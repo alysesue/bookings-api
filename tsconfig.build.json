@@ -1,0 +1,16 @@
+{
+	"extends": "./node_modules/mol-lib-config/shared-config/tsconfig.json",
+	"include": [
+		"src/**/*"
+	],
+	"exclude": [
+		"**/node_modules/*",
+		"**/__tests__/*",
+		"**/__mocks__/*",
+		"src/**/*.unit.ts",
+		"src/**/*.test.ts",
+		"src/**/*.spec.ts",
+		"src/**/*.apispec.ts",
+		"src/**/*.bench.ts"
+	]
+}
