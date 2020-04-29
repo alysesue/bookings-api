@@ -52,7 +52,7 @@ echo "Generate TSOA routes"
 # Build and pack
 echo "Webpacking"
 export TS_NODE_PROJECT=./node_modules/mol-lib-config/shared-config/script.tsconfig.json
-./node_modules/.bin/webpack
+./node_modules/.bin/webpack-cli
 
 pushd dist
 npm shrinkwrap
