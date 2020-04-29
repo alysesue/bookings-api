@@ -11,7 +11,11 @@ export class DbConnection {
 		DbConnection.CONNECTION = await createConnection(connectionOptions);
 	}
 
-	public async getConnection() {
+	public async runMigrations() {
+		await (await this.getConnection()).runMigrations();
+	}
+
+	public async getConnection(): Promise<Connection> {
 		if (DbConnection.CONNECTION === null) {
 			await this.initConnection();
 		}

@@ -1,11 +1,12 @@
 import { ConnectionOptions } from 'typeorm';
 
 import { Booking } from '../models/booking';
+import { Calendar } from '../models/calendar';
 
 export const connectionOptions: ConnectionOptions = {
 	database: process.env.DB_DATABASE,
 	entities: [
-		Booking,
+		Booking, Calendar
 	],
 	host: process.env.DB_HOST,
 	logging: false,
