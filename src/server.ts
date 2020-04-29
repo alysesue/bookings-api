@@ -11,6 +11,7 @@ import { KoaResponseHandler } from "mol-lib-common/network/router/KoaResponseHan
 import "reflect-metadata";
 import { config } from "./config/app-config";
 import { HealthCheckMiddleware } from "./health/HealthCheckMiddleware";
+import { RegisterRoutes } from "./routes";
 
 export async function startServer(): Promise<Server> {
 	// Setup service
@@ -18,6 +19,7 @@ export async function startServer(): Promise<Server> {
 
 	// Setup server
 	const router: KoaRouter = new KoaRouter();
+	RegisterRoutes(router);
 	// @ts-ignore
 	const HandledRoutes = new KoaResponseHandler(router.routes());
 
