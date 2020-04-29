@@ -12,41 +12,56 @@ import "reflect-metadata";
 import { config } from "./config/app-config";
 import { HealthCheckMiddleware } from "./health/HealthCheckMiddleware";
 import { RegisterRoutes } from "./routes";
+import yaml2js from "yamljs";
+import koaSwagger from "koa2-swagger-ui";
 
 export async function startServer(): Promise<Server> {
-	// Setup service
-	LoggerV2.setServiceName(config.name);
+  // Setup service
+  LoggerV2.setServiceName(config.name);
 
-	// Setup server
-	const router: KoaRouter = new KoaRouter();
-	RegisterRoutes(router);
-	// @ts-ignore
-	const HandledRoutes = new KoaResponseHandler(router.routes());
+  // Setup server
+  const router: KoaRouter = new KoaRouter();
+  RegisterRoutes(router);
+  // @ts-ignore
+  const HandledRoutes = new KoaResponseHandler(router.routes());
 
-	const koaServer = new Koa()
-		.use(compress({
-			filter: () => true,
-			threshold: 2048,
-			flush: require("zlib").Z_SYNC_FLUSH,
-			level: require("zlib").Z_BEST_COMPRESSION,
-		}))
-		.use(body({
-			multipart: true,
-			jsonLimit: "10mb",
-			formLimit: "10mb",
-			textLimit: "10mb",
-		}))
-		.use(new KoaErrorHandler().build())
-		.use(new KoaLoggerContext().build())
-		.use(new KoaMultipartCleaner().build())
-		.use(HealthCheckMiddleware.build())
-		.use(HandledRoutes.build())
-		.use(router.allowedMethods());
+  const swaggerOptions = yaml2js.load("../swagger.config.yml");
+  router.use(koaSwagger());
+  router.get(
+    "/docs",
+    koaSwagger({ routePrefix: false, swaggerOptions: { swaggerOptions } })
+  );
 
-	return new Promise((resolve) => {
-		const server = koaServer.listen(config.port, async () => {
-			logger.info(`${config.name} v${config.version} started on port ${config.port}`);
-			resolve(server);
-		});
-	});
+  const koaServer = new Koa()
+    .use(
+      compress({
+        filter: () => true,
+        threshold: 2048,
+        flush: require("zlib").Z_SYNC_FLUSH,
+        level: require("zlib").Z_BEST_COMPRESSION,
+      })
+    )
+    .use(
+      body({
+        multipart: true,
+        jsonLimit: "10mb",
+        formLimit: "10mb",
+        textLimit: "10mb",
+      })
+    )
+    .use(new KoaErrorHandler().build())
+    .use(new KoaLoggerContext().build())
+    .use(new KoaMultipartCleaner().build())
+    .use(HealthCheckMiddleware.build())
+    .use(HandledRoutes.build())
+    .use(router.allowedMethods());
+
+  return new Promise((resolve) => {
+    const server = koaServer.listen(config.port, async () => {
+      logger.info(
+        `${config.name} v${config.version} started on port ${config.port}`
+      );
+      resolve(server);
+    });
+  });
 }

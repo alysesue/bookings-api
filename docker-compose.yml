@@ -4,7 +4,7 @@ services:
     build:
       context: ./
       dockerfile: ./node_modules/mol-lib-config/shared-config/service.node12.watch.dockerfile
-    container_name: 'bookingsg-api'
+    container_name: "bookingsg-api"
     logging:
       driver: "json-file"
       options:
@@ -26,8 +26,8 @@ services:
       DB_HOST: gt_postgres
       DB_PORT: 5432
       DB_DATABASE: govtech
-      DB_USERNAME: 'gtbooking'
-      DB_PASSWORD: 'D8L6xJspQbvaUwukQLqd'
+      DB_USERNAME: "gtbooking"
+      DB_PASSWORD: "D8L6xJspQbvaUwukQLqd"
   db:
     image: "postgres:11"
     container_name: "gt_postgres"

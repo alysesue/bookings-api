@@ -1,94 +1,101 @@
 {
-	"name": "bookingsg-api",
-	"version": "0.0.1",
-	"main": "index.js",
-	"scripts": {
-		"lint": "./node_modules/mol-lib-config/shared-scripts/ts-lint.sh",
-		"test": "./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
-		"test:func": "./node_modules/mol-lib-config/shared-scripts/jest-test-functional.sh",
-		"build": "./scripts/build.sh",
-		"swagger": "./node_modules/.bin/tsoa swagger",
-		"sync-env": "export SERVICE_NAME=bookingsg-api && ./node_modules/mol-lib-config/shared-scripts/aws/aws-sm-sync-env.sh",
-		"start": "docker-compose up -d --build",
-		"start:fresh": "docker-compose down -v && npm start -- --force-recreate",
-		"logs": "docker logs -f bookingsg-api",
-		"stop": "docker-compose stop",
-		"watcher-install": "npm install",
-		"watcher-build": "npm run build && npm run watcher-env",
-		"watcher-run": "(cd ./dist; forever --minUptime 1000ms --spinSleepTime 1000ms -c \"node --trace-warnings --inspect=0.0.0.0:6000\" index.js)",
-		"watcher-env": "cp ./.env ./dist/",
-		"params:new": "./node_modules/mol-bamboo-scripts/scripts/generator/service-params-new-env.sh"
-	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "lint-staged",
-			"pre-push": "npm run build && npm run test && npm run swagger"
-		}
-	},
-	"lint-staged": {
-		"*.ts": [
-			"npm run lint --"
-		]
-	},
-	"watch": {
-		"watcher-build": {
-			"patterns": [
-				"node_modules",
-				"src"
-			],
-			"ignore": [
-				"**/*.spec.ts",
-				"src/routes.ts"
-			],
-			"extensions": "*",
-			"delay": 1000,
-			"verbose": true
-		},
-		"watcher-install": {
-			"patterns": [
-				"package.json",
-				"package-lock.json"
-			],
-			"extensions": "*",
-			"delay": 1000,
-			"runOnChangeOnly": true,
-			"verbose": true
-		},
-		"watcher-run": {
-			"patterns": [
-				"dist",
-				".env"
-			],
-			"ignore": [
-				"package.json",
-				"package-lock.json"
-			],
-			"extensions": "*",
-			"delay": 1000,
-			"runOnChangeOnly": true,
-			"verbose": true
-		},
-		"watcher-env": {
-			"patterns": [
-				".env"
-			],
-			"extensions": "*",
-			"delay": 1000,
-			"runOnChangeOnly": false,
-			"verbose": true
-		}
-	},
-	"dependencies": {
-		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:^4.3.32",
-		"mol-lib-common": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-common.git#semver:^3.10.5",
-		"pg": "^8.0.3",
-		"typeorm": "^0.2.24",
-		"typescript-ioc": "^3.2.1"
-	},
-	"devDependencies": {
-		"mol-bamboo-scripts": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-bamboo-scripts.git#semver:^1.4.0",
-		"mol-lib-config": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-config.git#semver:^3.1.1",
-		"typescript": "^3.8.3",
-		"reflect-metadata": "^0.1.13"
-	}
+  "name": "bookingsg-api",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "lint": "./node_modules/mol-lib-config/shared-scripts/ts-lint.sh",
+    "test": "./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
+    "test:func": "./node_modules/mol-lib-config/shared-scripts/jest-test-functional.sh",
+    "build": "./scripts/build.sh",
+    "swagger": "./node_modules/.bin/tsoa swagger",
+    "sync-env": "export SERVICE_NAME=bookingsg-api && ./node_modules/mol-lib-config/shared-scripts/aws/aws-sm-sync-env.sh",
+    "start": "docker-compose up -d --build",
+    "start:fresh": "docker-compose down -v && npm start -- --force-recreate",
+    "logs": "docker logs -f bookingsg-api",
+    "stop": "docker-compose stop",
+    "watcher-install": "npm install",
+    "watcher-build": "npm run build && npm run watcher-env",
+    "watcher-run": "(cd ./dist; forever --minUptime 1000ms --spinSleepTime 1000ms -c \"node --trace-warnings --inspect=0.0.0.0:6000\" index.js)",
+    "watcher-env": "cp ./.env ./dist/",
+    "params:new": "./node_modules/mol-bamboo-scripts/scripts/generator/service-params-new-env.sh"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "npm run build && npm run test && npm run swagger"
+    }
+  },
+  "lint-staged": {
+    "*.ts": [
+      "npm run lint --"
+    ]
+  },
+  "watch": {
+    "watcher-build": {
+      "patterns": [
+        "node_modules",
+        "src"
+      ],
+      "ignore": [
+        "**/*.spec.ts",
+        "src/routes.ts"
+      ],
+      "extensions": "*",
+      "delay": 1000,
+      "verbose": true
+    },
+    "watcher-install": {
+      "patterns": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "extensions": "*",
+      "delay": 1000,
+      "runOnChangeOnly": true,
+      "verbose": true
+    },
+    "watcher-run": {
+      "patterns": [
+        "dist",
+        ".env"
+      ],
+      "ignore": [
+        "package.json",
+        "package-lock.json"
+      ],
+      "extensions": "*",
+      "delay": 1000,
+      "runOnChangeOnly": true,
+      "verbose": true
+    },
+    "watcher-env": {
+      "patterns": [
+        ".env"
+      ],
+      "extensions": "*",
+      "delay": 1000,
+      "runOnChangeOnly": false,
+      "verbose": true
+    }
+  },
+  "dependencies": {
+    "@js-joda/core": "^2.0.0",
+    "bufferutil": "^4.0.1",
+    "canvas": "^2.5.0",
+    "class-validator": "^0.12.2",
+    "koa2-swagger-ui": "3.0.0",
+    "mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:^4.3.32",
+    "mol-lib-common": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-common.git#semver:^3.10.5",
+    "mol-lib-config": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-config.git#semver:^3.1.1",
+    "pg": "^8.0.3",
+    "typeorm": "^0.2.24",
+    "typescript-ioc": "^3.2.1",
+    "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "@types/yamljs": "^0.2.30",
+    "mol-bamboo-scripts": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-bamboo-scripts.git#semver:^1.4.0",
+    "typescript": "^3.8.3",
+    "reflect-metadata": "^0.1.13"
+  }
 }
