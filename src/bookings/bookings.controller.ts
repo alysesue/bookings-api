@@ -5,7 +5,6 @@ import { Controller, Get, Post, Route, Body } from "tsoa";
 import { BookingsResponse } from "./bookings.response";
 import { BookingsService } from "./bookings.service";
 import { BookingRequest } from "./booking.request";
-import { Booking } from "../models/booking";
 
 @Route("api")
 export class BookingsController extends Controller {
@@ -25,7 +24,7 @@ export class BookingsController extends Controller {
 
   @Post("v1/bookings")
   public async postBooking(@Body() bookingRequest: BookingRequest) {
-    const booking: Booking = new Booking();
-    // booking.create(bookingRequest);
+    const booking = await this.bookingsService.save(bookingRequest);
+    return new BookingsResponse([booking]);
   }
 }

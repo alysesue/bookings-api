@@ -1,15 +1,27 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  OneToOne,
+  JoinColumn,
+  BaseEntity,
+} from "typeorm";
+import { TimeSlot } from "./index";
+enum BookingStatus {
+  PendingApproval = 0,
+}
 
 @Entity()
-export class Booking {
+export class Booking extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  protected id: number;
 
-	@PrimaryGeneratedColumn()
-	protected id: number;
+  @Column()
+  protected status: BookingStatus = BookingStatus.PendingApproval;
 
-	@Column()
-	protected name: string;
-
-	constructor(name: string) {
-		this.name = name;
-	}
+  @OneToOne((type) => TimeSlot, {
+    cascade: true,
+  })
+  @JoinColumn()
+  timeSlot: TimeSlot;
 }

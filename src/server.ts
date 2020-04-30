@@ -12,8 +12,6 @@ import "reflect-metadata";
 import { config } from "./config/app-config";
 import { HealthCheckMiddleware } from "./health/HealthCheckMiddleware";
 import { RegisterRoutes } from "./routes";
-import yaml2js from "yamljs";
-import koaSwagger from "koa2-swagger-ui";
 
 export async function startServer(): Promise<Server> {
   // Setup service
@@ -24,13 +22,6 @@ export async function startServer(): Promise<Server> {
   RegisterRoutes(router);
   // @ts-ignore
   const HandledRoutes = new KoaResponseHandler(router.routes());
-
-  const swaggerOptions = yaml2js.load("../swagger.config.yml");
-  router.use(koaSwagger());
-  router.get(
-    "/docs",
-    koaSwagger({ routePrefix: false, swaggerOptions: { swaggerOptions } })
-  );
 
   const koaServer = new Koa()
     .use(
