@@ -1,16 +1,16 @@
-import { Column, Entity, Generated, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Generated, PrimaryGeneratedColumn, Index } from 'typeorm';
 
 @Entity()
 export class Calendar {
 
 	@PrimaryGeneratedColumn()
-	protected id: number;
+	public id: number;
 
 	@Column({ type: "uuid" })
+	@Index({ unique: true })
 	@Generated("uuid")
-	protected uuid: string;
+	public uuid: string;
 
-	constructor(uuid: string) {
-		this.uuid = uuid;
+	constructor() {
 	}
 }

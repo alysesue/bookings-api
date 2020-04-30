@@ -12,13 +12,20 @@ export class DbConnection {
 	}
 
 	public async runMigrations() {
-		await (await this.getConnection()).runMigrations();
+		const conn = await this.getConnection();
+		await conn.runMigrations();
+	}
+
+	public async synchronize() {
+		const conn = await this.getConnection();
+		await conn.synchronize();
 	}
 
 	public async getConnection(): Promise<Connection> {
 		if (DbConnection.CONNECTION === null) {
 			await this.initConnection();
 		}
+
 		return DbConnection.CONNECTION;
 	}
 }

@@ -12,6 +12,8 @@ import "reflect-metadata";
 import { config } from "./config/app-config";
 import { HealthCheckMiddleware } from "./health/HealthCheckMiddleware";
 import { RegisterRoutes } from "./routes";
+import { DbConnection } from "./core/db.connection";
+import { Container } from 'typescript-ioc';
 
 export async function startServer(): Promise<Server> {
 	// Setup service
@@ -43,7 +45,12 @@ export async function startServer(): Promise<Server> {
 		.use(HandledRoutes.build())
 		.use(router.allowedMethods());
 
-	return new Promise((resolve) => {
+	const dbConnection = Container.get(DbConnection);
+
+	await dbConnection.runMigrations();
+	await dbConnection.synchronize();
+
+	return await new Promise(async (resolve) => {
 		const server = koaServer.listen(config.port, async () => {
 			logger.info(`${config.name} v${config.version} started on port ${config.port}`);
 			resolve(server);
