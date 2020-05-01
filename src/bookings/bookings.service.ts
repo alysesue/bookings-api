@@ -7,25 +7,25 @@ import { BookingRequest } from "./booking.request";
 
 @Singleton
 export class BookingsService {
-	private static SessionDurationInMinutes = 60;
-	@Inject
-	private bookingsRepository: BookingsRepository;
+  private static SessionDurationInMinutes = 60;
+  @Inject
+  private bookingsRepository: BookingsRepository;
 
-	public async getBookings(): Promise<Booking[]> {
-		return this.bookingsRepository.getBookings();
-	}
+  public async getBookings(): Promise<Booking[]> {
+    return this.bookingsRepository.getBookings();
+  }
 
-	public async save(bookingRequest: BookingRequest): Promise<Booking> {
-		// TODO: validate booking request.
-		const booking = BookingsService.createBooking(bookingRequest);
-		await this.bookingsRepository.save(booking);
-		return booking;
-	}
+  public async save(bookingRequest: BookingRequest): Promise<Booking> {
+    // TODO: validate booking request.
+    const booking = BookingsService.createBooking(bookingRequest);
+    await this.bookingsRepository.save(booking);
+    return booking;
+  }
 
-	private static createBooking(bookingRequest: BookingRequest) {
-		return new Booking(
-			bookingRequest.startDateTime,
-			this.SessionDurationInMinutes
-		);
-	}
+  private static createBooking(bookingRequest: BookingRequest) {
+    return new Booking(
+      bookingRequest.startDateTime,
+      this.SessionDurationInMinutes
+    );
+  }
 }
