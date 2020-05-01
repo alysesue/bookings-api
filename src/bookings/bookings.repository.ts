@@ -2,7 +2,7 @@ import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 import { Inject, Singleton } from 'typescript-ioc';
 
 import { DbConnection } from '../core/db.connection';
-import { Booking } from '../entities/booking';
+import { Booking } from '../models/booking';
 
 @Singleton
 export class BookingsRepository {

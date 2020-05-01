@@ -3,6 +3,8 @@ import { Inject } from 'typescript-ioc';
 import { DbConnection } from '../core/db.connection'
 import { Controller, Post, Route } from 'tsoa';
 
+/* istanbul ignore file */
+
 @Route('api/v1/infrastructure')
 export class InfrastructureController extends Controller {
 
@@ -11,21 +13,20 @@ export class InfrastructureController extends Controller {
 
 	@Post('dbmigrations')
 	public async dbmigrations() {
-		try {
-			await this.connection.runMigrations();
-		} catch (err) {
-			logger.error('endpoint/dbmigrations:: error: ', err);
-			throw err;
-		}
+		await this.connection.runMigrations();
 	}
 
 	@Post('dbsynchronize')
 	public async dbsynchronize() {
-		try {
-			await this.connection.synchronize();
-		} catch (err) {
-			logger.error('endpoint/dbsynchronize:: error: ', err);
-			throw err;
-		}
+		await this.connection.synchronize();
+	}
+
+	@Post('throwexception')
+	public async throwexception() {
+		await this.sampleException();
+	}
+
+	private async sampleException() {
+		throw new Error('sampleException');
 	}
 }

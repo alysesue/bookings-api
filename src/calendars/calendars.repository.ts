@@ -16,20 +16,10 @@ export class CalendarsRepository {
 	}
 
 	public async getCalendars(): Promise<Calendar[]> {
-		try {
-			return (await this.getRepository()).find();
-		} catch (e) {
-			logger.error('calendarsRepository::getCalendars::error', e);
-			throw e;
-		}
+		return (await this.getRepository()).find();
 	}
 
 	public async saveCalendar(calendar: Calendar): Promise<Calendar> {
-		try {
-			return (await this.getRepository()).save(calendar);
-		} catch (e) {
-			logger.error('calendarsRepository::addCalendar::error', e);
-			throw e;
-		}
+		return (await this.getRepository()).save(calendar);
 	}
 }

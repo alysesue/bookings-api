@@ -2,7 +2,7 @@
 
 echo ==============================================================================
 echo Script: $(basename "$0")
-echo Builds and prepares the distribution
+echo Builds the docker image from a packaged docker tarball
 echo ==============================================================================
 
 # ==============================================================================
@@ -25,7 +25,6 @@ fi
 
 SCRIPT_PATH=$( ${READLINK} -f $0 )
 SCRIPT_DIR=$( dirname $( ${READLINK} -f $0 ) )
-PROJECT_DIR=$( cd ${SCRIPT_DIR} && cd .. && pwd )
 
 # ==============================================================================
 # Inputs
@@ -33,31 +32,39 @@ PROJECT_DIR=$( cd ${SCRIPT_DIR} && cd .. && pwd )
 
 # Variables
 echo "Checking variables"
-ASSERT_VAR_SCRIPT="${PROJECT_DIR}/scripts/shared-scripts/helpers/assert-variable.sh"
+ASSERT_VAR_SCRIPT=$( ${READLINK} -f ${SCRIPT_DIR}/../helpers/assert-variable.sh )
 
-export BUILD_ENV=${1:-development}	# development or production only
-source ${ASSERT_VAR_SCRIPT} BUILD_ENV
+# Path to the packaged tarball to be published
+PACKAGE_PATH=$1
+source ${ASSERT_VAR_SCRIPT} PACKAGE_PATH
+
+export PROJECT_NAME=${PROJECT_NAME:=${bamboo_PROJECT_NAME}}
+source ${ASSERT_VAR_SCRIPT} PROJECT_NAME
+
+export SERVICE_NAME=${SERVICE_NAME:=${bamboo_SERVICE_NAME}}
+source ${ASSERT_VAR_SCRIPT} SERVICE_NAME
 
 # ==============================================================================
 # Script
 # ==============================================================================
 
-# Set project directory
-pushd ${PROJECT_DIR}
+# Resolve package path
+PACKAGE_PATH=$( ${READLINK} -f ${PACKAGE_PATH} )
 
-# Build and pack
-echo "Generate TSOA routes"
-./node_modules/.bin/tsoa routes
+# Prepare image directory
+echo "Preparing temp package folder"
+rm -rf ./build_image
+mkdir -p ./build_image
+cd build_image
 
-# Build and pack
-echo "Webpacking"
-export TS_NODE_PROJECT=./configs/shared-config/script.tsconfig.json
-./node_modules/.bin/webpack-cli
+# Extract package
+echo "Extracting package"
+tar -C $( pwd ) --strip-components=1 -xvzf ${PACKAGE_PATH}
 
-pushd dist
-npm shrinkwrap
-npm pack
-popd
+# Build image
+echo "Building docker image"
+docker build -t ${PROJECT_NAME}-${SERVICE_NAME} -f ./Dockerfile .
 
-# Return to invocation dir
-popd
+# Clean up image directory
+cd ..
+rm -rf ./build_image

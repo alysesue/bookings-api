@@ -3,7 +3,7 @@ services:
   bookingsg-api:
     build:
       context: ./
-      dockerfile: ./node_modules/mol-lib-config/shared-config/service.node12.watch.dockerfile
+      dockerfile: ./configs/shared-config/service.node12.watch.dockerfile
     container_name: 'bookingsg-api'
     logging:
       driver: "json-file"

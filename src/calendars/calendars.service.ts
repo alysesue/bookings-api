@@ -3,8 +3,8 @@ import { Calendar } from '../models/calendar';
 import { CalendarsRepository } from './calendars.repository';
 
 @Singleton
-export class CalendarsService {
 
+export class CalendarsService {
 	@Inject
 	private calendarsRepository: CalendarsRepository;
 

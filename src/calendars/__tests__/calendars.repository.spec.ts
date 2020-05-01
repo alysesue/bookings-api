@@ -17,7 +17,7 @@ afterAll(function () {
 	snapshot.restore();
 });
 
-describe('Calendar repository', () => {
+describe('Calendar service', () => {
 	it('should get calendars', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
@@ -33,7 +33,7 @@ describe('Calendar repository', () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
 		const calendarsRepository = new CalendarsRepository();
-		const myCalendar = new Calendar('99feb592-1cf6-4be2-9332-a2c64ac71550');
+		const myCalendar = { uuid: '99feb592-1cf6-4be2-9332-a2c64ac71550' } as Calendar;
 
 		const result = await calendarsRepository.saveCalendar(myCalendar);
 		expect(result).not.toBe(undefined);
