@@ -11,6 +11,7 @@
 		"sync-env": "export SERVICE_NAME=bookingsg-api && ./node_modules/mol-lib-config/shared-scripts/aws/aws-sm-sync-env.sh",
 		"start": "docker-compose up -d --build",
 		"start:fresh": "docker-compose down -v && npm start -- --force-recreate",
+		"cleanup": "docker-compose down -v --rmi all --remove-orphans",
 		"logs": "docker logs -f bookingsg-api",
 		"stop": "docker-compose stop",
 		"watcher-install": "npm install",
@@ -92,6 +93,8 @@
 		"mol-lib-config": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-config.git#semver:^3.1.1",
 		"reflect-metadata": "^0.1.13",
 		"ts-jest": "^25.4.0",
-		"typescript": "^3.8.3"
+		"ts-loader": "^7.0.2",
+		"typescript": "^3.8.3",
+		"webpack": "^4.43.0"
 	}
 }
