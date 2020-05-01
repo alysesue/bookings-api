@@ -6,12 +6,12 @@ import { BookingsResponse } from "./bookings.response";
 import { BookingsService } from "./bookings.service";
 import { BookingRequest } from "./booking.request";
 
-@Route("api")
+@Route("api/v1/bookings")
 export class BookingsController extends Controller {
 	@Inject
 	private bookingsService: BookingsService;
 
-	@Get("v1/bookings")
+	@Get()
 	public async getBookings() {
 		try {
 			const users = await this.bookingsService.getBookings();
@@ -22,7 +22,7 @@ export class BookingsController extends Controller {
 		}
 	}
 
-	@Post("v1/bookings")
+	@Post()
 	public async postBooking(@Body() bookingRequest: BookingRequest) {
 		const booking = await this.bookingsService.save(bookingRequest);
 		return new BookingsResponse([booking]);
