@@ -8,23 +8,23 @@ import { BookingRequest } from "./booking.request";
 
 @Route("api")
 export class BookingsController extends Controller {
-  @Inject
-  private bookingsService: BookingsService;
+	@Inject
+	private bookingsService: BookingsService;
 
-  @Get("v1/bookings")
-  public async getBookings() {
-    try {
-      const users = await this.bookingsService.getBookings();
-      return new BookingsResponse(users);
-    } catch (err) {
-      logger.error("endpointGetUsers:: error: ", err);
-      throw err;
-    }
-  }
+	@Get("v1/bookings")
+	public async getBookings() {
+		try {
+			const users = await this.bookingsService.getBookings();
+			return new BookingsResponse(users);
+		} catch (err) {
+			logger.error("endpointGetUsers:: error: ", err);
+			throw err;
+		}
+	}
 
-  @Post("v1/bookings")
-  public async postBooking(@Body() bookingRequest: BookingRequest) {
-    const booking = await this.bookingsService.save(bookingRequest);
-    return new BookingsResponse([booking]);
-  }
+	@Post("v1/bookings")
+	public async postBooking(@Body() bookingRequest: BookingRequest) {
+		const booking = await this.bookingsService.save(bookingRequest);
+		return new BookingsResponse([booking]);
+	}
 }

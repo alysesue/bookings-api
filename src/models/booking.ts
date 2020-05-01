@@ -3,25 +3,25 @@ import { BookingStatus } from "./bookingStatus";
 
 @Entity()
 export class Booking extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  protected id: number;
+	@PrimaryGeneratedColumn()
+	protected id: number;
 
-  @Column()
-  protected status: BookingStatus;
+	@Column()
+	protected status: BookingStatus;
 
-  @Column()
-  protected startDateTime: Date;
-  @Column()
-  protected sessionDurationInMinutes: number;
+	@Column()
+	protected startDateTime: Date;
+	@Column()
+	protected sessionDurationInMinutes: number;
 
-  constructor(startDateTime: Date, sessionDurationInMinutes: number) {
-    super();
-    this.startDateTime = startDateTime;
-    this.sessionDurationInMinutes = sessionDurationInMinutes;
-    this.status = BookingStatus.PendingApproval;
-  }
+	constructor(startDateTime: Date, sessionDurationInMinutes: number) {
+		super();
+		this.startDateTime = startDateTime;
+		this.sessionDurationInMinutes = sessionDurationInMinutes;
+		this.status = BookingStatus.PendingApproval;
+	}
 
-  public getStatus() {
-    return this.status;
-  }
+	public getStatus() {
+		return this.status;
+	}
 }

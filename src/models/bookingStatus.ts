@@ -1,3 +1,3 @@
 export enum BookingStatus {
-  PendingApproval = 0,
+	PendingApproval = 0,
 }

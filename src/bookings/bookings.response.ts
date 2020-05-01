@@ -1,9 +1,9 @@
-import { Booking } from "../models/booking";
+import { Booking } from "../models";
 
 export class BookingsResponse {
-  protected bookings: Booking[];
+	protected bookings: Booking[];
 
-  constructor(users: Booking[]) {
-    this.bookings = users;
-  }
+	constructor(users: Booking[]) {
+		this.bookings = users;
+	}
 }
