@@ -1,8 +1,10 @@
 {
 	"swagger": {
-		"outputDirectory": "./dist/swagger",
+		"outputDirectory": "./swagger",
 		"entryFile": "./src/index.ts",
-		"specVersion": 3
+		"specVersion": 3,
+		"yaml": true,
+		"host": "localhost:3000"
 	},
 	"routes": {
 		"entryFile": "./src/controllers.ts",

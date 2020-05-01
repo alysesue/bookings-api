@@ -11,7 +11,7 @@ services:
         max-size: "50k"
         max-file: "10"
     ports:
-      - 3999:3000
+      - 3000:3000
       - 6999:6000
     volumes:
       - ./src:/service/src:delegated
@@ -23,13 +23,14 @@ services:
     depends_on:
       - db
     environment:
+      PORT: 3000
       DB_HOST: gt_postgres
       DB_PORT: 5432
       DB_DATABASE: govtech
       DB_USERNAME: "gtbooking"
       DB_PASSWORD: "D8L6xJspQbvaUwukQLqd"
   db:
-    image: "postgres:11"
+    image: "postgres:12"
     container_name: "gt_postgres"
     ports:
       - "5432:5432"

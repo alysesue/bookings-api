@@ -12,6 +12,8 @@ import "reflect-metadata";
 import { config } from "./config/app-config";
 import { HealthCheckMiddleware } from "./health/HealthCheckMiddleware";
 import { RegisterRoutes } from "./routes";
+import * as swagger from "swagger2";
+import { ui } from 'swagger2-koa';
 
 export async function startServer(): Promise<Server> {
 	// Setup service
@@ -23,6 +25,7 @@ export async function startServer(): Promise<Server> {
 	// @ts-ignore
 	const HandledRoutes = new KoaResponseHandler(router.routes());
 
+	const document = swagger.loadDocumentSync('../swagger/swagger.yaml');
 	const koaServer = new Koa()
 		.use(
 			compress({
@@ -40,6 +43,7 @@ export async function startServer(): Promise<Server> {
 				textLimit: "10mb",
 			})
 		)
+		.use(ui(document as swagger.Document, "/swagger"))
 		.use(new KoaErrorHandler().build())
 		.use(new KoaLoggerContext().build())
 		.use(new KoaMultipartCleaner().build())

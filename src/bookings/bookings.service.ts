@@ -7,6 +7,7 @@ import { BookingRequest } from "./booking.request";
 
 @Singleton
 export class BookingsService {
+	private static SessionDurationInMinutes = 60;
 	@Inject
 	private bookingsRepository: BookingsRepository;
 
@@ -24,7 +25,7 @@ export class BookingsService {
 	private static createBooking(bookingRequest: BookingRequest) {
 		return new Booking(
 			bookingRequest.startDateTime,
-			bookingRequest.sessionDurationInMinutes
+			this.SessionDurationInMinutes
 		);
 	}
 }
