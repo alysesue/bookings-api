@@ -1,4 +1,4 @@
-import { Column, Entity, Generated, PrimaryGeneratedColumn, Index } from 'typeorm';
+import { Column, Entity, Generated, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Calendar {
@@ -10,6 +10,10 @@ export class Calendar {
 	@Index({ unique: true })
 	@Generated("uuid")
 	public uuid: string;
+
+
+	@Column({ type: "varchar", length: 300 })
+	public googleCalendarId: string;
 
 	constructor() {
 	}

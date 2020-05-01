@@ -80,6 +80,7 @@
 		}
 	},
 	"dependencies": {
+		"googleapis": "^49.0.0",
 		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:^4.3.32",
 		"mol-lib-common": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-common.git#semver:^3.10.5",
 		"pg": "^8.0.3",

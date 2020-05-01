@@ -772,3 +772,6 @@ src/routes.ts
 
 # Jest
 jest.json
+
+# Google secrets
+src/googleapi/googleapi-credentials.json
