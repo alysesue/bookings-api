@@ -1,15 +1,5 @@
-import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  OneToOne,
-  JoinColumn,
-  BaseEntity,
-} from "typeorm";
-import { TimeSlot } from "./index";
-enum BookingStatus {
-  PendingApproval = 0,
-}
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BookingStatus } from "./bookingStatus";
 
 @Entity()
 export class Booking extends BaseEntity {
@@ -17,11 +7,21 @@ export class Booking extends BaseEntity {
   protected id: number;
 
   @Column()
-  protected status: BookingStatus = BookingStatus.PendingApproval;
+  protected status: BookingStatus;
 
-  @OneToOne((type) => TimeSlot, {
-    cascade: true,
-  })
-  @JoinColumn()
-  timeSlot: TimeSlot;
+  @Column()
+  protected startDateTime: Date;
+  @Column()
+  protected sessionDurationInMinutes: number;
+
+  constructor(startDateTime: Date, sessionDurationInMinutes: number) {
+    super();
+    this.startDateTime = startDateTime;
+    this.sessionDurationInMinutes = sessionDurationInMinutes;
+    this.status = BookingStatus.PendingApproval;
+  }
+
+  public getStatus() {
+    return this.status;
+  }
 }

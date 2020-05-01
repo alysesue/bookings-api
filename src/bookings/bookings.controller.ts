@@ -1,7 +1,7 @@
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 import { Inject } from "typescript-ioc";
 
-import { Controller, Get, Post, Route, Body } from "tsoa";
+import { Body, Controller, Get, Post, Route } from "tsoa";
 import { BookingsResponse } from "./bookings.response";
 import { BookingsService } from "./bookings.service";
 import { BookingRequest } from "./booking.request";

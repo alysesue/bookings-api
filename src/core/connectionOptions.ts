@@ -1,10 +1,10 @@
 import { ConnectionOptions } from "typeorm";
 
-import { Booking, TimeSlot } from "../models/index";
+import { Booking } from "../models/index";
 
 export const connectionOptions: ConnectionOptions = {
   database: process.env.DB_DATABASE,
-  entities: [Booking, TimeSlot],
+  entities: [Booking],
   host: process.env.DB_HOST,
   logging: false,
   password: process.env.DB_PASSWORD,

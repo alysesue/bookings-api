@@ -1,6 +1,6 @@
 import { Inject, Singleton } from "typescript-ioc";
 
-import { Booking, TimeSlot } from "../models/index";
+import { Booking } from "../models/index";
 
 import { BookingsRepository } from "./bookings.repository";
 import { BookingRequest } from "./booking.request";
@@ -15,16 +15,17 @@ export class BookingsService {
   }
 
   public async save(bookingRequest: BookingRequest): Promise<Booking> {
-    return this.bookingsRepository.save(this.createBooking(bookingRequest));
+    // validate booking request.
+    const booking = this.createBooking(bookingRequest);
+    await this.bookingsRepository.save(booking);
+    return booking;
   }
 
   private createBooking(bookingRequest: BookingRequest) {
-    const timeSlot = new TimeSlot(
+    const booking = new Booking(
       bookingRequest.startDateTime,
-      bookingRequest.sessionDuration
+      bookingRequest.sessionDurationInMinutes
     );
-    const booking = new Booking();
-    booking.timeSlot = timeSlot;
     return booking;
   }
 }
