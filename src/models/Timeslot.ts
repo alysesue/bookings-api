@@ -1,6 +1,7 @@
-import { Column, Entity, Generated, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Calendar } from './calendar';
 
+@Entity()
 export class Timeslot {
 
 	@PrimaryGeneratedColumn()
@@ -12,13 +13,11 @@ export class Timeslot {
 	@Column({ type: "timestamp" })
 	public endDatetime: Date;
 
-
 	@ManyToOne(type => Calendar)
 	public calendar: Calendar;
 
-	@Column({ type: "bo"})
+	@Column()
+	public isAvailable: boolean;
 
-
-	}
-
+	constructor() { }
 }
