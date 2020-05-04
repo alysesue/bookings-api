@@ -1,7 +1,7 @@
 import { Inject, Singleton } from 'typescript-ioc';
-import { Calendar } from '../models/calendar';
+import { Calendar } from '../../models/calendar';
 import { CalendarsRepository } from './calendars.repository';
-import { GoogleCalendarApiWrapper } from '../googleapi/calendarwrapper';
+import { GoogleCalendarApiWrapper } from '../../googleapi/calendarwrapper';
 
 @Singleton
 export class CalendarsService {
