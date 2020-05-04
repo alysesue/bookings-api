@@ -33,7 +33,7 @@ describe('Calendar service', () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
 		const calendarsRepository = new CalendarsRepository();
-		const myCalendar = { uuid: 'lkjasdkl' } as Calendar;
+		const myCalendar = { uuid: '99feb592-1cf6-4be2-9332-a2c64ac71550' } as Calendar;
 
 		const result = await calendarsRepository.saveCalendar(myCalendar);
 		expect(result).not.toBe(undefined);

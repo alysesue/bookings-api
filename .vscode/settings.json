@@ -31,5 +31,16 @@
 	"tslint.jsEnable": true,
 	"typescript.tsdk": "./node_modules/typescript/lib",
 	"typescriptHero.imports.multiLineWrapThreshold": 120,
-	"typescriptHero.imports.stringQuoteStyle": "\""
+	"typescriptHero.imports.stringQuoteStyle": "\"",
+	"sqltools.connections": [
+		{
+			"database": "govtech",
+			"dialect": "PostgreSQL",
+			"name": "Bookingsg",
+			"password": "D8L6xJspQbvaUwukQLqd",
+			"port": 5432,
+			"server": "localhost",
+			"username": "gtbooking"
+		}
+	]
 }
