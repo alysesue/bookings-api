@@ -1,8 +1,13 @@
-const baseConfig = require("mol-lib-config/shared-config/jest.config");
+const baseConfigModule = require("./configs/shared-config/jest.config");
+const baseConfig = baseConfigModule.createBaseConfig(baseConfigModule.TestType.UNIT_AND_INTERGRATION)
 
 const config = {
-	...baseConfig.createBaseConfig(baseConfig.TestType.UNIT_AND_INTERGRATION),
+	...baseConfig,
 	setupFiles: ["./jest.setup.ts"],
+	collectCoverageFrom: [
+		...baseConfig.collectCoverageFrom,
+		"!**/*{A,a}picontract{*,*/**/*}"
+	],
 	coverageThreshold: {
 		global: {
 			branches: 70,

@@ -2,7 +2,7 @@
 
 echo ==============================================================================
 echo Script: $(basename "$0")
-echo Builds and prepares the distribution
+echo Run jest tests
 echo ==============================================================================
 
 # ==============================================================================
@@ -25,39 +25,22 @@ fi
 
 SCRIPT_PATH=$( ${READLINK} -f $0 )
 SCRIPT_DIR=$( dirname $( ${READLINK} -f $0 ) )
-PROJECT_DIR=$( cd ${SCRIPT_DIR} && cd .. && pwd )
 
 # ==============================================================================
 # Inputs
 # ==============================================================================
 
-# Variables
-echo "Checking variables"
-ASSERT_VAR_SCRIPT="${PROJECT_DIR}/scripts/shared-scripts/helpers/assert-variable.sh"
+export DEBUG_PORT=${DEBUG_PORT:-7000}
 
-export BUILD_ENV=${1:-development}	# development or production only
-source ${ASSERT_VAR_SCRIPT} BUILD_ENV
+export JEST_PATH=${JEST_PATH:-"./node_modules/.bin/jest"}
 
 # ==============================================================================
 # Script
 # ==============================================================================
 
-# Set project directory
-pushd ${PROJECT_DIR}
+# Resolve jest path
+JEST_PATH=$( ${READLINK} -f ${JEST_PATH} )
 
-# Build and pack
-echo "Generate TSOA routes"
-./node_modules/.bin/tsoa routes
-
-# Build and pack
-echo "Webpacking"
-export TS_NODE_PROJECT=./configs/shared-config/script.tsconfig.json
-./node_modules/.bin/webpack-cli
-
-pushd dist
-npm shrinkwrap
-npm pack
-popd
-
-# Return to invocation dir
-popd
+# Run test
+echo "Testing with jest"
+node --max_old_space_size=4096 --expose-gc --trace-warnings --inspect=0.0.0.0:${DEBUG_PORT} ${JEST_PATH} $@

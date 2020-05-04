@@ -2,7 +2,7 @@
 
 echo ==============================================================================
 echo Script: $(basename "$0")
-echo Builds and prepares the distribution
+echo Updates the target env fargate cluster to run the latest service image
 echo ==============================================================================
 
 # ==============================================================================
@@ -25,7 +25,6 @@ fi
 
 SCRIPT_PATH=$( ${READLINK} -f $0 )
 SCRIPT_DIR=$( dirname $( ${READLINK} -f $0 ) )
-PROJECT_DIR=$( cd ${SCRIPT_DIR} && cd .. && pwd )
 
 # ==============================================================================
 # Inputs
@@ -33,31 +32,35 @@ PROJECT_DIR=$( cd ${SCRIPT_DIR} && cd .. && pwd )
 
 # Variables
 echo "Checking variables"
-ASSERT_VAR_SCRIPT="${PROJECT_DIR}/scripts/shared-scripts/helpers/assert-variable.sh"
+ASSERT_VAR_SCRIPT=$( ${READLINK} -f ${SCRIPT_DIR}/../helpers/assert-variable.sh )
 
-export BUILD_ENV=${1:-development}	# development or production only
-source ${ASSERT_VAR_SCRIPT} BUILD_ENV
+export ENV_NAME # dev, qe, stg, prod
+source ${ASSERT_VAR_SCRIPT} ENV_NAME
+
+export PROJECT_NAME=${PROJECT_NAME:=${bamboo_PROJECT_NAME}}
+source ${ASSERT_VAR_SCRIPT} PROJECT_NAME
+
+export SERVICE_NAME=${SERVICE_NAME:=${bamboo_SERVICE_NAME}}
+source ${ASSERT_VAR_SCRIPT} SERVICE_NAME
 
 # ==============================================================================
 # Script
 # ==============================================================================
 
-# Set project directory
-pushd ${PROJECT_DIR}
+# Check for invalid env
+if [ ${ENV_NAME} != "dev" ] &&
+	[ ${ENV_NAME} != "qe" ] &&
+	[ ${ENV_NAME} != "stg" ] &&
+	[ ${ENV_NAME} != "prod" ]; then
+	echo "ENV_NAME must be dev/qe/stg/prod" >>/dev/stderr
+	exit 1
+fi
 
-# Build and pack
-echo "Generate TSOA routes"
-./node_modules/.bin/tsoa routes
+# Update cluster service
+echo "Updating AWS cluster service"
+aws ecs update-service \
+    --cluster ${PROJECT_NAME}-${ENV_NAME}-cluster \
+    --service ${PROJECT_NAME}-${ENV_NAME}-${SERVICE_NAME}-service \
+    --force-new-deployment | grep -vq "failed to launch a task with"
 
-# Build and pack
-echo "Webpacking"
-export TS_NODE_PROJECT=./configs/shared-config/script.tsconfig.json
-./node_modules/.bin/webpack-cli
-
-pushd dist
-npm shrinkwrap
-npm pack
-popd
-
-# Return to invocation dir
-popd
+echo $?
