@@ -1,5 +1,5 @@
 import { BookingsRepository } from '../bookings.repository';
-import { DbConnection } from '../../core/db.connection';
+import { DbConnection } from '../../../core/db.connection';
 import { Container } from 'typescript-ioc';
 
 describe('Bookings repository', () => {

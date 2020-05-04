@@ -1,7 +1,7 @@
 import { Inject, Singleton } from 'typescript-ioc';
 
-import { DbConnection } from '../core/db.connection';
-import { Timeslot } from '../models/timeslot';
+import { DbConnection } from '../../core/db.connection';
+import { Timeslot } from '../../models/timeslot';
 import { DeleteResult, Repository } from "typeorm";
 
 @Singleton
