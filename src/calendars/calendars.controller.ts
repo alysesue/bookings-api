@@ -18,13 +18,8 @@ export class CalendarsController extends Controller {
 		} as CalendarModel;
 	}
 
-	private mapDataModels(calendar: Calendar[]): CalendarModel[] {
-		if (calendar === null)
-			return null;
-		if (calendar.length === 0)
-			return [];
-
-		return calendar.map(e => this.mapDataModel(e));
+	private mapDataModels(calendars: Calendar[]): CalendarModel[] {
+		return calendars?.map(e => this.mapDataModel(e));
 	}
 
 	@Get('')
