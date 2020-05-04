@@ -2,7 +2,7 @@
 
 echo ==============================================================================
 echo Script: $(basename "$0")
-echo Builds and prepares the distribution
+echo Tags and pushes the servicee image to AWS ECR
 echo ==============================================================================
 
 # ==============================================================================
@@ -25,7 +25,6 @@ fi
 
 SCRIPT_PATH=$( ${READLINK} -f $0 )
 SCRIPT_DIR=$( dirname $( ${READLINK} -f $0 ) )
-PROJECT_DIR=$( cd ${SCRIPT_DIR} && cd .. && pwd )
 
 # ==============================================================================
 # Inputs
@@ -33,31 +32,37 @@ PROJECT_DIR=$( cd ${SCRIPT_DIR} && cd .. && pwd )
 
 # Variables
 echo "Checking variables"
-ASSERT_VAR_SCRIPT="${PROJECT_DIR}/scripts/shared-scripts/helpers/assert-variable.sh"
+ASSERT_VAR_SCRIPT=$( ${READLINK} -f ${SCRIPT_DIR}/../helpers/assert-variable.sh )
 
-export BUILD_ENV=${1:-development}	# development or production only
-source ${ASSERT_VAR_SCRIPT} BUILD_ENV
+export PROJECT_NAME=${PROJECT_NAME:=${bamboo_PROJECT_NAME}}
+source ${ASSERT_VAR_SCRIPT} PROJECT_NAME
+
+export SERVICE_NAME=${SERVICE_NAME:=${bamboo_SERVICE_NAME}}
+source ${ASSERT_VAR_SCRIPT} SERVICE_NAME
+
+export AWS_ECR_REPO=${AWS_ECR_REPO:=${bamboo_AWS_ECR_REPO}}
+source ${ASSERT_VAR_SCRIPT} AWS_ECR_REPO
+
+export IMAGE_TAG=${IMAGE_TAG:=${bamboo_buildNumber}}
 
 # ==============================================================================
 # Script
 # ==============================================================================
 
-# Set project directory
-pushd ${PROJECT_DIR}
+# Tag image
+echo "Tagging docker image ${AWS_ECR_REPO}:latest"
+docker tag ${PROJECT_NAME}-${SERVICE_NAME}:latest ${AWS_ECR_REPO}:latest
 
-# Build and pack
-echo "Generate TSOA routes"
-./node_modules/.bin/tsoa routes
+if [ ! -z ${IMAGE_TAG} ] && [ ${IMAGE_TAG} != "" ]; then
+	echo "Tagging docker image ${AWS_ECR_REPO}:${IMAGE_TAG}"
+	docker tag ${PROJECT_NAME}-${SERVICE_NAME}:latest ${AWS_ECR_REPO}:${IMAGE_TAG}
+fi
 
-# Build and pack
-echo "Webpacking"
-export TS_NODE_PROJECT=./configs/shared-config/script.tsconfig.json
-./node_modules/.bin/webpack-cli
+# Push image
+echo "Pushing docker image to AWS ECR ${AWS_ECR_REPO}:latest"
+docker push ${AWS_ECR_REPO}:latest
 
-pushd dist
-npm shrinkwrap
-npm pack
-popd
-
-# Return to invocation dir
-popd
+if [ ! -z ${IMAGE_TAG} ] && [ ${IMAGE_TAG} != "" ]; then
+	echo "Pushing docker image to AWS ECR ${AWS_ECR_REPO}:${IMAGE_TAG}"
+	docker push ${AWS_ECR_REPO}:${IMAGE_TAG}
+fi

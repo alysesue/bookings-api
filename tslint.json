@@ -1,3 +1,3 @@
 {
-	"extends": "./node_modules/mol-lib-config/shared-config/tslint.json"
+	"extends": "./configs/shared-config/tslint.json"
 }

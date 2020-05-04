@@ -3,15 +3,15 @@ services:
   bookingsg-api:
     build:
       context: ./
-      dockerfile: ./node_modules/mol-lib-config/shared-config/service.node12.watch.dockerfile
-    container_name: "bookingsg-api"
+      dockerfile: ./configs/shared-config/service.node12.watch.dockerfile
+    container_name: 'bookingsg-api'
     logging:
       driver: "json-file"
       options:
         max-size: "50k"
         max-file: "10"
     ports:
-      - 3000:3000
+      - 3999:3000
       - 6999:6000
     volumes:
       - ./src:/service/src:delegated
