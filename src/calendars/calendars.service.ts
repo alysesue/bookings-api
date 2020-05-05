@@ -2,6 +2,7 @@ import { Inject, Singleton } from 'typescript-ioc';
 import { Calendar } from '../models/calendar';
 import { CalendarsRepository } from './calendars.repository';
 import { GoogleCalendarApiWrapper } from '../googleapi/calendarwrapper';
+import { CalendarUserModel } from './calendars.apicontract';
 
 @Singleton
 export class CalendarsService {
@@ -17,8 +18,7 @@ export class CalendarsService {
 	}
 
 	public async createCalendar(): Promise<Calendar> {
-		const wrapper = new GoogleCalendarApiWrapper();
-		const api = await wrapper.getCalendarApi();
+		const api = await this.apiWrapper.getCalendarApi();
 
 		const response = await api.calendars.insert({
 			requestBody: {
@@ -31,5 +31,26 @@ export class CalendarsService {
 		calendar.googleCalendarId = response.data.id;
 
 		return await this.calendarsRepository.saveCalendar(calendar);
+	}
+
+	public async addUser(calendarUUID: string, model: CalendarUserModel): Promise<CalendarUserModel> {
+		const calendar = await this.calendarsRepository.getCalendarByUUID(calendarUUID);
+
+		const api = await this.apiWrapper.getCalendarApi();
+
+		const response = await api.acl.insert({
+			calendarId: calendar.googleCalendarId,
+			requestBody: {
+				role: "reader",
+				scope: {
+					type: "user",
+					value: model.email
+				}
+			}
+		});
+
+		return {
+			email: response.data.scope.value
+		} as CalendarUserModel;
 	}
 }

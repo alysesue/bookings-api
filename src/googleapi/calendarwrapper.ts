@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import { Singleton } from "typescript-ioc";
 import { calendar_v3 } from "googleapis";
 
