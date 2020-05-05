@@ -1,5 +1,6 @@
 import { BookingRequest, BookingsService } from "../index";
 import { BookingsRepository } from "../bookings.repository";
+import {CalendarsService} from "../../calendars/calendars.service";
 import { Container } from "typescript-ioc";
 import { Booking, BookingStatus } from "../../models/";
 import { InsertResult } from "typeorm";
@@ -15,12 +16,14 @@ describe("Bookings.Service", () => {
 
 	it("should save booking from booking request", async () => {
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
+		Container.bind(CalendarsService).to(CalendarsServiceMock);
+
 		const bookingRequest: BookingRequest = new BookingRequest();
 		await new BookingsService().save(bookingRequest);
 
 		const booking = BookingRepositoryMock.booking;
 		expect(booking).not.toBe(undefined);
-		expect(booking.getStatus()).toBe(BookingStatus.PendingApproval);
+		expect(booking.status).toBe(BookingStatus.PendingApproval);
 	});
 });
 
@@ -36,4 +39,11 @@ class BookingRepositoryMock extends BookingsRepository {
 		BookingRepositoryMock.booking = booking;
 		return Promise.resolve(new InsertResult());
 	}
+}
+
+class CalendarsServiceMock extends CalendarsService {
+	public async validateTimeSlot(startTime: Date, sessionDuration: number) {
+		return Promise.resolve();
+	}
+
 }

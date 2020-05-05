@@ -1,7 +1,7 @@
 export class ErrorResponse {
-  message: string;
+	public message: string;
 
-  constructor(message: string) {
-    this.message = message;
-  }
+	constructor(message: string) {
+		this.message = message;
+	}
 }
