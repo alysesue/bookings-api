@@ -1,6 +1,6 @@
 import { CalendarsRepository } from '../calendars.repository';
 import { Container, Snapshot, ObjectFactory } from 'typescript-ioc';
-import { Calendar } from '../../../models/calendar';
+import { Calendar } from '../../models/calendar';
 import { CalendarsService } from '../calendars.service'
 
 let snapshot: Snapshot;

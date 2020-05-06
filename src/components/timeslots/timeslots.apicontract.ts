@@ -1,5 +1,5 @@
 export class TimeslotsFilter {
-	public startDate: Date
+	public startDate: Date;
 	public isAvailable: boolean;
 }
 
