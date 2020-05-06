@@ -1,6 +1,6 @@
 import { Inject, Singleton } from 'typescript-ioc';
 
-import { Booking } from '../../models/booking';
+import { Booking } from '../models/booking';
 
 import { BookingsRepository } from './bookings.repository';
 

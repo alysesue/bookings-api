@@ -1,8 +1,8 @@
 
 import { CalendarsRepository } from '../calendars.repository';
-import { DbConnection } from '../../../core/db.connection';
+import { DbConnection } from '../../core/db.connection';
 import { Container, Snapshot } from 'typescript-ioc';
-import { Calendar } from '../../../models/calendar';
+import { Calendar } from '../../models/calendar';
 
 let snapshot: Snapshot;
 beforeAll(function () {

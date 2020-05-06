@@ -1,6 +1,6 @@
 import { Container } from 'typescript-ioc';
 
-import { Booking } from '../../../models/booking';
+import { Booking } from '../../models/booking';
 
 import { BookingsController } from '../bookings.controller';
 import { BookingsResponse } from '../bookings.response';

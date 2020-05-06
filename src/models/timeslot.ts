@@ -19,5 +19,10 @@ export class Timeslot {
 	@Column()
 	public isAvailable: boolean;
 
-	constructor() { }
+	constructor(calendar: Calendar, startDatetime: Date, endDatetime: Date, isAvailable: boolean) {
+		this.startDatetime = startDatetime;
+		this.endDatetime = endDatetime;
+		this.isAvailable = isAvailable;
+		this.calendar = calendar;
+	}
 }
