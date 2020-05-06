@@ -29,11 +29,21 @@ describe('Calendar service', () => {
 		expect(InnerRepositoryMock.find).toBeCalledTimes(1);
 	});
 
+	it('should get calendar by UUID', async () => {
+		Container.bind(DbConnection).to(DbConnectionMock);
+
+		const calendarsRepository = new CalendarsRepository();
+		const result = await calendarsRepository.getCalendarByUUID('uuid');
+		expect(result).not.toBe(undefined);
+
+		expect(getRepositoryMock).toBeCalled();
+	});
+
 	it('should save calendars', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
 		const calendarsRepository = new CalendarsRepository();
-		const myCalendar = {uuid: '99feb592-1cf6-4be2-9332-a2c64ac71550'} as Calendar;
+		const myCalendar = { uuid: 'uuid' } as Calendar;
 
 		const result = await calendarsRepository.saveCalendar(myCalendar);
 		expect(result).not.toBe(undefined);
@@ -45,7 +55,8 @@ describe('Calendar service', () => {
 
 const InnerRepositoryMock = {
 	find: jest.fn().mockImplementation(() => Promise.resolve([])),
-	save: jest.fn().mockImplementation(() => Promise.resolve({}))
+	save: jest.fn().mockImplementation(() => Promise.resolve({})),
+	findOne: jest.fn().mockImplementation(() => Promise.resolve({}))
 };
 
 const getRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);
@@ -59,5 +70,5 @@ const DbConnectionMock = jest.fn().mockImplementation(() => {
 		return Promise.resolve(connection);
 	};
 
-	return {getConnection};
+	return { getConnection };
 });

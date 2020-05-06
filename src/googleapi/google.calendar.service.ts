@@ -1,5 +1,5 @@
-import {Singleton} from "typescript-ioc";
-import {calendar_v3, google} from "googleapis";
+import { Singleton } from "typescript-ioc";
+import { calendar_v3, google } from "googleapis";
 
 const credentials = require('../config/googleapi-credentials.json');
 
@@ -16,7 +16,7 @@ export class GoogleCalendarService {
 	}
 
 	private async getAuthToken(): Promise<any> {
-		const {client_email, private_key} = credentials;
+		const { client_email, private_key } = credentials;
 
 		if (this._authToken === null) {
 			const newToken = new google.auth.JWT(
@@ -46,7 +46,7 @@ export class GoogleCalendarService {
 
 	public async getCalendarApi(): Promise<calendar_v3.Calendar> {
 		const token = await this.getAuthToken();
-		return new calendar_v3.Calendar({auth: token});
+		return new calendar_v3.Calendar({ auth: token });
 	}
 
 	public async createCalendar() {
@@ -75,5 +75,22 @@ export class GoogleCalendarService {
 		});
 
 		return freeBusyResponse.data.calendars;
+	}
+
+	public async addCalendarUser(calendarId: string, user: { role: string, email: string }): Promise<string> {
+		const api = await this.getCalendarApi();
+
+		const response = await api.acl.insert({
+			calendarId,
+			requestBody: {
+				role: user.role,
+				scope: {
+					type: "user",
+					value: user.email
+				}
+			}
+		});
+
+		return response.data.scope.value;
 	}
 }

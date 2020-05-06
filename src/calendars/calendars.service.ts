@@ -1,7 +1,8 @@
 import { Inject, Singleton } from 'typescript-ioc';
 import { Calendar } from '../models/calendar';
 import { CalendarsRepository } from './calendars.repository';
-import {GoogleCalendarService} from '../googleapi/google.calendar.service';
+import { GoogleCalendarService } from '../googleapi/google.calendar.service';
+import { CalendarUserModel } from './calendars.apicontract';
 
 @Singleton
 export class CalendarsService {
@@ -36,7 +37,7 @@ export class CalendarsService {
 	}
 
 	public async getAvailableCalendarsForTimeSlot(startTime: Date, endTime: Date, calendars: Calendar[]) {
-		const googleCalendarIds = calendars.map(cal => ({id: cal.googleCalendarId.toString()}));
+		const googleCalendarIds = calendars.map(cal => ({ id: cal.googleCalendarId.toString() }));
 
 		const availableGoogleCalendars =
 			await this.googleCalendarApi.getAvailableGoogleCalendars(startTime, endTime, googleCalendarIds);
@@ -51,5 +52,15 @@ export class CalendarsService {
 
 	private static getSessionEndTime(startTime: Date, sessionDuration: number) {
 		return new Date(startTime.getTime() + sessionDuration * 60 * 1000);
+	}
+
+	public async addUser(calendarUUID: string, model: CalendarUserModel): Promise<CalendarUserModel> {
+		const calendar = await this.calendarsRepository.getCalendarByUUID(calendarUUID);
+
+		const response = await this.googleCalendarApi.addCalendarUser(calendar.googleCalendarId, { role: "reader", email: model.email });
+
+		return {
+			email: response
+		} as CalendarUserModel;
 	}
 }
