@@ -19,6 +19,10 @@ export class CalendarsRepository {
 		return (await this.getRepository()).find();
 	}
 
+	public async getCalendarByUUID(uuid: string): Promise<Calendar> {
+		return (await this.getRepository()).findOne({ uuid });
+	}
+
 	public async saveCalendar(calendar: Calendar): Promise<Calendar> {
 		return (await this.getRepository()).save(calendar);
 	}

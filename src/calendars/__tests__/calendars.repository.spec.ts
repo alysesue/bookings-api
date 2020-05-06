@@ -8,7 +8,7 @@ beforeAll(function () {
 	// Store the IoC configuration
 	snapshot = Container.snapshot();
 
-	//Clears mock counters, not implementation
+	// Clears mock counters, not implementation
 	jest.clearAllMocks();
 });
 
@@ -29,6 +29,16 @@ describe('Calendar service', () => {
 		expect(InnerRepositoryMock.find).toBeCalledTimes(1);
 	});
 
+	it('should get calendar by UUID', async () => {
+		Container.bind(DbConnection).to(DbConnectionMock);
+
+		const calendarsRepository = new CalendarsRepository();
+		const result = await calendarsRepository.getCalendarByUUID('uuid');
+		expect(result).not.toBe(undefined);
+
+		expect(getRepositoryMock).toBeCalled();
+	});
+
 	it('should save calendars', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
@@ -45,7 +55,8 @@ describe('Calendar service', () => {
 
 const InnerRepositoryMock = {
 	find: jest.fn().mockImplementation(() => Promise.resolve([])),
-	save: jest.fn().mockImplementation(() => Promise.resolve({}))
+	save: jest.fn().mockImplementation(() => Promise.resolve({})),
+	findOne: jest.fn().mockImplementation(() => Promise.resolve({}))
 };
 
 const getRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);
@@ -59,5 +70,5 @@ const DbConnectionMock = jest.fn().mockImplementation(() => {
 		return Promise.resolve(connection);
 	};
 
-	return { getConnection: getConnection };
+	return { getConnection };
 });
