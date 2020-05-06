@@ -1,5 +1,5 @@
-import {GoogleCalendarService} from "../google.calendar.service";
-import {calendar_v3} from "googleapis";
+import { GoogleCalendarService } from "../google.calendar.service";
+import { calendar_v3 } from "googleapis";
 
 const calendarMock = jest.fn();
 const queryMock = jest.fn();
@@ -31,7 +31,7 @@ describe('Google calendar wrapper tests', () => {
 			}
 		};
 
-		const result = await new GoogleCalendarApiWrapperMock(query, {})
+		const result = await new GoogleCalendarApiWrapperMock(query, {}, {})
 			.getAvailableGoogleCalendars(startDate, endDate, calendars);
 
 		expect(result).toBe(query.data.calendars);
@@ -44,7 +44,7 @@ describe('Google calendar wrapper tests', () => {
 				id: 'google-id'
 			}
 		};
-		const calendarId = await new GoogleCalendarApiWrapperMock({}, calendarsResponse)
+		const calendarId = await new GoogleCalendarApiWrapperMock({}, calendarsResponse, {})
 			.createCalendar();
 		expect(calendarId).toBe('google-id');
 	});
@@ -61,23 +61,44 @@ describe('Google calendar wrapper tests', () => {
 
 		expect(result);
 	});
+
+	it('should add user access', async () => {
+		const aclInsertResponse = {
+			data: {
+				scope: {
+					value: 'example@email.com'
+				}
+			}
+		};
+
+		const result = await new GoogleCalendarApiWrapperMock({}, {}, aclInsertResponse).addCalendarUser('uuid', { role: "reader", email: "example@email.com" });
+
+		expect(result);
+	});
 });
 
 
 class GoogleCalendarApiWrapperMock extends GoogleCalendarService {
 
+	private mockAclInsertResponse;
 	private mockQueryResponse;
 	private insertCalendarsMock;
 
-	constructor(mockQueryResponse, insertCalendarsMock) {
+	constructor(mockQueryResponse, insertCalendarsMock, mockAclInsertResponse) {
 		super();
 		super.setToken('fake-token');
 		this.mockQueryResponse = mockQueryResponse;
 		this.insertCalendarsMock = insertCalendarsMock;
+		this.mockAclInsertResponse = mockAclInsertResponse;
 	}
 
 	public async getCalendarApi(): Promise<calendar_v3.Calendar> {
 		return {
+			// @ts-ignore
+			acl: {
+				// @ts-ignore
+				insert: () => (this.mockAclInsertResponse)
+			},
 			// @ts-ignore
 			freebusy: {
 				// @ts-ignore
