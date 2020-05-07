@@ -4,7 +4,7 @@ jest.mock('../connectionOptions');
 
 describe('DbConnection', () => {
 	it('should get connection', () => {
-		const o = new DbConnection();
+		const o = new DbConnectionMock();
 		expect(o.getConnection());
 	});
 
