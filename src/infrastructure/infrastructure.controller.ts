@@ -1,6 +1,6 @@
-import { Inject } from 'typescript-ioc';
+import {Inject} from 'typescript-ioc';
 import {DbConnection} from '../core/db.connection';
-import { Controller, Post, Route } from 'tsoa';
+import {Controller, Post, Route} from 'tsoa';
 
 /* istanbul ignore file */
 

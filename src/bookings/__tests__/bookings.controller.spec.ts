@@ -1,10 +1,10 @@
-import { Container } from "typescript-ioc";
+import {Container} from "typescript-ioc";
 
 import {Booking, BookingStatus} from "../../models";
 
-import { BookingsController } from "../bookings.controller";
+import {BookingsController} from "../bookings.controller";
 import {BookingResponse} from "../booking.response";
-import { BookingsService } from "../bookings.service";
+import {BookingsService} from "../bookings.service";
 
 describe("Bookings.Controller", () => {
 	it("should have http code 200", async () => {
@@ -31,12 +31,31 @@ describe("Bookings.Controller", () => {
 
 		expect(result[0]).toEqual(bookingResponse);
 	});
+
+	it('should accept booking', async () => {
+		Container.bind(BookingsService).to(BookingsServiceMock);
+		const controller = Container.get(BookingsController);
+		const bookingId = 'booking-1';
+		const testBooking = new Booking(new Date(), 120);
+		BookingsServiceMock.mockAcceptBooking = testBooking;
+
+		await controller.acceptBooking(bookingId);
+
+		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
+	});
 });
 
 class BookingsServiceMock extends BookingsService {
+	public static mockAcceptBooking: Booking;
 	public static mockBookings: Booking[] = [];
+	public static mockBookingId;
 
 	public async getBookings(): Promise<Booking[]> {
 		return Promise.resolve(BookingsServiceMock.mockBookings);
+	}
+
+	public async acceptBooking(bookingId: string): Promise<Booking> {
+		BookingsServiceMock.mockBookingId = bookingId;
+		return Promise.resolve(BookingsServiceMock.mockAcceptBooking);
 	}
 }

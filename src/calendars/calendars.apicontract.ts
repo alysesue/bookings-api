@@ -5,4 +5,5 @@ export class CalendarModel {
 
 export class CalendarUserModel {
 	public email: string;
+	public role: string;
 }

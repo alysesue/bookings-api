@@ -1,9 +1,9 @@
-import { Inject, Singleton } from "typescript-ioc";
+import {Inject, Singleton} from "typescript-ioc";
 
-import { Booking } from "../models";
+import {Booking, BookingStatus} from "../models";
 
-import { BookingsRepository } from "./bookings.repository";
-import { BookingRequest } from "./booking.request";
+import {BookingsRepository} from "./bookings.repository";
+import {BookingRequest} from "./booking.request";
 import {CalendarsService} from "../calendars/calendars.service";
 
 @Singleton
@@ -20,13 +20,44 @@ export class BookingsService {
 		return this.bookingsRepository.getBookings();
 	}
 
-	public async save(bookingRequest: BookingRequest): Promise<Booking> {
-		await this.calendarsService.validateTimeSlot(bookingRequest.startDateTime, BookingsService.SessionDurationInMinutes);
+	public async getBooking(bookingId: string): Promise<Booking> {
+		const booking = await this.bookingsRepository.getBooking(bookingId);
 
+		if (!booking) {
+			throw new Error(`Booking ${bookingId} not found`);
+		}
+		return booking;
+	}
+
+	public async save(bookingRequest: BookingRequest): Promise<Booking> {
 		const booking = BookingsService.createBooking(bookingRequest);
+
+		await this.calendarsService.validateTimeSlot(booking);
+
 		await this.bookingsRepository.save(booking);
 		return booking;
 	}
+
+	public async acceptBooking(bookingId: string): Promise<Booking> {
+		const booking = await this.getBookingForAccepting(bookingId);
+
+		await this.calendarsService.createEvent(booking);
+
+		booking.status = BookingStatus.Accepted;
+
+		await this.bookingsRepository.update(booking);
+
+		return booking;
+	}
+
+	private async getBookingForAccepting(bookingId: string): Promise<Booking> {
+		const booking = await this.getBooking(bookingId);
+		if (booking.status !== BookingStatus.PendingApproval) {
+			throw new Error(`Booking ${bookingId} is in invalid state for accepting`);
+		}
+		return booking;
+	}
+
 
 	private static createBooking(bookingRequest: BookingRequest) {
 		return new Booking(

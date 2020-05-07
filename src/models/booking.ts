@@ -1,5 +1,5 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { BookingStatus } from "./bookingStatus";
+import {BaseEntity, Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {BookingStatus} from "./bookingStatus";
 
 @Entity()
 export class Booking extends BaseEntity {
@@ -25,6 +25,10 @@ export class Booking extends BaseEntity {
 		return this._id;
 	}
 
+	public set status(newStatus: BookingStatus) {
+		this._status = newStatus;
+	}
+
 	public get status(): BookingStatus {
 		return this._status;
 	}
@@ -35,5 +39,9 @@ export class Booking extends BaseEntity {
 
 	public get sessionDurationInMinutes(): number {
 		return this._sessionDurationInMinutes;
+	}
+
+	public getSessionEndTime(): Date {
+		return new Date(this._startDateTime.getTime() + this._sessionDurationInMinutes * 60 * 1000);
 	}
 }

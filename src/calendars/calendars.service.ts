@@ -1,8 +1,8 @@
-import { Inject, Singleton } from 'typescript-ioc';
-import { Calendar } from '../models/calendar';
-import { CalendarsRepository } from './calendars.repository';
-import { GoogleCalendarService } from '../googleapi/google.calendar.service';
-import { CalendarUserModel } from './calendars.apicontract';
+import {Inject, Singleton} from 'typescript-ioc';
+import {Booking, Calendar} from '../models';
+import {CalendarsRepository} from './calendars.repository';
+import {GoogleCalendarService} from '../googleapi/google.calendar.service';
+import {CalendarUserModel} from './calendars.apicontract';
 
 @Singleton
 export class CalendarsService {
@@ -26,32 +26,33 @@ export class CalendarsService {
 		return await this.calendarsRepository.saveCalendar(calendar);
 	}
 
-	public async validateTimeSlot(startTime: Date, sessionDuration: number) {
+	private static isEmptyArray(array) {
+		return Array.isArray(array) && array.length === 0;
+	}
+
+	public async validateTimeSlot(booking: Booking) {
 		const calendars = await this.getCalendars();
-		const endTime = CalendarsService.getSessionEndTime(startTime, sessionDuration);
-		const availableCalendars = await this.getAvailableCalendarsForTimeSlot(startTime, endTime, calendars);
+		const availableCalendars = await this.getAvailableCalendarsForTimeSlot(booking, calendars);
 
 		if (CalendarsService.isEmptyArray(availableCalendars)) {
 			throw new Error("No available calendars for this timeslot");
 		}
 	}
 
-	public async getAvailableCalendarsForTimeSlot(startTime: Date, endTime: Date, calendars: Calendar[]) {
+	public async getAvailableCalendarsForTimeSlot(booking: Booking, calendars: Calendar[]) {
 		const googleCalendarIds = calendars.map(cal => ({ id: cal.googleCalendarId.toString() }));
 
 		const availableGoogleCalendars =
-			await this.googleCalendarApi.getAvailableGoogleCalendars(startTime, endTime, googleCalendarIds);
+			await this.googleCalendarApi.getAvailableGoogleCalendars(booking.startDateTime, booking.getSessionEndTime(), googleCalendarIds);
 
 		return calendars.filter(calendar =>
 			CalendarsService.isEmptyArray(availableGoogleCalendars[calendar.googleCalendarId].busy));
 	}
 
-	private static isEmptyArray(array) {
-		return Array.isArray(array) && array.length;
-	}
-
-	private static getSessionEndTime(startTime: Date, sessionDuration: number) {
-		return new Date(startTime.getTime() + sessionDuration * 60 * 1000);
+	public async createEvent(booking: Booking) {
+		// TODO:
+		await this.getCalendarForBookingRequest(booking);
+		// TODO : await this.googleCalendarApi.createEvent(booking, calendar.googleCalendarId);
 	}
 
 	public async addUser(calendarUUID: string, model: CalendarUserModel): Promise<CalendarUserModel> {
@@ -60,7 +61,17 @@ export class CalendarsService {
 		const response = await this.googleCalendarApi.addCalendarUser(calendar.googleCalendarId, { role: "reader", email: model.email });
 
 		return {
-			email: response
+			email: response.email
 		} as CalendarUserModel;
+	}
+
+	private async getCalendarForBookingRequest(booking: Booking): Promise<Calendar> {
+		const calendars = await this.getCalendars();
+		const availableCalendars = await this.getAvailableCalendarsForTimeSlot(booking, calendars);
+
+		if (!(Array.isArray(availableCalendars) && availableCalendars.length)) {
+			throw new Error(`No available calendars for booking ${booking.id}`);
+		}
+		return availableCalendars[0];
 	}
 }

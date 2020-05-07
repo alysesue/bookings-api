@@ -1,5 +1,7 @@
-import { Singleton } from "typescript-ioc";
-import { calendar_v3, google } from "googleapis";
+import {Singleton} from "typescript-ioc";
+import {calendar_v3, google} from "googleapis";
+
+import {CalendarUserModel} from '../calendars/calendars.apicontract';
 
 const credentials = require('../config/googleapi-credentials.json');
 
@@ -77,7 +79,7 @@ export class GoogleCalendarService {
 		return freeBusyResponse.data.calendars;
 	}
 
-	public async addCalendarUser(calendarId: string, user: { role: string, email: string }): Promise<string> {
+	public async addCalendarUser(calendarId: string, user: { role: string, email: string }): Promise<CalendarUserModel> {
 		const api = await this.getCalendarApi();
 
 		const response = await api.acl.insert({
@@ -91,6 +93,13 @@ export class GoogleCalendarService {
 			}
 		});
 
-		return response.data.scope.value;
+		return {
+			email: response.data.scope.value
+		} as CalendarUserModel;
 	}
+
+	public async createEvent() {
+
+	}
+
 }
