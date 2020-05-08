@@ -15,6 +15,9 @@ export class Calendar {
 	@Column({ type: "varchar", length: 300 })
 	public googleCalendarId: string;
 
+	@Column({ type: "varchar", length: 100 })
+	public serviceProviderName: string;
+
 	public generateExternalUrl(timezone: string): string {
 		return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(this.googleCalendarId)}&ctz=${encodeURIComponent(timezone)}`;
 	}
