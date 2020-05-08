@@ -1,6 +1,7 @@
 import { Inject, Singleton } from 'typescript-ioc';
-import { TimeslotsRepository } from "./timeslots.repository";
+import TimeslotsRepository from "./timeslots.repository";
 import { Timeslot } from '../../models/timeslot';
+import { TimeslotParams } from "./timeslots.apicontract";
 
 @Singleton
 export default class TimeslotsService {
@@ -8,11 +9,14 @@ export default class TimeslotsService {
 	private timeslotsRepository: TimeslotsRepository;
 
 	public async getAllAvailableTimeslots(): Promise<Timeslot[]> {
-
+		return Promise.resolve([]);
 	}
 
-    public async addAvailableTimeslot(calendarId, startDate: Date, endDate: Date): Promise<Timeslot[]> {
-        const timeslots: Timeslot = new Timeslot(calendarId, startDate, endDate, true);
-    }
+	public async addTemplateTimeslots(timeslot: TimeslotParams): Promise<Timeslot> {
+		const {name, firstSlotStartTime, lastSlotEndTime, slotsDuration} = timeslot;
+		const timeslots: Timeslot = new Timeslot(name, firstSlotStartTime, lastSlotEndTime, slotsDuration);
+		return await this.timeslotsRepository.addTemplateTimeslots(timeslots);
+		// return Promise.resolve(undefined);
+	}
 
 }

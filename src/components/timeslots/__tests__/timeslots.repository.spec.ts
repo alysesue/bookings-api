@@ -1,10 +1,8 @@
-
 import { TimeslotsRepository } from '../timeslots.repository';
 import { DbConnection } from '../../../core/db.connection';
 import { Container, Snapshot } from 'typescript-ioc';
-import { Calendar } from '../../../models/calendar';
 import { DbConnectionMock, GetRepositoryMock, InnerRepositoryMock } from '../../../infrastructure/tests/dbconnectionmock';
-import {Timeslot} from "../../../models/timeslot";
+import { Timeslot } from "../../../models/timeslot";
 
 let snapshot: Snapshot;
 beforeAll(() => {
@@ -34,9 +32,9 @@ describe('Timeslot repository', () => {
 
 	it('should add timeSlots', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
-
+		const timeslot = new Timeslot('test', new Date(), new Date(), 3);
 		const repository = Container.get(TimeslotsRepository);
-		const result = await repository.addTimeslot(new Timeslot());
+		const result = await repository.addTemplateTimeslots(timeslot);
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();

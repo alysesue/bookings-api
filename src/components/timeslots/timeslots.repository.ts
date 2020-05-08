@@ -5,7 +5,7 @@ import { Timeslot } from '../../models/timeslot';
 import { DeleteResult, Repository } from "typeorm";
 
 @Singleton
-export class TimeslotsRepository {
+export default class TimeslotsRepository {
 	@Inject
 	private connection: DbConnection;
 
@@ -20,7 +20,7 @@ export class TimeslotsRepository {
 		});
 	}
 
-	public async addTimeslot(timeslot: Timeslot): Promise<Timeslot> {
+	public async addTemplateTimeslots(timeslot: Timeslot): Promise<Timeslot> {
 		return (await this.getRepository()).save(timeslot);
 	}
 

@@ -1,14 +1,7 @@
-export class TimeslotsFilter {
-	public startDate: Date;
-	public isAvailable: boolean;
-}
-
-export class TimeslotModel {
-	public id: number;
-
-	public startDatetime: Date;
-	public endDatetime: Date;
-
-	public calendarCount: number;
+export class TimeslotParams {
+	public name: string;
+	public firstSlotStartTime: Date;
+	public lastSlotEndTime: Date;
+	public slotsDuration: number;
 }
 

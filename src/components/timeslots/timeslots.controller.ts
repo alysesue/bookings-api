@@ -1,30 +1,28 @@
-import {Controller, Get, Post, Query, Route} from 'tsoa';
-import {TimeslotModel, TimeslotsFilter} from "./timeslots.apicontract";
-import {logger} from "mol-lib-common/debugging/logging/LoggerV2";
-import {Inject} from "typescript-ioc";
+import { Body, Controller, Post, Route } from 'tsoa';
+import { TimeslotParams } from "./timeslots.apicontract";
+import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
+import { Inject } from "typescript-ioc";
+import TimeslotsService from "./timeslots.service";
 
 @Route('api/v1/timeslots')
 export class TimeslotsController extends Controller {
-	public timeslotsService;
 	@Inject
-	private TimeslotsService;
+	private timeslotsService : TimeslotsService;
 
-	@Get('')
-	public async getTimeslots(@Query() filter: TimeslotsFilter): Promise<TimeslotModel[]> {
-		return Promise.resolve([]);
-	}
+	// @Get('/list')
+	// public async getTimeslots(@Query() filter: TimeslotsFilter): Promise<TimeslotModel[]> {
+	// 	return Promise.resolve([]);
+	// }
 
-	@Post('')
-	public async addAvailableTimeslot(@Body() startDate: Date, @Body() endDate: Date): {
+	@Post('/add')
+	public async addTemplateTimeslots(@Body() timeslot: TimeslotParams): Promise<boolean> {
 		try {
-			const booking = await this.bookingsService.getBookings();
-			timeslotsService.addAvailableTimeslot(2314, startDate, endDate);
-			return new BookingsResponse(users);
-		}
-		catch(err) {
+			await this.timeslotsService.addTemplateTimeslots(timeslot);
+			return true;
+		} catch (err) {
 			logger.error('endpointGetUsers:: error: ', err);
 			throw err;
 		}
 
-}
+	}
 }

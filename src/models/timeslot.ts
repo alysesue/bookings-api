@@ -7,22 +7,22 @@ export class Timeslot {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
-	@Column({ type: "timestamp" })
-	public startDatetime: Date;
+	@Column({ type: "string" })
+	public name: string;
 
 	@Column({ type: "timestamp" })
-	public endDatetime: Date;
+	public firstSlotStartTime: Date;
 
-	@ManyToOne(type => Calendar)
-	public calendar: Calendar;
+	@Column({ type: "timestamp" })
+	public lastSlotEndTime: Date;
 
-	@Column()
-	public isAvailable: boolean;
+	@Column({ type: "number" })
+	public slotsDuration: number;
 
-	constructor(calendar: Calendar, startDatetime: Date, endDatetime: Date, isAvailable: boolean) {
-		this.startDatetime = startDatetime;
-		this.endDatetime = endDatetime;
-		this.isAvailable = isAvailable;
-		this.calendar = calendar;
+	constructor(name: string, firstSlotStartTime: Date, lastSlotEndTime: Date, slotsDuration: number) {
+		this.name = name;
+		this.firstSlotStartTime = firstSlotStartTime;
+		this.lastSlotEndTime = lastSlotEndTime;
+		this.slotsDuration = slotsDuration;
 	}
 }
