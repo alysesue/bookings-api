@@ -7,7 +7,7 @@ export class Timeslot {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
-	@Column({ type: "string" })
+	@Column({ type: "text" })
 	public name: string;
 
 	@Column({ type: "timestamp" })
@@ -16,7 +16,7 @@ export class Timeslot {
 	@Column({ type: "timestamp" })
 	public lastSlotEndTime: Date;
 
-	@Column({ type: "number" })
+	@Column({ type: "interger" })
 	public slotsDuration: number;
 
 	constructor(name: string, firstSlotStartTime: Date, lastSlotEndTime: Date, slotsDuration: number) {
