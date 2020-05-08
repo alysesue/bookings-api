@@ -1,6 +1,5 @@
-import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 import { Inject } from 'typescript-ioc';
-import { DbConnection } from '../core/db.connection'
+import {DbConnection} from '../core/db.connection';
 import { Controller, Post, Route } from 'tsoa';
 
 /* istanbul ignore file */

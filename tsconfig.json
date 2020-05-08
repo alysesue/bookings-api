@@ -16,13 +16,32 @@
 		"sourceMap": true,
 		"noUnusedLocals": false,
 		"target": "es6",
-		"typeRoots": ["node_modules/@types"],
+		"typeRoots": [
+			"node_modules/@types"
+		],
 		"paths": {
-			"*": ["src/types/*"]
+			"*": [
+				"src/types/*"
+			]
 		}
 	},
-	"include": ["src"],
-	"exclude": ["build", "jest", "node_modules", "scripts", "webpack", "types", "**/*.spec.ts"],
-	"filesGlob": ["./**/*.ts", "!./build/**/*.ts", "!./node_modules/**/*.ts"],
-	"lib": ["es6"]
+	"include": [
+		"src"
+	],
+	"exclude": [
+		"build",
+		"jest",
+		"node_modules",
+		"scripts",
+		"webpack",
+		"types"
+	],
+	"filesGlob": [
+		"./**/*.ts",
+		"!./build/**/*.ts",
+		"!./node_modules/**/*.ts"
+	],
+	"lib": [
+		"es6"
+	]
 }

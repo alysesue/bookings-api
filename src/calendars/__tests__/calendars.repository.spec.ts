@@ -5,7 +5,7 @@ import { Container, Snapshot } from 'typescript-ioc';
 import { Calendar } from '../../models/calendar';
 
 let snapshot: Snapshot;
-beforeAll(function () {
+beforeAll(() => {
 	// Store the IoC configuration
 	snapshot = Container.snapshot();
 
@@ -13,7 +13,7 @@ beforeAll(function () {
 	jest.clearAllMocks();
 });
 
-afterAll(function () {
+afterAll(() => {
 	// Put the IoC configuration back for IService, so other tests can run.
 	snapshot.restore();
 });
@@ -63,7 +63,7 @@ const InnerRepositoryMock = {
 const getRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);
 
 const DbConnectionMock = jest.fn().mockImplementation(() => {
-	const getConnection = function () {
+	const getConnection = () => {
 		const connection = {
 			getRepository: getRepositoryMock,
 		};

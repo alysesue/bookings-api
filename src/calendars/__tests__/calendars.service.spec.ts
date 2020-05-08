@@ -1,43 +1,39 @@
 import { CalendarsRepository } from '../calendars.repository';
-import { Container, ObjectFactory, Snapshot } from 'typescript-ioc';
+import { Container, Snapshot } from 'typescript-ioc';
 import { Calendar } from '../../models/calendar';
 import { CalendarsService } from '../calendars.service';
-import { calendar_v3 } from "googleapis";
-import { GoogleCalendarApiWrapper } from "../../googleapi/calendarwrapper";
+import { GoogleCalendarService } from "../../googleapi/google.calendar.service";
 
 let snapshot: Snapshot;
-beforeAll(function () {
+beforeAll(() => {
 	// Store the IoC configuration
 	snapshot = Container.snapshot();
 
 	Container.bind(CalendarsRepository).to(CalendarRepositoryMock);
-	Container.bind(GoogleCalendarApiWrapper).to(GoogleCalendarApiWrapperMock);
+	Container.bind(GoogleCalendarService).to(GoogleCalendarApiWrapperMock);
 
 	// Clears mock counters, not implementation
 	jest.clearAllMocks();
 });
 
-afterAll(function () {
+afterAll(() => {
 	// Put the IoC configuration back for IService, so other tests can run.
 	snapshot.restore();
 });
 
 describe('Calendar service', () => {
+
 	it('should get calendars', async () => {
 		const service = Container.get(CalendarsService);
 
-		const result = await service.getCalendars();
-		expect(result).not.toBe(undefined);
-
+		await service.getCalendars();
 		expect(CalendarRepositoryObj.getCalendars).toBeCalled();
 	});
 
 	it('should save calendars', async () => {
 		const service = Container.get(CalendarsService);
 
-		const result = await service.createCalendar();
-		expect(result).not.toBe(undefined);
-
+		await service.createCalendar();
 		expect(CalendarRepositoryObj.saveCalendar).toBeCalled();
 	});
 
@@ -49,6 +45,31 @@ describe('Calendar service', () => {
 
 		expect(CalendarRepositoryObj.getCalendarByUUID).toHaveBeenCalled();
 	});
+
+	it('should return available calendars', async () => {
+		const service = Container.get(CalendarsService);
+
+		const calendars = [
+			{
+				googleCalendarId: 'google-id-1'
+			} as Calendar,
+			{
+				googleCalendarId: 'google-id-2'
+			} as Calendar,
+		];
+
+		const result = await service.getAvailableCalendarsForTimeSlot(new Date(), new Date(), calendars);
+
+		expect(result).not.toBe(undefined);
+	});
+
+	it('should validate booking request', async () => {
+		const testCalendar = new Calendar();
+		testCalendar.googleCalendarId = 'google-id-1';
+
+		const service = Container.get(CalendarsService);
+		await service.validateTimeSlot(new Date(), 60);
+	});
 });
 
 const CalendarObjMock = {
@@ -59,37 +80,32 @@ const CalendarObjMock = {
 
 const CalendarRepositoryObj = {
 	getCalendars: jest.fn().mockImplementation(() => Promise.resolve([])),
-	saveCalendar: jest.fn().mockImplementation(() => Promise.resolve({})),
+	saveCalendar: jest.fn().mockImplementation((calendar) => Promise.resolve(calendar)),
 	getCalendarByUUID: jest.fn().mockImplementation(() => Promise.resolve(CalendarObjMock))
 };
 
 const CalendarRepositoryMock = jest.fn().mockImplementation(() => CalendarRepositoryObj);
 
-const acl_insert_response = {
-	data: {
-		scope: {
-			value: 'example@email.com'
-		}
-	}
-};
+class GoogleCalendarApiWrapperMock extends GoogleCalendarService {
 
-const calendars_insert_response = {
-	data: {
-		id: 'googleid@group.calendar.google.com'
+	constructor() {
+		super();
+		super.setToken('fake-token');
 	}
-};
 
-const GoogleCalendarApiMock = {
-	acl: {
-		insert: () => Promise.resolve(acl_insert_response)
-	},
-	calendars: {
-		insert: () => Promise.resolve(calendars_insert_response)
+	public async getAvailableGoogleCalendars(startTime: Date, endTime: Date, googleCalendarIds: { id: string }[]) {
+		// @ts-ignore
+		return {
+			'google-id-1': { busy: [] },
+			'google-id-2': { busy: [] }
+		};
 	}
-} as calendar_v3.Calendar;
 
-const GoogleCalendarApiWrapperMock = jest.fn().mockImplementation(() => {
-	return {
-		getCalendarApi: () => GoogleCalendarApiMock
-	};
-});
+	public async createCalendar(): Promise<string> {
+		return 'google-id-1';
+	}
+
+	public async addCalendarUser(calendarId: string, user: { role: string, email: string }): Promise<string> {
+		return user.email;
+	}
+}
