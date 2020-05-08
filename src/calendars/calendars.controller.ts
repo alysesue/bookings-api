@@ -5,17 +5,22 @@ import { Body, Controller, Get, Path, Post, Route } from 'tsoa';
 import { CalendarModel, CalendarUserModel } from './calendars.apicontract';
 import { CalendarsService } from './calendars.service';
 import { Calendar } from '../models/calendar';
+import { CalDavProxyHandler } from '../infrastructure/caldavproxy.handler';
 
 @Route('api/v1/calendars')
 export class CalendarsController extends Controller {
-
 	@Inject
 	private calendarsService: CalendarsService;
+
+	@Inject
+	private proxyHandler: CalDavProxyHandler;
 
 	private mapDataModel(calendar: Calendar): CalendarModel {
 		return {
 			uuid: calendar.uuid,
-			externalCalendarUrl: calendar.generateExternalUrl('Asia/Singapore')
+			externalCalendarUrl: calendar.generateExternalUrl('Asia/Singapore'),
+			caldavUserUrl: calendar.generateCaldavUserUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost),
+			caldavEventsUrl: calendar.generateCaldavEventsUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost)
 		} as CalendarModel;
 	}
 
