@@ -1,48 +1,25 @@
 import TimeslotsService from "../timeslots.service";
 import { TimeslotParams } from "../timeslots.apicontract";
 import TimeslotsRepository from "../timeslots.repository";
-import {Container, Snapshot} from "typescript-ioc";
-// import TimeslotsRepository, { mockAddTemplateTimeslots } from "../timeslots.repository";
+import { Container } from "typescript-ioc";
+import { Timeslot } from "../../../models/timeslot";
 
-// jest.mock("../timeslots.repository");
-const addTemplateTimeslots = jest.fn();
-jest.mock('../timeslots.repository', () => {
-	return jest.fn().mockImplementation(() => {
-		return {addTemplateTimeslots};
-	});
-});
-const mockedTimeslotsRepository = TimeslotsRepository as jest.Mock<TimeslotsRepository>;
-// const mockedTimeslotsRepository = mockAddTemplateTimeslots as jest.Mock<TimeslotsRepository>;
+const timeslots = new Timeslot('name', new Date(), new Date(), 5);
+const addTemplateTimeslots = jest.fn().mockImplementation(() => Promise.resolve(timeslots));
 
-let snapshot: Snapshot;
-beforeAll(() => {
-	// Store the IoC configuration
-	snapshot = Container.snapshot();
-
-	// Clears mock counters, not implementation
-	jest.clearAllMocks();
-});
-
-afterAll(() => {
-	// Put the IoC configuration back for IService, so other tests can run.
-	snapshot.restore();
-});
+const MockTimeslotsRepository = jest.fn().mockImplementation(() => ({addTemplateTimeslots}));
 
 describe('Timeslots  template services ', () => {
-	beforeEach(() => {
-		// Clear all instances and calls to constructor and all methods:
-		addTemplateTimeslots.mockClear();
-		// mockAddTemplateTimeslots.mockClear();
+	let timeslotsService: TimeslotsService = new TimeslotsService();
+
+	beforeAll(() => {
+		Container.bind(TimeslotsRepository).to(MockTimeslotsRepository);
+		timeslotsService = Container.get(TimeslotsService);
 	});
 
-	it('should do some stuff', async () => {
-		const timeslotsService: TimeslotsService = new TimeslotsService();
-		const timeslots = new TimeslotParams();
-		await timeslotsService.addTemplateTimeslots(new TimeslotParams());
-		// console.log(require('util').inspect(mockedTimeslotsRepository.mock.instances[1], false, null, true /* enable colors */));
-		console.log(require('util').inspect(addTemplateTimeslots, false, null, true /* enable colors */));
-		console.log(require('util').inspect(addTemplateTimeslots.mock, false, null, true /* enable colors */));
-
-		//expect(mockedTimeslotsRepository.mock.instances[0].addTemplateTimeslots()).toBeCalledTimes(0);
+	it('should return the template', async () => {
+		const template = await timeslotsService.addTemplateTimeslots(new TimeslotParams());
+		expect(addTemplateTimeslots).toBeCalled();
+		expect(template.name).toStrictEqual(timeslots.name);
 	});
 });

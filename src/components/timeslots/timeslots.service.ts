@@ -16,7 +16,6 @@ export default class TimeslotsService {
 		const {name, firstSlotStartTime, lastSlotEndTime, slotsDuration} = timeslot;
 		const timeslots: Timeslot = new Timeslot(name, firstSlotStartTime, lastSlotEndTime, slotsDuration);
 		return await this.timeslotsRepository.addTemplateTimeslots(timeslots);
-		// return Promise.resolve(undefined);
 	}
 
 }
