@@ -1,9 +1,10 @@
-import {BookingRequest, BookingsService} from "../index";
+import {BookingRequest, BookingsService} from "..";
 import {BookingsRepository} from "../bookings.repository";
 import {CalendarsService} from "../../calendars/calendars.service";
 import {Container} from "typescript-ioc";
 import {Booking, BookingStatus, Calendar} from "../../models/";
 import {InsertResult, UpdateResult} from "typeorm";
+import {BookingAcceptRequest} from "../rest/booking.acceptRequest";
 
 describe("Bookings.Service", () => {
 	beforeAll(() => {
@@ -34,7 +35,8 @@ describe("Bookings.Service", () => {
 		CalendarsServiceMock.calendars = [
 			{id: 1, googleCalendarId: "google-id-1"} as Calendar,
 		];
-		const result = await bookingService.acceptBooking("1");
+		const acceptRequest = new BookingAcceptRequest();
+		const result = await bookingService.acceptBooking("1", acceptRequest);
 
 		expect(result.status).toBe(BookingStatus.Accepted);
 		expect(result.eventICalId).toBe("event-id");

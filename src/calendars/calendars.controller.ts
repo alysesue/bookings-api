@@ -1,11 +1,12 @@
 import {Inject} from "typescript-ioc";
 
-import {Body, Controller, Get, Path, Post, Route} from "tsoa";
+import {Body, Controller, Get, Path, Post, Route, Tags} from "tsoa";
 import {CalendarModel, CalendarUserModel} from "./calendars.apicontract";
 import {CalendarsService} from "./calendars.service";
 import {Calendar} from "../models";
 
 @Route("api/v1/calendars")
+@Tags('Calendars')
 export class CalendarsController extends Controller {
 	@Inject
 	private calendarsService: CalendarsService;

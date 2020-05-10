@@ -7,7 +7,7 @@
 		"test": "./scripts/shared-scripts/jest-test-unit-integration.sh",
 		"test:func": "./scripts/shared-scripts/jest-test-functional.sh",
 		"build": "./scripts/build.sh",
-		"swagger": "./node_modules/.bin/tsoa swagger",
+		"swagger": "./node_modules/.bin/tsoa swagger --yaml",
 		"sync-env": "export SERVICE_NAME=bookingsg-api && ./scripts/shared-scripts/aws/aws-sm-sync-env.sh",
 		"start": "docker-compose up -d --build",
 		"start:fresh": "docker-compose down -v && npm start -- --force-recreate",
@@ -85,7 +85,9 @@
 		"mol-lib-common": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-common.git#semver:^3.10.5",
 		"pg": "^8.0.3",
 		"typeorm": "^0.2.24",
-		"typescript-ioc": "^3.2.1"
+		"typescript-ioc": "^3.2.1",
+		"swagger2": "^2.0.0",
+		"swagger2-koa": "^2.0.0"
 	},
 	"devDependencies": {
 		"mol-bamboo-scripts": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-bamboo-scripts.git#semver:^1.4.0",

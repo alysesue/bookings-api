@@ -1,14 +1,16 @@
 import {logger} from "mol-lib-common/debugging/logging/LoggerV2";
 import {Inject} from "typescript-ioc";
 
-import {Body, Controller, Get, Path, Post, Route, SuccessResponse} from "tsoa";
-import {BookingResponse} from "./booking.response";
+import {Body, Controller, Get, Path, Post, Route, SuccessResponse, Tags} from "tsoa";
+import {BookingResponse} from "./rest/booking.response";
 import {BookingsService} from "./bookings.service";
-import {BookingRequest} from "./booking.request";
-import {ErrorResponse} from "./errorResponse";
+import {BookingRequest} from "./rest/booking.request";
+import {ErrorResponse} from "./rest/errorResponse";
 import {Booking} from "../models";
+import {BookingAcceptRequest} from "./rest/booking.acceptRequest";
 
 @Route("api/v1/bookings")
+@Tags('Bookings')
 export class BookingsController extends Controller {
 	@Inject
 	private bookingsService: BookingsService;
@@ -35,9 +37,9 @@ export class BookingsController extends Controller {
 
 	@Post('{bookingId}/accept')
 	@SuccessResponse(204, 'Accepted')
-	public async acceptBooking(@Path() bookingId: string): Promise<any> {
+	public async acceptBooking(@Path() bookingId: string, @Body() acceptRequest: BookingAcceptRequest): Promise<any> {
 		try {
-			await this.bookingsService.acceptBooking(bookingId);
+			await this.bookingsService.acceptBooking(bookingId, acceptRequest);
 		} catch (err) {
 			logger.error("endpointAcceptBooking:: error: ", err);
 			this.setStatus(400);

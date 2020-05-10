@@ -3,7 +3,7 @@ import {Container} from "typescript-ioc";
 import {Booking, BookingStatus} from "../../models";
 
 import {BookingsController} from "../bookings.controller";
-import {BookingResponse} from "../booking.response";
+import {BookingResponse} from "../rest/booking.response";
 import {BookingsService} from "../bookings.service";
 
 describe("Bookings.Controller", () => {
@@ -18,8 +18,7 @@ describe("Bookings.Controller", () => {
 	it("should return the bookings from bookingsService", async () => {
 		Container.bind(BookingsService).to(BookingsServiceMock);
 		const bookingStartDate = new Date();
-		const bookings = [new Booking(bookingStartDate, 60)];
-		BookingsServiceMock.mockBookings = bookings;
+		BookingsServiceMock.mockBookings = [new Booking(bookingStartDate, 60)];
 		const controller = Container.get(BookingsController);
 		const result = await controller.getBookings();
 
@@ -36,10 +35,9 @@ describe("Bookings.Controller", () => {
 		Container.bind(BookingsService).to(BookingsServiceMock);
 		const controller = Container.get(BookingsController);
 		const bookingId = 'booking-1';
-		const testBooking = new Booking(new Date(), 120);
-		BookingsServiceMock.mockAcceptBooking = testBooking;
+		BookingsServiceMock.mockAcceptBooking = new Booking(new Date(), 120);
 
-		await controller.acceptBooking(bookingId);
+		await controller.acceptBooking(bookingId, undefined);
 
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 	});

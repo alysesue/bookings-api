@@ -20,11 +20,10 @@ describe("Calendar service", () => {
 	beforeEach(() => {
 		// Clears mock counters, not implementation
 		jest.clearAllMocks();
+		Container.bind(CalendarsRepository).to(CalendarRepositoryMock);
+		Container.bind(GoogleCalendarService).to(GoogleCalendarServiceMock);
 	});
 	it("should get calendars", async () => {
-		Container.bind(CalendarsRepository).to(CalendarRepositoryMock);
-		Container.bind(GoogleCalendarService).to(GoogleCalendarApiWrapperMock);
-
 		const service = Container.get(CalendarsService);
 
 		await service.getCalendars();
@@ -32,9 +31,6 @@ describe("Calendar service", () => {
 	});
 
 	it("should save calendars", async () => {
-		Container.bind(CalendarsRepository).to(CalendarRepositoryMock);
-		Container.bind(GoogleCalendarService).to(GoogleCalendarApiWrapperMock);
-
 		const service = Container.get(CalendarsService);
 
 		await service.createCalendar();
@@ -42,8 +38,6 @@ describe("Calendar service", () => {
 	});
 
 	it("should add user access", async () => {
-		Container.bind(CalendarsRepository).to(CalendarRepositoryMock);
-		Container.bind(GoogleCalendarService).to(GoogleCalendarApiWrapperMock);
 		const service = Container.get(CalendarsService);
 
 		const result = await service.addUser("uuid", {
@@ -55,18 +49,12 @@ describe("Calendar service", () => {
 	});
 
 	it("should return available calendars", async () => {
-		Container.bind(CalendarsRepository).to(CalendarRepositoryMock);
-		Container.bind(GoogleCalendarService).to(GoogleCalendarApiWrapperMock);
-
 		const service = Container.get(CalendarsService);
 		const booking = new Booking(new Date(), 60);
 
 		const calendars = [
 			{
-				googleCalendarId: "google-id-1",
-			} as Calendar,
-			{
-				googleCalendarId: "google-id-2",
+				googleCalendarId: "googleid@group.calendar.google.com",
 			} as Calendar,
 		];
 
@@ -79,9 +67,6 @@ describe("Calendar service", () => {
 	});
 
 	it("should validate booking request", async () => {
-		Container.bind(CalendarsRepository).to(CalendarRepositoryMock);
-		Container.bind(GoogleCalendarService).to(GoogleCalendarApiWrapperMock);
-
 		const testCalendar = new Calendar();
 		testCalendar.googleCalendarId = "google-id-1";
 		CalendarRepositoryMockConstants.calendars = [testCalendar];
@@ -90,17 +75,22 @@ describe("Calendar service", () => {
 	});
 
 	it("should create event to the calendar", async () => {
-		Container.bind(CalendarsRepository).to(CalendarRepositoryMock);
-		Container.bind(GoogleCalendarService).to(GoogleCalendarApiWrapperMock);
-
 		CalendarRepositoryMockConstants.eventId = "event-id";
+
 		const service = Container.get(CalendarsService);
 		const booking = new Booking(new Date(), 60);
 		booking.status = BookingStatus.Accepted;
 
-		const eventId = await service.createEvent(booking);
+		const eventId = await service.createEvent(booking, '1');
 
 		expect(eventId).toBe("event-id");
+	});
+
+	it('should throw exception if no calendar for uuid', async () => {
+		CalendarRepositoryObj.getCalendarByUUID.mockReturnValue(undefined);
+		const service = Container.get(CalendarsService);
+		expect(service.createEvent(new Booking(new Date(), 111), '1')).rejects
+			.toStrictEqual(new Error('Calendar 1 does not exist'));
 	});
 });
 
@@ -138,10 +128,9 @@ class CalendarRepositoryMockConstants {
 	public static eventId: string;
 }
 
-class GoogleCalendarApiWrapperMock extends GoogleCalendarService {
+class GoogleCalendarServiceMock extends GoogleCalendarService {
 	constructor() {
 		super();
-		super.setToken("fake-token");
 	}
 
 	public async getAvailableGoogleCalendars(
@@ -152,7 +141,7 @@ class GoogleCalendarApiWrapperMock extends GoogleCalendarService {
 		// @ts-ignore
 		return {
 			"google-id-1": {busy: []},
-			"google-id-2": {busy: []},
+			"googleid@group.calendar.google.com": {busy: []},
 		};
 	}
 

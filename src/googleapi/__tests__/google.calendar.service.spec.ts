@@ -2,11 +2,17 @@ import {GoogleCalendarService} from "../google.calendar.service";
 import {calendar_v3} from "googleapis";
 import * as mockEvents from "./createEventResponse.json";
 import {Booking} from "../../models";
+import {Container} from "typescript-ioc";
+import {GoogleApi} from "../google.api";
 
 const calendarMock = jest.fn();
 const queryMock = jest.fn();
 
 describe("Google calendar wrapper tests", () => {
+	beforeAll(() => {
+		Container.bind(GoogleApi).to(GoogleApiMock);
+	});
+
 	beforeEach(() => {
 		calendarMock.mockImplementation(() => ({
 			freebusy: jest.fn().mockImplementation(() => ({
@@ -33,44 +39,26 @@ describe("Google calendar wrapper tests", () => {
 			},
 		};
 
-		const result = await new GoogleCalendarApiWrapperMock(
-			query,
-			{},
-			{}
-		).getAvailableGoogleCalendars(startDate, endDate, calendars);
+		GoogleApiMock.mockQueryResponse = query;
+
+		const googleService = Container.get(GoogleCalendarService);
+		const result = await googleService.getAvailableGoogleCalendars(startDate, endDate, calendars);
 
 		expect(result).toBe(query.data.calendars);
 	});
 
 	it("should create calendar", async () => {
-		const calendarsResponse = {
+		GoogleApiMock.insertCalendarsMock = {
 			data: {
 				id: "google-id",
 			},
 		};
-		const calendarId = await new GoogleCalendarApiWrapperMock(
-			{},
-			calendarsResponse,
-			{}
-		).createCalendar();
+		const calendarId = await Container.get(GoogleCalendarService).createCalendar();
 		expect(calendarId).toBe("google-id");
 	});
 
-	it("should call google auth when no token", async () => {
-		jest.mock("googleapis", () => ({
-			google: {
-				auth: {
-					JWT: jest.fn(),
-				},
-			},
-		}));
-		const result = await new GoogleCalendarService().getCalendarApi();
-
-		expect(result);
-	});
-
 	it("should add user access", async () => {
-		const aclInsertResponse = {
+		GoogleApiMock.mockAclInsertResponse = {
 			data: {
 				scope: {
 					value: "example@email.com",
@@ -78,11 +66,8 @@ describe("Google calendar wrapper tests", () => {
 			},
 		};
 
-		const result = await new GoogleCalendarApiWrapperMock(
-			{},
-			{},
-			aclInsertResponse
-		).addCalendarUser("uuid", {role: "reader", email: "example@email.com"});
+		const result = await Container.get(GoogleCalendarService)
+			.addCalendarUser("uuid", {role: "reader", email: "example@email.com"});
 
 		expect(result);
 	});
@@ -90,8 +75,8 @@ describe("Google calendar wrapper tests", () => {
 	it("should return ical UID on create event", async () => {
 		const createEvents = mockEvents;
 
-		const googleService = new GoogleCalendarApiWrapperMock({}, {}, {});
-		googleService.createEventMock = createEvents;
+		const googleService = Container.get(GoogleCalendarService);
+		GoogleApiMock.createEventsMock = createEvents;
 
 		const result = await googleService.createEvent(
 			new Booking(new Date(), 60),
@@ -102,43 +87,31 @@ describe("Google calendar wrapper tests", () => {
 	});
 });
 
-class GoogleCalendarApiWrapperMock extends GoogleCalendarService {
-	private mockAclInsertResponse;
-	private mockQueryResponse;
-	private insertCalendarsMock;
-	private _createEventsMock;
-
-	constructor(mockQueryResponse, insertCalendarsMock, mockAclInsertResponse) {
-		super();
-		super.setToken("fake-token");
-		this.mockQueryResponse = mockQueryResponse;
-		this.insertCalendarsMock = insertCalendarsMock;
-		this.mockAclInsertResponse = mockAclInsertResponse;
-	}
-
-	public set createEventMock(mock: any) {
-		this._createEventsMock = mock;
-	}
+class GoogleApiMock extends GoogleApi {
+	static mockAclInsertResponse;
+	static mockQueryResponse;
+	static insertCalendarsMock;
+	static createEventsMock;
 
 	public async getCalendarApi(): Promise<calendar_v3.Calendar> {
 		return {
 			// @ts-ignore
 			acl: {
 				// @ts-ignore
-				insert: () => this.mockAclInsertResponse,
+				insert: () => GoogleApiMock.mockAclInsertResponse,
 			},
 			// @ts-ignore
 			freebusy: {
 				// @ts-ignore
-				query: () => this.mockQueryResponse,
+				query: () => GoogleApiMock.mockQueryResponse,
 			},
 			// @ts-ignore
 			calendars: {
-				insert: () => this.insertCalendarsMock,
+				insert: () => GoogleApiMock.insertCalendarsMock,
 			},
 			// @ts-ignore
 			events: {
-				insert: () => this._createEventsMock,
+				insert: () => GoogleApiMock.createEventsMock,
 			},
 		};
 	}

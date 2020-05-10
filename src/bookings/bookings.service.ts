@@ -3,8 +3,9 @@ import {Inject, Singleton} from "typescript-ioc";
 import {Booking, BookingStatus} from "../models";
 
 import {BookingsRepository} from "./bookings.repository";
-import {BookingRequest} from "./booking.request";
+import {BookingRequest} from "./rest/booking.request";
 import {CalendarsService} from "../calendars/calendars.service";
+import {BookingAcceptRequest} from "./rest/booking.acceptRequest";
 
 @Singleton
 export class BookingsService {
@@ -44,15 +45,14 @@ export class BookingsService {
 		return booking;
 	}
 
-	public async acceptBooking(bookingId: string): Promise<Booking> {
+	public async acceptBooking(bookingId: string, acceptRequest: BookingAcceptRequest): Promise<Booking> {
 		const booking = await this.getBookingForAccepting(bookingId);
 
-		const eventICalId: string = await this.calendarsService.createEvent(
-			booking
-		);
+		const eventICalId = await this.calendarsService.createEvent(booking, acceptRequest.calendarUUID);
 
 		booking.status = BookingStatus.Accepted;
 		booking.eventICalId = eventICalId;
+		booking.acceptedAt = new Date();
 
 		await this.bookingsRepository.update(booking);
 
