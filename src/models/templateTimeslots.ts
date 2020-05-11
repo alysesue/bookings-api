@@ -1,8 +1,7 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Calendar } from './calendar';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class Timeslot {
+export class TemplateTimeslots {
 
 	@PrimaryGeneratedColumn()
 	public id: number;
@@ -16,7 +15,7 @@ export class Timeslot {
 	@Column({ type: "timestamp" })
 	public lastSlotEndTime: Date;
 
-	@Column({ type: "interger" })
+	@Column({ type: "int" })
 	public slotsDuration: number;
 
 	constructor(name: string, firstSlotStartTime: Date, lastSlotEndTime: Date, slotsDuration: number) {
