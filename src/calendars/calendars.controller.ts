@@ -2,7 +2,7 @@ import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 import { Inject } from 'typescript-ioc';
 
 import { Body, Controller, Get, Path, Post, Route } from 'tsoa';
-import { CalendarModel, CalendarUserModel } from './calendars.apicontract';
+import { AddCalendarModel, CalendarModel, CalendarUserModel } from './calendars.apicontract';
 import { CalendarsService } from './calendars.service';
 import { Calendar } from '../models/calendar';
 import { CalDavProxyHandler } from '../infrastructure/caldavproxy.handler';
@@ -20,6 +20,7 @@ export class CalendarsController extends Controller {
 	private mapDataModel(calendar: Calendar): CalendarModel {
 		return {
 			uuid: calendar.uuid,
+			serviceProviderName: calendar.serviceProviderName,
 			externalCalendarUrl: calendar.generateExternalUrl(CalendarsController.CalendarTimezone),
 			caldavUserUrl: calendar.generateCaldavUserUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost),
 			caldavEventsUrl: calendar.generateCaldavEventsUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost)
@@ -37,8 +38,8 @@ export class CalendarsController extends Controller {
 	}
 
 	@Post('')
-	public async addCalendars(): Promise<CalendarModel> {
-		const data = await this.calendarsService.createCalendar();
+	public async addCalendars(@Body() model: AddCalendarModel): Promise<CalendarModel> {
+		const data = await this.calendarsService.createCalendar(model);
 		return this.mapDataModel(data);
 	}
 
