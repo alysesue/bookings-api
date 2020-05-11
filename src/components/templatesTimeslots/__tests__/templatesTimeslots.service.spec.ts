@@ -3,6 +3,7 @@ import { TimeslotParams } from "../templatesTimeslots.apicontract";
 import { TemplatesTimeslotsRepository } from "../templatesTimeslots.repository";
 import { Container } from "typescript-ioc";
 import { TemplateTimeslots } from "../../../models/templateTimeslots";
+import { DateHelper } from '../../../infrastructure/dateHelper';
 
 const timeslots = new TemplateTimeslots('name', new Date(), new Date(), 5);
 
@@ -20,7 +21,13 @@ describe('Timeslots  template services ', () => {
 	});
 
 	it('should return the template', async () => {
-		const template = await timeslotsService.upsertTemplateTimeslots(new TimeslotParams());
+		const date = new Date();
+		const template = await timeslotsService.upsertTemplateTimeslots({
+			name: 'test',
+			firstSlotStartTime: DateHelper.setHours(date, 9, 0),
+			lastSlotEndTime: DateHelper.setHours(date, 5, 0),
+			slotsDuration: 60
+		} as TimeslotParams);
 		expect(setTemplateTimeslots).toBeCalled();
 		expect(template.name).toStrictEqual(timeslots.name);
 	});
