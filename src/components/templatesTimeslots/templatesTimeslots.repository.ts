@@ -5,7 +5,7 @@ import { TemplateTimeslots } from '../../models/templateTimeslots';
 import { DeleteResult, Repository } from "typeorm";
 
 @Singleton
-export default class TemplatesTimeslotsRepository {
+export class TemplatesTimeslotsRepository {
 	@Inject
 	private connection: DbConnection;
 
@@ -15,7 +15,7 @@ export default class TemplatesTimeslotsRepository {
 	}
 
 	public async getTemplateTimeslots(name: string): Promise<TemplateTimeslots> {
-		return (await this.getRepository()).findOne({name: timeslot.name});
+		return (await this.getRepository()).findOne({ name });
 	}
 
 	public async setTemplateTimeslots(timeslot: TemplateTimeslots): Promise<TemplateTimeslots> {

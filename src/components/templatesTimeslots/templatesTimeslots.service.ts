@@ -1,5 +1,5 @@
 import { Inject, Singleton } from 'typescript-ioc';
-import TemplatesTimeslotsRepository from "./templatesTimeslots.repository";
+import { TemplatesTimeslotsRepository } from "./templatesTimeslots.repository";
 import { TemplateTimeslots } from '../../models/templateTimeslots';
 import { TimeslotParams } from "./templatesTimeslots.apicontract";
 
@@ -13,7 +13,7 @@ export default class TemplatesTimeslotsService {
 	}
 
 	public async upsertTemplateTimeslots(template: TimeslotParams): Promise<TemplateTimeslots> {
-		const {name, firstSlotStartTime, lastSlotEndTime, slotsDuration} = template;
+		const { name, firstSlotStartTime, lastSlotEndTime, slotsDuration } = template;
 		const newTemplateModel: TemplateTimeslots = new TemplateTimeslots(name, firstSlotStartTime, lastSlotEndTime, slotsDuration);
 		const templateRes: TemplateTimeslots = await this.timeslotsRepository.getTemplateTimeslots(newTemplateModel.name);
 		if (newTemplateModel) {
@@ -22,10 +22,8 @@ export default class TemplatesTimeslotsService {
 		return (await this.timeslotsRepository.setTemplateTimeslots(newTemplateModel));
 	}
 
-	public async deleteTemplateTimeslots(timeslot: TimeslotParams): Promise<TemplateTimeslots> {
-		const {name, firstSlotStartTime, lastSlotEndTime, slotsDuration} = timeslot;
-		const timeslots: TemplateTimeslots = new TemplateTimeslots(name, firstSlotStartTime, lastSlotEndTime, slotsDuration);
-		return await this.timeslotsRepository.upsertTemplateTimeslots(timeslots);
+	public async deleteTemplateTimeslots(timeslotId: number): Promise<void> {
+		await this.timeslotsRepository.deleteTimeslot(timeslotId);
 	}
 
 }

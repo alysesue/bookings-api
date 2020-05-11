@@ -22,19 +22,19 @@ describe('TemplateTimeslots repository', () => {
 	it('should get timeSlots', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
-		const repository = Container.get(TimeslotsRepository);
-		const result = await repository.getTimeslots(true);
+		const repository = Container.get(TemplatesTimeslotsRepository);
+		const result = await repository.getTemplateTimeslots('name');
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
-		expect(InnerRepositoryMock.find).toBeCalledTimes(1);
+		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
 	});
 
 	it('should add timeSlots', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 		const timeslot = new TemplateTimeslots('test', new Date(), new Date(), 3);
-		const repository = Container.get(TimeslotsRepository);
-		const result = await repository.upsertTemplateTimeslots(timeslot);
+		const repository = Container.get(TemplatesTimeslotsRepository);
+		const result = await repository.setTemplateTimeslots(timeslot);
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
@@ -44,7 +44,7 @@ describe('TemplateTimeslots repository', () => {
 	it('should remove timeSlots', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
-		const repository = Container.get(TimeslotsRepository);
+		const repository = Container.get(TemplatesTimeslotsRepository);
 		const result = await repository.deleteTimeslot(34848);
 		expect(result).not.toBe(undefined);
 

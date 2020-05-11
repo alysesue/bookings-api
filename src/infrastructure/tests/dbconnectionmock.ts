@@ -1,5 +1,6 @@
 export const InnerRepositoryMock = {
 	find: jest.fn().mockImplementation(() => Promise.resolve([])),
+	findOne: jest.fn().mockImplementation(() => Promise.resolve({})),
 	save: jest.fn().mockImplementation(() => Promise.resolve({})),
 	delete: jest.fn().mockImplementation(() => Promise.resolve({}))
 };
