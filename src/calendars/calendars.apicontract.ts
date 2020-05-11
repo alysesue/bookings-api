@@ -1,6 +1,8 @@
 export class CalendarModel {
 	public uuid: string;
 	public externalCalendarUrl: string;
+	public caldavUserUrl: string;
+	public caldavEventsUrl: string;
 	public serviceProviderName: string;
 }
 

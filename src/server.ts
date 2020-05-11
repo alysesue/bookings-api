@@ -14,6 +14,7 @@ import { HealthCheckMiddleware } from "./health/HealthCheckMiddleware";
 import { RegisterRoutes } from "./routes";
 import { DbConnection } from "./core/db.connection";
 import { Container } from 'typescript-ioc';
+import { CalDavProxyHandler } from './infrastructure/caldavproxy.handler';
 
 export async function startServer(): Promise<Server> {
 	// Setup service
@@ -24,8 +25,10 @@ export async function startServer(): Promise<Server> {
 	RegisterRoutes(router);
 	// @ts-ignore
 	const HandledRoutes = new KoaResponseHandler(router.routes());
+	const proxyHandler = Container.get(CalDavProxyHandler);
 
 	const koaServer = new Koa()
+		.use(proxyHandler.build())
 		.use(compress({
 			filter: () => true,
 			threshold: 2048,

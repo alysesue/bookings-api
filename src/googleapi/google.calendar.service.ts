@@ -1,5 +1,7 @@
 import { Singleton } from "typescript-ioc";
-import { calendar_v3, google } from "googleapis";
+import { calendar_v3, google, GoogleApis } from "googleapis";
+import { JWT } from "google-auth-library";
+import { Constants } from '../models/constants';
 
 const credentials = require('../config/googleapi-credentials.json');
 
@@ -9,39 +11,31 @@ const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 export class GoogleCalendarService {
 	private _authToken: any = null;
 
-	private static CalendarTimezone = 'Asia/Singapore';
-
 	public setToken(token) {
 		this._authToken = token;
 	}
 
-	private async getAuthToken(): Promise<any> {
-		const { client_email, private_key } = credentials;
+	private async loadJWTTokenFromFile(): Promise<JWT> {
+		const newToken = new JWT();
+		newToken.fromJSON(credentials);
 
+		return newToken.createScoped(SCOPES);
+	}
+
+	private async getAuthToken(): Promise<JWT> {
 		if (this._authToken === null) {
-			const newToken = new google.auth.JWT(
-				client_email,
-				null,
-				private_key,
-				SCOPES);
+			const newToken = await this.loadJWTTokenFromFile();
 
-			await this.testAuthorization(newToken);
+			await newToken.authorize();
 			this.setToken(newToken);
 		}
 
 		return this._authToken;
 	}
 
-	private async testAuthorization(token): Promise<void> {
-		return new Promise<void>((resolve, reject) => {
-			token.authorize((err, _) => {
-				if (err) {
-					reject(err);
-				} else {
-					resolve();
-				}
-			});
-		});
+	public async getAccessToken(): Promise<string> {
+		const jwt = await this.getAuthToken();
+		return (await jwt.getAccessToken()).token;
 	}
 
 	public async getCalendarApi(): Promise<calendar_v3.Calendar> {
@@ -55,7 +49,7 @@ export class GoogleCalendarService {
 		const response = await api.calendars.insert({
 			requestBody: {
 				summary: 'Booking SG Calendar',
-				timeZone: GoogleCalendarService.CalendarTimezone
+				timeZone: Constants.CalendarTimezone
 			}
 		});
 
@@ -69,7 +63,7 @@ export class GoogleCalendarService {
 			requestBody: {
 				timeMin: startTime.toISOString(),
 				timeMax: endTime.toISOString(),
-				timeZone: GoogleCalendarService.CalendarTimezone,
+				timeZone: Constants.CalendarTimezone,
 				items: googleCalendarIds,
 			}
 		});
