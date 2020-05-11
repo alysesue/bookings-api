@@ -1,9 +1,9 @@
-import { Container, Snapshot } from 'typescript-ioc';
-import { CalDavProxyHandler } from '../caldavproxy.handler';
-import { Context } from "koa";
+import {Container, Snapshot} from 'typescript-ioc';
+import {CalDavProxyHandler} from '../caldavproxy.handler';
+import {Context} from "koa";
 import * as KoaProxy from 'koa-proxy';
-import { GoogleCalendarService } from '../../googleapi/google.calendar.service';
-import { GoogleApi } from "../../googleapi/google.api";
+import {GoogleCalendarService} from '../../googleapi/google.calendar.service';
+import {GoogleApi} from "../../googleapi/google.api";
 
 let snapshot: Snapshot;
 beforeEach(() => {

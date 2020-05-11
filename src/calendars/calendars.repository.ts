@@ -1,8 +1,8 @@
-import { Inject, Singleton } from 'typescript-ioc';
+import {Inject, Singleton} from 'typescript-ioc';
 
-import { DbConnection } from '../core/db.connection';
-import { Calendar } from '../models';
-import { Repository } from "typeorm";
+import {DbConnection} from '../core/db.connection';
+import {Calendar} from '../models';
+import {Repository} from "typeorm";
 
 @Singleton
 export class CalendarsRepository {
@@ -24,5 +24,10 @@ export class CalendarsRepository {
 	private async getRepository(): Promise<Repository<Calendar>> {
 		const conn = await this.connection.getConnection();
 		return conn.getRepository(Calendar);
+	}
+
+	public async searchCalendar(from, to): Promise<Calendar[]> {
+		// TODO : search against timeslot
+		return (await this.getRepository()).find();
 	}
 }
