@@ -1,5 +1,5 @@
-import {BaseEntity, Column, Entity, PrimaryGeneratedColumn} from "typeorm";
-import {BookingStatus} from "./bookingStatus";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BookingStatus } from "./bookingStatus";
 
 @Entity()
 export class Booking extends BaseEntity {
@@ -23,7 +23,7 @@ export class Booking extends BaseEntity {
 	@Column()
 	private _startDateTime: Date;
 
-	@Column()
+	@Column({nullable: true})
 	private _acceptedAt: Date;
 
 	@Column()
