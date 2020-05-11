@@ -1,12 +1,12 @@
-import {Container} from "typescript-ioc";
-import {BookingsController} from "../index";
-import {BookingsRepository} from "../bookings.repository";
-import {Booking, BookingStatus, Calendar} from "../../models";
-import {CalendarsRepository} from "../../calendars/calendars.repository";
-import {GoogleApi} from "../../googleapi/google.api";
+import { Container } from "typescript-ioc";
+import { BookingsController } from "../index";
+import { BookingsRepository } from "../bookings.repository";
+import { Booking, BookingStatus, Calendar } from "../../models";
+import { CalendarsRepository } from "../../calendars/calendars.repository";
+import { GoogleApi } from "../../googleapi/google.api";
 import * as insertEventResponse from "./createEventResponse.json";
 import * as freebusyResponse from "./freebusyResponse.json";
-import {BookingAcceptRequest} from "../bookings.apicontract";
+import { BookingAcceptRequest } from "../bookings.apicontract";
 
 const BookingRepositoryMock = (update) => {
 	const testBooking = new Booking(new Date(), 100);

@@ -1,8 +1,8 @@
-import {BookingsRepository} from "../bookings.repository";
-import {DbConnection} from "../../core/db.connection";
-import {Booking} from "../../models";
-import {Container} from "typescript-ioc";
-import {InsertResult, UpdateResult} from "typeorm";
+import { BookingsRepository } from "../bookings.repository";
+import { DbConnection } from "../../core/db.connection";
+import { Booking } from "../../models";
+import { Container } from "typescript-ioc";
+import { InsertResult, UpdateResult } from "typeorm";
 
 describe("Bookings repository", () => {
 	beforeEach(() => {

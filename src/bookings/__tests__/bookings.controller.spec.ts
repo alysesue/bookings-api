@@ -1,10 +1,10 @@
-import {Container} from "typescript-ioc";
+import { Container } from "typescript-ioc";
 
-import {Booking, BookingStatus} from "../../models";
+import { Booking, BookingStatus } from "../../models";
 
-import {BookingsController} from "../bookings.controller";
-import {BookingsService} from "../bookings.service";
-import {BookingResponse} from "../bookings.apicontract";
+import { BookingsController } from "../bookings.controller";
+import { BookingsService } from "../bookings.service";
+import { BookingResponse } from "../bookings.apicontract";
 
 describe("Bookings.Controller", () => {
 	it("should have http code 200", async () => {

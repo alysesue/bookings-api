@@ -1,18 +1,17 @@
 import * as Koa from "koa";
-import * as KoaProxy from 'koa-proxy';
-import { Container, Inject, Singleton } from 'typescript-ioc';
-import { GoogleCalendarService } from '../googleapi/google.calendar.service';
+import * as KoaProxy from "koa-proxy";
+import { Inject, Singleton } from 'typescript-ioc';
+import { GoogleApi } from "../googleapi/google.api";
 
 @Singleton
 export class CalDavProxyHandler {
 
-	@Inject
-	private calendarService: GoogleCalendarService;
-
-	private koaProxy: any;
-	private _initialized: boolean = false;
 	public httpProtocol: string = null;
 	public httpHost: string = null;
+	@Inject
+	private googleApi: GoogleApi;
+	private readonly koaProxy: any;
+	private _initialized: boolean = false;
 
 	constructor() {
 		this.koaProxy = KoaProxy({
@@ -20,10 +19,16 @@ export class CalDavProxyHandler {
 		});
 	}
 
+	public build(): Koa.Middleware {
+		return async (ctx: Koa.Context, next: Koa.Next): Promise<any> => {
+			return await this.KoaMiddleware(ctx, next);
+		};
+	}
+
 	private async koaProxyWithAuth(ctx: Koa.Context, next: Koa.Next): Promise<any> {
 		ctx.originalUrl = ctx.url;
 
-		const accessToken = await this.calendarService.getAccessToken();
+		const accessToken = await this.googleApi.getAccessToken();
 		ctx.header['Authorization'] = `Bearer ${accessToken}`;
 
 		return await this.koaProxy(ctx, next);
@@ -62,11 +67,5 @@ export class CalDavProxyHandler {
 		}
 
 		return next();
-	}
-
-	public build(): Koa.Middleware {
-		return async (ctx: Koa.Context, next: Koa.Next): Promise<any> => {
-			return await this.KoaMiddleware(ctx, next);
-		};
 	}
 }

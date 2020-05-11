@@ -1,5 +1,5 @@
-import {Booking} from "./booking";
-import {BookingStatus} from "./bookingStatus";
-import {Calendar} from "./calendar";
+import { Booking } from "./booking";
+import { BookingStatus } from "./bookingStatus";
+import { Calendar } from "./calendar";
 
-export {Booking, BookingStatus, Calendar};
+export { Booking, BookingStatus, Calendar };

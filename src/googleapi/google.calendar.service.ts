@@ -7,8 +7,6 @@ import { Constants } from "../models/constants";
 
 @Singleton
 export class GoogleCalendarService {
-	private static CalendarTimezone = "Asia/Singapore";
-
 	@Inject
 	private googleApi: GoogleApi;
 
@@ -70,11 +68,11 @@ export class GoogleCalendarService {
 				summary: "Booking SG Event",
 				start: {
 					dateTime: booking.startDateTime.toISOString(),
-					timeZone: GoogleCalendarService.CalendarTimezone,
+					timeZone: Constants.CalendarTimezone,
 				},
 				end: {
 					dateTime: booking.getSessionEndTime().toISOString(),
-					timeZone: GoogleCalendarService.CalendarTimezone,
+					timeZone: Constants.CalendarTimezone,
 				},
 			},
 		};

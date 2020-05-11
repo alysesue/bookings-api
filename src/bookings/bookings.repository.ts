@@ -1,8 +1,8 @@
-import {logger} from "mol-lib-common/debugging/logging/LoggerV2";
-import {Inject, Singleton} from "typescript-ioc";
-import {InsertResult, UpdateResult} from "typeorm";
-import {DbConnection} from "../core/db.connection";
-import {Booking} from "../models";
+import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
+import { Inject, Singleton } from "typescript-ioc";
+import { InsertResult, UpdateResult } from "typeorm";
+import { DbConnection } from "../core/db.connection";
+import { Booking } from "../models";
 
 @Singleton
 export class BookingsRepository {

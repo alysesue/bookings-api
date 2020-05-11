@@ -1,5 +1,6 @@
-import {calendar_v3, google} from "googleapis";
-import {Singleton} from "typescript-ioc";
+import { calendar_v3 } from "googleapis";
+import { JWT } from "google-auth-library";
+import { Singleton } from "typescript-ioc";
 
 const credentials = require("../config/googleapi-credentials.json");
 
@@ -10,6 +11,13 @@ export class GoogleApi {
 
 	private _authToken: any = null;
 
+	private static async loadJWTTokenFromJson(): Promise<JWT> {
+		const newToken = new JWT();
+		newToken.fromJSON(credentials);
+
+		return newToken.createScoped(SCOPES);
+	}
+
 	public setToken(token) {
 		this._authToken = token;
 	}
@@ -19,33 +27,19 @@ export class GoogleApi {
 		return new calendar_v3.Calendar({auth: token});
 	}
 
-	private async getAuthToken(): Promise<any> {
-		const {client_email, private_key} = credentials;
+	public async getAccessToken(): Promise<string> {
+		const jwt = await this.getAuthToken();
+		return (await jwt.getAccessToken()).token;
+	}
 
+	private async getAuthToken(): Promise<JWT> {
 		if (this._authToken === null) {
-			const newToken = new google.auth.JWT(
-				client_email,
-				null,
-				private_key,
-				SCOPES
-			);
+			const newToken = await GoogleApi.loadJWTTokenFromJson();
 
-			await this.testAuthorization(newToken);
+			await newToken.authorize();
 			this.setToken(newToken);
 		}
 
 		return this._authToken;
-	}
-
-	private async testAuthorization(token): Promise<void> {
-		return new Promise<void>((resolve, reject) => {
-			token.authorize((err, _) => {
-				if (err) {
-					reject(err);
-				} else {
-					resolve();
-				}
-			});
-		});
 	}
 }

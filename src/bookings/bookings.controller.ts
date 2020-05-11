@@ -1,17 +1,26 @@
-import {logger} from "mol-lib-common/debugging/logging/LoggerV2";
-import {Inject} from "typescript-ioc";
+import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
+import { Inject } from "typescript-ioc";
 
-import {Body, Controller, Get, Path, Post, Route, SuccessResponse, Tags} from "tsoa";
-import {Booking} from "../models";
-import {BookingAcceptRequest, BookingRequest, BookingResponse} from "./bookings.apicontract";
-import {BookingsService} from "./bookings.service";
-import {ErrorResponse} from "../apicontract";
+import { Body, Controller, Get, Path, Post, Route, SuccessResponse, Tags } from "tsoa";
+import { Booking } from "../models";
+import { BookingAcceptRequest, BookingRequest, BookingResponse } from "./bookings.apicontract";
+import { BookingsService } from "./bookings.service";
+import { ErrorResponse } from "../apicontract";
 
 @Route("api/v1/bookings")
 @Tags('Bookings')
 export class BookingsController extends Controller {
 	@Inject
 	private bookingsService: BookingsService;
+
+	private static mapDataModel(booking: Booking): BookingResponse {
+		return {
+			id: booking.id,
+			status: booking.status,
+			sessionDurationInMinutes: booking.sessionDurationInMinutes,
+			startDateTime: booking.startDateTime
+		} as BookingResponse;
+	}
 
 	@Get()
 	@SuccessResponse(200, 'Ok')
@@ -47,14 +56,5 @@ export class BookingsController extends Controller {
 
 	private mapDataModels(bookings: Booking[]): BookingResponse[] {
 		return bookings?.map(e => BookingsController.mapDataModel(e));
-	}
-
-	private static mapDataModel(booking: Booking): BookingResponse {
-		return {
-			id: booking.id,
-			status: booking.status,
-			sessionDurationInMinutes: booking.sessionDurationInMinutes,
-			startDateTime: booking.startDateTime
-		} as BookingResponse;
 	}
 }

@@ -1,4 +1,4 @@
-import {GoogleApi} from "../google.api";
+import { GoogleApi } from "../google.api";
 
 describe('Google api wrapper tests', () => {
 	it('should return api', async () => {

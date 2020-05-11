@@ -1,10 +1,10 @@
-import {BookingsService} from "..";
-import {BookingsRepository} from "../bookings.repository";
-import {CalendarsService} from "../../calendars/calendars.service";
-import {Container} from "typescript-ioc";
-import {Booking, BookingStatus, Calendar} from "../../models/";
-import {InsertResult, UpdateResult} from "typeorm";
-import {BookingAcceptRequest, BookingRequest} from "../bookings.apicontract";
+import { BookingsService } from "..";
+import { BookingsRepository } from "../bookings.repository";
+import { CalendarsService } from "../../calendars/calendars.service";
+import { Container } from "typescript-ioc";
+import { Booking, BookingStatus, Calendar } from "../../models/";
+import { InsertResult, UpdateResult } from "typeorm";
+import { BookingAcceptRequest, BookingRequest } from "../bookings.apicontract";
 
 describe("Bookings.Service", () => {
 	beforeAll(() => {
