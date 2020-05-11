@@ -1,9 +1,11 @@
-import {Inject} from "typescript-ioc";
+import { Inject } from "typescript-ioc";
 
-import {Body, Controller, Get, Path, Post, Route, Tags} from "tsoa";
-import {CalendarModel, CalendarUserModel} from "./calendars.apicontract";
-import {CalendarsService} from "./calendars.service";
-import {Calendar} from "../models";
+import { Body, Controller, Get, Path, Post, Route, Tags } from "tsoa";
+import { AddCalendarModel, CalendarModel, CalendarUserModel } from "./calendars.apicontract";
+import { CalendarsService } from "./calendars.service";
+import { Calendar } from "../models";
+import { CalDavProxyHandler } from "../infrastructure/caldavproxy.handler";
+import { Constants } from "../models/constants";
 
 @Route("api/v1/calendars")
 @Tags('Calendars')
@@ -11,10 +13,16 @@ export class CalendarsController extends Controller {
 	@Inject
 	private calendarsService: CalendarsService;
 
+	@Inject
+	private proxyHandler: CalDavProxyHandler;
+
 	private static mapDataModel(calendar: Calendar): CalendarModel {
 		return {
 			uuid: calendar.uuid,
-			externalCalendarUrl: calendar.generateExternalUrl("Asia/Singapore"),
+			serviceProviderName: calendar.serviceProviderName,
+			externalCalendarUrl: calendar.generateExternalUrl(Constants.CalendarTimezone),
+			caldavUserUrl: calendar.generateCaldavUserUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost),
+			caldavEventsUrl: calendar.generateCaldavEventsUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost)
 		} as CalendarModel;
 	}
 
@@ -25,20 +33,17 @@ export class CalendarsController extends Controller {
 	}
 
 	@Post("")
-	public async addCalendars(): Promise<CalendarModel> {
-		const data = await this.calendarsService.createCalendar();
+	public async addCalendars(@Body() model: AddCalendarModel): Promise<CalendarModel> {
+		const data = await this.calendarsService.createCalendar(model);
 		return CalendarsController.mapDataModel(data);
 	}
 
 	@Post("{calendarUUID}/useraccess")
-	public async addUser(
-		@Path() calendarUUID: string,
-		@Body() model: CalendarUserModel
-	): Promise<CalendarUserModel> {
+	public async addUser(@Path() calendarUUID: string, @Body() model: CalendarUserModel): Promise<CalendarUserModel> {
 		return await this.calendarsService.addUser(calendarUUID, model);
 	}
 
 	private mapDataModels(calendars: Calendar[]): CalendarModel[] {
-		return calendars?.map((e) => CalendarsController.mapDataModel(e));
+		return calendars?.map(e => CalendarsController.mapDataModel(e));
 	}
 }

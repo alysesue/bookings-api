@@ -1,8 +1,9 @@
-import {Inject, Singleton} from "typescript-ioc";
-import {Booking} from "../models";
+import { Inject, Singleton } from "typescript-ioc";
+import { Booking } from "../models";
 
-import {CalendarUserModel} from "../calendars/calendars.apicontract";
-import {GoogleApi} from "./google.api";
+import { CalendarUserModel } from "../calendars/calendars.apicontract";
+import { GoogleApi } from "./google.api";
+import { Constants } from "../models/constants";
 
 @Singleton
 export class GoogleCalendarService {
@@ -17,7 +18,7 @@ export class GoogleCalendarService {
 		const calendarRequest = {
 			requestBody: {
 				summary: "Booking SG Calendar",
-				timeZone: GoogleCalendarService.CalendarTimezone,
+				timeZone: Constants.CalendarTimezone,
 			},
 		};
 		const response = await api.calendars.insert(calendarRequest);
@@ -32,7 +33,7 @@ export class GoogleCalendarService {
 			requestBody: {
 				timeMin: startTime.toISOString(),
 				timeMax: endTime.toISOString(),
-				timeZone: GoogleCalendarService.CalendarTimezone,
+				timeZone: Constants.CalendarTimezone,
 				items: googleCalendarIds,
 			},
 		};
