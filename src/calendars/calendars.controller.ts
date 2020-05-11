@@ -2,12 +2,13 @@ import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 import { Inject } from 'typescript-ioc';
 
 import { Body, Controller, Get, Path, Post, Route } from 'tsoa';
-import { CalendarModel, CalendarUserModel } from './calendars.apicontract';
+import { AddCalendarModel, CalendarModel, CalendarUserModel } from './calendars.apicontract';
 import { CalendarsService } from './calendars.service';
 import { Calendar } from '../models/calendar';
 
 @Route('api/v1/calendars')
 export class CalendarsController extends Controller {
+	private static CalendarTimezone = 'Asia/Singapore';
 
 	@Inject
 	private calendarsService: CalendarsService;
@@ -15,7 +16,8 @@ export class CalendarsController extends Controller {
 	private mapDataModel(calendar: Calendar): CalendarModel {
 		return {
 			uuid: calendar.uuid,
-			externalCalendarUrl: calendar.generateExternalUrl('Asia/Singapore')
+			serviceProviderName: calendar.serviceProviderName,
+			externalCalendarUrl: calendar.generateExternalUrl(CalendarsController.CalendarTimezone)
 		} as CalendarModel;
 	}
 
@@ -30,8 +32,8 @@ export class CalendarsController extends Controller {
 	}
 
 	@Post('')
-	public async addCalendars(): Promise<CalendarModel> {
-		const data = await this.calendarsService.createCalendar();
+	public async addCalendars(@Body() model: AddCalendarModel): Promise<CalendarModel> {
+		const data = await this.calendarsService.createCalendar(model);
 		return this.mapDataModel(data);
 	}
 

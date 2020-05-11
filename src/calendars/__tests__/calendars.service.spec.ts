@@ -33,7 +33,10 @@ describe('Calendar service', () => {
 	it('should save calendars', async () => {
 		const service = Container.get(CalendarsService);
 
-		await service.createCalendar();
+		await service.createCalendar({
+			serviceProviderName: 'Jhon Doe'
+		});
+
 		expect(CalendarRepositoryObj.saveCalendar).toBeCalled();
 	});
 
