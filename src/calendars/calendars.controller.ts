@@ -9,6 +9,8 @@ import { CalDavProxyHandler } from '../infrastructure/caldavproxy.handler';
 
 @Route('api/v1/calendars')
 export class CalendarsController extends Controller {
+	private static CalendarTimezone = 'Asia/Singapore';
+
 	@Inject
 	private calendarsService: CalendarsService;
 
@@ -18,7 +20,7 @@ export class CalendarsController extends Controller {
 	private mapDataModel(calendar: Calendar): CalendarModel {
 		return {
 			uuid: calendar.uuid,
-			externalCalendarUrl: calendar.generateExternalUrl('Asia/Singapore'),
+			externalCalendarUrl: calendar.generateExternalUrl(CalendarsController.CalendarTimezone),
 			caldavUserUrl: calendar.generateCaldavUserUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost),
 			caldavEventsUrl: calendar.generateCaldavEventsUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost)
 		} as CalendarModel;
