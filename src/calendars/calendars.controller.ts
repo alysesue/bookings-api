@@ -5,10 +5,10 @@ import { Body, Controller, Get, Path, Post, Route } from 'tsoa';
 import { AddCalendarModel, CalendarModel, CalendarUserModel } from './calendars.apicontract';
 import { CalendarsService } from './calendars.service';
 import { Calendar } from '../models/calendar';
+import { Constants } from '../models/constants';
 
 @Route('api/v1/calendars')
 export class CalendarsController extends Controller {
-	private static CalendarTimezone = 'Asia/Singapore';
 
 	@Inject
 	private calendarsService: CalendarsService;
@@ -17,7 +17,7 @@ export class CalendarsController extends Controller {
 		return {
 			uuid: calendar.uuid,
 			serviceProviderName: calendar.serviceProviderName,
-			externalCalendarUrl: calendar.generateExternalUrl(CalendarsController.CalendarTimezone)
+			externalCalendarUrl: calendar.generateExternalUrl(Constants.CalendarTimezone)
 		} as CalendarModel;
 	}
 

@@ -1,5 +1,6 @@
 import { Singleton } from "typescript-ioc";
 import { calendar_v3, google } from "googleapis";
+import { Constants } from '../models/constants';
 
 const credentials = require('../config/googleapi-credentials.json');
 
@@ -8,8 +9,6 @@ const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 @Singleton
 export class GoogleCalendarService {
 	private _authToken: any = null;
-
-	private static CalendarTimezone = 'Asia/Singapore';
 
 	public setToken(token) {
 		this._authToken = token;
@@ -55,7 +54,7 @@ export class GoogleCalendarService {
 		const response = await api.calendars.insert({
 			requestBody: {
 				summary: 'Booking SG Calendar',
-				timeZone: GoogleCalendarService.CalendarTimezone
+				timeZone: Constants.CalendarTimezone
 			}
 		});
 
@@ -69,7 +68,7 @@ export class GoogleCalendarService {
 			requestBody: {
 				timeMin: startTime.toISOString(),
 				timeMax: endTime.toISOString(),
-				timeZone: GoogleCalendarService.CalendarTimezone,
+				timeZone: Constants.CalendarTimezone,
 				items: googleCalendarIds,
 			}
 		});
