@@ -16,7 +16,19 @@ export class CalendarsController extends Controller {
 	@Inject
 	private proxyHandler: CalDavProxyHandler;
 
-	private static mapDataModel(calendar: Calendar): CalendarModel {
+	@Post("")
+	public async addCalendars(@Body() model: AddCalendarModel): Promise<CalendarModel> {
+		const data = await this.calendarsService.createCalendar(model);
+		return this.mapDataModel(data);
+	}
+
+	@Get("")
+	public async getCalendars(): Promise<CalendarModel[]> {
+		const dataModels = await this.calendarsService.getCalendars();
+		return this.mapDataModels(dataModels);
+	}
+
+	private mapDataModel(calendar: Calendar): CalendarModel {
 		return {
 			uuid: calendar.uuid,
 			serviceProviderName: calendar.serviceProviderName,
@@ -26,24 +38,12 @@ export class CalendarsController extends Controller {
 		} as CalendarModel;
 	}
 
-	@Get("")
-	public async getCalendars(): Promise<CalendarModel[]> {
-		const dataModels = await this.calendarsService.getCalendars();
-		return this.mapDataModels(dataModels);
-	}
-
-	@Post("")
-	public async addCalendars(@Body() model: AddCalendarModel): Promise<CalendarModel> {
-		const data = await this.calendarsService.createCalendar(model);
-		return CalendarsController.mapDataModel(data);
-	}
-
 	@Post("{calendarUUID}/useraccess")
 	public async addUser(@Path() calendarUUID: string, @Body() model: CalendarUserModel): Promise<CalendarUserModel> {
 		return await this.calendarsService.addUser(calendarUUID, model);
 	}
 
 	private mapDataModels(calendars: Calendar[]): CalendarModel[] {
-		return calendars?.map(e => CalendarsController.mapDataModel(e));
+		return calendars?.map(e => this.mapDataModel(e));
 	}
 }
