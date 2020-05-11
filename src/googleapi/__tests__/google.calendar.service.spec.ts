@@ -88,10 +88,10 @@ describe("Google calendar wrapper tests", () => {
 });
 
 class GoogleApiMock extends GoogleApi {
-	static mockAclInsertResponse;
-	static mockQueryResponse;
-	static insertCalendarsMock;
-	static createEventsMock;
+	public static mockAclInsertResponse;
+	public static mockQueryResponse;
+	public static insertCalendarsMock;
+	public static createEventsMock;
 
 	public async getCalendarApi(): Promise<calendar_v3.Calendar> {
 		return {

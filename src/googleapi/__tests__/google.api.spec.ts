@@ -1,7 +1,7 @@
 import {GoogleApi} from "../google.api";
 
 describe('Google api wrapper tests', () => {
-	it('should return api', async function () {
+	it('should return api', async () => {
 		jest.mock("googleapis", () => ({
 			google: {
 				auth: {

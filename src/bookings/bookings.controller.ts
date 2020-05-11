@@ -2,12 +2,10 @@ import {logger} from "mol-lib-common/debugging/logging/LoggerV2";
 import {Inject} from "typescript-ioc";
 
 import {Body, Controller, Get, Path, Post, Route, SuccessResponse, Tags} from "tsoa";
-import {BookingResponse} from "./rest/booking.response";
-import {BookingsService} from "./bookings.service";
-import {BookingRequest} from "./rest/booking.request";
-import {ErrorResponse} from "./rest/errorResponse";
 import {Booking} from "../models";
-import {BookingAcceptRequest} from "./rest/booking.acceptRequest";
+import {BookingAcceptRequest, BookingRequest, BookingResponse} from "./bookings.apicontract";
+import {BookingsService} from "./bookings.service";
+import {ErrorResponse} from "../apicontract";
 
 @Route("api/v1/bookings")
 @Tags('Bookings')

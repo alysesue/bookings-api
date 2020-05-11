@@ -3,9 +3,8 @@ import {Inject, Singleton} from "typescript-ioc";
 import {Booking, BookingStatus} from "../models";
 
 import {BookingsRepository} from "./bookings.repository";
-import {BookingRequest} from "./rest/booking.request";
 import {CalendarsService} from "../calendars/calendars.service";
-import {BookingAcceptRequest} from "./rest/booking.acceptRequest";
+import {BookingAcceptRequest, BookingRequest} from "./bookings.apicontract";
 
 @Singleton
 export class BookingsService {
