@@ -15,4 +15,5 @@ export class AddCalendarModel {
 
 export class CalendarUserModel {
 	public email: string;
+	public role: string;
 }

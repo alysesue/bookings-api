@@ -1,36 +1,36 @@
-import { CalendarsRepository } from '../calendars.repository';
-import { Container, Snapshot } from 'typescript-ioc';
-import { Calendar } from '../../models/calendar';
-import { CalendarsService } from '../calendars.service';
+import { CalendarsRepository } from "../calendars.repository";
+import { Container, Snapshot } from "typescript-ioc";
+import { Booking, BookingStatus, Calendar } from "../../models";
+import { CalendarsService } from "../calendars.service";
 import { GoogleCalendarService } from "../../googleapi/google.calendar.service";
+import { CalendarUserModel } from "../calendars.apicontract";
 
 let snapshot: Snapshot;
-beforeAll(() => {
-	// Store the IoC configuration
-	snapshot = Container.snapshot();
 
-	Container.bind(CalendarsRepository).to(CalendarRepositoryMock);
-	Container.bind(GoogleCalendarService).to(GoogleCalendarApiWrapperMock);
+describe("Calendar service", () => {
+	beforeAll(() => {
+		// Store the IoC configuration
+		snapshot = Container.snapshot();
+	});
 
-	// Clears mock counters, not implementation
-	jest.clearAllMocks();
-});
+	afterEach(() => {
+		snapshot.restore();
+	});
 
-afterAll(() => {
-	// Put the IoC configuration back for IService, so other tests can run.
-	snapshot.restore();
-});
-
-describe('Calendar service', () => {
-
-	it('should get calendars', async () => {
+	beforeEach(() => {
+		// Clears mock counters, not implementation
+		jest.clearAllMocks();
+		Container.bind(CalendarsRepository).to(CalendarRepositoryMock);
+		Container.bind(GoogleCalendarService).to(GoogleCalendarServiceMock);
+	});
+	it("should get calendars", async () => {
 		const service = Container.get(CalendarsService);
 
 		await service.getCalendars();
 		expect(CalendarRepositoryObj.getCalendars).toBeCalled();
 	});
 
-	it('should save calendars', async () => {
+	it("should save calendars", async () => {
 		const service = Container.get(CalendarsService);
 
 		await service.createCalendar({
@@ -40,75 +40,129 @@ describe('Calendar service', () => {
 		expect(CalendarRepositoryObj.saveCalendar).toBeCalled();
 	});
 
-	it('should add user access', async () => {
+	it("should add user access", async () => {
 		const service = Container.get(CalendarsService);
 
-		const result = await service.addUser('uuid', { email: 'test@palo-it.com' });
+		const result = await service.addUser("uuid", {
+			email: "test@palo-it.com",
+		} as CalendarUserModel);
 		expect(result.email).not.toBe(undefined);
 
 		expect(CalendarRepositoryObj.getCalendarByUUID).toHaveBeenCalled();
 	});
 
-	it('should return available calendars', async () => {
+	it("should return available calendars", async () => {
 		const service = Container.get(CalendarsService);
+		const booking = new Booking(new Date(), 60);
 
 		const calendars = [
 			{
-				googleCalendarId: 'google-id-1'
-			} as Calendar,
-			{
-				googleCalendarId: 'google-id-2'
+				googleCalendarId: "googleid@group.calendar.google.com",
 			} as Calendar,
 		];
 
-		const result = await service.getAvailableCalendarsForTimeSlot(new Date(), new Date(), calendars);
+		const result = await service.getAvailableCalendarsForTimeSlot(
+			booking,
+			calendars
+		);
 
 		expect(result).not.toBe(undefined);
 	});
 
-	it('should validate booking request', async () => {
+	it("should validate booking request", async () => {
 		const testCalendar = new Calendar();
-		testCalendar.googleCalendarId = 'google-id-1';
+		testCalendar.googleCalendarId = "google-id-1";
+		CalendarRepositoryMockConstants.calendars = [testCalendar];
+		const service = Container.get(CalendarsService);
+		await service.validateTimeSlot(new Booking(new Date(), 60));
+	});
+
+	it("should create event to the calendar", async () => {
+		CalendarRepositoryMockConstants.eventId = "event-id";
 
 		const service = Container.get(CalendarsService);
-		await service.validateTimeSlot(new Date(), 60);
+		const booking = new Booking(new Date(), 60);
+		booking.status = BookingStatus.Accepted;
+
+		const eventId = await service.createEvent(booking, '1');
+
+		expect(eventId).toBe("event-id");
+	});
+
+	it('should throw exception if no calendar for uuid', async () => {
+		CalendarRepositoryObj.getCalendarByUUID.mockReturnValue(undefined);
+		const service = Container.get(CalendarsService);
+		expect(service.createEvent(new Booking(new Date(), 111), '1')).rejects
+			.toStrictEqual(new Error('Calendar 1 does not exist'));
 	});
 });
 
 const CalendarObjMock = {
 	id: 1,
-	uuid: 'uuid',
-	googleCalendarId: 'googleid@group.calendar.google.com'
+	uuid: "uuid",
+	googleCalendarId: "googleid@group.calendar.google.com",
 } as Calendar;
 
 const CalendarRepositoryObj = {
-	getCalendars: jest.fn().mockImplementation(() => Promise.resolve([])),
-	saveCalendar: jest.fn().mockImplementation((calendar) => Promise.resolve(calendar)),
-	getCalendarByUUID: jest.fn().mockImplementation(() => Promise.resolve(CalendarObjMock))
+	getCalendars: jest
+		.fn()
+		.mockImplementation(() =>
+			Promise.resolve(CalendarRepositoryMockConstants.calendars)
+		),
+	saveCalendar: jest
+		.fn()
+		.mockImplementation((calendar) => Promise.resolve(calendar)),
+	getCalendarByUUID: jest
+		.fn()
+		.mockImplementation(() => Promise.resolve(CalendarObjMock)),
+	createEvent: jest
+		.fn()
+		.mockImplementation(() =>
+			Promise.resolve(CalendarRepositoryMockConstants.eventId)
+		),
 };
 
-const CalendarRepositoryMock = jest.fn().mockImplementation(() => CalendarRepositoryObj);
+const CalendarRepositoryMock = jest
+	.fn()
+	.mockImplementation(() => CalendarRepositoryObj);
 
-class GoogleCalendarApiWrapperMock extends GoogleCalendarService {
+class CalendarRepositoryMockConstants {
+	public static calendars: Calendar[];
+	public static eventId: string;
+}
 
+class GoogleCalendarServiceMock extends GoogleCalendarService {
 	constructor() {
 		super();
-		super.setToken('fake-token');
 	}
 
-	public async getAvailableGoogleCalendars(startTime: Date, endTime: Date, googleCalendarIds: { id: string }[]) {
+	public async getAvailableGoogleCalendars(
+		startTime: Date,
+		endTime: Date,
+		googleCalendarIds: { id: string }[]
+	) {
 		// @ts-ignore
 		return {
-			'google-id-1': { busy: [] },
-			'google-id-2': { busy: [] }
+			"google-id-1": {busy: []},
+			"googleid@group.calendar.google.com": {busy: []},
 		};
 	}
 
 	public async createCalendar(): Promise<string> {
-		return 'google-id-1';
+		return "google-id-1";
 	}
 
-	public async addCalendarUser(calendarId: string, user: { role: string, email: string }): Promise<string> {
-		return user.email;
+	public async addCalendarUser(
+		calendarId: string,
+		user: { role: string; email: string }
+	): Promise<CalendarUserModel> {
+		return Promise.resolve({email: user.email} as CalendarUserModel);
+	}
+
+	public async createEvent(
+		booking: Booking,
+		calendarId: string
+	): Promise<string> {
+		return Promise.resolve("event-id");
 	}
 }

@@ -3,6 +3,7 @@ import { CalDavProxyHandler } from '../caldavproxy.handler';
 import { Context } from "koa";
 import * as KoaProxy from 'koa-proxy';
 import { GoogleCalendarService } from '../../googleapi/google.calendar.service';
+import { GoogleApi } from "../../googleapi/google.api";
 
 let snapshot: Snapshot;
 beforeEach(() => {
@@ -24,7 +25,7 @@ jest.mock('koa-proxy', () => {
 	return jest.fn(() => koaProxyMiddleware);
 });
 
-const GoogleCalendarServiceMock = {
+const GoogleApiMock = {
 	getAccessToken: jest.fn(() => Promise.resolve('test_access_token'))
 };
 
@@ -32,13 +33,13 @@ function buildSampleKoaContext(path: string): Context {
 	return {
 		path,
 		header: {},
-		request: { host: 'localhost', protocol: 'http' }
+		request: {host: 'localhost', protocol: 'http'}
 	} as Context;
 }
 
 describe('Caldav proxy tests', () => {
 	it('should redirect caldav users request', async () => {
-		Container.bind(GoogleCalendarService).to(jest.fn(() => GoogleCalendarServiceMock));
+		Container.bind(GoogleApi).to(jest.fn(() => GoogleApiMock));
 
 		const handler = new CalDavProxyHandler();
 		const middleware = handler.build();
@@ -49,7 +50,7 @@ describe('Caldav proxy tests', () => {
 
 		await middleware(context, nextMiddleware);
 
-		expect(GoogleCalendarServiceMock.getAccessToken).toBeCalled();
+		expect(GoogleApiMock.getAccessToken).toBeCalled();
 		expect(koaProxyMiddleware).toBeCalled();
 		expect(nextMiddleware).not.toBeCalled();
 
@@ -58,7 +59,7 @@ describe('Caldav proxy tests', () => {
 	});
 
 	it('should redirect caldav events request', async () => {
-		Container.bind(GoogleCalendarService).to(jest.fn(() => GoogleCalendarServiceMock));
+		Container.bind(GoogleApi).to(jest.fn(() => GoogleApiMock));
 
 		const handler = new CalDavProxyHandler();
 		const middleware = handler.build();
@@ -69,7 +70,7 @@ describe('Caldav proxy tests', () => {
 
 		await middleware(context, nextMiddleware);
 
-		expect(GoogleCalendarServiceMock.getAccessToken).toBeCalled();
+		expect(GoogleApiMock.getAccessToken).toBeCalled();
 		expect(koaProxyMiddleware).toBeCalled();
 		expect(nextMiddleware).not.toBeCalled();
 
@@ -78,7 +79,7 @@ describe('Caldav proxy tests', () => {
 	});
 
 	it('should not redirect ordinary requests', async () => {
-		Container.bind(GoogleCalendarService).to(jest.fn(() => GoogleCalendarServiceMock));
+		Container.bind(GoogleCalendarService).to(jest.fn(() => GoogleApiMock));
 
 		const handler = new CalDavProxyHandler();
 		const middleware = handler.build();
@@ -89,7 +90,7 @@ describe('Caldav proxy tests', () => {
 
 		await middleware(context, nextMiddleware);
 
-		expect(GoogleCalendarServiceMock.getAccessToken).not.toBeCalled();
+		expect(GoogleApiMock.getAccessToken).not.toBeCalled();
 		expect(koaProxyMiddleware).not.toBeCalled();
 		expect(nextMiddleware).toBeCalled();
 
@@ -97,7 +98,7 @@ describe('Caldav proxy tests', () => {
 	});
 
 	it('should not redirect invalid caldav url', async () => {
-		Container.bind(GoogleCalendarService).to(jest.fn(() => GoogleCalendarServiceMock));
+		Container.bind(GoogleCalendarService).to(jest.fn(() => GoogleApiMock));
 
 		const handler = new CalDavProxyHandler();
 		const middleware = handler.build();
@@ -108,7 +109,7 @@ describe('Caldav proxy tests', () => {
 
 		await middleware(context, nextMiddleware);
 
-		expect(GoogleCalendarServiceMock.getAccessToken).not.toBeCalled();
+		expect(GoogleApiMock.getAccessToken).not.toBeCalled();
 		expect(koaProxyMiddleware).not.toBeCalled();
 		expect(nextMiddleware).toBeCalled();
 

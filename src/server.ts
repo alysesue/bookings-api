@@ -12,9 +12,11 @@ import "reflect-metadata";
 import { config } from "./config/app-config";
 import { HealthCheckMiddleware } from "./health/HealthCheckMiddleware";
 import { RegisterRoutes } from "./routes";
+import * as swagger from "swagger2";
+import { ui } from 'swagger2-koa';
 import { DbConnection } from "./core/db.connection";
-import { Container } from 'typescript-ioc';
-import { CalDavProxyHandler } from './infrastructure/caldavproxy.handler';
+import { Container } from "typescript-ioc";
+import { CalDavProxyHandler } from "./infrastructure/caldavproxy.handler";
 
 export async function startServer(): Promise<Server> {
 	// Setup service
@@ -27,20 +29,26 @@ export async function startServer(): Promise<Server> {
 	const HandledRoutes = new KoaResponseHandler(router.routes());
 	const proxyHandler = Container.get(CalDavProxyHandler);
 
+	const document = swagger.loadDocumentSync('../dist/swagger/swagger.yaml');
 	const koaServer = new Koa()
 		.use(proxyHandler.build())
-		.use(compress({
-			filter: () => true,
-			threshold: 2048,
-			flush: require("zlib").Z_SYNC_FLUSH,
-			level: require("zlib").Z_BEST_COMPRESSION,
-		}))
-		.use(body({
-			multipart: true,
-			jsonLimit: "10mb",
-			formLimit: "10mb",
-			textLimit: "10mb",
-		}))
+		.use(
+			compress({
+				filter: () => true,
+				threshold: 2048,
+				flush: require("zlib").Z_SYNC_FLUSH,
+				level: require("zlib").Z_BEST_COMPRESSION,
+			})
+		)
+		.use(
+			body({
+				multipart: true,
+				jsonLimit: "10mb",
+				formLimit: "10mb",
+				textLimit: "10mb",
+			})
+		)
+		.use(ui(document as swagger.Document, "/swagger"))
 		.use(new KoaErrorHandler().build())
 		.use(new KoaLoggerContext().build())
 		.use(new KoaMultipartCleaner().build())
