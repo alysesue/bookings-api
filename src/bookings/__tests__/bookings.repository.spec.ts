@@ -1,24 +1,10 @@
 import { BookingsRepository } from "../bookings.repository";
 import { DbConnection } from "../../core/db.connection";
 import { Booking } from "../../models";
-import { Container, Snapshot } from "typescript-ioc";
-import { InsertResult } from "typeorm";
+import { Container } from "typescript-ioc";
+import { InsertResult, UpdateResult } from "typeorm";
 
 describe("Bookings repository", () => {
-	let snapshot: Snapshot;
-	beforeAll(() => {
-		// Store the IoC configuration
-		snapshot = Container.snapshot();
-
-		// Clears mock counters, not implementation
-		jest.clearAllMocks();
-	});
-
-	afterAll(() => {
-		// Put the IoC configuration back for IService, so other tests can run.
-		snapshot.restore();
-	});
-
 	beforeEach(() => {
 		jest.resetAllMocks();
 	});
@@ -43,17 +29,43 @@ describe("Bookings repository", () => {
 		const result = await bookingsRepository.save(booking);
 		expect(result.identifiers).toStrictEqual([{id: "abc"}]);
 	});
+
+	it('should update booking', async () => {
+		jest.resetAllMocks();
+		Container.bind(DbConnection).to(MockDBConnection);
+		const updateRe = new UpdateResult();
+
+		MockDBConnection.update.mockImplementation(() => updateRe);
+		const bookingsRepository = new BookingsRepository();
+		const booking: Booking = new Booking(new Date(), 60);
+
+		await bookingsRepository.update(booking);
+		expect(MockDBConnection.update.mock.calls[0][1]).toBe(booking);
+	});
+
+	it('should get booking', async () => {
+		Container.bind(DbConnection).to(MockDBConnection);
+		const booking = new Booking(new Date(), 60);
+		MockDBConnection.findOne.mockImplementation(() => Promise.resolve(booking));
+		const bookingsRepository = Container.get(BookingsRepository);
+		const result = await bookingsRepository.getBooking('1');
+		expect(result).toStrictEqual(booking);
+	});
 });
 
 class MockDBConnection extends DbConnection {
 	public static insert = jest.fn();
 	public static find = jest.fn();
+	public static update = jest.fn();
+	public static findOne = jest.fn();
 
 	public async getConnection(): Promise<any> {
 		const connection = {
 			getRepository: () => ({
 				find: MockDBConnection.find,
+				findOne: MockDBConnection.findOne,
 				insert: MockDBConnection.insert,
+				update: MockDBConnection.update,
 			}),
 		};
 		return Promise.resolve(connection);
