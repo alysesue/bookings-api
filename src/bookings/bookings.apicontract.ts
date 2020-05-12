@@ -5,13 +5,7 @@ export class BookingAcceptRequest {
 }
 
 export class BookingRequest {
-	constructor() {
-		this.requestedAt = new Date();
-
-	}
 	public startDateTime: Date;
-	public requestedAt: Date;
-
 }
 
 export class BookingResponse {

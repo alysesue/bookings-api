@@ -1,9 +1,9 @@
-import {CalendarsRepository} from "../calendars.repository";
-import {Container, Snapshot} from "typescript-ioc";
-import {Booking, BookingStatus, Calendar} from "../../models";
-import {CalendarsService} from "../calendars.service";
-import {GoogleCalendarService} from "../../googleapi/google.calendar.service";
-import {CalendarUserModel} from "../calendars.apicontract";
+import { CalendarsRepository } from "../calendars.repository";
+import { Container, Snapshot } from "typescript-ioc";
+import { Booking, BookingStatus, Calendar } from "../../models";
+import { CalendarsService } from "../calendars.service";
+import { GoogleCalendarService } from "../../googleapi/google.calendar.service";
+import { CalendarUserModel } from "../calendars.apicontract";
 
 let snapshot: Snapshot;
 
@@ -144,8 +144,8 @@ class GoogleCalendarServiceMock extends GoogleCalendarService {
 	) {
 		// @ts-ignore
 		return {
-			"google-id-1": {busy: []},
-			"googleid@group.calendar.google.com": {busy: []},
+			"google-id-1": { busy: [] },
+			"googleid@group.calendar.google.com": { busy: [] },
 		};
 	}
 
@@ -157,7 +157,7 @@ class GoogleCalendarServiceMock extends GoogleCalendarService {
 		calendarId: string,
 		user: { role: string; email: string }
 	): Promise<CalendarUserModel> {
-		return Promise.resolve({email: user.email} as CalendarUserModel);
+		return Promise.resolve({ email: user.email } as CalendarUserModel);
 	}
 
 	public async createEvent(

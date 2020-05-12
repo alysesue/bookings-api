@@ -4,12 +4,13 @@ import { BookingStatus } from "./bookingStatus";
 @Entity()
 export class Booking extends BaseEntity {
 
-	constructor(startDateTime: Date, sessionDurationInMinutes: number, requestedAt: Date) {
+	constructor(startDateTime: Date, sessionDurationInMinutes: number) {
 		super();
 		this._startDateTime = startDateTime;
 		this._sessionDurationInMinutes = sessionDurationInMinutes;
+
 		this._status = BookingStatus.PendingApproval;
-		this._requestedAt = requestedAt;
+		this._createdAt = new Date();
 	}
 
 	@PrimaryGeneratedColumn()
@@ -48,7 +49,7 @@ export class Booking extends BaseEntity {
 	private _startDateTime: Date;
 
 	@Column()
-	private _requestedAt: Date;
+	private _createdAt: Date;
 
 	public get startDateTime(): Date {
 		return this._startDateTime;

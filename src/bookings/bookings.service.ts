@@ -1,10 +1,10 @@
-import {Inject, Singleton} from "typescript-ioc";
+import { Inject, Singleton } from "typescript-ioc";
 
-import {Booking, BookingStatus} from "../models";
+import { Booking, BookingStatus } from "../models";
 
-import {BookingsRepository} from "./bookings.repository";
-import {CalendarsService} from "../calendars/calendars.service";
-import {BookingAcceptRequest, BookingRequest, BookingSearchRequest} from "./bookings.apicontract";
+import { BookingsRepository } from "./bookings.repository";
+import { CalendarsService } from "../calendars/calendars.service";
+import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "./bookings.apicontract";
 
 @Singleton
 export class BookingsService {
@@ -18,8 +18,7 @@ export class BookingsService {
 	private static createBooking(bookingRequest: BookingRequest) {
 		return new Booking(
 			bookingRequest.startDateTime,
-			this.SessionDurationInMinutes
-		);
+			this.SessionDurationInMinutes);
 	}
 
 	public async getBookings(): Promise<Booking[]> {
