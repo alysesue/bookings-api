@@ -1,7 +1,9 @@
 
 import { Container, Snapshot } from 'typescript-ioc';
-import { TemplateTimeslots, Timeslot } from '../templateTimeslots';
+import { TemplateTimeslots } from '../templateTimeslots';
+import { Timeslot } from '../../models/templateTimeslots.interface';
 import { DateHelper } from '../../infrastructure/dateHelper';
+import { Weekday } from '../../enums/weekday';
 
 let snapshot: Snapshot;
 beforeAll(() => {
@@ -21,12 +23,15 @@ describe('Timeslots template', () => {
 	const template = new TemplateTimeslots('test',
 		new Date(2000, 1, 1, 8, 30),
 		new Date(2000, 1, 1, 16, 0),
-		60);
+		60,
+		[Weekday.Monday, Weekday.Tuesday, Weekday.Wednesday, Weekday.Thursday, Weekday.Friday],
+		[]
+	);
 
 	it('should generate single timeslot', () => {
 		const date = new Date();
 
-		const generate = template.GenerateValidTimeslots({
+		const generate = template.generateValidTimeslots({
 			startDatetime: DateHelper.setHours(date, 8, 30),
 			endDatetime: DateHelper.setHours(date, 9, 30)
 		});
@@ -41,7 +46,7 @@ describe('Timeslots template', () => {
 	it('should generate multiple timeslots', () => {
 		const date = new Date();
 
-		const generate = template.GenerateValidTimeslots({
+		const generate = template.generateValidTimeslots({
 			startDatetime: DateHelper.setHours(date, 12, 0),
 			endDatetime: DateHelper.setHours(date, 18, 0)
 		});
@@ -54,7 +59,7 @@ describe('Timeslots template', () => {
 	it('should generate fist timeslot only when the template starts', () => {
 		const date = new Date();
 
-		const generate = template.GenerateValidTimeslots({
+		const generate = template.generateValidTimeslots({
 			startDatetime: DateHelper.setHours(date, 6, 0),
 			endDatetime: DateHelper.setHours(date, 10, 0)
 		});
@@ -69,7 +74,7 @@ describe('Timeslots template', () => {
 	it('should discard last timeslot when it doesnt fit the window', () => {
 		const date = new Date();
 
-		const generate = template.GenerateValidTimeslots({
+		const generate = template.generateValidTimeslots({
 			startDatetime: DateHelper.setHours(date, 14, 0),
 			endDatetime: DateHelper.setHours(date, 18, 0)
 		});
@@ -85,7 +90,7 @@ describe('Timeslots template', () => {
 		const date = new Date();
 		const nextDay = DateHelper.addDays(date, 1);
 
-		const generate = template.GenerateValidTimeslots({
+		const generate = template.generateValidTimeslots({
 			startDatetime: DateHelper.setHours(date, 14, 0),
 			endDatetime: DateHelper.setHours(nextDay, 10, 0)
 		});
@@ -104,7 +109,7 @@ describe('Timeslots template', () => {
 		const date = new Date();
 		const anotherDate = DateHelper.addDays(date, 2);
 
-		const generate = template.GenerateValidTimeslots({
+		const generate = template.generateValidTimeslots({
 			startDatetime: DateHelper.setHours(date, 12, 0),
 			endDatetime: DateHelper.setHours(anotherDate, 11, 0)
 		});
@@ -125,7 +130,7 @@ describe('Timeslots template', () => {
 	it('should generate no timeslots', () => {
 		const date = new Date();
 
-		const generate = template.GenerateValidTimeslots({
+		const generate = template.generateValidTimeslots({
 			startDatetime: DateHelper.setHours(date, 8, 31),
 			endDatetime: DateHelper.setHours(date, 9, 30)
 		});

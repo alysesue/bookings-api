@@ -1,5 +1,5 @@
 
-import { Timeslot } from '../../models/templateTimeslots';
+import { Timeslot } from '../../models/templateTimeslots.interface';
 import { TimeslotAggregator } from '../timeslotAggregator';
 import { DateHelper } from '../../infrastructure/dateHelper';
 
@@ -42,10 +42,10 @@ describe('Timeslot aggregator', () => {
 		expect(DateHelper.getTimeString(entries[3].getTimeslot().getStartTime())).toBe("09:00");
 		expect(DateHelper.getTimeString(entries[4].getTimeslot().getStartTime())).toBe("10:00");
 
-		expect(entries[0].getGroupIds().join(',')).toBe("C");
-		expect(entries[1].getGroupIds().join(',')).toBe("A,B");
-		expect(entries[2].getGroupIds().join(',')).toBe("C");
-		expect(entries[3].getGroupIds().join(',')).toBe("B");
-		expect(entries[4].getGroupIds().join(',')).toBe("A,B,C");
+		expect(entries[0].getGroups().join(',')).toBe("C");
+		expect(entries[1].getGroups().join(',')).toBe("A,B");
+		expect(entries[2].getGroups().join(',')).toBe("C");
+		expect(entries[3].getGroups().join(',')).toBe("B");
+		expect(entries[4].getGroups().join(',')).toBe("A,B,C");
 	});
 });

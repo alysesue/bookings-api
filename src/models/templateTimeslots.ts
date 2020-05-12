@@ -4,6 +4,7 @@ import { Calendar } from "./index";
 import { ITemplateTimeslots } from "./templateTimeslots.interface";
 import { ICalendar } from "./calendar.interface";
 import { DateHelper } from '../infrastructure/dateHelper';
+import { Timeslot } from './templateTimeslots.interface';
 
 @Entity()
 export class TemplateTimeslots implements ITemplateTimeslots {
@@ -51,7 +52,7 @@ export class TemplateTimeslots implements ITemplateTimeslots {
 		return newDate;
 	}
 
-	private GetFirstBlockStartTime(startDatetime: Date): Date {
+	private getFirstBlockStartTime(startDatetime: Date): Date {
 		let relativeStartDatetime = this.getRelativeStartTime(startDatetime);
 
 		if (relativeStartDatetime < startDatetime) {
@@ -65,7 +66,7 @@ export class TemplateTimeslots implements ITemplateTimeslots {
 		return relativeStartDatetime;
 	}
 
-	private GetMaxLastBlockEndTime(endDateTime: Date) {
+	private getMaxLastBlockEndTime(endDateTime: Date) {
 		let relativeEndDatetime = this.getRelativeEndTime(endDateTime);
 
 		if (relativeEndDatetime > endDateTime) {
@@ -75,7 +76,7 @@ export class TemplateTimeslots implements ITemplateTimeslots {
 		return relativeEndDatetime;
 	}
 
-	public * GenerateValidTimeslots(range: { startDatetime: Date, endDatetime: Date }): Iterable<Timeslot> {
+	public * generateValidTimeslots(range: { startDatetime: Date, endDatetime: Date }): Iterable<Timeslot> {
 		if (range.endDatetime < range.startDatetime) {
 			return;
 		}
@@ -86,10 +87,10 @@ export class TemplateTimeslots implements ITemplateTimeslots {
 		for (let day = 0; day < daysCount; day++) {
 			const date = DateHelper.addDays(initialDate, day);
 
-			let startTime = (day === 0) ? this.GetFirstBlockStartTime(range.startDatetime) : this.getRelativeStartTime(date);
+			let startTime = (day === 0) ? this.getFirstBlockStartTime(range.startDatetime) : this.getRelativeStartTime(date);
 			let currentEndTime = DateHelper.addMinutes(startTime, this.slotsDuration);
 
-			const maxLastBlockEndTime = (day === daysCount - 1) ? this.GetMaxLastBlockEndTime(range.endDatetime) : this.getRelativeEndTime(date);
+			const maxLastBlockEndTime = (day === daysCount - 1) ? this.getMaxLastBlockEndTime(range.endDatetime) : this.getRelativeEndTime(date);
 
 			while (currentEndTime <= maxLastBlockEndTime) {
 				yield new Timeslot(startTime, currentEndTime);
@@ -98,19 +99,5 @@ export class TemplateTimeslots implements ITemplateTimeslots {
 				currentEndTime = DateHelper.addMinutes(currentEndTime, this.slotsDuration);
 			}
 		}
-	}
-}
-
-/* This class is *not* a database entity for now */
-export class Timeslot {
-	private _startTime: Date;
-	private _endTime: Date;
-
-	public getStartTime = () => this._startTime;
-	public getEndTime = () => this._endTime;
-
-	constructor(startTime: Date, endTime: Date) {
-		this._startTime = startTime;
-		this._endTime = endTime;
 	}
 }

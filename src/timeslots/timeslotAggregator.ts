@@ -1,4 +1,4 @@
-import { Timeslot } from '../models/templateTimeslots';
+import { Timeslot } from '../models/templateTimeslots.interface';
 
 export class TimeslotAggregator<TGroup> {
 	private _map: any;
@@ -57,7 +57,7 @@ export class AggregatedEntry<TGroup> {
 	private _groups: TGroup[];
 
 	public getTimeslot = () => this._timeslot;
-	public getGroupIds = () => this._groups;
+	public getGroups = () => this._groups;
 
 	constructor(timeslot: Timeslot) {
 		this._timeslot = timeslot;
@@ -65,6 +65,8 @@ export class AggregatedEntry<TGroup> {
 	}
 
 	public addGroup(group: TGroup): void {
-		this._groups = [...this._groups, group];
+		if (this._groups.indexOf(group) < 0) {
+			this._groups = [...this._groups, group];
+		}
 	}
 }

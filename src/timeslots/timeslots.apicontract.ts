@@ -3,7 +3,8 @@ export class GetTimeslotsFilter {
 	public endDate: Date;
 }
 
-export class TimeslotModel {
+export class TimeslotResponse {
 	public startTime: Date;
 	public endTime: Date;
+	public availabilityCount: number;
 }

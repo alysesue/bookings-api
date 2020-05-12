@@ -13,8 +13,12 @@ export class CalendarsRepository {
 		return (await this.getRepository()).find();
 	}
 
+	public async getCalendarsWithTemplates(): Promise<Calendar[]> {
+		return (await this.getRepository()).find({ relations: ['templateTimeslots'] });
+	}
+
 	public async getCalendarByUUID(uuid: string): Promise<Calendar> {
-		return (await this.getRepository()).findOne({uuid});
+		return (await this.getRepository()).findOne({ uuid });
 	}
 
 	public async saveCalendar(calendar: Calendar): Promise<Calendar> {
