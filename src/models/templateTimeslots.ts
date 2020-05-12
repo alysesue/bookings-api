@@ -1,9 +1,11 @@
 import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Weekday } from "../enums/weekday";
-import { Calendar } from "./calendar";
+import { Calendar } from "./index";
+import { ITemplateTimeslots } from "./templateTimeslots.interface";
+import { ICalendar } from "./calendar.interface";
 
 @Entity()
-export class TemplateTimeslots {
+export class TemplateTimeslots implements ITemplateTimeslots{
 
 	@PrimaryGeneratedColumn()
 	public id: number;
@@ -23,9 +25,9 @@ export class TemplateTimeslots {
 	@Column("int", { array: true })
 	public weekdays: Weekday[];
 
-	@ManyToMany(type => Calendar)
+	@ManyToMany("Calendar", "templateTimeslots")
 	@JoinTable()
-	public calendars: Calendar[];
+	public calendars: ICalendar[];
 
 	constructor(name: string, firstSlotStartTime: Date, lastSlotEndTime: Date, slotsDuration: number, weekdays: Weekday[], calendars: Calendar[]) {
 		this.name = name;
