@@ -11,8 +11,15 @@ export class TimeslotAggregator<TGroup> {
 		this._map.clear();
 	}
 
+	private compressNumber(n: number): string {
+		return atob(n.toString(36));
+	}
+
 	private getOrAddEntry(timeslot: Timeslot): AggregatedEntry<TGroup> {
-		const key = `${timeslot.getStartTime().getTime()}|${timeslot.getEndTime().getTime()}`;
+		const startKey = this.compressNumber(timeslot.getStartTime().getTime());
+		const endKey = this.compressNumber(timeslot.getEndTime().getTime());
+		const key = `${startKey}|${endKey}`;
+
 		let entry = this._map.get(key);
 		if (!entry) {
 			entry = new AggregatedEntry(timeslot);
