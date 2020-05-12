@@ -34,11 +34,9 @@ export class TemplateTimeslots {
 	}
 
 	private getRelativeEndTime(endDate: Date) {
-		const endsNextDay = this.lastSlotEndTime < this.firstSlotStartTime;
 		const newDate = DateHelper.getDateOnly(endDate);
 		newDate.setHours(this.lastSlotEndTime.getHours(), this.lastSlotEndTime.getMinutes());
-
-		return endsNextDay ? DateHelper.addDays(newDate, 1) : newDate;
+		return newDate;
 	}
 
 	private GetFirstBlockStartTime(startDatetime: Date): Date {
@@ -70,20 +68,26 @@ export class TemplateTimeslots {
 			return;
 		}
 
-		const fistBlockStartTime = this.GetFirstBlockStartTime(range.startDatetime);
-		const maxLastBlockEndTime = this.GetMaxLastBlockEndTime(range.endDatetime);
+		const initialDate = DateHelper.getDateOnly(range.startDatetime);
+		const daysCount = 1 + Math.floor(DateHelper.DiffInDays(DateHelper.getDateOnly(range.endDatetime), initialDate));
 
-		let startTime = fistBlockStartTime;
-		let currentTime = DateHelper.addMinutes(startTime, this.slotsDuration);
+		for (let day = 0; day < daysCount; day++) {
+			const date = DateHelper.addDays(initialDate, day);
 
-		while (currentTime <= maxLastBlockEndTime) {
-			yield {
-				startTime,
-				endTime: currentTime
-			} as Timeslot;
+			let startTime = (day === 0) ? this.GetFirstBlockStartTime(range.startDatetime) : this.getRelativeStartTime(date);
+			let currentEndTime = DateHelper.addMinutes(startTime, this.slotsDuration);
 
-			startTime = currentTime;
-			currentTime = DateHelper.addMinutes(currentTime, this.slotsDuration);
+			const maxLastBlockEndTime = (day === daysCount - 1) ? this.GetMaxLastBlockEndTime(range.endDatetime) : this.getRelativeEndTime(date);
+
+			while (currentEndTime <= maxLastBlockEndTime) {
+				yield {
+					startTime,
+					endTime: currentEndTime
+				} as Timeslot;
+
+				startTime = currentEndTime;
+				currentEndTime = DateHelper.addMinutes(currentEndTime, this.slotsDuration);
+			}
 		}
 	}
 }
