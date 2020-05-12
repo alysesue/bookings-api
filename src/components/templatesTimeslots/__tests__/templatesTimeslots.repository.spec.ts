@@ -47,7 +47,7 @@ describe('TemplateTimeslots repository', () => {
 
 	it('should add timeSlots', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
-		const timeslot = new TemplateTimeslots('test', new Date(), new Date(), 3);
+		const timeslot = new TemplateTimeslots('test', new Date(), new Date(), 3, [], []);
 		const repository = Container.get(TemplatesTimeslotsRepository);
 		const result = await repository.setTemplateTimeslots(timeslot);
 		expect(result).not.toBe(undefined);
