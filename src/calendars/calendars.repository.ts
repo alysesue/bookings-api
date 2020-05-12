@@ -1,8 +1,8 @@
-import {Inject, Singleton} from 'typescript-ioc';
+import { Inject, Singleton } from 'typescript-ioc';
 
-import {DbConnection} from '../core/db.connection';
-import {Calendar} from '../models';
-import {Repository} from "typeorm";
+import { DbConnection } from '../core/db.connection';
+import { Calendar } from '../models';
+import { Repository } from "typeorm";
 
 @Singleton
 export class CalendarsRepository {

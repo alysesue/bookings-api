@@ -1,12 +1,12 @@
-import {logger} from "mol-lib-common/debugging/logging/LoggerV2";
-import {Inject} from "typescript-ioc";
+import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
+import { Inject } from "typescript-ioc";
 
-import {Body, Controller, Get, Path, Post, Query, Route, SuccessResponse, Tags} from "tsoa";
-import {Booking} from "../models";
-import {BookingAcceptRequest, BookingRequest, BookingResponse, BookingSearchRequest} from "./bookings.apicontract";
-import {BookingsService} from "./bookings.service";
-import {ErrorResponse} from "../apicontract";
-import {CalendarsService} from "../calendars/calendars.service";
+import { Body, Controller, Get, Path, Post, Query, Route, SuccessResponse, Tags } from "tsoa";
+import { Booking } from "../models";
+import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingSearchRequest } from "./bookings.apicontract";
+import { BookingsService } from "./bookings.service";
+import { ErrorResponse } from "../apicontract";
+import { CalendarsService } from "../calendars/calendars.service";
 
 @Route("api/v1/bookings")
 @Tags('Bookings')
@@ -39,6 +39,7 @@ export class BookingsController extends Controller {
 		const searchQuery = new BookingSearchRequest(status, from, to);
 		const bookings = await this.bookingsService.searchBookings(searchQuery);
 		return this.mapDataModels(bookings);
+
 	}
 
 	@Post()

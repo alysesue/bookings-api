@@ -1,8 +1,8 @@
-import {Inject, Singleton} from "typescript-ioc";
-import {Booking, Calendar} from "../models";
-import {CalendarsRepository} from "./calendars.repository";
-import {GoogleCalendarService} from "../googleapi/google.calendar.service";
-import {AddCalendarModel, CalendarUserModel} from "./calendars.apicontract";
+import { Inject, Singleton } from "typescript-ioc";
+import { Booking, Calendar } from "../models";
+import { CalendarsRepository } from "./calendars.repository";
+import { GoogleCalendarService } from "../googleapi/google.calendar.service";
+import { AddCalendarModel, CalendarUserModel } from "./calendars.apicontract";
 
 @Singleton
 export class CalendarsService {

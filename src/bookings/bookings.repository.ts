@@ -1,9 +1,9 @@
-import {logger} from "mol-lib-common/debugging/logging/LoggerV2";
-import {Inject, Singleton} from "typescript-ioc";
-import {Between, InsertResult, Repository, UpdateResult} from "typeorm";
-import {DbConnection} from "../core/db.connection";
-import {Booking} from "../models";
-import {BookingSearchRequest} from "./bookings.apicontract";
+import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
+import { Inject, Singleton } from "typescript-ioc";
+import { Between, InsertResult, Repository, UpdateResult } from "typeorm";
+import { DbConnection } from "../core/db.connection";
+import { Booking } from "../models";
+import { BookingSearchRequest } from "./bookings.apicontract";
 
 @Singleton
 export class BookingsRepository {

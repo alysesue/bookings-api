@@ -48,7 +48,7 @@ export class CalendarsController extends Controller {
 		if (bookingRequests.length >= calendars.length) {
 			return [];
 		}
-		return calendars.map(cal => CalendarsController.mapToServiceProviderResponse(cal));
+		return calendars.map(CalendarsController.mapToServiceProviderResponse);
 	}
 
 	private async getBookingRequests(from: Date, to: Date) {

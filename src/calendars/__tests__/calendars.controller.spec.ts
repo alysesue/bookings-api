@@ -1,9 +1,9 @@
-import {CalendarsController} from "../calendars.controller";
-import {Container} from "typescript-ioc";
-import {CalendarsService} from "../calendars.service";
-import {BookingsService} from "../../bookings";
-import {Booking, Calendar} from "../../models";
-import {BookingSearchRequest} from "../../bookings/bookings.apicontract";
+import { CalendarsController } from "../calendars.controller";
+import { Container } from "typescript-ioc";
+import { CalendarsService } from "../calendars.service";
+import { BookingsService } from "../../bookings";
+import { Booking, Calendar } from "../../models";
+import { BookingSearchRequest } from "../../bookings/bookings.apicontract";
 
 describe('Calendars.controller', () => {
 	beforeAll(() => {
