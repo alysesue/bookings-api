@@ -1,11 +1,17 @@
-import {ServiceProviderResponse} from "../calendars/calendars.apicontract";
+import { ServiceProviderResponse } from "../calendars/calendars.apicontract";
 
 export class BookingAcceptRequest {
 	public calendarUUID: string;
 }
 
 export class BookingRequest {
+	constructor() {
+		this.requestedAt = new Date();
+
+	}
 	public startDateTime: Date;
+	public requestedAt: Date;
+
 }
 
 export class BookingResponse {
