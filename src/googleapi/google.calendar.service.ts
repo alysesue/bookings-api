@@ -1,96 +1,82 @@
-import { Singleton } from "typescript-ioc";
-import { calendar_v3, google } from "googleapis";
+import { Inject, Singleton } from "typescript-ioc";
+import { Booking } from "../models";
 
-const credentials = require('../config/googleapi-credentials.json');
-
-const SCOPES = ['https://www.googleapis.com/auth/calendar'];
+import { CalendarUserModel } from "../calendars/calendars.apicontract";
+import { GoogleApi } from "./google.api";
+import { Constants } from "../models/constants";
 
 @Singleton
 export class GoogleCalendarService {
-	private _authToken: any = null;
-
-	private static CalendarTimezone = 'Asia/Singapore';
-
-	public setToken(token) {
-		this._authToken = token;
-	}
-
-	private async getAuthToken(): Promise<any> {
-		const { client_email, private_key } = credentials;
-
-		if (this._authToken === null) {
-			const newToken = new google.auth.JWT(
-				client_email,
-				null,
-				private_key,
-				SCOPES);
-
-			await this.testAuthorization(newToken);
-			this.setToken(newToken);
-		}
-
-		return this._authToken;
-	}
-
-	private async testAuthorization(token): Promise<void> {
-		return new Promise<void>((resolve, reject) => {
-			token.authorize((err, _) => {
-				if (err) {
-					reject(err);
-				} else {
-					resolve();
-				}
-			});
-		});
-	}
-
-	public async getCalendarApi(): Promise<calendar_v3.Calendar> {
-		const token = await this.getAuthToken();
-		return new calendar_v3.Calendar({ auth: token });
-	}
+	@Inject
+	private googleApi: GoogleApi;
 
 	public async createCalendar() {
-		const api = await this.getCalendarApi();
+		const api = await this.googleApi.getCalendarApi();
 
-		const response = await api.calendars.insert({
+		const calendarRequest = {
 			requestBody: {
-				summary: 'Booking SG Calendar',
-				timeZone: GoogleCalendarService.CalendarTimezone
-			}
-		});
+				summary: "Booking SG Calendar",
+				timeZone: Constants.CalendarTimezone,
+			},
+		};
+		const response = await api.calendars.insert(calendarRequest);
 
 		return response.data.id;
 	}
 
 	public async getAvailableGoogleCalendars(startTime: Date, endTime: Date, googleCalendarIds: { id: string }[]) {
-		const api = await this.getCalendarApi();
+		const api = await this.googleApi.getCalendarApi();
 
-		const freeBusyResponse = await api.freebusy.query({
+		const params = {
 			requestBody: {
 				timeMin: startTime.toISOString(),
 				timeMax: endTime.toISOString(),
-				timeZone: GoogleCalendarService.CalendarTimezone,
+				timeZone: Constants.CalendarTimezone,
 				items: googleCalendarIds,
-			}
-		});
+			},
+		};
+		const freeBusyResponse = await api.freebusy.query(params);
 
 		return freeBusyResponse.data.calendars;
 	}
 
-	public async addCalendarUser(calendarId: string, user: { role: string, email: string }): Promise<string> {
-		const api = await this.getCalendarApi();
+	public async addCalendarUser(calendarId: string, user: { role: string; email: string }): Promise<CalendarUserModel> {
+		const api = await this.googleApi.getCalendarApi();
 
-		const response = await api.acl.insert({
+		const params = {
 			calendarId,
 			requestBody: {
 				role: user.role,
 				scope: {
 					type: "user",
-					value: user.email
-				}
-			}
-		});
+					value: user.email,
+				},
+			},
+		};
+		const response = await api.acl.insert(params);
 
-		return response.data.scope.value;
+		return {
+			email: response.data.scope.value,
+		} as CalendarUserModel;
+	}
+
+	public async createEvent(booking: Booking, calendarId: string): Promise<string> {
+		const api = await this.googleApi.getCalendarApi();
+		const params = {
+			calendarId,
+			requestBody: {
+				summary: "Booking SG Event",
+				start: {
+					dateTime: booking.startDateTime.toISOString(),
+					timeZone: Constants.CalendarTimezone,
+				},
+				end: {
+					dateTime: booking.getSessionEndTime().toISOString(),
+					timeZone: Constants.CalendarTimezone,
+				},
+			},
+		};
+		const event = await api.events.insert(params);
+		return event.data.iCalUID;
 	}
 }
