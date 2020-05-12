@@ -1,7 +1,10 @@
-import { Column, Entity, Generated, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Generated, Index, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { TemplateTimeslots } from "./index";
+import { ICalendar } from "./calendar.interface";
+import { ITemplateTimeslots } from "./templateTimeslots.interface";
 
 @Entity()
-export class Calendar {
+export class Calendar implements ICalendar {
 
 	@PrimaryGeneratedColumn()
 	public id: number;
@@ -14,6 +17,9 @@ export class Calendar {
 
 	@Column({type: "varchar", length: 300})
 	public googleCalendarId: string;
+
+	@ManyToMany("TemplateTimeslots", "calendars")
+	public templateTimeslots: ITemplateTimeslots[];
 
 	@Column({type: "varchar", length: 100})
 	public serviceProviderName: string;

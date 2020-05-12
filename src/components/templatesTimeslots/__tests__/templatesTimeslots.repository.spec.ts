@@ -18,12 +18,27 @@ afterAll(() => {
 	snapshot.restore();
 });
 
+beforeEach(()=>{
+	jest.clearAllMocks();
+});
+
 describe('TemplateTimeslots repository', () => {
-	it('should get timeSlots', async () => {
+	it('should get timeSlots with id', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
 		const repository = Container.get(TemplatesTimeslotsRepository);
-		const result = await repository.getTemplateTimeslots('name');
+		const result = await repository.getTemplateTimeslotsById(3);
+		expect(result).not.toBe(undefined);
+
+		expect(GetRepositoryMock).toBeCalled();
+		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
+	});
+
+	it('should get timeSlots with name', async () => {
+		Container.bind(DbConnection).to(DbConnectionMock);
+
+		const repository = Container.get(TemplatesTimeslotsRepository);
+		const result = await repository.getTemplateTimeslotsByName('test');
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
@@ -32,7 +47,7 @@ describe('TemplateTimeslots repository', () => {
 
 	it('should add timeSlots', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
-		const timeslot = new TemplateTimeslots('test', new Date(), new Date(), 3);
+		const timeslot = new TemplateTimeslots('test', new Date(), new Date(), 3, [], []);
 		const repository = Container.get(TemplatesTimeslotsRepository);
 		const result = await repository.setTemplateTimeslots(timeslot);
 		expect(result).not.toBe(undefined);
@@ -45,7 +60,7 @@ describe('TemplateTimeslots repository', () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
 		const repository = Container.get(TemplatesTimeslotsRepository);
-		const result = await repository.deleteTimeslot(34848);
+		const result = await repository.deleteTemplateTimeslots(34848);
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();

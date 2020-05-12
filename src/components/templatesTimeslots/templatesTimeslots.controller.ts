@@ -10,11 +10,6 @@ export class TemplatesTimeslotsController extends Controller {
 	@Inject
 	private timeslotsService: TemplatesTimeslotsService;
 
-	// @Get('')
-	// public async getTimeslots(@Query() filter: TimeslotsFilter): Promise<TimeslotModel[]> {
-	// 	return Promise.resolve([]);
-	// }
-
 	@Post('')
 	public async upsertTemplateTimeslots(@Body() timeslot: TimeslotParams): Promise<TemplateTimeslots> {
 		try {
@@ -23,11 +18,10 @@ export class TemplatesTimeslotsController extends Controller {
 			logger.error('endpointGetUsers:: error: ', err);
 			throw err;
 		}
-
 	}
 
 	@Delete('{id}')
-	public async deleteTemplateTimeslots(@Path() id: number): Promise<void> {
+	public async deleteTemplateTimeslots(@Path() id: number): Promise<any> {
 		try {
 			return await this.timeslotsService.deleteTemplateTimeslots(id);
 		} catch (err) {

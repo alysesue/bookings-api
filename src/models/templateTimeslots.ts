@@ -1,9 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn, Timestamp } from 'typeorm';
-import { start } from 'repl';
+import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Weekday } from "../enums/weekday";
+import { Calendar } from "./index";
+import { ITemplateTimeslots } from "./templateTimeslots.interface";
+import { ICalendar } from "./calendar.interface";
 import { DateHelper } from '../infrastructure/dateHelper';
 
 @Entity()
-export class TemplateTimeslots {
+export class TemplateTimeslots implements ITemplateTimeslots {
 
 	@PrimaryGeneratedColumn()
 	public id: number;
@@ -20,11 +23,20 @@ export class TemplateTimeslots {
 	@Column({ type: "int" })
 	public slotsDuration: number;
 
-	constructor(name: string, firstSlotStartTime: Date, lastSlotEndTime: Date, slotsDuration: number) {
+	@Column("int", { array: true })
+	public weekdays: Weekday[];
+
+	@ManyToMany("Calendar", "templateTimeslots")
+	@JoinTable()
+	public calendars: ICalendar[];
+
+	constructor(name: string, firstSlotStartTime: Date, lastSlotEndTime: Date, slotsDuration: number, weekdays: Weekday[], calendars: Calendar[]) {
 		this.name = name;
 		this.firstSlotStartTime = DateHelper.keepHoursAndMinutes(firstSlotStartTime);
 		this.lastSlotEndTime = DateHelper.keepHoursAndMinutes(lastSlotEndTime);
 		this.slotsDuration = slotsDuration;
+		this.weekdays = weekdays;
+		this.calendars = calendars;
 	}
 
 	private getRelativeStartTime(startDate: Date) {
