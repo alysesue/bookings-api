@@ -80,10 +80,7 @@ export class TemplateTimeslots {
 			const maxLastBlockEndTime = (day === daysCount - 1) ? this.GetMaxLastBlockEndTime(range.endDatetime) : this.getRelativeEndTime(date);
 
 			while (currentEndTime <= maxLastBlockEndTime) {
-				yield {
-					startTime,
-					endTime: currentEndTime
-				} as Timeslot;
+				yield new Timeslot(startTime, currentEndTime);
 
 				startTime = currentEndTime;
 				currentEndTime = DateHelper.addMinutes(currentEndTime, this.slotsDuration);
@@ -94,6 +91,14 @@ export class TemplateTimeslots {
 
 /* This class is *not* a database entity for now */
 export class Timeslot {
-	public startTime: Date;
-	public endTime: Date;
+	private _startTime: Date;
+	private _endTime: Date;
+
+	public getStartTime = () => this._startTime;
+	public getEndTime = () => this._endTime;
+
+	constructor(startTime: Date, endTime: Date) {
+		this._startTime = startTime;
+		this._endTime = endTime;
+	}
 }
