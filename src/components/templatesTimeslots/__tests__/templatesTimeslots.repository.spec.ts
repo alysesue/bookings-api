@@ -1,4 +1,4 @@
-import TemplatesTimeslotsRepository  from '../templatesTimeslots.repository';
+import { TemplatesTimeslotsRepository } from '../templatesTimeslots.repository';
 import { DbConnection } from '../../../core/db.connection';
 import { Container, Snapshot } from 'typescript-ioc';
 import { DbConnectionMock, GetRepositoryMock, InnerRepositoryMock } from '../../../infrastructure/tests/dbconnectionmock';

@@ -5,7 +5,7 @@ import { TemplateTimeslots } from '../../models/templateTimeslots';
 import { DeleteResult, Repository } from "typeorm";
 
 @Singleton
-export default class TemplatesTimeslotsRepository {
+export class TemplatesTimeslotsRepository {
 	@Inject
 	private connection: DbConnection;
 

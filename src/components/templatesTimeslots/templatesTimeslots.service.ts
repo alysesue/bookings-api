@@ -1,5 +1,5 @@
 import { Inject, Singleton } from 'typescript-ioc';
-import TemplatesTimeslotsRepository from "./templatesTimeslots.repository";
+import { TemplatesTimeslotsRepository } from "./templatesTimeslots.repository";
 import { TemplateTimeslots } from '../../models/templateTimeslots';
 import { TimeslotParams } from "./templatesTimeslots.apicontract";
 import { DeleteResult } from "typeorm";
@@ -23,11 +23,9 @@ export default class TemplatesTimeslotsService {
 		return (await this.timeslotsRepository.setTemplateTimeslots(newTemplateModel));
 	}
 
-	public async deleteTemplateTimeslots(id: number): Promise<number | null> {
+	public async deleteTemplateTimeslots(id: number): Promise<DeleteResult> {
 		const res =  await this.timeslotsRepository.deleteTemplateTimeslots(id);
-		if (!res.affected)
-			return 0;
-		return res.affected;
+		return res;
 	}
 
 }

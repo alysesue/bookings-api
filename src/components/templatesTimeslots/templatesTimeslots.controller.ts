@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Route } from 'tsoa';
+import { Body, Controller, Delete, Path, Post, Route } from 'tsoa';
 import { TimeslotParams } from "./templatesTimeslots.apicontract";
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 import { Inject } from "typescript-ioc";
@@ -6,17 +6,17 @@ import TemplatesTimeslotsService from "./templatesTimeslots.service";
 import { TemplateTimeslots } from "../../models/templateTimeslots";
 import { DeleteResult } from "typeorm";
 
-@Route('api/v1/timeslots')
+@Route('api/v1/timeslottemplates')
 export class TemplatesTimeslotsController extends Controller {
 	@Inject
 	private timeslotsService: TemplatesTimeslotsService;
-	//
+
 	// @Get('/list')
 	// public async getTimeslots(@Query() filter: TimeslotsFilter): Promise<TimeslotModel[]> {
 	// 	return Promise.resolve([]);
 	// }
 
-	@Post('/upsert')
+	@Post('')
 	public async upsertTemplateTimeslots(@Body() timeslot: TimeslotParams): Promise<TemplateTimeslots> {
 		try {
 			return await this.timeslotsService.upsertTemplateTimeslots(timeslot);
@@ -27,8 +27,8 @@ export class TemplatesTimeslotsController extends Controller {
 
 	}
 
-	@Post('/delete')
-	public async deleteTemplateTimeslots(@Body() id: number): Promise<number> {
+	@Delete('{id}')
+	public async deleteTemplateTimeslots(@Path() id: number): Promise<any> {
 		try {
 			return await this.timeslotsService.deleteTemplateTimeslots(id);
 		} catch (err) {
