@@ -1,4 +1,4 @@
-import { TemplatesTimeslotsRepository } from '../templatesTimeslots.repository';
+import TemplatesTimeslotsRepository  from '../templatesTimeslots.repository';
 import { DbConnection } from '../../../core/db.connection';
 import { Container, Snapshot } from 'typescript-ioc';
 import { DbConnectionMock, GetRepositoryMock, InnerRepositoryMock } from '../../../infrastructure/tests/dbconnectionmock';
@@ -18,23 +18,38 @@ afterAll(() => {
 	snapshot.restore();
 });
 
+beforeEach(()=>{
+	jest.clearAllMocks();
+});
+
 describe('TemplateTimeslots repository', () => {
-	it('should get timeSlots', async () => {
+	it('should get timeSlots with id', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
-		const repository = Container.get(TimeslotsRepository);
-		const result = await repository.getTimeslots(true);
+		const repository = Container.get(TemplatesTimeslotsRepository);
+		const result = await repository.getTemplateTimeslotsById(3);
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
-		expect(InnerRepositoryMock.find).toBeCalledTimes(1);
+		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
+	});
+
+	it('should get timeSlots with name', async () => {
+		Container.bind(DbConnection).to(DbConnectionMock);
+
+		const repository = Container.get(TemplatesTimeslotsRepository);
+		const result = await repository.getTemplateTimeslotsByName('test');
+		expect(result).not.toBe(undefined);
+
+		expect(GetRepositoryMock).toBeCalled();
+		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
 	});
 
 	it('should add timeSlots', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 		const timeslot = new TemplateTimeslots('test', new Date(), new Date(), 3);
-		const repository = Container.get(TimeslotsRepository);
-		const result = await repository.upsertTemplateTimeslots(timeslot);
+		const repository = Container.get(TemplatesTimeslotsRepository);
+		const result = await repository.setTemplateTimeslots(timeslot);
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
@@ -44,8 +59,8 @@ describe('TemplateTimeslots repository', () => {
 	it('should remove timeSlots', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
-		const repository = Container.get(TimeslotsRepository);
-		const result = await repository.deleteTimeslot(34848);
+		const repository = Container.get(TemplatesTimeslotsRepository);
+		const result = await repository.deleteTemplateTimeslots(34848);
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();

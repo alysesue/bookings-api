@@ -5,13 +5,12 @@ import { Container } from "typescript-ioc";
 import { TemplateTimeslots } from "../../../models/templateTimeslots";
 
 const timeslots = new TemplateTimeslots('name', new Date(), new Date(), 5);
-const upsertTemplateTimeslots = jest.fn().mockImplementation(() => Promise.resolve(timeslots));
-
-const MockTimeslotsRepository = jest.fn().mockImplementation(() => ({upsertTemplateTimeslots}));
+const getTemplateTimeslotsByName = jest.fn().mockImplementation(() => Promise.resolve(undefined));
+const setTemplateTimeslots = jest.fn().mockImplementation(() => Promise.resolve(timeslots));
+const MockTimeslotsRepository = jest.fn().mockImplementation(() => ({setTemplateTimeslots, getTemplateTimeslotsByName}));
 
 describe('Timeslots  template services ', () => {
-	let timeslotsService: TemplatesTimeslotsService = new TemplatesTimeslotsService();
-
+	let  timeslotsService;
 	beforeAll(() => {
 		Container.bind(TemplatesTimeslotsRepository).to(MockTimeslotsRepository);
 		timeslotsService = Container.get(TemplatesTimeslotsService);
@@ -19,7 +18,8 @@ describe('Timeslots  template services ', () => {
 
 	it('should return the template', async () => {
 		const template = await timeslotsService.upsertTemplateTimeslots(new TimeslotParams());
-		expect(upsertTemplateTimeslots).toBeCalled();
+		expect(getTemplateTimeslotsByName).toBeCalledTimes(1);
+		expect(setTemplateTimeslots).toBeCalledTimes(1);
 		expect(template.name).toStrictEqual(timeslots.name);
 	});
 });

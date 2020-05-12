@@ -4,12 +4,13 @@ import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 import { Inject } from "typescript-ioc";
 import TemplatesTimeslotsService from "./templatesTimeslots.service";
 import { TemplateTimeslots } from "../../models/templateTimeslots";
+import { DeleteResult } from "typeorm";
 
 @Route('api/v1/timeslots')
 export class TemplatesTimeslotsController extends Controller {
 	@Inject
 	private timeslotsService: TemplatesTimeslotsService;
-
+	//
 	// @Get('/list')
 	// public async getTimeslots(@Query() filter: TimeslotsFilter): Promise<TimeslotModel[]> {
 	// 	return Promise.resolve([]);
@@ -27,9 +28,9 @@ export class TemplatesTimeslotsController extends Controller {
 	}
 
 	@Post('/delete')
-	public async deleteTemplateTimeslots(@Body() timeslot: TimeslotParams): Promise<TemplateTimeslots> {
+	public async deleteTemplateTimeslots(@Body() id: number): Promise<number> {
 		try {
-			return await this.timeslotsService.deleteTemplateTimeslots(timeslot);
+			return await this.timeslotsService.deleteTemplateTimeslots(id);
 		} catch (err) {
 			logger.error('endpointGetUsers:: error: ', err);
 			throw err;

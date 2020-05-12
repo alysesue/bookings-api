@@ -2,30 +2,32 @@ import { Inject, Singleton } from 'typescript-ioc';
 import TemplatesTimeslotsRepository from "./templatesTimeslots.repository";
 import { TemplateTimeslots } from '../../models/templateTimeslots';
 import { TimeslotParams } from "./templatesTimeslots.apicontract";
+import { DeleteResult } from "typeorm";
 
 @Singleton
 export default class TemplatesTimeslotsService {
 	@Inject
 	private timeslotsRepository: TemplatesTimeslotsRepository;
 
-	public async getAllAvailableTimeslots(): Promise<TemplateTimeslots[]> {
-		return Promise.resolve([]);
+	public async getTemplateTimeslots(id): Promise<TemplateTimeslots> {
+		return (await this.timeslotsRepository.getTemplateTimeslotsById(id));
 	}
 
 	public async upsertTemplateTimeslots(template: TimeslotParams): Promise<TemplateTimeslots> {
-		const {name, firstSlotStartTime, lastSlotEndTime, slotsDuration} = template;
-		const newTemplateModel: TemplateTimeslots = new TemplateTimeslots(name, firstSlotStartTime, lastSlotEndTime, slotsDuration);
-		const templateRes: TemplateTimeslots = await this.timeslotsRepository.getTemplateTimeslots(newTemplateModel.name);
-		if (newTemplateModel) {
+		const {name, firstSlotStartTime, lastSlotEndTime, slotsDuration, weekdays, calendars} = template;
+		const newTemplateModel: TemplateTimeslots = new TemplateTimeslots(name, firstSlotStartTime, lastSlotEndTime, slotsDuration, weekdays, calendars);
+		const templateRes: TemplateTimeslots = await this.timeslotsRepository.getTemplateTimeslotsByName(newTemplateModel.name);
+		if (templateRes) {
 			newTemplateModel.id = templateRes.id;
 		}
 		return (await this.timeslotsRepository.setTemplateTimeslots(newTemplateModel));
 	}
 
-	public async deleteTemplateTimeslots(timeslot: TimeslotParams): Promise<TemplateTimeslots> {
-		const {name, firstSlotStartTime, lastSlotEndTime, slotsDuration} = timeslot;
-		const timeslots: TemplateTimeslots = new TemplateTimeslots(name, firstSlotStartTime, lastSlotEndTime, slotsDuration);
-		return await this.timeslotsRepository.upsertTemplateTimeslots(timeslots);
+	public async deleteTemplateTimeslots(id: number): Promise<number | null> {
+		const res =  await this.timeslotsRepository.deleteTemplateTimeslots(id);
+		if (!res.affected)
+			return 0;
+		return res.affected;
 	}
 
 }

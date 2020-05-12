@@ -1,10 +1,24 @@
 import { BookingsRepository } from "../bookings.repository";
 import { DbConnection } from "../../core/db.connection";
 import { Booking } from "../../models";
-import { Container } from "typescript-ioc";
+import { Container, Snapshot } from "typescript-ioc";
 import { InsertResult } from "typeorm";
 
 describe("Bookings repository", () => {
+	let snapshot: Snapshot;
+	beforeAll(() => {
+		// Store the IoC configuration
+		snapshot = Container.snapshot();
+
+		// Clears mock counters, not implementation
+		jest.clearAllMocks();
+	});
+
+	afterAll(() => {
+		// Put the IoC configuration back for IService, so other tests can run.
+		snapshot.restore();
+	});
+
 	beforeEach(() => {
 		jest.resetAllMocks();
 	});
