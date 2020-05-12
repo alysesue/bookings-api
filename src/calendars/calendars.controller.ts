@@ -1,13 +1,13 @@
-import {Inject} from "typescript-ioc";
+import { Inject } from "typescript-ioc";
 
-import {Body, Controller, Get, Path, Post, Query, Route, SuccessResponse, Tags} from "tsoa";
-import {AddCalendarModel, CalendarModel, CalendarUserModel, ServiceProviderResponse} from "./calendars.apicontract";
-import {CalendarsService} from "./calendars.service";
-import {BookingStatus, Calendar} from "../models";
-import {CalDavProxyHandler} from "../infrastructure/caldavproxy.handler";
-import {Constants} from "../models/constants";
-import {BookingSearchRequest} from "../bookings/bookings.apicontract";
-import {BookingsService} from "../bookings";
+import { Body, Controller, Get, Path, Post, Query, Route, SuccessResponse, Tags } from "tsoa";
+import { AddCalendarModel, CalendarModel, CalendarUserModel, ServiceProviderResponse } from "./calendars.apicontract";
+import { CalendarsService } from "./calendars.service";
+import { BookingStatus, Calendar } from "../models";
+import { CalDavProxyHandler } from "../infrastructure/caldavproxy.handler";
+import { Constants } from "../models/constants";
+import { BookingSearchRequest } from "../bookings/bookings.apicontract";
+import { BookingsService } from "../bookings";
 
 @Route("api/v1/calendars")
 @Tags('Calendars')
@@ -33,6 +33,13 @@ export class CalendarsController extends Controller {
 		return this.mapDataModels(dataModels);
 	}
 
+	private static mapToServiceProviderResponse(calendar: Calendar): ServiceProviderResponse {
+		return {
+			serviceProviderName: calendar.serviceProviderName,
+			uuid: calendar.uuid
+		} as ServiceProviderResponse;
+	}
+
 	@Get('availability')
 	@SuccessResponse(200, "Ok")
 	public async getAvailability(@Query() from: Date, @Query() to: Date): Promise<ServiceProviderResponse[]> {
@@ -41,7 +48,7 @@ export class CalendarsController extends Controller {
 		if (bookingRequests.length >= calendars.length) {
 			return [];
 		}
-		return calendars;
+		return calendars.map(cal => CalendarsController.mapToServiceProviderResponse(cal));
 	}
 
 	private async getBookingRequests(from: Date, to: Date) {
