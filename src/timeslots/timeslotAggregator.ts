@@ -1,14 +1,15 @@
 import { Timeslot } from '../models/templateTimeslots';
 
 export class TimeslotAggregator<TGroup> {
-	private _map: Map<string, AggregatedEntry<TGroup>>;
+	private _map: any;
 
 	constructor() {
-		this._map = new Map<string, AggregatedEntry<TGroup>>();
+		this._map = {};
 	}
 
 	public clear(): void {
-		this._map.clear();
+		delete this._map;
+		this._map = {};
 	}
 
 	private compressNumber(n: number): string {
@@ -20,10 +21,10 @@ export class TimeslotAggregator<TGroup> {
 		const endKey = this.compressNumber(timeslot.getEndTime().getTime());
 		const key = `${startKey}|${endKey}`;
 
-		let entry = this._map.get(key);
+		let entry = this._map[key];
 		if (!entry) {
 			entry = new AggregatedEntry(timeslot);
-			this._map.set(key, entry);
+			this._map[key] = entry;
 		}
 
 		return entry;
@@ -45,7 +46,7 @@ export class TimeslotAggregator<TGroup> {
 	}
 
 	public getEntries(): AggregatedEntry<TGroup>[] {
-		const entries = Array.from(this._map.values());
+		const entries = Object.values<AggregatedEntry<TGroup>>(this._map);
 		entries.sort(this.compareEntryFn);
 		return entries;
 	}
