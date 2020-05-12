@@ -7,10 +7,13 @@ import { TemplateTimeslots } from "../../../models/templateTimeslots";
 const timeslots = new TemplateTimeslots('name', new Date(), new Date(), 5, [], []);
 const getTemplateTimeslotsByName = jest.fn().mockImplementation(() => Promise.resolve(undefined));
 const setTemplateTimeslots = jest.fn().mockImplementation(() => Promise.resolve(timeslots));
-const MockTimeslotsRepository = jest.fn().mockImplementation(() => ({setTemplateTimeslots, getTemplateTimeslotsByName}));
+const MockTimeslotsRepository = jest.fn().mockImplementation(() => ({
+	setTemplateTimeslots,
+	getTemplateTimeslotsByName
+}));
 
 describe('Timeslots  template services ', () => {
-	let  timeslotsService;
+	let timeslotsService;
 	beforeAll(() => {
 		Container.bind(TemplatesTimeslotsRepository).to(MockTimeslotsRepository);
 		timeslotsService = Container.get(TemplatesTimeslotsService);
@@ -22,4 +25,5 @@ describe('Timeslots  template services ', () => {
 		expect(setTemplateTimeslots).toBeCalled();
 		expect(template.name).toStrictEqual(timeslots.name);
 	});
+
 });

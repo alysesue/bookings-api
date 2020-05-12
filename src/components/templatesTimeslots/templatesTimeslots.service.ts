@@ -9,10 +9,6 @@ export default class TemplatesTimeslotsService {
 	@Inject
 	private timeslotsRepository: TemplatesTimeslotsRepository;
 
-	public async getTemplateTimeslots(id): Promise<TemplateTimeslots> {
-		return (await this.timeslotsRepository.getTemplateTimeslotsById(id));
-	}
-
 	public async upsertTemplateTimeslots(template: TimeslotParams): Promise<TemplateTimeslots> {
 		const {name, firstSlotStartTime, lastSlotEndTime, slotsDuration, weekdays, calendars} = template;
 		const newTemplateModel: TemplateTimeslots = new TemplateTimeslots(name, firstSlotStartTime, lastSlotEndTime, slotsDuration, weekdays, calendars);
