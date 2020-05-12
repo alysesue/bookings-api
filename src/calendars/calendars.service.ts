@@ -65,10 +65,8 @@ export class CalendarsService {
 
 		const googleCalendars = await this.googleCalendarApi.getAvailableGoogleCalendars(startTime, endTime, googleCalendarIds);
 
-		const availableGoogleCalendars = calendars.filter((calendar) =>
+		return calendars.filter((calendar) =>
 			CalendarsService.isEmptyArray(googleCalendars[calendar.googleCalendarId].busy));
-
-		return availableGoogleCalendars;
 	}
 
 	public async createEvent(booking: Booking, calendarId: string): Promise<string> {

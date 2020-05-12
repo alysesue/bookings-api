@@ -33,9 +33,9 @@ export class CalendarsController extends Controller {
 		return this.mapDataModels(dataModels);
 	}
 
-	@Get('search')
+	@Get('availability')
 	@SuccessResponse(200, "Ok")
-	public async searchCalendars(@Query() from: Date, @Query() to: Date): Promise<ServiceProviderResponse[]> {
+	public async getAvailability(@Query() from: Date, @Query() to: Date): Promise<ServiceProviderResponse[]> {
 		const calendars = await this.calendarsService.searchCalendars(from, to);
 		const bookingRequests = await this.getBookingRequests(from, to);
 		if (bookingRequests.length >= calendars.length) {
@@ -46,9 +46,7 @@ export class CalendarsController extends Controller {
 
 	private async getBookingRequests(from: Date, to: Date) {
 		const searchBookingsRequest = new BookingSearchRequest(BookingStatus.PendingApproval, from, to);
-		const bookingRequests = await this.bookingsService.searchBookings(searchBookingsRequest);
-		console.log(bookingRequests);
-		return bookingRequests;
+		return await this.bookingsService.searchBookings(searchBookingsRequest);
 	}
 
 	private mapDataModel(calendar: Calendar): CalendarModel {

@@ -14,6 +14,7 @@ export class BookingResponse {
 	public status: number;
 
 	public startDateTime: Date;
+	public endDateTime: Date;
 	public sessionDurationInMinutes: number;
 }
 

@@ -1,7 +1,7 @@
-import { CalendarsRepository } from '../calendars.repository';
-import { DbConnection } from '../../core/db.connection';
-import { Container, Snapshot } from 'typescript-ioc';
-import { Calendar } from '../../models/calendar';
+import {CalendarsRepository} from '../calendars.repository';
+import {DbConnection} from '../../core/db.connection';
+import {Container, Snapshot} from 'typescript-ioc';
+import {Calendar} from '../../models';
 
 let snapshot: Snapshot;
 beforeAll(() => {
