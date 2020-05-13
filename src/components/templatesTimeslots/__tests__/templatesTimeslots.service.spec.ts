@@ -4,9 +4,11 @@ import { TemplatesTimeslotsRepository } from "../templatesTimeslots.repository";
 import { Container } from "typescript-ioc";
 import { TemplateTimeslots } from "../../../models/templateTimeslots";
 
-const timeslots : TemplateTimeslots = new TemplateTimeslots();
+const timeslotsRequestCommon: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 65, []);
+const timeslots: TemplateTimeslots = new TemplateTimeslots();
+timeslots.mapTemplateTimeslotRequest(timeslotsRequestCommon);
 
-const getTemplateTimeslotsByName = jest.fn().mockImplementation(() => Promise.resolve(undefined));
+const getTemplateTimeslotsByName = jest.fn().mockImplementation(() => Promise.resolve(timeslots));
 const setTemplateTimeslots = jest.fn().mockImplementation(() => Promise.resolve(timeslots));
 const MockTimeslotsRepository = jest.fn().mockImplementation(() => ({
 	setTemplateTimeslots,
@@ -19,38 +21,35 @@ describe('Timeslots  template services ', () => {
 		Container.bind(TemplatesTimeslotsRepository).to(MockTimeslotsRepository);
 		timeslotsService = Container.get(TemplatesTimeslotsService);
 	});
-	beforeEach(()=>{
+	beforeEach(() => {
 		jest.clearAllMocks();
 	});
 
 	it('should throw error because firstSlotStartTimeInHHmm have wrong format', async () => {
-		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '2323', '11:23', 5, []);
+		const timeslotsRequest: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '2323', '11:23', 5, []);
 		try {
 			await timeslotsService.createTemplateTimeslots(timeslotsRequest);
-		}
-		catch (e) {
+		} catch (e) {
 			expect(e.message).toBe("Not valid format for firstSlotStartTimeInHHmm: 2323");
 		}
 		expect(setTemplateTimeslots).toBeCalledTimes(0);
 	});
 
 	it('should throw error because firstSlotEndTimeInHHmm have wrong format', async () => {
-		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '23:23', '11:73', 5, []);
+		const timeslotsRequest: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '23:23', '11:73', 5, []);
 		try {
 			await timeslotsService.createTemplateTimeslots(timeslotsRequest);
-		}
-		catch (e) {
+		} catch (e) {
 			expect(e.message).toBe("Not valid format for firstSlotEndTimeInHHmm: 11:73");
 		}
 		expect(setTemplateTimeslots).toBeCalledTimes(0);
 	});
 
 	it('should throw error because firstSlotStartTimeInHHmm > firstSlotEndTimeInHHmm', async () => {
-		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '23:23', '11:23', 5, []);
+		const timeslotsRequest: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '23:23', '11:23', 5, []);
 		try {
 			await timeslotsService.createTemplateTimeslots(timeslotsRequest);
-		}
-		catch (e) {
+		} catch (e) {
 			expect(e.message).toBe("firstSlotStartTimeInHHmm=23:23 > firstSlotEndTimeInHHmm=11:23");
 		}
 		expect(setTemplateTimeslots).toBeCalledTimes(0);
@@ -58,11 +57,10 @@ describe('Timeslots  template services ', () => {
 	});
 
 	it('should throw error because slotsDurationInMin < firstSlotEndTimeInHHmm - firstSlotStartTimeInHHmm ', async () => {
-		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 65, []);
+		const timeslotsRequest: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 65, []);
 		try {
 			await timeslotsService.createTemplateTimeslots(timeslotsRequest);
-		}
-		catch (e) {
+		} catch (e) {
 			expect(e.message).toBe("slotsDurationInMin=65 < (firstSlotEndTimeInHHmm-firstSlotStartTimeInHHmm)=60");
 		}
 		expect(setTemplateTimeslots).toBeCalledTimes(0);
@@ -70,17 +68,17 @@ describe('Timeslots  template services ', () => {
 	});
 
 	it('should create new templateTimeslots ', async () => {
-		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 60, []);
+		const timeslotsRequest: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 60, []);
 		await timeslotsService.createTemplateTimeslots(timeslotsRequest);
 		expect(setTemplateTimeslots).toBeCalledTimes(1);
 	});
 
-	// it('should return the template', async () => {
-	// 	const template = await timeslotsService.upsertTemplateTimeslots(timeslotsRequest);
-	// 	timeslots.mapTemplateTimeslotRequest(timeslotsRequest);
-	// 	expect(setTemplateTimeslots).toBeCalled();
-	// 	expect(getTemplateTimeslotsByName).toBeCalled();
-	// 	expect(template.name).toStrictEqual(timeslots.name);
-	// });
+	it('should update the template', async () => {
+		const template = await timeslotsService.updateTemplateTimeslots(timeslotsRequestCommon);
+		timeslots.mapTemplateTimeslotRequest(timeslotsRequestCommon);
+		expect(setTemplateTimeslots).toBeCalled();
+		expect(getTemplateTimeslotsByName).toBeCalled();
+		expect(template.name).toStrictEqual(timeslots.name);
+	});
 
 });

@@ -1,8 +1,6 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn, RelationId } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { Weekday } from "../enums/weekday";
-import { Calendar } from "./index";
 import { TemplateTimeslotRequest } from "../components/templatesTimeslots/templatesTimeslots.apicontract";
-import { ICalendar } from './calendar.interface';
 
 @Entity()
 export class TemplateTimeslots extends BaseEntity {

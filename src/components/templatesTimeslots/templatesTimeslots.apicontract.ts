@@ -1,6 +1,5 @@
 import { Weekday } from "../../enums/weekday";
 import { TemplateTimeslots } from "../../models";
-import { ICalendar } from "../../models/calendar.interface";
 
 export class TemplateTimeslotRequest {
 	public name: string;
