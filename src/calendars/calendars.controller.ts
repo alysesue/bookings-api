@@ -1,7 +1,12 @@
 import { Inject } from "typescript-ioc";
 
-import { Body, Controller, Get, Path, Post, Route, Tags } from "tsoa";
-import { AddCalendarModel, CalendarModel, CalendarUserModel } from "./calendars.apicontract";
+import { Body, Controller, Get, Path, Post, Put, Route, Tags } from "tsoa";
+import {
+	AddCalendarModel,
+	CalendarModel,
+	CalendarTemplatesTimeslotModel, CalendarTemplateTimeslotResponse,
+	CalendarUserModel
+} from "./calendars.apicontract";
 import { CalendarsService } from "./calendars.service";
 import { Calendar } from "../models";
 import { CalDavProxyHandler } from "../infrastructure/caldavproxy.handler";
@@ -28,6 +33,17 @@ export class CalendarsController extends Controller {
 		return this.mapDataModels(dataModels);
 	}
 
+	@Post("{calendarUUID}/useraccess")
+	public async addUser(@Path() calendarUUID: string, @Body() model: CalendarUserModel): Promise<CalendarUserModel> {
+		return await this.calendarsService.addUser(calendarUUID, model);
+	}
+
+	@Put("{calendarUUID}/templatestimeslot")
+	public async addCalendar(@Path() calendarUUID: string, @Body() model: CalendarTemplatesTimeslotModel): Promise<CalendarTemplateTimeslotResponse> {
+		const data = await this.calendarsService.addTemplatesTimeslots(calendarUUID, model);
+		return new CalendarTemplateTimeslotResponse(data);
+	}
+
 	private mapDataModel(calendar: Calendar): CalendarModel {
 		return {
 			uuid: calendar.uuid,
@@ -36,11 +52,6 @@ export class CalendarsController extends Controller {
 			caldavUserUrl: calendar.generateCaldavUserUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost),
 			caldavEventsUrl: calendar.generateCaldavEventsUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost)
 		} as CalendarModel;
-	}
-
-	@Post("{calendarUUID}/useraccess")
-	public async addUser(@Path() calendarUUID: string, @Body() model: CalendarUserModel): Promise<CalendarUserModel> {
-		return await this.calendarsService.addUser(calendarUUID, model);
 	}
 
 	private mapDataModels(calendars: Calendar[]): CalendarModel[] {

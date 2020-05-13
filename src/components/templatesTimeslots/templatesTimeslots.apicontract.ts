@@ -8,15 +8,13 @@ export class TemplateTimeslotRequest {
 	public firstSlotEndTimeInHHmm: string;
 	public slotsDurationInMin: number;
 	public weekdays: Weekday[];
-	public calendarUuid: string;
 
-	constructor(name, firstSlotStartTimeInHHmm, firstSlotEndTimeInHHmm, slotsDurationInMin, weekdays, calendarUuid) {
+	constructor(name, firstSlotStartTimeInHHmm, firstSlotEndTimeInHHmm, slotsDurationInMin, weekdays) {
 		this.name = name;
 		this.firstSlotStartTimeInHHmm = firstSlotStartTimeInHHmm;
 		this.firstSlotEndTimeInHHmm = firstSlotEndTimeInHHmm;
 		this.slotsDurationInMin = slotsDurationInMin;
 		this.weekdays = weekdays;
-		this.calendarUuid = calendarUuid;
 	}
 }
 
@@ -27,7 +25,6 @@ export class TemplateTimeslotResponse {
 	public firstSlotEndTimeInHHmm: string;
 	public slotsDurationInMin: number;
 	public weekdays: Weekday[];
-	public calendarUuid: ICalendar;
 
 	constructor(template: TemplateTimeslots) {
 		this.id = template.id;
@@ -36,6 +33,5 @@ export class TemplateTimeslotResponse {
 		this.firstSlotEndTimeInHHmm = template.firstSlotEndTimeInHHmm;
 		this.slotsDurationInMin = template.slotsDurationInMin;
 		this.weekdays = template.weekdays;
-		this.calendarUuid = template.calendarUuid;
 	}
 }

@@ -1,8 +1,8 @@
-import { TemplatesTimeslotsRepository } from '../templatesTimeslots.repository';
-import { DbConnection } from '../../../core/db.connection';
-import { Container, Snapshot } from 'typescript-ioc';
-import { DbConnectionMock, GetRepositoryMock, InnerRepositoryMock } from '../../../infrastructure/tests/dbconnectionmock';
-import { TemplateTimeslots } from "../../../models/templateTimeslots";
+import {TemplatesTimeslotsRepository} from '../templatesTimeslots.repository';
+import {DbConnection} from '../../../core/db.connection';
+import {Container, Snapshot} from 'typescript-ioc';
+import {DbConnectionMock, GetRepositoryMock, InnerRepositoryMock} from '../../../infrastructure/tests/dbconnectionmock';
+import {TemplateTimeslots} from "../../../models/templateTimeslots";
 
 let snapshot: Snapshot;
 beforeAll(() => {
@@ -18,7 +18,7 @@ afterAll(() => {
 	snapshot.restore();
 });
 
-beforeEach(()=>{
+beforeEach(() => {
 	jest.clearAllMocks();
 });
 
@@ -47,7 +47,7 @@ describe('TemplateTimeslots repository', () => {
 
 	it('should add timeSlots', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
-		const timeslot = new TemplateTimeslots('test', new Date(), new Date(), 3, [], []);
+		const timeslot = new TemplateTimeslots();
 		const repository = Container.get(TemplatesTimeslotsRepository);
 		const result = await repository.setTemplateTimeslots(timeslot);
 		expect(result).not.toBe(undefined);

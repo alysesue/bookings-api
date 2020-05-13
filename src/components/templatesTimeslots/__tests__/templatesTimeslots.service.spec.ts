@@ -24,7 +24,7 @@ describe('Timeslots  template services ', () => {
 	});
 
 	it('should throw error because firstSlotStartTimeInHHmm have wrong format', async () => {
-		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '2323', '11:23', 5, [], undefined);
+		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '2323', '11:23', 5, []);
 		try {
 			await timeslotsService.createTemplateTimeslots(timeslotsRequest);
 		}
@@ -35,7 +35,7 @@ describe('Timeslots  template services ', () => {
 	});
 
 	it('should throw error because firstSlotEndTimeInHHmm have wrong format', async () => {
-		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '23:23', '11:73', 5, [], undefined);
+		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '23:23', '11:73', 5, []);
 		try {
 			await timeslotsService.createTemplateTimeslots(timeslotsRequest);
 		}
@@ -46,7 +46,7 @@ describe('Timeslots  template services ', () => {
 	});
 
 	it('should throw error because firstSlotStartTimeInHHmm > firstSlotEndTimeInHHmm', async () => {
-		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '23:23', '11:23', 5, [], undefined);
+		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '23:23', '11:23', 5, []);
 		try {
 			await timeslotsService.createTemplateTimeslots(timeslotsRequest);
 		}
@@ -58,7 +58,7 @@ describe('Timeslots  template services ', () => {
 	});
 
 	it('should throw error because slotsDurationInMin < firstSlotEndTimeInHHmm - firstSlotStartTimeInHHmm ', async () => {
-		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 65, [], undefined);
+		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 65, []);
 		try {
 			await timeslotsService.createTemplateTimeslots(timeslotsRequest);
 		}
@@ -70,7 +70,7 @@ describe('Timeslots  template services ', () => {
 	});
 
 	it('should create new templateTimeslots ', async () => {
-		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 60, [], undefined);
+		const timeslotsRequest : TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 60, []);
 		await timeslotsService.createTemplateTimeslots(timeslotsRequest);
 		expect(setTemplateTimeslots).toBeCalledTimes(1);
 	});

@@ -28,7 +28,7 @@ beforeEach(() => {
 	jest.clearAllMocks();
 });
 
-const timeslot: TemplateTimeslotRequest = new TemplateTimeslotRequest('', '', '', '', [], undefined);
+const timeslot: TemplateTimeslotRequest = new TemplateTimeslotRequest('', '', '', '', []);
 describe('Test templates timeslots controller', () => {
 	it('should test if creat service is called', async () => {
 		Container.bind(TemplatesTimeslotsService).to(MockTemplatesTimeslotsService);

@@ -13,10 +13,10 @@ export class TemplateTimeslots extends BaseEntity {
 	@Column({type: "text"})
 	public name: string;
 
-	@Column({type: "text"})
+	@Column({type: "time"})
 	public firstSlotStartTimeInHHmm: string;
 
-	@Column({type: "text"})
+	@Column({type: "time"})
 	public firstSlotEndTimeInHHmm: string;
 
 	@Column({type: "int"})
@@ -24,12 +24,6 @@ export class TemplateTimeslots extends BaseEntity {
 
 	@Column("int", {array: true})
 	public weekdays: Weekday[];
-
-	@ManyToOne("Calendar", { nullable: true })
-	public calendar: ICalendar;
-
-	// @RelationId((templateTimeslots: TemplateTimeslots) => templateTimeslots.calendar)
-	// public calendarId: number;
 
 	constructor() {
 		super();
@@ -41,6 +35,5 @@ export class TemplateTimeslots extends BaseEntity {
 		this.firstSlotEndTimeInHHmm = template.firstSlotEndTimeInHHmm;
 		this.slotsDurationInMin = template.slotsDurationInMin;
 		this.weekdays = template.weekdays;
-		this.calendar = template.calendar;
 	}
 }
