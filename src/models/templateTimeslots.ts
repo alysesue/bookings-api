@@ -13,7 +13,7 @@ export class TemplateTimeslots extends BaseEntity {
 	@Column({type: "text"})
 	public name: string;
 
-	@Column({type: "timestamp"})
+	@Column({type: "text"})
 	public firstSlotStartTimeInHHmm: string;
 
 	@Column({type: "text"})

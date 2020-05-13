@@ -19,6 +19,7 @@ export class Calendar implements ICalendar {
 	@Column({type: "varchar", length: 100})
 	public serviceProviderName: string;
 
+
 	constructor() {
 	}
 
