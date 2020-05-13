@@ -1,7 +1,8 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn, RelationId } from 'typeorm';
 import { Weekday } from "../enums/weekday";
 import { Calendar } from "./index";
 import { TemplateTimeslotRequest } from "../components/templatesTimeslots/templatesTimeslots.apicontract";
+import { ICalendar } from './calendar.interface';
 
 @Entity()
 export class TemplateTimeslots extends BaseEntity {
@@ -24,8 +25,11 @@ export class TemplateTimeslots extends BaseEntity {
 	@Column("int", {array: true})
 	public weekdays: Weekday[];
 
-	@ManyToOne("Calendar", "templateTimeslots")
-	public calendars: Calendar;
+	@ManyToOne("Calendar", { nullable: true })
+	public calendar: ICalendar;
+
+	// @RelationId((templateTimeslots: TemplateTimeslots) => templateTimeslots.calendar)
+	// public calendarId: number;
 
 	constructor() {
 		super();
@@ -37,6 +41,6 @@ export class TemplateTimeslots extends BaseEntity {
 		this.firstSlotEndTimeInHHmm = template.firstSlotEndTimeInHHmm;
 		this.slotsDurationInMin = template.slotsDurationInMin;
 		this.weekdays = template.weekdays;
-		this.calendars = template.calendars;
+		this.calendar = template.calendar;
 	}
 }

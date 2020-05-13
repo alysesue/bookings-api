@@ -1,6 +1,6 @@
 import { Weekday } from "../../enums/weekday";
-import { Calendar } from "../../models/calendar";
 import { TemplateTimeslots } from "../../models";
+import { ICalendar } from "../../models/calendar.interface";
 
 export class TemplateTimeslotRequest {
 	public name: string;
@@ -8,7 +8,7 @@ export class TemplateTimeslotRequest {
 	public firstSlotEndTimeInHHmm: string;
 	public slotsDurationInMin: number;
 	public weekdays: Weekday[];
-	public calendars: Calendar;
+	public calendar: ICalendar;
 
 	constructor(name, firstSlotStartTimeInHHmm, firstSlotEndTimeInHHmm, slotsDurationInMin, weekdays, calendars) {
 		this.name = name;
@@ -16,7 +16,7 @@ export class TemplateTimeslotRequest {
 		this.firstSlotEndTimeInHHmm = firstSlotEndTimeInHHmm;
 		this.slotsDurationInMin = slotsDurationInMin;
 		this.weekdays = weekdays;
-		this.calendars = calendars;
+		this.calendar = calendars;
 	}
 }
 
@@ -27,7 +27,7 @@ export class TemplateTimeslotResponse {
 	public firstSlotEndTimeInHHmm: string;
 	public slotsDurationInMin: number;
 	public weekdays: Weekday[];
-	public calendars: Calendar;
+	public calendar: ICalendar;
 
 	constructor(template: TemplateTimeslots) {
 		this.id = template.id;
@@ -36,6 +36,6 @@ export class TemplateTimeslotResponse {
 		this.firstSlotEndTimeInHHmm = template.firstSlotEndTimeInHHmm;
 		this.slotsDurationInMin = template.slotsDurationInMin;
 		this.weekdays = template.weekdays;
-		this.calendars = template.calendars;
+		this.calendar = template.calendar;
 	}
 }

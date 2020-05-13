@@ -1,7 +1,8 @@
 import { Column, Entity, Generated, Index, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { ICalendar } from "./calendar.interface";
 
 @Entity()
-export class Calendar {
+export class Calendar implements ICalendar {
 
 	@PrimaryGeneratedColumn()
 	public id: number;
