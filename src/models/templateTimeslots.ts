@@ -1,11 +1,10 @@
-import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Weekday } from "../enums/weekday";
 import { Calendar } from "./index";
-import { ITemplateTimeslots } from "./templateTimeslots.interface";
-import { ICalendar } from "./calendar.interface";
+import { TemplateTimeslotRequest } from "../components/templatesTimeslots/templatesTimeslots.apicontract";
 
 @Entity()
-export class TemplateTimeslots implements ITemplateTimeslots{
+export class TemplateTimeslots extends BaseEntity {
 
 	@PrimaryGeneratedColumn()
 	public id: number;
@@ -14,27 +13,30 @@ export class TemplateTimeslots implements ITemplateTimeslots{
 	public name: string;
 
 	@Column({type: "timestamp"})
-	public firstSlotStartTime: Date;
+	public firstSlotStartTimeInHHmm: string;
 
-	@Column({type: "timestamp"})
-	public lastSlotEndTime: Date;
+	@Column({type: "text"})
+	public firstSlotEndTimeInHHmm: string;
 
 	@Column({type: "int"})
-	public slotsDuration: number;
+	public slotsDurationInMin: number;
 
-	@Column("int", { array: true })
+	@Column("int", {array: true})
 	public weekdays: Weekday[];
 
-	@ManyToMany("Calendar", "templateTimeslots")
-	@JoinTable()
-	public calendars: ICalendar[];
+	@ManyToOne("Calendar", "templateTimeslots")
+	public calendars: Calendar;
 
-	constructor(name: string, firstSlotStartTime: Date, lastSlotEndTime: Date, slotsDuration: number, weekdays: Weekday[], calendars: Calendar[]) {
-		this.name = name;
-		this.firstSlotStartTime = firstSlotStartTime;
-		this.lastSlotEndTime = lastSlotEndTime;
-		this.slotsDuration = slotsDuration;
-		this.weekdays = weekdays;
-		this.calendars = calendars;
+	constructor() {
+		super();
+	}
+
+	public mapTemplateTimeslotRequest(template: TemplateTimeslotRequest) {
+		this.name = template.name;
+		this.firstSlotStartTimeInHHmm = template.firstSlotStartTimeInHHmm;
+		this.firstSlotEndTimeInHHmm = template.firstSlotEndTimeInHHmm;
+		this.slotsDurationInMin = template.slotsDurationInMin;
+		this.weekdays = template.weekdays;
+		this.calendars = template.calendars;
 	}
 }

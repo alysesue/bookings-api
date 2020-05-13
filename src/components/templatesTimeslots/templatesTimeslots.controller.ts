@@ -1,33 +1,26 @@
-import { Body, Controller, Delete, Path, Post, Route } from 'tsoa';
-import { TimeslotParams } from "./templatesTimeslots.apicontract";
-import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
+import { Body, Controller, Delete, Path, Post, Route, Tags } from 'tsoa';
+import {TemplateTimeslotRequest, TemplateTimeslotResponse} from "./templatesTimeslots.apicontract";
 import { Inject } from "typescript-ioc";
 import TemplatesTimeslotsService from "./templatesTimeslots.service";
-import { TemplateTimeslots } from "../../models/templateTimeslots";
 
 @Route('api/v1/timeslottemplates')
+@Tags('Timeslots_templates')
 export class TemplatesTimeslotsController extends Controller {
 	@Inject
 	private timeslotsService: TemplatesTimeslotsService;
 
 	@Post('')
-	public async upsertTemplateTimeslots(@Body() timeslot: TimeslotParams): Promise<TemplateTimeslots> {
-		try {
-			return await this.timeslotsService.upsertTemplateTimeslots(timeslot);
-		} catch (err) {
-			logger.error('endpointGetUsers:: error: ', err);
-			throw err;
-		}
+	public async createTemplateTimeslots(@Body() timeslot: TemplateTimeslotRequest): Promise<TemplateTimeslotResponse> {
+		return await this.timeslotsService.createTemplateTimeslots(timeslot);
+	}
+
+	@Post('')
+	public async updateTemplateTimeslots(@Body() timeslot: TemplateTimeslotRequest): Promise<TemplateTimeslotResponse> {
+		return await this.timeslotsService.updateTemplateTimeslots(timeslot);
 	}
 
 	@Delete('{id}')
 	public async deleteTemplateTimeslots(@Path() id: number): Promise<any> {
-		try {
-			return await this.timeslotsService.deleteTemplateTimeslots(id);
-		} catch (err) {
-			logger.error('endpointGetUsers:: error: ', err);
-			throw err;
-		}
-
+		return await this.timeslotsService.deleteTemplateTimeslots(id);
 	}
 }

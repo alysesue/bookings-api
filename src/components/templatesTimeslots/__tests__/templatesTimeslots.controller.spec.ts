@@ -1,5 +1,5 @@
 import { Container, Snapshot } from "typescript-ioc";
-import { TimeslotParams } from "../templatesTimeslots.apicontract";
+import { TemplateTimeslotRequest } from "../templatesTimeslots.apicontract";
 import TemplatesTimeslotsService from "../templatesTimeslots.service";
 import { TemplatesTimeslotsController } from "../templatesTimeslots.controller";
 
@@ -29,7 +29,7 @@ beforeEach(() => {
 
 describe('Test templates timeslots controller', () => {
 	it('should test if upsert service is called', async () => {
-		const timeslot: TimeslotParams = new TimeslotParams();
+		const timeslot: TemplateTimeslotRequest = new TemplateTimeslotRequest();
 		Container.bind(TemplatesTimeslotsService).to(MockTemplatesTimeslotsService);
 		const timeslotsController = Container.get(TemplatesTimeslotsController);
 
@@ -43,4 +43,5 @@ describe('Test templates timeslots controller', () => {
 		await timeslotsController.deleteTemplateTimeslots(3);
 		expect(deleteTemplateTimeslots).toBeCalledTimes(1);
 	});
+
 });
