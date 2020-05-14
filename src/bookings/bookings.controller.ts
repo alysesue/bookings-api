@@ -1,24 +1,28 @@
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 import { Inject } from "typescript-ioc";
 
-import { Body, Controller, Get, Path, Post, Route, SuccessResponse, Tags } from "tsoa";
+import { Body, Controller, Get, Path, Post, Query, Route, SuccessResponse, Tags } from "tsoa";
 import { Booking } from "../models";
-import { BookingAcceptRequest, BookingRequest, BookingResponse } from "./bookings.apicontract";
+import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingSearchRequest } from "./bookings.apicontract";
 import { BookingsService } from "./bookings.service";
 import { ErrorResponse } from "../apicontract";
+import { CalendarsService } from "../calendars/calendars.service";
 
 @Route("api/v1/bookings")
 @Tags('Bookings')
 export class BookingsController extends Controller {
 	@Inject
 	private bookingsService: BookingsService;
+	@Inject
+	private calendarsService: CalendarsService;
 
 	private static mapDataModel(booking: Booking): BookingResponse {
 		return {
 			id: booking.id,
 			status: booking.status,
 			sessionDurationInMinutes: booking.sessionDurationInMinutes,
-			startDateTime: booking.startDateTime
+			startDateTime: booking.startDateTime,
+			endDateTime: booking.getSessionEndTime()
 		} as BookingResponse;
 	}
 
@@ -27,6 +31,15 @@ export class BookingsController extends Controller {
 	public async getBookings(): Promise<BookingResponse[]> {
 		const bookings = await this.bookingsService.getBookings();
 		return this.mapDataModels(bookings);
+	}
+
+	@Get('search')
+	@SuccessResponse(200, "Ok")
+	public async searchBookings(@Query() status: number, @Query() from: Date, @Query() to: Date): Promise<BookingResponse[]> {
+		const searchQuery = new BookingSearchRequest(status, from, to);
+		const bookings = await this.bookingsService.searchBookings(searchQuery);
+		return this.mapDataModels(bookings);
+
 	}
 
 	@Post()
