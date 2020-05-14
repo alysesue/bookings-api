@@ -46,7 +46,7 @@ describe("Calendar service", () => {
 		const service = Container.get(CalendarsService);
 
 		await service.addTemplatesTimeslots("uuid", {
-			id: 3,
+			templatesTimeslotId: 3,
 		} as CalendarTemplatesTimeslotModel);
 
 		expect(CalendarRepositoryObj.saveCalendar).toBeCalled();
