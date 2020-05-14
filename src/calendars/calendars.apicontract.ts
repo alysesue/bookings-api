@@ -1,3 +1,5 @@
+import { TemplateTimeslots } from "../models";
+
 export class CalendarModel {
 	public uuid: string;
 	public externalCalendarUrl: string;
@@ -21,4 +23,16 @@ export class CalendarUserModel {
 export class ServiceProviderResponse {
 	public serviceProviderName: string;
 	public uuid: string;
+}
+
+export class CalendarTemplatesTimeslotModel {
+	public templatesTimeslotId: number;
+}
+
+export class CalendarTemplateTimeslotResponse {
+	public id: number;
+
+	constructor(template: TemplateTimeslots) {
+		this.id = template.id;
+	}
 }

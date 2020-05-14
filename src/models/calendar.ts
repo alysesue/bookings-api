@@ -1,4 +1,5 @@
-import { Column, Entity, Generated, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Generated, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { TemplateTimeslots } from "./templateTimeslots";
 
 @Entity()
 export class Calendar {
@@ -17,6 +18,9 @@ export class Calendar {
 
 	@Column({type: "varchar", length: 100})
 	public serviceProviderName: string;
+
+	@ManyToOne("TemplateTimeslots", { nullable: true })
+	public templatesTimeslots: TemplateTimeslots;
 
 	constructor() {
 	}

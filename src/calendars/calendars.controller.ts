@@ -1,13 +1,19 @@
 import { Inject } from "typescript-ioc";
-
-import { Body, Controller, Get, Path, Post, Query, Route, SuccessResponse, Tags } from "tsoa";
-import { AddCalendarModel, CalendarModel, CalendarUserModel, ServiceProviderResponse } from "./calendars.apicontract";
+import {
+	AddCalendarModel,
+	CalendarModel,
+	CalendarTemplatesTimeslotModel,
+	CalendarTemplateTimeslotResponse,
+	CalendarUserModel,
+	ServiceProviderResponse
+} from "./calendars.apicontract";
 import { CalendarsService } from "./calendars.service";
 import { BookingStatus, Calendar } from "../models";
 import { CalDavProxyHandler } from "../infrastructure/caldavproxy.handler";
 import { Constants } from "../models/constants";
 import { BookingSearchRequest } from "../bookings/bookings.apicontract";
 import { BookingsService } from "../bookings";
+import { Body, Controller, Get, Path, Post, Put, Query, Route, SuccessResponse, Tags } from "tsoa";
 
 @Route("api/v1/calendars")
 @Tags('Calendars')
@@ -21,6 +27,13 @@ export class CalendarsController extends Controller {
 	@Inject
 	private bookingsService: BookingsService;
 
+	private static mapToServiceProviderResponse(calendar: Calendar): ServiceProviderResponse {
+		return {
+			serviceProviderName: calendar.serviceProviderName,
+			uuid: calendar.uuid
+		} as ServiceProviderResponse;
+	}
+
 	@Post("")
 	public async addCalendars(@Body() model: AddCalendarModel): Promise<CalendarModel> {
 		const data = await this.calendarsService.createCalendar(model);
@@ -33,11 +46,15 @@ export class CalendarsController extends Controller {
 		return this.mapDataModels(dataModels);
 	}
 
-	private static mapToServiceProviderResponse(calendar: Calendar): ServiceProviderResponse {
-		return {
-			serviceProviderName: calendar.serviceProviderName,
-			uuid: calendar.uuid
-		} as ServiceProviderResponse;
+	@Post("{calendarUUID}/useraccess")
+	public async addUser(@Path() calendarUUID: string, @Body() model: CalendarUserModel): Promise<CalendarUserModel> {
+		return await this.calendarsService.addUser(calendarUUID, model);
+	}
+
+	@Put("{calendarUUID}/templatestimeslot")
+	public async addCalendar(@Path() calendarUUID: string, @Body() model: CalendarTemplatesTimeslotModel): Promise<CalendarTemplateTimeslotResponse> {
+		const data = await this.calendarsService.addTemplatesTimeslots(calendarUUID, model);
+		return new CalendarTemplateTimeslotResponse(data);
 	}
 
 	@Get('availability')
@@ -64,11 +81,6 @@ export class CalendarsController extends Controller {
 			caldavUserUrl: calendar.generateCaldavUserUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost),
 			caldavEventsUrl: calendar.generateCaldavEventsUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost)
 		} as CalendarModel;
-	}
-
-	@Post("{calendarUUID}/useraccess")
-	public async addUser(@Path() calendarUUID: string, @Body() model: CalendarUserModel): Promise<CalendarUserModel> {
-		return await this.calendarsService.addUser(calendarUUID, model);
 	}
 
 	private mapDataModels(calendars: Calendar[]): CalendarModel[] {

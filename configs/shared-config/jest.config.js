@@ -84,11 +84,12 @@ function getCoverageConfig(testType) {
 		Object.assign(coverageConfig, {
 			collectCoverageFrom: [
 				"<rootDir>/src/**/*.{js,jsx,ts,tsx}",
+				"<rootDir>/src/components/**/*.{js,jsx,ts,tsx}",
 				// Generic exclusions
 				"!**/__tests__/**/*",
 				"!**/*{M,m}ock{*,*/**/*}",
 				"!**/*{E,e}num{*,*/**/*}",
-				"!**/*{T,t}emp{*,*/**/*}",
+				// "!**/*{T,t}emp{*,*/**/*}",
 				"!**/*{E,e}xample{*,*/**/*}",
 				"!**/*{S,s}ample{*,*/**/*}",
 				"!**/*{C,c}ontroller{*,*/**/*}",

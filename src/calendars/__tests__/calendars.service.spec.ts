@@ -3,7 +3,8 @@ import { Container, Snapshot } from "typescript-ioc";
 import { Booking, BookingStatus, Calendar } from "../../models";
 import { CalendarsService } from "../calendars.service";
 import { GoogleCalendarService } from "../../googleapi/google.calendar.service";
-import { CalendarUserModel } from "../calendars.apicontract";
+import { CalendarTemplatesTimeslotModel, CalendarUserModel } from "../calendars.apicontract";
+import { TemplatesTimeslotsRepository } from "../../components/templatesTimeslots/templatesTimeslots.repository";
 
 let snapshot: Snapshot;
 
@@ -21,6 +22,7 @@ describe("Calendar service", () => {
 		// Clears mock counters, not implementation
 		jest.clearAllMocks();
 		Container.bind(CalendarsRepository).to(CalendarRepositoryMock);
+		Container.bind(TemplatesTimeslotsRepository).to(TemplatesTimeslotsRepositoryMock);
 		Container.bind(GoogleCalendarService).to(GoogleCalendarServiceMock);
 	});
 	it("should get calendars", async () => {
@@ -38,6 +40,17 @@ describe("Calendar service", () => {
 		});
 
 		expect(CalendarRepositoryObj.saveCalendar).toBeCalled();
+	});
+
+	it("should link calendars with templatestimelot", async () => {
+		const service = Container.get(CalendarsService);
+
+		await service.addTemplatesTimeslots("uuid", {
+			templatesTimeslotId: 3,
+		} as CalendarTemplatesTimeslotModel);
+
+		expect(CalendarRepositoryObj.saveCalendar).toBeCalled();
+		expect(TemplatesTimeslotsRepositoryObj.getTemplateTimeslotsById).toBeCalled();
 	});
 
 	it("should add user access", async () => {
@@ -122,6 +135,18 @@ const CalendarRepositoryObj = {
 			Promise.resolve(CalendarRepositoryMockConstants.eventId)
 		),
 };
+
+const TemplatesTimeslotsRepositoryObj = {
+	getTemplateTimeslotsById: jest
+		.fn()
+		.mockImplementation(() =>
+			Promise.resolve({})
+		),
+};
+
+const TemplatesTimeslotsRepositoryMock = jest
+	.fn()
+	.mockImplementation(() => TemplatesTimeslotsRepositoryObj);
 
 const CalendarRepositoryMock = jest
 	.fn()

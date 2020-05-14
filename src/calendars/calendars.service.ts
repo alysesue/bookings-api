@@ -1,14 +1,16 @@
 import { Inject, Singleton } from "typescript-ioc";
-import { Booking, Calendar } from "../models";
+import { Booking, Calendar, TemplateTimeslots } from "../models";
 import { CalendarsRepository } from "./calendars.repository";
 import { GoogleCalendarService } from "../googleapi/google.calendar.service";
-import { AddCalendarModel, CalendarUserModel } from "./calendars.apicontract";
+import { AddCalendarModel, CalendarTemplatesTimeslotModel, CalendarUserModel } from "./calendars.apicontract";
+import { TemplatesTimeslotsRepository } from "../components/templatesTimeslots/templatesTimeslots.repository";
 
 @Singleton
 export class CalendarsService {
 	@Inject
+	private templatesTimeslotsRepository: TemplatesTimeslotsRepository;
+	@Inject
 	private calendarsRepository: CalendarsRepository;
-
 	@Inject
 	private googleCalendarApi: GoogleCalendarService;
 
@@ -73,6 +75,15 @@ export class CalendarsService {
 		const calendar = await this.getCalendarForBookingRequest(booking, calendarId);
 		return await this.googleCalendarApi.createEvent(booking, calendar.googleCalendarId);
 	}
+
+	public async addTemplatesTimeslots(calendarUUID: string, model: CalendarTemplatesTimeslotModel): Promise<TemplateTimeslots> {
+		const calendar = await this.calendarsRepository.getCalendarByUUID(calendarUUID);
+		const templateTimeslots = await this.templatesTimeslotsRepository.getTemplateTimeslotsById(model.templatesTimeslotId);
+		calendar.templatesTimeslots = templateTimeslots;
+		await this.calendarsRepository.saveCalendar(calendar);
+		return templateTimeslots;
+	}
+
 
 	public async addUser(calendarUUID: string, model: CalendarUserModel): Promise<CalendarUserModel> {
 		const calendar = await this.calendarsRepository.getCalendarByUUID(calendarUUID);
