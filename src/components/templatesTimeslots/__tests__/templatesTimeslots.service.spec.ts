@@ -4,7 +4,7 @@ import { TemplatesTimeslotsRepository } from "../templatesTimeslots.repository";
 import { Container } from "typescript-ioc";
 import { TemplateTimeslots } from "../../../models/templateTimeslots";
 
-const timeslotsRequestCommon: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 65, []);
+const timeslotsRequestCommon: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 60, []);
 const timeslotsCommon: TemplateTimeslots = TemplateTimeslots.mapTemplateTimeslotRequest(timeslotsRequestCommon);
 
 const getTemplateTimeslotsByName = jest.fn().mockImplementation(() => Promise.resolve(timeslotsCommon));
@@ -69,8 +69,7 @@ describe('Timeslots  template services ', () => {
 	});
 
 	it('should create new templateTimeslots ', async () => {
-		const timeslotsRequest: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 60, []);
-		await timeslotsService.createTemplateTimeslots(timeslotsRequest);
+		await timeslotsService.createTemplateTimeslots(timeslotsRequestCommon);
 		expect(setTemplateTimeslots).toBeCalledTimes(1);
 	});
 
