@@ -21,7 +21,7 @@ export class CalendarUserModel {
 }
 
 export class CalendarTemplatesTimeslotModel {
-	public id: number;
+	public templatesTimeslotId: number;
 }
 
 export class CalendarTemplateTimeslotResponse {

@@ -5,11 +5,10 @@ import { Container } from "typescript-ioc";
 import { TemplateTimeslots } from "../../../models/templateTimeslots";
 
 const timeslotsRequestCommon: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 65, []);
-const timeslots: TemplateTimeslots = new TemplateTimeslots();
-timeslots.mapTemplateTimeslotRequest(timeslotsRequestCommon);
+const timeslotsCommon: TemplateTimeslots = TemplateTimeslots.mapTemplateTimeslotRequest(timeslotsRequestCommon);
 
-const getTemplateTimeslotsByName = jest.fn().mockImplementation(() => Promise.resolve(timeslots));
-const setTemplateTimeslots = jest.fn().mockImplementation(() => Promise.resolve(timeslots));
+const getTemplateTimeslotsByName = jest.fn().mockImplementation(() => Promise.resolve(timeslotsCommon));
+const setTemplateTimeslots = jest.fn().mockImplementation(() => Promise.resolve(timeslotsCommon));
 const deleteTemplateTimeslots = jest.fn().mockImplementation(() => Promise.resolve(undefined));
 const MockTimeslotsRepository = jest.fn().mockImplementation(() => ({
 	setTemplateTimeslots,
@@ -77,7 +76,7 @@ describe('Timeslots  template services ', () => {
 
 	it('should update the template', async () => {
 		const template = await timeslotsService.updateTemplateTimeslots(timeslotsRequestCommon);
-		timeslots.mapTemplateTimeslotRequest(timeslotsRequestCommon);
+		const timeslots = TemplateTimeslots.mapTemplateTimeslotRequest(timeslotsRequestCommon);
 		expect(setTemplateTimeslots).toBeCalled();
 		expect(getTemplateTimeslotsByName).toBeCalled();
 		expect(template.name).toStrictEqual(timeslots.name);

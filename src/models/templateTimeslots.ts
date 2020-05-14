@@ -8,7 +8,7 @@ export class TemplateTimeslots extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
-	@Column({type: "text"})
+	@Column({type: "varchar", length: 100})
 	public name: string;
 
 	@Column({type: "time"})
@@ -27,11 +27,13 @@ export class TemplateTimeslots extends BaseEntity {
 		super();
 	}
 
-	public mapTemplateTimeslotRequest(template: TemplateTimeslotRequest) {
-		this.name = template.name;
-		this.firstSlotStartTimeInHHmm = template.firstSlotStartTimeInHHmm;
-		this.firstSlotEndTimeInHHmm = template.firstSlotEndTimeInHHmm;
-		this.slotsDurationInMin = template.slotsDurationInMin;
-		this.weekdays = template.weekdays;
+	public static mapTemplateTimeslotRequest(template: TemplateTimeslotRequest) {
+		return {
+			name : template.name,
+			firstSlotStartTimeInHHmm : template.firstSlotStartTimeInHHmm,
+			firstSlotEndTimeInHHmm : template.firstSlotEndTimeInHHmm,
+			slotsDurationInMin: template.slotsDurationInMin,
+			weekdays: template.weekdays,
+		} as TemplateTimeslots;
 	}
 }
