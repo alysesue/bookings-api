@@ -1,14 +1,16 @@
 import moment = require("moment");
-const TIME_FORMAT = "HH:mm";
+const TIME_FORMATS = ["HH:mm", "H:mm", "HH:m", "H:m"];
+
+const parseTime = (time: string) => moment(time, TIME_FORMATS, true);
 
 export const isValidFormatHHmm = (time: string) => {
-	const parsed = moment(time, TIME_FORMAT);
-	return parsed.isValid() && time.indexOf(':') > 0;
+	const parsed = parseTime(time);
+	return parsed.isValid();
 };
 
 export const diffHours = (previous: string, after: string) => {
-	const previousTime = moment(previous, TIME_FORMAT);
-	const afterTime = moment(after, TIME_FORMAT);
+	const previousTime = parseTime(previous);
+	const afterTime = parseTime(after);
 
 	return afterTime.diff(previousTime, 'minutes');
 };
@@ -18,8 +20,8 @@ export const parseHHmm = (time: string): { hours: number, minutes: number } => {
 		return null;
 	}
 
-	const parsed = moment(time, TIME_FORMAT);
-	if (!parsed.isValid() && time.indexOf(':') > 0) {
+	const parsed = parseTime(time);
+	if (!parsed.isValid()) {
 		throw new Error(`Value ${time} is not a valid time.`);
 	}
 
