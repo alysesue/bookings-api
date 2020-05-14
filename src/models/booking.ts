@@ -8,7 +8,9 @@ export class Booking extends BaseEntity {
 		super();
 		this._startDateTime = startDateTime;
 		this._sessionDurationInMinutes = sessionDurationInMinutes;
+
 		this._status = BookingStatus.PendingApproval;
+		this._createdAt = new Date();
 	}
 
 	@PrimaryGeneratedColumn()
@@ -18,7 +20,7 @@ export class Booking extends BaseEntity {
 		return this._id;
 	}
 
-	@Column({type: "varchar", length: 300, nullable: true})
+	@Column({ type: "varchar", length: 300, nullable: true })
 	private _eventICalId: string;
 
 	public get eventICalId(): string {
@@ -46,11 +48,14 @@ export class Booking extends BaseEntity {
 	@Column()
 	private _startDateTime: Date;
 
+	@Column()
+	private _createdAt: Date;
+
 	public get startDateTime(): Date {
 		return this._startDateTime;
 	}
 
-	@Column({nullable: true})
+	@Column({ nullable: true })
 	private _acceptedAt: Date;
 
 	public set acceptedAt(acceptedAt: Date) {

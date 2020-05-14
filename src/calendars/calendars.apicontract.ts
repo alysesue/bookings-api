@@ -17,3 +17,8 @@ export class CalendarUserModel {
 	public email: string;
 	public role: string;
 }
+
+export class ServiceProviderResponse {
+	public serviceProviderName: string;
+	public uuid: string;
+}

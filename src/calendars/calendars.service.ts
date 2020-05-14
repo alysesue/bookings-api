@@ -32,12 +32,16 @@ export class CalendarsService {
 	}
 
 	public async validateTimeSlot(booking: Booking) {
-		const calendars = await this.getCalendars();
-		const availableCalendars = await this.getAvailableCalendarsForTimeSlot(booking, calendars);
+		const calendars = await this.searchCalendars(booking.startDateTime, booking.getSessionEndTime());
 
-		if (CalendarsService.isEmptyArray(availableCalendars)) {
+		if (CalendarsService.isEmptyArray(calendars)) {
 			throw new Error("No available calendars for this timeslot");
 		}
+	}
+
+	public async searchCalendars(startTime: Date, endTime: Date): Promise<Calendar[]> {
+		const calendars = await this.getCalendars();
+		return await this.getAvailableCalendarsForTimeSlot(startTime, endTime, calendars);
 	}
 
 	public async validateGoogleCalendarForTimeSlot(booking: Booking, calendar: Calendar) {
@@ -51,21 +55,18 @@ export class CalendarsService {
 	}
 
 	public async getAvailableCalendarsForTimeSlot(
-		booking: Booking,
+		startTime: Date,
+		endTime: Date,
 		calendars: Calendar[]
 	) {
 		const googleCalendarIds = calendars.map((cal) => ({
 			id: cal.googleCalendarId.toString(),
 		}));
 
-		const availableGoogleCalendars = await this.googleCalendarApi.getAvailableGoogleCalendars(
-			booking.startDateTime,
-			booking.getSessionEndTime(),
-			googleCalendarIds
-		);
+		const googleCalendars = await this.googleCalendarApi.getAvailableGoogleCalendars(startTime, endTime, googleCalendarIds);
 
 		return calendars.filter((calendar) =>
-			CalendarsService.isEmptyArray(availableGoogleCalendars[calendar.googleCalendarId].busy));
+			CalendarsService.isEmptyArray(googleCalendars[calendar.googleCalendarId].busy));
 	}
 
 	public async createEvent(booking: Booking, calendarId: string): Promise<string> {
