@@ -15,7 +15,7 @@ export class TemplateTimeslots extends BaseEntity {
 	public firstSlotStartTimeInHHmm: string;
 
 	@Column({type: "time"})
-	public firstSlotEndTimeInHHmm: string;
+	public lastSlotEndTimeInHHmm: string;
 
 	@Column({type: "int"})
 	public slotsDurationInMin: number;
@@ -31,7 +31,7 @@ export class TemplateTimeslots extends BaseEntity {
 		return {
 			name : template.name,
 			firstSlotStartTimeInHHmm : template.firstSlotStartTimeInHHmm,
-			firstSlotEndTimeInHHmm : template.firstSlotEndTimeInHHmm,
+			lastSlotEndTimeInHHmm : template.lastSlotEndTimeInHHmm,
 			slotsDurationInMin: template.slotsDurationInMin,
 			weekdays: template.weekdays,
 		} as TemplateTimeslots;

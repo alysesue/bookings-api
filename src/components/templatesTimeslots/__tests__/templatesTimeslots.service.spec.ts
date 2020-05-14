@@ -36,33 +36,33 @@ describe('Timeslots  template services ', () => {
 		expect(setTemplateTimeslots).toBeCalledTimes(0);
 	});
 
-	it('should throw error because firstSlotEndTimeInHHmm have wrong format', async () => {
+	it('should throw error because lastSlotEndTimeInHHmm have wrong format', async () => {
 		const timeslotsRequest: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '23:23', '11:73', 5, []);
 		try {
 			await timeslotsService.createTemplateTimeslots(timeslotsRequest);
 		} catch (e) {
-			expect(e.message).toBe("Not valid format for firstSlotEndTimeInHHmm: 11:73");
+			expect(e.message).toBe("Not valid format for lastSlotEndTimeInHHmm: 11:73");
 		}
 		expect(setTemplateTimeslots).toBeCalledTimes(0);
 	});
 
-	it('should throw error because firstSlotStartTimeInHHmm > firstSlotEndTimeInHHmm', async () => {
+	it('should throw error because firstSlotStartTimeInHHmm > lastSlotEndTimeInHHmm', async () => {
 		const timeslotsRequest: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '23:23', '11:23', 5, []);
 		try {
 			await timeslotsService.createTemplateTimeslots(timeslotsRequest);
 		} catch (e) {
-			expect(e.message).toBe("firstSlotStartTimeInHHmm=23:23 > firstSlotEndTimeInHHmm=11:23");
+			expect(e.message).toBe("firstSlotStartTimeInHHmm=23:23 > lastSlotEndTimeInHHmm=11:23");
 		}
 		expect(setTemplateTimeslots).toBeCalledTimes(0);
 
 	});
 
-	it('should throw error because slotsDurationInMin < firstSlotEndTimeInHHmm - firstSlotStartTimeInHHmm ', async () => {
+	it('should throw error because slotsDurationInMin < lastSlotEndTimeInHHmm - firstSlotStartTimeInHHmm ', async () => {
 		const timeslotsRequest: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 65, []);
 		try {
 			await timeslotsService.createTemplateTimeslots(timeslotsRequest);
 		} catch (e) {
-			expect(e.message).toBe("slotsDurationInMin=65 < (firstSlotEndTimeInHHmm-firstSlotStartTimeInHHmm)=60");
+			expect(e.message).toBe("slotsDurationInMin=65 < (lastSlotEndTimeInHHmm-firstSlotStartTimeInHHmm)=60");
 		}
 		expect(setTemplateTimeslots).toBeCalledTimes(0);
 

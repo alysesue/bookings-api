@@ -4,14 +4,14 @@ import { TemplateTimeslots } from "../../models";
 export class TemplateTimeslotRequest {
 	public name: string;
 	public firstSlotStartTimeInHHmm: string;
-	public firstSlotEndTimeInHHmm: string;
+	public lastSlotEndTimeInHHmm: string;
 	public slotsDurationInMin: number;
 	public weekdays: Weekday[];
 
-	constructor(name, firstSlotStartTimeInHHmm, firstSlotEndTimeInHHmm, slotsDurationInMin, weekdays) {
+	constructor(name, firstSlotStartTimeInHHmm, lastSlotEndTimeInHHmm, slotsDurationInMin, weekdays) {
 		this.name = name;
 		this.firstSlotStartTimeInHHmm = firstSlotStartTimeInHHmm;
-		this.firstSlotEndTimeInHHmm = firstSlotEndTimeInHHmm;
+		this.lastSlotEndTimeInHHmm = lastSlotEndTimeInHHmm;
 		this.slotsDurationInMin = slotsDurationInMin;
 		this.weekdays = weekdays;
 	}
@@ -21,7 +21,7 @@ export class TemplateTimeslotResponse {
 	public id: number;
 	public name: string;
 	public firstSlotStartTimeInHHmm: string;
-	public firstSlotEndTimeInHHmm: string;
+	public lastSlotEndTimeInHHmm: string;
 	public slotsDurationInMin: number;
 	public weekdays: Weekday[];
 
@@ -29,7 +29,7 @@ export class TemplateTimeslotResponse {
 		this.id = template.id;
 		this.name = template.name;
 		this.firstSlotStartTimeInHHmm = template.firstSlotStartTimeInHHmm;
-		this.firstSlotEndTimeInHHmm = template.firstSlotEndTimeInHHmm;
+		this.lastSlotEndTimeInHHmm = template.lastSlotEndTimeInHHmm;
 		this.slotsDurationInMin = template.slotsDurationInMin;
 		this.weekdays = template.weekdays;
 	}

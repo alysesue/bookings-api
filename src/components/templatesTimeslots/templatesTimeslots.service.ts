@@ -36,14 +36,14 @@ export default class TemplatesTimeslotsService {
 		if (!(isValidFormatHHmm(templatable.firstSlotStartTimeInHHmm)))
 			throw new Error(`Not valid format for firstSlotStartTimeInHHmm: ${templatable.firstSlotStartTimeInHHmm}`);
 
-		if (!(isValidFormatHHmm(templatable.firstSlotEndTimeInHHmm)))
-			throw new Error(`Not valid format for firstSlotEndTimeInHHmm: ${templatable.firstSlotEndTimeInHHmm}`);
+		if (!(isValidFormatHHmm(templatable.lastSlotEndTimeInHHmm)))
+			throw new Error(`Not valid format for lastSlotEndTimeInHHmm: ${templatable.lastSlotEndTimeInHHmm}`);
 
-		const diff = diffHours(templatable.firstSlotStartTimeInHHmm, templatable.firstSlotEndTimeInHHmm);
+		const diff = diffHours(templatable.firstSlotStartTimeInHHmm, templatable.lastSlotEndTimeInHHmm);
 		if (diff < 0)
-			throw new Error(`firstSlotStartTimeInHHmm=${templatable.firstSlotStartTimeInHHmm} > firstSlotEndTimeInHHmm=${templatable.firstSlotEndTimeInHHmm}`);
+			throw new Error(`firstSlotStartTimeInHHmm=${templatable.firstSlotStartTimeInHHmm} > lastSlotEndTimeInHHmm=${templatable.lastSlotEndTimeInHHmm}`);
 		if (diff < templatable.slotsDurationInMin)
-			throw new Error(`slotsDurationInMin=${templatable.slotsDurationInMin} < (firstSlotEndTimeInHHmm-firstSlotStartTimeInHHmm)=${diff}`);
+			throw new Error(`slotsDurationInMin=${templatable.slotsDurationInMin} < (lastSlotEndTimeInHHmm-firstSlotStartTimeInHHmm)=${diff}`);
 
 	}
 
