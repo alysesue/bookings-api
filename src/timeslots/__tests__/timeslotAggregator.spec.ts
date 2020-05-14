@@ -1,5 +1,5 @@
 
-import { Timeslot } from '../../models/templateTimeslots.interface';
+import { Timeslot } from '../../models/Timeslot';
 import { TimeslotAggregator } from '../timeslotAggregator';
 import { DateHelper } from '../../infrastructure/dateHelper';
 

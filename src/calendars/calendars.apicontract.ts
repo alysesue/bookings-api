@@ -1,3 +1,5 @@
+import { TemplateTimeslots } from "../models";
+
 export class CalendarModel {
 	public uuid: string;
 	public externalCalendarUrl: string;
@@ -16,4 +18,16 @@ export class AddCalendarModel {
 export class CalendarUserModel {
 	public email: string;
 	public role: string;
+}
+
+export class CalendarTemplatesTimeslotModel {
+	public id: number;
+}
+
+export class CalendarTemplateTimeslotResponse {
+	public id: number;
+
+	constructor(template: TemplateTimeslots) {
+		this.id = template.id;
+	}
 }

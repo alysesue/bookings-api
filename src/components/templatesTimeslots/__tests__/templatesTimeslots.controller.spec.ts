@@ -1,12 +1,13 @@
 import { Container, Snapshot } from "typescript-ioc";
-import { TimeslotParams } from "../templatesTimeslots.apicontract";
+import { TemplateTimeslotRequest } from "../templatesTimeslots.apicontract";
 import TemplatesTimeslotsService from "../templatesTimeslots.service";
 import { TemplatesTimeslotsController } from "../templatesTimeslots.controller";
 
-const upsertTemplateTimeslots = jest.fn();
+const createTemplateTimeslots = jest.fn();
+const updateTemplateTimeslots = jest.fn();
 const deleteTemplateTimeslots = jest.fn();
 const MockTemplatesTimeslotsService = jest.fn().mockImplementation(() => {
-	return {upsertTemplateTimeslots, deleteTemplateTimeslots};
+	return {createTemplateTimeslots, updateTemplateTimeslots, deleteTemplateTimeslots};
 });
 
 let snapshot: Snapshot;
@@ -27,15 +28,24 @@ beforeEach(() => {
 	jest.clearAllMocks();
 });
 
+const timeslot: TemplateTimeslotRequest = new TemplateTimeslotRequest('', '', '', '', []);
 describe('Test templates timeslots controller', () => {
-	it('should test if upsert service is called', async () => {
-		const timeslot: TimeslotParams = new TimeslotParams();
+	it('should test if creat service is called', async () => {
 		Container.bind(TemplatesTimeslotsService).to(MockTemplatesTimeslotsService);
 		const timeslotsController = Container.get(TemplatesTimeslotsController);
 
-		await timeslotsController.upsertTemplateTimeslots(timeslot);
-		expect(upsertTemplateTimeslots).toBeCalledTimes(1);
+		await timeslotsController.createTemplateTimeslots(timeslot);
+		expect(createTemplateTimeslots).toBeCalledTimes(1);
 	});
+
+	it('should test if upsert service is called', async () => {
+		Container.bind(TemplatesTimeslotsService).to(MockTemplatesTimeslotsService);
+		const timeslotsController = Container.get(TemplatesTimeslotsController);
+
+		await timeslotsController.updateTemplateTimeslots(timeslot);
+		expect(updateTemplateTimeslots).toBeCalledTimes(1);
+	});
+
 	it('should test if delete service is called', async () => {
 		Container.bind(TemplatesTimeslotsService).to(MockTemplatesTimeslotsService);
 		const timeslotsController = Container.get(TemplatesTimeslotsController);
@@ -43,4 +53,5 @@ describe('Test templates timeslots controller', () => {
 		await timeslotsController.deleteTemplateTimeslots(3);
 		expect(deleteTemplateTimeslots).toBeCalledTimes(1);
 	});
+
 });

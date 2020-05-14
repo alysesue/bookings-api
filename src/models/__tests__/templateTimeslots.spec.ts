@@ -1,7 +1,7 @@
 
 import { Container, Snapshot } from 'typescript-ioc';
 import { TemplateTimeslots } from '../templateTimeslots';
-import { Timeslot } from '../../models/templateTimeslots.interface';
+import { Timeslot } from '../Timeslot';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Weekday } from '../../enums/weekday';
 
@@ -20,13 +20,14 @@ afterAll(() => {
 });
 
 describe('Timeslots template', () => {
-	const template = new TemplateTimeslots('test',
-		new Date(2000, 1, 1, 8, 30),
-		new Date(2000, 1, 1, 16, 0),
-		60,
-		[Weekday.Monday, Weekday.Tuesday, Weekday.Wednesday, Weekday.Thursday, Weekday.Friday],
-		[]
-	);
+	const template = new TemplateTimeslots();
+	template.mapTemplateTimeslotRequest({
+		name: 'test',
+		firstSlotStartTimeInHHmm: '08:30',
+		lastSlotEndTimeInHHmm: '16:00',
+		slotsDurationInMin: 60,
+		weekdays: [Weekday.Monday, Weekday.Tuesday, Weekday.Wednesday, Weekday.Thursday, Weekday.Friday]
+	});
 
 	it('should generate single timeslot', () => {
 		const date = new Date();

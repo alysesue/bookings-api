@@ -1,13 +1,12 @@
-import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { Weekday } from "../enums/weekday";
-import { Calendar } from "./index";
-import { ITemplateTimeslots } from "./templateTimeslots.interface";
-import { ICalendar } from "./calendar.interface";
+import { TemplateTimeslotRequest } from "../components/templatesTimeslots/templatesTimeslots.apicontract";
 import { DateHelper } from '../infrastructure/dateHelper';
-import { Timeslot } from './templateTimeslots.interface';
+import { parseHHmm } from '../tools/date';
+import { Timeslot } from './Timeslot';
 
 @Entity()
-export class TemplateTimeslots implements ITemplateTimeslots {
+export class TemplateTimeslots extends BaseEntity {
 
 	@PrimaryGeneratedColumn()
 	public id: number;
@@ -15,40 +14,41 @@ export class TemplateTimeslots implements ITemplateTimeslots {
 	@Column({ type: "text" })
 	public name: string;
 
-	@Column({ type: "timestamp" })
-	public firstSlotStartTime: Date;
+	@Column({ type: "time" })
+	public firstSlotStartTimeInHHmm: string;
 
-	@Column({ type: "timestamp" })
-	public lastSlotEndTime: Date;
+	@Column({ type: "time" })
+	public lastSlotEndTimeInHHmm: string;
 
 	@Column({ type: "int" })
-	public slotsDuration: number;
+	public slotsDurationInMin: number;
 
 	@Column("int", { array: true })
 	public weekdays: Weekday[];
 
-	@ManyToMany("Calendar", "templateTimeslots")
-	@JoinTable()
-	public calendars: ICalendar[];
+	constructor() {
+		super();
+	}
 
-	constructor(name: string, firstSlotStartTime: Date, lastSlotEndTime: Date, slotsDuration: number, weekdays: Weekday[], calendars: Calendar[]) {
-		this.name = name;
-		this.firstSlotStartTime = DateHelper.keepHoursAndMinutes(firstSlotStartTime);
-		this.lastSlotEndTime = DateHelper.keepHoursAndMinutes(lastSlotEndTime);
-		this.slotsDuration = slotsDuration;
-		this.weekdays = weekdays;
-		this.calendars = calendars;
+	public mapTemplateTimeslotRequest(template: TemplateTimeslotRequest) {
+		this.name = template.name;
+		this.firstSlotStartTimeInHHmm = template.firstSlotStartTimeInHHmm;
+		this.lastSlotEndTimeInHHmm = template.lastSlotEndTimeInHHmm;
+		this.slotsDurationInMin = template.slotsDurationInMin;
+		this.weekdays = template.weekdays;
 	}
 
 	private getRelativeStartTime(startDate: Date) {
 		const newDate = DateHelper.getDateOnly(startDate);
-		newDate.setHours(this.firstSlotStartTime.getHours(), this.firstSlotStartTime.getMinutes());
+		const { hours, minutes } = parseHHmm(this.firstSlotStartTimeInHHmm);
+		newDate.setHours(hours, minutes);
 		return newDate;
 	}
 
 	private getRelativeEndTime(endDate: Date) {
 		const newDate = DateHelper.getDateOnly(endDate);
-		newDate.setHours(this.lastSlotEndTime.getHours(), this.lastSlotEndTime.getMinutes());
+		const { hours, minutes } = parseHHmm(this.lastSlotEndTimeInHHmm);
+		newDate.setHours(hours, minutes);
 		return newDate;
 	}
 
@@ -57,10 +57,10 @@ export class TemplateTimeslots implements ITemplateTimeslots {
 
 		if (relativeStartDatetime < startDatetime) {
 			const minutes = DateHelper.DiffInMinutes(startDatetime, relativeStartDatetime);
-			const blocksInDiff = Math.floor(minutes / this.slotsDuration);
+			const blocksInDiff = Math.floor(minutes / this.slotsDurationInMin);
 
 			// finds the first block's start time that is after startDatetime, also respecting slot duration
-			relativeStartDatetime = DateHelper.addMinutes(relativeStartDatetime, (1 + blocksInDiff) * this.slotsDuration);
+			relativeStartDatetime = DateHelper.addMinutes(relativeStartDatetime, (1 + blocksInDiff) * this.slotsDurationInMin);
 		}
 
 		return relativeStartDatetime;
@@ -88,7 +88,7 @@ export class TemplateTimeslots implements ITemplateTimeslots {
 			const date = DateHelper.addDays(initialDate, day);
 
 			let startTime = (day === 0) ? this.getFirstBlockStartTime(range.startDatetime) : this.getRelativeStartTime(date);
-			let currentEndTime = DateHelper.addMinutes(startTime, this.slotsDuration);
+			let currentEndTime = DateHelper.addMinutes(startTime, this.slotsDurationInMin);
 
 			const maxLastBlockEndTime = (day === daysCount - 1) ? this.getMaxLastBlockEndTime(range.endDatetime) : this.getRelativeEndTime(date);
 
@@ -96,7 +96,7 @@ export class TemplateTimeslots implements ITemplateTimeslots {
 				yield new Timeslot(startTime, currentEndTime);
 
 				startTime = currentEndTime;
-				currentEndTime = DateHelper.addMinutes(currentEndTime, this.slotsDuration);
+				currentEndTime = DateHelper.addMinutes(currentEndTime, this.slotsDurationInMin);
 			}
 		}
 	}

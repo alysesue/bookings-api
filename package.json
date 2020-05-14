@@ -84,11 +84,12 @@
 		"koa-proxy": "^1.0.0-alpha.3",
 		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:^4.3.32",
 		"mol-lib-common": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-common.git#semver:^3.10.5",
+		"moment": "^2.25.3",
 		"pg": "^8.0.3",
-		"typeorm": "^0.2.24",
-		"typescript-ioc": "^3.2.1",
 		"swagger2": "^2.0.0",
-		"swagger2-koa": "^2.0.0"
+		"swagger2-koa": "^2.0.0",
+		"typeorm": "^0.2.24",
+		"typescript-ioc": "^3.2.1"
 	},
 	"devDependencies": {
 		"mol-bamboo-scripts": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-bamboo-scripts.git#semver:^1.4.0",

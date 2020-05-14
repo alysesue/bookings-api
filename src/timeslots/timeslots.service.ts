@@ -16,15 +16,13 @@ export class TimeslotsService {
 
 		const calendars = await this.calendarRepository.getCalendarsWithTemplates();
 
-		for (const calendar of calendars) {
-			for (const template of calendar.templateTimeslots) {
-				const generator = template.generateValidTimeslots({
-					startDatetime: startOfDay,
-					endDatetime: endOfLastDay
-				});
+		for (const calendar of calendars.filter(c => c.templatesTimeslots !== null)) {
+			const generator = calendar.templatesTimeslots.generateValidTimeslots({
+				startDatetime: startOfDay,
+				endDatetime: endOfLastDay
+			});
 
-				aggregator.aggregate(calendar, generator);
-			}
+			aggregator.aggregate(calendar, generator);
 		}
 
 		const entries = aggregator.getEntries();

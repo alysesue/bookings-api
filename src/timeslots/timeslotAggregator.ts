@@ -1,4 +1,4 @@
-import { Timeslot } from '../models/templateTimeslots.interface';
+import { Timeslot } from '../models/Timeslot';
 
 export class TimeslotAggregator<TGroup> {
 	private _map: any;

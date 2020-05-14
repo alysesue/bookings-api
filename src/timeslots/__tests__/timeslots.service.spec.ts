@@ -1,5 +1,5 @@
 import { Container, Snapshot } from "typescript-ioc";
-import { Calendar } from "../../models";
+import { Calendar, TemplateTimeslots } from "../../models";
 import { TimeslotsService } from "../timeslots.service";
 import { CalendarsRepository } from '../../calendars/calendars.repository';
 import { TimeslotAggregator } from '../timeslotAggregator';
@@ -20,14 +20,11 @@ const templateTimeslotMock = {
 	generateValidTimeslots: jest.fn(() => [])
 };
 
-const CalendarsMock = [
-	{
-		templateTimeslots: [templateTimeslotMock, templateTimeslotMock]
-	} as unknown as Calendar
-];
+const CalendarMock = new Calendar();
+CalendarMock.templatesTimeslots = templateTimeslotMock as unknown as TemplateTimeslots;
 
 const CalendarsRepositoryMock = {
-	getCalendarsWithTemplates: jest.fn(() => Promise.resolve(CalendarsMock))
+	getCalendarsWithTemplates: jest.fn(() => Promise.resolve([CalendarMock]))
 };
 
 jest.mock('../timeslotAggregator', () => {
@@ -53,7 +50,7 @@ describe("Timeslots Service", () => {
 		expect(result).toBeDefined();
 
 		expect(CalendarsRepositoryMock.getCalendarsWithTemplates).toBeCalled();
-		expect(templateTimeslotMock.generateValidTimeslots).toBeCalledTimes(2);
+		expect(templateTimeslotMock.generateValidTimeslots).toBeCalledTimes(1);
 		expect(aggregator.aggregate).toBeCalled();
 		expect(aggregator.getEntries).toBeCalled();
 	});
