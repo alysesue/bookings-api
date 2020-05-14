@@ -56,14 +56,31 @@ describe("Bookings.Controller", () => {
 
 		expect(result).toHaveLength(1);
 	});
+
+	it('should return one booking', async () => {
+		const controller = Container.get(BookingsController);
+		const testTime = new Date('2020-05-16T20:25:43.511Z');
+
+		BookingsServiceMock.mockGetBooking = new Booking(testTime, 120);
+
+		const result = await controller.getBooking("booking-id-1");
+
+		expect(result.startDateTime).toBe(testTime);
+		expect(result.status).toBe(0);
+	});
 });
 
 class BookingsServiceMock extends BookingsService {
 	public static mockAcceptBooking: Booking;
+	public static mockGetBooking: Booking;
 	public static mockBookings: Booking[] = [];
 	public static mockSearchBookings: Booking[] = [];
 	public static mockBookingId;
 
+	public async getBooking(bookingId: string): Promise<Booking> {
+		BookingsServiceMock.mockBookingId = bookingId;
+		return Promise.resolve(BookingsServiceMock.mockGetBooking);
+	}
 	public async getBookings(): Promise<Booking[]> {
 		return Promise.resolve(BookingsServiceMock.mockBookings);
 	}
