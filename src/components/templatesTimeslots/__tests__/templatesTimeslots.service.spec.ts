@@ -10,9 +10,11 @@ timeslots.mapTemplateTimeslotRequest(timeslotsRequestCommon);
 
 const getTemplateTimeslotsByName = jest.fn().mockImplementation(() => Promise.resolve(timeslots));
 const setTemplateTimeslots = jest.fn().mockImplementation(() => Promise.resolve(timeslots));
+const deleteTemplateTimeslots = jest.fn().mockImplementation(() => Promise.resolve(undefined));
 const MockTimeslotsRepository = jest.fn().mockImplementation(() => ({
 	setTemplateTimeslots,
-	getTemplateTimeslotsByName
+	getTemplateTimeslotsByName,
+	deleteTemplateTimeslots
 }));
 
 describe('Timeslots  template services ', () => {
@@ -79,6 +81,11 @@ describe('Timeslots  template services ', () => {
 		expect(setTemplateTimeslots).toBeCalled();
 		expect(getTemplateTimeslotsByName).toBeCalled();
 		expect(template.name).toStrictEqual(timeslots.name);
+	});
+
+	it('should call delete repository', async () => {
+		await timeslotsService.deleteTemplateTimeslots(3);
+		expect(deleteTemplateTimeslots).toBeCalled();
 	});
 
 });

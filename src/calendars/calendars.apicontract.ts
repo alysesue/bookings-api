@@ -1,5 +1,4 @@
-import {Weekday} from "../enums/weekday";
-import {TemplateTimeslots} from "../models";
+import { TemplateTimeslots } from "../models";
 
 export class CalendarModel {
 	public uuid: string;
