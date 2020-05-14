@@ -17,6 +17,7 @@ import { ui } from 'swagger2-koa';
 import { DbConnection } from "./core/db.connection";
 import { Container } from "typescript-ioc";
 import { CalDavProxyHandler } from "./infrastructure/caldavproxy.handler";
+import * as cors from '@koa/cors';
 
 export async function startServer(): Promise<Server> {
 	// Setup service
@@ -48,6 +49,7 @@ export async function startServer(): Promise<Server> {
 				textLimit: "10mb",
 			})
 		)
+		.use(cors())
 		.use(ui(document as swagger.Document, "/swagger"))
 		.use(new KoaErrorHandler().build())
 		.use(new KoaLoggerContext().build())
