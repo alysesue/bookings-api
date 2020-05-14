@@ -33,7 +33,7 @@ describe("Bookings.Service", () => {
 		CalendarsServiceMock.eventId = "event-id";
 		BookingRepositoryMock.booking = new Booking(new Date(), 60);
 		CalendarsServiceMock.calendars = [
-			{id: 1, googleCalendarId: "google-id-1"} as Calendar,
+			{ id: 1, googleCalendarId: "google-id-1" } as Calendar,
 		];
 		const acceptRequest = new BookingAcceptRequest();
 		const result = await bookingService.acceptBooking("1", acceptRequest);
@@ -87,5 +87,13 @@ class CalendarsServiceMock extends CalendarsService {
 
 	public async createEvent(booking: Booking): Promise<string> {
 		return Promise.resolve(CalendarsServiceMock.eventId);
+	}
+
+	public async getCalendarForBookingRequest(booking: Booking, calendarId: string): Promise<Calendar> {
+		const calendar = new Calendar();
+		calendar.id = 1;
+		calendar.uuid = 'uuid';
+		calendar.googleCalendarId = 'googleCalendarId';
+		return calendar;
 	}
 }

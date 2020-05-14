@@ -11,7 +11,7 @@ export class TimeslotsController extends Controller {
 	@Inject
 	private timeslotsService: TimeslotsService;
 
-	@Get("aggregated")
+	@Get("availability")
 	public async getAggregatedTimeslots(@Query() startDate: Date, @Query() endDate: Date): Promise<TimeslotResponse[]> {
 		const aggregated = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate);
 		return this.mapDataModels(aggregated);
