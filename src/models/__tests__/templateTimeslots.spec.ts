@@ -26,12 +26,11 @@ describe('Timeslots template', () => {
 		firstSlotStartTimeInHHmm: '08:30',
 		lastSlotEndTimeInHHmm: '16:00',
 		slotsDurationInMin: 60,
-		weekdays: [Weekday.Monday, Weekday.Tuesday, Weekday.Wednesday, Weekday.Thursday, Weekday.Friday]
+		weekdays: [Weekday.Monday, Weekday.Tuesday, Weekday.Wednesday]
 	});
+	const date = new Date(2020, 4, 12); // May 12th -  Tuesday;
 
 	it('should generate single timeslot', () => {
-		const date = new Date();
-
 		const generate = template.generateValidTimeslots({
 			startDatetime: DateHelper.setHours(date, 8, 30),
 			endDatetime: DateHelper.setHours(date, 9, 30)
@@ -45,8 +44,6 @@ describe('Timeslots template', () => {
 	});
 
 	it('should generate multiple timeslots', () => {
-		const date = new Date();
-
 		const generate = template.generateValidTimeslots({
 			startDatetime: DateHelper.setHours(date, 12, 0),
 			endDatetime: DateHelper.setHours(date, 18, 0)
@@ -58,8 +55,6 @@ describe('Timeslots template', () => {
 	});
 
 	it('should generate fist timeslot only when the template starts', () => {
-		const date = new Date();
-
 		const generate = template.generateValidTimeslots({
 			startDatetime: DateHelper.setHours(date, 6, 0),
 			endDatetime: DateHelper.setHours(date, 10, 0)
@@ -73,8 +68,6 @@ describe('Timeslots template', () => {
 	});
 
 	it('should discard last timeslot when it doesnt fit the window', () => {
-		const date = new Date();
-
 		const generate = template.generateValidTimeslots({
 			startDatetime: DateHelper.setHours(date, 14, 0),
 			endDatetime: DateHelper.setHours(date, 18, 0)
@@ -88,7 +81,6 @@ describe('Timeslots template', () => {
 	});
 
 	it('should generate timeslots over the next day', () => {
-		const date = new Date();
 		const nextDay = DateHelper.addDays(date, 1);
 
 		const generate = template.generateValidTimeslots({
@@ -107,7 +99,6 @@ describe('Timeslots template', () => {
 	});
 
 	it('should generate timeslots over multiple days', () => {
-		const date = new Date();
 		const anotherDate = DateHelper.addDays(date, 2);
 
 		const generate = template.generateValidTimeslots({
@@ -116,7 +107,7 @@ describe('Timeslots template', () => {
 		});
 
 		const list = Array.from(generate);
-		expect(list.length).toBe(12);
+		expect(list.length).toBe(10); // Thursday is not a work day
 
 		expect(list[0].getStartTime().getDate()).toBe(date.getDate());
 		expect(DateHelper.getTimeString(list[0].getStartTime())).toBe("12:30");

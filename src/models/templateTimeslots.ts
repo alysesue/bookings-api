@@ -76,6 +76,11 @@ export class TemplateTimeslots extends BaseEntity {
 		return relativeEndDatetime;
 	}
 
+	public isValidWeekday(date: Date) {
+		const dayOfWeek: number = date.getDay();
+		return this.weekdays.indexOf(dayOfWeek) >= 0;
+	}
+
 	public * generateValidTimeslots(range: { startDatetime: Date, endDatetime: Date }): Iterable<Timeslot> {
 		if (range.endDatetime < range.startDatetime) {
 			return;
@@ -86,6 +91,10 @@ export class TemplateTimeslots extends BaseEntity {
 
 		for (let day = 0; day < daysCount; day++) {
 			const date = DateHelper.addDays(initialDate, day);
+
+			if (!this.isValidWeekday(date)) {
+				continue;
+			}
 
 			let startTime = (day === 0) ? this.getFirstBlockStartTime(range.startDatetime) : this.getRelativeStartTime(date);
 			let currentEndTime = DateHelper.addMinutes(startTime, this.slotsDurationInMin);

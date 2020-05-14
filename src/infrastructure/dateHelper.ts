@@ -3,10 +3,6 @@ export class DateHelper {
 	private static MsPerHour = 3600000;
 	private static MsPerDay = 86400000;
 
-	public static keepHoursAndMinutes(date: Date): Date {
-		return new Date(2020, 1, 1, date.getHours(), date.getMinutes());
-	}
-
 	public static addMinutes(date: Date, minutes: number) {
 		return new Date(date.getTime() + minutes * DateHelper.MsPerMinute);
 	}
