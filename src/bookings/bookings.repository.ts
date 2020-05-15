@@ -1,6 +1,6 @@
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 import { Inject, Singleton } from "typescript-ioc";
-import { Equal, FindManyOptions, InsertResult, LessThanOrEqual, MoreThanOrEqual, UpdateResult } from "typeorm";
+import { Equal, FindManyOptions, InsertResult, LessThanOrEqual, MoreThanOrEqual, Raw, UpdateResult } from "typeorm";
 import { DbConnection } from "../core/db.connection";
 import { Booking, BookingStatus } from "../models";
 
@@ -15,12 +15,19 @@ export class BookingsRepository {
 			return conditions;
 		}
 
+		let rawStartDateTime = "";
 		if (!!filter.minStartDateTime) {
-			conditions.where["_startDateTime"] = MoreThanOrEqual(filter.minStartDateTime);
+			rawStartDateTime = `_startDateTime >= ${JSON.stringify(filter.minStartDateTime)}`;
 		}
 
 		if (!!filter.maxStartDateTime) {
-			conditions.where["_startDateTime"] = LessThanOrEqual(filter.maxStartDateTime);
+			const maxStartDateTimeCondition = `_startDateTime <= ${JSON.stringify(filter.maxStartDateTime)}`;
+			rawStartDateTime = rawStartDateTime.length === 0 ? maxStartDateTimeCondition
+				: `${rawStartDateTime} AND ${maxStartDateTimeCondition}`;
+		}
+
+		if (rawStartDateTime.length > 0) {
+			conditions.where["_startDateTime"] = Raw(rawStartDateTime);
 		}
 
 		if (!!filter.status) {

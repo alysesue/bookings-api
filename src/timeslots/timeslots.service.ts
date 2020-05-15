@@ -6,6 +6,7 @@ import { DateHelper } from "../infrastructure/dateHelper";
 import { BookingsRepository } from "../bookings/bookings.repository";
 import { Booking } from '../models/booking';
 import { Timeslot } from '../models/Timeslot';
+import { BookingStatus } from "../models";
 
 @Singleton
 export class TimeslotsService {
@@ -36,7 +37,8 @@ export class TimeslotsService {
 	private async getBookingsPerCalendarId(startOfDay: Date, endOfLastDay: Date): Promise<Map<number, Booking[]>> {
 		let bookings = await this.bookingsRepository.getBookings({
 			minStartDateTime: startOfDay,
-			maxStartDateTime: endOfLastDay
+			maxStartDateTime: endOfLastDay,
+			status: BookingStatus.Accepted
 		});
 		bookings = bookings.filter(booking => booking.getSessionEndTime() <= endOfLastDay && !!booking.calendarId);
 
