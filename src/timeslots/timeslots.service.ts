@@ -88,7 +88,7 @@ export class TimeslotsService {
 				startDatetime: startOfDay,
 				endDatetime: endOfLastDay
 			});
-			const calendarBookings = bookingsPerCalendarId.get(calendar.id) || [];
+			const calendarBookings = (bookingsPerCalendarId.get(calendar.id) || []).filter(booking => booking.status === BookingStatus.Accepted);
 			const generatorWithoutBookedTimes = this.ignoreBookedTimes(generator, calendarBookings);
 
 			aggregator.aggregate(calendar, generatorWithoutBookedTimes);
