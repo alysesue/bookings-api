@@ -1,5 +1,6 @@
-import moment = require("moment");
-const TIME_FORMATS = ["HH:mm", "H:mm", "HH:m", "H:m"];
+import * as moment from 'moment';
+
+const TIME_FORMATS = ["HH:mm", "H:mm", "HH:m", "H:m", "HH:mm:ss"];
 
 const parseTime = (time: string) => moment(time, TIME_FORMATS, true);
 

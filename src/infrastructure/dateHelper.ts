@@ -51,4 +51,9 @@ export class DateHelper {
 		const minutes = date.getMinutes().toString().padStart(2, '0');
 		return `${hours}:${minutes}`;
 	}
+
+	public static UTCAsLocal(date: Date): Date {
+		return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(),
+			date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
+	}
 }

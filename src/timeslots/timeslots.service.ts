@@ -44,8 +44,7 @@ export class TimeslotsService {
 		return result;
 	}
 
-	private * ignoreBookedTimes(generator: Iterable<Timeslot>, calendar: Calendar, bookingsPerCalendar: Map<number, Booking[]>): Iterable<Timeslot> {
-		const calendarBookings = bookingsPerCalendar.get(calendar.id) || [];
+	private * ignoreBookedTimes(generator: Iterable<Timeslot>, calendarBookings: Booking[]): Iterable<Timeslot> {
 		const timeslotKeySelector = (start: Date, end: Date) => `${start.getTime()}|${end.getTime()}`;
 		const bookingKeySelector = (booking: Booking) => timeslotKeySelector(booking.startDateTime, booking.getSessionEndTime());
 
@@ -71,8 +70,8 @@ export class TimeslotsService {
 				startDatetime: startOfDay,
 				endDatetime: endOfLastDay
 			});
-
-			const generatorWithoutBookedTimes = this.ignoreBookedTimes(generator, calendar, bookingsPerCalendar);
+			const calendarBookings = bookingsPerCalendar.get(calendar.id) || [];
+			const generatorWithoutBookedTimes = this.ignoreBookedTimes(generator, calendarBookings);
 
 			aggregator.aggregate(calendar, generatorWithoutBookedTimes);
 		}

@@ -14,7 +14,7 @@ export class CalendarsRepository {
 	}
 
 	public async getCalendarsWithTemplates(): Promise<Calendar[]> {
-		return (await this.getRepository()).find({ relations: ['templateTimeslots'] });
+		return (await this.getRepository()).find({ relations: ['templatesTimeslots'] });
 	}
 
 	public async getCalendarByUUID(uuid: string): Promise<Calendar> {

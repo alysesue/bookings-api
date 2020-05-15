@@ -13,7 +13,7 @@ export class TimeslotAggregator<TGroup> {
 	}
 
 	private compressNumber(n: number): string {
-		return atob(n.toString(36));
+		return n.toString(36);
 	}
 
 	private getOrAddEntry(timeslot: Timeslot): AggregatedEntry<TGroup> {
