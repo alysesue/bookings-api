@@ -49,6 +49,7 @@ export class BookingsService {
 		const eventICalId = await this.calendarsService.createCalendarEvent(booking, calendar);
 
 		booking.status = BookingStatus.Accepted;
+		booking.calendar = calendar;
 		booking.eventICalId = eventICalId;
 		booking.acceptedAt = new Date();
 
