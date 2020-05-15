@@ -79,7 +79,7 @@ export class Booking extends BaseEntity {
 	@JoinColumn({ name: '_calendarId' })
 	private _calendar: Calendar;
 
-	@Column()
+	@Column({ nullable: true })
 	private _calendarId?: number;
 
 	public get calendar(): Calendar {

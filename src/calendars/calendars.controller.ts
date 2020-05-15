@@ -69,7 +69,7 @@ export class CalendarsController extends Controller {
 	}
 
 	private async getBookingRequests(from: Date, to: Date) {
-		const searchBookingsRequest = new BookingSearchRequest(BookingStatus.PendingApproval, from, to);
+		const searchBookingsRequest = new BookingSearchRequest(from, to, BookingStatus.PendingApproval);
 		return await this.bookingsService.searchBookings(searchBookingsRequest);
 	}
 

@@ -36,7 +36,7 @@ export class BookingsController extends Controller {
 	@Get('search')
 	@SuccessResponse(200, "Ok")
 	public async searchBookings(@Query() status: number, @Query() from: Date, @Query() to: Date): Promise<BookingResponse[]> {
-		const searchQuery = new BookingSearchRequest(status, from, to);
+		const searchQuery = new BookingSearchRequest(from, to, status);
 		const bookings = await this.bookingsService.searchBookings(searchQuery);
 		return this.mapDataModels(bookings);
 

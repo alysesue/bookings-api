@@ -29,7 +29,30 @@ describe("Bookings repository", () => {
 
 		const bookingsRepository = new BookingsRepository();
 		const date = new Date(Date.UTC(2020, 0, 1, 14, 0));
-		const filter = new BookingSearchRequest(BookingStatus.Accepted,
+		const filter = new BookingSearchRequest(
+			date,
+			DateHelper.addDays(date, 1),
+			BookingStatus.Accepted
+		);
+
+		const result = await bookingsRepository.search(filter);
+		expect(result).toStrictEqual([]);
+		expect(MockDBConnection.find).toBeCalled();
+
+		expect(param).toMatchSnapshot();
+	});
+
+	it("should search bookings without status", async () => {
+		Container.bind(DbConnection).to(MockDBConnection);
+		let param: string;
+		MockDBConnection.find.mockImplementation((_param) => {
+			param = JSON.stringify(_param);
+			return Promise.resolve([]);
+		});
+
+		const bookingsRepository = new BookingsRepository();
+		const date = new Date(Date.UTC(2020, 0, 1, 14, 0));
+		const filter = new BookingSearchRequest(
 			date,
 			DateHelper.addDays(date, 1)
 		);
@@ -40,6 +63,7 @@ describe("Bookings repository", () => {
 
 		expect(param).toMatchSnapshot();
 	});
+
 
 	it("should save booking", async () => {
 		jest.resetAllMocks();

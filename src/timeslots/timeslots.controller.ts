@@ -19,18 +19,6 @@ export class TimeslotsController extends Controller {
 		endDate = DateHelper.UTCAsLocal(endDate);
 
 		const aggregated = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate);
-		return this.mapDataModels(aggregated);
-	}
-
-	private mapDataModel(entry: AggregatedEntry<Calendar>): TimeslotResponse {
-		return {
-			startTime: entry.getTimeslot().getStartTime(),
-			endTime: entry.getTimeslot().getEndTime(),
-			availabilityCount: entry.getGroups().length
-		} as TimeslotResponse;
-	}
-
-	private mapDataModels(entries: AggregatedEntry<Calendar>[]): TimeslotResponse[] {
-		return entries?.map(e => this.mapDataModel(e));
+		return aggregated;
 	}
 }
