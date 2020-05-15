@@ -1,9 +1,10 @@
-import { BookingQueryFilter, BookingsRepository } from "../bookings.repository";
+import { BookingsRepository } from "../bookings.repository";
 import { DbConnection } from "../../core/db.connection";
 import { Booking, BookingStatus } from "../../models";
 import { Container } from "typescript-ioc";
 import { InsertResult, UpdateResult } from "typeorm";
 import { DateHelper } from '../../infrastructure/dateHelper';
+import { BookingSearchRequest } from '../bookings.apicontract';
 
 describe("Bookings repository", () => {
 	beforeEach(() => {
@@ -18,7 +19,7 @@ describe("Bookings repository", () => {
 		expect(result).toStrictEqual([]);
 	});
 
-	it("should get bookings with filter", async () => {
+	it("should search bookings", async () => {
 		Container.bind(DbConnection).to(MockDBConnection);
 		let param: string;
 		MockDBConnection.find.mockImplementation((_param) => {
@@ -27,32 +28,13 @@ describe("Bookings repository", () => {
 		});
 
 		const bookingsRepository = new BookingsRepository();
-		const filter = new BookingQueryFilter();
-		filter.minStartDateTime = new Date(Date.UTC(2020, 0, 1, 14, 0));
-		filter.maxStartDateTime = DateHelper.addDays(filter.minStartDateTime, 1);
-		filter.status = BookingStatus.Accepted;
+		const date = new Date(Date.UTC(2020, 0, 1, 14, 0));
+		const filter = new BookingSearchRequest(BookingStatus.Accepted,
+			date,
+			DateHelper.addDays(date, 1)
+		);
 
-		const result = await bookingsRepository.getBookings(filter);
-		expect(result).toStrictEqual([]);
-		expect(MockDBConnection.find).toBeCalled();
-
-		expect(param).toMatchSnapshot();
-	});
-
-	it("should get bookings with only max start date", async () => {
-		Container.bind(DbConnection).to(MockDBConnection);
-		let param: string;
-		MockDBConnection.find.mockImplementation((_param) => {
-			param = JSON.stringify(_param);
-			return Promise.resolve([]);
-		});
-
-		const bookingsRepository = new BookingsRepository();
-		const filter = new BookingQueryFilter();
-		filter.maxStartDateTime = new Date(Date.UTC(2020, 0, 5, 14, 0))
-		filter.status = BookingStatus.Accepted;
-
-		const result = await bookingsRepository.getBookings(filter);
+		const result = await bookingsRepository.search(filter);
 		expect(result).toStrictEqual([]);
 		expect(MockDBConnection.find).toBeCalled();
 

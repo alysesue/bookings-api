@@ -7,6 +7,7 @@ import { BookingsRepository } from "../bookings/bookings.repository";
 import { Booking } from '../models/booking';
 import { Timeslot } from '../models/Timeslot';
 import { BookingStatus } from "../models";
+import { BookingSearchRequest } from '../bookings/bookings.apicontract';
 
 @Singleton
 export class TimeslotsService {
@@ -35,11 +36,11 @@ export class TimeslotsService {
 	}
 
 	private async getBookingsPerCalendarId(startOfDay: Date, endOfLastDay: Date): Promise<Map<number, Booking[]>> {
-		let bookings = await this.bookingsRepository.getBookings({
-			minStartDateTime: startOfDay,
-			maxStartDateTime: endOfLastDay,
-			status: BookingStatus.Accepted
-		});
+		let bookings = await this.bookingsRepository.search(new BookingSearchRequest(
+			BookingStatus.Accepted,
+			startOfDay,
+			endOfLastDay,
+		));
 		bookings = bookings.filter(booking => booking.getSessionEndTime() <= endOfLastDay && !!booking.calendarId);
 
 		const result = this.GroupByKey(bookings, (booking) => booking.calendarId);

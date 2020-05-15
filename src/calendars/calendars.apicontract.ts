@@ -20,8 +20,13 @@ export class CalendarUserModel {
 	public role: string;
 }
 
+export class ServiceProviderResponse {
+	public serviceProviderName: string;
+	public uuid: string;
+}
+
 export class CalendarTemplatesTimeslotModel {
-	public id: number;
+	public templatesTimeslotId: number;
 }
 
 export class CalendarTemplateTimeslotResponse {

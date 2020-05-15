@@ -33,7 +33,7 @@ const CalendarsRepositoryMock = {
 };
 
 const BookingsRepositoryMock = {
-	getBookings: jest.fn(() => Promise.resolve([]))
+	search: jest.fn(() => Promise.resolve([]))
 };
 
 jest.mock('../timeslotAggregator', () => {

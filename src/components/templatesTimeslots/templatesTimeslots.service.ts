@@ -11,16 +11,15 @@ export default class TemplatesTimeslotsService {
 	private timeslotsRepository: TemplatesTimeslotsRepository;
 
 	public async createTemplateTimeslots(template: TemplateTimeslotRequest): Promise<TemplateTimeslotResponse> {
-		this.checkTemplateTimeslots(template);
-		const newTemplateModel: TemplateTimeslots = new TemplateTimeslots();
-		newTemplateModel.mapTemplateTimeslotRequest(template);
+		this.valideTemplateTimeslots(template);
+		const newTemplateModel: TemplateTimeslots= TemplateTimeslots.mapTemplateTimeslotRequest(template);
 		const templateSet: TemplateTimeslots = (await this.timeslotsRepository.setTemplateTimeslots(newTemplateModel));
 		return new TemplateTimeslotResponse(templateSet);
 	}
 
 	public async updateTemplateTimeslots(template: TemplateTimeslotRequest): Promise<TemplateTimeslotResponse> {
-		const newTemplateModel: TemplateTimeslots = new TemplateTimeslots();
-		newTemplateModel.mapTemplateTimeslotRequest(template);
+		this.valideTemplateTimeslots(template);
+		const newTemplateModel: TemplateTimeslots= TemplateTimeslots.mapTemplateTimeslotRequest(template);
 		const templateGet: TemplateTimeslots = await this.timeslotsRepository.getTemplateTimeslotsByName(newTemplateModel.name);
 		if (templateGet) {
 			newTemplateModel.id = templateGet.id;
@@ -33,7 +32,7 @@ export default class TemplatesTimeslotsService {
 		return await this.timeslotsRepository.deleteTemplateTimeslots(id);
 	}
 
-	private checkTemplateTimeslots(templatable: TemplateTimeslotRequest): void {
+	private valideTemplateTimeslots(templatable: TemplateTimeslotRequest): void {
 		if (!(isValidFormatHHmm(templatable.firstSlotStartTimeInHHmm)))
 			throw new Error(`Not valid format for firstSlotStartTimeInHHmm: ${templatable.firstSlotStartTimeInHHmm}`);
 

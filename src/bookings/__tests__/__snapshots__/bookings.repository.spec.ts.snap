@@ -1,5 +1,3 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Bookings repository should get bookings with filter 1`] = `"{\\"where\\":{\\"_startDateTime\\":{\\"_type\\":\\"raw\\",\\"_value\\":\\"_startDateTime >= \\\\\\"2020-01-01T14:00:00.000Z\\\\\\" AND _startDateTime <= \\\\\\"2020-01-02T14:00:00.000Z\\\\\\"\\",\\"_useParameter\\":false,\\"_multipleParameters\\":false},\\"_status\\":{\\"_type\\":\\"equal\\",\\"_value\\":10,\\"_useParameter\\":true,\\"_multipleParameters\\":false}}}"`;
-
-exports[`Bookings repository should get bookings with only max start date 1`] = `"{\\"where\\":{\\"_startDateTime\\":{\\"_type\\":\\"raw\\",\\"_value\\":\\"_startDateTime <= \\\\\\"2020-01-05T14:00:00.000Z\\\\\\"\\",\\"_useParameter\\":false,\\"_multipleParameters\\":false},\\"_status\\":{\\"_type\\":\\"equal\\",\\"_value\\":10,\\"_useParameter\\":true,\\"_multipleParameters\\":false}}}"`;
+exports[`Bookings repository should search bookings 1`] = `"{\\"where\\":[{\\"_status\\":10,\\"_startDateTime\\":{\\"_type\\":\\"between\\",\\"_value\\":[\\"2020-01-01T14:00:00.000Z\\",\\"2020-01-02T14:00:00.000Z\\"],\\"_useParameter\\":true,\\"_multipleParameters\\":true}}]}"`;

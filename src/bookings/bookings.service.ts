@@ -4,7 +4,7 @@ import { Booking, BookingStatus } from "../models";
 
 import { BookingsRepository } from "./bookings.repository";
 import { CalendarsService } from "../calendars/calendars.service";
-import { BookingAcceptRequest, BookingRequest } from "./bookings.apicontract";
+import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "./bookings.apicontract";
 
 @Singleton
 export class BookingsService {
@@ -18,8 +18,7 @@ export class BookingsService {
 	private static createBooking(bookingRequest: BookingRequest) {
 		return new Booking(
 			bookingRequest.startDateTime,
-			this.SessionDurationInMinutes
-		);
+			this.SessionDurationInMinutes);
 	}
 
 	public async getBookings(): Promise<Booking[]> {
@@ -28,7 +27,6 @@ export class BookingsService {
 
 	public async getBooking(bookingId: string): Promise<Booking> {
 		const booking = await this.bookingsRepository.getBooking(bookingId);
-
 		if (!booking) {
 			throw new Error(`Booking ${bookingId} not found`);
 		}
@@ -65,5 +63,9 @@ export class BookingsService {
 			throw new Error(`Booking ${bookingId} is in invalid state for accepting`);
 		}
 		return booking;
+	}
+
+	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
+		return await this.bookingsRepository.search(searchRequest);
 	}
 }

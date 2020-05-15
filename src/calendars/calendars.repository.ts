@@ -29,4 +29,9 @@ export class CalendarsRepository {
 		const conn = await this.connection.getConnection();
 		return conn.getRepository(Calendar);
 	}
+
+	public async searchCalendar(from, to): Promise<Calendar[]> {
+		// TODO : search against timeslot
+		return (await this.getRepository()).find();
+	}
 }

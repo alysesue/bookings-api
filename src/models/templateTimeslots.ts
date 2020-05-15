@@ -11,7 +11,7 @@ export class TemplateTimeslots extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
-	@Column({ type: "text" })
+	@Column({ type: "varchar", length: 100 })
 	public name: string;
 
 	@Column({ type: "time" })
@@ -30,12 +30,14 @@ export class TemplateTimeslots extends BaseEntity {
 		super();
 	}
 
-	public mapTemplateTimeslotRequest(template: TemplateTimeslotRequest) {
-		this.name = template.name;
-		this.firstSlotStartTimeInHHmm = template.firstSlotStartTimeInHHmm;
-		this.lastSlotEndTimeInHHmm = template.lastSlotEndTimeInHHmm;
-		this.slotsDurationInMin = template.slotsDurationInMin;
-		this.weekdays = template.weekdays;
+	public static mapTemplateTimeslotRequest(template: TemplateTimeslotRequest) {
+		const newTemplate = new TemplateTimeslots();
+		newTemplate.name = template.name;
+		newTemplate.firstSlotStartTimeInHHmm = template.firstSlotStartTimeInHHmm;
+		newTemplate.lastSlotEndTimeInHHmm = template.lastSlotEndTimeInHHmm;
+		newTemplate.slotsDurationInMin = template.slotsDurationInMin;
+		newTemplate.weekdays = template.weekdays;
+		return newTemplate;
 	}
 
 	private getRelativeStartTime(startDate: Date) {

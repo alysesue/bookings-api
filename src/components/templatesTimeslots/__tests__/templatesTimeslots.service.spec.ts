@@ -4,12 +4,11 @@ import { TemplatesTimeslotsRepository } from "../templatesTimeslots.repository";
 import { Container } from "typescript-ioc";
 import { TemplateTimeslots } from "../../../models/templateTimeslots";
 
-const timeslotsRequestCommon: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 65, []);
-const timeslots: TemplateTimeslots = new TemplateTimeslots();
-timeslots.mapTemplateTimeslotRequest(timeslotsRequestCommon);
+const timeslotsRequestCommon: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 60, []);
+const timeslotsCommon: TemplateTimeslots = TemplateTimeslots.mapTemplateTimeslotRequest(timeslotsRequestCommon);
 
-const getTemplateTimeslotsByName = jest.fn().mockImplementation(() => Promise.resolve(timeslots));
-const setTemplateTimeslots = jest.fn().mockImplementation(() => Promise.resolve(timeslots));
+const getTemplateTimeslotsByName = jest.fn().mockImplementation(() => Promise.resolve(timeslotsCommon));
+const setTemplateTimeslots = jest.fn().mockImplementation(() => Promise.resolve(timeslotsCommon));
 const deleteTemplateTimeslots = jest.fn().mockImplementation(() => Promise.resolve(undefined));
 const MockTimeslotsRepository = jest.fn().mockImplementation(() => ({
 	setTemplateTimeslots,
@@ -70,14 +69,13 @@ describe('Timeslots  template services ', () => {
 	});
 
 	it('should create new templateTimeslots ', async () => {
-		const timeslotsRequest: TemplateTimeslotRequest = new TemplateTimeslotRequest('name', '11:23', '12:23', 60, []);
-		await timeslotsService.createTemplateTimeslots(timeslotsRequest);
+		await timeslotsService.createTemplateTimeslots(timeslotsRequestCommon);
 		expect(setTemplateTimeslots).toBeCalledTimes(1);
 	});
 
 	it('should update the template', async () => {
 		const template = await timeslotsService.updateTemplateTimeslots(timeslotsRequestCommon);
-		timeslots.mapTemplateTimeslotRequest(timeslotsRequestCommon);
+		const timeslots = TemplateTimeslots.mapTemplateTimeslotRequest(timeslotsRequestCommon);
 		expect(setTemplateTimeslots).toBeCalled();
 		expect(getTemplateTimeslotsByName).toBeCalled();
 		expect(template.name).toStrictEqual(timeslots.name);
