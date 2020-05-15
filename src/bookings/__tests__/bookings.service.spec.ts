@@ -89,6 +89,10 @@ class CalendarsServiceMock extends CalendarsService {
 		return Promise.resolve(CalendarsServiceMock.eventId);
 	}
 
+	public async createCalendarEvent(booking: Booking, calendar: Calendar): Promise<string> {
+		return Promise.resolve(CalendarsServiceMock.eventId);
+	}
+
 	public async getCalendarForBookingRequest(booking: Booking, calendarId: string): Promise<Calendar> {
 		const calendar = new Calendar();
 		calendar.id = 1;

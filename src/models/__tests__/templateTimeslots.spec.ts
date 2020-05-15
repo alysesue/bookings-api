@@ -20,8 +20,7 @@ afterAll(() => {
 });
 
 describe('Timeslots template', () => {
-	const template = new TemplateTimeslots();
-	template.mapTemplateTimeslotRequest({
+	const template = TemplateTimeslots.mapTemplateTimeslotRequest({
 		name: 'test',
 		firstSlotStartTimeInHHmm: '08:30',
 		lastSlotEndTimeInHHmm: '16:00',

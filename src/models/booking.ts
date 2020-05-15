@@ -1,6 +1,7 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { BookingStatus } from "./bookingStatus";
 import { Calendar } from '../models/calendar';
+import { textChangeRangeIsUnchanged } from "typescript";
 
 @Entity()
 export class Booking extends BaseEntity {
@@ -87,6 +88,9 @@ export class Booking extends BaseEntity {
 
 	public set calendar(calendar: Calendar) {
 		this._calendar = calendar;
+		if (calendar && calendar.id !== 0) {
+			this._calendarId = calendar.id;
+		}
 	}
 
 	public get calendarId(): number | undefined {
