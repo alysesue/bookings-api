@@ -42,6 +42,20 @@ export class BookingsController extends Controller {
 
 	}
 
+	@Get('{bookingId}')
+	@SuccessResponse(200, 'Ok')
+	public async getBooking(@Path() bookingId: string): Promise<any> {
+		try {
+			const booking = await this.bookingsService.getBooking(bookingId);
+			return BookingsController.mapDataModel(booking);
+		}
+		catch (err) {
+			logger.error("endpointPostBooking:: error: ", err);
+			this.setStatus(400);
+			return new ErrorResponse(err.message);
+		}
+	}
+
 	@Post()
 	@SuccessResponse(201, 'Created')
 	public async postBooking(@Body() bookingRequest: BookingRequest): Promise<any> {

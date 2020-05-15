@@ -27,7 +27,6 @@ export class BookingsService {
 
 	public async getBooking(bookingId: string): Promise<Booking> {
 		const booking = await this.bookingsRepository.getBooking(bookingId);
-
 		if (!booking) {
 			throw new Error(`Booking ${bookingId} not found`);
 		}
