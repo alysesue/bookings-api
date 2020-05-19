@@ -13,6 +13,7 @@ import { CalDavProxyHandler } from "../infrastructure/caldavproxy.handler";
 import { Constants } from "../models/constants";
 import { BookingsService } from "../bookings";
 import { Body, Controller, Get, Path, Post, Put, Query, Route, SuccessResponse, Tags } from "tsoa";
+import { TimeslotsService } from "../timeslots/timeslots.service";
 
 @Route("api/v1/calendars")
 @Tags('Calendars')
@@ -25,6 +26,9 @@ export class CalendarsController extends Controller {
 
 	@Inject
 	private bookingsService: BookingsService;
+
+	@Inject
+	private timeslotService: TimeslotsService;
 
 	private static mapToServiceProviderResponse(calendar: Calendar): ServiceProviderResponse {
 		return {
@@ -59,11 +63,8 @@ export class CalendarsController extends Controller {
 	@Get('availability')
 	@SuccessResponse(200, "Ok")
 	public async getAvailability(@Query() from: Date, @Query() to: Date): Promise<ServiceProviderResponse[]> {
-		const calendars = await this.calendarsService.searchCalendars(from, to);
-		const bookingRequests = await this.bookingsService.getBookingRequests(from, to);
-		if (bookingRequests.length >= calendars.length) {
-			return [];
-		}
+		const calendars = await this.timeslotService.getAvailableCalendarsForTimeslot(from, to);
+
 		return calendars.map(CalendarsController.mapToServiceProviderResponse);
 	}
 

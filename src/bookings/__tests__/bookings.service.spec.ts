@@ -5,11 +5,13 @@ import { Container } from "typescript-ioc";
 import { Booking, BookingStatus, Calendar } from "../../models/";
 import { InsertResult, UpdateResult } from "typeorm";
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "../bookings.apicontract";
+import { TimeslotsService } from '../../timeslots/timeslots.service';
 
 describe("Bookings.Service", () => {
 	beforeAll(() => {
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
+		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 	});
 
 	it("should get all bookings", async () => {
@@ -24,6 +26,7 @@ describe("Bookings.Service", () => {
 		bookingRequest.startDateTime = new Date();
 		BookingRepositoryMock.searchBookingsMock = [];
 		CalendarsServiceMock.calendars = [new Calendar()];
+		TimeslotsServiceMock.availableCalendarsForTimeslot = [new Calendar()];
 
 		await Container.get(BookingsService).save(bookingRequest);
 
@@ -36,10 +39,12 @@ describe("Bookings.Service", () => {
 		const bookingService = Container.get(BookingsService);
 		CalendarsServiceMock.eventId = "event-id";
 		BookingRepositoryMock.booking = new Booking(new Date(), 60);
-		CalendarsServiceMock.calendars = [
-			{id: 1, googleCalendarId: "google-id-1"} as Calendar,
-		];
+		const calendar = { id: 1, uuid: '123', googleCalendarId: "google-id-1" } as Calendar;
+		CalendarsServiceMock.calendars = [calendar];
+		TimeslotsServiceMock.availableCalendarsForTimeslot = [calendar];
+
 		const acceptRequest = new BookingAcceptRequest();
+		acceptRequest.calendarUUID = '123';
 		const result = await bookingService.acceptBooking("1", acceptRequest);
 
 		expect(result.status).toBe(BookingStatus.Accepted);
@@ -66,7 +71,7 @@ describe("Bookings.Service", () => {
 		const service = Container.get(BookingsService);
 		expect(service.save(bookingRequest))
 			.rejects
-			.toStrictEqual(new Error('No available calendars for this timeslot'))
+			.toStrictEqual(new Error('No available calendars for this timeslot'));
 	});
 });
 
@@ -92,7 +97,7 @@ class BookingRepositoryMock extends BookingsRepository {
 		return Promise.resolve(new UpdateResult());
 	}
 
-	async search(searchRequest: BookingSearchRequest): Promise<Booking[]> {
+	public async search(searchRequest: BookingSearchRequest): Promise<Booking[]> {
 		return Promise.resolve(BookingRepositoryMock.searchBookingsMock);
 	}
 }
@@ -107,6 +112,14 @@ class CalendarsServiceMock extends CalendarsService {
 
 	public async getCalendars(): Promise<Calendar[]> {
 		return CalendarsServiceMock.calendars;
+	}
+
+	public async getCalendarByUUID(uuid: string): Promise<Calendar> {
+		const calendar = new Calendar();
+		calendar.id = 1;
+		calendar.uuid = uuid;
+		calendar.googleCalendarId = 'googleCalendarId';
+		return calendar;
 	}
 
 	public async createEvent(booking: Booking): Promise<string> {
@@ -124,8 +137,12 @@ class CalendarsServiceMock extends CalendarsService {
 		calendar.googleCalendarId = 'googleCalendarId';
 		return calendar;
 	}
+}
 
-	async searchCalendars(startTime: Date, endTime: Date): Promise<Calendar[]> {
-		return CalendarsServiceMock.calendars;
+class TimeslotsServiceMock extends TimeslotsService {
+	public static availableCalendarsForTimeslot: Calendar[] = [];
+
+	public async getAvailableCalendarsForTimeslot(startDateTime: Date, endDateTime: Date): Promise<Calendar[]> {
+		return TimeslotsServiceMock.availableCalendarsForTimeslot;
 	}
 }

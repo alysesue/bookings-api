@@ -74,32 +74,13 @@ describe("Calendar service", () => {
 			} as Calendar,
 		];
 
-		const result = await service.getAvailableCalendarsForTimeSlot(
+		const result = await service.getAvailableGoogleCalendarsForTimeSlot(
 			booking.startDateTime,
 			booking.getSessionEndTime(),
 			calendars
 		);
 
 		expect(result).not.toBe(undefined);
-	});
-
-	it("should create event to the calendar", async () => {
-		CalendarRepositoryMockConstants.eventId = "event-id";
-
-		const service = Container.get(CalendarsService);
-		const booking = new Booking(new Date(), 60);
-		booking.status = BookingStatus.Accepted;
-
-		const eventId = await service.createEvent(booking, '1');
-
-		expect(eventId).toBe("event-id");
-	});
-
-	it('should throw exception if no calendar for uuid', async () => {
-		CalendarRepositoryObj.getCalendarByUUID.mockReturnValue(undefined);
-		const service = Container.get(CalendarsService);
-		expect(service.createEvent(new Booking(new Date(), 111), '1')).rejects
-			.toStrictEqual(new Error('Calendar 1 does not exist'));
 	});
 });
 

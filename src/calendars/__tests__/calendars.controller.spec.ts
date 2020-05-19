@@ -4,11 +4,13 @@ import { CalendarsService } from "../calendars.service";
 import { BookingsService } from "../../bookings";
 import { Booking, Calendar } from "../../models";
 import { BookingSearchRequest } from "../../bookings/bookings.apicontract";
+import { TimeslotsService } from '../../timeslots/timeslots.service';
 
 describe('Calendars.controller', () => {
 	beforeAll(() => {
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
 		Container.bind(BookingsService).to(BookingsServiceMock);
+		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 	});
 
 	beforeEach(() => {
@@ -19,6 +21,7 @@ describe('Calendars.controller', () => {
 		const calendar = new Calendar();
 		calendar.serviceProviderName = 'test';
 		CalendarsServiceMock.mockCalendars = [calendar];
+		TimeslotsServiceMock.availableCalendarsForTimeslot = [calendar];
 
 		const controller = Container.get(CalendarsController);
 		const result = await controller.getAvailability(new Date(), new Date());
@@ -26,17 +29,18 @@ describe('Calendars.controller', () => {
 		expect(result).toHaveLength(1);
 	});
 
-	it('should return empty list if calendar has booking requests', async () => {
+	it('should call timeslot availability service', async () => {
 		const calendar = new Calendar();
 		calendar.serviceProviderName = 'test';
 		CalendarsServiceMock.mockCalendars = [calendar];
+		TimeslotsServiceMock.availableCalendarsForTimeslot = [calendar];
 
 		BookingsServiceMock.mockBookings = [new Booking(new Date(), 60)];
 
 		const controller = Container.get(CalendarsController);
 		const result = await controller.getAvailability(new Date(), new Date());
 
-		expect(result).toStrictEqual([]);
+		expect(result).toBeDefined();
 	});
 
 	it('should return calendars', async () => {
@@ -46,6 +50,7 @@ describe('Calendars.controller', () => {
 		calendar.uuid = 'uuid';
 		calendar.googleCalendarId = "google-id-1";
 		CalendarsServiceMock.mockCalendars = [calendar];
+		TimeslotsServiceMock.availableCalendarsForTimeslot = [calendar];
 
 		BookingsServiceMock.mockBookings = [new Booking(new Date(), 60)];
 
@@ -69,11 +74,15 @@ class BookingsServiceMock extends BookingsService {
 class CalendarsServiceMock extends CalendarsService {
 	public static mockCalendars: Calendar[] = [];
 
-	public async searchCalendars(startTime: Date, endTime: Date): Promise<Calendar[]> {
-		return CalendarsServiceMock.mockCalendars;
-	}
-
 	public async getCalendars(): Promise<Calendar[]> {
 		return CalendarsServiceMock.mockCalendars;
+	}
+}
+
+class TimeslotsServiceMock extends TimeslotsService {
+	public static availableCalendarsForTimeslot: Calendar[] = [];
+
+	public async getAvailableCalendarsForTimeslot(startDateTime: Date, endDateTime: Date): Promise<Calendar[]> {
+		return TimeslotsServiceMock.availableCalendarsForTimeslot;
 	}
 }
