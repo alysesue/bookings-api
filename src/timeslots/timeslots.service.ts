@@ -36,26 +36,26 @@ export class TimeslotsService {
 		return result;
 	}
 
-	private async getAcceptedBookingsPerCalendarId(startOfDay: Date, endOfLastDay: Date): Promise<Map<number, Booking[]>> {
+	private async getAcceptedBookingsPerCalendarId(minStartTime: Date, maxEndTime: Date): Promise<Map<number, Booking[]>> {
 		let bookings = await this.bookingsRepository.search(new BookingSearchRequest(
-			startOfDay,
-			endOfLastDay,
+			minStartTime,
+			maxEndTime,
 			BookingStatus.Accepted
 		));
-		bookings = bookings.filter(booking => booking.getSessionEndTime() <= endOfLastDay);
+		bookings = bookings.filter(booking => booking.getSessionEndTime() <= maxEndTime);
 
 		const result = this.GroupByKey(bookings, (booking) => booking?.calendarId ?? 0);
 		return result;
 	}
 
-	private async getPendingBookings(startOfDay: Date, endOfLastDay: Date): Promise<Booking[]> {
+	private async getPendingBookings(minStartTime: Date, maxEndTime: Date): Promise<Booking[]> {
 		let bookings = await this.bookingsRepository.search(new BookingSearchRequest(
-			startOfDay,
-			endOfLastDay,
+			minStartTime,
+			maxEndTime,
 			BookingStatus.PendingApproval
 		));
 
-		bookings = bookings.filter(booking => booking.getSessionEndTime() <= endOfLastDay);
+		bookings = bookings.filter(booking => booking.getSessionEndTime() <= maxEndTime);
 		return bookings;
 	}
 
@@ -86,16 +86,16 @@ export class TimeslotsService {
 		}
 	}
 
-	private async getAggregatedTimeslotEntries(startOfDay: Date, endOfLastDay: Date): Promise<AggregatedEntry<Calendar>[]> {
+	private async getAggregatedTimeslotEntries(minStartTime: Date, maxEndTime: Date): Promise<AggregatedEntry<Calendar>[]> {
 		const aggregator = new TimeslotAggregator<Calendar>();
 
 		const calendars = await this.calendarsRepository.getCalendarsWithTemplates();
-		const bookingsPerCalendarId = await this.getAcceptedBookingsPerCalendarId(startOfDay, endOfLastDay);
+		const bookingsPerCalendarId = await this.getAcceptedBookingsPerCalendarId(minStartTime, maxEndTime);
 
 		for (const calendar of calendars.filter(c => c.templatesTimeslots !== null)) {
 			const generator = calendar.templatesTimeslots.generateValidTimeslots({
-				startDatetime: startOfDay,
-				endDatetime: endOfLastDay
+				startDatetime: minStartTime,
+				endDatetime: maxEndTime
 			});
 			const calendarBookings = (bookingsPerCalendarId.get(calendar.id) || []);
 			const generatorWithoutBookedTimes = this.ignoreBookedTimes(generator, calendarBookings);
