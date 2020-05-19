@@ -6,6 +6,7 @@ export class BookingAcceptRequest {
 
 export class BookingRequest {
 	public startDateTime: Date;
+	public endDateTime: Date;
 }
 
 export class BookingResponse {

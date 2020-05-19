@@ -1,7 +1,6 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { BookingStatus } from "./bookingStatus";
-import { Calendar } from '../models/calendar';
-import { textChangeRangeIsUnchanged } from "typescript";
+import { Calendar } from './calendar';
 
 @Entity()
 export class Booking extends BaseEntity {

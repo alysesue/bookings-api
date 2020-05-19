@@ -4,7 +4,7 @@ import { CalendarsService } from "../../calendars/calendars.service";
 import { Container } from "typescript-ioc";
 import { Booking, BookingStatus, Calendar } from "../../models/";
 import { InsertResult, UpdateResult } from "typeorm";
-import { BookingAcceptRequest, BookingRequest } from "../bookings.apicontract";
+import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "../bookings.apicontract";
 
 describe("Bookings.Service", () => {
 	beforeAll(() => {
@@ -21,6 +21,10 @@ describe("Bookings.Service", () => {
 
 	it("should save booking from booking request", async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		BookingRepositoryMock.searchBookingsMock = [];
+		CalendarsServiceMock.calendars = [new Calendar()];
+
 		await Container.get(BookingsService).save(bookingRequest);
 
 		const booking = BookingRepositoryMock.booking;
@@ -33,7 +37,7 @@ describe("Bookings.Service", () => {
 		CalendarsServiceMock.eventId = "event-id";
 		BookingRepositoryMock.booking = new Booking(new Date(), 60);
 		CalendarsServiceMock.calendars = [
-			{ id: 1, googleCalendarId: "google-id-1" } as Calendar,
+			{id: 1, googleCalendarId: "google-id-1"} as Calendar,
 		];
 		const acceptRequest = new BookingAcceptRequest();
 		const result = await bookingService.acceptBooking("1", acceptRequest);
@@ -49,11 +53,27 @@ describe("Bookings.Service", () => {
 			new Error("Booking 1 not found")
 		);
 	});
+
+	it("should validate booking request", async () => {
+		const bookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+
+		const testCalendar = new Calendar();
+		testCalendar.googleCalendarId = "google-id-1";
+		CalendarsServiceMock.calendars = [new Calendar()];
+		BookingRepositoryMock.searchBookingsMock = [new Booking(new Date(), 10)];
+
+		const service = Container.get(BookingsService);
+		expect(service.save(bookingRequest))
+			.rejects
+			.toStrictEqual(new Error('No available calendars for this timeslot'))
+	});
 });
 
 class BookingRepositoryMock extends BookingsRepository {
 	public static booking: Booking;
 	public static getBookingsMock: Booking[];
+	public static searchBookingsMock: Booking[];
 
 	public async getBookings(): Promise<Booking[]> {
 		return Promise.resolve(BookingRepositoryMock.getBookingsMock);
@@ -70,6 +90,10 @@ class BookingRepositoryMock extends BookingsRepository {
 
 	public async update(booking: Booking): Promise<UpdateResult> {
 		return Promise.resolve(new UpdateResult());
+	}
+
+	async search(searchRequest: BookingSearchRequest): Promise<Booking[]> {
+		return Promise.resolve(BookingRepositoryMock.searchBookingsMock);
 	}
 }
 
@@ -99,5 +123,9 @@ class CalendarsServiceMock extends CalendarsService {
 		calendar.uuid = 'uuid';
 		calendar.googleCalendarId = 'googleCalendarId';
 		return calendar;
+	}
+
+	async searchCalendars(startTime: Date, endTime: Date): Promise<Calendar[]> {
+		return CalendarsServiceMock.calendars;
 	}
 }

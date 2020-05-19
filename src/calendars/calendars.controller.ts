@@ -8,10 +8,9 @@ import {
 	ServiceProviderResponse
 } from "./calendars.apicontract";
 import { CalendarsService } from "./calendars.service";
-import { BookingStatus, Calendar } from "../models";
+import { Calendar } from "../models";
 import { CalDavProxyHandler } from "../infrastructure/caldavproxy.handler";
 import { Constants } from "../models/constants";
-import { BookingSearchRequest } from "../bookings/bookings.apicontract";
 import { BookingsService } from "../bookings";
 import { Body, Controller, Get, Path, Post, Put, Query, Route, SuccessResponse, Tags } from "tsoa";
 
@@ -61,16 +60,11 @@ export class CalendarsController extends Controller {
 	@SuccessResponse(200, "Ok")
 	public async getAvailability(@Query() from: Date, @Query() to: Date): Promise<ServiceProviderResponse[]> {
 		const calendars = await this.calendarsService.searchCalendars(from, to);
-		const bookingRequests = await this.getBookingRequests(from, to);
+		const bookingRequests = await this.bookingsService.getBookingRequests(from, to);
 		if (bookingRequests.length >= calendars.length) {
 			return [];
 		}
 		return calendars.map(CalendarsController.mapToServiceProviderResponse);
-	}
-
-	private async getBookingRequests(from: Date, to: Date) {
-		const searchBookingsRequest = new BookingSearchRequest(from, to, BookingStatus.PendingApproval);
-		return await this.bookingsService.searchBookings(searchBookingsRequest);
 	}
 
 	private mapDataModel(calendar: Calendar): CalendarModel {
