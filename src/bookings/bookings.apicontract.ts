@@ -36,3 +36,8 @@ export class BookingRequestResponse {
 	public booking: BookingResponse;
 	public serviceProviders: ServiceProviderResponse[];
 }
+
+export class BookingProviderResponse {
+	public uuid: string;
+	public serviceProviderName: string;
+}

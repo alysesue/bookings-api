@@ -2,7 +2,7 @@ import { Container, Snapshot } from "typescript-ioc";
 import { Booking, BookingStatus, Calendar, TemplateTimeslots } from "../../models";
 import { TimeslotsService } from "../timeslots.service";
 import { CalendarsRepository } from '../../calendars/calendars.repository';
-import { TimeslotAggregator } from '../timeslotAggregator';
+import { AggregatedEntry, TimeslotAggregator } from '../timeslotAggregator';
 import { BookingsRepository } from "../../bookings/bookings.repository";
 import { Timeslot } from "../../models/Timeslot";
 import { DateHelper } from "../../infrastructure/dateHelper";
@@ -21,13 +21,26 @@ afterEach(() => {
 });
 
 jest.mock('../timeslotAggregator', () => {
+	const getEntriesMock = jest.fn(() => {
+		const timeslot = new Timeslot(new Date(Date.UTC(2020, 4, 19, 1, 0)), new Date(Date.UTC(2020, 4, 19, 2, 0)));
+		const CalendarMock = new Calendar();
+		CalendarMock.id = 2;
+
+		const aggregatedEntryMock = new AggregatedEntry<Calendar>(timeslot);
+		aggregatedEntryMock.addGroup(CalendarMock);
+
+		return [aggregatedEntryMock];
+	});
+
 	const aggregatorMock = {
 		aggregate: jest.fn(),
 		clear: jest.fn(),
-		getEntries: jest.fn(() => [])
+		getEntries: getEntriesMock
 	};
 
+	const actualImplementation = jest.requireActual('../timeslotAggregator');
 	return {
+		AggregatedEntry: actualImplementation.AggregatedEntry,
 		TimeslotAggregator: jest.fn(() => aggregatorMock)
 	};
 });
@@ -62,14 +75,33 @@ describe("Timeslots Service", () => {
 		Container.bind(BookingsRepository).to(jest.fn(() => BookingsRepositoryMock));
 
 		const service = Container.get(TimeslotsService);
-		const result = await service.getAggregatedTimeslots(new Date(), new Date());
 		const aggregator = new TimeslotAggregator<Calendar>();
 
+		const result = await service.getAggregatedTimeslots(new Date(), new Date());
 		expect(result).toBeDefined();
 
 		expect(CalendarsRepositoryMock.getCalendarsWithTemplates).toBeCalled();
 		expect(templateTimeslotMock.generateValidTimeslots).toBeCalledTimes(1);
 		expect(aggregator.aggregate).toBeCalled();
 		expect(aggregator.getEntries).toBeCalled();
+	});
+
+	it("should get available calendars", async () => {
+		Container.bind(CalendarsRepository).to(jest.fn(() => CalendarsRepositoryMock));
+		Container.bind(BookingsRepository).to(jest.fn(() => BookingsRepositoryMock));
+
+		const service = Container.get(TimeslotsService);
+		const startDateTime = new Date(Date.UTC(2020, 4, 19, 1, 0));
+		const endDateTime = new Date(Date.UTC(2020, 4, 19, 2, 0));
+
+		const aggregator = new TimeslotAggregator<Calendar>();
+		const result = await service.getAvailableCalendarsForTimeslot(startDateTime, endDateTime);
+
+		expect(CalendarsRepositoryMock.getCalendarsWithTemplates).toBeCalled();
+		expect(templateTimeslotMock.generateValidTimeslots).toBeCalledTimes(1);
+		expect(aggregator.aggregate).toBeCalled();
+		expect(aggregator.getEntries).toBeCalled();
+
+		expect(result).toHaveLength(1);
 	});
 });

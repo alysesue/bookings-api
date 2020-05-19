@@ -39,6 +39,10 @@ export class DateHelper {
 		return (dateA.getTime() - dateB.getTime()) / DateHelper.MsPerDay;
 	}
 
+	public static equals(dateA: Date, dateB: Date): boolean {
+		return dateA.getTime() === dateB.getTime();
+	}
+
 	public static setHours(date: Date, hours: number, min: number): Date {
 		const newDate = DateHelper.getDateOnly(date);
 		newDate.setHours(hours, min);
