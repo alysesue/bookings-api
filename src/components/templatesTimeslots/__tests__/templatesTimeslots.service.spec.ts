@@ -17,7 +17,7 @@ const MockTimeslotsRepository = jest.fn().mockImplementation(() => ({
 }));
 
 describe('Timeslots  template services ', () => {
-	let timeslotsService;
+	let timeslotsService: TemplatesTimeslotsService;
 	beforeAll(() => {
 		Container.bind(TemplatesTimeslotsRepository).to(MockTimeslotsRepository);
 		timeslotsService = Container.get(TemplatesTimeslotsService);

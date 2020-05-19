@@ -1,15 +1,30 @@
-// Format HH:mm
-const TIME_FORMAT = "HH:mm";
-import moment = require("moment");
+import * as moment from 'moment';
+
+const TIME_FORMATS = ["HH:mm", "H:mm", "HH:m", "H:m", "HH:mm:ss"];
+
+const parseTime = (time: string) => moment(time, TIME_FORMATS, true);
 
 export const isValidFormatHHmm = (time: string) => {
-	const regex = new RegExp("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$");
-	return regex.test(time);
-
+	const parsed = parseTime(time);
+	return parsed.isValid();
 };
 
 export const diffHours = (previous: string, after: string) => {
-	const previousDate = moment('01/01/2011 ' + previous,'MM/DD/YYYY ' + TIME_FORMAT);
-	const afterDate = moment('01/01/2011 ' + after, 'MM/DD/YYYY ' + TIME_FORMAT);
-	return afterDate.diff(previousDate, 'minutes');
+	const previousTime = parseTime(previous);
+	const afterTime = parseTime(after);
+
+	return afterTime.diff(previousTime, 'minutes');
+};
+
+export const parseHHmm = (time: string): { hours: number, minutes: number } => {
+	if (time === null || time === undefined) {
+		return null;
+	}
+
+	const parsed = parseTime(time);
+	if (!parsed.isValid()) {
+		throw new Error(`Value ${time} is not a valid time.`);
+	}
+
+	return { hours: parsed.hours(), minutes: parsed.minutes() };
 };

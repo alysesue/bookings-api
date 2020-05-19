@@ -1,6 +1,6 @@
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 import { Inject, Singleton } from "typescript-ioc";
-import { Between, InsertResult, Repository, UpdateResult } from "typeorm";
+import { Between, FindConditions, InsertResult, Repository, UpdateResult } from "typeorm";
 import { DbConnection } from "../core/db.connection";
 import { Booking } from "../models";
 import { BookingSearchRequest } from "./bookings.apicontract";
@@ -34,12 +34,13 @@ export class BookingsRepository {
 	public async search(searchRequest: BookingSearchRequest): Promise<Booking[]> {
 		const repository = await this.getRepository();
 
-		return repository.find({
-			where: [{
-				_status: searchRequest.status,
-				_startDateTime: Between(searchRequest.from, searchRequest.to)
-			}]
-		});
+		const findConditions: FindConditions<Booking> = {};
+		findConditions['_startDateTime'] = Between(searchRequest.from, searchRequest.to);
+		if (searchRequest.status) {
+			findConditions['_status'] = searchRequest.status;
+		}
+
+		return repository.find({ where: [findConditions] });
 	}
 
 	private async getRepository(): Promise<Repository<Booking>> {

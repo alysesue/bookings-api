@@ -45,9 +45,11 @@ export class BookingsService {
 	public async acceptBooking(bookingId: string, acceptRequest: BookingAcceptRequest): Promise<Booking> {
 		const booking = await this.getBookingForAccepting(bookingId);
 
-		const eventICalId = await this.calendarsService.createEvent(booking, acceptRequest.calendarUUID);
+		const calendar = await this.calendarsService.getCalendarForBookingRequest(booking, acceptRequest.calendarUUID);
+		const eventICalId = await this.calendarsService.createCalendarEvent(booking, calendar);
 
 		booking.status = BookingStatus.Accepted;
+		booking.calendar = calendar;
 		booking.eventICalId = eventICalId;
 		booking.acceptedAt = new Date();
 

@@ -50,7 +50,7 @@ export class CalendarsService {
 		const googleCalendarResult = await this.googleCalendarApi.getAvailableGoogleCalendars(
 			booking.startDateTime,
 			booking.getSessionEndTime(),
-			[{id: calendar.googleCalendarId}]
+			[{ id: calendar.googleCalendarId }]
 		);
 
 		return CalendarsService.isEmptyArray(googleCalendarResult[calendar.googleCalendarId].busy);
@@ -73,6 +73,10 @@ export class CalendarsService {
 
 	public async createEvent(booking: Booking, calendarId: string): Promise<string> {
 		const calendar = await this.getCalendarForBookingRequest(booking, calendarId);
+		return await this.createCalendarEvent(booking, calendar);
+	}
+
+	public async createCalendarEvent(booking: Booking, calendar: Calendar): Promise<string> {
 		return await this.googleCalendarApi.createEvent(booking, calendar.googleCalendarId);
 	}
 
@@ -90,7 +94,7 @@ export class CalendarsService {
 
 		const response = await this.googleCalendarApi.addCalendarUser(
 			calendar.googleCalendarId,
-			{role: "reader", email: model.email}
+			{ role: "reader", email: model.email }
 		);
 
 		return {
@@ -98,7 +102,7 @@ export class CalendarsService {
 		} as CalendarUserModel;
 	}
 
-	private async getCalendarForBookingRequest(booking: Booking, calendarId: string): Promise<Calendar> {
+	public async getCalendarForBookingRequest(booking: Booking, calendarId: string): Promise<Calendar> {
 		const calendar = await this.calendarsRepository.getCalendarByUUID(calendarId);
 		if (!calendar) {
 			throw new Error(`Calendar ${calendarId} does not exist`);
