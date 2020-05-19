@@ -5,6 +5,7 @@ import { Booking, BookingStatus } from "../models";
 import { BookingsRepository } from "./bookings.repository";
 import { CalendarsService } from "../calendars/calendars.service";
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "./bookings.apicontract";
+import { isEmptyArray } from "../tools/arrays";
 
 @Singleton
 export class BookingsService {
@@ -36,10 +37,15 @@ export class BookingsService {
 	public async save(bookingRequest: BookingRequest): Promise<Booking> {
 		const booking = BookingsService.createBooking(bookingRequest);
 
-		await this.calendarsService.validateTimeSlot(booking);
+		await this.validateTimeSlot(booking);
 
 		await this.bookingsRepository.save(booking);
 		return booking;
+	}
+
+	public async getBookingRequests(from: Date, to: Date) {
+		const searchBookingsRequest = new BookingSearchRequest(from, to, BookingStatus.PendingApproval);
+		return await this.searchBookings(searchBookingsRequest);
 	}
 
 	public async acceptBooking(bookingId: string, acceptRequest: BookingAcceptRequest): Promise<Booking> {
@@ -56,6 +62,19 @@ export class BookingsService {
 		await this.bookingsRepository.update(booking);
 
 		return booking;
+	}
+
+	private async validateTimeSlot(booking: Booking) {
+		const calendars = await this.calendarsService.searchCalendars(booking.startDateTime, booking.getSessionEndTime());
+
+		if (isEmptyArray(calendars)) {
+			throw new Error("No available calendars for this timeslot");
+		}
+		const bookingRequests = await this.getBookingRequests(booking.startDateTime, booking.getSessionEndTime());
+
+		if (bookingRequests.length >= calendars.length) {
+			throw new Error("No available calendars for this timeslot");
+		}
 	}
 
 	private async getBookingForAccepting(bookingId: string): Promise<Booking> {

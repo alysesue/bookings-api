@@ -83,14 +83,6 @@ describe("Calendar service", () => {
 		expect(result).not.toBe(undefined);
 	});
 
-	it("should validate booking request", async () => {
-		const testCalendar = new Calendar();
-		testCalendar.googleCalendarId = "google-id-1";
-		CalendarRepositoryMockConstants.calendars = [testCalendar];
-		const service = Container.get(CalendarsService);
-		await service.validateTimeSlot(new Booking(new Date(), 60));
-	});
-
 	it("should create event to the calendar", async () => {
 		CalendarRepositoryMockConstants.eventId = "event-id";
 
