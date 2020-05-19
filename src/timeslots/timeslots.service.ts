@@ -7,7 +7,7 @@ import { BookingsRepository } from "../bookings/bookings.repository";
 import { Booking } from '../models/booking';
 import { Timeslot } from '../models/Timeslot';
 import { BookingStatus } from "../models";
-import { BookingSearchRequest } from '../bookings/bookings.apicontract';
+import { BookingRequest, BookingSearchRequest } from '../bookings/bookings.apicontract';
 import { TimeslotResponse } from './timeslots.apicontract';
 
 @Singleton
@@ -36,15 +36,27 @@ export class TimeslotsService {
 		return result;
 	}
 
-	private async getBookingsPerCalendarId(startOfDay: Date, endOfLastDay: Date): Promise<Map<number, Booking[]>> {
+	private async getAcceptedBookingsPerCalendarId(startOfDay: Date, endOfLastDay: Date): Promise<Map<number, Booking[]>> {
 		let bookings = await this.bookingsRepository.search(new BookingSearchRequest(
 			startOfDay,
-			endOfLastDay
+			endOfLastDay,
+			BookingStatus.Accepted
 		));
 		bookings = bookings.filter(booking => booking.getSessionEndTime() <= endOfLastDay);
 
 		const result = this.GroupByKey(bookings, (booking) => booking?.calendarId ?? 0);
 		return result;
+	}
+
+	private async getPendingBookings(startOfDay: Date, endOfLastDay: Date): Promise<Booking[]> {
+		let bookings = await this.bookingsRepository.search(new BookingSearchRequest(
+			startOfDay,
+			endOfLastDay,
+			BookingStatus.PendingApproval
+		));
+
+		bookings = bookings.filter(booking => booking.getSessionEndTime() <= endOfLastDay);
+		return bookings;
 	}
 
 	private timeslotKeySelector = (start: Date, end: Date) => `${start.getTime()}|${end.getTime()}`;
@@ -60,8 +72,7 @@ export class TimeslotsService {
 		}
 	}
 
-	private * deductPendingTimeslots(entries: Iterable<TimeslotResponse>, bookingsPerCalendarId: Map<number, Booking[]>): Iterable<TimeslotResponse> {
-		const pendingBookings = (bookingsPerCalendarId.get(0) || []).filter(booking => booking.status === BookingStatus.PendingApproval);
+	private * deductPendingTimeslots(entries: Iterable<TimeslotResponse>, pendingBookings: Booking[]): Iterable<TimeslotResponse> {
 		const pendingBookingsLookup = this.GroupByKey(pendingBookings, this.bookingKeySelector);
 
 		for (const element of entries) {
@@ -75,20 +86,18 @@ export class TimeslotsService {
 		}
 	}
 
-	public async getAggregatedTimeslots(startDate: Date, endDate: Date): Promise<TimeslotResponse[]> {
+	private async getAggregatedTimeslotEntries(startOfDay: Date, endOfLastDay: Date): Promise<AggregatedEntry<Calendar>[]> {
 		const aggregator = new TimeslotAggregator<Calendar>();
-		const startOfDay = DateHelper.getDateOnly(startDate);
-		const endOfLastDay = DateHelper.getEndOfDay(endDate);
 
 		const calendars = await this.calendarsRepository.getCalendarsWithTemplates();
-		const bookingsPerCalendarId = await this.getBookingsPerCalendarId(startOfDay, endOfLastDay);
+		const bookingsPerCalendarId = await this.getAcceptedBookingsPerCalendarId(startOfDay, endOfLastDay);
 
 		for (const calendar of calendars.filter(c => c.templatesTimeslots !== null)) {
 			const generator = calendar.templatesTimeslots.generateValidTimeslots({
 				startDatetime: startOfDay,
 				endDatetime: endOfLastDay
 			});
-			const calendarBookings = (bookingsPerCalendarId.get(calendar.id) || []).filter(booking => booking.status === BookingStatus.Accepted);
+			const calendarBookings = (bookingsPerCalendarId.get(calendar.id) || []);
 			const generatorWithoutBookedTimes = this.ignoreBookedTimes(generator, calendarBookings);
 
 			aggregator.aggregate(calendar, generatorWithoutBookedTimes);
@@ -97,10 +106,29 @@ export class TimeslotsService {
 		const entries = aggregator.getEntries();
 		aggregator.clear();
 
-		const generateMappedEntries = this.mapDataModels(entries);
-		const mappedEntries = Array.from(this.deductPendingTimeslots(generateMappedEntries, bookingsPerCalendarId));
+		return entries;
+	}
+
+	public async getAggregatedTimeslots(startDate: Date, endDate: Date): Promise<TimeslotResponse[]> {
+		const startOfDay = DateHelper.getDateOnly(startDate);
+		const endOfLastDay = DateHelper.getEndOfDay(endDate);
+
+		const aggregatedEntries = await this.getAggregatedTimeslotEntries(startOfDay, endOfLastDay);
+		const generateMappedEntries = this.mapDataModels(aggregatedEntries);
+
+		const pendingBookings = await this.getPendingBookings(startOfDay, endOfLastDay);
+		const mappedEntries = Array.from(this.deductPendingTimeslots(generateMappedEntries, pendingBookings));
 
 		return mappedEntries;
+	}
+
+	public async getAvailableCalendarsForTimeslot(startDateTime: Date, endDateTime: Date): Promise<Calendar[]> {
+		const aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime);
+
+		const timeslotEntry = aggregatedEntries.find(e => DateHelper.equals(e.getTimeslot().getStartTime(), startDateTime)
+			&& DateHelper.equals(e.getTimeslot().getEndTime(), endDateTime));
+
+		return timeslotEntry?.getGroups() || [];
 	}
 
 	private mapDataModel(entry: AggregatedEntry<Calendar>): TimeslotResponse {

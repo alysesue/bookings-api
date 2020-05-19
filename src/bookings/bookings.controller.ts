@@ -3,18 +3,20 @@ import { Inject } from "typescript-ioc";
 
 import { Body, Controller, Get, Path, Post, Query, Route, SuccessResponse, Tags } from "tsoa";
 import { Booking } from "../models";
-import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingSearchRequest } from "./bookings.apicontract";
+import { BookingAcceptRequest, BookingProviderResponse, BookingRequest, BookingResponse, BookingSearchRequest } from "./bookings.apicontract";
 import { BookingsService } from "./bookings.service";
 import { ErrorResponse } from "../apicontract";
-import { CalendarsService } from "../calendars/calendars.service";
+import { Calendar } from '../models/calendar';
+import { TimeslotsService } from "../timeslots/timeslots.service";
 
 @Route("api/v1/bookings")
 @Tags('Bookings')
 export class BookingsController extends Controller {
 	@Inject
 	private bookingsService: BookingsService;
+
 	@Inject
-	private calendarsService: CalendarsService;
+	private timeslotService: TimeslotsService;
 
 	private static mapDataModel(booking: Booking): BookingResponse {
 		return {
@@ -24,6 +26,13 @@ export class BookingsController extends Controller {
 			startDateTime: booking.startDateTime,
 			endDateTime: booking.getSessionEndTime()
 		} as BookingResponse;
+	}
+
+	private mapProvider(calendar: Calendar): BookingProviderResponse {
+		return {
+			uuid: calendar.uuid,
+			serviceProviderName: calendar.serviceProviderName
+		} as BookingProviderResponse;
 	}
 
 	@Get()
@@ -54,6 +63,23 @@ export class BookingsController extends Controller {
 			this.setStatus(400);
 			return new ErrorResponse(err.message);
 		}
+	}
+
+	@Get('{bookingId}/providers')
+	@SuccessResponse(200, 'Ok')
+	public async getBookingProviders(@Path() bookingId: string): Promise<any> {
+		let booking: Booking;
+		try {
+			booking = await this.bookingsService.getBooking(bookingId);
+		}
+		catch (err) {
+			logger.error("endpointPostBooking:: error: ", err);
+			this.setStatus(400);
+			return new ErrorResponse(err.message);
+		}
+
+		const timeslots = await this.timeslotService.getAvailableCalendarsForTimeslot(booking.startDateTime, booking.getSessionEndTime());
+		return timeslots?.map(e => this.mapProvider(e)) || [];
 	}
 
 	@Post()

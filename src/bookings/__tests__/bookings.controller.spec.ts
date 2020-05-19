@@ -1,14 +1,15 @@
 import { Container } from "typescript-ioc";
-
 import { Booking, BookingStatus } from "../../models";
-
 import { BookingsController } from "../bookings.controller";
 import { BookingsService } from "../bookings.service";
 import { BookingResponse, BookingSearchRequest } from "../bookings.apicontract";
+import { TimeslotsService } from '../../timeslots/timeslots.service';
+import { Calendar } from '../../models/calendar';
 
 describe("Bookings.Controller", () => {
 	beforeAll(() => {
 		Container.bind(BookingsService).to(BookingsServiceMock);
+		Container.bind(TimeslotsService).to(jest.fn(() => TimeslotsServiceMock));
 	});
 
 	it("should have http code 200", async () => {
@@ -68,7 +69,23 @@ describe("Bookings.Controller", () => {
 		expect(result.startDateTime).toBe(testTime);
 		expect(result.status).toBe(0);
 	});
+
+	it('should get booking providers', async () => {
+		const controller = Container.get(BookingsController);
+		const testTime = new Date('2020-05-16T20:25:43.511Z');
+
+		BookingsServiceMock.mockGetBooking = new Booking(testTime, 120);
+
+		const result = await controller.getBookingProviders("booking-id-1");
+
+		expect(result).toBeDefined();
+		expect(TimeslotsServiceMock.getAvailableCalendarsForTimeslot).toBeCalled();
+	});
 });
+
+const TimeslotsServiceMock = {
+	getAvailableCalendarsForTimeslot: jest.fn(() => Promise.resolve([]))
+};
 
 class BookingsServiceMock extends BookingsService {
 	public static mockAcceptBooking: Booking;
