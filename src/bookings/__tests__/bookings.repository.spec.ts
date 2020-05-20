@@ -81,14 +81,13 @@ describe("Bookings repository", () => {
 	it('should update booking', async () => {
 		jest.resetAllMocks();
 		Container.bind(DbConnection).to(MockDBConnection);
-		const updateRe = new UpdateResult();
 
-		MockDBConnection.update.mockImplementation(() => updateRe);
 		const bookingsRepository = new BookingsRepository();
 		const booking: Booking = new Booking(new Date(), 60);
+		MockDBConnection.save.mockImplementation(() => booking);
 
 		await bookingsRepository.update(booking);
-		expect(MockDBConnection.update.mock.calls[0][1]).toBe(booking);
+		expect(MockDBConnection.save).toBeCalled();
 	});
 
 	it('should get booking', async () => {
@@ -106,6 +105,7 @@ class MockDBConnection extends DbConnection {
 	public static find = jest.fn();
 	public static update = jest.fn();
 	public static findOne = jest.fn();
+	public static save = jest.fn();
 
 	public async getConnection(): Promise<any> {
 		const connection = {
@@ -114,7 +114,8 @@ class MockDBConnection extends DbConnection {
 				findOne: MockDBConnection.findOne,
 				insert: MockDBConnection.insert,
 				update: MockDBConnection.update,
-			}),
+				save: MockDBConnection.save
+			})
 		};
 		return Promise.resolve(connection);
 	}

@@ -87,9 +87,10 @@ export class Booking extends BaseEntity {
 
 	public set calendar(calendar: Calendar) {
 		this._calendar = calendar;
-		if (calendar && calendar.id !== 0) {
-			this._calendarId = calendar.id;
-		}
+	}
+
+	public set calendarId(value: number | undefined) {
+		this._calendarId = undefined;
 	}
 
 	public get calendarId(): number | undefined {

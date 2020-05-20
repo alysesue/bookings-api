@@ -93,8 +93,8 @@ class BookingRepositoryMock extends BookingsRepository {
 		return Promise.resolve(new InsertResult());
 	}
 
-	public async update(booking: Booking): Promise<UpdateResult> {
-		return Promise.resolve(new UpdateResult());
+	public async update(booking: Booking): Promise<Booking> {
+		return Promise.resolve(booking);
 	}
 
 	public async search(searchRequest: BookingSearchRequest): Promise<Booking[]> {

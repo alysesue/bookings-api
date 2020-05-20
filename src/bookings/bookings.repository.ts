@@ -25,10 +25,9 @@ export class BookingsRepository {
 		return repository.insert(booking);
 	}
 
-	public async update(booking: Booking): Promise<UpdateResult> {
+	public async update(booking: Booking): Promise<Booking> {
 		const repository = await this.getRepository();
-		return repository.update(booking.id, booking);
-
+		return repository.save(booking);
 	}
 
 	public async search(searchRequest: BookingSearchRequest): Promise<Booking[]> {
