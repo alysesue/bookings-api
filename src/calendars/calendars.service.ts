@@ -19,6 +19,10 @@ export class CalendarsService {
 		return await this.calendarsRepository.getCalendars();
 	}
 
+	public async getCalendarByUUID(uuid: string): Promise<Calendar> {
+		return await this.calendarsRepository.getCalendarByUUID(uuid);
+	}
+
 	public async createCalendar(model: AddCalendarModel): Promise<Calendar> {
 		const googleCalendarId = await this.googleCalendarApi.createCalendar();
 
@@ -30,22 +34,17 @@ export class CalendarsService {
 		return await this.calendarsRepository.saveCalendar(calendar);
 	}
 
-	public async searchCalendars(startTime: Date, endTime: Date): Promise<Calendar[]> {
-		const calendars = await this.getCalendars();
-		return await this.getAvailableCalendarsForTimeSlot(startTime, endTime, calendars);
-	}
-
 	public async validateGoogleCalendarForTimeSlot(booking: Booking, calendar: Calendar) {
 		const googleCalendarResult = await this.googleCalendarApi.getAvailableGoogleCalendars(
 			booking.startDateTime,
 			booking.getSessionEndTime(),
-			[{id: calendar.googleCalendarId}]
+			[{ id: calendar.googleCalendarId }]
 		);
 
 		return isEmptyArray(googleCalendarResult[calendar.googleCalendarId].busy);
 	}
 
-	public async getAvailableCalendarsForTimeSlot(
+	public async getAvailableGoogleCalendarsForTimeSlot(
 		startTime: Date,
 		endTime: Date,
 		calendars: Calendar[]
@@ -57,11 +56,6 @@ export class CalendarsService {
 		const googleCalendars = await this.googleCalendarApi.getAvailableGoogleCalendars(startTime, endTime, googleCalendarIds);
 
 		return calendars.filter((calendar) => isEmptyArray(googleCalendars[calendar.googleCalendarId].busy));
-	}
-
-	public async createEvent(booking: Booking, calendarId: string): Promise<string> {
-		const calendar = await this.getCalendarForBookingRequest(booking, calendarId);
-		return await this.createCalendarEvent(booking, calendar);
 	}
 
 	public async createCalendarEvent(booking: Booking, calendar: Calendar): Promise<string> {
@@ -82,22 +76,11 @@ export class CalendarsService {
 
 		const response = await this.googleCalendarApi.addCalendarUser(
 			calendar.googleCalendarId,
-			{role: "reader", email: model.email}
+			{ role: "reader", email: model.email }
 		);
 
 		return {
 			email: response.email,
 		} as CalendarUserModel;
-	}
-
-	public async getCalendarForBookingRequest(booking: Booking, calendarId: string): Promise<Calendar> {
-		const calendar = await this.calendarsRepository.getCalendarByUUID(calendarId);
-		if (!calendar) {
-			throw new Error(`Calendar ${calendarId} does not exist`);
-		}
-		if (!(await this.validateGoogleCalendarForTimeSlot(booking, calendar))) {
-			throw new Error(`Calendar ${calendarId} is not available for this timeslot`);
-		}
-		return calendar;
 	}
 }

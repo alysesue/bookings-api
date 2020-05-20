@@ -3,9 +3,10 @@ import { Inject, Singleton } from "typescript-ioc";
 import { Booking, BookingStatus } from "../models";
 
 import { BookingsRepository } from "./bookings.repository";
-import { CalendarsService } from "../calendars/calendars.service";
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "./bookings.apicontract";
 import { isEmptyArray } from "../tools/arrays";
+import { TimeslotsService } from '../timeslots/timeslots.service';
+import { CalendarsService } from '../calendars/calendars.service';
 
 @Singleton
 export class BookingsService {
@@ -15,6 +16,8 @@ export class BookingsService {
 	private bookingsRepository: BookingsRepository;
 	@Inject
 	private calendarsService: CalendarsService;
+	@Inject
+	private timeslotsService: TimeslotsService;
 
 	private static createBooking(bookingRequest: BookingRequest) {
 		return new Booking(
@@ -51,7 +54,16 @@ export class BookingsService {
 	public async acceptBooking(bookingId: string, acceptRequest: BookingAcceptRequest): Promise<Booking> {
 		const booking = await this.getBookingForAccepting(bookingId);
 
-		const calendar = await this.calendarsService.getCalendarForBookingRequest(booking, acceptRequest.calendarUUID);
+		const calendar = await this.calendarsService.getCalendarByUUID(acceptRequest.calendarUUID);
+		if (!calendar) {
+			throw new Error(`Calendar '${acceptRequest.calendarUUID}' not found`);
+		}
+		const availableCalendars = await this.timeslotsService.getAvailableCalendarsForTimeslot(booking.startDateTime, booking.getSessionEndTime());
+		const isCalendarAvailable = availableCalendars.filter(c => c.uuid === acceptRequest.calendarUUID).length > 0;
+		if (!isCalendarAvailable) {
+			throw new Error(`Calendar '${acceptRequest.calendarUUID}' is not available for this booking.`);
+		}
+
 		const eventICalId = await this.calendarsService.createCalendarEvent(booking, calendar);
 
 		booking.status = BookingStatus.Accepted;
@@ -65,14 +77,9 @@ export class BookingsService {
 	}
 
 	private async validateTimeSlot(booking: Booking) {
-		const calendars = await this.calendarsService.searchCalendars(booking.startDateTime, booking.getSessionEndTime());
+		const calendars = await this.timeslotsService.getAvailableCalendarsForTimeslot(booking.startDateTime, booking.getSessionEndTime());
 
 		if (isEmptyArray(calendars)) {
-			throw new Error("No available calendars for this timeslot");
-		}
-		const bookingRequests = await this.getBookingRequests(booking.startDateTime, booking.getSessionEndTime());
-
-		if (bookingRequests.length >= calendars.length) {
 			throw new Error("No available calendars for this timeslot");
 		}
 	}
