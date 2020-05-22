@@ -54,3 +54,12 @@ resource "aws_ssm_parameter" "test" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "bookingsg-svc_acc" {
+  name   = "${local.path-prefix}/GOOGLE_SERVICE_ACCOUNT"
+  type   = "SecureString"
+  key_id = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
+  value  = "${data.external.static.result.GOOGLE_SERVICE_ACCOUNT}"
+
+  overwrite = true
+}
+

@@ -24,4 +24,18 @@ describe("Test dates", () => {
 		expect(parsed.hours).toBe(16);
 		expect(parsed.minutes).toBe(30);
 	});
+
+	it("Should not parse null value", () => {
+		const parsedNull = parseHHmm(null);
+		const parsedUndefined = parseHHmm(undefined);
+
+		expect(parsedNull).toBe(null);
+		expect(parsedUndefined).toBe(null);
+	});
+
+	it("Should parse with error when format is invalid.", () => {
+		expect(() => {
+			parseHHmm("0362");
+		}).toThrowError();
+	});
 });

@@ -1,8 +1,7 @@
 import { calendar_v3 } from "googleapis";
 import { JWT } from "google-auth-library";
 import { Singleton } from "typescript-ioc";
-
-const credentials = require("../config/googleapi-credentials.json");
+import { config } from '../config/app-config';
 
 const SCOPES = ["https://www.googleapis.com/auth/calendar"];
 
@@ -13,7 +12,8 @@ export class GoogleApi {
 
 	private static async loadJWTTokenFromJson(): Promise<JWT> {
 		const newToken = new JWT();
-		newToken.fromJSON(credentials);
+		const json = JSON.parse(config.serviceAccount);
+		newToken.fromJSON(json);
 
 		return newToken.createScoped(SCOPES);
 	}
@@ -24,7 +24,7 @@ export class GoogleApi {
 
 	public async getCalendarApi(): Promise<calendar_v3.Calendar> {
 		const token = await this.getAuthToken();
-		return new calendar_v3.Calendar({auth: token});
+		return new calendar_v3.Calendar({ auth: token });
 	}
 
 	public async getAccessToken(): Promise<string> {
