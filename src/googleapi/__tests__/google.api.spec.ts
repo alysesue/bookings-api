@@ -1,23 +1,27 @@
 import { Credentials, JWT, JWTInput } from 'google-auth-library';
 import * as authModule from 'google-auth-library';
 import { GoogleApi } from '../google.api';
+import { config } from '../../config/app-config';
+
+jest.mock('../../config/app-config', () => {
+	const configMock = {
+		serviceAccount: '{}'
+	};
+
+	return {
+		config: configMock
+	};
+});
 
 jest.mock('google-auth-library', () => {
 	const actual = jest.requireActual('google-auth-library');
 	const authorizeMock = jest.fn(() => ({}));
 
-	class JWTWrapper {
-		private _jwt: JWT;
-		constructor(...params) {
-			this._jwt = new actual.JWT(params);
-		}
-
+	class JWTMock {
 		public fromJSON(json: JWTInput) {
-			this._jwt.fromJSON(json);
 		}
 
 		public createScoped(scopes?: string | string[]): JWT {
-			this._jwt = this._jwt.createScoped(scopes);
 			return this as unknown as JWT;
 		}
 
@@ -28,7 +32,7 @@ jest.mock('google-auth-library', () => {
 
 	return {
 		...actual,
-		JWT: JWTWrapper,
+		JWT: JWTMock,
 		authorizeMock
 	};
 });
