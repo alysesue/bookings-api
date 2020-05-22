@@ -21,7 +21,7 @@ import * as cors from '@koa/cors';
 
 const setTenant = async (ctx, next) => {
 	Container.bindName('config').to({
-		tenant: ctx.params.service || 'default'
+		agency: ctx.params.service || 'default'
 	});
 	await next();
 };
