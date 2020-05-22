@@ -8,5 +8,5 @@ export const config = {
 	version: packageJSON.version,
 	port: ConfigUtils.getIntValueFromEnv("PORT", 3000),
 	env: ConfigUtils.getValueFromEnv("NODE_ENV", "production"),
-	serviceAccount: ConfigUtils.getValueFromEnv("BOOKINGSG_SVC_ACC")
+	serviceAccount: ConfigUtils.getValueFromEnv("GOOGLE_SERVICE_ACCOUNT")
 };
