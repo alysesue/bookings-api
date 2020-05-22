@@ -2,14 +2,19 @@ import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 import { Inject } from "typescript-ioc";
 
 import { Body, Controller, Get, Path, Post, Query, Route, SuccessResponse, Tags } from "tsoa";
-import { Booking } from "../models";
-import { BookingAcceptRequest, BookingProviderResponse, BookingRequest, BookingResponse, BookingSearchRequest } from "./bookings.apicontract";
+import { Booking, Calendar } from "../models";
+import {
+	BookingAcceptRequest,
+	BookingProviderResponse,
+	BookingRequest,
+	BookingResponse,
+	BookingSearchRequest
+} from "./bookings.apicontract";
 import { BookingsService } from "./bookings.service";
 import { ErrorResponse } from "../apicontract";
-import { Calendar } from '../models/calendar';
 import { TimeslotsService } from "../timeslots/timeslots.service";
 
-@Route("api/v1/bookings")
+@Route("**/v1/bookings")
 @Tags('Bookings')
 export class BookingsController extends Controller {
 	@Inject
@@ -17,6 +22,10 @@ export class BookingsController extends Controller {
 
 	@Inject
 	private timeslotService: TimeslotsService;
+
+	private static mapDataModels(bookings: Booking[]): BookingResponse[] {
+		return bookings?.map(BookingsController.mapDataModel);
+	}
 
 	private static mapDataModel(booking: Booking): BookingResponse {
 		return {
@@ -28,7 +37,7 @@ export class BookingsController extends Controller {
 		} as BookingResponse;
 	}
 
-	private mapProvider(calendar: Calendar): BookingProviderResponse {
+	private static mapProvider(calendar: Calendar): BookingProviderResponse {
 		return {
 			uuid: calendar.uuid,
 			serviceProviderName: calendar.serviceProviderName
@@ -39,47 +48,7 @@ export class BookingsController extends Controller {
 	@SuccessResponse(200, 'Ok')
 	public async getBookings(): Promise<BookingResponse[]> {
 		const bookings = await this.bookingsService.getBookings();
-		return this.mapDataModels(bookings);
-	}
-
-	@Get('search')
-	@SuccessResponse(200, "Ok")
-	public async searchBookings(@Query() status: number, @Query() from: Date, @Query() to: Date): Promise<BookingResponse[]> {
-		const searchQuery = new BookingSearchRequest(from, to, status);
-		const bookings = await this.bookingsService.searchBookings(searchQuery);
-		return this.mapDataModels(bookings);
-
-	}
-
-	@Get('{bookingId}')
-	@SuccessResponse(200, 'Ok')
-	public async getBooking(@Path() bookingId: string): Promise<any> {
-		try {
-			const booking = await this.bookingsService.getBooking(bookingId);
-			return BookingsController.mapDataModel(booking);
-		}
-		catch (err) {
-			logger.error("endpointPostBooking:: error: ", err);
-			this.setStatus(400);
-			return new ErrorResponse(err.message);
-		}
-	}
-
-	@Get('{bookingId}/providers')
-	@SuccessResponse(200, 'Ok')
-	public async getBookingProviders(@Path() bookingId: string): Promise<any> {
-		let booking: Booking;
-		try {
-			booking = await this.bookingsService.getBooking(bookingId);
-		}
-		catch (err) {
-			logger.error("endpointPostBooking:: error: ", err);
-			this.setStatus(400);
-			return new ErrorResponse(err.message);
-		}
-
-		const timeslots = await this.timeslotService.getAvailableCalendarsForTimeslot(booking.startDateTime, booking.getSessionEndTime());
-		return timeslots?.map(e => this.mapProvider(e)) || [];
+		return BookingsController.mapDataModels(bookings);
 	}
 
 	@Post()
@@ -107,7 +76,42 @@ export class BookingsController extends Controller {
 		}
 	}
 
-	private mapDataModels(bookings: Booking[]): BookingResponse[] {
-		return bookings?.map(e => BookingsController.mapDataModel(e));
+	@Get('search')
+	@SuccessResponse(200, "Ok")
+	public async searchBookings(@Query() status: number, @Query() from: Date, @Query() to: Date): Promise<BookingResponse[]> {
+		const searchQuery = new BookingSearchRequest(from, to, status);
+		const bookings = await this.bookingsService.searchBookings(searchQuery);
+		return BookingsController.mapDataModels(bookings);
+
 	}
+
+	@Get('{bookingId}')
+	@SuccessResponse(200, 'Ok')
+	public async getBooking(@Path() bookingId: string): Promise<any> {
+		try {
+			const booking = await this.bookingsService.getBooking(bookingId);
+			return BookingsController.mapDataModel(booking);
+		} catch (err) {
+			logger.error("endpointPostBooking:: error: ", err);
+			this.setStatus(400);
+			return new ErrorResponse(err.message);
+		}
+	}
+
+	@Get('{bookingId}/providers')
+	@SuccessResponse(200, 'Ok')
+	public async getBookingProviders(@Path() bookingId: string): Promise<any> {
+		let booking: Booking;
+		try {
+			booking = await this.bookingsService.getBooking(bookingId);
+		} catch (err) {
+			logger.error("endpointPostBooking:: error: ", err);
+			this.setStatus(400);
+			return new ErrorResponse(err.message);
+		}
+
+		const timeslots = await this.timeslotService.getAvailableCalendarsForTimeslot(booking.startDateTime, booking.getSessionEndTime());
+		return timeslots?.map(BookingsController.mapProvider) || [];
+	}
+
 }

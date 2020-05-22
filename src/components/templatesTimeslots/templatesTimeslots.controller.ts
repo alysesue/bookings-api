@@ -3,7 +3,7 @@ import { TemplateTimeslotRequest, TemplateTimeslotResponse } from "./templatesTi
 import { Inject } from "typescript-ioc";
 import TemplatesTimeslotsService from "./templatesTimeslots.service";
 
-@Route('api/v1/templatestimeslots')
+@Route("**/v1/templatestimeslots")
 @Tags('Timeslots_templates')
 export class TemplatesTimeslotsController extends Controller {
 	@Inject
