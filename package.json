@@ -12,6 +12,7 @@
 		"start": "docker-compose up -d --build",
 		"start:fresh": "docker-compose down -v && npm start -- --force-recreate",
 		"cleanup": "docker-compose down -v --rmi all --remove-orphans",
+		"cleanup:db": "docker-compose down -v",
 		"logs": "docker logs -f bookingsg-api",
 		"stop": "docker-compose stop",
 		"lint-staged": "lint-staged",
