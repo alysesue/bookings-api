@@ -1,9 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class ServiceProvider {
+export class ServiceProvider extends BaseEntity {
 
 	constructor(name: string) {
+		super();
 		this._name = name;
 		this._createdAt = new Date();
 	}

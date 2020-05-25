@@ -15,8 +15,7 @@ export class ServiceProvidersController extends Controller {
 
 	@Post("")
 	public async addSP(@Body() spRequest: ServiceProviderListRequest): Promise<any> {
-		//		return await this.serviceProvidersService.save(spRequest.serviceProviders);
-		return;
+		return await this.serviceProvidersService.save(spRequest.serviceProviders);
 	}
 
 	@Get("")

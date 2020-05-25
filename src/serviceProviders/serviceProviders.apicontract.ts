@@ -10,10 +10,4 @@ export class ServiceProviderModel {
 
 export class ServiceProviderListRequest {
 	public serviceProviders: ServiceProviderModel[];
-
-	// constructor(spList: ServiceProviderModel[]) {
-	// 	spList.forEach(item => {
-	// 		this.serviceProviders.push(new ServiceProvider(item.name));
-	// 	});
-	// }
 }

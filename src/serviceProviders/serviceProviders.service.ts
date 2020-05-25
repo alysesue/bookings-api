@@ -22,8 +22,8 @@ export class ServiceProvidersService {
 		return sp;
 	}
 
-	public async save(listRequest: ServiceProviderModel[]) {
-		await this.serviceProvidersRepository.saveBulk(this.mapBulkRequest(listRequest));
+	public async save(listRequest: ServiceProviderModel[]): Promise<ServiceProvider[]> {
+		return await this.serviceProvidersRepository.saveBulk(this.mapBulkRequest(listRequest));
 	}
 
 	private mapBulkRequest(req: ServiceProviderModel[]): ServiceProvider[] {

@@ -1,36 +1,24 @@
-import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
-import { Inject, Singleton } from "typescript-ioc";
-import { InsertResult, Repository } from "typeorm";
-import { DbConnection } from "../core/db.connection";
+import { Singleton } from "typescript-ioc";
 import { ServiceProvider } from "../models";
+import { RepositoryBase } from "../core/repository";
 
 @Singleton
-export class ServiceProvidersRepository {
-	@Inject
-	private connection: DbConnection;
+export class ServiceProvidersRepository extends RepositoryBase {
+
+	constructor() {
+		super(ServiceProvider);
+	}
 
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
-		const repository = await this.getRepository();
-		return repository.find();
+		return (await this.getRepository<ServiceProvider>()).find();
 	}
 
 	public async getServiceProvider(id: string): Promise<ServiceProvider> {
-		const repository = await this.getRepository();
-		return repository.findOne(id);
+		return (await this.getRepository<ServiceProvider>()).findOne(id);
 	}
 
-	public async saveBulk(serviceProviders: ServiceProvider[]): Promise<InsertResult> {
-		const repository = await this.getRepository();
-		return repository.insert(serviceProviders);
-	}
-
-	private async getRepository(): Promise<Repository<ServiceProvider>> {
-		try {
-			const conn = await this.connection.getConnection();
-			return conn.getRepository(ServiceProvider);
-		} catch (e) {
-			logger.error("ServiceProviderRepository::connection::error", e);
-			throw e;
-		}
+	public async saveBulk(serviceProviders: ServiceProvider[]): Promise<ServiceProvider[]> {
+		const repository = await this.getRepository<ServiceProvider>();
+		return repository.save(serviceProviders);
 	}
 }
