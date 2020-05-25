@@ -23,5 +23,16 @@ describe("Test dates", () => {
 		expect(parsed).toBeDefined();
 		expect(parsed.hours).toBe(16);
 		expect(parsed.minutes).toBe(30);
+		// tslint:disable-next-line:no-unused-expression
+		expect(parseHHmm(null)).toBeNull;
+		// tslint:disable-next-line:no-unused-expression
+		expect(parseHHmm(undefined)).toBeNull;
+		try {
+			parseHHmm("1630");
+		}
+		catch (e) {
+			expect(e.message).toMatch('Value 1630 is not a valid time.');
+		}
+
 	});
 });
