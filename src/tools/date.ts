@@ -2,22 +2,15 @@ import * as moment from 'moment';
 
 const TIME_FORMATS = ["HH:mm", "H:mm", "HH:m", "H:m", "HH:mm:ss"];
 
-const parseTime = (time: string) => moment(time, TIME_FORMATS, true);
+export const parseTime = (time: string) => moment(time, TIME_FORMATS, true);
 
 export const isValidFormatHHmm = (time: string) => {
 	const parsed = parseTime(time);
 	return parsed.isValid();
 };
 
-export const diffHours = (previous: string, after: string) => {
-	const previousTime = parseTime(previous);
-	const afterTime = parseTime(after);
-
-	return afterTime.diff(previousTime, 'minutes');
-};
-
 export const parseHHmm = (time: string): { hours: number, minutes: number } => {
-	if (time === null || time === undefined) {
+	if (time === null || time === undefined || time.length === 0) {
 		return null;
 	}
 

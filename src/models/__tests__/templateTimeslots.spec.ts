@@ -1,6 +1,6 @@
 
 import { Container, Snapshot } from 'typescript-ioc';
-import { TemplateTimeslots } from '../templateTimeslots';
+import { Schedule } from '../Schedule';
 import { Timeslot } from '../Timeslot';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Weekday } from '../../enums/weekday';
@@ -20,7 +20,7 @@ afterAll(() => {
 });
 
 describe('Timeslots template', () => {
-	const template = TemplateTimeslots.mapTemplateTimeslotRequest({
+	const template = Schedule.mapScheduleRequest({
 		name: 'test',
 		firstSlotStartTimeInHHmm: '08:30',
 		lastSlotEndTimeInHHmm: '16:00',

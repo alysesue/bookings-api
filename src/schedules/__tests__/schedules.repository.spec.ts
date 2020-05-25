@@ -1,8 +1,8 @@
-import {TemplatesTimeslotsRepository} from '../templatesTimeslots.repository';
-import {DbConnection} from '../../../core/db.connection';
-import {Container, Snapshot} from 'typescript-ioc';
-import {DbConnectionMock, GetRepositoryMock, InnerRepositoryMock} from '../../../infrastructure/tests/dbconnectionmock';
-import {TemplateTimeslots} from "../../../models/templateTimeslots";
+import { SchedulesRepository } from '../schedules.repository';
+import { DbConnection } from '../../core/db.connection';
+import { Container, Snapshot } from 'typescript-ioc';
+import { DbConnectionMock, GetRepositoryMock, InnerRepositoryMock } from '../../infrastructure/tests/dbconnectionmock';
+import { Schedule } from "../../models/Schedule";
 
 let snapshot: Snapshot;
 beforeAll(() => {
@@ -22,12 +22,12 @@ beforeEach(() => {
 	jest.clearAllMocks();
 });
 
-describe('TemplateTimeslots repository', () => {
+describe('Schedule repository', () => {
 	it('should get timeSlots with id', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
-		const repository = Container.get(TemplatesTimeslotsRepository);
-		const result = await repository.getTemplateTimeslotsById(3);
+		const repository = Container.get(SchedulesRepository);
+		const result = await repository.getScheduleById(3);
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
@@ -37,8 +37,8 @@ describe('TemplateTimeslots repository', () => {
 	it('should get timeSlots with name', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
-		const repository = Container.get(TemplatesTimeslotsRepository);
-		const result = await repository.getTemplateTimeslotsByName('test');
+		const repository = Container.get(SchedulesRepository);
+		const result = await repository.getScheduleByName('test');
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
@@ -47,9 +47,9 @@ describe('TemplateTimeslots repository', () => {
 
 	it('should add timeSlots', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
-		const timeslot = new TemplateTimeslots();
-		const repository = Container.get(TemplatesTimeslotsRepository);
-		const result = await repository.setTemplateTimeslots(timeslot);
+		const timeslot = new Schedule();
+		const repository = Container.get(SchedulesRepository);
+		const result = await repository.setSchedule(timeslot);
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
@@ -59,8 +59,8 @@ describe('TemplateTimeslots repository', () => {
 	it('should remove timeSlots', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
-		const repository = Container.get(TemplatesTimeslotsRepository);
-		const result = await repository.deleteTemplateTimeslots(34848);
+		const repository = Container.get(SchedulesRepository);
+		const result = await repository.deleteSchedule(34848);
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();

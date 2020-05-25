@@ -2,8 +2,8 @@ import { Inject } from "typescript-ioc";
 import {
 	AddCalendarModel,
 	CalendarModel,
+	CalendarScheduleResponse,
 	CalendarTemplatesTimeslotModel,
-	CalendarTemplateTimeslotResponse,
 	CalendarUserModel,
 	ServiceProviderResponse
 } from "./calendars.apicontract";
@@ -54,10 +54,10 @@ export class CalendarsController extends Controller {
 		return await this.calendarsService.addUser(calendarUUID, model);
 	}
 
-	@Put("{calendarUUID}/templatestimeslot")
-	public async addCalendar(@Path() calendarUUID: string, @Body() model: CalendarTemplatesTimeslotModel): Promise<CalendarTemplateTimeslotResponse> {
-		const data = await this.calendarsService.addTemplatesTimeslots(calendarUUID, model);
-		return new CalendarTemplateTimeslotResponse(data);
+	@Put("{calendarUUID}/schedule")
+	public async addCalendar(@Path() calendarUUID: string, @Body() model: CalendarTemplatesTimeslotModel): Promise<CalendarScheduleResponse> {
+		const data = await this.calendarsService.addSchedules(calendarUUID, model);
+		return new CalendarScheduleResponse(data);
 	}
 
 	@Get('availability')

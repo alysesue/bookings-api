@@ -1,5 +1,5 @@
 import { Column, Entity, Generated, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { TemplateTimeslots } from "./templateTimeslots";
+import { Schedule } from "./Schedule";
 
 @Entity()
 export class Calendar {
@@ -7,20 +7,20 @@ export class Calendar {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
-	@Column({type: "uuid"})
-	@Index({unique: true})
+	@Column({ type: "uuid" })
+	@Index({ unique: true })
 	@Generated("uuid")
 	public uuid: string;
 
 
-	@Column({type: "varchar", length: 300})
+	@Column({ type: "varchar", length: 300 })
 	public googleCalendarId: string;
 
-	@Column({type: "varchar", length: 100})
+	@Column({ type: "varchar", length: 100 })
 	public serviceProviderName: string;
 
-	@ManyToOne("TemplateTimeslots", { nullable: true })
-	public templatesTimeslots: TemplateTimeslots;
+	@ManyToOne("Schedule", { nullable: true })
+	public schedules: Schedule;
 
 	constructor() {
 	}

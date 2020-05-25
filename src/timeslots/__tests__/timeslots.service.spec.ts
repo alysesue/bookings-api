@@ -1,5 +1,5 @@
 import { Container, Snapshot } from "typescript-ioc";
-import { Booking, BookingStatus, Calendar, TemplateTimeslots } from "../../models";
+import { Booking, BookingStatus, Calendar, Schedule } from "../../models";
 import { TimeslotsService } from "../timeslots.service";
 import { CalendarsRepository } from '../../calendars/calendars.repository';
 import { AggregatedEntry, TimeslotAggregator } from '../timeslotAggregator';
@@ -48,14 +48,14 @@ jest.mock('../timeslotAggregator', () => {
 describe("Timeslots Service", () => {
 	const timeslot = new Timeslot(DateHelper.setHours(new Date(), 15, 0), DateHelper.setHours(new Date(), 16, 0));
 
-	const templateTimeslotMock = {
+	const ScheduleMock = {
 		generateValidTimeslots: jest.fn(() => [timeslot])
 	};
 
 	const CalendarMock = new Calendar();
 	CalendarMock.id = 1;
 
-	CalendarMock.templatesTimeslots = templateTimeslotMock as unknown as TemplateTimeslots;
+	CalendarMock.schedules = ScheduleMock as unknown as Schedule;
 
 	const CalendarsRepositoryMock = {
 		getCalendarsWithTemplates: jest.fn(() => Promise.resolve([CalendarMock]))
@@ -81,7 +81,7 @@ describe("Timeslots Service", () => {
 		expect(result).toBeDefined();
 
 		expect(CalendarsRepositoryMock.getCalendarsWithTemplates).toBeCalled();
-		expect(templateTimeslotMock.generateValidTimeslots).toBeCalledTimes(1);
+		expect(ScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 		expect(aggregator.aggregate).toBeCalled();
 		expect(aggregator.getEntries).toBeCalled();
 	});
@@ -98,7 +98,7 @@ describe("Timeslots Service", () => {
 		const result = await service.getAvailableCalendarsForTimeslot(startDateTime, endDateTime);
 
 		expect(CalendarsRepositoryMock.getCalendarsWithTemplates).toBeCalled();
-		expect(templateTimeslotMock.generateValidTimeslots).toBeCalledTimes(1);
+		expect(ScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 		expect(aggregator.aggregate).toBeCalled();
 		expect(aggregator.getEntries).toBeCalled();
 

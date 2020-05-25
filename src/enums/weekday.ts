@@ -7,3 +7,5 @@ export enum Weekday {
 	Friday = 5,
 	Saturday = 6
 }
+
+export const WeekdayList: Weekday[] = [Weekday.Sunday, Weekday.Monday, Weekday.Tuesday, Weekday.Wednesday, Weekday.Thursday, Weekday.Friday, Weekday.Saturday];
