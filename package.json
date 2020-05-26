@@ -82,6 +82,7 @@
 	},
 	"dependencies": {
 		"@koa/cors": "^2.2.3",
+		"csv-parse": "^4.10.1",
 		"googleapis": "^49.0.0",
 		"koa-proxy": "^1.0.0-alpha.3",
 		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:^4.3.32",

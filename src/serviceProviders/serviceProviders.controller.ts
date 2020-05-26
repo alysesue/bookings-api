@@ -6,6 +6,8 @@ import {
 import { ServiceProvidersService } from "./serviceProviders.service";
 import { ServiceProvider } from "../models";
 import { Body, Controller, Get, Path, Post, Put, Query, Route, SuccessResponse, Tags } from "tsoa";
+import { ErrorResponse } from "../apicontract";
+import { parseServiceProvidersCsv } from "../utils";
 
 @Route("api/v1/serviceProviders")
 @Tags('Service Providers')
@@ -17,6 +19,17 @@ export class ServiceProvidersController extends Controller {
 	@SuccessResponse(201, 'Created')
 	public async addServiceProviders(@Body() spRequest: ServiceProviderListRequest): Promise<any> {
 		return await this.serviceProvidersService.save(spRequest.serviceProviders);
+	}
+
+	@Post("/csv")
+	@SuccessResponse(201, 'Created')
+	public async addServiceProvidersText(@Body() spRequest: string): Promise<any> {
+		try {
+			const req: ServiceProviderModel[] = parseServiceProvidersCsv(spRequest);
+			return await this.serviceProvidersService.save(req);
+		} catch (e) {
+			return new ErrorResponse(e.message);
+		}
 	}
 
 	@Get("")

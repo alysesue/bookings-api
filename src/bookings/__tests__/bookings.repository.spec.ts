@@ -14,7 +14,7 @@ describe("Bookings repository", () => {
 	it("should get bookings", async () => {
 		Container.bind(DbConnection).to(MockDBConnection);
 		MockDBConnection.find.mockImplementation(() => Promise.resolve([]));
-		const bookingsRepository = new BookingsRepository();
+		const bookingsRepository = Container.get(BookingsRepository);
 		const result = await bookingsRepository.getBookings();
 		expect(result).toStrictEqual([]);
 	});
@@ -27,7 +27,7 @@ describe("Bookings repository", () => {
 			return Promise.resolve([]);
 		});
 
-		const bookingsRepository = new BookingsRepository();
+		const bookingsRepository = Container.get(BookingsRepository);
 		const date = new Date(Date.UTC(2020, 0, 1, 14, 0));
 		const filter = new BookingSearchRequest(
 			date,
@@ -50,7 +50,7 @@ describe("Bookings repository", () => {
 			return Promise.resolve([]);
 		});
 
-		const bookingsRepository = new BookingsRepository();
+		const bookingsRepository = Container.get(BookingsRepository);
 		const date = new Date(Date.UTC(2020, 0, 1, 14, 0));
 		const filter = new BookingSearchRequest(
 			date,
@@ -71,7 +71,7 @@ describe("Bookings repository", () => {
 		const insertResult = new InsertResult();
 		insertResult.identifiers = [{ id: "abc" }];
 		MockDBConnection.insert.mockImplementation(() => insertResult);
-		const bookingsRepository = new BookingsRepository();
+		const bookingsRepository = Container.get(BookingsRepository);
 		const booking: Booking = new Booking(new Date(), 60);
 
 		const result = await bookingsRepository.save(booking);
@@ -82,7 +82,7 @@ describe("Bookings repository", () => {
 		jest.resetAllMocks();
 		Container.bind(DbConnection).to(MockDBConnection);
 
-		const bookingsRepository = new BookingsRepository();
+		const bookingsRepository = Container.get(BookingsRepository);
 		const booking: Booking = new Booking(new Date(), 60);
 		MockDBConnection.save.mockImplementation(() => booking);
 
