@@ -1,9 +1,9 @@
 import { RequestEndpoint } from "mol-lib-common/network/request/RequestEndpoint";
 
-describe("Test API", () => {
+describe("Tests endpoint and populate data", () => {
 	const baseUrl = process.env["FUNCTIONAL_TEST_BASE_URL"] || "http://localhost:3999";
 
-	it("should  creat calendar, templatesTimeslots and link them", async () => {
+	it("Link timeschedule to a calendar,", async () => {
 		const data = {
 			params: {},
 			body: {
