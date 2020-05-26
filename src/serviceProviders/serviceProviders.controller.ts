@@ -14,30 +14,31 @@ export class ServiceProvidersController extends Controller {
 	private serviceProvidersService: ServiceProvidersService;
 
 	@Post("")
-	public async addSP(@Body() spRequest: ServiceProviderListRequest): Promise<any> {
+	@SuccessResponse(201, 'Created')
+	public async addServiceProviders(@Body() spRequest: ServiceProviderListRequest): Promise<any> {
 		return await this.serviceProvidersService.save(spRequest.serviceProviders);
 	}
 
 	@Get("")
-	public async getCalendars(): Promise<ServiceProviderModel[]> {
+	public async getServiceProviders(): Promise<ServiceProviderModel[]> {
 		const dataModels = await this.serviceProvidersService.getServiceProviders();
-		return this.mapDataModels(dataModels);
+		return ServiceProvidersController.mapDataModels(dataModels);
 	}
 
 	@Get("{spId}")
-	public async addUser(@Path() spId: string): Promise<ServiceProviderModel> {
+	public async getServiceProvider(@Path() spId: string): Promise<ServiceProviderModel> {
 		const dataModel = await this.serviceProvidersService.getServiceProvider(spId);
-		return this.mapDataModel(dataModel);
+		return ServiceProvidersController.mapDataModel(dataModel);
 	}
 
-	private mapDataModel(spData: ServiceProvider): ServiceProviderModel {
+	private static mapDataModel(spData: ServiceProvider): ServiceProviderModel {
 		return {
 			id: spData.id,
 			name: spData.name
 		} as ServiceProviderModel;
 	}
 
-	private mapDataModels(spList: ServiceProvider[]): ServiceProviderModel[] {
-		return spList?.map(e => this.mapDataModel(e));
+	private static mapDataModels(spList: ServiceProvider[]): ServiceProviderModel[] {
+		return spList?.map(this.mapDataModel);
 	}
 }

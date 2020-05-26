@@ -26,7 +26,7 @@ export class ServiceProvidersService {
 		return await this.serviceProvidersRepository.saveBulk(this.mapBulkRequest(listRequest));
 	}
 
-	private mapBulkRequest(req: ServiceProviderModel[]): ServiceProvider[] {
+	public mapBulkRequest(req: ServiceProviderModel[]): ServiceProvider[] {
 		const res: ServiceProvider[] = [];
 		req.forEach(item => {
 			res.push(new ServiceProvider(item.name));
