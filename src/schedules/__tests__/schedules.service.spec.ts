@@ -41,7 +41,7 @@ describe('Schedules  template services ', () => {
 		jest.clearAllMocks();
 	});
 
-	it('should throw error because firstSlotStartTimeInHHmm have wrong format', async () => {
+	it('should throw error because open and close times have wrong format', async () => {
 		const schedulesRequest: ScheduleRequest = {
 			name: 'schedule',
 			slotsDurationInMin: 5,
@@ -59,7 +59,7 @@ describe('Schedules  template services ', () => {
 		expect(saveSchedule).toBeCalledTimes(0);
 	});
 
-	it('should throw error because lastSlotEndTimeInHHmm have wrong format', async () => {
+	it('should throw error because close time have wrong format', async () => {
 		const schedulesRequest: ScheduleRequest = {
 			name: 'schedule',
 			slotsDurationInMin: 5,
@@ -77,7 +77,7 @@ describe('Schedules  template services ', () => {
 		expect(saveSchedule).toBeCalledTimes(0);
 	});
 
-	it('should throw error because firstSlotStartTimeInHHmm > lastSlotEndTimeInHHmm', async () => {
+	it('should throw error because openTime > closeTime', async () => {
 		const schedulesRequest: ScheduleRequest = {
 			name: 'schedule',
 			slotsDurationInMin: 5,
@@ -96,7 +96,7 @@ describe('Schedules  template services ', () => {
 
 	});
 
-	it('should throw error because slotsDurationInMin < lastSlotEndTimeInHHmm - firstSlotStartTimeInHHmm ', async () => {
+	it('should throw error because slotsDurationInMin < (closeTime - openTime)', async () => {
 		const schedulesRequest: ScheduleRequest = {
 			name: 'schedule',
 			slotsDurationInMin: 65,

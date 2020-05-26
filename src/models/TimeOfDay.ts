@@ -49,10 +49,14 @@ export class TimeOfDay {
 		return this._minutes;
 	}
 
-	public toJSON(): string {
+	public toString(): string {
 		const hours = `${this._hours}`.padStart(2, '0');
 		const minutes = `${this._minutes}`.padStart(2, '0');
 		return `${hours}:${minutes}`;
+	}
+
+	public toJSON(): string {
+		return this.toString();
 	}
 
 	public useTimeOfDay(date: Date): Date {

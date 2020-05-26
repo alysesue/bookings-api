@@ -23,12 +23,17 @@ export class Schedule {
 	constructor() {
 	}
 
-	public * validateSchedule(): Iterable<BusinessValidation> {
+	private ensureWeekdayParentIsSet(): void {
 		for (const weekdaySchedule of this.weekdaySchedules) {
 			if (weekdaySchedule.schedule !== this) {
 				weekdaySchedule.schedule = this;
 			}
+		}
+	}
 
+	public * validateSchedule(): Iterable<BusinessValidation> {
+		this.ensureWeekdayParentIsSet();
+		for (const weekdaySchedule of this.weekdaySchedules) {
 			for (const validation of weekdaySchedule.validateWeekDaySchedule()) {
 				yield validation;
 			}
@@ -36,6 +41,7 @@ export class Schedule {
 	}
 
 	public * generateValidTimeslots(range: { startDatetime: Date, endDatetime: Date }): Iterable<Timeslot> {
+		this.ensureWeekdayParentIsSet();
 		if (range.endDatetime < range.startDatetime) {
 			return;
 		}
@@ -119,7 +125,7 @@ export class WeekDaySchedule {
 		}
 
 		if (diff < this.schedule.slotsDurationInMin) {
-			yield new BusinessValidation(`The interval between open and close times [${this.openTime} — ${this.closeTime}] must be greater that slot duration [${this.schedule.slotsDurationInMin}]`);
+			yield new BusinessValidation(`The interval between open and close times [${this.openTime} — ${this.closeTime}] must be greater than slot duration [${this.schedule.slotsDurationInMin} minutes]`);
 			return;
 		}
 	}
