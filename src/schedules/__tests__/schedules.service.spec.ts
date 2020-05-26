@@ -1,88 +1,129 @@
-import SchedulesService from "../schedules.service";
-import { ScheduleRequest } from "../schedules.apicontract";
+import { SchedulesService } from "../schedules.service";
+import { ScheduleRequest, WeekDayScheduleContract } from "../schedules.apicontract";
 import { SchedulesRepository } from "../schedules.repository";
 import { Container } from "typescript-ioc";
-import { Schedule } from "../../../models/Schedule";
+import { Schedule } from "../../models/Schedule";
+import { mapToEntity } from '../schedules.mapper';
+import { Weekday } from "../../enums/weekday";
 
-const timeslotsRequestCommon: ScheduleRequest = new ScheduleRequest('name', '11:23', '12:23', 60, []);
-const timeslotsCommon: Schedule = Schedule.mapScheduleRequest(timeslotsRequestCommon);
+const scheduleRequestCommon = {
+	name: 'schedule',
+	slotsDurationInMin: 60,
+	weekdaySchedules: [
+		{ weekday: Weekday.Monday, hasSchedule: true, openTime: '11:23', closeTime: '12:23' } as WeekDayScheduleContract
+	]
+} as ScheduleRequest;
 
-const getScheduleByName = jest.fn().mockImplementation(() => Promise.resolve(timeslotsCommon));
-const setSchedule = jest.fn().mockImplementation(() => Promise.resolve(timeslotsCommon));
+const scheduleCommon: Schedule = mapToEntity(scheduleRequestCommon, new Schedule());
+
+const getSchedules = jest.fn().mockImplementation(() => Promise.resolve([scheduleCommon]));
+const getScheduleById = jest.fn().mockImplementation(() => Promise.resolve(scheduleCommon));
+const getScheduleByName = jest.fn().mockImplementation(() => Promise.resolve(scheduleCommon));
+const saveSchedule = jest.fn().mockImplementation(() => Promise.resolve(scheduleCommon));
 const deleteSchedule = jest.fn().mockImplementation(() => Promise.resolve(undefined));
-const MockTimeslotsRepository = jest.fn().mockImplementation(() => ({
-	setSchedule,
+const MockSchedulesRepository = jest.fn().mockImplementation(() => ({
+	getSchedules,
+	saveSchedule,
+	getScheduleById,
 	getScheduleByName,
 	deleteSchedule
 }));
 
-describe('Timeslots  template services ', () => {
-	let timeslotsService: SchedulesService;
+describe('Schedules  template services ', () => {
+	let schedulesService: SchedulesService;
 	beforeAll(() => {
-		Container.bind(SchedulesRepository).to(MockTimeslotsRepository);
-		timeslotsService = Container.get(SchedulesService);
+		Container.bind(SchedulesRepository).to(MockSchedulesRepository);
+		schedulesService = Container.get(SchedulesService);
 	});
 	beforeEach(() => {
 		jest.clearAllMocks();
 	});
 
 	it('should throw error because firstSlotStartTimeInHHmm have wrong format', async () => {
-		const timeslotsRequest: ScheduleRequest = new ScheduleRequest('name', '2323', '11:23', 5, []);
+		const schedulesRequest: ScheduleRequest = {
+			name: 'schedule',
+			slotsDurationInMin: 5,
+			weekdaySchedules: [
+				{ weekday: Weekday.Monday, hasSchedule: true, openTime: '2323', closeTime: '12:23' } as WeekDayScheduleContract
+			]
+		} as ScheduleRequest;
+
 		try {
-			await timeslotsService.createSchedule(timeslotsRequest);
+			await schedulesService.createSchedule(schedulesRequest);
 		} catch (e) {
 			expect(e.message).toBe("Not valid format for firstSlotStartTimeInHHmm: 2323");
 		}
-		expect(setSchedule).toBeCalledTimes(0);
+		expect(saveSchedule).toBeCalledTimes(0);
 	});
 
 	it('should throw error because lastSlotEndTimeInHHmm have wrong format', async () => {
-		const timeslotsRequest: ScheduleRequest = new ScheduleRequest('name', '23:23', '11:73', 5, []);
+		const schedulesRequest: ScheduleRequest = {
+			name: 'schedule',
+			slotsDurationInMin: 5,
+			weekdaySchedules: [
+				{ weekday: Weekday.Monday, hasSchedule: true, openTime: '23:23', closeTime: '11:73' } as WeekDayScheduleContract
+			]
+		} as ScheduleRequest;
+
 		try {
-			await timeslotsService.createSchedule(timeslotsRequest);
+			await schedulesService.createSchedule(schedulesRequest);
 		} catch (e) {
 			expect(e.message).toBe("Not valid format for lastSlotEndTimeInHHmm: 11:73");
 		}
-		expect(setSchedule).toBeCalledTimes(0);
+		expect(saveSchedule).toBeCalledTimes(0);
 	});
 
 	it('should throw error because firstSlotStartTimeInHHmm > lastSlotEndTimeInHHmm', async () => {
-		const timeslotsRequest: ScheduleRequest = new ScheduleRequest('name', '23:23', '11:23', 5, []);
+		const schedulesRequest: ScheduleRequest = {
+			name: 'schedule',
+			slotsDurationInMin: 5,
+			weekdaySchedules: [
+				{ weekday: Weekday.Monday, hasSchedule: true, openTime: '23:23', closeTime: '11:23' } as WeekDayScheduleContract
+			]
+		} as ScheduleRequest;
+
 		try {
-			await timeslotsService.createSchedule(timeslotsRequest);
+			await schedulesService.createSchedule(schedulesRequest);
 		} catch (e) {
 			expect(e.message).toBe("firstSlotStartTimeInHHmm=23:23 > lastSlotEndTimeInHHmm=11:23");
 		}
-		expect(setSchedule).toBeCalledTimes(0);
+		expect(saveSchedule).toBeCalledTimes(0);
 
 	});
 
 	it('should throw error because slotsDurationInMin < lastSlotEndTimeInHHmm - firstSlotStartTimeInHHmm ', async () => {
-		const timeslotsRequest: ScheduleRequest = new ScheduleRequest('name', '11:23', '12:23', 65, []);
+		const schedulesRequest: ScheduleRequest = {
+			name: 'schedule',
+			slotsDurationInMin: 65,
+			weekdaySchedules: [
+				{ weekday: Weekday.Monday, hasSchedule: true, openTime: '11:23', closeTime: '12:23' } as WeekDayScheduleContract
+			]
+		} as ScheduleRequest;
+
 		try {
-			await timeslotsService.createSchedule(timeslotsRequest);
+			await schedulesService.createSchedule(schedulesRequest);
 		} catch (e) {
 			expect(e.message).toBe("slotsDurationInMin=65 < (lastSlotEndTimeInHHmm-firstSlotStartTimeInHHmm)=60");
 		}
-		expect(setSchedule).toBeCalledTimes(0);
+		expect(saveSchedule).toBeCalledTimes(0);
 
 	});
 
 	it('should create new Schedule ', async () => {
-		await timeslotsService.createSchedule(timeslotsRequestCommon);
-		expect(setSchedule).toBeCalledTimes(1);
+		await schedulesService.createSchedule(scheduleRequestCommon);
+		expect(saveSchedule).toBeCalledTimes(1);
 	});
 
 	it('should update the template', async () => {
-		const template = await timeslotsService.updateSchedule(timeslotsRequestCommon);
-		const timeslots = Schedule.mapScheduleRequest(timeslotsRequestCommon);
-		expect(setSchedule).toBeCalled();
+		const template = await schedulesService.updateSchedule(1, scheduleRequestCommon);
+
+		expect(saveSchedule).toBeCalled();
 		expect(getScheduleByName).toBeCalled();
-		expect(template.name).toStrictEqual(timeslots.name);
+		expect(template.name).toStrictEqual(scheduleRequestCommon.name);
 	});
 
 	it('should call delete repository', async () => {
-		await timeslotsService.deleteSchedule(3);
+		await schedulesService.deleteSchedule(3);
 		expect(deleteSchedule).toBeCalled();
 	});
 

@@ -1,13 +1,15 @@
 import { Container, Snapshot } from "typescript-ioc";
-import { ScheduleRequest } from "../schedules.apicontract";
-import SchedulesService from "../schedules.service";
+import { ScheduleRequest, WeekDayScheduleContract } from "../schedules.apicontract";
+import { SchedulesService } from "../schedules.service";
 import { SchedulesController } from "../schedules.controller";
+import { Weekday } from '../../enums/weekday';
 
 const createSchedule = jest.fn();
+const getSchedules = jest.fn();
 const updateSchedule = jest.fn();
 const deleteSchedule = jest.fn();
 const MockSchedulesService = jest.fn().mockImplementation(() => {
-	return { createSchedule, updateSchedule, deleteSchedule };
+	return { createSchedule, getSchedules, updateSchedule, deleteSchedule };
 });
 
 let snapshot: Snapshot;
@@ -28,29 +30,44 @@ beforeEach(() => {
 	jest.clearAllMocks();
 });
 
-const timeslot: ScheduleRequest = new ScheduleRequest('', '', '', '', []);
-describe('Test templates timeslots controller', () => {
-	it('should test if creat service is called', async () => {
-		Container.bind(SchedulesService).to(MockSchedulesService);
-		const timeslotsController = Container.get(SchedulesController);
+const timeslot = {
+	name: 'schedule',
+	slotsDurationInMin: 60,
+	weekdaySchedules: [
+		{ weekday: Weekday.Monday, hasSchedule: true, openTime: '11:23', closeTime: '12:23' } as WeekDayScheduleContract
+	]
+} as ScheduleRequest;
 
-		await timeslotsController.createSchedule(timeslot);
+describe('Test templates schedules controller', () => {
+	it('should test if create service is called', async () => {
+		Container.bind(SchedulesService).to(MockSchedulesService);
+		const schedulesController = Container.get(SchedulesController);
+
+		await schedulesController.createSchedule(timeslot);
 		expect(createSchedule).toBeCalledTimes(1);
 	});
 
-	it('should test if upsert service is called', async () => {
+	it('should test if get schedules service is called', async () => {
 		Container.bind(SchedulesService).to(MockSchedulesService);
-		const timeslotsController = Container.get(SchedulesController);
+		const schedulesController = Container.get(SchedulesController);
 
-		await timeslotsController.updateSchedule(timeslot);
+		await schedulesController.getSchedules();
+		expect(getSchedules).toBeCalledTimes(1);
+	});
+
+	it('should test if update service is called', async () => {
+		Container.bind(SchedulesService).to(MockSchedulesService);
+		const schedulesController = Container.get(SchedulesController);
+
+		await schedulesController.updateSchedule(1, timeslot);
 		expect(updateSchedule).toBeCalledTimes(1);
 	});
 
 	it('should test if delete service is called', async () => {
 		Container.bind(SchedulesService).to(MockSchedulesService);
-		const timeslotsController = Container.get(SchedulesController);
+		const schedulesController = Container.get(SchedulesController);
 
-		await timeslotsController.deleteSchedule(3);
+		await schedulesController.deleteSchedule(3);
 		expect(deleteSchedule).toBeCalledTimes(1);
 	});
 

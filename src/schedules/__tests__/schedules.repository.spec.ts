@@ -14,7 +14,7 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-	// Put the IoC configuration back for IService, so other tests can run.
+	// Put the IoC configuration back, so other tests can run.
 	snapshot.restore();
 });
 
@@ -23,7 +23,18 @@ beforeEach(() => {
 });
 
 describe('Schedule repository', () => {
-	it('should get timeSlots with id', async () => {
+	it('should get schedules', async () => {
+		Container.bind(DbConnection).to(DbConnectionMock);
+
+		const repository = Container.get(SchedulesRepository);
+		const result = await repository.getSchedules();
+		expect(result).not.toBe(undefined);
+
+		expect(GetRepositoryMock).toBeCalled();
+		expect(InnerRepositoryMock.find).toBeCalledTimes(1);
+	});
+
+	it('should get schedules with id', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
 		const repository = Container.get(SchedulesRepository);
@@ -34,7 +45,7 @@ describe('Schedule repository', () => {
 		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
 	});
 
-	it('should get timeSlots with name', async () => {
+	it('should get schedules with name', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
 		const repository = Container.get(SchedulesRepository);
@@ -45,18 +56,18 @@ describe('Schedule repository', () => {
 		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
 	});
 
-	it('should add timeSlots', async () => {
+	it('should add schedules', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 		const timeslot = new Schedule();
 		const repository = Container.get(SchedulesRepository);
-		const result = await repository.setSchedule(timeslot);
+		const result = await repository.saveSchedule(timeslot);
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
 		expect(InnerRepositoryMock.save).toBeCalledTimes(1);
 	});
 
-	it('should remove timeSlots', async () => {
+	it('should remove schedules', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
 		const repository = Container.get(SchedulesRepository);

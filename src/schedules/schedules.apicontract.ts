@@ -1,5 +1,4 @@
 import { Weekday } from "../enums/weekday";
-import { Schedule } from "../models";
 
 export class ScheduleRequest {
 	/**

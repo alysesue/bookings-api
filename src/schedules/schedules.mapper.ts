@@ -7,7 +7,7 @@ export const mapToEntity = (contract: ScheduleRequest, entity: Schedule): Schedu
 	entity.name = contract.name;
 	entity.slotsDurationInMin = contract.slotsDurationInMin;
 
-	const weekDaysContract = groupByKeyLastValue(contract.weekdaySchedules, w => w.weekday);
+	const weekDaysContract = groupByKeyLastValue(contract.weekdaySchedules || [], w => w.weekday);
 
 	if (!entity.weekdaySchedules || entity.weekdaySchedules.length === 0) {
 		entity.weekdaySchedules = WeekdayList.map(day => new WeekDaySchedule(day));
@@ -43,8 +43,8 @@ export const mapDayScheduleToResponse = (daySchedule: WeekDaySchedule): WeekDayS
 	const dayContract = new WeekDayScheduleContract();
 	dayContract.weekday = daySchedule.weekDay;
 	dayContract.hasSchedule = daySchedule.hasSchedule;
-	dayContract.openTime = daySchedule.openTime.toJSON();
-	dayContract.closeTime = daySchedule.closeTime.toJSON();
+	dayContract.openTime = daySchedule.openTime?.toJSON();
+	dayContract.closeTime = daySchedule.closeTime?.toJSON();
 
 	return dayContract;
 };

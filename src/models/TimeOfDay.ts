@@ -9,14 +9,6 @@ export class TimeOfDay {
 	private constructor() {
 	}
 
-	public get hours(): number {
-		return this._hours;
-	}
-
-	public get minutes(): number {
-		return this._minutes;
-	}
-
 	public static parse(time: string): TimeOfDay {
 		const parsedTime = parseHHmm(time);
 		return TimeOfDay.create(parsedTime);
@@ -38,16 +30,33 @@ export class TimeOfDay {
 		return instance;
 	}
 
+	public static fromDate(date: Date): TimeOfDay {
+		if (!date) {
+			return null;
+		}
+
+		const instance = new TimeOfDay();
+		instance._hours = date.getHours();
+		instance._minutes = date.getMinutes();
+		return instance;
+	}
+
+	public get hours(): number {
+		return this._hours;
+	}
+
+	public get minutes(): number {
+		return this._minutes;
+	}
+
 	public toJSON(): string {
 		const hours = `${this._hours}`.padStart(2, '0');
 		const minutes = `${this._minutes}`.padStart(2, '0');
 		return `${hours}:${minutes}`;
 	}
 
-	public setTimeOfDay(date: Date): Date {
-		const newDate = DateHelper.getDateOnly(date);
-		newDate.setHours(this._hours, this._minutes);
-		return newDate;
+	public useTimeOfDay(date: Date): Date {
+		return DateHelper.setHours(date, this._hours, this._minutes);
 	}
 
 	public AsMinutes(): number { return this._hours * 60 + this._minutes; }
