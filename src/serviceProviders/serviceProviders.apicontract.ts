@@ -1,5 +1,3 @@
-import { ServiceProvider } from "../models";
-
 export class ServiceProviderModel {
 	public name: string;
 

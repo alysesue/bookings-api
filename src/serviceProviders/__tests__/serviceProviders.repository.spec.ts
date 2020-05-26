@@ -1,8 +1,7 @@
 import { ServiceProvidersRepository } from "../serviceProviders.repository";
 import { DbConnection } from "../../core/db.connection";
-import { Container, Snapshot } from "typescript-ioc";
+import { Container } from "typescript-ioc";
 import { ServiceProvider } from "../../models";
-import { InsertResult, } from "typeorm";
 
 describe("Service Provider repository", () => {
 	beforeEach(() => {
