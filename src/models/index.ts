@@ -2,6 +2,6 @@ import { Booking } from "./booking";
 import { BookingStatus } from "./bookingStatus";
 import { TemplateTimeslots } from "./templateTimeslots";
 import { Calendar } from "./calendar";
-import { Agency } from "./agency";
+import { Service } from "./service";
 
-export { Booking, BookingStatus, TemplateTimeslots, Calendar, Agency };
+export { Booking, BookingStatus, TemplateTimeslots, Calendar, Service };

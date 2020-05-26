@@ -1,7 +1,7 @@
 import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class Agency extends BaseEntity {
+export class Service extends BaseEntity {
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
