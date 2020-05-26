@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Schedules  template services  should throw error because firstSlotStartTimeInHHmm > lastSlotEndTimeInHHmm 1`] = `
+Array [
+  "Close time [[object Object]] must be greater than open time [[object Object]]",
+]
+`;
+
+exports[`Schedules  template services  should throw error because firstSlotStartTimeInHHmm have wrong format 1`] = `
+Array [
+  "Value 2323 is not a valid time.",
+  "Value 25:25 is not a valid time.",
+]
+`;
+
+exports[`Schedules  template services  should throw error because lastSlotEndTimeInHHmm have wrong format 1`] = `
+Array [
+  "Value 11:73 is not a valid time.",
+]
+`;
+
+exports[`Schedules  template services  should throw error because slotsDurationInMin < lastSlotEndTimeInHHmm - firstSlotStartTimeInHHmm  1`] = `
+Array [
+  "The interval between open and close times [[object Object] — [object Object]] must be greater that slot duration [65]",
+]
+`;

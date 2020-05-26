@@ -5,6 +5,7 @@ import { Container } from "typescript-ioc";
 import { Schedule } from "../../models/Schedule";
 import { mapToEntity } from '../schedules.mapper';
 import { Weekday } from "../../enums/weekday";
+import { MOLErrorV2 } from "mol-lib-api-contract";
 
 const scheduleRequestCommon = {
 	name: 'schedule',
@@ -14,7 +15,8 @@ const scheduleRequestCommon = {
 	]
 } as ScheduleRequest;
 
-const scheduleCommon: Schedule = mapToEntity(scheduleRequestCommon, new Schedule());
+const scheduleCommon = new Schedule();
+mapToEntity(scheduleRequestCommon, new Schedule());
 
 const getSchedules = jest.fn().mockImplementation(() => Promise.resolve([scheduleCommon]));
 const getScheduleById = jest.fn().mockImplementation(() => Promise.resolve(scheduleCommon));
@@ -44,14 +46,15 @@ describe('Schedules  template services ', () => {
 			name: 'schedule',
 			slotsDurationInMin: 5,
 			weekdaySchedules: [
-				{ weekday: Weekday.Monday, hasSchedule: true, openTime: '2323', closeTime: '12:23' } as WeekDayScheduleContract
+				{ weekday: Weekday.Monday, hasSchedule: true, openTime: '2323', closeTime: '25:25' } as WeekDayScheduleContract
 			]
 		} as ScheduleRequest;
 
 		try {
 			await schedulesService.createSchedule(schedulesRequest);
 		} catch (e) {
-			expect(e.message).toBe("Not valid format for firstSlotStartTimeInHHmm: 2323");
+			expect(e.message).toBe("Invalid request parameters.");
+			expect((e as MOLErrorV2).responseData).toMatchSnapshot();
 		}
 		expect(saveSchedule).toBeCalledTimes(0);
 	});
@@ -68,7 +71,8 @@ describe('Schedules  template services ', () => {
 		try {
 			await schedulesService.createSchedule(schedulesRequest);
 		} catch (e) {
-			expect(e.message).toBe("Not valid format for lastSlotEndTimeInHHmm: 11:73");
+			expect(e.message).toBe("Invalid request parameters.");
+			expect((e as MOLErrorV2).responseData).toMatchSnapshot();
 		}
 		expect(saveSchedule).toBeCalledTimes(0);
 	});
@@ -85,7 +89,8 @@ describe('Schedules  template services ', () => {
 		try {
 			await schedulesService.createSchedule(schedulesRequest);
 		} catch (e) {
-			expect(e.message).toBe("firstSlotStartTimeInHHmm=23:23 > lastSlotEndTimeInHHmm=11:23");
+			expect(e.message).toBe("Invalid request parameters.");
+			expect((e as MOLErrorV2).responseData).toMatchSnapshot();
 		}
 		expect(saveSchedule).toBeCalledTimes(0);
 
@@ -103,7 +108,8 @@ describe('Schedules  template services ', () => {
 		try {
 			await schedulesService.createSchedule(schedulesRequest);
 		} catch (e) {
-			expect(e.message).toBe("slotsDurationInMin=65 < (lastSlotEndTimeInHHmm-firstSlotStartTimeInHHmm)=60");
+			expect(e.message).toBe("Invalid request parameters.");
+			expect((e as MOLErrorV2).responseData).toMatchSnapshot();
 		}
 		expect(saveSchedule).toBeCalledTimes(0);
 
@@ -118,7 +124,7 @@ describe('Schedules  template services ', () => {
 		const template = await schedulesService.updateSchedule(1, scheduleRequestCommon);
 
 		expect(saveSchedule).toBeCalled();
-		expect(getScheduleByName).toBeCalled();
+		expect(getScheduleById).toBeCalled();
 		expect(template.name).toStrictEqual(scheduleRequestCommon.name);
 	});
 

@@ -1,11 +1,13 @@
 import { Weekday, WeekdayList } from "../enums/weekday";
-import { Schedule, TimeOfDay, WeekDaySchedule } from "../models";
+import { BusinessValidation, Schedule, TimeOfDay, WeekDaySchedule } from "../models";
 import { ScheduleRequest, ScheduleResponse, WeekDayScheduleContract } from './schedules.apicontract';
 import { groupByKeyLastValue } from '../tools/collections';
+import { getErrorResult, isErrorResult, OptionalResult } from '../errors';
 
-export const mapToEntity = (contract: ScheduleRequest, entity: Schedule): Schedule => {
+export const mapToEntity = (contract: ScheduleRequest, entity: Schedule): OptionalResult<Schedule, string[]> => {
 	entity.name = contract.name;
 	entity.slotsDurationInMin = contract.slotsDurationInMin;
+	const errors: string[] = [];
 
 	const weekDaysContract = groupByKeyLastValue(contract.weekdaySchedules || [], w => w.weekday);
 
@@ -16,17 +18,49 @@ export const mapToEntity = (contract: ScheduleRequest, entity: Schedule): Schedu
 	for (const daySchedule of entity.weekdaySchedules) {
 		if (weekDaysContract.has(daySchedule.weekDay)) {
 			const dayContract = weekDaysContract.get(daySchedule.weekDay);
-			setDayContractEntity(dayContract, daySchedule);
+
+			const dayResult = setDayContractEntity(dayContract, daySchedule);
+			if (isErrorResult(dayResult)) {
+				errors.push(...getErrorResult(dayResult));
+			}
 		}
 	}
 
-	return entity;
+	if (errors.length > 0) {
+		return {
+			errorResult: errors
+		};
+	}
+	return {
+		result: entity
+	};
 };
 
-const setDayContractEntity = (contract: WeekDayScheduleContract, entity: WeekDaySchedule): void => {
+const setDayContractEntity = (contract: WeekDayScheduleContract, entity: WeekDaySchedule): OptionalResult<WeekDaySchedule, string[]> => {
 	entity.hasSchedule = contract.hasSchedule;
-	entity.openTime = TimeOfDay.parse(contract.openTime);
-	entity.closeTime = TimeOfDay.parse(contract.closeTime);
+	const errors: string[] = [];
+
+	try {
+		entity.openTime = TimeOfDay.parse(contract.openTime);
+	} catch (e) {
+		errors.push(e.message);
+	}
+
+	try {
+		entity.closeTime = TimeOfDay.parse(contract.closeTime);
+	} catch (e) {
+		errors.push(e.message);
+	}
+
+	if (errors.length > 0) {
+		return {
+			errorResult: errors
+		};
+	}
+
+	return {
+		result: entity
+	};
 };
 
 export const mapToResponse = (template: Schedule): ScheduleResponse => {

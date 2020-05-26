@@ -5,6 +5,12 @@ export class ScheduleRequest {
 	 * @maxLength 100
 	 */
 	public name: string;
+
+	/**
+	 * @isInt
+	 * @minimum 1
+	 * @maximum 480
+	 */
 	public slotsDurationInMin: number;
 	public weekdaySchedules: WeekDayScheduleContract[];
 }

@@ -1,4 +1,4 @@
-import { parseHHmm } from '../tools/date';
+import { parseHHmm, tryParseHHmm } from '../tools/date';
 import { DateHelper } from '../infrastructure/dateHelper';
 import { ValueTransformer } from 'typeorm';
 

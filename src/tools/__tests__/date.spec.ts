@@ -1,4 +1,4 @@
-import { diffHours, isValidFormatHHmm, parseHHmm } from "../date";
+import { isValidFormatHHmm, parseHHmm } from "../date";
 import { parse } from "querystring";
 
 describe("Test dates", () => {
@@ -9,12 +9,6 @@ describe("Test dates", () => {
 		expect(isValidFormatHHmm("3:12")).toBe(true);
 		expect(isValidFormatHHmm("03:12")).toBe(true);
 		expect(isValidFormatHHmm("2323")).toBe(false);
-	});
-
-	it("Should calcule diff between two hours", () => {
-		expect(diffHours("21:12", "22:12")).toBe(60);
-		expect(diffHours("22:12", "22:12")).toBe(0);
-		expect(diffHours("23:12", "22:12")).toBe(-60);
 	});
 
 	it("Should return hours and minutes", () => {

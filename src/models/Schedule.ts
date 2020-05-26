@@ -1,5 +1,5 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Weekday } from "../enums/weekday";
+import { getWeekdayName, Weekday } from "../enums/weekday";
 import { DateHelper } from '../infrastructure/dateHelper';
 import { Timeslot } from './Timeslot';
 import { TimeOfDay, Transformer as TimeTransformer } from './TimeOfDay';
@@ -108,7 +108,7 @@ export class WeekDaySchedule {
 		}
 
 		if (!this.openTime || !this.closeTime) {
-			yield new BusinessValidation(`Open and close times must be informed because schedule is enabled for this day of the week [${this.weekDay}]`);
+			yield new BusinessValidation(`Open and close times must be informed because schedule is enabled for this day of the week [${getWeekdayName(this.weekDay)}]`);
 			return;
 		}
 
