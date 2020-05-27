@@ -1,37 +1,34 @@
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
-import { Inject, Singleton } from "typescript-ioc";
+import { Singleton } from "typescript-ioc";
 import { Between, FindConditions, InsertResult, Repository, UpdateResult } from "typeorm";
-import { DbConnection } from "../core/db.connection";
 import { Booking } from "../models";
 import { BookingSearchRequest } from "./bookings.apicontract";
+import { RepositoryBase } from "../core/repository";
+
 
 @Singleton
-export class BookingsRepository {
-	@Inject
-	private connection: DbConnection;
-
+export class BookingsRepository extends RepositoryBase {
 	public async getBookings(): Promise<Booking[]> {
-		const repository = await this.getRepository();
-		return repository.find();
+		return (await this.getRepository<Booking>()).find();
 	}
 
 	public async getBooking(id: string): Promise<Booking> {
-		const repository = await this.getRepository();
+		const repository = await this.getRepository<Booking>();
 		return repository.findOne(id);
 	}
 
 	public async save(booking: Booking): Promise<InsertResult> {
-		const repository = await this.getRepository();
+		const repository = await this.getRepository<Booking>();
 		return repository.insert(booking);
 	}
 
 	public async update(booking: Booking): Promise<Booking> {
-		const repository = await this.getRepository();
+		const repository = await this.getRepository<Booking>();
 		return repository.save(booking);
 	}
 
 	public async search(searchRequest: BookingSearchRequest): Promise<Booking[]> {
-		const repository = await this.getRepository();
+		const repository = await this.getRepository<Booking>();
 
 		const findConditions: FindConditions<Booking> = {};
 		findConditions['_startDateTime'] = Between(searchRequest.from, searchRequest.to);
@@ -40,15 +37,5 @@ export class BookingsRepository {
 		}
 
 		return repository.find({ where: [findConditions] });
-	}
-
-	private async getRepository(): Promise<Repository<Booking>> {
-		try {
-			const conn = await this.connection.getConnection();
-			return conn.getRepository(Booking);
-		} catch (e) {
-			logger.error("bookingsRepository::connection::error", e);
-			throw e;
-		}
 	}
 }
