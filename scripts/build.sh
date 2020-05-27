@@ -54,7 +54,7 @@ echo "Webpacking"
 export TS_NODE_PROJECT=./configs/shared-config/script.tsconfig.json
 ./node_modules/.bin/webpack-cli
 
-npm run swagger
+./node_modules/.bin/tsoa swagger --yaml
 pushd dist
 npm shrinkwrap
 npm pack

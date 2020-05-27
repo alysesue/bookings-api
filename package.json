@@ -20,7 +20,7 @@
 		"lint-staged": "lint-staged",
 		"watcher-install": "npm install",
 		"watcher-build": "npm run build && npm run watcher-env",
-		"watcher-run": "(cd ./dist; forever --minUptime 1000ms --spinSleepTime 1000ms -c \"node --trace-warnings --inspect=0.0.0.0:6000\" index.js)",
+		"watcher-run": "(cd ./dist; npm run watcher-env; forever --minUptime 1000ms --spinSleepTime 3000ms -c \"node --trace-warnings --inspect=0.0.0.0:6000\" index.js)",
 		"watcher-env": "cp ./.env ./dist/",
 		"params:new": "./node_modules/mol-bamboo-scripts/scripts/generator/service-params-new-env.sh"
 	},
@@ -88,7 +88,7 @@
 		"csv-parse": "^4.10.1",
 		"googleapis": "^49.0.0",
 		"koa-proxy": "^1.0.0-alpha.3",
-		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:^4.3.32",
+		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:^4.6.5",
 		"mol-lib-common": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-common.git#semver:^3.10.5",
 		"moment": "^2.25.3",
 		"pg": "^8.0.3",
