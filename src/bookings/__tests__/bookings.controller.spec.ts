@@ -4,7 +4,6 @@ import { BookingsController } from "../bookings.controller";
 import { BookingsService } from "../bookings.service";
 import { BookingResponse, BookingSearchRequest } from "../bookings.apicontract";
 import { TimeslotsService } from '../../timeslots/timeslots.service';
-import { Calendar } from '../../models/calendar';
 
 describe("Bookings.Controller", () => {
 	beforeAll(() => {
