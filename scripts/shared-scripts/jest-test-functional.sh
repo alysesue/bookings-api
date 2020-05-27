@@ -50,6 +50,8 @@ source ${ASSERT_VAR_SCRIPT} TARGET_ENV
 if [ ${TARGET_ENV} == "prod" ]; then
 	echo "Functional test can not be ran on production env."
 	exit 1
+elif [ ${TARGET_ENV} == "local"  ]; then
+  export FUNCTIONAL_TEST_BASE_URL="http://localhost:3999"
 else
 	export FUNCTIONAL_TEST_BASE_URL="https://${TARGET_ENV}.momentsoflife.sg"
 fi

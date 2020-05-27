@@ -30,14 +30,15 @@ RUN yarn global add npm@6.9.0 && npm --version
 # Set python version
 RUN cd /usr/bin && ln -s /usr/bin/python2.7 /usr/bin/python
 
+RUN npm install -g forever npm-watch
+
 # Copy files needed for the service to run
 WORKDIR /service
-COPY ./ .
+COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
-RUN npm install -g forever
-RUN npm install -g npm-watch
+RUN npm install
 
+COPY ./ .
 # Note: node_modules may get overriden if you mount a volume, so a reinstall might be required
 CMD bash -c "npm-watch"
