@@ -6,6 +6,7 @@
 		"lint": "tslint -p ./tsconfig.json -c ./tslint.json ./src/**/*.ts",
 		"test": "./scripts/shared-scripts/jest-test-unit-integration.sh",
 		"test:func": "./scripts/shared-scripts/jest-test-functional.sh",
+		"test:func-local": "npm run test:func local",
 		"build": "./scripts/build.sh",
 		"swagger": "./node_modules/.bin/tsoa swagger --yaml",
 		"sync-env": "export SERVICE_NAME=bookingsg-api && ./scripts/shared-scripts/aws/aws-sm-sync-env.sh",
@@ -13,6 +14,7 @@
 		"start": "docker-compose up -d --build",
 		"start:fresh": "docker-compose down -v && npm start -- --force-recreate",
 		"cleanup": "docker-compose down -v --rmi all --remove-orphans",
+		"cleanup:db": "docker-compose down && docker volume rm bookingsg-api_gt_dbdata",
 		"logs": "docker logs -f bookingsg-api",
 		"stop": "docker-compose stop",
 		"lint-staged": "lint-staged",
@@ -83,6 +85,7 @@
 	},
 	"dependencies": {
 		"@koa/cors": "^2.2.3",
+		"csv-parse": "^4.10.1",
 		"googleapis": "^49.0.0",
 		"koa-proxy": "^1.0.0-alpha.3",
 		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:^4.6.5",
