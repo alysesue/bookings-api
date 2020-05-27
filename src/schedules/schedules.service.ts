@@ -12,14 +12,6 @@ export class SchedulesService {
 	@Inject
 	private schedulesRepository: SchedulesRepository;
 
-	private validate(schedule: Schedule) {
-		const validations = Array.from(schedule.validateSchedule());
-		if (validations.length > 0) {
-			const response = validations.map(val => val.message);
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setResponseData(response);
-		}
-	}
-
 	private mapToEntityAndValidate(template: ScheduleRequest, schedule: Schedule) {
 		const mapped = mapToEntity(template, schedule);
 		if (isErrorResult(mapped)) {

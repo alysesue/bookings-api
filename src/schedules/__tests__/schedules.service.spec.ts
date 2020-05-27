@@ -128,6 +128,11 @@ describe('Schedules  template services ', () => {
 		expect(template.name).toStrictEqual(scheduleRequestCommon.name);
 	});
 
+	it('should get schedules', async () => {
+		await schedulesService.getSchedules();
+		expect(getSchedules).toBeCalled();
+	});
+
 	it('should call delete repository', async () => {
 		await schedulesService.deleteSchedule(3);
 		expect(deleteSchedule).toBeCalled();
