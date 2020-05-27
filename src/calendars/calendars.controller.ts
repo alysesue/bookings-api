@@ -1,6 +1,5 @@
 import { Inject } from "typescript-ioc";
 import {
-	AddCalendarModel,
 	CalendarModel,
 	CalendarTemplatesTimeslotModel,
 	CalendarTemplateTimeslotResponse,
@@ -28,15 +27,8 @@ export class CalendarsController extends Controller {
 
 	private static mapToServiceProviderResponse(calendar: Calendar): ServiceProviderResponse {
 		return {
-			serviceProviderName: calendar.serviceProviderName,
 			uuid: calendar.uuid
 		} as ServiceProviderResponse;
-	}
-
-	@Post("")
-	public async addCalendars(@Body() model: AddCalendarModel): Promise<CalendarModel> {
-		const data = await this.calendarsService.createCalendar(model);
-		return this.mapDataModel(data);
 	}
 
 	@Get("")
@@ -67,7 +59,6 @@ export class CalendarsController extends Controller {
 	private mapDataModel(calendar: Calendar): CalendarModel {
 		return {
 			uuid: calendar.uuid,
-			serviceProviderName: calendar.serviceProviderName,
 			externalCalendarUrl: calendar.generateExternalUrl(Constants.CalendarTimezone),
 			caldavUserUrl: calendar.generateCaldavUserUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost),
 			caldavEventsUrl: calendar.generateCaldavEventsUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost)

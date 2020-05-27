@@ -3,12 +3,15 @@ import { ServiceProvider } from "../models";
 
 import { ServiceProvidersRepository } from "./serviceProviders.repository";
 import { ServiceProviderModel } from "./serviceProviders.apicontract";
+import { CalendarsService } from "../calendars/calendars.service";
 
 @Singleton
 export class ServiceProvidersService {
 	@Inject
 	private serviceProvidersRepository: ServiceProvidersRepository;
 
+	@Inject
+	private calendarsService: CalendarsService;
 
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
 		return await this.serviceProvidersRepository.getServiceProviders();
@@ -23,7 +26,12 @@ export class ServiceProvidersService {
 	}
 
 	public async save(listRequest: ServiceProviderModel[]): Promise<ServiceProvider[]> {
-		return await this.serviceProvidersRepository.saveBulk(this.mapBulkRequest(listRequest));
+		const spList = this.mapBulkRequest(listRequest)
+		spList.map(async (i) => {
+			const calendar = await this.calendarsService.createCalendar();
+			i.calendar = calendar;
+		}) as unknown as ServiceProvider[];
+		return await this.serviceProvidersRepository.saveBulk(spList);
 	}
 
 	public mapBulkRequest(req: ServiceProviderModel[]): ServiceProvider[] {
