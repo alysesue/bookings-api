@@ -9,8 +9,8 @@ export class ServicesRepository {
 	@Inject
 	private connection: DbConnection;
 
-	public async create(agency: Service): Promise<InsertResult> {
-		return (await this.getRepository()).insert(agency);
+	public async create(service: Service): Promise<InsertResult> {
+		return (await this.getRepository()).insert(service);
 	}
 
 	private async getRepository(): Promise<Repository<Service>> {

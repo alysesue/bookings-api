@@ -1,8 +1,5 @@
 import { Inject } from "typescript-ioc";
-import {
-	ServiceProviderListRequest,
-	ServiceProviderModel
-} from "./serviceProviders.apicontract";
+import { ServiceProviderListRequest, ServiceProviderModel } from "./serviceProviders.apicontract";
 import { ServiceProvidersService } from "./serviceProviders.service";
 import { ServiceProvider } from "../models";
 import { Body, Controller, Get, Path, Post, Route, SuccessResponse, Tags } from "tsoa";
@@ -62,12 +59,13 @@ export class ServiceProvidersController extends Controller {
 	private static parseCsvModelToServiceProviders(csvModels: []) {
 		try {
 
-			const serviceProvidersRequest = csvModels as ServiceProviderModel[]
+			const serviceProvidersRequest = csvModels as ServiceProviderModel[];
 
-			if (serviceProvidersRequest.length !== csvModels.length) {
+			if (serviceProvidersRequest.length === csvModels.length) {
+				return serviceProvidersRequest;
+			} else {
 				throw new Error("Invalid model format");
 			}
-			return serviceProvidersRequest;
 		}
 		catch (e) {
 			throw new Error("Invalid model format");
