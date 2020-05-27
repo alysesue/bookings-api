@@ -46,13 +46,13 @@ resource "aws_ssm_parameter" "bookingsg-db_host" {
 }
 
 
-resource "aws_ssm_parameter" "test" {
-  name  = "${local.path-prefix}/TEST"
-  type  = "String"
-  value = "${data.external.static.result.TEST}"
+# resource "aws_ssm_parameter" "test" {
+#   name  = "${local.path-prefix}/TEST"
+#   type  = "String"
+#   value = "${data.external.static.result.TEST}"
 
-  overwrite = true
-}
+#   overwrite = true
+# }
 
 resource "aws_ssm_parameter" "bookingsg-svc_acc" {
   name   = "${local.path-prefix}/GOOGLE_SERVICE_ACCOUNT"
