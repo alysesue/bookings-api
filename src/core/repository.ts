@@ -1,4 +1,4 @@
-import { Repository, EntitySchema } from "typeorm";
+import { Repository } from "typeorm";
 import { Inject, Singleton } from "typescript-ioc";
 import { DbConnection } from "./db.connection";
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
@@ -9,7 +9,7 @@ export abstract class RepositoryBase {
 	@Inject
 	private connection: DbConnection;
 
-	modelType;
+	private readonly modelType;
 
 	protected constructor(modelType) {
 		this.modelType = modelType;

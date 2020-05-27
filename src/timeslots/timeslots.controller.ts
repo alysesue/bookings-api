@@ -1,12 +1,10 @@
 import { Inject } from "typescript-ioc";
-import { Body, Controller, Get, Path, Post, Query, Route, Tags, } from "tsoa";
+import { Controller, Get, Query, Route, Tags, } from "tsoa";
 import { TimeslotResponse } from "./timeslots.apicontract";
 import { TimeslotsService } from './timeslots.service';
-import { AggregatedEntry } from "./timeslotAggregator";
-import { Calendar } from '../models/calendar';
 import { DateHelper } from "../infrastructure/dateHelper";
 
-@Route("api/v1/timeslots")
+@Route("**/v1/timeslots")
 @Tags('Timeslots')
 export class TimeslotsController extends Controller {
 	@Inject
