@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { EntitySchema, Repository } from "typeorm";
 import { Inject, Singleton } from "typescript-ioc";
 import { DbConnection } from "./db.connection";
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";

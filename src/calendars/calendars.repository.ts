@@ -16,19 +16,16 @@ export class CalendarsRepository extends RepositoryBase {
 	}
 
 	public async getCalendarsWithTemplates(): Promise<Calendar[]> {
-		return (await this.getRepository<Calendar>()).find({relations: ['templatesTimeslots']});
+		return (await this.getRepository<Calendar>()).find({ relations: ['schedule'] });
 	}
 
 	public async getCalendarByUUID(uuid: string): Promise<Calendar> {
-		return (await this.getRepository<Calendar>()).findOne({uuid});
+		return (await this.getRepository<Calendar>()).findOne({ uuid });
 	}
 
 	public async saveCalendar(calendar: Calendar): Promise<Calendar> {
 		return (await this.getRepository<Calendar>()).save(calendar);
 	}
 
-	public async searchCalendar(from, to): Promise<Calendar[]> {
-		// TODO : search against timeslot
-		return (await this.getRepository<Calendar>()).find();
-	}
+
 }

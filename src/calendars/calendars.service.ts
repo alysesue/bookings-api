@@ -1,15 +1,15 @@
 import { Inject, Singleton } from "typescript-ioc";
-import { Booking, Calendar, TemplateTimeslots } from "../models";
+import { Booking, Calendar, Schedule } from "../models";
 import { CalendarsRepository } from "./calendars.repository";
 import { GoogleCalendarService } from "../googleapi/google.calendar.service";
 import { AddCalendarModel, CalendarTemplatesTimeslotModel, CalendarUserModel } from "./calendars.apicontract";
-import { TemplatesTimeslotsRepository } from "../components/templatesTimeslots/templatesTimeslots.repository";
+import { SchedulesRepository } from "../schedules/schedules.repository";
 import { isEmptyArray } from "../tools/arrays";
 
 @Singleton
 export class CalendarsService {
 	@Inject
-	private templatesTimeslotsRepository: TemplatesTimeslotsRepository;
+	private schedulesRepository: SchedulesRepository;
 	@Inject
 	private calendarsRepository: CalendarsRepository;
 	@Inject
@@ -62,12 +62,12 @@ export class CalendarsService {
 		return await this.googleCalendarApi.createEvent(booking, calendar.googleCalendarId);
 	}
 
-	public async addTemplatesTimeslots(calendarUUID: string, model: CalendarTemplatesTimeslotModel): Promise<TemplateTimeslots> {
+	public async addSchedules(calendarUUID: string, model: CalendarTemplatesTimeslotModel): Promise<Schedule> {
 		const calendar = await this.calendarsRepository.getCalendarByUUID(calendarUUID);
-		const templateTimeslots = await this.templatesTimeslotsRepository.getTemplateTimeslotsById(model.templatesTimeslotId);
-		calendar.templatesTimeslots = templateTimeslots;
+		const schedule = await this.schedulesRepository.getScheduleById(model.templatesTimeslotId);
+		calendar.schedule = schedule;
 		await this.calendarsRepository.saveCalendar(calendar);
-		return templateTimeslots;
+		return schedule;
 	}
 
 

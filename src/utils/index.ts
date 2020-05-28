@@ -1,4 +1,5 @@
 import * as parse from 'csv-parse/lib/sync';
+
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 
 export const parseCsv = (input: string | Buffer): [] => {

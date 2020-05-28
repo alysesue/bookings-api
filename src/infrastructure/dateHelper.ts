@@ -43,6 +43,12 @@ export class DateHelper {
 		return dateA.getTime() === dateB.getTime();
 	}
 
+	public static equalsDateOnly(dateA: Date, dateB: Date): boolean {
+		return dateA.getFullYear() === dateB.getFullYear()
+			&& dateA.getMonth() === dateB.getMonth()
+			&& dateA.getDate() === dateB.getDate();
+	}
+
 	public static setHours(date: Date, hours: number, min: number): Date {
 		const newDate = DateHelper.getDateOnly(date);
 		newDate.setHours(hours, min);
