@@ -1,5 +1,4 @@
 import { Singleton } from "typescript-ioc";
-import { InsertResult } from "typeorm";
 import { Service } from "../models";
 import { RepositoryBase } from "../core/repository";
 
@@ -10,8 +9,8 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		super(Service);
 	}
 
-	public async create(service: Service): Promise<InsertResult> {
-		return (await this.getRepository()).insert(service);
+	public async save(service: Service): Promise<Service> {
+		return (await this.getRepository()).save(service);
 	}
 
 	public async getAll(): Promise<Service[]> {

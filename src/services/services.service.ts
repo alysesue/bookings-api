@@ -13,8 +13,7 @@ export class ServicesService {
 		const service = new Service();
 		service.name = request.name;
 
-		await this.servicesRepository.create(service);
-		return service;
+		return await this.servicesRepository.save(service);
 	}
 
 	public async getServices(): Promise<Service[]> {
