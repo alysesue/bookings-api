@@ -3,6 +3,9 @@ import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 @Entity()
 export class ServiceProvider extends BaseEntity {
 
+	@Column()
+	private _createdAt: Date;
+
 	constructor(name: string) {
 		super();
 		this._name = name;
@@ -16,7 +19,7 @@ export class ServiceProvider extends BaseEntity {
 		return this._id;
 	}
 
-	@Column({ type: "varchar", length: 300 })
+	@Column({type: "varchar", length: 300})
 	private _name: string;
 
 	public get name(): string {
@@ -26,7 +29,4 @@ export class ServiceProvider extends BaseEntity {
 	public set name(value: string) {
 		this._name = value;
 	}
-
-	@Column()
-	private _createdAt: Date;
 }
