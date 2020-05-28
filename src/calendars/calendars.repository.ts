@@ -26,10 +26,4 @@ export class CalendarsRepository extends RepositoryBase<Calendar> {
 	public async saveCalendar(calendar: Calendar): Promise<Calendar> {
 		return (await this.getRepository()).save(calendar);
 	}
-
-	// todo: Not used?
-	public async searchCalendar(from, to): Promise<Calendar[]> {
-		// TODO : search against timeslot
-		return (await this.getRepository()).find();
-	}
 }
