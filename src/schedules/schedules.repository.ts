@@ -1,7 +1,7 @@
 import { Inject, Singleton } from 'typescript-ioc';
 
 import { DbConnection } from '../core/db.connection';
-import { Schedule, WeekDaySchedule } from '../models/Schedule';
+import { Schedule, WeekDaySchedule } from '../models';
 import { DeleteResult, Repository } from "typeorm";
 
 @Singleton

@@ -1,12 +1,9 @@
 import { Inject, Singleton } from "typescript-ioc";
 import { AggregatedEntry, TimeslotAggregator } from "./timeslotAggregator";
-import { Calendar } from '../models/calendar';
+import { Booking, BookingStatus, Calendar, Timeslot } from '../models';
 import { CalendarsRepository } from "../calendars/calendars.repository";
 import { DateHelper } from "../infrastructure/dateHelper";
 import { BookingsRepository } from "../bookings/bookings.repository";
-import { Booking } from '../models/booking';
-import { Timeslot } from '../models/Timeslot';
-import { BookingStatus } from "../models";
 import { BookingRequest, BookingSearchRequest } from '../bookings/bookings.apicontract';
 import { TimeslotResponse } from './timeslots.apicontract';
 import { groupByKey } from '../tools/collections';
@@ -75,8 +72,8 @@ export class TimeslotsService {
 		const calendars = await this.calendarsRepository.getCalendarsWithTemplates();
 		const bookingsPerCalendarId = await this.getAcceptedBookingsPerCalendarId(minStartTime, maxEndTime);
 
-		for (const calendar of calendars.filter(c => c.schedules !== null)) {
-			const generator = calendar.schedules.generateValidTimeslots({
+		for (const calendar of calendars.filter(c => c.schedule !== null)) {
+			const generator = calendar.schedule.generateValidTimeslots({
 				startDatetime: minStartTime,
 				endDatetime: maxEndTime
 			});

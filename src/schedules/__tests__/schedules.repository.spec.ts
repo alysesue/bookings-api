@@ -2,7 +2,7 @@ import { SchedulesRepository } from '../schedules.repository';
 import { DbConnection } from '../../core/db.connection';
 import { Container, Snapshot } from 'typescript-ioc';
 import { DbConnectionMock, GetRepositoryMock, InnerRepositoryMock } from '../../infrastructure/tests/dbconnectionmock';
-import { Schedule } from "../../models/Schedule";
+import { Schedule } from "../../models";
 
 let snapshot: Snapshot;
 beforeAll(() => {

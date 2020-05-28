@@ -1,5 +1,5 @@
 
-import { Timeslot } from '../../models/Timeslot';
+import { Timeslot } from '../../models';
 import { TimeslotAggregator } from '../timeslotAggregator';
 import { DateHelper } from '../../infrastructure/dateHelper';
 

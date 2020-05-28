@@ -2,7 +2,7 @@ import { SchedulesService } from "../schedules.service";
 import { ScheduleRequest, WeekDayScheduleContract } from "../schedules.apicontract";
 import { SchedulesRepository } from "../schedules.repository";
 import { Container } from "typescript-ioc";
-import { Schedule } from "../../models/Schedule";
+import { Schedule } from "../../models";
 import { mapToEntity } from '../schedules.mapper';
 import { Weekday } from "../../enums/weekday";
 import { MOLErrorV2 } from "mol-lib-api-contract";

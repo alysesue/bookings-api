@@ -1,10 +1,10 @@
 
 import { Container, Snapshot } from 'typescript-ioc';
-import { Schedule, WeekDaySchedule } from '../Schedule';
-import { Timeslot } from '../Timeslot';
+import { Schedule, WeekDaySchedule } from '../schedule';
+import { Timeslot } from '../timeslot';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Weekday } from '../../enums/weekday';
-import { TimeOfDay } from '../TimeOfDay';
+import { TimeOfDay } from '../timeOfDay';
 
 let snapshot: Snapshot;
 beforeAll(() => {

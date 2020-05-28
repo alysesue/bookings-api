@@ -4,7 +4,7 @@ import { TimeslotsService } from "../timeslots.service";
 import { CalendarsRepository } from '../../calendars/calendars.repository';
 import { AggregatedEntry, TimeslotAggregator } from '../timeslotAggregator';
 import { BookingsRepository } from "../../bookings/bookings.repository";
-import { Timeslot } from "../../models/Timeslot";
+import { Timeslot } from "../../models";
 import { DateHelper } from "../../infrastructure/dateHelper";
 import { BookingSearchRequest } from '../../bookings/bookings.apicontract';
 
@@ -33,7 +33,7 @@ describe("Timeslots Service", () => {
 	const CalendarMock = new Calendar();
 	CalendarMock.id = 1;
 
-	CalendarMock.schedules = ScheduleMock as unknown as Schedule;
+	CalendarMock.schedule = ScheduleMock as unknown as Schedule;
 
 	const CalendarsRepositoryMock = {
 		getCalendarsWithTemplates: jest.fn(() => Promise.resolve([CalendarMock]))

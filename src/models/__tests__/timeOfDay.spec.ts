@@ -1,4 +1,4 @@
-import { TimeOfDay, Transformer } from '../TimeOfDay';
+import { TimeOfDay, Transformer } from '../timeOfDay';
 import { AssociateUserRequestApiDomain } from 'mol-lib-api-contract/notification/push/associate-user/associate-user-api-domain';
 
 describe('Time of day tests', () => {

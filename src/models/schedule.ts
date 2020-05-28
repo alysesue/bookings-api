@@ -1,10 +1,10 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { getWeekdayName, Weekday } from "../enums/weekday";
 import { DateHelper } from '../infrastructure/dateHelper';
-import { Timeslot } from './Timeslot';
-import { TimeOfDay, Transformer as TimeTransformer } from './TimeOfDay';
+import { Timeslot } from './timeslot';
+import { TimeOfDay, Transformer as TimeTransformer } from './timeOfDay';
 import { groupByKeyLastValue } from '../tools/collections';
-import { BusinessValidation } from './BusinessValidation';
+import { BusinessValidation } from './businessValidation';
 
 @Entity()
 export class Schedule {

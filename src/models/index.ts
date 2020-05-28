@@ -1,9 +1,10 @@
 import { Booking } from "./booking";
 import { BookingStatus } from "./bookingStatus";
-import { Schedule, WeekDaySchedule } from "./Schedule";
+import { Schedule, WeekDaySchedule } from "./schedule";
 import { Calendar } from "./calendar";
-import { TimeOfDay } from './TimeOfDay';
+import { TimeOfDay } from './timeOfDay';
 import { ServiceProvider } from "./serviceProvider";
-import { BusinessValidation } from './BusinessValidation';
+import { BusinessValidation } from './businessValidation';
+import { Timeslot } from '../models/timeslot';
 
-export { Booking, BusinessValidation, BookingStatus, Schedule, WeekDaySchedule, Calendar, TimeOfDay, ServiceProvider };
+export { Booking, BusinessValidation, BookingStatus, Schedule, WeekDaySchedule, Calendar, TimeOfDay, Timeslot, ServiceProvider };

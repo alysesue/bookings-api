@@ -65,7 +65,7 @@ export class CalendarsService {
 	public async addSchedules(calendarUUID: string, model: CalendarTemplatesTimeslotModel): Promise<Schedule> {
 		const calendar = await this.calendarsRepository.getCalendarByUUID(calendarUUID);
 		const schedule = await this.schedulesRepository.getScheduleById(model.templatesTimeslotId);
-		calendar.schedules = schedule;
+		calendar.schedule = schedule;
 		await this.calendarsRepository.saveCalendar(calendar);
 		return schedule;
 	}
