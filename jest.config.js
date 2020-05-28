@@ -7,7 +7,8 @@ const config = {
 	collectCoverageFrom: [
 		...baseConfig.collectCoverageFrom,
 		'**/*.controller.ts',
-		'!**/*{A,a}picontract{*,*/**/*}'
+		'!**/*{A,a}picontract{*,*/**/*}',
+		'!**/fixLF.js'
 	],
 	coverageThreshold: {
 		global: {
