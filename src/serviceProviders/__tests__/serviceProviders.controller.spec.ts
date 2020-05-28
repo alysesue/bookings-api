@@ -69,6 +69,7 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 	public async getServiceProvider(spId: string): Promise<ServiceProvider> {
 		return ServiceProvidersMock.getServiceProvider();
 	}
+
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
 		return ServiceProvidersMock.getServiceProviders();
 	}

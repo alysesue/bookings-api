@@ -1,6 +1,5 @@
-import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 import { Singleton } from "typescript-ioc";
-import { Between, FindConditions, InsertResult, Repository, UpdateResult } from "typeorm";
+import { Between, FindConditions, InsertResult } from "typeorm";
 import { Booking } from "../models";
 import { BookingSearchRequest } from "./bookings.apicontract";
 import { RepositoryBase } from "../core/repository";
@@ -36,6 +35,6 @@ export class BookingsRepository extends RepositoryBase {
 			findConditions['_status'] = searchRequest.status;
 		}
 
-		return repository.find({ where: [findConditions] });
+		return repository.find({where: [findConditions]});
 	}
 }

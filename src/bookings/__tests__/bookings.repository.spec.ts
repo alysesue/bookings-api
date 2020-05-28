@@ -2,7 +2,7 @@ import { BookingsRepository } from "../bookings.repository";
 import { DbConnection } from "../../core/db.connection";
 import { Booking, BookingStatus } from "../../models";
 import { Container } from "typescript-ioc";
-import { InsertResult, UpdateResult } from "typeorm";
+import { InsertResult } from "typeorm";
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { BookingSearchRequest } from '../bookings.apicontract';
 
@@ -69,13 +69,13 @@ describe("Bookings repository", () => {
 		jest.resetAllMocks();
 		Container.bind(DbConnection).to(MockDBConnection);
 		const insertResult = new InsertResult();
-		insertResult.identifiers = [{ id: "abc" }];
+		insertResult.identifiers = [{id: "abc"}];
 		MockDBConnection.insert.mockImplementation(() => insertResult);
 		const bookingsRepository = Container.get(BookingsRepository);
 		const booking: Booking = new Booking(new Date(), 60);
 
 		const result = await bookingsRepository.save(booking);
-		expect(result.identifiers).toStrictEqual([{ id: "abc" }]);
+		expect(result.identifiers).toStrictEqual([{id: "abc"}]);
 	});
 
 	it('should update booking', async () => {

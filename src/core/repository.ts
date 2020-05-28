@@ -9,7 +9,7 @@ export abstract class RepositoryBase {
 	@Inject
 	private connection: DbConnection;
 
-	private modelType;
+	private readonly modelType;
 
 	protected constructor(modelType) {
 		this.modelType = modelType;

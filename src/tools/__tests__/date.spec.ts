@@ -1,5 +1,4 @@
 import { isValidFormatHHmm, parseHHmm } from "../date";
-import { parse } from "querystring";
 
 describe("Test dates", () => {
 	it("Should have a valid format time", () => {
@@ -23,8 +22,7 @@ describe("Test dates", () => {
 		expect(parseHHmm(undefined)).toBeNull;
 		try {
 			parseHHmm("1630");
-		}
-		catch (e) {
+		} catch (e) {
 			expect(e.message).toMatch('Value 1630 is not a valid time.');
 		}
 

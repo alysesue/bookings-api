@@ -19,6 +19,14 @@ import { Container } from "typescript-ioc";
 import { CalDavProxyHandler } from "./infrastructure/caldavproxy.handler";
 import * as cors from '@koa/cors';
 
+const setService = async (ctx, next) => {
+	Container.bindName('config').to({
+		service: ctx.params.service || 'default'
+	});
+	await next();
+};
+
+
 export async function startServer(): Promise<Server> {
 	// Setup service
 	LoggerV2.setServiceName(config.name);
@@ -26,8 +34,11 @@ export async function startServer(): Promise<Server> {
 	// Setup server
 	const router: KoaRouter = new KoaRouter();
 	RegisterRoutes(router);
+	const serviceAwareRouter = new KoaRouter({prefix: '/api'})
+		.use('/:service/**', setService)
+		.use(router.routes(), router.allowedMethods());
 	// @ts-ignore
-	const HandledRoutes = new KoaResponseHandler(router.routes());
+	const HandledRoutes = new KoaResponseHandler(serviceAwareRouter.routes());
 	const proxyHandler = Container.get(CalDavProxyHandler);
 
 	const document = swagger.loadDocumentSync('../dist/swagger/swagger.yaml');
@@ -56,7 +67,7 @@ export async function startServer(): Promise<Server> {
 		.use(new KoaMultipartCleaner().build())
 		.use(HealthCheckMiddleware.build())
 		.use(HandledRoutes.build())
-		.use(router.allowedMethods());
+		.use(serviceAwareRouter.allowedMethods());
 
 	const dbConnection = Container.get(DbConnection);
 

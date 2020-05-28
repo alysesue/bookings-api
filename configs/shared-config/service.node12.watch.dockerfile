@@ -34,11 +34,10 @@ RUN npm install -g forever npm-watch
 
 # Copy files needed for the service to run
 WORKDIR /service
-COPY package*.json ./
+COPY ./ .
 
 # Install dependencies
-RUN npm install
+RUN npm ci mol-lib-config
 
-COPY ./ .
 # Note: node_modules may get overriden if you mount a volume, so a reinstall might be required
 CMD bash -c "npm-watch"

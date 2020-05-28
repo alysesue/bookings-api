@@ -11,11 +11,10 @@ import { CalendarsService } from "./calendars.service";
 import { Calendar } from "../models";
 import { CalDavProxyHandler } from "../infrastructure/caldavproxy.handler";
 import { Constants } from "../models/constants";
-import { BookingsService } from "../bookings";
 import { Body, Controller, Get, Path, Post, Put, Query, Route, SuccessResponse, Tags } from "tsoa";
 import { TimeslotsService } from "../timeslots/timeslots.service";
 
-@Route("api/v1/calendars")
+@Route("**/v1/calendars")
 @Tags('Calendars')
 export class CalendarsController extends Controller {
 	@Inject
@@ -23,9 +22,6 @@ export class CalendarsController extends Controller {
 
 	@Inject
 	private proxyHandler: CalDavProxyHandler;
-
-	@Inject
-	private bookingsService: BookingsService;
 
 	@Inject
 	private timeslotService: TimeslotsService;
