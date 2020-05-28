@@ -1,7 +1,6 @@
 
 import { Container, Snapshot } from 'typescript-ioc';
-import { Schedule } from '../schedule';
-import { WeekDaySchedule } from '../weekDaySchedule';
+import { Schedule, WeekDaySchedule } from '../schedule';
 import { Timeslot } from '../timeslot';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Weekday } from '../../enums/weekday';
