@@ -13,4 +13,8 @@ export class Service extends BaseEntity {
 	public set name(name: string) {
 		this._name = name;
 	}
+
+	public get name() {
+		return this._name;
+	}
 }

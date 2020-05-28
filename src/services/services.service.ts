@@ -16,4 +16,8 @@ export class ServicesService {
 		await this.servicesRepository.create(service);
 		return service;
 	}
+
+	public async getServices(): Promise<Service[]> {
+		return await this.servicesRepository.getAll();
+	}
 }

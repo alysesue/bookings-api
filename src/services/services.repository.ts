@@ -1,20 +1,20 @@
-import { Inject, Singleton } from "typescript-ioc";
-import { DbConnection } from "../core/db.connection";
-import { InsertResult, Repository } from "typeorm";
+import { Singleton } from "typescript-ioc";
+import { InsertResult } from "typeorm";
 import { Service } from "../models";
+import { RepositoryBase } from "../core/repository";
 
 @Singleton
-export class ServicesRepository {
+export class ServicesRepository extends RepositoryBase<Service> {
 
-	@Inject
-	private connection: DbConnection;
+	constructor() {
+		super(Service);
+	}
 
 	public async create(service: Service): Promise<InsertResult> {
 		return (await this.getRepository()).insert(service);
 	}
 
-	private async getRepository(): Promise<Repository<Service>> {
-		const conn = await this.connection.getConnection();
-		return conn.getRepository(Service);
+	public async getAll(): Promise<Service[]> {
+		return (await this.getRepository()).find();
 	}
 }

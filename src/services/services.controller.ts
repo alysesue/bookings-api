@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Route, SuccessResponse, Tags } from "tsoa";
+import { Body, Controller, Get, Post, Route, SuccessResponse, Tags } from "tsoa";
 import { ServiceRequest, ServiceResponse } from "./service.apicontract";
 import { Inject } from "typescript-ioc";
 import { ServicesService } from "./services.service";
@@ -21,5 +21,12 @@ export class ServicesController extends Controller {
 	@SuccessResponse(201, "Created")
 	public async createService(@Body() request: ServiceRequest): Promise<ServiceResponse> {
 		return ServicesController.mapToServiceResponse(await this.servicesService.createService(request));
+	}
+
+	@Get()
+	@SuccessResponse(200, "Ok")
+	public async getServices(): Promise<ServiceResponse[]> {
+		const services = await this.servicesService.getServices();
+		return services.map(ServicesController.mapToServiceResponse);
 	}
 }
