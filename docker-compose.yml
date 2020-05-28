@@ -3,7 +3,7 @@ services:
   bookingsg-api:
     build:
       context: ./
-      dockerfile: ./configs/shared-config/service.node12.watch.dockerfile
+      dockerfile: ./service.node12.watch.dockerfile
     container_name: 'bookingsg-api'
     restart: always
     logging:

@@ -33,7 +33,7 @@ PROJECT_DIR=$( cd ${SCRIPT_DIR} && cd .. && pwd )
 
 # Variables
 echo "Checking variables"
-ASSERT_VAR_SCRIPT="${PROJECT_DIR}/scripts/shared-scripts/helpers/assert-variable.sh"
+ASSERT_VAR_SCRIPT="${PROJECT_DIR}/node_modules/mol-lib-config/shared-scripts/helpers/assert-variable.sh"
 
 export BUILD_ENV=${1:-development}	# development or production only
 source ${ASSERT_VAR_SCRIPT} BUILD_ENV
@@ -51,7 +51,7 @@ echo "Generate TSOA routes"
 
 # Build and pack
 echo "Webpacking"
-export TS_NODE_PROJECT=./configs/shared-config/script.tsconfig.json
+export TS_NODE_PROJECT=./node_modules/mol-lib-config/shared-config/script.tsconfig.json
 ./node_modules/.bin/webpack-cli
 
 ./node_modules/.bin/tsoa swagger --yaml

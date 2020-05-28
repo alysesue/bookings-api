@@ -4,12 +4,12 @@
 	"main": "index.js",
 	"scripts": {
 		"lint": "tslint -p ./tsconfig.json -c ./tslint.json ./src/**/*.ts",
-		"test": "./scripts/shared-scripts/jest-test-unit-integration.sh",
-		"test:func": "./scripts/shared-scripts/jest-test-functional.sh",
-		"test:func-local": "npm run test:func local",
-		"build": "./scripts/build.sh",
+		"test": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
+		"test:func": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-functional.sh",
+		"test:func-local": "npm run fixLF && npm run test:func local",
+		"build": "npm run fixLF && ./scripts/build.sh",
 		"swagger": "./node_modules/.bin/tsoa swagger --yaml",
-		"sync-env": "export SERVICE_NAME=bookingsg-api && ./scripts/shared-scripts/aws/aws-sm-sync-env.sh",
+		"sync-env": "npm run fixLF && export SERVICE_NAME=bookingsg-api && ./node_modules/mol-lib-config/shared-scripts/aws/aws-sm-sync-env.sh",
 		"sync-local": "node node_modules/cpy-cli/cli ./params/secrets/local.env ./ --rename=.env",
 		"start": "docker-compose up -d --build",
 		"start:fresh": "docker-compose down -v && npm start -- --force-recreate",
@@ -22,7 +22,8 @@
 		"watcher-build": "npm run build && npm run watcher-env",
 		"watcher-run": "(cd ./dist; npm run watcher-env; forever --minUptime 1000ms --spinSleepTime 3000ms -c \"node --trace-warnings --inspect=0.0.0.0:6000\" index.js)",
 		"watcher-env": "cp ./.env ./dist/",
-		"params:new": "./node_modules/mol-bamboo-scripts/scripts/generator/service-params-new-env.sh"
+		"params:new": "npm run fixLF && ./node_modules/mol-bamboo-scripts/scripts/generator/service-params-new-env.sh",
+		"fixLF": "node ./src/fixLF.js"
 	},
 	"husky": {
 		"hooks": {
@@ -86,6 +87,7 @@
 	"dependencies": {
 		"@koa/cors": "^2.2.3",
 		"csv-parse": "^4.10.1",
+		"glob": "^7.1.6",
 		"googleapis": "^49.0.0",
 		"koa-proxy": "^1.0.0-alpha.3",
 		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:^4.6.5",
@@ -122,6 +124,7 @@
 		"lodash": "^4.17.15",
 		"minimist": "^1.2.5",
 		"mol-bamboo-scripts": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-bamboo-scripts.git#semver:^1.4.0",
+		"mol-lib-config": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-config.git#semver:^4.0.2",
 		"reflect-metadata": "^0.1.13",
 		"ts-jest": "^25.5.1",
 		"ts-loader": "^7.0.2",

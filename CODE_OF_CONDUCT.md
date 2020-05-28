@@ -105,6 +105,7 @@ src/
 
 ### Code
 
+- Apply [clean code](https://github.com/ryanmcdermott/clean-code-javascript) best practices
 - Use tabs instead of spaces (rendered as 2 spaces preferably)
 - Naming should be verbose enough to prevent miscommunication or naming conflicts
 - Write comments when
@@ -178,6 +179,8 @@ src/
 | Benchmark | Testing optimization impacts (or lack thereof) | ✗ | ✓ | ✓ | `<root>/src/**/__tests__/<name>.bench.spec.ts` | test:bench |
 | Functional | Testing API/Mobile automation against a full env (e.g. E2E) | ✓ | ✓ | ✓ | `<root>/__tests__/functional/**/<name>.spec.ts` | test:func -- \<env\> |
 | Load | Testing API automation against a full env (e.g. E2E) to ensure that it can handle an expected load using [k6](https://k6.io/blog/comparing-best-open-source-load-testing-tools) | ✓ | ✓ | ✓ | `<root>/__tests__/load/**/<name>.spec.ts` | test:load -- \<env\> |
+
+---
 
 ## API Routes
 
