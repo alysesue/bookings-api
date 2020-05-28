@@ -1,6 +1,7 @@
 import { Booking } from "./booking";
 import { BookingStatus } from "./bookingStatus";
-import { Schedule, WeekDaySchedule } from "./schedule";
+import { Schedule } from "./schedule";
+import { WeekDaySchedule } from "./weekDaySchedule";
 import { Calendar } from "./calendar";
 import { TimeOfDay } from './timeOfDay';
 import { ServiceProvider } from "./serviceProvider";
