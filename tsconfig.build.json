@@ -1,5 +1,5 @@
 {
-	"extends": "./configs/shared-config/tsconfig.json",
+	"extends": "./node_modules/mol-lib-config/shared-config/tsconfig.json",
 	"include": [
 		"src/**/*"
 	],

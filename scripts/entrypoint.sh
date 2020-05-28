@@ -32,7 +32,7 @@ PROJECT_DIR=$( cd ${SCRIPT_DIR} && cd .. && pwd )
 
 # Variables
 echo "Checking variables"
-ASSERT_VAR_SCRIPT="${PROJECT_DIR}/scripts/shared-scripts/helpers/assert-variable.sh"
+ASSERT_VAR_SCRIPT="${PROJECT_DIR}/node_modules/mol-lib-config/shared-scripts/helpers/assert-variable.sh"
 
 export ENV=$1					# Injected by terraform
 source ${ASSERT_VAR_SCRIPT} ENV
@@ -45,7 +45,7 @@ export SERVICE_NAME="bookingsg-api"
 
 # Sync env file from AWS param store
 echo "Generating service env"
-${PROJECT_DIR}/scripts/shared-scripts/aws/aws-sm-sync-env.sh ${ENV}
+${PROJECT_DIR}/node_modules/mol-lib-config/shared-scripts/aws/aws-sm-sync-env.sh ${ENV}
 
 # Start node server
 echo "Starting server up"

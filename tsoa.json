@@ -14,6 +14,6 @@
 		"entryFile": "./src/controllers.ts",
 		"routesDir": "./src",
 		"middleware": "koa",
-		"middlewareTemplate": "./configs/shared-config/tsoa-koa.hbs"
+		"middlewareTemplate": "./node_modules/mol-lib-config/shared-config/tsoa-koa.hbs"
 	}
 }

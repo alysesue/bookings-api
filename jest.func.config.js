@@ -1,4 +1,4 @@
-const baseConfig = require("./configs/shared-config/jest.config");
+const baseConfig = require("mol-lib-config/shared-config/jest.config");
 
 const config = {
 	...baseConfig.createBaseConfig(baseConfig.TestType.FUNCTIONAL),
