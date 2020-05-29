@@ -1,6 +1,6 @@
 
 import { Container, Snapshot } from 'typescript-ioc';
-import { Schedule, WeekDaySchedule } from '../schedule';
+import { Schedule, WeekDaySchedule } from '../index';
 import { Timeslot } from '../timeslot';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Weekday } from '../../enums/weekday';
@@ -20,8 +20,8 @@ afterAll(() => {
 	snapshot.restore();
 });
 
-function createDayOfWeekTemplate(weekday: Weekday, openTime: string, closeTime: string): WeekDaySchedule {
-	const weekDaySchedule = new WeekDaySchedule(weekday);
+function createDayOfWeekTemplate(weekday: Weekday, openTime: string, closeTime: string, schedule: Schedule): WeekDaySchedule {
+	const weekDaySchedule = WeekDaySchedule.create(weekday, schedule);
 	weekDaySchedule.hasSchedule = true;
 	weekDaySchedule.openTime = TimeOfDay.parse(openTime);
 	weekDaySchedule.closeTime = TimeOfDay.parse(closeTime);
@@ -33,9 +33,13 @@ describe('Timeslots template', () => {
 	template.name = 'test';
 	template.slotsDurationInMin = 60;
 	template.weekdaySchedules = [
-		createDayOfWeekTemplate(Weekday.Monday, '08:30', '16:00'),
-		createDayOfWeekTemplate(Weekday.Tuesday, '08:30', '15:00'),
-		createDayOfWeekTemplate(Weekday.Wednesday, '09:30', '16:00')
+		WeekDaySchedule.create(Weekday.Sunday, template),
+		createDayOfWeekTemplate(Weekday.Monday, '08:30', '16:00', template),
+		createDayOfWeekTemplate(Weekday.Tuesday, '08:30', '15:00', template),
+		createDayOfWeekTemplate(Weekday.Wednesday, '09:30', '16:00', template),
+		WeekDaySchedule.create(Weekday.Thursday, template),
+		WeekDaySchedule.create(Weekday.Friday, template),
+		WeekDaySchedule.create(Weekday.Saturday, template)
 	];
 
 	const date = new Date(2020, 4, 12); // May 12th -  Tuesday;
@@ -130,8 +134,6 @@ describe('Timeslots template', () => {
 	});
 
 	it('should generate no timeslots', () => {
-		const date = new Date();
-
 		const generate = template.generateValidTimeslots({
 			startDatetime: DateHelper.setHours(date, 8, 31),
 			endDatetime: DateHelper.setHours(date, 9, 30)

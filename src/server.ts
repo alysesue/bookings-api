@@ -19,6 +19,7 @@ import { Container } from "typescript-ioc";
 import { CalDavProxyHandler } from "./infrastructure/caldavproxy.handler";
 import * as cors from '@koa/cors';
 import * as fs from 'fs';
+import { join } from 'path';
 
 const setService = async (ctx, next) => {
 	Container.bindName('config').to({
@@ -28,9 +29,12 @@ const setService = async (ctx, next) => {
 };
 
 const useSwagger = () => {
-	const swaggerDoc = '../dist/swagger/swagger.yaml';
+	const swaggerDoc = join(__dirname, 'swagger/swagger.yaml');
 	// tslint:disable-next-line: tsr-detect-non-literal-fs-filename
-	if (fs.existsSync(swaggerDoc)) {
+	const exists = fs.existsSync(swaggerDoc);
+
+	logger.info(`Swagger document location: ${swaggerDoc} ${exists ? '(found)' : '(not found)'}`);
+	if (exists) {
 		const document = swagger.loadDocumentSync(swaggerDoc);
 		return ui(document as swagger.Document, "/swagger");
 	}

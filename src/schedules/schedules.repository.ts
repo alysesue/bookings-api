@@ -1,32 +1,74 @@
 import { Inject, Singleton } from 'typescript-ioc';
-
 import { DbConnection } from '../core/db.connection';
-import { Schedule, WeekDaySchedule } from '../models';
-import { DeleteResult, Repository } from "typeorm";
+import { Schedule, WeekDayBreak } from '../models';
+import { DeleteResult, In, Repository } from "typeorm";
+import { groupByKey } from '../tools/collections';
+import { WeekDayBreakRepository } from './weekdaybreak.repository';
 
 @Singleton
 export class SchedulesRepository {
 	@Inject
 	private connection: DbConnection;
+	@Inject
+	private weekDayBreakRepo: WeekDayBreakRepository;
 
 	public async getScheduleById(id: number): Promise<Schedule> {
-		return (await this.getRepository()).findOne({ where: { id }, relations: ['weekdaySchedules'] });
+		const schedule = await (await this.getRepository()).findOne({
+			where: { id },
+			relations: ['weekdaySchedules']
+		});
+		return this.populateSingleEntryBreaks(schedule);
 	}
 
 	public async getSchedules(): Promise<Schedule[]> {
-		return (await this.getRepository()).find({ relations: ['weekdaySchedules'] });
+		const schedules = await (await this.getRepository()).find({ relations: ['weekdaySchedules'] });
+		return this.populateBreaks(schedules);
 	}
 
 	public async getScheduleByName(name: string): Promise<Schedule> {
-		return (await this.getRepository()).findOne({ where: { name }, relations: ['weekdaySchedules'] });
+		const schedule = await (await this.getRepository()).findOne({
+			where: { name },
+			relations: ['weekdaySchedules']
+		});
+		return this.populateSingleEntryBreaks(schedule);
 	}
 
-	public async saveSchedule(timeslot: Schedule): Promise<Schedule> {
-		return (await this.getRepository()).save(timeslot);
+	private async populateSingleEntryBreaks(schedule: Schedule): Promise<Schedule> {
+		if (!schedule) {
+			return null;
+		}
+		return (await this.populateBreaks([schedule]))[0];
 	}
 
-	public async deleteSchedule(timeslotId: number): Promise<DeleteResult> {
-		return (await this.getRepository()).delete(timeslotId);
+	private async populateBreaks(schedules: Schedule[]): Promise<Schedule[]> {
+		const scheduleIds = schedules.map(s => s.id);
+		const breaks = await this.weekDayBreakRepo.getBreaksForSchedules(scheduleIds);
+		const breaksPerSchedule = groupByKey(breaks, e => e.getScheduleId());
+
+		for (const schedule of schedules) {
+			const scheduleBreaks = breaksPerSchedule.get(schedule.id) || [];
+			schedule.setBreaks(scheduleBreaks);
+		}
+
+		return schedules;
+	}
+
+	public async saveSchedule(schedule: Schedule): Promise<Schedule> {
+		const breaks = schedule.getAllBreaks();
+		const saved = await (await this.getRepository()).save(schedule);
+
+		if (schedule.id > 0) {
+			await this.weekDayBreakRepo.deleteBreaksForSchedule(schedule.id);
+		}
+		const savedBreaks = await this.weekDayBreakRepo.save(breaks);
+
+		saved.setBreaks(savedBreaks);
+		return saved;
+	}
+
+	public async deleteSchedule(scheduleId: number): Promise<DeleteResult> {
+		await this.weekDayBreakRepo.deleteBreaksForSchedule(scheduleId);
+		return (await this.getRepository()).delete(scheduleId);
 	}
 
 	private async getRepository(): Promise<Repository<Schedule>> {
