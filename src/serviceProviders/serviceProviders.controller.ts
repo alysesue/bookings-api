@@ -6,7 +6,7 @@ import { Body, Controller, Get, Path, Post, Route, SuccessResponse, Tags } from 
 import { ErrorResponse } from "../apicontract";
 import { parseCsv } from "../utils";
 
-@Route("api/v1/serviceProviders")
+@Route("api/v1/service-providers")
 @Tags('Service Providers')
 export class ServiceProvidersController extends Controller {
 
