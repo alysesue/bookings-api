@@ -1,17 +1,19 @@
 import { Inject, Singleton } from "typescript-ioc";
 import { ServiceProvider } from "../models";
+import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 
 import { ServiceProvidersRepository } from "./serviceProviders.repository";
 import { ServiceProviderModel } from "./serviceProviders.apicontract";
 import { CalendarsService } from "../calendars/calendars.service";
-
+import { Calendar } from "../models/calendar";
+import { ServiceProviderStatus } from "../models/serviceProviderStatus";
 @Singleton
 export class ServiceProvidersService {
 	@Inject
-	private serviceProvidersRepository: ServiceProvidersRepository;
+	public serviceProvidersRepository: ServiceProvidersRepository;
 
 	@Inject
-	private calendarsService: CalendarsService;
+	public calendarsService: CalendarsService;
 
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
 		return await this.serviceProvidersRepository.getServiceProviders();
@@ -25,21 +27,24 @@ export class ServiceProvidersService {
 		return sp;
 	}
 
-	public async save(listRequest: ServiceProviderModel[]): Promise<ServiceProvider[]> {
-		const spList = this.mapBulkRequest(listRequest)
-		spList.map(async (i) => {
-			const calendar = await this.calendarsService.createCalendar();
-			i.calendar = calendar;
-		}) as unknown as ServiceProvider[];
-		return await this.serviceProvidersRepository.saveBulk(spList);
+	public async saveServiceProviders(listRequest: ServiceProviderModel[]) {
+		for (const item of listRequest) {
+			await this.saveSp(item);
+			await this.delay(3000);
+		}
 	}
 
-	public mapBulkRequest(req: ServiceProviderModel[]): ServiceProvider[] {
-		const res: ServiceProvider[] = [];
-		req.forEach(item => {
-			res.push(new ServiceProvider(item.name));
-		});
-		return res;
+	public async saveSp(item: ServiceProviderModel) {
+		try {
+			const cal = await this.calendarsService.createCalendar();
+			return await this.serviceProvidersRepository.save(new ServiceProvider(item.name, cal));
+		}
+		catch (e) {
+			logger.error("exception when creating calendar ", e.message);
+		}
 	}
 
+	private delay(ms) {
+		return new Promise((resolve, _reject) => setTimeout(resolve, ms));
+	}
 }

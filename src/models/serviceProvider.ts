@@ -1,5 +1,6 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, OneToOne } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Calendar } from "./calendar";
+import { ServiceProviderStatus } from "./serviceProviderStatus";
 
 @Entity()
 export class ServiceProvider extends BaseEntity {
@@ -7,10 +8,23 @@ export class ServiceProvider extends BaseEntity {
 	@Column()
 	private _createdAt: Date;
 
-	constructor(name: string) {
+	@Column()
+	private _status: ServiceProviderStatus;
+
+	public get status(): ServiceProviderStatus {
+		return this._status;
+	}
+
+	public set status(value: ServiceProviderStatus) {
+		this._status = value;
+	}
+
+	constructor(name: string, calendar: Calendar) {
 		super();
 		this._name = name;
 		this._createdAt = new Date();
+		this._status = ServiceProviderStatus.Valid;
+		this._calendar = calendar;
 	}
 
 	@PrimaryGeneratedColumn()
@@ -31,14 +45,16 @@ export class ServiceProvider extends BaseEntity {
 		this._name = value;
 	}
 
-	@OneToOne("Calendars", { nullable: false })
-	private _calendar: Calendar;
+	@OneToOne("Calendar")
+	@JoinColumn()
+	public _calendar: Calendar;
 
 	public get calendar(): Calendar {
 		return this._calendar;
 	}
 
-	public set calendar(value: Calendar) {
-		this._calendar = value;
+	public set calendar(calendar: Calendar) {
+		this._calendar = calendar;
 	}
+
 }

@@ -17,7 +17,7 @@ export class ServiceProvidersRepository extends RepositoryBase {
 		return (await this.getRepository<ServiceProvider>()).findOne(id);
 	}
 
-	public async saveBulk(serviceProviders: ServiceProvider[]): Promise<ServiceProvider[]> {
-		return (await this.getRepository<ServiceProvider>()).save(serviceProviders);
+	public async save(serviceProvider: ServiceProvider): Promise<ServiceProvider> {
+		return (await this.getRepository<ServiceProvider>()).save(serviceProvider);
 	}
 }

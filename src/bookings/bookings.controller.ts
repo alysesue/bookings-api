@@ -39,8 +39,7 @@ export class BookingsController extends Controller {
 
 	private static mapProvider(calendar: Calendar): BookingProviderResponse {
 		return {
-			uuid: calendar.uuid,
-			serviceProviderName: calendar.serviceProviderName
+			uuid: calendar.uuid
 		} as BookingProviderResponse;
 	}
 

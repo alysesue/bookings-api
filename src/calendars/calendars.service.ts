@@ -25,11 +25,8 @@ export class CalendarsService {
 
 	public async createCalendar(): Promise<Calendar> {
 		const googleCalendarId = await this.googleCalendarApi.createCalendar();
-
 		const calendar = new Calendar();
-
 		calendar.googleCalendarId = googleCalendarId;
-
 		return await this.calendarsRepository.saveCalendar(calendar);
 	}
 
