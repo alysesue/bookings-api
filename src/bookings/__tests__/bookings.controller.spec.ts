@@ -88,7 +88,7 @@ describe("Bookings.Controller", () => {
 
 		const result = await controller.getBooking("1");
 
-		expect(result).toStrictEqual(new ErrorResponse('error'))
+		expect(result).toStrictEqual(new ErrorResponse('error'));
 	});
 
 	it('should throw exception if booking not found', async () => {
@@ -97,7 +97,7 @@ describe("Bookings.Controller", () => {
 
 		const result = await controller.getBookingProviders("1");
 
-		expect(result).toStrictEqual(new ErrorResponse('error'))
+		expect(result).toStrictEqual(new ErrorResponse('error'));
 	});
 
 	it('should post booking', async () => {
@@ -105,7 +105,7 @@ describe("Bookings.Controller", () => {
 
 		const result = await controller.postBooking(new BookingRequest());
 
-		expect(result as BookingResponse)
+		expect(result as BookingResponse);
 	});
 
 	it('should return 400 on post booking error', async () => {
@@ -114,7 +114,7 @@ describe("Bookings.Controller", () => {
 
 		const result = await controller.postBooking(new BookingRequest());
 
-		expect(result as ErrorResponse)
+		expect(result as ErrorResponse);
 	});
 
 	it('should return 400 on accept booking error', async () => {
@@ -122,7 +122,7 @@ describe("Bookings.Controller", () => {
 
 		const result = await Container.get(BookingsController).acceptBooking('1', new BookingAcceptRequest());
 
-		expect(result as ErrorResponse)
+		expect(result as ErrorResponse);
 	});
 });
 
@@ -158,7 +158,7 @@ class BookingsServiceMock extends BookingsService {
 		return Promise.resolve(BookingsServiceMock.mockSearchBookings);
 	}
 
-	async save(bookingRequest: BookingRequest): Promise<Booking> {
+	public async save(bookingRequest: BookingRequest): Promise<Booking> {
 		return BookingsServiceMock.mockPostBooking;
 	}
 }

@@ -1,4 +1,4 @@
-import { TemplateTimeslots } from "../models";
+import { Schedule } from "../models";
 
 export class CalendarModel {
 	public uuid: string;
@@ -29,10 +29,10 @@ export class CalendarTemplatesTimeslotModel {
 	public templatesTimeslotId: number;
 }
 
-export class CalendarTemplateTimeslotResponse {
+export class CalendarScheduleResponse {
 	public id: number;
 
-	constructor(template: TemplateTimeslots) {
+	constructor(template: Schedule) {
 		this.id = template.id;
 	}
 }

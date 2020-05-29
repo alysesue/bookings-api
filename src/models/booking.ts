@@ -90,7 +90,7 @@ export class Booking extends BaseEntity {
 	}
 
 	public set calendarId(value: number | undefined) {
-		this._calendarId = undefined;
+		this._calendarId = value;
 	}
 
 	public get calendarId(): number | undefined {

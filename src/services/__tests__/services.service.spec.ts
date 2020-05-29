@@ -6,12 +6,12 @@ import { ServicesRepository } from "../services.repository";
 
 describe('Services service tests', () => {
 	it('should save service', async () => {
-		Container.bind(ServicesRepository).to(ServicesRepositoryMockClass)
+		Container.bind(ServicesRepository).to(ServicesRepositoryMockClass);
 		const request = new ServiceRequest();
 		request.name = 'John';
-		const result = await Container.get(ServicesService).createService(request);
+		await Container.get(ServicesService).createService(request);
 
-		expect(result.name).toBe('John')
+		expect(ServicesRepoMock.create.mock.calls[0][0].name).toBe('John')
 	});
 });
 
@@ -20,7 +20,7 @@ const ServicesRepoMock = {
 }
 
 class ServicesRepositoryMockClass extends ServicesRepository {
-	async save(agency: Service): Promise<Service> {
-		return ServicesRepoMock.create();
+	async save(service: Service): Promise<Service> {
+		return ServicesRepoMock.create(service);
 	}
 }

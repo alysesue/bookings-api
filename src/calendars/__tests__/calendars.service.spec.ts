@@ -1,10 +1,10 @@
 import { CalendarsRepository } from "../calendars.repository";
 import { Container, Snapshot } from "typescript-ioc";
-import { Booking, BookingStatus, Calendar } from "../../models";
+import { Booking, Calendar } from "../../models";
 import { CalendarsService } from "../calendars.service";
 import { GoogleCalendarService } from "../../googleapi/google.calendar.service";
 import { CalendarTemplatesTimeslotModel, CalendarUserModel } from "../calendars.apicontract";
-import { TemplatesTimeslotsRepository } from "../../components/templatesTimeslots/templatesTimeslots.repository";
+import { SchedulesRepository } from "../../schedules/schedules.repository";
 
 let snapshot: Snapshot;
 
@@ -22,7 +22,7 @@ describe("Calendar service", () => {
 		// Clears mock counters, not implementation
 		jest.clearAllMocks();
 		Container.bind(CalendarsRepository).to(CalendarRepositoryMock);
-		Container.bind(TemplatesTimeslotsRepository).to(TemplatesTimeslotsRepositoryMock);
+		Container.bind(SchedulesRepository).to(SchedulesRepositoryMock);
 		Container.bind(GoogleCalendarService).to(GoogleCalendarServiceMock);
 	});
 	it("should get calendars", async () => {
@@ -42,15 +42,15 @@ describe("Calendar service", () => {
 		expect(CalendarRepositoryObj.saveCalendar).toBeCalled();
 	});
 
-	it("should link calendars with templatestimelot", async () => {
+	it("should link calendars with schedule", async () => {
 		const service = Container.get(CalendarsService);
 
-		await service.addTemplatesTimeslots("uuid", {
+		await service.addSchedules("uuid", {
 			templatesTimeslotId: 3,
 		} as CalendarTemplatesTimeslotModel);
 
 		expect(CalendarRepositoryObj.saveCalendar).toBeCalled();
-		expect(TemplatesTimeslotsRepositoryObj.getTemplateTimeslotsById).toBeCalled();
+		expect(SchedulesRepositoryObj.getScheduleById).toBeCalled();
 	});
 
 	it("should add user access", async () => {
@@ -109,17 +109,17 @@ const CalendarRepositoryObj = {
 		),
 };
 
-const TemplatesTimeslotsRepositoryObj = {
-	getTemplateTimeslotsById: jest
+const SchedulesRepositoryObj = {
+	getScheduleById: jest
 		.fn()
 		.mockImplementation(() =>
 			Promise.resolve({})
 		),
 };
 
-const TemplatesTimeslotsRepositoryMock = jest
+const SchedulesRepositoryMock = jest
 	.fn()
-	.mockImplementation(() => TemplatesTimeslotsRepositoryObj);
+	.mockImplementation(() => SchedulesRepositoryObj);
 
 const CalendarRepositoryMock = jest
 	.fn()

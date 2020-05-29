@@ -1,8 +1,22 @@
 import { Booking } from "./booking";
 import { BookingStatus } from "./bookingStatus";
-import { TemplateTimeslots } from "./templateTimeslots";
+import { Schedule, WeekDaySchedule } from "./schedule";
 import { Calendar } from "./calendar";
 import { Service } from "./service";
+import { TimeOfDay } from './timeOfDay';
 import { ServiceProvider } from "./serviceProvider";
+import { BusinessValidation } from './businessValidation';
+import { Timeslot } from './timeslot';
 
-export { Booking, BookingStatus, TemplateTimeslots, Calendar, Service, ServiceProvider };
+export {
+	Booking,
+	BusinessValidation,
+	BookingStatus,
+	Schedule,
+	Service,
+	WeekDaySchedule,
+	Calendar,
+	TimeOfDay,
+	Timeslot,
+	ServiceProvider
+};
