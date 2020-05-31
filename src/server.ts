@@ -49,7 +49,7 @@ export async function startServer(): Promise<Server> {
 	// Setup server
 	const router: KoaRouter = new KoaRouter();
 	RegisterRoutes(router);
-	const serviceAwareRouter = new KoaRouter({ prefix: '/api' })
+	const serviceAwareRouter = new KoaRouter({prefix: '/api'})
 		.use('/:service/**', setService)
 		.use(router.routes(), router.allowedMethods());
 	// @ts-ignore

@@ -1,12 +1,21 @@
-import { parseHHmm, tryParseHHmm } from '../tools/date';
+import { parseHHmm } from '../tools/date';
 import { DateHelper } from '../infrastructure/dateHelper';
 import { ValueTransformer } from 'typeorm';
 
 export class TimeOfDay {
+	private constructor() {
+	}
+
 	private _hours: number;
+
+	public get hours(): number {
+		return this._hours;
+	}
+
 	private _minutes: number;
 
-	private constructor() {
+	public get minutes(): number {
+		return this._minutes;
 	}
 
 	public static parse(time: string): TimeOfDay {
@@ -41,12 +50,8 @@ export class TimeOfDay {
 		return instance;
 	}
 
-	public get hours(): number {
-		return this._hours;
-	}
-
-	public get minutes(): number {
-		return this._minutes;
+	public static DiffInMinutes(a: TimeOfDay, b: TimeOfDay): number {
+		return a.AsMinutes() - b.AsMinutes();
 	}
 
 	public toString(): string {
@@ -63,10 +68,8 @@ export class TimeOfDay {
 		return DateHelper.setHours(date, this._hours, this._minutes);
 	}
 
-	public AsMinutes(): number { return this._hours * 60 + this._minutes; }
-
-	public static DiffInMinutes(a: TimeOfDay, b: TimeOfDay): number {
-		return a.AsMinutes() - b.AsMinutes();
+	public AsMinutes(): number {
+		return this._hours * 60 + this._minutes;
 	}
 }
 

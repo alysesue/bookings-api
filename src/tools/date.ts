@@ -17,7 +17,7 @@ export const tryParseHHmm = (time: string): { isValid: boolean, hours: number, m
 
 	const parsed = parseTime(time);
 	const isValid = parsed.isValid();
-	return { isValid, hours: isValid ? parsed.hours() : null, minutes: isValid ? parsed.minutes() : null };
+	return {isValid, hours: isValid ? parsed.hours() : null, minutes: isValid ? parsed.minutes() : null};
 };
 
 
@@ -27,10 +27,10 @@ export const parseHHmm = (time: string): { hours: number, minutes: number } => {
 		return null;
 	}
 
-	const { isValid, hours, minutes } = result;
+	const {isValid, hours, minutes} = result;
 	if (!isValid) {
 		throw new ParseTimeError(`Value ${time} is not a valid time.`);
 	}
 
-	return { hours, minutes };
+	return {hours, minutes};
 };

@@ -11,7 +11,7 @@ const scheduleRequestCommon = {
 	name: 'schedule',
 	slotsDurationInMin: 60,
 	weekdaySchedules: [
-		{ weekday: Weekday.Monday, hasSchedule: true, openTime: '11:23', closeTime: '12:23' } as WeekDayScheduleContract
+		{weekday: Weekday.Monday, hasSchedule: true, openTime: '11:23', closeTime: '12:23'} as WeekDayScheduleContract
 	]
 } as ScheduleRequest;
 
@@ -46,7 +46,12 @@ describe('Schedules  template services ', () => {
 			name: 'schedule',
 			slotsDurationInMin: 5,
 			weekdaySchedules: [
-				{ weekday: Weekday.Monday, hasSchedule: true, openTime: '2323', closeTime: '25:25' } as WeekDayScheduleContract
+				{
+					weekday: Weekday.Monday,
+					hasSchedule: true,
+					openTime: '2323',
+					closeTime: '25:25'
+				} as WeekDayScheduleContract
 			]
 		} as ScheduleRequest;
 
@@ -64,7 +69,12 @@ describe('Schedules  template services ', () => {
 			name: 'schedule',
 			slotsDurationInMin: 5,
 			weekdaySchedules: [
-				{ weekday: Weekday.Monday, hasSchedule: true, openTime: '23:23', closeTime: '11:73' } as WeekDayScheduleContract
+				{
+					weekday: Weekday.Monday,
+					hasSchedule: true,
+					openTime: '23:23',
+					closeTime: '11:73'
+				} as WeekDayScheduleContract
 			]
 		} as ScheduleRequest;
 
@@ -82,7 +92,12 @@ describe('Schedules  template services ', () => {
 			name: 'schedule',
 			slotsDurationInMin: 5,
 			weekdaySchedules: [
-				{ weekday: Weekday.Monday, hasSchedule: true, openTime: '23:23', closeTime: '11:23' } as WeekDayScheduleContract
+				{
+					weekday: Weekday.Monday,
+					hasSchedule: true,
+					openTime: '23:23',
+					closeTime: '11:23'
+				} as WeekDayScheduleContract
 			]
 		} as ScheduleRequest;
 
@@ -101,7 +116,12 @@ describe('Schedules  template services ', () => {
 			name: 'schedule',
 			slotsDurationInMin: 65,
 			weekdaySchedules: [
-				{ weekday: Weekday.Monday, hasSchedule: true, openTime: '11:23', closeTime: '12:23' } as WeekDayScheduleContract
+				{
+					weekday: Weekday.Monday,
+					hasSchedule: true,
+					openTime: '11:23',
+					closeTime: '12:23'
+				} as WeekDayScheduleContract
 			]
 		} as ScheduleRequest;
 

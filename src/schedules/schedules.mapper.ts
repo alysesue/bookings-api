@@ -1,5 +1,5 @@
-import { Weekday, WeekdayList } from "../enums/weekday";
-import { BusinessValidation, Schedule, TimeOfDay, WeekDaySchedule } from "../models";
+import { WeekdayList } from "../enums/weekday";
+import { Schedule, TimeOfDay, WeekDaySchedule } from "../models";
 import { ScheduleRequest, ScheduleResponse, WeekDayScheduleContract } from './schedules.apicontract';
 import { groupByKeyLastValue } from '../tools/collections';
 import { getErrorResult, isErrorResult, OptionalResult } from '../errors';

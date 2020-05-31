@@ -11,27 +11,19 @@ export class Schedule {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
-	@Column({ type: "varchar", length: 100 })
+	@Column({type: "varchar", length: 100})
 	public name: string;
 
-	@Column({ type: "int" })
+	@Column({type: "int"})
 	public slotsDurationInMin: number;
 
-	@OneToMany(type => WeekDaySchedule, weekdaySchedule => weekdaySchedule.schedule, { cascade: true })
+	@OneToMany(type => WeekDaySchedule, weekdaySchedule => weekdaySchedule.schedule, {cascade: true})
 	public weekdaySchedules: WeekDaySchedule[];
 
 	constructor() {
 	}
 
-	private ensureWeekdayParentIsSet(): void {
-		for (const weekdaySchedule of this.weekdaySchedules) {
-			if (weekdaySchedule.schedule !== this) {
-				weekdaySchedule.schedule = this;
-			}
-		}
-	}
-
-	public * validateSchedule(): Iterable<BusinessValidation> {
+	public* validateSchedule(): Iterable<BusinessValidation> {
 		this.ensureWeekdayParentIsSet();
 		for (const weekdaySchedule of this.weekdaySchedules) {
 			for (const validation of weekdaySchedule.validateWeekDaySchedule()) {
@@ -40,7 +32,7 @@ export class Schedule {
 		}
 	}
 
-	public * generateValidTimeslots(range: { startDatetime: Date, endDatetime: Date }): Iterable<Timeslot> {
+	public* generateValidTimeslots(range: { startDatetime: Date, endDatetime: Date }): Iterable<Timeslot> {
 		this.ensureWeekdayParentIsSet();
 		if (range.endDatetime < range.startDatetime) {
 			return;
@@ -72,39 +64,42 @@ export class Schedule {
 			}
 		}
 	}
+
+	private ensureWeekdayParentIsSet(): void {
+		for (const weekdaySchedule of this.weekdaySchedules) {
+			if (weekdaySchedule.schedule !== this) {
+				weekdaySchedule.schedule = this;
+			}
+		}
+	}
 }
 
 @Entity()
-@Index(["scheduleId", "weekDay"], { unique: true })
+@Index(["scheduleId", "weekDay"], {unique: true})
 export class WeekDaySchedule {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
-	@ManyToOne(type => Schedule, { nullable: false })
-	@JoinColumn({ name: 'scheduleId' })
+	@ManyToOne(type => Schedule, {nullable: false})
+	@JoinColumn({name: 'scheduleId'})
 	public schedule: Schedule;
-
-	@Column({ nullable: false })
-	private scheduleId: number;
-
 	@Column("int")
 	public weekDay: Weekday;
-
 	@Column()
 	public hasSchedule: boolean;
-
-	@Column({ type: "time", transformer: TimeTransformer, nullable: true })
+	@Column({type: "time", transformer: TimeTransformer, nullable: true})
 	public openTime?: TimeOfDay;
-
-	@Column({ type: "time", transformer: TimeTransformer, nullable: true })
+	@Column({type: "time", transformer: TimeTransformer, nullable: true})
 	public closeTime?: TimeOfDay;
+	@Column({nullable: false})
+	private scheduleId: number;
 
 	constructor(weekDay: Weekday) {
 		this.weekDay = weekDay;
 		this.hasSchedule = false;
 	}
 
-	public * validateWeekDaySchedule(): Iterable<BusinessValidation> {
+	public* validateWeekDaySchedule(): Iterable<BusinessValidation> {
 		if (!this.schedule) {
 			throw new Error('Schedule entity not set in WeekDaySchedule');
 		}
@@ -127,6 +122,28 @@ export class WeekDaySchedule {
 		if (diff < this.schedule.slotsDurationInMin) {
 			yield new BusinessValidation(`The interval between open and close times [${this.openTime} — ${this.closeTime}] must be greater than slot duration [${this.schedule.slotsDurationInMin} minutes]`);
 			return;
+		}
+	}
+
+	public* generateValidTimeslots(range: { dayOfWeek: Date, startTimeOfDay?: TimeOfDay, endTimeOfDay?: TimeOfDay }): Iterable<Timeslot> {
+		if (!this.hasSchedule) {
+			return;
+		}
+
+		const slotDuration = this.schedule.slotsDurationInMin;
+
+		let startTime = range.startTimeOfDay ? this.getFirstBlockStartTime(range.startTimeOfDay.useTimeOfDay(range.dayOfWeek))
+			: this.getRelativeStartTime(range.dayOfWeek);
+		let currentEndTime = DateHelper.addMinutes(startTime, slotDuration);
+
+		const maxLastBlockEndTime = range.endTimeOfDay ? this.getMaxLastBlockEndTime(range.endTimeOfDay.useTimeOfDay(range.dayOfWeek))
+			: this.getRelativeEndTime(range.dayOfWeek);
+
+		while (currentEndTime <= maxLastBlockEndTime) {
+			yield new Timeslot(startTime, currentEndTime);
+
+			startTime = currentEndTime;
+			currentEndTime = DateHelper.addMinutes(currentEndTime, slotDuration);
 		}
 	}
 
@@ -161,27 +178,5 @@ export class WeekDaySchedule {
 		}
 
 		return relativeEndDatetime;
-	}
-
-	public * generateValidTimeslots(range: { dayOfWeek: Date, startTimeOfDay?: TimeOfDay, endTimeOfDay?: TimeOfDay }): Iterable<Timeslot> {
-		if (!this.hasSchedule) {
-			return;
-		}
-
-		const slotDuration = this.schedule.slotsDurationInMin;
-
-		let startTime = range.startTimeOfDay ? this.getFirstBlockStartTime(range.startTimeOfDay.useTimeOfDay(range.dayOfWeek))
-			: this.getRelativeStartTime(range.dayOfWeek);
-		let currentEndTime = DateHelper.addMinutes(startTime, slotDuration);
-
-		const maxLastBlockEndTime = range.endTimeOfDay ? this.getMaxLastBlockEndTime(range.endTimeOfDay.useTimeOfDay(range.dayOfWeek))
-			: this.getRelativeEndTime(range.dayOfWeek);
-
-		while (currentEndTime <= maxLastBlockEndTime) {
-			yield new Timeslot(startTime, currentEndTime);
-
-			startTime = currentEndTime;
-			currentEndTime = DateHelper.addMinutes(currentEndTime, slotDuration);
-		}
 	}
 }

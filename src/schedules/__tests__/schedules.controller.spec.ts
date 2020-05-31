@@ -9,7 +9,7 @@ const getSchedules = jest.fn();
 const updateSchedule = jest.fn();
 const deleteSchedule = jest.fn();
 const MockSchedulesService = jest.fn().mockImplementation(() => {
-	return { createSchedule, getSchedules, updateSchedule, deleteSchedule };
+	return {createSchedule, getSchedules, updateSchedule, deleteSchedule};
 });
 
 let snapshot: Snapshot;
@@ -34,7 +34,7 @@ const timeslot = {
 	name: 'schedule',
 	slotsDurationInMin: 60,
 	weekdaySchedules: [
-		{ weekday: Weekday.Monday, hasSchedule: true, openTime: '11:23', closeTime: '12:23' } as WeekDayScheduleContract
+		{weekday: Weekday.Monday, hasSchedule: true, openTime: '11:23', closeTime: '12:23'} as WeekDayScheduleContract
 	]
 } as ScheduleRequest;
 

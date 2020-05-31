@@ -1,7 +1,7 @@
 import { Inject, Singleton } from 'typescript-ioc';
 
 import { DbConnection } from '../core/db.connection';
-import { Schedule, WeekDaySchedule } from '../models';
+import { Schedule } from '../models';
 import { DeleteResult, Repository } from "typeorm";
 
 @Singleton
@@ -10,15 +10,15 @@ export class SchedulesRepository {
 	private connection: DbConnection;
 
 	public async getScheduleById(id: number): Promise<Schedule> {
-		return (await this.getRepository()).findOne({ where: { id }, relations: ['weekdaySchedules'] });
+		return (await this.getRepository()).findOne({where: {id}, relations: ['weekdaySchedules']});
 	}
 
 	public async getSchedules(): Promise<Schedule[]> {
-		return (await this.getRepository()).find({ relations: ['weekdaySchedules'] });
+		return (await this.getRepository()).find({relations: ['weekdaySchedules']});
 	}
 
 	public async getScheduleByName(name: string): Promise<Schedule> {
-		return (await this.getRepository()).findOne({ where: { name }, relations: ['weekdaySchedules'] });
+		return (await this.getRepository()).findOne({where: {name}, relations: ['weekdaySchedules']});
 	}
 
 	public async saveSchedule(timeslot: Schedule): Promise<Schedule> {

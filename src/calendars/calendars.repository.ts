@@ -4,7 +4,7 @@ import { RepositoryBase } from "../core/repository";
 
 
 @Singleton
-export class CalendarsRepository extends RepositoryBase {
+export class CalendarsRepository extends RepositoryBase<Calendar> {
 
 	constructor() {
 		super(Calendar);
@@ -12,20 +12,18 @@ export class CalendarsRepository extends RepositoryBase {
 	}
 
 	public async getCalendars(): Promise<Calendar[]> {
-		return (await this.getRepository<Calendar>()).find();
+		return (await this.getRepository()).find();
 	}
 
 	public async getCalendarsWithTemplates(): Promise<Calendar[]> {
-		return (await this.getRepository<Calendar>()).find({ relations: ['schedule'] });
+		return (await this.getRepository()).find({relations: ['schedule']});
 	}
 
 	public async getCalendarByUUID(uuid: string): Promise<Calendar> {
-		return (await this.getRepository<Calendar>()).findOne({ uuid });
+		return (await this.getRepository()).findOne({uuid});
 	}
 
 	public async saveCalendar(calendar: Calendar): Promise<Calendar> {
-		return (await this.getRepository<Calendar>()).save(calendar);
+		return (await this.getRepository()).save(calendar);
 	}
-
-
 }
