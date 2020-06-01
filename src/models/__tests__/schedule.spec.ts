@@ -5,6 +5,7 @@ import { Timeslot } from '../timeslot';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Weekday } from '../../enums/weekday';
 import { TimeOfDay } from '../timeOfDay';
+import { WeekDayBreak } from '../weekDayBreak';
 
 let snapshot: Snapshot;
 beforeAll(() => {
@@ -32,14 +33,15 @@ describe('Timeslots template', () => {
 	const template = new Schedule();
 	template.name = 'test';
 	template.slotsDurationInMin = 60;
+	const wednesday = createDayOfWeekTemplate(Weekday.Wednesday, '09:30', '17:30', template);
+	wednesday.breaks = [
+		WeekDayBreak.create(Weekday.Wednesday, TimeOfDay.parse('16:00'), TimeOfDay.parse('17:00'), template)
+	];
+
 	template.weekdaySchedules = [
-		WeekDaySchedule.create(Weekday.Sunday, template),
 		createDayOfWeekTemplate(Weekday.Monday, '08:30', '16:00', template),
 		createDayOfWeekTemplate(Weekday.Tuesday, '08:30', '15:00', template),
-		createDayOfWeekTemplate(Weekday.Wednesday, '09:30', '16:00', template),
-		WeekDaySchedule.create(Weekday.Thursday, template),
-		WeekDaySchedule.create(Weekday.Friday, template),
-		WeekDaySchedule.create(Weekday.Saturday, template)
+		wednesday
 	];
 
 	const date = new Date(2020, 4, 12); // May 12th -  Tuesday;
@@ -142,5 +144,39 @@ describe('Timeslots template', () => {
 		const list = Array.from(generate);
 
 		expect(list.length).toBe(0);
+	});
+
+	it('should init weekday schedules', () => {
+		const newSchedule = new Schedule();
+		newSchedule.initWeekdaySchedules();
+
+		expect(newSchedule.weekdaySchedules).toBeDefined();
+	});
+
+	it('should init set weekday schedules parent', () => {
+		const newSchedule = new Schedule();
+		const weekDay = new WeekDaySchedule();
+		weekDay.weekDay = Weekday.Monday;
+		newSchedule.weekdaySchedules = [
+			weekDay
+		];
+
+		newSchedule.initWeekdaySchedules();
+		newSchedule.verifyWeekdaySchedules();
+		expect(weekDay.schedule).toBe(newSchedule);
+	});
+
+	it('should verify weekday schedules is initialized', () => {
+		const newSchedule = new Schedule();
+
+		expect(() => {
+			newSchedule.verifyWeekdaySchedules();
+		}).toThrowError();
+	});
+
+	it('should not create weekday schedule without schedule reference', () => {
+		expect(() => {
+			WeekDaySchedule.create(Weekday.Monday, null);
+		}).toThrowError();
 	});
 });

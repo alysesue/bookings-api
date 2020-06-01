@@ -138,6 +138,19 @@ export class WeekDaySchedule {
 		return relativeEndDatetime;
 	}
 
+	private intersectsAnyBreak(startDateTime: Date, endDateTime: Date): boolean {
+		const start = TimeOfDay.fromDate(startDateTime);
+		const end = TimeOfDay.fromDate(endDateTime);
+
+		for (const element of this.breaks) {
+			if (element.intersects(start, end)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public * generateValidTimeslots(range: { dayOfWeek: Date, startTimeOfDay?: TimeOfDay, endTimeOfDay?: TimeOfDay }): Iterable<Timeslot> {
 		if (!this.hasSchedule) {
 			return;
@@ -153,7 +166,9 @@ export class WeekDaySchedule {
 			: this.getRelativeEndTime(range.dayOfWeek);
 
 		while (currentEndTime <= maxLastBlockEndTime) {
-			yield new Timeslot(startTime, currentEndTime);
+			if (!this.intersectsAnyBreak(startTime, currentEndTime)) {
+				yield new Timeslot(startTime, currentEndTime);
+			}
 
 			startTime = currentEndTime;
 			currentEndTime = DateHelper.addMinutes(currentEndTime, slotDuration);

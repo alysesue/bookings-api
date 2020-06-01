@@ -45,4 +45,14 @@ export class WeekDayBreak {
 
 		return instance;
 	}
+
+	public intersects(start: TimeOfDay, end: TimeOfDay): boolean {
+		const compareThisEndOtherStart = TimeOfDay.compare(this.endTime, start);
+		if (compareThisEndOtherStart > 0) {
+			const compareOtherEndThisStart = TimeOfDay.compare(end, this.startTime);
+			return compareOtherEndThisStart > 0;
+		}
+
+		return false;
+	}
 }

@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, Generated, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, Generated, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Schedule } from "./schedule";
 
 @Entity()
@@ -19,8 +19,14 @@ export class Calendar extends BaseEntity {
 	@Column({ type: "varchar", length: 100 })
 	public serviceProviderName: string;
 
-	@ManyToOne("Schedule", { nullable: true })
+	@ManyToOne('Schedule', { nullable: true })
+	@JoinColumn({ name: 'scheduleId' })
 	public schedule: Schedule;
+
+	@Column({ nullable: true })
+	private scheduleId?: number;
+
+	public getScheduleId(): number { return this.scheduleId; }
 
 	public generateExternalUrl(timezone: string): string {
 		return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(this.googleCalendarId)}&ctz=${encodeURIComponent(timezone)}`;

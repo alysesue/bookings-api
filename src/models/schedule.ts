@@ -35,7 +35,7 @@ export class Schedule implements ISchedule {
 	}
 
 	public verifyWeekdaySchedules() {
-		if (!this.weekdaySchedules || this.weekdaySchedules.length !== 7) {
+		if (!this.weekdaySchedules || this.weekdaySchedules.length === 0) {
 			throw new Error('Week day schedules not loaded.');
 		}
 	}

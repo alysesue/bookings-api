@@ -1,7 +1,7 @@
 import { Inject, Singleton } from 'typescript-ioc';
 import { DbConnection } from '../core/db.connection';
 import { Schedule, WeekDayBreak } from '../models';
-import { DeleteResult, In, Repository } from "typeorm";
+import { DeleteResult, FindManyOptions, In, Repository } from "typeorm";
 import { groupByKey } from '../tools/collections';
 import { WeekDayBreakRepository } from './weekdaybreak.repository';
 
@@ -20,8 +20,13 @@ export class SchedulesRepository {
 		return this.populateSingleEntryBreaks(schedule);
 	}
 
-	public async getSchedules(): Promise<Schedule[]> {
-		const schedules = await (await this.getRepository()).find({ relations: ['weekdaySchedules'] });
+	public async getSchedules(ids?: number[]): Promise<Schedule[]> {
+		const options: FindManyOptions<Schedule> = { relations: ['weekdaySchedules'] };
+		if (ids) {
+			options.where = { id: In(ids) };
+		}
+
+		const schedules = await (await this.getRepository()).find(options);
 		return this.populateBreaks(schedules);
 	}
 

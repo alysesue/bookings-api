@@ -3,6 +3,7 @@ import { WeekDayBreakRepository } from '../weekdaybreak.repository';
 import { DbConnection } from '../../core/db.connection';
 import { Container, Snapshot } from 'typescript-ioc';
 import { Schedule } from "../../models";
+import { FindOneOptions } from "typeorm";
 
 let snapshot: Snapshot;
 beforeAll(() => {
@@ -25,6 +26,7 @@ beforeEach(() => {
 	jest.clearAllMocks();
 });
 
+const NullScheduleId = 55;
 describe('Schedule repository', () => {
 	it('should get schedules', async () => {
 		const repository = Container.get(SchedulesRepository);
@@ -44,6 +46,15 @@ describe('Schedule repository', () => {
 		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
 	});
 
+	it('should return null when schedule not found', async () => {
+		const repository = Container.get(SchedulesRepository);
+		const result = await repository.getScheduleById(NullScheduleId);
+		expect(result).toBe(null);
+
+		expect(GetRepositoryMock).toBeCalled();
+		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
+	});
+
 	it('should get schedules with name', async () => {
 		const repository = Container.get(SchedulesRepository);
 		const result = await repository.getScheduleByName('test');
@@ -55,6 +66,7 @@ describe('Schedule repository', () => {
 
 	it('should add schedules', async () => {
 		const schedule = new Schedule();
+		schedule.id = 2;
 		schedule.initWeekdaySchedules();
 
 		const repository = Container.get(SchedulesRepository);
@@ -88,7 +100,9 @@ scheduleMock.name = 'test';
 scheduleMock.initWeekdaySchedules();
 
 export const InnerRepositoryMock = {
-	findOne: jest.fn().mockImplementation(() => Promise.resolve(scheduleMock)),
+	findOne: jest.fn().mockImplementation((options: FindOneOptions<Schedule>) => {
+		return Promise.resolve(options?.where?.['id'] === NullScheduleId ? null : scheduleMock);
+	}),
 	find: jest.fn().mockImplementation(() => Promise.resolve([scheduleMock])),
 	save: jest.fn().mockImplementation(() => Promise.resolve(scheduleMock)),
 	delete: jest.fn().mockImplementation(() => Promise.resolve({}))
