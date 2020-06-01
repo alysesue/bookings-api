@@ -16,7 +16,7 @@ export {
 	BookingStatus,
 	Schedule,
 	Service,
-	WeekDayBreak
+	WeekDayBreak,
 	WeekDaySchedule,
 	Calendar,
 	TimeOfDay,

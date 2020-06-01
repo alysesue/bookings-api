@@ -50,6 +50,14 @@ export class TimeOfDay {
 		return instance;
 	}
 
+	public static compare(a: TimeOfDay, b: TimeOfDay): number {
+		const diffHours = a._hours - b._hours;
+		if (diffHours !== 0) {
+			return diffHours;
+		}
+		return a._minutes - b._minutes;
+	}
+
 	public static DiffInMinutes(a: TimeOfDay, b: TimeOfDay): number {
 		return a.AsMinutes() - b.AsMinutes();
 	}
@@ -70,14 +78,6 @@ export class TimeOfDay {
 
 	public AsMinutes(): number {
 		return this._hours * 60 + this._minutes;
-	public static compare(a: TimeOfDay, b: TimeOfDay): number {
-		const diffHours = a._hours - b._hours;
-		if (diffHours !== 0) {
-			return diffHours;
-		}
-		return a._minutes - b._minutes;
-	}
-
 	}
 }
 
