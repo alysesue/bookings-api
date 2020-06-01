@@ -6,7 +6,7 @@ import { Body, Controller, Get, Path, Post, Route, SuccessResponse, Tags } from 
 import { ErrorResponse } from "../apicontract";
 import { parseCsv } from "../utils";
 
-@Route("api/v1/service-providers")
+@Route("**/v1/service-providers")
 @Tags('Service Providers')
 export class ServiceProvidersController extends Controller {
 
@@ -41,18 +41,16 @@ export class ServiceProvidersController extends Controller {
 
 	@Post("")
 	@SuccessResponse(201, 'Created')
-	public async addServiceProviders(@Body() spRequest: ServiceProviderListRequest): Promise<ServiceProviderModel[]> {
-		const response = await this.serviceProvidersService.save(spRequest.serviceProviders);
-		return ServiceProvidersController.mapDataModels(response);
+	public async addServiceProviders(@Body() spRequest: ServiceProviderListRequest) {
+		await this.serviceProvidersService.saveServiceProviders(spRequest.serviceProviders);
 	}
 
 	@Post("/csv")
 	@SuccessResponse(201, 'Created')
-	public async addServiceProvidersText(@Body() spRequest: string): Promise<any> {
+	public async addServiceProvidersText(@Body() spRequest: string) {
 		try {
 			const request = ServiceProvidersController.parseCsvModelToServiceProviders(parseCsv(spRequest));
-			const response = await this.serviceProvidersService.save(request);
-			return ServiceProvidersController.mapDataModels(response);
+			await this.serviceProvidersService.saveServiceProviders(request);
 		} catch (e) {
 			return new ErrorResponse(e.message);
 		}

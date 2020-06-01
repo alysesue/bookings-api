@@ -11,19 +11,19 @@ export class Schedule {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
-	@Column({type: "varchar", length: 100})
+	@Column({ type: "varchar", length: 100 })
 	public name: string;
 
-	@Column({type: "int"})
+	@Column({ type: "int" })
 	public slotsDurationInMin: number;
 
-	@OneToMany(type => WeekDaySchedule, weekdaySchedule => weekdaySchedule.schedule, {cascade: true})
+	@OneToMany(type => WeekDaySchedule, weekdaySchedule => weekdaySchedule.schedule, { cascade: true })
 	public weekdaySchedules: WeekDaySchedule[];
 
 	constructor() {
 	}
 
-	public* validateSchedule(): Iterable<BusinessValidation> {
+	public * validateSchedule(): Iterable<BusinessValidation> {
 		this.ensureWeekdayParentIsSet();
 		for (const weekdaySchedule of this.weekdaySchedules) {
 			for (const validation of weekdaySchedule.validateWeekDaySchedule()) {
@@ -32,7 +32,7 @@ export class Schedule {
 		}
 	}
 
-	public* generateValidTimeslots(range: { startDatetime: Date, endDatetime: Date }): Iterable<Timeslot> {
+	public * generateValidTimeslots(range: { startDatetime: Date, endDatetime: Date }): Iterable<Timeslot> {
 		this.ensureWeekdayParentIsSet();
 		if (range.endDatetime < range.startDatetime) {
 			return;
@@ -75,23 +75,23 @@ export class Schedule {
 }
 
 @Entity()
-@Index(["scheduleId", "weekDay"], {unique: true})
+@Index(["scheduleId", "weekDay"], { unique: true })
 export class WeekDaySchedule {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
-	@ManyToOne(type => Schedule, {nullable: false})
-	@JoinColumn({name: 'scheduleId'})
+	@ManyToOne(type => Schedule, { nullable: false })
+	@JoinColumn({ name: 'scheduleId' })
 	public schedule: Schedule;
 	@Column("int")
 	public weekDay: Weekday;
 	@Column()
 	public hasSchedule: boolean;
-	@Column({type: "time", transformer: TimeTransformer, nullable: true})
+	@Column({ type: "time", transformer: TimeTransformer, nullable: true })
 	public openTime?: TimeOfDay;
-	@Column({type: "time", transformer: TimeTransformer, nullable: true})
+	@Column({ type: "time", transformer: TimeTransformer, nullable: true })
 	public closeTime?: TimeOfDay;
-	@Column({nullable: false})
+	@Column({ nullable: false })
 	private scheduleId: number;
 
 	constructor(weekDay: Weekday) {
@@ -99,7 +99,7 @@ export class WeekDaySchedule {
 		this.hasSchedule = false;
 	}
 
-	public* validateWeekDaySchedule(): Iterable<BusinessValidation> {
+	public * validateWeekDaySchedule(): Iterable<BusinessValidation> {
 		if (!this.schedule) {
 			throw new Error('Schedule entity not set in WeekDaySchedule');
 		}
@@ -125,7 +125,7 @@ export class WeekDaySchedule {
 		}
 	}
 
-	public* generateValidTimeslots(range: { dayOfWeek: Date, startTimeOfDay?: TimeOfDay, endTimeOfDay?: TimeOfDay }): Iterable<Timeslot> {
+	public * generateValidTimeslots(range: { dayOfWeek: Date, startTimeOfDay?: TimeOfDay, endTimeOfDay?: TimeOfDay }): Iterable<Timeslot> {
 		if (!this.hasSchedule) {
 			return;
 		}

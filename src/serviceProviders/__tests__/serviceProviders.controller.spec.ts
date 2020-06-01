@@ -1,12 +1,14 @@
 import { Container } from "typescript-ioc";
-import { ServiceProvider } from "../../models";
+import { ServiceProvider, Calendar } from "../../models";
 import { ServiceProvidersController } from "../serviceProviders.controller";
 import { ServiceProvidersService } from "../serviceProviders.service";
 import { ServiceProviderModel } from "../serviceProviders.apicontract";
+import { CalendarsService } from "../../calendars/calendars.service";
 
 describe("ServiceProviders.Controller", () => {
 	beforeAll(() => {
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
+		Container.bind(CalendarsService).to(CalendarsServiceMock);
 	});
 
 	beforeEach(() => {
@@ -14,7 +16,7 @@ describe("ServiceProviders.Controller", () => {
 	});
 
 	it('should get service providers', async () => {
-		ServiceProvidersMock.getServiceProviders.mockReturnValue([new ServiceProvider("Monica"), new ServiceProvider("Timmy")]);
+		ServiceProvidersMock.getServiceProviders.mockReturnValue([new ServiceProvider("Monica", null), new ServiceProvider("Timmy", null)]);
 
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders();
@@ -22,7 +24,7 @@ describe("ServiceProviders.Controller", () => {
 	});
 
 	it('should get a service provider', async () => {
-		ServiceProvidersMock.getServiceProvider.mockReturnValue(new ServiceProvider("Monica"));
+		ServiceProvidersMock.getServiceProvider.mockReturnValue(new ServiceProvider("Monica", null));
 
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProvider("1");
@@ -31,7 +33,7 @@ describe("ServiceProviders.Controller", () => {
 	});
 
 	it('should save multiple service providers', async () => {
-		ServiceProvidersMock.save.mockReturnValue([new ServiceProvider("Monica"), new ServiceProvider("Timmy")]);
+		ServiceProvidersMock.save.mockReturnValue([new ServiceProvider("Monica", null), new ServiceProvider("Timmy", null)]);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.addServiceProviders({
 			serviceProviders: [
@@ -40,12 +42,13 @@ describe("ServiceProviders.Controller", () => {
 				}
 			]
 		});
+		const listRequest = ServiceProvidersMock.save.mock.calls[0][0] as ServiceProvider[];
 
-		expect(result[0].name).toEqual("Monica");
+		expect(listRequest.length).toBe(1)
 	});
 
 	it('should save multiple service providers as text', async () => {
-		ServiceProvidersMock.save.mockReturnValue([new ServiceProvider("Monica"), new ServiceProvider("Timmy")]);
+		ServiceProvidersMock.save.mockReturnValue([new ServiceProvider("Monica", null), new ServiceProvider("Timmy", null)]);
 		const controller = Container.get(ServiceProvidersController);
 
 		await controller.addServiceProvidersText("name\nJohn\nMary\nJuliet\n");
@@ -74,7 +77,16 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 		return ServiceProvidersMock.getServiceProviders();
 	}
 
-	public async save(listRequest: ServiceProviderModel[]): Promise<ServiceProvider[]> {
+	public async saveServiceProviders(listRequest: ServiceProviderModel[]): Promise<void> {
 		return ServiceProvidersMock.save(listRequest);
+	}
+}
+
+const CalendarsSvcMock = {
+	createCalendar: jest.fn()
+}
+class CalendarsServiceMock extends CalendarsService {
+	public async createCalendar(): Promise<Calendar> {
+		return CalendarsSvcMock.createCalendar();
 	}
 }

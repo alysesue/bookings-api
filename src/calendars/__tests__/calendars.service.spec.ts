@@ -35,9 +35,7 @@ describe("Calendar service", () => {
 	it("should save calendars", async () => {
 		const service = Container.get(CalendarsService);
 
-		await service.createCalendar({
-			serviceProviderName: 'Jhon Doe'
-		});
+		await service.createCalendar();
 
 		expect(CalendarRepositoryObj.saveCalendar).toBeCalled();
 	});
