@@ -4,7 +4,7 @@ import { Booking, BookingStatus, Calendar, Timeslot } from '../models';
 import { CalendarsRepository } from "../calendars/calendars.repository";
 import { DateHelper } from "../infrastructure/dateHelper";
 import { BookingsRepository } from "../bookings/bookings.repository";
-import { BookingRequest, BookingSearchRequest } from '../bookings/bookings.apicontract';
+import { BookingSearchRequest } from '../bookings/bookings.apicontract';
 import { TimeslotResponse } from './timeslots.apicontract';
 import { groupByKey } from '../tools/collections';
 

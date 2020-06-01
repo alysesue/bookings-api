@@ -19,22 +19,22 @@ describe("Service Provider repository", () => {
 
 	it("should get a service provider", async () => {
 		Container.bind(DbConnection).to(MockDBConnection);
-		MockDBConnection.findOne.mockImplementation(() => Promise.resolve({name: "Monica"}));
+		MockDBConnection.findOne.mockImplementation(() => Promise.resolve({ name: "Monica" }));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProvider("id");
 
-		expect(result).toStrictEqual({name: "Monica"});
+		expect(result).toStrictEqual({ name: "Monica" });
 	});
 
 	it("should save multiple SPs", async () => {
-		const spInput: ServiceProvider[] = [new ServiceProvider("abc")];
+		const spInput: ServiceProvider = new ServiceProvider("abc", null);
 
 		Container.bind(DbConnection).to(MockDBConnection);
 		MockDBConnection.save.mockImplementation(() => Promise.resolve(spInput));
 		const spRepository = Container.get(ServiceProvidersRepository);
 
-		const result = await spRepository.saveBulk(spInput);
+		const result = await spRepository.save(spInput);
 		expect(MockDBConnection.save.mock.calls[0][0]).toStrictEqual(spInput)
 	});
 

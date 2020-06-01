@@ -3,7 +3,7 @@ import { BookingsRepository } from "../bookings.repository";
 import { CalendarsService } from "../../calendars/calendars.service";
 import { Container } from "typescript-ioc";
 import { Booking, BookingStatus, Calendar } from "../../models/";
-import { InsertResult, UpdateResult } from "typeorm";
+import { InsertResult } from "typeorm";
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "../bookings.apicontract";
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 

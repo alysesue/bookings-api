@@ -5,7 +5,7 @@ import { SchedulesRepository } from '../schedules/schedules.repository';
 import { groupByKeyLastValue } from '../tools/collections';
 
 @Singleton
-export class CalendarsRepository extends RepositoryBase {
+export class CalendarsRepository extends RepositoryBase<Calendar> {
 	@Inject
 	private scheduleRepository: SchedulesRepository;
 
@@ -15,7 +15,7 @@ export class CalendarsRepository extends RepositoryBase {
 	}
 
 	public async getCalendars(): Promise<Calendar[]> {
-		return (await this.getRepository<Calendar>()).find();
+		return (await this.getRepository()).find();
 	}
 
 	private async populateSchedules(calendars: Calendar[]): Promise<Calendar[]> {
@@ -35,10 +35,10 @@ export class CalendarsRepository extends RepositoryBase {
 	}
 
 	public async getCalendarByUUID(uuid: string): Promise<Calendar> {
-		return (await this.getRepository<Calendar>()).findOne({ uuid });
+		return (await this.getRepository()).findOne({uuid});
 	}
 
 	public async saveCalendar(calendar: Calendar): Promise<Calendar> {
-		return (await this.getRepository<Calendar>()).save(calendar);
+		return (await this.getRepository()).save(calendar);
 	}
 }

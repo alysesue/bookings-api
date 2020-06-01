@@ -11,4 +11,6 @@ export enum Weekday {
 export const WeekdayList: Weekday[] = [Weekday.Sunday, Weekday.Monday, Weekday.Tuesday, Weekday.Wednesday, Weekday.Thursday, Weekday.Friday, Weekday.Saturday];
 export const WeekdayNameList: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-export function getWeekdayName(weekday: Weekday): string { return WeekdayNameList[weekday]; }
+export function getWeekdayName(weekday: Weekday): string {
+	return WeekdayNameList[weekday];
+}

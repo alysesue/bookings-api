@@ -1,10 +1,10 @@
-import { EntitySchema, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { Inject, Singleton } from "typescript-ioc";
 import { DbConnection } from "./db.connection";
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 
 @Singleton
-export abstract class RepositoryBase {
+export abstract class RepositoryBase<T> {
 
 	@Inject
 	private connection: DbConnection;
@@ -15,7 +15,7 @@ export abstract class RepositoryBase {
 		this.modelType = modelType;
 	}
 
-	protected async getRepository<T>(): Promise<Repository<T>> {
+	protected async getRepository(): Promise<Repository<T>> {
 		try {
 			const conn = await this.connection.getConnection();
 			return conn.getRepository<T>(this.modelType);

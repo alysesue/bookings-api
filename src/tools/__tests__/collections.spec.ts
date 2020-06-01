@@ -1,15 +1,14 @@
 import { groupByKey, groupByKeyLastValue } from "../collections";
-import { TableBodyElement } from "k6/html";
 
 describe("Test collection tool", () => {
 	const values = [
-		{ k: 0, v: '-' },
-		{ k: 0, v: 'a' },
-		{ k: 0, v: 'b' },
-		{ k: 0, v: 'c' },
-		{ k: 1, v: 'd' },
-		{ k: 2, v: 'e' },
-		{ k: 2, v: 'f' },
+		{k: 0, v: '-'},
+		{k: 0, v: 'a'},
+		{k: 0, v: 'b'},
+		{k: 0, v: 'c'},
+		{k: 1, v: 'd'},
+		{k: 2, v: 'e'},
+		{k: 2, v: 'f'},
 	];
 
 	it("Should group by key", () => {
@@ -31,12 +30,14 @@ describe("Test collection tool", () => {
 	});
 
 	it("Should return empty map when undefined collection - group by key", () => {
-		const result = groupByKey(null, () => { });
+		const result = groupByKey(null, () => {
+		});
 		expect(result.size).toBe(0);
 	});
 
 	it("Should return empty map when undefined collection - group by key last value", () => {
-		const result = groupByKeyLastValue(null, () => { });
+		const result = groupByKeyLastValue(null, () => {
+		});
 		expect(result.size).toBe(0);
 	});
 });

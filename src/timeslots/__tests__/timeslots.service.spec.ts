@@ -1,10 +1,8 @@
 import { Container, Snapshot } from "typescript-ioc";
-import { Booking, BookingStatus, Calendar, Schedule } from "../../models";
+import { Booking, BookingStatus, Calendar, Schedule, Timeslot } from "../../models";
 import { TimeslotsService } from "../timeslots.service";
 import { CalendarsRepository } from '../../calendars/calendars.repository';
-import { AggregatedEntry, TimeslotAggregator } from '../timeslotAggregator';
 import { BookingsRepository } from "../../bookings/bookings.repository";
-import { Timeslot } from "../../models";
 import { DateHelper } from "../../infrastructure/dateHelper";
 import { BookingSearchRequest } from '../../bookings/bookings.apicontract';
 

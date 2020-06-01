@@ -16,9 +16,6 @@ export class Calendar extends BaseEntity {
 	@Column({ type: "varchar", length: 300 })
 	public googleCalendarId: string;
 
-	@Column({ type: "varchar", length: 100 })
-	public serviceProviderName: string;
-
 	@ManyToOne('Schedule', { nullable: true })
 	@JoinColumn({ name: 'scheduleId' })
 	public schedule: Schedule;

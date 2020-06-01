@@ -2,7 +2,7 @@ import { Inject, Singleton } from "typescript-ioc";
 import { Booking, Calendar, Schedule } from "../models";
 import { CalendarsRepository } from "./calendars.repository";
 import { GoogleCalendarService } from "../googleapi/google.calendar.service";
-import { AddCalendarModel, CalendarTemplatesTimeslotModel, CalendarUserModel } from "./calendars.apicontract";
+import { CalendarTemplatesTimeslotModel, CalendarUserModel } from "./calendars.apicontract";
 import { SchedulesRepository } from "../schedules/schedules.repository";
 import { isEmptyArray } from "../tools/arrays";
 
@@ -23,14 +23,10 @@ export class CalendarsService {
 		return await this.calendarsRepository.getCalendarByUUID(uuid);
 	}
 
-	public async createCalendar(model: AddCalendarModel): Promise<Calendar> {
+	public async createCalendar(): Promise<Calendar> {
 		const googleCalendarId = await this.googleCalendarApi.createCalendar();
-
 		const calendar = new Calendar();
-		calendar.serviceProviderName = model.serviceProviderName;
-
 		calendar.googleCalendarId = googleCalendarId;
-
 		return await this.calendarsRepository.saveCalendar(calendar);
 	}
 

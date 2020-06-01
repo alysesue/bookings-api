@@ -19,7 +19,6 @@ describe('Calendars.controller', () => {
 
 	it('should get all available calendars', async () => {
 		const calendar = new Calendar();
-		calendar.serviceProviderName = 'test';
 		CalendarsServiceMock.mockCalendars = [calendar];
 		TimeslotsServiceMock.availableCalendarsForTimeslot = [calendar];
 
@@ -31,7 +30,6 @@ describe('Calendars.controller', () => {
 
 	it('should call timeslot availability service', async () => {
 		const calendar = new Calendar();
-		calendar.serviceProviderName = 'test';
 		CalendarsServiceMock.mockCalendars = [calendar];
 		TimeslotsServiceMock.availableCalendarsForTimeslot = [calendar];
 
@@ -45,7 +43,6 @@ describe('Calendars.controller', () => {
 
 	it('should return calendars', async () => {
 		const calendar = new Calendar();
-		calendar.serviceProviderName = 'test';
 		calendar.id = 1;
 		calendar.uuid = 'uuid';
 		calendar.googleCalendarId = "google-id-1";
@@ -58,7 +55,6 @@ describe('Calendars.controller', () => {
 		const result = await controller.getCalendars();
 
 		expect(result).toHaveLength(1);
-		expect(result[0].serviceProviderName).toBe('test');
 		expect(result[0].uuid).toBe('uuid');
 	});
 });

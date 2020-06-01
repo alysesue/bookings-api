@@ -5,28 +5,12 @@ import { SchedulesRepository } from "./schedules.repository";
 import { Schedule } from '../models';
 import { ScheduleRequest, ScheduleResponse } from "./schedules.apicontract";
 import { mapToEntity, mapToResponse } from './schedules.mapper';
-import { getErrorResult, isErrorResult, OptionalResult } from '../errors';
+import { getErrorResult, isErrorResult } from '../errors';
 
 @Singleton
 export class SchedulesService {
 	@Inject
 	private schedulesRepository: SchedulesRepository;
-
-	private mapToEntityAndValidate(template: ScheduleRequest, schedule: Schedule) {
-		const mapped = mapToEntity(template, schedule);
-		if (isErrorResult(mapped)) {
-			const errorResult = getErrorResult(mapped);
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setResponseData(errorResult);
-		}
-
-		const validations = Array.from(schedule.validateSchedule());
-		if (validations.length > 0) {
-			const response = validations.map(val => val.message);
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setResponseData(response);
-		}
-
-		return schedule;
-	}
 
 	public async createSchedule(template: ScheduleRequest): Promise<ScheduleResponse> {
 		const newSchedule = this.mapToEntityAndValidate(template, new Schedule());
@@ -57,5 +41,21 @@ export class SchedulesService {
 
 	public async deleteSchedule(id: number): Promise<DeleteResult> {
 		return await this.schedulesRepository.deleteSchedule(id);
+	}
+
+	private mapToEntityAndValidate(template: ScheduleRequest, schedule: Schedule) {
+		const mapped = mapToEntity(template, schedule);
+		if (isErrorResult(mapped)) {
+			const errorResult = getErrorResult(mapped);
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setResponseData(errorResult);
+		}
+
+		const validations = Array.from(schedule.validateSchedule());
+		if (validations.length > 0) {
+			const response = validations.map(val => val.message);
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setResponseData(response);
+		}
+
+		return schedule;
 	}
 }

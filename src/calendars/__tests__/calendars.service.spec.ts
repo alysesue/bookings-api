@@ -1,6 +1,6 @@
 import { CalendarsRepository } from "../calendars.repository";
 import { Container, Snapshot } from "typescript-ioc";
-import { Booking, BookingStatus, Calendar } from "../../models";
+import { Booking, Calendar } from "../../models";
 import { CalendarsService } from "../calendars.service";
 import { GoogleCalendarService } from "../../googleapi/google.calendar.service";
 import { CalendarTemplatesTimeslotModel, CalendarUserModel } from "../calendars.apicontract";
@@ -35,9 +35,7 @@ describe("Calendar service", () => {
 	it("should save calendars", async () => {
 		const service = Container.get(CalendarsService);
 
-		await service.createCalendar({
-			serviceProviderName: 'Jhon Doe'
-		});
+		await service.createCalendar();
 
 		expect(CalendarRepositoryObj.saveCalendar).toBeCalled();
 	});
