@@ -7,6 +7,7 @@ import { ServiceProviderModel } from "./serviceProviders.apicontract";
 import { CalendarsService } from "../calendars/calendars.service";
 import { Calendar } from "../models/calendar";
 import { ServiceProviderStatus } from "../models/serviceProviderStatus";
+import { API_TIMEOUT_PERIOD } from "../const/index"
 @Singleton
 export class ServiceProvidersService {
 	@Inject
@@ -30,7 +31,7 @@ export class ServiceProvidersService {
 	public async saveServiceProviders(listRequest: ServiceProviderModel[]) {
 		for (const item of listRequest) {
 			await this.saveSp(item);
-			await this.delay(3000);
+			await this.delay(API_TIMEOUT_PERIOD);
 		}
 	}
 
