@@ -1,10 +1,10 @@
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
-import { Booking, Calendar, ServiceProvider, TemplateTimeslots } from "../models";
+import { Booking, Calendar, Schedule, Service, ServiceProvider, WeekDaySchedule } from "../models";
 
 export const connectionOptions: PostgresConnectionOptions = {
 	database: process.env.DB_DATABASE,
 	entities: [
-		Booking, Calendar, TemplateTimeslots, ServiceProvider
+		Booking, Calendar, WeekDaySchedule, Schedule, Service, ServiceProvider
 	],
 	host: process.env.DB_HOST,
 	logging: ["schema", "migration"],

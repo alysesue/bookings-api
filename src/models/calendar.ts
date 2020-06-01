@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, Generated, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { TemplateTimeslots } from "./templateTimeslots";
+import { Schedule } from "./schedule";
 
 @Entity()
 export class Calendar extends BaseEntity {
@@ -16,8 +16,8 @@ export class Calendar extends BaseEntity {
 	@Column({ type: "varchar", length: 300 })
 	public googleCalendarId: string;
 
-	@ManyToOne("TemplateTimeslots", { nullable: true })
-	public templatesTimeslots: TemplateTimeslots;
+	@ManyToOne("Schedule", { nullable: true })
+	public schedule: Schedule;
 
 	public generateExternalUrl(timezone: string): string {
 		return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(this.googleCalendarId)}&ctz=${encodeURIComponent(timezone)}`;

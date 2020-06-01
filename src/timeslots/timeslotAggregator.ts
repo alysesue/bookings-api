@@ -1,4 +1,4 @@
-import { Timeslot } from '../models/Timeslot';
+import { Timeslot } from '../models';
 
 export class TimeslotAggregator<TGroup> {
 	private _map: any;

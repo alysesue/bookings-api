@@ -3,7 +3,7 @@ import { BookingsRepository } from "../bookings.repository";
 import { CalendarsService } from "../../calendars/calendars.service";
 import { Container } from "typescript-ioc";
 import { Booking, BookingStatus, Calendar } from "../../models/";
-import { InsertResult, UpdateResult } from "typeorm";
+import { InsertResult } from "typeorm";
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "../bookings.apicontract";
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 
@@ -54,7 +54,7 @@ describe("Bookings.Service", () => {
 	it("should throw exception if booking not found", async () => {
 		const bookingService = Container.get(BookingsService);
 		BookingRepositoryMock.booking = undefined;
-		expect(bookingService.getBooking("1")).rejects.toEqual(
+		await expect(bookingService.getBooking("1")).rejects.toEqual(
 			new Error("Booking 1 not found")
 		);
 	});
@@ -67,9 +67,10 @@ describe("Bookings.Service", () => {
 		testCalendar.googleCalendarId = "google-id-1";
 		CalendarsServiceMock.calendars = [new Calendar()];
 		BookingRepositoryMock.searchBookingsMock = [new Booking(new Date(), 10)];
+		TimeslotsServiceMock.availableCalendarsForTimeslot = [];
 
 		const service = Container.get(BookingsService);
-		expect(service.save(bookingRequest))
+		await expect(service.save(bookingRequest))
 			.rejects
 			.toStrictEqual(new Error('No available calendars for this timeslot'));
 	});

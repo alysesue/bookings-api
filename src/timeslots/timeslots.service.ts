@@ -1,14 +1,12 @@
 import { Inject, Singleton } from "typescript-ioc";
 import { AggregatedEntry, TimeslotAggregator } from "./timeslotAggregator";
-import { Calendar } from '../models/calendar';
+import { Booking, BookingStatus, Calendar, Timeslot } from '../models';
 import { CalendarsRepository } from "../calendars/calendars.repository";
 import { DateHelper } from "../infrastructure/dateHelper";
 import { BookingsRepository } from "../bookings/bookings.repository";
-import { Booking } from '../models/booking';
-import { Timeslot } from '../models/Timeslot';
-import { BookingStatus } from "../models";
-import { BookingRequest, BookingSearchRequest } from '../bookings/bookings.apicontract';
+import { BookingSearchRequest } from '../bookings/bookings.apicontract';
 import { TimeslotResponse } from './timeslots.apicontract';
+import { groupByKey } from '../tools/collections';
 
 @Singleton
 export class TimeslotsService {
@@ -18,24 +16,6 @@ export class TimeslotsService {
 	@Inject
 	private bookingsRepository: BookingsRepository;
 
-	private GroupByKey<TKey, TValue>(elements: TValue[], keySelector: (value: TValue) => TKey): Map<TKey, TValue[]> {
-		const initial = new Map<TKey, TValue[]>();
-		if (!elements) {
-			return initial;
-		}
-
-		const result = elements.reduce((map, current) => {
-			const key = keySelector(current);
-			const groupCollection = map.get(key) || [];
-			groupCollection.push(current);
-
-			map.set(key, groupCollection);
-			return map;
-		}, initial);
-
-		return result;
-	}
-
 	private async getAcceptedBookingsPerCalendarId(minStartTime: Date, maxEndTime: Date): Promise<Map<number, Booking[]>> {
 		let bookings = await this.bookingsRepository.search(new BookingSearchRequest(
 			minStartTime,
@@ -44,7 +24,7 @@ export class TimeslotsService {
 		));
 		bookings = bookings.filter(booking => booking.getSessionEndTime() <= maxEndTime);
 
-		const result = this.GroupByKey(bookings, (booking) => booking?.calendarId ?? 0);
+		const result = groupByKey(bookings, (booking) => booking?.calendarId ?? 0);
 		return result;
 	}
 
@@ -63,7 +43,7 @@ export class TimeslotsService {
 	private bookingKeySelector = (booking: Booking) => this.timeslotKeySelector(booking.startDateTime, booking.getSessionEndTime());
 
 	private * ignoreBookedTimes(generator: Iterable<Timeslot>, calendarBookings: Booking[]): Iterable<Timeslot> {
-		const bookingsLookup = this.GroupByKey(calendarBookings, this.bookingKeySelector);
+		const bookingsLookup = groupByKey(calendarBookings, this.bookingKeySelector);
 		for (const element of generator) {
 			const elementKey = this.timeslotKeySelector(element.getStartTime(), element.getEndTime());
 			if (!bookingsLookup.has(elementKey)) {
@@ -73,7 +53,7 @@ export class TimeslotsService {
 	}
 
 	private * deductPendingTimeslots(entries: Iterable<TimeslotResponse>, pendingBookings: Booking[]): Iterable<TimeslotResponse> {
-		const pendingBookingsLookup = this.GroupByKey(pendingBookings, this.bookingKeySelector);
+		const pendingBookingsLookup = groupByKey(pendingBookings, this.bookingKeySelector);
 
 		for (const element of entries) {
 			const elementKey = this.timeslotKeySelector(element.startTime, element.endTime);
@@ -92,8 +72,8 @@ export class TimeslotsService {
 		const calendars = await this.calendarsRepository.getCalendarsWithTemplates();
 		const bookingsPerCalendarId = await this.getAcceptedBookingsPerCalendarId(minStartTime, maxEndTime);
 
-		for (const calendar of calendars.filter(c => c.templatesTimeslots !== null)) {
-			const generator = calendar.templatesTimeslots.generateValidTimeslots({
+		for (const calendar of calendars.filter(c => c.schedule !== null)) {
+			const generator = calendar.schedule.generateValidTimeslots({
 				startDatetime: minStartTime,
 				endDatetime: maxEndTime
 			});

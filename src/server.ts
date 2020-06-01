@@ -18,6 +18,7 @@ import { DbConnection } from "./core/db.connection";
 import { Container } from "typescript-ioc";
 import { CalDavProxyHandler } from "./infrastructure/caldavproxy.handler";
 import * as cors from '@koa/cors';
+import * as fs from 'fs';
 
 const setService = async (ctx, next) => {
 	Container.bindName('config').to({
@@ -26,6 +27,20 @@ const setService = async (ctx, next) => {
 	await next();
 };
 
+const useSwagger = () => {
+	const swaggerDoc = '../dist/swagger/swagger.yaml';
+	// tslint:disable-next-line: tsr-detect-non-literal-fs-filename
+	if (fs.existsSync(swaggerDoc)) {
+		const document = swagger.loadDocumentSync(swaggerDoc);
+		return ui(document as swagger.Document, "/swagger");
+	}
+
+	async function emptyMiddleware(_ctx, next) {
+		await next();
+	}
+
+	return emptyMiddleware;
+};
 
 export async function startServer(): Promise<Server> {
 	// Setup service
@@ -41,7 +56,7 @@ export async function startServer(): Promise<Server> {
 	const HandledRoutes = new KoaResponseHandler(serviceAwareRouter.routes());
 	const proxyHandler = Container.get(CalDavProxyHandler);
 
-	const document = swagger.loadDocumentSync('../dist/swagger/swagger.yaml');
+
 	const koaServer = new Koa()
 		.use(proxyHandler.build())
 		.use(
@@ -61,7 +76,7 @@ export async function startServer(): Promise<Server> {
 			})
 		)
 		.use(cors())
-		.use(ui(document as swagger.Document, "/swagger"))
+		.use(useSwagger())
 		.use(new KoaErrorHandler().build())
 		.use(new KoaLoggerContext().build())
 		.use(new KoaMultipartCleaner().build())
