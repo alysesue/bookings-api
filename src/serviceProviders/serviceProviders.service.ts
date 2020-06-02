@@ -32,9 +32,12 @@ export class ServiceProvidersService {
 	}
 
 	public async saveServiceProviders(listRequest: ServiceProviderModel[]) {
-		for (const item of listRequest) {
-			await this.saveSp(item, this.service);
-			await this.delay(API_TIMEOUT_PERIOD);
+		for (let i = 0; i < listRequest.length; i++) {
+			await this.saveSp(listRequest[i], this.service);
+
+			if (i > 0) {
+				await this.delay(API_TIMEOUT_PERIOD);
+			}
 		}
 	}
 

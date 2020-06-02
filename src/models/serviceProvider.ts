@@ -20,7 +20,11 @@ export class ServiceProvider extends BaseEntity {
 		this._status = value;
 	}
 
-	@ManyToOne(type => Service, {nullable: false})
+	@Column({nullable: false})
+	private _serviceId: number;
+
+	@ManyToOne(type => Service)
+	@JoinColumn({name: '_serviceId'})
 	private _service: Service;
 
 	@PrimaryGeneratedColumn()
@@ -62,4 +66,7 @@ export class ServiceProvider extends BaseEntity {
 		this._calendar = calendar;
 	}
 
+	public get service(): Service {
+		return this._service;
+	}
 }

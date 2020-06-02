@@ -16,9 +16,26 @@ import { DbConnection } from "./core/db.connection";
 import { Container } from "typescript-ioc";
 import { CalDavProxyHandler } from "./infrastructure/caldavproxy.handler";
 import * as cors from '@koa/cors';
-import { useSwagger } from "./infrastructure/middleware/swagger";
 import { useServiceValidation } from "./infrastructure/middleware/useServiceValidator";
 import { useService } from "./infrastructure/middleware/useService";
+import * as fs from "fs";
+import * as swagger from "swagger2";
+import { ui } from "swagger2-koa";
+
+export const useSwagger = () => {
+	const swaggerDoc = '../dist/swagger/swagger.yaml';
+	// tslint:disable-next-line: tsr-detect-non-literal-fs-filename
+	if (fs.existsSync(swaggerDoc)) {
+		const document = swagger.loadDocumentSync(swaggerDoc);
+		return ui(document as swagger.Document, "/swagger");
+	}
+
+	async function emptyMiddleware(_ctx, next) {
+		await next();
+	}
+
+	return emptyMiddleware;
+};
 
 export async function startServer(): Promise<Server> {
 	// Setup service
