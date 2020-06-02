@@ -17,6 +17,16 @@ describe("Services repository", () => {
 		expect(result).toStrictEqual([]);
 	});
 
+	it("should get service by id", async () => {
+		Container.bind(DbConnection).to(MockDBConnection);
+		MockDBConnection.findOne.mockImplementation(() => Promise.resolve({}));
+
+		const repository = Container.get(ServicesRepository);
+		const result = await repository.get(1);
+		expect(result).toBeDefined();
+		expect(MockDBConnection.findOne).toBeCalled();
+	});
+
 	it("should save a service", async () => {
 		const service: Service = new Service();
 		service.name = "Coaches";
@@ -26,7 +36,7 @@ describe("Services repository", () => {
 		const repository = Container.get(ServicesRepository);
 
 		await repository.save(service);
-		expect(MockDBConnection.save.mock.calls[0][0]).toStrictEqual(service)
+		expect(MockDBConnection.save.mock.calls[0][0]).toStrictEqual(service);
 	});
 
 });
@@ -34,11 +44,13 @@ describe("Services repository", () => {
 class MockDBConnection extends DbConnection {
 	public static save = jest.fn();
 	public static find = jest.fn();
+	public static findOne = jest.fn();
 
 	public async getConnection(): Promise<any> {
 		const connection = {
 			getRepository: () => ({
 				find: MockDBConnection.find,
+				findOne: MockDBConnection.findOne,
 				save: MockDBConnection.save,
 			})
 		};

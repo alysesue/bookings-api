@@ -34,9 +34,8 @@ export class SchedulesService {
 		return schedules.map(s => mapToResponse(s));
 	}
 
-	public async getSchedule(id: number): Promise<ScheduleResponse> {
-		const schedule = await this.schedulesRepository.getScheduleById(id);
-		return mapToResponse(schedule);
+	public async getSchedule(id: number): Promise<Schedule> {
+		return await this.schedulesRepository.getScheduleById(id);
 	}
 
 	public async deleteSchedule(id: number): Promise<DeleteResult> {

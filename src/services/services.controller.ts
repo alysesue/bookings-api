@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Post, Route, SuccessResponse, Tags } from "tsoa";
-import { ServiceRequest, ServiceResponse } from "./service.apicontract";
+import { Body, Controller, Get, Path, Post, Put, Route, SuccessResponse, Tags } from "tsoa";
+import { ServiceRequest, ServiceResponse, SetScheduleRequest } from "./service.apicontract";
 import { Inject } from "typescript-ioc";
 import { ServicesService } from "./services.service";
 import { Service } from "../models";
+import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
+import { ScheduleResponse } from '../schedules/schedules.apicontract';
 
 @Route('**/v1/services')
 @Tags('Services')
@@ -13,6 +15,7 @@ export class ServicesController extends Controller {
 
 	private static mapToServiceResponse(service: Service) {
 		const response = new ServiceResponse();
+		response.id = service.id;
 		response.name = service.name;
 		return response;
 	}
@@ -28,5 +31,17 @@ export class ServicesController extends Controller {
 	public async getServices(): Promise<ServiceResponse[]> {
 		const services = await this.servicesService.getServices();
 		return services.map(ServicesController.mapToServiceResponse);
+	}
+
+	@Put('{id}/schedule')
+	@SuccessResponse(200, "Ok")
+	public async setServiceSchedule(@Path() id: number, @Body() request: SetScheduleRequest): Promise<ScheduleResponse> {
+		return mapScheduleToResponse(await this.servicesService.setServiceSchedule(id, request));
+	}
+
+	@Get('{id}/schedule')
+	@SuccessResponse(200, "Ok")
+	public async getServiceSchedule(@Path() id: number): Promise<ScheduleResponse> {
+		return mapScheduleToResponse(await this.servicesService.getServiceSchedule(id));
 	}
 }

@@ -82,6 +82,10 @@ const mapBreaks = (daySchedule: WeekDayScheduleContract, entity: WeekDaySchedule
 };
 
 export const mapToResponse = (template: Schedule): ScheduleResponse => {
+	if (!template) {
+		return null;
+	}
+
 	const response = new ScheduleResponse();
 	response.id = template.id;
 	response.name = template.name;
