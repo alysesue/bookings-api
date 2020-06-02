@@ -15,11 +15,29 @@ export class ScheduleRequest {
 	public weekdaySchedules: WeekDayScheduleContract[];
 }
 
+export class WeekDayBreakContract {
+	/**
+	 * @maxLength 5
+	 */
+	public startTime: string;
+	/**
+	 * @maxLength 5
+	 */
+	public endTime: string;
+}
+
 export class WeekDayScheduleContract {
 	public weekday: Weekday;
 	public hasSchedule: boolean;
+	/**
+	 * @maxLength 5
+	 */
 	public openTime?: string;
+	/**
+	 * @maxLength 5
+	 */
 	public closeTime?: string;
+	public breaks: WeekDayBreakContract[];
 }
 
 export class ScheduleResponse {

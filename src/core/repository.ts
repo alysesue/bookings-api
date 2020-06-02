@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { Connection, Repository } from "typeorm";
 import { Inject, Singleton } from "typescript-ioc";
 import { DbConnection } from "./db.connection";
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
@@ -23,5 +23,9 @@ export abstract class RepositoryBase<T> {
 			logger.error("ServiceProviderRepository::connection::error", e);
 			throw e;
 		}
+	}
+
+	protected async getConnection(): Promise<Connection> {
+		return this.connection.getConnection();
 	}
 }

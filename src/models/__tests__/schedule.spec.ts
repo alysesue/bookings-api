@@ -1,8 +1,9 @@
 import { Container, Snapshot } from 'typescript-ioc';
-import { Schedule, WeekDaySchedule } from '../schedule';
+import { Schedule, WeekDaySchedule } from '../index';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Weekday } from '../../enums/weekday';
 import { TimeOfDay } from '../timeOfDay';
+import { WeekDayBreak } from '../weekDayBreak';
 
 let snapshot: Snapshot;
 beforeAll(() => {
@@ -18,8 +19,8 @@ afterAll(() => {
 	snapshot.restore();
 });
 
-function createDayOfWeekTemplate(weekday: Weekday, openTime: string, closeTime: string): WeekDaySchedule {
-	const weekDaySchedule = new WeekDaySchedule(weekday);
+function createDayOfWeekTemplate(weekday: Weekday, openTime: string, closeTime: string, schedule: Schedule): WeekDaySchedule {
+	const weekDaySchedule = WeekDaySchedule.create(weekday, schedule);
 	weekDaySchedule.hasSchedule = true;
 	weekDaySchedule.openTime = TimeOfDay.parse(openTime);
 	weekDaySchedule.closeTime = TimeOfDay.parse(closeTime);
@@ -30,10 +31,15 @@ describe('Timeslots template', () => {
 	const template = new Schedule();
 	template.name = 'test';
 	template.slotsDurationInMin = 60;
+	const wednesday = createDayOfWeekTemplate(Weekday.Wednesday, '09:30', '17:30', template);
+	wednesday.breaks = [
+		WeekDayBreak.create(Weekday.Wednesday, TimeOfDay.parse('16:00'), TimeOfDay.parse('17:00'), template)
+	];
+
 	template.weekdaySchedules = [
-		createDayOfWeekTemplate(Weekday.Monday, '08:30', '16:00'),
-		createDayOfWeekTemplate(Weekday.Tuesday, '08:30', '15:00'),
-		createDayOfWeekTemplate(Weekday.Wednesday, '09:30', '16:00')
+		createDayOfWeekTemplate(Weekday.Monday, '08:30', '16:00', template),
+		createDayOfWeekTemplate(Weekday.Tuesday, '08:30', '15:00', template),
+		wednesday
 	];
 
 	const date = new Date(2020, 4, 12); // May 12th -  Tuesday;
@@ -128,8 +134,6 @@ describe('Timeslots template', () => {
 	});
 
 	it('should generate no timeslots', () => {
-		const date = new Date();
-
 		const generate = template.generateValidTimeslots({
 			startDatetime: DateHelper.setHours(date, 8, 31),
 			endDatetime: DateHelper.setHours(date, 9, 30)
@@ -138,5 +142,39 @@ describe('Timeslots template', () => {
 		const list = Array.from(generate);
 
 		expect(list.length).toBe(0);
+	});
+
+	it('should init weekday schedules', () => {
+		const newSchedule = new Schedule();
+		newSchedule.initWeekdaySchedules();
+
+		expect(newSchedule.weekdaySchedules).toBeDefined();
+	});
+
+	it('should init set weekday schedules parent', () => {
+		const newSchedule = new Schedule();
+		const weekDay = new WeekDaySchedule();
+		weekDay.weekDay = Weekday.Monday;
+		newSchedule.weekdaySchedules = [
+			weekDay
+		];
+
+		newSchedule.initWeekdaySchedules();
+		newSchedule.verifyWeekdaySchedules();
+		expect(weekDay.schedule).toBe(newSchedule);
+	});
+
+	it('should verify weekday schedules is initialized', () => {
+		const newSchedule = new Schedule();
+
+		expect(() => {
+			newSchedule.verifyWeekdaySchedules();
+		}).toThrowError();
+	});
+
+	it('should not create weekday schedule without schedule reference', () => {
+		expect(() => {
+			WeekDaySchedule.create(Weekday.Monday, null);
+		}).toThrowError();
 	});
 });
