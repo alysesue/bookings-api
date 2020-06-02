@@ -1,13 +1,10 @@
-import { Inject, Singleton } from 'typescript-ioc';
-import { DbConnection } from '../core/db.connection';
-import { Schedule, WeekDayBreak } from '../models';
-import { DeleteResult, In, Repository } from "typeorm";
-import { groupByKey } from '../tools/collections';
+import { Singleton } from 'typescript-ioc';
+import { WeekDayBreak } from '../models';
+import { DeleteResult, In } from "typeorm";
+import { RepositoryBase } from '../core/repository';
 
 @Singleton
-export class WeekDayBreakRepository {
-	@Inject
-	private connection: DbConnection;
+export class WeekDayBreakRepository extends RepositoryBase<WeekDayBreak> {
 
 	public async getBreaksForSchedules(scheduleIds: number[]): Promise<WeekDayBreak[]> {
 		return (await this.getRepository()).find({
@@ -18,7 +15,8 @@ export class WeekDayBreakRepository {
 	}
 
 	public async deleteBreaksForSchedule(scheduleId: number): Promise<DeleteResult> {
-		const query = (await this.connection.getConnection())
+		const connection = (await this.getConnection());
+		const query = connection
 			.createQueryBuilder()
 			.delete()
 			.from(WeekDayBreak)
@@ -29,10 +27,5 @@ export class WeekDayBreakRepository {
 
 	public async save(entities: WeekDayBreak[]): Promise<WeekDayBreak[]> {
 		return (await this.getRepository()).save(entities);
-	}
-
-	private async getRepository(): Promise<Repository<WeekDayBreak>> {
-		const conn = await this.connection.getConnection();
-		return conn.getRepository(WeekDayBreak);
 	}
 }
