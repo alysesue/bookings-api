@@ -1,14 +1,12 @@
 import { Inject, Singleton } from 'typescript-ioc';
-import { DbConnection } from '../core/db.connection';
-import { Schedule, WeekDayBreak } from '../models';
-import { DeleteResult, FindManyOptions, In, Repository } from "typeorm";
+import { Schedule } from '../models';
+import { DeleteResult, FindManyOptions, In } from "typeorm";
 import { groupByKey } from '../tools/collections';
 import { WeekDayBreakRepository } from './weekdaybreak.repository';
+import { RepositoryBase } from '../core/repository';
 
 @Singleton
-export class SchedulesRepository {
-	@Inject
-	private connection: DbConnection;
+export class SchedulesRepository extends RepositoryBase<Schedule> {
 	@Inject
 	private weekDayBreakRepo: WeekDayBreakRepository;
 
@@ -74,10 +72,5 @@ export class SchedulesRepository {
 	public async deleteSchedule(scheduleId: number): Promise<DeleteResult> {
 		await this.weekDayBreakRepo.deleteBreaksForSchedule(scheduleId);
 		return (await this.getRepository()).delete(scheduleId);
-	}
-
-	private async getRepository(): Promise<Repository<Schedule>> {
-		const conn = await this.connection.getConnection();
-		return conn.getRepository(Schedule);
 	}
 }

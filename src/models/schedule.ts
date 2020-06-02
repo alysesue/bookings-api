@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { DateHelper } from '../infrastructure/dateHelper';
 import { Timeslot } from './timeslot';
-import { TimeOfDay, Transformer as TimeTransformer } from './timeOfDay';
+import { TimeOfDay } from './timeOfDay';
 import { groupByKey, groupByKeyLastValue } from '../tools/collections';
 import { BusinessValidation } from './businessValidation';
 import { WeekdayList } from '../enums/weekday';
