@@ -72,6 +72,37 @@ describe('Services service tests', () => {
 		expect(schedule).toBeDefined();
 		expect(SchedulesServiceMock.getSchedule).toBeCalled();
 	});
+
+	it('should throw service not found', async () => {
+		ServicesRepoMock.get.mockImplementation(() => Promise.resolve(null));
+		SchedulesServiceMock.getSchedule.mockImplementation(() => Promise.resolve(new Schedule()));
+
+		await expect(async () => {
+			const request = new SetScheduleRequest();
+			request.scheduleId = 2;
+			await Container.get(ServicesService).setServiceSchedule(1, request);
+		}).rejects.toThrowError();
+
+		await expect(async () => {
+			await Container.get(ServicesService).getServiceSchedule(1);
+		}).rejects.toThrowError();
+	});
+
+	it('should throw service schedule not found', async () => {
+		const newService = new Service();
+		ServicesRepoMock.get.mockImplementation(() => Promise.resolve(newService));
+		SchedulesServiceMock.getSchedule.mockImplementation(() => Promise.resolve(null));
+
+		await expect(async () => {
+			const request = new SetScheduleRequest();
+			request.scheduleId = 3;
+			await Container.get(ServicesService).setServiceSchedule(2, request);
+		}).rejects.toThrowError();
+
+		await expect(async () => {
+			await Container.get(ServicesService).getServiceSchedule(2);
+		}).rejects.toThrowError();
+	});
 });
 
 const ServicesRepoMock = {
