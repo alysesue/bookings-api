@@ -1,20 +1,23 @@
-import { Inject, Singleton } from "typescript-ioc";
-import { ServiceProvider } from "../models";
+import { Inject, InjectValue, Singleton } from "typescript-ioc";
+import { Service, ServiceProvider } from "../models";
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 
 import { ServiceProvidersRepository } from "./serviceProviders.repository";
 import { ServiceProviderModel } from "./serviceProviders.apicontract";
 import { CalendarsService } from "../calendars/calendars.service";
-import { Calendar } from "../models/calendar";
-import { ServiceProviderStatus } from "../models/serviceProviderStatus";
-import { API_TIMEOUT_PERIOD } from "../const/index"
+import { API_TIMEOUT_PERIOD } from "../const";
+
 @Singleton
 export class ServiceProvidersService {
+
 	@Inject
 	public serviceProvidersRepository: ServiceProvidersRepository;
 
 	@Inject
 	public calendarsService: CalendarsService;
+
+	@InjectValue('config.service')
+	private service: Service;
 
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
 		return await this.serviceProvidersRepository.getServiceProviders();
@@ -30,17 +33,16 @@ export class ServiceProvidersService {
 
 	public async saveServiceProviders(listRequest: ServiceProviderModel[]) {
 		for (const item of listRequest) {
-			await this.saveSp(item);
+			await this.saveSp(item, this.service);
 			await this.delay(API_TIMEOUT_PERIOD);
 		}
 	}
 
-	public async saveSp(item: ServiceProviderModel) {
+	public async saveSp(item: ServiceProviderModel, service: Service) {
 		try {
 			const cal = await this.calendarsService.createCalendar();
-			return await this.serviceProvidersRepository.save(new ServiceProvider(item.name, cal));
-		}
-		catch (e) {
+			return await this.serviceProvidersRepository.save(new ServiceProvider(service, item.name, cal));
+		} catch (e) {
 			logger.error("exception when creating calendar ", e.message);
 		}
 	}

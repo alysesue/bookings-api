@@ -1,3 +1,6 @@
+import { Service } from "../models";
+
 export interface Config {
-	service: string;
+	serviceName: string;
+	service: Service;
 }

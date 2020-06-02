@@ -1,7 +1,7 @@
 import { ServiceProvidersService } from "../serviceProviders.service";
 import { ServiceProvidersRepository } from "../serviceProviders.repository";
 import { Container } from "typescript-ioc";
-import { ServiceProvider, Calendar } from "../../models/";
+import { Calendar, ServiceProvider } from "../../models/";
 import { ServiceProviderModel } from "../serviceProviders.apicontract";
 import { CalendarsService } from "../../calendars/calendars.service";
 
@@ -13,20 +13,20 @@ describe("ServiceProviders.Service", () => {
 	});
 
 	it("should get all service providers", async () => {
-		ServiceProvidersRepositoryMock.getServiceProvidersMock = [new ServiceProvider("Monica", null)];
+		ServiceProvidersRepositoryMock.getServiceProvidersMock = [new ServiceProvider(null, "Monica", null)];
 		const result = await new ServiceProvidersService().getServiceProviders();
 		expect(result.length).toBe(1);
 	});
 
 	it("should get service provider by Id", async () => {
-		ServiceProvidersRepositoryMock.getServiceProviderMock = new ServiceProvider("Monica", null);
+		ServiceProvidersRepositoryMock.getServiceProviderMock = new ServiceProvider(null, "Monica", null);
 		const result = await new ServiceProvidersService().getServiceProvider("1");
 		expect(result.name).toBe("Monica");
 	});
 
 	it("should save a service provider", async () => {
 		CalendarsServiceMock.createCalendar = new Calendar();
-		const spRequest = new ServiceProvider("Timmy", null)
+		const spRequest = new ServiceProvider(null, "Timmy", null)
 		ServiceProvidersRepositoryMock.save = spRequest;
 		await new ServiceProvidersService().saveServiceProviders([spRequest]);
 		expect(ServiceProvidersRepositoryMock.save.name).toBe("Timmy");

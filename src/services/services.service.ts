@@ -19,4 +19,8 @@ export class ServicesService {
 	public async getServices(): Promise<Service[]> {
 		return await this.servicesRepository.getAll();
 	}
+
+	public async getByName(service: string): Promise<Service> {
+		return await this.servicesRepository.findOne({_name: service});
+	}
 }
