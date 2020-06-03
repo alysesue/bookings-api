@@ -25,7 +25,10 @@ import { ui } from "swagger2-koa";
 export const useSwagger = () => {
 	const swaggerDoc = '../dist/swagger/swagger.yaml';
 	// tslint:disable-next-line: tsr-detect-non-literal-fs-filename
-	if (fs.existsSync(swaggerDoc)) {
+	const exists = fs.existsSync(swaggerDoc);
+
+	logger.info(`Swagger document location: ${swaggerDoc} ${exists ? '(found)' : '(not found)'}`);
+	if (exists) {
 		const document = swagger.loadDocumentSync(swaggerDoc);
 		return ui(document as swagger.Document, "/swagger");
 	}

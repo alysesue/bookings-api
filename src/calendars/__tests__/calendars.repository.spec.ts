@@ -37,7 +37,7 @@ describe('Calendar service', () => {
 		expect(result).not.toBe(undefined);
 
 		expect(getRepositoryMock).toBeCalled();
-		expect(InnerRepositoryMock.find).toBeCalledTimes(1);
+		expect(InnerRepositoryMock.find).toBeCalled();
 	});
 
 	it('should get calendar by UUID', async () => {

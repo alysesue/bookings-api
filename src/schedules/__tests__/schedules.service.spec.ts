@@ -1,5 +1,5 @@
 import { SchedulesService } from "../schedules.service";
-import { ScheduleRequest, WeekDayScheduleContract } from "../schedules.apicontract";
+import { ScheduleRequest, WeekDayBreakContract, WeekDayScheduleContract } from "../schedules.apicontract";
 import { SchedulesRepository } from "../schedules.repository";
 import { Container } from "typescript-ioc";
 import { Schedule } from "../../models";
@@ -11,12 +11,15 @@ const scheduleRequestCommon = {
 	name: 'schedule',
 	slotsDurationInMin: 60,
 	weekdaySchedules: [
-		{weekday: Weekday.Monday, hasSchedule: true, openTime: '11:23', closeTime: '12:23'} as WeekDayScheduleContract
+		{
+			weekday: Weekday.Monday, hasSchedule: true, openTime: '8:30', closeTime: '12:30',
+			breaks: [{ startTime: '11:00', endTime: '11:30' } as WeekDayBreakContract]
+		} as WeekDayScheduleContract
 	]
 } as ScheduleRequest;
 
 const scheduleCommon = new Schedule();
-mapToEntity(scheduleRequestCommon, new Schedule());
+mapToEntity(scheduleRequestCommon, scheduleCommon);
 
 const getSchedules = jest.fn().mockImplementation(() => Promise.resolve([scheduleCommon]));
 const getScheduleById = jest.fn().mockImplementation(() => Promise.resolve(scheduleCommon));
@@ -46,12 +49,7 @@ describe('Schedules  template services ', () => {
 			name: 'schedule',
 			slotsDurationInMin: 5,
 			weekdaySchedules: [
-				{
-					weekday: Weekday.Monday,
-					hasSchedule: true,
-					openTime: '2323',
-					closeTime: '25:25'
-				} as WeekDayScheduleContract
+				{ weekday: Weekday.Monday, hasSchedule: true, openTime: '2323', closeTime: '25:25' } as WeekDayScheduleContract
 			]
 		} as ScheduleRequest;
 
@@ -69,12 +67,7 @@ describe('Schedules  template services ', () => {
 			name: 'schedule',
 			slotsDurationInMin: 5,
 			weekdaySchedules: [
-				{
-					weekday: Weekday.Monday,
-					hasSchedule: true,
-					openTime: '23:23',
-					closeTime: '11:73'
-				} as WeekDayScheduleContract
+				{ weekday: Weekday.Monday, hasSchedule: true, openTime: '23:23', closeTime: '11:73' } as WeekDayScheduleContract
 			]
 		} as ScheduleRequest;
 
@@ -92,12 +85,7 @@ describe('Schedules  template services ', () => {
 			name: 'schedule',
 			slotsDurationInMin: 5,
 			weekdaySchedules: [
-				{
-					weekday: Weekday.Monday,
-					hasSchedule: true,
-					openTime: '23:23',
-					closeTime: '11:23'
-				} as WeekDayScheduleContract
+				{ weekday: Weekday.Monday, hasSchedule: true, openTime: '23:23', closeTime: '11:23' } as WeekDayScheduleContract
 			]
 		} as ScheduleRequest;
 
@@ -116,12 +104,7 @@ describe('Schedules  template services ', () => {
 			name: 'schedule',
 			slotsDurationInMin: 65,
 			weekdaySchedules: [
-				{
-					weekday: Weekday.Monday,
-					hasSchedule: true,
-					openTime: '11:23',
-					closeTime: '12:23'
-				} as WeekDayScheduleContract
+				{ weekday: Weekday.Monday, hasSchedule: true, openTime: '11:23', closeTime: '12:23' } as WeekDayScheduleContract
 			]
 		} as ScheduleRequest;
 

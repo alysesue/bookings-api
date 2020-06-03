@@ -1,6 +1,8 @@
 import { Booking } from "./booking";
 import { BookingStatus } from "./bookingStatus";
-import { Schedule, WeekDaySchedule } from "./schedule";
+import { Schedule } from "./schedule";
+import { WeekDaySchedule } from './weekDaySchedule';
+import { WeekDayBreak } from './weekDayBreak';
 import { Calendar } from "./calendar";
 import { Service } from "./service";
 import { TimeOfDay } from './timeOfDay';
@@ -14,6 +16,7 @@ export {
 	BookingStatus,
 	Schedule,
 	Service,
+	WeekDayBreak,
 	WeekDaySchedule,
 	Calendar,
 	TimeOfDay,

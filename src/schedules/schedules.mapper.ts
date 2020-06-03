@@ -1,8 +1,7 @@
-import { WeekdayList } from "../enums/weekday";
-import { Schedule, TimeOfDay, WeekDaySchedule } from "../models";
-import { ScheduleRequest, ScheduleResponse, WeekDayScheduleContract } from './schedules.apicontract';
+import { Schedule, TimeOfDay, WeekDayBreak, WeekDaySchedule } from "../models";
+import { ScheduleRequest, ScheduleResponse, WeekDayBreakContract, WeekDayScheduleContract } from './schedules.apicontract';
 import { groupByKeyLastValue } from '../tools/collections';
-import { getErrorResult, isErrorResult, OptionalResult } from '../errors';
+import { getErrorResult, getOkResult, isErrorResult, OptionalResult } from '../errors';
 
 export const mapToEntity = (contract: ScheduleRequest, entity: Schedule): OptionalResult<Schedule, string[]> => {
 	entity.name = contract.name;
@@ -11,9 +10,7 @@ export const mapToEntity = (contract: ScheduleRequest, entity: Schedule): Option
 
 	const weekDaysContract = groupByKeyLastValue(contract.weekdaySchedules || [], w => w.weekday);
 
-	if (!entity.weekdaySchedules || entity.weekdaySchedules.length === 0) {
-		entity.weekdaySchedules = WeekdayList.map(day => new WeekDaySchedule(day));
-	}
+	entity.initWeekdaySchedules();
 
 	for (const daySchedule of entity.weekdaySchedules) {
 		if (weekDaysContract.has(daySchedule.weekDay)) {
@@ -26,14 +23,7 @@ export const mapToEntity = (contract: ScheduleRequest, entity: Schedule): Option
 		}
 	}
 
-	if (errors.length > 0) {
-		return {
-			errorResult: errors
-		};
-	}
-	return {
-		result: entity
-	};
+	return (errors.length > 0) ? { errorResult: errors } : { result: entity };
 };
 
 const setDayContractEntity = (contract: WeekDayScheduleContract, entity: WeekDaySchedule): OptionalResult<WeekDaySchedule, string[]> => {
@@ -52,15 +42,43 @@ const setDayContractEntity = (contract: WeekDayScheduleContract, entity: WeekDay
 		errors.push(e.message);
 	}
 
-	if (errors.length > 0) {
-		return {
-			errorResult: errors
-		};
+	const mappedBreaks = mapBreaks(contract, entity);
+	if (isErrorResult(mappedBreaks)) {
+		errors.push(...getErrorResult(mappedBreaks));
+	} else {
+		entity.breaks = getOkResult(mappedBreaks);
 	}
 
-	return {
-		result: entity
-	};
+	return (errors.length > 0) ? { errorResult: errors } : { result: entity };
+};
+
+const mapBreaks = (daySchedule: WeekDayScheduleContract, entity: WeekDaySchedule): OptionalResult<WeekDayBreak[], string[]> => {
+	const errors: string[] = [];
+	const result: WeekDayBreak[] = [];
+
+	for (const entry of (daySchedule.breaks || [])) {
+		let startTime: TimeOfDay = null;
+		let endTime: TimeOfDay = null;
+
+		try {
+			startTime = TimeOfDay.parse(entry.startTime);
+		} catch (e) {
+			errors.push(e.message);
+		}
+
+		try {
+			endTime = TimeOfDay.parse(entry.endTime);
+		} catch (e) {
+			errors.push(e.message);
+		}
+
+		if (startTime && endTime) {
+			const mapped = WeekDayBreak.create(daySchedule.weekday, startTime, endTime, entity.schedule);
+			result.push(mapped);
+		}
+	}
+
+	return (errors.length > 0) ? { errorResult: errors } : { result };
 };
 
 export const mapToResponse = (template: Schedule): ScheduleResponse => {
@@ -79,6 +97,15 @@ export const mapDayScheduleToResponse = (daySchedule: WeekDaySchedule): WeekDayS
 	dayContract.hasSchedule = daySchedule.hasSchedule;
 	dayContract.openTime = daySchedule.openTime?.toJSON();
 	dayContract.closeTime = daySchedule.closeTime?.toJSON();
+	dayContract.breaks = daySchedule.breaks?.map(e => mapBreaksToResponse(e));
 
 	return dayContract;
+};
+
+export const mapBreaksToResponse = (dayBreak: WeekDayBreak): WeekDayBreakContract => {
+	const breakContract = new WeekDayBreakContract();
+	breakContract.startTime = dayBreak.startTime.toJSON();
+	breakContract.endTime = dayBreak.endTime.toJSON();
+
+	return breakContract;
 };
