@@ -19,4 +19,7 @@ export class ServicesService {
 	public async getServices(): Promise<Service[]> {
 		return await this.servicesRepository.getAll();
 	}
+	public async getService(id: number): Promise<Service> {
+		return await this.servicesRepository.getService(id);
+	}
 }
