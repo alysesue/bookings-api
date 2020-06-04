@@ -29,4 +29,11 @@ export class ServicesController extends Controller {
 		const services = await this.servicesService.getServices();
 		return services.map(ServicesController.mapToServiceResponse);
 	}
+
+	@Get("{serviceId}")
+	@SuccessResponse(200, "Ok")
+	public async getService(serviceId: number): Promise<ServiceResponse> {
+		const service = await this.servicesService.getService(serviceId);
+		return ServicesController.mapToServiceResponse(service);
+	}
 }

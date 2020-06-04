@@ -6,6 +6,10 @@ import { RepositoryBase } from '../core/repository';
 @Singleton
 export class WeekDayBreakRepository extends RepositoryBase<WeekDayBreak> {
 
+	constructor() {
+		super(WeekDayBreak);
+	}
+
 	public async getBreaksForSchedules(scheduleIds: number[]): Promise<WeekDayBreak[]> {
 		return (await this.getRepository()).find({
 			where: {

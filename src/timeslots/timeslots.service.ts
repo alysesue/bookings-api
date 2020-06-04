@@ -72,7 +72,7 @@ export class TimeslotsService {
 		const calendars = await this.calendarsRepository.getCalendarsWithTemplates();
 		const bookingsPerCalendarId = await this.getAcceptedBookingsPerCalendarId(minStartTime, maxEndTime);
 
-		for (const calendar of calendars.filter(c => c.schedule !== null)) {
+		for (const calendar of calendars.filter(c => !!c.schedule)) {
 			const generator = calendar.schedule.generateValidTimeslots({
 				startDatetime: minStartTime,
 				endDatetime: maxEndTime

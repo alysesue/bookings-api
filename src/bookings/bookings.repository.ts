@@ -7,6 +7,10 @@ import { RepositoryBase } from "../core/repository";
 
 @Singleton
 export class BookingsRepository extends RepositoryBase<Booking> {
+	constructor() {
+		super(Booking);
+	}
+
 	public async getBookings(): Promise<Booking[]> {
 		return (await this.getRepository()).find();
 	}
@@ -35,6 +39,6 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 			findConditions['_status'] = searchRequest.status;
 		}
 
-		return repository.find({where: [findConditions]});
+		return repository.find({ where: [findConditions] });
 	}
 }

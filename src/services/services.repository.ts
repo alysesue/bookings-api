@@ -20,4 +20,7 @@ export class ServicesRepository extends RepositoryBase<Service> {
 	public async findOne(options: any) {
 		return (await this.getRepository()).findOne(options);
 	}
+	public async getService(id: number): Promise<Service> {
+		return (await this.getRepository()).findOne(id);
+	}
 }

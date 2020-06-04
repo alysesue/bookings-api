@@ -10,6 +10,10 @@ export class SchedulesRepository extends RepositoryBase<Schedule> {
 	@Inject
 	private weekDayBreakRepo: WeekDayBreakRepository;
 
+	constructor() {
+		super(Schedule);
+	}
+
 	public async getScheduleById(id: number): Promise<Schedule> {
 		const schedule = await (await this.getRepository()).findOne({
 			where: { id },

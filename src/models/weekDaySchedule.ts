@@ -119,10 +119,10 @@ export class WeekDaySchedule {
 
 		if (relativeStartDatetime < startDatetime) {
 			const minutes = DateHelper.DiffInMinutes(startDatetime, relativeStartDatetime);
-			const blocksInDiff = Math.floor(minutes / slotDuration);
+			const blocksInDiff = Math.ceil(minutes / slotDuration);
 
 			// finds the first block's start time that is after startDatetime, also respecting slot duration
-			relativeStartDatetime = DateHelper.addMinutes(relativeStartDatetime, (1 + blocksInDiff) * slotDuration);
+			relativeStartDatetime = DateHelper.addMinutes(relativeStartDatetime, blocksInDiff * slotDuration);
 		}
 
 		return relativeStartDatetime;

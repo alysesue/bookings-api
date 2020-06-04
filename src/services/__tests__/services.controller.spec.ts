@@ -10,7 +10,7 @@ describe('Services controller tests', () => {
 	});
 
 	it('should save a new service', async () => {
-		ServicesServiceMock.createService.mockReturnValue({name: 'John'})
+		ServicesServiceMock.createService.mockReturnValue({ name: 'John' })
 
 		const controller = Container.get(ServicesController);
 		const request = new ServiceRequest();
@@ -20,16 +20,23 @@ describe('Services controller tests', () => {
 	});
 
 	it('should get all services', async () => {
-		ServicesServiceMock.getServices.mockReturnValue([{name: 'John'}, {name: 'Mary'}]);
+		ServicesServiceMock.getServices.mockReturnValue([{ name: 'John' }, { name: 'Mary' }]);
 
 		const response = await Container.get(ServicesController).getServices();
 		expect(response).toHaveLength(2)
+	});
+
+	it('should get a service', async () => {
+		ServicesServiceMock.getService.mockReturnValue({ name: 'John' });
+		const response = await Container.get(ServicesController).getService(1);
+		expect(response.name).toEqual("John");
 	});
 });
 
 const ServicesServiceMock = {
 	createService: jest.fn(),
-	getServices: jest.fn()
+	getServices: jest.fn(),
+	getService: jest.fn()
 }
 
 class ServicesServiceMockClass extends ServicesService {
@@ -39,5 +46,8 @@ class ServicesServiceMockClass extends ServicesService {
 
 	async getServices(): Promise<Service[]> {
 		return ServicesServiceMock.getServices();
+	}
+	async getService(serviceId: number): Promise<Service> {
+		return ServicesServiceMock.getService(serviceId);
 	}
 }
