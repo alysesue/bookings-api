@@ -1,16 +1,17 @@
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
 import { Booking, Calendar, Schedule, Service, ServiceProvider, WeekDayBreak, WeekDaySchedule } from "../models";
+import { config } from '../config/app-config';
 
 export const connectionOptions: PostgresConnectionOptions = {
-	database: process.env.DB_DATABASE,
+	database: config.database.instance,
 	entities: [
 		Booking, Calendar, Service, Schedule, ServiceProvider, WeekDayBreak, WeekDaySchedule
 	],
-	host: process.env.DB_HOST,
 	logging: ["schema", "migration"],
-	password: process.env.DB_PASSWORD,
-	port: +process.env.DB_PORT,
+	host: config.database.host,
+	port: +config.database.port,
+	username: config.database.username,
+	password: config.database.password,
 	synchronize: false,
-	type: 'postgres',
-	username: process.env.DB_USERNAME
+	type: 'postgres'
 };
