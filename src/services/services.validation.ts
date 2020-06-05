@@ -12,13 +12,17 @@ export class ServicesValidation {
 
 	public validate(serviceId: number): Promise<any> {
 		return new Promise(async (resolve, reject) => {
-			const service = await this.servicesService.getService(serviceId);
+			try {
+				const service = await this.servicesService.getService(serviceId);
 
-			if (!service) {
-				reject(new Error(`${serviceId} is not a valid service`));
+				if (!service) {
+					reject(new Error(`${serviceId} is not a valid service`));
+				}
+				Container.bindName('config').to({service});
+				resolve();
+			} catch (error) {
+				reject(error);
 			}
-			Container.bindName('config').to({service});
-			resolve();
 		});
 
 	}
