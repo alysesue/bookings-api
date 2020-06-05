@@ -16,4 +16,7 @@ export class ServicesRepository extends RepositoryBase<Service> {
 	public async getAll(): Promise<Service[]> {
 		return (await this.getRepository()).find();
 	}
+	public async getService(id: number): Promise<Service> {
+		return (await this.getRepository()).findOne(id);
+	}
 }
