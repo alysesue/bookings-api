@@ -22,6 +22,12 @@ services:
       - bookingsg-api-dist:/service/dist
     depends_on:
       - db
+    environment:
+      BOOKINGSG_DB_HOST: gt_postgres
+      BOOKINGSG_DB_PORT: 5432
+      BOOKINGSG_DB_INSTANCE: govtech
+      BOOKINGSG_DB_USERNAME: "gtbooking"
+      DB_PASSWORD_BOOKINGSG_API_APP: "D8L6xJspQbvaUwukQLqd"
   db:
     image: "postgres:12"
     container_name: "gt_postgres"
