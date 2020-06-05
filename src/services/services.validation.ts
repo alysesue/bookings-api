@@ -10,9 +10,9 @@ export class ServicesValidation {
 	@InjectValue('config.serviceName')
 	private serviceName: string;
 
-	public validate(serviceId: string): Promise<any> {
+	public validate(serviceId: number): Promise<any> {
 		return new Promise(async (resolve, reject) => {
-			const service = await this.servicesService.getByName(serviceId);
+			const service = await this.servicesService.getService(serviceId);
 
 			if (!service) {
 				reject(new Error(`${serviceId} is not a valid service`));

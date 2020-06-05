@@ -20,9 +20,6 @@ export class ServicesService {
 		return await this.servicesRepository.getAll();
 	}
 
-	public async getByName(service: string): Promise<Service> {
-		return await this.servicesRepository.findOne({_name: service});
-	}
 	public async getService(id: number): Promise<Service> {
 		return await this.servicesRepository.getService(id);
 	}

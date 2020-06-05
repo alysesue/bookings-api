@@ -8,7 +8,7 @@ export const koaAuthentication = (
 	scopes?: string[]
 ): Promise<any> => {
 	if (securityName === 'service') {
-		const serviceId = request.headers["x-api-service"];
+		const serviceId: number = request.headers["x-api-service"];
 		return new Promise((resolve, reject) => {
 			Container
 				.get(ServicesValidation)
