@@ -43,12 +43,10 @@ export async function startServer(): Promise<Server> {
 	LoggerV2.setServiceName(config.name);
 
 	// Setup server
-	const router: KoaRouter = new KoaRouter();
+	const router: KoaRouter = new KoaRouter({prefix: '/api'});
 	RegisterRoutes(router);
-	const serviceAwareRouter = new KoaRouter({prefix: '/api'})
-		.use(router.routes(), router.allowedMethods());
 	// @ts-ignore
-	const HandledRoutes = new KoaResponseHandler(serviceAwareRouter.routes());
+	const HandledRoutes = new KoaResponseHandler(router.routes());
 	const proxyHandler = Container.get(CalDavProxyHandler);
 
 
@@ -77,7 +75,7 @@ export async function startServer(): Promise<Server> {
 		.use(new KoaMultipartCleaner().build())
 		.use(HealthCheckMiddleware.build())
 		.use(HandledRoutes.build())
-		.use(serviceAwareRouter.allowedMethods());
+		.use(router.allowedMethods());
 
 	const dbConnection = Container.get(DbConnection);
 

@@ -1,19 +1,20 @@
-import { InjectValue, Singleton } from "typescript-ioc";
-import { Service, ServiceProvider } from "../models";
+import { Inject, InRequestScope } from "typescript-ioc";
+import { ServiceProvider } from "../models";
 import { RepositoryBase } from "../core/repository";
+import { ServiceConfiguration } from "../common/serviceConfiguration";
 
-@Singleton
+@InRequestScope
 export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> {
 
-	@InjectValue("config.service")
-	private service: Service;
+	@Inject
+	private serviceConfiguration: ServiceConfiguration;
 
 	constructor() {
 		super(ServiceProvider);
 	}
 
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
-		return (await this.getRepository()).find({where: {_serviceId: this.service.id}});
+		return (await this.getRepository()).find({where: {_serviceId: this.serviceConfiguration.getServiceId()}});
 	}
 
 	public async getServiceProvider(id: string): Promise<ServiceProvider> {

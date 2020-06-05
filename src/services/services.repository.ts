@@ -1,8 +1,8 @@
-import { Singleton } from "typescript-ioc";
+import { InRequestScope } from "typescript-ioc";
 import { Service } from "../models";
 import { RepositoryBase } from "../core/repository";
 
-@Singleton
+@InRequestScope
 export class ServicesRepository extends RepositoryBase<Service> {
 
 	constructor() {

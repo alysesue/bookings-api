@@ -1,10 +1,10 @@
-import { Inject, Singleton } from 'typescript-ioc';
-import { Calendar, Schedule } from '../models';
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { Calendar } from '../models';
 import { RepositoryBase } from "../core/repository";
 import { SchedulesRepository } from '../schedules/schedules.repository';
 import { groupByKeyLastValue } from '../tools/collections';
 
-@Singleton
+@InRequestScope
 export class CalendarsRepository extends RepositoryBase<Calendar> {
 	@Inject
 	private scheduleRepository: SchedulesRepository;

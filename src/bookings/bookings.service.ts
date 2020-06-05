@@ -1,4 +1,4 @@
-import { Inject, Singleton } from "typescript-ioc";
+import { Inject, InRequestScope } from "typescript-ioc";
 
 import { Booking, BookingStatus } from "../models";
 
@@ -8,7 +8,7 @@ import { isEmptyArray } from "../tools/arrays";
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
 
-@Singleton
+@InRequestScope
 export class BookingsService {
 	private static SessionDurationInMinutes = 60;
 
