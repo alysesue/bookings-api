@@ -4,7 +4,7 @@
     "entryFile": "./src/index.ts",
     "specVersion": 3,
     "yaml": true,
-    "host": "localhost:3999/api/coaches",
+    "host": "localhost:3999/api",
     "schemes": [
       "http",
       "https"
@@ -14,6 +14,7 @@
     "entryFile": "./src/controllers.ts",
     "routesDir": "./src",
     "middleware": "koa",
-    "middlewareTemplate": "./node_modules/mol-lib-config/shared-config/tsoa-koa.hbs"
+    "middlewareTemplate": "./node_modules/mol-lib-config/shared-config/tsoa-koa.hbs",
+    "authenticationModule": "./src/authentication.ts"
   }
 }

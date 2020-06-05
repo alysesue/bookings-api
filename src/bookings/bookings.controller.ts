@@ -1,7 +1,7 @@
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 import { Inject } from "typescript-ioc";
 
-import { Body, Controller, Get, Path, Post, Query, Route, SuccessResponse, Tags } from "tsoa";
+import { Body, Controller, Get, Header, Path, Post, Query, Route, Security, SuccessResponse, Tags } from "tsoa";
 import { Booking, Calendar } from "../models";
 import {
 	BookingAcceptRequest,
@@ -14,7 +14,7 @@ import { BookingsService } from "./bookings.service";
 import { ErrorResponse } from "../apicontract";
 import { TimeslotsService } from "../timeslots/timeslots.service";
 
-@Route("**/v1/bookings")
+@Route("v1/bookings")
 @Tags('Bookings')
 export class BookingsController extends Controller {
 	@Inject
@@ -45,14 +45,16 @@ export class BookingsController extends Controller {
 
 	@Get()
 	@SuccessResponse(200, 'Ok')
-	public async getBookings(): Promise<BookingResponse[]> {
+	@Security("service")
+	public async getBookings(@Header("x-api-service") _?): Promise<BookingResponse[]> {
 		const bookings = await this.bookingsService.getBookings();
 		return BookingsController.mapDataModels(bookings);
 	}
 
 	@Post()
 	@SuccessResponse(201, 'Created')
-	public async postBooking(@Body() bookingRequest: BookingRequest): Promise<any> {
+	@Security("service")
+	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") _?): Promise<any> {
 		try {
 			const booking = await this.bookingsService.save(bookingRequest);
 			return BookingsController.mapDataModel(booking);
@@ -77,7 +79,11 @@ export class BookingsController extends Controller {
 
 	@Get('search')
 	@SuccessResponse(200, "Ok")
-	public async searchBookings(@Query() status: number, @Query() from: Date, @Query() to: Date): Promise<BookingResponse[]> {
+	@Security("service")
+	public async searchBookings(@Query() status: number,
+								@Query() from: Date,
+								@Query() to: Date,
+								@Header("x-api-service") _?): Promise<BookingResponse[]> {
 		const searchQuery = new BookingSearchRequest(from, to, status);
 		const bookings = await this.bookingsService.searchBookings(searchQuery);
 		return BookingsController.mapDataModels(bookings);
@@ -99,7 +105,8 @@ export class BookingsController extends Controller {
 
 	@Get('{bookingId}/providers')
 	@SuccessResponse(200, 'Ok')
-	public async getBookingProviders(@Path() bookingId: string): Promise<any> {
+	@Security("service")
+	public async getBookingProviders(@Path() bookingId: string, @Header("x-api-service") _?): Promise<any> {
 		let booking: Booking;
 		try {
 			booking = await this.bookingsService.getBooking(bookingId);

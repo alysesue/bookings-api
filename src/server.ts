@@ -16,8 +16,6 @@ import { DbConnection } from "./core/db.connection";
 import { Container } from "typescript-ioc";
 import { CalDavProxyHandler } from "./infrastructure/caldavproxy.handler";
 import * as cors from '@koa/cors';
-import { useServiceValidation } from "./infrastructure/middleware/useServiceValidator";
-import { useService } from "./infrastructure/middleware/useService";
 import * as fs from "fs";
 import * as swagger from "swagger2";
 import { ui } from "swagger2-koa";
@@ -48,8 +46,6 @@ export async function startServer(): Promise<Server> {
 	const router: KoaRouter = new KoaRouter();
 	RegisterRoutes(router);
 	const serviceAwareRouter = new KoaRouter({prefix: '/api'})
-		.use('/:service/**', useService)
-		.use('/**', useServiceValidation)
 		.use(router.routes(), router.allowedMethods());
 	// @ts-ignore
 	const HandledRoutes = new KoaResponseHandler(serviceAwareRouter.routes());
