@@ -6,7 +6,7 @@ import { Service } from "../models";
 import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
 import { ScheduleResponse } from '../schedules/schedules.apicontract';
 
-@Route('**/v1/services')
+@Route('v1/services')
 @Tags('Services')
 export class ServicesController extends Controller {
 
@@ -44,7 +44,7 @@ export class ServicesController extends Controller {
 	public async getServiceSchedule(@Path() id: number): Promise<ScheduleResponse> {
 		return mapScheduleToResponse(await this.servicesService.getServiceSchedule(id));
 	}
-	
+
 	@Get("{serviceId}")
 	@SuccessResponse(200, "Ok")
 	public async getService(serviceId: number): Promise<ServiceResponse> {

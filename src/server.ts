@@ -44,7 +44,7 @@ export async function startServer(): Promise<Server> {
 	LoggerV2.setServiceName(config.name);
 
 	// Setup server
-	const router: KoaRouter = new KoaRouter({prefix: '/bookingsg-api/api'});
+	const router: KoaRouter = new KoaRouter({ prefix: '/bookingsg-api/api' });
 	RegisterRoutes(router);
 	// @ts-ignore
 	const HandledRoutes = new KoaResponseHandler(router.routes());
