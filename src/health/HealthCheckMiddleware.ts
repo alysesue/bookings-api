@@ -6,6 +6,6 @@ const checkMyMolService = async () => {
 };
 
 // STUB
-export const HealthCheckMiddleware = new KoaHealth("health", {
+export const HealthCheckMiddleware = new KoaHealth("bookingsg-api/health", {
 	mol_service: checkMyMolService,
 });

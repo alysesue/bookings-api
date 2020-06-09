@@ -4,16 +4,16 @@
 		"entryFile": "./src/index.ts",
 		"specVersion": 3,
 		"yaml": true,
-		"host": "localhost:3999/api/default",
+		"host": "localhost:3999/bookingsg-api/api/default",
 		"schemes": [
 			"http",
 			"https"
 		]
 	},
 	"routes": {
-      "entryFile": "./src/controllers.ts",
-      "routesDir": "./src",
-      "middleware": "koa",
-      "middlewareTemplate": "./node_modules/mol-lib-config/shared-config/tsoa-koa.hbs"
-    }
+		"entryFile": "./src/controllers.ts",
+		"routesDir": "./src",
+		"middleware": "koa",
+		"middlewareTemplate": "./node_modules/mol-lib-config/shared-config/tsoa-koa.hbs"
+	}
 }

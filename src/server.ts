@@ -36,7 +36,7 @@ const useSwagger = () => {
 	logger.info(`Swagger document location: ${swaggerDoc} ${exists ? '(found)' : '(not found)'}`);
 	if (exists) {
 		const document = swagger.loadDocumentSync(swaggerDoc);
-		return ui(document as swagger.Document, "/swagger");
+		return ui(document as swagger.Document, "/bookingsg-api/swagger");
 	}
 
 	async function emptyMiddleware(_ctx, next) {
@@ -53,7 +53,7 @@ export async function startServer(): Promise<Server> {
 	// Setup server
 	const router: KoaRouter = new KoaRouter();
 	RegisterRoutes(router);
-	const serviceAwareRouter = new KoaRouter({ prefix: '/api' })
+	const serviceAwareRouter = new KoaRouter({ prefix: '/bookingsg-api/api' })
 		.use('/:service/**', setService)
 		.use(router.routes(), router.allowedMethods());
 	// @ts-ignore
