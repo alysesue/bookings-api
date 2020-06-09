@@ -19,9 +19,7 @@
 import * as KoaRouter from 'koa-router';
 import * as _ from 'lodash';
 
-{{#if useTypescriptIoc}}
-    import { Container } from 'typescript-ioc';
-{{/if}}
+import { Container } from 'typescript-ioc';
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
@@ -95,11 +93,7 @@ export function RegisterRoutes(router: KoaRouter) {
             controller.setStatus(undefined);
             }
         {{else}}
-            {{#if useTypescriptIoc}}
-                const controller = Container.get({{../name}});
-            {{else}}
-                const controller = new {{../name}}();
-            {{/if}}
+            const controller = Container.get({{../name}});
         {{/if}}
 
         // =============================================================================
