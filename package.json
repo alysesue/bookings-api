@@ -20,8 +20,8 @@
 		"lint-staged": "lint-staged",
 		"watcher-install": "npm install",
 		"watcher-build": "npm run build && npm run watcher-env",
-		"watcher-run": "(cd ./dist; npm run watcher-env; forever --minUptime 1000ms --spinSleepTime 3000ms -c \"node --trace-warnings --inspect=0.0.0.0:6000\" index.js)",
-		"watcher-env": "cp ./.env ./dist/",
+		"watcher-env": "cp ./params/secrets/local.env ./dist/.env",
+		"watcher-run": "(npm run watcher-env; cd ./dist; forever --minUptime 1000ms --spinSleepTime 3000ms -c \"node --trace-warnings --inspect=0.0.0.0:6000\" index.js)",
 		"params:new": "npm run fixLF && ./node_modules/mol-bamboo-scripts/scripts/generator/service-params-new-env.sh",
 		"fixLF": "node ./src/fixLF.js"
 	},
@@ -63,23 +63,23 @@
 		"watcher-run": {
 			"patterns": [
 				"dist",
-				".env"
+				"params"
 			],
 			"ignore": [
 				"package.json",
 				"package-lock.json"
 			],
 			"extensions": "*",
-			"delay": 1000,
+			"delay": 500,
 			"runOnChangeOnly": true,
 			"verbose": true
 		},
 		"watcher-env": {
 			"patterns": [
-				".env"
+				"params"
 			],
 			"extensions": "*",
-			"delay": 1000,
+			"delay": 100,
 			"runOnChangeOnly": false,
 			"verbose": true
 		}
@@ -93,10 +93,11 @@
 		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:^4.6.5",
 		"mol-lib-common": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-common.git#semver:^3.10.5",
 		"moment": "^2.25.3",
-		"pg": "^8.0.3",
+		"pg": "^8.2.1",
+		"reflect-metadata": "^0.1.13",
 		"swagger2": "^2.0.0",
 		"swagger2-koa": "^2.0.0",
-		"typeorm": "^0.2.24",
+		"typeorm": "^0.2.25",
 		"typescript-ioc": "^3.2.1"
 	},
 	"devDependencies": {
@@ -106,7 +107,7 @@
 		"@types/k6": "^0.25.1",
 		"@types/lodash": "^4.14.150",
 		"@types/minimist": "^1.2.0",
-		"@types/node": "^13.13.4",
+		"@types/node": "^13.13.10",
 		"@types/webpack": "^4.41.12",
 		"@types/webpack-node-externals": "^1.7.1",
 		"chalk": "^4.0.0",
@@ -125,7 +126,6 @@
 		"minimist": "^1.2.5",
 		"mol-bamboo-scripts": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-bamboo-scripts.git#semver:^1.4.0",
 		"mol-lib-config": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-config.git#semver:^4.0.2",
-		"reflect-metadata": "^0.1.13",
 		"ts-jest": "^25.5.1",
 		"ts-loader": "^7.0.2",
 		"ts-node": "^8.9.1",

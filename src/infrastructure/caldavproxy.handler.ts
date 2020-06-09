@@ -52,16 +52,16 @@ export class CalDavProxyHandler {
 			this._initialized = true;
 		}
 
-		if (!ctx.path.match(/^\/caldav/)) {
+		if (!ctx.path.match(/^\/bookingsg-api\/caldav/)) {
 			return next();
 		}
 
-		const calidUser = ctx.path.match(/^\/caldav\/(.*)\/user/)?.[1];
+		const calidUser = ctx.path.match(/^\/bookingsg-api\/caldav\/(.*)\/user/)?.[1];
 		if (calidUser) {
 			return await this.proxyCaldavUser(calidUser, ctx, next);
 		}
 
-		const calidEvents = ctx.path.match(/^\/caldav\/(.*)\/events/)?.[1];
+		const calidEvents = ctx.path.match(/^\/bookingsg-api\/caldav\/(.*)\/events/)?.[1];
 		if (calidEvents) {
 			return await this.proxyCaldavEvents(calidEvents, ctx, next);
 		}

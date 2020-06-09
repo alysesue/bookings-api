@@ -4,7 +4,7 @@ services:
     build:
       context: ./
       dockerfile: ./service.node12.watch.dockerfile
-    container_name: 'bookingsg-api'
+    container_name: "bookingsg-api"
     restart: always
     logging:
       driver: "json-file"
@@ -18,17 +18,10 @@ services:
       - ./src:/service/src:delegated
       - ./package.json:/service/package.json:delegated
       - ./package-lock.json:/service/package-lock.json:delegated
-      - ./.env:/service/.env:delegated
+      - ./params:/service/params:delegated
       - bookingsg-api-dist:/service/dist
     depends_on:
       - db
-    environment:
-      PORT: 3000
-      DB_HOST: gt_postgres
-      DB_PORT: 5432
-      DB_DATABASE: govtech
-      DB_USERNAME: "gtbooking"
-      DB_PASSWORD: "D8L6xJspQbvaUwukQLqd"
   db:
     image: "postgres:12"
     container_name: "gt_postgres"

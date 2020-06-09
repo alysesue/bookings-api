@@ -46,6 +46,7 @@ export SERVICE_NAME="bookingsg-api"
 # Sync env file from AWS param store
 echo "Generating service env"
 ${PROJECT_DIR}/node_modules/mol-lib-config/shared-scripts/aws/aws-sm-sync-env.sh ${ENV}
+sleep 1
 
 # Start node server
 echo "Starting server up"

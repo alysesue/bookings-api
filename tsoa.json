@@ -4,7 +4,7 @@
     "entryFile": "./src/index.ts",
     "specVersion": 3,
     "yaml": true,
-    "host": "localhost:3999/api",
+    "host": "localhost:3999/bookingsg-api/api",
     "schemes": [
       "http",
       "https"
