@@ -9,7 +9,7 @@ import { KoaLoggerContext } from "mol-lib-common/network/router/KoaLoggerContext
 import { KoaMultipartCleaner } from "mol-lib-common/network/router/KoaMultipartCleaner";
 import { KoaResponseHandler } from "mol-lib-common/network/router/KoaResponseHandler";
 import "reflect-metadata";
-import { config } from "./config/app-config";
+import { getConfig } from "./config/app-config";
 import { HealthCheckMiddleware } from "./health/HealthCheckMiddleware";
 import { RegisterRoutes } from "./routes";
 import * as swagger from "swagger2";
@@ -47,6 +47,7 @@ const useSwagger = () => {
 };
 
 export async function startServer(): Promise<Server> {
+	const config = getConfig();
 	// Setup service
 	LoggerV2.setServiceName(config.name);
 

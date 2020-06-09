@@ -36,7 +36,7 @@ describe("Services repository", () => {
 		const repository = Container.get(ServicesRepository);
 
 		await repository.save(service);
-		expect(MockDBConnection.save.mock.calls[0][0]).toStrictEqual(service)
+		expect(MockDBConnection.save.mock.calls[0][0]).toStrictEqual(service);
 	});
 
 });

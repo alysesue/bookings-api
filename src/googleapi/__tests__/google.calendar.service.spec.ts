@@ -31,11 +31,11 @@ describe("Google calendar wrapper tests", () => {
 		const startDate = new Date();
 		const endDate = startDate;
 
-		const calendars = [{id: "1"}];
+		const calendars = [{ id: "1" }];
 
 		const query = {
 			data: {
-				calendars: {"1": {busy: []}},
+				calendars: { "1": { busy: [] } },
 			},
 		};
 
@@ -67,7 +67,7 @@ describe("Google calendar wrapper tests", () => {
 		};
 
 		const result = await Container.get(GoogleCalendarService)
-			.addCalendarUser("uuid", {role: "reader", email: "example@email.com"});
+			.addCalendarUser("uuid", { role: "reader", email: "example@email.com" });
 
 		expect(result);
 	});

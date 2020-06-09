@@ -33,7 +33,7 @@ function buildSampleKoaContext(path: string): Context {
 	return {
 		path,
 		header: {},
-		request: {host: 'localhost', protocol: 'http'}
+		request: { host: 'localhost', protocol: 'http' }
 	} as Context;
 }
 
@@ -46,7 +46,7 @@ describe('Caldav proxy tests', () => {
 		const koaProxyMiddleware = KoaProxy();
 
 		const nextMiddleware = jest.fn().mockImplementation(() => Promise.resolve());
-		const context = buildSampleKoaContext('/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/user');
+		const context = buildSampleKoaContext('/bookingsg-api/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/user');
 
 		await middleware(context, nextMiddleware);
 
@@ -66,7 +66,7 @@ describe('Caldav proxy tests', () => {
 		const koaProxyMiddleware = KoaProxy();
 
 		const nextMiddleware = jest.fn().mockImplementation(() => Promise.resolve());
-		const context = buildSampleKoaContext('/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/events');
+		const context = buildSampleKoaContext('/bookingsg-api/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/events');
 
 		await middleware(context, nextMiddleware);
 
@@ -105,7 +105,7 @@ describe('Caldav proxy tests', () => {
 		const koaProxyMiddleware = KoaProxy();
 
 		const nextMiddleware = jest.fn().mockImplementation(() => Promise.resolve());
-		const context = buildSampleKoaContext('/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/wrongurl');
+		const context = buildSampleKoaContext('/bookingsg-api/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/wrongurl');
 
 		await middleware(context, nextMiddleware);
 
@@ -113,6 +113,6 @@ describe('Caldav proxy tests', () => {
 		expect(koaProxyMiddleware).not.toBeCalled();
 		expect(nextMiddleware).toBeCalled();
 
-		expect(context.path).toBe('/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/wrongurl');
+		expect(context.path).toBe('/bookingsg-api/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/wrongurl');
 	});
 });

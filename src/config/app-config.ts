@@ -3,7 +3,7 @@ import { ConfigUtils } from "mol-lib-common/utils/config/ConfigUtils";
 const packageJSON = require("../../package.json");
 require("dotenv").config();
 
-export const config = {
+export const getConfig = () => ({
 	name: packageJSON.name,
 	version: packageJSON.version,
 	port: ConfigUtils.getIntValueFromEnv("PORT", 3000),
@@ -16,4 +16,4 @@ export const config = {
 		username: ConfigUtils.getValueFromEnv("BOOKINGSG_DB_USERNAME"),
 		password: ConfigUtils.getValueFromEnv("DB_PASSWORD_BOOKINGSG_API_APP"),
 	}
-};
+});
