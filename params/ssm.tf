@@ -63,3 +63,26 @@ resource "aws_ssm_parameter" "bookingsg-svc_acc" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "bookingsg-db_instance" {
+  name  = "${local.path-prefix}/BOOKINGSG_DB_INSTANCE"
+  type  = "String"
+  value = "${data.external.static.result.BOOKINGSG_DB_INSTANCE}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "bookingsg-db_username" {
+  name  = "${local.path-prefix}/BOOKINGSG_DB_USERNAME"
+  type  = "String"
+  value = "${data.external.static.result.BOOKINGSG_DB_USERNAME}"
+
+  overwrite = true
+}
+resource "aws_ssm_parameter" "db-password_bookingsg_api_app" {
+  name   = "${local.path-prefix}/DB_PASSWORD_BOOKINGSG_API_APP"
+  type   = "SecureString"
+  key_id = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
+  value  = "${data.external.static.result.DB_PASSWORD_BOOKINGSG_API_APP}"
+
+  overwrite = true
+}

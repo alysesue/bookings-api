@@ -1,6 +1,7 @@
-import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Calendar } from "./calendar";
 import { ServiceProviderStatus } from "./serviceProviderStatus";
+import { Service } from "./service";
 
 @Entity()
 export class ServiceProvider extends BaseEntity {
@@ -19,13 +20,12 @@ export class ServiceProvider extends BaseEntity {
 		this._status = value;
 	}
 
-	constructor(name: string, calendar: Calendar) {
-		super();
-		this._name = name;
-		this._createdAt = new Date();
-		this._status = ServiceProviderStatus.Valid;
-		this._calendar = calendar;
-	}
+	@Column({nullable: false})
+	private _serviceId: number;
+
+	@ManyToOne(type => Service)
+	@JoinColumn({name: '_serviceId'})
+	private _service: Service;
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
@@ -34,8 +34,17 @@ export class ServiceProvider extends BaseEntity {
 		return this._id;
 	}
 
-	@Column({ type: "varchar", length: 300 })
+	@Column({type: "varchar", length: 300})
 	private _name: string;
+
+	constructor(service: Service, name: string, calendar: Calendar) {
+		super();
+		this._service = service;
+		this._name = name;
+		this._createdAt = new Date();
+		this._status = ServiceProviderStatus.Valid;
+		this._calendar = calendar;
+	}
 
 	public get name(): string {
 		return this._name;
@@ -57,4 +66,7 @@ export class ServiceProvider extends BaseEntity {
 		this._calendar = calendar;
 	}
 
+	public get service(): Service {
+		return this._service;
+	}
 }

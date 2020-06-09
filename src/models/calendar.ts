@@ -30,10 +30,10 @@ export class Calendar extends BaseEntity {
 	}
 
 	public generateCaldavUserUrl(protocol: string, host: string): string {
-		return `${protocol}://${host}/caldav/${encodeURIComponent(this.googleCalendarId)}/user`;
+		return `${protocol}://${host}/bookingsg-api/caldav/${encodeURIComponent(this.googleCalendarId)}/user`;
 	}
 
 	public generateCaldavEventsUrl(protocol: string, host: string): string {
-		return `${protocol}://${host}/caldav/${encodeURIComponent(this.googleCalendarId)}/events`;
+		return `${protocol}://${host}/bookingsg-api/caldav/${encodeURIComponent(this.googleCalendarId)}/events`;
 	}
 }

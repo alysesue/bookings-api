@@ -1,7 +1,7 @@
 import { ServiceProvidersRepository } from "../serviceProviders.repository";
 import { DbConnection } from "../../core/db.connection";
 import { Container } from "typescript-ioc";
-import { ServiceProvider } from "../../models";
+import { Service, ServiceProvider } from "../../models";
 
 describe("Service Provider repository", () => {
 	beforeEach(() => {
@@ -10,6 +10,7 @@ describe("Service Provider repository", () => {
 
 	it("should get list of SP", async () => {
 		Container.bind(DbConnection).to(MockDBConnection);
+		Container.bindName('config').to({service: new Service()})
 		MockDBConnection.find.mockImplementation(() => Promise.resolve([]));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
@@ -28,14 +29,14 @@ describe("Service Provider repository", () => {
 	});
 
 	it("should save multiple SPs", async () => {
-		const spInput: ServiceProvider = new ServiceProvider("abc", null);
+		const spInput: ServiceProvider = new ServiceProvider(null, "abc", null);
 
 		Container.bind(DbConnection).to(MockDBConnection);
 		MockDBConnection.save.mockImplementation(() => Promise.resolve(spInput));
 		const spRepository = Container.get(ServiceProvidersRepository);
 
 		const result = await spRepository.save(spInput);
-		expect(MockDBConnection.save.mock.calls[0][0]).toStrictEqual(spInput)
+		expect(MockDBConnection.save.mock.calls[0][0]).toStrictEqual(spInput);
 	});
 
 });

@@ -89,7 +89,8 @@ src/
   something/
     models/
       SomethingDomain.ts
-      SomethingPersistence.ts
+    entities/
+      SomethingEntity.ts
     services/
       SomethingService.ts
       SomethingRepository.ts
@@ -174,9 +175,9 @@ src/
 | Test | Purpose | CI | Network/Deps | Setup | File Pattern | NPM Command |
 | --- | --- | :---: | :---: | :---: | --- | --- |
 | Unit | Testing a function/feature | ✓ | ✗ | ✗ | `<root>/src/**/__tests__/<name>.spec.ts` | test |
-| API Integraton | Testing the service from the API level using [supertest](https://github.com/visionmedia/supertest) | ✓ | ✗ | ✗ | `<root>/src/__tests__/<name>.super.spec.ts` | test |
+| API Integraton | Testing the service on the API level using [supertest](https://github.com/visionmedia/supertest) | ✓ | ✗ | ✗ | `<root>/src/__tests__/<name>.super.spec.ts` | test |
 | External Integration | Testing our integration against external services/dependencies</br>(e.g. DB, agency API endpoints, another microservice) | ✗ | ✓ | ✓ | `<root>/src/**/__tests__/<name>.ext.spec.ts` | test:ext |
-| Benchmark | Testing optimization impacts (or lack thereof) | ✗ | ✓ | ✓ | `<root>/src/**/__tests__/<name>.bench.spec.ts` | test:bench |
+| Benchmark | Testing optimization impact (or lack thereof) | ✗ | ✓ | ✓ | `<root>/src/**/__tests__/<name>.bench.spec.ts` | test:bench |
 | Functional | Testing API/Mobile automation against a full env (e.g. E2E) | ✓ | ✓ | ✓ | `<root>/__tests__/functional/**/<name>.spec.ts` | test:func -- \<env\> |
 | Load | Testing API automation against a full env (e.g. E2E) to ensure that it can handle an expected load using [k6](https://k6.io/blog/comparing-best-open-source-load-testing-tools) | ✓ | ✓ | ✓ | `<root>/__tests__/load/**/<name>.spec.ts` | test:load -- \<env\> |
 

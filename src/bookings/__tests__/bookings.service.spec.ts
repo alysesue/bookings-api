@@ -16,7 +16,7 @@ describe("Bookings.Service", () => {
 
 	it("should get all bookings", async () => {
 		BookingRepositoryMock.getBookingsMock = [new Booking(new Date(), 60)];
-		const result = await new BookingsService().getBookings();
+		const result = await Container.get(BookingsService).getBookings();
 
 		expect(result.length).toBe(1);
 	});

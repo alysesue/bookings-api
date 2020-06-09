@@ -44,4 +44,11 @@ export class ServicesController extends Controller {
 	public async getServiceSchedule(@Path() id: number): Promise<ScheduleResponse> {
 		return mapScheduleToResponse(await this.servicesService.getServiceSchedule(id));
 	}
+	
+	@Get("{serviceId}")
+	@SuccessResponse(200, "Ok")
+	public async getService(serviceId: number): Promise<ServiceResponse> {
+		const service = await this.servicesService.getService(serviceId);
+		return ServicesController.mapToServiceResponse(service);
+	}
 }

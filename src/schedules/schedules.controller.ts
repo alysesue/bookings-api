@@ -3,7 +3,7 @@ import { ScheduleRequest, ScheduleResponse } from "./schedules.apicontract";
 import { Inject } from "typescript-ioc";
 import { SchedulesService } from "./schedules.service";
 
-@Route('**/v1/schedules')
+@Route('v1/schedules')
 @Tags('Schedules')
 export class SchedulesController extends Controller {
 	@Inject

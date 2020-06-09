@@ -7,7 +7,7 @@ export class Service extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
-	public get id() {
+	public get id(): number {
 		return this._id;
 	}
 

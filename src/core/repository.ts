@@ -1,9 +1,8 @@
 import { Connection, Repository } from "typeorm";
-import { Inject, Singleton } from "typescript-ioc";
+import { Inject } from "typescript-ioc";
 import { DbConnection } from "./db.connection";
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 
-@Singleton
 export abstract class RepositoryBase<T> {
 
 	@Inject

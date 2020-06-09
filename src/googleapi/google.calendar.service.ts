@@ -1,11 +1,11 @@
-import { Inject, Singleton } from "typescript-ioc";
+import { Inject, InRequestScope } from "typescript-ioc";
 import { Booking } from "../models";
 
 import { CalendarUserModel } from "../calendars/calendars.apicontract";
 import { GoogleApi } from "./google.api";
 import { Constants } from "../models/constants";
 
-@Singleton
+@InRequestScope
 export class GoogleCalendarService {
 	@Inject
 	private googleApi: GoogleApi;

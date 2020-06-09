@@ -1,11 +1,11 @@
 import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
-import { Inject, Singleton } from "typescript-ioc";
+import { Inject, InRequestScope, Scope, Scoped } from "typescript-ioc";
 import { Schedule, Service } from "../models";
 import { ServicesRepository } from "./services.repository";
 import { ServiceRequest, SetScheduleRequest } from "./service.apicontract";
 import { SchedulesService } from '../schedules/schedules.service';
 
-@Singleton
+@InRequestScope
 export class ServicesService {
 
 	@Inject
@@ -61,5 +61,9 @@ export class ServicesService {
 
 	public async getServices(): Promise<Service[]> {
 		return await this.servicesRepository.getAll();
+	}
+
+	public async getService(id: number): Promise<Service> {
+		return await this.servicesRepository.getService(id);
 	}
 }

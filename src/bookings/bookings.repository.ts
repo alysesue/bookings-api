@@ -1,12 +1,16 @@
-import { Singleton } from "typescript-ioc";
+import { InRequestScope } from "typescript-ioc";
 import { Between, FindConditions, InsertResult } from "typeorm";
 import { Booking } from "../models";
 import { BookingSearchRequest } from "./bookings.apicontract";
 import { RepositoryBase } from "../core/repository";
 
 
-@Singleton
+@InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {
+	constructor() {
+		super(Booking);
+	}
+
 	public async getBookings(): Promise<Booking[]> {
 		return (await this.getRepository()).find();
 	}
@@ -35,6 +39,6 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 			findConditions['_status'] = searchRequest.status;
 		}
 
-		return repository.find({where: [findConditions]});
+		return repository.find({ where: [findConditions] });
 	}
 }

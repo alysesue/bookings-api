@@ -1,20 +1,24 @@
-import { Inject, Singleton } from "typescript-ioc";
-import { ServiceProvider } from "../models";
+import { Inject, InRequestScope } from "typescript-ioc";
+import { Service, ServiceProvider } from "../models";
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 
 import { ServiceProvidersRepository } from "./serviceProviders.repository";
 import { ServiceProviderModel } from "./serviceProviders.apicontract";
 import { CalendarsService } from "../calendars/calendars.service";
-import { Calendar } from "../models/calendar";
-import { ServiceProviderStatus } from "../models/serviceProviderStatus";
-import { API_TIMEOUT_PERIOD } from "../const/index";
-@Singleton
+import { API_TIMEOUT_PERIOD } from "../const";
+import { ServiceConfiguration } from "../common/serviceConfiguration";
+
+@InRequestScope
 export class ServiceProvidersService {
+
 	@Inject
 	public serviceProvidersRepository: ServiceProvidersRepository;
 
 	@Inject
 	public calendarsService: CalendarsService;
+
+	@Inject
+	private serviceConfiguration: ServiceConfiguration;
 
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
 		return await this.serviceProvidersRepository.getServiceProviders();
@@ -28,20 +32,30 @@ export class ServiceProvidersService {
 		return sp;
 	}
 
-	public async saveServiceProviders(listRequest: ServiceProviderModel[]) {
-		for (const item of listRequest) {
-			await this.saveSp(item);
-			await this.delay(API_TIMEOUT_PERIOD);
+	private static validateService(service: Service) {
+		if (!service) {
+			throw new Error("No service provided");
 		}
 	}
 
-	public async saveSp(item: ServiceProviderModel) {
-		try {
-			const cal = await this.calendarsService.createCalendar();
-			return await this.serviceProvidersRepository.save(new ServiceProvider(item.name, cal));
+	public async saveServiceProviders(listRequest: ServiceProviderModel[]) {
+		for (let i = 0; i < listRequest.length; i++) {
+			await this.saveSp(listRequest[i], this.serviceConfiguration.service);
+
+			if (i > 0) {
+				await this.delay(API_TIMEOUT_PERIOD);
+			}
 		}
-		catch (e) {
-			logger.error("exception when creating calendar ", e.message);
+	}
+
+	public async saveSp(item: ServiceProviderModel, service: Service) {
+		try {
+			ServiceProvidersService.validateService(service);
+			const cal = await this.calendarsService.createCalendar();
+			return await this.serviceProvidersRepository.save(new ServiceProvider(service, item.name, cal));
+		} catch (e) {
+			logger.error("exception when creating service provider ", e.message);
+			throw e;
 		}
 	}
 

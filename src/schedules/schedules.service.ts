@@ -1,5 +1,5 @@
 import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
-import { Inject, Singleton } from 'typescript-ioc';
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { DeleteResult } from "typeorm";
 import { SchedulesRepository } from "./schedules.repository";
 import { Schedule } from '../models';
@@ -7,7 +7,7 @@ import { ScheduleRequest, ScheduleResponse } from "./schedules.apicontract";
 import { mapToEntity, mapToResponse } from './schedules.mapper';
 import { getErrorResult, isErrorResult } from '../errors';
 
-@Singleton
+@InRequestScope
 export class SchedulesService {
 	@Inject
 	private schedulesRepository: SchedulesRepository;

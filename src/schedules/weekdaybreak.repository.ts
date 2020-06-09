@@ -1,10 +1,14 @@
-import { Singleton } from 'typescript-ioc';
+import { InRequestScope, Scope, Scoped } from 'typescript-ioc';
 import { WeekDayBreak } from '../models';
 import { DeleteResult, In } from "typeorm";
 import { RepositoryBase } from '../core/repository';
 
-@Singleton
+@Scoped(Scope.Request)
 export class WeekDayBreakRepository extends RepositoryBase<WeekDayBreak> {
+
+	constructor() {
+		super(WeekDayBreak);
+	}
 
 	public async getBreaksForSchedules(scheduleIds: number[]): Promise<WeekDayBreak[]> {
 		return (await this.getRepository()).find({

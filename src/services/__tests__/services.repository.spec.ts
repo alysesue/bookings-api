@@ -17,14 +17,14 @@ describe("Services repository", () => {
 		expect(result).toStrictEqual([]);
 	});
 
-	it("should get service by id", async () => {
+	it("should a service", async () => {
 		Container.bind(DbConnection).to(MockDBConnection);
-		MockDBConnection.findOne.mockImplementation(() => Promise.resolve({}));
+		const data = new Service();
+		MockDBConnection.findOne.mockImplementation(() => Promise.resolve(data));
 
 		const repository = Container.get(ServicesRepository);
-		const result = await repository.get(1);
-		expect(result).toBeDefined();
-		expect(MockDBConnection.findOne).toBeCalled();
+		const result = await repository.getService(1);
+		expect(result).toStrictEqual(data);
 	});
 
 	it("should save a service", async () => {

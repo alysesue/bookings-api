@@ -177,4 +177,21 @@ describe('Timeslots template', () => {
 			WeekDaySchedule.create(Weekday.Monday, null);
 		}).toThrowError();
 	});
+
+	it('should generate timeslot with exact match', () => {
+		const customSchedule = new Schedule();
+		customSchedule.slotsDurationInMin = 60;
+		const monday = createDayOfWeekTemplate(Weekday.Monday, '08:00', '12:00', customSchedule);
+		monday.breaks = [
+			WeekDayBreak.create(Weekday.Monday, TimeOfDay.parse('08:00'), TimeOfDay.parse('09:00'), customSchedule)
+		];
+
+		customSchedule.weekdaySchedules = [monday];
+
+		const startTime = new Date(Date.parse('2020-6-8, 9:00:00 AM'));
+		const endTime = new Date(Date.parse('2020-6-8, 10:00:00 AM'));
+
+		const generated = Array.from(customSchedule.generateValidTimeslots({ startDatetime: startTime, endDatetime: endTime }));
+		expect(generated.length).toBe(1);
+	});
 });

@@ -1,7 +1,6 @@
 import { Credentials, JWT, JWTInput } from 'google-auth-library';
 import * as authModule from 'google-auth-library';
 import { GoogleApi } from '../google.api';
-import { config } from '../../config/app-config';
 
 jest.mock('../../config/app-config', () => {
 	const configMock = {
@@ -9,7 +8,7 @@ jest.mock('../../config/app-config', () => {
 	};
 
 	return {
-		config: configMock
+		getConfig: () => configMock
 	};
 });
 

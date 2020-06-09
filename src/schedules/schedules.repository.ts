@@ -1,14 +1,18 @@
-import { Inject, Singleton } from 'typescript-ioc';
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { Schedule } from '../models';
 import { DeleteResult, FindManyOptions, In } from "typeorm";
 import { groupByKey } from '../tools/collections';
 import { WeekDayBreakRepository } from './weekdaybreak.repository';
 import { RepositoryBase } from '../core/repository';
 
-@Singleton
+@InRequestScope
 export class SchedulesRepository extends RepositoryBase<Schedule> {
 	@Inject
 	private weekDayBreakRepo: WeekDayBreakRepository;
+
+	constructor() {
+		super(Schedule);
+	}
 
 	public async getScheduleById(id: number): Promise<Schedule> {
 		const schedule = await (await this.getRepository()).findOne({

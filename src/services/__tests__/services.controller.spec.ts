@@ -42,13 +42,20 @@ describe('Services controller tests', () => {
 
 		expect(ServicesServiceMock.getServiceSchedule).toBeCalled();
 	});
+	
+	it('should get a service', async () => {
+		ServicesServiceMock.getService.mockReturnValue({ name: 'John' });
+		const response = await Container.get(ServicesController).getService(1);
+		expect(response.name).toEqual("John");
+	});
 });
 
 const ServicesServiceMock = {
 	createService: jest.fn(),
 	getServices: jest.fn(),
 	setServiceSchedule: jest.fn(),
-	getServiceSchedule: jest.fn()
+	getServiceSchedule: jest.fn(),
+	getService: jest.fn()
 };
 
 class ServicesServiceMockClass extends ServicesService {
@@ -66,5 +73,9 @@ class ServicesServiceMockClass extends ServicesService {
 
 	public async getServiceSchedule(id: number): Promise<Schedule> {
 		return ServicesServiceMock.getServiceSchedule(id);
+	}
+	
+	public async getService(serviceId: number): Promise<Service> {
+		return ServicesServiceMock.getService(serviceId);
 	}
 }

@@ -1,4 +1,4 @@
-import { Inject, Singleton } from "typescript-ioc";
+import { Inject, InRequestScope } from "typescript-ioc";
 import { Booking, Calendar, Schedule } from "../models";
 import { CalendarsRepository } from "./calendars.repository";
 import { GoogleCalendarService } from "../googleapi/google.calendar.service";
@@ -6,7 +6,7 @@ import { CalendarTemplatesTimeslotModel, CalendarUserModel } from "./calendars.a
 import { SchedulesRepository } from "../schedules/schedules.repository";
 import { isEmptyArray } from "../tools/arrays";
 
-@Singleton
+@InRequestScope
 export class CalendarsService {
 	@Inject
 	private schedulesRepository: SchedulesRepository;
