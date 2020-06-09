@@ -13,6 +13,10 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		return (await this.getRepository()).save(service);
 	}
 
+	public async get(id: number): Promise<Service> {
+		return (await this.getRepository()).findOne({ where: { _id: id } });
+	}
+
 	public async getAll(): Promise<Service[]> {
 		return (await this.getRepository()).find();
 	}
