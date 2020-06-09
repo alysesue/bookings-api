@@ -33,14 +33,14 @@ export class CalendarsController extends Controller {
 
 	@Get()
 	@Security("service")
-	public async getCalendars(@Header("x-api-service") _?): Promise<CalendarModel[]> {
+	public async getCalendars(@Header("x-api-service") _?: number): Promise<CalendarModel[]> {
 		const dataModels = await this.calendarsService.getCalendars();
 		return this.mapDataModels(dataModels);
 	}
 
 	@Post("{calendarUUID}/useraccess")
 	@Security("service")
-	public async addUser(@Path() calendarUUID: string, @Body() model: CalendarUserModel, @Header("x-api-service") _?): Promise<CalendarUserModel> {
+	public async addUser(@Path() calendarUUID: string, @Body() model: CalendarUserModel, @Header("x-api-service") _?: number): Promise<CalendarUserModel> {
 		return await this.calendarsService.addUser(calendarUUID, model);
 	}
 
@@ -54,7 +54,7 @@ export class CalendarsController extends Controller {
 	@Get('availability')
 	@SuccessResponse(200, "Ok")
 	@Security("service")
-	public async getAvailability(@Query() from: Date, @Query() to: Date, @Header("x-api-service") _?): Promise<ServiceProviderResponse[]> {
+	public async getAvailability(@Query() from: Date, @Query() to: Date, @Header("x-api-service") _?: number): Promise<ServiceProviderResponse[]> {
 		const calendars = await this.timeslotService.getAvailableCalendarsForTimeslot(from, to);
 
 		return calendars.map(CalendarsController.mapToServiceProviderResponse);

@@ -1,12 +1,34 @@
-import { InRequestScope } from "typescript-ioc";
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { Service } from "../models";
 import { RepositoryBase } from "../core/repository";
+import { groupByKeyLastValue } from '../tools/collections';
+import { SchedulesRepository } from '../schedules/schedules.repository';
 
 @InRequestScope
 export class ServicesRepository extends RepositoryBase<Service> {
+	@Inject
+	private scheduleRepository: SchedulesRepository;
 
 	constructor() {
 		super(Service);
+	}
+
+	private async populateSchedules(entries: Service[]): Promise<Service[]> {
+		const scheduleIds = entries.map(e => e.scheduleId).filter(id => !!id);
+		const schedulesById = groupByKeyLastValue(await this.scheduleRepository.getSchedules(scheduleIds), s => s.id);
+
+		for (const calendar of entries.filter(c => !!c.scheduleId)) {
+			const schedule = schedulesById.get(calendar.scheduleId);
+			calendar.schedule = schedule;
+		}
+		return entries;
+	}
+
+	private async populateSingleEntrySchedule(entry: Service): Promise<Service> {
+		if (!entry) {
+			return null;
+		}
+		return (await this.populateSchedules([entry]))[0];
 	}
 
 	public async save(service: Service): Promise<Service> {
@@ -15,6 +37,11 @@ export class ServicesRepository extends RepositoryBase<Service> {
 
 	public async get(id: number): Promise<Service> {
 		return (await this.getRepository()).findOne({ where: { _id: id } });
+	}
+
+	public async getWithSchedule(id: number): Promise<Service> {
+		const entry = await (await this.getRepository()).findOne({ where: { _id: id } });
+		return this.populateSingleEntrySchedule(entry);
 	}
 
 	public async getAll(): Promise<Service[]> {

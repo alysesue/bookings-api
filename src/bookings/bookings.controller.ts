@@ -1,8 +1,7 @@
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 import { Inject } from "typescript-ioc";
-
 import { Body, Controller, Get, Header, Path, Post, Query, Route, Security, SuccessResponse, Tags } from "tsoa";
-import { Booking, Calendar } from "../models";
+import { Booking, ServiceProvider } from "../models";
 import {
 	BookingAcceptRequest,
 	BookingProviderResponse,
@@ -37,16 +36,17 @@ export class BookingsController extends Controller {
 		} as BookingResponse;
 	}
 
-	private static mapProvider(calendar: Calendar): BookingProviderResponse {
+	private static mapProvider(provider: ServiceProvider): BookingProviderResponse {
 		return {
-			uuid: calendar.uuid
+			id: provider.id,
+			name: provider.name
 		} as BookingProviderResponse;
 	}
 
 	@Get()
 	@SuccessResponse(200, 'Ok')
 	@Security("service")
-	public async getBookings(@Header("x-api-service") _?): Promise<BookingResponse[]> {
+	public async getBookings(@Header("x-api-service") _?: number): Promise<BookingResponse[]> {
 		const bookings = await this.bookingsService.getBookings();
 		return BookingsController.mapDataModels(bookings);
 	}
@@ -54,7 +54,7 @@ export class BookingsController extends Controller {
 	@Post()
 	@SuccessResponse(201, 'Created')
 	@Security("service")
-	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") _?): Promise<any> {
+	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") _?: number): Promise<any> {
 		try {
 			const booking = await this.bookingsService.save(bookingRequest);
 			return BookingsController.mapDataModel(booking);
@@ -81,13 +81,13 @@ export class BookingsController extends Controller {
 	@SuccessResponse(200, "Ok")
 	@Security("service")
 	public async searchBookings(@Query() status: number,
-								@Query() from: Date,
-								@Query() to: Date,
-								@Header("x-api-service") _?): Promise<BookingResponse[]> {
-		const searchQuery = new BookingSearchRequest(from, to, status);
+		@Query() from: Date,
+		@Query() to: Date,
+		@Header("x-api-service") serviceId: number): Promise<BookingResponse[]> {
+
+		const searchQuery = new BookingSearchRequest(from, to, status, serviceId);
 		const bookings = await this.bookingsService.searchBookings(searchQuery);
 		return BookingsController.mapDataModels(bookings);
-
 	}
 
 	@Get('{bookingId}')
@@ -106,7 +106,7 @@ export class BookingsController extends Controller {
 	@Get('{bookingId}/providers')
 	@SuccessResponse(200, 'Ok')
 	@Security("service")
-	public async getBookingProviders(@Path() bookingId: string, @Header("x-api-service") _?): Promise<any> {
+	public async getBookingProviders(@Path() bookingId: string, @Header("x-api-service") serviceId: number): Promise<any> {
 		let booking: Booking;
 		try {
 			booking = await this.bookingsService.getBooking(bookingId);
@@ -116,7 +116,7 @@ export class BookingsController extends Controller {
 			return new ErrorResponse(err.message);
 		}
 
-		const timeslots = await this.timeslotService.getAvailableCalendarsForTimeslot(booking.startDateTime, booking.getSessionEndTime());
+		const timeslots = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), serviceId);
 		return timeslots?.map(BookingsController.mapProvider) || [];
 	}
 

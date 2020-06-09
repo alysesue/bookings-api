@@ -1,12 +1,14 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { BookingStatus } from "./bookingStatus";
 import { Calendar } from './calendar';
+import { Service } from "./service";
 
 @Entity()
 export class Booking extends BaseEntity {
 
-	constructor(startDateTime: Date, sessionDurationInMinutes: number) {
+	constructor(serviceId: number, startDateTime: Date, sessionDurationInMinutes: number) {
 		super();
+		this._serviceId = serviceId;
 		this._startDateTime = startDateTime;
 		this._sessionDurationInMinutes = sessionDurationInMinutes;
 
@@ -19,6 +21,21 @@ export class Booking extends BaseEntity {
 
 	public get id(): number {
 		return this._id;
+	}
+
+	@Column({ nullable: false })
+	private _serviceId: number;
+
+	public get serviceId(): number {
+		return this._serviceId;
+	}
+
+	@ManyToOne(type => Service)
+	@JoinColumn({ name: '_serviceId' })
+	private _service: Service;
+
+	public get service(): Service {
+		return this._service;
 	}
 
 	@Column({ type: "varchar", length: 300, nullable: true })

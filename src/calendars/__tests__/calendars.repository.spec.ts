@@ -29,17 +29,6 @@ describe('Calendar service', () => {
 		expect(InnerRepositoryMock.find).toBeCalledTimes(1);
 	});
 
-	it('should get calendars with templates', async () => {
-		Container.bind(DbConnection).to(DbConnectionMock);
-
-		const calendarsRepository = Container.get(CalendarsRepository);
-		const result = await calendarsRepository.getCalendarsWithTemplates();
-		expect(result).not.toBe(undefined);
-
-		expect(getRepositoryMock).toBeCalled();
-		expect(InnerRepositoryMock.find).toBeCalled();
-	});
-
 	it('should get calendar by UUID', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 

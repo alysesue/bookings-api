@@ -1,7 +1,7 @@
 import { Container } from "typescript-ioc";
 import { BookingsController } from "../index";
 import { BookingsRepository } from "../bookings.repository";
-import { Booking, BookingStatus, Calendar } from "../../models";
+import { Booking, BookingStatus, Calendar, Service, ServiceProvider } from "../../models";
 import { CalendarsRepository } from "../../calendars/calendars.repository";
 import { GoogleApi } from "../../googleapi/google.api";
 import * as insertEventResponse from "./createEventResponse.json";
@@ -39,11 +39,11 @@ const GoogleApiMock = () => {
 	}));
 };
 
-class TimeslotsServiceMock extends TimeslotsService {
-	public static availableCalendarsForTimeslot: Calendar[] = [];
+class TimeslotsServiceMock {
+	public static availableProvidersForTimeslot: ServiceProvider[] = [];
 
-	public async getAvailableCalendarsForTimeslot(startDateTime: Date, endDateTime: Date): Promise<Calendar[]> {
-		return TimeslotsServiceMock.availableCalendarsForTimeslot;
+	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date): Promise<ServiceProvider[]> {
+		return TimeslotsServiceMock.availableProvidersForTimeslot;
 	}
 }
 
@@ -51,16 +51,25 @@ class TimeslotsServiceMock extends TimeslotsService {
 describe('Booking Integration tests', () => {
 	it('should accept booking', async () => {
 		const updateBooking = jest.fn();
-		const calendar = { id: 1, uuid: '123', googleCalendarId: "google-id-1" } as Calendar;
+		const calendar = new Calendar();
+		calendar.id = 1;
+		calendar.uuid = '123';
+		calendar.googleCalendarId = "google-id-1";
+
+		const service = new Service();
+		service.id = 2;
+		const provider = new ServiceProvider(service, 'Provider', calendar);
+		provider.id = 11;
+
 		Container.bind(BookingsRepository).to(BookingRepositoryMock(updateBooking));
 		Container.bind(CalendarsRepository).to(CalendarsRepositoryMock());
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 		Container.bind(GoogleApi).to(GoogleApiMock());
 
-		TimeslotsServiceMock.availableCalendarsForTimeslot = [calendar];
+		TimeslotsServiceMock.availableProvidersForTimeslot = [provider];
 		const controller = Container.get(BookingsController);
 
-		await controller.acceptBooking('1', { calendarUUID: '123' } as BookingAcceptRequest);
+		await controller.acceptBooking('1', { serviceProviderId: 11 } as BookingAcceptRequest);
 
 		expect(updateBooking).toBeCalledTimes(1);
 		const booking = updateBooking.mock.calls[0][0] as Booking;

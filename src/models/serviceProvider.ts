@@ -20,21 +20,25 @@ export class ServiceProvider extends BaseEntity {
 		this._status = value;
 	}
 
-	@Column({nullable: false})
+	@Column({ nullable: false })
 	private _serviceId: number;
 
 	@ManyToOne(type => Service)
-	@JoinColumn({name: '_serviceId'})
+	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
+	public set id(id: number) {
+		this._id = id;
+	}
+
 	public get id(): number {
 		return this._id;
 	}
 
-	@Column({type: "varchar", length: 300})
+	@Column({ type: "varchar", length: 300 })
 	private _name: string;
 
 	constructor(service: Service, name: string, calendar: Calendar) {
