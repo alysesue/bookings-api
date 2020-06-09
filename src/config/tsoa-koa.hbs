@@ -18,7 +18,10 @@
 {{/if}}
 import * as KoaRouter from 'koa-router';
 import * as _ from 'lodash';
-import {Container} from 'typescript-ioc';
+
+{{#if useTypescriptIoc}}
+    import { Container } from 'typescript-ioc';
+{{/if}}
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
@@ -92,7 +95,11 @@ export function RegisterRoutes(router: KoaRouter) {
             controller.setStatus(undefined);
             }
         {{else}}
-            const controller = Container.get({{../name}});
+            {{#if useTypescriptIoc}}
+                const controller = Container.get({{../name}});
+            {{else}}
+                const controller = new {{../name}}();
+            {{/if}}
         {{/if}}
 
         // =============================================================================
@@ -168,8 +175,7 @@ export function RegisterRoutes(router: KoaRouter) {
 
     for (const secMethod of security) {
     if (Object.keys(secMethod).length > 1) {
-    let promises: Promise
-    <any>[] = [];
+    let promises: Promise<any>[] = [];
 
         for (const name in secMethod) {
         promises.push(koaAuthentication(context.request, name, secMethod[name]));
@@ -190,16 +196,13 @@ export function RegisterRoutes(router: KoaRouter) {
         }
 {{/if}}
 
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file:
-    https://github.com/lukeautry/tsoa
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file:https://github.com/lukeautry/tsoa
 
     function isController(object: any): object is Controller {
     return 'getHeaders' in object && 'getStatus' in object && 'setStatus' in object;
     }
 
-    function promiseHandler(controllerObj: any, promise: Promise
-    <any>, context: any, next: () => Promise
-        <any>) {
+    function promiseHandler(controllerObj: any, promise: Promise<any>, context: any, next: () => Promise<any>) {
             return Promise.resolve(promise)
             .then((data: any) => {
             if (data || data === false) {
@@ -209,8 +212,7 @@ export function RegisterRoutes(router: KoaRouter) {
             context.status = 204;
             }
 
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this
-            file: https://github.com/lukeautry/tsoa
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
             if (isController(controllerObj)) {
             const headers = controllerObj.getHeaders();
@@ -247,8 +249,7 @@ export function RegisterRoutes(router: KoaRouter) {
             }
             // =============================================================================
 
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this
-            file: https://github.com/lukeautry/tsoa
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
             // =============================================================================
             // MOL: To support validation skipping
             function getValidatedArgs(args: any, context: any, skippedFields?: string[]): any[] {
@@ -291,9 +292,7 @@ export function RegisterRoutes(router: KoaRouter) {
             return values;
             }
 
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this
-            file: https://github.com/lukeautry/tsoa
-            }
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+}
 
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this
-            file: https://github.com/lukeautry/tsoa
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

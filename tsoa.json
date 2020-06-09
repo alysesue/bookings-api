@@ -15,6 +15,7 @@
     "routesDir": "./src",
     "middleware": "koa",
     "middlewareTemplate": "./src/config/tsoa-koa.hbs",
-    "authenticationModule": "./src/authentication.ts"
+    "authenticationModule": "./src/authentication.ts",
+    "useTypescriptIoc": true
   }
 }
