@@ -2,11 +2,11 @@ import { Inject } from "typescript-ioc";
 import { ServiceProviderListRequest, ServiceProviderModel } from "./serviceProviders.apicontract";
 import { ServiceProvidersService } from "./serviceProviders.service";
 import { ServiceProvider } from "../models";
-import { Body, Controller, Get, Path, Post, Route, SuccessResponse, Tags } from "tsoa";
+import { Body, Controller, Get, Header, Path, Post, Route, Security, SuccessResponse, Tags } from "tsoa";
 import { ErrorResponse } from "../apicontract";
 import { parseCsv } from "../utils";
 
-@Route("**/v1/service-providers")
+@Route("v1/service-providers")
 @Tags('Service Providers')
 export class ServiceProvidersController extends Controller {
 
@@ -40,14 +40,16 @@ export class ServiceProvidersController extends Controller {
 	}
 
 	@Post("")
+	@Security("service")
 	@SuccessResponse(201, 'Created')
-	public async addServiceProviders(@Body() spRequest: ServiceProviderListRequest) {
+	public async addServiceProviders(@Body() spRequest: ServiceProviderListRequest, @Header('x-api-service') _?) {
 		await this.serviceProvidersService.saveServiceProviders(spRequest.serviceProviders);
 	}
 
 	@Post("/csv")
+	@Security("service")
 	@SuccessResponse(201, 'Created')
-	public async addServiceProvidersText(@Body() spRequest: string) {
+	public async addServiceProvidersText(@Body() spRequest: string, @Header('x-api-service') _?) {
 		try {
 			const request = ServiceProvidersController.parseCsvModelToServiceProviders(parseCsv(spRequest));
 			await this.serviceProvidersService.saveServiceProviders(request);
@@ -57,7 +59,8 @@ export class ServiceProvidersController extends Controller {
 	}
 
 	@Get("")
-	public async getServiceProviders(): Promise<ServiceProviderModel[]> {
+	@Security("service")
+	public async getServiceProviders(@Header('x-api-service') _?): Promise<ServiceProviderModel[]> {
 		const dataModels = await this.serviceProvidersService.getServiceProviders();
 		return ServiceProvidersController.mapDataModels(dataModels);
 	}

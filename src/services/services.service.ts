@@ -1,9 +1,10 @@
-import { Inject, Singleton } from "typescript-ioc";
+import { Inject, InRequestScope, Scope, Scoped } from "typescript-ioc";
 import { Service } from "../models";
 import { ServicesRepository } from "./services.repository";
 import { ServiceRequest } from "./service.apicontract";
 
-@Singleton
+@Scoped(Scope.Request)
+@InRequestScope
 export class ServicesService {
 
 	@Inject
@@ -19,6 +20,7 @@ export class ServicesService {
 	public async getServices(): Promise<Service[]> {
 		return await this.servicesRepository.getAll();
 	}
+
 	public async getService(id: number): Promise<Service> {
 		return await this.servicesRepository.getService(id);
 	}

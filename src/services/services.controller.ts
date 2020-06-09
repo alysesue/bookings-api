@@ -4,7 +4,7 @@ import { Inject } from "typescript-ioc";
 import { ServicesService } from "./services.service";
 import { Service } from "../models";
 
-@Route('**/v1/services')
+@Route('v1/services')
 @Tags('Services')
 export class ServicesController extends Controller {
 

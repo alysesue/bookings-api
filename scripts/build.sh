@@ -54,6 +54,7 @@ echo "Webpacking"
 export TS_NODE_PROJECT=./node_modules/mol-lib-config/shared-config/script.tsconfig.json
 ./node_modules/.bin/webpack-cli
 
+echo 'Swaggering'
 ./node_modules/.bin/tsoa swagger --yaml
 pushd dist
 npm shrinkwrap

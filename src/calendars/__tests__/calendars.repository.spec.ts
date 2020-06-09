@@ -21,7 +21,7 @@ describe('Calendar service', () => {
 	it('should get calendars', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
-		const calendarsRepository = new CalendarsRepository();
+		const calendarsRepository = Container.get(CalendarsRepository);
 		const result = await calendarsRepository.getCalendars();
 		expect(result).not.toBe(undefined);
 
@@ -32,7 +32,7 @@ describe('Calendar service', () => {
 	it('should get calendars with templates', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
-		const calendarsRepository = new CalendarsRepository();
+		const calendarsRepository = Container.get(CalendarsRepository);
 		const result = await calendarsRepository.getCalendarsWithTemplates();
 		expect(result).not.toBe(undefined);
 
@@ -43,7 +43,7 @@ describe('Calendar service', () => {
 	it('should get calendar by UUID', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
-		const calendarsRepository = new CalendarsRepository();
+		const calendarsRepository = Container.get(CalendarsRepository);
 		const result = await calendarsRepository.getCalendarByUUID('uuid');
 		expect(result).not.toBe(undefined);
 
@@ -53,7 +53,7 @@ describe('Calendar service', () => {
 	it('should save calendars', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
-		const calendarsRepository = new CalendarsRepository();
+		const calendarsRepository = Container.get(CalendarsRepository);
 		const myCalendar = { uuid: 'uuid' } as Calendar;
 
 		const result = await calendarsRepository.saveCalendar(myCalendar);

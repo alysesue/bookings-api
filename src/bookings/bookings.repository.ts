@@ -1,11 +1,11 @@
-import { Singleton } from "typescript-ioc";
+import { InRequestScope } from "typescript-ioc";
 import { Between, FindConditions, InsertResult } from "typeorm";
 import { Booking } from "../models";
 import { BookingSearchRequest } from "./bookings.apicontract";
 import { RepositoryBase } from "../core/repository";
 
 
-@Singleton
+@InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {
 	constructor() {
 		super(Booking);

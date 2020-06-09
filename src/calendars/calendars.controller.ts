@@ -10,10 +10,10 @@ import { CalendarsService } from "./calendars.service";
 import { Calendar } from "../models";
 import { CalDavProxyHandler } from "../infrastructure/caldavproxy.handler";
 import { Constants } from "../models/constants";
-import { Body, Controller, Get, Path, Post, Put, Query, Route, SuccessResponse, Tags } from "tsoa";
+import { Body, Controller, Get, Header, Path, Post, Put, Query, Route, Security, SuccessResponse, Tags } from "tsoa";
 import { TimeslotsService } from "../timeslots/timeslots.service";
 
-@Route("**/v1/calendars")
+@Route("v1/calendars")
 @Tags('Calendars')
 export class CalendarsController extends Controller {
 	@Inject
@@ -31,26 +31,30 @@ export class CalendarsController extends Controller {
 		} as ServiceProviderResponse;
 	}
 
-	@Get("")
-	public async getCalendars(): Promise<CalendarModel[]> {
+	@Get()
+	@Security("service")
+	public async getCalendars(@Header("x-api-service") _?): Promise<CalendarModel[]> {
 		const dataModels = await this.calendarsService.getCalendars();
 		return this.mapDataModels(dataModels);
 	}
 
 	@Post("{calendarUUID}/useraccess")
-	public async addUser(@Path() calendarUUID: string, @Body() model: CalendarUserModel): Promise<CalendarUserModel> {
+	@Security("service")
+	public async addUser(@Path() calendarUUID: string, @Body() model: CalendarUserModel, @Header("x-api-service") _?): Promise<CalendarUserModel> {
 		return await this.calendarsService.addUser(calendarUUID, model);
 	}
 
 	@Put("{calendarUUID}/schedule")
-	public async addCalendar(@Path() calendarUUID: string, @Body() model: CalendarTemplatesTimeslotModel): Promise<CalendarScheduleResponse> {
+	@Security("service")
+	public async addCalendar(@Path() calendarUUID: string, @Body() model: CalendarTemplatesTimeslotModel, @Header("x-api-service") _?): Promise<CalendarScheduleResponse> {
 		const data = await this.calendarsService.addSchedules(calendarUUID, model);
 		return new CalendarScheduleResponse(data);
 	}
 
 	@Get('availability')
 	@SuccessResponse(200, "Ok")
-	public async getAvailability(@Query() from: Date, @Query() to: Date): Promise<ServiceProviderResponse[]> {
+	@Security("service")
+	public async getAvailability(@Query() from: Date, @Query() to: Date, @Header("x-api-service") _?): Promise<ServiceProviderResponse[]> {
 		const calendars = await this.timeslotService.getAvailableCalendarsForTimeslot(from, to);
 
 		return calendars.map(CalendarsController.mapToServiceProviderResponse);

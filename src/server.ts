@@ -12,23 +12,15 @@ import "reflect-metadata";
 import { getConfig } from "./config/app-config";
 import { HealthCheckMiddleware } from "./health/HealthCheckMiddleware";
 import { RegisterRoutes } from "./routes";
-import * as swagger from "swagger2";
-import { ui } from 'swagger2-koa';
 import { DbConnection } from "./core/db.connection";
 import { Container } from "typescript-ioc";
 import { CalDavProxyHandler } from "./infrastructure/caldavproxy.handler";
 import * as cors from '@koa/cors';
-import * as fs from 'fs';
-import { join } from 'path';
+import * as fs from "fs";
+import * as swagger from "swagger2";
+import { ui } from "swagger2-koa";
 
-const setService = async (ctx, next) => {
-	Container.bindName('config').to({
-		service: ctx.params.service || 'default'
-	});
-	await next();
-};
-
-const useSwagger = () => {
+export const useSwagger = () => {
 	const swaggerDoc = '../dist/swagger/swagger.yaml';
 	// tslint:disable-next-line: tsr-detect-non-literal-fs-filename
 	const exists = fs.existsSync(swaggerDoc);
@@ -52,13 +44,10 @@ export async function startServer(): Promise<Server> {
 	LoggerV2.setServiceName(config.name);
 
 	// Setup server
-	const router: KoaRouter = new KoaRouter();
+	const router: KoaRouter = new KoaRouter({prefix: '/bookingsg-api/api'});
 	RegisterRoutes(router);
-	const serviceAwareRouter = new KoaRouter({ prefix: '/bookingsg-api/api' })
-		.use('/:service/**', setService)
-		.use(router.routes(), router.allowedMethods());
 	// @ts-ignore
-	const HandledRoutes = new KoaResponseHandler(serviceAwareRouter.routes());
+	const HandledRoutes = new KoaResponseHandler(router.routes());
 	const proxyHandler = Container.get(CalDavProxyHandler);
 
 
@@ -87,7 +76,7 @@ export async function startServer(): Promise<Server> {
 		.use(new KoaMultipartCleaner().build())
 		.use(HealthCheckMiddleware.build())
 		.use(HandledRoutes.build())
-		.use(serviceAwareRouter.allowedMethods());
+		.use(router.allowedMethods());
 
 	const dbConnection = Container.get(DbConnection);
 
