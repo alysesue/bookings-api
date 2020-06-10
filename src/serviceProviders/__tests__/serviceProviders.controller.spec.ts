@@ -1,5 +1,5 @@
 import { Container } from "typescript-ioc";
-import { Calendar, ServiceProvider } from "../../models";
+import { Calendar, Service, ServiceProvider } from "../../models";
 import { ServiceProvidersController } from "../serviceProviders.controller";
 import { ServiceProvidersService } from "../serviceProviders.service";
 import { ServiceProviderModel } from "../serviceProviders.apicontract";
@@ -16,7 +16,8 @@ describe("ServiceProviders.Controller", () => {
 	});
 
 	it('should get service providers', async () => {
-		ServiceProvidersMock.getServiceProviders.mockReturnValue([new ServiceProvider(null, "Monica", null), new ServiceProvider(null, "Timmy", null)]);
+		const calendar = new Calendar();
+		ServiceProvidersMock.getServiceProviders.mockReturnValue([new ServiceProvider(null, "Monica", calendar), new ServiceProvider(null, "Timmy", calendar)]);
 
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders();
@@ -27,7 +28,7 @@ describe("ServiceProviders.Controller", () => {
 		ServiceProvidersMock.getServiceProvider.mockReturnValue(new ServiceProvider(null, "Monica", null));
 
 		const controller = Container.get(ServiceProvidersController);
-		const result = await controller.getServiceProvider("1");
+		const result = await controller.getServiceProvider(1);
 
 		expect(result.name).toEqual("Monica");
 	});
@@ -44,7 +45,7 @@ describe("ServiceProviders.Controller", () => {
 		});
 		const listRequest = ServiceProvidersMock.save.mock.calls[0][0] as ServiceProvider[];
 
-		expect(listRequest.length).toBe(1)
+		expect(listRequest.length).toBe(1);
 	});
 
 	it('should save multiple service providers as text', async () => {
@@ -59,7 +60,7 @@ describe("ServiceProviders.Controller", () => {
 
 		const listRequest = ServiceProvidersMock.save.mock.calls[0][0] as ServiceProvider[];
 
-		expect(listRequest.length).toBe(3)
+		expect(listRequest.length).toBe(3);
 
 	});
 
@@ -69,11 +70,11 @@ const ServiceProvidersMock = {
 	getServiceProvider: jest.fn(),
 	getServiceProviders: jest.fn(),
 	save: jest.fn(),
-}
+};
 
 class ServiceProvidersServiceMock extends ServiceProvidersService {
 
-	public async getServiceProvider(spId: string): Promise<ServiceProvider> {
+	public async getServiceProvider(spId: number): Promise<ServiceProvider> {
 		return ServiceProvidersMock.getServiceProvider();
 	}
 
@@ -88,7 +89,7 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 
 const CalendarsSvcMock = {
 	createCalendar: jest.fn()
-}
+};
 
 class CalendarsServiceMock extends CalendarsService {
 	public async createCalendar(): Promise<Calendar> {

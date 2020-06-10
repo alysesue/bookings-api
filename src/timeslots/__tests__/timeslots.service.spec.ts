@@ -57,7 +57,7 @@ describe("Timeslots Service", () => {
 	};
 
 	const ServicesRepositoryMock = {
-		getWithSchedule: jest.fn(() => Promise.resolve(ServiceMock))
+		getServiceWithSchedule: jest.fn(() => Promise.resolve(ServiceMock))
 	};
 
 	const ServiceProvidersRepositoryMock = {
@@ -73,7 +73,7 @@ describe("Timeslots Service", () => {
 		const result = await service.getAggregatedTimeslots(date, date, 1);
 		expect(result).toBeDefined();
 
-		expect(ServicesRepositoryMock.getWithSchedule).toBeCalled();
+		expect(ServicesRepositoryMock.getServiceWithSchedule).toBeCalled();
 		expect(ScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 	});
 
@@ -87,7 +87,7 @@ describe("Timeslots Service", () => {
 		const endDateTime = DateHelper.setHours(date, 16, 0);
 		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1);
 
-		expect(ServicesRepositoryMock.getWithSchedule).toBeCalled();
+		expect(ServicesRepositoryMock.getServiceWithSchedule).toBeCalled();
 		expect(ScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 
 		expect(result.serviceProviders).toHaveLength(0);

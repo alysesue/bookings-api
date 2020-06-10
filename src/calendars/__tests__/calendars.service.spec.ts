@@ -3,7 +3,7 @@ import { Container, Snapshot } from "typescript-ioc";
 import { Booking, Calendar } from "../../models";
 import { CalendarsService } from "../calendars.service";
 import { GoogleCalendarService } from "../../googleapi/google.calendar.service";
-import { CalendarTemplatesTimeslotModel, CalendarUserModel } from "../calendars.apicontract";
+import { CalendarUserModel } from "../calendars.apicontract";
 import { SchedulesRepository } from "../../schedules/schedules.repository";
 
 let snapshot: Snapshot;

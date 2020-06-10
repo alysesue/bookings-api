@@ -46,8 +46,8 @@ export class BookingsController extends Controller {
 	@Get()
 	@SuccessResponse(200, 'Ok')
 	@Security("service")
-	public async getBookings(@Header("x-api-service") _?: number): Promise<BookingResponse[]> {
-		const bookings = await this.bookingsService.getBookings();
+	public async getBookings(@Header("x-api-service") serviceId: number): Promise<BookingResponse[]> {
+		const bookings = await this.bookingsService.getBookings(serviceId);
 		return BookingsController.mapDataModels(bookings);
 	}
 
@@ -115,7 +115,7 @@ export class BookingsController extends Controller {
 			return new ErrorResponse(err.message);
 		}
 
-		const timeslots = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
-		return timeslots?.map(BookingsController.mapProvider) || [];
+		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
+		return timeslotEntry.serviceProviders.map(BookingsController.mapProvider) || [];
 	}
 }

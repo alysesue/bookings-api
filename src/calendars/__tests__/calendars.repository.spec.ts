@@ -17,7 +17,7 @@ afterEach(() => {
 	jest.clearAllMocks();
 });
 
-describe('Calendar service', () => {
+describe('Calendar repository', () => {
 	it('should get calendars', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 

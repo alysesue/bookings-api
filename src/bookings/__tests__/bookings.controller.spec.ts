@@ -3,7 +3,7 @@ import { Booking, BookingStatus, Calendar } from "../../models";
 import { BookingsController } from "../bookings.controller";
 import { BookingsService } from "../bookings.service";
 import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingSearchRequest } from "../bookings.apicontract";
-import { TimeslotsService } from '../../timeslots/timeslots.service';
+import { AvailableTimeslotProviders, TimeslotsService } from '../../timeslots/timeslots.service';
 import { ErrorResponse } from "../../apicontract";
 
 describe("Bookings.Controller", () => {
@@ -15,7 +15,7 @@ describe("Bookings.Controller", () => {
 	it("should have http code 200", async () => {
 
 		const controller = Container.get(BookingsController);
-		const result = await controller.getBookings();
+		const result = await controller.getBookings(1);
 
 		expect(result).toBeTruthy();
 	});
@@ -25,7 +25,7 @@ describe("Bookings.Controller", () => {
 		const booking = new Booking(1, bookingStartDate, 60);
 		BookingsServiceMock.mockBookings = [booking];
 		const controller = Container.get(BookingsController);
-		const result = await controller.getBookings();
+		const result = await controller.getBookings(1);
 
 		const bookingResponse = new BookingResponse();
 		bookingResponse.id = undefined;
@@ -103,7 +103,7 @@ describe("Bookings.Controller", () => {
 	it('should post booking', async () => {
 		const controller = Container.get(BookingsController);
 
-		const result = await controller.postBooking(new BookingRequest());
+		const result = await controller.postBooking(new BookingRequest(), 1);
 
 		expect(result as BookingResponse);
 	});
@@ -112,7 +112,7 @@ describe("Bookings.Controller", () => {
 		const controller = Container.get(BookingsController);
 		BookingsServiceMock.mockPostBooking = Promise.reject({ message: 'error' });
 
-		const result = await controller.postBooking(new BookingRequest());
+		const result = await controller.postBooking(new BookingRequest(), 1);
 
 		expect(result as ErrorResponse);
 	});
@@ -127,7 +127,7 @@ describe("Bookings.Controller", () => {
 });
 
 const TimeslotsServiceMock = {
-	getAvailableProvidersForTimeslot: jest.fn(() => Promise.resolve([new Calendar()]))
+	getAvailableProvidersForTimeslot: jest.fn(() => Promise.resolve(AvailableTimeslotProviders.empty(new Date(), new Date())))
 };
 
 class BookingsServiceMock extends BookingsService {

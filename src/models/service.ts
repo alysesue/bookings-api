@@ -42,5 +42,6 @@ export class Service extends BaseEntity {
 	@Column({ nullable: true })
 	private _scheduleId?: number;
 
+	public set scheduleId(id: number) { this._scheduleId = id; }
 	public get scheduleId(): number { return this._scheduleId; }
 }

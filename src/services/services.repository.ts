@@ -35,12 +35,8 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		return (await this.getRepository()).save(service);
 	}
 
-	public async get(id: number): Promise<Service> {
-		return (await this.getRepository()).findOne({ where: { _id: id } });
-	}
-
-	public async getWithSchedule(id: number): Promise<Service> {
-		const entry = await (await this.getRepository()).findOne({ where: { _id: id } });
+	public async getServiceWithSchedule(id: number): Promise<Service> {
+		const entry = await this.getService(id);
 		return this.populateSingleEntrySchedule(entry);
 	}
 
@@ -48,9 +44,6 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		return (await this.getRepository()).find();
 	}
 
-	public async findOne(options: any) {
-		return (await this.getRepository()).findOne(options);
-	}
 	public async getService(id: number): Promise<Service> {
 		return (await this.getRepository()).findOne(id);
 	}

@@ -10,7 +10,7 @@ describe("Service Provider repository", () => {
 
 	it("should get list of SP", async () => {
 		Container.bind(DbConnection).to(MockDBConnection);
-		Container.bindName('config').to({service: new Service()})
+		Container.bindName('config').to({ service: new Service() });
 		MockDBConnection.find.mockImplementation(() => Promise.resolve([]));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
@@ -23,7 +23,7 @@ describe("Service Provider repository", () => {
 		MockDBConnection.findOne.mockImplementation(() => Promise.resolve({ name: "Monica" }));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
-		const result = await spRepository.getServiceProvider("id");
+		const result = await spRepository.getServiceProvider(1);
 
 		expect(result).toStrictEqual({ name: "Monica" });
 	});

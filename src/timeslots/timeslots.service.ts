@@ -71,7 +71,7 @@ export class TimeslotsService {
 	private async getAggregatedTimeslotEntries(minStartTime: Date, maxEndTime: Date, serviceId: number): Promise<AggregatedEntry<ServiceProvider>[]> {
 		const aggregator = new TimeslotAggregator<ServiceProvider>();
 
-		const service = await this.servicesRepository.getWithSchedule(serviceId);
+		const service = await this.servicesRepository.getServiceWithSchedule(serviceId);
 		const schedule = service?.schedule;
 		if (!schedule) {
 			return aggregator.getEntries();

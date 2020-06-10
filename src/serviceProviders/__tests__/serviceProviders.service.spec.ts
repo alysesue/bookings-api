@@ -24,7 +24,7 @@ describe("ServiceProviders.Service", () => {
 
 	it("should get service provider by Id", async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = new ServiceProvider(null, "Monica", null);
-		const result = await Container.get(ServiceProvidersService).getServiceProvider("1");
+		const result = await Container.get(ServiceProvidersService).getServiceProvider(1);
 		expect(result.name).toBe("Monica");
 	});
 

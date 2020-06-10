@@ -1,49 +1,35 @@
 import { CalendarsController } from "../calendars.controller";
 import { Container } from "typescript-ioc";
 import { CalendarsService } from "../calendars.service";
-import { BookingsService } from "../../bookings";
-import { Booking, Calendar } from "../../models";
-import { BookingSearchRequest } from "../../bookings/bookings.apicontract";
+import { CalendarUserModel } from '../calendars.apicontract';
 
 describe('Calendars.controller', () => {
 	beforeAll(() => {
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
-		Container.bind(BookingsService).to(BookingsServiceMock);
 	});
 
 	beforeEach(() => {
 		jest.resetAllMocks();
 	});
 
-	it('should return calendars', async () => {
-		const calendar = new Calendar();
-		calendar.id = 1;
-		calendar.uuid = 'uuid';
-		calendar.googleCalendarId = "google-id-1";
-		CalendarsServiceMock.mockCalendars = [calendar];
+	it('should add user', async () => {
+		const request = new CalendarUserModel();
+		request.email = 'test@gmail.com';
+		request.role = 'reader';
 
-		BookingsServiceMock.mockBookings = [new Booking(1, new Date(), 60)];
-
+		CalendarsServiceMock.addUserMock.mockImplementation(() => Promise.resolve(request));
 		const controller = Container.get(CalendarsController);
-		const result = await controller.getCalendars();
+		const result = await controller.addUser('uuid', request);
 
-		expect(result).toHaveLength(1);
-		expect(result[0].uuid).toBe('uuid');
+		expect(result).toBeDefined();
+		expect(CalendarsServiceMock.addUserMock).toHaveBeenCalled();
 	});
 });
 
-class BookingsServiceMock extends BookingsService {
-	public static mockBookings: Booking[] = [];
-
-	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
-		return BookingsServiceMock.mockBookings;
-	}
-}
-
 class CalendarsServiceMock extends CalendarsService {
-	public static mockCalendars: Calendar[] = [];
+	public static addUserMock = jest.fn();
 
-	public async getCalendars(): Promise<Calendar[]> {
-		return CalendarsServiceMock.mockCalendars;
+	public async addUser(calendarUUID: string, model: CalendarUserModel): Promise<CalendarUserModel> {
+		return await CalendarsServiceMock.addUserMock();
 	}
 }

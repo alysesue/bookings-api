@@ -24,7 +24,7 @@ export class ServiceProvidersService {
 		return await this.serviceProvidersRepository.getServiceProviders();
 	}
 
-	public async getServiceProvider(id: string): Promise<ServiceProvider> {
+	public async getServiceProvider(id: number): Promise<ServiceProvider> {
 		const sp = await this.serviceProvidersRepository.getServiceProvider(id);
 		if (!sp) {
 			throw new Error(`Service provider ${sp} is not found`);
