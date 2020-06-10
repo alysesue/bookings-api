@@ -22,7 +22,7 @@ describe("Bookings.Controller", () => {
 
 	it("should return the bookings from bookingsService", async () => {
 		const bookingStartDate = new Date();
-		const booking = new Booking(bookingStartDate, 60);
+		const booking = new Booking(1, bookingStartDate, 60);
 		BookingsServiceMock.mockBookings = [booking];
 		const controller = Container.get(BookingsController);
 		const result = await controller.getBookings();
@@ -40,7 +40,7 @@ describe("Bookings.Controller", () => {
 	it('should accept booking', async () => {
 		const controller = Container.get(BookingsController);
 		const bookingId = 'booking-1';
-		BookingsServiceMock.mockAcceptBooking = Promise.resolve(new Booking(new Date(), 120));
+		BookingsServiceMock.mockAcceptBooking = Promise.resolve(new Booking(1, new Date(), 120));
 
 		await controller.acceptBooking(bookingId, undefined);
 
@@ -48,12 +48,12 @@ describe("Bookings.Controller", () => {
 	});
 
 	it('should search bookings', async () => {
-		BookingsServiceMock.mockSearchBookings = [new Booking(new Date(), 120)];
+		BookingsServiceMock.mockSearchBookings = [new Booking(1, new Date(), 120)];
 		const from = new Date('2020-05-16T20:25:43.511Z');
 		const to = new Date('2020-05-16T21:25:43.511Z');
 		const controller = Container.get(BookingsController);
 
-		const result = await controller.searchBookings(0, from, to);
+		const result = await controller.searchBookings(0, from, to, 1);
 
 		expect(result).toHaveLength(1);
 	});
@@ -62,7 +62,7 @@ describe("Bookings.Controller", () => {
 		const controller = Container.get(BookingsController);
 		const testTime = new Date('2020-05-16T20:25:43.511Z');
 
-		BookingsServiceMock.getBookingPromise = Promise.resolve(new Booking(testTime, 120));
+		BookingsServiceMock.getBookingPromise = Promise.resolve(new Booking(1, testTime, 120));
 
 		const result = await controller.getBooking("booking-id-1");
 
@@ -74,17 +74,17 @@ describe("Bookings.Controller", () => {
 		const controller = Container.get(BookingsController);
 		const testTime = new Date('2020-05-16T20:25:43.511Z');
 
-		BookingsServiceMock.mockGetBooking = new Booking(testTime, 120);
+		BookingsServiceMock.mockGetBooking = new Booking(1, testTime, 120);
 
 		const result = await controller.getBookingProviders("booking-id-1");
 
 		expect(result).toBeDefined();
-		expect(TimeslotsServiceMock.getAvailableCalendarsForTimeslot).toBeCalled();
+		expect(TimeslotsServiceMock.getAvailableProvidersForTimeslot).toBeCalled();
 	});
 
 	it('should throw exception if booking not found', async () => {
 		const controller = Container.get(BookingsController);
-		BookingsServiceMock.getBookingPromise = Promise.reject({message: 'error'});
+		BookingsServiceMock.getBookingPromise = Promise.reject({ message: 'error' });
 
 		const result = await controller.getBooking("1");
 
@@ -93,7 +93,7 @@ describe("Bookings.Controller", () => {
 
 	it('should throw exception if booking not found', async () => {
 		const controller = Container.get(BookingsController);
-		BookingsServiceMock.getBookingPromise = Promise.reject({message: 'error'});
+		BookingsServiceMock.getBookingPromise = Promise.reject({ message: 'error' });
 
 		const result = await controller.getBookingProviders("1");
 
@@ -110,7 +110,7 @@ describe("Bookings.Controller", () => {
 
 	it('should return 400 on post booking error', async () => {
 		const controller = Container.get(BookingsController);
-		BookingsServiceMock.mockPostBooking = Promise.reject({message: 'error'});
+		BookingsServiceMock.mockPostBooking = Promise.reject({ message: 'error' });
 
 		const result = await controller.postBooking(new BookingRequest());
 
@@ -118,7 +118,7 @@ describe("Bookings.Controller", () => {
 	});
 
 	it('should return 400 on accept booking error', async () => {
-		BookingsServiceMock.mockAcceptBooking = Promise.reject({message: 'error'});
+		BookingsServiceMock.mockAcceptBooking = Promise.reject({ message: 'error' });
 
 		const result = await Container.get(BookingsController).acceptBooking('1', new BookingAcceptRequest());
 
@@ -127,7 +127,7 @@ describe("Bookings.Controller", () => {
 });
 
 const TimeslotsServiceMock = {
-	getAvailableCalendarsForTimeslot: jest.fn(() => Promise.resolve([new Calendar()]))
+	getAvailableProvidersForTimeslot: jest.fn(() => Promise.resolve([new Calendar()]))
 };
 
 class BookingsServiceMock extends BookingsService {

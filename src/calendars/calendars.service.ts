@@ -58,15 +58,6 @@ export class CalendarsService {
 		return await this.googleCalendarApi.createEvent(booking, calendar.googleCalendarId);
 	}
 
-	public async addSchedules(calendarUUID: string, model: CalendarTemplatesTimeslotModel): Promise<Schedule> {
-		const calendar = await this.calendarsRepository.getCalendarByUUID(calendarUUID);
-		const schedule = await this.schedulesRepository.getScheduleById(model.templatesTimeslotId);
-		calendar.schedule = schedule;
-		await this.calendarsRepository.saveCalendar(calendar);
-		return schedule;
-	}
-
-
 	public async addUser(calendarUUID: string, model: CalendarUserModel): Promise<CalendarUserModel> {
 		const calendar = await this.calendarsRepository.getCalendarByUUID(calendarUUID);
 

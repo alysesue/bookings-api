@@ -54,9 +54,9 @@ export class BookingsController extends Controller {
 	@Post()
 	@SuccessResponse(201, 'Created')
 	@Security("service")
-	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") _?: number): Promise<any> {
+	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
 		try {
-			const booking = await this.bookingsService.save(bookingRequest);
+			const booking = await this.bookingsService.save(bookingRequest, serviceId);
 			return BookingsController.mapDataModel(booking);
 		} catch (err) {
 			logger.error("endpointPostBooking:: error: ", err);
@@ -105,8 +105,7 @@ export class BookingsController extends Controller {
 
 	@Get('{bookingId}/providers')
 	@SuccessResponse(200, 'Ok')
-	@Security("service")
-	public async getBookingProviders(@Path() bookingId: string, @Header("x-api-service") serviceId: number): Promise<any> {
+	public async getBookingProviders(@Path() bookingId: string): Promise<any> {
 		let booking: Booking;
 		try {
 			booking = await this.bookingsService.getBooking(bookingId);
@@ -116,8 +115,7 @@ export class BookingsController extends Controller {
 			return new ErrorResponse(err.message);
 		}
 
-		const timeslots = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), serviceId);
+		const timeslots = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
 		return timeslots?.map(BookingsController.mapProvider) || [];
 	}
-
 }

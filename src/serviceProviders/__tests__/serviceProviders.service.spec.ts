@@ -30,7 +30,7 @@ describe("ServiceProviders.Service", () => {
 
 	it("should save a service provider", async () => {
 		CalendarsServiceMock.createCalendar = new Calendar();
-		const spRequest = new ServiceProvider(null, "Timmy", null)
+		const spRequest = new ServiceProvider(null, "Timmy", null);
 		ServiceProvidersRepositoryMock.save = spRequest;
 		await Container.get(ServiceProvidersService).saveServiceProviders([spRequest]);
 		expect(ServiceProvidersRepositoryMock.save.name).toBe("Timmy");
@@ -48,7 +48,7 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProvidersMock);
 	}
 
-	public async getServiceProvider(id: string): Promise<ServiceProvider> {
+	public async getServiceProvider(id: number): Promise<ServiceProvider> {
 		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
 	}
 
@@ -61,6 +61,6 @@ class CalendarsServiceMock extends CalendarsService {
 	public static createCalendar: Calendar;
 
 	public async createCalendar(): Promise<Calendar> {
-		return Promise.resolve(CalendarsServiceMock.createCalendar)
+		return Promise.resolve(CalendarsServiceMock.createCalendar);
 	}
 }

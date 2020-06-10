@@ -1,7 +1,6 @@
 import { Inject, InRequestScope } from "typescript-ioc";
 import { ServiceProvider } from "../models";
 import { RepositoryBase } from "../core/repository";
-import { ServiceConfiguration } from "../common/serviceConfiguration";
 import { FindConditions } from "typeorm";
 
 @InRequestScope

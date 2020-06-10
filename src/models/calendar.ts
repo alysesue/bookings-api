@@ -12,18 +12,8 @@ export class Calendar extends BaseEntity {
 	@Generated("uuid")
 	public uuid: string;
 
-
 	@Column({ type: "varchar", length: 300 })
 	public googleCalendarId: string;
-
-	@ManyToOne('Schedule', { nullable: true })
-	@JoinColumn({ name: 'scheduleId' })
-	public schedule: Schedule;
-
-	@Column({ nullable: true })
-	private scheduleId?: number;
-
-	public getScheduleId(): number { return this.scheduleId; }
 
 	public generateExternalUrl(timezone: string): string {
 		return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(this.googleCalendarId)}&ctz=${encodeURIComponent(timezone)}`;

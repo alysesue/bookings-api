@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Schedule } from '../models';
+import { Schedule } from './schedule';
 
 @Entity()
 export class Service extends BaseEntity {

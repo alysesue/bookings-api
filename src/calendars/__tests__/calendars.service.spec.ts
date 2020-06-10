@@ -40,17 +40,6 @@ describe("Calendar service", () => {
 		expect(CalendarRepositoryObj.saveCalendar).toBeCalled();
 	});
 
-	it("should link calendars with schedule", async () => {
-		const service = Container.get(CalendarsService);
-
-		await service.addSchedules("uuid", {
-			templatesTimeslotId: 3,
-		} as CalendarTemplatesTimeslotModel);
-
-		expect(CalendarRepositoryObj.saveCalendar).toBeCalled();
-		expect(SchedulesRepositoryObj.getScheduleById).toBeCalled();
-	});
-
 	it("should add user access", async () => {
 		const service = Container.get(CalendarsService);
 
@@ -64,7 +53,7 @@ describe("Calendar service", () => {
 
 	it("should return available calendars", async () => {
 		const service = Container.get(CalendarsService);
-		const booking = new Booking(new Date(), 60);
+		const booking = new Booking(1, new Date(), 60);
 
 		const calendars = [
 			{

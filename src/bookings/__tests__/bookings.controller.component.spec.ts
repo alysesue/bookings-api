@@ -7,10 +7,11 @@ import { GoogleApi } from "../../googleapi/google.api";
 import * as insertEventResponse from "./createEventResponse.json";
 import * as freebusyResponse from "./freebusyResponse.json";
 import { BookingAcceptRequest } from "../bookings.apicontract";
-import { TimeslotsService } from '../../timeslots/timeslots.service';
+import { AvailableTimeslotProviders, TimeslotsService } from '../../timeslots/timeslots.service';
+import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 
 const BookingRepositoryMock = (update) => {
-	const testBooking = new Booking(new Date(), 100);
+	const testBooking = new Booking(1, new Date(), 100);
 	return jest.fn().mockImplementation(() => ({
 		getBooking: jest.fn().mockReturnValue(testBooking),
 		update
@@ -39,14 +40,26 @@ const GoogleApiMock = () => {
 	}));
 };
 
-class TimeslotsServiceMock {
+class TimeslotsServiceMock extends TimeslotsService {
 	public static availableProvidersForTimeslot: ServiceProvider[] = [];
 
-	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date): Promise<ServiceProvider[]> {
-		return TimeslotsServiceMock.availableProvidersForTimeslot;
+	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date, serviceId: number): Promise<AvailableTimeslotProviders> {
+		const timeslotEntry = new AvailableTimeslotProviders();
+		timeslotEntry.startTime = startDateTime;
+		timeslotEntry.endTime = startDateTime;
+		timeslotEntry.serviceProviders = TimeslotsServiceMock.availableProvidersForTimeslot;
+
+		return timeslotEntry;
 	}
 }
 
+class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
+	public static getServiceProviderMock: ServiceProvider;
+
+	public async getServiceProvider(id: number): Promise<ServiceProvider> {
+		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
+	}
+}
 
 describe('Booking Integration tests', () => {
 	it('should accept booking', async () => {
@@ -65,7 +78,9 @@ describe('Booking Integration tests', () => {
 		Container.bind(CalendarsRepository).to(CalendarsRepositoryMock());
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 		Container.bind(GoogleApi).to(GoogleApiMock());
+		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 
+		ServiceProvidersRepositoryMock.getServiceProviderMock = provider;
 		TimeslotsServiceMock.availableProvidersForTimeslot = [provider];
 		const controller = Container.get(BookingsController);
 

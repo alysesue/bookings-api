@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { BookingStatus } from "./bookingStatus";
-import { Calendar } from './calendar';
+import { ServiceProvider } from './serviceProvider';
 import { Service } from "./service";
 
 @Entity()
@@ -91,26 +91,26 @@ export class Booking extends BaseEntity {
 		);
 	}
 
-	@ManyToOne(type => Calendar, { nullable: true })
-	@JoinColumn({ name: '_calendarId' })
-	private _calendar: Calendar;
+	@ManyToOne(type => ServiceProvider, { nullable: true })
+	@JoinColumn({ name: '_serviceProviderId' })
+	private _serviceProvider: ServiceProvider;
 
 	@Column({ nullable: true })
-	private _calendarId?: number;
+	private _serviceProviderId?: number;
 
-	public get calendar(): Calendar {
-		return this._calendar;
+	public get serviceProvider(): ServiceProvider {
+		return this._serviceProvider;
 	}
 
-	public set calendar(calendar: Calendar) {
-		this._calendar = calendar;
+	public set serviceProvider(serviceProvider: ServiceProvider) {
+		this._serviceProvider = serviceProvider;
 	}
 
-	public set calendarId(value: number | undefined) {
-		this._calendarId = value;
+	public set serviceProviderId(value: number | undefined) {
+		this._serviceProviderId = value;
 	}
 
-	public get calendarId(): number | undefined {
-		return this._calendarId;
+	public get serviceProviderId(): number | undefined {
+		return this._serviceProviderId;
 	}
 }

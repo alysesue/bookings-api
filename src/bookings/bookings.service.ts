@@ -2,10 +2,8 @@ import { Inject, InRequestScope } from "typescript-ioc";
 import { Booking, BookingStatus } from "../models";
 import { BookingsRepository } from "./bookings.repository";
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "./bookings.apicontract";
-import { isEmptyArray } from "../tools/arrays";
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
-import { ServiceConfiguration } from '../../src/common/serviceConfiguration';
 import { DateHelper } from "../infrastructure/dateHelper";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 
@@ -20,12 +18,9 @@ export class BookingsService {
 	@Inject
 	private timeslotsService: TimeslotsService;
 	@Inject
-	private serviceConfiguration: ServiceConfiguration;
-	@Inject
 	private serviceProviderRepo: ServiceProvidersRepository;
 
-	private createBooking(bookingRequest: BookingRequest) {
-		const serviceId = this.serviceConfiguration.getServiceId();
+	private createBooking(bookingRequest: BookingRequest, serviceId: number) {
 		if (!serviceId) {
 			throw new Error('A service is required to make a booking');
 		}
@@ -36,8 +31,8 @@ export class BookingsService {
 			BookingsService.SessionDurationInMinutes);
 	}
 
-	public async getBookings(): Promise<Booking[]> {
-		return this.bookingsRepository.getBookings(this.serviceConfiguration.getServiceId());
+	public async getBookings(serviceId?: number): Promise<Booking[]> {
+		return this.bookingsRepository.getBookings(serviceId);
 	}
 
 	public async getBooking(bookingId: string): Promise<Booking> {
@@ -48,8 +43,8 @@ export class BookingsService {
 		return booking;
 	}
 
-	public async save(bookingRequest: BookingRequest): Promise<Booking> {
-		const booking = this.createBooking(bookingRequest);
+	public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
+		const booking = this.createBooking(bookingRequest, serviceId);
 
 		await this.validateTimeSlot(booking);
 
@@ -64,16 +59,16 @@ export class BookingsService {
 		if (!provider) {
 			throw new Error(`Service provider '${acceptRequest.serviceProviderId}' not found`);
 		}
-		const availableProviders = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
-		const isCalendarAvailable = availableProviders.filter(e => e.id === acceptRequest.serviceProviderId).length > 0;
-		if (!isCalendarAvailable) {
+		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
+		const isProviderAvailable = timeslotEntry.serviceProviders.filter(e => e.id === acceptRequest.serviceProviderId).length > 0;
+		if (!isProviderAvailable) {
 			throw new Error(`Service provider '${acceptRequest.serviceProviderId}' is not available for this booking.`);
 		}
 
 		const eventICalId = await this.calendarsService.createCalendarEvent(booking, provider.calendar);
 
 		booking.status = BookingStatus.Accepted;
-		booking.calendar = provider.calendar;
+		booking.serviceProvider = provider;
 		booking.eventICalId = eventICalId;
 		booking.acceptedAt = new Date();
 
@@ -83,12 +78,10 @@ export class BookingsService {
 	}
 
 	private async validateTimeSlot(booking: Booking) {
-		const timeslots = await this.timeslotsService.getAggregatedTimeslotsExactMatch(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
-		const timeslotEntry = timeslots.find(e => DateHelper.equals(e.startTime, booking.startDateTime)
-			&& DateHelper.equals(e.endTime, booking.getSessionEndTime()));
+		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
 
-		if (!timeslotEntry || timeslotEntry?.availabilityCount < 1) {
-			throw new Error("No available calendars for this timeslot");
+		if (timeslotEntry.availabilityCount < 1) {
+			throw new Error("No available service providers for this timeslot");
 		}
 	}
 
