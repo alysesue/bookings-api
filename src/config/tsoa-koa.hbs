@@ -19,7 +19,7 @@
 import * as KoaRouter from 'koa-router';
 import * as _ from 'lodash';
 
-import { Container } from 'typescript-ioc';
+import { getKoaScopedInstance, koaScopeBoundMiddleware } from './infrastructure/koaScopeBound.middleware';
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
@@ -58,6 +58,7 @@ export function RegisterRoutes(router: KoaRouter) {
 {{#each controllers}}
     {{#each actions}}
         router.{{method}}('{{fullPath}}',
+		koaScopeBoundMiddleware(),
         {{#if security.length}}
             authenticateMiddleware({{json security}}),
         {{/if}}
@@ -93,7 +94,7 @@ export function RegisterRoutes(router: KoaRouter) {
             controller.setStatus(undefined);
             }
         {{else}}
-            const controller = Container.get({{../name}});
+            const controller = getKoaScopedInstance({{../name}}, context.request);
         {{/if}}
 
         // =============================================================================

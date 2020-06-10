@@ -1,6 +1,7 @@
 import * as Koa from "koa";
 import { ServicesValidation } from "./services/services.validation";
 import { Container } from "typescript-ioc";
+import { getKoaScopedInstance, koaScopeBoundMiddleware } from './infrastructure/koaScopeBound.middleware';
 
 export async function koaAuthentication(
 	request: Koa.Request,
@@ -9,6 +10,7 @@ export async function koaAuthentication(
 ): Promise<any> {
 	if (securityName === 'service') {
 		const serviceId: number = request.headers["x-api-service"];
-		await Container.get(ServicesValidation).validate(serviceId);
+		const servicesValidation = getKoaScopedInstance(ServicesValidation, request);
+		await servicesValidation.validate(serviceId);
 	}
 }

@@ -21,7 +21,7 @@ export class ServiceProvidersService {
 	private serviceConfiguration: ServiceConfiguration;
 
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
-		return await this.serviceProvidersRepository.getServiceProviders();
+		return await this.serviceProvidersRepository.getServiceProviders(this.serviceConfiguration.getServiceId());
 	}
 
 	public async getServiceProvider(id: number): Promise<ServiceProvider> {
@@ -39,6 +39,9 @@ export class ServiceProvidersService {
 	}
 
 	public async saveServiceProviders(listRequest: ServiceProviderModel[]) {
+
+		console.log(' **** ServiceProvidersService *** ConfigId: ' + this.serviceConfiguration.configId);
+
 		for (let i = 0; i < listRequest.length; i++) {
 			await this.saveSp(listRequest[i], this.serviceConfiguration.service);
 

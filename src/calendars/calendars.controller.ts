@@ -10,8 +10,7 @@ export class CalendarsController extends Controller {
 	private calendarsService: CalendarsService;
 
 	@Post("{calendarUUID}/useraccess")
-	@Security("service")
-	public async addUser(@Path() calendarUUID: string, @Body() model: CalendarUserModel, @Header("x-api-service") _?: number): Promise<CalendarUserModel> {
+	public async addUser(@Path() calendarUUID: string, @Body() model: CalendarUserModel): Promise<CalendarUserModel> {
 		return await this.calendarsService.addUser(calendarUUID, model);
 	}
 }

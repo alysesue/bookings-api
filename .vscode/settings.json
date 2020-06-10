@@ -6,6 +6,9 @@
 	"[sql]": {
 		"editor.formatOnSave": false
 	},
+	"[hbs]": {
+		"editor.formatOnSave": false
+	},	
 	"auto-close-tag.activationOnLanguage": [
 		"html",
 		"javascriptreact",
@@ -15,7 +18,6 @@
 		"source.fixAll.tslint": true
 	},
 	"editor.detectIndentation": false,
-	"editor.formatOnSave": true,
 	"editor.insertSpaces": false,
 	"files.associations": {
 		"*.tsconfig.json": "jsonc",
@@ -31,5 +33,5 @@
   "tslint.jsEnable": true,
   "typescript.tsdk": "./node_modules/typescript/lib",
   "typescriptHero.imports.multiLineWrapThreshold": 120,
-  "typescriptHero.imports.stringQuoteStyle": "\""
+"typescriptHero.imports.stringQuoteStyle": "\""
 }

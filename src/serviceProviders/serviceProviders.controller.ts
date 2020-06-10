@@ -1,4 +1,4 @@
-import { Inject } from "typescript-ioc";
+import { Inject, InRequestScope } from "typescript-ioc";
 import { ServiceProviderListRequest, ServiceProviderModel, ServiceProviderResponseModel } from "./serviceProviders.apicontract";
 import { ServiceProvidersService } from "./serviceProviders.service";
 import { ServiceProvider } from "../models";
@@ -7,6 +7,7 @@ import { ErrorResponse } from "../apicontract";
 import { parseCsv } from "../utils";
 import { CalendarsMapper } from "../calendars/calendars.mapper";
 
+@InRequestScope
 @Route("v1/service-providers")
 @Tags('Service Providers')
 export class ServiceProvidersController extends Controller {
@@ -44,14 +45,14 @@ export class ServiceProvidersController extends Controller {
 	@Post("")
 	@Security("service")
 	@SuccessResponse(201, 'Created')
-	public async addServiceProviders(@Body() spRequest: ServiceProviderListRequest, @Header('x-api-service') _?) {
+	public async addServiceProviders(@Body() spRequest: ServiceProviderListRequest, @Header('x-api-service') _) {
 		await this.serviceProvidersService.saveServiceProviders(spRequest.serviceProviders);
 	}
 
 	@Post("/csv")
 	@Security("service")
 	@SuccessResponse(201, 'Created')
-	public async addServiceProvidersText(@Body() spRequest: string, @Header('x-api-service') _?) {
+	public async addServiceProvidersText(@Body() spRequest: string, @Header('x-api-service') _) {
 		try {
 			const request = ServiceProvidersController.parseCsvModelToServiceProviders(parseCsv(spRequest));
 			await this.serviceProvidersService.saveServiceProviders(request);
