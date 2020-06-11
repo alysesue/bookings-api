@@ -1,6 +1,5 @@
 import { Container, Inject, InRequestScope } from "typescript-ioc";
 import { ServicesService } from "./services.service";
-import { ServiceConfiguration } from "../common/serviceConfiguration";
 import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
 import { AdvancedConsoleLogger } from "typeorm";
 
@@ -19,10 +18,5 @@ export class ServicesValidation {
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_GENERIC).setMessage('Service not found');
 		}
-
-		const serviceConfiguation = Container.get(ServiceConfiguration);
-		serviceConfiguation.service = service;
-
-		console.log(' **** ServicesValidation *** ConfigId: ' + serviceConfiguation.configId);
 	}
 }

@@ -6,7 +6,6 @@ import { ServiceProvidersRepository } from "./serviceProviders.repository";
 import { ServiceProviderModel } from "./serviceProviders.apicontract";
 import { CalendarsService } from "../calendars/calendars.service";
 import { API_TIMEOUT_PERIOD } from "../const";
-import { ServiceConfiguration } from "../common/serviceConfiguration";
 
 @InRequestScope
 export class ServiceProvidersService {
@@ -17,11 +16,8 @@ export class ServiceProvidersService {
 	@Inject
 	public calendarsService: CalendarsService;
 
-	@Inject
-	private serviceConfiguration: ServiceConfiguration;
-
-	public async getServiceProviders(): Promise<ServiceProvider[]> {
-		return await this.serviceProvidersRepository.getServiceProviders(this.serviceConfiguration.getServiceId());
+	public async getServiceProviders(serviceId?: number): Promise<ServiceProvider[]> {
+		return await this.serviceProvidersRepository.getServiceProviders(serviceId);
 	}
 
 	public async getServiceProvider(id: number): Promise<ServiceProvider> {
@@ -32,18 +28,15 @@ export class ServiceProvidersService {
 		return sp;
 	}
 
-	private static validateService(service: Service) {
-		if (!service) {
+	private static validateService(serviceId: number) {
+		if (!serviceId) {
 			throw new Error("No service provided");
 		}
 	}
 
-	public async saveServiceProviders(listRequest: ServiceProviderModel[]) {
-
-		console.log(' **** ServiceProvidersService *** ConfigId: ' + this.serviceConfiguration.configId);
-
+	public async saveServiceProviders(listRequest: ServiceProviderModel[], serviceId: number) {
 		for (let i = 0; i < listRequest.length; i++) {
-			await this.saveSp(listRequest[i], this.serviceConfiguration.service);
+			await this.saveSp(listRequest[i], serviceId);
 
 			if (i > 0) {
 				await this.delay(API_TIMEOUT_PERIOD);
@@ -51,11 +44,11 @@ export class ServiceProvidersService {
 		}
 	}
 
-	public async saveSp(item: ServiceProviderModel, service: Service) {
+	public async saveSp(item: ServiceProviderModel, serviceId: number) {
 		try {
-			ServiceProvidersService.validateService(service);
+			ServiceProvidersService.validateService(serviceId);
 			const cal = await this.calendarsService.createCalendar();
-			return await this.serviceProvidersRepository.save(new ServiceProvider(service, item.name, cal));
+			return await this.serviceProvidersRepository.save(new ServiceProvider(item.name, cal, serviceId));
 		} catch (e) {
 			logger.error("exception when creating service provider ", e.message);
 			throw e;

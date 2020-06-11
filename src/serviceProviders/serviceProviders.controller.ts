@@ -45,17 +45,17 @@ export class ServiceProvidersController extends Controller {
 	@Post("")
 	@Security("service")
 	@SuccessResponse(201, 'Created')
-	public async addServiceProviders(@Body() spRequest: ServiceProviderListRequest, @Header('x-api-service') _) {
-		await this.serviceProvidersService.saveServiceProviders(spRequest.serviceProviders);
+	public async addServiceProviders(@Body() spRequest: ServiceProviderListRequest, @Header('x-api-service') serviceId: number) {
+		await this.serviceProvidersService.saveServiceProviders(spRequest.serviceProviders, serviceId);
 	}
 
 	@Post("/csv")
 	@Security("service")
 	@SuccessResponse(201, 'Created')
-	public async addServiceProvidersText(@Body() spRequest: string, @Header('x-api-service') _) {
+	public async addServiceProvidersText(@Body() spRequest: string, @Header('x-api-service') serviceId: number) {
 		try {
 			const request = ServiceProvidersController.parseCsvModelToServiceProviders(parseCsv(spRequest));
-			await this.serviceProvidersService.saveServiceProviders(request);
+			await this.serviceProvidersService.saveServiceProviders(request, serviceId);
 		} catch (e) {
 			return new ErrorResponse(e.message);
 		}
@@ -63,8 +63,8 @@ export class ServiceProvidersController extends Controller {
 
 	@Get("")
 	@Security("service")
-	public async getServiceProviders(@Header('x-api-service') _?): Promise<ServiceProviderResponseModel[]> {
-		const dataModels = await this.serviceProvidersService.getServiceProviders();
+	public async getServiceProviders(@Header('x-api-service') serviceId?: number): Promise<ServiceProviderResponseModel[]> {
+		const dataModels = await this.serviceProvidersService.getServiceProviders(serviceId);
 		return this.mapDataModels(dataModels);
 	}
 
