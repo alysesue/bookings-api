@@ -35,11 +35,12 @@ export class TimeslotsService {
 		return result;
 	}
 
-	private async getPendingBookings(minStartTime: Date, maxEndTime: Date): Promise<Booking[]> {
+	private async getPendingBookings(minStartTime: Date, maxEndTime: Date, serviceId: number): Promise<Booking[]> {
 		let bookings = await this.bookingsRepository.search(new BookingSearchRequest(
 			minStartTime,
 			maxEndTime,
-			BookingStatus.PendingApproval
+			BookingStatus.PendingApproval,
+			serviceId
 		));
 
 		bookings = bookings.filter(booking => booking.getSessionEndTime() <= maxEndTime);
@@ -59,7 +60,7 @@ export class TimeslotsService {
 		}
 	}
 
-	private * setPendingTimeslots(entries: Iterable<AvailableTimeslotProviders>, pendingBookings: Booking[]): Iterable<AvailableTimeslotProviders> {
+	private setPendingTimeslots(entries: AvailableTimeslotProviders[], pendingBookings: Booking[]): void {
 		const pendingBookingsLookup = groupByKey(pendingBookings, this.bookingKeySelector);
 
 		for (const element of entries) {
@@ -107,11 +108,10 @@ export class TimeslotsService {
 
 	public async getAggregatedTimeslotsExactMatch(startDateTime: Date, endDateTime: Date, serviceId: number): Promise<AvailableTimeslotProviders[]> {
 		const aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime, serviceId);
-		const generateMappedEntries = this.mapDataModels(aggregatedEntries);
+		const pendingBookings = await this.getPendingBookings(startDateTime, endDateTime, serviceId);
 
-		const pendingBookings = await this.getPendingBookings(startDateTime, endDateTime);
-		let mappedEntries = Array.from(this.setPendingTimeslots(generateMappedEntries, pendingBookings));
-		mappedEntries = mappedEntries.filter(e => e.availabilityCount > 0);
+		const mappedEntries = this.mapDataModels(aggregatedEntries);
+		this.setPendingTimeslots(mappedEntries, pendingBookings);
 
 		return mappedEntries;
 	}
@@ -125,10 +125,8 @@ export class TimeslotsService {
 		return timeslotEntry || AvailableTimeslotProviders.empty(startDateTime, endDateTime);
 	}
 
-	private * mapDataModels(entries: AggregatedEntry<ServiceProvider>[]): Iterable<AvailableTimeslotProviders> {
-		for (const entry of entries) {
-			yield AvailableTimeslotProviders.create(entry);
-		}
+	private mapDataModels(entries: AggregatedEntry<ServiceProvider>[]): AvailableTimeslotProviders[] {
+		return entries.map(e => AvailableTimeslotProviders.create(e));
 	}
 }
 

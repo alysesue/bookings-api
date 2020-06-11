@@ -7,8 +7,10 @@ export async function koaAuthentication(
 	securityName: string,
 	scopes?: string[]
 ): Promise<any> {
-	if (securityName === 'service') {
+	const hasService = (securityName === 'service');
+	const hasOptionalService = (securityName === 'optional-service');
+	if (hasService || hasOptionalService) {
 		const serviceId: number = request.headers["x-api-service"];
-		await Container.get(ServicesValidation).validate(serviceId);
+		await Container.get(ServicesValidation).validate(hasOptionalService, serviceId);
 	}
 }

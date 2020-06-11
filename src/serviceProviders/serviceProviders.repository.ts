@@ -14,11 +14,11 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		if (serviceId) {
 			findConditions['_serviceId'] = serviceId;
 		}
-		return (await this.getRepository()).find({ where: [findConditions], relations: ['Calendar'] });
+		return (await this.getRepository()).find({ where: [findConditions], relations: ['_calendar'] });
 	}
 
 	public async getServiceProvider(id: number): Promise<ServiceProvider> {
-		return (await this.getRepository()).findOne({ where: { id }, relations: ['Calendar'] });
+		return (await this.getRepository()).findOne(id, { relations: ['_calendar'] });
 	}
 
 	public async save(serviceProviders: ServiceProvider): Promise<ServiceProvider> {

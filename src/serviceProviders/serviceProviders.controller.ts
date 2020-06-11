@@ -62,7 +62,7 @@ export class ServiceProvidersController extends Controller {
 	}
 
 	@Get("")
-	@Security("service")
+	@Security("optional-service")
 	public async getServiceProviders(@Header('x-api-service') serviceId?: number): Promise<ServiceProviderResponseModel[]> {
 		const dataModels = await this.serviceProvidersService.getServiceProviders(serviceId);
 		return this.mapDataModels(dataModels);

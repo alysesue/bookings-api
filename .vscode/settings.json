@@ -33,5 +33,6 @@
   "tslint.jsEnable": true,
   "typescript.tsdk": "./node_modules/typescript/lib",
   "typescriptHero.imports.multiLineWrapThreshold": 120,
-"typescriptHero.imports.stringQuoteStyle": "\""
+"typescriptHero.imports.stringQuoteStyle": "\"",
+"editor.formatOnSave": true
 }
