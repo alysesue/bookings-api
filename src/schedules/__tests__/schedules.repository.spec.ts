@@ -100,8 +100,12 @@ scheduleMock.name = 'test';
 scheduleMock.initWeekdaySchedules();
 
 export const InnerRepositoryMock = {
-	findOne: jest.fn().mockImplementation((options: FindOneOptions<Schedule>) => {
-		return Promise.resolve(options?.where?.['id'] === NullScheduleId ? null : scheduleMock);
+	findOne: jest.fn().mockImplementation((...params) => {
+		if (params.length === 2 && params[0] === NullScheduleId) {
+			return Promise.resolve(null);
+		}
+
+		return Promise.resolve(scheduleMock);
 	}),
 	find: jest.fn().mockImplementation(() => Promise.resolve([scheduleMock])),
 	save: jest.fn().mockImplementation(() => Promise.resolve(scheduleMock)),

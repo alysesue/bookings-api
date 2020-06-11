@@ -17,7 +17,7 @@ afterEach(() => {
 	jest.clearAllMocks();
 });
 
-describe('Calendar service', () => {
+describe('Calendar repository', () => {
 	it('should get calendars', async () => {
 		Container.bind(DbConnection).to(DbConnectionMock);
 
@@ -27,17 +27,6 @@ describe('Calendar service', () => {
 
 		expect(getRepositoryMock).toBeCalled();
 		expect(InnerRepositoryMock.find).toBeCalledTimes(1);
-	});
-
-	it('should get calendars with templates', async () => {
-		Container.bind(DbConnection).to(DbConnectionMock);
-
-		const calendarsRepository = Container.get(CalendarsRepository);
-		const result = await calendarsRepository.getCalendarsWithTemplates();
-		expect(result).not.toBe(undefined);
-
-		expect(getRepositoryMock).toBeCalled();
-		expect(InnerRepositoryMock.find).toBeCalled();
 	});
 
 	it('should get calendar by UUID', async () => {

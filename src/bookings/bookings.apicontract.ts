@@ -1,7 +1,7 @@
 import { ServiceProviderResponse } from "../calendars/calendars.apicontract";
 
 export class BookingAcceptRequest {
-	public calendarUUID: string;
+	public serviceProviderId: number;
 }
 
 export class BookingRequest {
@@ -20,12 +20,13 @@ export class BookingResponse {
 }
 
 export class BookingSearchRequest {
+	public serviceId?: number;
 	public status?: number;
 	public from: Date;
 	public to: Date;
 
-
-	constructor(from: Date, to: Date, status?: number) {
+	constructor(from: Date, to: Date, status?: number, serviceId?: number) {
+		this.serviceId = serviceId;
 		this.status = status;
 		this.from = from;
 		this.to = to;
@@ -38,6 +39,6 @@ export class BookingRequestResponse {
 }
 
 export class BookingProviderResponse {
-	public uuid: string;
-	public serviceProviderName: string;
+	public id: number;
+	public name: string;
 }

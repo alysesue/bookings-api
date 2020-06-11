@@ -1,10 +1,11 @@
 import { Container, Snapshot } from "typescript-ioc";
-import { Booking, BookingStatus, Calendar, Schedule, Timeslot } from "../../models";
+import { Booking, BookingStatus, Calendar, Schedule, Service, ServiceProvider, Timeslot } from "../../models";
 import { TimeslotsService } from "../timeslots.service";
-import { CalendarsRepository } from '../../calendars/calendars.repository';
 import { BookingsRepository } from "../../bookings/bookings.repository";
 import { DateHelper } from "../../infrastructure/dateHelper";
 import { BookingSearchRequest } from '../../bookings/bookings.apicontract';
+import { ServicesRepository } from '../../services/services.repository';
+import { ServiceProvidersRepository } from "../../serviceProviders/serviceProviders.repository";
 
 let snapshot: Snapshot;
 beforeAll(() => {
@@ -31,20 +32,21 @@ describe("Timeslots Service", () => {
 	const CalendarMock = new Calendar();
 	CalendarMock.id = 1;
 
-	CalendarMock.schedule = ScheduleMock as unknown as Schedule;
+	const ServiceMock = new Service();
+	ServiceMock.id = 1;
+	ServiceMock.schedule = ScheduleMock as unknown as Schedule;
 
-	const CalendarsRepositoryMock = {
-		getCalendarsWithTemplates: jest.fn(() => Promise.resolve([CalendarMock]))
-	};
+	const ServiceProviderMock = new ServiceProvider(ServiceMock, 'Provider', CalendarMock);
+	ServiceProviderMock.id = 1;
 
 	// Booking in place for the first time slot
-	const BookingMock = new Booking(DateHelper.setHours(date, 15, 0), 60);
+	const BookingMock = new Booking(1, DateHelper.setHours(date, 15, 0), 60);
 	BookingMock.status = BookingStatus.Accepted;
 	BookingMock.eventICalId = 'eventICalId';
-	BookingMock.calendar = CalendarMock;
-	BookingMock.calendarId = CalendarMock.id;
+	BookingMock.serviceProvider = ServiceProviderMock;
+	BookingMock.serviceProviderId = ServiceProviderMock.id;
 
-	const pendingBookingMock = new Booking(DateHelper.setHours(date, 17, 0), 60);
+	const pendingBookingMock = new Booking(1, DateHelper.setHours(date, 17, 0), 60);
 	pendingBookingMock.status = BookingStatus.PendingApproval;
 
 	const BookingsRepositoryMock = {
@@ -54,30 +56,40 @@ describe("Timeslots Service", () => {
 		})
 	};
 
+	const ServicesRepositoryMock = {
+		getServiceWithSchedule: jest.fn(() => Promise.resolve(ServiceMock))
+	};
+
+	const ServiceProvidersRepositoryMock = {
+		getServiceProviders: jest.fn(() => Promise.resolve([ServiceProviderMock]))
+	};
+
 	it("should aggregate results", async () => {
-		Container.bind(CalendarsRepository).to(jest.fn(() => CalendarsRepositoryMock));
 		Container.bind(BookingsRepository).to(jest.fn(() => BookingsRepositoryMock));
+		Container.bind(ServicesRepository).to(jest.fn(() => ServicesRepositoryMock));
+		Container.bind(ServiceProvidersRepository).to(jest.fn(() => ServiceProvidersRepositoryMock));
 
 		const service = Container.get(TimeslotsService);
-		const result = await service.getAggregatedTimeslots(date, date);
+		const result = await service.getAggregatedTimeslots(date, date, 1);
 		expect(result).toBeDefined();
 
-		expect(CalendarsRepositoryMock.getCalendarsWithTemplates).toBeCalled();
+		expect(ServicesRepositoryMock.getServiceWithSchedule).toBeCalled();
 		expect(ScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 	});
 
-	it("should get available calendars", async () => {
-		Container.bind(CalendarsRepository).to(jest.fn(() => CalendarsRepositoryMock));
+	it("should get available providers", async () => {
 		Container.bind(BookingsRepository).to(jest.fn(() => BookingsRepositoryMock));
+		Container.bind(ServicesRepository).to(jest.fn(() => ServicesRepositoryMock));
+		Container.bind(ServiceProvidersRepository).to(jest.fn(() => ServiceProvidersRepositoryMock));
 
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 15, 0);
 		const endDateTime = DateHelper.setHours(date, 16, 0);
-		const result = await service.getAvailableCalendarsForTimeslot(startDateTime, endDateTime);
+		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1);
 
-		expect(CalendarsRepositoryMock.getCalendarsWithTemplates).toBeCalled();
+		expect(ServicesRepositoryMock.getServiceWithSchedule).toBeCalled();
 		expect(ScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 
-		expect(result).toHaveLength(0);
+		expect(result.serviceProviders).toHaveLength(0);
 	});
 });

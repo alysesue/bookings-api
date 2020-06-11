@@ -72,7 +72,7 @@ describe("Bookings repository", () => {
 		insertResult.identifiers = [{ id: "abc" }];
 		MockDBConnection.insert.mockImplementation(() => insertResult);
 		const bookingsRepository = Container.get(BookingsRepository);
-		const booking: Booking = new Booking(new Date(), 60);
+		const booking: Booking = new Booking(1, new Date(), 60);
 
 		const result = await bookingsRepository.save(booking);
 		expect(result.identifiers).toStrictEqual([{ id: "abc" }]);
@@ -83,7 +83,7 @@ describe("Bookings repository", () => {
 		Container.bind(DbConnection).to(MockDBConnection);
 
 		const bookingsRepository = Container.get(BookingsRepository);
-		const booking: Booking = new Booking(new Date(), 60);
+		const booking: Booking = new Booking(1, new Date(), 60);
 		MockDBConnection.save.mockImplementation(() => booking);
 
 		await bookingsRepository.update(booking);
@@ -92,7 +92,7 @@ describe("Bookings repository", () => {
 
 	it('should get booking', async () => {
 		Container.bind(DbConnection).to(MockDBConnection);
-		const booking = new Booking(new Date(), 60);
+		const booking = new Booking(1, new Date(), 60);
 		MockDBConnection.findOne.mockImplementation(() => Promise.resolve(booking));
 		const bookingsRepository = Container.get(BookingsRepository);
 		const result = await bookingsRepository.getBooking('1');

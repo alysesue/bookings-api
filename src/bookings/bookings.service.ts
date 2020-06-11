@@ -1,12 +1,11 @@
 import { Inject, InRequestScope } from "typescript-ioc";
-
 import { Booking, BookingStatus } from "../models";
-
 import { BookingsRepository } from "./bookings.repository";
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "./bookings.apicontract";
-import { isEmptyArray } from "../tools/arrays";
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
+import { DateHelper } from "../infrastructure/dateHelper";
+import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 
 @InRequestScope
 export class BookingsService {
@@ -18,15 +17,22 @@ export class BookingsService {
 	private calendarsService: CalendarsService;
 	@Inject
 	private timeslotsService: TimeslotsService;
+	@Inject
+	private serviceProviderRepo: ServiceProvidersRepository;
 
-	private static createBooking(bookingRequest: BookingRequest) {
+	private createBooking(bookingRequest: BookingRequest, serviceId: number) {
+		if (!serviceId) {
+			throw new Error('A service is required to make a booking');
+		}
+
 		return new Booking(
+			serviceId,
 			bookingRequest.startDateTime,
-			this.SessionDurationInMinutes);
+			BookingsService.SessionDurationInMinutes);
 	}
 
-	public async getBookings(): Promise<Booking[]> {
-		return this.bookingsRepository.getBookings();
+	public async getBookings(serviceId?: number): Promise<Booking[]> {
+		return this.bookingsRepository.getBookings(serviceId);
 	}
 
 	public async getBooking(bookingId: string): Promise<Booking> {
@@ -37,8 +43,8 @@ export class BookingsService {
 		return booking;
 	}
 
-	public async save(bookingRequest: BookingRequest): Promise<Booking> {
-		const booking = BookingsService.createBooking(bookingRequest);
+	public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
+		const booking = this.createBooking(bookingRequest, serviceId);
 
 		await this.validateTimeSlot(booking);
 
@@ -46,28 +52,23 @@ export class BookingsService {
 		return booking;
 	}
 
-	public async getBookingRequests(from: Date, to: Date) {
-		const searchBookingsRequest = new BookingSearchRequest(from, to, BookingStatus.PendingApproval);
-		return await this.searchBookings(searchBookingsRequest);
-	}
-
 	public async acceptBooking(bookingId: string, acceptRequest: BookingAcceptRequest): Promise<Booking> {
 		const booking = await this.getBookingForAccepting(bookingId);
 
-		const calendar = await this.calendarsService.getCalendarByUUID(acceptRequest.calendarUUID);
-		if (!calendar) {
-			throw new Error(`Calendar '${acceptRequest.calendarUUID}' not found`);
+		const provider = await this.serviceProviderRepo.getServiceProvider(acceptRequest.serviceProviderId);
+		if (!provider) {
+			throw new Error(`Service provider '${acceptRequest.serviceProviderId}' not found`);
 		}
-		const availableCalendars = await this.timeslotsService.getAvailableCalendarsForTimeslot(booking.startDateTime, booking.getSessionEndTime());
-		const isCalendarAvailable = availableCalendars.filter(c => c.uuid === acceptRequest.calendarUUID).length > 0;
-		if (!isCalendarAvailable) {
-			throw new Error(`Calendar '${acceptRequest.calendarUUID}' is not available for this booking.`);
+		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
+		const isProviderAvailable = timeslotEntry.serviceProviders.filter(e => e.id === acceptRequest.serviceProviderId).length > 0;
+		if (!isProviderAvailable) {
+			throw new Error(`Service provider '${acceptRequest.serviceProviderId}' is not available for this booking.`);
 		}
 
-		const eventICalId = await this.calendarsService.createCalendarEvent(booking, calendar);
+		const eventICalId = await this.calendarsService.createCalendarEvent(booking, provider.calendar);
 
 		booking.status = BookingStatus.Accepted;
-		booking.calendar = calendar;
+		booking.serviceProvider = provider;
 		booking.eventICalId = eventICalId;
 		booking.acceptedAt = new Date();
 
@@ -77,10 +78,10 @@ export class BookingsService {
 	}
 
 	private async validateTimeSlot(booking: Booking) {
-		const calendars = await this.timeslotsService.getAvailableCalendarsForTimeslot(booking.startDateTime, booking.getSessionEndTime());
+		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
 
-		if (isEmptyArray(calendars)) {
-			throw new Error("No available calendars for this timeslot");
+		if (timeslotEntry.availabilityCount < 1) {
+			throw new Error("No available service providers for this timeslot");
 		}
 	}
 

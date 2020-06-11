@@ -2,14 +2,11 @@ import { Inject, InRequestScope } from "typescript-ioc";
 import { Booking, Calendar, Schedule } from "../models";
 import { CalendarsRepository } from "./calendars.repository";
 import { GoogleCalendarService } from "../googleapi/google.calendar.service";
-import { CalendarTemplatesTimeslotModel, CalendarUserModel } from "./calendars.apicontract";
-import { SchedulesRepository } from "../schedules/schedules.repository";
+import { CalendarUserModel } from "./calendars.apicontract";
 import { isEmptyArray } from "../tools/arrays";
 
 @InRequestScope
 export class CalendarsService {
-	@Inject
-	private schedulesRepository: SchedulesRepository;
 	@Inject
 	private calendarsRepository: CalendarsRepository;
 	@Inject
@@ -57,15 +54,6 @@ export class CalendarsService {
 	public async createCalendarEvent(booking: Booking, calendar: Calendar): Promise<string> {
 		return await this.googleCalendarApi.createEvent(booking, calendar.googleCalendarId);
 	}
-
-	public async addSchedules(calendarUUID: string, model: CalendarTemplatesTimeslotModel): Promise<Schedule> {
-		const calendar = await this.calendarsRepository.getCalendarByUUID(calendarUUID);
-		const schedule = await this.schedulesRepository.getScheduleById(model.templatesTimeslotId);
-		calendar.schedule = schedule;
-		await this.calendarsRepository.saveCalendar(calendar);
-		return schedule;
-	}
-
 
 	public async addUser(calendarUUID: string, model: CalendarUserModel): Promise<CalendarUserModel> {
 		const calendar = await this.calendarsRepository.getCalendarByUUID(calendarUUID);
