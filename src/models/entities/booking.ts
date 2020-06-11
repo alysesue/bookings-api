@@ -1,9 +1,12 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { BookingStatus } from "./bookingStatus";
+import { BookingStatus } from "../bookingStatus";
 import { Calendar } from './calendar';
 
 @Entity()
 export class Booking extends BaseEntity {
+
+	@Column()
+	private _createdAt: Date;
 
 	constructor(startDateTime: Date, sessionDurationInMinutes: number) {
 		super();
@@ -46,12 +49,13 @@ export class Booking extends BaseEntity {
 	@Column()
 	private _sessionDurationInMinutes: number;
 
+	public get sessionDurationInMinutes(): number {
+		return this._sessionDurationInMinutes;
+	}
+
 	@Column()
 	@Index()
 	private _startDateTime: Date;
-
-	@Column()
-	private _createdAt: Date;
 
 	public get startDateTime(): Date {
 		return this._startDateTime;
@@ -64,22 +68,9 @@ export class Booking extends BaseEntity {
 		this._acceptedAt = acceptedAt;
 	}
 
-	public get sessionDurationInMinutes(): number {
-		return this._sessionDurationInMinutes;
-	}
-
-	public getSessionEndTime(): Date {
-		return new Date(
-			this._startDateTime.getTime() + this._sessionDurationInMinutes * 60 * 1000
-		);
-	}
-
 	@ManyToOne(type => Calendar, { nullable: true })
 	@JoinColumn({ name: '_calendarId' })
 	private _calendar: Calendar;
-
-	@Column({ nullable: true })
-	private _calendarId?: number;
 
 	public get calendar(): Calendar {
 		return this._calendar;
@@ -89,11 +80,20 @@ export class Booking extends BaseEntity {
 		this._calendar = calendar;
 	}
 
+	@Column({ nullable: true })
+	private _calendarId?: number;
+
+	public get calendarId(): number | undefined {
+		return this._calendarId;
+	}
+
 	public set calendarId(value: number | undefined) {
 		this._calendarId = value;
 	}
 
-	public get calendarId(): number | undefined {
-		return this._calendarId;
+	public getSessionEndTime(): Date {
+		return new Date(
+			this._startDateTime.getTime() + this._sessionDurationInMinutes * 60 * 1000
+		);
 	}
 }

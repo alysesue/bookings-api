@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { ISchedule } from '../models/interfaces';
+import { ISchedule } from '../interfaces';
 
 @Entity()
 export class Service extends BaseEntity {
@@ -15,24 +15,24 @@ export class Service extends BaseEntity {
 	@Index({ unique: true })
 	private _name: string;
 
-	public set name(name: string) {
-		this._name = name;
-	}
-
 	public get name() {
 		return this._name;
+	}
+
+	public set name(name: string) {
+		this._name = name;
 	}
 
 	@ManyToOne('Schedule', { nullable: true })
 	@JoinColumn({ name: '_scheduleId' })
 	public _schedule: ISchedule;
 
-	public set schedule(schedule: ISchedule) {
-		this._schedule = schedule;
-	}
-
 	public get schedule(): ISchedule {
 		return this._schedule;
+	}
+
+	public set schedule(schedule: ISchedule) {
+		this._schedule = schedule;
 	}
 
 	@Column({ nullable: true })

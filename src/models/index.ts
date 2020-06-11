@@ -1,12 +1,12 @@
-import { Booking } from "./booking";
+import { Booking } from "./entities/booking";
 import { BookingStatus } from "./bookingStatus";
-import { Schedule } from "./schedule";
-import { WeekDaySchedule } from './weekDaySchedule';
-import { WeekDayBreak } from './weekDayBreak';
-import { Calendar } from "./calendar";
-import { Service } from "./service";
+import { Schedule } from "./entities/schedule";
+import { WeekDaySchedule } from './entities/weekDaySchedule';
+import { WeekDayBreak } from './entities/weekDayBreak';
+import { Calendar } from "./entities/calendar";
+import { Service } from "./entities/service";
 import { TimeOfDay } from './timeOfDay';
-import { ServiceProvider } from "./serviceProvider";
+import { ServiceProvider } from "./entities/serviceProvider";
 import { BusinessValidation } from './businessValidation';
 import { Timeslot } from './timeslot';
 

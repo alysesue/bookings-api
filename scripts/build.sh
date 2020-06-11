@@ -61,5 +61,10 @@ npm shrinkwrap
 npm pack
 popd
 
+echo "run migrations"
+
+./node_modules/.bin/ts-node --project tsconfig.json ./node_modules/.bin/typeorm schema:sync
+./node_modules/.bin/ts-node --project tsconfig.json ./node_modules/.bin/typeorm migration:run
+
 # Return to invocation dir
 popd

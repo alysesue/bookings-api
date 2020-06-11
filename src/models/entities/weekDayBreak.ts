@@ -1,7 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { TimeOfDay, Transformer as TimeTransformer } from './timeOfDay';
-import { ISchedule } from './interfaces';
-import { Weekday } from '../enums/weekday';
+import { TimeOfDay, Transformer as TimeTransformer } from '../timeOfDay';
+import { ISchedule } from '../interfaces';
+import { Weekday } from '../../enums/weekday';
 
 @Entity()
 @Index(["scheduleId", "weekDay"], { unique: true })
@@ -12,22 +12,14 @@ export class WeekDayBreak {
 	@ManyToOne('Schedule', { nullable: false })
 	@JoinColumn({ name: 'scheduleId' })
 	public schedule: ISchedule;
-
-	@Column({ nullable: false })
-	private scheduleId: number;
-
-	public getScheduleId() {
-		return this.scheduleId;
-	}
-
 	@Column("int")
 	public weekDay: Weekday;
-
 	@Column({ type: "time", transformer: TimeTransformer })
 	public startTime: TimeOfDay;
-
 	@Column({ type: "time", transformer: TimeTransformer })
 	public endTime: TimeOfDay;
+	@Column({ nullable: false })
+	private scheduleId: number;
 
 	constructor() {
 	}
@@ -44,6 +36,10 @@ export class WeekDayBreak {
 		instance.schedule = schedule;
 
 		return instance;
+	}
+
+	public getScheduleId() {
+		return this.scheduleId;
 	}
 
 	public intersects(start: TimeOfDay, end: TimeOfDay): boolean {
