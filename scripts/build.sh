@@ -23,6 +23,7 @@ else
 	XARGS="xargs"
 fi
 
+skipMigrations=${2:-1}
 SCRIPT_PATH=$( ${READLINK} -f $0 )
 SCRIPT_DIR=$( dirname $( ${READLINK} -f $0 ) )
 PROJECT_DIR=$( cd ${SCRIPT_DIR} && cd .. && pwd )
@@ -61,10 +62,15 @@ npm shrinkwrap
 npm pack
 popd
 
-echo "run migrations"
+if [ $skipMigrations =  "skipMigrations" ]
+  then
+     popd
+  else
+    echo "run migrations"
 
-./node_modules/.bin/ts-node --project tsconfig.json ./node_modules/.bin/typeorm schema:sync
-./node_modules/.bin/ts-node --project tsconfig.json ./node_modules/.bin/typeorm migration:run
+    ./node_modules/.bin/ts-node --project tsconfig.json ./node_modules/.bin/typeorm schema:sync
+    ./node_modules/.bin/ts-node --project tsconfig.json ./node_modules/.bin/typeorm migration:run
 
-# Return to invocation dir
-popd
+    # Return to invocation dir
+    popd
+fi
