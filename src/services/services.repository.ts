@@ -15,11 +15,14 @@ export class ServicesRepository extends RepositoryBase<Service> {
 
 	private async populateSchedules(entries: Service[]): Promise<Service[]> {
 		const scheduleIds = entries.map(e => e.scheduleId).filter(id => !!id);
+		if (scheduleIds.length === 0) {
+			return entries;
+		}
+
 		const schedulesById = groupByKeyLastValue(await this.scheduleRepository.getSchedules(scheduleIds), s => s.id);
 
-		for (const calendar of entries.filter(c => !!c.scheduleId)) {
-			const schedule = schedulesById.get(calendar.scheduleId);
-			calendar.schedule = schedule;
+		for (const service of entries.filter(c => !!c.scheduleId)) {
+			service.schedule = schedulesById.get(service.scheduleId);
 		}
 		return entries;
 	}

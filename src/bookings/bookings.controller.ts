@@ -45,8 +45,8 @@ export class BookingsController extends Controller {
 
 	@Get()
 	@SuccessResponse(200, 'Ok')
-	@Security("service")
-	public async getBookings(@Header("x-api-service") serviceId: number): Promise<BookingResponse[]> {
+	@Security("optional-service")
+	public async getBookings(@Header("x-api-service") serviceId?: number): Promise<BookingResponse[]> {
 		const bookings = await this.bookingsService.getBookings(serviceId);
 		return BookingsController.mapDataModels(bookings);
 	}
@@ -79,11 +79,11 @@ export class BookingsController extends Controller {
 
 	@Get('search')
 	@SuccessResponse(200, "Ok")
-	@Security("service")
+	@Security("optional-service")
 	public async searchBookings(@Query() status: number,
 		@Query() from: Date,
 		@Query() to: Date,
-		@Header("x-api-service") serviceId: number): Promise<BookingResponse[]> {
+		@Header("x-api-service") serviceId?: number): Promise<BookingResponse[]> {
 
 		const searchQuery = new BookingSearchRequest(from, to, status, serviceId);
 		const bookings = await this.bookingsService.searchBookings(searchQuery);
