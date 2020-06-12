@@ -111,12 +111,12 @@ const ServicesRepoMock = {
 	getAll: jest.fn()
 };
 
-class ServicesRepositoryMockClass {
+class ServicesRepositoryMockClass extends ServicesRepository {
 	public async save(service: Service): Promise<Service> {
 		return ServicesRepoMock.save(service);
 	}
 
-	public async get(id: number): Promise<Service> {
+	public async getService(id: number): Promise<Service> {
 		return ServicesRepoMock.get(id);
 	}
 
@@ -129,7 +129,7 @@ const SchedulesServiceMock = {
 	getSchedule: jest.fn()
 };
 
-class SchedulesServiceMockClass {
+class SchedulesServiceMockClass extends SchedulesService {
 	public async getSchedule(id: number): Promise<Schedule> {
 		return SchedulesServiceMock.getSchedule(id);
 	}

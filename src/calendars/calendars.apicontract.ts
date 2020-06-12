@@ -17,10 +17,6 @@ export class ServiceProviderResponse {
 	public uuid: string;
 }
 
-export class CalendarTemplatesTimeslotModel {
-	public templatesTimeslotId: number;
-}
-
 export class CalendarScheduleResponse {
 	public id: number;
 

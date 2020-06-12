@@ -15,8 +15,7 @@ export class SchedulesRepository extends RepositoryBase<Schedule> {
 	}
 
 	public async getScheduleById(id: number): Promise<Schedule> {
-		const schedule = await (await this.getRepository()).findOne({
-			where: { id },
+		const schedule = await (await this.getRepository()).findOne(id, {
 			relations: ['weekdaySchedules']
 		});
 		return this.populateSingleEntryBreaks(schedule);

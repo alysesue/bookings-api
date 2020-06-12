@@ -1,16 +1,17 @@
 import { Container } from "typescript-ioc";
 import { BookingsController } from "../index";
 import { BookingsRepository } from "../bookings.repository";
-import { Booking, BookingStatus, Calendar } from "../../models";
+import { Booking, BookingStatus, Calendar, Service, ServiceProvider } from "../../models";
 import { CalendarsRepository } from "../../calendars/calendars.repository";
 import { GoogleApi } from "../../googleapi/google.api";
 import * as insertEventResponse from "./createEventResponse.json";
 import * as freebusyResponse from "./freebusyResponse.json";
 import { BookingAcceptRequest } from "../bookings.apicontract";
-import { TimeslotsService } from '../../timeslots/timeslots.service';
+import { AvailableTimeslotProviders, TimeslotsService } from '../../timeslots/timeslots.service';
+import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 
 const BookingRepositoryMock = (update) => {
-	const testBooking = new Booking(new Date(), 100);
+	const testBooking = new Booking(1, new Date(), 100);
 	return jest.fn().mockImplementation(() => ({
 		getBooking: jest.fn().mockReturnValue(testBooking),
 		update
@@ -40,27 +41,50 @@ const GoogleApiMock = () => {
 };
 
 class TimeslotsServiceMock extends TimeslotsService {
-	public static availableCalendarsForTimeslot: Calendar[] = [];
+	public static availableProvidersForTimeslot: ServiceProvider[] = [];
 
-	public async getAvailableCalendarsForTimeslot(startDateTime: Date, endDateTime: Date): Promise<Calendar[]> {
-		return TimeslotsServiceMock.availableCalendarsForTimeslot;
+	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date, serviceId: number): Promise<AvailableTimeslotProviders> {
+		const timeslotEntry = new AvailableTimeslotProviders();
+		timeslotEntry.startTime = startDateTime;
+		timeslotEntry.endTime = startDateTime;
+		timeslotEntry.serviceProviders = TimeslotsServiceMock.availableProvidersForTimeslot;
+
+		return timeslotEntry;
 	}
 }
 
+class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
+	public static getServiceProviderMock: ServiceProvider;
+
+	public async getServiceProvider(id: number): Promise<ServiceProvider> {
+		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
+	}
+}
 
 describe('Booking Integration tests', () => {
 	it('should accept booking', async () => {
 		const updateBooking = jest.fn();
-		const calendar = { id: 1, uuid: '123', googleCalendarId: "google-id-1" } as Calendar;
+		const calendar = new Calendar();
+		calendar.id = 1;
+		calendar.uuid = '123';
+		calendar.googleCalendarId = "google-id-1";
+
+		const service = new Service();
+		service.id = 2;
+		const provider = new ServiceProvider("service", calendar, 2);
+		provider.id = 11;
+
 		Container.bind(BookingsRepository).to(BookingRepositoryMock(updateBooking));
 		Container.bind(CalendarsRepository).to(CalendarsRepositoryMock());
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 		Container.bind(GoogleApi).to(GoogleApiMock());
+		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 
-		TimeslotsServiceMock.availableCalendarsForTimeslot = [calendar];
+		ServiceProvidersRepositoryMock.getServiceProviderMock = provider;
+		TimeslotsServiceMock.availableProvidersForTimeslot = [provider];
 		const controller = Container.get(BookingsController);
 
-		await controller.acceptBooking('1', { calendarUUID: '123' } as BookingAcceptRequest);
+		await controller.acceptBooking('1', { serviceProviderId: 11 } as BookingAcceptRequest);
 
 		expect(updateBooking).toBeCalledTimes(1);
 		const booking = updateBooking.mock.calls[0][0] as Booking;

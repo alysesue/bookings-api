@@ -2,20 +2,30 @@ import { BookingsService } from "..";
 import { BookingsRepository } from "../bookings.repository";
 import { CalendarsService } from "../../calendars/calendars.service";
 import { Container } from "typescript-ioc";
-import { Booking, BookingStatus, Calendar } from "../../models/";
+import { Booking, BookingStatus, Calendar, Service, ServiceProvider } from "../../models/";
 import { InsertResult } from "typeorm";
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "../bookings.apicontract";
-import { TimeslotsService } from '../../timeslots/timeslots.service';
+import { AvailableTimeslotProviders, TimeslotsService } from '../../timeslots/timeslots.service';
+import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 
 describe("Bookings.Service", () => {
+	const service = new Service();
+	const calendar = new Calendar();
+	calendar.id = 1;
+	calendar.uuid = '123';
+	calendar.googleCalendarId = 'google-id-1';
+	const serviceProvider = new ServiceProvider('provider', calendar, 0);
+	serviceProvider.id = 1;
+
 	beforeAll(() => {
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
+		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 	});
 
 	it("should get all bookings", async () => {
-		BookingRepositoryMock.getBookingsMock = [new Booking(new Date(), 60)];
+		BookingRepositoryMock.getBookingsMock = [new Booking(1, new Date(), 60)];
 		const result = await Container.get(BookingsService).getBookings();
 
 		expect(result.length).toBe(1);
@@ -25,10 +35,9 @@ describe("Bookings.Service", () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
 		BookingRepositoryMock.searchBookingsMock = [];
-		CalendarsServiceMock.calendars = [new Calendar()];
-		TimeslotsServiceMock.availableCalendarsForTimeslot = [new Calendar()];
+		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 
-		await Container.get(BookingsService).save(bookingRequest);
+		await Container.get(BookingsService).save(bookingRequest, 1);
 
 		const booking = BookingRepositoryMock.booking;
 		expect(booking).not.toBe(undefined);
@@ -38,13 +47,12 @@ describe("Bookings.Service", () => {
 	it("should accept booking", async () => {
 		const bookingService = Container.get(BookingsService);
 		CalendarsServiceMock.eventId = "event-id";
-		BookingRepositoryMock.booking = new Booking(new Date(), 60);
-		const calendar = { id: 1, uuid: '123', googleCalendarId: "google-id-1" } as Calendar;
-		CalendarsServiceMock.calendars = [calendar];
-		TimeslotsServiceMock.availableCalendarsForTimeslot = [calendar];
+		BookingRepositoryMock.booking = new Booking(1, new Date(), 60);
+		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 
 		const acceptRequest = new BookingAcceptRequest();
-		acceptRequest.calendarUUID = '123';
+		acceptRequest.serviceProviderId = 1;
 		const result = await bookingService.acceptBooking("1", acceptRequest);
 
 		expect(result.status).toBe(BookingStatus.Accepted);
@@ -63,20 +71,17 @@ describe("Bookings.Service", () => {
 		const bookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
 
-		const testCalendar = new Calendar();
-		testCalendar.googleCalendarId = "google-id-1";
-		CalendarsServiceMock.calendars = [new Calendar()];
-		BookingRepositoryMock.searchBookingsMock = [new Booking(new Date(), 10)];
-		TimeslotsServiceMock.availableCalendarsForTimeslot = [];
+		BookingRepositoryMock.searchBookingsMock = [new Booking(1, new Date(), 10)];
+		TimeslotsServiceMock.availableProvidersForTimeslot = [];
 
-		const service = Container.get(BookingsService);
-		await expect(service.save(bookingRequest))
+		const bookingService = Container.get(BookingsService);
+		await expect(bookingService.save(bookingRequest, 1))
 			.rejects
-			.toStrictEqual(new Error('No available calendars for this timeslot'));
+			.toStrictEqual(new Error('No available service providers for this timeslot'));
 	});
 });
 
-class BookingRepositoryMock extends BookingsRepository {
+class BookingRepositoryMock {
 	public static booking: Booking;
 	public static getBookingsMock: Booking[];
 	public static searchBookingsMock: Booking[];
@@ -104,46 +109,31 @@ class BookingRepositoryMock extends BookingsRepository {
 }
 
 class CalendarsServiceMock extends CalendarsService {
-	public static calendars: Calendar[];
 	public static eventId: string;
-
-	public async validateTimeSlot(booking: Booking) {
-		return Promise.resolve();
-	}
-
-	public async getCalendars(): Promise<Calendar[]> {
-		return CalendarsServiceMock.calendars;
-	}
-
-	public async getCalendarByUUID(uuid: string): Promise<Calendar> {
-		const calendar = new Calendar();
-		calendar.id = 1;
-		calendar.uuid = uuid;
-		calendar.googleCalendarId = 'googleCalendarId';
-		return calendar;
-	}
-
-	public async createEvent(booking: Booking): Promise<string> {
-		return Promise.resolve(CalendarsServiceMock.eventId);
-	}
 
 	public async createCalendarEvent(booking: Booking, calendar: Calendar): Promise<string> {
 		return Promise.resolve(CalendarsServiceMock.eventId);
 	}
-
-	public async getCalendarForBookingRequest(booking: Booking, calendarId: string): Promise<Calendar> {
-		const calendar = new Calendar();
-		calendar.id = 1;
-		calendar.uuid = 'uuid';
-		calendar.googleCalendarId = 'googleCalendarId';
-		return calendar;
-	}
 }
 
 class TimeslotsServiceMock extends TimeslotsService {
-	public static availableCalendarsForTimeslot: Calendar[] = [];
+	public static availableProvidersForTimeslot: ServiceProvider[] = [];
 
-	public async getAvailableCalendarsForTimeslot(startDateTime: Date, endDateTime: Date): Promise<Calendar[]> {
-		return TimeslotsServiceMock.availableCalendarsForTimeslot;
+	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date, serviceId: number): Promise<AvailableTimeslotProviders> {
+		const timeslotEntry = new AvailableTimeslotProviders();
+		timeslotEntry.startTime = startDateTime;
+		timeslotEntry.endTime = startDateTime;
+		timeslotEntry.serviceProviders = TimeslotsServiceMock.availableProvidersForTimeslot;
+
+		return timeslotEntry;
+	}
+}
+
+
+class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
+	public static getServiceProviderMock: ServiceProvider;
+
+	public async getServiceProvider(id: number): Promise<ServiceProvider> {
+		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
 	}
 }

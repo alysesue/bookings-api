@@ -1,9 +1,7 @@
 import { InRequestScope } from "typescript-ioc";
 import { Between, FindConditions, InsertResult } from "typeorm";
 import { Booking } from "../models";
-import { BookingSearchRequest } from "./bookings.apicontract";
 import { RepositoryBase } from "../core/repository";
-
 
 @InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {
@@ -11,8 +9,12 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		super(Booking);
 	}
 
-	public async getBookings(): Promise<Booking[]> {
-		return (await this.getRepository()).find();
+	public async getBookings(serviceId?: number): Promise<Booking[]> {
+		const findConditions: FindConditions<Booking> = {};
+		if (serviceId) {
+			findConditions['_serviceId'] = serviceId;
+		}
+		return (await this.getRepository()).find({ where: [findConditions] });
 	}
 
 	public async getBooking(id: string): Promise<Booking> {
@@ -30,13 +32,21 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return repository.save(booking);
 	}
 
-	public async search(searchRequest: BookingSearchRequest): Promise<Booking[]> {
+	public async search(searchRequest: {
+		serviceId?: number,
+		status?: number,
+		from: Date,
+		to: Date
+	}): Promise<Booking[]> {
 		const repository = await this.getRepository();
 
 		const findConditions: FindConditions<Booking> = {};
 		findConditions['_startDateTime'] = Between(searchRequest.from, searchRequest.to);
 		if (searchRequest.status) {
 			findConditions['_status'] = searchRequest.status;
+		}
+		if (searchRequest.serviceId) {
+			findConditions['_serviceId'] = searchRequest.serviceId;
 		}
 
 		return repository.find({ where: [findConditions] });

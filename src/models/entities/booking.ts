@@ -1,15 +1,14 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { BookingStatus } from "../bookingStatus";
-import { Calendar } from './calendar';
+import { ServiceProvider } from './serviceProvider';
+import { Service } from "./service";
 
 @Entity()
 export class Booking extends BaseEntity {
 
-	@Column()
-	private _createdAt: Date;
-
-	constructor(startDateTime: Date, sessionDurationInMinutes: number) {
+	constructor(serviceId: number, startDateTime: Date, sessionDurationInMinutes: number) {
 		super();
+		this._serviceId = serviceId;
 		this._startDateTime = startDateTime;
 		this._sessionDurationInMinutes = sessionDurationInMinutes;
 
@@ -22,6 +21,21 @@ export class Booking extends BaseEntity {
 
 	public get id(): number {
 		return this._id;
+	}
+
+	@Column({ nullable: false })
+	private _serviceId: number;
+
+	public get serviceId(): number {
+		return this._serviceId;
+	}
+
+	@ManyToOne(type => Service)
+	@JoinColumn({ name: '_serviceId' })
+	private _service: Service;
+
+	public get service(): Service {
+		return this._service;
 	}
 
 	@Column({ type: "varchar", length: 300, nullable: true })
@@ -49,13 +63,12 @@ export class Booking extends BaseEntity {
 	@Column()
 	private _sessionDurationInMinutes: number;
 
-	public get sessionDurationInMinutes(): number {
-		return this._sessionDurationInMinutes;
-	}
-
 	@Column()
 	@Index()
 	private _startDateTime: Date;
+
+	@Column()
+	private _createdAt: Date;
 
 	public get startDateTime(): Date {
 		return this._startDateTime;
@@ -68,32 +81,36 @@ export class Booking extends BaseEntity {
 		this._acceptedAt = acceptedAt;
 	}
 
-	@ManyToOne(type => Calendar, { nullable: true })
-	@JoinColumn({ name: '_calendarId' })
-	private _calendar: Calendar;
-
-	public get calendar(): Calendar {
-		return this._calendar;
-	}
-
-	public set calendar(calendar: Calendar) {
-		this._calendar = calendar;
-	}
-
-	@Column({ nullable: true })
-	private _calendarId?: number;
-
-	public get calendarId(): number | undefined {
-		return this._calendarId;
-	}
-
-	public set calendarId(value: number | undefined) {
-		this._calendarId = value;
+	public get sessionDurationInMinutes(): number {
+		return this._sessionDurationInMinutes;
 	}
 
 	public getSessionEndTime(): Date {
 		return new Date(
 			this._startDateTime.getTime() + this._sessionDurationInMinutes * 60 * 1000
 		);
+	}
+
+	@ManyToOne(type => ServiceProvider, { nullable: true })
+	@JoinColumn({ name: '_serviceProviderId' })
+	private _serviceProvider: ServiceProvider;
+
+	@Column({ nullable: true })
+	private _serviceProviderId?: number;
+
+	public get serviceProvider(): ServiceProvider {
+		return this._serviceProvider;
+	}
+
+	public set serviceProvider(serviceProvider: ServiceProvider) {
+		this._serviceProvider = serviceProvider;
+	}
+
+	public set serviceProviderId(value: number | undefined) {
+		this._serviceProviderId = value;
+	}
+
+	public get serviceProviderId(): number | undefined {
+		return this._serviceProviderId;
 	}
 }

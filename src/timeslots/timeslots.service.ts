@@ -1,12 +1,13 @@
 import { Inject, Scope, Scoped } from "typescript-ioc";
 import { AggregatedEntry, TimeslotAggregator } from "./timeslotAggregator";
-import { Booking, BookingStatus, Calendar, Timeslot } from '../models';
+import { Booking, BookingStatus, Calendar, ServiceProvider, Timeslot } from '../models';
 import { CalendarsRepository } from "../calendars/calendars.repository";
 import { DateHelper } from "../infrastructure/dateHelper";
 import { BookingsRepository } from "../bookings/bookings.repository";
 import { BookingSearchRequest } from '../bookings/bookings.apicontract';
-import { TimeslotResponse } from './timeslots.apicontract';
 import { groupByKey } from '../tools/collections';
+import { ServicesRepository } from "../services/services.repository";
+import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 
 @Scoped(Scope.Request)
 export class TimeslotsService {
@@ -16,7 +17,13 @@ export class TimeslotsService {
 	@Inject
 	private bookingsRepository: BookingsRepository;
 
-	private async getAcceptedBookingsPerCalendarId(minStartTime: Date, maxEndTime: Date): Promise<Map<number, Booking[]>> {
+	@Inject
+	private servicesRepository: ServicesRepository;
+
+	@Inject
+	private serviceProvidersRepo: ServiceProvidersRepository;
+
+	private async getAcceptedBookingsPerProviderId(minStartTime: Date, maxEndTime: Date): Promise<Map<number, Booking[]>> {
 		let bookings = await this.bookingsRepository.search(new BookingSearchRequest(
 			minStartTime,
 			maxEndTime,
@@ -24,15 +31,16 @@ export class TimeslotsService {
 		));
 		bookings = bookings.filter(booking => booking.getSessionEndTime() <= maxEndTime);
 
-		const result = groupByKey(bookings, (booking) => booking?.calendarId ?? 0);
+		const result = groupByKey(bookings, (booking) => booking?.serviceProviderId ?? 0);
 		return result;
 	}
 
-	private async getPendingBookings(minStartTime: Date, maxEndTime: Date): Promise<Booking[]> {
+	private async getPendingBookings(minStartTime: Date, maxEndTime: Date, serviceId: number): Promise<Booking[]> {
 		let bookings = await this.bookingsRepository.search(new BookingSearchRequest(
 			minStartTime,
 			maxEndTime,
-			BookingStatus.PendingApproval
+			BookingStatus.PendingApproval,
+			serviceId
 		));
 
 		bookings = bookings.filter(booking => booking.getSessionEndTime() <= maxEndTime);
@@ -52,35 +60,37 @@ export class TimeslotsService {
 		}
 	}
 
-	private * deductPendingTimeslots(entries: Iterable<TimeslotResponse>, pendingBookings: Booking[]): Iterable<TimeslotResponse> {
+	private setPendingTimeslots(entries: AvailableTimeslotProviders[], pendingBookings: Booking[]): void {
 		const pendingBookingsLookup = groupByKey(pendingBookings, this.bookingKeySelector);
 
 		for (const element of entries) {
 			const elementKey = this.timeslotKeySelector(element.startTime, element.endTime);
-			const pendingBookingsCount = pendingBookingsLookup.get(elementKey)?.length || 0;
-
-			element.availabilityCount = element.availabilityCount - pendingBookingsCount;
-			if (element.availabilityCount > 0) {
-				yield element;
-			}
+			element.pendingBookingsCount = pendingBookingsLookup.get(elementKey)?.length || 0;
 		}
 	}
 
-	private async getAggregatedTimeslotEntries(minStartTime: Date, maxEndTime: Date): Promise<AggregatedEntry<Calendar>[]> {
-		const aggregator = new TimeslotAggregator<Calendar>();
+	private async getAggregatedTimeslotEntries(minStartTime: Date, maxEndTime: Date, serviceId: number): Promise<AggregatedEntry<ServiceProvider>[]> {
+		const aggregator = new TimeslotAggregator<ServiceProvider>();
 
-		const calendars = await this.calendarsRepository.getCalendarsWithTemplates();
-		const bookingsPerCalendarId = await this.getAcceptedBookingsPerCalendarId(minStartTime, maxEndTime);
+		const service = await this.servicesRepository.getServiceWithSchedule(serviceId);
+		const schedule = service?.schedule;
+		if (!schedule) {
+			return aggregator.getEntries();
+		}
 
-		for (const calendar of calendars.filter(c => !!c.schedule)) {
-			const generator = calendar.schedule.generateValidTimeslots({
-				startDatetime: minStartTime,
-				endDatetime: maxEndTime
-			});
-			const calendarBookings = (bookingsPerCalendarId.get(calendar.id) || []);
-			const generatorWithoutBookedTimes = this.ignoreBookedTimes(generator, calendarBookings);
+		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders(serviceId);
+		const bookingsPerProviderId = await this.getAcceptedBookingsPerProviderId(minStartTime, maxEndTime);
 
-			aggregator.aggregate(calendar, generatorWithoutBookedTimes);
+		const validTimeslots = Array.from(schedule.generateValidTimeslots({
+			startDatetime: minStartTime,
+			endDatetime: maxEndTime
+		}));
+
+		for (const provider of serviceProviders) {
+			const providerBookings = (bookingsPerProviderId.get(provider.id) || []);
+			const generatorWithoutBookedTimes = this.ignoreBookedTimes(validTimeslots, providerBookings);
+
+			aggregator.aggregate(provider, generatorWithoutBookedTimes);
 		}
 
 		const entries = aggregator.getEntries();
@@ -89,39 +99,66 @@ export class TimeslotsService {
 		return entries;
 	}
 
-	public async getAggregatedTimeslots(startDate: Date, endDate: Date): Promise<TimeslotResponse[]> {
+	public async getAggregatedTimeslots(startDate: Date, endDate: Date, serviceId: number): Promise<AvailableTimeslotProviders[]> {
 		const startOfDay = DateHelper.getDateOnly(startDate);
 		const endOfLastDay = DateHelper.getEndOfDay(endDate);
 
-		const aggregatedEntries = await this.getAggregatedTimeslotEntries(startOfDay, endOfLastDay);
-		const generateMappedEntries = this.mapDataModels(aggregatedEntries);
+		return await this.getAggregatedTimeslotsExactMatch(startOfDay, endOfLastDay, serviceId);
+	}
 
-		const pendingBookings = await this.getPendingBookings(startOfDay, endOfLastDay);
-		const mappedEntries = Array.from(this.deductPendingTimeslots(generateMappedEntries, pendingBookings));
+	public async getAggregatedTimeslotsExactMatch(startDateTime: Date, endDateTime: Date, serviceId: number): Promise<AvailableTimeslotProviders[]> {
+		const aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime, serviceId);
+		const pendingBookings = await this.getPendingBookings(startDateTime, endDateTime, serviceId);
+
+		const mappedEntries = this.mapDataModels(aggregatedEntries);
+		this.setPendingTimeslots(mappedEntries, pendingBookings);
 
 		return mappedEntries;
 	}
 
-	public async getAvailableCalendarsForTimeslot(startDateTime: Date, endDateTime: Date): Promise<Calendar[]> {
-		const aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime);
+	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date, serviceId: number): Promise<AvailableTimeslotProviders> {
+		const aggregatedEntries = await this.getAggregatedTimeslotsExactMatch(startDateTime, endDateTime, serviceId);
 
-		const timeslotEntry = aggregatedEntries.find(e => DateHelper.equals(e.getTimeslot().getStartTime(), startDateTime)
-			&& DateHelper.equals(e.getTimeslot().getEndTime(), endDateTime));
+		const timeslotEntry = aggregatedEntries.find(e => DateHelper.equals(e.startTime, startDateTime)
+			&& DateHelper.equals(e.endTime, endDateTime));
 
-		return timeslotEntry?.getGroups() || [];
+		return timeslotEntry || AvailableTimeslotProviders.empty(startDateTime, endDateTime);
 	}
 
-	private mapDataModel(entry: AggregatedEntry<Calendar>): TimeslotResponse {
-		return {
-			startTime: entry.getTimeslot().getStartTime(),
-			endTime: entry.getTimeslot().getEndTime(),
-			availabilityCount: entry.getGroups().length
-		} as TimeslotResponse;
+	private mapDataModels(entries: AggregatedEntry<ServiceProvider>[]): AvailableTimeslotProviders[] {
+		return entries.map(e => AvailableTimeslotProviders.create(e));
+	}
+}
+
+export class AvailableTimeslotProviders {
+	public startTime: Date;
+	public endTime: Date;
+	public serviceProviders: ServiceProvider[];
+	public pendingBookingsCount: number;
+
+	constructor() {
+		this.serviceProviders = [];
+		this.pendingBookingsCount = 0;
 	}
 
-	private * mapDataModels(entries: AggregatedEntry<Calendar>[]): Iterable<TimeslotResponse> {
-		for (const entry of entries) {
-			yield this.mapDataModel(entry);
-		}
+	public get availabilityCount(): number {
+		return this.serviceProviders.length - this.pendingBookingsCount;
+	}
+
+	public static empty(startTime: Date, endTime: Date): AvailableTimeslotProviders {
+		const instance = new AvailableTimeslotProviders();
+		instance.startTime = startTime;
+		instance.endTime = endTime;
+
+		return instance;
+	}
+
+	public static create(entry: AggregatedEntry<ServiceProvider>): AvailableTimeslotProviders {
+		const instance = new AvailableTimeslotProviders();
+		instance.startTime = entry.getTimeslot().getStartTime();
+		instance.endTime = entry.getTimeslot().getEndTime();
+		instance.serviceProviders = entry.getGroups();
+
+		return instance;
 	}
 }

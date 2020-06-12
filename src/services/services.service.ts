@@ -23,7 +23,7 @@ export class ServicesService {
 
 
 	public async setServiceSchedule(id: number, model: SetScheduleRequest): Promise<Schedule> {
-		const service = await this.servicesRepository.get(id);
+		const service = await this.servicesRepository.getService(id);
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
@@ -42,7 +42,7 @@ export class ServicesService {
 	}
 
 	public async getServiceSchedule(id: number): Promise<Schedule> {
-		const service = await this.servicesRepository.get(id);
+		const service = await this.servicesRepository.getService(id);
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}

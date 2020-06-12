@@ -1,84 +1,35 @@
 import { CalendarsController } from "../calendars.controller";
 import { Container } from "typescript-ioc";
 import { CalendarsService } from "../calendars.service";
-import { BookingsService } from "../../bookings";
-import { Booking, Calendar } from "../../models";
-import { BookingSearchRequest } from "../../bookings/bookings.apicontract";
-import { TimeslotsService } from '../../timeslots/timeslots.service';
+import { CalendarUserModel } from '../calendars.apicontract';
 
 describe('Calendars.controller', () => {
 	beforeAll(() => {
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
-		Container.bind(BookingsService).to(BookingsServiceMock);
-		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 	});
 
 	beforeEach(() => {
 		jest.resetAllMocks();
 	});
 
-	it('should get all available calendars', async () => {
-		const calendar = new Calendar();
-		CalendarsServiceMock.mockCalendars = [calendar];
-		TimeslotsServiceMock.availableCalendarsForTimeslot = [calendar];
+	it('should add user', async () => {
+		const request = new CalendarUserModel();
+		request.email = 'test@gmail.com';
+		request.role = 'reader';
 
+		CalendarsServiceMock.addUserMock.mockImplementation(() => Promise.resolve(request));
 		const controller = Container.get(CalendarsController);
-		const result = await controller.getAvailability(new Date(), new Date());
-
-		expect(result).toHaveLength(1);
-	});
-
-	it('should call timeslot availability service', async () => {
-		const calendar = new Calendar();
-		CalendarsServiceMock.mockCalendars = [calendar];
-		TimeslotsServiceMock.availableCalendarsForTimeslot = [calendar];
-
-		BookingsServiceMock.mockBookings = [new Booking(new Date(), 60)];
-
-		const controller = Container.get(CalendarsController);
-		const result = await controller.getAvailability(new Date(), new Date());
+		const result = await controller.addUser('uuid', request);
 
 		expect(result).toBeDefined();
-	});
-
-	it('should return calendars', async () => {
-		const calendar = new Calendar();
-		calendar.id = 1;
-		calendar.uuid = 'uuid';
-		calendar.googleCalendarId = "google-id-1";
-		CalendarsServiceMock.mockCalendars = [calendar];
-		TimeslotsServiceMock.availableCalendarsForTimeslot = [calendar];
-
-		BookingsServiceMock.mockBookings = [new Booking(new Date(), 60)];
-
-		const controller = Container.get(CalendarsController);
-		const result = await controller.getCalendars();
-
-		expect(result).toHaveLength(1);
-		expect(result[0].uuid).toBe('uuid');
+		expect(CalendarsServiceMock.addUserMock).toHaveBeenCalled();
 	});
 });
 
-class BookingsServiceMock extends BookingsService {
-	public static mockBookings: Booking[] = [];
-
-	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
-		return BookingsServiceMock.mockBookings;
-	}
-}
-
 class CalendarsServiceMock extends CalendarsService {
-	public static mockCalendars: Calendar[] = [];
+	public static addUserMock = jest.fn();
 
-	public async getCalendars(): Promise<Calendar[]> {
-		return CalendarsServiceMock.mockCalendars;
-	}
-}
-
-class TimeslotsServiceMock extends TimeslotsService {
-	public static availableCalendarsForTimeslot: Calendar[] = [];
-
-	public async getAvailableCalendarsForTimeslot(startDateTime: Date, endDateTime: Date): Promise<Calendar[]> {
-		return TimeslotsServiceMock.availableCalendarsForTimeslot;
+	public async addUser(calendarUUID: string, model: CalendarUserModel): Promise<CalendarUserModel> {
+		return await CalendarsServiceMock.addUserMock();
 	}
 }

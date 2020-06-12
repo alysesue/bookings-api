@@ -8,17 +8,6 @@ export class ServiceProvider extends BaseEntity {
 
 	@Column()
 	private _createdAt: Date;
-	@Column({nullable: false})
-	private _serviceId: number;
-
-	constructor(service: Service, name: string, calendar: Calendar) {
-		super();
-		this._service = service;
-		this._name = name;
-		this._createdAt = new Date();
-		this._status = ServiceProviderStatus.Valid;
-		this._calendar = calendar;
-	}
 
 	@Column()
 	private _status: ServiceProviderStatus;
@@ -31,23 +20,35 @@ export class ServiceProvider extends BaseEntity {
 		this._status = value;
 	}
 
-	@ManyToOne(type => Service)
-	@JoinColumn({name: '_serviceId'})
-	private _service: Service;
+	@Column({ nullable: false })
+	private _serviceId: number;
 
-	public get service(): Service {
-		return this._service;
-	}
+	@ManyToOne(type => Service)
+	@JoinColumn({ name: '_serviceId' })
+	private _service: Service;
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
+
+	public set id(id: number) {
+		this._id = id;
+	}
 
 	public get id(): number {
 		return this._id;
 	}
 
-	@Column({type: "varchar", length: 300})
+	@Column({ type: "varchar", length: 300 })
 	private _name: string;
+
+	constructor(name: string, calendar: Calendar, serviceId: number) {
+		super();
+		this._serviceId = serviceId;
+		this._name = name;
+		this._createdAt = new Date();
+		this._status = ServiceProviderStatus.Valid;
+		this._calendar = calendar;
+	}
 
 	public get name(): string {
 		return this._name;
@@ -67,5 +68,9 @@ export class ServiceProvider extends BaseEntity {
 
 	public set calendar(calendar: Calendar) {
 		this._calendar = calendar;
+	}
+
+	public get service(): Service {
+		return this._service;
 	}
 }
