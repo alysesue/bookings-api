@@ -3,7 +3,7 @@ import { Schedule, WeekDaySchedule } from '../index';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Weekday } from '../../enums/weekday';
 import { TimeOfDay } from '../timeOfDay';
-import { WeekDayBreak } from '../weekDayBreak';
+import { WeekDayBreak } from '../entities/weekDayBreak';
 
 let snapshot: Snapshot;
 beforeAll(() => {

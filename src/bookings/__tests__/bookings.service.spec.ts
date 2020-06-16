@@ -14,7 +14,7 @@ describe("Bookings.Service", () => {
 	calendar.id = 1;
 	calendar.uuid = '123';
 	calendar.googleCalendarId = 'google-id-1';
-	const serviceProvider = new ServiceProvider(service, 'provider', calendar);
+	const serviceProvider = new ServiceProvider('provider', calendar, 0);
 	serviceProvider.id = 1;
 
 	beforeAll(() => {

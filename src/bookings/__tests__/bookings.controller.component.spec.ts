@@ -71,7 +71,7 @@ describe('Booking Integration tests', () => {
 
 		const service = new Service();
 		service.id = 2;
-		const provider = new ServiceProvider(service, 'Provider', calendar);
+		const provider = new ServiceProvider("service", calendar, 2);
 		provider.id = 11;
 
 		Container.bind(BookingsRepository).to(BookingRepositoryMock(updateBooking));

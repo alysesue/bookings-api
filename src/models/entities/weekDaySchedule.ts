@@ -1,10 +1,10 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { DateHelper } from '../infrastructure/dateHelper';
-import { Timeslot } from './timeslot';
-import { TimeOfDay, Transformer as TimeTransformer } from './timeOfDay';
-import { BusinessValidation } from './businessValidation';
-import { getWeekdayName, Weekday } from '../enums/weekday';
-import { ISchedule } from './interfaces';
+import { DateHelper } from '../../infrastructure/dateHelper';
+import { Timeslot } from '../timeslot';
+import { TimeOfDay, Transformer as TimeTransformer } from '../timeOfDay';
+import { BusinessValidation } from '../businessValidation';
+import { getWeekdayName, Weekday } from '../../enums/weekday';
+import { ISchedule } from '../interfaces';
 import { WeekDayBreak } from './weekDayBreak';
 
 @Entity()
@@ -16,27 +16,31 @@ export class WeekDaySchedule {
 	@ManyToOne('Schedule', { nullable: false })
 	@JoinColumn({ name: 'scheduleId' })
 	public schedule: ISchedule;
-
+	@Column("int")
+	public weekDay: Weekday;
+	@Column()
+	public hasSchedule: boolean;
+	@Column({ type: "time", transformer: TimeTransformer, nullable: true })
+	public openTime?: TimeOfDay;
+	@Column({ type: "time", transformer: TimeTransformer, nullable: true })
+	public closeTime?: TimeOfDay;
 	@Column({ nullable: false })
 	private scheduleId: number;
 
-	@Column("int")
-	public weekDay: Weekday;
-
-	@Column()
-	public hasSchedule: boolean;
-
-	@Column({ type: "time", transformer: TimeTransformer, nullable: true })
-	public openTime?: TimeOfDay;
-
-	@Column({ type: "time", transformer: TimeTransformer, nullable: true })
-	public closeTime?: TimeOfDay;
-
 	// This a logical relationship (WeekDaySchedule[1-*]WeekDayBreak), not mapped directly to database.
+
+	constructor() {
+	}
+
 	// It is set when loading schedules or mapping from api contract.
 	private _breaks: WeekDayBreak[];
 
-	constructor() {
+	public get breaks() {
+		return this._breaks;
+	}
+
+	public set breaks(breaks: WeekDayBreak[]) {
+		this._breaks = breaks;
 	}
 
 	public static create(weekDay: Weekday, schedule: ISchedule): WeekDaySchedule {
@@ -53,12 +57,42 @@ export class WeekDaySchedule {
 		return instance;
 	}
 
-	public set breaks(breaks: WeekDayBreak[]) {
-		this._breaks = breaks;
+	public * validateWeekDaySchedule(): Iterable<BusinessValidation> {
+		if (!this.schedule) {
+			throw new Error('Schedule entity not set in WeekDaySchedule');
+		}
+
+		for (const validation of this.validateOpenCloseTimes()) {
+			yield validation;
+		}
+
+		for (const validation of this.validateBreaks()) {
+			yield validation;
+		}
 	}
 
-	public get breaks() {
-		return this._breaks;
+	public * generateValidTimeslots(range: { dayOfWeek: Date, startTimeOfDay?: TimeOfDay, endTimeOfDay?: TimeOfDay }): Iterable<Timeslot> {
+		if (!this.hasSchedule) {
+			return;
+		}
+
+		const slotDuration = this.schedule.slotsDurationInMin;
+
+		let startTime = range.startTimeOfDay ? this.getFirstBlockStartTime(range.startTimeOfDay.useTimeOfDay(range.dayOfWeek))
+			: this.getRelativeStartTime(range.dayOfWeek);
+		let currentEndTime = DateHelper.addMinutes(startTime, slotDuration);
+
+		const maxLastBlockEndTime = range.endTimeOfDay ? this.getMaxLastBlockEndTime(range.endTimeOfDay.useTimeOfDay(range.dayOfWeek))
+			: this.getRelativeEndTime(range.dayOfWeek);
+
+		while (currentEndTime <= maxLastBlockEndTime) {
+			if (!this.intersectsAnyBreak(startTime, currentEndTime)) {
+				yield new Timeslot(startTime, currentEndTime);
+			}
+
+			startTime = currentEndTime;
+			currentEndTime = DateHelper.addMinutes(currentEndTime, slotDuration);
+		}
 	}
 
 	private * validateBreaks(): Iterable<BusinessValidation> {
@@ -88,20 +122,6 @@ export class WeekDaySchedule {
 		if (diff < this.schedule.slotsDurationInMin) {
 			yield new BusinessValidation(`The interval between open and close times [${this.openTime} — ${this.closeTime}] must be greater than slot duration [${this.schedule.slotsDurationInMin} minutes]`);
 			return;
-		}
-	}
-
-	public * validateWeekDaySchedule(): Iterable<BusinessValidation> {
-		if (!this.schedule) {
-			throw new Error('Schedule entity not set in WeekDaySchedule');
-		}
-
-		for (const validation of this.validateOpenCloseTimes()) {
-			yield validation;
-		}
-
-		for (const validation of this.validateBreaks()) {
-			yield validation;
 		}
 	}
 
@@ -149,29 +169,5 @@ export class WeekDaySchedule {
 		}
 
 		return false;
-	}
-
-	public * generateValidTimeslots(range: { dayOfWeek: Date, startTimeOfDay?: TimeOfDay, endTimeOfDay?: TimeOfDay }): Iterable<Timeslot> {
-		if (!this.hasSchedule) {
-			return;
-		}
-
-		const slotDuration = this.schedule.slotsDurationInMin;
-
-		let startTime = range.startTimeOfDay ? this.getFirstBlockStartTime(range.startTimeOfDay.useTimeOfDay(range.dayOfWeek))
-			: this.getRelativeStartTime(range.dayOfWeek);
-		let currentEndTime = DateHelper.addMinutes(startTime, slotDuration);
-
-		const maxLastBlockEndTime = range.endTimeOfDay ? this.getMaxLastBlockEndTime(range.endTimeOfDay.useTimeOfDay(range.dayOfWeek))
-			: this.getRelativeEndTime(range.dayOfWeek);
-
-		while (currentEndTime <= maxLastBlockEndTime) {
-			if (!this.intersectsAnyBreak(startTime, currentEndTime)) {
-				yield new Timeslot(startTime, currentEndTime);
-			}
-
-			startTime = currentEndTime;
-			currentEndTime = DateHelper.addMinutes(currentEndTime, slotDuration);
-		}
 	}
 }

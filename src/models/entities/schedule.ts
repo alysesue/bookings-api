@@ -1,11 +1,11 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { DateHelper } from '../infrastructure/dateHelper';
-import { Timeslot } from './timeslot';
-import { TimeOfDay } from './timeOfDay';
-import { groupByKey, groupByKeyLastValue } from '../tools/collections';
-import { BusinessValidation } from './businessValidation';
-import { WeekdayList } from '../enums/weekday';
-import { ISchedule } from './interfaces';
+import { DateHelper } from '../../infrastructure/dateHelper';
+import { Timeslot } from '../timeslot';
+import { TimeOfDay } from '../timeOfDay';
+import { groupByKey, groupByKeyLastValue } from '../../tools/collections';
+import { BusinessValidation } from '../businessValidation';
+import { WeekdayList } from '../../enums/weekday';
+import { ISchedule } from '../interfaces';
 import { WeekDayBreak } from './weekDayBreak';
 import { WeekDaySchedule } from './weekDaySchedule';
 
@@ -63,11 +63,6 @@ export class Schedule implements ISchedule {
 		return breaks;
 	}
 
-	private ensureWeekdayParentIsSet(): void {
-		this.verifyWeekdaySchedules();
-		this.weekdaySchedules.filter(e => e.schedule !== this).forEach(e => e.schedule = this);
-	}
-
 	public * validateSchedule(): Iterable<BusinessValidation> {
 		this.ensureWeekdayParentIsSet();
 		for (const weekdaySchedule of this.weekdaySchedules) {
@@ -108,5 +103,10 @@ export class Schedule implements ISchedule {
 				yield timeslot;
 			}
 		}
+	}
+
+	private ensureWeekdayParentIsSet(): void {
+		this.verifyWeekdaySchedules();
+		this.weekdaySchedules.filter(e => e.schedule !== this).forEach(e => e.schedule = this);
 	}
 }
