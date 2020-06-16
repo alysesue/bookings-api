@@ -21,7 +21,7 @@ afterEach(() => {
 	snapshot.restore();
 
 	// Clears mock counters, not implementation
-	jest.clearAllMocks();
+	jest.resetAllMocks();
 });
 
 describe('Services service tests', () => {
@@ -64,6 +64,7 @@ describe('Services service tests', () => {
 
 	it('should get service schedule', async () => {
 		const newService = new Service();
+		newService.scheduleId = 2;
 		ServicesRepoMock.get.mockImplementation(() => Promise.resolve(newService));
 		SchedulesServiceMock.getSchedule.mockImplementation(() => Promise.resolve(new Schedule()));
 

@@ -56,7 +56,7 @@ class TimeslotsServiceMock extends TimeslotsService {
 class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	public static getServiceProviderMock: ServiceProvider;
 
-	public async getServiceProvider(id: number): Promise<ServiceProvider> {
+	public async getServiceProvider(): Promise<ServiceProvider> {
 		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
 	}
 }
