@@ -14,7 +14,12 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		if (serviceId) {
 			findConditions['_serviceId'] = serviceId;
 		}
-		return (await this.getRepository()).find({ where: [findConditions], order: { id: 'DESC' } });
+
+		const findManyOptions: FindManyOptions<Booking> = { where: [findConditions] };
+		findManyOptions['order'] = {};
+		findManyOptions['order']['_id'] = 'DESC';
+
+		return (await this.getRepository()).find(findManyOptions);
 	}
 
 	public async getBooking(id: string): Promise<Booking> {
