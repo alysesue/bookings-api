@@ -8,6 +8,7 @@
 		"test:func": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-functional.sh",
 		"test:func-local": "npm run fixLF && npm run test:func local",
 		"build": "npm run fixLF && ./scripts/build.sh",
+		"build:skip-migrations": "npm run fixLF && ./scripts/build.sh production skipMigrations",
 		"swagger": "./node_modules/.bin/tsoa swagger --yaml",
 		"sync-env": "npm run fixLF && export SERVICE_NAME=bookingsg-api && ./node_modules/mol-lib-config/shared-scripts/aws/aws-sm-sync-env.sh",
 		"sync-local": "node node_modules/cpy-cli/cli ./params/secrets/local.env ./ --rename=.env",
@@ -28,7 +29,7 @@
 	"husky": {
 		"hooks": {
 			"pre-commit": "npm run lint --",
-			"pre-push": "npm run build && npm run test && npm run swagger"
+			"pre-push": "npm run build:skip-migrations && npm run test && npm run swagger"
 		}
 	},
 	"lint-staged": {
