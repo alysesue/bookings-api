@@ -9,12 +9,11 @@ import { AvailableTimeslotProviders, TimeslotsService } from '../../timeslots/ti
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 
 describe("Bookings.Service", () => {
-	const service = new Service();
 	const calendar = new Calendar();
 	calendar.id = 1;
 	calendar.uuid = '123';
 	calendar.googleCalendarId = 'google-id-1';
-	const serviceProvider = new ServiceProvider(service, 'provider', calendar);
+	const serviceProvider = new ServiceProvider('provider', calendar, 1);
 	serviceProvider.id = 1;
 
 	beforeAll(() => {

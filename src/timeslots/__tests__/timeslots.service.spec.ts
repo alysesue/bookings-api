@@ -36,7 +36,7 @@ describe("Timeslots Service", () => {
 	ServiceMock.id = 1;
 	ServiceMock.schedule = ScheduleMock as unknown as Schedule;
 
-	const ServiceProviderMock = new ServiceProvider(ServiceMock, 'Provider', CalendarMock);
+	const ServiceProviderMock = new ServiceProvider('Provider', CalendarMock, 1);
 	ServiceProviderMock.id = 1;
 
 	// Booking in place for the first time slot

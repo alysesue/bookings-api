@@ -12,31 +12,6 @@ describe("Bookings.Controller", () => {
 		Container.bind(TimeslotsService).to(jest.fn(() => TimeslotsServiceMock));
 	});
 
-	it("should have http code 200", async () => {
-
-		const controller = Container.get(BookingsController);
-		const result = await controller.getBookings(1);
-
-		expect(result).toBeTruthy();
-	});
-
-	it("should return the bookings from bookingsService", async () => {
-		const bookingStartDate = new Date();
-		const booking = new Booking(1, bookingStartDate, 60);
-		BookingsServiceMock.mockBookings = [booking];
-		const controller = Container.get(BookingsController);
-		const result = await controller.getBookings(1);
-
-		const bookingResponse = new BookingResponse();
-		bookingResponse.id = undefined;
-		bookingResponse.startDateTime = bookingStartDate;
-		bookingResponse.status = BookingStatus.PendingApproval;
-		bookingResponse.sessionDurationInMinutes = 60;
-		bookingResponse.endDateTime = booking.getSessionEndTime();
-
-		expect(result[0]).toEqual(bookingResponse);
-	});
-
 	it('should accept booking', async () => {
 		const controller = Container.get(BookingsController);
 		const bookingId = 'booking-1';
@@ -53,7 +28,7 @@ describe("Bookings.Controller", () => {
 		const to = new Date('2020-05-16T21:25:43.511Z');
 		const controller = Container.get(BookingsController);
 
-		const result = await controller.searchBookings(0, from, to, 1);
+		const result = await controller.getBookings(from, to, 1, 1);
 
 		expect(result).toHaveLength(1);
 	});
@@ -67,7 +42,7 @@ describe("Bookings.Controller", () => {
 		const result = await controller.getBooking("booking-id-1");
 
 		expect(result.startDateTime).toBe(testTime);
-		expect(result.status).toBe(0);
+		expect(result.status).toBe(BookingStatus.PendingApproval);
 	});
 
 	it('should get booking providers', async () => {
