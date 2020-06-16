@@ -23,3 +23,7 @@ export class ServiceProviderResponseModel {
 export class ServiceProviderListRequest {
 	public serviceProviders: ServiceProviderModel[];
 }
+
+export class SetProviderScheduleRequest {
+	public scheduleId?: number;
+}

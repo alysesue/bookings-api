@@ -15,7 +15,7 @@ describe("Bookings.Controller", () => {
 	it('should accept booking', async () => {
 		const controller = Container.get(BookingsController);
 		const bookingId = 'booking-1';
-		BookingsServiceMock.mockAcceptBooking = Promise.resolve(new Booking(1, new Date(), 120));
+		BookingsServiceMock.mockAcceptBooking = Promise.resolve(Booking.create(1, new Date(), 120));
 
 		await controller.acceptBooking(bookingId, undefined);
 
@@ -23,7 +23,7 @@ describe("Bookings.Controller", () => {
 	});
 
 	it('should search bookings', async () => {
-		BookingsServiceMock.mockSearchBookings = [new Booking(1, new Date(), 120)];
+		BookingsServiceMock.mockSearchBookings = [Booking.create(1, new Date(), 120)];
 		const from = new Date('2020-05-16T20:25:43.511Z');
 		const to = new Date('2020-05-16T21:25:43.511Z');
 		const controller = Container.get(BookingsController);
@@ -37,7 +37,7 @@ describe("Bookings.Controller", () => {
 		const controller = Container.get(BookingsController);
 		const testTime = new Date('2020-05-16T20:25:43.511Z');
 
-		BookingsServiceMock.getBookingPromise = Promise.resolve(new Booking(1, testTime, 120));
+		BookingsServiceMock.getBookingPromise = Promise.resolve(Booking.create(1, testTime, 120));
 
 		const result = await controller.getBooking("booking-id-1");
 
@@ -49,7 +49,7 @@ describe("Bookings.Controller", () => {
 		const controller = Container.get(BookingsController);
 		const testTime = new Date('2020-05-16T20:25:43.511Z');
 
-		BookingsServiceMock.mockGetBooking = new Booking(1, testTime, 120);
+		BookingsServiceMock.mockGetBooking = Booking.create(1, testTime, 120);
 
 		const result = await controller.getBookingProviders("booking-id-1");
 

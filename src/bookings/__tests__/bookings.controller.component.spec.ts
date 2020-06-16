@@ -11,7 +11,7 @@ import { AvailableTimeslotProviders, TimeslotsService } from '../../timeslots/ti
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 
 const BookingRepositoryMock = (update) => {
-	const testBooking = new Booking(1, new Date(), 100);
+	const testBooking = Booking.create(1, new Date(), 100);
 	return jest.fn().mockImplementation(() => ({
 		getBooking: jest.fn().mockReturnValue(testBooking),
 		update
@@ -71,7 +71,7 @@ describe('Booking Integration tests', () => {
 
 		const service = new Service();
 		service.id = 2;
-		const provider = new ServiceProvider('Provider', calendar, 2);
+		const provider = ServiceProvider.create('Provider', calendar, 2);
 		provider.id = 11;
 
 		Container.bind(BookingsRepository).to(BookingRepositoryMock(updateBooking));

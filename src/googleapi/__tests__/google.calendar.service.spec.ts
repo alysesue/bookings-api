@@ -79,7 +79,7 @@ describe("Google calendar wrapper tests", () => {
 		GoogleApiMock.createEventsMock = createEvents;
 
 		const result = await googleService.createEvent(
-			new Booking(1, new Date(), 60),
+			Booking.create(1, new Date(), 60),
 			"calendar-id"
 		);
 

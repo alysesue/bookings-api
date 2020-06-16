@@ -1,11 +1,13 @@
 import { Inject, InRequestScope } from "typescript-ioc";
-import { ServiceProviderListRequest, ServiceProviderModel, ServiceProviderResponseModel } from "./serviceProviders.apicontract";
+import { ServiceProviderListRequest, ServiceProviderModel, ServiceProviderResponseModel, SetProviderScheduleRequest } from "./serviceProviders.apicontract";
 import { ServiceProvidersService } from "./serviceProviders.service";
 import { ServiceProvider } from "../models";
-import { Body, Controller, Get, Header, Path, Post, Route, Security, SuccessResponse, Tags } from "tsoa";
+import { Body, Controller, Get, Header, Path, Post, Put, Route, Security, SuccessResponse, Tags } from "tsoa";
 import { ErrorResponse } from "../apicontract";
 import { parseCsv } from "../utils";
 import { CalendarsMapper } from "../calendars/calendars.mapper";
+import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
+import { ScheduleResponse } from "../schedules/schedules.apicontract";
 
 @InRequestScope
 @Route("v1/service-providers")
@@ -72,5 +74,17 @@ export class ServiceProvidersController extends Controller {
 	public async getServiceProvider(@Path() spId: number): Promise<ServiceProviderResponseModel> {
 		const dataModel = await this.serviceProvidersService.getServiceProvider(spId);
 		return this.mapDataModel(dataModel);
+	}
+
+	@Put('{id}/schedule')
+	@SuccessResponse(200, "Ok")
+	public async setServiceSchedule(@Path() id: number, @Body() request: SetProviderScheduleRequest): Promise<ScheduleResponse> {
+		return mapScheduleToResponse(await this.serviceProvidersService.setProviderSchedule(id, request));
+	}
+
+	@Get('{id}/schedule')
+	@SuccessResponse(200, "Ok")
+	public async getServiceSchedule(@Path() id: number): Promise<ScheduleResponse> {
+		return mapScheduleToResponse(await this.serviceProvidersService.getProviderSchedule(id));
 	}
 }

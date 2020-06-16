@@ -78,7 +78,7 @@ export class TimeslotsService {
 			return aggregator.getEntries();
 		}
 
-		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders(serviceId);
+		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({ serviceId, includeSchedule: true });
 		const bookingsPerProviderId = await this.getAcceptedBookingsPerProviderId(minStartTime, maxEndTime);
 
 		const validTimeslots = Array.from(schedule.generateValidTimeslots({

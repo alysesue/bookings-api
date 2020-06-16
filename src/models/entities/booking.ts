@@ -4,16 +4,19 @@ import { ServiceProvider } from './serviceProvider';
 import { Service } from "./service";
 
 @Entity()
-export class Booking extends BaseEntity {
+export class Booking {
+	constructor() {
+	}
 
-	constructor(serviceId: number, startDateTime: Date, sessionDurationInMinutes: number) {
-		super();
-		this._serviceId = serviceId;
-		this._startDateTime = startDateTime;
-		this._sessionDurationInMinutes = sessionDurationInMinutes;
+	public static create(serviceId: number, startDateTime: Date, sessionDurationInMinutes: number) {
+		const instance = new Booking();
+		instance._serviceId = serviceId;
+		instance._startDateTime = startDateTime;
+		instance._sessionDurationInMinutes = sessionDurationInMinutes;
 
-		this._status = BookingStatus.PendingApproval;
-		this._createdAt = new Date();
+		instance._status = BookingStatus.PendingApproval;
+		instance._createdAt = new Date();
+		return instance;
 	}
 
 	@PrimaryGeneratedColumn()

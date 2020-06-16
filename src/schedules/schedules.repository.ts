@@ -4,6 +4,8 @@ import { DeleteResult, FindManyOptions, In } from "typeorm";
 import { groupByKey } from '../tools/collections';
 import { WeekDayBreakRepository } from './weekdaybreak.repository';
 import { RepositoryBase } from '../core/repository';
+import { groupByKeyLastValue } from '../tools/collections';
+import { IEntityWithSchedule } from '../models/interfaces';
 
 @InRequestScope
 export class SchedulesRepository extends RepositoryBase<Schedule> {
@@ -75,5 +77,27 @@ export class SchedulesRepository extends RepositoryBase<Schedule> {
 	public async deleteSchedule(scheduleId: number): Promise<DeleteResult> {
 		await this.weekDayBreakRepo.deleteBreaksForSchedule(scheduleId);
 		return (await this.getRepository()).delete(scheduleId);
+	}
+
+	public async populateSchedules<T extends IEntityWithSchedule>(entries: T[]): Promise<T[]> {
+		const scheduleIds = entries.map(e => e.scheduleId).filter(id => !!id);
+		if (scheduleIds.length === 0) {
+			return entries;
+		}
+
+		const schedulesById = groupByKeyLastValue(await this.getSchedules(scheduleIds), s => s.id);
+
+		for (const entry of entries.filter(c => !!c.scheduleId)) {
+			entry.schedule = schedulesById.get(entry.scheduleId);
+		}
+		return entries;
+	}
+
+	public async populateSingleEntrySchedule<T extends IEntityWithSchedule>(entry: T): Promise<T> {
+		if (!entry) {
+			return entry;
+		}
+
+		return (await this.populateSchedules([entry]))[0];
 	}
 }

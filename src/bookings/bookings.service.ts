@@ -25,7 +25,7 @@ export class BookingsService {
 			throw new Error('A service is required to make a booking');
 		}
 
-		return new Booking(
+		return Booking.create(
 			serviceId,
 			bookingRequest.startDateTime,
 			BookingsService.SessionDurationInMinutes);

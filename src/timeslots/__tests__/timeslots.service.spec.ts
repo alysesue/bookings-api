@@ -36,17 +36,17 @@ describe("Timeslots Service", () => {
 	ServiceMock.id = 1;
 	ServiceMock.schedule = ScheduleMock as unknown as Schedule;
 
-	const ServiceProviderMock = new ServiceProvider( 'Provider', CalendarMock, ServiceMock.id);
+	const ServiceProviderMock = ServiceProvider.create('Provider', CalendarMock, ServiceMock.id);
 	ServiceProviderMock.id = 1;
 
 	// Booking in place for the first time slot
-	const BookingMock = new Booking(1, DateHelper.setHours(date, 15, 0), 60);
+	const BookingMock = Booking.create(1, DateHelper.setHours(date, 15, 0), 60);
 	BookingMock.status = BookingStatus.Accepted;
 	BookingMock.eventICalId = 'eventICalId';
 	BookingMock.serviceProvider = ServiceProviderMock;
 	BookingMock.serviceProviderId = ServiceProviderMock.id;
 
-	const pendingBookingMock = new Booking(1, DateHelper.setHours(date, 17, 0), 60);
+	const pendingBookingMock = Booking.create(1, DateHelper.setHours(date, 17, 0), 60);
 	pendingBookingMock.status = BookingStatus.PendingApproval;
 
 	const BookingsRepositoryMock = {

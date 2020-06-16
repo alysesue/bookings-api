@@ -2,7 +2,7 @@ import { BaseEntity, Column, Entity, Generated, Index, JoinColumn, ManyToOne, Pr
 import { Schedule } from "./schedule";
 
 @Entity()
-export class Calendar extends BaseEntity {
+export class Calendar {
 
 	@PrimaryGeneratedColumn()
 	public id: number;
