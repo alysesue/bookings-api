@@ -43,14 +43,6 @@ export class BookingsController extends Controller {
 		} as BookingProviderResponse;
 	}
 
-	@Get()
-	@SuccessResponse(200, 'Ok')
-	@Security("optional-service")
-	public async getBookings(@Header("x-api-service") serviceId?: number): Promise<BookingResponse[]> {
-		const bookings = await this.bookingsService.getBookings(serviceId);
-		return BookingsController.mapDataModels(bookings);
-	}
-
 	@Post()
 	@SuccessResponse(201, 'Created')
 	@Security("service")
@@ -77,12 +69,13 @@ export class BookingsController extends Controller {
 		}
 	}
 
-	@Get('search')
+	@Get('')
 	@SuccessResponse(200, "Ok")
 	@Security("optional-service")
-	public async searchBookings(@Query() status: number,
+	public async getBookings(
 		@Query() from: Date,
 		@Query() to: Date,
+		@Query() status?: number,
 		@Header("x-api-service") serviceId?: number): Promise<BookingResponse[]> {
 
 		const searchQuery = new BookingSearchRequest(from, to, status, serviceId);

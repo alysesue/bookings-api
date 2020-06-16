@@ -1,4 +1,4 @@
 export enum BookingStatus {
-	PendingApproval = 0,
-	Accepted = 10,
+	PendingApproval = 1,
+	Accepted = 2,
 }
