@@ -12,6 +12,7 @@ import "reflect-metadata";
 import { getConfig } from "./config/app-config";
 import { HealthCheckMiddleware } from "./health/HealthCheckMiddleware";
 import { RegisterRoutes } from "./routes";
+import { DbConnection } from "./core/db.connection";
 import { Container } from "typescript-ioc";
 import { CalDavProxyHandler } from "./infrastructure/caldavproxy.handler";
 import * as cors from '@koa/cors';
@@ -76,6 +77,11 @@ export async function startServer(): Promise<Server> {
 		.use(HealthCheckMiddleware.build())
 		.use(HandledRoutes.build())
 		.use(router.allowedMethods());
+
+	const dbConnection = Container.get(DbConnection);
+
+	await dbConnection.runMigrations();
+	await dbConnection.synchronize();
 
 	return await new Promise(async (resolve) => {
 		const server = koaServer.listen(config.port, async () => {
