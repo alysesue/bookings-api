@@ -1,8 +1,8 @@
 import { Container } from "typescript-ioc";
-import { Calendar, Service, ServiceProvider } from "../../models";
+import { Calendar, Schedule, ServiceProvider } from "../../models";
 import { ServiceProvidersController } from "../serviceProviders.controller";
 import { ServiceProvidersService } from "../serviceProviders.service";
-import { ServiceProviderModel } from "../serviceProviders.apicontract";
+import { ServiceProviderModel, SetProviderScheduleRequest } from "../serviceProviders.apicontract";
 import { CalendarsService } from "../../calendars/calendars.service";
 
 describe("ServiceProviders.Controller", () => {
@@ -17,7 +17,7 @@ describe("ServiceProviders.Controller", () => {
 
 	it('should get service providers', async () => {
 		const calendar = new Calendar();
-		ServiceProvidersMock.getServiceProviders.mockReturnValue([new ServiceProvider("Monica", calendar, 1), new ServiceProvider("Timmy", calendar, 1)]);
+		ServiceProvidersMock.getServiceProviders.mockReturnValue([ServiceProvider.create("Monica", calendar, 1), ServiceProvider.create("Timmy", calendar, 1)]);
 
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders();
@@ -25,7 +25,7 @@ describe("ServiceProviders.Controller", () => {
 	});
 
 	it('should get a service provider', async () => {
-		ServiceProvidersMock.getServiceProvider.mockReturnValue(new ServiceProvider("Monica", null, 1));
+		ServiceProvidersMock.getServiceProvider.mockReturnValue(ServiceProvider.create("Monica", null, 1));
 
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProvider(1);
@@ -34,7 +34,7 @@ describe("ServiceProviders.Controller", () => {
 	});
 
 	it('should save multiple service providers', async () => {
-		ServiceProvidersMock.save.mockReturnValue([new ServiceProvider("Monica", null, 1), new ServiceProvider("Timmy", null, 1)]);
+		ServiceProvidersMock.save.mockReturnValue([ServiceProvider.create("Monica", null, 1), ServiceProvider.create("Timmy", null, 1)]);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.addServiceProviders({
 			serviceProviders: [
@@ -51,8 +51,8 @@ describe("ServiceProviders.Controller", () => {
 	it('should save multiple service providers as text', async () => {
 		ServiceProvidersMock.save.mockReturnValue(
 			[
-				new ServiceProvider("Monica", null, 1),
-				new ServiceProvider("Timmy", null, 1)
+				ServiceProvider.create("Monica", null, 1),
+				ServiceProvider.create("Timmy", null, 1)
 			]);
 		const controller = Container.get(ServiceProvidersController);
 
@@ -64,12 +64,32 @@ describe("ServiceProviders.Controller", () => {
 
 	});
 
+
+	it('should set provider schedule', async () => {
+		ServiceProvidersMock.setProviderSchedule.mockReturnValue(Promise.resolve(new Schedule()));
+		const request = new SetProviderScheduleRequest();
+		request.scheduleId = 2;
+
+		await Container.get(ServiceProvidersController).setServiceSchedule(1, request);
+
+		expect(ServiceProvidersMock.setProviderSchedule).toBeCalled();
+	});
+
+	it('should get provider schedule', async () => {
+		ServiceProvidersMock.getProviderSchedule.mockReturnValue(Promise.resolve(new Schedule()));
+		await Container.get(ServiceProvidersController).getServiceSchedule(1);
+
+		expect(ServiceProvidersMock.getProviderSchedule).toBeCalled();
+	});
+
 });
 
 const ServiceProvidersMock = {
 	getServiceProvider: jest.fn(),
 	getServiceProviders: jest.fn(),
 	save: jest.fn(),
+	setProviderSchedule: jest.fn(),
+	getProviderSchedule: jest.fn(),
 };
 
 class ServiceProvidersServiceMock extends ServiceProvidersService {
@@ -84,6 +104,14 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 
 	public async saveServiceProviders(listRequest: ServiceProviderModel[]): Promise<void> {
 		return ServiceProvidersMock.save(listRequest);
+	}
+
+	public async setProviderSchedule(...params): Promise<Schedule> {
+		return ServiceProvidersMock.setProviderSchedule(...params);
+	}
+
+	public async getProviderSchedule(...params): Promise<Schedule> {
+		return ServiceProvidersMock.getProviderSchedule(...params);
 	}
 }
 

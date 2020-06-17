@@ -13,7 +13,7 @@ describe("Bookings.Service", () => {
 	calendar.id = 1;
 	calendar.uuid = '123';
 	calendar.googleCalendarId = 'google-id-1';
-	const serviceProvider = new ServiceProvider('provider', calendar, 1);
+	const serviceProvider = ServiceProvider.create('provider', calendar, 1);
 	serviceProvider.id = 1;
 
 	beforeAll(() => {
@@ -24,7 +24,7 @@ describe("Bookings.Service", () => {
 	});
 
 	it("should get all bookings", async () => {
-		BookingRepositoryMock.getBookingsMock = [new Booking(1, new Date(), 60)];
+		BookingRepositoryMock.getBookingsMock = [Booking.create(1, new Date(), 60)];
 		const result = await Container.get(BookingsService).getBookings();
 
 		expect(result.length).toBe(1);
@@ -46,7 +46,7 @@ describe("Bookings.Service", () => {
 	it("should accept booking", async () => {
 		const bookingService = Container.get(BookingsService);
 		CalendarsServiceMock.eventId = "event-id";
-		BookingRepositoryMock.booking = new Booking(1, new Date(), 60);
+		BookingRepositoryMock.booking = Booking.create(1, new Date(), 60);
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 
@@ -70,7 +70,7 @@ describe("Bookings.Service", () => {
 		const bookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
 
-		BookingRepositoryMock.searchBookingsMock = [new Booking(1, new Date(), 10)];
+		BookingRepositoryMock.searchBookingsMock = [Booking.create(1, new Date(), 10)];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [];
 
 		const bookingService = Container.get(BookingsService);
@@ -132,7 +132,7 @@ class TimeslotsServiceMock extends TimeslotsService {
 class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	public static getServiceProviderMock: ServiceProvider;
 
-	public async getServiceProvider(id: number): Promise<ServiceProvider> {
+	public async getServiceProvider(): Promise<ServiceProvider> {
 		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
 	}
 }

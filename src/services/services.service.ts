@@ -29,7 +29,7 @@ export class ServicesService {
 		}
 
 		let schedule: Schedule = null;
-		if (model.scheduleId !== null) {
+		if (model.scheduleId) {
 			schedule = await this.schedulesService.getSchedule(model.scheduleId);
 			if (!schedule) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Schedule not found');
@@ -48,7 +48,7 @@ export class ServicesService {
 		}
 
 		let schedule: Schedule = null;
-		if (service.scheduleId !== null) {
+		if (service.scheduleId) {
 			schedule = await this.schedulesService.getSchedule(service.scheduleId);
 		}
 

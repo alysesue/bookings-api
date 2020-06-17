@@ -1,8 +1,9 @@
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Schedule } from './schedule';
+import { IEntityWithSchedule } from '../interfaces';
 
 @Entity()
-export class Service extends BaseEntity {
+export class Service implements IEntityWithSchedule {
 
 	@PrimaryGeneratedColumn()
 	private _id: number;

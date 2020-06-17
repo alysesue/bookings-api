@@ -25,7 +25,7 @@ export class BookingsService {
 			throw new Error('A service is required to make a booking');
 		}
 
-		return new Booking(
+		return Booking.create(
 			serviceId,
 			bookingRequest.startDateTime,
 			BookingsService.SessionDurationInMinutes);
@@ -55,7 +55,7 @@ export class BookingsService {
 	public async acceptBooking(bookingId: string, acceptRequest: BookingAcceptRequest): Promise<Booking> {
 		const booking = await this.getBookingForAccepting(bookingId);
 
-		const provider = await this.serviceProviderRepo.getServiceProvider(acceptRequest.serviceProviderId);
+		const provider = await this.serviceProviderRepo.getServiceProvider({ id: acceptRequest.serviceProviderId });
 		if (!provider) {
 			throw new Error(`Service provider '${acceptRequest.serviceProviderId}' not found`);
 		}

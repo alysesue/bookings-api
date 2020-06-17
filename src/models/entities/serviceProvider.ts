@@ -2,9 +2,11 @@ import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGen
 import { Calendar } from "./calendar";
 import { ServiceProviderStatus } from "../serviceProviderStatus";
 import { Service } from "./service";
+import { Schedule } from './schedule';
+import { IEntityWithSchedule } from '../interfaces';
 
 @Entity()
-export class ServiceProvider extends BaseEntity {
+export class ServiceProvider implements IEntityWithSchedule {
 
 	@Column()
 	private _createdAt: Date;
@@ -41,13 +43,17 @@ export class ServiceProvider extends BaseEntity {
 	@Column({ type: "varchar", length: 300 })
 	private _name: string;
 
-	constructor(name: string, calendar: Calendar, serviceId: number) {
-		super();
-		this._serviceId = serviceId;
-		this._name = name;
-		this._createdAt = new Date();
-		this._status = ServiceProviderStatus.Valid;
-		this._calendar = calendar;
+	constructor() {
+	}
+
+	public static create(name: string, calendar: Calendar, serviceId: number): ServiceProvider {
+		const instance = new ServiceProvider();
+		instance._serviceId = serviceId;
+		instance._name = name;
+		instance._createdAt = new Date();
+		instance._status = ServiceProviderStatus.Valid;
+		instance._calendar = calendar;
+		return instance;
 	}
 
 	public get name(): string {
@@ -73,4 +79,22 @@ export class ServiceProvider extends BaseEntity {
 	public get service(): Service {
 		return this._service;
 	}
+
+	@ManyToOne('Schedule', { nullable: true })
+	@JoinColumn({ name: '_scheduleId' })
+	public _schedule: Schedule;
+
+	public set schedule(schedule: Schedule) {
+		this._schedule = schedule;
+	}
+
+	public get schedule(): Schedule {
+		return this._schedule;
+	}
+
+	@Column({ nullable: true })
+	private _scheduleId?: number;
+
+	public set scheduleId(id: number) { this._scheduleId = id; }
+	public get scheduleId(): number { return this._scheduleId; }
 }
