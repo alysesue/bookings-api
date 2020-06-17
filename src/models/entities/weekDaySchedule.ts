@@ -27,11 +27,10 @@ export class WeekDaySchedule {
 	@Column({ nullable: false })
 	private scheduleId: number;
 
-	// This a logical relationship (WeekDaySchedule[1-*]WeekDayBreak), not mapped directly to database.
-
 	constructor() {
 	}
 
+	// This a logical relationship (WeekDaySchedule[1-*]WeekDayBreak), not mapped directly to database.
 	// It is set when loading schedules or mapping from api contract.
 	private _breaks: WeekDayBreak[];
 
