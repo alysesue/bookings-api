@@ -22,7 +22,7 @@ export class ServiceProvidersController extends Controller {
 
 	private mapDataModel(spData: ServiceProvider): ServiceProviderResponseModel {
 		const mappedCalendar = this.calendarsMapper.mapDataModel(spData.calendar);
-		return new ServiceProviderResponseModel(spData.id, spData.name, mappedCalendar);
+		return new ServiceProviderResponseModel(spData.id, spData.name, mappedCalendar, spData.serviceId);
 	}
 
 	private mapDataModels(spList: ServiceProvider[]): ServiceProviderResponseModel[] {

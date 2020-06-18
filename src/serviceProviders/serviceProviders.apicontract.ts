@@ -12,11 +12,13 @@ export class ServiceProviderResponseModel {
 	public id: number;
 	public name: string;
 	public calendar: CalendarModel;
+	public serviceId: number;
 
-	constructor(id: number, name: string, calendar: CalendarModel) {
+	constructor(id: number, name: string, calendar: CalendarModel, serviceId: number) {
 		this.id = id;
 		this.name = name;
 		this.calendar = calendar;
+		this.serviceId = serviceId;
 	}
 }
 
