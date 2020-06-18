@@ -4,6 +4,7 @@ import { Context } from "koa";
 import * as KoaProxy from 'koa-proxy';
 import { GoogleCalendarService } from '../../googleapi/google.calendar.service';
 import { GoogleApi } from "../../googleapi/google.api";
+import { basePath } from "../../config/app-config";
 
 let snapshot: Snapshot;
 beforeEach(() => {
@@ -46,7 +47,7 @@ describe('Caldav proxy tests', () => {
 		const koaProxyMiddleware = KoaProxy();
 
 		const nextMiddleware = jest.fn().mockImplementation(() => Promise.resolve());
-		const context = buildSampleKoaContext('/bookingsg-api/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/user');
+		const context = buildSampleKoaContext(`${basePath}/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/user`);
 
 		await middleware(context, nextMiddleware);
 
@@ -66,7 +67,7 @@ describe('Caldav proxy tests', () => {
 		const koaProxyMiddleware = KoaProxy();
 
 		const nextMiddleware = jest.fn().mockImplementation(() => Promise.resolve());
-		const context = buildSampleKoaContext('/bookingsg-api/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/events');
+		const context = buildSampleKoaContext(`${basePath}/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/events`);
 
 		await middleware(context, nextMiddleware);
 
@@ -105,7 +106,7 @@ describe('Caldav proxy tests', () => {
 		const koaProxyMiddleware = KoaProxy();
 
 		const nextMiddleware = jest.fn().mockImplementation(() => Promise.resolve());
-		const context = buildSampleKoaContext('/bookingsg-api/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/wrongurl');
+		const context = buildSampleKoaContext(`${basePath}/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/wrongurl`);
 
 		await middleware(context, nextMiddleware);
 
@@ -113,6 +114,6 @@ describe('Caldav proxy tests', () => {
 		expect(koaProxyMiddleware).not.toBeCalled();
 		expect(nextMiddleware).toBeCalled();
 
-		expect(context.path).toBe('/bookingsg-api/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/wrongurl');
+		expect(context.path).toBe(`${basePath}/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/wrongurl`);
 	});
 });

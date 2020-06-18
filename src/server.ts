@@ -9,7 +9,7 @@ import { KoaLoggerContext } from "mol-lib-common/network/router/KoaLoggerContext
 import { KoaMultipartCleaner } from "mol-lib-common/network/router/KoaMultipartCleaner";
 import { KoaResponseHandler } from "mol-lib-common/network/router/KoaResponseHandler";
 import "reflect-metadata";
-import { getConfig } from "./config/app-config";
+import { basePath, getConfig } from "./config/app-config";
 import { HealthCheckMiddleware } from "./health/HealthCheckMiddleware";
 import { RegisterRoutes } from "./routes";
 import { DbConnection } from "./core/db.connection";
@@ -28,7 +28,7 @@ export const useSwagger = () => {
 	logger.info(`Swagger document location: ${swaggerDoc} ${exists ? '(found)' : '(not found)'}`);
 	if (exists) {
 		const document = swagger.loadDocumentSync(swaggerDoc);
-		return ui(document as swagger.Document, "/bookingsg-api/swagger");
+		return ui(document as swagger.Document, `${basePath}/swagger`);
 	}
 
 	async function emptyMiddleware(_ctx, next) {
@@ -44,7 +44,7 @@ export async function startServer(): Promise<Server> {
 	LoggerV2.setServiceName(config.name);
 
 	// Setup server
-	const router: KoaRouter = new KoaRouter({ prefix: '/bookingsg-api/api' });
+	const router: KoaRouter = new KoaRouter({ prefix: `${basePath}/api` });
 	RegisterRoutes(router);
 	// @ts-ignore
 	const HandledRoutes = new KoaResponseHandler(router.routes());

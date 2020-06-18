@@ -17,3 +17,5 @@ export const getConfig = () => ({
 		password: ConfigUtils.getValueFromEnv("DB_PASSWORD_BOOKINGSG_API_APP"),
 	}
 });
+
+export const basePath = '/bookingsg';

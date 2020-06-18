@@ -1,7 +1,9 @@
+// tslint:disable: tsr-detect-non-literal-regexp
 import * as Koa from "koa";
 import * as KoaProxy from "koa-proxy";
 import { Inject, Singleton } from 'typescript-ioc';
 import { GoogleApi } from "../googleapi/google.api";
+import { basePath } from "../config/app-config";
 
 @Singleton
 export class CalDavProxyHandler {
@@ -12,11 +14,16 @@ export class CalDavProxyHandler {
 	private googleApi: GoogleApi;
 	private readonly koaProxy: any;
 	private _initialized: boolean = false;
+	private _calidUserRegex: RegExp;
+	private _calidEventsRegex: RegExp;
 
 	constructor() {
 		this.koaProxy = KoaProxy({
 			host: 'https://apidata.googleusercontent.com'
 		});
+
+		this._calidUserRegex = new RegExp(`^${basePath}/caldav/(.*)/user`);
+		this._calidEventsRegex = new RegExp(`^${basePath}/caldav/(.*)/events`);
 	}
 
 	public build(): Koa.Middleware {
@@ -52,16 +59,12 @@ export class CalDavProxyHandler {
 			this._initialized = true;
 		}
 
-		if (!ctx.path.match(/^\/bookingsg-api\/caldav/)) {
-			return next();
-		}
-
-		const calidUser = ctx.path.match(/^\/bookingsg-api\/caldav\/(.*)\/user/)?.[1];
+		const calidUser = ctx.path.match(this._calidUserRegex)?.[1];
 		if (calidUser) {
 			return await this.proxyCaldavUser(calidUser, ctx, next);
 		}
 
-		const calidEvents = ctx.path.match(/^\/bookingsg-api\/caldav\/(.*)\/events/)?.[1];
+		const calidEvents = ctx.path.match(this._calidEventsRegex)?.[1];
 		if (calidEvents) {
 			return await this.proxyCaldavEvents(calidEvents, ctx, next);
 		}

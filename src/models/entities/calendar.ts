@@ -1,5 +1,6 @@
 import { BaseEntity, Column, Entity, Generated, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Schedule } from "./schedule";
+import { basePath } from '../../config/app-config';
 
 @Entity()
 export class Calendar {
@@ -20,10 +21,10 @@ export class Calendar {
 	}
 
 	public generateCaldavUserUrl(protocol: string, host: string): string {
-		return `${protocol}://${host}/bookingsg-api/caldav/${encodeURIComponent(this.googleCalendarId)}/user`;
+		return `${protocol}://${host}${basePath}/caldav/${encodeURIComponent(this.googleCalendarId)}/user`;
 	}
 
 	public generateCaldavEventsUrl(protocol: string, host: string): string {
-		return `${protocol}://${host}/bookingsg-api/caldav/${encodeURIComponent(this.googleCalendarId)}/events`;
+		return `${protocol}://${host}${basePath}/caldav/${encodeURIComponent(this.googleCalendarId)}/events`;
 	}
 }
