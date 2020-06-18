@@ -78,11 +78,11 @@ resource "aws_ssm_parameter" "bookingsg-db_username" {
 
   overwrite = true
 }
-resource "aws_ssm_parameter" "db-password_bookingsg_api_app" {
-  name   = "${local.path-prefix}/DB_PASSWORD_BOOKINGSG_API_APP"
+resource "aws_ssm_parameter" "db-password_bookingsg_app" {
+  name   = "${local.path-prefix}/DB_PASSWORD_BOOKINGSG_APP"
   type   = "SecureString"
   key_id = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
-  value  = "${data.external.static.result.DB_PASSWORD_BOOKINGSG_API_APP}"
+  value  = "${data.external.static.result.DB_PASSWORD_BOOKINGSG_APP}"
 
   overwrite = true
 }
