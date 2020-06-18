@@ -4,7 +4,6 @@ import { ISchedule } from '../interfaces';
 import { Weekday } from '../../enums/weekday';
 
 @Entity()
-@Index(["scheduleId", "weekDay"], { unique: true })
 export class WeekDayBreak {
 	@PrimaryGeneratedColumn()
 	public id: number;
