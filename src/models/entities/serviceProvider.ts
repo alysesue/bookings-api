@@ -24,6 +24,12 @@ export class ServiceProvider implements IEntityWithSchedule {
 
 	@Column({ nullable: false })
 	private _serviceId: number;
+	public get serviceId(): number {
+		return this._serviceId;
+	}
+	public set serviceId(value: number) {
+		this._serviceId = value;
+	}
 
 	@ManyToOne(type => Service)
 	@JoinColumn({ name: '_serviceId' })
