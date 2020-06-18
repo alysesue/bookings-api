@@ -1,7 +1,7 @@
 # Fixed path for each service
 # Please do not change
 locals {
-  path-prefix = "/${var.project}/${terraform.workspace}/bookingsg-api"
+  path-prefix = "/${var.project}/${terraform.workspace}/bookingsg"
 }
 
 # Keys for encryption
