@@ -14,7 +14,7 @@ export const getConfig = () => ({
 		port: ConfigUtils.getValueFromEnv("BOOKINGSG_DB_PORT"),
 		instance: ConfigUtils.getValueFromEnv("BOOKINGSG_DB_INSTANCE"),
 		username: ConfigUtils.getValueFromEnv("BOOKINGSG_DB_USERNAME"),
-		password: ConfigUtils.getValueFromEnv("DB_PASSWORD_BOOKINGSG_API_APP"),
+		password: ConfigUtils.getValueFromEnv("DB_PASSWORD_BOOKINGSG_APP"),
 	}
 });
 
