@@ -21,6 +21,7 @@ afterEach(() => {
 
 describe("Timeslots Service", () => {
 	const date = new Date(2020, 4, 27);
+	const endDate = DateHelper.setHours(date, 11, 59);
 	const timeslot = new Timeslot(DateHelper.setHours(date, 15, 0), DateHelper.setHours(date, 16, 0));
 	const timeslot2 = new Timeslot(DateHelper.setHours(date, 16, 0), DateHelper.setHours(date, 17, 0));
 	const timeslot3 = new Timeslot(DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
@@ -70,7 +71,7 @@ describe("Timeslots Service", () => {
 		Container.bind(ServiceProvidersRepository).to(jest.fn(() => ServiceProvidersRepositoryMock));
 
 		const service = Container.get(TimeslotsService);
-		const result = await service.getAggregatedTimeslots(date, date, 1);
+		const result = await service.getAggregatedTimeslots(date, endDate, 1);
 		expect(result).toBeDefined();
 
 		expect(ServicesRepositoryMock.getServiceWithSchedule).toBeCalled();

@@ -1,6 +1,6 @@
 import { Inject } from "typescript-ioc";
 import { Controller, Get, Header, Query, Route, Security, Tags, } from "tsoa";
-import { TimeslotResponse } from "./timeslots.apicontract";
+import { AvailabilityEntryResponse } from "./timeslots.apicontract";
 import { AvailableTimeslotProviders, TimeslotsService } from './timeslots.service';
 import { DateHelper } from "../infrastructure/dateHelper";
 
@@ -12,22 +12,27 @@ export class TimeslotsController extends Controller {
 
 	@Get("availability")
 	@Security("service")
-	public async getAggregatedTimeslots(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number): Promise<TimeslotResponse[]> {
-		// Parameters are created as UTC datetimes, treating them as local datetimes
-		startDate = DateHelper.UTCAsLocal(startDate);
-		endDate = DateHelper.UTCAsLocal(endDate);
-
+	public async getAvailability(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number): Promise<AvailabilityEntryResponse[]> {
 		let availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId);
 		availableTimeslots = availableTimeslots.filter(e => e.availabilityCount > 0);
-		return TimeslotsController.mapToResponse(availableTimeslots);
+		return TimeslotsController.mapAvailabilityToResponse(availableTimeslots);
 	}
 
-	private static mapToResponse(entries: AvailableTimeslotProviders[]): TimeslotResponse[] {
-		return entries.map(e => this.mapEntryToResponse(e));
+	@Get("")
+	@Security("service")
+	public async getTimeslots(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number): Promise<AvailabilityEntryResponse[]> {
+		const timeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId);
+
+		// todo: Map to TimeslotEntryResponse
+		return TimeslotsController.mapAvailabilityToResponse(timeslots);
 	}
 
-	private static mapEntryToResponse(entry: AvailableTimeslotProviders): TimeslotResponse {
-		const response = new TimeslotResponse();
+	private static mapAvailabilityToResponse(entries: AvailableTimeslotProviders[]): AvailabilityEntryResponse[] {
+		return entries.map(e => this.mapAvailabilityEntry(e));
+	}
+
+	private static mapAvailabilityEntry(entry: AvailableTimeslotProviders): AvailabilityEntryResponse {
+		const response = new AvailabilityEntryResponse();
 		response.startTime = entry.startTime;
 		response.endTime = entry.endTime;
 		response.availabilityCount = entry.availabilityCount;
