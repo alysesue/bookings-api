@@ -79,8 +79,7 @@ export class BookingsController extends Controller {
 	@Get('{bookingId}/providers')
 	@SuccessResponse(200, 'Ok')
 	public async getBookingProviders(@Path() bookingId: string): Promise<any> {
-		let booking: Booking;
-		booking = await this.bookingsService.getBooking(bookingId);
+		const booking = await this.bookingsService.getBooking(bookingId);
 
 		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
 		return timeslotEntry.serviceProviders.map(BookingsController.mapProvider) || [];
