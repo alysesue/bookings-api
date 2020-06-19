@@ -1,10 +1,10 @@
 version: "3"
 services:
-  bookingsg-api:
+  bookingsg:
     build:
       context: ./
       dockerfile: ./service.node12.watch.dockerfile
-    container_name: "bookingsg-api"
+    container_name: "bookingsg"
     restart: always
     logging:
       driver: "json-file"
@@ -19,7 +19,7 @@ services:
       - ./package.json:/service/package.json:delegated
       - ./package-lock.json:/service/package-lock.json:delegated
       - ./params:/service/params:delegated
-      - bookingsg-api-dist:/service/dist
+      - bookingsg-dist:/service/dist
     depends_on:
       - db
   db:
@@ -35,4 +35,4 @@ services:
       - gt_dbdata:/var/lib/postgresql/data
 volumes:
   gt_dbdata:
-  bookingsg-api-dist:
+  bookingsg-dist:

@@ -1,4 +1,4 @@
-# bookingsg-api
+# bookingsg
 
 This is a reference template for starting a standard MOL backend service.
 

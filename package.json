@@ -1,5 +1,5 @@
 {
-	"name": "bookingsg-api",
+	"name": "bookingsg",
 	"version": "0.0.1",
 	"main": "index.js",
 	"scripts": {
@@ -11,13 +11,13 @@
 		"build": "npm run fixLF && ./scripts/build.sh",
 		"build:skip-migrations": "npm run fixLF && ./scripts/build.sh production skipMigrations",
 		"swagger": "./node_modules/.bin/tsoa swagger --yaml",
-		"sync-env": "npm run fixLF && export SERVICE_NAME=bookingsg-api && ./node_modules/mol-lib-config/shared-scripts/aws/aws-sm-sync-env.sh",
+		"sync-env": "npm run fixLF && export SERVICE_NAME=bookingsg && ./node_modules/mol-lib-config/shared-scripts/aws/aws-sm-sync-env.sh",
 		"sync-local": "node node_modules/cpy-cli/cli ./params/secrets/local.env ./ --rename=.env",
 		"start": "docker-compose up -d --build",
 		"start:fresh": "docker-compose down -v && npm start -- --force-recreate",
 		"cleanup": "docker-compose down -v --rmi all --remove-orphans",
-		"cleanup:db": "docker-compose down && docker volume rm bookingsg-api_gt_dbdata",
-		"logs": "docker logs -f bookingsg-api",
+		"cleanup:db": "docker-compose down && docker volume rm bookingsg_gt_dbdata",
+		"logs": "docker logs -f bookingsg",
 		"stop": "docker-compose stop",
 		"lint-staged": "lint-staged",
 		"watcher-install": "npm install",

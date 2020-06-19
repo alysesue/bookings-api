@@ -37,7 +37,7 @@ ASSERT_VAR_SCRIPT="${PROJECT_DIR}/node_modules/mol-lib-config/shared-scripts/hel
 export ENV=$1					# Injected by terraform
 source ${ASSERT_VAR_SCRIPT} ENV
 
-export SERVICE_NAME="bookingsg-api"
+export SERVICE_NAME="bookingsg"
 
 # ==============================================================================
 # Script
