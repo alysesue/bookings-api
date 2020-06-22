@@ -54,7 +54,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 			findConditions['_serviceId'] = searchRequest.serviceId;
 		}
 
-		const findManyOptions: FindManyOptions<Booking> = { where: [findConditions] };
+		const findManyOptions: FindManyOptions<Booking> = { where: [findConditions], relations: ['_service'] };
 		findManyOptions['order'] = {};
 		findManyOptions['order']['_id'] = 'DESC';
 

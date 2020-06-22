@@ -17,6 +17,7 @@ export class BookingResponse {
 	public startDateTime: Date;
 	public endDateTime: Date;
 	public sessionDurationInMinutes: number;
+	public serviceName: string;
 }
 
 export class BookingSearchRequest {
