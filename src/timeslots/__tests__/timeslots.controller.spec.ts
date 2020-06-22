@@ -1,6 +1,7 @@
 import { Container } from "typescript-ioc";
 import { TimeslotsController } from "../timeslots.controller";
-import { AvailableTimeslotProviders, TimeslotsService } from "../timeslots.service";
+import { TimeslotsService } from "../timeslots.service";
+import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
 import { DateHelper } from "../../infrastructure/dateHelper";
 
 const TimeslotsServiceMock = {

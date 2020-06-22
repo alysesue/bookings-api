@@ -1,7 +1,8 @@
 import { Inject } from "typescript-ioc";
 import { Controller, Get, Header, Query, Route, Security, Tags, } from "tsoa";
 import { AvailabilityEntryResponse, TimeslotEntryResponse } from "./timeslots.apicontract";
-import { AvailableTimeslotProviders, TimeslotsService } from './timeslots.service';
+import { TimeslotsService } from './timeslots.service';
+import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import { ServiceprovidersMapper } from "../serviceProviders/serviceProviders.mapper";
 import { map } from "lodash";
 
