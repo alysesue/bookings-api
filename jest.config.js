@@ -6,10 +6,8 @@ const config = {
 	setupFiles: ['./jest.setup.ts'],
 	collectCoverageFrom: [
 		...baseConfig.collectCoverageFrom,
-		'**/*.controller.ts',
-		'!**/*{A,a}picontract{*,*/**/*}',
-		'!**/fixLF.js',
-		'!**/authentication.ts'
+		'**/src/*.ts',
+		'**/src/*.tsx',
 	],
 	coverageThreshold: {
 		global: {

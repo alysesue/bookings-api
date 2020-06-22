@@ -5,7 +5,6 @@ import { BookingsRepository } from "./bookings.repository";
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "./bookings.apicontract";
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
-import { DateHelper } from "../infrastructure/dateHelper";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 
 @InRequestScope
