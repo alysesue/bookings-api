@@ -109,6 +109,6 @@ export class BookingsController extends Controller {
 		}
 
 		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
-		return timeslotEntry.serviceProviders.map(BookingsController.mapProvider) || [];
+		return timeslotEntry.availableServiceProviders.map(BookingsController.mapProvider) || [];
 	}
 }

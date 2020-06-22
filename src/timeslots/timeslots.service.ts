@@ -136,6 +136,12 @@ export class AvailableTimeslotProviders {
 		this.pendingBookingsCount = 0;
 	}
 
+	public setRelatedServiceProviders(providers: ServiceProvider[]) {
+		this._relatedServiceProviders = providers;
+		this._bookedServiceProviders = [];
+		this._availableServiceProviders = Array.from(providers);
+	}
+
 	public setBookedServiceProvders(providerIds: number[]) {
 		const bookedProviderIds = new Set<number>(providerIds);
 		this._bookedServiceProviders = this._relatedServiceProviders.filter(sp => bookedProviderIds.has(sp.id));
@@ -166,7 +172,7 @@ export class AvailableTimeslotProviders {
 		const instance = new AvailableTimeslotProviders();
 		instance.startTime = entry.getTimeslot().getStartTime();
 		instance.endTime = entry.getTimeslot().getEndTime();
-		instance._relatedServiceProviders = entry.getGroups();
+		instance.setRelatedServiceProviders(entry.getGroups());
 
 		return instance;
 	}

@@ -1,4 +1,4 @@
-import { ServiceProviderResponseModel } from '../serviceProviders/serviceProviders.apicontract';
+import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
 
 export class AvailabilityEntryResponse {
 	public startTime: Date;
@@ -9,7 +9,8 @@ export class AvailabilityEntryResponse {
 export class TimeslotEntryResponse {
 	public startTime: Date;
 	public endTime: Date;
-	public bookedServiceProviders: ServiceProviderResponseModel[];
-	public availableServiceProviders: ServiceProviderResponseModel[];
+	public bookedServiceProviders: ServiceProviderSummaryModel[];
+	public availableServiceProviders: ServiceProviderSummaryModel[];
+	public pendingBookingsCount: number;
 	public availabilityCount: number;
 }

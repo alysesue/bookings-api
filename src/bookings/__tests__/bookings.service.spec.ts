@@ -122,7 +122,7 @@ class TimeslotsServiceMock extends TimeslotsService {
 		const timeslotEntry = new AvailableTimeslotProviders();
 		timeslotEntry.startTime = startDateTime;
 		timeslotEntry.endTime = startDateTime;
-		timeslotEntry.serviceProviders = TimeslotsServiceMock.availableProvidersForTimeslot;
+		timeslotEntry.setRelatedServiceProviders(TimeslotsServiceMock.availableProvidersForTimeslot);
 
 		return timeslotEntry;
 	}

@@ -17,7 +17,11 @@ export class ServiceprovidersMapper {
 		return spList?.map(e => this.mapDataModel(e));
 	}
 
-	public mapSummaryDataModel(data: ServiceProvider): ServiceProviderSummaryModel {
-		return new ServiceProviderSummaryModel(data.id, data.name);
+	public mapSummaryDataModel(entry: ServiceProvider): ServiceProviderSummaryModel {
+		return new ServiceProviderSummaryModel(entry.id, entry.name);
+	}
+
+	public mapSummaryDataModels(entries: ServiceProvider[]): ServiceProviderSummaryModel[] {
+		return entries?.map(e => this.mapSummaryDataModel(e));
 	}
 }

@@ -3,6 +3,7 @@ import { Controller, Get, Header, Query, Route, Security, Tags, } from "tsoa";
 import { AvailabilityEntryResponse, TimeslotEntryResponse } from "./timeslots.apicontract";
 import { AvailableTimeslotProviders, TimeslotsService } from './timeslots.service';
 import { ServiceprovidersMapper } from "../serviceProviders/serviceProviders.mapper";
+import { map } from "lodash";
 
 @Route("v1/timeslots")
 @Tags('Timeslots')
@@ -23,11 +24,9 @@ export class TimeslotsController extends Controller {
 
 	@Get("")
 	@Security("service")
-	public async getTimeslots(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number): Promise<AvailabilityEntryResponse[]> {
+	public async getTimeslots(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number): Promise<TimeslotEntryResponse[]> {
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId);
-
-		// todo: Map to TimeslotEntryResponse
-		return TimeslotsController.mapAvailabilityToResponse(timeslots);
+		return timeslots?.map(t => this.mapTimeslotEntry(t));
 	}
 
 	private static mapAvailabilityToResponse(entries: AvailableTimeslotProviders[]): AvailabilityEntryResponse[] {
@@ -42,12 +41,14 @@ export class TimeslotsController extends Controller {
 		return response;
 	}
 
-	private static mapTimeslotEntry(entry: AvailableTimeslotProviders): TimeslotEntryResponse {
+	private mapTimeslotEntry(entry: AvailableTimeslotProviders): TimeslotEntryResponse {
 		const response = new TimeslotEntryResponse();
 		response.startTime = entry.startTime;
 		response.endTime = entry.endTime;
-		// response.bookedServiceProviders = entry.bookedServiceProviders
-
+		response.availabilityCount = entry.availabilityCount;
+		response.pendingBookingsCount = entry.pendingBookingsCount;
+		response.bookedServiceProviders = this.serviceProviderMapper.mapSummaryDataModels(entry.bookedServiceProviders);
+		response.availableServiceProviders = this.serviceProviderMapper.mapSummaryDataModels(entry.availableServiceProviders);
 		return response;
 	}
 }
