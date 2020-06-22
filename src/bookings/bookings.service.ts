@@ -51,6 +51,23 @@ export class BookingsService {
 		await this.bookingsRepository.save(booking);
 		return booking;
 	}
+	public async cancelBooking(bookingId: string): Promise<Booking> {
+		const booking = await this.getBookingForCancelling(bookingId);
+
+		const eventCalId = booking.eventICalId;
+
+		if (booking.status === BookingStatus.Accepted) {
+			const provider = await this.serviceProviderRepo.getServiceProvider({ id: booking.serviceProviderId });
+			if (!provider) {
+				throw new Error(`Service provider '${booking.serviceProviderId}' not found`);
+			}
+			await this.calendarsService.deleteCalendarEvent(provider.calendar, eventCalId);
+		}
+		booking.status = BookingStatus.Cancelled;
+		await this.bookingsRepository.update(booking);
+
+		return booking;
+	}
 
 	public async acceptBooking(bookingId: string, acceptRequest: BookingAcceptRequest): Promise<Booking> {
 		const booking = await this.getBookingForAccepting(bookingId);
@@ -93,6 +110,13 @@ export class BookingsService {
 		return booking;
 	}
 
+	private async getBookingForCancelling(bookingId: string): Promise<Booking> {
+		const booking = await this.getBooking(bookingId);
+		if (booking.status === BookingStatus.Closed || booking.status === BookingStatus.Cancelled) {
+			throw new Error(`Booking ${bookingId} is in invalid state for cancelling`);
+		}
+		return booking;
+	}
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
 		return await this.bookingsRepository.search(searchRequest);
 	}

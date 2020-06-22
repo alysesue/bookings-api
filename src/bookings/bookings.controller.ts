@@ -70,6 +70,18 @@ export class BookingsController extends Controller {
 		}
 	}
 
+	@Post('{bookingId}/cancel')
+	@SuccessResponse(204, 'Cancelled')
+	public async cancelBooking(@Path() bookingId: string): Promise<any> {
+		try {
+			await this.bookingsService.cancelBooking(bookingId);
+		} catch (err) {
+			logger.error("endpointCancelBooking:: error: ", err);
+			this.setStatus(400);
+			return new ErrorResponse(err.message);
+		}
+	}
+
 	@Get('')
 	@SuccessResponse(200, "Ok")
 	@Security("optional-service")

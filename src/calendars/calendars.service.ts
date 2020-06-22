@@ -55,6 +55,10 @@ export class CalendarsService {
 		return await this.googleCalendarApi.createEvent(booking, calendar.googleCalendarId);
 	}
 
+	public async deleteCalendarEvent(calendar: Calendar, eventId: string) {
+		await this.googleCalendarApi.deleteEvent(calendar.googleCalendarId, eventId);
+	}
+
 	public async addUser(calendarUUID: string, model: CalendarUserModel): Promise<CalendarUserModel> {
 		const calendar = await this.calendarsRepository.getCalendarByUUID(calendarUUID);
 
