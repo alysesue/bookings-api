@@ -8,7 +8,6 @@ import { BookingSearchRequest } from '../bookings/bookings.apicontract';
 import { groupByKey } from '../tools/collections';
 import { ServicesRepository } from "../services/services.repository";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
-import { forEach } from "lodash";
 
 @Scoped(Scope.Request)
 export class TimeslotsService {
@@ -49,15 +48,14 @@ export class TimeslotsService {
 	private timeslotKeySelector = (start: Date, end: Date) => `${start.getTime()}|${end.getTime()}`;
 	private bookingKeySelector = (booking: Booking) => this.timeslotKeySelector(booking.startDateTime, booking.getSessionEndTime());
 
-	private setAcceptedProviders(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {
+	private setBookedProviders(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {
 		const acceptedBookingsLookup = groupByKey(acceptedBookings, this.bookingKeySelector);
 
 		for (const element of entries) {
 			const elementKey = this.timeslotKeySelector(element.startTime, element.endTime);
 			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
 			if (acceptedBookingsForTimeslot) {
-				const acceptedProviderIds = acceptedBookingsForTimeslot.reduce((set, booking) => set.add(booking.serviceProviderId), new Set<number>());
-				element.acceptedProviders = element.slotServiceProviders.filter(sp => acceptedProviderIds.has(sp.id));
+				element.setBookedServiceProvders(acceptedBookingsForTimeslot.map(booking => booking.serviceProviderId));
 			}
 		}
 	}
@@ -103,7 +101,7 @@ export class TimeslotsService {
 		const acceptedBookings = await this.getAcceptedBookings(startDateTime, endDateTime);
 
 		const mappedEntries = this.mapDataModels(aggregatedEntries);
-		this.setAcceptedProviders(mappedEntries, acceptedBookings);
+		this.setBookedProviders(mappedEntries, acceptedBookings);
 		this.setPendingTimeslots(mappedEntries, pendingBookings);
 
 		return mappedEntries;
@@ -126,24 +124,34 @@ export class TimeslotsService {
 export class AvailableTimeslotProviders {
 	public startTime: Date;
 	public endTime: Date;
-	public slotServiceProviders: ServiceProvider[];
-	public acceptedProviders: ServiceProvider[];
 	public pendingBookingsCount: number;
+	private _relatedServiceProviders: ServiceProvider[];
+	private _bookedServiceProviders: ServiceProvider[];
+	private _availableServiceProviders: ServiceProvider[];
 
 	constructor() {
-		this.slotServiceProviders = [];
-		this.acceptedProviders = [];
+		this._relatedServiceProviders = [];
+		this._bookedServiceProviders = [];
+		this._availableServiceProviders = [];
 		this.pendingBookingsCount = 0;
 	}
 
+	public setBookedServiceProvders(providerIds: number[]) {
+		const bookedProviderIds = new Set<number>(providerIds);
+		this._bookedServiceProviders = this._relatedServiceProviders.filter(sp => bookedProviderIds.has(sp.id));
+		this._availableServiceProviders = this._relatedServiceProviders.filter(sp => !bookedProviderIds.has(sp.id));
+	}
+
+	public get bookedServiceProviders(): ServiceProvider[] {
+		return this._bookedServiceProviders;
+	}
+
 	public get availableServiceProviders(): ServiceProvider[] {
-		const bookedProviderIds = this.acceptedProviders.reduce((set, sp) => set.add(sp.id), new Set<number>());
-		const availableProviders = this.slotServiceProviders.filter(sp => !bookedProviderIds.has(sp.id));
-		return availableProviders;
+		return this._availableServiceProviders;
 	}
 
 	public get availabilityCount(): number {
-		return this.slotServiceProviders.length - this.acceptedProviders.length - this.pendingBookingsCount;
+		return this._availableServiceProviders.length - this.pendingBookingsCount;
 	}
 
 	public static empty(startTime: Date, endTime: Date): AvailableTimeslotProviders {
@@ -158,7 +166,7 @@ export class AvailableTimeslotProviders {
 		const instance = new AvailableTimeslotProviders();
 		instance.startTime = entry.getTimeslot().getStartTime();
 		instance.endTime = entry.getTimeslot().getEndTime();
-		instance.slotServiceProviders = entry.getGroups();
+		instance._relatedServiceProviders = entry.getGroups();
 
 		return instance;
 	}

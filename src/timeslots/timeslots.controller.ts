@@ -1,14 +1,17 @@
 import { Inject } from "typescript-ioc";
 import { Controller, Get, Header, Query, Route, Security, Tags, } from "tsoa";
-import { AvailabilityEntryResponse } from "./timeslots.apicontract";
+import { AvailabilityEntryResponse, TimeslotEntryResponse } from "./timeslots.apicontract";
 import { AvailableTimeslotProviders, TimeslotsService } from './timeslots.service';
-import { DateHelper } from "../infrastructure/dateHelper";
+import { ServiceprovidersMapper } from "../serviceProviders/serviceProviders.mapper";
 
 @Route("v1/timeslots")
 @Tags('Timeslots')
 export class TimeslotsController extends Controller {
 	@Inject
 	private timeslotsService: TimeslotsService;
+
+	@Inject
+	private serviceProviderMapper: ServiceprovidersMapper;
 
 	@Get("availability")
 	@Security("service")
@@ -36,6 +39,15 @@ export class TimeslotsController extends Controller {
 		response.startTime = entry.startTime;
 		response.endTime = entry.endTime;
 		response.availabilityCount = entry.availabilityCount;
+		return response;
+	}
+
+	private static mapTimeslotEntry(entry: AvailableTimeslotProviders): TimeslotEntryResponse {
+		const response = new TimeslotEntryResponse();
+		response.startTime = entry.startTime;
+		response.endTime = entry.endTime;
+		// response.bookedServiceProviders = entry.bookedServiceProviders
+
 		return response;
 	}
 }

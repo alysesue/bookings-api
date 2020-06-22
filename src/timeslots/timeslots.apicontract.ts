@@ -9,6 +9,7 @@ export class AvailabilityEntryResponse {
 export class TimeslotEntryResponse {
 	public startTime: Date;
 	public endTime: Date;
-	public serviceProviders: ServiceProviderResponseModel[];
-	public pendingBookingsCount: number;
+	public bookedServiceProviders: ServiceProviderResponseModel[];
+	public availableServiceProviders: ServiceProviderResponseModel[];
+	public availabilityCount: number;
 }
