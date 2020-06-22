@@ -4,7 +4,6 @@ import { BookingsController } from "../bookings.controller";
 import { BookingsService } from "../bookings.service";
 import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingSearchRequest } from "../bookings.apicontract";
 import { AvailableTimeslotProviders, TimeslotsService } from '../../timeslots/timeslots.service';
-import { ErrorResponse } from "../../apicontract";
 
 describe("Bookings.Controller", () => {
 	beforeAll(() => {
@@ -16,8 +15,8 @@ describe("Bookings.Controller", () => {
 		const controller = Container.get(BookingsController);
 		const bookingId = 'booking-1';
 		BookingsServiceMock.mockAcceptBooking = Promise.resolve(Booking.create(1, new Date(), 120));
-
-		await controller.acceptBooking(bookingId, undefined);
+		const request = new BookingAcceptRequest();
+		await controller.acceptBooking(bookingId, request);
 
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 	});
@@ -25,7 +24,7 @@ describe("Bookings.Controller", () => {
 	it('should cancel booking', async () => {
 		const controller = Container.get(BookingsController);
 		const bookingId = 'booking-1';
-		BookingsServiceMock.mockAcceptBooking = Promise.resolve(Booking.create(1, new Date(), 120));
+		BookingsServiceMock.mockCancelBooking = Promise.resolve(Booking.create(1, new Date(), 120));
 
 		await controller.cancelBooking(bookingId);
 
@@ -67,47 +66,13 @@ describe("Bookings.Controller", () => {
 		expect(TimeslotsServiceMock.getAvailableProvidersForTimeslot).toBeCalled();
 	});
 
-	it('should throw exception if booking not found', async () => {
-		const controller = Container.get(BookingsController);
-		BookingsServiceMock.getBookingPromise = Promise.reject({ message: 'error' });
-
-		const result = await controller.getBooking("1");
-
-		expect(result).toStrictEqual(new ErrorResponse('error'));
-	});
-
-	it('should throw exception if booking not found', async () => {
-		const controller = Container.get(BookingsController);
-		BookingsServiceMock.getBookingPromise = Promise.reject({ message: 'error' });
-
-		const result = await controller.getBookingProviders("1");
-
-		expect(result).toStrictEqual(new ErrorResponse('error'));
-	});
-
 	it('should post booking', async () => {
+		BookingsServiceMock.mockPostBooking = Promise.resolve(Booking.create(1, new Date(), 60));
 		const controller = Container.get(BookingsController);
 
 		const result = await controller.postBooking(new BookingRequest(), 1);
 
 		expect(result as BookingResponse);
-	});
-
-	it('should return 400 on post booking error', async () => {
-		const controller = Container.get(BookingsController);
-		BookingsServiceMock.mockPostBooking = Promise.reject({ message: 'error' });
-
-		const result = await controller.postBooking(new BookingRequest(), 1);
-
-		expect(result as ErrorResponse);
-	});
-
-	it('should return 400 on accept booking error', async () => {
-		BookingsServiceMock.mockAcceptBooking = Promise.reject({ message: 'error' });
-
-		const result = await Container.get(BookingsController).acceptBooking('1', new BookingAcceptRequest());
-
-		expect(result as ErrorResponse);
 	});
 });
 
@@ -118,6 +83,7 @@ const TimeslotsServiceMock = {
 class BookingsServiceMock extends BookingsService {
 	public static mockBooking: Booking;
 	public static mockAcceptBooking = Promise.resolve(BookingsServiceMock.mockBooking);
+	public static mockCancelBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockGetBooking: Booking;
 	public static mockPostBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockBookings: Booking[] = [];
@@ -137,6 +103,11 @@ class BookingsServiceMock extends BookingsService {
 	public async acceptBooking(bookingId: string): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
 		return BookingsServiceMock.mockAcceptBooking;
+	}
+
+	public async cancelBooking(bookingId: string): Promise<Booking> {
+		BookingsServiceMock.mockBookingId = bookingId;
+		return BookingsServiceMock.mockCancelBooking;
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {

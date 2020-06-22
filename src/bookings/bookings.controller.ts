@@ -1,4 +1,3 @@
-import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
 import { Inject } from "typescript-ioc";
 import { Body, Controller, Get, Header, Path, Post, Query, Route, Security, SuccessResponse, Tags } from "tsoa";
 import { Booking, ServiceProvider } from "../models";
@@ -10,7 +9,6 @@ import {
 	BookingSearchRequest
 } from "./bookings.apicontract";
 import { BookingsService } from "./bookings.service";
-import { ErrorResponse } from "../apicontract";
 import { TimeslotsService } from "../timeslots/timeslots.service";
 
 @Route("v1/bookings")
@@ -33,7 +31,7 @@ export class BookingsController extends Controller {
 			sessionDurationInMinutes: booking.sessionDurationInMinutes,
 			startDateTime: booking.startDateTime,
 			endDateTime: booking.getSessionEndTime(),
-			serviceName: booking.service.name,
+			serviceName: booking.service?.name,
 		} as BookingResponse;
 	}
 
@@ -48,38 +46,20 @@ export class BookingsController extends Controller {
 	@SuccessResponse(201, 'Created')
 	@Security("service")
 	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
-		try {
-			const booking = await this.bookingsService.save(bookingRequest, serviceId);
-			return BookingsController.mapDataModel(booking);
-		} catch (err) {
-			logger.error("endpointPostBooking:: error: ", err);
-			this.setStatus(400);
-			return new ErrorResponse(err.message);
-		}
+		const booking = await this.bookingsService.save(bookingRequest, serviceId);
+		return BookingsController.mapDataModel(booking);
 	}
 
 	@Post('{bookingId}/accept')
 	@SuccessResponse(204, 'Accepted')
 	public async acceptBooking(@Path() bookingId: string, @Body() acceptRequest: BookingAcceptRequest): Promise<any> {
-		try {
-			await this.bookingsService.acceptBooking(bookingId, acceptRequest);
-		} catch (err) {
-			logger.error("endpointAcceptBooking:: error: ", err);
-			this.setStatus(400);
-			return new ErrorResponse(err.message);
-		}
+		await this.bookingsService.acceptBooking(bookingId, acceptRequest);
 	}
 
 	@Post('{bookingId}/cancel')
 	@SuccessResponse(204, 'Cancelled')
 	public async cancelBooking(@Path() bookingId: string): Promise<any> {
-		try {
-			await this.bookingsService.cancelBooking(bookingId);
-		} catch (err) {
-			logger.error("endpointCancelBooking:: error: ", err);
-			this.setStatus(400);
-			return new ErrorResponse(err.message);
-		}
+		await this.bookingsService.cancelBooking(bookingId);
 	}
 
 	@Get('')
@@ -99,27 +79,14 @@ export class BookingsController extends Controller {
 	@Get('{bookingId}')
 	@SuccessResponse(200, 'Ok')
 	public async getBooking(@Path() bookingId: string): Promise<any> {
-		try {
-			const booking = await this.bookingsService.getBooking(bookingId);
-			return BookingsController.mapDataModel(booking);
-		} catch (err) {
-			logger.error("endpointPostBooking:: error: ", err);
-			this.setStatus(400);
-			return new ErrorResponse(err.message);
-		}
+		const booking = await this.bookingsService.getBooking(bookingId);
+		return BookingsController.mapDataModel(booking);
 	}
 
 	@Get('{bookingId}/providers')
 	@SuccessResponse(200, 'Ok')
 	public async getBookingProviders(@Path() bookingId: string): Promise<any> {
-		let booking: Booking;
-		try {
-			booking = await this.bookingsService.getBooking(bookingId);
-		} catch (err) {
-			logger.error("endpointPostBooking:: error: ", err);
-			this.setStatus(400);
-			return new ErrorResponse(err.message);
-		}
+		const booking = await this.bookingsService.getBooking(bookingId);
 
 		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
 		return timeslotEntry.serviceProviders.map(BookingsController.mapProvider) || [];
