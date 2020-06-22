@@ -91,6 +91,7 @@ describe("Timeslots Service", () => {
 		expect(ServicesRepositoryMock.getServiceWithSchedule).toBeCalled();
 		expect(ScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 
+		expect(result.bookedServiceProviders).toHaveLength(1);
 		expect(result.availableServiceProviders).toHaveLength(0);
 	});
 });
