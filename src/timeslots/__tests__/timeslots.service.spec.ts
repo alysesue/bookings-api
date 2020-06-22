@@ -27,7 +27,13 @@ describe("Timeslots Service", () => {
 	const timeslot3 = new Timeslot(DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
 
 	const ScheduleMock = {
+		id: 1,
 		generateValidTimeslots: jest.fn(() => [timeslot, timeslot2, timeslot3])
+	};
+
+	const ProviderScheduleMock = {
+		id: 2,
+		generateValidTimeslots: jest.fn(() => [timeslot3])
 	};
 
 	const CalendarMock = new Calendar();
@@ -36,12 +42,18 @@ describe("Timeslots Service", () => {
 	const ServiceMock = new Service();
 	ServiceMock.id = 1;
 	ServiceMock.schedule = ScheduleMock as unknown as Schedule;
+	ServiceMock.scheduleId = ScheduleMock.id;
 
 	const ServiceProviderMock = ServiceProvider.create('Provider', CalendarMock, ServiceMock.id);
-	ServiceProviderMock.id = 1;
+	ServiceProviderMock.id = 100;
 
-	// Booking in place for the first time slot
-	const BookingMock = Booking.create(1, DateHelper.setHours(date, 15, 0), 60);
+	const ServiceProviderMock2 = ServiceProvider.create('Provider with schedule', CalendarMock, ServiceMock.id);
+	ServiceProviderMock2.id = 101;
+	ServiceProviderMock2.schedule = ProviderScheduleMock as unknown as Schedule;
+	ServiceProviderMock2.scheduleId = ProviderScheduleMock.id;
+
+	// Booking in place for the last time slot
+	const BookingMock = Booking.create(1, DateHelper.setHours(date, 17, 0), 60);
 	BookingMock.status = BookingStatus.Accepted;
 	BookingMock.eventICalId = 'eventICalId';
 	BookingMock.serviceProvider = ServiceProviderMock;
@@ -62,7 +74,7 @@ describe("Timeslots Service", () => {
 	};
 
 	const ServiceProvidersRepositoryMock = {
-		getServiceProviders: jest.fn(() => Promise.resolve([ServiceProviderMock]))
+		getServiceProviders: jest.fn(() => Promise.resolve([ServiceProviderMock, ServiceProviderMock2]))
 	};
 
 	it("should aggregate results", async () => {
@@ -84,14 +96,16 @@ describe("Timeslots Service", () => {
 		Container.bind(ServiceProvidersRepository).to(jest.fn(() => ServiceProvidersRepositoryMock));
 
 		const service = Container.get(TimeslotsService);
-		const startDateTime = DateHelper.setHours(date, 15, 0);
-		const endDateTime = DateHelper.setHours(date, 16, 0);
+		const startDateTime = DateHelper.setHours(date, 17, 0);
+		const endDateTime = DateHelper.setHours(date, 18, 0);
 		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1);
 
 		expect(ServicesRepositoryMock.getServiceWithSchedule).toBeCalled();
 		expect(ScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
+		expect(ProviderScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 
 		expect(result.bookedServiceProviders).toHaveLength(1);
-		expect(result.availableServiceProviders).toHaveLength(0);
+		expect(result.availableServiceProviders).toHaveLength(1);
+		expect(result.bookedServiceProviders[0].id).not.toBe(result.availableServiceProviders[0]);
 	});
 });

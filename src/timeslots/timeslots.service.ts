@@ -81,13 +81,21 @@ export class TimeslotsService {
 
 		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({ serviceId, includeSchedule: true });
 
-		const validTimeslots = Array.from(schedule.generateValidTimeslots({
+		const validServiceTimeslots = Array.from(schedule.generateValidTimeslots({
 			startDatetime: minStartTime,
 			endDatetime: maxEndTime
 		}));
 
 		for (const provider of serviceProviders) {
-			aggregator.aggregate(provider, validTimeslots);
+			if (provider.schedule) {
+				const serviceProviderTimeslots = provider.schedule.generateValidTimeslots({
+					startDatetime: minStartTime,
+					endDatetime: maxEndTime
+				});
+				aggregator.aggregate(provider, serviceProviderTimeslots);
+			} else {
+				aggregator.aggregate(provider, validServiceTimeslots);
+			}
 		}
 
 		const entries = aggregator.getEntries();
