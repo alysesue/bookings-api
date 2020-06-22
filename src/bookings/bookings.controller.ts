@@ -31,7 +31,7 @@ export class BookingsController extends Controller {
 			sessionDurationInMinutes: booking.sessionDurationInMinutes,
 			startDateTime: booking.startDateTime,
 			endDateTime: booking.getSessionEndTime(),
-			serviceName: booking.service.name,
+			serviceName: booking.service?.name,
 		} as BookingResponse;
 	}
 
