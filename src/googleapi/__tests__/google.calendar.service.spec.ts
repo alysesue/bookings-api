@@ -57,6 +57,12 @@ describe("Google calendar wrapper tests", () => {
 		expect(calendarId).toBe("google-id");
 	});
 
+	it("should remove calendar", async () => {
+		GoogleApiMock.deleteEventsMock = jest.fn()
+		await Container.get(GoogleCalendarService).deleteEvent("cal-id", "event-id");
+		expect(GoogleApiMock.deleteEventsMock).toBeCalled();
+	});
+
 	it("should add user access", async () => {
 		GoogleApiMock.mockAclInsertResponse = {
 			data: {
@@ -92,6 +98,7 @@ class GoogleApiMock extends GoogleApi {
 	public static mockQueryResponse;
 	public static insertCalendarsMock;
 	public static createEventsMock;
+	public static deleteEventsMock;
 
 	public async getCalendarApi(): Promise<calendar_v3.Calendar> {
 		return {
@@ -112,6 +119,7 @@ class GoogleApiMock extends GoogleApi {
 			// @ts-ignore
 			events: {
 				insert: () => GoogleApiMock.createEventsMock,
+				delete: (param: any) => GoogleApiMock.deleteEventsMock(param),
 			},
 		};
 	}
