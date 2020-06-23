@@ -7,7 +7,8 @@ import { GoogleApi } from "../../googleapi/google.api";
 import * as insertEventResponse from "./createEventResponse.json";
 import * as freebusyResponse from "./freebusyResponse.json";
 import { BookingAcceptRequest } from "../bookings.apicontract";
-import { AvailableTimeslotProviders, TimeslotsService } from '../../timeslots/timeslots.service';
+import { TimeslotsService } from '../../timeslots/timeslots.service';
+import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 
 const BookingRepositoryMock = (update) => {
@@ -47,7 +48,7 @@ class TimeslotsServiceMock extends TimeslotsService {
 		const timeslotEntry = new AvailableTimeslotProviders();
 		timeslotEntry.startTime = startDateTime;
 		timeslotEntry.endTime = startDateTime;
-		timeslotEntry.serviceProviders = TimeslotsServiceMock.availableProvidersForTimeslot;
+		timeslotEntry.setRelatedServiceProviders(TimeslotsServiceMock.availableProvidersForTimeslot);
 
 		return timeslotEntry;
 	}

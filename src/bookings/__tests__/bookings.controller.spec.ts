@@ -3,7 +3,8 @@ import { Booking, BookingStatus, Calendar } from "../../models";
 import { BookingsController } from "../bookings.controller";
 import { BookingsService } from "../bookings.service";
 import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingSearchRequest } from "../bookings.apicontract";
-import { AvailableTimeslotProviders, TimeslotsService } from '../../timeslots/timeslots.service';
+import { TimeslotsService } from '../../timeslots/timeslots.service';
+import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 
 describe("Bookings.Controller", () => {
 	beforeAll(() => {

@@ -6,7 +6,8 @@ import { Container } from "typescript-ioc";
 import { Booking, BookingStatus, Calendar, Service, ServiceProvider } from "../../models/";
 import { InsertResult } from "typeorm";
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "../bookings.apicontract";
-import { AvailableTimeslotProviders, TimeslotsService } from '../../timeslots/timeslots.service';
+import { TimeslotsService } from '../../timeslots/timeslots.service';
+import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { DateHelper } from "../../infrastructure/dateHelper";
 
@@ -156,7 +157,7 @@ class TimeslotsServiceMock extends TimeslotsService {
 		const timeslotEntry = new AvailableTimeslotProviders();
 		timeslotEntry.startTime = startDateTime;
 		timeslotEntry.endTime = startDateTime;
-		timeslotEntry.serviceProviders = TimeslotsServiceMock.availableProvidersForTimeslot;
+		timeslotEntry.setRelatedServiceProviders(TimeslotsServiceMock.availableProvidersForTimeslot);
 
 		return timeslotEntry;
 	}

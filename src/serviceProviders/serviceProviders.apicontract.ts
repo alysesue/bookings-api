@@ -29,3 +29,13 @@ export class ServiceProviderListRequest {
 export class SetProviderScheduleRequest {
 	public scheduleId?: number;
 }
+
+export class ServiceProviderSummaryModel {
+	public id: number;
+	public name: string;
+
+	constructor(id: number, name: string) {
+		this.id = id;
+		this.name = name;
+	}
+}

@@ -5,9 +5,9 @@ import { ServiceProvider } from "../models";
 import { Body, Controller, Get, Header, Path, Post, Put, Route, Security, SuccessResponse, Tags } from "tsoa";
 import { ErrorResponse } from "../apicontract";
 import { parseCsv } from "../utils";
-import { CalendarsMapper } from "../calendars/calendars.mapper";
 import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
 import { ScheduleResponse } from "../schedules/schedules.apicontract";
+import { ServiceprovidersMapper } from "./serviceProviders.mapper";
 
 @InRequestScope
 @Route("v1/service-providers")
@@ -18,16 +18,7 @@ export class ServiceProvidersController extends Controller {
 	private serviceProvidersService: ServiceProvidersService;
 
 	@Inject
-	private calendarsMapper: CalendarsMapper;
-
-	private mapDataModel(spData: ServiceProvider): ServiceProviderResponseModel {
-		const mappedCalendar = this.calendarsMapper.mapDataModel(spData.calendar);
-		return new ServiceProviderResponseModel(spData.id, spData.name, mappedCalendar, spData.serviceId);
-	}
-
-	private mapDataModels(spList: ServiceProvider[]): ServiceProviderResponseModel[] {
-		return spList?.map(e => this.mapDataModel(e));
-	}
+	private mapper: ServiceprovidersMapper;
 
 	// TODO: write test for this one
 	private static parseCsvModelToServiceProviders(csvModels: []) {
@@ -67,13 +58,13 @@ export class ServiceProvidersController extends Controller {
 	@Security("optional-service")
 	public async getServiceProviders(@Header('x-api-service') serviceId?: number): Promise<ServiceProviderResponseModel[]> {
 		const dataModels = await this.serviceProvidersService.getServiceProviders(serviceId);
-		return this.mapDataModels(dataModels);
+		return this.mapper.mapDataModels(dataModels);
 	}
 
 	@Get("{spId}")
 	public async getServiceProvider(@Path() spId: number): Promise<ServiceProviderResponseModel> {
 		const dataModel = await this.serviceProvidersService.getServiceProvider(spId);
-		return this.mapDataModel(dataModel);
+		return this.mapper.mapDataModel(dataModel);
 	}
 
 	@Put('{id}/schedule')
