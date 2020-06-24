@@ -59,13 +59,12 @@ export class BookingsService {
 	}
 	public async cancelBooking(bookingId: string): Promise<Booking> {
 		const booking = await this.getBookingForCancelling(bookingId);
-
 		const eventCalId = booking.eventICalId;
-
 		if (booking.status === BookingStatus.Accepted) {
 			const provider = await this.serviceProviderRepo.getServiceProvider({ id: booking.serviceProviderId });
 			if (!provider) {
-				throw new Error(`Service provider '${booking.serviceProviderId}' not found`);
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${booking.serviceProviderId}' not found`);
+
 			}
 			await this.calendarsService.deleteCalendarEvent(provider.calendar, this.formatEventId(eventCalId));
 		}
