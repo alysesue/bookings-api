@@ -79,4 +79,13 @@ export class GoogleCalendarService {
 		const event = await api.events.insert(params);
 		return event.data.iCalUID;
 	}
+
+	public async deleteEvent(calendarId: string, eventId: string) {
+		const api = await this.googleApi.getCalendarApi();
+		const params = {
+			calendarId,
+			eventId,
+		};
+		await api.events.delete(params);
+	}
 }

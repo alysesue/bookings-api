@@ -19,6 +19,10 @@ export class BookingsService {
 	@Inject
 	private serviceProviderRepo: ServiceProvidersRepository;
 
+	public formatEventId(event: string): string {
+		return event.split("@")[0];
+	}
+
 	private createBooking(bookingRequest: BookingRequest, serviceId: number) {
 		const duration = Math.floor(DateHelper.DiffInMinutes(bookingRequest.endDateTime, bookingRequest.startDateTime));
 		if (duration <= 0) {
@@ -51,6 +55,22 @@ export class BookingsService {
 		await this.validateTimeSlot(booking);
 
 		await this.bookingsRepository.save(booking);
+		return booking;
+	}
+	public async cancelBooking(bookingId: string): Promise<Booking> {
+		const booking = await this.getBookingForCancelling(bookingId);
+		const eventCalId = booking.eventICalId;
+		if (booking.status === BookingStatus.Accepted) {
+			const provider = await this.serviceProviderRepo.getServiceProvider({ id: booking.serviceProviderId });
+			if (!provider) {
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${booking.serviceProviderId}' not found`);
+
+			}
+			await this.calendarsService.deleteCalendarEvent(provider.calendar, this.formatEventId(eventCalId));
+		}
+		booking.status = BookingStatus.Cancelled;
+		await this.bookingsRepository.update(booking);
+
 		return booking;
 	}
 
@@ -95,6 +115,14 @@ export class BookingsService {
 		return booking;
 	}
 
+	private async getBookingForCancelling(bookingId: string): Promise<Booking> {
+		const booking = await this.getBooking(bookingId);
+		if (booking.status === BookingStatus.Cancelled || booking.startDateTime < new Date()) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking ${bookingId} is in invalid state for cancelling`);
+
+		}
+		return booking;
+	}
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
 		return await this.bookingsRepository.search(searchRequest);
 	}

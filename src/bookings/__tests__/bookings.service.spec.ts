@@ -88,6 +88,20 @@ describe("Bookings.Service", () => {
 		expect(result.eventICalId).toBe("event-id");
 	});
 
+
+	it("should cancel booking", async () => {
+		const bookingService = Container.get(BookingsService);
+		CalendarsServiceMock.eventId = "event-id";
+		var tomorrow = new Date();
+		tomorrow.setDate(new Date().getDate() + 1);
+		BookingRepositoryMock.booking = Booking.create(1, tomorrow, 60);
+		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		const result = await bookingService.cancelBooking("1");
+
+		expect(result.status).toBe(BookingStatus.Cancelled);
+	});
+
 	it("should throw exception if booking not found", async () => {
 		const bookingService = Container.get(BookingsService);
 		BookingRepositoryMock.booking = undefined;
@@ -108,6 +122,13 @@ describe("Bookings.Service", () => {
 		await expect(bookingService.save(bookingRequest, 1))
 			.rejects
 			.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('No available service providers for this timeslot'));
+	});
+
+	it("should return eventId", async () => {
+		const bookingService = Container.get(BookingsService);
+		const res = bookingService.formatEventId("qmrljumfcqg1gur997fsjcnmto@google.com");
+		expect(res).toBe("qmrljumfcqg1gur997fsjcnmto");
+
 	});
 });
 

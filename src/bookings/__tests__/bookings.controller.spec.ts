@@ -22,6 +22,16 @@ describe("Bookings.Controller", () => {
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 	});
 
+	it('should cancel booking', async () => {
+		const controller = Container.get(BookingsController);
+		const bookingId = 'booking-1';
+		BookingsServiceMock.mockCancelBooking = Promise.resolve(Booking.create(1, new Date(), 120));
+
+		await controller.cancelBooking(bookingId);
+
+		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
+	});
+
 	it('should search bookings', async () => {
 		BookingsServiceMock.mockSearchBookings = [Booking.create(1, new Date(), 120)];
 		const from = new Date('2020-05-16T20:25:43.511Z');
@@ -74,6 +84,7 @@ const TimeslotsServiceMock = {
 class BookingsServiceMock extends BookingsService {
 	public static mockBooking: Booking;
 	public static mockAcceptBooking = Promise.resolve(BookingsServiceMock.mockBooking);
+	public static mockCancelBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockGetBooking: Booking;
 	public static mockPostBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockBookings: Booking[] = [];
@@ -93,6 +104,11 @@ class BookingsServiceMock extends BookingsService {
 	public async acceptBooking(bookingId: string): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
 		return BookingsServiceMock.mockAcceptBooking;
+	}
+
+	public async cancelBooking(bookingId: string): Promise<Booking> {
+		BookingsServiceMock.mockBookingId = bookingId;
+		return BookingsServiceMock.mockCancelBooking;
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {

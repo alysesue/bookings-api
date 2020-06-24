@@ -56,6 +56,12 @@ export class BookingsController extends Controller {
 		await this.bookingsService.acceptBooking(bookingId, acceptRequest);
 	}
 
+	@Post('{bookingId}/cancel')
+	@SuccessResponse(204, 'Cancelled')
+	public async cancelBooking(@Path() bookingId: string): Promise<any> {
+		await this.bookingsService.cancelBooking(bookingId);
+	}
+
 	@Get('')
 	@SuccessResponse(200, "Ok")
 	@Security("optional-service")
