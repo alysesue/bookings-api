@@ -91,7 +91,9 @@ describe("Bookings.Service", () => {
 	it("should cancel booking", async () => {
 		const bookingService = Container.get(BookingsService);
 		CalendarsServiceMock.eventId = "event-id";
-		BookingRepositoryMock.booking = Booking.create(1, new Date(), 60);
+		var tomorrow = new Date();
+		tomorrow.setDate(new Date().getDate() + 1);
+		BookingRepositoryMock.booking = Booking.create(1, tomorrow, 60);
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		const result = await bookingService.cancelBooking("1");

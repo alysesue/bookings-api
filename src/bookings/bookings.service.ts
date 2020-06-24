@@ -118,8 +118,9 @@ export class BookingsService {
 
 	private async getBookingForCancelling(bookingId: string): Promise<Booking> {
 		const booking = await this.getBooking(bookingId);
-		if (booking.status === BookingStatus.Closed || booking.status === BookingStatus.Cancelled) {
-			throw new Error(`Booking ${bookingId} is in invalid state for cancelling`);
+		if (booking.status === BookingStatus.Cancelled || booking.startDateTime < new Date()) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking ${bookingId} is in invalid state for cancelling`);
+
 		}
 		return booking;
 	}
