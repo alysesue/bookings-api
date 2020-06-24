@@ -120,6 +120,13 @@ describe("Bookings.Service", () => {
 			.rejects
 			.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('No available service providers for this timeslot'));
 	});
+
+	it("should return eventId", async () => {
+		const bookingService = Container.get(BookingsService);
+		const res = bookingService.formatEventId("qmrljumfcqg1gur997fsjcnmto@google.com");
+		expect(res).toBe("qmrljumfcqg1gur997fsjcnmto");
+
+	});
 });
 
 class BookingRepositoryMock extends BookingsRepository {
