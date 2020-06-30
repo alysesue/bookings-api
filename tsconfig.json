@@ -1,3 +1,47 @@
 {
-	"extends": "./node_modules/mol-lib-config/shared-config/tsconfig.json"
+	"extends": "./node_modules/mol-lib-config/shared-config/tsconfig.json",
+	"compileOnSave": true,
+	"compilerOptions": {
+		"strict": true,
+		"noImplicitAny": false,
+		"strictNullChecks": false,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"baseUrl": "./",
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"noLib": false,
+		"outDir": "./build",
+		"removeComments": false,
+		"sourceMap": true,
+		"noUnusedLocals": false,
+		"target": "es6",
+		"typeRoots": [
+			"node_modules/@types"
+		],
+		"paths": {
+			"*": [
+				"src/types/*"
+			]
+		}
+	},
+	"include": [
+		"src"
+	],
+	"exclude": [
+		"build",
+		"jest",
+		"node_modules",
+		"scripts",
+		"webpack",
+		"types"
+	],
+	"filesGlob": [
+		"./**/*.ts",
+		"!./build/**/*.ts",
+		"!./node_modules/**/*.ts"
+	],
+	"lib": [
+		"es6"
+	]
 }
