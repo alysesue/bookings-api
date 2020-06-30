@@ -6,7 +6,6 @@ import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "./bo
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
-import { DateHelper } from "../infrastructure/dateHelper";
 
 @InRequestScope
 export class BookingsService {
@@ -23,7 +22,7 @@ export class BookingsService {
 		return event.split("@")[0];
 	}
 
-	private static createBooking(bookingRequest: BookingRequest, serviceId: number) {
+	private createBooking(bookingRequest: BookingRequest, serviceId: number) {
 		const duration = Math.floor(DateHelper.DiffInMinutes(bookingRequest.endDateTime, bookingRequest.startDateTime));
 		if (duration <= 0) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('End time for booking must be greater than start time');
@@ -50,7 +49,7 @@ export class BookingsService {
 	public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
-		const booking = BookingsService.createBooking(bookingRequest, serviceId);
+		const booking = this.createBooking(bookingRequest, serviceId);
 
 		await this.validateTimeSlot(booking);
 
