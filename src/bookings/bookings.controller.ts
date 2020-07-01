@@ -32,6 +32,7 @@ export class BookingsController extends Controller {
 			startDateTime: booking.startDateTime,
 			endDateTime: booking.getSessionEndTime(),
 			serviceName: booking.service?.name,
+			requestedAt: booking.createdAt,
 		} as BookingResponse;
 	}
 
