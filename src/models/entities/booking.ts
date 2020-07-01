@@ -116,4 +116,7 @@ export class Booking {
 	public get serviceProviderId(): number | undefined {
 		return this._serviceProviderId;
 	}
+	public get createdAt(): Date {
+		return this._createdAt;
+	}
 }
