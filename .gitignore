@@ -775,3 +775,6 @@ jest.json
 
 # Google secrets
 src/config/googleapi-credentials.json
+
+# ignore .terrafom which is created during params creation
+.terraform
