@@ -127,8 +127,8 @@ export class TimeslotsService {
 		return mappedEntries;
 	}
 
-	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date, serviceId: number): Promise<AvailableTimeslotProviders> {
-		const aggregatedEntries = await this.getAggregatedTimeslots(startDateTime, endDateTime, serviceId);
+	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date, serviceId: number, serviceProviderId?: number): Promise<AvailableTimeslotProviders> {
+		const aggregatedEntries = await this.getAggregatedTimeslots(startDateTime, endDateTime, serviceId, serviceProviderId);
 
 		const timeslotEntry = aggregatedEntries.find(e => DateHelper.equals(e.startTime, startDateTime)
 			&& DateHelper.equals(e.endTime, endDateTime));

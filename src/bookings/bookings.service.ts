@@ -111,7 +111,7 @@ export class BookingsService {
 		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId, booking.serviceProviderId);
 
 		if (timeslotEntry.availabilityCount < 1) {
-			const errorMessage = booking.serviceProviderId ? "This timeslot is not available"
+			const errorMessage = booking.serviceProviderId ? "The service provider is not available for this timeslot"
 				: "No available service providers for this timeslot";
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(errorMessage);
 		}
