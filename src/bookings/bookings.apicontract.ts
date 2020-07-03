@@ -7,6 +7,7 @@ export class BookingAcceptRequest {
 export class BookingRequest {
 	public startDateTime: Date;
 	public endDateTime: Date;
+	public serviceProviderId?: number;
 }
 
 export class BookingResponse {

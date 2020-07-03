@@ -37,7 +37,18 @@ export class AvailableTimeslotProviders {
 	}
 
 	public get availabilityCount(): number {
-		return this._availableServiceProviders.length - this.pendingBookingsCount;
+		return Math.max(this._availableServiceProviders.length - this.pendingBookingsCount, 0);
+	}
+
+	public keepOnlyServiceProvider(providerId: number) {
+		// isAvailableBeforeFilter: Does timeslot entry contain less pending bookings then available providers?
+		const isAvailableBeforeFilter = this.availabilityCount > 0;
+		this._relatedServiceProviders = this._relatedServiceProviders.filter(sp => sp.id === providerId);
+		this._bookedServiceProviders = this._bookedServiceProviders.filter(sp => sp.id === providerId);
+		this._availableServiceProviders = this._availableServiceProviders.filter(sp => sp.id === providerId);
+		if (this._availableServiceProviders.length > 0 && isAvailableBeforeFilter) {
+			this.pendingBookingsCount = 0;
+		}
 	}
 
 	public static empty(startTime: Date, endTime: Date): AvailableTimeslotProviders {
