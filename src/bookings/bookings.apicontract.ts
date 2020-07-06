@@ -11,14 +11,15 @@ export class BookingRequest {
 }
 
 export class BookingResponse {
-
 	public id: number;
 	public status: number;
-
 	public startDateTime: Date;
 	public endDateTime: Date;
 	public sessionDurationInMinutes: number;
+	public serviceId: number;
 	public serviceName: string;
+	public serviceProviderId?: number;
+	public serviceProviderName?: string;
 }
 
 export class BookingSearchRequest {

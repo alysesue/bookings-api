@@ -30,13 +30,6 @@ describe("Bookings.Service", () => {
 		jest.resetAllMocks();
 	});
 
-	it("should get all bookings", async () => {
-		BookingRepositoryMock.getBookingsMock = [Booking.create(1, new Date(), 60)];
-		const result = await Container.get(BookingsService).getBookings();
-
-		expect(result.length).toBe(1);
-	});
-
 	it("should save booking from booking request", async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
@@ -112,7 +105,7 @@ describe("Bookings.Service", () => {
 
 		const acceptRequest = new BookingAcceptRequest();
 		acceptRequest.serviceProviderId = 1;
-		const result = await bookingService.acceptBooking("1", acceptRequest);
+		const result = await bookingService.acceptBooking(1, acceptRequest);
 
 		expect(result.status).toBe(BookingStatus.Accepted);
 		expect(result.eventICalId).toBe("event-id");
@@ -127,7 +120,7 @@ describe("Bookings.Service", () => {
 		BookingRepositoryMock.booking = Booking.create(1, tomorrow, 60);
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
-		const result = await bookingService.cancelBooking("1");
+		const result = await bookingService.cancelBooking(1);
 
 		expect(result.status).toBe(BookingStatus.Cancelled);
 	});
@@ -135,7 +128,7 @@ describe("Bookings.Service", () => {
 	it("should throw exception if booking not found", async () => {
 		const bookingService = Container.get(BookingsService);
 		BookingRepositoryMock.booking = undefined;
-		await expect(bookingService.getBooking("1")).rejects.toStrictEqual(
+		await expect(bookingService.getBooking(1)).rejects.toStrictEqual(
 			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage("Booking 1 not found")
 		);
 	});
@@ -188,7 +181,7 @@ class BookingRepositoryMock extends BookingsRepository {
 		return Promise.resolve(BookingRepositoryMock.getBookingsMock);
 	}
 
-	public async getBooking(id: string): Promise<Booking> {
+	public async getBooking(id: number): Promise<Booking> {
 		return Promise.resolve(BookingRepositoryMock.booking);
 	}
 

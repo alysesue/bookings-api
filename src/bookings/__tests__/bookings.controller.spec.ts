@@ -14,7 +14,7 @@ describe("Bookings.Controller", () => {
 
 	it('should accept booking', async () => {
 		const controller = Container.get(BookingsController);
-		const bookingId = 'booking-1';
+		const bookingId = 1;
 		BookingsServiceMock.mockAcceptBooking = Promise.resolve(Booking.create(1, new Date(), 120));
 		const request = new BookingAcceptRequest();
 		await controller.acceptBooking(bookingId, request);
@@ -24,7 +24,7 @@ describe("Bookings.Controller", () => {
 
 	it('should cancel booking', async () => {
 		const controller = Container.get(BookingsController);
-		const bookingId = 'booking-1';
+		const bookingId = 1;
 		BookingsServiceMock.mockCancelBooking = Promise.resolve(Booking.create(1, new Date(), 120));
 
 		await controller.cancelBooking(bookingId);
@@ -49,7 +49,7 @@ describe("Bookings.Controller", () => {
 
 		BookingsServiceMock.getBookingPromise = Promise.resolve(Booking.create(1, testTime, 120));
 
-		const result = await controller.getBooking("booking-id-1");
+		const result = await controller.getBooking(1);
 
 		expect(result.startDateTime).toBe(testTime);
 		expect(result.status).toBe(BookingStatus.PendingApproval);
@@ -61,7 +61,7 @@ describe("Bookings.Controller", () => {
 
 		BookingsServiceMock.mockGetBooking = Booking.create(1, testTime, 120);
 
-		const result = await controller.getBookingProviders("booking-id-1");
+		const result = await controller.getBookingProviders(1);
 
 		expect(result).toBeDefined();
 		expect(TimeslotsServiceMock.getAvailableProvidersForTimeslot).toBeCalled();
@@ -92,7 +92,7 @@ class BookingsServiceMock extends BookingsService {
 	public static mockBookingId;
 	public static getBookingPromise = Promise.resolve(BookingsServiceMock.mockGetBooking);
 
-	public async getBooking(bookingId: string): Promise<Booking> {
+	public async getBooking(bookingId: number): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
 		return BookingsServiceMock.getBookingPromise;
 	}
@@ -101,12 +101,12 @@ class BookingsServiceMock extends BookingsService {
 		return Promise.resolve(BookingsServiceMock.mockBookings);
 	}
 
-	public async acceptBooking(bookingId: string): Promise<Booking> {
+	public async acceptBooking(bookingId: number): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
 		return BookingsServiceMock.mockAcceptBooking;
 	}
 
-	public async cancelBooking(bookingId: string): Promise<Booking> {
+	public async cancelBooking(bookingId: number): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
 		return BookingsServiceMock.mockCancelBooking;
 	}
