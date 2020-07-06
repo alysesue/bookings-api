@@ -18,6 +18,7 @@ export class Booking {
 		if (serviceProviderId) {
 			instance._serviceProviderId = serviceProviderId;
 			instance._status = BookingStatus.Accepted;
+			instance._acceptedAt = instance.createdAt;
 		} else {
 			instance._status = BookingStatus.PendingApproval;
 		}
