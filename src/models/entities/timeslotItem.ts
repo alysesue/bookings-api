@@ -1,10 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { TimeOfDay, Transformer as TimeTransformer } from '../timeOfDay';
 import { Weekday } from '../../enums/weekday';
 import { ITimeslotsSchedule } from "../interfaces";
 
 @Entity()
+@Index(["timeslotScheduleId", "weekDay"], { unique: true })
 export class TimeslotItem {
 	constructor() {
 	}
@@ -15,7 +16,7 @@ export class TimeslotItem {
 	@Column({ nullable: false })
 	private timeslotScheduleId: number;
 
-	@ManyToOne('Timeslot', { nullable: false })
+	@ManyToOne('TimeslotsSchedule', { nullable: false })
 	@JoinColumn({ name: 'timeslotsScheduleId' })
 	public _timeslotsSchedule: ITimeslotsSchedule;
 

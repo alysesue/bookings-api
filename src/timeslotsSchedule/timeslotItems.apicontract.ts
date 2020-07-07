@@ -1,8 +1,6 @@
 import { Service, TimeslotItem } from "../models";
 
-export class TimeslotsScheduleResponse {
-	public id: number;
-	public service: Service;
+export class TimeslotItemsResponse {
 	public timeslots: TimeslotItem[];
 
 }

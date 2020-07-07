@@ -3,6 +3,7 @@ import { ServiceProvider } from './serviceProvider';
 import { Service } from "./service";
 import { TimeslotItem } from "./timeslotItem";
 import { ITimeslotsSchedule } from "../interfaces";
+
 @Entity()
 export class TimeslotsSchedule implements ITimeslotsSchedule {
 	constructor() {
@@ -11,7 +12,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 	@PrimaryGeneratedColumn()
 	public _timeslotsScheduleId: number;
 
-	@Column({ nullable: false })
+	@Column({ nullable: true })
 	private _serviceId: number;
 
 	public get serviceId(): number {
@@ -26,7 +27,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 		return this._service;
 	}
 
-	@Column({ nullable: false })
+	@Column({ nullable: true })
 	private _serviceProviderId?: number;
 
 	@ManyToOne(type => ServiceProvider)
