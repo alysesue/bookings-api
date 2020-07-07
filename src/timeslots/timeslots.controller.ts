@@ -17,16 +17,16 @@ export class TimeslotsController extends Controller {
 
 	@Get("availability")
 	@Security("service")
-	public async getAvailability(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number): Promise<AvailabilityEntryResponse[]> {
-		let availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId);
+	public async getAvailability(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number, @Query() serviceProviderId?: number): Promise<AvailabilityEntryResponse[]> {
+		let availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId, serviceProviderId);
 		availableTimeslots = availableTimeslots.filter(e => e.availabilityCount > 0);
 		return TimeslotsController.mapAvailabilityToResponse(availableTimeslots);
 	}
 
 	@Get("")
 	@Security("service")
-	public async getTimeslots(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number): Promise<TimeslotEntryResponse[]> {
-		const timeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId);
+	public async getTimeslots(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number, @Query() serviceProviderId?: number): Promise<TimeslotEntryResponse[]> {
+		const timeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId, serviceProviderId);
 		return timeslots?.map(t => this.mapTimeslotEntry(t));
 	}
 

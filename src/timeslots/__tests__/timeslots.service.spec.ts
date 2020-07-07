@@ -84,7 +84,20 @@ describe("Timeslots Service", () => {
 
 		const service = Container.get(TimeslotsService);
 		const result = await service.getAggregatedTimeslots(date, endDate, 1);
-		expect(result).toBeDefined();
+		expect(result.length).toBe(3);
+
+		expect(ServicesRepositoryMock.getServiceWithSchedule).toBeCalled();
+		expect(ScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
+	});
+
+	it("should aggregate results by service provider", async () => {
+		Container.bind(BookingsRepository).to(jest.fn(() => BookingsRepositoryMock));
+		Container.bind(ServicesRepository).to(jest.fn(() => ServicesRepositoryMock));
+		Container.bind(ServiceProvidersRepository).to(jest.fn(() => ServiceProvidersRepositoryMock));
+
+		const service = Container.get(TimeslotsService);
+		const result = await service.getAggregatedTimeslots(date, endDate, 1, 101);
+		expect(result.length).toBe(1);
 
 		expect(ServicesRepositoryMock.getServiceWithSchedule).toBeCalled();
 		expect(ScheduleMock.generateValidTimeslots).toBeCalledTimes(1);

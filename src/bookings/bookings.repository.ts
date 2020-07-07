@@ -9,22 +9,9 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		super(Booking);
 	}
 
-	public async getBookings(serviceId?: number): Promise<Booking[]> {
-		const findConditions: FindConditions<Booking> = {};
-		if (serviceId) {
-			findConditions['_serviceId'] = serviceId;
-		}
-
-		const findManyOptions: FindManyOptions<Booking> = { where: [findConditions] };
-		findManyOptions['order'] = {};
-		findManyOptions['order']['_id'] = 'DESC';
-
-		return (await this.getRepository()).find(findManyOptions);
-	}
-
-	public async getBooking(id: string): Promise<Booking> {
+	public async getBooking(id: number): Promise<Booking> {
 		const repository = await this.getRepository();
-		return repository.findOne(id);
+		return repository.findOne(id, { relations: ['_service', '_serviceProvider'] });
 	}
 
 	public async save(booking: Booking): Promise<InsertResult> {
@@ -54,7 +41,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 			findConditions['_serviceId'] = searchRequest.serviceId;
 		}
 
-		const findManyOptions: FindManyOptions<Booking> = { where: [findConditions], relations: ['_service'] };
+		const findManyOptions: FindManyOptions<Booking> = { where: [findConditions], relations: ['_service', '_serviceProvider'] };
 		findManyOptions['order'] = {};
 		findManyOptions['order']['_id'] = 'DESC';
 

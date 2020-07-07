@@ -8,14 +8,21 @@ export class Booking {
 	constructor() {
 	}
 
-	public static create(serviceId: number, startDateTime: Date, sessionDurationInMinutes: number) {
+	public static create(serviceId: number, startDateTime: Date, sessionDurationInMinutes: number, serviceProviderId?: number) {
 		const instance = new Booking();
 		instance._serviceId = serviceId;
 		instance._startDateTime = startDateTime;
 		instance._sessionDurationInMinutes = sessionDurationInMinutes;
-
-		instance._status = BookingStatus.PendingApproval;
 		instance._createdAt = new Date();
+
+		if (serviceProviderId) {
+			instance._serviceProviderId = serviceProviderId;
+			instance._status = BookingStatus.Accepted;
+			instance._acceptedAt = instance.createdAt;
+		} else {
+			instance._status = BookingStatus.PendingApproval;
+		}
+
 		return instance;
 	}
 
