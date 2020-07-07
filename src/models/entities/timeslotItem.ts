@@ -2,9 +2,10 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { TimeOfDay, Transformer as TimeTransformer } from '../timeOfDay';
 import { Weekday } from '../../enums/weekday';
+import { ITimeslotsSchedule } from "../interfaces";
 
 @Entity()
-export class Timeslot {
+export class TimeslotItem {
 	constructor() {
 	}
 
@@ -16,7 +17,7 @@ export class Timeslot {
 
 	@ManyToOne('Timeslot', { nullable: false })
 	@JoinColumn({ name: 'timeslotsScheduleId' })
-	public _timeslotsSchedule: TimeslotsSchedule;
+	public _timeslotsSchedule: ITimeslotsSchedule;
 
 	@Column("int")
 	public weekDay: Weekday;
@@ -27,8 +28,8 @@ export class Timeslot {
 	@Column({ type: "time", transformer: TimeTransformer, nullable: true })
 	public closeTime?: TimeOfDay;
 
-	public static create(timeslotScheduleId: number, weekDay: Weekday, openTime?: TimeOfDay, closeTime?: TimeOfDay): Timeslot {
-		const instance = new Timeslot();
+	public static create(timeslotScheduleId: number, weekDay: Weekday, openTime?: TimeOfDay, closeTime?: TimeOfDay): TimeslotItem {
+		const instance = new TimeslotItem();
 		instance.timeslotScheduleId = timeslotScheduleId;
 		instance.openTime = openTime;
 		instance.closeTime = closeTime;

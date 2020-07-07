@@ -12,7 +12,7 @@ import { Timeslot } from './timeslot';
 import { TimeslotsSchedule } from "./entities/timeslotsSchedule";
 
 // TODO : rename
-import { Timeslot as NewTimeslot } from "./entities/timeslot";
+import { TimeslotItem } from "./entities/timeslotItem";
 
 export {
 	Booking,
@@ -27,5 +27,5 @@ export {
 	Timeslot,
 	ServiceProvider,
 	TimeslotsSchedule,
-	NewTimeslot
+	TimeslotItem
 };

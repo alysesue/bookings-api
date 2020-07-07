@@ -1,10 +1,10 @@
 import { BaseEntity, Column, Entity, OneToMany, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ServiceProvider } from './serviceProvider';
 import { Service } from "./service";
-import { Timeslot } from "./timeslot";
-
+import { TimeslotItem } from "./timeslotItem";
+import { ITimeslotsSchedule } from "../interfaces";
 @Entity()
-export class TimeslotsSchedule {
+export class TimeslotsSchedule implements ITimeslotsSchedule {
 	constructor() {
 	}
 
@@ -37,7 +37,7 @@ export class TimeslotsSchedule {
 		return this._serviceProvider;
 	}
 
-	@OneToMany(type => Timeslot, timeslot => timeslot._timeslotSchedule, { cascade: true })
-	public timeslot: Timeslot[];
+	@OneToMany(type => TimeslotItem, timeslot => timeslot._timeslotsSchedule, { cascade: true })
+	public timeslot: TimeslotItem[];
 
 }

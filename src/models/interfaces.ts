@@ -6,3 +6,6 @@ export interface IEntityWithSchedule {
 	scheduleId: number;
 	schedule: ISchedule;
 }
+
+export interface ITimeslotsSchedule {
+}
