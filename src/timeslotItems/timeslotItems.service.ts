@@ -11,7 +11,7 @@ export class TimeslotItemsService {
 
 	public async getTimeslotItemsByServiceId(id: number): Promise<TimeslotItemsResponse> {
 		if (id !== null) {
-			return mapToResponse(await this.timeslotItemsRepository.getTimeslotsScheduleById({ timeslotScheduleId: id }));
+			return mapToResponse(await this.timeslotItemsRepository.getTimeslotsScheduleById({ timeslotsScheduleId: id }));
 		}
 		else {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service Id should not be empty');

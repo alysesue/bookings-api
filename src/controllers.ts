@@ -6,4 +6,4 @@ import "./infrastructure/infrastructure.controller";
 import "./timeslots/timeslots.controller";
 import "./services/services.controller";
 import "./serviceProviders/serviceProviders.controller";
-import "./timeslotsSchedule/timeslotsSchedule.controller";
+import "./timeslotItems/timeslot.controller";
