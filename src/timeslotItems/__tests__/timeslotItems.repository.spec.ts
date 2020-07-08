@@ -1,6 +1,6 @@
 import { DbConnection } from '../../core/db.connection';
 import { Container } from 'typescript-ioc';
-import { TimeslotsSchedule, TimeslotItem, TimeOfDay } from '../../models';
+import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { TimeslotItemsRepository } from '../timeslotItems.repository';
 
 beforeEach(() => {
@@ -22,7 +22,7 @@ describe('TimeslotsSchedule repository', () => {
 
 const timeslotsScheduleMock = new TimeslotsSchedule();
 timeslotsScheduleMock._timeslotsScheduleId = 1;
-timeslotsScheduleMock.timeslot = [TimeslotItem.create(1, 1, TimeOfDay.create({ hours: 11, minutes: 0 }), TimeOfDay.create({ hours: 11, minutes: 30 }))]
+timeslotsScheduleMock.timeslotItems = [TimeslotItem.create(1, 1, TimeOfDay.create({ hours: 11, minutes: 0 }), TimeOfDay.create({ hours: 11, minutes: 30 }))];
 
 
 

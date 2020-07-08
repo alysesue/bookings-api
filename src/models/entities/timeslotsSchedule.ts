@@ -1,9 +1,12 @@
-import { BaseEntity, Column, Entity, OneToMany, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ServiceProvider } from './serviceProvider';
 import { Service } from "./service";
 import { TimeslotItem } from "./timeslotItem";
 import { ITimeslotsSchedule } from "../interfaces";
-
+import { Timeslot } from "../timeslot";
+import { DateHelper } from "../../infrastructure/dateHelper";
+import { groupByKey } from "../../tools/collections";
+import { TimeOfDay } from "../timeOfDay";
 @Entity()
 export class TimeslotsSchedule implements ITimeslotsSchedule {
 	constructor() {
@@ -13,7 +16,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 	public _timeslotsScheduleId: number;
 
 	@Column({ nullable: true })
-	private _serviceId: number;
+	private _serviceId?: number;
 
 	public get serviceId(): number {
 		return this._serviceId;
@@ -38,7 +41,10 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 		return this._serviceProvider;
 	}
 
-	@OneToMany(type => TimeslotItem, timeslot => timeslot._timeslotsSchedule, { cascade: true })
-	public timeslot: TimeslotItem[];
+	@OneToMany(type => TimeslotItem, timeslot => timeslot._timeslotsSchedule)
+	public timeslotItems: TimeslotItem[];
 
+	private static sortTimeslots(a: TimeslotItem, b: TimeslotItem) {
+		return a.startTime.AsMinutes() - b.startTime.AsMinutes();
+	}
 }

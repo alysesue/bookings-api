@@ -2,7 +2,7 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { TimeslotItemsRepository } from "./timeslotItems.repository";
 import { mapToResponse } from './timeslotItems.mapper';
 import { TimeslotItemsResponse } from './timeslotItems.apicontract';
-import { MOLErrorV2, ErrorCodeV2 } from 'mol-lib-api-contract';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 @InRequestScope
 export class TimeslotItemsService {

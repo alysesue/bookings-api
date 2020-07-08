@@ -1,5 +1,5 @@
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
-import { Booking, Calendar, Schedule, Service, ServiceProvider, WeekDayBreak, WeekDaySchedule, TimeslotsSchedule, TimeslotItem } from "../models";
+import { Booking, Calendar, Schedule, Service, ServiceProvider, TimeslotItem, TimeslotsSchedule, WeekDayBreak, WeekDaySchedule } from "../models";
 import { getConfig } from '../config/app-config';
 
 export function getConnectionOptions(): PostgresConnectionOptions {

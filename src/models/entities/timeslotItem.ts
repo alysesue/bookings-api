@@ -1,5 +1,4 @@
 import { Column, Entity, JoinColumn, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { TimeslotsSchedule } from './timeslotsSchedule';
 import { TimeOfDay, Transformer as TimeTransformer } from '../timeOfDay';
 import { Weekday } from '../../enums/weekday';
 import { ITimeslotsSchedule } from "../interfaces";
@@ -23,20 +22,18 @@ export class TimeslotItem {
 	@Column("int")
 	public weekDay: Weekday;
 
-	@Column({ type: "time", transformer: TimeTransformer, nullable: true })
-	public openTime?: TimeOfDay;
+	@Column({ type: "time", transformer: TimeTransformer, nullable: false })
+	public startTime: TimeOfDay;
 
-	@Column({ type: "time", transformer: TimeTransformer, nullable: true })
-	public closeTime?: TimeOfDay;
+	@Column({ type: "time", transformer: TimeTransformer, nullable: false })
+	public endTime: TimeOfDay;
 
-	public static create(timeslotScheduleId: number, weekDay: Weekday, openTime?: TimeOfDay, closeTime?: TimeOfDay): TimeslotItem {
+	public static create(timeslotScheduleId: number, weekDay: Weekday, startTime: TimeOfDay, endTime: TimeOfDay): TimeslotItem {
 		const instance = new TimeslotItem();
 		instance.timeslotScheduleId = timeslotScheduleId;
-		instance.openTime = openTime;
-		instance.closeTime = closeTime;
+		instance.startTime = startTime;
+		instance.endTime = endTime;
 		instance.weekDay = weekDay;
 		return instance;
 	}
-
-
 }
