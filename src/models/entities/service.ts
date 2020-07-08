@@ -1,9 +1,10 @@
-import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Schedule } from './schedule';
-import { IEntityWithSchedule } from '../interfaces';
+import { IEntityWithSchedule, IService } from '../interfaces';
+import { TimeslotsSchedule } from "./timeslotsSchedule";
 
 @Entity()
-export class Service implements IEntityWithSchedule {
+export class Service implements IService, IEntityWithSchedule {
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
@@ -45,4 +46,11 @@ export class Service implements IEntityWithSchedule {
 
 	public set scheduleId(id: number) { this._scheduleId = id; }
 	public get scheduleId(): number { return this._scheduleId; }
+
+	@Column({ nullable: true })
+	public _timeslotsScheduleId: number;
+
+	@OneToOne(type => TimeslotsSchedule, e => e._service)
+	@JoinColumn({ name: '_timeslotsScheduleId' })
+	public _timeslotsSchedule: TimeslotsSchedule;
 }

@@ -3,10 +3,11 @@ import { Calendar } from "./calendar";
 import { ServiceProviderStatus } from "../serviceProviderStatus";
 import { Service } from "./service";
 import { Schedule } from './schedule';
-import { IEntityWithSchedule } from '../interfaces';
+import { IEntityWithSchedule, IServiceProvider } from '../interfaces';
+import { TimeslotsSchedule } from "./timeslotsSchedule";
 
 @Entity()
-export class ServiceProvider implements IEntityWithSchedule {
+export class ServiceProvider implements IServiceProvider, IEntityWithSchedule {
 
 	@Column()
 	private _createdAt: Date;
@@ -103,4 +104,11 @@ export class ServiceProvider implements IEntityWithSchedule {
 
 	public set scheduleId(id: number) { this._scheduleId = id; }
 	public get scheduleId(): number { return this._scheduleId; }
+
+	@Column({ nullable: true })
+	private _timeslotsScheduleId: number;
+
+	@OneToOne(type => TimeslotsSchedule, e => e._serviceProvider)
+	@JoinColumn({ name: '_timeslotsScheduleId' })
+	public _timeslotsSchedule: TimeslotsSchedule;
 }

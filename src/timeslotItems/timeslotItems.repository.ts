@@ -11,16 +11,11 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotsSchedule> {
 		super(TimeslotsSchedule);
 	}
 
-	public async getTimeslotsScheduleById(options: { serviceId?: number } = {}): Promise<TimeslotsSchedule> {
-		const findConditions: FindConditions<TimeslotsSchedule> = {};
-		console.log(options.serviceId);
-		if (options.serviceId) {
-			findConditions['_serviceId'] = options.serviceId;
-		}
+	public async getTimeslotsScheduleById(id: number): Promise<TimeslotsSchedule> {
+		if (!id)
+			return null;
 		const repository = await this.getRepository();
-		const entries = await repository.findOne({ where: [findConditions], relations: ['timeslotItems'] });
-		return entries;
-
+		const entry = await repository.findOne(id, { relations: ['timeslotItems'] });
+		return entry;
 	}
-
 }

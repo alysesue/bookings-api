@@ -9,3 +9,9 @@ export interface IEntityWithSchedule {
 
 export interface ITimeslotsSchedule {
 }
+
+export interface IService {
+}
+
+export interface IServiceProvider {
+}

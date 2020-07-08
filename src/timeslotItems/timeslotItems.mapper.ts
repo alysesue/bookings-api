@@ -1,5 +1,5 @@
-import { TimeslotsSchedule, TimeslotItem } from "../models";
-import { TimeslotsScheduleResponse, TimeslotItemResponse } from "./timeslotItems.apicontract";
+import { TimeslotItem, TimeslotsSchedule } from "../models";
+import { TimeslotItemResponse, TimeslotsScheduleResponse } from "./timeslotItems.apicontract";
 
 
 const mapTimeslotItems = (data: TimeslotItem[]): TimeslotItemResponse[] => {

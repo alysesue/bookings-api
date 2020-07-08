@@ -11,7 +11,7 @@ beforeEach(() => {
 describe('TimeslotsSchedule repository', () => {
 	it('should get timeslotsSchedule', async () => {
 		const repository = Container.get(TimeslotItemsRepository);
-		const result = await repository.getTimeslotsScheduleById({ serviceId: 1 });
+		const result = await repository.getTimeslotsScheduleById(1);
 		expect(result).not.toBe(undefined);
 		expect(GetRepositoryMock).toBeCalled();
 		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
@@ -20,10 +20,8 @@ describe('TimeslotsSchedule repository', () => {
 });
 
 const timeslotsScheduleMock = new TimeslotsSchedule();
-timeslotsScheduleMock._serviceId = 1;
+timeslotsScheduleMock._id = 1;
 timeslotsScheduleMock.timeslotItems = [TimeslotItem.create(1, 1, TimeOfDay.create({ hours: 11, minutes: 0 }), TimeOfDay.create({ hours: 11, minutes: 30 }))];
-
-
 
 export const InnerRepositoryMock = {
 	findOne: jest.fn().mockImplementation((...params) => {

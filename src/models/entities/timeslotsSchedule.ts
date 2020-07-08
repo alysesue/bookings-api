@@ -1,8 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { ServiceProvider } from './serviceProvider';
-import { Service } from "./service";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { TimeslotItem } from "./timeslotItem";
-import { ITimeslotsSchedule } from "../interfaces";
+import { IService, IServiceProvider, ITimeslotsSchedule } from "../interfaces";
 
 @Entity()
 export class TimeslotsSchedule implements ITimeslotsSchedule {
@@ -12,25 +10,13 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 	@PrimaryGeneratedColumn()
 	public _id: number;
 
-	@Column({ nullable: true })
-	public _serviceId?: number;
-
-	@ManyToOne(type => Service)
-	@JoinColumn({ name: '_serviceId' })
-	private _service: Service;
-
-	public get service(): Service {
+	public _service: IService;
+	public get service(): IService {
 		return this._service;
 	}
 
-	@Column({ nullable: true })
-	private _serviceProviderId?: number;
-
-	@ManyToOne(type => ServiceProvider)
-	@JoinColumn({ name: '_serviceProviderId' })
-	private _serviceProvider: ServiceProvider;
-
-	public get serviceProvider(): ServiceProvider {
+	public _serviceProvider: IServiceProvider;
+	public get serviceProvider(): IServiceProvider {
 		return this._serviceProvider;
 	}
 
