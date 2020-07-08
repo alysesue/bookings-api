@@ -57,7 +57,7 @@ export class ServicesController extends Controller {
 		return ServicesController.mapToServiceResponse(service);
 	}
 
-	@Get("{serviceId}/timeslot")
+	@Get("{serviceId}/timeslotSchedule")
 	@SuccessResponse(200, "Ok")
 	public async getTimeslotsScheduleByServiceId(serviceId: number): Promise<TimeslotItemsResponse> {
 		const service = await this.timeslotItemsService.getTimeslotItemsByServiceId(serviceId);
