@@ -4,7 +4,7 @@ import { Weekday } from '../../enums/weekday';
 import { ITimeslotsSchedule } from "../interfaces";
 
 @Entity()
-@Index(["timeslotScheduleId", "weekDay"], { unique: true })
+@Index(["_timeslotsScheduleId", "_weekDay"], { unique: true })
 export class TimeslotItem {
 	constructor() {
 	}
