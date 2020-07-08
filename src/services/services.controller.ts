@@ -5,6 +5,8 @@ import { ServicesService } from "./services.service";
 import { Service } from "../models";
 import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
 import { ScheduleResponse } from '../schedules/schedules.apicontract';
+import { TimeslotItemsService } from "../timeslotItems/timeslotItems.service";
+import { TimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.apicontract";
 
 @Route('v1/services')
 @Tags('Services')
@@ -12,6 +14,9 @@ export class ServicesController extends Controller {
 
 	@Inject
 	private servicesService: ServicesService;
+
+	@Inject
+	private timeslotItemsService: TimeslotItemsService;
 
 	private static mapToServiceResponse(service: Service) {
 		const response = new ServiceResponse();
@@ -50,5 +55,12 @@ export class ServicesController extends Controller {
 	public async getService(serviceId: number): Promise<ServiceResponse> {
 		const service = await this.servicesService.getService(serviceId);
 		return ServicesController.mapToServiceResponse(service);
+	}
+
+	@Get("{serviceId}/timeslotSchedule")
+	@SuccessResponse(200, "Ok")
+	public async getTimeslotsScheduleByServiceId(serviceId: number): Promise<TimeslotsScheduleResponse> {
+		const service = await this.timeslotItemsService.getTimeslotItemsByServiceId(serviceId);
+		return service;
 	}
 }

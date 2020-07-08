@@ -1,9 +1,19 @@
-const { Schedule, Service, WeekDaySchedule, WeekDayBreak, ServiceProvider, Calendar, Booking } = require('./src/models/entities')
+const {
+	Schedule,
+	Service,
+	WeekDaySchedule,
+	WeekDayBreak,
+	ServiceProvider,
+	Calendar,
+	Booking,
+	TimeslotsSchedule,
+	TimeslotItem
+} = require('./src/models/entities')
 
 module.exports = {
 	'database': process.env.BOOKINGSG_DB_INSTANCE,
 	entities: [
-		Schedule, Service, ServiceProvider, Calendar, Booking, WeekDayBreak, WeekDaySchedule
+		Schedule, Service, ServiceProvider, Calendar, Booking, WeekDayBreak, WeekDaySchedule, TimeslotsSchedule, TimeslotItem
 	],
 	'migrations': [
 		'migrations/**/*{.js,.ts}'

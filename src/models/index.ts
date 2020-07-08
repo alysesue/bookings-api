@@ -9,6 +9,10 @@ import { TimeOfDay } from './timeOfDay';
 import { ServiceProvider } from "./entities/serviceProvider";
 import { BusinessValidation } from './businessValidation';
 import { Timeslot } from './timeslot';
+import { TimeslotsSchedule } from "./entities/timeslotsSchedule";
+
+// TODO : rename
+import { TimeslotItem } from "./entities/timeslotItem";
 
 export {
 	Booking,
@@ -21,5 +25,7 @@ export {
 	Calendar,
 	TimeOfDay,
 	Timeslot,
-	ServiceProvider
+	ServiceProvider,
+	TimeslotsSchedule,
+	TimeslotItem
 };

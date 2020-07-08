@@ -5,6 +5,9 @@ import { WeekDayBreak } from './weekDayBreak';
 import { Calendar } from "./calendar";
 import { Service } from "./service";
 import { ServiceProvider } from "./serviceProvider";
+import { TimeslotsSchedule } from "./timeslotsSchedule";
+import { TimeslotItem } from "./timeslotItem";
+
 
 export {
 	Booking,
@@ -13,5 +16,7 @@ export {
 	WeekDayBreak,
 	WeekDaySchedule,
 	Calendar,
-	ServiceProvider
+	ServiceProvider,
+	TimeslotsSchedule,
+	TimeslotItem,
 };
