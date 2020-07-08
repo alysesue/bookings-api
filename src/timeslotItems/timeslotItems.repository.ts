@@ -14,10 +14,10 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotItem> {
 	public async getTimeslotsScheduleById(options: { timeslotsScheduleId?: number } = {}): Promise<TimeslotItem[]> {
 		const findConditions: FindConditions<TimeslotItem> = {};
 		if (options.timeslotsScheduleId) {
-			findConditions['timeslotScheduleId'] = options.timeslotsScheduleId;
+			findConditions['_timeslotsScheduleId'] = options.timeslotsScheduleId;
 		}
 		const repository = await this.getRepository();
-		const entries = await repository.find({ where: [findConditions], relations: ['_timeslotsSchedule'] });
+		const entries = await repository.find({ where: [findConditions] });
 		return entries;
 
 	}
