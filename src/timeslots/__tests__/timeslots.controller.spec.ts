@@ -26,7 +26,7 @@ describe("Timeslots Controller", () => {
 		});
 
 		const controller = Container.get(TimeslotsController);
-		const result = await controller.getAvailability(new Date(), new Date(), 1);
+		const result = await controller.getAvailability(new Date(), new Date(), 1, 100);
 
 		expect(result).toBeDefined();
 		// zero availabilityCount not returned
@@ -43,7 +43,7 @@ describe("Timeslots Controller", () => {
 		});
 
 		const controller = Container.get(TimeslotsController);
-		const result = await controller.getTimeslots(new Date(), new Date(), 1);
+		const result = await controller.getTimeslots(new Date(), new Date(), 1, 100);
 
 		expect(result).toBeDefined();
 		expect(result.length).toBe(1);

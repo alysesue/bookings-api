@@ -24,11 +24,12 @@ export class TimeslotsService {
 	@Inject
 	private serviceProvidersRepo: ServiceProvidersRepository;
 
-	private async getAcceptedBookings(minStartTime: Date, maxEndTime: Date): Promise<Booking[]> {
+	private async getAcceptedBookings(minStartTime: Date, maxEndTime: Date, serviceId: number): Promise<Booking[]> {
 		let bookings = await this.bookingsRepository.search(new BookingSearchRequest(
 			minStartTime,
 			maxEndTime,
-			BookingStatus.Accepted
+			BookingStatus.Accepted,
+			serviceId
 		));
 		bookings = bookings.filter(booking => booking.serviceProviderId && booking.getSessionEndTime() <= maxEndTime);
 		return bookings;
@@ -104,20 +105,30 @@ export class TimeslotsService {
 		return entries;
 	}
 
-	public async getAggregatedTimeslots(startDateTime: Date, endDateTime: Date, serviceId: number): Promise<AvailableTimeslotProviders[]> {
-		const aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime, serviceId);
+	public async getAggregatedTimeslots(startDateTime: Date, endDateTime: Date, serviceId: number, serviceProviderId?: number): Promise<AvailableTimeslotProviders[]> {
+		let aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime, serviceId);
 		const pendingBookings = await this.getPendingBookings(startDateTime, endDateTime, serviceId);
-		const acceptedBookings = await this.getAcceptedBookings(startDateTime, endDateTime);
+		const acceptedBookings = await this.getAcceptedBookings(startDateTime, endDateTime, serviceId);
+
+		if (serviceProviderId) {
+			aggregatedEntries = aggregatedEntries.filter(entry => entry.getGroups().find(sp => sp.id === serviceProviderId));
+		}
 
 		const mappedEntries = this.mapDataModels(aggregatedEntries);
 		this.setBookedProviders(mappedEntries, acceptedBookings);
 		this.setPendingTimeslots(mappedEntries, pendingBookings);
 
+		if (serviceProviderId) {
+			for (const entry of mappedEntries) {
+				entry.keepOnlyServiceProvider(serviceProviderId);
+			}
+		}
+
 		return mappedEntries;
 	}
 
-	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date, serviceId: number): Promise<AvailableTimeslotProviders> {
-		const aggregatedEntries = await this.getAggregatedTimeslots(startDateTime, endDateTime, serviceId);
+	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date, serviceId: number, serviceProviderId?: number): Promise<AvailableTimeslotProviders> {
+		const aggregatedEntries = await this.getAggregatedTimeslots(startDateTime, endDateTime, serviceId, serviceProviderId);
 
 		const timeslotEntry = aggregatedEntries.find(e => DateHelper.equals(e.startTime, startDateTime)
 			&& DateHelper.equals(e.endTime, endDateTime));

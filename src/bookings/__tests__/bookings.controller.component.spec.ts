@@ -85,7 +85,7 @@ describe('Booking Integration tests', () => {
 		TimeslotsServiceMock.availableProvidersForTimeslot = [provider];
 		const controller = Container.get(BookingsController);
 
-		await controller.acceptBooking('1', { serviceProviderId: 11 } as BookingAcceptRequest);
+		await controller.acceptBooking(1, { serviceProviderId: 11 } as BookingAcceptRequest);
 
 		expect(updateBooking).toBeCalledTimes(1);
 		const booking = updateBooking.mock.calls[0][0] as Booking;

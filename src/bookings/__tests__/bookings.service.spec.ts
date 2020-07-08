@@ -30,13 +30,6 @@ describe("Bookings.Service", () => {
 		jest.resetAllMocks();
 	});
 
-	it("should get all bookings", async () => {
-		BookingRepositoryMock.getBookingsMock = [Booking.create(1, new Date(), 60)];
-		const result = await Container.get(BookingsService).getBookings();
-
-		expect(result.length).toBe(1);
-	});
-
 	it("should save booking from booking request", async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
@@ -49,6 +42,36 @@ describe("Bookings.Service", () => {
 		const booking = BookingRepositoryMock.booking;
 		expect(booking).not.toBe(undefined);
 		expect(booking.status).toBe(BookingStatus.PendingApproval);
+	});
+
+	it("should save direct booking", async () => {
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 5;
+		BookingRepositoryMock.searchBookingsMock = [];
+		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+
+		await Container.get(BookingsService).save(bookingRequest, 1);
+
+		const booking = BookingRepositoryMock.booking;
+		expect(booking).not.toBe(undefined);
+		expect(booking.status).toBe(BookingStatus.Accepted);
+	});
+
+	it("should validate service provider when saving direct booking", async () => {
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 5;
+		BookingRepositoryMock.searchBookingsMock = [];
+		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+		ServiceProvidersRepositoryMock.getServiceProviderMock = null;
+
+		expect(async () => await Container.get(BookingsService).save(bookingRequest, 1))
+			.rejects.toStrictEqual(
+				new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service provider 5 not found'));
 	});
 
 	it("should validate end date time", async () => {
@@ -82,7 +105,7 @@ describe("Bookings.Service", () => {
 
 		const acceptRequest = new BookingAcceptRequest();
 		acceptRequest.serviceProviderId = 1;
-		const result = await bookingService.acceptBooking("1", acceptRequest);
+		const result = await bookingService.acceptBooking(1, acceptRequest);
 
 		expect(result.status).toBe(BookingStatus.Accepted);
 		expect(result.eventICalId).toBe("event-id");
@@ -92,12 +115,12 @@ describe("Bookings.Service", () => {
 	it("should cancel booking", async () => {
 		const bookingService = Container.get(BookingsService);
 		CalendarsServiceMock.eventId = "event-id";
-		var tomorrow = new Date();
+		const tomorrow = new Date();
 		tomorrow.setDate(new Date().getDate() + 1);
 		BookingRepositoryMock.booking = Booking.create(1, tomorrow, 60);
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
-		const result = await bookingService.cancelBooking("1");
+		const result = await bookingService.cancelBooking(1);
 
 		expect(result.status).toBe(BookingStatus.Cancelled);
 	});
@@ -105,7 +128,7 @@ describe("Bookings.Service", () => {
 	it("should throw exception if booking not found", async () => {
 		const bookingService = Container.get(BookingsService);
 		BookingRepositoryMock.booking = undefined;
-		await expect(bookingService.getBooking("1")).rejects.toEqual(
+		await expect(bookingService.getBooking(1)).rejects.toStrictEqual(
 			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage("Booking 1 not found")
 		);
 	});
@@ -122,6 +145,22 @@ describe("Bookings.Service", () => {
 		await expect(bookingService.save(bookingRequest, 1))
 			.rejects
 			.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('No available service providers for this timeslot'));
+	});
+
+	it("should validate availability for direct booking", async () => {
+		const bookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 60);
+		bookingRequest.serviceProviderId = 5;
+
+		BookingRepositoryMock.searchBookingsMock = [Booking.create(1, new Date(), 10)];
+		TimeslotsServiceMock.availableProvidersForTimeslot = [];
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+
+		const bookingService = Container.get(BookingsService);
+		await expect(bookingService.save(bookingRequest, 1))
+			.rejects
+			.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('The service provider is not available for this timeslot'));
 	});
 
 	it("should return eventId", async () => {
@@ -142,7 +181,7 @@ class BookingRepositoryMock extends BookingsRepository {
 		return Promise.resolve(BookingRepositoryMock.getBookingsMock);
 	}
 
-	public async getBooking(id: string): Promise<Booking> {
+	public async getBooking(id: number): Promise<Booking> {
 		return Promise.resolve(BookingRepositoryMock.booking);
 	}
 

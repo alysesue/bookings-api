@@ -31,7 +31,10 @@ export class BookingsController extends Controller {
 			sessionDurationInMinutes: booking.sessionDurationInMinutes,
 			startDateTime: booking.startDateTime,
 			endDateTime: booking.getSessionEndTime(),
+			serviceId: booking.serviceId,
 			serviceName: booking.service?.name,
+			serviceProviderId: booking.serviceProviderId,
+			serviceProviderName: booking.serviceProvider?.name,
 			requestedAt: booking.createdAt,
 		} as BookingResponse;
 	}
@@ -53,13 +56,13 @@ export class BookingsController extends Controller {
 
 	@Post('{bookingId}/accept')
 	@SuccessResponse(204, 'Accepted')
-	public async acceptBooking(@Path() bookingId: string, @Body() acceptRequest: BookingAcceptRequest): Promise<any> {
+	public async acceptBooking(@Path() bookingId: number, @Body() acceptRequest: BookingAcceptRequest): Promise<any> {
 		await this.bookingsService.acceptBooking(bookingId, acceptRequest);
 	}
 
 	@Post('{bookingId}/cancel')
 	@SuccessResponse(204, 'Cancelled')
-	public async cancelBooking(@Path() bookingId: string): Promise<any> {
+	public async cancelBooking(@Path() bookingId: number): Promise<any> {
 		await this.bookingsService.cancelBooking(bookingId);
 	}
 
@@ -79,14 +82,14 @@ export class BookingsController extends Controller {
 
 	@Get('{bookingId}')
 	@SuccessResponse(200, 'Ok')
-	public async getBooking(@Path() bookingId: string): Promise<any> {
+	public async getBooking(@Path() bookingId: number): Promise<any> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 		return BookingsController.mapDataModel(booking);
 	}
 
 	@Get('{bookingId}/providers')
 	@SuccessResponse(200, 'Ok')
-	public async getBookingProviders(@Path() bookingId: string): Promise<any> {
+	public async getBookingProviders(@Path() bookingId: number): Promise<any> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 
 		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
