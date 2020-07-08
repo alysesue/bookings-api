@@ -10,6 +10,11 @@ export interface IEntityWithSchedule {
 export interface ITimeslotsSchedule {
 }
 
+export interface IEntityWithTimeslotsSchedule {
+	timeslotsScheduleId: number;
+	timeslotsSchedule: ITimeslotsSchedule;
+}
+
 export interface IService {
 }
 
