@@ -13,11 +13,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 	public _id: number;
 
 	@Column({ nullable: true })
-	private _serviceId?: number;
-
-	public get serviceId(): number {
-		return this._serviceId;
-	}
+	public _serviceId?: number;
 
 	@ManyToOne(type => Service)
 	@JoinColumn({ name: '_serviceId' })
