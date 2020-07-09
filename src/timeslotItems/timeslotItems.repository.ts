@@ -20,20 +20,15 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotsSchedule> {
 		return entry;
 	}
 
-	public async getTimeslotsSchedules(ids?: number[]): Promise<TimeslotsSchedule[]> {
+	public async getTimeslotsSchedules(ids: number[]): Promise<TimeslotsSchedule[]> {
 		const options: FindManyOptions<TimeslotsSchedule> = { relations: ['timeslotItems'] };
-		if (ids) {
-			options.where = { _id: In(ids) };
-		}
+		options.where = { _id: In(ids) };
 
 		return await (await this.getRepository()).find(options);
 	}
 
 	public async populateTimeslotsSchedules<T extends IEntityWithTimeslotsSchedule>(entries: T[]): Promise<T[]> {
 		const relatedIdList = entries.map(e => e.timeslotsScheduleId).filter(id => !!id);
-		if (relatedIdList.length === 0) {
-			return entries;
-		}
 
 		const schedulesById = groupByKeyLastValue(await this.getTimeslotsSchedules(relatedIdList), s => s._id);
 

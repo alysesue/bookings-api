@@ -37,7 +37,6 @@ describe('[Timeslots schedule] template', () => {
 		TimeslotItem.create(1, Weekday.Tuesday, TimeOfDay.parse('12:30'), TimeOfDay.parse('13:30')),
 		TimeslotItem.create(1, Weekday.Tuesday, TimeOfDay.parse('13:30'), TimeOfDay.parse('14:30')),
 
-
 		TimeslotItem.create(1, Weekday.Wednesday, TimeOfDay.parse('09:30'), TimeOfDay.parse('10:30')),
 		TimeslotItem.create(1, Weekday.Wednesday, TimeOfDay.parse('10:30'), TimeOfDay.parse('11:30')),
 		TimeslotItem.create(1, Weekday.Wednesday, TimeOfDay.parse('11:30'), TimeOfDay.parse('12:30')),
