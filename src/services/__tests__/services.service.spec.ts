@@ -1,7 +1,7 @@
 import { ServicesService } from "../services.service";
 import { Container, Snapshot } from 'typescript-ioc';
 import { ServiceRequest, SetScheduleRequest } from "../service.apicontract";
-import { Schedule, Service } from "../../models";
+import { Schedule, Service, TimeslotsSchedule } from "../../models";
 import { ServicesRepository } from "../services.repository";
 import { SchedulesService } from "../../schedules/schedules.service";
 
@@ -103,6 +103,22 @@ describe('Services service tests', () => {
 		await expect(async () => {
 			await Container.get(ServicesService).getServiceSchedule(2);
 		}).rejects.toThrowError();
+	});
+
+	it('should set service timeslot schedule', async () => {
+		const newService = new Service();
+		const newTimeslotsSchedule = new TimeslotsSchedule();
+		newTimeslotsSchedule._id = 1;
+		newService._timeslotsScheduleId = 1;
+		newService._timeslotsSchedule = newTimeslotsSchedule;
+		ServicesRepoMock.get.mockImplementation(() => Promise.resolve(newService));
+		SchedulesServiceMock.getSchedule.mockImplementation(() => Promise.resolve(new Schedule()));
+
+		const timeslotsSchedule = await Container.get(ServicesService).setServiceTimeslotsSchedule(1, 1);
+
+		expect(timeslotsSchedule).toBeDefined();
+		expect(newService._timeslotsSchedule).toBe(timeslotsSchedule);
+		expect(ServicesRepoMock.save).toBeCalled();
 	});
 });
 

@@ -2,30 +2,30 @@ import { DbConnection } from '../../core/db.connection';
 import { Container } from 'typescript-ioc';
 import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedule.repository';
+import { TimeslotItemsRepository } from '../timeslotItems.repository';
 
 beforeEach(() => {
 	Container.bind(DbConnection).to(DbConnectionMock);
 	jest.clearAllMocks();
 });
 
-describe('TimeslotsSchedule repository', () => {
-	it('should get timeslotsSchedule', async () => {
-		const repository = Container.get(TimeslotsScheduleRepository);
-		const result = await repository.getTimeslotsScheduleById(1);
+describe('TimeslotItems repository', () => {
+	it('should save TimeslotItems', async () => {
+		const repository = Container.get(TimeslotItemsRepository);
+		const data = TimeslotItem.create(1, 0, TimeOfDay.parse("08:00"), TimeOfDay.parse("09:00"));
+		const result = await repository.saveTimeslotItem(data);
 		expect(result).not.toBe(undefined);
 		expect(GetRepositoryMock).toBeCalled();
-		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
+		expect(InnerRepositoryMock.save).toBeCalledTimes(1);
 	});
 
 });
 
-const timeslotsScheduleMock = new TimeslotsSchedule();
-timeslotsScheduleMock._id = 1;
-timeslotsScheduleMock.timeslotItems = [TimeslotItem.create(1, 1, TimeOfDay.create({ hours: 11, minutes: 0 }), TimeOfDay.create({ hours: 11, minutes: 30 }))];
+const timeslotItemMock = TimeslotItem.create(1, 1, TimeOfDay.create({ hours: 8, minutes: 0 }), TimeOfDay.create({ hours: 9, minutes: 0 }));
 
 export const InnerRepositoryMock = {
-	findOne: jest.fn().mockImplementation((...params) => {
-		return Promise.resolve(timeslotsScheduleMock);
+	save: jest.fn().mockImplementation(() => {
+		return Promise.resolve(timeslotItemMock);
 	}),
 };
 

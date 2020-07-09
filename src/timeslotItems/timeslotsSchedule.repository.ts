@@ -1,7 +1,6 @@
 import { InRequestScope } from "typescript-ioc";
 import { RepositoryBase } from "../core/repository";
-import { TimeslotItem, TimeslotsSchedule } from "../models";
-import { FindConditions } from "typeorm";
+import { TimeslotsSchedule } from "../models";
 
 
 @InRequestScope
