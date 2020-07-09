@@ -21,6 +21,9 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotsSchedule> {
 	}
 
 	public async getTimeslotsSchedules(ids: number[]): Promise<TimeslotsSchedule[]> {
+		if (ids.length === 0)
+			return [];
+
 		const options: FindManyOptions<TimeslotsSchedule> = { relations: ['timeslotItems'] };
 		options.where = { _id: In(ids) };
 

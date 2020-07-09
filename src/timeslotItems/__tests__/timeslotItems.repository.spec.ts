@@ -36,6 +36,12 @@ describe('TimeslotsSchedule repository', () => {
 		expect(entity1.timeslotsSchedule).toBeDefined();
 		expect(entity2.timeslotsSchedule).not.toBeDefined();
 	});
+
+	it('should not call DB when array is empty (not supported)', async () => {
+		const repository = Container.get(TimeslotItemsRepository);
+		await repository.getTimeslotsSchedules([]);
+		expect(InnerRepositoryMock.find).not.toHaveBeenCalled();
+	});
 });
 
 class SampleEntity implements IEntityWithTimeslotsSchedule {
