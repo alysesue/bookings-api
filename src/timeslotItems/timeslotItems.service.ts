@@ -1,11 +1,11 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { TimeslotsScheduleRepository } from "./timeslotsSchedule.repository";
-import { mapToTimeslotsScheduleResponse, mapToTimeslotItemResponse } from './timeslotItems.mapper';
-import { TimeslotsScheduleResponse, TimeslotItemRequest, TimeslotItemsResponse } from './timeslotItems.apicontract';
+import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from './timeslotItems.mapper';
+import { TimeslotItemRequest, TimeslotItemsResponse, TimeslotsScheduleResponse } from './timeslotItems.apicontract';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { ServicesRepository } from '../services/services.repository';
 import { TimeslotItemsRepository } from './timeslotItems.repository';
-import { TimeslotItem, TimeOfDay, TimeslotsSchedule } from '../models';
+import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../models';
 import { ServicesService } from '../services/services.service';
 
 @InRequestScope
@@ -59,7 +59,7 @@ export class TimeslotItemsService {
 		if (timeslotsSchedule._id) {
 			await this.servicesService.setServiceTimeslotsSchedule(serviceId, timeslotsSchedule._id);
 		}
-		return timeslotsSchedule
+		return timeslotsSchedule;
 
 	}
 

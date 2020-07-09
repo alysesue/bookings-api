@@ -4,9 +4,7 @@ import { ServiceRequest, SetScheduleRequest } from "../service.apicontract";
 import { ServicesService } from "../services.service";
 import { Schedule, Service } from "../../models";
 import { TimeslotItemsService } from "../../timeslotItems/timeslotItems.service";
-import { TimeslotsScheduleResponse } from "../../timeslotItems/timeslotItems.apicontract";
-import { TimeslotItemRequest } from "../../timeslotItems/timeslotItems.apicontract";
-import { TimeslotItemsResponse } from "../../timeslotItems/timeslotItems.apicontract";
+import { TimeslotItemRequest, TimeslotItemsResponse, TimeslotsScheduleResponse } from "../../timeslotItems/timeslotItems.apicontract";
 
 describe('Services controller tests', () => {
 	beforeAll(() => {

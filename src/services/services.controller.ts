@@ -6,7 +6,7 @@ import { Service } from "../models";
 import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
 import { ScheduleResponse } from '../schedules/schedules.apicontract';
 import { TimeslotItemsService } from "../timeslotItems/timeslotItems.service";
-import { TimeslotsScheduleResponse, TimeslotItemRequest, TimeslotItemResponse } from "../timeslotItems/timeslotItems.apicontract";
+import { TimeslotItemRequest, TimeslotItemResponse, TimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.apicontract";
 
 @Route('v1/services')
 @Tags('Services')
