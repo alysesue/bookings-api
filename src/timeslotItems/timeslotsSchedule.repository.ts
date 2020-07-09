@@ -19,5 +19,9 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 		return entry;
 	}
 
+	public async createTimeslotsSchedule(data: TimeslotsSchedule): Promise<TimeslotsSchedule> {
+		const repository = await this.getRepository();
+		return await repository.save(data);
+	}
 
 }

@@ -41,6 +41,15 @@ export class ServicesService {
 		return schedule;
 	}
 
+	public async setServiceTimeslotsSchedule(id: number, timeslotsScheduleId: number): Promise<Service> {
+		const service = await this.servicesRepository.getService(id);
+		if (!service) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
+		}
+		service._timeslotsScheduleId = timeslotsScheduleId;
+		return await this.servicesRepository.save(service);
+	}
+
 	public async getServiceSchedule(id: number): Promise<Schedule> {
 		const service = await this.servicesRepository.getService(id);
 		if (!service) {

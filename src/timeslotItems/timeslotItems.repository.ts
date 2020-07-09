@@ -14,8 +14,7 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotItem> {
 		if (!data)
 			return null;
 		const repository = await this.getRepository();
-		await repository.save(data);
-		return data;
+		return await repository.save(data);;
 	}
 
 
