@@ -1,7 +1,7 @@
 import { Container } from "typescript-ioc";
 import { Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from "../../models";
 import { TimeslotItemsService } from "../timeslotItems.service";
-import { TimeslotItemsRepository } from "../timeslotItems.repository";
+import { TimeslotsScheduleRepository } from "../timeslotsSchedule.repository";
 import { ServicesRepository } from "../../services/services.repository";
 
 const timeslotsScheduleMock = new TimeslotsSchedule();
@@ -24,7 +24,7 @@ const MockServicesRepository = jest.fn().mockImplementation(() => ({
 describe('Schedules  template services ', () => {
 	let timeslotItemsService: TimeslotItemsService;
 	beforeAll(() => {
-		Container.bind(TimeslotItemsRepository).to(MockTimeslotsScheduleRepository);
+		Container.bind(TimeslotsScheduleRepository).to(MockTimeslotsScheduleRepository);
 		Container.bind(ServicesRepository).to(MockServicesRepository);
 		timeslotItemsService = Container.get(TimeslotItemsService);
 	});

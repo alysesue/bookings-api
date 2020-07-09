@@ -1,7 +1,7 @@
 import { DbConnection } from '../../core/db.connection';
 import { Container } from 'typescript-ioc';
 import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
-import { TimeslotItemsRepository } from '../timeslotItems.repository';
+import { TimeslotsScheduleRepository } from '../timeslotsSchedule.repository';
 
 beforeEach(() => {
 	Container.bind(DbConnection).to(DbConnectionMock);
@@ -10,7 +10,7 @@ beforeEach(() => {
 
 describe('TimeslotsSchedule repository', () => {
 	it('should get timeslotsSchedule', async () => {
-		const repository = Container.get(TimeslotItemsRepository);
+		const repository = Container.get(TimeslotsScheduleRepository);
 		const result = await repository.getTimeslotsScheduleById(1);
 		expect(result).not.toBe(undefined);
 		expect(GetRepositoryMock).toBeCalled();
