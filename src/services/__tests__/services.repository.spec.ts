@@ -3,13 +3,13 @@ import { DbConnection } from "../../core/db.connection";
 import { Container } from "typescript-ioc";
 import { Schedule, Service, TimeslotsSchedule } from "../../models";
 import { SchedulesRepository } from '../../schedules/schedules.repository';
-import { TimeslotItemsRepository } from "../../timeslotItems/timeslotItems.repository";
+import { TimeslotsScheduleRepository } from "../../timeslotItems/timeslotsSchedule.repository";
 
 describe("Services repository", () => {
 	beforeEach(() => {
 		Container.bind(DbConnection).to(MockDBConnection);
 		Container.bind(SchedulesRepository).to(SchedulesRepositoryMock);
-		Container.bind(TimeslotItemsRepository).to(TimeslotItemsRepositoryMock);
+		Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 
 		jest.resetAllMocks();
 	});
@@ -52,7 +52,7 @@ describe("Services repository", () => {
 
 		const timeslotsSchedule = new TimeslotsSchedule();
 		timeslotsSchedule._id = 2;
-		TimeslotItemsRepositoryMock.getTimeslotsScheduleByIdMock.mockImplementation(() => Promise.resolve(timeslotsSchedule));
+		TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock.mockImplementation(() => Promise.resolve(timeslotsSchedule));
 		MockDBConnection.findOne.mockImplementation(() => Promise.resolve(data));
 
 		const repository = Container.get(ServicesRepository);
@@ -101,11 +101,11 @@ class SchedulesRepositoryMock extends SchedulesRepository {
 }
 
 
-class TimeslotItemsRepositoryMock extends TimeslotItemsRepository {
+class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
 	public static getTimeslotsScheduleByIdMock = jest.fn();
 
 	public async getTimeslotsScheduleById(...params): Promise<TimeslotsSchedule> {
-		return await TimeslotItemsRepositoryMock.getTimeslotsScheduleByIdMock(...params);
+		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock(...params);
 	}
 }
 

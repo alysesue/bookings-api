@@ -29,7 +29,7 @@ export class TimeslotItemsService {
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
-		return mapToTimeslotsScheduleResponse(await this.timeslotItemsRepository.getTimeslotsScheduleById(service.timeslotsScheduleId));
+		return mapToTimeslotsScheduleResponse(await this.timeslotsScheduleRepository.getTimeslotsScheduleById(service.timeslotsScheduleId));
 	}
 
 	public async createTimeslotItem(serviceId: number, data: TimeslotItemRequest): Promise<TimeslotItemsResponse> {
