@@ -74,22 +74,22 @@ export class TimeslotsService {
 	private async getAggregatedTimeslotEntries(minStartTime: Date, maxEndTime: Date, serviceId: number): Promise<AggregatedEntry<ServiceProvider>[]> {
 		const aggregator = new TimeslotAggregator<ServiceProvider>();
 
-		const service = await this.servicesRepository.getServiceWithSchedule(serviceId);
-		const schedule = service?.schedule;
-		if (!schedule) {
+		const service = await this.servicesRepository.getServiceWithTimeslotsSchedule(serviceId);
+		const timeslotsSchedule = service?.timeslotsSchedule;
+		if (!timeslotsSchedule) {
 			return aggregator.getEntries();
 		}
 
-		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({ serviceId, includeSchedule: true });
+		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({ serviceId, includeTimeslotsSchedule: true });
 
-		const validServiceTimeslots = Array.from(schedule.generateValidTimeslots({
+		const validServiceTimeslots = Array.from(timeslotsSchedule.generateValidTimeslots({
 			startDatetime: minStartTime,
 			endDatetime: maxEndTime
 		}));
 
 		for (const provider of serviceProviders) {
-			if (provider.schedule) {
-				const serviceProviderTimeslots = provider.schedule.generateValidTimeslots({
+			if (provider.timeslotsSchedule) {
+				const serviceProviderTimeslots = provider.timeslotsSchedule.generateValidTimeslots({
 					startDatetime: minStartTime,
 					endDatetime: maxEndTime
 				});

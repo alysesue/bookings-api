@@ -21,6 +21,6 @@ export class TimeslotItemsService {
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
-		return mapToResponse(await this.timeslotItemsRepository.getTimeslotsScheduleById(service._timeslotsScheduleId));
+		return mapToResponse(await this.timeslotItemsRepository.getTimeslotsScheduleById(service.timeslotsScheduleId));
 	}
 }

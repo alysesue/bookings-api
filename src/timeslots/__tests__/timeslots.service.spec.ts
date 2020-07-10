@@ -1,5 +1,5 @@
 import { Container, Snapshot } from "typescript-ioc";
-import { Booking, BookingStatus, Calendar, Schedule, Service, ServiceProvider, Timeslot } from "../../models";
+import { Booking, BookingStatus, Calendar, Service, ServiceProvider, Timeslot, TimeslotsSchedule } from "../../models";
 import { TimeslotsService } from "../timeslots.service";
 import { BookingsRepository } from "../../bookings/bookings.repository";
 import { DateHelper } from "../../infrastructure/dateHelper";
@@ -26,31 +26,31 @@ describe("Timeslots Service", () => {
 	const timeslot2 = new Timeslot(DateHelper.setHours(date, 16, 0), DateHelper.setHours(date, 17, 0));
 	const timeslot3 = new Timeslot(DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
 
-	const ScheduleMock = {
-		id: 1,
+	const TimeslotsScheduleMock = {
+		_id: 1,
 		generateValidTimeslots: jest.fn(() => [timeslot, timeslot2, timeslot3])
-	};
+	} as unknown as TimeslotsSchedule;
 
 	const ProviderScheduleMock = {
-		id: 2,
+		_id: 2,
 		generateValidTimeslots: jest.fn(() => [timeslot3])
-	};
+	} as unknown as TimeslotsSchedule;
 
 	const CalendarMock = new Calendar();
 	CalendarMock.id = 1;
 
 	const ServiceMock = new Service();
 	ServiceMock.id = 1;
-	ServiceMock.schedule = ScheduleMock as unknown as Schedule;
-	ServiceMock.scheduleId = ScheduleMock.id;
+	ServiceMock.timeslotsSchedule = TimeslotsScheduleMock;
+	ServiceMock.timeslotsScheduleId = TimeslotsScheduleMock._id;
 
 	const ServiceProviderMock = ServiceProvider.create('Provider', CalendarMock, ServiceMock.id);
 	ServiceProviderMock.id = 100;
 
 	const ServiceProviderMock2 = ServiceProvider.create('Provider with schedule', CalendarMock, ServiceMock.id);
 	ServiceProviderMock2.id = 101;
-	ServiceProviderMock2.schedule = ProviderScheduleMock as unknown as Schedule;
-	ServiceProviderMock2.scheduleId = ProviderScheduleMock.id;
+	ServiceProviderMock2.timeslotsSchedule = ProviderScheduleMock;
+	ServiceProviderMock2.timeslotsScheduleId = ProviderScheduleMock._id;
 
 	// Booking in place for the last time slot
 	const BookingMock = Booking.create(1, DateHelper.setHours(date, 17, 0), 60);
@@ -70,7 +70,7 @@ describe("Timeslots Service", () => {
 	};
 
 	const ServicesRepositoryMock = {
-		getServiceWithSchedule: jest.fn(() => Promise.resolve(ServiceMock))
+		getServiceWithTimeslotsSchedule: jest.fn(() => Promise.resolve(ServiceMock))
 	};
 
 	const ServiceProvidersRepositoryMock = {
@@ -86,8 +86,8 @@ describe("Timeslots Service", () => {
 		const result = await service.getAggregatedTimeslots(date, endDate, 1);
 		expect(result.length).toBe(3);
 
-		expect(ServicesRepositoryMock.getServiceWithSchedule).toBeCalled();
-		expect(ScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
+		expect(ServicesRepositoryMock.getServiceWithTimeslotsSchedule).toBeCalled();
+		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 	});
 
 	it("should aggregate results by service provider", async () => {
@@ -99,8 +99,8 @@ describe("Timeslots Service", () => {
 		const result = await service.getAggregatedTimeslots(date, endDate, 1, 101);
 		expect(result.length).toBe(1);
 
-		expect(ServicesRepositoryMock.getServiceWithSchedule).toBeCalled();
-		expect(ScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
+		expect(ServicesRepositoryMock.getServiceWithTimeslotsSchedule).toBeCalled();
+		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 	});
 
 	it("should get available providers", async () => {
@@ -113,8 +113,8 @@ describe("Timeslots Service", () => {
 		const endDateTime = DateHelper.setHours(date, 18, 0);
 		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1);
 
-		expect(ServicesRepositoryMock.getServiceWithSchedule).toBeCalled();
-		expect(ScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
+		expect(ServicesRepositoryMock.getServiceWithTimeslotsSchedule).toBeCalled();
+		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 		expect(ProviderScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 
 		expect(result.bookedServiceProviders).toHaveLength(1);
