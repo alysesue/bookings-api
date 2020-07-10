@@ -109,15 +109,15 @@ describe('Services service tests', () => {
 		const newService = new Service();
 		const newTimeslotsSchedule = new TimeslotsSchedule();
 		newTimeslotsSchedule._id = 1;
-		newService._timeslotsScheduleId = 1;
-		newService._timeslotsSchedule = newTimeslotsSchedule;
+		newService.timeslotsScheduleId = 1;
+		newService.timeslotsSchedule = newTimeslotsSchedule;
 		ServicesRepoMock.get.mockImplementation(() => Promise.resolve(newService));
 		SchedulesServiceMock.getSchedule.mockImplementation(() => Promise.resolve(new Schedule()));
 
 		const timeslotsSchedule = await Container.get(ServicesService).setServiceTimeslotsSchedule(1, 1);
 
 		expect(timeslotsSchedule).toBeDefined();
-		expect(newService._timeslotsSchedule).toBe(timeslotsSchedule);
+		expect(newService.timeslotsSchedule).toBe(timeslotsSchedule);
 		expect(ServicesRepoMock.save).toBeCalled();
 	});
 });

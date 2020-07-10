@@ -25,10 +25,7 @@ const MockTimeslotItemsRepository = jest.fn().mockImplementation(() => ({
 	saveTimeslotItem
 }));
 
-const serviceMock = new Service();
-serviceMock.id = 1;
-serviceMock.name = 'service';
-const getService = jest.fn().mockImplementation(() => Promise.resolve(serviceMock));
+const getService = jest.fn();
 const save = jest.fn().mockImplementation(() => Promise.resolve(serviceMock));
 const MockServicesRepository = jest.fn().mockImplementation(() => ({
 	getService,
@@ -48,6 +45,11 @@ describe('TimeslotsSchedule template services ', () => {
 	});
 
 	it('should get timeslots schedule', async () => {
+		const serviceMock = new Service();
+		serviceMock.id = 1;
+		serviceMock.name = 'service';
+
+		getService.mockImplementation(() => Promise.resolve(serviceMock));
 		await timeslotItemsService.getTimeslotItemsByServiceId(1);
 		expect(getTimeslotsScheduleById).toBeCalled();
 	});
@@ -58,6 +60,15 @@ describe('TimeslotsSchedule template services ', () => {
 		req.startTime = "07:00";
 		await timeslotItemsService.createTimeslotItem(1, req);
 		expect(createTimeslotsSchedule).toBeCalled();
+	it('should throw when id is empty', async () => {
+		expect(async () => await timeslotItemsService.getTimeslotItemsByServiceId(null))
+			.rejects.toThrowError();
+	});
+
+	it('should throw when service is not found', async () => {
+		getService.mockImplementation(() => Promise.resolve(null));
+		expect(async () => await timeslotItemsService.getTimeslotItemsByServiceId(3))
+			.rejects.toThrowError();
 	});
 
 });

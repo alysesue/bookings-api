@@ -1,13 +1,15 @@
 import { ServicesRepository } from "../services.repository";
 import { DbConnection } from "../../core/db.connection";
 import { Container } from "typescript-ioc";
-import { Schedule, Service } from "../../models";
+import { Schedule, Service, TimeslotsSchedule } from "../../models";
 import { SchedulesRepository } from '../../schedules/schedules.repository';
+import { TimeslotItemsRepository } from "../../timeslotItems/timeslotItems.repository";
 
 describe("Services repository", () => {
 	beforeEach(() => {
 		Container.bind(DbConnection).to(MockDBConnection);
 		Container.bind(SchedulesRepository).to(SchedulesRepositoryMock);
+		Container.bind(TimeslotItemsRepository).to(TimeslotItemsRepositoryMock);
 
 		jest.resetAllMocks();
 	});
@@ -42,6 +44,21 @@ describe("Services repository", () => {
 		const result = await repository.getServiceWithSchedule(1);
 		expect(result).toBeDefined();
 		expect(result.schedule).toBe(schedule);
+	});
+
+	it("should get a service with TimeslotsSchedule", async () => {
+		const data = new Service();
+		data.timeslotsScheduleId = 2;
+
+		const timeslotsSchedule = new TimeslotsSchedule();
+		timeslotsSchedule._id = 2;
+		TimeslotItemsRepositoryMock.getTimeslotsScheduleByIdMock.mockImplementation(() => Promise.resolve(timeslotsSchedule));
+		MockDBConnection.findOne.mockImplementation(() => Promise.resolve(data));
+
+		const repository = Container.get(ServicesRepository);
+		const result = await repository.getServiceWithTimeslotsSchedule(1);
+		expect(result).toBeDefined();
+		expect(result.timeslotsSchedule).toBeDefined();
 	});
 
 	it("should save a service", async () => {
@@ -82,3 +99,13 @@ class SchedulesRepositoryMock extends SchedulesRepository {
 		return await SchedulesRepositoryMock.getSchedulesMock(...params);
 	}
 }
+
+
+class TimeslotItemsRepositoryMock extends TimeslotItemsRepository {
+	public static getTimeslotsScheduleByIdMock = jest.fn();
+
+	public async getTimeslotsScheduleById(...params): Promise<TimeslotsSchedule> {
+		return await TimeslotItemsRepositoryMock.getTimeslotsScheduleByIdMock(...params);
+	}
+}
+

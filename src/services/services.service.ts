@@ -72,9 +72,9 @@ export class ServicesService {
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
-		service._timeslotsScheduleId = timeslotsScheduleId;
+		service.timeslotsScheduleId = timeslotsScheduleId;
 		await this.servicesRepository.save(service);
-		return service._timeslotsSchedule;
+		return service.timeslotsSchedule;
 	}
 
 
