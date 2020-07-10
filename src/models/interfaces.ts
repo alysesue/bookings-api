@@ -1,3 +1,5 @@
+import { TimeOfDay } from "./timeOfDay";
+
 export interface ISchedule {
 	slotsDurationInMin: number;
 }
@@ -19,4 +21,9 @@ export interface IService {
 }
 
 export interface IServiceProvider {
+}
+
+export interface ITimeSpan {
+	startTime: TimeOfDay;
+	endTime: TimeOfDay;
 }

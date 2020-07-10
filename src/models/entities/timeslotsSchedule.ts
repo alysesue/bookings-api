@@ -34,6 +34,17 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 		return instance;
 	}
 
+	public intersectsAnyExceptThis(timeslotItem: TimeslotItem) {
+		for (const entry of this.timeslotItems) {
+			if (entry._id === timeslotItem._id)
+				continue;
+
+			if (entry.intersects(timeslotItem))
+				return true;
+		}
+		return false;
+	}
+
 	private static sortTimeslots(a: TimeslotItem, b: TimeslotItem) {
 		const compare = TimeOfDay.compare(a._startTime, b._startTime);
 		if (compare !== 0) {

@@ -25,13 +25,12 @@ const MockTimeslotItemsRepository = jest.fn().mockImplementation(() => ({
 	saveTimeslotItem
 }));
 
-const serviceMock = new Service();
-serviceMock.id = 1;
-serviceMock.name = 'service';
-const getService = jest.fn().mockImplementation(() => Promise.resolve(serviceMock));
-const save = jest.fn().mockImplementation(() => Promise.resolve(serviceMock));
+const getServiceWithTimeslotsSchedule = jest.fn();
+const getService = jest.fn();
+const save = jest.fn().mockImplementation((param) => Promise.resolve(param));
 const MockServicesRepository = jest.fn().mockImplementation(() => ({
 	getService,
+	getServiceWithTimeslotsSchedule,
 	save
 }));
 
@@ -45,18 +44,28 @@ describe('TimeslotsSchedule template services ', () => {
 		jest.clearAllMocks();
 	});
 
-	it('should get timeslots schedule', async () => {
-		getService.mockImplementation(() => Promise.resolve(serviceMock));
+	const serviceMock = new Service();
+	serviceMock.id = 1;
+	serviceMock.name = 'service';
 
+	const serviceMockWithTemplate = new Service();
+	serviceMockWithTemplate.id = 1;
+	serviceMockWithTemplate.name = 'service';
+	serviceMockWithTemplate.timeslotsScheduleId = timeslotsScheduleMock._id;
+	serviceMockWithTemplate.timeslotsSchedule = timeslotsScheduleMock;
+
+	it('should get timeslots schedule', async () => {
+		getServiceWithTimeslotsSchedule.mockImplementation(() => Promise.resolve(serviceMockWithTemplate));
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.getTimeslotItemsByServiceId(1);
-		expect(getTimeslotsScheduleById).toBeCalled();
+		expect(getServiceWithTimeslotsSchedule).toBeCalled();
 	});
 
 	it('should create timeslots item', async () => {
 		const req = new TimeslotItemRequest();
 		req.weekDay = 4;
 		req.startTime = "07:00";
+		getService.mockImplementation(() => Promise.resolve(serviceMock));
 
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.createTimeslotItem(1, req);
@@ -70,7 +79,7 @@ describe('TimeslotsSchedule template services ', () => {
 	});
 
 	it('should throw when service is not found', async () => {
-		getService.mockImplementation(() => Promise.resolve(null));
+		getServiceWithTimeslotsSchedule.mockImplementation(() => Promise.resolve(null));
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		expect(async () => await timeslotItemsService.getTimeslotItemsByServiceId(3))
 			.rejects.toThrowError();

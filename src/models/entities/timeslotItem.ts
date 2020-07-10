@@ -1,10 +1,11 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { TimeOfDay, Transformer as TimeTransformer } from '../timeOfDay';
 import { Weekday } from '../../enums/weekday';
-import { ITimeslotsSchedule } from "../interfaces";
+import { ITimeslotsSchedule, ITimeSpan } from "../interfaces";
+import * as timeSpan from '../../tools/timeSpan';
 
 @Entity()
-export class TimeslotItem {
+export class TimeslotItem implements ITimeSpan {
 	constructor() {
 	}
 
@@ -27,6 +28,9 @@ export class TimeslotItem {
 	@Column({ type: "time", transformer: TimeTransformer, nullable: false })
 	public _endTime: TimeOfDay;
 
+	public get startTime() { return this._startTime; }
+	public get endTime() { return this._endTime; }
+
 	public static create(timeslotScheduleId: number, weekDay: Weekday, startTime: TimeOfDay, endTime: TimeOfDay): TimeslotItem {
 		const instance = new TimeslotItem();
 		instance._timeslotsScheduleId = timeslotScheduleId;
@@ -34,5 +38,9 @@ export class TimeslotItem {
 		instance._endTime = endTime;
 		instance._weekDay = weekDay;
 		return instance;
+	}
+
+	public intersects(other: ITimeSpan): boolean {
+		return timeSpan.intersectsSpan(this, other);
 	}
 }
