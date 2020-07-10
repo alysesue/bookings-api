@@ -1,10 +1,10 @@
 import { ServiceProvidersRepository } from "../serviceProviders.repository";
 import { DbConnection } from "../../core/db.connection";
 import { Container } from "typescript-ioc";
-import { Service, ServiceProvider, TimeslotsSchedule } from "../../models";
+import { ServiceProvider, TimeslotsSchedule } from "../../models";
 import { SchedulesRepository } from "../../schedules/schedules.repository";
 import { IEntityWithSchedule } from "../../models/interfaces";
-import { TimeslotItemsRepository } from "../../timeslotItems/timeslotItems.repository";
+import { TimeslotsScheduleRepository } from "../../timeslotItems/timeslotsSchedule.repository";
 
 describe("Service Provider repository", () => {
 	beforeEach(() => {
@@ -58,7 +58,7 @@ describe("Service Provider repository", () => {
 
 	it("should get list of SP with TimeslotsSchedule", async () => {
 		Container.bind(DbConnection).to(MockDBConnection);
-		Container.bind(TimeslotItemsRepository).to(TimeslotItemsRepositoryMock);
+		Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 
 		const sp = new ServiceProvider();
 		sp.id = 1;
@@ -66,20 +66,20 @@ describe("Service Provider repository", () => {
 		const timeslotsSchedule = new TimeslotsSchedule();
 		timeslotsSchedule._id = 2;
 		MockDBConnection.find.mockImplementation(() => Promise.resolve([sp]));
-		TimeslotItemsRepositoryMock.getTimeslotsSchedulesMock.mockImplementation(() => Promise.resolve([timeslotsSchedule]));
+		TimeslotsScheduleRepositoryMock.getTimeslotsSchedulesMock.mockImplementation(() => Promise.resolve([timeslotsSchedule]));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProviders({ serviceId: 1, includeTimeslotsSchedule: true });
 
 		expect(MockDBConnection.find).toHaveBeenCalled();
-		expect(TimeslotItemsRepositoryMock.getTimeslotsSchedulesMock).toHaveBeenCalled();
+		expect(TimeslotsScheduleRepositoryMock.getTimeslotsSchedulesMock).toHaveBeenCalled();
 		expect(result.length).toBe(1);
 		expect(result[0].timeslotsSchedule).toBeDefined();
 	});
 
 	it("should get a service provider with TimeslotsSchedule", async () => {
 		Container.bind(DbConnection).to(MockDBConnection);
-		Container.bind(TimeslotItemsRepository).to(TimeslotItemsRepositoryMock);
+		Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 
 		const sp = new ServiceProvider();
 		sp.id = 1;
@@ -87,13 +87,13 @@ describe("Service Provider repository", () => {
 		const timeslotsSchedule = new TimeslotsSchedule();
 		timeslotsSchedule._id = 2;
 		MockDBConnection.findOne.mockImplementation(() => sp);
-		TimeslotItemsRepositoryMock.getTimeslotsScheduleByIdMock.mockImplementation(() => Promise.resolve(timeslotsSchedule));
+		TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock.mockImplementation(() => Promise.resolve(timeslotsSchedule));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProvider({ id: 1, includeTimeslotsSchedule: true });
 
 		expect(MockDBConnection.findOne).toHaveBeenCalled();
-		expect(TimeslotItemsRepositoryMock.getTimeslotsScheduleByIdMock).toHaveBeenCalled();
+		expect(TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock).toHaveBeenCalled();
 		expect(result).toBeDefined();
 		expect(result.timeslotsSchedule).toBeDefined();
 	});
@@ -144,14 +144,14 @@ class SchedulesRepositoryMock extends SchedulesRepository {
 }
 
 
-class TimeslotItemsRepositoryMock extends TimeslotItemsRepository {
+class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
 	public static getTimeslotsScheduleByIdMock = jest.fn();
 	public static getTimeslotsSchedulesMock = jest.fn();
 
 	public async getTimeslotsScheduleById(id: number): Promise<TimeslotsSchedule> {
-		return await TimeslotItemsRepositoryMock.getTimeslotsScheduleByIdMock(id);
+		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock(id);
 	}
 	public async getTimeslotsSchedules(ids: number[]): Promise<TimeslotsSchedule[]> {
-		return await TimeslotItemsRepositoryMock.getTimeslotsSchedulesMock(ids);
+		return await TimeslotsScheduleRepositoryMock.getTimeslotsSchedulesMock(ids);
 	}
 }

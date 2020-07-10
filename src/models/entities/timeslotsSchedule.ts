@@ -27,6 +27,13 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 	@OneToMany(type => TimeslotItem, timeslot => timeslot._timeslotsSchedule)
 	public timeslotItems: TimeslotItem[];
 
+	public static create(serviceId, serviceProviderId): TimeslotsSchedule {
+		const instance = new TimeslotsSchedule();
+		instance._service = serviceId;
+		instance._serviceProvider = serviceProviderId;
+		return instance;
+	}
+
 	private static sortTimeslots(a: TimeslotItem, b: TimeslotItem) {
 		const compare = TimeOfDay.compare(a._startTime, b._startTime);
 		if (compare !== 0) {

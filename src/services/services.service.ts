@@ -1,6 +1,6 @@
 import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
 import { Inject, InRequestScope, Scope, Scoped } from "typescript-ioc";
-import { Schedule, Service } from "../models";
+import { Schedule, Service, TimeslotsSchedule } from "../models";
 import { ServicesRepository } from "./services.repository";
 import { ServiceRequest, SetScheduleRequest } from "./service.apicontract";
 import { SchedulesService } from '../schedules/schedules.service';
@@ -66,4 +66,16 @@ export class ServicesService {
 	public async getService(id: number): Promise<Service> {
 		return await this.servicesRepository.getService(id);
 	}
+
+	public async setServiceTimeslotsSchedule(id: number, timeslotsScheduleId: number): Promise<TimeslotsSchedule> {
+		const service = await this.servicesRepository.getService(id);
+		if (!service) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
+		}
+		service.timeslotsScheduleId = timeslotsScheduleId;
+		await this.servicesRepository.save(service);
+		return service.timeslotsSchedule;
+	}
+
+
 }

@@ -14,13 +14,27 @@ const mapTimeslotItems = (data: TimeslotItem[]): TimeslotItemResponse[] => {
 };
 
 
-export const mapToResponse = (data: TimeslotsSchedule): TimeslotsScheduleResponse => {
+export const mapToTimeslotsScheduleResponse = (data: TimeslotsSchedule): TimeslotsScheduleResponse => {
 	if (!data) {
 		return null;
 	}
 
 	const response = new TimeslotsScheduleResponse();
 	response.timeslots = mapTimeslotItems(data.timeslotItems);
+
+	return response;
+};
+
+export const mapToTimeslotItemResponse = (data: TimeslotItem): TimeslotItemResponse => {
+	if (!data) {
+		return null;
+	}
+
+	const response = new TimeslotItemResponse();
+	response.id = data._id;
+	response.weekDay = data._weekDay;
+	response.startTime = data._startTime.toString();
+	response.endTime = data._endTime.toString();
 
 	return response;
 };

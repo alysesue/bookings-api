@@ -3,14 +3,15 @@ import { ServiceProvider } from "../models";
 import { RepositoryBase } from "../core/repository";
 import { FindConditions } from "typeorm";
 import { SchedulesRepository } from '../schedules/schedules.repository';
-import { TimeslotItemsRepository } from "../timeslotItems/timeslotItems.repository";
+import { TimeslotsScheduleRepository } from "../timeslotItems/timeslotsSchedule.repository";
+
 
 @InRequestScope
 export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> {
 	@Inject
 	private scheduleRepository: SchedulesRepository;
 	@Inject
-	private timeslotsRepository: TimeslotItemsRepository;
+	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
 
 	constructor() {
 		super(ServiceProvider);
@@ -33,7 +34,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		}
 
 		if (options.includeTimeslotsSchedule) {
-			await this.timeslotsRepository.populateTimeslotsSchedules(entries);
+			await this.timeslotsScheduleRepository.populateTimeslotsSchedules(entries);
 		}
 
 		return entries;
@@ -52,7 +53,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		}
 
 		if (options.includeTimeslotsSchedule) {
-			entry.timeslotsSchedule = await this.timeslotsRepository.getTimeslotsScheduleById(entry.timeslotsScheduleId);
+			entry.timeslotsSchedule = await this.timeslotsScheduleRepository.getTimeslotsScheduleById(entry.timeslotsScheduleId);
 		}
 
 		return entry;
