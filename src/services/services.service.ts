@@ -76,6 +76,4 @@ export class ServicesService {
 		await this.servicesRepository.save(service);
 		return service.timeslotsSchedule;
 	}
-
-
 }

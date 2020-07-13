@@ -1,6 +1,6 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { TimeslotsScheduleRepository } from "./timeslotsSchedule.repository";
-import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from './timeslotItems.mapper';
+import { mapTimeslotItemToEntity, mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from './timeslotItems.mapper';
 import { TimeslotItemRequest, TimeslotItemsResponse, TimeslotsScheduleResponse } from './timeslotItems.apicontract';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { ServicesRepository } from '../services/services.repository';
@@ -38,28 +38,38 @@ export class TimeslotItemsService {
 		return mapToTimeslotsScheduleResponse(timeslotsSchedule);
 	}
 
-	public async createTimeslotItem(serviceId: number, data: TimeslotItemRequest): Promise<TimeslotItemsResponse> {
-		let timeslotSchedule = await this.getServiceTimeslotsSchedule(serviceId);
-		if (!timeslotSchedule) {
-			timeslotSchedule = await this.createTimeslotsSchedule(serviceId);
-		}
-
-		let item: TimeslotItem;
+	private mapItemAndValidate(timeslotsSchedule: TimeslotsSchedule, request: TimeslotItemRequest, entity: TimeslotItem): TimeslotItem {
+		entity._timeslotsScheduleId = timeslotsSchedule._id;
 		try {
-			item = TimeslotItem.create(timeslotSchedule._id, data.weekDay, TimeOfDay.parse(data.startTime), TimeOfDay.parse(data.endTime));
+			mapTimeslotItemToEntity(request, entity);
 		} catch (err) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage((err as Error).message);
 		}
 
-		if (timeslotSchedule.intersectsAnyExceptThis(item)) {
+		if (TimeOfDay.compare(entity.startTime, entity.endTime) >= 0) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Timeslot start time must be less than end time.');
+		}
+
+		if (timeslotsSchedule.intersectsAnyExceptThis(entity)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Timeslot item overlaps existing entry.');
 		}
 
+		return entity;
+	}
+
+	public async createTimeslotItem(serviceId: number, request: TimeslotItemRequest): Promise<TimeslotItemsResponse> {
+		let timeslotsSchedule = await this.getServiceTimeslotsSchedule(serviceId);
+		if (!timeslotsSchedule) {
+			timeslotsSchedule = await this.createTimeslotsSchedule(serviceId);
+		}
+
+		const item = this.mapItemAndValidate(timeslotsSchedule, request, new TimeslotItem());
 		return mapToTimeslotItemResponse(await this.timeslotItemsRepository.saveTimeslotItem(item));
 	}
 
-	public async updateTimeslotItem(params: { serviceId: number; timeslotId: number; request: TimeslotItemRequest; }): Promise<TimeslotItemsResponse> {
-		const { serviceId, timeslotId, request } = params;
+	public async updateTimeslotItem({ serviceId, timeslotId, request }:
+		{ serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
+		: Promise<TimeslotItemsResponse> {
 
 		const timeslotsSchedule = await this.getServiceTimeslotsSchedule(serviceId);
 		const timeslotItem = timeslotsSchedule?.timeslotItems.find(t => t._id === timeslotId);
@@ -67,18 +77,7 @@ export class TimeslotItemsService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Timeslot item not found');
 		}
 
-		try {
-			timeslotItem._weekDay = request.weekDay;
-			timeslotItem._startTime = TimeOfDay.parse(request.startTime);
-			timeslotItem._endTime = TimeOfDay.parse(request.startTime);
-		} catch (err) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage((err as Error).message);
-		}
-
-		if (timeslotsSchedule.intersectsAnyExceptThis(timeslotItem)) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Timeslot item overlaps existing entry.');
-		}
-
+		this.mapItemAndValidate(timeslotsSchedule, request, timeslotItem);
 		return mapToTimeslotItemResponse(await this.timeslotItemsRepository.saveTimeslotItem(timeslotItem));
 	}
 
@@ -89,8 +88,8 @@ export class TimeslotItemsService {
 		if (timeslotsSchedule._id) {
 			await this.servicesService.setServiceTimeslotsSchedule(serviceId, timeslotsSchedule._id);
 		}
-		return timeslotsSchedule;
 
+		return timeslotsSchedule;
 	}
 
 }

@@ -1,5 +1,5 @@
 import { ITimeSpan } from "../models/interfaces";
-import { TimeOfDay } from "../models";
+import { TimeOfDay } from "../models/timeOfDay";
 
 export const intersectsSpan = (a: ITimeSpan, b: ITimeSpan) => {
 	return intersects(a, b.startTime, b.endTime);

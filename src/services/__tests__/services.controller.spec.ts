@@ -79,6 +79,20 @@ describe('Services controller tests', () => {
 		expect(response.startTime).toEqual("08:00");
 	});
 
+	it('should update a timeslot item', async () => {
+		const mockItem = new TimeslotItemsResponse();
+		mockItem.id = 11;
+		mockItem.startTime = "08:00";
+		mockItem.endTime = "09:00";
+		TimeslotItemsServiceMock.updateTimeslotItem.mockReturnValue(mockItem);
+
+		const request = new TimeslotItemRequest();
+		request.weekDay = 4;
+		request.startTime = "08:00";
+		request.endTime = "09:00";
+		const response = await Container.get(ServicesController).updateTimeslotItem(1, 11, request);
+		expect(response).toBeDefined();
+	});
 });
 
 const ServicesServiceMock = {
@@ -113,7 +127,8 @@ class ServicesServiceMockClass extends ServicesService {
 
 const TimeslotItemsServiceMock = {
 	getTimeslotItemsByServiceId: jest.fn(),
-	createTimeslotItem: jest.fn()
+	createTimeslotItem: jest.fn(),
+	updateTimeslotItem: jest.fn()
 };
 
 
@@ -124,5 +139,9 @@ class TimeslotItemsServiceMockClass extends TimeslotItemsService {
 
 	public async createTimeslotItem(serviceId: number, request: TimeslotItemRequest): Promise<TimeslotItemsResponse> {
 		return TimeslotItemsServiceMock.createTimeslotItem(serviceId, request);
+	}
+
+	public async updateTimeslotItem(...params): Promise<TimeslotItemsResponse> {
+		return await TimeslotItemsServiceMock.updateTimeslotItem(...params);
 	}
 }

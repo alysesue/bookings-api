@@ -13,7 +13,7 @@ export class TimeslotItem implements ITimeSpan {
 	public _id: number;
 
 	@Column({ nullable: false })
-	private _timeslotsScheduleId: number;
+	public _timeslotsScheduleId: number;
 
 	@ManyToOne('TimeslotsSchedule', { nullable: false })
 	@JoinColumn({ name: '_timeslotsScheduleId' })
@@ -40,7 +40,11 @@ export class TimeslotItem implements ITimeSpan {
 		return instance;
 	}
 
-	public intersects(other: ITimeSpan): boolean {
+	public intersects(other: TimeslotItem): boolean {
+		if (this._weekDay !== other._weekDay) {
+			return false;
+		}
+
 		return timeSpan.intersectsSpan(this, other);
 	}
 }
