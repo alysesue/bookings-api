@@ -1,6 +1,6 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { TimeslotsScheduleRepository } from "./timeslotsSchedule.repository";
-import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from './timeslotItems.mapper';
+import { mapTimeslotItemToEntity, mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from './timeslotItems.mapper';
 import { TimeslotItemRequest, TimeslotItemsResponse, TimeslotsScheduleResponse } from './timeslotItems.apicontract';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { ServicesRepository } from '../services/services.repository';
@@ -20,36 +20,65 @@ export class TimeslotItemsService {
 	@Inject
 	private servicesService: ServicesService;
 
-	public async getTimeslotItemsByServiceId(id: number): Promise<TimeslotsScheduleResponse> {
+	private async getServiceTimeslotsSchedule(id: number): Promise<TimeslotsSchedule> {
 		if (!id) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service Id should not be empty');
 		}
 
-		const service = await this.servicesRepository.getService(id);
+		const service = await this.servicesRepository.getServiceWithTimeslotsSchedule(id);
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
-		return mapToTimeslotsScheduleResponse(await this.timeslotsScheduleRepository.getTimeslotsScheduleById(service.timeslotsScheduleId));
+
+		return service.timeslotsSchedule;
 	}
 
-	public async createTimeslotItem(serviceId: number, data: TimeslotItemRequest): Promise<TimeslotItemsResponse> {
-		if (!serviceId) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service Id should not be empty');
+	public async getTimeslotItemsByServiceId(id: number): Promise<TimeslotsScheduleResponse> {
+		const timeslotsSchedule = await this.getServiceTimeslotsSchedule(id);
+		return mapToTimeslotsScheduleResponse(timeslotsSchedule);
+	}
+
+	private mapItemAndValidate(timeslotsSchedule: TimeslotsSchedule, request: TimeslotItemRequest, entity: TimeslotItem): TimeslotItem {
+		entity._timeslotsScheduleId = timeslotsSchedule._id;
+		try {
+			mapTimeslotItemToEntity(request, entity);
+		} catch (err) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage((err as Error).message);
 		}
 
-		const service = await this.servicesRepository.getService(serviceId);
-		if (!service) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
+		if (TimeOfDay.compare(entity.startTime, entity.endTime) >= 0) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Timeslot start time must be less than end time.');
 		}
 
-		let timeslotScheduleId = service.timeslotsScheduleId;
-		if (!service.timeslotsScheduleId) {
-			timeslotScheduleId = (await this.createTimeslotsSchedule(serviceId))._id;
+		if (timeslotsSchedule.intersectsAnyExceptThis(entity)) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Timeslot item overlaps existing entry.');
 		}
 
+		return entity;
+	}
 
-		const item = TimeslotItem.create(timeslotScheduleId, data.weekDay, TimeOfDay.parse(data.startTime), TimeOfDay.parse(data.endTime));
+	public async createTimeslotItem(serviceId: number, request: TimeslotItemRequest): Promise<TimeslotItemsResponse> {
+		let timeslotsSchedule = await this.getServiceTimeslotsSchedule(serviceId);
+		if (!timeslotsSchedule) {
+			timeslotsSchedule = await this.createTimeslotsSchedule(serviceId);
+		}
+
+		const item = this.mapItemAndValidate(timeslotsSchedule, request, new TimeslotItem());
 		return mapToTimeslotItemResponse(await this.timeslotItemsRepository.saveTimeslotItem(item));
+	}
+
+	public async updateTimeslotItem({ serviceId, timeslotId, request }:
+		{ serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
+		: Promise<TimeslotItemsResponse> {
+
+		const timeslotsSchedule = await this.getServiceTimeslotsSchedule(serviceId);
+		const timeslotItem = timeslotsSchedule?.timeslotItems.find(t => t._id === timeslotId);
+		if (!timeslotItem) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Timeslot item not found');
+		}
+
+		this.mapItemAndValidate(timeslotsSchedule, request, timeslotItem);
+		return mapToTimeslotItemResponse(await this.timeslotItemsRepository.saveTimeslotItem(timeslotItem));
 	}
 
 	private async createTimeslotsSchedule(serviceId: number): Promise<TimeslotsSchedule> {
@@ -59,8 +88,8 @@ export class TimeslotItemsService {
 		if (timeslotsSchedule._id) {
 			await this.servicesService.setServiceTimeslotsSchedule(serviceId, timeslotsSchedule._id);
 		}
-		return timeslotsSchedule;
 
+		return timeslotsSchedule;
 	}
 
 }

@@ -1,10 +1,11 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TimeOfDay, Transformer as TimeTransformer } from '../timeOfDay';
-import { ISchedule } from '../interfaces';
+import { ISchedule, ITimeSpan } from '../interfaces';
 import { Weekday } from '../../enums/weekday';
+import * as timeSpan from '../../tools/timeSpan';
 
 @Entity()
-export class WeekDayBreak {
+export class WeekDayBreak implements ITimeSpan {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
@@ -42,12 +43,6 @@ export class WeekDayBreak {
 	}
 
 	public intersects(start: TimeOfDay, end: TimeOfDay): boolean {
-		const compareThisEndOtherStart = TimeOfDay.compare(this.endTime, start);
-		if (compareThisEndOtherStart > 0) {
-			const compareOtherEndThisStart = TimeOfDay.compare(end, this.startTime);
-			return compareOtherEndThisStart > 0;
-		}
-
-		return false;
+		return timeSpan.intersects(this, start, end);
 	}
 }
