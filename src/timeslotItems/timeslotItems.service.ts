@@ -7,6 +7,7 @@ import { ServicesRepository } from '../services/services.repository';
 import { TimeslotItemsRepository } from './timeslotItems.repository';
 import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../models';
 import { ServicesService } from '../services/services.service';
+import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 
 @InRequestScope
 export class TimeslotItemsService {
@@ -16,7 +17,8 @@ export class TimeslotItemsService {
 	private timeslotItemsRepository: TimeslotItemsRepository;
 	@Inject
 	private servicesRepository: ServicesRepository;
-
+	@Inject
+	private serviceProvidersRepository: ServiceProvidersRepository;
 	@Inject
 	private servicesService: ServicesService;
 
@@ -30,6 +32,25 @@ export class TimeslotItemsService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
 		return mapToTimeslotsScheduleResponse(await this.timeslotsScheduleRepository.getTimeslotsScheduleById(service.timeslotsScheduleId));
+	}
+
+	public async getTimeslotItemsByServiceProvider(id: number): Promise<TimeslotsScheduleResponse> {
+		if (!id) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider ID should not be empty');
+		}
+
+		const serviceProvider = await this.serviceProvidersRepository.getServiceProvider({id, includeSchedule: false, includeTimeslotsSchedule: true});
+		if (!serviceProvider) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
+		}
+
+		if(!serviceProvider.timeslotsScheduleId) {
+			const serviceId = serviceProvider.serviceId;
+			const service = await this.servicesRepository.getService(serviceId);
+			return mapToTimeslotsScheduleResponse(await this.timeslotsScheduleRepository.getTimeslotsScheduleById(service.timeslotsScheduleId));
+		}
+
+		return mapToTimeslotsScheduleResponse(serviceProvider.timeslotsSchedule);
 	}
 
 	public async createTimeslotItem(serviceId: number, data: TimeslotItemRequest): Promise<TimeslotItemsResponse> {

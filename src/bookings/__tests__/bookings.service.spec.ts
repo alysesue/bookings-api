@@ -3,7 +3,7 @@ import { BookingsService } from "..";
 import { BookingsRepository } from "../bookings.repository";
 import { CalendarsService } from "../../calendars/calendars.service";
 import { Container } from "typescript-ioc";
-import { Booking, BookingStatus, Calendar, Service, ServiceProvider } from "../../models/";
+import { Booking, BookingStatus, Calendar, ServiceProvider } from "../../models/";
 import { InsertResult } from "typeorm";
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "../bookings.apicontract";
 import { TimeslotsService } from '../../timeslots/timeslots.service';
@@ -151,7 +151,6 @@ describe("Bookings.Service", () => {
 		const bookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 60);
-		bookingRequest.serviceProviderId = 5;
 
 		BookingRepositoryMock.searchBookingsMock = [Booking.create(1, new Date(), 10)];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [];
@@ -160,7 +159,7 @@ describe("Bookings.Service", () => {
 		const bookingService = Container.get(BookingsService);
 		await expect(bookingService.save(bookingRequest, 1))
 			.rejects
-			.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('The service provider is not available for this timeslot'));
+			.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('No available service providers for this timeslot'));
 	});
 
 	it("should return eventId", async () => {
@@ -176,10 +175,6 @@ class BookingRepositoryMock extends BookingsRepository {
 	public static getBookingsMock: Booking[];
 	public static searchBookingsMock: Booking[];
 	public static saveMock: Promise<InsertResult>;
-
-	public async getBookings(): Promise<Booking[]> {
-		return Promise.resolve(BookingRepositoryMock.getBookingsMock);
-	}
 
 	public async getBooking(id: number): Promise<Booking> {
 		return Promise.resolve(BookingRepositoryMock.booking);

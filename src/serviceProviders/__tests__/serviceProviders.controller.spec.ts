@@ -1,14 +1,17 @@
 import { Container } from "typescript-ioc";
-import { Calendar, Schedule, ServiceProvider } from "../../models";
+import { Calendar, Schedule, ServiceProvider, TimeslotsSchedule } from "../../models";
 import { ServiceProvidersController } from "../serviceProviders.controller";
 import { ServiceProvidersService } from "../serviceProviders.service";
 import { ServiceProviderModel, SetProviderScheduleRequest } from "../serviceProviders.apicontract";
 import { CalendarsService } from "../../calendars/calendars.service";
+import { TimeslotItemsService } from "../../timeslotItems/timeslotItems.service";
+import { TimeslotsScheduleResponse } from "../../timeslotItems/timeslotItems.apicontract";
 
 describe("ServiceProviders.Controller", () => {
 	beforeAll(() => {
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
+		Container.bind(TimeslotItemsService).to(TimeslotItemsServiceMock);
 	});
 
 	beforeEach(() => {
@@ -36,7 +39,7 @@ describe("ServiceProviders.Controller", () => {
 	it('should save multiple service providers', async () => {
 		ServiceProvidersMock.save.mockReturnValue([ServiceProvider.create("Monica", null, 1), ServiceProvider.create("Timmy", null, 1)]);
 		const controller = Container.get(ServiceProvidersController);
-		const result = await controller.addServiceProviders({
+		await controller.addServiceProviders({
 			serviceProviders: [
 				{
 					"name": "Test"
@@ -82,6 +85,12 @@ describe("ServiceProviders.Controller", () => {
 		expect(ServiceProvidersMock.getProviderSchedule).toBeCalled();
 	});
 
+	it('should get provider timeslot schedule', async () => {
+		TimeslotItemsMock.getTimeslotItemsByServiceProvider.mockReturnValue(Promise.resolve(new TimeslotsSchedule()));
+		await Container.get(ServiceProvidersController).getTimeslotsScheduleByServiceProvider(1);
+		expect(TimeslotItemsMock.getTimeslotItemsByServiceProvider).toBeCalledTimes(1);
+	});
+
 });
 
 const ServiceProvidersMock = {
@@ -122,5 +131,15 @@ const CalendarsSvcMock = {
 class CalendarsServiceMock extends CalendarsService {
 	public async createCalendar(): Promise<Calendar> {
 		return CalendarsSvcMock.createCalendar();
+	}
+}
+
+const TimeslotItemsMock = {
+	getTimeslotItemsByServiceProvider: jest.fn(),
+};
+
+class TimeslotItemsServiceMock extends TimeslotItemsService {
+	public async getTimeslotItemsByServiceProvider(...params): Promise<TimeslotsScheduleResponse> {
+			return TimeslotItemsMock.getTimeslotItemsByServiceProvider(...params);
 	}
 }

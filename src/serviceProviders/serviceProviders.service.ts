@@ -60,7 +60,7 @@ export class ServiceProvidersService {
 	}
 
 	private delay(ms) {
-		return new Promise((resolve, _reject) => setTimeout(resolve, ms));
+		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 
 	public async setProviderSchedule(id: number, model: SetProviderScheduleRequest): Promise<Schedule> {

@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { TimeslotItem } from "./timeslotItem";
 import { IService, IServiceProvider, ITimeslotsSchedule } from "../interfaces";
 import { DateHelper } from "../../infrastructure/dateHelper";

@@ -1,13 +1,14 @@
 import { Inject, InRequestScope } from "typescript-ioc";
 import { ServiceProviderListRequest, ServiceProviderModel, ServiceProviderResponseModel, SetProviderScheduleRequest } from "./serviceProviders.apicontract";
 import { ServiceProvidersService } from "./serviceProviders.service";
-import { ServiceProvider } from "../models";
 import { Body, Controller, Get, Header, Path, Post, Put, Route, Security, SuccessResponse, Tags } from "tsoa";
 import { ErrorResponse } from "../apicontract";
 import { parseCsv } from "../utils";
 import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
 import { ScheduleResponse } from "../schedules/schedules.apicontract";
 import { ServiceprovidersMapper } from "./serviceProviders.mapper";
+import { TimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.apicontract";
+import { TimeslotItemsService } from "../timeslotItems/timeslotItems.service";
 
 @InRequestScope
 @Route("v1/service-providers")
@@ -16,6 +17,9 @@ export class ServiceProvidersController extends Controller {
 
 	@Inject
 	private serviceProvidersService: ServiceProvidersService;
+
+	@Inject
+	private timeslotItemsService: TimeslotItemsService;
 
 	@Inject
 	private mapper: ServiceprovidersMapper;
@@ -77,5 +81,11 @@ export class ServiceProvidersController extends Controller {
 	@SuccessResponse(200, "Ok")
 	public async getServiceSchedule(@Path() id: number): Promise<ScheduleResponse> {
 		return mapScheduleToResponse(await this.serviceProvidersService.getProviderSchedule(id));
+	}
+
+	@Get("{id}/timeslotSchedule")
+	@SuccessResponse(200, "Ok")
+	public async getTimeslotsScheduleByServiceProvider(id: number): Promise<TimeslotsScheduleResponse> {
+		return  await this.timeslotItemsService.getTimeslotItemsByServiceProvider(id);
 	}
 }

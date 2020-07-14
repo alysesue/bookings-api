@@ -4,7 +4,6 @@ import { AvailabilityEntryResponse, TimeslotEntryResponse } from "./timeslots.ap
 import { TimeslotsService } from './timeslots.service';
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import { ServiceprovidersMapper } from "../serviceProviders/serviceProviders.mapper";
-import { map } from "lodash";
 
 @Route("v1/timeslots")
 @Tags('Timeslots')
