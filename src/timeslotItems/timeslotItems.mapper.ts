@@ -1,5 +1,5 @@
-import { TimeslotItem, TimeslotsSchedule } from "../models";
-import { TimeslotItemResponse, TimeslotsScheduleResponse } from "./timeslotItems.apicontract";
+import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from "../models";
+import { TimeslotItemRequest, TimeslotItemResponse, TimeslotsScheduleResponse } from "./timeslotItems.apicontract";
 
 
 const mapTimeslotItems = (data: TimeslotItem[]): TimeslotItemResponse[] => {
@@ -37,4 +37,11 @@ export const mapToTimeslotItemResponse = (data: TimeslotItem): TimeslotItemRespo
 	response.endTime = data._endTime.toString();
 
 	return response;
+};
+
+export const mapTimeslotItemToEntity = (request: TimeslotItemRequest, entity: TimeslotItem): TimeslotItem => {
+	entity._weekDay = request.weekDay;
+	entity._startTime = TimeOfDay.parse(request.startTime);
+	entity._endTime = TimeOfDay.parse(request.endTime);
+	return entity;
 };
