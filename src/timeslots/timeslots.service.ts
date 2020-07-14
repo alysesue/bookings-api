@@ -75,17 +75,16 @@ export class TimeslotsService {
 		const aggregator = new TimeslotAggregator<ServiceProvider>();
 
 		const service = await this.servicesRepository.getServiceWithTimeslotsSchedule(serviceId);
-		const timeslotsSchedule = service?.timeslotsSchedule;
-		if (!timeslotsSchedule) {
+		if (!service) {
 			return aggregator.getEntries();
 		}
 
 		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({ serviceId, includeTimeslotsSchedule: true });
 
-		const validServiceTimeslots = Array.from(timeslotsSchedule.generateValidTimeslots({
+		const validServiceTimeslots = Array.from(service.timeslotsSchedule?.generateValidTimeslots({
 			startDatetime: minStartTime,
 			endDatetime: maxEndTime
-		}));
+		}) || []);
 
 		for (const provider of serviceProviders) {
 			if (provider.timeslotsSchedule) {

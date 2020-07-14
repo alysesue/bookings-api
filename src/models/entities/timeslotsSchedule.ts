@@ -34,6 +34,17 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 		return instance;
 	}
 
+	public intersectsAnyExceptThis(timeslotItem: TimeslotItem) {
+		for (const entry of this.timeslotItems || []) {
+			if (entry._id === timeslotItem._id)
+				continue;
+
+			if (entry.intersects(timeslotItem))
+				return true;
+		}
+		return false;
+	}
+
 	private static sortTimeslots(a: TimeslotItem, b: TimeslotItem) {
 		const compare = TimeOfDay.compare(a._startTime, b._startTime);
 		if (compare !== 0) {
@@ -50,7 +61,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 		const initialDate = DateHelper.getDateOnly(range.startDatetime);
 		const daysCount = 1 + Math.floor(DateHelper.DiffInDays(DateHelper.getDateOnly(range.endDatetime), initialDate));
 
-		const validWeekDays = groupByKey(this.timeslotItems, t => t._weekDay);
+		const validWeekDays = groupByKey(this.timeslotItems || [], t => t._weekDay);
 		for (const [, weekdayTimeslots] of validWeekDays) {
 			weekdayTimeslots.sort(TimeslotsSchedule.sortTimeslots);
 		}

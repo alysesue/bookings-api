@@ -69,9 +69,9 @@ describe("Bookings.Service", () => {
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = null;
 
-		expect(async () => await Container.get(BookingsService).save(bookingRequest, 1))
+		await expect(async () => await Container.get(BookingsService).save(bookingRequest, 1))
 			.rejects.toStrictEqual(
-				new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service provider 5 not found'));
+				new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage("Service provider '5' not found"));
 	});
 
 	it("should validate end date time", async () => {
