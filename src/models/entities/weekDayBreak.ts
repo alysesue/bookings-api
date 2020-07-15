@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TimeOfDay, Transformer as TimeTransformer } from '../timeOfDay';
 import { ISchedule, ITimeSpan } from '../interfaces';
 import { Weekday } from '../../enums/weekday';

@@ -30,8 +30,7 @@ const MockServicesRepository = jest.fn().mockImplementation(() => ({
 	save
 }));
 
-const serviceProvider = new ServiceProvider();
-const getServiceProvider = jest.fn().mockImplementation(() => Promise.resolve(serviceProvider));
+const getServiceProvider = jest.fn();
 const MockServiceProvidersRepository = jest.fn().mockImplementation(() => ({
 	getServiceProvider
 }));
@@ -63,6 +62,9 @@ describe('TimeslotsSchedule template services ', () => {
 	serviceMockWithTemplate.timeslotsScheduleId = timeslotsScheduleMock._id;
 	serviceMockWithTemplate.timeslotsSchedule = timeslotsScheduleMock;
 
+	const serviceProviderMock = new ServiceProvider();
+
+
 	it('should get timeslots schedule', async () => {
 		getServiceWithTimeslotsSchedule.mockImplementation(() => Promise.resolve(serviceMockWithTemplate));
 		const timeslotItemsService = Container.get(TimeslotItemsService);
@@ -71,32 +73,27 @@ describe('TimeslotsSchedule template services ', () => {
 	});
 
 	it('should get service provider timeslots schedule', async () => {
+		getServiceProvider.mockImplementation(() => Promise.resolve(serviceProviderMock));
+		getService.mockImplementation(() => Promise.resolve(serviceMock));
+
 		const timeslotItemsService = Container.get(TimeslotItemsService);
-		const result = await timeslotItemsService.getTimeslotItemsByServiceProvider(1);
-		expect(result.timeslots).toEqual([
-			{
-				"endTime": "11:30",
-				"startTime": "11:00",
-				"weekDay": 1
-			}
-		]);
-		expect(getTimeslotsScheduleById).toBeCalledWith(serviceProvider.timeslotsScheduleId);
+
+		await timeslotItemsService.getTimeslotItemsByServiceProviderId(1);
+
+		expect(getTimeslotsScheduleById).toBeCalledWith(serviceProviderMock.timeslotsScheduleId);
 	});
 
 	it('should get service timeslots schedule where service provider does not have one', async () => {
-		serviceProvider.timeslotsScheduleId = null;
-		getServiceProvider.mockImplementation(() => Promise.resolve(serviceProvider));
+		serviceProviderMock.timeslotsScheduleId = null;
+		getServiceProvider.mockImplementation(() => Promise.resolve(serviceProviderMock));
+		getService.mockImplementation(() => Promise.resolve(serviceMock));
+
 		const timeslotItemsService = Container.get(TimeslotItemsService);
-		const result = await timeslotItemsService.getTimeslotItemsByServiceProvider(1);
-		expect(result.timeslots).toEqual([
-			{
-				"endTime": "11:30",
-				"startTime": "11:00",
-				"weekDay": 1
-			}
-		]);
+
+		await timeslotItemsService.getTimeslotItemsByServiceProviderId(1);
+
 		expect(getTimeslotsScheduleById).toBeCalledWith(serviceMock.timeslotsScheduleId);
-		expect(getTimeslotsScheduleById).not.toHaveBeenCalledWith(serviceProvider.timeslotsScheduleId);
+		expect(getTimeslotsScheduleById).not.toHaveBeenCalledWith(serviceProviderMock.timeslotsScheduleId);
 	});
 
 	it('should create timeslots item', async () => {

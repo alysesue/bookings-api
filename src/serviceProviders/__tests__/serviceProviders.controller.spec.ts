@@ -86,9 +86,9 @@ describe("ServiceProviders.Controller", () => {
 	});
 
 	it('should get provider timeslot schedule', async () => {
-		TimeslotItemsMock.getTimeslotItemsByServiceProvider.mockReturnValue(Promise.resolve(new TimeslotsSchedule()));
+		TimeslotItemsMock.getTimeslotItemsByServiceProviderId.mockReturnValue(Promise.resolve(new TimeslotsSchedule()));
 		await Container.get(ServiceProvidersController).getTimeslotsScheduleByServiceProvider(1);
-		expect(TimeslotItemsMock.getTimeslotItemsByServiceProvider).toBeCalledTimes(1);
+		expect(TimeslotItemsMock.getTimeslotItemsByServiceProviderId).toBeCalledTimes(1);
 	});
 
 });
@@ -135,11 +135,11 @@ class CalendarsServiceMock extends CalendarsService {
 }
 
 const TimeslotItemsMock = {
-	getTimeslotItemsByServiceProvider: jest.fn(),
+	getTimeslotItemsByServiceProviderId: jest.fn(),
 };
 
 class TimeslotItemsServiceMock extends TimeslotItemsService {
-	public async getTimeslotItemsByServiceProvider(...params): Promise<TimeslotsScheduleResponse> {
-			return TimeslotItemsMock.getTimeslotItemsByServiceProvider(...params);
+	public async getTimeslotItemsByServiceProviderId(...params): Promise<TimeslotsScheduleResponse> {
+			return TimeslotItemsMock.getTimeslotItemsByServiceProviderId(...params);
 	}
 }

@@ -1,5 +1,5 @@
 import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
-import { Inject, InRequestScope, Scope, Scoped } from "typescript-ioc";
+import { Inject, InRequestScope } from "typescript-ioc";
 import { Schedule, Service, TimeslotsSchedule } from "../models";
 import { ServicesRepository } from "./services.repository";
 import { ServiceRequest, SetScheduleRequest } from "./service.apicontract";

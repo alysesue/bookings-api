@@ -86,6 +86,6 @@ export class ServiceProvidersController extends Controller {
 	@Get("{id}/timeslotSchedule")
 	@SuccessResponse(200, "Ok")
 	public async getTimeslotsScheduleByServiceProvider(id: number): Promise<TimeslotsScheduleResponse> {
-		return  await this.timeslotItemsService.getTimeslotItemsByServiceProvider(id);
+		return await this.timeslotItemsService.getTimeslotItemsByServiceProviderId(id);
 	}
 }
