@@ -4,14 +4,12 @@ import { ServiceProvidersController } from "../serviceProviders.controller";
 import { ServiceProvidersService } from "../serviceProviders.service";
 import { ServiceProviderModel, SetProviderScheduleRequest } from "../serviceProviders.apicontract";
 import { CalendarsService } from "../../calendars/calendars.service";
-import { TimeslotItemsService } from "../../timeslotItems/timeslotItems.service";
 import { TimeslotsScheduleResponse } from "../../timeslotItems/timeslotItems.apicontract";
 
 describe("ServiceProviders.Controller", () => {
 	beforeAll(() => {
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
-		Container.bind(TimeslotItemsService).to(TimeslotItemsServiceMock);
 	});
 
 	beforeEach(() => {
@@ -122,6 +120,10 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 	public async getProviderSchedule(...params): Promise<Schedule> {
 		return ServiceProvidersMock.getProviderSchedule(...params);
 	}
+
+	public async getTimeslotItemsByServiceProviderId(...params): Promise<TimeslotsScheduleResponse> {
+		return TimeslotItemsMock.getTimeslotItemsByServiceProviderId(...params);
+	}
 }
 
 const CalendarsSvcMock = {
@@ -137,9 +139,3 @@ class CalendarsServiceMock extends CalendarsService {
 const TimeslotItemsMock = {
 	getTimeslotItemsByServiceProviderId: jest.fn(),
 };
-
-class TimeslotItemsServiceMock extends TimeslotItemsService {
-	public async getTimeslotItemsByServiceProviderId(...params): Promise<TimeslotsScheduleResponse> {
-			return TimeslotItemsMock.getTimeslotItemsByServiceProviderId(...params);
-	}
-}
