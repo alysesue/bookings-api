@@ -1,6 +1,6 @@
 import { DbConnection } from '../../core/db.connection';
 import { Container } from 'typescript-ioc';
-import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { TimeOfDay, TimeslotItem } from '../../models';
 import { TimeslotItemsRepository } from '../timeslotItems.repository';
 
 beforeEach(() => {
@@ -17,6 +17,12 @@ describe('TimeslotItems repository', () => {
 		expect(GetRepositoryMock).toBeCalled();
 		expect(InnerRepositoryMock.save).toBeCalledTimes(1);
 	});
+
+	it('should delete timeslot', async () => {
+		const repository = Container.get(TimeslotItemsRepository);
+		await repository.deleteTimeslotItem(1);
+		expect(InnerRepositoryMock.delete).toBeCalledTimes(1);
+	});
 });
 
 const timeslotItemMock = TimeslotItem.create(1, 1, TimeOfDay.create({ hours: 8, minutes: 0 }), TimeOfDay.create({ hours: 9, minutes: 0 }));
@@ -28,6 +34,9 @@ export const InnerRepositoryMock = {
 	find: jest.fn().mockImplementation((...params) => {
 		return Promise.resolve([timeslotItemMock]);
 	}),
+	delete: jest.fn().mockImplementationOnce((...id) => {
+		return Promise.resolve([timeslotItemMock])
+})
 };
 
 

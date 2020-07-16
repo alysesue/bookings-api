@@ -17,8 +17,10 @@ const MockTimeslotsScheduleRepository = jest.fn().mockImplementation(() => ({
 }));
 
 const saveTimeslotItem = jest.fn().mockImplementation((item) => Promise.resolve(item));
+const deleteTimeslotItem = jest.fn();
 const MockTimeslotItemsRepository = jest.fn().mockImplementation(() => ({
-	saveTimeslotItem
+	saveTimeslotItem,
+	deleteTimeslotItem
 }));
 
 const getServiceWithTimeslotsSchedule = jest.fn();
@@ -221,5 +223,11 @@ describe('TimeslotsSchedule template services ', () => {
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		expect(async () => await timeslotItemsService.getTimeslotItemsByServiceId(3))
 			.rejects.toThrowError();
+	});
+
+	it('should delete timeslot item', async () => {
+		const timeslotItemsService = Container.get(TimeslotItemsService);
+		await timeslotItemsService.deleteTimeslot(1);
+		expect(deleteTimeslotItem).toBeCalledTimes(1);
 	});
 });
