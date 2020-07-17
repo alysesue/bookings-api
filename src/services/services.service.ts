@@ -4,6 +4,9 @@ import { Schedule, Service, TimeslotsSchedule } from "../models";
 import { ServicesRepository } from "./services.repository";
 import { ServiceRequest, SetScheduleRequest } from "./service.apicontract";
 import { SchedulesService } from '../schedules/schedules.service';
+import { mapToTimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.mapper";
+import { TimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.apicontract";
+import { TimeslotsScheduleRepository } from "../timeslotItems/timeslotsSchedule.repository";
 
 @InRequestScope
 export class ServicesService {
@@ -14,13 +17,15 @@ export class ServicesService {
 	@Inject
 	private schedulesService: SchedulesService;
 
+	@Inject
+	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
+
 	public async createService(request: ServiceRequest): Promise<Service> {
 		const service = new Service();
 		service.name = request.name;
 
 		return await this.servicesRepository.save(service);
 	}
-
 
 	public async setServiceSchedule(id: number, model: SetScheduleRequest): Promise<Schedule> {
 		const service = await this.servicesRepository.getService(id);
@@ -57,6 +62,11 @@ export class ServicesService {
 		}
 
 		return schedule;
+	}
+
+	public async getServiceTimeslotsSchedule(id: number): Promise<TimeslotsScheduleResponse> {
+		const service = await this.getService(id);
+		return mapToTimeslotsScheduleResponse(await this.timeslotsScheduleRepository.getTimeslotsScheduleById(service.timeslotsScheduleId));
 	}
 
 	public async getServices(): Promise<Service[]> {

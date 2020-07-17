@@ -29,7 +29,7 @@ describe("ServiceProviders.Service", () => {
 
 	it("should get service provider by Id", async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
-		const result = await Container.get(ServiceProvidersService).getServiceProvider(1);
+		const result = await Container.get(ServiceProvidersService).getServiceProvider(1, true, true);
 		expect(result.name).toBe("Service provider");
 	});
 

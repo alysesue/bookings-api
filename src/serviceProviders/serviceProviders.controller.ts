@@ -63,7 +63,7 @@ export class ServiceProvidersController extends Controller {
 
 	@Get("{spId}")
 	public async getServiceProvider(@Path() spId: number): Promise<ServiceProviderResponseModel> {
-		const dataModel = await this.serviceProvidersService.getServiceProvider(spId);
+		const dataModel = await this.serviceProvidersService.getServiceProvider(spId, true, true);
 		return this.mapper.mapDataModel(dataModel);
 	}
 
