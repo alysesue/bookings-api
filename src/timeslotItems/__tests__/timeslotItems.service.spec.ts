@@ -8,11 +8,8 @@ import { TimeslotItemsRepository } from "../timeslotItems.repository";
 import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
 import { Weekday } from "../../enums/weekday";
 
-
-const getTimeslotsScheduleById = jest.fn();
 const createTimeslotsSchedule = jest.fn();
 const MockTimeslotsScheduleRepository = jest.fn().mockImplementation(() => ({
-	getTimeslotsScheduleById,
 	createTimeslotsSchedule,
 }));
 
@@ -38,6 +35,7 @@ describe('TimeslotsSchedule template services ', () => {
 		Container.bind(TimeslotItemsRepository).to(MockTimeslotItemsRepository);
 		Container.bind(ServicesRepository).to(MockServicesRepository);
 	});
+
 	afterEach(() => {
 		jest.clearAllMocks();
 	});

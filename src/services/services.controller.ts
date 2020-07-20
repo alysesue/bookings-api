@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Header, Path, Post, Put, Route, Security, SuccessResponse, Tags } from "tsoa";
+import { Body, Controller, Delete, Get, Path, Post, Put, Route, SuccessResponse, Tags } from "tsoa";
 import { ServiceRequest, ServiceResponse, SetScheduleRequest } from "./service.apicontract";
 import { Inject } from "typescript-ioc";
 import { ServicesService } from "./services.service";

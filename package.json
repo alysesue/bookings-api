@@ -5,7 +5,7 @@
 	"scripts": {
 		"lint": "tslint -p ./tsconfig.json -c ./tslint.json ./src/**/*.ts",
 		"test": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
-		"atest": "npm run fixLF && node ./node_modules/jest/bin/jest.js a --collect-coverage",
+		"atest": "npm run fixLF && node ./node_modules/jest/bin/jest.js",
 		"test:func": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-functional.sh",
 		"test:func-local": "npm run fixLF && npm run test:func local",
 		"build": "npm run fixLF && ./scripts/build.sh",

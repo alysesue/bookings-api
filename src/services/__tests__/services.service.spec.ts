@@ -1,9 +1,10 @@
 import { ServicesService } from "../services.service";
 import { Container, Snapshot } from 'typescript-ioc';
 import { ServiceRequest, SetScheduleRequest } from "../service.apicontract";
-import { Schedule, Service, TimeslotsSchedule } from "../../models";
+import {Schedule, Service, TimeslotsSchedule} from "../../models";
 import { ServicesRepository } from "../services.repository";
 import { SchedulesService } from "../../schedules/schedules.service";
+import {TimeslotsScheduleRepository} from "../../timeslotItems/timeslotsSchedule.repository";
 
 let snapshot: Snapshot;
 beforeAll(() => {
@@ -14,6 +15,7 @@ beforeAll(() => {
 beforeEach(() => {
 	Container.bind(ServicesRepository).to(ServicesRepositoryMockClass);
 	Container.bind(SchedulesService).to(SchedulesServiceMockClass);
+	Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 });
 
 afterEach(() => {
@@ -120,6 +122,21 @@ describe('Services service tests', () => {
 		expect(newService.timeslotsSchedule).toBe(timeslotsSchedule);
 		expect(ServicesRepoMock.save).toBeCalled();
 	});
+
+	it('should get service timeslot schedule', async () => {
+		const newService = new Service();
+		const newTimeslotsSchedule = new TimeslotsSchedule();
+		newTimeslotsSchedule._id = 1;
+		newService.timeslotsScheduleId = 1;
+		newService.timeslotsSchedule = newTimeslotsSchedule;
+		ServicesRepoMock.get.mockImplementation(() => Promise.resolve(newService));
+		SchedulesServiceMock.getSchedule.mockImplementation(() => Promise.resolve(new Schedule()));
+
+		const timeslotsSchedule = await Container.get(ServicesService).getServiceTimeslotsSchedule(1);
+
+		expect(timeslotsSchedule).toBeDefined();
+		expect(TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock).toBeCalledWith(1);
+	});
 });
 
 const ServicesRepoMock = {
@@ -149,5 +166,13 @@ const SchedulesServiceMock = {
 class SchedulesServiceMockClass extends SchedulesService {
 	public async getSchedule(id: number): Promise<Schedule> {
 		return SchedulesServiceMock.getSchedule(id);
+	}
+}
+
+class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
+	public static getTimeslotsScheduleByIdMock = jest.fn();
+
+	public async getTimeslotsScheduleById(id: number): Promise<TimeslotsSchedule> {
+		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock(id);
 	}
 }

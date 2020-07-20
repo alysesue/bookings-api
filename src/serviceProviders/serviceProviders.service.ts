@@ -7,6 +7,11 @@ import { ServiceProviderModel, SetProviderScheduleRequest } from "./serviceProvi
 import { CalendarsService } from "../calendars/calendars.service";
 import { API_TIMEOUT_PERIOD } from "../const";
 import { SchedulesService } from '../schedules/schedules.service';
+import { TimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.apicontract";
+import { mapToTimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.mapper";
+import { TimeslotsScheduleRepository } from "../timeslotItems/timeslotsSchedule.repository";
+import { ServicesRepository } from "../services/services.repository";
+import { ServicesService } from "../services/services.service";
 
 @InRequestScope
 export class ServiceProvidersService {
@@ -20,12 +25,21 @@ export class ServiceProvidersService {
 	@Inject
 	private schedulesService: SchedulesService;
 
+	@Inject
+	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
+
+	@Inject
+	private servicesRepository: ServicesRepository;
+
+	@Inject
+	private servicesService: ServicesService;
+
 	public async getServiceProviders(serviceId?: number): Promise<ServiceProvider[]> {
 		return await this.serviceProvidersRepository.getServiceProviders({ serviceId });
 	}
 
-	public async getServiceProvider(id: number): Promise<ServiceProvider> {
-		const sp = await this.serviceProvidersRepository.getServiceProvider({ id });
+	public async getServiceProvider(id: number, includeSchedule: boolean, includeTimeslotsSchedule: boolean): Promise<ServiceProvider> {
+		const sp = await this.serviceProvidersRepository.getServiceProvider({id, includeSchedule, includeTimeslotsSchedule});
 		if (!sp) {
 			throw new Error(`Service provider ${sp} is not found`);
 		}
@@ -60,11 +74,12 @@ export class ServiceProvidersService {
 	}
 
 	private delay(ms) {
-		return new Promise((resolve, _reject) => setTimeout(resolve, ms));
+		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 
 	public async setProviderSchedule(id: number, model: SetProviderScheduleRequest): Promise<Schedule> {
-		const serviceProvider = await this.serviceProvidersRepository.getServiceProvider({ id });
+		const serviceProvider = await this.getServiceProvider(id, true, false);
+
 		if (!serviceProvider) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service Provider not found');
 		}
@@ -83,7 +98,7 @@ export class ServiceProvidersService {
 	}
 
 	public async getProviderSchedule(id: number): Promise<Schedule> {
-		const serviceProvider = await this.serviceProvidersRepository.getServiceProvider({ id, includeSchedule: true });
+		const serviceProvider = await this.getServiceProvider(id, true, false);
 		if (!serviceProvider) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service Provider not found');
 		}
@@ -93,5 +108,16 @@ export class ServiceProvidersService {
 		}
 
 		return serviceProvider.schedule;
+	}
+
+	public async getTimeslotItemsByServiceProviderId(id: number): Promise<TimeslotsScheduleResponse> {
+		const serviceProvider = await this.getServiceProvider(id, false, true);
+		if (!serviceProvider) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
+		}
+		if(!serviceProvider.timeslotsScheduleId) {
+			return await this.servicesService.getServiceTimeslotsSchedule(serviceProvider.serviceId);
+		}
+		return mapToTimeslotsScheduleResponse(serviceProvider.timeslotsSchedule);
 	}
 }
