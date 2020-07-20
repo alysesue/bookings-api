@@ -80,6 +80,10 @@ export class TimeslotItemsService {
 		return mapToTimeslotItemResponse(await this.timeslotItemsRepository.saveTimeslotItem(timeslotItem));
 	}
 
+	public async deleteTimeslot(timeslotId: number) {
+		await this.timeslotItemsRepository.deleteTimeslotItem(timeslotId);
+	}
+
 	private async createTimeslotsSchedule(serviceId: number): Promise<TimeslotsSchedule> {
 		const timeslotsScheduleData = new TimeslotsSchedule();
 		timeslotsScheduleData._service = serviceId;
@@ -90,5 +94,4 @@ export class TimeslotItemsService {
 
 		return timeslotsSchedule;
 	}
-
 }

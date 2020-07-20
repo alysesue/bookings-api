@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Path, Post, Put, Route, SuccessResponse, Tags } from "tsoa";
+import { Body, Controller, Delete, Get, Path, Post, Put, Route, SuccessResponse, Tags } from "tsoa";
 import { ServiceRequest, ServiceResponse, SetScheduleRequest } from "./service.apicontract";
 import { Inject } from "typescript-ioc";
 import { ServicesService } from "./services.service";
@@ -63,13 +63,19 @@ export class ServicesController extends Controller {
 		return await this.timeslotItemsService.getTimeslotItemsByServiceId(serviceId);
 	}
 
-	@Post("{serviceId}/timeslotSchedule/timeslot")
+	@Post("{serviceId}/timeslotSchedule/timeslots")
 	@SuccessResponse(201, "Created")
 	public async createTimeslotItem(@Path() serviceId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
 		return await this.timeslotItemsService.createTimeslotItem(serviceId, request);
 	}
 
-	@Put("{serviceId}/timeslotSchedule/timeslot/{timeslotId}")
+	@Delete("{serviceId}/timeslotSchedule/timeslots/{timeslotId}")
+	@SuccessResponse(204, "No Content")
+	public async deleteTimeslotItem(@Path() serviceId: number, @Path() timeslotId: number) {
+		await this.timeslotItemsService.deleteTimeslot(timeslotId);
+	}
+
+	@Put("{serviceId}/timeslotSchedule/timeslots/{timeslotId}")
 	@SuccessResponse(200, "Ok")
 	public async updateTimeslotItem(@Path() serviceId: number, @Path() timeslotId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
 		return await this.timeslotItemsService.updateTimeslotItem({ serviceId, timeslotId, request });
