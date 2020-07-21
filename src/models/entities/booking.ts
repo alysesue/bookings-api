@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { BookingStatus } from "../bookingStatus";
 import { ServiceProvider } from './serviceProvider';
 import { Service } from "./service";

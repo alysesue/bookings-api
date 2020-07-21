@@ -15,4 +15,9 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotItem> {
 		const repository = await this.getRepository();
 		return await repository.save(data);
 	}
+
+	public async deleteTimeslotItem(id: number) {
+		const repository = await this.getRepository();
+		await repository.delete(id);
+	}
 }
