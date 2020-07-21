@@ -97,6 +97,13 @@ describe("ServiceProviders.Service", () => {
 		expect(TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock).toBeCalledWith(serviceMock.timeslotsScheduleId);
 		expect(TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock).not.toHaveBeenCalledWith(serviceProviderMock.timeslotsScheduleId);
 	});
+
+	it('should set provider  timeslots schedule ', async () => {
+		const newSP = new ServiceProvider();
+		ServiceProvidersRepositoryMock.getServiceProviderMock = newSP;
+		await Container.get(ServiceProvidersService).setServiceTimeslotsSchedule(1, 2);
+		expect(newSP.timeslotsScheduleId).toBe(2);
+	});
 });
 
 const serviceProviderMock = new ServiceProvider();

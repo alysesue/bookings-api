@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { TimeslotsScheduleRepository } from "./timeslotsSchedule.repository";
 import { mapTimeslotItemToEntity, mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from './timeslotItems.mapper';
@@ -8,6 +9,7 @@ import { TimeslotItemsRepository } from './timeslotItems.repository';
 import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../models';
 import { ServicesService } from '../services/services.service';
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
+import { ServiceProvidersService } from "../serviceProviders/serviceProviders.service";
 
 @InRequestScope
 export class TimeslotItemsService {
@@ -21,7 +23,13 @@ export class TimeslotItemsService {
 	private serviceProvidersRepository: ServiceProvidersRepository;
 
 	@Inject
+	private servicesProvidersRepository: ServiceProvidersRepository;
+
+	@Inject
 	private servicesService: ServicesService;
+
+	@Inject
+	private serviceProvidersService: ServiceProvidersService;
 
 	private async getServiceTimeslotsSchedule(id: number): Promise<TimeslotsSchedule> {
 		const service = await this.servicesRepository.getServiceWithTimeslotsSchedule(id);
@@ -32,8 +40,26 @@ export class TimeslotItemsService {
 		return service.timeslotsSchedule;
 	}
 
+	private async getServiceProviderTimeslotsSchedule(id: number): Promise<TimeslotsSchedule> {
+		if (!id) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service Provider Id should not be empty');
+		}
+
+		const serviceProvider = await this.servicesProvidersRepository.getServiceProvider({id, includeTimeslotsSchedule: true});
+		if (!serviceProvider) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
+		}
+
+		return serviceProvider.timeslotsSchedule;
+	}
+
 	public async getTimeslotItemsByServiceId(id: number): Promise<TimeslotsScheduleResponse> {
 		const timeslotsSchedule = await this.getServiceTimeslotsSchedule(id);
+		return mapToTimeslotsScheduleResponse(timeslotsSchedule);
+	}
+
+	public async getTimeslotItemsByServiceProviderId(id: number): Promise<TimeslotsScheduleResponse> {
+		const timeslotsSchedule = await this.getServiceProviderTimeslotsSchedule(id);
 		return mapToTimeslotsScheduleResponse(timeslotsSchedule);
 	}
 
@@ -66,6 +92,17 @@ export class TimeslotItemsService {
 		return mapToTimeslotItemResponse(await this.timeslotItemsRepository.saveTimeslotItem(item));
 	}
 
+	public async createTimeslotItemForServiceProvider(serviceProviderId: number, request: TimeslotItemRequest): Promise<TimeslotItemsResponse> {
+		let timeslotsSchedule = await this.getServiceProviderTimeslotsSchedule(serviceProviderId);
+		if (!timeslotsSchedule) {
+			timeslotsSchedule = await this.createTimeslotsScheduleForServiceProvider(serviceProviderId);
+			const serviceProvider = await this.serviceProvidersService.getServiceProvider(serviceProviderId);
+			timeslotsSchedule.timeslotItems = await this.copyTimeslotScheduleServiceToServiceProvider(serviceProvider.serviceId, timeslotsSchedule);
+		}
+		const item = this.mapItemAndValidate(timeslotsSchedule, request, new TimeslotItem());
+		return mapToTimeslotItemResponse(await this.timeslotItemsRepository.saveTimeslotItem(item));
+	}
+
 	public async updateTimeslotItem({ serviceId, timeslotId, request }:
 		{ serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
 		: Promise<TimeslotItemsResponse> {
@@ -80,6 +117,16 @@ export class TimeslotItemsService {
 		return mapToTimeslotItemResponse(await this.timeslotItemsRepository.saveTimeslotItem(timeslotItem));
 	}
 
+	private async copyTimeslotScheduleServiceToServiceProvider(serviceId: number, timeslotsSchedule: TimeslotsSchedule):Promise<TimeslotItem[]>{
+		const timeslotsScheduleService = await this.getServiceTimeslotsSchedule(serviceId);
+		const timeslotsScheduleServiceClone = _.cloneDeep(timeslotsScheduleService);
+		timeslotsScheduleServiceClone.timeslotItems.forEach(e=> {
+			delete e._id;
+			e._timeslotsSchedule = timeslotsSchedule;
+		});
+		return await this.timeslotItemsRepository.saveTimeslotItems(timeslotsScheduleServiceClone.timeslotItems);
+	}
+
 	public async deleteTimeslot(timeslotId: number) {
 		await this.timeslotItemsRepository.deleteTimeslotItem(timeslotId);
 	}
@@ -90,6 +137,17 @@ export class TimeslotItemsService {
 		const timeslotsSchedule = await this.timeslotsScheduleRepository.createTimeslotsSchedule(timeslotsScheduleData);
 		if (timeslotsSchedule._id) {
 			await this.servicesService.setServiceTimeslotsSchedule(serviceId, timeslotsSchedule._id);
+		}
+
+		return timeslotsSchedule;
+	}
+
+	private async createTimeslotsScheduleForServiceProvider(serviceProviderId: number): Promise<TimeslotsSchedule> {
+		const timeslotsScheduleData = new TimeslotsSchedule();
+		timeslotsScheduleData._serviceProvider = serviceProviderId;
+		const timeslotsSchedule = await this.timeslotsScheduleRepository.createTimeslotsSchedule(timeslotsScheduleData);
+		if (timeslotsSchedule._id) {
+			await this.serviceProvidersService.setServiceTimeslotsSchedule(serviceProviderId, timeslotsSchedule._id);
 		}
 
 		return timeslotsSchedule;

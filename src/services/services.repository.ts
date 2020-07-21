@@ -24,7 +24,7 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		return this.scheduleRepository.populateSingleEntrySchedule(entry);
 	}
 
-	public async getServiceWithTimeslotsSchedule(id: number): Promise<Service> {
+	public async getServiceWithTimeslotsSchedule(id: number, spId?: number): Promise<Service> {
 		const entry = await this.getService(id);
 		entry.timeslotsSchedule = await this.timeslotsScheduleRepository.getTimeslotsScheduleById(entry.timeslotsScheduleId);
 		return entry;

@@ -7,7 +7,12 @@ import { parseCsv } from "../utils";
 import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
 import { ScheduleResponse } from "../schedules/schedules.apicontract";
 import { ServiceprovidersMapper } from "./serviceProviders.mapper";
-import { TimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.apicontract";
+import {
+	TimeslotItemRequest,
+	TimeslotItemResponse,
+	TimeslotsScheduleResponse
+} from "../timeslotItems/timeslotItems.apicontract";
+import { TimeslotItemsService } from "../timeslotItems/timeslotItems.service";
 
 @InRequestScope
 @Route("v1/service-providers")
@@ -19,6 +24,9 @@ export class ServiceProvidersController extends Controller {
 
 	@Inject
 	private mapper: ServiceprovidersMapper;
+
+	@Inject
+	private timeslotItemsService: TimeslotItemsService;
 
 	// TODO: write test for this one
 	private static parseCsvModelToServiceProviders(csvModels: []) {
@@ -67,21 +75,30 @@ export class ServiceProvidersController extends Controller {
 		return this.mapper.mapDataModel(dataModel);
 	}
 
+	// TODO: Remove this api call
 	@Put('{id}/schedule')
 	@SuccessResponse(200, "Ok")
 	public async setServiceSchedule(@Path() id: number, @Body() request: SetProviderScheduleRequest): Promise<ScheduleResponse> {
 		return mapScheduleToResponse(await this.serviceProvidersService.setProviderSchedule(id, request));
 	}
 
+	// TODO: Remove this api call
 	@Get('{id}/schedule')
 	@SuccessResponse(200, "Ok")
 	public async getServiceSchedule(@Path() id: number): Promise<ScheduleResponse> {
 		return mapScheduleToResponse(await this.serviceProvidersService.getProviderSchedule(id));
 	}
 
-	@Get("{id}/timeslotSchedule")
+	@Get("{spId}/timeslotSchedule")
 	@SuccessResponse(200, "Ok")
-	public async getTimeslotsScheduleByServiceProvider(id: number): Promise<TimeslotsScheduleResponse> {
-		return await this.serviceProvidersService.getTimeslotItemsByServiceProviderId(id);
+	public async getTimeslotsScheduleByServiceProviderId(spId: number): Promise<TimeslotsScheduleResponse> {
+		return await this.timeslotItemsService.getTimeslotItemsByServiceProviderId(spId);
 	}
+
+	@Post("{spId}/timeslotSchedule/timeslot")
+	@SuccessResponse(201, "Created")
+	public async createTimeslotItem(@Path() spId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
+		return await this.timeslotItemsService.createTimeslotItemForServiceProvider(spId, request);
+	}
+
 }
