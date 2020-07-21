@@ -2,7 +2,7 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { Service } from "../models";
 import { RepositoryBase } from "../core/repository";
 import { SchedulesRepository } from '../schedules/schedules.repository';
-import { TimeslotsScheduleRepository } from '../timeslotItems/timeslotsSchedule.repository';
+import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
 
 @InRequestScope
 export class ServicesRepository extends RepositoryBase<Service> {
@@ -24,7 +24,7 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		return this.scheduleRepository.populateSingleEntrySchedule(entry);
 	}
 
-	public async getServiceWithTimeslotsSchedule(id: number, spId?: number): Promise<Service> {
+	public async getServiceWithTimeslotsSchedule(id: number): Promise<Service> {
 		const entry = await this.getService(id);
 		entry.timeslotsSchedule = await this.timeslotsScheduleRepository.getTimeslotsScheduleById(entry.timeslotsScheduleId);
 		return entry;

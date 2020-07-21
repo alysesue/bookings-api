@@ -2,6 +2,7 @@ import { Inject, InRequestScope } from "typescript-ioc";
 import { ServiceProvider } from "../models";
 import { CalendarsMapper } from "../calendars/calendars.mapper";
 import { ServiceProviderResponseModel, ServiceProviderSummaryModel } from "./serviceProviders.apicontract";
+import { mapToTimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.mapper";
 
 @InRequestScope
 export class ServiceprovidersMapper {
@@ -10,7 +11,8 @@ export class ServiceprovidersMapper {
 
 	public mapDataModel(spData: ServiceProvider): ServiceProviderResponseModel {
 		const mappedCalendar = this.calendarsMapper.mapDataModel(spData.calendar);
-		return new ServiceProviderResponseModel(spData.id, spData.name, mappedCalendar, spData.serviceId);
+		const mappedTimeslotSchedule = mapToTimeslotsScheduleResponse(spData.timeslotsSchedule);
+		return new ServiceProviderResponseModel(spData.id, spData.name, mappedCalendar, spData.serviceId, mappedTimeslotSchedule);
 	}
 
 	public mapDataModels(spList: ServiceProvider[]): ServiceProviderResponseModel[] {

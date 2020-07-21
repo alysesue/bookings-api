@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from "typescript-ioc";
 import { ServiceProviderListRequest, ServiceProviderModel, ServiceProviderResponseModel, SetProviderScheduleRequest } from "./serviceProviders.apicontract";
 import { ServiceProvidersService } from "./serviceProviders.service";
-import { Body, Controller, Get, Header, Path, Post, Put, Route, Security, SuccessResponse, Tags } from "tsoa";
+import { Body, Controller, Delete, Get, Header, Path, Post, Put, Query, Route, Security, SuccessResponse, Tags } from "tsoa";
 import { ErrorResponse } from "../apicontract";
 import { parseCsv } from "../utils";
 import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
@@ -12,7 +12,7 @@ import {
 	TimeslotItemResponse,
 	TimeslotsScheduleResponse
 } from "../timeslotItems/timeslotItems.apicontract";
-import { TimeslotItemsService } from "../timeslotItems/timeslotItems.service";
+import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.mapper";
 
 @InRequestScope
 @Route("v1/service-providers")
@@ -24,9 +24,6 @@ export class ServiceProvidersController extends Controller {
 
 	@Inject
 	private mapper: ServiceprovidersMapper;
-
-	@Inject
-	private timeslotItemsService: TimeslotItemsService;
 
 	// TODO: write test for this one
 	private static parseCsvModelToServiceProviders(csvModels: []) {
@@ -64,9 +61,11 @@ export class ServiceProvidersController extends Controller {
 
 	@Get("")
 	@Security("optional-service")
-	public async getServiceProviders(@Header('x-api-service') serviceId?: number): Promise<ServiceProviderResponseModel[]> {
-		const dataModels = await this.serviceProvidersService.getServiceProviders(serviceId);
+
+	public async getServiceProviders(@Header('x-api-service') serviceId?: number, @Query() includeTimeslotsSchedule = false): Promise<ServiceProviderResponseModel[]> {
+		const dataModels = await this.serviceProvidersService.getServiceProviders(serviceId, undefined, includeTimeslotsSchedule);
 		return this.mapper.mapDataModels(dataModels);
+
 	}
 
 	@Get("{spId}")
@@ -91,14 +90,28 @@ export class ServiceProvidersController extends Controller {
 
 	@Get("{spId}/timeslotSchedule")
 	@SuccessResponse(200, "Ok")
-	public async getTimeslotsScheduleByServiceProviderId(spId: number): Promise<TimeslotsScheduleResponse> {
-		return await this.timeslotItemsService.getTimeslotItemsByServiceProviderId(spId);
+	public async getTimeslotsScheduleByServiceProviderId(@Path() spId: number): Promise<TimeslotsScheduleResponse> {
+		const data = await this.serviceProvidersService.getTimeslotItems(spId);
+		return mapToTimeslotsScheduleResponse(data);
 	}
 
-	@Post("{spId}/timeslotSchedule/timeslot")
+	@Post("{spId}/timeslotSchedule/timeslots")
 	@SuccessResponse(201, "Created")
 	public async createTimeslotItem(@Path() spId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
-		return await this.timeslotItemsService.createTimeslotItemForServiceProvider(spId, request);
+		const data = await this.serviceProvidersService.addTimeslotItem(spId, request);
+		return mapToTimeslotItemResponse(data);
 	}
 
+	@Put("{serviceProviderId}/timeslotSchedule/timeslots/{timeslotId}")
+	@SuccessResponse(200, "Ok")
+	public async updateTimeslotItem(@Path() serviceProviderId: number, @Path() timeslotId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
+		const data = await this.serviceProvidersService.updateTimeslotItem(serviceProviderId, timeslotId, request );
+		return mapToTimeslotItemResponse(data);
+	}
+
+	@Delete("{serviceProviderId}/timeslotSchedule/timeslots/{timeslotId}")
+	@SuccessResponse(204, "No Content")
+	public async deleteTimeslotItem(@Path() serviceProviderId: number, @Path() timeslotId: number) {
+		await this.serviceProvidersService.deleteTimeslotItem(serviceProviderId, timeslotId);
+	}
 }

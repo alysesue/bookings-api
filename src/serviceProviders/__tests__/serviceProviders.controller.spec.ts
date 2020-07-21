@@ -1,22 +1,32 @@
 import { Container } from "typescript-ioc";
-import { Calendar, Schedule, ServiceProvider, TimeslotsSchedule } from "../../models";
+import { Calendar, Schedule, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from "../../models";
 import { ServiceProvidersController } from "../serviceProviders.controller";
 import { ServiceProvidersService } from "../serviceProviders.service";
 import { ServiceProviderModel, SetProviderScheduleRequest } from "../serviceProviders.apicontract";
 import { CalendarsService } from "../../calendars/calendars.service";
-import { TimeslotItemsService } from "../../timeslotItems/timeslotItems.service";
-import {
-	TimeslotItemRequest,
-	TimeslotItemsResponse,
-	TimeslotsScheduleResponse
-} from "../../timeslotItems/timeslotItems.apicontract";
-import {ServicesController} from "../../services/services.controller";
+import { TimeslotItemRequest } from "../../timeslotItems/timeslotItems.apicontract";
 
 describe("ServiceProviders.Controller", () => {
+	const calendar = new Calendar();
+	const sp1 = ServiceProvider.create("Monica", calendar, 1);
+	const sp2 = ServiceProvider.create("Timmy", calendar, 1);
+
 	beforeAll(() => {
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
-		Container.bind(TimeslotItemsService).to(TimeslotItemsServiceMockClass);
+	});
+	const mockItem = new TimeslotItem();
+	const request = new TimeslotItemRequest();
+
+	beforeEach(()=>{
+		mockItem._id = 11;
+
+		mockItem._startTime = TimeOfDay.create({ hours: 8, minutes: 0 });
+		mockItem._endTime = TimeOfDay.create({ hours: 9, minutes: 0 });
+
+		request.weekDay = 4;
+		request.startTime = "08:00";
+		request.endTime = "09:00";
 	});
 
 	beforeEach(() => {
@@ -24,12 +34,24 @@ describe("ServiceProviders.Controller", () => {
 	});
 
 	it('should get service providers', async () => {
-		const calendar = new Calendar();
-		ServiceProvidersMock.getServiceProviders.mockReturnValue([ServiceProvider.create("Monica", calendar, 1), ServiceProvider.create("Timmy", calendar, 1)]);
 
+		ServiceProvidersMock.getServiceProviders.mockReturnValue([sp1, sp2]);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders();
 		expect(result.length).toBe(2);
+	});
+
+	it('should get service providers with timeslots', async () => {
+		const timeslots = new TimeslotsSchedule();
+		const timeslotItem = TimeslotItem.create(1,0,TimeOfDay.create({hours: 8, minutes: 0}), TimeOfDay.create({hours: 9, minutes: 0}));
+		timeslots.timeslotItems = [timeslotItem];
+		sp1.timeslotsSchedule = timeslots;
+		ServiceProvidersMock.getServiceProviders.mockReturnValue([sp1]);
+
+		const controller = Container.get(ServiceProvidersController);
+		const result = await controller.getServiceProviders(undefined, true);
+		expect(result.length).toBe(1);
+		expect(result[0].timeslotsSchedule.timeslots[0].weekDay).toBe(timeslotItem._weekDay);
 	});
 
 	it('should get a service provider', async () => {
@@ -75,11 +97,9 @@ describe("ServiceProviders.Controller", () => {
 
 	it('should set provider schedule', async () => {
 		ServiceProvidersMock.setProviderSchedule.mockReturnValue(Promise.resolve(new Schedule()));
-		const request = new SetProviderScheduleRequest();
-		request.scheduleId = 2;
-
-		await Container.get(ServiceProvidersController).setServiceSchedule(1, request);
-
+		const providerScheduleRequest = new SetProviderScheduleRequest();
+		providerScheduleRequest.scheduleId = 2;
+		await Container.get(ServiceProvidersController).setServiceSchedule(1, providerScheduleRequest);
 		expect(ServiceProvidersMock.setProviderSchedule).toBeCalled();
 	});
 
@@ -92,34 +112,35 @@ describe("ServiceProviders.Controller", () => {
 
 	it('should get provider timeslots schedule', async () => {
 		const mockItemId = 11;
-		const mockResult = new TimeslotsScheduleResponse();
-		const mockItem = new TimeslotItemsResponse();
-		mockItem.id = mockItemId;
-		mockResult.timeslots = [mockItem];
-		TimeslotItemsServiceMock.getTimeslotItemsByServiceProviderId.mockReturnValue(mockResult);
+		const mockResult = new TimeslotsSchedule();
+		mockItem._id = mockItemId;
+		mockResult.timeslotItems = [mockItem];
+		ServiceProvidersMock.getTimeslotItemsByServiceProviderId.mockReturnValue(mockResult);
 		const response = await Container.get(ServiceProvidersController).getTimeslotsScheduleByServiceProviderId(1);
 		expect(response.timeslots.length).toEqual(1);
 		expect(response.timeslots[0].id).toEqual(mockItemId);
 	});
 
 	it('should set provider schedule timeslots', async () => {
-		const mockItem = new TimeslotItemsResponse();
-		mockItem.id = 11;
-		mockItem.startTime = "08:00";
-		TimeslotItemsServiceMock.createTimeslotItemForServiceProvider.mockReturnValue(mockItem);
+		ServiceProvidersMock.createTimeslotItemForServiceProvider.mockReturnValue(mockItem);
 
-		const request = new TimeslotItemRequest();
-		request.weekDay = 4;
-		request.startTime = "08:00";
-		request.endTime = "09:00";
 		const response = await Container.get(ServiceProvidersController).createTimeslotItem(1, request);
 		expect(response).toBeDefined();
 		expect(response.startTime).toEqual("08:00");
 	});
-	it('should get provider timeslot schedule', async () => {
-		TimeslotItemsMock.getTimeslotItemsByServiceProviderId.mockReturnValue(Promise.resolve(new TimeslotsSchedule()));
-		await Container.get(ServiceProvidersController).getTimeslotsScheduleByServiceProvider(1);
-		expect(TimeslotItemsMock.getTimeslotItemsByServiceProviderId).toBeCalledTimes(1);
+
+	it('should update provider schedule timeslots', async () => {
+		ServiceProvidersMock.updateTimeslotItemForServiceProvider.mockReturnValue(mockItem);
+		const response = await Container.get(ServiceProvidersController).updateTimeslotItem(1, 1, request);
+		expect(ServiceProvidersMock.updateTimeslotItemForServiceProvider).toBeCalled();
+		expect(response.startTime).toEqual("08:00");
+	});
+
+	it('should call deleteTimeslotForServiceProvider', async () => {
+		ServiceProvidersMock.deleteTimeslotForServiceProvider.mockReturnValue(mockItem);
+		await Container.get(ServiceProvidersController).deleteTimeslotItem(1, 1);
+		expect(ServiceProvidersMock.deleteTimeslotForServiceProvider).toBeCalled();
+
 	});
 
 });
@@ -130,6 +151,10 @@ const ServiceProvidersMock = {
 	save: jest.fn(),
 	setProviderSchedule: jest.fn(),
 	getProviderSchedule: jest.fn(),
+	getTimeslotItemsByServiceProviderId: jest.fn(),
+	createTimeslotItemForServiceProvider: jest.fn(),
+	updateTimeslotItemForServiceProvider: jest.fn(),
+	deleteTimeslotForServiceProvider: jest.fn()
 };
 
 class ServiceProvidersServiceMock extends ServiceProvidersService {
@@ -154,8 +179,20 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 		return ServiceProvidersMock.getProviderSchedule(...params);
 	}
 
-	public async getTimeslotItemsByServiceProviderId(...params): Promise<TimeslotsScheduleResponse> {
-		return TimeslotItemsMock.getTimeslotItemsByServiceProviderId(...params);
+	public async getTimeslotItems(serviceProviderId: number): Promise<TimeslotsSchedule> {
+		return ServiceProvidersMock.getTimeslotItemsByServiceProviderId(serviceProviderId);
+	}
+
+	public async addTimeslotItem(serviceProviderId: number, timeslotsSchedule: TimeslotItemRequest): Promise<TimeslotItem> {
+		return ServiceProvidersMock.createTimeslotItemForServiceProvider(serviceProviderId, timeslotsSchedule);
+	}
+
+	public async updateTimeslotItem(serviceProviderId, timeslotId, request): Promise<TimeslotItem> {
+		return ServiceProvidersMock.updateTimeslotItemForServiceProvider(serviceProviderId, timeslotId, request);
+	}
+
+	public async deleteTimeslotItem(serviceProviderId: number, timeslotsScheduleId: number): Promise<void> {
+		return ServiceProvidersMock.deleteTimeslotForServiceProvider(serviceProviderId, timeslotsScheduleId);
 	}
 }
 
@@ -168,24 +205,3 @@ class CalendarsServiceMock extends CalendarsService {
 		return CalendarsSvcMock.createCalendar();
 	}
 }
-
-const TimeslotItemsServiceMock = {
-	getTimeslotItemsByServiceProviderId: jest.fn(),
-	createTimeslotItemForServiceProvider: jest.fn(),
-	createTimeslotItem: jest.fn(),
-	updateTimeslotItem: jest.fn()
-};
-
-class TimeslotItemsServiceMockClass extends TimeslotItemsService {
-	public async getTimeslotItemsByServiceProviderId(serviceProviderId: number): Promise<TimeslotsScheduleResponse> {
-		return TimeslotItemsServiceMock.getTimeslotItemsByServiceProviderId(serviceProviderId);
-	}
-
-	public async createTimeslotItemForServiceProvider(serviceProviderId: number, timeslotsScheduleId: TimeslotItemRequest): Promise<TimeslotItemsResponse> {
-		return TimeslotItemsServiceMock.createTimeslotItemForServiceProvider(serviceProviderId, timeslotsScheduleId);
-	}
-}
-
-const TimeslotItemsMock = {
-	getTimeslotItemsByServiceProviderId: jest.fn(),
-};
