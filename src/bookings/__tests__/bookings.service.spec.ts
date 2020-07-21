@@ -168,6 +168,23 @@ describe("Bookings.Service", () => {
 		expect(res).toBe("qmrljumfcqg1gur997fsjcnmto");
 
 	});
+
+	// TODO: add test
+	// it("should allow booking out of timeslots", async () => {
+	// 		const bookingRequest: BookingRequest = new BookingRequest();
+	// 		bookingRequest.startDateTime = new Date();
+	// 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 60);
+	// 		bookingRequest.serviceProviderId = 10;
+	// 		bookingRequest.outOfSlotBooking = true;
+	// 		BookingRepositoryMock.searchBookingsMock = [];
+	// 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+	//
+	// 		await Container.get(BookingsService).save(bookingRequest, 1);
+	//
+	// 		const booking = BookingRepositoryMock.booking;
+	// 		expect(booking).not.toBe(undefined);
+	// 		// expect(booking.status).toBe(BookingStatus.Accepted);
+	// 	});
 });
 
 class BookingRepositoryMock extends BookingsRepository {
@@ -217,7 +234,6 @@ class TimeslotsServiceMock extends TimeslotsService {
 		return timeslotEntry;
 	}
 }
-
 
 class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	public static getServiceProviderMock: ServiceProvider;

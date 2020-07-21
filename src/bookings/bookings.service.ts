@@ -56,11 +56,14 @@ export class BookingsService {
 		// Method calls with different services, or timeslots should still run in parallel.
 		const booking = await this.createBooking(bookingRequest, serviceId);
 
-		await this.validateTimeSlot(booking);
+		if(!bookingRequest.outOfSlotBooking) {
+			await this.validateTimeSlot(booking);
+		}
 
 		await this.bookingsRepository.save(booking);
 		return this.getBooking(booking.id);
 	}
+
 	public async cancelBooking(bookingId: number): Promise<Booking> {
 		const booking = await this.getBookingForCancelling(bookingId);
 		const eventCalId = booking.eventICalId;

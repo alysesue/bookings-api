@@ -31,10 +31,10 @@ export const InnerRepositoryMock = {
 	save: jest.fn().mockImplementation(() => {
 		return Promise.resolve(timeslotItemMock);
 	}),
-	find: jest.fn().mockImplementation((...params) => {
+	find: jest.fn().mockImplementation(() => {
 		return Promise.resolve([timeslotItemMock]);
 	}),
-	delete: jest.fn().mockImplementationOnce((...id) => {
+	delete: jest.fn().mockImplementationOnce(() => {
 		return Promise.resolve([timeslotItemMock])
 })
 };

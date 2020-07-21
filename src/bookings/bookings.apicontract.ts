@@ -1,5 +1,3 @@
-import { ServiceProviderResponse } from "../calendars/calendars.apicontract";
-
 export class BookingAcceptRequest {
 	public serviceProviderId: number;
 }
@@ -8,6 +6,7 @@ export class BookingRequest {
 	public startDateTime: Date;
 	public endDateTime: Date;
 	public serviceProviderId?: number;
+	public outOfSlotBooking?: boolean;
 }
 
 export class BookingResponse {
@@ -34,11 +33,6 @@ export class BookingSearchRequest {
 		this.from = from;
 		this.to = to;
 	}
-}
-
-export class BookingRequestResponse {
-	public booking: BookingResponse;
-	public serviceProviders: ServiceProviderResponse[];
 }
 
 export class BookingProviderResponse {

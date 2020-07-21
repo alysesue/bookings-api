@@ -54,6 +54,15 @@ export class BookingsController extends Controller {
 		return BookingsController.mapDataModel(booking);
 	}
 
+	// TODO: change name of api
+	@Post('outofslot')
+	@SuccessResponse(201, 'Created')
+	@Security("service")
+	public async postBookingOutOfSlot(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
+		const booking = await this.bookingsService.save(bookingRequest, serviceId);
+		return BookingsController.mapDataModel(booking);
+	}
+
 	@Post('{bookingId}/accept')
 	@SuccessResponse(204, 'Accepted')
 	public async acceptBooking(@Path() bookingId: number, @Body() acceptRequest: BookingAcceptRequest): Promise<any> {
