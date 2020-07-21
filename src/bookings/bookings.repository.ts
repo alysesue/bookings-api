@@ -26,6 +26,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 	public async search(searchRequest: {
 		serviceId?: number,
+		serviceProviderId?: number,
 		status?: number,
 		from: Date,
 		to: Date

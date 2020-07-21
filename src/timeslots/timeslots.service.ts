@@ -24,12 +24,13 @@ export class TimeslotsService {
 	@Inject
 	private serviceProvidersRepo: ServiceProvidersRepository;
 
-	private async getAcceptedBookings(minStartTime: Date, maxEndTime: Date, serviceId: number): Promise<Booking[]> {
+	public async getAcceptedBookings(minStartTime: Date, maxEndTime: Date, serviceId: number, serviceProviderId?: number): Promise<Booking[]> {
 		let bookings = await this.bookingsRepository.search(new BookingSearchRequest(
 			minStartTime,
 			maxEndTime,
 			BookingStatus.Accepted,
-			serviceId
+			serviceId,
+			serviceProviderId,
 		));
 		bookings = bookings.filter(booking => booking.serviceProviderId && booking.getSessionEndTime() <= maxEndTime);
 		return bookings;

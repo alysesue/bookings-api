@@ -23,12 +23,14 @@ export class BookingResponse {
 
 export class BookingSearchRequest {
 	public serviceId?: number;
+	public serviceProviderId?: number;
 	public status?: number;
 	public from: Date;
 	public to: Date;
 
-	constructor(from: Date, to: Date, status?: number, serviceId?: number) {
+	constructor(from: Date, to: Date, status?: number, serviceId?: number, serviceProviderId?: number) {
 		this.serviceId = serviceId;
+		this.serviceProviderId = serviceProviderId;
 		this.status = status;
 		this.from = from;
 		this.to = to;

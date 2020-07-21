@@ -55,10 +55,15 @@ export class BookingsService {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
 		const booking = await this.createBooking(bookingRequest, serviceId);
+		const {startDateTime, endDateTime, serviceProviderId, outOfSlotBooking} = bookingRequest;
 
 		if(!bookingRequest.outOfSlotBooking) {
 			await this.validateTimeSlot(booking);
-		}
+		} else {
+		    // check if there are accepted bookings at this time
+            const acceptedBookings = await this.timeslotsService.getAcceptedBookings(startDateTime, endDateTime, serviceId, serviceProviderId);
+            // check for timeslots at this time and remove
+        }
 
 		await this.bookingsRepository.save(booking);
 		return this.getBooking(booking.id);
