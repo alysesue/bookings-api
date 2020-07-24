@@ -7,6 +7,7 @@ import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
 import { DateHelper } from "../infrastructure/dateHelper";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
+import { intersectsDateTimeSpan } from "../tools/timeSpan";
 
 @InRequestScope
 export class BookingsService {
@@ -40,7 +41,8 @@ export class BookingsService {
 			serviceId,
 			bookingRequest.startDateTime,
 			duration,
-			bookingRequest.serviceProviderId);
+			bookingRequest.serviceProviderId,
+			bookingRequest.refId);
 	}
 
 	public async getBooking(bookingId: number): Promise<Booking> {
@@ -55,15 +57,20 @@ export class BookingsService {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
 		const booking = await this.createBooking(bookingRequest, serviceId);
-		const {startDateTime, endDateTime, serviceProviderId, outOfSlotBooking} = bookingRequest;
+		const {startDateTime, endDateTime, serviceProviderId} = bookingRequest;
 
 		if(!bookingRequest.outOfSlotBooking) {
 			await this.validateTimeSlot(booking);
 		} else {
-		    // check if there are accepted bookings at this time
-            const acceptedBookings = await this.timeslotsService.getAcceptedBookings(startDateTime, endDateTime, serviceId, serviceProviderId);
-            // check for timeslots at this time and remove
-        }
+			const acceptedBookings = await this.timeslotsService.getAcceptedBookings(startDateTime, endDateTime, serviceId, serviceProviderId);
+
+			for (const item of acceptedBookings) {
+				const intersects = intersectsDateTimeSpan({start: booking.startDateTime, end: booking.getSessionEndTime()}, item.startDateTime, item.getSessionEndTime());
+				if (intersects) {
+					throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking request not valid as it overlaps another accepted booking`);
+				}
+			}
+		}
 
 		await this.bookingsRepository.save(booking);
 		return this.getBooking(booking.id);

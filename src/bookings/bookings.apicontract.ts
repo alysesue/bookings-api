@@ -7,6 +7,7 @@ export class BookingRequest {
 	public endDateTime: Date;
 	public serviceProviderId?: number;
 	public outOfSlotBooking?: boolean;
+	public refId?: string;
 }
 
 export class BookingResponse {
