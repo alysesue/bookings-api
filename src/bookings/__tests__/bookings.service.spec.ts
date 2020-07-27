@@ -18,7 +18,7 @@ describe("Bookings.Service", () => {
 	calendar.googleCalendarId = 'google-id-1';
 	const serviceProvider = ServiceProvider.create('provider', calendar, 1);
 	serviceProvider.id = 1;
-	const bookingMock = Booking.create(1,new Date(), 60);
+	const bookingMock = Booking.create(1,new Date(), 60, 1, 'RHDH');
 
 	beforeAll(() => {
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
@@ -77,7 +77,7 @@ describe("Bookings.Service", () => {
 
 	it("should allow booking out of timeslots", async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
-		bookingRequest.startDateTime = new Date(2020-10-15);
+		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 5;
 		bookingRequest.outOfSlotBooking = true;
