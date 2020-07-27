@@ -122,16 +122,25 @@ export class BookingsService {
 
 	private async validateOutOfSlotBookings(booking: Booking) {
 		const {startDateTime, serviceId, serviceProviderId} = booking;
-		booking.status = BookingStatus.Accepted;
 		const endTime = booking.getSessionEndTime();
-		const searchQuery = new BookingSearchRequest(startDateTime, endTime, booking.status, serviceId, serviceProviderId);
-		const acceptedBookings = await this.searchBookings(searchQuery);
+		const acceptedBookingsSearchQuery = new BookingSearchRequest(startDateTime, endTime, BookingStatus.Accepted, serviceId, serviceProviderId);
+		const pendingBookingsSearchQuery = new BookingSearchRequest(startDateTime, endTime, BookingStatus.PendingApproval, serviceId, serviceProviderId);
+
+		const acceptedBookings = await this.searchBookings(acceptedBookingsSearchQuery);
+		const pendingBookings = await this.searchBookings(pendingBookingsSearchQuery);
 
 		for (const item of acceptedBookings) {
 			const intersects = intersectsDateTimeSpan({start: booking.startDateTime, end: endTime}, item.startDateTime, item.getSessionEndTime());
 			if (intersects) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking request not valid as it overlaps another accepted booking`);
 			}
+		}
+
+		for (const item of pendingBookings) {
+            const intersects = intersectsDateTimeSpan({start: booking.startDateTime, end: endTime}, item.startDateTime, item.getSessionEndTime());
+            if (intersects) {
+                item.status = BookingStatus.Cancelled;
+            }
 		}
 	}
 

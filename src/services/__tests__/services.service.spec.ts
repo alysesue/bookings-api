@@ -1,10 +1,10 @@
 import { ServicesService } from "../services.service";
 import { Container, Snapshot } from 'typescript-ioc';
 import { ServiceRequest, SetScheduleRequest } from "../service.apicontract";
-import {Schedule, Service, TimeslotsSchedule} from "../../models";
+import { Schedule, Service, TimeslotsSchedule } from "../../models";
 import { ServicesRepository } from "../services.repository";
 import { SchedulesService } from "../../schedules/schedules.service";
-import {TimeslotsScheduleRepository} from "../../timeslotItems/timeslotsSchedule.repository";
+import { TimeslotsScheduleRepository } from "../../timeslotItems/timeslotsSchedule.repository";
 
 let snapshot: Snapshot;
 beforeAll(() => {

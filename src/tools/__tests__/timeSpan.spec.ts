@@ -15,6 +15,6 @@ describe('Timespan tests', () => {
         const newDate = new Date();
         const result = intersectsDateTimeSpan(dateSpan, newDate, newDate);
 
-        expect(result).toBe(false)
+        expect(result).toBe(false);
     });
 });

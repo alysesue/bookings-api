@@ -35,7 +35,7 @@ export const InnerRepositoryMock = {
 		return Promise.resolve([timeslotItemMock]);
 	}),
 	delete: jest.fn().mockImplementationOnce(() => {
-		return Promise.resolve([timeslotItemMock])
+		return Promise.resolve([timeslotItemMock]);
 })
 };
 
