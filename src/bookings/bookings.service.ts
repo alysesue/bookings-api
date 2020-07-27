@@ -57,19 +57,11 @@ export class BookingsService {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
 		const booking = await this.createBooking(bookingRequest, serviceId);
-		const {startDateTime, endDateTime, serviceProviderId} = bookingRequest;
 
 		if(!bookingRequest.outOfSlotBooking) {
 			await this.validateTimeSlot(booking);
 		} else {
-			const acceptedBookings = await this.timeslotsService.getAcceptedBookings(startDateTime, endDateTime, serviceId, serviceProviderId);
-
-			for (const item of acceptedBookings) {
-				const intersects = intersectsDateTimeSpan({start: booking.startDateTime, end: booking.getSessionEndTime()}, item.startDateTime, item.getSessionEndTime());
-				if (intersects) {
-					throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking request not valid as it overlaps another accepted booking`);
-				}
-			}
+			await this.validateOutOfSlotBookings(booking);
 		}
 
 		await this.bookingsRepository.save(booking);
@@ -125,6 +117,20 @@ export class BookingsService {
 			const errorMessage = booking.serviceProviderId ? "The service provider is not available for this timeslot"
 				: "No available service providers for this timeslot";
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(errorMessage);
+		}
+	}
+
+	private async validateOutOfSlotBookings(booking: Booking) {
+		const {startDateTime, getSessionEndTime, serviceId, serviceProviderId} = booking;
+		booking.status = BookingStatus.Accepted;
+		const searchQuery = new BookingSearchRequest(startDateTime, getSessionEndTime(), booking.status, serviceId, serviceProviderId);
+		const acceptedBookings = await this.searchBookings(searchQuery);
+
+		for (const item of acceptedBookings) {
+			const intersects = intersectsDateTimeSpan({start: booking.startDateTime, end: booking.getSessionEndTime()}, item.startDateTime, item.getSessionEndTime());
+			if (intersects) {
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking request not valid as it overlaps another accepted booking`);
+			}
 		}
 	}
 

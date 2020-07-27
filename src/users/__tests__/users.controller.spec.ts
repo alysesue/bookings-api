@@ -1,6 +1,5 @@
 import { Container } from "typescript-ioc";
 import { UsersController } from "../users.controller";
-import * as Koa from "koa";
 
 describe("Users Controller", () => {
 	it("should get profile", async () => {

@@ -3,8 +3,8 @@ import {TimeOfDay} from "../../models";
 
 describe('Timespan tests', () => {
     it('should check if time intersects', () => {
-        const startTime = {startTime: new TimeOfDay(), endTime: new TimeOfDay()};
-        const endTime = {startTime: new TimeOfDay(), endTime: new TimeOfDay()};
+        const startTime = {startTime: TimeOfDay.create({hours: 9, minutes: 0}), endTime: TimeOfDay.create({hours: 10, minutes: 0})};
+        const endTime = {startTime: TimeOfDay.create({hours: 10, minutes: 0}), endTime: TimeOfDay.create({hours: 11, minutes: 0})};
         const result = intersectsSpan(startTime, endTime);
 
         expect(result).toBe(false);

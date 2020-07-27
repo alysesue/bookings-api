@@ -93,6 +93,20 @@ describe("Bookings.Service", () => {
 		expect(booking.status).toBe(BookingStatus.Accepted);
 	});
 
+	it("should not allow booking out of timeslots", async () => {
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.outOfSlotBooking = false;
+		BookingRepositoryMock.searchBookingsMock = [];
+		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+
+		await Container.get(BookingsService).save(bookingRequest, 1);
+
+		const booking = BookingRepositoryMock.booking;
+		expect(booking).not.toBe(undefined);
+	});
+
 	it("should validate end date time", async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
@@ -129,7 +143,6 @@ describe("Bookings.Service", () => {
 		expect(result.status).toBe(BookingStatus.Accepted);
 		expect(result.eventICalId).toBe("event-id");
 	});
-
 
 	it("should cancel booking", async () => {
 		const bookingService = Container.get(BookingsService);
@@ -185,7 +198,6 @@ describe("Bookings.Service", () => {
 		const bookingService = Container.get(BookingsService);
 		const res = bookingService.formatEventId("qmrljumfcqg1gur997fsjcnmto@google.com");
 		expect(res).toBe("qmrljumfcqg1gur997fsjcnmto");
-
 	});
 });
 
@@ -228,7 +240,6 @@ class TimeslotsServiceMock extends TimeslotsService {
 	public static availableProvidersForTimeslot: ServiceProvider[] = [];
 	public static acceptedBookings: Booking[] = [];
 
-
 	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date, serviceId: number): Promise<AvailableTimeslotProviders> {
 		const timeslotEntry = new AvailableTimeslotProviders();
 		timeslotEntry.startTime = startDateTime;
@@ -236,10 +247,6 @@ class TimeslotsServiceMock extends TimeslotsService {
 		timeslotEntry.setRelatedServiceProviders(TimeslotsServiceMock.availableProvidersForTimeslot);
 
 		return timeslotEntry;
-	}
-
-	public async getAcceptedBookings(startDateTime, endDateTime, serviceId, serviceProviderId): Promise<Booking[]> {
-		return Promise.resolve(TimeslotsServiceMock.acceptedBookings)
 	}
 }
 

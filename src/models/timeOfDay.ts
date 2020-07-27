@@ -3,7 +3,7 @@ import { DateHelper } from '../infrastructure/dateHelper';
 import { ValueTransformer } from 'typeorm';
 
 export class TimeOfDay {
-	public constructor() {
+	private constructor() {
 	}
 
 	private _hours: number;
