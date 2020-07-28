@@ -7,6 +7,7 @@ export const getConfig = () => ({
 	name: packageJSON.name,
 	version: packageJSON.version,
 	port: ConfigUtils.getIntValueFromEnv("PORT", 3000),
+	isDev: Boolean(ConfigUtils.getValueFromEnv("IS_DEV", 'false')),
 	env: ConfigUtils.getValueFromEnv("NODE_ENV", "production"),
 	serviceAccount: ConfigUtils.getValueFromEnv("GOOGLE_SERVICE_ACCOUNT"),
 	database: {

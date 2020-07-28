@@ -50,7 +50,6 @@ export async function startServer(): Promise<Server> {
 	const HandledRoutes = new KoaResponseHandler(router.routes());
 	const proxyHandler = Container.get(CalDavProxyHandler);
 
-
 	const koaServer = new Koa()
 		.use(proxyHandler.build())
 		.use(
@@ -69,7 +68,7 @@ export async function startServer(): Promise<Server> {
 				textLimit: "10mb",
 			})
 		)
-		.use(cors())
+		.use(cors({ credentials: config.isDev }))
 		.use(useSwagger())
 		.use(new KoaErrorHandler().build())
 		.use(new KoaLoggerContext().build())
