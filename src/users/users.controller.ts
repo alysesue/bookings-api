@@ -8,7 +8,7 @@ export class UsersController extends Controller {
 	@Get("me")
 	@AuthLevel(Auth.MOLAuthorizationLevel.L2)
 	public async getProfile(
-		@Header("nric") nric: string,
+		@Header("nric") nric?: string,
 	): Promise<any> {
 		return { nric };
 	}
