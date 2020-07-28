@@ -33,7 +33,7 @@ export class TimeslotsService {
 			const elementKey = this.timeslotKeySelector(element.startTime, element.endTime);
 			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
 			if (acceptedBookingsForTimeslot) {
-				element.setBookedServiceProvders(acceptedBookingsForTimeslot.map(booking => booking.serviceProviderId));
+				element.setBookedServiceProviders(acceptedBookingsForTimeslot.map(booking => booking.serviceProviderId));
 			}
 		}
 	}

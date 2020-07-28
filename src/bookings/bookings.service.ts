@@ -123,21 +123,24 @@ export class BookingsService {
 	private async validateOutOfSlotBookings(booking: Booking) {
 		const {startDateTime, serviceId, serviceProviderId} = booking;
 		const endTime = booking.getSessionEndTime();
-		const acceptedBookingsSearchQuery = new BookingSearchRequest(startDateTime, endTime, BookingStatus.Accepted, serviceId, serviceProviderId);
-		const pendingBookingsSearchQuery = new BookingSearchRequest(startDateTime, endTime, BookingStatus.PendingApproval, serviceId, serviceProviderId);
+		const startOfDay = DateHelper.getStartOfDay(startDateTime);
+		const endOfDay = DateHelper.getEndOfDay(startDateTime);
+
+		const acceptedBookingsSearchQuery = new BookingSearchRequest(startOfDay, endOfDay, BookingStatus.Accepted, serviceId, serviceProviderId);
+		const pendingBookingsSearchQuery = new BookingSearchRequest(startOfDay, endOfDay, BookingStatus.PendingApproval, serviceId, serviceProviderId);
 
 		const acceptedBookings = await this.searchBookings(acceptedBookingsSearchQuery);
 		const pendingBookings = await this.searchBookings(pendingBookingsSearchQuery);
 
 		for (const item of acceptedBookings) {
-			const intersects = intersectsDateTimeSpan({start: booking.startDateTime, end: endTime}, item.startDateTime, item.getSessionEndTime());
+			const intersects = intersectsDateTimeSpan({start: item.startDateTime, end: item.getSessionEndTime()}, startDateTime, endTime );
 			if (intersects) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking request not valid as it overlaps another accepted booking`);
 			}
 		}
 
 		for (const item of pendingBookings) {
-            const intersects = intersectsDateTimeSpan({start: booking.startDateTime, end: endTime}, item.startDateTime, item.getSessionEndTime());
+			const intersects = intersectsDateTimeSpan({start: item.startDateTime, end: item.getSessionEndTime()}, startDateTime, endTime );
             if (intersects) {
                 item.status = BookingStatus.Cancelled;
             }

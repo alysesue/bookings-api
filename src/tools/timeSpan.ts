@@ -16,12 +16,6 @@ export const intersects = (timeSpan: ITimeSpan, startTime: TimeOfDay, endTime: T
 };
 
 export const intersectsDateTimeSpan = (dateSpan: IDateSpan, startDate: Date, endDate: Date) => {
-	const compareAEndBStart = (dateSpan.end.getTime() - startDate.getTime());
-	if (compareAEndBStart > 0) {
-		const compareBEndAStart = (endDate.getTime() - dateSpan.start.getTime());
-		return compareBEndAStart > 0;
-	}
-
-	return false;
+	return dateSpan.start < endDate && startDate < dateSpan.end;
 };
 
