@@ -8,6 +8,8 @@ import { groupByKey } from '../tools/collections';
 import { ServicesRepository } from "../services/services.repository";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
+import { intersectsDateTimeSpan } from "../tools/timeSpan";
+import { BookingSearchRequest } from "../bookings/bookings.apicontract";
 
 @Scoped(Scope.Request)
 export class TimeslotsService {
@@ -30,6 +32,11 @@ export class TimeslotsService {
 		const acceptedBookingsLookup = groupByKey(acceptedBookings, this.bookingKeySelector);
 
 		for (const element of entries) {
+			const result = acceptedBookings.filter(booking => {
+				return intersectsDateTimeSpan({start: booking.startDateTime, end: booking.getSessionEndTime()}, element.startTime, element.endTime);})
+			.map(booking => booking.serviceProviderId);
+			element.setOverlappingServiceProviders(result);
+
 			const elementKey = this.timeslotKeySelector(element.startTime, element.endTime);
 			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
 			if (acceptedBookingsForTimeslot) {
@@ -83,9 +90,21 @@ export class TimeslotsService {
 	public async getAggregatedTimeslots(startDateTime: Date, endDateTime: Date, serviceId: number, serviceProviderId?: number): Promise<AvailableTimeslotProviders[]> {
 		let aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime, serviceId);
 		const pendingBookings = await this.bookingsRepository.search(
-			{serviceId, serviceProviderId, status: BookingStatus.PendingApproval, to: startDateTime, from: endDateTime});
+            new BookingSearchRequest(
+                startDateTime,
+                endDateTime,
+                BookingStatus.PendingApproval,
+                serviceId
+            )
+        );
 		const acceptedBookings = await this.bookingsRepository.search(
-			{serviceId, serviceProviderId, status: BookingStatus.Accepted, to: startDateTime, from: endDateTime});
+		    new BookingSearchRequest(
+                startDateTime,
+                endDateTime,
+                BookingStatus.Accepted,
+                serviceId
+            )
+        );
 
 		if (serviceProviderId) {
 			aggregatedEntries = aggregatedEntries.filter(entry => entry.getGroups().find(sp => sp.id === serviceProviderId));

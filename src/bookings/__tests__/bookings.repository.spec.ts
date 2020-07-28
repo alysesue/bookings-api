@@ -1,10 +1,13 @@
-import { BookingsRepository } from "../bookings.repository";
-import { DbConnection } from "../../core/db.connection";
-import { Booking, BookingStatus } from "../../models";
-import { Container } from "typescript-ioc";
-import { InsertResult } from "typeorm";
-import { DateHelper } from '../../infrastructure/dateHelper';
-import { BookingSearchRequest } from '../bookings.apicontract';
+import {BookingsRepository} from "../bookings.repository";
+import {DbConnection} from "../../core/db.connection";
+import {Booking, BookingStatus} from "../../models";
+import {Container} from "typescript-ioc";
+import {InsertResult} from "typeorm";
+import {DateHelper} from '../../infrastructure/dateHelper';
+import {BookingSearchRequest} from '../bookings.apicontract';
+
+const bookingMock = new Booking();
+bookingMock.status = BookingStatus.Accepted;
 
 describe("Bookings repository", () => {
 	beforeEach(() => {
@@ -16,7 +19,7 @@ describe("Bookings repository", () => {
 		let param: string;
 		MockDBConnection.find.mockImplementation((_param) => {
 			param = JSON.stringify(_param);
-			return Promise.resolve([]);
+			return Promise.resolve([bookingMock]);
 		});
 
 		const bookingsRepository = Container.get(BookingsRepository);
@@ -28,7 +31,7 @@ describe("Bookings repository", () => {
 		);
 
 		const result = await bookingsRepository.search(filter);
-		expect(result).toStrictEqual([]);
+		expect(result).toStrictEqual([bookingMock]);
 		expect(MockDBConnection.find).toBeCalled();
 
 		expect(param).toMatchSnapshot();
@@ -55,7 +58,6 @@ describe("Bookings repository", () => {
 
 		expect(param).toMatchSnapshot();
 	});
-
 
 	it("should save booking", async () => {
 		jest.resetAllMocks();
