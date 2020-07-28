@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from "typescript-ioc";
 import { ServiceProviderListRequest, ServiceProviderModel, ServiceProviderResponseModel, SetProviderScheduleRequest } from "./serviceProviders.apicontract";
 import { ServiceProvidersService } from "./serviceProviders.service";
-import { Body, Controller, Delete, Get, Header, Path, Post, Put, Query, Route, Security, SuccessResponse, Tags } from "tsoa";
+import { Body, Controller, Delete, Deprecated, Get, Header, Path, Post, Put, Query, Route, Security, SuccessResponse, Tags } from "tsoa";
 import { ErrorResponse } from "../apicontract";
 import { parseCsv } from "../utils";
 import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
@@ -75,6 +75,7 @@ export class ServiceProvidersController extends Controller {
 	}
 
 	// TODO: Remove this api call
+	@Deprecated()
 	@Put('{id}/schedule')
 	@SuccessResponse(200, "Ok")
 	public async setServiceSchedule(@Path() id: number, @Body() request: SetProviderScheduleRequest): Promise<ScheduleResponse> {
@@ -82,6 +83,7 @@ export class ServiceProvidersController extends Controller {
 	}
 
 	// TODO: Remove this api call
+	@Deprecated()
 	@Get('{id}/schedule')
 	@SuccessResponse(200, "Ok")
 	public async getServiceSchedule(@Path() id: number): Promise<ScheduleResponse> {

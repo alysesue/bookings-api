@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Path, Post, Put, Route, SuccessResponse, Tags } from "tsoa";
+import { Body, Controller, Delete, Deprecated, Get, Path, Post, Put, Route, SuccessResponse, Tags } from "tsoa";
 import { ServiceRequest, ServiceResponse, SetScheduleRequest } from "./service.apicontract";
 import { Inject } from "typescript-ioc";
 import { ServicesService } from "./services.service";
@@ -39,12 +39,14 @@ export class ServicesController extends Controller {
 		return services.map(ServicesController.mapToServiceResponse);
 	}
 
+	@Deprecated()
 	@Put('{id}/schedule')
 	@SuccessResponse(200, "Ok")
 	public async setServiceSchedule(@Path() id: number, @Body() request: SetScheduleRequest): Promise<ScheduleResponse> {
 		return mapScheduleToResponse(await this.servicesService.setServiceSchedule(id, request));
 	}
 
+	@Deprecated()
 	@Get('{id}/schedule')
 	@SuccessResponse(200, "Ok")
 	public async getServiceSchedule(@Path() id: number): Promise<ScheduleResponse> {
