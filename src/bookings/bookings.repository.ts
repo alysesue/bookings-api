@@ -26,6 +26,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 	public async search(searchRequest: {
 		serviceId?: number,
+		serviceProviderId?: number,
 		status?: number,
 		from: Date,
 		to: Date
@@ -39,6 +40,9 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		}
 		if (searchRequest.serviceId) {
 			findConditions['_serviceId'] = searchRequest.serviceId;
+		}
+		if (searchRequest.serviceProviderId) {
+			findConditions['_serviceProviderId'] = searchRequest.serviceProviderId;
 		}
 
 		const findManyOptions: FindManyOptions<Booking> = { where: [findConditions], relations: ['_service', '_serviceProvider'] };

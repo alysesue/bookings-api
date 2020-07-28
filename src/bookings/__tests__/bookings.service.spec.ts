@@ -18,6 +18,7 @@ describe("Bookings.Service", () => {
 	calendar.googleCalendarId = 'google-id-1';
 	const serviceProvider = ServiceProvider.create('provider', calendar, 1);
 	serviceProvider.id = 1;
+	const bookingMock = Booking.create(1,new Date(), 60, 1, 'RHDH');
 
 	beforeAll(() => {
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
@@ -74,6 +75,38 @@ describe("Bookings.Service", () => {
 				new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage("Service provider '5' not found"));
 	});
 
+	it("should allow booking out of timeslots", async () => {
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 5;
+		bookingRequest.outOfSlotBooking = true;
+		bookingRequest.refId = 'RFM186';
+		BookingRepositoryMock.searchBookingsMock = [];
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		TimeslotsServiceMock.acceptedBookings = [bookingMock];
+
+		await Container.get(BookingsService).save(bookingRequest, 1);
+
+		const booking = BookingRepositoryMock.booking;
+		expect(booking).not.toBe(undefined);
+		expect(booking.status).toBe(BookingStatus.Accepted);
+	});
+
+	it("should not allow booking out of timeslots", async () => {
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.outOfSlotBooking = false;
+		BookingRepositoryMock.searchBookingsMock = [];
+		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+
+		await Container.get(BookingsService).save(bookingRequest, 1);
+
+		const booking = BookingRepositoryMock.booking;
+		expect(booking).not.toBe(undefined);
+	});
+
 	it("should validate end date time", async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
@@ -110,7 +143,6 @@ describe("Bookings.Service", () => {
 		expect(result.status).toBe(BookingStatus.Accepted);
 		expect(result.eventICalId).toBe("event-id");
 	});
-
 
 	it("should cancel booking", async () => {
 		const bookingService = Container.get(BookingsService);
@@ -166,7 +198,6 @@ describe("Bookings.Service", () => {
 		const bookingService = Container.get(BookingsService);
 		const res = bookingService.formatEventId("qmrljumfcqg1gur997fsjcnmto@google.com");
 		expect(res).toBe("qmrljumfcqg1gur997fsjcnmto");
-
 	});
 });
 
@@ -207,6 +238,7 @@ class CalendarsServiceMock extends CalendarsService {
 
 class TimeslotsServiceMock extends TimeslotsService {
 	public static availableProvidersForTimeslot: ServiceProvider[] = [];
+	public static acceptedBookings: Booking[] = [];
 
 	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date, serviceId: number): Promise<AvailableTimeslotProviders> {
 		const timeslotEntry = new AvailableTimeslotProviders();
@@ -217,7 +249,6 @@ class TimeslotsServiceMock extends TimeslotsService {
 		return timeslotEntry;
 	}
 }
-
 
 class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	public static getServiceProviderMock: ServiceProvider;

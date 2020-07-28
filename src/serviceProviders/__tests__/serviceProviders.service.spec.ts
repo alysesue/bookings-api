@@ -1,12 +1,12 @@
 import { ServiceProvidersService } from "../serviceProviders.service";
 import { ServiceProvidersRepository } from "../serviceProviders.repository";
 import { Container } from "typescript-ioc";
-import {Calendar, Schedule, Service, ServiceProvider, TimeslotsSchedule} from "../../models";
+import { Calendar, Schedule, Service, ServiceProvider, TimeslotsSchedule } from "../../models";
 import { ServiceProviderModel, SetProviderScheduleRequest } from "../serviceProviders.apicontract";
 import { CalendarsService } from "../../calendars/calendars.service";
 import { SchedulesService } from "../../schedules/schedules.service";
-import {ServicesRepository} from "../../services/services.repository";
-import {TimeslotsScheduleRepository} from "../../timeslotItems/timeslotsSchedule.repository";
+import { ServicesRepository } from "../../services/services.repository";
+import { TimeslotsScheduleRepository } from "../../timeslotItems/timeslotsSchedule.repository";
 
 beforeEach(() => {
 	Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);

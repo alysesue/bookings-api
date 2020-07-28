@@ -1,5 +1,5 @@
 import { Container } from "typescript-ioc";
-import { Booking, BookingStatus, Calendar } from "../../models";
+import { Booking, BookingStatus } from "../../models";
 import { BookingsController } from "../bookings.controller";
 import { BookingsService } from "../bookings.service";
 import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingSearchRequest } from "../bookings.apicontract";
@@ -75,6 +75,15 @@ describe("Bookings.Controller", () => {
 
 		expect(result as BookingResponse);
 	});
+
+	it('should post out of timeslot booking', async () => {
+		BookingsServiceMock.mockPostBooking = Promise.resolve(Booking.create(1, new Date(), 60));
+		const controller = Container.get(BookingsController);
+
+		const result = await controller.postBookingOutOfSlot(new BookingRequest(), 1);
+
+		expect(result as BookingResponse);
+	});
 });
 
 const TimeslotsServiceMock = {
@@ -95,10 +104,6 @@ class BookingsServiceMock extends BookingsService {
 	public async getBooking(bookingId: number): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
 		return BookingsServiceMock.getBookingPromise;
-	}
-
-	public async getBookings(): Promise<Booking[]> {
-		return Promise.resolve(BookingsServiceMock.mockBookings);
 	}
 
 	public async acceptBooking(bookingId: number): Promise<Booking> {

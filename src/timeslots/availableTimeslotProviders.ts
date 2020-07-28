@@ -22,7 +22,7 @@ export class AvailableTimeslotProviders {
 		this._availableServiceProviders = Array.from(providers);
 	}
 
-	public setBookedServiceProvders(providerIds: number[]) {
+	public setBookedServiceProviders(providerIds: number[]) {
 		const bookedProviderIds = new Set<number>(providerIds);
 		this._bookedServiceProviders = this._relatedServiceProviders.filter(sp => bookedProviderIds.has(sp.id));
 		this._availableServiceProviders = this._relatedServiceProviders.filter(sp => !bookedProviderIds.has(sp.id));
