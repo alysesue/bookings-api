@@ -58,7 +58,7 @@ export class BookingsService {
 		// Method calls with different services, or timeslots should still run in parallel.
 		const booking = await this.createBooking(bookingRequest, serviceId);
 
-		if(!bookingRequest.outOfSlotBooking) {
+		if (!bookingRequest.outOfSlotBooking) {
 			await this.validateTimeSlot(booking);
 		} else {
 			await this.validateOutOfSlotBookings(booking);
@@ -121,7 +121,7 @@ export class BookingsService {
 	}
 
 	private async validateOutOfSlotBookings(booking: Booking) {
-		const {startDateTime, serviceId, serviceProviderId} = booking;
+		const { startDateTime, serviceId, serviceProviderId } = booking;
 		const endTime = booking.getSessionEndTime();
 		const startOfDay = DateHelper.getStartOfDay(startDateTime);
 		const endOfDay = DateHelper.getEndOfDay(startDateTime);
@@ -133,17 +133,17 @@ export class BookingsService {
 		const pendingBookings = await this.searchBookings(pendingBookingsSearchQuery);
 
 		for (const item of acceptedBookings) {
-			const intersects = intersectsDateTimeSpan({start: item.startDateTime, end: item.getSessionEndTime()}, startDateTime, endTime );
+			const intersects = intersectsDateTimeSpan({ start: item.startDateTime, end: item.getSessionEndTime() }, startDateTime, endTime);
 			if (intersects) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking request not valid as it overlaps another accepted booking`);
 			}
 		}
 
 		for (const item of pendingBookings) {
-			const intersects = intersectsDateTimeSpan({start: item.startDateTime, end: item.getSessionEndTime()}, startDateTime, endTime );
-            if (intersects) {
-                item.status = BookingStatus.Cancelled;
-            }
+			const intersects = intersectsDateTimeSpan({ start: item.startDateTime, end: item.getSessionEndTime() }, startDateTime, endTime);
+			if (intersects) {
+				item.status = BookingStatus.Cancelled;
+			}
 		}
 	}
 
