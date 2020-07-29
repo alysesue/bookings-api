@@ -1,10 +1,10 @@
-import {BookingsRepository} from "../bookings.repository";
-import {DbConnection} from "../../core/db.connection";
-import {Booking, BookingStatus} from "../../models";
-import {Container} from "typescript-ioc";
-import {InsertResult} from "typeorm";
-import {DateHelper} from '../../infrastructure/dateHelper';
-import {BookingSearchRequest} from '../bookings.apicontract';
+import { BookingsRepository } from "../bookings.repository";
+import { DbConnection } from "../../core/db.connection";
+import { Booking, BookingStatus } from "../../models";
+import { Container } from "typescript-ioc";
+import { InsertResult } from "typeorm";
+import { DateHelper } from '../../infrastructure/dateHelper';
+import { BookingSearchRequest } from '../bookings.apicontract';
 
 const bookingMock = new Booking();
 bookingMock.status = BookingStatus.Accepted;
@@ -27,7 +27,7 @@ describe("Bookings repository", () => {
 		const filter = new BookingSearchRequest(
 			date,
 			DateHelper.addDays(date, 1),
-			BookingStatus.Accepted
+			[BookingStatus.Accepted]
 		);
 
 		const result = await bookingsRepository.search(filter);

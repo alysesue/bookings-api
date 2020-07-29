@@ -89,22 +89,17 @@ export class TimeslotsService {
 
 	public async getAggregatedTimeslots(startDateTime: Date, endDateTime: Date, serviceId: number, serviceProviderId?: number): Promise<AvailableTimeslotProviders[]> {
 		let aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime, serviceId);
-		const pendingBookings = await this.bookingsRepository.search(
-            new BookingSearchRequest(
-                startDateTime,
-                endDateTime,
-                BookingStatus.PendingApproval,
-                serviceId
-            )
-        );
-		const acceptedBookings = await this.bookingsRepository.search(
-		    new BookingSearchRequest(
-                startDateTime,
-                endDateTime,
-                BookingStatus.Accepted,
-                serviceId
-            )
-        );
+		const pendingAndAcceptedBookings = await this.bookingsRepository.search(
+			new BookingSearchRequest(
+				startDateTime,
+				endDateTime,
+				[BookingStatus.PendingApproval, BookingStatus.Accepted],
+				serviceId
+			)
+		);
+
+		const acceptedBookings = pendingAndAcceptedBookings.filter(booking => booking.status === BookingStatus.Accepted);
+		const pendingBookings = pendingAndAcceptedBookings.filter(booking => booking.status === BookingStatus.PendingApproval);
 
 		if (serviceProviderId) {
 			aggregatedEntries = aggregatedEntries.filter(entry => entry.getGroups().find(sp => sp.id === serviceProviderId));

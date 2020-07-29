@@ -1,3 +1,5 @@
+import { BookingStatus } from "../models";
+
 export class BookingAcceptRequest {
 	public serviceProviderId: number;
 }
@@ -25,14 +27,14 @@ export class BookingResponse {
 export class BookingSearchRequest {
 	public serviceId?: number;
 	public serviceProviderId?: number;
-	public status?: number;
+	public statuses?: BookingStatus[];
 	public from: Date;
 	public to: Date;
 
-	constructor(from: Date, to: Date, status?: number, serviceId?: number, serviceProviderId?: number) {
+	constructor(from: Date, to: Date, status?: BookingStatus[], serviceId?: number, serviceProviderId?: number) {
 		this.serviceId = serviceId;
 		this.serviceProviderId = serviceProviderId;
-		this.status = status;
+		this.statuses = status;
 		this.from = from;
 		this.to = to;
 	}

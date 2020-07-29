@@ -1,5 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Bookings repository should search bookings 1`] = `"{\\"where\\":[{\\"_startDateTime\\":{\\"_type\\":\\"between\\",\\"_value\\":[\\"2020-01-01T14:00:00.000Z\\",\\"2020-01-02T14:00:00.000Z\\"],\\"_useParameter\\":true,\\"_multipleParameters\\":true},\\"_status\\":2}],\\"relations\\":[\\"_service\\",\\"_serviceProvider\\"],\\"order\\":{\\"_id\\":\\"DESC\\"}}"`;
+exports[`Bookings repository should search bookings 1`] = `"{\\"where\\":[{\\"_startDateTime\\":{\\"_type\\":\\"between\\",\\"_value\\":[\\"2020-01-01T14:00:00.000Z\\",\\"2020-01-02T14:00:00.000Z\\"],\\"_useParameter\\":true,\\"_multipleParameters\\":true},\\"_status\\":{\\"_type\\":\\"in\\",\\"_value\\":[2],\\"_useParameter\\":true,\\"_multipleParameters\\":true}}],\\"relations\\":[\\"_service\\",\\"_serviceProvider\\"],\\"order\\":{\\"_id\\":\\"DESC\\"}}"`;
 
 exports[`Bookings repository should search bookings without status 1`] = `"{\\"where\\":[{\\"_startDateTime\\":{\\"_type\\":\\"between\\",\\"_value\\":[\\"2020-01-01T14:00:00.000Z\\",\\"2020-01-02T14:00:00.000Z\\"],\\"_useParameter\\":true,\\"_multipleParameters\\":true}}],\\"relations\\":[\\"_service\\",\\"_serviceProvider\\"],\\"order\\":{\\"_id\\":\\"DESC\\"}}"`;

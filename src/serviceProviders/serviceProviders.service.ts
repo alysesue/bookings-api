@@ -8,14 +8,12 @@ import { CalendarsService } from "../calendars/calendars.service";
 import { API_TIMEOUT_PERIOD } from "../const";
 import { SchedulesService } from '../schedules/schedules.service';
 import {
-	TimeslotItemRequest, TimeslotItemResponse,
-	TimeslotsScheduleResponse
+	TimeslotItemRequest,
 } from "../timeslotItems/timeslotItems.apicontract";
-import { mapToTimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.mapper";
-import { TimeslotsScheduleRepository } from "../timeslotsSchedules/timeslotsSchedule.repository";
 import { ServicesRepository } from "../services/services.repository";
 import { ServicesService } from "../services/services.service";
 import { TimeslotItemsService } from "../timeslotItems/timeslotItems.service";
+import { TimeslotsScheduleRepository } from "../timeslotsSchedules/timeslotsSchedule.repository";
 
 @InRequestScope
 export class ServiceProvidersService {

@@ -65,7 +65,7 @@ describe("Timeslots Service", () => {
 
 	const BookingsRepositoryMock = {
 		search: jest.fn((param: BookingSearchRequest) => {
-			return (param.status === BookingStatus.Accepted) ? Promise.resolve([BookingMock])
+			return (param.statuses.includes(BookingStatus.Accepted)) ? Promise.resolve([BookingMock])
 				: Promise.resolve([pendingBookingMock]);
 		})
 	};
