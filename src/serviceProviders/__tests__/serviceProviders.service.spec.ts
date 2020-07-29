@@ -1,17 +1,17 @@
 import { Container } from "typescript-ioc";
 import { cloneDeep } from "lodash";
-import {DeleteResult} from "typeorm";
+import { DeleteResult } from "typeorm";
 import { ServiceProvidersService } from "../serviceProviders.service";
 import { ServiceProvidersRepository } from "../serviceProviders.repository";
 import { Calendar, Schedule, Service, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from "../../models";
 import { ServiceProviderModel, SetProviderScheduleRequest } from "../serviceProviders.apicontract";
 import { CalendarsService } from "../../calendars/calendars.service";
 import { SchedulesService } from "../../schedules/schedules.service";
-import { ServicesRepository } from "../../services/services.repository";
 import { TimeslotsScheduleRepository } from "../../timeslotsSchedules/timeslotsSchedule.repository";
 import { TimeslotItemsService } from "../../timeslotItems/timeslotItems.service";
 import { Weekday } from "../../enums/weekday";
 import { TimeslotItemRequest } from "../../timeslotItems/timeslotItems.apicontract";
+import { ServicesService } from "../../services/services.service";
 
 describe("ServiceProviders.Service", () => {
 	const serviceProviderMock = new ServiceProvider();
@@ -28,7 +28,7 @@ describe("ServiceProviders.Service", () => {
 		Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 		Container.bind(TimeslotItemsService).to(TimeslotItemsServiceMock);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
-		Container.bind(ServicesRepository).to(ServicesRepositoryMock);
+		Container.bind(ServicesService).to(ServicesServiceMock);
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
 		Container.bind(SchedulesService).to(SchedulesServiceMock);
 	});
@@ -78,9 +78,9 @@ describe("ServiceProviders.Service", () => {
 
 	it("should save a service provider", async () => {
 		CalendarsServiceMock.createCalendar = new Calendar();
-		ServiceProvidersRepositoryMock.save = serviceProviderMock;
-		await Container.get(ServiceProvidersService).saveServiceProviders([serviceProviderMock], 1);
-		expect(ServiceProvidersRepositoryMock.save.name).toBe("Service Provider");
+		ServiceProvidersRepositoryMock.save.mockImplementation(()=>serviceProviderMock);
+		const data = await Container.get(ServiceProvidersService).saveServiceProviders([serviceProviderMock], 1);
+		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
 	});
 
 	it('should set provider schedule', async () => {
@@ -125,7 +125,7 @@ describe("ServiceProviders.Service", () => {
 
 	it('should get timeslots schedule from service if no timeslots schedule provider', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
-		ServicesRepositoryMock.getServiceWithTimeslotsScheduleMock = serviceMockWithTemplate;
+		ServicesServiceMock.getServiceTimeslotsSchedule = serviceMockWithTemplate.timeslotsSchedule;
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		const timeslotsScheduleResponse = await serviceProvidersService.getTimeslotItems(1);
 		expect(timeslotsScheduleResponse.timeslotItems[0]._weekDay).toBe(serviceMockWithTemplate.timeslotsSchedule.timeslotItems[0]._weekDay);
@@ -136,18 +136,19 @@ describe("ServiceProviders.Service", () => {
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.addTimeslotItem(1, request);
-		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItemsToTimeslotsSchedule ).toBeCalledTimes(0);
+		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(0);
 		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem ).toBeCalledTimes(1);
 	});
 
 	it('should copy timeslots item  service to  service provider and save it', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
-		ServicesRepositoryMock.getServiceWithTimeslotsScheduleMock = serviceMockWithTemplate;
-		TimeslotsScheduleRepositoryMock.createTimeslotsScheduleMock = timeslotsScheduleMock;
+		ServicesServiceMock.getServiceTimeslotsSchedule = serviceMockWithTemplate.timeslotsSchedule;
+		ServiceProvidersRepositoryMock.save.mockImplementation(()=>serviceProviderMockWithTemplate);
+
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.addTimeslotItem(1, request);
-		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItemsToTimeslotsSchedule).toBeCalledTimes(1);
+		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(1);
 		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem ).toBeCalledTimes(1);
 	});
 
@@ -156,36 +157,34 @@ describe("ServiceProviders.Service", () => {
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.updateTimeslotItem( 1,  4, request );
-		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItemsToTimeslotsSchedule ).toBeCalledTimes(0);
+		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(0);
 		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem ).toBeCalledTimes(1);
 	});
 
 	it('should copy timeslots schedule item for service to  service provider and update', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
-		ServicesRepositoryMock.getServiceWithTimeslotsScheduleMock = serviceMockWithTemplate;
-		TimeslotsScheduleRepositoryMock.createTimeslotsScheduleMock = timeslotsScheduleMock;
+		ServicesServiceMock.getServiceTimeslotsSchedule = serviceMockWithTemplate.timeslotsSchedule;
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.updateTimeslotItem( 1,  4, request );
-		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItemsToTimeslotsSchedule).toBeCalledTimes(1);
-		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem ).toBeCalledTimes(1);
+		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(1);
+		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem ).toBeCalledTimes(0);
 	});
 
 	it('should delete timeslot item for service provider', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMockWithTemplate;
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.deleteTimeslotItem(1,4);
-		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItemsToTimeslotsSchedule).toBeCalledTimes(0);
+		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(0);
 		expect(TimeslotItemsServiceMock.deleteTimeslot).toBeCalledTimes(1);
 	});
 
 	it('should copy timeslots of service  for service provider and not adding the target timeslots', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
-		ServicesRepositoryMock.getServiceWithTimeslotsScheduleMock = serviceMockWithTemplate;
-		TimeslotsScheduleRepositoryMock.createTimeslotsScheduleMock = timeslotsScheduleMock;
+		ServicesServiceMock.getServiceTimeslotsSchedule = serviceMockWithTemplate.timeslotsSchedule;
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.deleteTimeslotItem(1,4);
-		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItemsToTimeslotsSchedule).toBeCalledTimes(1);
+		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(1);
 		expect(TimeslotItemsServiceMock.deleteTimeslot).toBeCalledTimes(0);
 	});
 });
@@ -195,7 +194,7 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	public static sp: ServiceProvider;
 	public static getServiceProvidersMock: ServiceProvider[];
 	public static getServiceProviderMock: ServiceProvider;
-	public static save: ServiceProvider;
+	public static save = jest.fn();
 
 
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
@@ -207,7 +206,7 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	}
 
 	public async save(listRequest: ServiceProviderModel): Promise<ServiceProvider> {
-		return Promise.resolve(ServiceProvidersRepositoryMock.save);
+		return await ServiceProvidersRepositoryMock.save();
 	}
 }
 
@@ -229,15 +228,11 @@ class SchedulesServiceMock extends SchedulesService {
 	}
 }
 
-class ServicesRepositoryMock extends ServicesRepository {
-	public static getServiceMock: Service;
-	public static getServiceWithTimeslotsScheduleMock: Service;
+class ServicesServiceMock extends ServicesService {
+	public static getServiceTimeslotsSchedule: TimeslotsSchedule;
 
-	public async getService(): Promise<Service> {
-		return Promise.resolve(ServicesRepositoryMock.getServiceMock);
-	}
-	public async getServiceWithTimeslotsSchedule(): Promise<Service> {
-		return Promise.resolve(ServicesRepositoryMock.getServiceWithTimeslotsScheduleMock);
+	public async getServiceTimeslotsSchedule(): Promise<TimeslotsSchedule> {
+		return Promise.resolve(ServicesServiceMock.getServiceTimeslotsSchedule);
 	}
 }
 

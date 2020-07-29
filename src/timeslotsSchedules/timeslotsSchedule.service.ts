@@ -19,7 +19,7 @@ export class TimeslotsScheduleService {
 		else if (id)
 			timeslotsScheduleData._service = id;
 		else
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Creating timeslotsSchedule... No id provide`);
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Creating timeslotsSchedule... No id provided`);
 		const timeslotsSchedule = await this.timeslotsScheduleRepository.createTimeslotsSchedule(timeslotsScheduleData);
 		return timeslotsSchedule;
 	}

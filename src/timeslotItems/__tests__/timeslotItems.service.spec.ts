@@ -159,9 +159,10 @@ describe('TimeslotsSchedule template services ', () => {
 		expect(deleteTimeslotItem).toBeCalledTimes(1);
 	});
 
-	it('should ',  async () => {
+	it('should copy timeslotsSchedule',  async () => {
 		const timeslotItemsService = Container.get(TimeslotItemsService);
-		const data = await timeslotItemsService.mapAndSaveTimeslotItemsToTimeslotsSchedule([timeslotItemMock], timeslotsScheduleMock);
-		expect(saveTimeslotItems).toBeCalledTimes(1);
+		const data = await timeslotItemsService.mapTimeslotItemsInTimeslotsSchedule([timeslotItemMock], timeslotsScheduleMock);
+		// @ts-ignore
+		expect(data[0]._timeslotsSchedule._id).toBe(1);
 	});
 });

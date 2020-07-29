@@ -111,7 +111,9 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	public set timeslotsScheduleId(id: number) { this._timeslotsScheduleId = id; }
 	public get timeslotsScheduleId(): number { return this._timeslotsScheduleId; }
 
-	@OneToOne(type => TimeslotsSchedule, e => e._serviceProvider)
+	@OneToOne(type => TimeslotsSchedule, e => e._serviceProvider,{
+		cascade: true,
+	})
 	@JoinColumn({ name: '_timeslotsScheduleId' })
 	private _timeslotsSchedule: TimeslotsSchedule;
 
