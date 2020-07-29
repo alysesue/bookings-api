@@ -58,15 +58,15 @@ export class TimeslotItemsService {
 		return await this.timeslotItemsRepository.deleteTimeslotItem(timeslotId);
 	}
 
-	public async mapAndSaveTimeslotItemsToTimeslotsSchedule(timeslotsItemService: TimeslotItem[], timeslotsScheduleSP: TimeslotsSchedule)
-		:Promise<TimeslotItem[]>{
-		const timeslotsItemServiceClone = _.cloneDeep(timeslotsItemService);
+	public mapTimeslotItemsInTimeslotsSchedule(timeslotsItems: TimeslotItem[], timeslotsSchedule: TimeslotsSchedule)
+		:TimeslotItem[]{
+		const timeslotsItemServiceClone = _.cloneDeep(timeslotsItems);
 		if (timeslotsItemServiceClone) {
 			timeslotsItemServiceClone.forEach(e => {
 				delete e._id;
-				e._timeslotsSchedule = timeslotsScheduleSP;
+				e._timeslotsSchedule = timeslotsSchedule;
 			});
 		}
-		return await this.timeslotItemsRepository.saveTimeslotItems(timeslotsItemServiceClone);
+		return timeslotsItemServiceClone;
 	}
 }

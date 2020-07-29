@@ -76,18 +76,18 @@ export class ServiceProvidersController extends Controller {
 
 	// TODO: Remove this api call
 	@Deprecated()
-	@Put('{id}/schedule')
+	@Put('{spId}/schedule')
 	@SuccessResponse(200, "Ok")
-	public async setServiceSchedule(@Path() id: number, @Body() request: SetProviderScheduleRequest): Promise<ScheduleResponse> {
-		return mapScheduleToResponse(await this.serviceProvidersService.setProviderSchedule(id, request));
+	public async setServiceSchedule(@Path() spId: number, @Body() request: SetProviderScheduleRequest): Promise<ScheduleResponse> {
+		return mapScheduleToResponse(await this.serviceProvidersService.setProviderSchedule(spId, request));
 	}
 
 	// TODO: Remove this api call
 	@Deprecated()
-	@Get('{id}/schedule')
+	@Get('{spId}/schedule')
 	@SuccessResponse(200, "Ok")
-	public async getServiceSchedule(@Path() id: number): Promise<ScheduleResponse> {
-		return mapScheduleToResponse(await this.serviceProvidersService.getProviderSchedule(id));
+	public async getServiceSchedule(@Path() spId: number): Promise<ScheduleResponse> {
+		return mapScheduleToResponse(await this.serviceProvidersService.getProviderSchedule(spId));
 	}
 
 	@Get("{spId}/timeslotSchedule")
@@ -104,16 +104,16 @@ export class ServiceProvidersController extends Controller {
 		return mapToTimeslotItemResponse(data);
 	}
 
-	@Put("{serviceProviderId}/timeslotSchedule/timeslots/{timeslotId}")
+	@Put("{spId}/timeslotSchedule/timeslots/{timeslotId}")
 	@SuccessResponse(200, "Ok")
-	public async updateTimeslotItem(@Path() serviceProviderId: number, @Path() timeslotId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
-		const data = await this.serviceProvidersService.updateTimeslotItem(serviceProviderId, timeslotId, request );
+	public async updateTimeslotItem(@Path() spId: number, @Path() timeslotId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
+		const data = await this.serviceProvidersService.updateTimeslotItem(spId, timeslotId, request );
 		return mapToTimeslotItemResponse(data);
 	}
 
-	@Delete("{serviceProviderId}/timeslotSchedule/timeslots/{timeslotId}")
+	@Delete("{spId}/timeslotSchedule/timeslots/{timeslotId}")
 	@SuccessResponse(204, "No Content")
-	public async deleteTimeslotItem(@Path() serviceProviderId: number, @Path() timeslotId: number) {
-		await this.serviceProvidersService.deleteTimeslotItem(serviceProviderId, timeslotId);
+	public async deleteTimeslotItem(@Path() spId: number, @Path() timeslotId: number) {
+		await this.serviceProvidersService.deleteTimeslotItem(spId, timeslotId);
 	}
 }
