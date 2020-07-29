@@ -3,7 +3,7 @@ import { ServiceProvider } from "../models";
 import { RepositoryBase } from "../core/repository";
 import { FindConditions } from "typeorm";
 import { SchedulesRepository } from '../schedules/schedules.repository';
-import { TimeslotsScheduleRepository } from "../timeslotItems/timeslotsSchedule.repository";
+import { TimeslotsScheduleRepository } from "../timeslotsSchedules/timeslotsSchedule.repository";
 
 
 @InRequestScope

@@ -4,7 +4,7 @@ import { Container } from "typescript-ioc";
 import { ServiceProvider, TimeslotsSchedule } from "../../models";
 import { SchedulesRepository } from "../../schedules/schedules.repository";
 import { IEntityWithSchedule } from "../../models/interfaces";
-import { TimeslotsScheduleRepository } from "../../timeslotItems/timeslotsSchedule.repository";
+import { TimeslotsScheduleRepository } from "../../timeslotsSchedules/timeslotsSchedule.repository";
 
 describe("Service Provider repository", () => {
 	beforeEach(() => {

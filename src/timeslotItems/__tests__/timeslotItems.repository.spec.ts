@@ -9,10 +9,23 @@ beforeEach(() => {
 });
 
 describe('TimeslotItems repository', () => {
-	it('should save TimeslotItems', async () => {
+	afterEach(() => {
+		jest.clearAllMocks();
+	});
+
+	it('should save TimeslotItem', async () => {
 		const repository = Container.get(TimeslotItemsRepository);
 		const data = TimeslotItem.create(1, 0, TimeOfDay.parse("08:00"), TimeOfDay.parse("09:00"));
 		const result = await repository.saveTimeslotItem(data);
+		expect(result).not.toBe(undefined);
+		expect(GetRepositoryMock).toBeCalled();
+		expect(InnerRepositoryMock.save).toBeCalledTimes(1);
+	});
+
+	it('should save TimeslotItems', async () => {
+		const repository = Container.get(TimeslotItemsRepository);
+		const data = TimeslotItem.create(1, 0, TimeOfDay.parse("08:00"), TimeOfDay.parse("09:00"));
+		const result = await repository.saveTimeslotItems([data]);
 		expect(result).not.toBe(undefined);
 		expect(GetRepositoryMock).toBeCalled();
 		expect(InnerRepositoryMock.save).toBeCalledTimes(1);
@@ -31,11 +44,11 @@ export const InnerRepositoryMock = {
 	save: jest.fn().mockImplementation(() => {
 		return Promise.resolve(timeslotItemMock);
 	}),
-	find: jest.fn().mockImplementation((...params) => {
+	find: jest.fn().mockImplementation(() => {
 		return Promise.resolve([timeslotItemMock]);
 	}),
 	delete: jest.fn().mockImplementationOnce((...id) => {
-		return Promise.resolve([timeslotItemMock])
+		return Promise.resolve([timeslotItemMock]);
 })
 };
 

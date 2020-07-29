@@ -3,7 +3,7 @@ import { DbConnection } from "../../core/db.connection";
 import { Container } from "typescript-ioc";
 import { Schedule, Service, TimeslotsSchedule } from "../../models";
 import { SchedulesRepository } from '../../schedules/schedules.repository';
-import { TimeslotsScheduleRepository } from "../../timeslotItems/timeslotsSchedule.repository";
+import { TimeslotsScheduleRepository } from "../../timeslotsSchedules/timeslotsSchedule.repository";
 
 describe("Services repository", () => {
 	beforeEach(() => {

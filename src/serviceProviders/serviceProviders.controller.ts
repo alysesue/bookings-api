@@ -1,13 +1,18 @@
 import { Inject, InRequestScope } from "typescript-ioc";
 import { ServiceProviderListRequest, ServiceProviderModel, ServiceProviderResponseModel, SetProviderScheduleRequest } from "./serviceProviders.apicontract";
 import { ServiceProvidersService } from "./serviceProviders.service";
-import { Body, Controller, Get, Header, Path, Post, Put, Route, Security, SuccessResponse, Tags } from "tsoa";
+import { Body, Controller, Delete, Deprecated, Get, Header, Path, Post, Put, Query, Route, Security, SuccessResponse, Tags } from "tsoa";
 import { ErrorResponse } from "../apicontract";
 import { parseCsv } from "../utils";
 import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
 import { ScheduleResponse } from "../schedules/schedules.apicontract";
 import { ServiceprovidersMapper } from "./serviceProviders.mapper";
-import { TimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.apicontract";
+import {
+	TimeslotItemRequest,
+	TimeslotItemResponse,
+	TimeslotsScheduleResponse
+} from "../timeslotItems/timeslotItems.apicontract";
+import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.mapper";
 
 @InRequestScope
 @Route("v1/service-providers")
@@ -56,9 +61,11 @@ export class ServiceProvidersController extends Controller {
 
 	@Get("")
 	@Security("optional-service")
-	public async getServiceProviders(@Header('x-api-service') serviceId?: number): Promise<ServiceProviderResponseModel[]> {
-		const dataModels = await this.serviceProvidersService.getServiceProviders(serviceId);
+
+	public async getServiceProviders(@Header('x-api-service') serviceId?: number, @Query() includeTimeslotsSchedule = false): Promise<ServiceProviderResponseModel[]> {
+		const dataModels = await this.serviceProvidersService.getServiceProviders(serviceId, undefined, includeTimeslotsSchedule);
 		return this.mapper.mapDataModels(dataModels);
+
 	}
 
 	@Get("{spId}")
@@ -67,21 +74,46 @@ export class ServiceProvidersController extends Controller {
 		return this.mapper.mapDataModel(dataModel);
 	}
 
-	@Put('{id}/schedule')
+	// TODO: Remove this api call
+	@Deprecated()
+	@Put('{spId}/schedule')
 	@SuccessResponse(200, "Ok")
-	public async setServiceSchedule(@Path() id: number, @Body() request: SetProviderScheduleRequest): Promise<ScheduleResponse> {
-		return mapScheduleToResponse(await this.serviceProvidersService.setProviderSchedule(id, request));
+	public async setServiceSchedule(@Path() spId: number, @Body() request: SetProviderScheduleRequest): Promise<ScheduleResponse> {
+		return mapScheduleToResponse(await this.serviceProvidersService.setProviderSchedule(spId, request));
 	}
 
-	@Get('{id}/schedule')
+	// TODO: Remove this api call
+	@Deprecated()
+	@Get('{spId}/schedule')
 	@SuccessResponse(200, "Ok")
-	public async getServiceSchedule(@Path() id: number): Promise<ScheduleResponse> {
-		return mapScheduleToResponse(await this.serviceProvidersService.getProviderSchedule(id));
+	public async getServiceSchedule(@Path() spId: number): Promise<ScheduleResponse> {
+		return mapScheduleToResponse(await this.serviceProvidersService.getProviderSchedule(spId));
 	}
 
-	@Get("{id}/timeslotSchedule")
+	@Get("{spId}/timeslotSchedule")
 	@SuccessResponse(200, "Ok")
-	public async getTimeslotsScheduleByServiceProvider(id: number): Promise<TimeslotsScheduleResponse> {
-		return await this.serviceProvidersService.getTimeslotItemsByServiceProviderId(id);
+	public async getTimeslotsScheduleByServiceProviderId(@Path() spId: number): Promise<TimeslotsScheduleResponse> {
+		const data = await this.serviceProvidersService.getTimeslotItems(spId);
+		return mapToTimeslotsScheduleResponse(data);
+	}
+
+	@Post("{spId}/timeslotSchedule/timeslots")
+	@SuccessResponse(201, "Created")
+	public async createTimeslotItem(@Path() spId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
+		const data = await this.serviceProvidersService.addTimeslotItem(spId, request);
+		return mapToTimeslotItemResponse(data);
+	}
+
+	@Put("{spId}/timeslotSchedule/timeslots/{timeslotId}")
+	@SuccessResponse(200, "Ok")
+	public async updateTimeslotItem(@Path() spId: number, @Path() timeslotId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
+		const data = await this.serviceProvidersService.updateTimeslotItem(spId, timeslotId, request );
+		return mapToTimeslotItemResponse(data);
+	}
+
+	@Delete("{spId}/timeslotSchedule/timeslots/{timeslotId}")
+	@SuccessResponse(204, "No Content")
+	public async deleteTimeslotItem(@Path() spId: number, @Path() timeslotId: number) {
+		await this.serviceProvidersService.deleteTimeslotItem(spId, timeslotId);
 	}
 }

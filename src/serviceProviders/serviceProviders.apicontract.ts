@@ -1,4 +1,5 @@
 import { CalendarModel } from '../calendars/calendars.apicontract';
+import { TimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.apicontract";
 
 export class ServiceProviderModel {
 	public name: string;
@@ -13,12 +14,15 @@ export class ServiceProviderResponseModel {
 	public name: string;
 	public calendar: CalendarModel;
 	public serviceId: number;
+	public timeslotsSchedule?: TimeslotsScheduleResponse;
 
-	constructor(id: number, name: string, calendar: CalendarModel, serviceId: number) {
+
+	constructor(id: number, name: string, calendar: CalendarModel, serviceId: number, timeslotsSchedule?: TimeslotsScheduleResponse) {
 		this.id = id;
 		this.name = name;
 		this.calendar = calendar;
 		this.serviceId = serviceId;
+		this.timeslotsSchedule = timeslotsSchedule;
 	}
 }
 

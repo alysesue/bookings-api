@@ -58,7 +58,7 @@ describe("Google calendar wrapper tests", () => {
 	});
 
 	it("should remove calendar", async () => {
-		GoogleApiMock.deleteEventsMock = jest.fn()
+		GoogleApiMock.deleteEventsMock = jest.fn();
 		await Container.get(GoogleCalendarService).deleteEvent("cal-id", "event-id");
 		expect(GoogleApiMock.deleteEventsMock).toBeCalled();
 	});

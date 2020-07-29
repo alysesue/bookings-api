@@ -8,12 +8,13 @@ export class Booking {
 	constructor() {
 	}
 
-	public static create(serviceId: number, startDateTime: Date, sessionDurationInMinutes: number, serviceProviderId?: number) {
+	public static create(serviceId: number, startDateTime: Date, sessionDurationInMinutes: number, serviceProviderId?: number, refId?: string) {
 		const instance = new Booking();
 		instance._serviceId = serviceId;
 		instance._startDateTime = startDateTime;
 		instance._sessionDurationInMinutes = sessionDurationInMinutes;
 		instance._createdAt = new Date();
+		instance._refId = refId;
 
 		if (serviceProviderId) {
 			instance._serviceProviderId = serviceProviderId;
@@ -79,6 +80,9 @@ export class Booking {
 
 	@Column()
 	private _createdAt: Date;
+
+	@Column({ nullable: true })
+	private _refId?: string;
 
 	public get startDateTime(): Date {
 		return this._startDateTime;

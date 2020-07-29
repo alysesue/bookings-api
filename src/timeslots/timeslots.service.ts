@@ -4,11 +4,12 @@ import { Booking, BookingStatus, ServiceProvider } from '../models';
 import { CalendarsRepository } from "../calendars/calendars.repository";
 import { DateHelper } from "../infrastructure/dateHelper";
 import { BookingsRepository } from "../bookings/bookings.repository";
-import { BookingSearchRequest } from '../bookings/bookings.apicontract';
 import { groupByKey } from '../tools/collections';
 import { ServicesRepository } from "../services/services.repository";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
+import { intersectsDateTimeSpan } from "../tools/timeSpan";
+import { BookingSearchRequest } from "../bookings/bookings.apicontract";
 
 @Scoped(Scope.Request)
 export class TimeslotsService {
@@ -24,29 +25,6 @@ export class TimeslotsService {
 	@Inject
 	private serviceProvidersRepo: ServiceProvidersRepository;
 
-	private async getAcceptedBookings(minStartTime: Date, maxEndTime: Date, serviceId: number): Promise<Booking[]> {
-		let bookings = await this.bookingsRepository.search(new BookingSearchRequest(
-			minStartTime,
-			maxEndTime,
-			BookingStatus.Accepted,
-			serviceId
-		));
-		bookings = bookings.filter(booking => booking.serviceProviderId && booking.getSessionEndTime() <= maxEndTime);
-		return bookings;
-	}
-
-	private async getPendingBookings(minStartTime: Date, maxEndTime: Date, serviceId: number): Promise<Booking[]> {
-		let bookings = await this.bookingsRepository.search(new BookingSearchRequest(
-			minStartTime,
-			maxEndTime,
-			BookingStatus.PendingApproval,
-			serviceId
-		));
-
-		bookings = bookings.filter(booking => booking.getSessionEndTime() <= maxEndTime);
-		return bookings;
-	}
-
 	private timeslotKeySelector = (start: Date, end: Date) => `${start.getTime()}|${end.getTime()}`;
 	private bookingKeySelector = (booking: Booking) => this.timeslotKeySelector(booking.startDateTime, booking.getSessionEndTime());
 
@@ -54,10 +32,15 @@ export class TimeslotsService {
 		const acceptedBookingsLookup = groupByKey(acceptedBookings, this.bookingKeySelector);
 
 		for (const element of entries) {
+			const result = acceptedBookings.filter(booking => {
+				return intersectsDateTimeSpan({start: booking.startDateTime, end: booking.getSessionEndTime()}, element.startTime, element.endTime);})
+			.map(booking => booking.serviceProviderId);
+			element.setOverlappingServiceProviders(result);
+
 			const elementKey = this.timeslotKeySelector(element.startTime, element.endTime);
 			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
 			if (acceptedBookingsForTimeslot) {
-				element.setBookedServiceProvders(acceptedBookingsForTimeslot.map(booking => booking.serviceProviderId));
+				element.setBookedServiceProviders(acceptedBookingsForTimeslot.map(booking => booking.serviceProviderId));
 			}
 		}
 	}
@@ -106,8 +89,17 @@ export class TimeslotsService {
 
 	public async getAggregatedTimeslots(startDateTime: Date, endDateTime: Date, serviceId: number, serviceProviderId?: number): Promise<AvailableTimeslotProviders[]> {
 		let aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime, serviceId);
-		const pendingBookings = await this.getPendingBookings(startDateTime, endDateTime, serviceId);
-		const acceptedBookings = await this.getAcceptedBookings(startDateTime, endDateTime, serviceId);
+		const pendingAndAcceptedBookings = await this.bookingsRepository.search(
+			new BookingSearchRequest(
+				startDateTime,
+				endDateTime,
+				[BookingStatus.PendingApproval, BookingStatus.Accepted],
+				serviceId
+			)
+		);
+
+		const acceptedBookings = pendingAndAcceptedBookings.filter(booking => booking.status === BookingStatus.Accepted);
+		const pendingBookings = pendingAndAcceptedBookings.filter(booking => booking.status === BookingStatus.PendingApproval);
 
 		if (serviceProviderId) {
 			aggregatedEntries = aggregatedEntries.filter(entry => entry.getGroups().find(sp => sp.id === serviceProviderId));

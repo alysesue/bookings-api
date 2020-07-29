@@ -1,4 +1,4 @@
-import { ITimeSpan } from "../models/interfaces";
+import { IDateSpan, ITimeSpan } from "../models/interfaces";
 import { TimeOfDay } from "../models/timeOfDay";
 
 export const intersectsSpan = (a: ITimeSpan, b: ITimeSpan) => {
@@ -13,5 +13,9 @@ export const intersects = (timeSpan: ITimeSpan, startTime: TimeOfDay, endTime: T
 	}
 
 	return false;
+};
+
+export const intersectsDateTimeSpan = (dateSpan: IDateSpan, startDate: Date, endDate: Date) => {
+	return dateSpan.start < endDate && startDate < dateSpan.end;
 };
 

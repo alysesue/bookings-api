@@ -27,3 +27,8 @@ export interface ITimeSpan {
 	startTime: TimeOfDay;
 	endTime: TimeOfDay;
 }
+
+export interface IDateSpan {
+	start: Date;
+	end: Date;
+}

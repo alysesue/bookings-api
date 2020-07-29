@@ -1,12 +1,12 @@
 import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
 import { Inject, InRequestScope } from "typescript-ioc";
-import { Schedule, Service, TimeslotsSchedule } from "../models";
+import { Schedule, Service, TimeslotItem, TimeslotsSchedule } from "../models";
 import { ServicesRepository } from "./services.repository";
 import { ServiceRequest, SetScheduleRequest } from "./service.apicontract";
 import { SchedulesService } from '../schedules/schedules.service';
-import { mapToTimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.mapper";
-import { TimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.apicontract";
-import { TimeslotsScheduleRepository } from "../timeslotItems/timeslotsSchedule.repository";
+import { TimeslotItemRequest } from "../timeslotItems/timeslotItems.apicontract";
+import { TimeslotItemsService } from "../timeslotItems/timeslotItems.service";
+import { TimeslotsScheduleService } from "../timeslotsSchedules/timeslotsSchedule.service";
 
 @InRequestScope
 export class ServicesService {
@@ -18,7 +18,10 @@ export class ServicesService {
 	private schedulesService: SchedulesService;
 
 	@Inject
-	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
+	private timeslotItemsService: TimeslotItemsService;
+
+	@Inject
+	private timeslotsScheduleService: TimeslotsScheduleService;
 
 	public async createService(request: ServiceRequest): Promise<Service> {
 		const service = new Service();
@@ -64,11 +67,6 @@ export class ServicesService {
 		return schedule;
 	}
 
-	public async getServiceTimeslotsSchedule(id: number): Promise<TimeslotsScheduleResponse> {
-		const service = await this.getService(id);
-		return mapToTimeslotsScheduleResponse(await this.timeslotsScheduleRepository.getTimeslotsScheduleById(service.timeslotsScheduleId));
-	}
-
 	public async getServices(): Promise<Service[]> {
 		return await this.servicesRepository.getAll();
 	}
@@ -77,7 +75,41 @@ export class ServicesService {
 		return await this.servicesRepository.getService(id);
 	}
 
-	public async setServiceTimeslotsSchedule(id: number, timeslotsScheduleId: number): Promise<TimeslotsSchedule> {
+	public async getServiceTimeslotsSchedule(id: number): Promise<TimeslotsSchedule> {
+		const service = await this.getService(id);
+		return await this.timeslotsScheduleService.getTimeslotsScheduleById(service.timeslotsScheduleId);
+	}
+
+	public async addTimeslotItem(serviceId: number, request: TimeslotItemRequest): Promise<TimeslotItem> {
+		let timeslotsSchedule = await this.getServiceTimeslotsSchedule(serviceId);
+		if (!timeslotsSchedule) {
+			timeslotsSchedule = await this.createTimeslotsSchedule(serviceId);
+		}
+		return this.timeslotItemsService.createTimeslotItem(timeslotsSchedule, request);
+	}
+
+	public async deleteTimeslotsScheduleItem(timeslotId: number) {
+		await this.timeslotItemsService.deleteTimeslot(timeslotId);
+	}
+
+	public async updateTimeslotItem({serviceId, timeslotId, request}
+	: { serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
+		: Promise<TimeslotItem> {
+		const timeslotsSchedule = await this.getServiceTimeslotsSchedule(serviceId);
+		return this.timeslotItemsService.updateTimeslotItem(timeslotsSchedule, timeslotId, request);
+	}
+
+	private async createTimeslotsSchedule(serviceId: number): Promise<TimeslotsSchedule> {
+		const timeslotsScheduleData = new TimeslotsSchedule();
+		timeslotsScheduleData._service = serviceId;
+		const timeslotsSchedule = await this.timeslotsScheduleService.createTimeslotsSchedule({id: serviceId});
+		if (timeslotsSchedule._id) {
+			await this.setServiceTimeslotsSchedule(serviceId, timeslotsSchedule._id);
+		}
+		return timeslotsSchedule;
+	}
+
+	private async setServiceTimeslotsSchedule(id: number, timeslotsScheduleId: number): Promise<TimeslotsSchedule> {
 		const service = await this.servicesRepository.getService(id);
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');

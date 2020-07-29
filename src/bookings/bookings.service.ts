@@ -7,6 +7,7 @@ import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
 import { DateHelper } from "../infrastructure/dateHelper";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
+import { intersectsDateTimeSpan } from "../tools/timeSpan";
 
 @InRequestScope
 export class BookingsService {
@@ -40,7 +41,8 @@ export class BookingsService {
 			serviceId,
 			bookingRequest.startDateTime,
 			duration,
-			bookingRequest.serviceProviderId);
+			bookingRequest.serviceProviderId,
+			bookingRequest.refId);
 	}
 
 	public async getBooking(bookingId: number): Promise<Booking> {
@@ -56,11 +58,16 @@ export class BookingsService {
 		// Method calls with different services, or timeslots should still run in parallel.
 		const booking = await this.createBooking(bookingRequest, serviceId);
 
-		await this.validateTimeSlot(booking);
+		if (!bookingRequest.outOfSlotBooking) {
+			await this.validateTimeSlot(booking);
+		} else {
+			await this.validateOutOfSlotBookings(booking);
+		}
 
 		await this.bookingsRepository.save(booking);
 		return this.getBooking(booking.id);
 	}
+
 	public async cancelBooking(bookingId: number): Promise<Booking> {
 		const booking = await this.getBookingForCancelling(bookingId);
 		const eventCalId = booking.eventICalId;
@@ -110,6 +117,34 @@ export class BookingsService {
 			const errorMessage = booking.serviceProviderId ? "The service provider is not available for this timeslot"
 				: "No available service providers for this timeslot";
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(errorMessage);
+		}
+	}
+
+	private async validateOutOfSlotBookings(booking: Booking) {
+		const { startDateTime, serviceId, serviceProviderId } = booking;
+		const endTime = booking.getSessionEndTime();
+		const startOfDay = DateHelper.getStartOfDay(startDateTime);
+		const endOfDay = DateHelper.getEndOfDay(startDateTime);
+
+		const searchQuery = new BookingSearchRequest(startOfDay, endOfDay, [BookingStatus.Accepted,BookingStatus.PendingApproval], serviceId, serviceProviderId);
+
+		const pendingAndAcceptedBookings = await this.searchBookings(searchQuery);
+
+		const acceptedBookings = pendingAndAcceptedBookings.filter(acceptedBooking => acceptedBooking.status === BookingStatus.Accepted);
+		const pendingBookings = pendingAndAcceptedBookings.filter(pendingBooking => pendingBooking.status === BookingStatus.PendingApproval);
+
+		for (const item of acceptedBookings) {
+			const intersects = intersectsDateTimeSpan({ start: item.startDateTime, end: item.getSessionEndTime() }, startDateTime, endTime);
+			if (intersects) {
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking request not valid as it overlaps another accepted booking`);
+			}
+		}
+
+		for (const item of pendingBookings) {
+			const intersects = intersectsDateTimeSpan({ start: item.startDateTime, end: item.getSessionEndTime() }, startDateTime, endTime);
+			if (intersects) {
+				item.status = BookingStatus.Cancelled;
+			}
 		}
 	}
 

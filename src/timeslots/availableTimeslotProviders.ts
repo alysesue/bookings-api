@@ -7,6 +7,7 @@ export class AvailableTimeslotProviders {
 	public pendingBookingsCount: number;
 	private _relatedServiceProviders: ServiceProvider[];
 	private _bookedServiceProviders: ServiceProvider[];
+	private _overlappingServiceProviders: ServiceProvider[];
 	private _availableServiceProviders: ServiceProvider[];
 
 	constructor() {
@@ -22,10 +23,16 @@ export class AvailableTimeslotProviders {
 		this._availableServiceProviders = Array.from(providers);
 	}
 
-	public setBookedServiceProvders(providerIds: number[]) {
+	public setBookedServiceProviders(providerIds: number[]) {
 		const bookedProviderIds = new Set<number>(providerIds);
 		this._bookedServiceProviders = this._relatedServiceProviders.filter(sp => bookedProviderIds.has(sp.id));
-		this._availableServiceProviders = this._relatedServiceProviders.filter(sp => !bookedProviderIds.has(sp.id));
+		this._availableServiceProviders = this._availableServiceProviders.filter(sp => !bookedProviderIds.has(sp.id));
+	}
+
+	public setOverlappingServiceProviders(providerIds: number[]) {
+		const overlappingProviderIds = new Set<number>(providerIds);
+		this._overlappingServiceProviders = this._relatedServiceProviders.filter(sp => overlappingProviderIds.has(sp.id));
+		this._availableServiceProviders = this._availableServiceProviders.filter(sp => !overlappingProviderIds.has(sp.id));
 	}
 
 	public get bookedServiceProviders(): ServiceProvider[] {
