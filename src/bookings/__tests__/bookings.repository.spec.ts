@@ -6,6 +6,9 @@ import { InsertResult } from "typeorm";
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { BookingSearchRequest } from '../bookings.apicontract';
 
+const bookingMock = new Booking();
+bookingMock.status = BookingStatus.Accepted;
+
 describe("Bookings repository", () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
@@ -16,7 +19,7 @@ describe("Bookings repository", () => {
 		let param: string;
 		MockDBConnection.find.mockImplementation((_param) => {
 			param = JSON.stringify(_param);
-			return Promise.resolve([]);
+			return Promise.resolve([bookingMock]);
 		});
 
 		const bookingsRepository = Container.get(BookingsRepository);
@@ -24,11 +27,11 @@ describe("Bookings repository", () => {
 		const filter = new BookingSearchRequest(
 			date,
 			DateHelper.addDays(date, 1),
-			BookingStatus.Accepted
+			[BookingStatus.Accepted]
 		);
 
 		const result = await bookingsRepository.search(filter);
-		expect(result).toStrictEqual([]);
+		expect(result).toStrictEqual([bookingMock]);
 		expect(MockDBConnection.find).toBeCalled();
 
 		expect(param).toMatchSnapshot();
@@ -55,7 +58,6 @@ describe("Bookings repository", () => {
 
 		expect(param).toMatchSnapshot();
 	});
-
 
 	it("should save booking", async () => {
 		jest.resetAllMocks();

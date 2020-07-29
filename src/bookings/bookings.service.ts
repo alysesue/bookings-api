@@ -126,11 +126,12 @@ export class BookingsService {
 		const startOfDay = DateHelper.getStartOfDay(startDateTime);
 		const endOfDay = DateHelper.getEndOfDay(startDateTime);
 
-		const acceptedBookingsSearchQuery = new BookingSearchRequest(startOfDay, endOfDay, BookingStatus.Accepted, serviceId, serviceProviderId);
-		const pendingBookingsSearchQuery = new BookingSearchRequest(startOfDay, endOfDay, BookingStatus.PendingApproval, serviceId, serviceProviderId);
+		const searchQuery = new BookingSearchRequest(startOfDay, endOfDay, [BookingStatus.Accepted,BookingStatus.PendingApproval], serviceId, serviceProviderId);
 
-		const acceptedBookings = await this.searchBookings(acceptedBookingsSearchQuery);
-		const pendingBookings = await this.searchBookings(pendingBookingsSearchQuery);
+		const pendingAndAcceptedBookings = await this.searchBookings(searchQuery);
+
+		const acceptedBookings = pendingAndAcceptedBookings.filter(acceptedBooking => acceptedBooking.status === BookingStatus.Accepted);
+		const pendingBookings = pendingAndAcceptedBookings.filter(pendingBooking => pendingBooking.status === BookingStatus.PendingApproval);
 
 		for (const item of acceptedBookings) {
 			const intersects = intersectsDateTimeSpan({ start: item.startDateTime, end: item.getSessionEndTime() }, startDateTime, endTime);

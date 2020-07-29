@@ -115,7 +115,6 @@ export class ServiceProvidersService {
 		return serviceProvider.timeslotsSchedule;
 	}
 
-
 	public async addTimeslotItem(serviceProviderId: number, request: TimeslotItemRequest)
 		: Promise<TimeslotItem> {
 		let serviceProvider = await this.getServiceProvider(serviceProviderId, false, true);

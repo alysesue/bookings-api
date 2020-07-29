@@ -1,6 +1,6 @@
 import { InRequestScope } from "typescript-ioc";
-import { Between, FindConditions, FindManyOptions, InsertResult } from "typeorm";
-import { Booking } from "../models";
+import { Between, FindConditions, FindManyOptions, In, InsertResult,  } from "typeorm";
+import { Booking, BookingStatus } from "../models";
 import { RepositoryBase } from "../core/repository";
 
 @InRequestScope
@@ -27,7 +27,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 	public async search(searchRequest: {
 		serviceId?: number,
 		serviceProviderId?: number,
-		status?: number,
+		statuses?: BookingStatus[],
 		from: Date,
 		to: Date
 	}): Promise<Booking[]> {
@@ -35,8 +35,8 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 		const findConditions: FindConditions<Booking> = {};
 		findConditions['_startDateTime'] = Between(searchRequest.from, searchRequest.to);
-		if (searchRequest.status) {
-			findConditions['_status'] = searchRequest.status;
+		if (searchRequest.statuses) {
+			findConditions['_status'] = In(searchRequest.statuses);
 		}
 		if (searchRequest.serviceId) {
 			findConditions['_serviceId'] = searchRequest.serviceId;

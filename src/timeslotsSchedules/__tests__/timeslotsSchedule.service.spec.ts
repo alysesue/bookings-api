@@ -1,6 +1,6 @@
 import { Container } from "typescript-ioc";
 import { TimeslotsSchedule } from "../../models";
-import { TimeslotsScheduleRepository } from "../../timeslotsSchedules/timeslotsSchedule.repository";
+import { TimeslotsScheduleRepository } from "../timeslotsSchedule.repository";
 import { TimeslotsScheduleService } from "../timeslotsSchedule.service";
 
 const createTimeslotsSchedule = jest.fn();
