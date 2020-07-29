@@ -2,7 +2,7 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { Service } from "../models";
 import { RepositoryBase } from "../core/repository";
 import { SchedulesRepository } from '../schedules/schedules.repository';
-import { TimeslotsScheduleRepository } from '../timeslotItems/timeslotsSchedule.repository';
+import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
 
 @InRequestScope
 export class ServicesRepository extends RepositoryBase<Service> {

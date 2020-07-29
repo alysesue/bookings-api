@@ -1,3 +1,4 @@
+import { DeleteResult } from "typeorm";
 import { InRequestScope } from "typescript-ioc";
 import { RepositoryBase } from "../core/repository";
 import { TimeslotItem } from "../models";
@@ -16,8 +17,15 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotItem> {
 		return await repository.save(data);
 	}
 
-	public async deleteTimeslotItem(id: number) {
+	public async saveTimeslotItems(data: TimeslotItem[]): Promise<TimeslotItem[]> {
+		if (!data)
+			return null;
 		const repository = await this.getRepository();
-		await repository.delete(id);
+		return await repository.save(data);
+	}
+
+	public async deleteTimeslotItem(id: number): Promise<DeleteResult> {
+		const repository = await this.getRepository();
+		return await repository.delete(id);
 	}
 }
