@@ -5,7 +5,6 @@ import { ServicesService } from "./services.service";
 import { Service } from "../models";
 import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
 import { ScheduleResponse } from '../schedules/schedules.apicontract';
-import { TimeslotItemsService } from "../timeslotItems/timeslotItems.service";
 import { TimeslotItemRequest, TimeslotItemResponse, TimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.apicontract";
 import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.mapper";
 
@@ -16,9 +15,6 @@ export class ServicesController extends Controller {
 	@Inject
 	private servicesService: ServicesService;
 
-	@Inject
-	private timeslotItemsService: TimeslotItemsService;
-
 	private static mapToServiceResponse(service: Service) {
 		const response = new ServiceResponse();
 		response.id = service.id;
@@ -26,12 +22,19 @@ export class ServicesController extends Controller {
 		return response;
 	}
 
+	/**
+	 * Creates a service for booking.
+	 * @param request
+	 */
 	@Post()
 	@SuccessResponse(201, "Created")
 	public async createService(@Body() request: ServiceRequest): Promise<ServiceResponse> {
 		return ServicesController.mapToServiceResponse(await this.servicesService.createService(request));
 	}
 
+	/**
+	 * Retrieves all services.
+	 */
 	@Get()
 	@SuccessResponse(200, "Ok")
 	public async getServices(): Promise<ServiceResponse[]> {
@@ -53,6 +56,10 @@ export class ServicesController extends Controller {
 		return mapScheduleToResponse(await this.servicesService.getServiceSchedule(id));
 	}
 
+	/**
+	 * Retrieves a single service.
+	 * @param serviceId The service id.
+	 */
 	@Get("{serviceId}")
 	@SuccessResponse(200, "Ok")
 	public async getService(serviceId: number): Promise<ServiceResponse> {
@@ -60,6 +67,10 @@ export class ServicesController extends Controller {
 		return ServicesController.mapToServiceResponse(service);
 	}
 
+	/**
+	 * Retrieves all weekly recurring timeslots for a service.
+	 * @param serviceId The service id.
+	 */
 	@Get("{serviceId}/timeslotSchedule")
 	@SuccessResponse(200, "Ok")
 	public async getTimeslotsScheduleByServiceId(serviceId: number): Promise<TimeslotsScheduleResponse> {
@@ -67,6 +78,11 @@ export class ServicesController extends Controller {
 		return mapToTimeslotsScheduleResponse(data);
 	}
 
+	/**
+	 * Creates a new weekly recurring timeslot for a service.
+	 * @param serviceId The service id.
+	 * @param request
+	 */
 	@Post("{serviceId}/timeslotSchedule/timeslots")
 	@SuccessResponse(201, "Created")
 	public async createTimeslotItem(@Path() serviceId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
@@ -74,16 +90,27 @@ export class ServicesController extends Controller {
 		return mapToTimeslotItemResponse(data);
 	}
 
-	@Delete("{serviceId}/timeslotSchedule/timeslots/{timeslotId}")
-	@SuccessResponse(204, "No Content")
-	public async deleteTimeslotItem(@Path() serviceId: number, @Path() timeslotId: number) {
-		await this.servicesService.deleteTimeslotsScheduleItem(timeslotId);
-	}
-
+	/**
+	 * Updates a weekly recurring timeslot. Existing bookings are not affected.
+	 * @param serviceId The service id.
+	 * @param timeslotId The weekly timeslot id.
+	 * @param request
+	 */
 	@Put("{serviceId}/timeslotSchedule/timeslots/{timeslotId}")
 	@SuccessResponse(200, "Ok")
 	public async updateTimeslotItem(@Path() serviceId: number, @Path() timeslotId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
 		const data = await this.servicesService.updateTimeslotItem({ serviceId, timeslotId, request });
 		return mapToTimeslotItemResponse(data);
+	}
+
+	/**
+	 * Deletes a weekly recurring timeslot. Existing bookings are not affected.
+	 * @param serviceId The service id.
+	 * @param timeslotId The weekly timeslot id.
+	 */
+	@Delete("{serviceId}/timeslotSchedule/timeslots/{timeslotId}")
+	@SuccessResponse(204, "No Content")
+	public async deleteTimeslotItem(@Path() serviceId: number, @Path() timeslotId: number) {
+		await this.servicesService.deleteTimeslotsScheduleItem(timeslotId);
 	}
 }

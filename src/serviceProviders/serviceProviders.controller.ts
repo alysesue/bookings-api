@@ -40,6 +40,11 @@ export class ServiceProvidersController extends Controller {
 		}
 	}
 
+	/**
+	 * Creates multiple service providers (json format).
+	 * @param spRequest
+	 * @param serviceId The service id.
+	 */
 	@Post("")
 	@Security("service")
 	@SuccessResponse(201, 'Created')
@@ -47,6 +52,11 @@ export class ServiceProvidersController extends Controller {
 		await this.serviceProvidersService.saveServiceProviders(spRequest.serviceProviders, serviceId);
 	}
 
+	/**
+	 * Creates multiple service providers (CSV format). The csv content must contain a single header called name.
+	 * @param spRequest
+	 * @param serviceId The service id.
+	 */
 	@Post("/csv")
 	@Security("service")
 	@SuccessResponse(201, 'Created')
@@ -59,22 +69,29 @@ export class ServiceProvidersController extends Controller {
 		}
 	}
 
+	/**
+	 * Retrieves service providers.
+	 * @param serviceId (Optional) Filters by a service (id).
+	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
+	 */
 	@Get("")
 	@Security("optional-service")
-
 	public async getServiceProviders(@Header('x-api-service') serviceId?: number, @Query() includeTimeslotsSchedule = false): Promise<ServiceProviderResponseModel[]> {
 		const dataModels = await this.serviceProvidersService.getServiceProviders(serviceId, undefined, includeTimeslotsSchedule);
 		return this.mapper.mapDataModels(dataModels);
 
 	}
 
+	/**
+	 * Retrieves a single service provider.
+	 * @param spId The service provider id.
+	 */
 	@Get("{spId}")
 	public async getServiceProvider(@Path() spId: number): Promise<ServiceProviderResponseModel> {
 		const dataModel = await this.serviceProvidersService.getServiceProvider(spId, true, true);
 		return this.mapper.mapDataModel(dataModel);
 	}
 
-	// TODO: Remove this api call
 	@Deprecated()
 	@Put('{spId}/schedule')
 	@SuccessResponse(200, "Ok")
@@ -82,7 +99,6 @@ export class ServiceProvidersController extends Controller {
 		return mapScheduleToResponse(await this.serviceProvidersService.setProviderSchedule(spId, request));
 	}
 
-	// TODO: Remove this api call
 	@Deprecated()
 	@Get('{spId}/schedule')
 	@SuccessResponse(200, "Ok")
@@ -90,6 +106,10 @@ export class ServiceProvidersController extends Controller {
 		return mapScheduleToResponse(await this.serviceProvidersService.getProviderSchedule(spId));
 	}
 
+	/**
+	 * Retrieves all weekly recurring timeslots for a service provider.
+	 * @param spId The service provider id.
+	 */
 	@Get("{spId}/timeslotSchedule")
 	@SuccessResponse(200, "Ok")
 	public async getTimeslotsScheduleByServiceProviderId(@Path() spId: number): Promise<TimeslotsScheduleResponse> {
@@ -97,6 +117,11 @@ export class ServiceProvidersController extends Controller {
 		return mapToTimeslotsScheduleResponse(data);
 	}
 
+	/**
+	 * Creates a new weekly recurring timeslot for a service provider.
+	 * @param spId The service provider id.
+	 * @param request
+	 */
 	@Post("{spId}/timeslotSchedule/timeslots")
 	@SuccessResponse(201, "Created")
 	public async createTimeslotItem(@Path() spId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
@@ -104,13 +129,24 @@ export class ServiceProvidersController extends Controller {
 		return mapToTimeslotItemResponse(data);
 	}
 
+	/**
+	 * Updates a weekly recurring timeslot for a service provider. Existing bookings are not affected.
+	 * @param spId The service provider id.
+	 * @param timeslotId The weekly timeslot id.
+	 * @param request
+	 */
 	@Put("{spId}/timeslotSchedule/timeslots/{timeslotId}")
 	@SuccessResponse(200, "Ok")
 	public async updateTimeslotItem(@Path() spId: number, @Path() timeslotId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
-		const data = await this.serviceProvidersService.updateTimeslotItem(spId, timeslotId, request );
+		const data = await this.serviceProvidersService.updateTimeslotItem(spId, timeslotId, request);
 		return mapToTimeslotItemResponse(data);
 	}
 
+	/**
+	 * Deletes a weekly recurring timeslot for a service provider. Existing bookings are not affected.
+	 * @param spId The service provider id.
+	 * @param timeslotId The weekly timeslot id.
+	 */
 	@Delete("{spId}/timeslotSchedule/timeslots/{timeslotId}")
 	@SuccessResponse(204, "No Content")
 	public async deleteTimeslotItem(@Path() spId: number, @Path() timeslotId: number) {
