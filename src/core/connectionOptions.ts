@@ -1,5 +1,5 @@
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
-import { Booking, Calendar, Schedule, Service, ServiceProvider, TimeslotItem, TimeslotsSchedule, WeekDayBreak, WeekDaySchedule } from "../models";
+import { Booking, Calendar, Schedule, Service, ServiceProvider, TimeslotItem, TimeslotsSchedule, Unavailability, WeekDayBreak, WeekDaySchedule } from "../models";
 import { getConfig } from '../config/app-config';
 
 export function getConnectionOptions(): PostgresConnectionOptions {
@@ -7,7 +7,7 @@ export function getConnectionOptions(): PostgresConnectionOptions {
 	return {
 		database: config.database.instance,
 		entities: [
-			Booking, Calendar, Service, Schedule, ServiceProvider, WeekDayBreak, WeekDaySchedule, TimeslotsSchedule, TimeslotItem
+			Booking, Calendar, Service, Schedule, ServiceProvider, WeekDayBreak, WeekDaySchedule, TimeslotsSchedule, TimeslotItem, Unavailability
 		],
 		logging: ["schema", "migration"],
 		host: config.database.host,
@@ -15,6 +15,8 @@ export function getConnectionOptions(): PostgresConnectionOptions {
 		username: config.database.username,
 		password: config.database.password,
 		synchronize: false,
-		type: 'postgres'
-	};
+		type: 'postgres',
+		migrations: ['migrations/**/*{.js,.ts}'],
+		cli: { migrationsDir: 'migrations' },
+	} as PostgresConnectionOptions;
 }

@@ -1,9 +1,9 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Calendar } from "./calendar";
 import { ServiceProviderStatus } from "../serviceProviderStatus";
 import { Service } from "./service";
 import { Schedule } from './schedule';
-import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
+import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IServiceProvider, IUnavailability } from '../interfaces';
 import { TimeslotsSchedule } from "./timeslotsSchedule";
 
 @Entity()
@@ -111,7 +111,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	public set timeslotsScheduleId(id: number) { this._timeslotsScheduleId = id; }
 	public get timeslotsScheduleId(): number { return this._timeslotsScheduleId; }
 
-	@OneToOne(type => TimeslotsSchedule, e => e._serviceProvider,{
+	@OneToOne(type => TimeslotsSchedule, e => e._serviceProvider, {
 		cascade: true,
 	})
 	@JoinColumn({ name: '_timeslotsScheduleId' })
@@ -119,4 +119,6 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 
 	public set timeslotsSchedule(value: TimeslotsSchedule) { this._timeslotsSchedule = value; }
 	public get timeslotsSchedule(): TimeslotsSchedule { return this._timeslotsSchedule; }
+
+	public _unavailabilities: IUnavailability[];
 }
