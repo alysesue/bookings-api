@@ -47,7 +47,7 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Post("")
 	@Security("service")
-	@SuccessResponse(201, 'Created')
+	@SuccessResponse(204, 'Created')
 	public async addServiceProviders(@Body() spRequest: ServiceProviderListRequest, @Header('x-api-service') serviceId: number) {
 		await this.serviceProvidersService.saveServiceProviders(spRequest.serviceProviders, serviceId);
 	}
@@ -59,14 +59,10 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Post("/csv")
 	@Security("service")
-	@SuccessResponse(201, 'Created')
+	@SuccessResponse(204, 'Created')
 	public async addServiceProvidersText(@Body() spRequest: string, @Header('x-api-service') serviceId: number) {
-		try {
-			const request = ServiceProvidersController.parseCsvModelToServiceProviders(parseCsv(spRequest));
-			await this.serviceProvidersService.saveServiceProviders(request, serviceId);
-		} catch (e) {
-			return new ErrorResponse(e.message);
-		}
+		const request = ServiceProvidersController.parseCsvModelToServiceProviders(parseCsv(spRequest));
+		await this.serviceProvidersService.saveServiceProviders(request, serviceId);
 	}
 
 	/**
@@ -79,7 +75,6 @@ export class ServiceProvidersController extends Controller {
 	public async getServiceProviders(@Header('x-api-service') serviceId?: number, @Query() includeTimeslotsSchedule = false): Promise<ServiceProviderResponseModel[]> {
 		const dataModels = await this.serviceProvidersService.getServiceProviders(serviceId, undefined, includeTimeslotsSchedule);
 		return this.mapper.mapDataModels(dataModels);
-
 	}
 
 	/**
@@ -126,6 +121,7 @@ export class ServiceProvidersController extends Controller {
 	@SuccessResponse(201, "Created")
 	public async createTimeslotItem(@Path() spId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
 		const data = await this.serviceProvidersService.addTimeslotItem(spId, request);
+		this.setStatus(201);
 		return mapToTimeslotItemResponse(data);
 	}
 

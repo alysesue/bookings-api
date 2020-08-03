@@ -60,6 +60,7 @@ export class BookingsController extends Controller {
 	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
 		bookingRequest.outOfSlotBooking = false;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
+		this.setStatus(201);
 		return BookingsController.mapDataModel(booking);
 	}
 
@@ -76,6 +77,7 @@ export class BookingsController extends Controller {
 	public async postBookingOutOfSlot(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
 		bookingRequest.outOfSlotBooking = true;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
+		this.setStatus(201);
 		return BookingsController.mapDataModel(booking);
 	}
 

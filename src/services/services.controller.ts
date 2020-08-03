@@ -29,6 +29,7 @@ export class ServicesController extends Controller {
 	@Post()
 	@SuccessResponse(201, "Created")
 	public async createService(@Body() request: ServiceRequest): Promise<ServiceResponse> {
+		this.setStatus(201);
 		return ServicesController.mapToServiceResponse(await this.servicesService.createService(request));
 	}
 
@@ -87,6 +88,7 @@ export class ServicesController extends Controller {
 	@SuccessResponse(201, "Created")
 	public async createTimeslotItem(@Path() serviceId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
 		const data = await this.servicesService.addTimeslotItem(serviceId, request);
+		this.setStatus(201);
 		return mapToTimeslotItemResponse(data);
 	}
 
@@ -109,7 +111,7 @@ export class ServicesController extends Controller {
 	 * @param timeslotId The weekly timeslot id.
 	 */
 	@Delete("{serviceId}/timeslotSchedule/timeslots/{timeslotId}")
-	@SuccessResponse(204, "No Content")
+	@SuccessResponse(204, "Deleted")
 	public async deleteTimeslotItem(@Path() serviceId: number, @Path() timeslotId: number) {
 		await this.servicesService.deleteTimeslotsScheduleItem(timeslotId);
 	}

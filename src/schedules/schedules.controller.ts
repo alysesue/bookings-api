@@ -13,6 +13,7 @@ export class SchedulesController extends Controller {
 	@Post('')
 	@SuccessResponse(201, 'Created')
 	public async createSchedule(@Body() timeslot: ScheduleRequest): Promise<ScheduleResponse> {
+		this.setStatus(201);
 		return await this.scheduleService.createSchedule(timeslot);
 	}
 
