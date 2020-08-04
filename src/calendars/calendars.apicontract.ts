@@ -9,7 +9,13 @@ export class CalendarModel {
 }
 
 export class CalendarUserModel {
+	/**
+	 * Google account email address
+	 */
 	public email: string;
+	/**
+	 * Role: reader or writer.
+	 */
 	public role: string;
 }
 
