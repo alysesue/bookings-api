@@ -73,7 +73,7 @@ export class Unavailability implements IUnavailability {
 		this._allServiceProviders = value;
 	}
 
-	@ManyToMany(type => ServiceProvider, p => p._unavailabilities, { cascade: true })
+	@ManyToMany(type => ServiceProvider, { cascade: true })
 	@JoinTable({
 		name: 'unavailable_service_provider',
 		joinColumn: { name: 'unavailability_id' },
