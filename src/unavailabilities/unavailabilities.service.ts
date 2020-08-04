@@ -14,7 +14,7 @@ export class UnavailabilitiesService {
 	private serviceProvidersRepository: ServiceProvidersRepository;
 
 	private async mapToEntity(request: UnavailabilityRequest, entity: Unavailability): Promise<Unavailability> {
-		if (request.start > request.end) {
+		if (request.start.getTime() >= request.end.getTime()) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Unavailability start time must be less than end time.');
 		}
 
@@ -51,5 +51,15 @@ export class UnavailabilitiesService {
 		const saved = await this.unavailabilitiesRepository.save(entity);
 
 		return saved;
+	}
+
+	public async search(options:
+		{
+			from: Date,
+			to: Date,
+			serviceId: number,
+			serviceProviderId?: number,
+		}): Promise<Unavailability[]> {
+		return await this.unavailabilitiesRepository.search(options);
 	}
 }

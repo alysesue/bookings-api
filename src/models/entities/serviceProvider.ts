@@ -3,7 +3,7 @@ import { Calendar } from "./calendar";
 import { ServiceProviderStatus } from "../serviceProviderStatus";
 import { Service } from "./service";
 import { Schedule } from './schedule';
-import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IServiceProvider, IUnavailability } from '../interfaces';
+import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
 import { TimeslotsSchedule } from "./timeslotsSchedule";
 
 @Entity()
@@ -119,6 +119,4 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 
 	public set timeslotsSchedule(value: TimeslotsSchedule) { this._timeslotsSchedule = value; }
 	public get timeslotsSchedule(): TimeslotsSchedule { return this._timeslotsSchedule; }
-
-	public _unavailabilities: IUnavailability[];
 }

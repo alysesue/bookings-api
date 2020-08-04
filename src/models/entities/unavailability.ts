@@ -22,6 +22,10 @@ export class Unavailability implements IUnavailability {
 		return this._id;
 	}
 
+	public set id(value: number) {
+		this._id = value;
+	}
+
 	@Column({ nullable: false })
 	private _serviceId: number;
 
@@ -59,6 +63,7 @@ export class Unavailability implements IUnavailability {
 		this._end = value;
 	}
 
+	@Column()
 	private _allServiceProviders: boolean;
 	public get allServiceProviders() {
 		return this._allServiceProviders;
@@ -78,5 +83,9 @@ export class Unavailability implements IUnavailability {
 
 	public set serviceProviders(providers: ServiceProvider[]) {
 		this._serviceProviders = providers;
+	}
+
+	public get serviceProviders() {
+		return this._serviceProviders;
 	}
 }
