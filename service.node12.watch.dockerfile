@@ -25,12 +25,15 @@ RUN apt-get update && apt-get upgrade -y && \
 # Note that doing a straightforward upgrade `npm i -g npm@6.4.1` does not seem to work
 # This is a known issue with npm 5, refer to this thread https://github.com/nodejs/docker-node/issues/449
 # workaround using yarn is taken from that thread
-RUN yarn global add npm@6.9.0 && npm --version
+#RUN yarn global add npm@6.9.0 && npm --version
+#
+RUN yarn global add npm@6.14.7 && npm --version
 
 # Set python version
 RUN cd /usr/bin && ln -s /usr/bin/python2.7 /usr/bin/python
 
-RUN npm install -g forever npm-watch
+RUN npm install -g forever \
+                   npm-watch
 
 # Copy files needed for the service to run
 WORKDIR /service

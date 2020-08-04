@@ -14,6 +14,15 @@ export class TimeslotsController extends Controller {
 	@Inject
 	private serviceProviderMapper: ServiceprovidersMapper;
 
+	/**
+	 * Retrieves available timeslots for a service in a defined datetime range [startDate, endDate].
+	 * Availability count returned will be at least 1.
+	 * Pending and accepted bookings count towards availability quota.
+	 * @param startDate The lower bound limit for timeslots' startDate.
+	 * @param endDate The upper bound limit for timeslots' endDate.
+	 * @param serviceId The available service to be queried.
+	 * @param serviceProviderId (Optional) Filters timeslots for a specific service provider.
+	 */
 	@Get("availability")
 	@Security("service")
 	public async getAvailability(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number, @Query() serviceProviderId?: number): Promise<AvailabilityEntryResponse[]> {
@@ -22,6 +31,15 @@ export class TimeslotsController extends Controller {
 		return TimeslotsController.mapAvailabilityToResponse(availableTimeslots);
 	}
 
+	/**
+	 * Retrieves timeslots (available and booked) for a service in a defined datetime range [startDate, endDate].
+	 * Availability count returned may be zero.
+	 * Pending and accepted bookings count towards availability quota.
+	 * @param startDate The lower bound limit for timeslots' startDate.
+	 * @param endDate The upper bound limit for timeslots' endDate.
+	 * @param serviceId The available service to be queried.
+	 * @param serviceProviderId (Optional) Filters timeslots for a specific service provider.
+	 */
 	@Get("")
 	@Security("service")
 	public async getTimeslots(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number, @Query() serviceProviderId?: number): Promise<TimeslotEntryResponse[]> {
