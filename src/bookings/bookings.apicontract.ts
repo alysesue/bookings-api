@@ -8,7 +8,13 @@ export class BookingRequest {
 	public startDateTime: Date;
 	public endDateTime: Date;
 	public serviceProviderId?: number;
+	/**
+	 * @ignore
+	 */
 	public outOfSlotBooking?: boolean;
+	/**
+	 * An external reference Id for this booking (e.g. external Client Id or booking Id).
+	 */
 	public refId?: string;
 }
 

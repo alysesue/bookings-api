@@ -1,4 +1,5 @@
 {
+	"noImplicitAdditionalProperties": "silently-remove-extras",
 	"swagger": {
 		"outputDirectory": "./dist/swagger",
 		"entryFile": "./src/index.ts",
