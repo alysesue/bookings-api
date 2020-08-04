@@ -30,15 +30,13 @@ export class UnavailabilitiesService {
 			entity.serviceProviders = [];
 		} else {
 			entity.allServiceProviders = false;
-			if (request.serviceProviderIds) {
+			if (request.serviceProviderIds && request.serviceProviderIds.length > 0) {
 				entity.serviceProviders = await this.serviceProvidersRepository.getServiceProvidersByIds({ ids: request.serviceProviderIds, serviceId: request.serviceId });
 				const notFound = request.serviceProviderIds.filter(id => !entity.serviceProviders.find(sp => sp.id === id));
 				if (notFound.length > 0) {
 					throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Invalid service provider id(s): ' + notFound.join(', '));
 				}
-			}
-
-			if (!request.serviceProviderIds || entity.serviceProviders.length === 0) {
+			} else {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Unavailability must be applied to at least one service provider (or all).');
 			}
 		}

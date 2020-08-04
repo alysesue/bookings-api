@@ -68,7 +68,7 @@ describe("Unavailabilities repository", () => {
 			serviceProviderId: 2
 		});
 
-		const whereParam = "u._serviceId = :serviceId AND (u.\"_start\" <= :to AND u.\"_end\" >= :from) AND (u.\"_allServiceProviders\" OR EXISTS(SELECT 1 FROM public.unavailable_service_provider usp WHERE usp.\"unavailability_id\" = u.\"_id\" AND usp.\"serviceProvider_id\" = :serviceProviderId))";
+		const whereParam = "u._serviceId = :serviceId AND (u.\"_start\" <= :to AND u.\"_end\" >= :from) AND ((u.\"_allServiceProviders\" AND EXISTS(SELECT 1 FROM public.service_provider esp WHERE esp._id = :serviceProviderId AND esp._serviceId = :serviceId)) OR EXISTS(SELECT 1 FROM public.unavailable_service_provider usp WHERE usp.\"unavailability_id\" = u.\"_id\" AND usp.\"serviceProvider_id\" = :serviceProviderId))";
 		expect((queryBuilderMock.where as jest.Mock).mock.calls[0][0]).toBe(whereParam);
 		expect(queryBuilderMock.leftJoinAndSelect).toHaveBeenCalled();
 		expect(queryBuilderMock.getMany).toHaveBeenCalled();

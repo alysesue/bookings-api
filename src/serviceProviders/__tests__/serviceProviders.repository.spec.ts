@@ -20,6 +20,15 @@ describe("Service Provider repository", () => {
 		expect(result).toStrictEqual([]);
 	});
 
+	it("should get list of SP by ids", async () => {
+		Container.bind(DbConnection).to(MockDBConnection);
+		MockDBConnection.find.mockImplementation(() => Promise.resolve([]));
+
+		const spRepository = Container.get(ServiceProvidersRepository);
+		const result = await spRepository.getServiceProvidersByIds({ ids: [4, 5], serviceId: 1 });
+		expect(result).toStrictEqual([]);
+	});
+
 	it("should get a service provider", async () => {
 		Container.bind(DbConnection).to(MockDBConnection);
 		MockDBConnection.findOne.mockImplementation(() => Promise.resolve({ name: "Monica" }));
@@ -43,16 +52,16 @@ describe("Service Provider repository", () => {
 		expect(result.length).toBe(1);
 	});
 
-	it("should get a service provider  with schedule", async () => {
+	it("should get a service provider with schedule", async () => {
 		Container.bind(DbConnection).to(MockDBConnection);
 		Container.bind(SchedulesRepository).to(SchedulesRepositoryMock);
 		MockDBConnection.findOne.mockImplementation(() => Promise.resolve(new ServiceProvider()));
-		SchedulesRepositoryMock.populateSingleEntryScheduleMock.mockImplementation((entry: any) => Promise.resolve(entry));
+		SchedulesRepositoryMock.populateSchedulesMock.mockImplementation((entries: any[]) => Promise.resolve(entries));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProvider({ id: 1, includeSchedule: true });
 
-		expect(SchedulesRepositoryMock.populateSingleEntryScheduleMock).toHaveBeenCalled();
+		expect(SchedulesRepositoryMock.populateSchedulesMock).toHaveBeenCalled();
 		expect(result).toBeDefined();
 	});
 
@@ -87,13 +96,13 @@ describe("Service Provider repository", () => {
 		const timeslotsSchedule = new TimeslotsSchedule();
 		timeslotsSchedule._id = 2;
 		MockDBConnection.findOne.mockImplementation(() => sp);
-		TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock.mockImplementation(() => Promise.resolve(timeslotsSchedule));
+		TimeslotsScheduleRepositoryMock.getTimeslotsSchedulesMock.mockImplementation(() => Promise.resolve([timeslotsSchedule]));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProvider({ id: 1, includeTimeslotsSchedule: true });
 
 		expect(MockDBConnection.findOne).toHaveBeenCalled();
-		expect(TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock).toHaveBeenCalled();
+		expect(TimeslotsScheduleRepositoryMock.getTimeslotsSchedulesMock).toHaveBeenCalled();
 		expect(result).toBeDefined();
 		expect(result.timeslotsSchedule).toBeDefined();
 	});

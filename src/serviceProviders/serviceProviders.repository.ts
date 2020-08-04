@@ -17,6 +17,21 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		super(ServiceProvider);
 	}
 
+	private async processIncludes(entries: ServiceProvider[], options: {
+		includeSchedule?: boolean,
+		includeTimeslotsSchedule?: boolean
+	}): Promise<ServiceProvider[]> {
+		if (options.includeSchedule) {
+			await this.scheduleRepository.populateSchedules(entries);
+		}
+
+		if (options.includeTimeslotsSchedule) {
+			await this.timeslotsScheduleRepository.populateTimeslotsSchedules(entries);
+		}
+
+		return entries;
+	}
+
 	public async getServiceProviders(options: {
 		serviceId?: number,
 		includeSchedule?: boolean,
@@ -29,15 +44,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		const repository = await this.getRepository();
 		const entries = await repository.find({ where: [findConditions], relations: ['_calendar'] });
 
-		if (options.includeSchedule) {
-			await this.scheduleRepository.populateSchedules(entries);
-		}
-
-		if (options.includeTimeslotsSchedule) {
-			await this.timeslotsScheduleRepository.populateTimeslotsSchedules(entries);
-		}
-
-		return entries;
+		return await this.processIncludes(entries, options);
 	}
 
 	public async getServiceProvidersByIds(options: {
@@ -58,15 +65,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		const repository = await this.getRepository();
 		const entries = await repository.find({ where: [findConditions], relations: ['_calendar'] });
 
-		if (options.includeSchedule) {
-			await this.scheduleRepository.populateSchedules(entries);
-		}
-
-		if (options.includeTimeslotsSchedule) {
-			await this.timeslotsScheduleRepository.populateTimeslotsSchedules(entries);
-		}
-
-		return entries;
+		return await this.processIncludes(entries, options);
 	}
 
 	public async getServiceProvider(options: {
@@ -76,16 +75,11 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	}): Promise<ServiceProvider> {
 		const repository = await this.getRepository();
 		const entry = await repository.findOne(options.id, { relations: ['_calendar'] });
-
-		if (options.includeSchedule) {
-			await this.scheduleRepository.populateSingleEntrySchedule(entry);
+		if (!entry) {
+			return entry;
 		}
 
-		if (options.includeTimeslotsSchedule) {
-			entry.timeslotsSchedule = await this.timeslotsScheduleRepository.getTimeslotsScheduleById(entry.timeslotsScheduleId);
-		}
-
-		return entry;
+		return (await this.processIncludes([entry], options))[0];
 	}
 
 	public async save(serviceProviders: ServiceProvider): Promise<ServiceProvider> {

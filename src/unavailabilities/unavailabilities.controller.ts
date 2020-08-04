@@ -23,6 +23,11 @@ export class UnavailabilitiesController extends Controller {
 		} as UnavailabilityResponse;
 	}
 
+	/**
+	 * Creates an unavailable (blocked) timeslot for a service or, optionally, for specific service providers.
+	 * @param request
+	 * @param serviceId The service id.
+	 */
 	@Post("")
 	@Security("service")
 	@SuccessResponse(201, "Created")
