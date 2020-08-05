@@ -14,7 +14,7 @@
 		"outDir": "./build",
 		"removeComments": false,
 		"sourceMap": true,
-		"noUnusedLocals": true,
+		"noUnusedLocals": false,
 		"target": "es6",
 		"typeRoots": [
 			"node_modules/@types"
