@@ -7,3 +7,4 @@ import "./timeslots/timeslots.controller";
 import "./services/services.controller";
 import "./serviceProviders/serviceProviders.controller";
 import "./users/users.controller";
+import "./unavailabilities/unavailabilities.controller";
