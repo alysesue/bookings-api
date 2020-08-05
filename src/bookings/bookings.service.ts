@@ -40,7 +40,7 @@ export class BookingsService {
 		return Booking.create(
 			serviceId,
 			bookingRequest.startDateTime,
-			duration,
+			bookingRequest.endDateTime,
 			bookingRequest.serviceProviderId,
 			bookingRequest.refId);
 	}
@@ -92,7 +92,7 @@ export class BookingsService {
 		if (!provider) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${acceptRequest.serviceProviderId}' not found`);
 		}
-		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
+		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.endDateTime, booking.serviceId);
 		const isProviderAvailable = timeslotEntry.availableServiceProviders.filter(e => e.id === acceptRequest.serviceProviderId).length > 0;
 		if (!isProviderAvailable) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${acceptRequest.serviceProviderId}' is not available for this booking.`);
@@ -111,7 +111,7 @@ export class BookingsService {
 	}
 
 	private async validateTimeSlot(booking: Booking) {
-		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId, booking.serviceProviderId);
+		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.endDateTime, booking.serviceId, booking.serviceProviderId);
 
 		if (timeslotEntry.availabilityCount < 1) {
 			const errorMessage = booking.serviceProviderId ? "The service provider is not available for this timeslot"
@@ -122,7 +122,7 @@ export class BookingsService {
 
 	private async validateOutOfSlotBookings(booking: Booking) {
 		const { startDateTime, serviceId, serviceProviderId } = booking;
-		const endTime = booking.getSessionEndTime();
+		const endTime = booking.endDateTime;
 		const startOfDay = DateHelper.getStartOfDay(startDateTime);
 		const endOfDay = DateHelper.getEndOfDay(startDateTime);
 
@@ -134,14 +134,14 @@ export class BookingsService {
 		const pendingBookings = pendingAndAcceptedBookings.filter(pendingBooking => pendingBooking.status === BookingStatus.PendingApproval);
 
 		for (const item of acceptedBookings) {
-			const intersects = intersectsDateTimeSpan({ start: item.startDateTime, end: item.getSessionEndTime() }, startDateTime, endTime);
+			const intersects = intersectsDateTimeSpan({ start: item.startDateTime, end: item.endDateTime }, startDateTime, endTime);
 			if (intersects) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking request not valid as it overlaps another accepted booking`);
 			}
 		}
 
 		for (const item of pendingBookings) {
-			const intersects = intersectsDateTimeSpan({ start: item.startDateTime, end: item.getSessionEndTime() }, startDateTime, endTime);
+			const intersects = intersectsDateTimeSpan({ start: item.startDateTime, end: item.endDateTime }, startDateTime, endTime);
 			if (intersects) {
 				item.status = BookingStatus.Cancelled;
 			}

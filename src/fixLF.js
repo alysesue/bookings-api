@@ -1,16 +1,16 @@
-const fs = require('fs')
-const { promisify } = require('util')
-const globModule = require('glob')
+const fs = require('fs');
+const { promisify } = require('util');
+const globModule = require('glob');
 
-const exists = promisify(fs.exists)
-const readFile = promisify(fs.readFile)
-const writeFile = promisify(fs.writeFile)
-const glob = promisify(globModule)
+const exists = promisify(fs.exists);
+const readFile = promisify(fs.readFile);
+const writeFile = promisify(fs.writeFile);
+const glob = promisify(globModule);
 
 const counter = {
 	read: 0,
 	modified: []
-}
+};
 
 function print(text) {
 	// tslint:disable-next-line: no-console
@@ -22,19 +22,19 @@ async function fixFile(path) {
 		return
 	}
 
-	const contents = (await readFile(path)).toString()
-	counter.read++
+	const contents = (await readFile(path)).toString();
+	counter.read++;
 	if (contents.match(/\r\n/)) {
-		const replaced = contents.replace(/\r\n/g, '\n')
+		const replaced = contents.replace(/\r\n/g, '\n');
 
-		counter.modified.push(path)
+		counter.modified.push(path);
 		await writeFile(path, replaced)
 	}
 }
 
 async function fixGlobPattern(pattern) {
-	const files = await glob(pattern)
-	const promises = files ? files.map(f => fixFile(f)) : []
+	const files = await glob(pattern);
+	const promises = files ? files.map(f => fixFile(f)) : [];
 	await Promise.all(promises)
 }
 
@@ -52,12 +52,12 @@ function main() {
 		fixGlobPattern('./node_modules/mol-bamboo-scripts/**/*.json'),
 		fixGlobPattern('./node_modules/mol-lib-config/**/*.sh'),
 		fixGlobPattern('./node_modules/mol-lib-config/**/*.json'),
-	]
+	];
 
 	Promise.all(promises).then(() => {
-		counter.modified.forEach(f => print(f + ' ( CRLF -> LF )'))
+		counter.modified.forEach(f => print(f + ' ( CRLF -> LF )'));
 		print(counter.read + ' file(s) inspected, ' + counter.modified.length + ' modified.')
 	})
 }
 
-main()
+main();

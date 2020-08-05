@@ -12,7 +12,7 @@ import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotPro
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 
 const BookingRepositoryMock = (update) => {
-	const testBooking = Booking.create(1, new Date(), 100);
+	const testBooking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 	return jest.fn().mockImplementation(() => ({
 		getBooking: jest.fn().mockReturnValue(testBooking),
 		update

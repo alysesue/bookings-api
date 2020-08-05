@@ -28,9 +28,8 @@ export class BookingsController extends Controller {
 		return {
 			id: booking.id,
 			status: booking.status,
-			sessionDurationInMinutes: booking.sessionDurationInMinutes,
 			startDateTime: booking.startDateTime,
-			endDateTime: booking.getSessionEndTime(),
+			endDateTime: booking.endDateTime,
 			serviceId: booking.serviceId,
 			serviceName: booking.service?.name,
 			serviceProviderId: booking.serviceProviderId,
@@ -143,7 +142,7 @@ export class BookingsController extends Controller {
 	public async getBookingProviders(@Path() bookingId: number): Promise<any> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 
-		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
+		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.endDateTime, booking.serviceId);
 		return timeslotEntry.availableServiceProviders.map(BookingsController.mapProvider) || [];
 	}
 }

@@ -3,7 +3,6 @@ import { WeekDayBreakRepository } from '../weekdaybreak.repository';
 import { DbConnection } from '../../core/db.connection';
 import { Container, Snapshot } from 'typescript-ioc';
 import { Schedule } from "../../models";
-import { FindOneOptions } from "typeorm";
 
 let snapshot: Snapshot;
 beforeAll(() => {

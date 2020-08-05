@@ -1,4 +1,4 @@
-import { Schedule, TimeOfDay, WeekDayBreak } from '../index';
+import { TimeOfDay, WeekDayBreak } from '../index';
 import { Weekday } from '../../enums/weekday';
 import { ISchedule } from '../interfaces';
 

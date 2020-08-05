@@ -227,10 +227,6 @@ class TimeslotItemsServiceMock extends TimeslotItemsService {
 	public async updateTimeslotItem(timeslotsSchedule: TimeslotsSchedule, timeslotId: number, request: TimeslotItemRequest): Promise<TimeslotItem> {
 		return await TimeslotItemsServiceMock.updateTimeslotItem(timeslotsSchedule, timeslotId, request);
 	}
-
-	public async mapAndSaveTimeslotItemsToTimeslotsSchedule(timeslotsItemService: TimeslotItem[], timeslotsScheduleSP: TimeslotsSchedule): Promise<TimeslotItem[]> {
-		return await TimeslotItemsServiceMock.mapAndSaveTimeslotItemsToTimeslotsSchedule(timeslotsItemService, timeslotsScheduleSP);
-	}
 }
 
 class TimeslotsScheduleMockClass extends TimeslotItemsService {

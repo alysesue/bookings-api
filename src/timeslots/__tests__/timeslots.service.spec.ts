@@ -54,13 +54,13 @@ describe("Timeslots Service", () => {
 	ServiceProviderMock2.timeslotsScheduleId = ProviderScheduleMock._id;
 
 	// Booking in place for the last time slot
-	const BookingMock = Booking.create(1, DateHelper.setHours(date, 17, 0), 60);
+	const BookingMock = Booking.create(1, DateHelper.setHours(date, 17, 0),DateHelper.setHours(date, 18, 0));
 	BookingMock.status = BookingStatus.Accepted;
 	BookingMock.eventICalId = 'eventICalId';
 	BookingMock.serviceProvider = ServiceProviderMock;
 	BookingMock.serviceProviderId = ServiceProviderMock.id;
 
-	const pendingBookingMock = Booking.create(1, DateHelper.setHours(date, 17, 0), 60);
+	const pendingBookingMock = Booking.create(1, DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
 	pendingBookingMock.status = BookingStatus.PendingApproval;
 
 	const BookingsRepositoryMock = {
