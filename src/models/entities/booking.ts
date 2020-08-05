@@ -2,6 +2,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } 
 import { BookingStatus } from "../bookingStatus";
 import { ServiceProvider } from './serviceProvider';
 import { Service } from "./service";
+import * as timeSpan from "../../tools/timeSpan";
 
 @Entity()
 export class Booking {
@@ -124,5 +125,12 @@ export class Booking {
 	}
 	public get createdAt(): Date {
 		return this._createdAt;
+	}
+
+	public bookingIntersects(other: {start: Date, end: Date} ): boolean {
+		if (!other.start || !other.end) {
+			return false;
+		}
+		return timeSpan.intersectsDateTimeSpan(other, this.startDateTime, this.endDateTime)
 	}
 }

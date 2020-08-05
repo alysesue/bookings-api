@@ -7,7 +7,6 @@ import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
 import { DateHelper } from "../infrastructure/dateHelper";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
-import { intersectsDateTimeSpan } from "../tools/timeSpan";
 
 @InRequestScope
 export class BookingsService {
@@ -121,10 +120,9 @@ export class BookingsService {
 	}
 
 	private async validateOutOfSlotBookings(booking: Booking) {
-		const { startDateTime, serviceId, serviceProviderId } = booking;
-		const endTime = booking.endDateTime;
+		const { startDateTime, endDateTime, serviceId, serviceProviderId } = booking;
 		const startOfDay = DateHelper.getStartOfDay(startDateTime);
-		const endOfDay = DateHelper.getEndOfDay(startDateTime);
+		const endOfDay = DateHelper.getEndOfDay(endDateTime);
 
 		const searchQuery = new BookingSearchRequest(startOfDay, endOfDay, [BookingStatus.Accepted,BookingStatus.PendingApproval], serviceId, serviceProviderId);
 
@@ -134,14 +132,14 @@ export class BookingsService {
 		const pendingBookings = pendingAndAcceptedBookings.filter(pendingBooking => pendingBooking.status === BookingStatus.PendingApproval);
 
 		for (const item of acceptedBookings) {
-			const intersects = intersectsDateTimeSpan({ start: item.startDateTime, end: item.endDateTime }, startDateTime, endTime);
+			const intersects = booking.bookingIntersects({ start: item.startDateTime, end: item.endDateTime });
 			if (intersects) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking request not valid as it overlaps another accepted booking`);
 			}
 		}
 
 		for (const item of pendingBookings) {
-			const intersects = intersectsDateTimeSpan({ start: item.startDateTime, end: item.endDateTime }, startDateTime, endTime);
+			const intersects = booking.bookingIntersects({ start: item.startDateTime, end: item.endDateTime });
 			if (intersects) {
 				item.status = BookingStatus.Cancelled;
 			}

@@ -8,7 +8,6 @@ import { groupByKey } from '../tools/collections';
 import { ServicesRepository } from "../services/services.repository";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
-import { intersectsDateTimeSpan } from "../tools/timeSpan";
 import { BookingSearchRequest } from "../bookings/bookings.apicontract";
 
 @Scoped(Scope.Request)
@@ -33,8 +32,8 @@ export class TimeslotsService {
 
 		for (const element of entries) {
 			const result = acceptedBookings.filter(booking => {
-				return intersectsDateTimeSpan({start: booking.startDateTime, end: booking.endDateTime}, element.startTime, element.endTime);})
-			.map(booking => booking.serviceProviderId);
+				return booking.bookingIntersects({start: element.startTime, end: element.endTime});})
+				.map(booking => booking.serviceProviderId);
 			element.setOverlappingServiceProviders(result);
 
 			const elementKey = this.timeslotKeySelector(element.startTime, element.endTime);
