@@ -13,7 +13,7 @@ describe('Unavailabilities controller tests', () => {
 		jest.resetAllMocks();
 	});
 
-	it('should save a new service', async () => {
+	it('should save a new unavailability', async () => {
 		const entity = Unavailability.create();
 		entity.id = 1;
 		entity.start = new Date();

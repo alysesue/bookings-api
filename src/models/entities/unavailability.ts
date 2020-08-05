@@ -2,7 +2,6 @@ import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, Pr
 import { Service } from "./service";
 import { ServiceProvider } from "./serviceProvider";
 import { IUnavailability } from "../interfaces";
-import { DataListElement } from "k6/html";
 
 @Entity()
 export class Unavailability implements IUnavailability {
