@@ -26,14 +26,14 @@ export class TimeslotsService {
 	private serviceProvidersRepo: ServiceProvidersRepository;
 
 	private timeslotKeySelector = (start: Date, end: Date) => `${start.getTime()}|${end.getTime()}`;
-	private bookingKeySelector = (booking: Booking) => this.timeslotKeySelector(booking.startDateTime, booking.getSessionEndTime());
+	private bookingKeySelector = (booking: Booking) => this.timeslotKeySelector(booking.startDateTime, booking.endDateTime);
 
 	private setBookedProviders(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {
 		const acceptedBookingsLookup = groupByKey(acceptedBookings, this.bookingKeySelector);
 
 		for (const element of entries) {
 			const result = acceptedBookings.filter(booking => {
-				return intersectsDateTimeSpan({start: booking.startDateTime, end: booking.getSessionEndTime()}, element.startTime, element.endTime);})
+				return intersectsDateTimeSpan({start: booking.startDateTime, end: booking.endDateTime}, element.startTime, element.endTime);})
 			.map(booking => booking.serviceProviderId);
 			element.setOverlappingServiceProviders(result);
 

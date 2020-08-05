@@ -8,11 +8,11 @@ export class Booking {
 	constructor() {
 	}
 
-	public static create(serviceId: number, startDateTime: Date, sessionDurationInMinutes: number, serviceProviderId?: number, refId?: string) {
+	public static create(serviceId: number, startDateTime: Date, endDateTime: Date, serviceProviderId?: number, refId?: string) {
 		const instance = new Booking();
 		instance._serviceId = serviceId;
 		instance._startDateTime = startDateTime;
-		instance._sessionDurationInMinutes = sessionDurationInMinutes;
+		instance._endDateTime = endDateTime;
 		instance._createdAt = new Date();
 		instance._refId = refId;
 
@@ -72,11 +72,12 @@ export class Booking {
 	}
 
 	@Column()
-	private _sessionDurationInMinutes: number;
+	@Index()
+	private _startDateTime: Date;
 
 	@Column()
 	@Index()
-	private _startDateTime: Date;
+	private _endDateTime: Date;
 
 	@Column()
 	private _createdAt: Date;
@@ -88,21 +89,15 @@ export class Booking {
 		return this._startDateTime;
 	}
 
+	public get endDateTime(): Date {
+		return this._endDateTime;
+	}
+
 	@Column({ nullable: true })
 	private _acceptedAt: Date;
 
 	public set acceptedAt(acceptedAt: Date) {
 		this._acceptedAt = acceptedAt;
-	}
-
-	public get sessionDurationInMinutes(): number {
-		return this._sessionDurationInMinutes;
-	}
-
-	public getSessionEndTime(): Date {
-		return new Date(
-			this._startDateTime.getTime() + this._sessionDurationInMinutes * 60 * 1000
-		);
 	}
 
 	@ManyToOne(type => ServiceProvider, { nullable: true })
