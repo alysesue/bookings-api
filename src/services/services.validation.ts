@@ -10,13 +10,14 @@ export class ServicesValidation {
 	private servicesService: ServicesService;
 
 	public async validate(isOptional: boolean, serviceId?: number): Promise<any> {
-		if (!serviceId && !isOptional) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('no service id provided');
-		}
-		const service = await this.servicesService.getService(serviceId);
+		if (serviceId !== undefined) {
+			const service = await this.servicesService.getService(serviceId);
 
-		if (!service) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service not found');
+			if (!service) {
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service not found');
+			}
+		} else if (!isOptional) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('no service id provided');
 		}
 	}
 }

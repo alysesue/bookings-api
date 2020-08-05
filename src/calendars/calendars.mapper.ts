@@ -21,8 +21,4 @@ export class CalendarsMapper {
 			caldavEventsUrl: calendar.generateCaldavEventsUrl(this.proxyHandler.httpProtocol, this.proxyHandler.httpHost)
 		} as CalendarModel;
 	}
-
-	public mapDataModels(calendars: Calendar[]): CalendarModel[] {
-		return calendars?.map(e => this.mapDataModel(e));
-	}
 }
