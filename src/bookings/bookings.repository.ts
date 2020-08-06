@@ -1,5 +1,5 @@
 import { InRequestScope } from "typescript-ioc";
-import { Between, FindConditions, FindManyOptions, In, InsertResult,  } from "typeorm";
+import { InsertResult } from "typeorm";
 import { Booking, BookingStatus } from "../models";
 import { RepositoryBase } from "../core/repository";
 
@@ -24,31 +24,31 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return repository.save(booking);
 	}
 
-	public async search(searchRequest: {
-		serviceId?: number,
-		serviceProviderId?: number,
-		statuses?: BookingStatus[],
-		from: Date,
-		to: Date
-	}): Promise<Booking[]> {
+	public async search({ serviceId, serviceProviderId, statuses, from, to}:
+		{
+			serviceId?: number,
+			serviceProviderId?: number,
+			statuses?: BookingStatus[],
+			from: Date,
+			to: Date,
+		}): Promise<Booking[]> {
+
+		const serviceCondition = serviceId ? 'booking._serviceId = :serviceId' : '';
+
+		const serviceProviderCondition = serviceProviderId ? 'booking._serviceProviderId = :serviceProviderId' : '';
+
+		const statusesCondition =  statuses ? "booking._status IN (:...statuses)" : '';
+
+		const dateRangeCondition = '(booking."_startDateTime" <= :to AND booking."_endDateTime" >= :from)';
+
 		const repository = await this.getRepository();
+		const query = repository.createQueryBuilder("booking")
+		.where([serviceCondition, serviceProviderCondition, dateRangeCondition, statusesCondition].filter(c => c).join(' AND '),
+			{ serviceId, serviceProviderId, from, to, statuses })
+		.leftJoinAndSelect("booking._serviceProvider", "sp_relation")
+		.leftJoinAndSelect("booking._service", "service_relation")
+		.orderBy("booking._id", "DESC");
 
-		const findConditions: FindConditions<Booking> = {};
-		findConditions['_startDateTime'] = Between(searchRequest.from, searchRequest.to);
-		if (searchRequest.statuses) {
-			findConditions['_status'] = In(searchRequest.statuses);
-		}
-		if (searchRequest.serviceId) {
-			findConditions['_serviceId'] = searchRequest.serviceId;
-		}
-		if (searchRequest.serviceProviderId) {
-			findConditions['_serviceProviderId'] = searchRequest.serviceProviderId;
-		}
-
-		const findManyOptions: FindManyOptions<Booking> = { where: [findConditions], relations: ['_service', '_serviceProvider'] };
-		findManyOptions['order'] = {};
-		findManyOptions['order']['_id'] = 'DESC';
-
-		return repository.find(findManyOptions);
+		return await query.getMany();
 	}
 }

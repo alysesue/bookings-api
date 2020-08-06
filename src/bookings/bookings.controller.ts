@@ -1,6 +1,6 @@
 import { Inject } from "typescript-ioc";
 import { Body, Controller, Get, Header, Path, Post, Query, Route, Security, SuccessResponse, Tags } from "tsoa";
-import { Booking, BookingStatus, ServiceProvider } from "../models";
+import { Booking, ServiceProvider } from "../models";
 import {
 	BookingAcceptRequest,
 	BookingProviderResponse,
@@ -114,7 +114,7 @@ export class BookingsController extends Controller {
 	public async getBookings(
 		@Query() from: Date,
 		@Query() to: Date,
-		@Query() status?: BookingStatus[],
+		@Query() status?: number[],
 		@Header("x-api-service") serviceId?: number): Promise<BookingResponse[]> {
 
 		const searchQuery = new BookingSearchRequest(from, to, status, serviceId);

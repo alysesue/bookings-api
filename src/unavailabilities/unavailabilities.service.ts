@@ -1,4 +1,3 @@
-import * as _ from "lodash";
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { UnavailabilitiesRepository } from "./unavailabilities.repository";
 import { UnavailabilityRequest } from "./unavailabilities.apicontract";

@@ -2,7 +2,6 @@ import { DbConnection } from "../../core/db.connection";
 import { Container } from "typescript-ioc";
 import { UnavailabilitiesRepository } from "../unavailabilities.repository";
 import { Unavailability } from "../../models";
-import { after } from "lodash";
 import { SelectQueryBuilder } from "typeorm";
 
 describe("Unavailabilities repository", () => {

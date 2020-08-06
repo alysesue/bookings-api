@@ -18,7 +18,7 @@ describe("Bookings.Service", () => {
 	calendar.googleCalendarId = 'google-id-1';
 	const serviceProvider = ServiceProvider.create('provider', calendar, 1);
 	serviceProvider.id = 1;
-	const bookingMock = Booking.create(1,new Date(), 60, 1, 'RHDH');
+	const bookingMock = Booking.create(1,new Date("2020-08-10"), new Date("2020-08-11"), 1, 'RHDH');
 
 	beforeAll(() => {
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
@@ -132,7 +132,7 @@ describe("Bookings.Service", () => {
 	it("should accept booking", async () => {
 		const bookingService = Container.get(BookingsService);
 		CalendarsServiceMock.eventId = "event-id";
-		BookingRepositoryMock.booking = Booking.create(1, new Date(), 60);
+		BookingRepositoryMock.booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 
@@ -146,10 +146,7 @@ describe("Bookings.Service", () => {
 
 	it("should cancel booking", async () => {
 		const bookingService = Container.get(BookingsService);
-		CalendarsServiceMock.eventId = "event-id";
-		const tomorrow = new Date();
-		tomorrow.setDate(new Date().getDate() + 1);
-		BookingRepositoryMock.booking = Booking.create(1, tomorrow, 60);
+		BookingRepositoryMock.booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		const result = await bookingService.cancelBooking(1);
@@ -170,7 +167,7 @@ describe("Bookings.Service", () => {
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 60);
 
-		BookingRepositoryMock.searchBookingsMock = [Booking.create(1, new Date(), 10)];
+		BookingRepositoryMock.searchBookingsMock = [Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'))];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [];
 
 		const bookingService = Container.get(BookingsService);
@@ -184,7 +181,7 @@ describe("Bookings.Service", () => {
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 60);
 
-		BookingRepositoryMock.searchBookingsMock = [Booking.create(1, new Date(), 10)];
+		BookingRepositoryMock.searchBookingsMock = [Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'))];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 

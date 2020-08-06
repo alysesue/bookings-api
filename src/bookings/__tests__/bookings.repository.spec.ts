@@ -3,8 +3,6 @@ import { DbConnection } from "../../core/db.connection";
 import { Booking, BookingStatus } from "../../models";
 import { Container } from "typescript-ioc";
 import { InsertResult } from "typeorm";
-import { DateHelper } from '../../infrastructure/dateHelper';
-import { BookingSearchRequest } from '../bookings.apicontract';
 
 const bookingMock = new Booking();
 bookingMock.status = BookingStatus.Accepted;
@@ -15,48 +13,60 @@ describe("Bookings repository", () => {
 	});
 
 	it("should search bookings", async () => {
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			orderBy: jest.fn(() => queryBuilderMock),
+			getMany: jest.fn(() => Promise.resolve([bookingMock])),
+		};
+
 		Container.bind(DbConnection).to(MockDBConnection);
-		let param: string;
-		MockDBConnection.find.mockImplementation((_param) => {
-			param = JSON.stringify(_param);
-			return Promise.resolve([bookingMock]);
-		});
+
+		MockDBConnection.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const bookingsRepository = Container.get(BookingsRepository);
-		const date = new Date(Date.UTC(2020, 0, 1, 14, 0));
-		const filter = new BookingSearchRequest(
-			date,
-			DateHelper.addDays(date, 1),
-			[BookingStatus.Accepted]
-		);
 
-		const result = await bookingsRepository.search(filter);
+		const result = await bookingsRepository.search({
+			serviceId: 1,
+			serviceProviderId: 1,
+			statuses: [BookingStatus.Accepted],
+			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
+			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
+		});
+
 		expect(result).toStrictEqual([bookingMock]);
-		expect(MockDBConnection.find).toBeCalled();
-
-		expect(param).toMatchSnapshot();
+		expect(queryBuilderMock.where).toBeCalledTimes(1);
+		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(2);
+		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
+		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
 	});
 
 	it("should search bookings without status", async () => {
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			orderBy: jest.fn(() => queryBuilderMock),
+			getMany: jest.fn(() => Promise.resolve([bookingMock])),
+		};
+
 		Container.bind(DbConnection).to(MockDBConnection);
-		let param: string;
-		MockDBConnection.find.mockImplementation((_param) => {
-			param = JSON.stringify(_param);
-			return Promise.resolve([]);
-		});
+
+		MockDBConnection.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const bookingsRepository = Container.get(BookingsRepository);
-		const date = new Date(Date.UTC(2020, 0, 1, 14, 0));
-		const filter = new BookingSearchRequest(
-			date,
-			DateHelper.addDays(date, 1)
-		);
 
-		const result = await bookingsRepository.search(filter);
-		expect(result).toStrictEqual([]);
-		expect(MockDBConnection.find).toBeCalled();
+		const result = await bookingsRepository.search({
+			serviceId: 1,
+			serviceProviderId: 1,
+			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
+			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
+		});
 
-		expect(param).toMatchSnapshot();
+		expect(result).toStrictEqual([bookingMock]);
+		expect(queryBuilderMock.where).toBeCalledTimes(1);
+		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(2);
+		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
+		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
 	});
 
 	it("should save booking", async () => {
@@ -100,6 +110,7 @@ class MockDBConnection extends DbConnection {
 	public static update = jest.fn();
 	public static findOne = jest.fn();
 	public static save = jest.fn();
+	public static createQueryBuilder = jest.fn();
 
 	public async getConnection(): Promise<any> {
 		const connection = {
@@ -108,8 +119,9 @@ class MockDBConnection extends DbConnection {
 				findOne: MockDBConnection.findOne,
 				insert: MockDBConnection.insert,
 				update: MockDBConnection.update,
-				save: MockDBConnection.save
-			})
+				save: MockDBConnection.save,
+				createQueryBuilder: MockDBConnection.createQueryBuilder,
+			}),
 		};
 		return Promise.resolve(connection);
 	}
