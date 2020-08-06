@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Calendar } from "./calendar";
 import { ServiceProviderStatus } from "../serviceProviderStatus";
 import { Service } from "./service";
@@ -111,7 +111,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	public set timeslotsScheduleId(id: number) { this._timeslotsScheduleId = id; }
 	public get timeslotsScheduleId(): number { return this._timeslotsScheduleId; }
 
-	@OneToOne(type => TimeslotsSchedule, e => e._serviceProvider,{
+	@OneToOne(type => TimeslotsSchedule, e => e._serviceProvider, {
 		cascade: true,
 	})
 	@JoinColumn({ name: '_timeslotsScheduleId' })

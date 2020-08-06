@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from "typescript-ioc";
 import { ServiceProvider } from "../models";
 import { RepositoryBase } from "../core/repository";
-import { FindConditions } from "typeorm";
+import { FindConditions, In } from "typeorm";
 import { SchedulesRepository } from '../schedules/schedules.repository';
 import { TimeslotsScheduleRepository } from "../timeslotsSchedules/timeslotsSchedule.repository";
 
@@ -17,6 +17,21 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		super(ServiceProvider);
 	}
 
+	private async processIncludes(entries: ServiceProvider[], options: {
+		includeSchedule?: boolean,
+		includeTimeslotsSchedule?: boolean
+	}): Promise<ServiceProvider[]> {
+		if (options.includeSchedule) {
+			await this.scheduleRepository.populateSchedules(entries);
+		}
+
+		if (options.includeTimeslotsSchedule) {
+			await this.timeslotsScheduleRepository.populateTimeslotsSchedules(entries);
+		}
+
+		return entries;
+	}
+
 	public async getServiceProviders(options: {
 		serviceId?: number,
 		includeSchedule?: boolean,
@@ -29,15 +44,28 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		const repository = await this.getRepository();
 		const entries = await repository.find({ where: [findConditions], relations: ['_calendar'] });
 
-		if (options.includeSchedule) {
-			await this.scheduleRepository.populateSchedules(entries);
-		}
+		return await this.processIncludes(entries, options);
+	}
 
-		if (options.includeTimeslotsSchedule) {
-			await this.timeslotsScheduleRepository.populateTimeslotsSchedules(entries);
-		}
+	public async getServiceProvidersByIds(options: {
+		ids: number[],
+		serviceId?: number,
+		includeSchedule?: boolean,
+		includeTimeslotsSchedule?: boolean
+	} = { ids: [] }): Promise<ServiceProvider[]> {
+		if (options.ids.length === 0)
+			return [];
 
-		return entries;
+		const findConditions: FindConditions<ServiceProvider> = {};
+		findConditions['_id'] = In(options.ids);
+
+		if (options.serviceId) {
+			findConditions['_serviceId'] = options.serviceId;
+		}
+		const repository = await this.getRepository();
+		const entries = await repository.find({ where: [findConditions], relations: ['_calendar'] });
+
+		return await this.processIncludes(entries, options);
 	}
 
 	public async getServiceProvider(options: {
@@ -47,16 +75,11 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	}): Promise<ServiceProvider> {
 		const repository = await this.getRepository();
 		const entry = await repository.findOne(options.id, { relations: ['_calendar'] });
-
-		if (options.includeSchedule) {
-			await this.scheduleRepository.populateSingleEntrySchedule(entry);
+		if (!entry) {
+			return entry;
 		}
 
-		if (options.includeTimeslotsSchedule) {
-			entry.timeslotsSchedule = await this.timeslotsScheduleRepository.getTimeslotsScheduleById(entry.timeslotsScheduleId);
-		}
-
-		return entry;
+		return (await this.processIncludes([entry], options))[0];
 	}
 
 	public async save(serviceProviders: ServiceProvider): Promise<ServiceProvider> {

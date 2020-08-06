@@ -7,7 +7,7 @@ import { Service } from "./service";
 import { ServiceProvider } from "./serviceProvider";
 import { TimeslotsSchedule } from "./timeslotsSchedule";
 import { TimeslotItem } from "./timeslotItem";
-
+import { Unavailability } from "./unavailability";
 
 export {
 	Booking,
@@ -19,4 +19,5 @@ export {
 	ServiceProvider,
 	TimeslotsSchedule,
 	TimeslotItem,
+	Unavailability,
 };

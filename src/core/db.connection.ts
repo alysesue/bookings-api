@@ -1,7 +1,6 @@
-import { Connection, ConnectionOptions, createConnection } from 'typeorm';
+import { Connection, createConnection } from 'typeorm';
 import { Singleton } from 'typescript-ioc';
-
-import * as connectionOptions from '../../ormconfig';
+import { getConnectionOptions } from './connectionOptions';
 
 @Singleton
 export class DbConnection {
@@ -26,6 +25,7 @@ export class DbConnection {
 	}
 
 	protected async initConnection() {
-		DbConnection.CONNECTION = await createConnection(connectionOptions as ConnectionOptions);
+		const options = getConnectionOptions();
+		DbConnection.CONNECTION = await createConnection(options);
 	}
 }

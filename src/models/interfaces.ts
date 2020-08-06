@@ -32,3 +32,9 @@ export interface IDateSpan {
 	start: Date;
 	end: Date;
 }
+
+export interface IUnavailability {
+	serviceId: number;
+	start: Date;
+	end: Date;
+}
