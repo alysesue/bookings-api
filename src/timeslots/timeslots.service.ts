@@ -1,6 +1,6 @@
 import { Inject, Scope, Scoped } from "typescript-ioc";
 import { AggregatedEntry, TimeslotAggregator } from "./timeslotAggregator";
-import { Booking, BookingStatus, ServiceProvider } from '../models';
+import { Booking, BookingStatus, ServiceProvider, Unavailability } from '../models';
 import { CalendarsRepository } from "../calendars/calendars.repository";
 import { DateHelper } from "../infrastructure/dateHelper";
 import { BookingsRepository } from "../bookings/bookings.repository";
@@ -10,12 +10,10 @@ import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import { intersectsDateTimeSpan } from "../tools/timeSpan";
 import { BookingSearchRequest } from "../bookings/bookings.apicontract";
+import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
 
 @Scoped(Scope.Request)
 export class TimeslotsService {
-	@Inject
-	private calendarsRepository: CalendarsRepository;
-
 	@Inject
 	private bookingsRepository: BookingsRepository;
 
@@ -25,6 +23,9 @@ export class TimeslotsService {
 	@Inject
 	private serviceProvidersRepo: ServiceProvidersRepository;
 
+	@Inject
+	private unavailabilitiesService: UnavailabilitiesService;
+
 	private timeslotKeySelector = (start: Date, end: Date) => `${start.getTime()}|${end.getTime()}`;
 	private bookingKeySelector = (booking: Booking) => this.timeslotKeySelector(booking.startDateTime, booking.getSessionEndTime());
 
@@ -33,8 +34,8 @@ export class TimeslotsService {
 
 		for (const element of entries) {
 			const result = acceptedBookings.filter(booking => {
-				return intersectsDateTimeSpan({start: booking.startDateTime, end: booking.getSessionEndTime()}, element.startTime, element.endTime);})
-			.map(booking => booking.serviceProviderId);
+				return intersectsDateTimeSpan({ start: booking.startDateTime, end: booking.getSessionEndTime() }, element.startTime, element.endTime);
+			}).map(booking => booking.serviceProviderId);
 			element.setOverlappingServiceProviders(result);
 
 			const elementKey = this.timeslotKeySelector(element.startTime, element.endTime);
@@ -51,6 +52,16 @@ export class TimeslotsService {
 		for (const element of entries) {
 			const elementKey = this.timeslotKeySelector(element.startTime, element.endTime);
 			element.pendingBookingsCount = pendingBookingsLookup.get(elementKey)?.length || 0;
+		}
+	}
+
+	private setUnavailabilities(entries: AvailableTimeslotProviders[], unavailabilities: Unavailability[]) {
+		for (const entry of entries) {
+			for (const unavailability of unavailabilities) {
+				if (intersectsDateTimeSpan({ start: entry.startTime, end: entry.endTime }, unavailability.start, unavailability.end)) {
+					entry.setUnavailability(unavailability);
+				}
+			}
 		}
 	}
 
@@ -100,14 +111,16 @@ export class TimeslotsService {
 
 		const acceptedBookings = pendingAndAcceptedBookings.filter(booking => booking.status === BookingStatus.Accepted);
 		const pendingBookings = pendingAndAcceptedBookings.filter(booking => booking.status === BookingStatus.PendingApproval);
+		const unavailabilities = await this.unavailabilitiesService.search({ from: startDateTime, to: endDateTime, serviceId, serviceProviderId });
 
 		if (serviceProviderId) {
 			aggregatedEntries = aggregatedEntries.filter(entry => entry.getGroups().find(sp => sp.id === serviceProviderId));
 		}
 
-		const mappedEntries = this.mapDataModels(aggregatedEntries);
+		let mappedEntries = this.mapDataModels(aggregatedEntries);
 		this.setBookedProviders(mappedEntries, acceptedBookings);
 		this.setPendingTimeslots(mappedEntries, pendingBookings);
+		this.setUnavailabilities(mappedEntries, unavailabilities);
 
 		if (serviceProviderId) {
 			for (const entry of mappedEntries) {
@@ -115,6 +128,10 @@ export class TimeslotsService {
 			}
 		}
 
+		mappedEntries = mappedEntries.filter(e =>
+			e.availableServiceProviders.length > 0
+			|| e.bookedServiceProviders.length > 0
+			|| e.pendingBookingsCount > 0);
 		return mappedEntries;
 	}
 

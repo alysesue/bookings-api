@@ -21,10 +21,10 @@ export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {
 			serviceProviderId?: number,
 		}): Promise<Unavailability[]> {
 
-		const serviceCondition = 'u._serviceId = :serviceId';
+		const serviceCondition = 'u."_serviceId" = :serviceId';
 		const dateRangeCondition = '(u."_start" <= :to AND u."_end" >= :from)';
 		const spCondition = serviceProviderId ?
-			'((u."_allServiceProviders" AND EXISTS(SELECT 1 FROM public.service_provider esp WHERE esp._id = :serviceProviderId AND esp._serviceId = :serviceId)) OR '
+			'((u."_allServiceProviders" AND EXISTS(SELECT 1 FROM public.service_provider esp WHERE esp."_id" = :serviceProviderId AND esp."_serviceId" = :serviceId)) OR '
 			+ 'EXISTS(SELECT 1 FROM public.unavailable_service_provider usp WHERE usp."unavailability_id" = u."_id" AND usp."serviceProvider_id" = :serviceProviderId))'
 			: '';
 

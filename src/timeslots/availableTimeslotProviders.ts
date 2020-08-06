@@ -1,5 +1,5 @@
 import { AggregatedEntry } from "./timeslotAggregator";
-import { ServiceProvider } from '../models';
+import { ServiceProvider, Unavailability } from '../models';
 
 export class AvailableTimeslotProviders {
 	public startTime: Date;
@@ -13,6 +13,7 @@ export class AvailableTimeslotProviders {
 	constructor() {
 		this._relatedServiceProviders = [];
 		this._bookedServiceProviders = [];
+		this._overlappingServiceProviders = [];
 		this._availableServiceProviders = [];
 		this.pendingBookingsCount = 0;
 	}
@@ -35,6 +36,15 @@ export class AvailableTimeslotProviders {
 		this._availableServiceProviders = this._availableServiceProviders.filter(sp => !overlappingProviderIds.has(sp.id));
 	}
 
+	public setUnavailability(unavailability: Unavailability) {
+		if (unavailability.allServiceProviders) {
+			this._availableServiceProviders = [];
+		} else {
+			const unavailableProviderIds = unavailability.serviceProviders.reduce((set, sp) => set.add(sp.id), new Set<number>());
+			this._availableServiceProviders = this._availableServiceProviders.filter(sp => !unavailableProviderIds.has(sp.id));
+		}
+	}
+
 	public get bookedServiceProviders(): ServiceProvider[] {
 		return this._bookedServiceProviders;
 	}
@@ -52,6 +62,7 @@ export class AvailableTimeslotProviders {
 		const isAvailableBeforeFilter = this.availabilityCount > 0;
 		this._relatedServiceProviders = this._relatedServiceProviders.filter(sp => sp.id === providerId);
 		this._bookedServiceProviders = this._bookedServiceProviders.filter(sp => sp.id === providerId);
+		this._overlappingServiceProviders = this._overlappingServiceProviders.filter(sp => sp.id === providerId);
 		this._availableServiceProviders = this._availableServiceProviders.filter(sp => sp.id === providerId);
 		if (this._availableServiceProviders.length > 0 && isAvailableBeforeFilter) {
 			this.pendingBookingsCount = 0;
