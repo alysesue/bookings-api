@@ -1,14 +1,13 @@
 import { Inject, Scope, Scoped } from "typescript-ioc";
 import { AggregatedEntry, TimeslotAggregator } from "./timeslotAggregator";
 import { Booking, BookingStatus, ServiceProvider, Unavailability } from '../models';
-import { CalendarsRepository } from "../calendars/calendars.repository";
 import { DateHelper } from "../infrastructure/dateHelper";
 import { BookingsRepository } from "../bookings/bookings.repository";
 import { groupByKey } from '../tools/collections';
 import { ServicesRepository } from "../services/services.repository";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
-import { intersectsDateTimeSpan } from "../tools/timeSpan";
+import { intersectsDateTime, intersectsDateTimeSpan } from "../tools/timeSpan";
 import { BookingSearchRequest } from "../bookings/bookings.apicontract";
 import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
 
@@ -55,15 +54,21 @@ export class TimeslotsService {
 		}
 	}
 
-	private setUnavailabilities(entries: AvailableTimeslotProviders[], unavailabilities: Unavailability[]) {
-		for (const entry of entries) {
-			for (const unavailability of unavailabilities) {
-				if (intersectsDateTimeSpan({ start: entry.startTime, end: entry.endTime }, unavailability.start, unavailability.end)) {
+	private async filterUnavailabilities(startDateTime: Date, endDateTime: Date, serviceId: number, entries: AvailableTimeslotProviders[])
+		: Promise<AvailableTimeslotProviders[]> {
+		const unavailabilities = await this.unavailabilitiesService.search({ from: startDateTime, to: endDateTime, serviceId });
+
+		for (const unavailability of unavailabilities) {
+			for (const entry of entries) {
+				if (unavailability.intersects(entry.startTime, entry.endTime)) {
 					entry.setUnavailability(unavailability);
 				}
 			}
 		}
+
+		return entries.filter(e => e.availableServiceProviders.length > 0 || e.bookedServiceProviders.length > 0);
 	}
+
 
 	private async getAggregatedTimeslotEntries(minStartTime: Date, maxEndTime: Date, serviceId: number): Promise<AggregatedEntry<ServiceProvider>[]> {
 		const aggregator = new TimeslotAggregator<ServiceProvider>();
@@ -81,15 +86,13 @@ export class TimeslotsService {
 		}) || []);
 
 		for (const provider of serviceProviders) {
-			if (provider.timeslotsSchedule) {
-				const serviceProviderTimeslots = provider.timeslotsSchedule.generateValidTimeslots({
+			const serviceProviderTimeslots = provider.timeslotsSchedule ?
+				provider.timeslotsSchedule.generateValidTimeslots({
 					startDatetime: minStartTime,
 					endDatetime: maxEndTime
-				});
-				aggregator.aggregate(provider, serviceProviderTimeslots);
-			} else {
-				aggregator.aggregate(provider, validServiceTimeslots);
-			}
+				}) : validServiceTimeslots;
+
+			aggregator.aggregate(provider, serviceProviderTimeslots);
 		}
 
 		const entries = aggregator.getEntries();
@@ -111,16 +114,15 @@ export class TimeslotsService {
 
 		const acceptedBookings = pendingAndAcceptedBookings.filter(booking => booking.status === BookingStatus.Accepted);
 		const pendingBookings = pendingAndAcceptedBookings.filter(booking => booking.status === BookingStatus.PendingApproval);
-		const unavailabilities = await this.unavailabilitiesService.search({ from: startDateTime, to: endDateTime, serviceId, serviceProviderId });
 
 		if (serviceProviderId) {
 			aggregatedEntries = aggregatedEntries.filter(entry => entry.getGroups().find(sp => sp.id === serviceProviderId));
 		}
 
 		let mappedEntries = this.mapDataModels(aggregatedEntries);
+		mappedEntries = await this.filterUnavailabilities(startDateTime, endDateTime, serviceId, mappedEntries);
 		this.setBookedProviders(mappedEntries, acceptedBookings);
 		this.setPendingTimeslots(mappedEntries, pendingBookings);
-		this.setUnavailabilities(mappedEntries, unavailabilities);
 
 		if (serviceProviderId) {
 			for (const entry of mappedEntries) {
@@ -128,10 +130,6 @@ export class TimeslotsService {
 			}
 		}
 
-		mappedEntries = mappedEntries.filter(e =>
-			e.availableServiceProviders.length > 0
-			|| e.bookedServiceProviders.length > 0
-			|| e.pendingBookingsCount > 0);
 		return mappedEntries;
 	}
 
