@@ -9,16 +9,6 @@ import { ServiceProvidersRepository } from "../../serviceProviders/serviceProvid
 import { AvailableTimeslotProviders } from "../availableTimeslotProviders";
 
 let snapshot: Snapshot;
-beforeAll(() => {
-	// Store the IoC configuration
-	snapshot = Container.snapshot();
-});
-
-afterEach(() => {
-	snapshot.restore();
-	// Clears mock counters, not implementation
-	jest.clearAllMocks();
-});
 
 describe("Timeslots Service", () => {
 	const date = new Date(2020, 4, 27);
@@ -78,11 +68,24 @@ describe("Timeslots Service", () => {
 		getServiceProviders: jest.fn(() => Promise.resolve([ServiceProviderMock, ServiceProviderMock2]))
 	};
 
-	it("should aggregate results", async () => {
+	beforeAll(() => {
+		// Store the IoC configuration
+		snapshot = Container.snapshot();
+	});
+
+	afterEach(() => {
+		snapshot.restore();
+		// Clears mock counters, not implementation
+		jest.clearAllMocks();
+	});
+
+	beforeEach(() => {
 		Container.bind(BookingsRepository).to(jest.fn(() => BookingsRepositoryMock));
 		Container.bind(ServicesRepository).to(jest.fn(() => ServicesRepositoryMock));
 		Container.bind(ServiceProvidersRepository).to(jest.fn(() => ServiceProvidersRepositoryMock));
+	})
 
+	it("should aggregate results", async () => {
 		const service = Container.get(TimeslotsService);
 		const result = await service.getAggregatedTimeslots(date, endDate, 1);
 		expect(result.length).toBe(3);
@@ -92,10 +95,6 @@ describe("Timeslots Service", () => {
 	});
 
 	it("should aggregate results by service provider", async () => {
-		Container.bind(BookingsRepository).to(jest.fn(() => BookingsRepositoryMock));
-		Container.bind(ServicesRepository).to(jest.fn(() => ServicesRepositoryMock));
-		Container.bind(ServiceProvidersRepository).to(jest.fn(() => ServiceProvidersRepositoryMock));
-
 		const service = Container.get(TimeslotsService);
 		const result = await service.getAggregatedTimeslots(date, endDate, 1, 101);
 		expect(result.length).toBe(1);
@@ -105,10 +104,6 @@ describe("Timeslots Service", () => {
 	});
 
 	it("should get available providers", async () => {
-		Container.bind(BookingsRepository).to(jest.fn(() => BookingsRepositoryMock));
-		Container.bind(ServicesRepository).to(jest.fn(() => ServicesRepositoryMock));
-		Container.bind(ServiceProvidersRepository).to(jest.fn(() => ServiceProvidersRepositoryMock));
-
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 17, 0);
 		const endDateTime = DateHelper.setHours(date, 18, 0);
@@ -135,4 +130,25 @@ describe("Timeslots Service", () => {
 		expect(result.availableServiceProviders).toHaveLength(1);
 		expect(result.bookedServiceProviders[0].id).not.toBe(result.availableServiceProviders[0]);
 	});
+
+	it('should map accepted out-of-slot booking to timeslot response', async () => {
+		const service = Container.get(TimeslotsService);
+
+		const serviceProvider = ServiceProvider.create('Juku', undefined, 1);
+		serviceProvider.id = 1;
+
+		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([getOutOfSlotBooking(serviceProvider)]));
+
+		const timeslots = await service.getAggregatedTimeslots(new Date(), new Date(), 1);
+		const outOfSlotTimeslot = timeslots.pop();
+
+		expect(outOfSlotTimeslot.bookedServiceProviders).toHaveLength(1);
+		expect(outOfSlotTimeslot.bookedServiceProviders[0]).toBe(serviceProvider);
+	});
 });
+
+const getOutOfSlotBooking = (serviceProvider: ServiceProvider): Booking => {
+	const booking = Booking.create(1, new Date('2020-08-08T06:00:00.000Z'), 180, 1, 'ref');
+	booking.serviceProvider = serviceProvider;
+	return booking;
+}

@@ -28,21 +28,8 @@ export class TimeslotsService {
 	private timeslotKeySelector = (start: Date, end: Date) => `${start.getTime()}|${end.getTime()}`;
 	private bookingKeySelector = (booking: Booking) => this.timeslotKeySelector(booking.startDateTime, booking.getSessionEndTime());
 
-	private setBookedProviders(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {
-		const acceptedBookingsLookup = groupByKey(acceptedBookings, this.bookingKeySelector);
-
-		for (const element of entries) {
-			const result = acceptedBookings.filter(booking => {
-				return intersectsDateTimeSpan({start: booking.startDateTime, end: booking.getSessionEndTime()}, element.startTime, element.endTime);})
-			.map(booking => booking.serviceProviderId);
-			element.setOverlappingServiceProviders(result);
-
-			const elementKey = this.timeslotKeySelector(element.startTime, element.endTime);
-			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
-			if (acceptedBookingsForTimeslot) {
-				element.setBookedServiceProviders(acceptedBookingsForTimeslot.map(booking => booking.serviceProviderId));
-			}
-		}
+	private static mapDataModels(entries: AggregatedEntry<ServiceProvider>[], outOfSlotBookings: Booking[]): AvailableTimeslotProviders[] {
+		return entries.map(AvailableTimeslotProviders.create).concat(TimeslotsService.getOutOfSlotBookingTimeslots(outOfSlotBookings));
 	}
 
 	private setPendingTimeslots(entries: AvailableTimeslotProviders[], pendingBookings: Booking[]): void {
@@ -87,6 +74,19 @@ export class TimeslotsService {
 		return entries;
 	}
 
+	private static getOutOfSlotBookingTimeslots(outOfSlotBookings: Booking[]): AvailableTimeslotProviders[] {
+		return outOfSlotBookings.map(AvailableTimeslotProviders.createFromBooking);
+	}
+
+	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date, serviceId: number, serviceProviderId?: number): Promise<AvailableTimeslotProviders> {
+		const aggregatedEntries = await this.getAggregatedTimeslots(startDateTime, endDateTime, serviceId, serviceProviderId);
+
+		const timeslotEntry = aggregatedEntries.find(e => DateHelper.equals(e.startTime, startDateTime)
+			&& DateHelper.equals(e.endTime, endDateTime));
+
+		return timeslotEntry || AvailableTimeslotProviders.empty(startDateTime, endDateTime);
+	}
+
 	public async getAggregatedTimeslots(startDateTime: Date, endDateTime: Date, serviceId: number, serviceProviderId?: number): Promise<AvailableTimeslotProviders[]> {
 		let aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime, serviceId);
 		const pendingAndAcceptedBookings = await this.bookingsRepository.search(
@@ -100,12 +100,14 @@ export class TimeslotsService {
 
 		const acceptedBookings = pendingAndAcceptedBookings.filter(booking => booking.status === BookingStatus.Accepted);
 		const pendingBookings = pendingAndAcceptedBookings.filter(booking => booking.status === BookingStatus.PendingApproval);
+		const outOfSlotBookings = acceptedBookings.filter(booking => booking.outOfSlotBooking);
 
 		if (serviceProviderId) {
 			aggregatedEntries = aggregatedEntries.filter(entry => entry.getGroups().find(sp => sp.id === serviceProviderId));
 		}
 
-		const mappedEntries = this.mapDataModels(aggregatedEntries);
+		const mappedEntries = TimeslotsService.mapDataModels(aggregatedEntries, outOfSlotBookings);
+
 		this.setBookedProviders(mappedEntries, acceptedBookings);
 		this.setPendingTimeslots(mappedEntries, pendingBookings);
 
@@ -118,16 +120,20 @@ export class TimeslotsService {
 		return mappedEntries;
 	}
 
-	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date, serviceId: number, serviceProviderId?: number): Promise<AvailableTimeslotProviders> {
-		const aggregatedEntries = await this.getAggregatedTimeslots(startDateTime, endDateTime, serviceId, serviceProviderId);
+	private setBookedProviders(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {
+		const acceptedBookingsLookup = groupByKey(acceptedBookings, this.bookingKeySelector);
 
-		const timeslotEntry = aggregatedEntries.find(e => DateHelper.equals(e.startTime, startDateTime)
-			&& DateHelper.equals(e.endTime, endDateTime));
+		for (const element of entries) {
+			const result = acceptedBookings.filter(booking => {
+				return intersectsDateTimeSpan({start: booking.startDateTime, end: booking.getSessionEndTime()}, element.startTime, element.endTime);
+			}).map(booking => booking.serviceProviderId);
+			element.setOverlappingServiceProviders(result);
 
-		return timeslotEntry || AvailableTimeslotProviders.empty(startDateTime, endDateTime);
-	}
-
-	private mapDataModels(entries: AggregatedEntry<ServiceProvider>[]): AvailableTimeslotProviders[] {
-		return entries.map(e => AvailableTimeslotProviders.create(e));
+			const elementKey = this.timeslotKeySelector(element.startTime, element.endTime);
+			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
+			if (acceptedBookingsForTimeslot) {
+				element.setBookedServiceProviders(acceptedBookingsForTimeslot.map(booking => booking.serviceProviderId));
+			}
+		}
 	}
 }
