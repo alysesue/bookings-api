@@ -33,11 +33,11 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 			to: Date,
 		}): Promise<Booking[]> {
 
-		const serviceCondition = serviceId ? 'booking._serviceId = :serviceId' : '';
+		const serviceCondition = serviceId ? 'booking."_serviceId" = :serviceId' : '';
 
-		const serviceProviderCondition = serviceProviderId ? 'booking._serviceProviderId = :serviceProviderId' : '';
+		const serviceProviderCondition = serviceProviderId ? 'booking."_serviceProviderId" = :serviceProviderId' : '';
 
-		const statusesCondition =  statuses ? "booking._status IN (:...statuses)" : '';
+		const statusesCondition =  statuses ? 'booking."_status" IN (:...statuses)' : '';
 
 		const dateRangeCondition = '(booking."_startDateTime" <= :to AND booking."_endDateTime" >= :from)';
 
