@@ -26,7 +26,7 @@ export class TimeslotsController extends Controller {
 	@Get("availability")
 	@Security("service")
 	public async getAvailability(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number, @Query() serviceProviderId?: number): Promise<AvailabilityEntryResponse[]> {
-		let availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId, serviceProviderId);
+		let availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId, false, serviceProviderId);
 		availableTimeslots = availableTimeslots.filter(e => e.availabilityCount > 0);
 		return TimeslotsController.mapAvailabilityToResponse(availableTimeslots);
 	}
@@ -39,11 +39,17 @@ export class TimeslotsController extends Controller {
 	 * @param endDate The upper bound limit for timeslots' endDate.
 	 * @param serviceId The available service to be queried.
 	 * @param serviceProviderId (Optional) Filters timeslots for a specific service provider.
+	 * @param includeBookings (Optional)
 	 */
 	@Get("")
 	@Security("service")
-	public async getTimeslots(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number, @Query() serviceProviderId?: number): Promise<TimeslotEntryResponse[]> {
-		const timeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId, serviceProviderId);
+	public async getTimeslots(
+		@Query() startDate: Date,
+		@Query() endDate: Date,
+		@Header('x-api-service') serviceId: number,
+		@Query() includeBookings: boolean = false,
+		@Query() serviceProviderId?: number): Promise<TimeslotEntryResponse[]> {
+		const timeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId, includeBookings, serviceProviderId);
 		return timeslots?.map(t => this.mapTimeslotEntry(t));
 	}
 

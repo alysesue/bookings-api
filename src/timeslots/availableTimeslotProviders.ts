@@ -73,10 +73,16 @@ export class AvailableTimeslotProviders {
 		return instance;
 	}
 
-	public static createFromBooking(booking: Booking): AvailableTimeslotProviders {
-		const instance = AvailableTimeslotProviders.empty(booking.startDateTime, booking.getSessionEndTime());
-		instance._relatedServiceProviders = [booking.serviceProvider];
-		instance._bookedServiceProviders = [booking.serviceProvider];
+	public static createFromBooking(entry: AggregatedEntry<Booking>): AvailableTimeslotProviders {
+		const instance = new AvailableTimeslotProviders();
+		instance.startTime = entry.getTimeslot().getStartTime();
+		instance.endTime = entry.getTimeslot().getEndTime();
+
+		const serviceProviders = entry.getGroups()
+			.filter(booking => booking.serviceProvider)
+			.map(booking => booking.serviceProvider);
+
+		instance._relatedServiceProviders = serviceProviders;
 
 		return instance;
 	}
