@@ -7,6 +7,7 @@ import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
 import { DateHelper } from "../infrastructure/dateHelper";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
+import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
 
 @InRequestScope
 export class BookingsService {
@@ -18,6 +19,8 @@ export class BookingsService {
 	private timeslotsService: TimeslotsService;
 	@Inject
 	private serviceProviderRepo: ServiceProvidersRepository;
+	@Inject
+	public unavailabilitiesService: UnavailabilitiesService;
 
 	public formatEventId(event: string): string {
 		return event.split("@")[0];
@@ -121,15 +124,12 @@ export class BookingsService {
 
 	private async validateOutOfSlotBookings(booking: Booking) {
 		const { startDateTime, endDateTime, serviceId, serviceProviderId } = booking;
-		const startOfDay = DateHelper.getStartOfDay(startDateTime);
-		const endOfDay = DateHelper.getEndOfDay(endDateTime);
 
-		const searchQuery = new BookingSearchRequest(startOfDay, endOfDay, [BookingStatus.Accepted,BookingStatus.PendingApproval], serviceId, serviceProviderId);
+		const searchQuery = new BookingSearchRequest(startDateTime, endDateTime, [BookingStatus.Accepted, BookingStatus.PendingApproval], serviceId, serviceProviderId);
 
 		const pendingAndAcceptedBookings = await this.searchBookings(searchQuery);
 
 		const acceptedBookings = pendingAndAcceptedBookings.filter(acceptedBooking => acceptedBooking.status === BookingStatus.Accepted);
-		const pendingBookings = pendingAndAcceptedBookings.filter(pendingBooking => pendingBooking.status === BookingStatus.PendingApproval);
 
 		for (const item of acceptedBookings) {
 			const intersects = booking.bookingIntersects({ start: item.startDateTime, end: item.endDateTime });
@@ -138,11 +138,13 @@ export class BookingsService {
 			}
 		}
 
-		for (const item of pendingBookings) {
-			const intersects = booking.bookingIntersects({ start: item.startDateTime, end: item.endDateTime });
-			if (intersects) {
-				item.status = BookingStatus.Cancelled;
-			}
+		if (booking.serviceProviderId && await this.unavailabilitiesService.isUnavailable({
+			from: startDateTime,
+			to: endDateTime,
+			serviceId: booking.serviceId,
+			serviceProviderId: booking.serviceProviderId
+		})) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`The service provider is not available in the selected time range.`);
 		}
 	}
 

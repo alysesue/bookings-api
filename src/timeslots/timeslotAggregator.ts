@@ -54,19 +54,19 @@ export class TimeslotAggregator<TGroup> {
 
 export class AggregatedEntry<TGroup> {
 	private _timeslot: Timeslot;
-	private _groups: TGroup[];
+	private _groups: Set<TGroup>;
 
 	public getTimeslot = () => this._timeslot;
-	public getGroups = () => this._groups;
+	public getGroups = () => [...this._groups];
 
 	constructor(timeslot: Timeslot) {
 		this._timeslot = timeslot;
-		this._groups = [];
+		this._groups = new Set<TGroup>();
 	}
 
 	public addGroup(group: TGroup): void {
-		if (this._groups.indexOf(group) < 0) {
-			this._groups = [...this._groups, group];
+		if (!this._groups.has(group)) {
+			this._groups.add(group);
 		}
 	}
 }

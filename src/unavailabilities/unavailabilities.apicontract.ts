@@ -1,8 +1,8 @@
 import { ServiceProviderSummaryModel } from "../serviceProviders/serviceProviders.apicontract";
 
 export class UnavailabilityResponse {
-	public start: Date;
-	public end: Date;
+	public startTime: Date;
+	public endTime: Date;
 	public allServiceProviders: boolean;
 	public serviceProviders: ServiceProviderSummaryModel[];
 }
@@ -15,11 +15,11 @@ export class UnavailabilityRequest {
 	/**
 	 * The start datetime value. It must be less than end datetime.
 	 */
-	public start: Date;
+	public startTime: Date;
 	/**
 	 * The end datetime value.
 	 */
-	public end: Date;
+	public endTime: Date;
 	/**
 	 * Whether this unavailability applies to all service providers (under service).
 	 */

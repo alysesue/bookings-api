@@ -10,6 +10,7 @@ import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { DateHelper } from "../../infrastructure/dateHelper";
+import { UnavailabilitiesService } from "../../unavailabilities/unavailabilities.service";
 
 describe("Bookings.Service", () => {
 	const calendar = new Calendar();
@@ -25,6 +26,7 @@ describe("Bookings.Service", () => {
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
+		Container.bind(UnavailabilitiesService).to(UnavailabilitiesServiceMock);
 	});
 
 	afterEach(() => {
@@ -85,6 +87,7 @@ describe("Bookings.Service", () => {
 		BookingRepositoryMock.searchBookingsMock = [];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		TimeslotsServiceMock.acceptedBookings = [bookingMock];
+		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
 
@@ -100,11 +103,30 @@ describe("Bookings.Service", () => {
 		bookingRequest.outOfSlotBooking = false;
 		BookingRepositoryMock.searchBookingsMock = [];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
 
 		const booking = BookingRepositoryMock.booking;
 		expect(booking).not.toBe(undefined);
+	});
+
+	it("should not allow booking out of timeslots due to unavailability", async () => {
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 5;
+		bookingRequest.outOfSlotBooking = true;
+		bookingRequest.refId = 'RFM186';
+		BookingRepositoryMock.searchBookingsMock = [];
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		TimeslotsServiceMock.acceptedBookings = [bookingMock];
+		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(true);
+
+		const test = async () => await Container.get(BookingsService).save(bookingRequest, 1);
+		await expect(test).rejects.toStrictEqual(
+			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`The service provider is not available in the selected time range.`)
+		);
 	});
 
 	it("should validate end date time", async () => {
@@ -252,5 +274,13 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 
 	public async getServiceProvider(): Promise<ServiceProvider> {
 		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
+	}
+}
+
+class UnavailabilitiesServiceMock extends UnavailabilitiesService {
+	public static isUnavailable = jest.fn();
+
+	public async isUnavailable(...params): Promise<any> {
+		return await UnavailabilitiesServiceMock.isUnavailable(...params);
 	}
 }

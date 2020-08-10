@@ -19,3 +19,6 @@ export const intersectsDateTimeSpan = (dateSpan: IDateSpan, startDate: Date, end
 	return dateSpan.start <= endDate && startDate <= dateSpan.end;
 };
 
+export const intersectsDateTime = (startDateA: Date, endDateA: Date, startDateB: Date, endDateB: Date) => {
+	return startDateA < endDateB && startDateB < endDateA;
+};

@@ -42,11 +42,35 @@ describe("Unavailabilities repository", () => {
 			serviceId: 1,
 		});
 
-		const whereParam = "u._serviceId = :serviceId AND (u.\"_start\" <= :to AND u.\"_end\" >= :from)";
+		const whereParam = "(u.\"_serviceId\" = :serviceId) AND (u.\"_start\" <= :to AND u.\"_end\" >= :from)";
 		expect((queryBuilderMock.where as jest.Mock).mock.calls[0][0]).toBe(whereParam);
 		expect(queryBuilderMock.leftJoinAndSelect).toHaveBeenCalled();
 		expect(queryBuilderMock.getMany).toHaveBeenCalled();
 		expect(results).toBeDefined();
+	});
+
+	it("should count unavailabilities for a service", async () => {
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			getMany: jest.fn(() => Promise.resolve([])),
+			getCount: jest.fn(() => Promise.resolve(1)),
+		} as unknown as SelectQueryBuilder<Unavailability>;
+
+		MockDBConnection.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const repository = Container.get(UnavailabilitiesRepository);
+
+		const count = await repository.searchCount({
+			from: new Date(),
+			to: new Date(),
+			serviceId: 1,
+		});
+
+		const whereParam = "(u.\"_serviceId\" = :serviceId) AND (u.\"_start\" <= :to AND u.\"_end\" >= :from)";
+		expect((queryBuilderMock.where as jest.Mock).mock.calls[0][0]).toBe(whereParam);
+		expect(queryBuilderMock.getCount).toHaveBeenCalled();
+		expect(count).toBe(1);
 	});
 
 	it("should retrieve unavailabilities for a service provider", async () => {
@@ -67,7 +91,7 @@ describe("Unavailabilities repository", () => {
 			serviceProviderId: 2
 		});
 
-		const whereParam = "u._serviceId = :serviceId AND (u.\"_start\" <= :to AND u.\"_end\" >= :from) AND ((u.\"_allServiceProviders\" AND EXISTS(SELECT 1 FROM public.service_provider esp WHERE esp._id = :serviceProviderId AND esp._serviceId = :serviceId)) OR EXISTS(SELECT 1 FROM public.unavailable_service_provider usp WHERE usp.\"unavailability_id\" = u.\"_id\" AND usp.\"serviceProvider_id\" = :serviceProviderId))";
+		const whereParam = "(u.\"_serviceId\" = :serviceId) AND (u.\"_start\" <= :to AND u.\"_end\" >= :from) AND ((u.\"_allServiceProviders\" AND EXISTS(SELECT 1 FROM public.service_provider esp WHERE esp.\"_id\" = :serviceProviderId AND esp.\"_serviceId\" = u.\"_serviceId\")) OR EXISTS(SELECT 1 FROM public.unavailable_service_provider usp WHERE usp.\"unavailability_id\" = u.\"_id\" AND usp.\"serviceProvider_id\" = :serviceProviderId))";
 		expect((queryBuilderMock.where as jest.Mock).mock.calls[0][0]).toBe(whereParam);
 		expect(queryBuilderMock.leftJoinAndSelect).toHaveBeenCalled();
 		expect(queryBuilderMock.getMany).toHaveBeenCalled();
