@@ -16,8 +16,8 @@ export class UnavailabilitiesController extends Controller {
 	private mapToResponse(data: Unavailability): UnavailabilityResponse {
 		const serviceProviders = this.serviceprovidersMapper.mapSummaryDataModels(data.serviceProviders);
 		return {
-			start: data.start,
-			end: data.end,
+			startTime: data.start,
+			endTime: data.end,
 			allServiceProviders: data.allServiceProviders,
 			serviceProviders
 		} as UnavailabilityResponse;
