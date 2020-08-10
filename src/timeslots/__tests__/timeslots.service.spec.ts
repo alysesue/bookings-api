@@ -12,7 +12,6 @@ import {
 import { TimeslotsService } from "../timeslots.service";
 import { BookingsRepository } from "../../bookings/bookings.repository";
 import { DateHelper } from "../../infrastructure/dateHelper";
-import { BookingSearchRequest } from '../../bookings/bookings.apicontract';
 import { ServicesRepository } from '../../services/services.repository';
 import { ServiceProvidersRepository } from "../../serviceProviders/serviceProviders.repository";
 import { AvailableTimeslotProviders } from "../availableTimeslotProviders";
