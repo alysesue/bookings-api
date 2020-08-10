@@ -20,14 +20,14 @@ describe('TimeslotsSchedule template services ', () => {
 	const timeslotItemMock = TimeslotItem.create(1, Weekday.Monday, TimeOfDay.create({
 		hours: 11,
 		minutes: 0
-	}), TimeOfDay.create({hours: 11, minutes: 30}));
+	}), TimeOfDay.create({ hours: 11, minutes: 30 }));
 	const timeslotsScheduleMock = new TimeslotsSchedule();
 	const request = new TimeslotItemRequest();
 
 	beforeAll(() => {
 		Container.bind(TimeslotItemsRepository).to(TimeslotItemsRepositoryMock);
 	});
-	beforeEach(()=>{
+	beforeEach(() => {
 		timeslotItemMock._id = 4;
 
 		timeslotsScheduleMock._id = 1;
@@ -53,7 +53,7 @@ describe('TimeslotsSchedule template services ', () => {
 		request.endTime = "07:00";
 
 		const timeslotItemsService = Container.get(TimeslotItemsService);
-		await expect(() => timeslotItemsService.createTimeslotItem(timeslotsScheduleMock, request))
+		await expect(async () => await timeslotItemsService.createTimeslotItem(timeslotsScheduleMock, request))
 			.rejects.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Timeslot start time must be less than end time.'));
 	});
 
@@ -63,7 +63,7 @@ describe('TimeslotsSchedule template services ', () => {
 		request.endTime = "bbb";
 
 		const timeslotItemsService = Container.get(TimeslotItemsService);
-		await expect(() => timeslotItemsService.createTimeslotItem(timeslotsScheduleMock, request))
+		await expect(async () => await timeslotItemsService.createTimeslotItem(timeslotsScheduleMock, request))
 			.rejects.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Value asdasd is not a valid time.'));
 	});
 
@@ -73,7 +73,7 @@ describe('TimeslotsSchedule template services ', () => {
 		request.endTime = "12:15";
 		timeslotsScheduleMock.timeslotItems = [timeslotItemMock];
 		const timeslotItemsService = Container.get(TimeslotItemsService);
-		await expect(() => timeslotItemsService.createTimeslotItem(timeslotsScheduleMock, request))
+		await expect(async () => await timeslotItemsService.createTimeslotItem(timeslotsScheduleMock, request))
 			.rejects.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Timeslot item overlaps existing entry.'));
 	});
 
@@ -85,7 +85,7 @@ describe('TimeslotsSchedule template services ', () => {
 		const timeslotItemMockForUpdate = TimeslotItem.create(1, Weekday.Monday, TimeOfDay.create({
 			hours: 11,
 			minutes: 0
-		}), TimeOfDay.create({hours: 11, minutes: 30}));
+		}), TimeOfDay.create({ hours: 11, minutes: 30 }));
 		timeslotItemMockForUpdate._id = 4;
 		const scheduleForUpdate = new TimeslotsSchedule();
 		scheduleForUpdate._id = 1;
@@ -118,7 +118,7 @@ describe('TimeslotsSchedule template services ', () => {
 		const timeslotItemMockForUpdate = TimeslotItem.create(1, 1, TimeOfDay.create({
 			hours: 11,
 			minutes: 0
-		}), TimeOfDay.create({hours: 11, minutes: 30}));
+		}), TimeOfDay.create({ hours: 11, minutes: 30 }));
 		timeslotItemMockForUpdate._id = 4;
 		const scheduleForUpdate = new TimeslotsSchedule();
 		scheduleForUpdate._id = 1;
@@ -141,15 +141,15 @@ describe('TimeslotsSchedule template services ', () => {
 		const timeslotItemMockForUpdate = TimeslotItem.create(1, 1, TimeOfDay.create({
 			hours: 11,
 			minutes: 0
-		}), TimeOfDay.create({hours: 11, minutes: 30}));
+		}), TimeOfDay.create({ hours: 11, minutes: 30 }));
 		timeslotItemMockForUpdate._id = 4;
 		const scheduleForUpdate = new TimeslotsSchedule();
 		scheduleForUpdate._id = 1;
 		scheduleForUpdate.timeslotItems = [timeslotItemMockForUpdate];
 
 		const timeslotItemsService = Container.get(TimeslotItemsService);
-		await expect(() =>
-			timeslotItemsService.updateTimeslotItem(scheduleForUpdate, 5, request))
+		await expect(async () =>
+			await timeslotItemsService.updateTimeslotItem(scheduleForUpdate, 5, request))
 			.rejects.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Timeslot item not found'));
 	});
 
@@ -159,7 +159,7 @@ describe('TimeslotsSchedule template services ', () => {
 		expect(deleteTimeslotItem).toBeCalledTimes(1);
 	});
 
-	it('should copy timeslotsSchedule',  async () => {
+	it('should copy timeslotsSchedule', async () => {
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		const data = await timeslotItemsService.mapTimeslotItemsInTimeslotsSchedule([timeslotItemMock], timeslotsScheduleMock);
 		// @ts-ignore

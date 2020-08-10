@@ -19,7 +19,7 @@ describe("Bookings.Service", () => {
 	calendar.googleCalendarId = 'google-id-1';
 	const serviceProvider = ServiceProvider.create('provider', calendar, 1);
 	serviceProvider.id = 1;
-	const bookingMock = Booking.create(1,new Date("2020-08-10"), new Date("2020-08-11"), 1, 'RHDH');
+	const bookingMock = Booking.create(1, new Date("2020-08-10"), new Date("2020-08-11"), 1, 'RHDH');
 
 	beforeAll(() => {
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
@@ -137,7 +137,7 @@ describe("Bookings.Service", () => {
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 
 		const service = Container.get(BookingsService);
-		await expect(() => service.save(bookingRequest, 1)).rejects.toThrowError();
+		await expect(async () => await service.save(bookingRequest, 1)).rejects.toThrowError();
 	});
 
 	it('should throw on booking save error', async () => {
@@ -148,7 +148,7 @@ describe("Bookings.Service", () => {
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 
 		const service = Container.get(BookingsService);
-		await expect(() => service.save(bookingRequest, 1)).rejects.toThrowError();
+		await expect(async () => await service.save(bookingRequest, 1)).rejects.toThrowError();
 	});
 
 	it("should accept booking", async () => {
@@ -179,7 +179,7 @@ describe("Bookings.Service", () => {
 	it("should throw exception if booking not found", async () => {
 		const bookingService = Container.get(BookingsService);
 		BookingRepositoryMock.booking = undefined;
-		await expect(bookingService.getBooking(1)).rejects.toStrictEqual(
+		await expect(async () => await bookingService.getBooking(1)).rejects.toStrictEqual(
 			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage("Booking 1 not found")
 		);
 	});
@@ -193,7 +193,7 @@ describe("Bookings.Service", () => {
 		TimeslotsServiceMock.availableProvidersForTimeslot = [];
 
 		const bookingService = Container.get(BookingsService);
-		await expect(bookingService.save(bookingRequest, 1))
+		await expect(async () => await bookingService.save(bookingRequest, 1))
 			.rejects
 			.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('No available service providers for this timeslot'));
 	});
@@ -208,7 +208,7 @@ describe("Bookings.Service", () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 
 		const bookingService = Container.get(BookingsService);
-		await expect(bookingService.save(bookingRequest, 1))
+		await expect(async () => await bookingService.save(bookingRequest, 1))
 			.rejects
 			.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('No available service providers for this timeslot'));
 	});

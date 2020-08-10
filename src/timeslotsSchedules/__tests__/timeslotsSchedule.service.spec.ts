@@ -17,7 +17,7 @@ describe('TimeslotsSchedule template services ', () => {
 	beforeAll(() => {
 		Container.bind(TimeslotsScheduleRepository).to(MockTimeslotsScheduleRepository);
 	});
-	beforeEach(()=>{
+	beforeEach(() => {
 		timeslotsScheduleMock._id = 1;
 
 	});
@@ -34,29 +34,16 @@ describe('TimeslotsSchedule template services ', () => {
 		expect(getTimeslotsScheduleById).toBeCalled();
 	});
 
-	it('should throw when id is empty', async () => {
-		const timeslotsScheduleService = Container.get(TimeslotsScheduleService);
-		expect(async () => await timeslotsScheduleService.getTimeslotsScheduleById(null))
-			.rejects.toThrowError();
-	});
-
-	it('should throw when timeslotsSchedule is not found', async () => {
-		getTimeslotsScheduleById.mockImplementation(() => Promise.resolve(null));
-		const timeslotsScheduleService = Container.get(TimeslotsScheduleService);
-		expect(async () => await timeslotsScheduleService.getTimeslotsScheduleById(3))
-			.rejects.toThrowError();
-	});
-
 	it('should create TimeslotsSchedule ', async () => {
 		createTimeslotsSchedule.mockImplementation(() => Promise.resolve(null));
 		const timeslotsScheduleService = Container.get(TimeslotsScheduleService);
-		await timeslotsScheduleService.createTimeslotsSchedule({spId: 3});
+		await timeslotsScheduleService.createTimeslotsSchedule({ spId: 3 });
 		expect(createTimeslotsSchedule).toBeCalled();
 	});
 
 	it('should trow when no id provide when create', async () => {
 		const timeslotsScheduleService = Container.get(TimeslotsScheduleService);
-		expect(async () => await timeslotsScheduleService.createTimeslotsSchedule({}))
+		await expect(async () => await timeslotsScheduleService.createTimeslotsSchedule({}))
 			.rejects.toThrowError();
 	});
 });
