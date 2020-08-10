@@ -5,71 +5,22 @@ import { Service } from "./service";
 
 @Entity()
 export class Booking {
-	constructor() {
-	}
-
-	public static create(serviceId: number, startDateTime: Date, sessionDurationInMinutes: number, serviceProviderId?: number, refId?: string) {
-		const instance = new Booking();
-		instance._serviceId = serviceId;
-		instance._startDateTime = startDateTime;
-		instance._sessionDurationInMinutes = sessionDurationInMinutes;
-		instance._createdAt = new Date();
-		instance._refId = refId;
-
-		if (serviceProviderId) {
-			instance._serviceProviderId = serviceProviderId;
-			instance._status = BookingStatus.Accepted;
-			instance._acceptedAt = instance.createdAt;
-		} else {
-			instance._status = BookingStatus.PendingApproval;
-		}
-
-		return instance;
-	}
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
-	public get id(): number {
-		return this._id;
-	}
-
 	@Column({ nullable: false })
 	private _serviceId: number;
-
-	public get serviceId(): number {
-		return this._serviceId;
-	}
 
 	@ManyToOne(type => Service)
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
-	public get service(): Service {
-		return this._service;
-	}
-
 	@Column({ type: "varchar", length: 300, nullable: true })
 	private _eventICalId: string;
 
-	public get eventICalId(): string {
-		return this._eventICalId;
-	}
-
-	public set eventICalId(value: string) {
-		this._eventICalId = value;
-	}
-
 	@Column()
 	private _status: BookingStatus;
-
-	public get status(): BookingStatus {
-		return this._status;
-	}
-
-	public set status(newStatus: BookingStatus) {
-		this._status = newStatus;
-	}
 
 	@Column()
 	private _sessionDurationInMinutes: number;
@@ -84,12 +35,57 @@ export class Booking {
 	@Column({ nullable: true })
 	private _refId?: string;
 
+	@Column({ nullable: true })
+	private _acceptedAt: Date;
+
+	@ManyToOne(type => ServiceProvider, { nullable: true })
+	@JoinColumn({ name: '_serviceProviderId' })
+	private _serviceProvider: ServiceProvider;
+
+	@Column({ nullable: true })
+	private _serviceProviderId?: number;
+
+	@Column({nullable: true})
+	private _outOfSlotBooking?: boolean;
+
+	constructor() {
+	}
+
+	public get outOfSlotBooking(): boolean | undefined {
+		return this._outOfSlotBooking;
+	}
+
+	public get id(): number {
+		return this._id;
+	}
+
+	public get serviceId(): number {
+		return this._serviceId;
+	}
+
+	public get service(): Service {
+		return this._service;
+	}
+
+	public get eventICalId(): string {
+		return this._eventICalId;
+	}
+
+	public set eventICalId(value: string) {
+		this._eventICalId = value;
+	}
+
+	public get status(): BookingStatus {
+		return this._status;
+	}
+
+	public set status(newStatus: BookingStatus) {
+		this._status = newStatus;
+	}
+
 	public get startDateTime(): Date {
 		return this._startDateTime;
 	}
-
-	@Column({ nullable: true })
-	private _acceptedAt: Date;
 
 	public set acceptedAt(acceptedAt: Date) {
 		this._acceptedAt = acceptedAt;
@@ -104,13 +100,6 @@ export class Booking {
 			this._startDateTime.getTime() + this._sessionDurationInMinutes * 60 * 1000
 		);
 	}
-
-	@ManyToOne(type => ServiceProvider, { nullable: true })
-	@JoinColumn({ name: '_serviceProviderId' })
-	private _serviceProvider: ServiceProvider;
-
-	@Column({ nullable: true })
-	private _serviceProviderId?: number;
 
 	public get serviceProvider(): ServiceProvider {
 		return this._serviceProvider;
@@ -129,5 +118,25 @@ export class Booking {
 	}
 	public get createdAt(): Date {
 		return this._createdAt;
+	}
+
+	public static create(serviceId: number, startDateTime: Date, sessionDurationInMinutes: number, serviceProviderId?: number, refId?: string) {
+		const instance = new Booking();
+		instance._serviceId = serviceId;
+		instance._startDateTime = startDateTime;
+		instance._sessionDurationInMinutes = sessionDurationInMinutes;
+		instance._createdAt = new Date();
+		instance._refId = refId;
+
+		if (serviceProviderId) {
+			instance._serviceProviderId = serviceProviderId;
+			instance._status = BookingStatus.Accepted;
+			instance._acceptedAt = instance.createdAt;
+			instance._outOfSlotBooking = true;
+		} else {
+			instance._status = BookingStatus.PendingApproval;
+		}
+
+		return instance;
 	}
 }

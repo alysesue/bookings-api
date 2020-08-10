@@ -1,5 +1,5 @@
 import { AggregatedEntry } from "./timeslotAggregator";
-import { ServiceProvider, Unavailability } from '../models';
+import { Booking, ServiceProvider, Unavailability } from '../models';
 
 export class AvailableTimeslotProviders {
 	public startTime: Date;
@@ -78,10 +78,21 @@ export class AvailableTimeslotProviders {
 	}
 
 	public static create(entry: AggregatedEntry<ServiceProvider>): AvailableTimeslotProviders {
-		const instance = new AvailableTimeslotProviders();
-		instance.startTime = entry.getTimeslot().getStartTime();
-		instance.endTime = entry.getTimeslot().getEndTime();
+		const instance = AvailableTimeslotProviders.empty(entry.getTimeslot().getStartTime(), entry.getTimeslot().getEndTime());
 		instance.setRelatedServiceProviders(entry.getGroups());
+
+		return instance;
+	}
+
+	public static createFromBooking(entry: AggregatedEntry<Booking>): AvailableTimeslotProviders {
+		const instance = AvailableTimeslotProviders.empty(entry.getTimeslot().getStartTime(), entry.getTimeslot().getEndTime());
+
+		const serviceProviders = entry.getGroups()
+			.filter(booking => booking.serviceProvider)
+			.map(booking => booking.serviceProvider);
+
+		instance._relatedServiceProviders = serviceProviders;
+		instance._bookedServiceProviders = Array.from(serviceProviders);
 
 		return instance;
 	}
