@@ -47,8 +47,8 @@ describe("Unavailabilities service tests", () => {
 
 		const request = new UnavailabilityRequest();
 		request.serviceId = 1;
-		request.start = new Date('2020-01-01');
-		request.end = new Date('2020-01-02');
+		request.startTime = new Date('2020-01-01');
+		request.endTime = new Date('2020-01-02');
 		request.allServiceProviders = true;
 
 		const saved = await Container.get(UnavailabilitiesService).create(request);
@@ -63,8 +63,8 @@ describe("Unavailabilities service tests", () => {
 
 		const request = new UnavailabilityRequest();
 		request.serviceId = 1;
-		request.start = new Date('2020-01-02');
-		request.end = new Date('2020-01-01');
+		request.startTime = new Date('2020-01-02');
+		request.endTime = new Date('2020-01-01');
 		request.allServiceProviders = true;
 
 		const service = Container.get(UnavailabilitiesService);
@@ -81,8 +81,8 @@ describe("Unavailabilities service tests", () => {
 
 		const request = new UnavailabilityRequest();
 		request.serviceId = 1;
-		request.start = new Date('2020-01-01');
-		request.end = new Date('2020-01-02');
+		request.startTime = new Date('2020-01-01');
+		request.endTime = new Date('2020-01-02');
 		request.allServiceProviders = false;
 		request.serviceProviderIds = [];
 
@@ -104,8 +104,8 @@ describe("Unavailabilities service tests", () => {
 
 		const request = new UnavailabilityRequest();
 		request.serviceId = 1;
-		request.start = new Date('2020-01-01');
-		request.end = new Date('2020-01-02');
+		request.startTime = new Date('2020-01-01');
+		request.endTime = new Date('2020-01-02');
 		request.allServiceProviders = false;
 		request.serviceProviderIds = [5, 4, 3, 2];
 
@@ -116,11 +116,35 @@ describe("Unavailabilities service tests", () => {
 		await expect(test).rejects.toStrictEqual(expectError);
 		expect(UnavailabilitiesRepositoryMock.save).not.toHaveBeenCalled();
 	});
+
+	it("should check for unavailabilities", async () => {
+		UnavailabilitiesRepositoryMock.searchCount.mockReturnValue(Promise.resolve(1));
+
+		const from = new Date('2020-01-01');
+		const to = new Date('2020-01-02');
+
+		const isUnavailable = await Container.get(UnavailabilitiesService).isUnavailable({
+			from,
+			to,
+			serviceId: 1,
+			serviceProviderId: 2,
+		});
+
+		expect(UnavailabilitiesRepositoryMock.searchCount).toHaveBeenCalledWith({
+			from,
+			to,
+			serviceId: 1,
+			serviceProviderId: 2,
+		});
+
+		expect(isUnavailable).toBe(true);
+	});
 });
 
 class UnavailabilitiesRepositoryMock extends UnavailabilitiesRepository {
 	public static save = jest.fn();
 	public static search = jest.fn();
+	public static searchCount = jest.fn();
 
 	public async save(...params): Promise<any> {
 		return await UnavailabilitiesRepositoryMock.save(...params);
@@ -128,6 +152,10 @@ class UnavailabilitiesRepositoryMock extends UnavailabilitiesRepository {
 
 	public async search(...params): Promise<any> {
 		return await UnavailabilitiesRepositoryMock.search(...params);
+	}
+
+	public async searchCount(...params): Promise<any> {
+		return await UnavailabilitiesRepositoryMock.searchCount(...params);
 	}
 }
 

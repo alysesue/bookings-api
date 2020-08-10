@@ -8,6 +8,7 @@ import { CalendarsService } from '../calendars/calendars.service';
 import { DateHelper } from "../infrastructure/dateHelper";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 import { intersectsDateTimeSpan } from "../tools/timeSpan";
+import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
 
 @InRequestScope
 export class BookingsService {
@@ -19,6 +20,8 @@ export class BookingsService {
 	private timeslotsService: TimeslotsService;
 	@Inject
 	private serviceProviderRepo: ServiceProvidersRepository;
+	@Inject
+	public unavailabilitiesService: UnavailabilitiesService;
 
 	public formatEventId(event: string): string {
 		return event.split("@")[0];
@@ -126,12 +129,11 @@ export class BookingsService {
 		const startOfDay = DateHelper.getStartOfDay(startDateTime);
 		const endOfDay = DateHelper.getEndOfDay(startDateTime);
 
-		const searchQuery = new BookingSearchRequest(startOfDay, endOfDay, [BookingStatus.Accepted,BookingStatus.PendingApproval], serviceId, serviceProviderId);
+		const searchQuery = new BookingSearchRequest(startOfDay, endOfDay, [BookingStatus.Accepted, BookingStatus.PendingApproval], serviceId, serviceProviderId);
 
 		const pendingAndAcceptedBookings = await this.searchBookings(searchQuery);
 
 		const acceptedBookings = pendingAndAcceptedBookings.filter(acceptedBooking => acceptedBooking.status === BookingStatus.Accepted);
-		const pendingBookings = pendingAndAcceptedBookings.filter(pendingBooking => pendingBooking.status === BookingStatus.PendingApproval);
 
 		for (const item of acceptedBookings) {
 			const intersects = intersectsDateTimeSpan({ start: item.startDateTime, end: item.getSessionEndTime() }, startDateTime, endTime);
@@ -140,11 +142,13 @@ export class BookingsService {
 			}
 		}
 
-		for (const item of pendingBookings) {
-			const intersects = intersectsDateTimeSpan({ start: item.startDateTime, end: item.getSessionEndTime() }, startDateTime, endTime);
-			if (intersects) {
-				item.status = BookingStatus.Cancelled;
-			}
+		if (booking.serviceProviderId && await this.unavailabilitiesService.isUnavailable({
+			from: startDateTime,
+			to: booking.getSessionEndTime(),
+			serviceId: booking.serviceId,
+			serviceProviderId: booking.serviceProviderId
+		})) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`The service provider is not available in the selected time range.`);
 		}
 	}
 
