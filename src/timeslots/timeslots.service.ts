@@ -25,8 +25,8 @@ export class TimeslotsService {
 	@Inject
 	private unavailabilitiesService: UnavailabilitiesService;
 
-	private timeslotKeySelector = (start: Date, end: Date) => `${start.getTime()}|${end.getTime()}`;
-	private bookingKeySelector = (booking: Booking) => this.timeslotKeySelector(booking.startDateTime, booking.getSessionEndTime());
+	private static timeslotKeySelector = (start: Date, end: Date) => `${start.getTime()}|${end.getTime()}`;
+	private static bookingKeySelector = (booking: Booking) => TimeslotsService.timeslotKeySelector(booking.startDateTime, booking.getSessionEndTime());
 
 	private static getAggregatedTimeslotsFromBookings(bookings: Booking[]) {
 		const aggregator = new TimeslotAggregator<Booking>();
@@ -50,8 +50,13 @@ export class TimeslotsService {
 		mappedEntries: AvailableTimeslotProviders[],
 		timeslotEntriesFromBookings: AggregatedEntry<Booking>[]): void {
 
+		const entriesLookup = mappedEntries.reduce((set, entry) =>
+			set.add(TimeslotsService.timeslotKeySelector(entry.startTime, entry.endTime)),
+			new Set<string>());
+
 		timeslotEntriesFromBookings.forEach(entry => {
-			if (!mappedEntries.some(e => e.startTime === entry.getTimeslot().getStartTime() && e.endTime === entry.getTimeslot().getEndTime())) {
+			const entryKey = TimeslotsService.timeslotKeySelector(entry.getTimeslot().getStartTime(), entry.getTimeslot().getEndTime());
+			if (!entriesLookup.has(entryKey)) {
 				mappedEntries.push(AvailableTimeslotProviders.createFromBooking(entry));
 			}
 		});
@@ -104,10 +109,10 @@ export class TimeslotsService {
 	}
 
 	private setPendingTimeslots(entries: AvailableTimeslotProviders[], pendingBookings: Booking[]): void {
-		const pendingBookingsLookup = groupByKey(pendingBookings, this.bookingKeySelector);
+		const pendingBookingsLookup = groupByKey(pendingBookings, TimeslotsService.bookingKeySelector);
 
 		for (const element of entries) {
-			const elementKey = this.timeslotKeySelector(element.startTime, element.endTime);
+			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
 			element.pendingBookingsCount = pendingBookingsLookup.get(elementKey)?.length || 0;
 		}
 	}
@@ -128,7 +133,7 @@ export class TimeslotsService {
 	}
 
 	private setBookedProviders(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {
-		const acceptedBookingsLookup = groupByKey(acceptedBookings, this.bookingKeySelector);
+		const acceptedBookingsLookup = groupByKey(acceptedBookings, TimeslotsService.bookingKeySelector);
 
 		for (const element of entries) {
 			const result = acceptedBookings.filter(booking => {
@@ -139,7 +144,7 @@ export class TimeslotsService {
 			}).map(booking => booking.serviceProviderId);
 			element.setOverlappingServiceProviders(result);
 
-			const elementKey = this.timeslotKeySelector(element.startTime, element.endTime);
+			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
 			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
 			if (acceptedBookingsForTimeslot) {
 				element.setBookedServiceProviders(acceptedBookingsForTimeslot.map(booking => booking.serviceProviderId));

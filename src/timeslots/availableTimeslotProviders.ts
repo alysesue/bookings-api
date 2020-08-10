@@ -91,7 +91,8 @@ export class AvailableTimeslotProviders {
 			.filter(booking => booking.serviceProvider)
 			.map(booking => booking.serviceProvider);
 
-		instance.setRelatedServiceProviders(serviceProviders);
+		instance._relatedServiceProviders = serviceProviders;
+		instance._bookedServiceProviders = Array.from(serviceProviders);
 
 		return instance;
 	}
