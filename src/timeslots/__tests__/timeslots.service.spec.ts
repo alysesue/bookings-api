@@ -54,13 +54,13 @@ describe("Timeslots Service", () => {
 	ServiceProviderMock2.timeslotsScheduleId = ProviderScheduleMock._id;
 
 	// Booking in place for the last time slot
-	const BookingMock = Booking.create(1, DateHelper.setHours(date, 17, 0), 60);
+	const BookingMock = Booking.create(1, DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
 	BookingMock.status = BookingStatus.Accepted;
 	BookingMock.eventICalId = 'eventICalId';
 	BookingMock.serviceProvider = ServiceProviderMock;
 	BookingMock.serviceProviderId = ServiceProviderMock.id;
 
-	const pendingBookingMock = Booking.create(1, DateHelper.setHours(date, 17, 0), 60);
+	const pendingBookingMock = Booking.create(1, DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
 	pendingBookingMock.status = BookingStatus.PendingApproval;
 
 	const BookingsRepositoryMock = {
@@ -161,7 +161,7 @@ describe("Timeslots Service", () => {
 		const timeslots = await service.getAggregatedTimeslots(new Date(), new Date(), 1, true);
 
 		expect(timeslots.length).toBe(4);
-		expect(setBookedServiceProviders).toHaveBeenCalledWith([serviceProvider.id])
+		expect(setBookedServiceProviders).toHaveBeenCalledWith([serviceProvider.id]);
 	});
 
 	it('should merge bookings with same time range', async () => {
@@ -178,12 +178,12 @@ describe("Timeslots Service", () => {
 
 		await service.getAggregatedTimeslots(new Date(), new Date(), 1, true);
 
-		expect(setBookedServiceProviders).toHaveBeenCalledWith([serviceProvider1.id, serviceProvider2.id])
+		expect(setBookedServiceProviders).toHaveBeenCalledWith([serviceProvider1.id, serviceProvider2.id]);
 	});
 });
 
 const getOutOfSlotBooking = (serviceProvider: ServiceProvider): Booking => {
-	const booking = Booking.create(1, new Date('2020-08-08T06:00Z'), 180, serviceProvider.id, 'ref');
+	const booking = Booking.create(1, new Date('2020-08-08T06:00Z'), new Date('2020-08-08T09:00Z'), serviceProvider.id, 'ref');
 	booking.serviceProvider = serviceProvider;
 	return booking;
-}
+};

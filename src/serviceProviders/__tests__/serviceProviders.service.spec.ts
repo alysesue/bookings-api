@@ -79,7 +79,7 @@ describe("ServiceProviders.Service", () => {
 	it("should save a service provider", async () => {
 		CalendarsServiceMock.createCalendar = new Calendar();
 		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
-		const data = await Container.get(ServiceProvidersService).saveServiceProviders([serviceProviderMock], 1);
+		await Container.get(ServiceProvidersService).saveServiceProviders([serviceProviderMock], 1);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
 	});
 
@@ -247,10 +247,6 @@ class TimeslotItemsServiceMock extends TimeslotItemsService {
 
 	public async deleteTimeslot(timeslotId: number): Promise<DeleteResult> {
 		return await TimeslotItemsServiceMock.deleteTimeslot(timeslotId);
-	}
-
-	public async mapAndSaveTimeslotItemsToTimeslotsSchedule(timeslotsItemService: TimeslotItem[], timeslotsScheduleSP: TimeslotsSchedule): Promise<TimeslotItem[]> {
-		return await TimeslotItemsServiceMock.mapAndSaveTimeslotItemsToTimeslotsSchedule(timeslotsItemService, timeslotsScheduleSP);
 	}
 }
 

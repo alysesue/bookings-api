@@ -1,7 +1,6 @@
-import { Container, Inject, InRequestScope } from "typescript-ioc";
+import { Inject, InRequestScope } from "typescript-ioc";
 import { ServicesService } from "./services.service";
 import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
-import { AdvancedConsoleLogger } from "typeorm";
 
 @InRequestScope
 export class ServicesValidation {

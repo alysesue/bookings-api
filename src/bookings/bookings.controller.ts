@@ -1,6 +1,6 @@
 import { Inject } from "typescript-ioc";
 import { Body, Controller, Get, Header, Path, Post, Query, Route, Security, SuccessResponse, Tags } from "tsoa";
-import { Booking, BookingStatus, ServiceProvider } from "../models";
+import { Booking, ServiceProvider } from "../models";
 import {
 	BookingAcceptRequest,
 	BookingProviderResponse,
@@ -28,9 +28,8 @@ export class BookingsController extends Controller {
 		return {
 			id: booking.id,
 			status: booking.status,
-			sessionDurationInMinutes: booking.sessionDurationInMinutes,
 			startDateTime: booking.startDateTime,
-			endDateTime: booking.getSessionEndTime(),
+			endDateTime: booking.endDateTime,
 			serviceId: booking.serviceId,
 			serviceName: booking.service?.name,
 			serviceProviderId: booking.serviceProviderId,
@@ -115,7 +114,7 @@ export class BookingsController extends Controller {
 	public async getBookings(
 		@Query() from: Date,
 		@Query() to: Date,
-		@Query() status?: BookingStatus[],
+		@Query() status?: number[],
 		@Header("x-api-service") serviceId?: number): Promise<BookingResponse[]> {
 
 		const searchQuery = new BookingSearchRequest(from, to, status, serviceId);
@@ -143,7 +142,7 @@ export class BookingsController extends Controller {
 	public async getBookingProviders(@Path() bookingId: number): Promise<any> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 
-		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
+		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.endDateTime, booking.serviceId);
 		return timeslotEntry.availableServiceProviders.map(BookingsController.mapProvider) || [];
 	}
 }
