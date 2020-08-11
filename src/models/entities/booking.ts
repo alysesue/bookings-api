@@ -2,6 +2,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } 
 import { BookingStatus } from "../bookingStatus";
 import { ServiceProvider } from './serviceProvider';
 import { Service } from "./service";
+import * as timeSpan from "../../tools/timeSpan";
 
 @Entity()
 export class Booking {
@@ -23,11 +24,12 @@ export class Booking {
 	private _status: BookingStatus;
 
 	@Column()
-	private _sessionDurationInMinutes: number;
+	@Index()
+	private _startDateTime: Date;
 
 	@Column()
 	@Index()
-	private _startDateTime: Date;
+	private _endDateTime: Date;
 
 	@Column()
 	private _createdAt: Date;
@@ -45,7 +47,7 @@ export class Booking {
 	@Column({ nullable: true })
 	private _serviceProviderId?: number;
 
-	@Column({nullable: true})
+	@Column({ nullable: true })
 	private _outOfSlotBooking?: boolean;
 
 	constructor() {
@@ -87,18 +89,12 @@ export class Booking {
 		return this._startDateTime;
 	}
 
+	public get endDateTime(): Date {
+		return this._endDateTime;
+	}
+
 	public set acceptedAt(acceptedAt: Date) {
 		this._acceptedAt = acceptedAt;
-	}
-
-	public get sessionDurationInMinutes(): number {
-		return this._sessionDurationInMinutes;
-	}
-
-	public getSessionEndTime(): Date {
-		return new Date(
-			this._startDateTime.getTime() + this._sessionDurationInMinutes * 60 * 1000
-		);
 	}
 
 	public get serviceProvider(): ServiceProvider {
@@ -120,11 +116,18 @@ export class Booking {
 		return this._createdAt;
 	}
 
-	public static create(serviceId: number, startDateTime: Date, sessionDurationInMinutes: number, serviceProviderId?: number, refId?: string) {
+	public bookingIntersects(other: { start: Date, end: Date }): boolean {
+		if (!other.start || !other.end) {
+			return false;
+		}
+		return timeSpan.intersectsDateTimeSpan(other, this.startDateTime, this.endDateTime);
+	}
+
+	public static create(serviceId: number, startDateTime: Date, endDateTime: Date, serviceProviderId?: number, refId?: string) {
 		const instance = new Booking();
 		instance._serviceId = serviceId;
 		instance._startDateTime = startDateTime;
-		instance._sessionDurationInMinutes = sessionDurationInMinutes;
+		instance._endDateTime = endDateTime;
 		instance._createdAt = new Date();
 		instance._refId = refId;
 
@@ -132,7 +135,6 @@ export class Booking {
 			instance._serviceProviderId = serviceProviderId;
 			instance._status = BookingStatus.Accepted;
 			instance._acceptedAt = instance.createdAt;
-			instance._outOfSlotBooking = true;
 		} else {
 			instance._status = BookingStatus.PendingApproval;
 		}

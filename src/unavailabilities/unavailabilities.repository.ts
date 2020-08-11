@@ -23,7 +23,7 @@ export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {
 		}): Promise<SelectQueryBuilder<Unavailability>> {
 
 		const serviceCondition = 'u."_serviceId" = :serviceId';
-		const dateRangeCondition = 'u."_start" <= :to AND u."_end" >= :from';
+		const dateRangeCondition = 'u."_start" < :to AND u."_end" > :from';
 		const spCondition = serviceProviderId ?
 			'(u."_allServiceProviders" AND EXISTS(SELECT 1 FROM public.service_provider esp WHERE esp."_id" = :serviceProviderId AND esp."_serviceId" = u."_serviceId")) OR '
 			+ 'EXISTS(SELECT 1 FROM public.unavailable_service_provider usp WHERE usp."unavailability_id" = u."_id" AND usp."serviceProvider_id" = :serviceProviderId)'

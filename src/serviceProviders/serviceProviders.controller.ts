@@ -2,7 +2,6 @@ import { Inject, InRequestScope } from "typescript-ioc";
 import { ServiceProviderListRequest, ServiceProviderModel, ServiceProviderResponseModel, SetProviderScheduleRequest } from "./serviceProviders.apicontract";
 import { ServiceProvidersService } from "./serviceProviders.service";
 import { Body, Controller, Delete, Deprecated, Get, Header, Path, Post, Put, Query, Route, Security, SuccessResponse, Tags } from "tsoa";
-import { ErrorResponse } from "../apicontract";
 import { parseCsv } from "../utils";
 import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
 import { ScheduleResponse } from "../schedules/schedules.apicontract";

@@ -71,7 +71,7 @@ export class GoogleCalendarService {
 					timeZone: Constants.CalendarTimezone,
 				},
 				end: {
-					dateTime: booking.getSessionEndTime().toISOString(),
+					dateTime: booking.endDateTime.toISOString(),
 					timeZone: Constants.CalendarTimezone,
 				},
 			},

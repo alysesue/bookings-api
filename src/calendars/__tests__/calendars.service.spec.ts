@@ -53,7 +53,7 @@ describe("Calendar service", () => {
 
 	it("should return available calendars", async () => {
 		const service = Container.get(CalendarsService);
-		const booking = Booking.create(1, new Date(), 60);
+		const booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 
 		const calendars = [
 			{
@@ -63,7 +63,7 @@ describe("Calendar service", () => {
 
 		const result = await service.getAvailableGoogleCalendarsForTimeSlot(
 			booking.startDateTime,
-			booking.getSessionEndTime(),
+			booking.endDateTime,
 			calendars
 		);
 

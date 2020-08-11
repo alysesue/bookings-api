@@ -1,5 +1,5 @@
 import { Inject, InRequestScope } from "typescript-ioc";
-import { Booking, Calendar, Schedule } from "../models";
+import { Booking, Calendar } from "../models";
 import { CalendarsRepository } from "./calendars.repository";
 import { GoogleCalendarService } from "../googleapi/google.calendar.service";
 import { CalendarUserModel } from "./calendars.apicontract";
@@ -16,25 +16,11 @@ export class CalendarsService {
 		return await this.calendarsRepository.getCalendars();
 	}
 
-	public async getCalendarByUUID(uuid: string): Promise<Calendar> {
-		return await this.calendarsRepository.getCalendarByUUID(uuid);
-	}
-
 	public async createCalendar(): Promise<Calendar> {
 		const googleCalendarId = await this.googleCalendarApi.createCalendar();
 		const calendar = new Calendar();
 		calendar.googleCalendarId = googleCalendarId;
 		return await this.calendarsRepository.saveCalendar(calendar);
-	}
-
-	public async validateGoogleCalendarForTimeSlot(booking: Booking, calendar: Calendar) {
-		const googleCalendarResult = await this.googleCalendarApi.getAvailableGoogleCalendars(
-			booking.startDateTime,
-			booking.getSessionEndTime(),
-			[{ id: calendar.googleCalendarId }]
-		);
-
-		return isEmptyArray(googleCalendarResult[calendar.googleCalendarId].busy);
 	}
 
 	public async getAvailableGoogleCalendarsForTimeSlot(

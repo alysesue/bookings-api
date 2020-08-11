@@ -7,7 +7,6 @@ import { groupByKey } from '../tools/collections';
 import { ServicesRepository } from "../services/services.repository";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
-import { intersectsDateTimeSpan } from "../tools/timeSpan";
 import { BookingSearchRequest } from "../bookings/bookings.apicontract";
 import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
 
@@ -26,13 +25,13 @@ export class TimeslotsService {
 	private unavailabilitiesService: UnavailabilitiesService;
 
 	private static timeslotKeySelector = (start: Date, end: Date) => `${start.getTime()}|${end.getTime()}`;
-	private static bookingKeySelector = (booking: Booking) => TimeslotsService.timeslotKeySelector(booking.startDateTime, booking.getSessionEndTime());
+	private static bookingKeySelector = (booking: Booking) => TimeslotsService.timeslotKeySelector(booking.startDateTime, booking.endDateTime);
 
 	private static getAggregatedTimeslotsFromBookings(bookings: Booking[]) {
 		const aggregator = new TimeslotAggregator<Booking>();
 
 		for (const booking of bookings) {
-			const timeslotForBooking = new Timeslot(booking.startDateTime, booking.getSessionEndTime());
+			const timeslotForBooking = new Timeslot(booking.startDateTime, booking.endDateTime);
 			aggregator.aggregate(booking, [timeslotForBooking]);
 		}
 
@@ -137,10 +136,7 @@ export class TimeslotsService {
 
 		for (const element of entries) {
 			const result = acceptedBookings.filter(booking => {
-				return intersectsDateTimeSpan({
-					start: booking.startDateTime,
-					end: booking.getSessionEndTime()
-				}, element.startTime, element.endTime);
+				return booking.bookingIntersects({ start: element.startTime, end: element.endTime });
 			}).map(booking => booking.serviceProviderId);
 			element.setOverlappingServiceProviders(result);
 

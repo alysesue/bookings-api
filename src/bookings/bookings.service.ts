@@ -7,7 +7,6 @@ import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
 import { DateHelper } from "../infrastructure/dateHelper";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
-import { intersectsDateTimeSpan } from "../tools/timeSpan";
 import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
 
 @InRequestScope
@@ -43,7 +42,7 @@ export class BookingsService {
 		return Booking.create(
 			serviceId,
 			bookingRequest.startDateTime,
-			duration,
+			bookingRequest.endDateTime,
 			bookingRequest.serviceProviderId,
 			bookingRequest.refId);
 	}
@@ -95,7 +94,7 @@ export class BookingsService {
 		if (!provider) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${acceptRequest.serviceProviderId}' not found`);
 		}
-		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId);
+		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.endDateTime, booking.serviceId);
 		const isProviderAvailable = timeslotEntry.availableServiceProviders.filter(e => e.id === acceptRequest.serviceProviderId).length > 0;
 		if (!isProviderAvailable) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${acceptRequest.serviceProviderId}' is not available for this booking.`);
@@ -114,7 +113,7 @@ export class BookingsService {
 	}
 
 	private async validateTimeSlot(booking: Booking) {
-		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.getSessionEndTime(), booking.serviceId, booking.serviceProviderId);
+		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.endDateTime, booking.serviceId, booking.serviceProviderId);
 
 		if (timeslotEntry.availabilityCount < 1) {
 			const errorMessage = booking.serviceProviderId ? "The service provider is not available for this timeslot"
@@ -124,19 +123,16 @@ export class BookingsService {
 	}
 
 	private async validateOutOfSlotBookings(booking: Booking) {
-		const { startDateTime, serviceId, serviceProviderId } = booking;
-		const endTime = booking.getSessionEndTime();
-		const startOfDay = DateHelper.getStartOfDay(startDateTime);
-		const endOfDay = DateHelper.getEndOfDay(startDateTime);
+		const { startDateTime, endDateTime, serviceId, serviceProviderId } = booking;
 
-		const searchQuery = new BookingSearchRequest(startOfDay, endOfDay, [BookingStatus.Accepted, BookingStatus.PendingApproval], serviceId, serviceProviderId);
+		const searchQuery = new BookingSearchRequest(startDateTime, endDateTime, [BookingStatus.Accepted, BookingStatus.PendingApproval], serviceId, serviceProviderId);
 
 		const pendingAndAcceptedBookings = await this.searchBookings(searchQuery);
 
 		const acceptedBookings = pendingAndAcceptedBookings.filter(acceptedBooking => acceptedBooking.status === BookingStatus.Accepted);
 
 		for (const item of acceptedBookings) {
-			const intersects = intersectsDateTimeSpan({ start: item.startDateTime, end: item.getSessionEndTime() }, startDateTime, endTime);
+			const intersects = booking.bookingIntersects({ start: item.startDateTime, end: item.endDateTime });
 			if (intersects) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking request not valid as it overlaps another accepted booking`);
 			}
@@ -144,7 +140,7 @@ export class BookingsService {
 
 		if (booking.serviceProviderId && await this.unavailabilitiesService.isUnavailable({
 			from: startDateTime,
-			to: booking.getSessionEndTime(),
+			to: endDateTime,
 			serviceId: booking.serviceId,
 			serviceProviderId: booking.serviceProviderId
 		})) {

@@ -1,5 +1,4 @@
-import { BaseEntity, Column, Entity, Generated, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Schedule } from "./schedule";
+import { Column, Entity, Generated, Index, PrimaryGeneratedColumn } from 'typeorm';
 import { basePath } from '../../config/app-config';
 
 @Entity()
