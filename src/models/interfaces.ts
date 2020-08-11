@@ -18,9 +18,11 @@ export interface IEntityWithTimeslotsSchedule {
 }
 
 export interface IService {
+	id: number;
 }
 
 export interface IServiceProvider {
+	id: number;
 }
 
 export interface ITimeSpan {

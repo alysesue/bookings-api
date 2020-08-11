@@ -92,29 +92,19 @@ export class ServicesService {
 		await this.timeslotItemsService.deleteTimeslot(timeslotId);
 	}
 
-	public async updateTimeslotItem({serviceId, timeslotId, request}
-	: { serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
+	public async updateTimeslotItem({ serviceId, timeslotId, request }
+		: { serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
 		: Promise<TimeslotItem> {
 		const timeslotsSchedule = await this.getServiceTimeslotsSchedule(serviceId);
 		return this.timeslotItemsService.updateTimeslotItem(timeslotsSchedule, timeslotId, request);
 	}
 
 	private async createTimeslotsSchedule(serviceId: number): Promise<TimeslotsSchedule> {
-		const timeslotsScheduleData = new TimeslotsSchedule();
-		timeslotsScheduleData._service = serviceId;
-		const timeslotsSchedule = await this.timeslotsScheduleService.createTimeslotsSchedule({id: serviceId});
-		if (timeslotsSchedule._id) {
-			await this.setServiceTimeslotsSchedule(serviceId, timeslotsSchedule._id);
-		}
-		return timeslotsSchedule;
-	}
-
-	private async setServiceTimeslotsSchedule(id: number, timeslotsScheduleId: number): Promise<TimeslotsSchedule> {
-		const service = await this.servicesRepository.getService(id);
+		const service = await this.servicesRepository.getService(serviceId);
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
-		service.timeslotsScheduleId = timeslotsScheduleId;
+		service.timeslotsSchedule = TimeslotsSchedule.create(service, undefined);
 		await this.servicesRepository.save(service);
 		return service.timeslotsSchedule;
 	}

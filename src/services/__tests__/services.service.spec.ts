@@ -17,12 +17,12 @@ beforeAll(() => {
 	snapshot = Container.snapshot();
 });
 const timeslotItemRequest = new TimeslotItemRequest();
-const serviceMockWithTemplate= new Service();
+const serviceMockWithTemplate = new Service();
 const timeslotsScheduleMock = new TimeslotsSchedule();
 const timeslotItemMock = TimeslotItem.create(1, Weekday.Monday, TimeOfDay.create({
 	hours: 11,
 	minutes: 0
-}), TimeOfDay.create({hours: 11, minutes: 30}));
+}), TimeOfDay.create({ hours: 11, minutes: 30 }));
 
 beforeEach(() => {
 	Container.bind(ServicesRepository).to(ServicesRepositoryMockClass);
@@ -35,7 +35,7 @@ beforeEach(() => {
 	serviceMockWithTemplate.id = 1;
 	timeslotItemMock._id = 4;
 	timeslotsScheduleMock._id = 1;
-	timeslotsScheduleMock.timeslotItems=[timeslotItemMock];
+	timeslotsScheduleMock.timeslotItems = [timeslotItemMock];
 	serviceMockWithTemplate.timeslotsSchedule = timeslotsScheduleMock;
 });
 
@@ -148,7 +148,7 @@ describe('Services service tests', () => {
 	it('should create timeslots schedule if not exist', async () => {
 		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(serviceMockWithTemplate));
 		TimeslotsScheduleMockClass.getTimeslotsScheduleById.mockImplementation(() => Promise.resolve());
-		TimeslotsScheduleMockClass.createTimeslotsSchedule.mockImplementation(() => Promise.resolve(timeslotsScheduleMock));
+
 		TimeslotItemsServiceMock.createTimeslotItem.mockImplementation(() => Promise.resolve());
 		await Container.get(ServicesService).addTimeslotItem(1, timeslotItemRequest);
 		expect(TimeslotsScheduleMockClass.getTimeslotsScheduleById).toBeCalledTimes(1);
@@ -164,7 +164,7 @@ describe('Services service tests', () => {
 	it('should update timeslotItem', async () => {
 		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(serviceMockWithTemplate));
 		TimeslotsScheduleMockClass.getTimeslotsScheduleById.mockImplementation(() => Promise.resolve(serviceMockWithTemplate.timeslotsSchedule));
-		await Container.get(ServicesService).updateTimeslotItem({serviceId: 1, timeslotId: 4, request: timeslotItemRequest});
+		await Container.get(ServicesService).updateTimeslotItem({ serviceId: 1, timeslotId: 4, request: timeslotItemRequest });
 		expect(TimeslotItemsServiceMock.updateTimeslotItem).toBeCalledTimes(1);
 	});
 
@@ -206,11 +206,11 @@ class SchedulesServiceMockClass extends SchedulesService {
 
 
 class TimeslotItemsServiceMock extends TimeslotItemsService {
-	public static  mapAndSaveTimeslotItemsToTimeslotsSchedule = jest.fn();
-	public static  deleteTimeslot = jest.fn();
-	public static  mapAndSaveTimeslotItem= jest.fn();
-	public static  createTimeslotItem= jest.fn();
-	public static  updateTimeslotItem= jest.fn();
+	public static mapAndSaveTimeslotItemsToTimeslotsSchedule = jest.fn();
+	public static deleteTimeslot = jest.fn();
+	public static mapAndSaveTimeslotItem = jest.fn();
+	public static createTimeslotItem = jest.fn();
+	public static updateTimeslotItem = jest.fn();
 
 	public async mapAndSaveTimeslotItem(timeslotsSchedule: TimeslotsSchedule, request: TimeslotItemRequest, entity: TimeslotItem): Promise<TimeslotItem> {
 		return await TimeslotItemsServiceMock.mapAndSaveTimeslotItem(timeslotsSchedule, request, entity);
@@ -235,11 +235,7 @@ class TimeslotItemsServiceMock extends TimeslotItemsService {
 
 class TimeslotsScheduleMockClass extends TimeslotItemsService {
 	public static getTimeslotsScheduleById = jest.fn();
-	public static createTimeslotsSchedule = jest.fn();
 
-	public async createTimeslotsSchedule(id: number): Promise<TimeslotsSchedule> {
-		return await TimeslotsScheduleMockClass.createTimeslotsSchedule(id);
-	}
 	public async getTimeslotsScheduleById(id: number): Promise<TimeslotsSchedule> {
 		return await TimeslotsScheduleMockClass.getTimeslotsScheduleById(id);
 	}

@@ -20,14 +20,14 @@ describe('TimeslotsSchedule template services ', () => {
 	const timeslotItemMock = TimeslotItem.create(1, Weekday.Monday, TimeOfDay.create({
 		hours: 11,
 		minutes: 0
-	}), TimeOfDay.create({hours: 11, minutes: 30}));
+	}), TimeOfDay.create({ hours: 11, minutes: 30 }));
 	const timeslotsScheduleMock = new TimeslotsSchedule();
 	const request = new TimeslotItemRequest();
 
 	beforeAll(() => {
 		Container.bind(TimeslotItemsRepository).to(TimeslotItemsRepositoryMock);
 	});
-	beforeEach(()=>{
+	beforeEach(() => {
 		timeslotItemMock._id = 4;
 
 		timeslotsScheduleMock._id = 1;
@@ -85,7 +85,7 @@ describe('TimeslotsSchedule template services ', () => {
 		const timeslotItemMockForUpdate = TimeslotItem.create(1, Weekday.Monday, TimeOfDay.create({
 			hours: 11,
 			minutes: 0
-		}), TimeOfDay.create({hours: 11, minutes: 30}));
+		}), TimeOfDay.create({ hours: 11, minutes: 30 }));
 		timeslotItemMockForUpdate._id = 4;
 		const scheduleForUpdate = new TimeslotsSchedule();
 		scheduleForUpdate._id = 1;
@@ -118,7 +118,7 @@ describe('TimeslotsSchedule template services ', () => {
 		const timeslotItemMockForUpdate = TimeslotItem.create(1, 1, TimeOfDay.create({
 			hours: 11,
 			minutes: 0
-		}), TimeOfDay.create({hours: 11, minutes: 30}));
+		}), TimeOfDay.create({ hours: 11, minutes: 30 }));
 		timeslotItemMockForUpdate._id = 4;
 		const scheduleForUpdate = new TimeslotsSchedule();
 		scheduleForUpdate._id = 1;
@@ -141,7 +141,7 @@ describe('TimeslotsSchedule template services ', () => {
 		const timeslotItemMockForUpdate = TimeslotItem.create(1, 1, TimeOfDay.create({
 			hours: 11,
 			minutes: 0
-		}), TimeOfDay.create({hours: 11, minutes: 30}));
+		}), TimeOfDay.create({ hours: 11, minutes: 30 }));
 		timeslotItemMockForUpdate._id = 4;
 		const scheduleForUpdate = new TimeslotsSchedule();
 		scheduleForUpdate._id = 1;
@@ -157,12 +157,5 @@ describe('TimeslotsSchedule template services ', () => {
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.deleteTimeslot(1);
 		expect(deleteTimeslotItem).toBeCalledTimes(1);
-	});
-
-	it('should copy timeslotsSchedule',  async () => {
-		const timeslotItemsService = Container.get(TimeslotItemsService);
-		const data = await timeslotItemsService.mapTimeslotItemsInTimeslotsSchedule([timeslotItemMock], timeslotsScheduleMock);
-		// @ts-ignore
-		expect(data[0]._timeslotsSchedule._id).toBe(1);
 	});
 });

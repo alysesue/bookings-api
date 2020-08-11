@@ -53,7 +53,7 @@ export class Service implements IService, IEntityWithSchedule, IEntityWithTimesl
 	public set timeslotsScheduleId(id: number) { this._timeslotsScheduleId = id; }
 	public get timeslotsScheduleId(): number { return this._timeslotsScheduleId; }
 
-	@OneToOne(type => TimeslotsSchedule, e => e._service)
+	@OneToOne(type => TimeslotsSchedule, e => e._service, { cascade: true })
 	@JoinColumn({ name: '_timeslotsScheduleId' })
 	private _timeslotsSchedule: TimeslotsSchedule;
 
