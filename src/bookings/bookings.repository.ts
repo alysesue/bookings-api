@@ -24,7 +24,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return repository.save(booking);
 	}
 
-	public async search({ serviceId, serviceProviderId, statuses, from, to}:
+	public async search({ serviceId, serviceProviderId, statuses, from, to }:
 		{
 			serviceId?: number,
 			serviceProviderId?: number,
@@ -37,17 +37,17 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 		const serviceProviderCondition = serviceProviderId ? 'booking."_serviceProviderId" = :serviceProviderId' : '';
 
-		const statusesCondition =  statuses ? 'booking."_status" IN (:...statuses)' : '';
+		const statusesCondition = statuses ? 'booking."_status" IN (:...statuses)' : '';
 
-		const dateRangeCondition = '(booking."_startDateTime" <= :to AND booking."_endDateTime" >= :from)';
+		const dateRangeCondition = '(booking."_startDateTime" < :to AND booking."_endDateTime" > :from)';
 
 		const repository = await this.getRepository();
 		const query = repository.createQueryBuilder("booking")
-		.where([serviceCondition, serviceProviderCondition, dateRangeCondition, statusesCondition].filter(c => c).join(' AND '),
-			{ serviceId, serviceProviderId, from, to, statuses })
-		.leftJoinAndSelect("booking._serviceProvider", "sp_relation")
-		.leftJoinAndSelect("booking._service", "service_relation")
-		.orderBy("booking._id", "DESC");
+			.where([serviceCondition, serviceProviderCondition, dateRangeCondition, statusesCondition].filter(c => c).join(' AND '),
+				{ serviceId, serviceProviderId, from, to, statuses })
+			.leftJoinAndSelect("booking._serviceProvider", "sp_relation")
+			.leftJoinAndSelect("booking._service", "service_relation")
+			.orderBy("booking._id", "DESC");
 
 		return await query.getMany();
 	}
