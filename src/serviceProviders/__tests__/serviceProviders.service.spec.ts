@@ -19,7 +19,7 @@ describe("ServiceProviders.Service", () => {
 	const timeslotItemMock = TimeslotItem.create(1, Weekday.Monday, TimeOfDay.create({
 		hours: 11,
 		minutes: 0
-	}), TimeOfDay.create({hours: 11, minutes: 30}));
+	}), TimeOfDay.create({ hours: 11, minutes: 30 }));
 	const timeslotsScheduleMock = new TimeslotsSchedule();
 	const serviceMockWithTemplate = new Service();
 	const request = new TimeslotItemRequest();
@@ -37,7 +37,7 @@ describe("ServiceProviders.Service", () => {
 		jest.resetAllMocks();
 	});
 
-	beforeEach(()=>{
+	beforeEach(() => {
 		serviceProviderMock.id = 1;
 		serviceProviderMock.serviceId = 1;
 		serviceProviderMock.name = 'Service Provider';
@@ -78,7 +78,7 @@ describe("ServiceProviders.Service", () => {
 
 	it("should save a service provider", async () => {
 		CalendarsServiceMock.createCalendar = new Calendar();
-		ServiceProvidersRepositoryMock.save.mockImplementation(()=>serviceProviderMock);
+		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
 		await Container.get(ServiceProvidersService).saveServiceProviders([serviceProviderMock], 1);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
 	});
@@ -137,28 +137,28 @@ describe("ServiceProviders.Service", () => {
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.addTimeslotItem(1, request);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(0);
-		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem ).toBeCalledTimes(1);
+		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem).toBeCalledTimes(1);
 	});
 
 	it('should copy timeslots item  service to  service provider and save it', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ServicesServiceMock.getServiceTimeslotsSchedule = serviceMockWithTemplate.timeslotsSchedule;
-		ServiceProvidersRepositoryMock.save.mockImplementation(()=>serviceProviderMockWithTemplate);
+		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMockWithTemplate);
 
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.addTimeslotItem(1, request);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(1);
-		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem ).toBeCalledTimes(1);
+		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem).toBeCalledTimes(1);
 	});
 
 	it('should update timeslots schedule service provider', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMockWithTemplate;
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
-		await serviceProvidersService.updateTimeslotItem( 1,  4, request );
+		await serviceProvidersService.updateTimeslotItem(1, 4, request);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(0);
-		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem ).toBeCalledTimes(1);
+		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem).toBeCalledTimes(1);
 	});
 
 	it('should copy timeslots schedule item for service to  service provider and update', async () => {
@@ -166,15 +166,15 @@ describe("ServiceProviders.Service", () => {
 		ServicesServiceMock.getServiceTimeslotsSchedule = serviceMockWithTemplate.timeslotsSchedule;
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
-		await serviceProvidersService.updateTimeslotItem( 1,  4, request );
+		await serviceProvidersService.updateTimeslotItem(1, 4, request);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(1);
-		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem ).toBeCalledTimes(0);
+		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem).toBeCalledTimes(0);
 	});
 
 	it('should delete timeslot item for service provider', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMockWithTemplate;
 		const serviceProvidersService = Container.get(ServiceProvidersService);
-		await serviceProvidersService.deleteTimeslotItem(1,4);
+		await serviceProvidersService.deleteTimeslotItem(1, 4);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(0);
 		expect(TimeslotItemsServiceMock.deleteTimeslot).toBeCalledTimes(1);
 	});
@@ -183,7 +183,7 @@ describe("ServiceProviders.Service", () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ServicesServiceMock.getServiceTimeslotsSchedule = serviceMockWithTemplate.timeslotsSchedule;
 		const serviceProvidersService = Container.get(ServiceProvidersService);
-		await serviceProvidersService.deleteTimeslotItem(1,4);
+		await serviceProvidersService.deleteTimeslotItem(1, 4);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(1);
 		expect(TimeslotItemsServiceMock.deleteTimeslot).toBeCalledTimes(0);
 	});
@@ -237,9 +237,9 @@ class ServicesServiceMock extends ServicesService {
 }
 
 class TimeslotItemsServiceMock extends TimeslotItemsService {
-	public static  mapAndSaveTimeslotItemsToTimeslotsSchedule = jest.fn();
-	public static  deleteTimeslot = jest.fn();
-	public static  mapAndSaveTimeslotItem= jest.fn();
+	public static mapAndSaveTimeslotItemsToTimeslotsSchedule = jest.fn();
+	public static deleteTimeslot = jest.fn();
+	public static mapAndSaveTimeslotItem = jest.fn();
 
 	public async mapAndSaveTimeslotItem(timeslotsSchedule: TimeslotsSchedule, request: TimeslotItemRequest, entity: TimeslotItem): Promise<TimeslotItem> {
 		return await TimeslotItemsServiceMock.mapAndSaveTimeslotItem(timeslotsSchedule, request, entity);

@@ -29,10 +29,10 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 	})
 	public timeslotItems: TimeslotItem[];
 
-	public static create(serviceId, serviceProviderId): TimeslotsSchedule {
+	public static create(service: IService, serviceProvider: IServiceProvider): TimeslotsSchedule {
 		const instance = new TimeslotsSchedule();
-		instance._service = serviceId;
-		instance._serviceProvider = serviceProviderId;
+		if (service) instance._service = service;
+		if (serviceProvider) instance._serviceProvider = serviceProvider;
 		return instance;
 	}
 

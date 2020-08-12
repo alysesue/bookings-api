@@ -158,11 +158,4 @@ describe('TimeslotsSchedule template services ', () => {
 		await timeslotItemsService.deleteTimeslot(1);
 		expect(deleteTimeslotItem).toBeCalledTimes(1);
 	});
-
-	it('should copy timeslotsSchedule', async () => {
-		const timeslotItemsService = Container.get(TimeslotItemsService);
-		const data = await timeslotItemsService.mapTimeslotItemsInTimeslotsSchedule([timeslotItemMock], timeslotsScheduleMock);
-		// @ts-ignore
-		expect(data[0]._timeslotsSchedule._id).toBe(1);
-	});
 });

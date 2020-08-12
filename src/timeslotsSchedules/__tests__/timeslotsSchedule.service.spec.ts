@@ -34,16 +34,4 @@ describe('TimeslotsSchedule template services ', () => {
 		expect(getTimeslotsScheduleById).toBeCalled();
 	});
 
-	it('should create TimeslotsSchedule ', async () => {
-		createTimeslotsSchedule.mockImplementation(() => Promise.resolve(null));
-		const timeslotsScheduleService = Container.get(TimeslotsScheduleService);
-		await timeslotsScheduleService.createTimeslotsSchedule({ spId: 3 });
-		expect(createTimeslotsSchedule).toBeCalled();
-	});
-
-	it('should trow when no id provide when create', async () => {
-		const timeslotsScheduleService = Container.get(TimeslotsScheduleService);
-		await expect(async () => await timeslotsScheduleService.createTimeslotsSchedule({}))
-			.rejects.toThrowError();
-	});
 });
