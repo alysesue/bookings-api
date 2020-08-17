@@ -1,6 +1,6 @@
+import { Inject } from "typescript-ioc";
 import { Body, Controller, Delete, Deprecated, Get, Path, Post, Put, Route, SuccessResponse, Tags } from "tsoa";
 import { ServiceRequest, ServiceResponse, SetScheduleRequest } from "./service.apicontract";
-import { Inject } from "typescript-ioc";
 import { ServicesService } from "./services.service";
 import { Service } from "../../models";
 import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
@@ -29,10 +29,21 @@ export class ServicesController extends Controller {
 	@Post()
 	@SuccessResponse(201, "Created")
 	public async createService(@Body() request: ServiceRequest): Promise<ServiceResponse> {
-		this.setStatus(201);
 		return ServicesController.mapToServiceResponse(await this.servicesService.createService(request));
 	}
 
+
+	/**
+	 * Update a single service.
+	 * @param serviceId The service id.
+	 * @param serviceRequest
+	 */
+	@Put("{serviceId}")
+	@SuccessResponse(200, "Ok")
+	public async updateService(serviceId: number, @Body() serviceRequest: ServiceRequest): Promise<ServiceResponse> {
+		const service = await this.servicesService.updateService(serviceId, serviceRequest);
+		return ServicesController.mapToServiceResponse(service);
+	}
 	/**
 	 * Retrieves all services.
 	 */

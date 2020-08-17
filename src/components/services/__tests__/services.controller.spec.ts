@@ -3,9 +3,7 @@ import { ServicesController } from "../services.controller";
 import { ServiceRequest, SetScheduleRequest } from "../service.apicontract";
 import { ServicesService } from "../services.service";
 import { Schedule, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from "../../../models";
-import {
-	TimeslotItemRequest,
-} from "../../timeslotItems/timeslotItems.apicontract";
+import { TimeslotItemRequest, } from "../../timeslotItems/timeslotItems.apicontract";
 import { Weekday } from "../../../enums/weekday";
 
 describe('Services controller tests', () => {
@@ -19,6 +17,16 @@ describe('Services controller tests', () => {
 		const controller = Container.get(ServicesController);
 		const request = new ServiceRequest();
 		const result = await controller.createService(request);
+
+		expect(result.name).toBe('John');
+	});
+
+	it('should update a service', async () => {
+		ServicesServiceMock.updateService.mockReturnValue({ name: 'John' });
+
+		const controller = Container.get(ServicesController);
+		const request = new ServiceRequest();
+		const result = await controller.updateService(1, request);
 
 		expect(result.name).toBe('John');
 	});
@@ -59,7 +67,7 @@ describe('Services controller tests', () => {
 		const mockItem = TimeslotItem.create(1, Weekday.Monday, TimeOfDay.create({
 			hours: 8,
 			minutes: 0
-		}), TimeOfDay.create({hours: 9, minutes: 0}));
+		}), TimeOfDay.create({ hours: 9, minutes: 0 }));
 		mockItem._id = mockItemId;
 		mockResult.timeslotItems = [mockItem];
 		ServicesServiceMock.getServiceTimeslotsSchedule.mockReturnValue(mockResult);
@@ -72,7 +80,7 @@ describe('Services controller tests', () => {
 		const mockItem = TimeslotItem.create(1, Weekday.Monday, TimeOfDay.create({
 			hours: 8,
 			minutes: 0
-		}), TimeOfDay.create({hours: 9, minutes: 0}));
+		}), TimeOfDay.create({ hours: 9, minutes: 0 }));
 		ServicesServiceMock.addTimeslotItem.mockReturnValue(mockItem);
 
 		const request = new TimeslotItemRequest();
@@ -88,7 +96,7 @@ describe('Services controller tests', () => {
 		const mockItem = TimeslotItem.create(1, Weekday.Monday, TimeOfDay.create({
 			hours: 8,
 			minutes: 0
-		}), TimeOfDay.create({hours: 9, minutes: 0}));
+		}), TimeOfDay.create({ hours: 9, minutes: 0 }));
 		ServicesServiceMock.updateTimeslotItem.mockReturnValue(mockItem);
 
 		const request = new TimeslotItemRequest();
@@ -102,6 +110,7 @@ describe('Services controller tests', () => {
 
 const ServicesServiceMock = {
 	createService: jest.fn(),
+	updateService: jest.fn(),
 	getServices: jest.fn(),
 	setServiceSchedule: jest.fn(),
 	getServiceSchedule: jest.fn(),
@@ -115,6 +124,10 @@ const ServicesServiceMock = {
 class ServicesServiceMockClass extends ServicesService {
 	public async createService(request: ServiceRequest): Promise<Service> {
 		return ServicesServiceMock.createService();
+	}
+
+	public async updateService(id, request: ServiceRequest): Promise<Service> {
+		return ServicesServiceMock.updateService();
 	}
 
 	public async getServices(): Promise<Service[]> {
@@ -137,10 +150,10 @@ class ServicesServiceMockClass extends ServicesService {
 		await ServicesServiceMock.deleteTimeslotsScheduleItem(timeslotId);
 	}
 
-	public async updateTimeslotItem({serviceId, timeslotId, request}
-	: { serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
+	public async updateTimeslotItem({ serviceId, timeslotId, request }
+		                                : { serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
 		: Promise<TimeslotItem> {
-		return ServicesServiceMock.updateTimeslotItem({serviceId, timeslotId, request});
+		return ServicesServiceMock.updateTimeslotItem({ serviceId, timeslotId, request });
 	}
 
 	public async addTimeslotItem(serviceId: number, request: TimeslotItemRequest): Promise<TimeslotItem> {
