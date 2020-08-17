@@ -5,6 +5,7 @@ export class AvailableTimeslotProviders {
 	public startTime: Date;
 	public endTime: Date;
 	public pendingBookingsCount: number;
+	public bookings: Booking[];
 	private _relatedServiceProviders: ServiceProvider[];
 	private _bookedServiceProviders: ServiceProvider[];
 	private _overlappingServiceProviders: ServiceProvider[];
@@ -16,6 +17,7 @@ export class AvailableTimeslotProviders {
 		this._overlappingServiceProviders = [];
 		this._availableServiceProviders = [];
 		this.pendingBookingsCount = 0;
+		this.bookings = [];
 	}
 
 	public setRelatedServiceProviders(providers: ServiceProvider[]) {
@@ -43,6 +45,10 @@ export class AvailableTimeslotProviders {
 			const unavailableProviderIds = unavailability.serviceProviders.reduce((set, sp) => set.add(sp.id), new Set<number>());
 			this._availableServiceProviders = this._availableServiceProviders.filter(sp => !unavailableProviderIds.has(sp.id));
 		}
+	}
+
+	public setBookings(bookings: Booking[]) {
+		return this.bookings = bookings;
 	}
 
 	public get bookedServiceProviders(): ServiceProvider[] {

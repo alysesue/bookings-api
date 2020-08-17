@@ -53,10 +53,6 @@ export class Booking {
 	constructor() {
 	}
 
-	public get outOfSlotBooking(): boolean | undefined {
-		return this._outOfSlotBooking;
-	}
-
 	public get id(): number {
 		return this._id;
 	}

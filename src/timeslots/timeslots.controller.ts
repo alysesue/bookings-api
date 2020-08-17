@@ -73,6 +73,7 @@ export class TimeslotsController extends Controller {
 		response.pendingBookingsCount = entry.pendingBookingsCount;
 		response.bookedServiceProviders = this.serviceProviderMapper.mapSummaryDataModels(entry.bookedServiceProviders);
 		response.availableServiceProviders = this.serviceProviderMapper.mapSummaryDataModels(entry.availableServiceProviders);
+		response.acceptedBookings = entry.bookings;
 		return response;
 	}
 }

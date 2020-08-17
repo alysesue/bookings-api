@@ -97,6 +97,7 @@ export class TimeslotsService {
 
 		this.setBookedProviders(mappedEntries, acceptedBookings);
 		this.setPendingTimeslots(mappedEntries, pendingBookings);
+		this.setBookings(mappedEntries, acceptedBookings);
 
 		if (serviceProviderId) {
 			for (const entry of mappedEntries) {
@@ -131,6 +132,7 @@ export class TimeslotsService {
 		return entries.filter(e => e.availableServiceProviders.length > 0 || e.bookedServiceProviders.length > 0);
 	}
 
+	//TODO: refactor
 	private setBookedProviders(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {
 		const acceptedBookingsLookup = groupByKey(acceptedBookings, TimeslotsService.bookingKeySelector);
 
@@ -144,6 +146,18 @@ export class TimeslotsService {
 			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
 			if (acceptedBookingsForTimeslot) {
 				element.setBookedServiceProviders(acceptedBookingsForTimeslot.map(booking => booking.serviceProviderId));
+			}
+		}
+	}
+
+	private setBookings(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {
+		const acceptedBookingsLookup = groupByKey(acceptedBookings, TimeslotsService.bookingKeySelector);
+
+		for (const element of entries) {
+			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
+			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
+			if (acceptedBookingsForTimeslot) {
+				element.setBookings(acceptedBookingsForTimeslot.map(booking => booking));
 			}
 		}
 	}
