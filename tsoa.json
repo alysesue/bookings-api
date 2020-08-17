@@ -1,8 +1,8 @@
 {
+	"entryFile": "./src/controllers.ts",
 	"noImplicitAdditionalProperties": "silently-remove-extras",
-	"swagger": {
+	"spec": {
 		"outputDirectory": "./dist/swagger",
-		"entryFile": "./src/index.ts",
 		"specVersion": 3,
 		"yaml": true,
 		"host": "localhost:3999/bookingsg/api",
@@ -12,7 +12,6 @@
 		]
 	},
 	"routes": {
-		"entryFile": "./src/controllers.ts",
 		"routesDir": "./src",
 		"middleware": "koa",
 		"middlewareTemplate": "./src/config/tsoa-koa.hbs",

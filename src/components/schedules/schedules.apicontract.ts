@@ -1,5 +1,3 @@
-import { Weekday } from "../../enums/weekday";
-
 export class ScheduleRequest {
 	/**
 	 * @maxLength 100
@@ -27,7 +25,7 @@ export class WeekDayBreakContract {
 }
 
 export class WeekDayScheduleContract {
-	public weekday: Weekday;
+	public weekday: number;
 	public hasSchedule: boolean;
 	/**
 	 * @maxLength 5

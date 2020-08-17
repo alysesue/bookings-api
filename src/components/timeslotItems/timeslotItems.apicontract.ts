@@ -1,5 +1,3 @@
-import { Weekday } from "../../enums/weekday";
-
 export class TimeslotsScheduleResponse {
 	public timeslots: TimeslotItemResponse[];
 }
@@ -9,7 +7,7 @@ export class TimeslotItemResponse {
 	/**
 	 * The day of the week: [0, 6] starting from Sunday.
 	 */
-	public weekDay: Weekday;
+	public weekDay: number;
 	/**
 	 * The timeslot's start time in 24 hour format: HH:mm
 	 */
@@ -24,7 +22,7 @@ export class TimeslotItemRequest {
 	/**
 	 * The day of the week: [0, 6] starting from Sunday.
 	 */
-	public weekDay: Weekday;
+	public weekDay: number;
 	/**
 	 * The timeslot's start time in 24 hour format: HH:mm
 	 */
