@@ -86,6 +86,18 @@ export class ServiceProvidersController extends Controller {
 		return this.mapper.mapDataModel(dataModel);
 	}
 
+
+	/**
+	 * Update a single service provider.
+	 * @param spId The service provider id.
+	 * @param spRequest
+	 */
+	@Put("{spId}")
+	public async updateServiceProvider(@Path() spId: number, @Body() spRequest: ServiceProviderModel): Promise<ServiceProviderResponseModel> {
+		const result = await this.serviceProvidersService.updateSp(spRequest, spId);
+		return this.mapper.mapDataModel(result);
+	}
+
 	@Deprecated()
 	@Put('{spId}/schedule')
 	@SuccessResponse(200, "Ok")

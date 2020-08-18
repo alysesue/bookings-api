@@ -95,6 +95,13 @@ describe("ServiceProviders.Service", () => {
 		expect(serviceProviderMock.schedule).toBe(schedule);
 	});
 
+
+	it("should update a service provider", async () => {
+		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
+		await Container.get(ServiceProvidersService).updateSp(serviceProviderMock, 1);
+		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
+	});
+
 	it('should set provider schedule to null', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		SchedulesServiceObj.getSchedule.mockImplementation(() => Promise.resolve());
