@@ -4,6 +4,18 @@ import { UnavailabilitiesService } from "./unavailabilities.service";
 import { UnavailabilityRequest, UnavailabilityResponse } from "./unavailabilities.apicontract";
 import { Unavailability } from "../../models";
 import { ServiceprovidersMapper } from "../serviceProviders/serviceProviders.mapper";
+import { MOLAuth } from "mol-lib-common";
+
+jest.mock("mol-lib-common", () => {
+	const actual = jest.requireActual('mol-lib-common');
+	const mock = (config: any) => {
+		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
+	};
+	return {
+		...actual,
+		MOLAuth: mock
+	};
+});
 
 @Route("v1/unavailabilities")
 @Tags('Unavailabilities')
@@ -31,6 +43,7 @@ export class UnavailabilitiesController extends Controller {
 	@Post("")
 	@Security("service")
 	@SuccessResponse(201, "Created")
+	@MOLAuth({ admin: {} })
 	public async addUnavailability(@Body() request: UnavailabilityRequest, @Header("x-api-service") serviceId: number): Promise<UnavailabilityResponse> {
 		request.serviceId = serviceId;
 		const saved = await this.unavailabilitiesService.create(request);
@@ -40,6 +53,7 @@ export class UnavailabilitiesController extends Controller {
 
 	@Get("")
 	@Security("service")
+	@MOLAuth({ admin: {} })
 	public async getUnavailabilities(@Header('x-api-service') serviceId: number, @Query() fromDate: Date, @Query() toDate: Date, @Query() serviceProviderId?: number): Promise<UnavailabilityResponse[]> {
 		const entries = await this.unavailabilitiesService.search({ from: fromDate, to: toDate, serviceId, serviceProviderId });
 		return entries.map(e => this.mapToResponse(e));

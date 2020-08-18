@@ -5,6 +5,11 @@ import { Booking } from "../../models";
 import { Container } from "typescript-ioc";
 import { GoogleApi } from "../google.api";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 const calendarMock = jest.fn();
 const queryMock = jest.fn();
 

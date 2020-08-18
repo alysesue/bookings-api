@@ -7,6 +7,11 @@ import { mapToEntity } from '../schedules.mapper';
 import { Weekday } from "../../../enums/weekday";
 import { MOLErrorV2 } from "mol-lib-api-contract";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 const scheduleRequestCommon = {
 	name: 'schedule',
 	slotsDurationInMin: 60,

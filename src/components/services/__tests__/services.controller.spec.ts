@@ -8,6 +8,22 @@ import {
 } from "../../timeslotItems/timeslotItems.apicontract";
 import { Weekday } from "../../../enums/weekday";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
+jest.mock("mol-lib-common", () => {
+	const actual = jest.requireActual('mol-lib-common');
+	const mock = (config: any) => {
+		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
+	};
+	return {
+		...actual,
+		MOLAuth: mock
+	};
+});
+
 describe('Services controller tests', () => {
 	beforeAll(() => {
 		Container.bind(ServicesService).to(ServicesServiceMockClass);
@@ -59,7 +75,7 @@ describe('Services controller tests', () => {
 		const mockItem = TimeslotItem.create(1, Weekday.Monday, TimeOfDay.create({
 			hours: 8,
 			minutes: 0
-		}), TimeOfDay.create({hours: 9, minutes: 0}));
+		}), TimeOfDay.create({ hours: 9, minutes: 0 }));
 		mockItem._id = mockItemId;
 		mockResult.timeslotItems = [mockItem];
 		ServicesServiceMock.getServiceTimeslotsSchedule.mockReturnValue(mockResult);
@@ -72,7 +88,7 @@ describe('Services controller tests', () => {
 		const mockItem = TimeslotItem.create(1, Weekday.Monday, TimeOfDay.create({
 			hours: 8,
 			minutes: 0
-		}), TimeOfDay.create({hours: 9, minutes: 0}));
+		}), TimeOfDay.create({ hours: 9, minutes: 0 }));
 		ServicesServiceMock.addTimeslotItem.mockReturnValue(mockItem);
 
 		const request = new TimeslotItemRequest();
@@ -88,7 +104,7 @@ describe('Services controller tests', () => {
 		const mockItem = TimeslotItem.create(1, Weekday.Monday, TimeOfDay.create({
 			hours: 8,
 			minutes: 0
-		}), TimeOfDay.create({hours: 9, minutes: 0}));
+		}), TimeOfDay.create({ hours: 9, minutes: 0 }));
 		ServicesServiceMock.updateTimeslotItem.mockReturnValue(mockItem);
 
 		const request = new TimeslotItemRequest();
@@ -137,10 +153,10 @@ class ServicesServiceMockClass extends ServicesService {
 		await ServicesServiceMock.deleteTimeslotsScheduleItem(timeslotId);
 	}
 
-	public async updateTimeslotItem({serviceId, timeslotId, request}
-	: { serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
+	public async updateTimeslotItem({ serviceId, timeslotId, request }
+		: { serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
 		: Promise<TimeslotItem> {
-		return ServicesServiceMock.updateTimeslotItem({serviceId, timeslotId, request});
+		return ServicesServiceMock.updateTimeslotItem({ serviceId, timeslotId, request });
 	}
 
 	public async addTimeslotItem(serviceId: number, request: TimeslotItemRequest): Promise<TimeslotItem> {

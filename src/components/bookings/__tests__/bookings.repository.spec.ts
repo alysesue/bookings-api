@@ -4,6 +4,11 @@ import { Booking, BookingStatus } from "../../../models";
 import { Container } from "typescript-ioc";
 import { InsertResult } from "typeorm";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 const bookingMock = new Booking();
 bookingMock.status = BookingStatus.Accepted;
 

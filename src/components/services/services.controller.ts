@@ -7,6 +7,8 @@ import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.m
 import { ScheduleResponse } from '../schedules/schedules.apicontract';
 import { TimeslotItemRequest, TimeslotItemResponse, TimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.apicontract";
 import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.mapper";
+import { MOLAuth } from "mol-lib-common";
+import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
 
 @Route('v1/services')
 @Tags('Services')
@@ -28,6 +30,7 @@ export class ServicesController extends Controller {
 	 */
 	@Post()
 	@SuccessResponse(201, "Created")
+	@MOLAuth({ admin: {} })
 	public async createService(@Body() request: ServiceRequest): Promise<ServiceResponse> {
 		this.setStatus(201);
 		return ServicesController.mapToServiceResponse(await this.servicesService.createService(request));
@@ -38,6 +41,7 @@ export class ServicesController extends Controller {
 	 */
 	@Get()
 	@SuccessResponse(200, "Ok")
+	@MOLAuth({ admin: {} })
 	public async getServices(): Promise<ServiceResponse[]> {
 		const services = await this.servicesService.getServices();
 		return services.map(ServicesController.mapToServiceResponse);
@@ -46,6 +50,7 @@ export class ServicesController extends Controller {
 	@Deprecated()
 	@Put('{id}/schedule')
 	@SuccessResponse(200, "Ok")
+	@MOLAuth({ admin: {} })
 	public async setServiceSchedule(@Path() id: number, @Body() request: SetScheduleRequest): Promise<ScheduleResponse> {
 		return mapScheduleToResponse(await this.servicesService.setServiceSchedule(id, request));
 	}
@@ -53,6 +58,7 @@ export class ServicesController extends Controller {
 	@Deprecated()
 	@Get('{id}/schedule')
 	@SuccessResponse(200, "Ok")
+	@MOLAuth({ admin: {} })
 	public async getServiceSchedule(@Path() id: number): Promise<ScheduleResponse> {
 		return mapScheduleToResponse(await this.servicesService.getServiceSchedule(id));
 	}
@@ -63,6 +69,10 @@ export class ServicesController extends Controller {
 	 */
 	@Get("{serviceId}")
 	@SuccessResponse(200, "Ok")
+	@MOLAuth({
+		admin: {},
+		user: { minLevel: MOLUserAuthLevel.L2 }
+	})
 	public async getService(serviceId: number): Promise<ServiceResponse> {
 		const service = await this.servicesService.getService(serviceId);
 		return ServicesController.mapToServiceResponse(service);
@@ -74,6 +84,7 @@ export class ServicesController extends Controller {
 	 */
 	@Get("{serviceId}/timeslotSchedule")
 	@SuccessResponse(200, "Ok")
+	@MOLAuth({ admin: {} })
 	public async getTimeslotsScheduleByServiceId(serviceId: number): Promise<TimeslotsScheduleResponse> {
 		const data = await this.servicesService.getServiceTimeslotsSchedule(serviceId);
 		return mapToTimeslotsScheduleResponse(data);
@@ -86,6 +97,7 @@ export class ServicesController extends Controller {
 	 */
 	@Post("{serviceId}/timeslotSchedule/timeslots")
 	@SuccessResponse(201, "Created")
+	@MOLAuth({ admin: {} })
 	public async createTimeslotItem(@Path() serviceId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
 		const data = await this.servicesService.addTimeslotItem(serviceId, request);
 		this.setStatus(201);
@@ -100,6 +112,7 @@ export class ServicesController extends Controller {
 	 */
 	@Put("{serviceId}/timeslotSchedule/timeslots/{timeslotId}")
 	@SuccessResponse(200, "Ok")
+	@MOLAuth({ admin: {} })
 	public async updateTimeslotItem(@Path() serviceId: number, @Path() timeslotId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
 		const data = await this.servicesService.updateTimeslotItem({ serviceId, timeslotId, request });
 		return mapToTimeslotItemResponse(data);
@@ -112,6 +125,7 @@ export class ServicesController extends Controller {
 	 */
 	@Delete("{serviceId}/timeslotSchedule/timeslots/{timeslotId}")
 	@SuccessResponse(204, "Deleted")
+	@MOLAuth({ admin: {} })
 	public async deleteTimeslotItem(@Path() serviceId: number, @Path() timeslotId: number) {
 		await this.servicesService.deleteTimeslotsScheduleItem(timeslotId);
 	}

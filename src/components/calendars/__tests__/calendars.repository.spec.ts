@@ -1,20 +1,12 @@
 import { CalendarsRepository } from '../calendars.repository';
 import { DbConnection } from '../../../core/db.connection';
-import { Container, Snapshot } from 'typescript-ioc';
+import { Container } from 'typescript-ioc';
 import { Calendar } from '../../../models';
 
-let snapshot: Snapshot;
-beforeAll(() => {
-	// Store the IoC configuration
-	snapshot = Container.snapshot();
-});
 
-afterEach(() => {
-	// Put the IoC configuration back for IService, so other tests can run.
-	snapshot.restore();
-
-	// Clears mock counters, not implementation
-	jest.clearAllMocks();
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
 });
 
 describe('Calendar repository', () => {

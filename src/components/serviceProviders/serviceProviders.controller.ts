@@ -12,6 +12,8 @@ import {
 	TimeslotsScheduleResponse
 } from "../timeslotItems/timeslotItems.apicontract";
 import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.mapper";
+import { MOLAuth } from "mol-lib-common";
+import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
 
 @InRequestScope
 @Route("v1/service-providers")
@@ -47,6 +49,7 @@ export class ServiceProvidersController extends Controller {
 	@Post("")
 	@Security("service")
 	@SuccessResponse(204, 'Created')
+	@MOLAuth({ admin: {} })
 	public async addServiceProviders(@Body() spRequest: ServiceProviderListRequest, @Header('x-api-service') serviceId: number) {
 		await this.serviceProvidersService.saveServiceProviders(spRequest.serviceProviders, serviceId);
 	}
@@ -59,6 +62,7 @@ export class ServiceProvidersController extends Controller {
 	@Post("/csv")
 	@Security("service")
 	@SuccessResponse(204, 'Created')
+	@MOLAuth({ admin: {} })
 	public async addServiceProvidersText(@Body() spRequest: string, @Header('x-api-service') serviceId: number) {
 		const request = ServiceProvidersController.parseCsvModelToServiceProviders(parseCsv(spRequest));
 		await this.serviceProvidersService.saveServiceProviders(request, serviceId);
@@ -71,6 +75,7 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Get("")
 	@Security("optional-service")
+	@MOLAuth({ admin: {} })
 	public async getServiceProviders(@Header('x-api-service') serviceId?: number, @Query() includeTimeslotsSchedule = false): Promise<ServiceProviderResponseModel[]> {
 		const dataModels = await this.serviceProvidersService.getServiceProviders(serviceId, undefined, includeTimeslotsSchedule);
 		return this.mapper.mapDataModels(dataModels);
@@ -81,6 +86,10 @@ export class ServiceProvidersController extends Controller {
 	 * @param spId The service provider id.
 	 */
 	@Get("{spId}")
+	@MOLAuth({
+		admin: {},
+		user: { minLevel: MOLUserAuthLevel.L2 }
+	})
 	public async getServiceProvider(@Path() spId: number): Promise<ServiceProviderResponseModel> {
 		const dataModel = await this.serviceProvidersService.getServiceProvider(spId, true, true);
 		return this.mapper.mapDataModel(dataModel);
@@ -89,6 +98,7 @@ export class ServiceProvidersController extends Controller {
 	@Deprecated()
 	@Put('{spId}/schedule')
 	@SuccessResponse(200, "Ok")
+	@MOLAuth({ admin: {} })
 	public async setServiceSchedule(@Path() spId: number, @Body() request: SetProviderScheduleRequest): Promise<ScheduleResponse> {
 		return mapScheduleToResponse(await this.serviceProvidersService.setProviderSchedule(spId, request));
 	}
@@ -96,6 +106,7 @@ export class ServiceProvidersController extends Controller {
 	@Deprecated()
 	@Get('{spId}/schedule')
 	@SuccessResponse(200, "Ok")
+	@MOLAuth({ admin: {} })
 	public async getServiceSchedule(@Path() spId: number): Promise<ScheduleResponse> {
 		return mapScheduleToResponse(await this.serviceProvidersService.getProviderSchedule(spId));
 	}
@@ -106,6 +117,7 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Get("{spId}/timeslotSchedule")
 	@SuccessResponse(200, "Ok")
+	@MOLAuth({ admin: {} })
 	public async getTimeslotsScheduleByServiceProviderId(@Path() spId: number): Promise<TimeslotsScheduleResponse> {
 		const data = await this.serviceProvidersService.getTimeslotItems(spId);
 		return mapToTimeslotsScheduleResponse(data);
@@ -118,6 +130,7 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Post("{spId}/timeslotSchedule/timeslots")
 	@SuccessResponse(201, "Created")
+	@MOLAuth({ admin: {} })
 	public async createTimeslotItem(@Path() spId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
 		const data = await this.serviceProvidersService.addTimeslotItem(spId, request);
 		this.setStatus(201);
@@ -132,6 +145,7 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Put("{spId}/timeslotSchedule/timeslots/{timeslotId}")
 	@SuccessResponse(200, "Ok")
+	@MOLAuth({ admin: {} })
 	public async updateTimeslotItem(@Path() spId: number, @Path() timeslotId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
 		const data = await this.serviceProvidersService.updateTimeslotItem(spId, timeslotId, request);
 		return mapToTimeslotItemResponse(data);
@@ -144,6 +158,7 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Delete("{spId}/timeslotSchedule/timeslots/{timeslotId}")
 	@SuccessResponse(204, "No Content")
+	@MOLAuth({ admin: {} })
 	public async deleteTimeslotItem(@Path() spId: number, @Path() timeslotId: number) {
 		await this.serviceProvidersService.deleteTimeslotItem(spId, timeslotId);
 	}

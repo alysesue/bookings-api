@@ -6,6 +6,10 @@ import { TimeslotItemsRepository } from "../timeslotItems.repository";
 import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
 import { Weekday } from "../../../enums/weekday";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
 
 const saveTimeslotItem = jest.fn().mockImplementation((item) => Promise.resolve(item));
 const saveTimeslotItems = jest.fn().mockImplementation((item) => Promise.resolve([item]));

@@ -13,6 +13,11 @@ import { Weekday } from "../../../enums/weekday";
 import { TimeslotItemRequest } from "../../timeslotItems/timeslotItems.apicontract";
 import { ServicesService } from "../../services/services.service";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 describe("ServiceProviders.Service", () => {
 	const serviceProviderMock = new ServiceProvider();
 	const serviceProviderMockWithTemplate = new ServiceProvider();

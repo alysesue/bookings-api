@@ -1,5 +1,5 @@
 import { DeleteResult } from "typeorm";
-import { Container, Snapshot } from 'typescript-ioc';
+import { Container } from 'typescript-ioc';
 import { ServicesService } from "../services.service";
 import { ServiceRequest, SetScheduleRequest } from "../service.apicontract";
 import { Schedule, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from "../../../models";
@@ -10,12 +10,11 @@ import { TimeslotItemsService } from "../../timeslotItems/timeslotItems.service"
 import { TimeslotItemRequest } from "../../timeslotItems/timeslotItems.apicontract";
 import { Weekday } from "../../../enums/weekday";
 
-let snapshot: Snapshot;
-
-beforeAll(() => {
-	// Store the IoC configuration
-	snapshot = Container.snapshot();
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
 });
+
 const timeslotItemRequest = new TimeslotItemRequest();
 const serviceMockWithTemplate = new Service();
 const timeslotsScheduleMock = new TimeslotsSchedule();
@@ -41,7 +40,7 @@ beforeEach(() => {
 
 afterEach(() => {
 	// Put the IoC configuration back for IService, so other tests can run.
-	snapshot.restore();
+
 
 	// Clears mock counters, not implementation
 	jest.resetAllMocks();

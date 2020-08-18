@@ -4,6 +4,22 @@ import { TimeslotsService } from "../timeslots.service";
 import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
 import { DateHelper } from "../../../infrastructure/dateHelper";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
+jest.mock("mol-lib-common", () => {
+	const actual = jest.requireActual('mol-lib-common');
+	const mock = (config: any) => {
+		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
+	};
+	return {
+		...actual,
+		MOLAuth: mock
+	};
+});
+
 const TimeslotsServiceMock = {
 	getAggregatedTimeslots: jest.fn(() => Promise.resolve([]))
 };

@@ -3,6 +3,11 @@ import { Container } from 'typescript-ioc';
 import { TimeOfDay, TimeslotItem } from '../../../models';
 import { TimeslotItemsRepository } from '../timeslotItems.repository';
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 beforeEach(() => {
 	Container.bind(DbConnection).to(DbConnectionMock);
 	jest.clearAllMocks();
@@ -49,7 +54,7 @@ export const InnerRepositoryMock = {
 	}),
 	delete: jest.fn().mockImplementationOnce((...id) => {
 		return Promise.resolve([timeslotItemMock]);
-})
+	})
 };
 
 

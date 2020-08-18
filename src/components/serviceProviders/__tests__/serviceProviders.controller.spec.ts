@@ -6,6 +6,22 @@ import { ServiceProviderModel, SetProviderScheduleRequest } from "../serviceProv
 import { CalendarsService } from "../../calendars/calendars.service";
 import { TimeslotItemRequest } from "../../timeslotItems/timeslotItems.apicontract";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
+jest.mock("mol-lib-common", () => {
+	const actual = jest.requireActual('mol-lib-common');
+	const mock = (config: any) => {
+		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
+	};
+	return {
+		...actual,
+		MOLAuth: mock
+	};
+});
+
 describe("ServiceProviders.Controller", () => {
 	const calendar = new Calendar();
 	const sp1 = ServiceProvider.create("Monica", calendar, 1);
@@ -18,7 +34,7 @@ describe("ServiceProviders.Controller", () => {
 	const mockItem = new TimeslotItem();
 	const request = new TimeslotItemRequest();
 
-	beforeEach(()=>{
+	beforeEach(() => {
 		mockItem._id = 11;
 
 		mockItem._startTime = TimeOfDay.create({ hours: 8, minutes: 0 });
@@ -43,7 +59,7 @@ describe("ServiceProviders.Controller", () => {
 
 	it('should get service providers with timeslots', async () => {
 		const timeslots = new TimeslotsSchedule();
-		const timeslotItem = TimeslotItem.create(1,0,TimeOfDay.create({hours: 8, minutes: 0}), TimeOfDay.create({hours: 9, minutes: 0}));
+		const timeslotItem = TimeslotItem.create(1, 0, TimeOfDay.create({ hours: 8, minutes: 0 }), TimeOfDay.create({ hours: 9, minutes: 0 }));
 		timeslots.timeslotItems = [timeslotItem];
 		sp1.timeslotsSchedule = timeslots;
 		ServiceProvidersMock.getServiceProviders.mockReturnValue([sp1]);

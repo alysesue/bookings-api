@@ -10,6 +10,8 @@ import {
 } from "./bookings.apicontract";
 import { BookingsService } from "./bookings.service";
 import { TimeslotsService } from "../timeslots/timeslots.service";
+import { MOLAuth } from "mol-lib-common";
+import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
 
 @Route("v1/bookings")
 @Tags('Bookings')
@@ -56,6 +58,7 @@ export class BookingsController extends Controller {
 	@Post()
 	@SuccessResponse(201, 'Created')
 	@Security("service")
+	@MOLAuth({ user: { minLevel: MOLUserAuthLevel.L2 } })
 	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
 		bookingRequest.outOfSlotBooking = false;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
@@ -73,6 +76,7 @@ export class BookingsController extends Controller {
 	@Post('admin')
 	@SuccessResponse(201, 'Created')
 	@Security("service")
+	@MOLAuth({ admin: {} })
 	public async postBookingOutOfSlot(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
 		bookingRequest.outOfSlotBooking = true;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
@@ -87,6 +91,7 @@ export class BookingsController extends Controller {
 	 */
 	@Post('{bookingId}/accept')
 	@SuccessResponse(204, 'Accepted')
+	@MOLAuth({ admin: {} })
 	public async acceptBooking(@Path() bookingId: number, @Body() acceptRequest: BookingAcceptRequest): Promise<any> {
 		await this.bookingsService.acceptBooking(bookingId, acceptRequest);
 	}
@@ -97,6 +102,10 @@ export class BookingsController extends Controller {
 	 */
 	@Post('{bookingId}/cancel')
 	@SuccessResponse(204, 'Cancelled')
+	@MOLAuth({
+		admin: {},
+		user: { minLevel: MOLUserAuthLevel.L2 }
+	})
 	public async cancelBooking(@Path() bookingId: number): Promise<any> {
 		await this.bookingsService.cancelBooking(bookingId);
 	}
@@ -111,6 +120,10 @@ export class BookingsController extends Controller {
 	@Get('')
 	@SuccessResponse(200, "Ok")
 	@Security("optional-service")
+	@MOLAuth({
+		admin: {},
+		user: { minLevel: MOLUserAuthLevel.L2 }
+	})
 	public async getBookings(
 		@Query() from: Date,
 		@Query() to: Date,
@@ -128,6 +141,10 @@ export class BookingsController extends Controller {
 	 */
 	@Get('{bookingId}')
 	@SuccessResponse(200, 'Ok')
+	@MOLAuth({
+		admin: {},
+		user: { minLevel: MOLUserAuthLevel.L2 }
+	})
 	public async getBooking(@Path() bookingId: number): Promise<any> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 		return BookingsController.mapDataModel(booking);
@@ -139,6 +156,10 @@ export class BookingsController extends Controller {
 	 */
 	@Get('{bookingId}/providers')
 	@SuccessResponse(200, 'Ok')
+	@MOLAuth({
+		admin: {},
+		user: { minLevel: MOLUserAuthLevel.L2 }
+	})
 	public async getBookingProviders(@Path() bookingId: number): Promise<any> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 

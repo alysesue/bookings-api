@@ -3,6 +3,11 @@ import { TimeslotsSchedule } from "../../../models";
 import { TimeslotsScheduleRepository } from "../timeslotsSchedule.repository";
 import { TimeslotsScheduleService } from "../timeslotsSchedule.service";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 const createTimeslotsSchedule = jest.fn();
 const getTimeslotsScheduleById = jest.fn();
 const MockTimeslotsScheduleRepository = jest.fn().mockImplementation(() => ({

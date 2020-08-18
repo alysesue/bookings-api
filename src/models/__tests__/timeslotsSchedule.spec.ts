@@ -1,21 +1,11 @@
-import { Container, Snapshot } from 'typescript-ioc';
 import { TimeslotItem, TimeslotsSchedule } from '../index';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Weekday } from '../../enums/weekday';
 import { TimeOfDay } from '../timeOfDay';
 
-let snapshot: Snapshot;
-beforeAll(() => {
-	// Store the IoC configuration
-	snapshot = Container.snapshot();
-
-	// Clears mock counters, not implementation
-	jest.clearAllMocks();
-});
-
 afterAll(() => {
-	// Put the IoC configuration back for IService, so other tests can run.
-	snapshot.restore();
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
 });
 
 describe('[Timeslots schedule] template', () => {

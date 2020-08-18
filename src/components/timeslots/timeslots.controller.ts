@@ -4,6 +4,8 @@ import { AvailabilityEntryResponse, TimeslotEntryResponse } from "./timeslots.ap
 import { TimeslotsService } from './timeslots.service';
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import { ServiceprovidersMapper } from "../serviceProviders/serviceProviders.mapper";
+import { MOLAuth } from "mol-lib-common";
+import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
 
 @Route("v1/timeslots")
 @Tags('Timeslots')
@@ -25,6 +27,10 @@ export class TimeslotsController extends Controller {
 	 */
 	@Get("availability")
 	@Security("service")
+	@MOLAuth({
+		admin: {},
+		user: { minLevel: MOLUserAuthLevel.L2 }
+	})
 	public async getAvailability(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number, @Query() serviceProviderId?: number): Promise<AvailabilityEntryResponse[]> {
 		let availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId, false, serviceProviderId);
 		availableTimeslots = availableTimeslots.filter(e => e.availabilityCount > 0);
@@ -43,6 +49,7 @@ export class TimeslotsController extends Controller {
 	 */
 	@Get("")
 	@Security("service")
+	@MOLAuth({ admin: {} })
 	public async getTimeslots(
 		@Query() startDate: Date,
 		@Query() endDate: Date,

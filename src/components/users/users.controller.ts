@@ -14,8 +14,8 @@ export class UsersController extends Controller {
 	 */
 	@Get("me")
 	@MOLAuth({
-		user: { minLevel: MOLUserAuthLevel.L2 },
-		admin: {}
+		admin: {},
+		user: { minLevel: MOLUserAuthLevel.L2 }
 	})
 	public async getProfile(): Promise<any> {
 		return {
