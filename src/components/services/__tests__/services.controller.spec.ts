@@ -3,9 +3,7 @@ import { ServicesController } from "../services.controller";
 import { ServiceRequest, SetScheduleRequest } from "../service.apicontract";
 import { ServicesService } from "../services.service";
 import { Schedule, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from "../../../models";
-import {
-	TimeslotItemRequest,
-} from "../../timeslotItems/timeslotItems.apicontract";
+import { TimeslotItemRequest, } from "../../timeslotItems/timeslotItems.apicontract";
 import { Weekday } from "../../../enums/weekday";
 
 afterAll(() => {
@@ -35,6 +33,16 @@ describe('Services controller tests', () => {
 		const controller = Container.get(ServicesController);
 		const request = new ServiceRequest();
 		const result = await controller.createService(request);
+
+		expect(result.name).toBe('John');
+	});
+
+	it('should update a service', async () => {
+		ServicesServiceMock.updateService.mockReturnValue({ name: 'John' });
+
+		const controller = Container.get(ServicesController);
+		const request = new ServiceRequest();
+		const result = await controller.updateService(1, request);
 
 		expect(result.name).toBe('John');
 	});
@@ -118,6 +126,7 @@ describe('Services controller tests', () => {
 
 const ServicesServiceMock = {
 	createService: jest.fn(),
+	updateService: jest.fn(),
 	getServices: jest.fn(),
 	setServiceSchedule: jest.fn(),
 	getServiceSchedule: jest.fn(),
@@ -131,6 +140,10 @@ const ServicesServiceMock = {
 class ServicesServiceMockClass extends ServicesService {
 	public async createService(request: ServiceRequest): Promise<Service> {
 		return ServicesServiceMock.createService();
+	}
+
+	public async updateService(id, request: ServiceRequest): Promise<Service> {
+		return ServicesServiceMock.updateService();
 	}
 
 	public async getServices(): Promise<Service[]> {

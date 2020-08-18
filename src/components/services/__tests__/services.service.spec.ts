@@ -55,6 +55,23 @@ describe('Services service tests', () => {
 		expect(ServicesRepositoryMockClass.save.mock.calls[0][0].name).toBe('John');
 	});
 
+	it('should update service', async () => {
+		const newService = new Service();
+		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(newService));
+		const request = new ServiceRequest();
+		request.name = 'John';
+		await Container.get(ServicesService).updateService(1, request);
+
+		expect(ServicesRepositoryMockClass.save.mock.calls[0][0].name).toBe('John');
+	});
+
+	it('should throw if service not found', async () => {
+		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(undefined));
+		const request = new ServiceRequest();
+		request.name = 'John';
+		await expect(async () => await Container.get(ServicesService).updateService(1, request)).rejects.toThrowError();
+	});
+
 	it('should set service schedule', async () => {
 		const newService = new Service();
 		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(newService));
@@ -163,7 +180,11 @@ describe('Services service tests', () => {
 	it('should update timeslotItem', async () => {
 		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(serviceMockWithTemplate));
 		TimeslotsScheduleMockClass.getTimeslotsScheduleById.mockImplementation(() => Promise.resolve(serviceMockWithTemplate.timeslotsSchedule));
-		await Container.get(ServicesService).updateTimeslotItem({ serviceId: 1, timeslotId: 4, request: timeslotItemRequest });
+		await Container.get(ServicesService).updateTimeslotItem({
+			serviceId: 1,
+			timeslotId: 4,
+			request: timeslotItemRequest
+		});
 		expect(TimeslotItemsServiceMock.updateTimeslotItem).toBeCalledTimes(1);
 	});
 
