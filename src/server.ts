@@ -56,8 +56,6 @@ export async function startServer(): Promise<Server> {
 			compress({
 				filter: () => true,
 				threshold: 2048,
-				flush: require("zlib").Z_SYNC_FLUSH,
-				level: require("zlib").Z_BEST_COMPRESSION,
 			})
 		)
 		.use(
