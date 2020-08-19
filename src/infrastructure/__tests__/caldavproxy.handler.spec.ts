@@ -8,16 +8,8 @@ import { basePath } from "../../config/app-config";
 
 
 beforeEach(() => {
-	// Store the IoC configuration
-
-
 	// Clears mock counters, not implementation
 	jest.clearAllMocks();
-});
-
-afterEach(() => {
-	// Put the IoC configuration back for IService, so other tests can run.
-
 });
 
 jest.mock('koa-proxy', () => {

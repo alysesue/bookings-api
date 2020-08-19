@@ -39,9 +39,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-	// Put the IoC configuration back for IService, so other tests can run.
-
-
 	// Clears mock counters, not implementation
 	jest.resetAllMocks();
 });

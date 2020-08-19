@@ -35,7 +35,6 @@ describe('[Timeslots schedule] template', () => {
 		TimeslotItem.create(1, Weekday.Wednesday, TimeOfDay.parse('14:30'), TimeOfDay.parse('15:30')),
 	];
 
-
 	const date = new Date(2020, 4, 12); // May 12th -  Tuesday;
 
 	it('[Timeslots schedule] should generate single timeslot', () => {
