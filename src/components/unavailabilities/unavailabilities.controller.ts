@@ -6,17 +6,6 @@ import { Unavailability } from "../../models";
 import { ServiceprovidersMapper } from "../serviceProviders/serviceProviders.mapper";
 import { MOLAuth } from "mol-lib-common";
 
-jest.mock("mol-lib-common", () => {
-	const actual = jest.requireActual('mol-lib-common');
-	const mock = (config: any) => {
-		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
-	};
-	return {
-		...actual,
-		MOLAuth: mock
-	};
-});
-
 @Route("v1/unavailabilities")
 @Tags('Unavailabilities')
 export class UnavailabilitiesController extends Controller {
