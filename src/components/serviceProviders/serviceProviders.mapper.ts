@@ -12,7 +12,7 @@ export class ServiceprovidersMapper {
 	public mapDataModel(spData: ServiceProvider): ServiceProviderResponseModel {
 		const mappedCalendar = this.calendarsMapper.mapDataModel(spData.calendar);
 		const mappedTimeslotSchedule = mapToTimeslotsScheduleResponse(spData.timeslotsSchedule);
-		return new ServiceProviderResponseModel(spData.id, spData.name, mappedCalendar, spData.serviceId, mappedTimeslotSchedule);
+		return new ServiceProviderResponseModel(spData.id, spData.name, mappedCalendar, spData.serviceId, mappedTimeslotSchedule, spData.email);
 	}
 
 	public mapDataModels(spList: ServiceProvider[]): ServiceProviderResponseModel[] {

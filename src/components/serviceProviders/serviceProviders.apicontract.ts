@@ -17,14 +17,16 @@ export class ServiceProviderResponseModel {
 	public calendar: CalendarModel;
 	public serviceId: number;
 	public timeslotsSchedule?: TimeslotsScheduleResponse;
+	public email?: string;
 
 
-	constructor(id: number, name: string, calendar: CalendarModel, serviceId: number, timeslotsSchedule?: TimeslotsScheduleResponse) {
+	constructor(id: number, name: string, calendar: CalendarModel, serviceId: number, timeslotsSchedule?: TimeslotsScheduleResponse, email?: string) {
 		this.id = id;
 		this.name = name;
 		this.calendar = calendar;
 		this.serviceId = serviceId;
 		this.timeslotsSchedule = timeslotsSchedule;
+		this.email = email;
 	}
 }
 
