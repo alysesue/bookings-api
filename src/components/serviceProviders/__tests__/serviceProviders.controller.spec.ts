@@ -111,6 +111,8 @@ describe("ServiceProviders.Controller", () => {
 			"name": "Test",
 			"email": "test@gmail.com"
 		});
+		expect(ServiceProvidersMock.updateServiceProvider).toBeCalled();
+
 	});
 
 

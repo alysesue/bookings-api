@@ -70,11 +70,11 @@ export class ServiceProvidersService {
 	}
 
 	public async updateSp(request: ServiceProviderModel, spId: number) {
+		const sp = await this.serviceProvidersRepository.getServiceProvider({ id: spId });
+		if (!sp) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
+		}
 		try {
-			const sp = await this.serviceProvidersRepository.getServiceProvider({ id: spId });
-			if (!sp) {
-				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
-			}
 			sp.email = request.email;
 			sp.name = request.name;
 			return await this.serviceProvidersRepository.save(sp);

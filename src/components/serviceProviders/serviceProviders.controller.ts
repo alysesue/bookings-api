@@ -88,7 +88,7 @@ export class ServiceProvidersController extends Controller {
 
 
 	/**
-	 * Update a single service provider.
+	 * Updates a single service provider.
 	 * @param spId The service provider id.
 	 * @param spRequest
 	 */
