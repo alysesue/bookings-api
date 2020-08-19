@@ -104,14 +104,15 @@ describe("ServiceProviders.Controller", () => {
 	});
 
 	it('should update a service provider', async () => {
-		ServiceProvidersMock.updateServiceProvider.mockReturnValue(ServiceProvider.create("Test", null, 1));
+		ServiceProvidersMock.updateServiceProvider.mockReturnValue(ServiceProvider.create("Test", null, 1, "test@gmail.com"));
 		const controller = Container.get(ServiceProvidersController);
-		await controller.updateServiceProvider(
+		const result = await controller.updateServiceProvider(
 			1, {
 			"name": "Test",
 			"email": "test@gmail.com"
 		});
 		expect(ServiceProvidersMock.updateServiceProvider).toBeCalled();
+		expect(result.email).toBe("test@gmail.com");
 
 	});
 

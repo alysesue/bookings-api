@@ -62,13 +62,14 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	constructor() {
 	}
 
-	public static create(name: string, calendar: Calendar, serviceId: number): ServiceProvider {
+	public static create(name: string, calendar: Calendar, serviceId: number, email?: string): ServiceProvider {
 		const instance = new ServiceProvider();
 		instance._serviceId = serviceId;
 		instance._name = name;
 		instance._createdAt = new Date();
 		instance._status = ServiceProviderStatus.Valid;
 		instance._calendar = calendar;
+		instance._email = email;
 		return instance;
 	}
 
