@@ -114,6 +114,7 @@
 		"@types/node": "^13.13.10",
 		"chalk": "^4.0.0",
 		"circular-dependency-plugin": "^5.2.0",
+		"copy-webpack-plugin": "^6.0.1",
 		"cpy-cli": "^3.1.1",
 		"faker": "^4.1.0",
 		"file-loader": "^6.0.0",

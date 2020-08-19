@@ -1,4 +1,4 @@
-import { Controller, Get, Header, Route, Tags, } from "tsoa";
+import { Controller, Get, Response, Route, Tags, } from "tsoa";
 import { MOLAuth } from "mol-lib-common";
 import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
 import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
@@ -17,6 +17,7 @@ export class UsersController extends Controller {
 		admin: {},
 		user: { minLevel: MOLUserAuthLevel.L2 }
 	})
+	@Response(401, 'Valid authentication types: [admin,user]')
 	public async getProfile(): Promise<any> {
 		return {
 			uinfin: this.getHeader(MOLSecurityHeaderKeys.USER_UINFIN)

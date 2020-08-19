@@ -1,5 +1,5 @@
 import { Inject } from "typescript-ioc";
-import { Controller, Get, Header, Query, Route, Security, Tags, } from "tsoa";
+import { Controller, Get, Header, Query, Response, Route, Security, Tags, } from "tsoa";
 import { AvailabilityEntryResponse, TimeslotEntryResponse } from "./timeslots.apicontract";
 import { TimeslotsService } from './timeslots.service';
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
@@ -31,6 +31,7 @@ export class TimeslotsController extends Controller {
 		admin: {},
 		user: { minLevel: MOLUserAuthLevel.L2 }
 	})
+	@Response(401, 'Valid authentication types: [admin,user]')
 	public async getAvailability(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number, @Query() serviceProviderId?: number): Promise<AvailabilityEntryResponse[]> {
 		let availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId, false, serviceProviderId);
 		availableTimeslots = availableTimeslots.filter(e => e.availabilityCount > 0);
@@ -50,6 +51,7 @@ export class TimeslotsController extends Controller {
 	@Get("")
 	@Security("service")
 	@MOLAuth({ admin: {} })
+	@Response(401, 'Valid authentication types: [admin]')
 	public async getTimeslots(
 		@Query() startDate: Date,
 		@Query() endDate: Date,

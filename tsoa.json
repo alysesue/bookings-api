@@ -2,7 +2,7 @@
 	"entryFile": "./src/controllers.ts",
 	"noImplicitAdditionalProperties": "silently-remove-extras",
 	"spec": {
-		"outputDirectory": "./dist/swagger",
+		"outputDirectory": "./swagger",
 		"specVersion": 3,
 		"yaml": true,
 		"host": "localhost:3999/bookingsg/api",
