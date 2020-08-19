@@ -3,9 +3,11 @@ import { TimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.apicon
 
 export class ServiceProviderModel {
 	public name: string;
+	public email?: string;
 
-	constructor(name: string) {
+	constructor(name: string, email?: string) {
 		this.name = name;
+		this.email = email;
 	}
 }
 

@@ -18,7 +18,7 @@ describe("ServiceProviders.Controller", () => {
 	const mockItem = new TimeslotItem();
 	const request = new TimeslotItemRequest();
 
-	beforeEach(()=>{
+	beforeEach(() => {
 		mockItem._id = 11;
 
 		mockItem._startTime = TimeOfDay.create({ hours: 8, minutes: 0 });
@@ -43,7 +43,7 @@ describe("ServiceProviders.Controller", () => {
 
 	it('should get service providers with timeslots', async () => {
 		const timeslots = new TimeslotsSchedule();
-		const timeslotItem = TimeslotItem.create(1,0,TimeOfDay.create({hours: 8, minutes: 0}), TimeOfDay.create({hours: 9, minutes: 0}));
+		const timeslotItem = TimeslotItem.create(1, 0, TimeOfDay.create({ hours: 8, minutes: 0 }), TimeOfDay.create({ hours: 9, minutes: 0 }));
 		timeslots.timeslotItems = [timeslotItem];
 		sp1.timeslotsSchedule = timeslots;
 		ServiceProvidersMock.getServiceProviders.mockReturnValue([sp1]);
@@ -103,6 +103,19 @@ describe("ServiceProviders.Controller", () => {
 		expect(ServiceProvidersMock.setProviderSchedule).toBeCalled();
 	});
 
+	it('should update a service provider', async () => {
+		ServiceProvidersMock.updateServiceProvider.mockReturnValue(ServiceProvider.create("Test", null, 1));
+		const controller = Container.get(ServiceProvidersController);
+		await controller.updateServiceProvider(
+			1, {
+			"name": "Test",
+			"email": "test@gmail.com"
+		});
+		expect(ServiceProvidersMock.updateServiceProvider).toBeCalled();
+
+	});
+
+
 	it('should get provider schedule', async () => {
 		ServiceProvidersMock.getProviderSchedule.mockReturnValue(Promise.resolve(new Schedule()));
 		await Container.get(ServiceProvidersController).getServiceSchedule(1);
@@ -148,6 +161,7 @@ describe("ServiceProviders.Controller", () => {
 const ServiceProvidersMock = {
 	getServiceProvider: jest.fn(),
 	getServiceProviders: jest.fn(),
+	updateServiceProvider: jest.fn(),
 	save: jest.fn(),
 	setProviderSchedule: jest.fn(),
 	getProviderSchedule: jest.fn(),
@@ -162,15 +176,15 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 	public async getServiceProvider(spId: number): Promise<ServiceProvider> {
 		return ServiceProvidersMock.getServiceProvider();
 	}
-
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
 		return ServiceProvidersMock.getServiceProviders();
 	}
-
 	public async saveServiceProviders(listRequest: ServiceProviderModel[]): Promise<void> {
 		return ServiceProvidersMock.save(listRequest);
 	}
-
+	public async updateSp(request: ServiceProviderModel, spId: number): Promise<ServiceProvider> {
+		return ServiceProvidersMock.updateServiceProvider(request);
+	}
 	public async setProviderSchedule(...params): Promise<Schedule> {
 		return ServiceProvidersMock.setProviderSchedule(...params);
 	}

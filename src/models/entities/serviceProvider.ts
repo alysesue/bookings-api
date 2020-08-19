@@ -50,6 +50,15 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	@Column({ type: "varchar", length: 300 })
 	private _name: string;
 
+	public get name(): string {
+		return this._name;
+	}
+
+	public set name(value: string) {
+		this._name = value;
+	}
+
+
 	constructor() {
 	}
 
@@ -63,13 +72,19 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		return instance;
 	}
 
-	public get name(): string {
-		return this._name;
+
+	@Column({ nullable: true })
+	private _email?: string;
+
+	public get email(): string {
+		return this._email;
 	}
 
-	public set name(value: string) {
-		this._name = value;
+	public set email(value: string) {
+		this._email = value;
 	}
+
+
 
 	@OneToOne("Calendar")
 	@JoinColumn()
