@@ -17,6 +17,16 @@ export interface IEntityWithTimeslotsSchedule {
 	timeslotsSchedule: ITimeslotsSchedule;
 }
 
+export interface IUser {
+	id: number;
+}
+
+export interface ISingPassUser {
+	id: number;
+	molUserId: number;
+	UinFin: number;
+}
+
 export interface IService {
 	id: number;
 }
