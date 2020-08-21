@@ -38,10 +38,10 @@ export class ServicesService {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 			service.name = request.name;
 			return await this.servicesRepository.save(service);
-		}
-		catch (e) {
+		} catch (e) {
 			if (e.message.startsWith('duplicate key value violates unique constraint'))
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service name is already present');
+			throw e;
 		}
 	}
 
@@ -108,7 +108,7 @@ export class ServicesService {
 	}
 
 	public async updateTimeslotItem({ serviceId, timeslotId, request }
-		: { serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
+		                                : { serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
 		: Promise<TimeslotItem> {
 		const timeslotsSchedule = await this.getServiceTimeslotsSchedule(serviceId);
 		return this.timeslotItemsService.updateTimeslotItem(timeslotsSchedule, timeslotId, request);
