@@ -2,6 +2,11 @@ import { Timeslot } from '../../../models';
 import { TimeslotAggregator } from '../timeslotAggregator';
 import { DateHelper } from '../../../infrastructure/dateHelper';
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 describe('Timeslot aggregator', () => {
 	it('should aggregate timeslots in order', () => {
 		const date = new Date(Date.parse('2020-01-01'));

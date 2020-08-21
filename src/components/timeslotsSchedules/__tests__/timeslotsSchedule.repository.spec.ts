@@ -4,6 +4,11 @@ import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedule.repository';
 import { IEntityWithTimeslotsSchedule, ITimeslotsSchedule } from '../../../models/interfaces';
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 beforeEach(() => {
 	Container.bind(DbConnection).to(DbConnectionMock);
 	jest.clearAllMocks();

@@ -6,6 +6,22 @@ import { Schedule, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from ".
 import { TimeslotItemRequest, } from "../../timeslotItems/timeslotItems.apicontract";
 import { Weekday } from "../../../enums/weekday";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
+jest.mock("mol-lib-common", () => {
+	const actual = jest.requireActual('mol-lib-common');
+	const mock = (config: any) => {
+		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
+	};
+	return {
+		...actual,
+		MOLAuth: mock
+	};
+});
+
 describe('Services controller tests', () => {
 	beforeAll(() => {
 		Container.bind(ServicesService).to(ServicesServiceMockClass);
@@ -151,7 +167,7 @@ class ServicesServiceMockClass extends ServicesService {
 	}
 
 	public async updateTimeslotItem({ serviceId, timeslotId, request }
-		                                : { serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
+		: { serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
 		: Promise<TimeslotItem> {
 		return ServicesServiceMock.updateTimeslotItem({ serviceId, timeslotId, request });
 	}

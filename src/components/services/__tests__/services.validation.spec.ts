@@ -2,6 +2,11 @@ import { Container } from 'typescript-ioc';
 import { ServicesService } from "../services.service";
 import { ServicesValidation } from '../services.validation';
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 describe('Services validation tests', () => {
 	beforeEach(() => {
 		Container.bind(ServicesService).to(ServicesServiceMock);

@@ -1,4 +1,4 @@
-import { Container, Snapshot } from "typescript-ioc";
+import { Container } from "typescript-ioc";
 import {
 	Booking,
 	BookingStatus,
@@ -17,7 +17,10 @@ import { ServiceProvidersRepository } from "../../serviceProviders/serviceProvid
 import { AvailableTimeslotProviders } from "../availableTimeslotProviders";
 import { UnavailabilitiesService } from "../../unavailabilities/unavailabilities.service";
 
-let snapshot: Snapshot;
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
 
 describe("Timeslots Service", () => {
 	const date = new Date(2020, 4, 27);
@@ -77,13 +80,8 @@ describe("Timeslots Service", () => {
 		getServiceProviders: jest.fn(() => Promise.resolve([ServiceProviderMock, ServiceProviderMock2]))
 	};
 
-	beforeAll(() => {
-		// Store the IoC configuration
-		snapshot = Container.snapshot();
-	});
-
 	afterEach(() => {
-		snapshot.restore();
+
 		// Clears mock counters, not implementation
 		jest.clearAllMocks();
 	});

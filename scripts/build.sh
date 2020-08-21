@@ -49,13 +49,15 @@ pushd ${PROJECT_DIR}
 echo "Generate TSOA routes"
 ./node_modules/.bin/tsoa routes
 
+echo 'Swaggering'
+rm -f ./swagger/swagger.yaml
+./node_modules/.bin/tsoa spec
+
 # Build and pack
 echo "Webpacking"
 export TS_NODE_PROJECT=./node_modules/mol-lib-config/shared-config/script.tsconfig.json
 ./node_modules/.bin/webpack-cli
 
-echo 'Swaggering'
-./node_modules/.bin/tsoa spec
 pushd dist
 npm shrinkwrap
 npm pack

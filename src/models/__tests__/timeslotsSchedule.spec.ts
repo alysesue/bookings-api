@@ -1,21 +1,11 @@
-import { Container, Snapshot } from 'typescript-ioc';
 import { TimeslotItem, TimeslotsSchedule } from '../index';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Weekday } from '../../enums/weekday';
 import { TimeOfDay } from '../timeOfDay';
 
-let snapshot: Snapshot;
-beforeAll(() => {
-	// Store the IoC configuration
-	snapshot = Container.snapshot();
-
-	// Clears mock counters, not implementation
-	jest.clearAllMocks();
-});
-
 afterAll(() => {
-	// Put the IoC configuration back for IService, so other tests can run.
-	snapshot.restore();
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
 });
 
 describe('[Timeslots schedule] template', () => {
@@ -44,7 +34,6 @@ describe('[Timeslots schedule] template', () => {
 		TimeslotItem.create(1, Weekday.Wednesday, TimeOfDay.parse('13:30'), TimeOfDay.parse('14:30')),
 		TimeslotItem.create(1, Weekday.Wednesday, TimeOfDay.parse('14:30'), TimeOfDay.parse('15:30')),
 	];
-
 
 	const date = new Date(2020, 4, 12); // May 12th -  Tuesday;
 

@@ -1,21 +1,12 @@
 import { SchedulesRepository } from '../schedules.repository';
 import { WeekDayBreakRepository } from '../weekdaybreak.repository';
 import { DbConnection } from '../../../core/db.connection';
-import { Container, Snapshot } from 'typescript-ioc';
+import { Container } from 'typescript-ioc';
 import { Schedule } from "../../../models";
 
-let snapshot: Snapshot;
-beforeAll(() => {
-	// Store the IoC configuration
-	snapshot = Container.snapshot();
-
-	// Clears mock counters, not implementation
-	jest.clearAllMocks();
-});
-
 afterAll(() => {
-	// Put the IoC configuration back, so other tests can run.
-	snapshot.restore();
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
 });
 
 beforeEach(() => {

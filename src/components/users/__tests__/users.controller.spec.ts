@@ -3,6 +3,11 @@ import { UsersController } from "../users.controller";
 import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
 import { MOLAuthType } from "mol-lib-api-contract/auth/common/MOLAuthType";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 describe("Users Controller", () => {
 	it("should get user profile", async () => {
 		const controller = Container.get(UsersController);

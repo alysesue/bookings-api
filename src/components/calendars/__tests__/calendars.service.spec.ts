@@ -1,21 +1,19 @@
 import { CalendarsRepository } from "../calendars.repository";
-import { Container, Snapshot } from "typescript-ioc";
+import { Container } from "typescript-ioc";
 import { Booking, Calendar } from "../../../models";
 import { CalendarsService } from "../calendars.service";
 import { GoogleCalendarService } from "../../../googleapi/google.calendar.service";
 import { CalendarUserModel } from "../calendars.apicontract";
 import { SchedulesRepository } from "../../schedules/schedules.repository";
 
-let snapshot: Snapshot;
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
 
 describe("Calendar service", () => {
-	beforeAll(() => {
-		// Store the IoC configuration
-		snapshot = Container.snapshot();
-	});
-
 	afterEach(() => {
-		snapshot.restore();
+
 	});
 
 	beforeEach(() => {
