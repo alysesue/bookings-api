@@ -6,18 +6,10 @@ import { GoogleCalendarService } from '../../googleapi/google.calendar.service';
 import { GoogleApi } from "../../googleapi/google.api";
 import { basePath } from "../../config/app-config";
 
-let snapshot: Snapshot;
-beforeEach(() => {
-	// Store the IoC configuration
-	snapshot = Container.snapshot();
 
+beforeEach(() => {
 	// Clears mock counters, not implementation
 	jest.clearAllMocks();
-});
-
-afterEach(() => {
-	// Put the IoC configuration back for IService, so other tests can run.
-	snapshot.restore();
 });
 
 jest.mock('koa-proxy', () => {

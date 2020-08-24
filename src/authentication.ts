@@ -1,5 +1,5 @@
 import * as Koa from "koa";
-import { ServicesValidation } from "./services/services.validation";
+import { ServicesValidation } from "./components/services/services.validation";
 import { Container } from "typescript-ioc";
 
 export async function koaAuthentication(

@@ -1,8 +1,9 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { BookingStatus } from "../bookingStatus";
 import { ServiceProvider } from './serviceProvider';
 import { Service } from "./service";
 import * as timeSpan from "../../tools/timeSpan";
+import { User } from "./user";
 
 @Entity()
 export class Booking {
@@ -46,6 +47,21 @@ export class Booking {
 
 	@Column({ nullable: true })
 	private _serviceProviderId?: number;
+
+	@ManyToOne(type => User, { cascade: true, nullable: true })
+	@JoinColumn({ name: '_citizenUserId' })
+	private _citizenUser: User;
+
+	@Column({ nullable: true })
+	private _citizenUserId: number;
+
+	public get citizenUserId(): number {
+		return this._citizenUserId;
+	}
+
+	public set citizenUserId(value: number) {
+		this._citizenUserId = value;
+	}
 
 	constructor() {
 	}
@@ -105,6 +121,15 @@ export class Booking {
 	public get serviceProviderId(): number | undefined {
 		return this._serviceProviderId;
 	}
+
+	public get citizenUser(): User {
+		return this._citizenUser;
+	}
+
+	public set citizenUser(value: User) {
+		this._citizenUser = value;
+	}
+
 	public get createdAt(): Date {
 		return this._createdAt;
 	}

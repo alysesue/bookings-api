@@ -16,27 +16,7 @@ import { DbConnection } from "./core/db.connection";
 import { Container } from "typescript-ioc";
 import { CalDavProxyHandler } from "./infrastructure/caldavproxy.handler";
 import * as cors from '@koa/cors';
-import * as fs from "fs";
-import * as swagger from "swagger2";
-import { ui } from "swagger2-koa";
-
-export const useSwagger = () => {
-	const swaggerDoc = '../dist/swagger/swagger.yaml';
-	// tslint:disable-next-line: tsr-detect-non-literal-fs-filename
-	const exists = fs.existsSync(swaggerDoc);
-
-	logger.info(`Swagger document location: ${swaggerDoc} ${exists ? '(found)' : '(not found)'}`);
-	if (exists) {
-		const document = swagger.loadDocumentSync(swaggerDoc);
-		return ui(document as swagger.Document, `${basePath}/swagger`);
-	}
-
-	async function emptyMiddleware(_ctx, next) {
-		await next();
-	}
-
-	return emptyMiddleware;
-};
+import { useSwagger } from "./infrastructure/swagger.middleware";
 
 export async function startServer(): Promise<Server> {
 	const config = getConfig();
@@ -56,8 +36,6 @@ export async function startServer(): Promise<Server> {
 			compress({
 				filter: () => true,
 				threshold: 2048,
-				flush: require("zlib").Z_SYNC_FLUSH,
-				level: require("zlib").Z_BEST_COMPRESSION,
 			})
 		)
 		.use(
@@ -69,7 +47,7 @@ export async function startServer(): Promise<Server> {
 			})
 		)
 		.use(cors({ credentials: config.isDev }))
-		.use(useSwagger())
+		.use(await useSwagger())
 		.use(new KoaErrorHandler().build())
 		.use(new KoaLoggerContext().build())
 		.use(new KoaMultipartCleaner().build())

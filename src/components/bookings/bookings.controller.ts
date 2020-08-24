@@ -1,0 +1,196 @@
+import { Inject } from "typescript-ioc";
+import {
+	Body,
+	Controller,
+	Get,
+	Header,
+	Path,
+	Post,
+	Query,
+	Response,
+	Route,
+	Security,
+	SuccessResponse,
+	Tags
+} from "tsoa";
+import { Booking, ServiceProvider } from "../../models";
+import {
+	BookingAcceptRequest,
+	BookingProviderResponse,
+	BookingRequest,
+	CitizenBookingRequest,
+	BookingResponse,
+	BookingSearchRequest
+} from "./bookings.apicontract";
+import { BookingsService } from "./bookings.service";
+import { TimeslotsService } from "../timeslots/timeslots.service";
+import { MOLAuth } from "mol-lib-common";
+import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
+import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
+
+@Route("v1/bookings")
+@Tags('Bookings')
+export class BookingsController extends Controller {
+	@Inject
+	private bookingsService: BookingsService;
+
+	@Inject
+	private timeslotService: TimeslotsService;
+
+	public static mapDataModels(bookings: Booking[]): BookingResponse[] {
+		return bookings?.map(BookingsController.mapDataModel);
+	}
+
+	private static mapDataModel(booking: Booking): BookingResponse {
+		return {
+			id: booking.id,
+			status: booking.status,
+			startDateTime: booking.startDateTime,
+			endDateTime: booking.endDateTime,
+			serviceId: booking.serviceId,
+			serviceName: booking.service?.name,
+			serviceProviderId: booking.serviceProviderId,
+			serviceProviderName: booking.serviceProvider?.name,
+			requestedAt: booking.createdAt,
+		} as BookingResponse;
+	}
+
+	private static mapProvider(provider: ServiceProvider): BookingProviderResponse {
+		return {
+			id: provider.id,
+			name: provider.name
+		} as BookingProviderResponse;
+	}
+
+	/**
+	 * Creates a new booking.
+	 * [startDateTime, endDateTime] pair needs to match an available timeslot for the service or service provider.
+	 * If serviceProviderId is specified, the booking status will be Accepted (2),
+	 * otherwise the status will be Pending (1) and will require approval by an admin.
+	 * @param bookingRequest
+	 * @param serviceId The service (id) to be booked.
+	 */
+	@Post()
+	@SuccessResponse(201, 'Created')
+	@Security("service")
+	@MOLAuth({ user: { minLevel: MOLUserAuthLevel.L2 } })
+	@Response(401, 'Valid authentication types: [user]')
+	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
+		bookingRequest.outOfSlotBooking = false;
+		const userUinFin = this.getHeader(MOLSecurityHeaderKeys.USER_UINFIN);
+		const userMolId = this.getHeader(MOLSecurityHeaderKeys.USER_ID);
+
+		const bookingRequestWithCitizen: CitizenBookingRequest = { ...bookingRequest, userUinFin, userMolId };
+
+		const booking = await this.bookingsService.save(bookingRequestWithCitizen, serviceId);
+		this.setStatus(201);
+		return BookingsController.mapDataModel(booking);
+	}
+
+	/**
+	 * Creates a new booking. Any startDateTime and endDateTime are allowed.
+	 * If serviceProviderId is specified, the booking status will be Accepted (2),
+	 * otherwise the status will be Pending (1) and will require approval by an admin.
+	 * @param bookingRequest
+	 * @param serviceId The service (id) to be booked.
+	 */
+	@Post('admin')
+	@SuccessResponse(201, 'Created')
+	@Security("service")
+	@MOLAuth({ admin: {} })
+	@Response(401, 'Valid authentication types: [admin]')
+	public async postBookingOutOfSlot(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
+		bookingRequest.outOfSlotBooking = true;
+		const booking = await this.bookingsService.save(bookingRequest, serviceId);
+		this.setStatus(201);
+		return BookingsController.mapDataModel(booking);
+	}
+
+	/**
+	 * Approves a booking and allocates a service provider to it. The booking must have Pending (1) status and the service provider (serviceProviderId) must be available for this booking timeslot otherwise the request will fail.
+	 * @param bookingId The booking id.
+	 * @param acceptRequest
+	 */
+	@Post('{bookingId}/accept')
+	@SuccessResponse(204, 'Accepted')
+	@MOLAuth({ admin: {} })
+	@Response(401, 'Valid authentication types: [admin]')
+	public async acceptBooking(@Path() bookingId: number, @Body() acceptRequest: BookingAcceptRequest): Promise<any> {
+		await this.bookingsService.acceptBooking(bookingId, acceptRequest);
+	}
+
+	/**
+	 * Cancels a booking. Only future bookings that have Pending (1) or Accepted (2) status can be cancelled.
+	 * @param bookingId The booking id.
+	 */
+	@Post('{bookingId}/cancel')
+	@SuccessResponse(204, 'Cancelled')
+	@MOLAuth({
+		admin: {},
+		user: { minLevel: MOLUserAuthLevel.L2 }
+	})
+	@Response(401, 'Valid authentication types: [admin,user]')
+	public async cancelBooking(@Path() bookingId: number): Promise<any> {
+		await this.bookingsService.cancelBooking(bookingId);
+	}
+
+	/**
+	 * Retrieves all bookings that have start time in the datetime range [from, to].
+	 * @param from The lower bound datetime limit (inclusive) for booking's start.
+	 * @param to  The upper bound datetime limit (inclusive) for booking's start.
+	 * @param status (Optional) filters by a list of status: Pending (1), Accepted (2), Cancelled (3).
+	 * @param serviceId (Optional) filters by a service (id).
+	 */
+	@Get('')
+	@SuccessResponse(200, "Ok")
+	@Security("optional-service")
+	@MOLAuth({
+		admin: {},
+		user: { minLevel: MOLUserAuthLevel.L2 }
+	})
+	@Response(401, 'Valid authentication types: [admin,user]')
+	public async getBookings(
+		@Query() from: Date,
+		@Query() to: Date,
+		@Query() status?: number[],
+		@Header("x-api-service") serviceId?: number): Promise<BookingResponse[]> {
+
+		const searchQuery = new BookingSearchRequest(from, to, status, serviceId);
+		const bookings = await this.bookingsService.searchBookings(searchQuery);
+		return BookingsController.mapDataModels(bookings);
+	}
+
+	/**
+	 * Retrieves a single booking.
+	 * @param bookingId The booking id.
+	 */
+	@Get('{bookingId}')
+	@SuccessResponse(200, 'Ok')
+	@MOLAuth({
+		admin: {},
+		user: { minLevel: MOLUserAuthLevel.L2 }
+	})
+	@Response(401, 'Valid authentication types: [admin,user]')
+	public async getBooking(@Path() bookingId: number): Promise<any> {
+		const booking = await this.bookingsService.getBooking(bookingId);
+		return BookingsController.mapDataModel(booking);
+	}
+
+	/**
+	 * Retrieves a list of available service providers for this booking timeslot.
+	 * @param bookingId The booking id.
+	 */
+	@Get('{bookingId}/providers')
+	@SuccessResponse(200, 'Ok')
+	@MOLAuth({
+		admin: {},
+		user: { minLevel: MOLUserAuthLevel.L2 }
+	})
+	@Response(401, 'Valid authentication types: [admin,user]')
+	public async getBookingProviders(@Path() bookingId: number): Promise<any> {
+		const booking = await this.bookingsService.getBooking(bookingId);
+
+		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.endDateTime, booking.serviceId);
+		return timeslotEntry.availableServiceProviders.map(BookingsController.mapProvider) || [];
+	}
+}

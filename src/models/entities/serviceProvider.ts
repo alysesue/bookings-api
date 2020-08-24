@@ -50,19 +50,6 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	@Column({ type: "varchar", length: 300 })
 	private _name: string;
 
-	constructor() {
-	}
-
-	public static create(name: string, calendar: Calendar, serviceId: number): ServiceProvider {
-		const instance = new ServiceProvider();
-		instance._serviceId = serviceId;
-		instance._name = name;
-		instance._createdAt = new Date();
-		instance._status = ServiceProviderStatus.Valid;
-		instance._calendar = calendar;
-		return instance;
-	}
-
 	public get name(): string {
 		return this._name;
 	}
@@ -70,6 +57,35 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	public set name(value: string) {
 		this._name = value;
 	}
+
+
+	constructor() {
+	}
+
+	public static create(name: string, calendar: Calendar, serviceId: number, email?: string): ServiceProvider {
+		const instance = new ServiceProvider();
+		instance._serviceId = serviceId;
+		instance._name = name;
+		instance._createdAt = new Date();
+		instance._status = ServiceProviderStatus.Valid;
+		instance._calendar = calendar;
+		instance._email = email;
+		return instance;
+	}
+
+
+	@Column({ nullable: true })
+	private _email?: string;
+
+	public get email(): string {
+		return this._email;
+	}
+
+	public set email(value: string) {
+		this._email = value;
+	}
+
+
 
 	@OneToOne("Calendar")
 	@JoinColumn()
