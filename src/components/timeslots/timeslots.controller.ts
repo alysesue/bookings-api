@@ -39,7 +39,7 @@ export class TimeslotsController extends Controller {
 	}
 
 	/**
-	 * Retrieves timeslots (available and booked) for a service in a defined datetime range [startDate, endDate].
+	 * Retrieves timeslots (available and booked) and accepted bookings for a service in a defined datetime range [startDate, endDate].
 	 * Availability count returned may be zero.
 	 * Pending and accepted bookings count towards availability quota.
 	 * @param startDate The lower bound limit for timeslots' startDate.

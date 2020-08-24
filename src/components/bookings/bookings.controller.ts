@@ -13,10 +13,8 @@ import {
 	SuccessResponse,
 	Tags
 } from "tsoa";
-import { Booking, ServiceProvider } from "../../models";
 import {
 	BookingAcceptRequest,
-	BookingProviderResponse,
 	BookingRequest,
 	CitizenBookingRequest,
 	BookingResponse,
@@ -27,6 +25,7 @@ import { TimeslotsService } from "../timeslots/timeslots.service";
 import { MOLAuth } from "mol-lib-common";
 import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
 import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
+import {BookingsMapper} from "./bookings.mapper";
 
 @Route("v1/bookings")
 @Tags('Bookings')
@@ -37,30 +36,8 @@ export class BookingsController extends Controller {
 	@Inject
 	private timeslotService: TimeslotsService;
 
-	public static mapDataModels(bookings: Booking[]): BookingResponse[] {
-		return bookings?.map(BookingsController.mapDataModel);
-	}
-
-	private static mapDataModel(booking: Booking): BookingResponse {
-		return {
-			id: booking.id,
-			status: booking.status,
-			startDateTime: booking.startDateTime,
-			endDateTime: booking.endDateTime,
-			serviceId: booking.serviceId,
-			serviceName: booking.service?.name,
-			serviceProviderId: booking.serviceProviderId,
-			serviceProviderName: booking.serviceProvider?.name,
-			requestedAt: booking.createdAt,
-		} as BookingResponse;
-	}
-
-	private static mapProvider(provider: ServiceProvider): BookingProviderResponse {
-		return {
-			id: provider.id,
-			name: provider.name
-		} as BookingProviderResponse;
-	}
+	@Inject
+	private bookingsMapper: BookingsMapper;
 
 	/**
 	 * Creates a new booking.
@@ -84,7 +61,7 @@ export class BookingsController extends Controller {
 
 		const booking = await this.bookingsService.save(bookingRequestWithCitizen, serviceId);
 		this.setStatus(201);
-		return BookingsController.mapDataModel(booking);
+		return this.bookingsMapper.mapDataModel(booking);
 	}
 
 	/**
@@ -103,7 +80,7 @@ export class BookingsController extends Controller {
 		bookingRequest.outOfSlotBooking = true;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
-		return BookingsController.mapDataModel(booking);
+		return this.bookingsMapper.mapDataModel(booking);
 	}
 
 	/**
@@ -157,7 +134,7 @@ export class BookingsController extends Controller {
 
 		const searchQuery = new BookingSearchRequest(from, to, status, serviceId);
 		const bookings = await this.bookingsService.searchBookings(searchQuery);
-		return BookingsController.mapDataModels(bookings);
+		return this.bookingsMapper.mapDataModels(bookings);
 	}
 
 	/**
@@ -173,7 +150,7 @@ export class BookingsController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,user]')
 	public async getBooking(@Path() bookingId: number): Promise<any> {
 		const booking = await this.bookingsService.getBooking(bookingId);
-		return BookingsController.mapDataModel(booking);
+		return this.bookingsMapper.mapDataModel(booking);
 	}
 
 	/**
@@ -191,6 +168,6 @@ export class BookingsController extends Controller {
 		const booking = await this.bookingsService.getBooking(bookingId);
 
 		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.endDateTime, booking.serviceId);
-		return timeslotEntry.availableServiceProviders.map(BookingsController.mapProvider) || [];
+		return timeslotEntry.availableServiceProviders.map(this.bookingsMapper.mapProvider) || [];
 	}
 }
