@@ -1,7 +1,7 @@
 import { Container } from "typescript-ioc";
 import { BookingsController } from "../index";
 import { BookingsRepository } from "../bookings.repository";
-import { Booking, BookingStatus, Calendar, Service, ServiceProvider } from "../../../models";
+import {Booking, BookingStatus, Calendar, Service, ServiceProvider, User} from "../../../models";
 import { CalendarsRepository } from "../../calendars/calendars.repository";
 import { GoogleApi } from "../../../googleapi/google.api";
 import * as insertEventResponse from "./createEventResponse.json";
@@ -29,7 +29,7 @@ jest.mock("mol-lib-common", () => {
 });
 
 const BookingRepositoryMock = (update) => {
-	const testBooking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+	const testBooking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'), new User());
 	return jest.fn().mockImplementation(() => ({
 		getBooking: jest.fn().mockReturnValue(testBooking),
 		update

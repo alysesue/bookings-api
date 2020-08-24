@@ -52,19 +52,19 @@ export class BookingsService {
 				serviceId,
 				bookingRequest.startDateTime,
 				bookingRequest.endDateTime,
+				bookingRequest.citizenUser = UsersFactory.createUser(bookingRequest),
 				bookingRequest.serviceProviderId,
 				bookingRequest.refId,
 				eventICalId,
-                booking.citizenUser = UsersFactory.createUser(bookingRequest);
 			);
 		} else {
 			return Booking.create(
 				serviceId,
 				bookingRequest.startDateTime,
 				bookingRequest.endDateTime,
+				bookingRequest.citizenUser = UsersFactory.createUser(bookingRequest),
 				bookingRequest.serviceProviderId,
 				bookingRequest.refId
-                booking.citizenUser = UsersFactory.createUser(bookingRequest);
 			);
 		}
 	}

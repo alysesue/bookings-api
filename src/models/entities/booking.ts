@@ -141,7 +141,7 @@ export class Booking {
 		return timeSpan.intersectsDateTimeSpan(other, this.startDateTime, this.endDateTime);
 	}
 
-	public static create(serviceId: number, startDateTime: Date, endDateTime: Date, serviceProviderId?: number, refId?: string, eventICalId?: string) {
+	public static create(serviceId: number, startDateTime: Date, endDateTime: Date, citizenUser: User, serviceProviderId?: number, refId?: string, eventICalId?: string) {
 		const instance = new Booking();
 		instance._serviceId = serviceId;
 		instance._startDateTime = startDateTime;
@@ -149,6 +149,7 @@ export class Booking {
 		instance._createdAt = new Date();
 		instance._refId = refId;
 		instance._eventICalId = eventICalId;
+		instance._citizenUser = citizenUser;
 
 		if (serviceProviderId) {
 			instance._serviceProviderId = serviceProviderId;
