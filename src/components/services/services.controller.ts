@@ -55,8 +55,11 @@ export class ServicesController extends Controller {
 	 */
 	@Get()
 	@SuccessResponse(200, "Ok")
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({
+		admin: {},
+		user: { minLevel: MOLUserAuthLevel.L2 }
+	})
+	@Response(401, 'Valid authentication types: [admin,user]')
 	public async getServices(): Promise<ServiceResponse[]> {
 		const services = await this.servicesService.getServices();
 		return services.map(ServicesController.mapToServiceResponse);
