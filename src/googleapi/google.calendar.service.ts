@@ -4,6 +4,7 @@ import { Booking } from "../models";
 import { CalendarUserModel } from "../calendars/calendars.apicontract";
 import { GoogleApi } from "./google.api";
 import { Constants } from "../models/constants";
+import {BookingRequest} from "../bookings/bookings.apicontract";
 
 @InRequestScope
 export class GoogleCalendarService {
@@ -60,7 +61,7 @@ export class GoogleCalendarService {
 		} as CalendarUserModel;
 	}
 
-	public async createEvent(booking: Booking, calendarId: string): Promise<string> {
+	public async createEvent(booking: Booking | BookingRequest, calendarId: string): Promise<string> {
 		const api = await this.googleApi.getCalendarApi();
 		const params = {
 			calendarId,

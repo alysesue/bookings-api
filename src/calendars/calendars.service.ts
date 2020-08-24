@@ -4,6 +4,7 @@ import { CalendarsRepository } from "./calendars.repository";
 import { GoogleCalendarService } from "../googleapi/google.calendar.service";
 import { CalendarUserModel } from "./calendars.apicontract";
 import { isEmptyArray } from "../tools/arrays";
+import {BookingRequest} from "../bookings/bookings.apicontract";
 
 @InRequestScope
 export class CalendarsService {
@@ -37,7 +38,7 @@ export class CalendarsService {
 		return calendars.filter((calendar) => isEmptyArray(googleCalendars[calendar.googleCalendarId].busy));
 	}
 
-	public async createCalendarEvent(booking: Booking, calendar: Calendar): Promise<string> {
+	public async createCalendarEvent(booking: Booking | BookingRequest, calendar: Calendar): Promise<string> {
 		return await this.googleCalendarApi.createEvent(booking, calendar.googleCalendarId);
 	}
 
