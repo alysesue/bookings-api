@@ -6,6 +6,7 @@ import {
 	Header,
 	Path,
 	Post,
+	Put,
 	Query,
 	Response,
 	Route,
@@ -132,6 +133,29 @@ export class BookingsController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,user]')
 	public async cancelBooking(@Path() bookingId: number): Promise<any> {
 		await this.bookingsService.cancelBooking(bookingId);
+	}
+
+
+	/**
+	 * Updates an existing booking.
+	 * It will delete the exisitng booking and re-create a new booking based on request data.
+	 * @param bookingId The booking id.
+	 * @param bookingRequest
+	 * @param serviceId The service (id) to be booked.
+	 */
+	@Put('{bookingId}/update')
+	@SuccessResponse(201, 'Updated')
+	@Security("service")
+	@MOLAuth({ admin: {} })
+	@Response(401, 'Valid authentication types: [admin]')
+	public async updateBooking(@Path() bookingId: number, @Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
+		const deletedBooking = await this.bookingsService.cancelBooking(bookingId);
+		if (deletedBooking) {
+			bookingRequest.outOfSlotBooking = true;
+			const booking = await this.bookingsService.save(bookingRequest, serviceId);
+			this.setStatus(201);
+			return BookingsController.mapDataModel(booking);
+		}
 	}
 
 	/**

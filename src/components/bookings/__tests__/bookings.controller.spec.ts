@@ -48,6 +48,18 @@ describe("Bookings.Controller", () => {
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 	});
 
+	it('should update booking', async () => {
+		const controller = Container.get(BookingsController);
+		const bookingId = 1;
+		BookingsServiceMock.mockCancelBooking = Promise.resolve(Booking.create(1, new Date('2020-09-01T01:00:00'), new Date('2020-09-02T02:00:00')));
+		BookingsServiceMock.mockPostBooking = Promise.resolve(Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-02T02:00:00')));
+
+		const res = await controller.updateBooking(bookingId, new BookingRequest(), 1);
+
+		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
+		expect((res as Booking).startDateTime).toEqual('2020-10-01T01:00:00');
+	});
+
 	it('should search bookings', async () => {
 		BookingsServiceMock.mockSearchBookings = [Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'))];
 		const from = new Date('2020-05-16T20:25:43.511Z');
