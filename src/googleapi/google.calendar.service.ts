@@ -3,7 +3,7 @@ import { Booking } from "../models";
 import { CalendarUserModel } from "../components/calendars/calendars.apicontract";
 import { GoogleApi } from "./google.api";
 import { Constants } from "../models/constants";
-import {BookingRequest} from "../components/bookings/bookings.apicontract";
+import { BookingRequest } from "../components/bookings/bookings.apicontract";
 
 @InRequestScope
 export class GoogleCalendarService {

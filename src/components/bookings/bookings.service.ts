@@ -48,24 +48,26 @@ export class BookingsService {
 
 		if(bookingRequest.serviceProviderId) {
 			const eventICalId = await this.calendarsService.createCalendarEvent(bookingRequest, serviceProvider.calendar);
-			return Booking.create(
+			const booking = Booking.create(
 				serviceId,
 				bookingRequest.startDateTime,
 				bookingRequest.endDateTime,
-				bookingRequest.citizenUser = UsersFactory.createUser(bookingRequest),
 				bookingRequest.serviceProviderId,
 				bookingRequest.refId,
 				eventICalId,
 			);
+			booking.citizenUser = UsersFactory.createUser(bookingRequest);
+			return booking;
 		} else {
-			return Booking.create(
+			const booking = Booking.create(
 				serviceId,
 				bookingRequest.startDateTime,
 				bookingRequest.endDateTime,
-				bookingRequest.citizenUser = UsersFactory.createUser(bookingRequest),
 				bookingRequest.serviceProviderId,
 				bookingRequest.refId
 			);
+			booking.citizenUser = UsersFactory.createUser(bookingRequest);
+			return booking;
 		}
 	}
 
