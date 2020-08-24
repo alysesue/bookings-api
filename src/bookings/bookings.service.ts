@@ -1,13 +1,13 @@
-import {ErrorCodeV2, MOLErrorV2} from "mol-lib-api-contract";
-import {Inject, InRequestScope} from "typescript-ioc";
-import {Booking, BookingStatus} from "../models";
-import {BookingsRepository} from "./bookings.repository";
-import {BookingAcceptRequest, BookingRequest, BookingSearchRequest} from "./bookings.apicontract";
-import {TimeslotsService} from '../timeslots/timeslots.service';
-import {CalendarsService} from '../calendars/calendars.service';
-import {DateHelper} from "../infrastructure/dateHelper";
-import {ServiceProvidersRepository} from "../serviceProviders/serviceProviders.repository";
-import {UnavailabilitiesService} from "../unavailabilities/unavailabilities.service";
+import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
+import { Inject, InRequestScope } from "typescript-ioc";
+import { Booking, BookingStatus } from "../models";
+import { BookingsRepository } from "./bookings.repository";
+import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "./bookings.apicontract";
+import { TimeslotsService } from '../timeslots/timeslots.service';
+import { CalendarsService } from '../calendars/calendars.service';
+import { DateHelper } from "../infrastructure/dateHelper";
+import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
+import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
 
 @InRequestScope
 export class BookingsService {
@@ -27,7 +27,7 @@ export class BookingsService {
 	}
 
 	private async createBooking(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
-		const provider = await this.serviceProviderRepo.getServiceProvider({ id: bookingRequest.serviceProviderId });
+		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({ id: bookingRequest.serviceProviderId });
 		const duration = Math.floor(DateHelper.DiffInMinutes(bookingRequest.endDateTime, bookingRequest.startDateTime));
 
 		if (duration <= 0) {
@@ -42,7 +42,7 @@ export class BookingsService {
 		}
 
 		if(bookingRequest.serviceProviderId) {
-			const eventICalId = await this.calendarsService.createCalendarEvent(bookingRequest, provider.calendar);
+			const eventICalId = await this.calendarsService.createCalendarEvent(bookingRequest, serviceProvider.calendar);
 			return Booking.create(
 				serviceId,
 				bookingRequest.startDateTime,
@@ -50,7 +50,7 @@ export class BookingsService {
 				bookingRequest.serviceProviderId,
 				bookingRequest.refId,
 				eventICalId,
-			)
+			);
 		} else {
 			return Booking.create(
 				serviceId,
@@ -58,7 +58,7 @@ export class BookingsService {
 				bookingRequest.endDateTime,
 				bookingRequest.serviceProviderId,
 				bookingRequest.refId
-			)
+			);
 		}
 	}
 

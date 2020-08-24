@@ -1,10 +1,9 @@
 import { Inject, InRequestScope } from "typescript-ioc";
 import { Booking } from "../models";
-
 import { CalendarUserModel } from "../calendars/calendars.apicontract";
 import { GoogleApi } from "./google.api";
 import { Constants } from "../models/constants";
-import {BookingRequest} from "../bookings/bookings.apicontract";
+import { BookingRequest } from "../bookings/bookings.apicontract";
 
 @InRequestScope
 export class GoogleCalendarService {

@@ -20,7 +20,7 @@ export class BookingsController extends Controller {
 	@Inject
 	private timeslotService: TimeslotsService;
 
-	private static mapDataModels(bookings: Booking[]): BookingResponse[] {
+	public static mapDataModels(bookings: Booking[]): BookingResponse[] {
 		return bookings?.map(BookingsController.mapDataModel);
 	}
 

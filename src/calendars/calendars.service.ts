@@ -4,7 +4,7 @@ import { CalendarsRepository } from "./calendars.repository";
 import { GoogleCalendarService } from "../googleapi/google.calendar.service";
 import { CalendarUserModel } from "./calendars.apicontract";
 import { isEmptyArray } from "../tools/arrays";
-import {BookingRequest} from "../bookings/bookings.apicontract";
+import { BookingRequest } from "../bookings/bookings.apicontract";
 
 @InRequestScope
 export class CalendarsService {

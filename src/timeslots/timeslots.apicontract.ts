@@ -1,5 +1,4 @@
 import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
-import {Booking} from "../models/entities";
 
 export class AvailabilityEntryResponse {
 	public startTime: Date;
@@ -29,6 +28,4 @@ export class TimeslotEntryResponse {
 	 * The remaining number of available bookings that can be made in this timeslot. This value may be less than the count of available service providers due to pending bookings.
 	 */
 	public availabilityCount: number;
-
-	public acceptedBookings: Booking[];
 }
