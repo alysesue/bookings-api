@@ -18,6 +18,11 @@ export class BookingRequest {
 	public refId?: string;
 }
 
+export class CitizenBookingRequest extends BookingRequest {
+	public userMolId?: string;
+	public userUinFin?: string;
+}
+
 export class BookingResponse {
 	public id: number;
 	public status: number;

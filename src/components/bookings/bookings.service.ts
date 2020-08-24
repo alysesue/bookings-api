@@ -2,12 +2,17 @@ import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
 import { Inject, InRequestScope } from "typescript-ioc";
 import { Booking, BookingStatus } from "../../models";
 import { BookingsRepository } from "./bookings.repository";
-import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "./bookings.apicontract";
+import {
+	BookingAcceptRequest,
+	BookingRequest,
+	BookingSearchRequest
+} from "./bookings.apicontract";
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
 import { DateHelper } from "../../infrastructure/dateHelper";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
+import { UsersFactory } from "../users/users.factory";
 
 @InRequestScope
 export class BookingsService {
@@ -38,14 +43,17 @@ export class BookingsService {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${bookingRequest.serviceProviderId}' not found`);
 			}
 		}
-
-		return Booking.create(
+		const booking = Booking.create(
 			serviceId,
 			bookingRequest.startDateTime,
 			bookingRequest.endDateTime,
 			bookingRequest.serviceProviderId,
 			bookingRequest.refId);
+		booking.citizenUser = UsersFactory.createUser(bookingRequest);
+		return booking;
 	}
+
+
 
 	public async getBooking(bookingId: number): Promise<Booking> {
 		const booking = await this.bookingsRepository.getBooking(bookingId);

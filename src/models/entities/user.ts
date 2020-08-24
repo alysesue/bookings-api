@@ -29,4 +29,9 @@ export class User implements IUser {
 		this._singPassUser = value;
 	}
 
+	public static createSingPassUser(molUserId: string, userUinFin: string) {
+		const instance = new User();
+		instance.singPassUser = SingPassUser.create(molUserId, userUinFin);
+		return instance;
+	}
 }

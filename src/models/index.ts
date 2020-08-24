@@ -10,6 +10,8 @@ import { ServiceProvider } from "./entities/serviceProvider";
 import { BusinessValidation } from './businessValidation';
 import { Timeslot } from './timeslot';
 import { TimeslotsSchedule } from "./entities/timeslotsSchedule";
+import { User } from "./entities/user";
+import { SingPassUser } from "./entities/singPassUser";
 // TODO : rename
 import { TimeslotItem } from "./entities/timeslotItem";
 import { Unavailability } from "./entities/unavailability";
@@ -18,6 +20,8 @@ export {
 	Booking,
 	BusinessValidation,
 	BookingStatus,
+	User,
+	SingPassUser,
 	Schedule,
 	Service,
 	WeekDayBreak,

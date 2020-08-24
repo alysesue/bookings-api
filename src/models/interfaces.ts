@@ -23,8 +23,8 @@ export interface IUser {
 
 export interface ISingPassUser {
 	id: number;
-	molUserId: number;
-	UinFin: number;
+	molUserId: string;
+	UinFin: string;
 }
 
 export interface IService {
