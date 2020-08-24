@@ -7,6 +7,11 @@ import { Calendar, ServiceProvider, Unavailability } from "../../../models";
 import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
 import { ServiceProvidersRepository } from "../../serviceProviders/serviceProviders.repository";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 describe("Unavailabilities service tests", () => {
 	beforeAll(() => {
 		Container.bind(UnavailabilitiesRepository).to(UnavailabilitiesRepositoryMock);

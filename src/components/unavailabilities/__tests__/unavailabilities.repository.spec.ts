@@ -4,6 +4,11 @@ import { UnavailabilitiesRepository } from "../unavailabilities.repository";
 import { Unavailability } from "../../../models";
 import { SelectQueryBuilder } from "typeorm";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 describe("Unavailabilities repository", () => {
 	beforeEach(() => {
 		Container.bind(DbConnection).to(MockDBConnection);

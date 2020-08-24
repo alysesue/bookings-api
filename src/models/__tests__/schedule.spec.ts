@@ -1,22 +1,12 @@
-import { Container, Snapshot } from 'typescript-ioc';
 import { Schedule, WeekDaySchedule } from '../index';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Weekday } from '../../enums/weekday';
 import { TimeOfDay } from '../timeOfDay';
 import { WeekDayBreak } from '../entities/weekDayBreak';
 
-let snapshot: Snapshot;
-beforeAll(() => {
-	// Store the IoC configuration
-	snapshot = Container.snapshot();
-
-	// Clears mock counters, not implementation
-	jest.clearAllMocks();
-});
-
 afterAll(() => {
-	// Put the IoC configuration back for IService, so other tests can run.
-	snapshot.restore();
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
 });
 
 function createDayOfWeekTemplate(weekday: Weekday, openTime: string, closeTime: string, schedule: Schedule): WeekDaySchedule {

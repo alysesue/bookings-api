@@ -5,8 +5,8 @@
 	"scripts": {
 		"lint": "tslint -p ./tsconfig.json -c ./tslint.json ./src/**/*.ts",
 		"test": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
-		"atest": "npm run fixLF && node ./node_modules/jest/bin/jest.js",
-		"test:cov": "jest --collect-coverage",
+		"atest": "npm run fixLF && node --expose-gc ./node_modules/jest/bin/jest --runInBand",
+		"test:cov": "npm run fixLF && node --expose-gc ./node_modules/jest/bin/jest --runInBand --collect-coverage",
 		"test:func": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-functional.sh",
 		"test:func-local": "npm run fixLF && FUNCTIONAL_TEST_BASE_URL_LOCAL='http://localhost:3999/bookingsg/api/v1' npm run test:func local",
 		"build": "npm run fixLF && ./scripts/build.sh",
@@ -114,6 +114,7 @@
 		"@types/node": "^13.13.10",
 		"chalk": "^4.0.0",
 		"circular-dependency-plugin": "^5.2.0",
+		"copy-webpack-plugin": "^6.0.1",
 		"cpy-cli": "^3.1.1",
 		"faker": "^4.1.0",
 		"file-loader": "^6.0.0",

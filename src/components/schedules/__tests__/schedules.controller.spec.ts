@@ -1,40 +1,42 @@
-import { Container, Snapshot } from "typescript-ioc";
+import { Container } from "typescript-ioc";
 import { ScheduleRequest, WeekDayScheduleContract } from "../schedules.apicontract";
 import { SchedulesService } from "../schedules.service";
 import { SchedulesController } from "../schedules.controller";
 import { Weekday } from '../../../enums/weekday';
 
-const createSchedule = jest.fn();
-const getSchedules = jest.fn();
-const updateSchedule = jest.fn();
-const deleteSchedule = jest.fn();
-const MockSchedulesService = jest.fn().mockImplementation(() => {
-	return {createSchedule, getSchedules, updateSchedule, deleteSchedule};
-});
-
-let snapshot: Snapshot;
-beforeAll(() => {
-	// Store the IoC configuration
-	snapshot = Container.snapshot();
-
-	// Clears mock counters, not implementation
-	jest.clearAllMocks();
-});
-
 afterAll(() => {
-	// Put the IoC configuration back for IService, so other tests can run.
-	snapshot.restore();
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
 });
 
 beforeEach(() => {
 	jest.clearAllMocks();
 });
 
+jest.mock("mol-lib-common", () => {
+	const actual = jest.requireActual('mol-lib-common');
+	const mock = (config: any) => {
+		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
+	};
+	return {
+		...actual,
+		MOLAuth: mock
+	};
+});
+
+const createSchedule = jest.fn();
+const getSchedules = jest.fn();
+const updateSchedule = jest.fn();
+const deleteSchedule = jest.fn();
+const MockSchedulesService = jest.fn().mockImplementation(() => {
+	return { createSchedule, getSchedules, updateSchedule, deleteSchedule };
+});
+
 const timeslot = {
 	name: 'schedule',
 	slotsDurationInMin: 60,
 	weekdaySchedules: [
-		{weekday: Weekday.Monday, hasSchedule: true, openTime: '11:23', closeTime: '12:23'} as WeekDayScheduleContract
+		{ weekday: Weekday.Monday, hasSchedule: true, openTime: '11:23', closeTime: '12:23' } as WeekDayScheduleContract
 	]
 } as ScheduleRequest;
 

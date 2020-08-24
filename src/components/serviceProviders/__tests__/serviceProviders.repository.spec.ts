@@ -6,6 +6,11 @@ import { SchedulesRepository } from "../../schedules/schedules.repository";
 import { IEntityWithSchedule } from "../../../models/interfaces";
 import { TimeslotsScheduleRepository } from "../../timeslotsSchedules/timeslotsSchedule.repository";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 describe("Service Provider repository", () => {
 	beforeEach(() => {
 		jest.resetAllMocks();

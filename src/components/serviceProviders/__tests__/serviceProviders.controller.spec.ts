@@ -6,6 +6,22 @@ import { ServiceProviderModel, SetProviderScheduleRequest } from "../serviceProv
 import { CalendarsService } from "../../calendars/calendars.service";
 import { TimeslotItemRequest } from "../../timeslotItems/timeslotItems.apicontract";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
+jest.mock("mol-lib-common", () => {
+	const actual = jest.requireActual('mol-lib-common');
+	const mock = (config: any) => {
+		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
+	};
+	return {
+		...actual,
+		MOLAuth: mock
+	};
+});
+
 describe("ServiceProviders.Controller", () => {
 	const calendar = new Calendar();
 	const sp1 = ServiceProvider.create("Monica", calendar, 1);

@@ -5,6 +5,11 @@ import { Schedule, Service, TimeslotsSchedule } from "../../../models";
 import { SchedulesRepository } from '../../schedules/schedules.repository';
 import { TimeslotsScheduleRepository } from "../../timeslotsSchedules/timeslotsSchedule.repository";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 describe("Services repository", () => {
 	beforeEach(() => {
 		Container.bind(DbConnection).to(MockDBConnection);

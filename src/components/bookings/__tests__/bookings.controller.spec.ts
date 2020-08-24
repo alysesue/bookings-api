@@ -6,6 +6,22 @@ import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingSearchReq
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
+jest.mock("mol-lib-common", () => {
+	const actual = jest.requireActual('mol-lib-common');
+	const mock = (config: any) => {
+		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
+	};
+	return {
+		...actual,
+		MOLAuth: mock
+	};
+});
+
 describe("Bookings.Controller", () => {
 	beforeAll(() => {
 		Container.bind(BookingsService).to(BookingsServiceMock);

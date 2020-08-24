@@ -12,6 +12,11 @@ import { ServiceProvidersRepository } from '../../serviceProviders/serviceProvid
 import { DateHelper } from "../../../infrastructure/dateHelper";
 import { UnavailabilitiesService } from "../../unavailabilities/unavailabilities.service";
 
+afterAll(() => {
+	jest.resetAllMocks();
+	if (global.gc) global.gc();
+});
+
 describe("Bookings.Service", () => {
 	const calendar = new Calendar();
 	calendar.id = 1;
