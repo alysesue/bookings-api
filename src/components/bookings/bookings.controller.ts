@@ -114,7 +114,7 @@ export class BookingsController extends Controller {
 			bookingRequest.outOfSlotBooking = true;
 			const booking = await this.bookingsService.save(bookingRequest, serviceId);
 			this.setStatus(201);
-			return BookingsController.mapDataModel(booking);
+			return BookingsMapper.mapDataModel(booking);
 		}
 	}
 
