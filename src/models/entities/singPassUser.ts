@@ -1,6 +1,5 @@
 import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { IUser } from "../interfaces";
-import { User } from "./user";
 
 @Entity()
 export class SingPassUser {
@@ -23,7 +22,7 @@ export class SingPassUser {
 	public _User: IUser;
 
 	@Column({ nullable: false, type: "varchar", length: 20 })
-	@Index()
+	@Index({ unique: true })
 	private _UinFin: string;
 
 	public get UinFin(): string {
@@ -34,7 +33,7 @@ export class SingPassUser {
 		this._UinFin = value;
 	}
 
-	@Column()
+	@Column({ type: "uuid" })
 	@Index({ unique: true })
 	private _molUserId: string;
 

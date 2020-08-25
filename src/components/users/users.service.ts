@@ -11,9 +11,14 @@ export class UsersService {
 		if (!user)
 			return undefined;
 		let userRepo = await this.usersRepository.getUserByMolUserId(user.singPassUser.molUserId);
-		if (!userRepo)
-			userRepo = await this.usersRepository.save(user);
+		if (!userRepo) {
+			try {
+				userRepo = await this.usersRepository.save(user);
+			} catch {
+				// concurrency insert fail case
+				userRepo = await this.usersRepository.getUserByMolUserId(user.singPassUser.molUserId);
+			}
+		}
 		return userRepo;
 	}
-
 }

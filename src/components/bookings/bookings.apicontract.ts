@@ -19,9 +19,15 @@ export class BookingRequest {
 }
 
 export class CitizenBookingRequest extends BookingRequest {
+	/**
+	 * @ignore
+	 */
 	public userMolId?: string;
+	/**
+	 * @ignore
+	 */
 	public userUinFin?: string;
-	public static isCitizenBookingRequest = (p : any): p is CitizenBookingRequest => !!p.userMolId;
+	public static isCitizenBookingRequest = (p: any): p is CitizenBookingRequest => !!p.userMolId;
 }
 
 

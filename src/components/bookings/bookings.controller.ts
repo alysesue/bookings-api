@@ -1,5 +1,19 @@
 import { Inject } from "typescript-ioc";
-import { Body, Controller, Get, Header, Path, Post, Put, Query, Response, Route, Security, SuccessResponse, Tags } from "tsoa";
+import {
+	Body,
+	Controller,
+	Get,
+	Header,
+	Path,
+	Post,
+	Put,
+	Query,
+	Response,
+	Route,
+	Security,
+	SuccessResponse,
+	Tags
+} from "tsoa";
 import {
 	BookingAcceptRequest,
 	BookingRequest,
@@ -30,17 +44,20 @@ export class BookingsController extends Controller {
 	 * otherwise the status will be Pending (1) and will require approval by an admin.
 	 * @param bookingRequest
 	 * @param serviceId The service (id) to be booked.
-	 * @param userUinFin
-	 * @param userMolId
 	 */
 	@Post()
 	@SuccessResponse(201, 'Created')
 	@Security("service")
 	@MOLAuth({ user: { minLevel: MOLUserAuthLevel.L2 } })
 	@Response(401, 'Valid authentication types: [user]')
-	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number, @Header(MOLSecurityHeaderKeys.USER_UINFIN) userUinFin, @Header(MOLSecurityHeaderKeys.USER_ID) userMolId): Promise<any> {
+	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
 		bookingRequest.outOfSlotBooking = false;
-		const bookingRequestWithCitizen: CitizenBookingRequest = { ...bookingRequest, userUinFin, userMolId };
+		const headers = getRequestHeaders(this);
+		const bookingRequestWithCitizen: CitizenBookingRequest = {
+			...bookingRequest,
+			userUinFin: headers.get(MOLSecurityHeaderKeys.USER_UINFIN),
+			userMolId: headers.get(MOLSecurityHeaderKeys.USER_ID)
+		};
 		const booking = await this.bookingsService.save(bookingRequestWithCitizen, serviceId);
 		this.setStatus(201);
 		return BookingsMapper.mapDataModel(booking);

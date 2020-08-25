@@ -12,11 +12,12 @@ export class UsersRepository extends RepositoryBase<User> {
 	}
 
 	public async getUserByMolUserId(molUserId?: string): Promise<User> {
-		const repository = await this.getRepository();
+		if (!molUserId) return undefined;
 
+		const repository = await this.getRepository();
 		const molUserIdCondition = 'exists(select * from public.sing_pass_user as sg where sg."_userId" = u._id AND sg."_molUserId" = :molUserId)';
 		const query = repository.createQueryBuilder("u")
-			.where(molUserIdCondition, {molUserId})
+			.where(molUserIdCondition, { molUserId })
 			.leftJoinAndSelect("u._singPassUser", "singPass");
 
 		return await query.getOne();
