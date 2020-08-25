@@ -13,7 +13,7 @@ import { DateHelper } from "../../infrastructure/dateHelper";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
 import { UsersFactory } from "../users/users.factory";
-import { UsersRepository } from "../users/users.repository";
+import { UsersService } from "../users/users.service";
 
 @InRequestScope
 export class BookingsService {
@@ -26,21 +26,43 @@ export class BookingsService {
 	@Inject
 	private serviceProviderRepo: ServiceProvidersRepository;
 	@Inject
-	public unavailabilitiesService: UnavailabilitiesService;
+	private usersService: UsersService;
 	@Inject
-	private usersRepository: UsersRepository;
+	public unavailabilitiesService: UnavailabilitiesService;
 
     public formatEventId(event: string): string {
         return event.split("@")[0];
     }
 
-    public async getBooking(bookingId: number): Promise<Booking> {
-        const booking = await this.bookingsRepository.getBooking(bookingId);
-        if (!booking) {
-            throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingId} not found`);
-        }
-        return booking;
-    }
+	private async createBooking(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
+		const duration = Math.floor(DateHelper.DiffInMinutes(bookingRequest.endDateTime, bookingRequest.startDateTime));
+		if (duration <= 0) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('End time for booking must be greater than start time');
+		}
+
+		if (bookingRequest.serviceProviderId) {
+			const provider = await this.serviceProviderRepo.getServiceProvider({ id: bookingRequest.serviceProviderId });
+			if (!provider) {
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${bookingRequest.serviceProviderId}' not found`);
+			}
+		}
+		const booking = Booking.create(
+			serviceId,
+			bookingRequest.startDateTime,
+			bookingRequest.endDateTime,
+			bookingRequest.serviceProviderId,
+			bookingRequest.refId);
+		booking.citizenUser = UsersFactory.createUser(bookingRequest);
+		return booking;
+	}
+
+	public async getBooking(bookingId: number): Promise<Booking> {
+		const booking = await this.bookingsRepository.getBooking(bookingId);
+		if (!booking) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingId} not found`);
+		}
+		return booking;
+	}
 
 	public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
@@ -52,8 +74,7 @@ export class BookingsService {
 		} else {
 			await this.validateOutOfSlotBookings(booking);
 		}
-		const users = await this.usersRepository.getUserMolUserId(booking.citizenUser.singPassUser.molUserId);
-
+		booking.citizenUser = await this.usersService.save(booking?.citizenUser);
 		await this.bookingsRepository.save(booking);
 		return this.getBooking(booking.id);
 	}
