@@ -1,27 +1,34 @@
-import {ErrorCodeV2, MOLErrorV2} from "mol-lib-api-contract";
-import {Inject, InRequestScope} from "typescript-ioc";
-import {Booking, BookingStatus, ServiceProvider} from "../../models";
-import {BookingsRepository} from "./bookings.repository";
-import {BookingAcceptRequest, BookingRequest, BookingSearchRequest} from "./bookings.apicontract";
-import {TimeslotsService} from '../timeslots/timeslots.service';
-import {CalendarsService} from '../calendars/calendars.service';
-import {DateHelper} from "../../infrastructure/dateHelper";
-import {ServiceProvidersRepository} from "../serviceProviders/serviceProviders.repository";
-import {UnavailabilitiesService} from "../unavailabilities/unavailabilities.service";
-import {UsersFactory} from "../users/users.factory";
+import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
+import { Inject, InRequestScope } from "typescript-ioc";
+import { Booking, BookingStatus } from "../../models";
+import { BookingsRepository } from "./bookings.repository";
+import {
+	BookingAcceptRequest,
+	BookingRequest,
+	BookingSearchRequest
+} from "./bookings.apicontract";
+import { TimeslotsService } from '../timeslots/timeslots.service';
+import { CalendarsService } from '../calendars/calendars.service';
+import { DateHelper } from "../../infrastructure/dateHelper";
+import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
+import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
+import { UsersFactory } from "../users/users.factory";
+import { UsersRepository } from "../users/users.repository";
 
 @InRequestScope
 export class BookingsService {
-    @Inject
-    public unavailabilitiesService: UnavailabilitiesService;
-    @Inject
-    private bookingsRepository: BookingsRepository;
-    @Inject
-    private calendarsService: CalendarsService;
-    @Inject
-    private timeslotsService: TimeslotsService;
-    @Inject
-    private serviceProviderRepo: ServiceProvidersRepository;
+	@Inject
+	private bookingsRepository: BookingsRepository;
+	@Inject
+	private calendarsService: CalendarsService;
+	@Inject
+	private timeslotsService: TimeslotsService;
+	@Inject
+	private serviceProviderRepo: ServiceProvidersRepository;
+	@Inject
+	public unavailabilitiesService: UnavailabilitiesService;
+	@Inject
+	private usersRepository: UsersRepository;
 
     public formatEventId(event: string): string {
         return event.split("@")[0];
@@ -35,20 +42,21 @@ export class BookingsService {
         return booking;
     }
 
-    public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
-        // Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
-        // Method calls with different services, or timeslots should still run in parallel.
-        const booking = await this.createBooking(bookingRequest, serviceId);
+	public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
+		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
+		// Method calls with different services, or timeslots should still run in parallel.
+		const booking = await this.createBooking(bookingRequest, serviceId);
 
-        if (!bookingRequest.outOfSlotBooking) {
-            await this.validateTimeSlot(booking);
-        } else {
-            await this.validateOutOfSlotBookings(booking);
-        }
+		if (!bookingRequest.outOfSlotBooking) {
+			await this.validateTimeSlot(booking);
+		} else {
+			await this.validateOutOfSlotBookings(booking);
+		}
+		const users = await this.usersRepository.getUserMolUserId(booking.citizenUser.singPassUser.molUserId);
 
-        await this.bookingsRepository.save(booking);
-        return this.getBooking(booking.id);
-    }
+		await this.bookingsRepository.save(booking);
+		return this.getBooking(booking.id);
+	}
 
     public async cancelBooking(bookingId: number): Promise<Booking> {
         const booking = await this.getBookingForCancelling(bookingId);

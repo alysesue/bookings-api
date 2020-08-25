@@ -21,7 +21,9 @@ export class BookingRequest {
 export class CitizenBookingRequest extends BookingRequest {
 	public userMolId?: string;
 	public userUinFin?: string;
+	public static isCitizenBookingRequest = (p : any): p is CitizenBookingRequest => !!p.userMolId;
 }
+
 
 export class BookingResponse {
 	public id: number;

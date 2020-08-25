@@ -30,19 +30,17 @@ export class BookingsController extends Controller {
 	 * otherwise the status will be Pending (1) and will require approval by an admin.
 	 * @param bookingRequest
 	 * @param serviceId The service (id) to be booked.
+	 * @param userUinFin
+	 * @param userMolId
 	 */
 	@Post()
 	@SuccessResponse(201, 'Created')
 	@Security("service")
 	@MOLAuth({ user: { minLevel: MOLUserAuthLevel.L2 } })
 	@Response(401, 'Valid authentication types: [user]')
-	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
+	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number, @Header(MOLSecurityHeaderKeys.USER_UINFIN) userUinFin, @Header(MOLSecurityHeaderKeys.USER_ID) userMolId): Promise<any> {
 		bookingRequest.outOfSlotBooking = false;
-		const userUinFin = this.getHeader(MOLSecurityHeaderKeys.USER_UINFIN);
-		const userMolId = this.getHeader(MOLSecurityHeaderKeys.USER_ID);
-
 		const bookingRequestWithCitizen: CitizenBookingRequest = { ...bookingRequest, userUinFin, userMolId };
-
 		const booking = await this.bookingsService.save(bookingRequestWithCitizen, serviceId);
 		this.setStatus(201);
 		return BookingsMapper.mapDataModel(booking);
