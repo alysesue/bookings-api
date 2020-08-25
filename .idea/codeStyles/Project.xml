@@ -24,6 +24,9 @@
         <option name="ITERATION_ELEMENTS_WRAPPING" value="chop_down_if_not_single" />
       </formatting-settings>
     </DBN-SQL>
+    <TypeScriptCodeStyleSettings version="0">
+      <option name="SPACES_WITHIN_IMPORTS" value="true" />
+    </TypeScriptCodeStyleSettings>
     <codeStyleSettings language="TypeScript">
       <indentOptions>
         <option name="USE_TAB_CHARACTER" value="true" />

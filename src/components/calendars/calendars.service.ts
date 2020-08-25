@@ -1,9 +1,9 @@
-import {Inject, InRequestScope} from "typescript-ioc";
-import {Booking, Calendar} from "../../models";
-import {CalendarsRepository} from "./calendars.repository";
-import {GoogleCalendarService} from "../../googleapi/google.calendar.service";
-import {CalendarUserModel} from "./calendars.apicontract";
-import {isEmptyArray} from "../../tools/arrays";
+import { Inject, InRequestScope } from "typescript-ioc";
+import { Booking, Calendar } from "../../models";
+import { CalendarsRepository } from "./calendars.repository";
+import { GoogleCalendarService } from "../../googleapi/google.calendar.service";
+import { CalendarUserModel } from "./calendars.apicontract";
+import { isEmptyArray } from "../../tools/arrays";
 
 @InRequestScope
 export class CalendarsService {
@@ -50,7 +50,7 @@ export class CalendarsService {
 
 		const response = await this.googleCalendarApi.addCalendarUser(
 			calendar.googleCalendarId,
-			{ role: "reader", email: model.email }
+			{role: "reader", email: model.email}
 		);
 
 		return {
