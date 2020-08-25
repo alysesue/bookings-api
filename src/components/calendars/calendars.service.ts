@@ -1,10 +1,9 @@
-import { Inject, InRequestScope } from "typescript-ioc";
-import { Booking, Calendar } from "../../models";
-import { CalendarsRepository } from "./calendars.repository";
-import { GoogleCalendarService } from "../../googleapi/google.calendar.service";
-import { CalendarUserModel } from "./calendars.apicontract";
-import { BookingRequest } from "../bookings/bookings.apicontract";
-import { isEmptyArray } from "../../tools/arrays";
+import {Inject, InRequestScope} from "typescript-ioc";
+import {Booking, Calendar} from "../../models";
+import {CalendarsRepository} from "./calendars.repository";
+import {GoogleCalendarService} from "../../googleapi/google.calendar.service";
+import {CalendarUserModel} from "./calendars.apicontract";
+import {isEmptyArray} from "../../tools/arrays";
 
 @InRequestScope
 export class CalendarsService {
@@ -38,7 +37,7 @@ export class CalendarsService {
 		return calendars.filter((calendar) => isEmptyArray(googleCalendars[calendar.googleCalendarId].busy));
 	}
 
-	public async createCalendarEvent(booking: Booking | BookingRequest, calendar: Calendar): Promise<string> {
+	public async createCalendarEvent(booking: Booking, calendar: Calendar): Promise<string> {
 		return await this.googleCalendarApi.createEvent(booking, calendar.googleCalendarId);
 	}
 

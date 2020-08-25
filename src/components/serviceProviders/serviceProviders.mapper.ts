@@ -11,9 +11,6 @@ export class ServiceProvidersMapper {
     @Inject
     private calendarsMapper: CalendarsMapper;
 
-	@Inject
-	private bookingsMapper: BookingsMapper;
-
     public mapDataModel(spData: ServiceProvider): ServiceProviderResponseModel {
         const mappedCalendar = this.calendarsMapper.mapDataModel(spData.calendar);
         const mappedTimeslotSchedule = mapToTimeslotsScheduleResponse(spData.timeslotsSchedule);
@@ -36,7 +33,7 @@ export class ServiceProvidersMapper {
         const result: ServiceProviderSummaryModel[] = [];
 
         entries?.forEach((bookings, serviceProvider) => {
-            result.push(this.mapSummaryDataModel(serviceProvider, this.bookingsMapper.mapDataModels(bookings)));
+            result.push(this.mapSummaryDataModel(serviceProvider, BookingsMapper.mapDataModels(bookings)));
         });
         return result;
     }

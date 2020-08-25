@@ -5,8 +5,11 @@ export class AvailableTimeslotProviders {
     public startTime: Date;
     public endTime: Date;
     public pendingBookingsCount: number;
+
     private _relatedServiceProviders: ServiceProvider[];
     private _overlappingServiceProviders: ServiceProvider[];
+    private _bookedServiceProviders: Map<ServiceProvider, Booking[]>;
+    private _availableServiceProviders: ServiceProvider[];
 
     constructor() {
         this._relatedServiceProviders = [];
@@ -14,22 +17,6 @@ export class AvailableTimeslotProviders {
         this._overlappingServiceProviders = [];
         this._availableServiceProviders = [];
         this.pendingBookingsCount = 0;
-    }
-
-    private _bookedServiceProviders: Map<ServiceProvider, Booking[]>;
-
-    public get bookedServiceProviders(): Map<ServiceProvider, Booking[]> {
-        return this._bookedServiceProviders;
-    }
-
-    private _availableServiceProviders: ServiceProvider[];
-
-    public get availableServiceProviders(): ServiceProvider[] {
-        return this._availableServiceProviders;
-    }
-
-    public get availabilityCount(): number {
-        return Math.max(this._availableServiceProviders.length - this.pendingBookingsCount, 0);
     }
 
     public static empty(startTime: Date, endTime: Date): AvailableTimeslotProviders {
@@ -63,6 +50,18 @@ export class AvailableTimeslotProviders {
         });
 
         return instance;
+    }
+
+    public get bookedServiceProviders(): Map<ServiceProvider, Booking[]> {
+        return this._bookedServiceProviders;
+    }
+
+    public get availableServiceProviders(): ServiceProvider[] {
+        return this._availableServiceProviders;
+    }
+
+    public get availabilityCount(): number {
+        return Math.max(this._availableServiceProviders.length - this.pendingBookingsCount, 0);
     }
 
     public setRelatedServiceProviders(providers: ServiceProvider[]) {
