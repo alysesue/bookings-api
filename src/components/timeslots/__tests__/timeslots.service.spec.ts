@@ -1,4 +1,4 @@
-import { Container } from "typescript-ioc";
+import {Container} from "typescript-ioc";
 import {
 	Booking,
 	BookingStatus,
@@ -9,13 +9,13 @@ import {
 	TimeslotsSchedule,
 	Unavailability
 } from "../../../models";
-import { TimeslotsService } from "../timeslots.service";
-import { BookingsRepository } from "../../bookings/bookings.repository";
-import { DateHelper } from "../../../infrastructure/dateHelper";
-import { ServicesRepository } from '../../services/services.repository';
-import { ServiceProvidersRepository } from "../../serviceProviders/serviceProviders.repository";
-import { AvailableTimeslotProviders } from "../availableTimeslotProviders";
-import { UnavailabilitiesService } from "../../unavailabilities/unavailabilities.service";
+import {TimeslotsService} from "../timeslots.service";
+import {BookingsRepository} from "../../bookings/bookings.repository";
+import {DateHelper} from "../../../infrastructure/dateHelper";
+import {ServicesRepository} from '../../services/services.repository';
+import {ServiceProvidersRepository} from "../../serviceProviders/serviceProviders.repository";
+import {AvailableTimeslotProviders} from "../availableTimeslotProviders";
+import {UnavailabilitiesService} from "../../unavailabilities/unavailabilities.service";
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -137,9 +137,8 @@ describe("Timeslots Service", () => {
 		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 		expect(ProviderScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 
-		expect(result.bookedServiceProviders).toHaveLength(1);
+		expect(result.bookedServiceProviders.size).toBe(1);
 		expect(result.availableServiceProviders).toHaveLength(1);
-		expect(result.bookedServiceProviders[0].id).not.toBe(result.availableServiceProviders[0]);
 	});
 
 	it('should map accepted out-of-slot booking to timeslot response', async () => {
@@ -150,16 +149,17 @@ describe("Timeslots Service", () => {
 		const serviceProvider = ServiceProvider.create('Juku', undefined, 1);
 		serviceProvider.id = 1;
 
+		const testBooking = Booking.create(1, new Date(), new Date(), serviceProvider.id);
 		const availableTimeslotProvidersMock = new AvailableTimeslotProviders();
 		availableTimeslotProvidersMock.setRelatedServiceProviders([serviceProvider]);
-		availableTimeslotProvidersMock.setBookedServiceProviders([serviceProvider.id]);
+		availableTimeslotProvidersMock.setBookedServiceProviders([testBooking]);
 
 		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([getOutOfSlotBooking(serviceProvider)]));
 
 		const timeslots = await service.getAggregatedTimeslots(new Date(), new Date(), 1, true);
 
 		expect(timeslots.length).toBe(4);
-		expect(setBookedServiceProviders).toHaveBeenCalledWith([serviceProvider.id]);
+		expect(setBookedServiceProviders).toHaveBeenCalledWith([testBooking]);
 	});
 
 	it('should merge bookings with same time range', async () => {
@@ -172,11 +172,14 @@ describe("Timeslots Service", () => {
 		serviceProvider1.id = 1;
 		serviceProvider2.id = 2;
 
-		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([getOutOfSlotBooking(serviceProvider1), getOutOfSlotBooking(serviceProvider2)]));
+		const testBooking1 = getOutOfSlotBooking(serviceProvider1);
+		const testBooking2 = getOutOfSlotBooking(serviceProvider2);
+
+		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([testBooking1, testBooking2]));
 
 		await service.getAggregatedTimeslots(new Date(), new Date(), 1, true);
 
-		expect(setBookedServiceProviders).toHaveBeenCalledWith([serviceProvider1.id, serviceProvider2.id]);
+		expect(setBookedServiceProviders).toHaveBeenCalledWith([testBooking1, testBooking2]);
 	});
 });
 

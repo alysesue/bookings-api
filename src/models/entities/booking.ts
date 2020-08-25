@@ -1,9 +1,9 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { BookingStatus } from "../bookingStatus";
-import { ServiceProvider } from './serviceProvider';
-import { Service } from "./service";
+import {Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
+import {BookingStatus} from "../bookingStatus";
+import {ServiceProvider} from './serviceProvider';
+import {Service} from "./service";
 import * as timeSpan from "../../tools/timeSpan";
-import { User } from "./user";
+import {User} from "./user";
 
 @Entity()
 export class Booking {
@@ -141,14 +141,13 @@ export class Booking {
 		return timeSpan.intersectsDateTimeSpan(other, this.startDateTime, this.endDateTime);
 	}
 
-	public static create(serviceId: number, startDateTime: Date, endDateTime: Date, serviceProviderId?: number, refId?: string, eventICalId?: string) {
+	public static create(serviceId: number, startDateTime: Date, endDateTime: Date, serviceProviderId?: number, refId?: string) {
 		const instance = new Booking();
 		instance._serviceId = serviceId;
 		instance._startDateTime = startDateTime;
 		instance._endDateTime = endDateTime;
 		instance._createdAt = new Date();
 		instance._refId = refId;
-		instance._eventICalId = eventICalId;
 
 		if (serviceProviderId) {
 			instance._serviceProviderId = serviceProviderId;

@@ -1,32 +1,18 @@
 import { Inject } from "typescript-ioc";
-import {
-	Body,
-	Controller,
-	Get,
-	Header,
-	Path,
-	Post,
-	Put,
-	Query,
-	Response,
-	Route,
-	Security,
-	SuccessResponse,
-	Tags
-} from "tsoa";
+import { Body, Controller, Get, Header, Path, Post, Put, Query, Response, Route, Security, SuccessResponse, Tags } from "tsoa";
 import {
 	BookingAcceptRequest,
 	BookingRequest,
-	CitizenBookingRequest,
 	BookingResponse,
-	BookingSearchRequest
+	BookingSearchRequest,
+	CitizenBookingRequest
 } from "./bookings.apicontract";
 import { BookingsService } from "./bookings.service";
 import { TimeslotsService } from "../timeslots/timeslots.service";
 import { MOLAuth } from "mol-lib-common";
 import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
 import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
-import {BookingsMapper} from "./bookings.mapper";
+import { BookingsMapper } from "./bookings.mapper";
 
 @Route("v1/bookings")
 @Tags('Bookings')
@@ -36,9 +22,6 @@ export class BookingsController extends Controller {
 
 	@Inject
 	private timeslotService: TimeslotsService;
-
-	@Inject
-	private bookingsMapper: BookingsMapper;
 
 	/**
 	 * Creates a new booking.
@@ -62,7 +45,7 @@ export class BookingsController extends Controller {
 
 		const booking = await this.bookingsService.save(bookingRequestWithCitizen, serviceId);
 		this.setStatus(201);
-		return this.bookingsMapper.mapDataModel(booking);
+		return BookingsMapper.mapDataModel(booking);
 	}
 
 	/**
@@ -81,7 +64,7 @@ export class BookingsController extends Controller {
 		bookingRequest.outOfSlotBooking = true;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
-		return this.bookingsMapper.mapDataModel(booking);
+		return BookingsMapper.mapDataModel(booking);
 	}
 
 	/**
@@ -158,7 +141,7 @@ export class BookingsController extends Controller {
 
 		const searchQuery = new BookingSearchRequest(from, to, status, serviceId);
 		const bookings = await this.bookingsService.searchBookings(searchQuery);
-		return this.bookingsMapper.mapDataModels(bookings);
+		return BookingsMapper.mapDataModels(bookings);
 	}
 
 	/**
@@ -174,7 +157,7 @@ export class BookingsController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,user]')
 	public async getBooking(@Path() bookingId: number): Promise<any> {
 		const booking = await this.bookingsService.getBooking(bookingId);
-		return this.bookingsMapper.mapDataModel(booking);
+		return BookingsMapper.mapDataModel(booking);
 	}
 
 	/**
@@ -192,6 +175,6 @@ export class BookingsController extends Controller {
 		const booking = await this.bookingsService.getBooking(bookingId);
 
 		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.endDateTime, booking.serviceId);
-		return timeslotEntry.availableServiceProviders.map(this.bookingsMapper.mapProvider) || [];
+		return timeslotEntry.availableServiceProviders.map(BookingsMapper.mapProvider) || [];
 	}
 }

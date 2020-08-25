@@ -3,7 +3,6 @@ import { Booking, Calendar } from "../../models";
 import { CalendarsRepository } from "./calendars.repository";
 import { GoogleCalendarService } from "../../googleapi/google.calendar.service";
 import { CalendarUserModel } from "./calendars.apicontract";
-import { BookingRequest } from "../bookings/bookings.apicontract";
 import { isEmptyArray } from "../../tools/arrays";
 
 @InRequestScope
@@ -38,7 +37,7 @@ export class CalendarsService {
 		return calendars.filter((calendar) => isEmptyArray(googleCalendars[calendar.googleCalendarId].busy));
 	}
 
-	public async createCalendarEvent(booking: Booking | BookingRequest, calendar: Calendar): Promise<string> {
+	public async createCalendarEvent(booking: Booking, calendar: Calendar): Promise<string> {
 		return await this.googleCalendarApi.createEvent(booking, calendar.googleCalendarId);
 	}
 
@@ -51,7 +50,7 @@ export class CalendarsService {
 
 		const response = await this.googleCalendarApi.addCalendarUser(
 			calendar.googleCalendarId,
-			{ role: "reader", email: model.email }
+			{role: "reader", email: model.email}
 		);
 
 		return {
