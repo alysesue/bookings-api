@@ -2,6 +2,7 @@ import { Controller, Get, Response, Route, Tags, } from "tsoa";
 import { MOLAuth } from "mol-lib-common";
 import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
 import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
+import { getRequestHeaders } from "../../infrastructure/requestHelper";
 
 @Route("v1/users")
 @Tags('Users')
@@ -19,8 +20,10 @@ export class UsersController extends Controller {
 	})
 	@Response(401, 'Valid authentication types: [admin,user]')
 	public async getProfile(): Promise<any> {
+		const headers = getRequestHeaders(this);
+
 		return {
-			uinfin: this.getHeader(MOLSecurityHeaderKeys.USER_UINFIN)
+			uinfin: headers.get(MOLSecurityHeaderKeys.USER_UINFIN)
 		};
 	}
 }

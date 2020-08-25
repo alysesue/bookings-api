@@ -3,7 +3,7 @@ import { IUser } from "../interfaces";
 import { User } from "./user";
 
 @Entity()
-export class SingPassUser{
+export class SingPassUser {
 	constructor() {
 	}
 
@@ -18,8 +18,8 @@ export class SingPassUser{
 		this._id = value;
 	}
 
-	@OneToOne( 'User')
-	@JoinColumn({name: "_userId"})
+	@OneToOne('User', { nullable: false })
+	@JoinColumn({ name: "_userId" })
 	public _User: IUser;
 
 	@Column({ nullable: false, type: "varchar", length: 20 })
