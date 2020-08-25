@@ -1,4 +1,4 @@
-import { Container, Snapshot } from 'typescript-ioc';
+import { Container } from 'typescript-ioc';
 import { CalDavProxyHandler } from '../caldavproxy.handler';
 import { Context } from "koa";
 import * as KoaProxy from 'koa-proxy';

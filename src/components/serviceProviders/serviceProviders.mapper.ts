@@ -5,12 +5,15 @@ import { CalendarsMapper } from "../calendars/calendars.mapper";
 import { ServiceProviderResponseModel, ServiceProviderSummaryModel } from "./serviceProviders.apicontract";
 import { mapToTimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.mapper";
 import { BookingResponse } from "../bookings/bookings.apicontract";
-import { BookingsController } from "../bookings";
+import {BookingsMapper} from "../bookings/bookings.mapper";
 
 @InRequestScope
 export class ServiceprovidersMapper {
 	@Inject
 	private calendarsMapper: CalendarsMapper;
+
+	@Inject
+	private bookingsMapper: BookingsMapper;
 
 	public mapDataModel(spData: ServiceProvider): ServiceProviderResponseModel {
 		const mappedCalendar = this.calendarsMapper.mapDataModel(spData.calendar);
@@ -32,6 +35,6 @@ export class ServiceprovidersMapper {
 
 	public mapBookedServiceProviderEntries(entries: ServiceProvider[], bookings: Booking[]): ServiceProviderSummaryModel[] {
 		return entries.map(item => this.mapSummaryDataModel(
-			item, BookingsController.mapDataModels(bookings.filter(booking => booking.serviceProviderId === item.id))));
+			item, this.bookingsMapper.mapDataModels(bookings.filter(booking => booking.serviceProviderId === item.id))));
 	}
 }

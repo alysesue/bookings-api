@@ -1,5 +1,3 @@
-import { values } from "lodash";
-
 export type Selector<TOrigin, TDest> = (origin: TOrigin) => TDest;
 
 export function groupByKey<TKey, TValue>(elements: TValue[], keySelector: Selector<TValue, TKey>): Map<TKey, TValue[]> {
