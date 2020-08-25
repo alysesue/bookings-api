@@ -1,5 +1,5 @@
 import { Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import {  IUser } from "../interfaces";
+import { IUser } from "../interfaces";
 import { SingPassUser } from "./singPassUser";
 
 @Entity()
@@ -18,7 +18,7 @@ export class User implements IUser {
 		this._id = value;
 	}
 
-	@OneToOne(type => SingPassUser, { cascade: true })
+	@OneToOne(type => SingPassUser, e => e._User, { cascade: true })
 	public _singPassUser: SingPassUser;
 
 	public get singPassUser(): SingPassUser {
