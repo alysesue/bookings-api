@@ -1,10 +1,10 @@
-import { Inject } from "typescript-ioc";
-import { Body, Controller, Get, Header, Post, Query, Response, Route, Security, SuccessResponse, Tags, } from "tsoa";
-import { UnavailabilitiesService } from "./unavailabilities.service";
-import { UnavailabilityRequest, UnavailabilityResponse } from "./unavailabilities.apicontract";
-import { Unavailability } from "../../models";
-import { ServiceprovidersMapper } from "../serviceProviders/serviceProviders.mapper";
-import { MOLAuth } from "mol-lib-common";
+import {Inject} from "typescript-ioc";
+import {Body, Controller, Get, Header, Post, Query, Response, Route, Security, SuccessResponse, Tags,} from "tsoa";
+import {UnavailabilitiesService} from "./unavailabilities.service";
+import {UnavailabilityRequest, UnavailabilityResponse} from "./unavailabilities.apicontract";
+import {Unavailability} from "../../models";
+import {ServiceProvidersMapper} from "../serviceProviders/serviceProviders.mapper";
+import {MOLAuth} from "mol-lib-common";
 
 @Route("v1/unavailabilities")
 @Tags('Unavailabilities')
@@ -12,10 +12,10 @@ export class UnavailabilitiesController extends Controller {
 	@Inject
 	private unavailabilitiesService: UnavailabilitiesService;
 	@Inject
-	private serviceprovidersMapper: ServiceprovidersMapper;
+	private serviceProvidersMapper: ServiceProvidersMapper;
 
 	private mapToResponse(data: Unavailability): UnavailabilityResponse {
-		const serviceProviders = this.serviceprovidersMapper.mapSummaryDataModels(data.serviceProviders);
+		const serviceProviders = this.serviceProvidersMapper.mapSummaryDataModels(data.serviceProviders);
 		return {
 			startTime: data.start,
 			endTime: data.end,

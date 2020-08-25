@@ -1,14 +1,14 @@
-import { Inject, Scope, Scoped } from "typescript-ioc";
-import { AggregatedEntry, TimeslotAggregator } from "./timeslotAggregator";
-import { Booking, BookingStatus, ServiceProvider, Timeslot } from '../../models';
-import { DateHelper } from "../../infrastructure/dateHelper";
-import { BookingsRepository } from "../bookings/bookings.repository";
-import { groupByKey } from '../../tools/collections';
-import { ServicesRepository } from "../services/services.repository";
-import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
-import { AvailableTimeslotProviders } from './availableTimeslotProviders';
-import { BookingSearchRequest } from "../bookings/bookings.apicontract";
-import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
+import {Inject, Scope, Scoped} from "typescript-ioc";
+import {AggregatedEntry, TimeslotAggregator} from "./timeslotAggregator";
+import {Booking, BookingStatus, ServiceProvider, Timeslot} from '../../models';
+import {DateHelper} from "../../infrastructure/dateHelper";
+import {BookingsRepository} from "../bookings/bookings.repository";
+import {groupByKey} from '../../tools/collections';
+import {ServicesRepository} from "../services/services.repository";
+import {ServiceProvidersRepository} from "../serviceProviders/serviceProviders.repository";
+import {AvailableTimeslotProviders} from './availableTimeslotProviders';
+import {BookingSearchRequest} from "../bookings/bookings.apicontract";
+import {UnavailabilitiesService} from "../unavailabilities/unavailabilities.service";
 
 @Scoped(Scope.Request)
 export class TimeslotsService {
@@ -70,6 +70,15 @@ export class TimeslotsService {
 		return timeslotEntry || AvailableTimeslotProviders.empty(startDateTime, endDateTime);
 	}
 
+	private static setPendingTimeslots(entries: AvailableTimeslotProviders[], pendingBookings: Booking[]): void {
+		const pendingBookingsLookup = groupByKey(pendingBookings, TimeslotsService.bookingKeySelector);
+
+		for (const element of entries) {
+			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
+			element.pendingBookingsCount = pendingBookingsLookup.get(elementKey)?.length || 0;
+		}
+	}
+
 	public async getAggregatedTimeslots(startDateTime: Date, endDateTime: Date, serviceId: number, includeBookings: boolean = false, serviceProviderId?: number): Promise<AvailableTimeslotProviders[]> {
 		let aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime, serviceId);
 		const bookings = await this.bookingsRepository.search(
@@ -96,8 +105,7 @@ export class TimeslotsService {
 		}
 
 		this.setBookedProviders(mappedEntries, acceptedBookings);
-		this.setPendingTimeslots(mappedEntries, pendingBookings);
-		this.setBookings(mappedEntries, acceptedBookings);
+		TimeslotsService.setPendingTimeslots(mappedEntries, pendingBookings);
 
 		if (serviceProviderId) {
 			for (const entry of mappedEntries) {
@@ -106,15 +114,6 @@ export class TimeslotsService {
 		}
 
 		return mappedEntries;
-	}
-
-	private setPendingTimeslots(entries: AvailableTimeslotProviders[], pendingBookings: Booking[]): void {
-		const pendingBookingsLookup = groupByKey(pendingBookings, TimeslotsService.bookingKeySelector);
-
-		for (const element of entries) {
-			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
-			element.pendingBookingsCount = pendingBookingsLookup.get(elementKey)?.length || 0;
-		}
 	}
 
 	private async filterUnavailabilities(startDateTime: Date, endDateTime: Date, serviceId: number, entries: AvailableTimeslotProviders[])
@@ -129,7 +128,7 @@ export class TimeslotsService {
 			}
 		}
 
-		return entries.filter(e => e.availableServiceProviders.length > 0 || e.bookedServiceProviders.length > 0);
+		return entries.filter(e => e.availableServiceProviders.length > 0 || Array.from(e.bookedServiceProviders.keys()).length > 0);
 	}
 
 	private setBookedProviders(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {
@@ -144,19 +143,7 @@ export class TimeslotsService {
 			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
 			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
 			if (acceptedBookingsForTimeslot) {
-				element.setBookedServiceProviders(acceptedBookingsForTimeslot.map(booking => booking.serviceProviderId));
-			}
-		}
-	}
-
-	private setBookings(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {
-		const acceptedBookingsLookup = groupByKey(acceptedBookings, TimeslotsService.bookingKeySelector);
-
-		for (const element of entries) {
-			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
-			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
-			if (acceptedBookingsForTimeslot) {
-				element.setBookings(acceptedBookingsForTimeslot.map(booking => booking));
+				element.setBookedServiceProviders(acceptedBookingsForTimeslot);
 			}
 		}
 	}
