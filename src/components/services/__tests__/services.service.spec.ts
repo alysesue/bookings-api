@@ -111,7 +111,6 @@ describe('Services service tests', () => {
 	});
 
 	it('should throw service not found', async () => {
-		// ServicesRepoMock.get.mockImplementation(() => Promise.resolve(null));
 		SchedulesServiceMock.getSchedule.mockImplementation(() => Promise.resolve(new Schedule()));
 
 		await expect(async () => {
