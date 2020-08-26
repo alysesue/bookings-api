@@ -1,14 +1,14 @@
-import {Inject, Scope, Scoped} from "typescript-ioc";
-import {AggregatedEntry, TimeslotAggregator} from "./timeslotAggregator";
-import {Booking, BookingStatus, ServiceProvider, Timeslot} from '../../models';
-import {DateHelper} from "../../infrastructure/dateHelper";
-import {BookingsRepository} from "../bookings/bookings.repository";
-import {groupByKey} from '../../tools/collections';
-import {ServicesRepository} from "../services/services.repository";
-import {ServiceProvidersRepository} from "../serviceProviders/serviceProviders.repository";
-import {AvailableTimeslotProviders} from './availableTimeslotProviders';
-import {BookingSearchRequest} from "../bookings/bookings.apicontract";
-import {UnavailabilitiesService} from "../unavailabilities/unavailabilities.service";
+import { Inject, Scope, Scoped } from "typescript-ioc";
+import { AggregatedEntry, TimeslotAggregator } from "./timeslotAggregator";
+import { Booking, BookingStatus, ServiceProvider, Timeslot } from '../../models';
+import { DateHelper } from "../../infrastructure/dateHelper";
+import { BookingsRepository } from "../bookings/bookings.repository";
+import { groupByKey } from '../../tools/collections';
+import { ServicesRepository } from "../services/services.repository";
+import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
+import { AvailableTimeslotProviders } from './availableTimeslotProviders';
+import { BookingSearchRequest } from "../bookings/bookings.apicontract";
+import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
 
 @Scoped(Scope.Request)
 export class TimeslotsService {
@@ -128,7 +128,7 @@ export class TimeslotsService {
 			}
 		}
 
-		return entries.filter(e => e.availableServiceProviders.length > 0 || Array.from(e.bookedServiceProviders.keys()).length > 0);
+		return entries.filter(e => e.availableServiceProviders.length > 0 || e.bookedServiceProviders.size > 0);
 	}
 
 	private setBookedProviders(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {
