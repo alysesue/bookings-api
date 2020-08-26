@@ -5,11 +5,18 @@ import { BookingsService } from "../bookings.service";
 import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingSearchRequest } from "../bookings.apicontract";
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
+import { getRequestHeaders } from "../../../infrastructure/requestHelper";
+import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
+import { MOLAuthType } from "mol-lib-api-contract/auth/common/MOLAuthType";
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
+
+jest.mock('../../../infrastructure/requestHelper', () =>({
+	getRequestHeaders: jest.fn()
+}));
 
 jest.mock("mol-lib-common", () => {
 	const actual = jest.requireActual('mol-lib-common');
@@ -99,6 +106,13 @@ describe("Bookings.Controller", () => {
 	it('should post booking', async () => {
 		BookingsServiceMock.mockPostBooking = Promise.resolve(Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00')));
 		const controller = Container.get(BookingsController);
+		const headers = {
+			[MOLSecurityHeaderKeys.USER_UINFIN] : MOLAuthType.USER,
+			[MOLSecurityHeaderKeys.USER_ID] : 'abc',
+		};
+
+		(controller as any).context = { headers };
+		(getRequestHeaders as jest.Mock).mockReturnValue({ get: () => headers });
 
 		const result = await controller.postBooking(new BookingRequest(), 1);
 

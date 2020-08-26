@@ -21,7 +21,6 @@ export class UsersController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,user]')
 	public async getProfile(): Promise<any> {
 		const headers = getRequestHeaders(this);
-
 		return {
 			uinfin: headers.get(MOLSecurityHeaderKeys.USER_UINFIN)
 		};

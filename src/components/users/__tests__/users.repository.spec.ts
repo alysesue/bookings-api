@@ -12,17 +12,31 @@ const userMock = new User();
 
 describe("User repository", () => {
 	beforeEach(() => {
+		Container.bind(DbConnection).to(MockDBConnection);
 		jest.resetAllMocks();
 	});
 
 	it("should save user", async () => {
-		Container.bind(DbConnection).to(MockDBConnection);
 		const saveResult = [{ id: "abc" }];
 		MockDBConnection.save.mockImplementation(() => saveResult);
 		const userRepository = Container.get(UsersRepository);
 
 		const result = await userRepository.save({} as User);
 		expect(result).toStrictEqual([{ id: "abc" }]);
+	});
+
+	it('Should call createQueryBuilder', async () => {
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			orderBy: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve([userMock])),
+		};
+		MockDBConnection.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		const userRepository = Container.get(UsersRepository);
+
+		const result = await userRepository.getUserByMolUserId("molUserId");
+		expect(result).toStrictEqual([userMock]);
 	});
 });
 
