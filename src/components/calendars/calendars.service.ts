@@ -50,7 +50,7 @@ export class CalendarsService {
 
 		const response = await this.googleCalendarApi.addCalendarUser(
 			calendar.googleCalendarId,
-			{ role: "reader", email: model.email }
+			{role: "reader", email: model.email}
 		);
 
 		return {

@@ -1,10 +1,12 @@
 import { Container } from "typescript-ioc";
 import { BookingsController } from "../index";
 import { BookingsRepository } from "../bookings.repository";
-import { Booking, BookingStatus, Calendar, Service, ServiceProvider } from "../../../models";
+import {Booking, BookingStatus, Calendar, Service, ServiceProvider} from "../../../models";
 import { CalendarsRepository } from "../../calendars/calendars.repository";
 import { GoogleApi } from "../../../googleapi/google.api";
+// @ts-ignore
 import * as insertEventResponse from "./createEventResponse.json";
+// @ts-ignore
 import * as freebusyResponse from "./freebusyResponse.json";
 import { BookingAcceptRequest } from "../bookings.apicontract";
 import { TimeslotsService } from '../../timeslots/timeslots.service';

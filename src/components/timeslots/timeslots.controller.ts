@@ -1,11 +1,11 @@
-import { Inject } from "typescript-ioc";
-import { Controller, Get, Header, Query, Response, Route, Security, Tags, } from "tsoa";
-import { AvailabilityEntryResponse, TimeslotEntryResponse } from "./timeslots.apicontract";
-import { TimeslotsService } from './timeslots.service';
-import { AvailableTimeslotProviders } from './availableTimeslotProviders';
-import { ServiceprovidersMapper } from "../serviceProviders/serviceProviders.mapper";
-import { MOLAuth } from "mol-lib-common";
-import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
+import {Inject} from "typescript-ioc";
+import {Controller, Get, Header, Query, Response, Route, Security, Tags,} from "tsoa";
+import {AvailabilityEntryResponse, TimeslotEntryResponse} from "./timeslots.apicontract";
+import {TimeslotsService} from './timeslots.service';
+import {AvailableTimeslotProviders} from './availableTimeslotProviders';
+import {ServiceProvidersMapper} from "../serviceProviders/serviceProviders.mapper";
+import {MOLAuth} from "mol-lib-common";
+import {MOLUserAuthLevel} from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
 
 @Route("v1/timeslots")
 @Tags('Timeslots')
@@ -14,7 +14,7 @@ export class TimeslotsController extends Controller {
 	private timeslotsService: TimeslotsService;
 
 	@Inject
-	private serviceProviderMapper: ServiceprovidersMapper;
+	private serviceProviderMapper: ServiceProvidersMapper;
 
 	/**
 	 * Retrieves available timeslots for a service in a defined datetime range [startDate, endDate].
@@ -39,7 +39,7 @@ export class TimeslotsController extends Controller {
 	}
 
 	/**
-	 * Retrieves timeslots (available and booked) for a service in a defined datetime range [startDate, endDate].
+	 * Retrieves timeslots (available and booked) and accepted bookings for a service in a defined datetime range [startDate, endDate].
 	 * Availability count returned may be zero.
 	 * Pending and accepted bookings count towards availability quota.
 	 * @param startDate The lower bound limit for timeslots' startDate.
@@ -80,7 +80,7 @@ export class TimeslotsController extends Controller {
 		response.endTime = entry.endTime;
 		response.availabilityCount = entry.availabilityCount;
 		response.pendingBookingsCount = entry.pendingBookingsCount;
-		response.bookedServiceProviders = this.serviceProviderMapper.mapSummaryDataModels(entry.bookedServiceProviders);
+		response.bookedServiceProviders = this.serviceProviderMapper.mapBookedServiceProviderEntries(entry.bookedServiceProviders);
 		response.availableServiceProviders = this.serviceProviderMapper.mapSummaryDataModels(entry.availableServiceProviders);
 		return response;
 	}

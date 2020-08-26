@@ -1,9 +1,9 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { BookingStatus } from "../bookingStatus";
-import { ServiceProvider } from './serviceProvider';
-import { Service } from "./service";
+import {Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
+import {BookingStatus} from "../bookingStatus";
+import {ServiceProvider} from './serviceProvider';
+import {Service} from "./service";
 import * as timeSpan from "../../tools/timeSpan";
-import { User } from "./user";
+import {User} from "./user";
 
 @Entity()
 export class Booking {
@@ -48,10 +48,6 @@ export class Booking {
 	@Column({ nullable: true })
 	private _serviceProviderId?: number;
 
-	@Column({ nullable: true })
-	private _outOfSlotBooking?: boolean;
-
-
 	@ManyToOne(type => User, { cascade: true, nullable: true })
 	@JoinColumn({ name: '_citizenUserId' })
 	private _citizenUser: User;
@@ -68,10 +64,6 @@ export class Booking {
 	}
 
 	constructor() {
-	}
-
-	public get outOfSlotBooking(): boolean | undefined {
-		return this._outOfSlotBooking;
 	}
 
 	public get id(): number {

@@ -1,5 +1,6 @@
 import { CalendarModel } from '../calendars/calendars.apicontract';
 import { TimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.apicontract";
+import { BookingResponse } from "../bookings/bookings.apicontract";
 
 export class ServiceProviderModel {
 	public name: string;
@@ -41,9 +42,11 @@ export class SetProviderScheduleRequest {
 export class ServiceProviderSummaryModel {
 	public id: number;
 	public name: string;
+	public bookings?: BookingResponse[];
 
-	constructor(id: number, name: string) {
+	constructor(id: number, name: string, bookings?: BookingResponse[]) {
 		this.id = id;
 		this.name = name;
+		this.bookings = bookings;
 	}
 }
