@@ -103,7 +103,7 @@ export class BookingsController extends Controller {
 	 * @param bookingRequest
 	 * @param serviceId The service (id) to be booked.
 	 */
-	@Put('{bookingId}/update')
+	@Put('{bookingId}')
 	@SuccessResponse(201, 'Updated')
 	@Security("service")
 	@MOLAuth({ admin: {} })
