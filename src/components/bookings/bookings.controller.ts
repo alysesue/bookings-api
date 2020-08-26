@@ -1,5 +1,5 @@
-import {Inject} from "typescript-ioc";
-import {Body, Controller, Get, Header, Path, Post, Query, Response, Route, Security, SuccessResponse, Tags} from "tsoa";
+import { Inject } from "typescript-ioc";
+import { Body, Controller, Get, Header, Path, Post, Put, Query, Response, Route, Security, SuccessResponse, Tags } from "tsoa";
 import {
 	BookingAcceptRequest,
 	BookingRequest,
@@ -7,12 +7,12 @@ import {
 	BookingSearchRequest,
 	CitizenBookingRequest
 } from "./bookings.apicontract";
-import {BookingsService} from "./bookings.service";
-import {TimeslotsService} from "../timeslots/timeslots.service";
-import {MOLAuth} from "mol-lib-common";
-import {MOLUserAuthLevel} from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
-import {MOLSecurityHeaderKeys} from "mol-lib-api-contract/auth/common/mol-security-headers";
-import {BookingsMapper} from "./bookings.mapper";
+import { BookingsService } from "./bookings.service";
+import { TimeslotsService } from "../timeslots/timeslots.service";
+import { MOLAuth } from "mol-lib-common";
+import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
+import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
+import { BookingsMapper } from "./bookings.mapper";
 
 @Route("v1/bookings")
 @Tags('Bookings')
@@ -93,6 +93,29 @@ export class BookingsController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,user]')
 	public async cancelBooking(@Path() bookingId: number): Promise<any> {
 		await this.bookingsService.cancelBooking(bookingId);
+	}
+
+
+	/**
+	 * Updates an existing booking.
+	 * It will delete the exisitng booking and re-create a new booking based on request data.
+	 * @param bookingId The booking id.
+	 * @param bookingRequest
+	 * @param serviceId The service (id) to be booked.
+	 */
+	@Put('{bookingId}')
+	@SuccessResponse(201, 'Updated')
+	@Security("service")
+	@MOLAuth({ admin: {} })
+	@Response(401, 'Valid authentication types: [admin]')
+	public async updateBooking(@Path() bookingId: number, @Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
+		const deletedBooking = await this.bookingsService.cancelBooking(bookingId);
+		if (deletedBooking) {
+			bookingRequest.outOfSlotBooking = true;
+			const booking = await this.bookingsService.save(bookingRequest, serviceId);
+			this.setStatus(201);
+			return BookingsMapper.mapDataModel(booking);
+		}
 	}
 
 	/**
