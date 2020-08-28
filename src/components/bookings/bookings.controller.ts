@@ -1,11 +1,24 @@
 import { Inject } from "typescript-ioc";
-import { Body, Controller, Get, Header, Path, Post, Put, Query, Response, Route, Security, SuccessResponse, Tags } from "tsoa";
+import {
+	Body,
+	Controller,
+	Get,
+	Header,
+	Path,
+	Post,
+	Put,
+	Query,
+	Response,
+	Route,
+	Security,
+	SuccessResponse,
+	Tags
+} from "tsoa";
 import {
 	BookingAcceptRequest,
 	BookingRequest,
 	BookingResponse,
 	BookingSearchRequest,
-	CitizenBookingRequest
 } from "./bookings.apicontract";
 import { BookingsService } from "./bookings.service";
 import { TimeslotsService } from "../timeslots/timeslots.service";
@@ -13,6 +26,7 @@ import { MOLAuth } from "mol-lib-common";
 import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
 import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
 import { BookingsMapper } from "./bookings.mapper";
+import { getRequestHeaders } from "../../infrastructure/requestHelper";
 
 @Route("v1/bookings")
 @Tags('Bookings')
@@ -38,11 +52,14 @@ export class BookingsController extends Controller {
 	@Response(401, 'Valid authentication types: [user]')
 	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
 		bookingRequest.outOfSlotBooking = false;
-		const userUinFin = this.getHeader(MOLSecurityHeaderKeys.USER_UINFIN);
-		const userMolId = this.getHeader(MOLSecurityHeaderKeys.USER_ID);
-
-		const bookingRequestWithCitizen: CitizenBookingRequest = { ...bookingRequest, userUinFin, userMolId };
-
+		const headers = getRequestHeaders(this);
+		const bookingRequestWithCitizen = {
+			...bookingRequest,
+			createdByUser: {
+				userUinFin: headers.get(MOLSecurityHeaderKeys.USER_UINFIN),
+				userMolId: headers.get(MOLSecurityHeaderKeys.USER_ID)
+			}
+		} as BookingRequest;
 		const booking = await this.bookingsService.save(bookingRequestWithCitizen, serviceId);
 		this.setStatus(201);
 		return BookingsMapper.mapDataModel(booking);
