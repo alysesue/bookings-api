@@ -52,15 +52,7 @@ export class BookingsController extends Controller {
 	@Response(401, 'Valid authentication types: [user]')
 	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
 		bookingRequest.outOfSlotBooking = false;
-		const headers = getRequestHeaders(this);
-		const bookingRequestWithCitizen = {
-			...bookingRequest,
-			createdByUser: {
-				userUinFin: headers.get(MOLSecurityHeaderKeys.USER_UINFIN),
-				userMolId: headers.get(MOLSecurityHeaderKeys.USER_ID)
-			}
-		} as BookingRequest;
-		const booking = await this.bookingsService.save(bookingRequestWithCitizen, serviceId);
+		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
 		return BookingsMapper.mapDataModel(booking);
 	}

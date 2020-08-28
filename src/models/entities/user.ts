@@ -29,6 +29,10 @@ export class User implements IUser {
 		this._singPassUser = value;
 	}
 
+	public isCitizen(): boolean {
+		return !!this._singPassUser;
+	}
+
 	public static createSingPassUser(molUserId: string, userUinFin: string) {
 		const instance = new User();
 		instance.singPassUser = SingPassUser.create(molUserId, userUinFin);
