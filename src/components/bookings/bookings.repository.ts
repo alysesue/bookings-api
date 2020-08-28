@@ -1,5 +1,5 @@
 import { InRequestScope } from "typescript-ioc";
-import { InsertResult } from "typeorm";
+import { InsertResult, Transaction } from "typeorm";
 import { Booking, BookingStatus } from "../../models";
 import { RepositoryBase } from "../../core/repository";
 
