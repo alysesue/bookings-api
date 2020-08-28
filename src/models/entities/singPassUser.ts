@@ -1,8 +1,8 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
-import { ISingPassUser } from "../interfaces";
+import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { IUser } from "../interfaces";
 
 @Entity()
-export class SingPassUser implements ISingPassUser {
+export class SingPassUser {
 	constructor() {
 	}
 
@@ -17,7 +17,11 @@ export class SingPassUser implements ISingPassUser {
 		this._id = value;
 	}
 
-	@Column()
+	@OneToOne('User', { nullable: false })
+	@JoinColumn({ name: "_userId" })
+	public _User: IUser;
+
+	@Column({ nullable: false, type: "varchar", length: 20 })
 	@Index({ unique: true })
 	private _UinFin: string;
 
@@ -29,7 +33,7 @@ export class SingPassUser implements ISingPassUser {
 		this._UinFin = value;
 	}
 
-	@Column()
+	@Column({ type: "uuid" })
 	@Index({ unique: true })
 	private _molUserId: string;
 
