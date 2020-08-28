@@ -1,5 +1,6 @@
 import { Server } from "http";
 import * as Koa from "koa";
+import { Context } from "koa";
 import * as body from "koa-body";
 import * as compress from "koa-compress";
 import * as KoaRouter from "koa-router";
@@ -13,10 +14,12 @@ import { basePath, getConfig } from "./config/app-config";
 import { HealthCheckMiddleware } from "./health/HealthCheckMiddleware";
 import { RegisterRoutes } from "./routes";
 import { DbConnection } from "./core/db.connection";
-import { Container } from "typescript-ioc";
+import { Container, Scope } from "typescript-ioc";
 import { CalDavProxyHandler } from "./infrastructure/caldavproxy.handler";
 import * as cors from '@koa/cors';
 import { useSwagger } from "./infrastructure/swagger.middleware";
+import { ContainerContextMiddleware } from "./infrastructure/containerContext.middleware";
+import { UserContextMiddleware } from "./infrastructure/userContext.middleware";
 
 export async function startServer(): Promise<Server> {
 	const config = getConfig();
@@ -52,6 +55,8 @@ export async function startServer(): Promise<Server> {
 		.use(new KoaLoggerContext().build())
 		.use(new KoaMultipartCleaner().build())
 		.use(HealthCheckMiddleware.build())
+		.use(new ContainerContextMiddleware().build())
+		.use(new UserContextMiddleware().build())
 		.use(HandledRoutes.build())
 		.use(router.allowedMethods());
 
