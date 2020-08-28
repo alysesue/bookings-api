@@ -7,7 +7,7 @@ export class UsersService {
 	@Inject
 	private usersRepository: UsersRepository;
 
-	public async save(user?: User): Promise<User> {
+	public async getUserOrSave(user?: User): Promise<User> {
 		if (!user)
 			return undefined;
 		let userRepo = await this.usersRepository.getUserByMolUserId(user.singPassUser.molUserId);

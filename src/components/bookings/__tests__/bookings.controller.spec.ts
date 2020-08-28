@@ -64,7 +64,7 @@ describe("Bookings.Controller", () => {
 		const res = await controller.updateBooking(bookingId, new BookingRequest(), 1);
 
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
-		expect((res as Booking).startDateTime).toEqual('2020-10-01T01:00:00');
+		expect((res as Booking).startDateTime.toISOString()).toEqual("2020-09-30T15:00:00.000Z");
 	});
 
 	it('should search bookings', async () => {

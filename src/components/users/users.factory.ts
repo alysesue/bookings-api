@@ -1,12 +1,13 @@
-import { BookingRequest, CitizenBookingRequest } from "../bookings/bookings.apicontract";
 import { User } from "../../models";
+import { Citizen, UserRequest } from "./users.apicontract";
+
 
 
 export class UsersFactory {
-	public static createUser(bookingRequest: BookingRequest) {
-		if(CitizenBookingRequest.isCitizenBookingRequest(bookingRequest)) {
-			const citizenBookingRequest = bookingRequest as CitizenBookingRequest;
-			return User.createSingPassUser(citizenBookingRequest.userMolId, citizenBookingRequest.userUinFin);
+	public static createUser(userRequest: UserRequest) {
+		if(Citizen.isCitizen(userRequest)) {
+			const citizen = userRequest as Citizen;
+			return User.createSingPassUser(citizen.userMolId, citizen.userUinFin);
 		}
 		else
 			return null;

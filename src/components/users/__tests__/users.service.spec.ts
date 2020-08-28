@@ -20,21 +20,21 @@ describe("Users Service", () => {
 
 	it("should return undefined user", async () => {
 		UserRepositoryMock.firstPromiseUserByMolUserId = Promise.resolve(UserRepositoryMock.user);
-		const user = await Container.get(UsersService).save(User.createSingPassUser('id', 'uinFin'));
+		const user = await Container.get(UsersService).getUserOrSave(User.createSingPassUser('id', 'uinFin'));
 		expect(user).toBe(UserRepositoryMock.user);
 	});
 
 	it("should catch error undefined user", async () => {
 		UserRepositoryMock.firstPromiseUserByMolUserId = Promise.resolve(undefined);
-		UserRepositoryMock.promiseSave = Promise.reject(undefined);
+		UserRepositoryMock.promiseGetUserOrSave = Promise.reject(undefined);
 		UserRepositoryMock.promiseUserByMolUserId = Promise.resolve(UserRepositoryMock.user);
-		const user = await Container.get(UsersService).save(User.createSingPassUser('id', 'uinFin'));
+		const user = await Container.get(UsersService).getUserOrSave(User.createSingPassUser('id', 'uinFin'));
 		expect(user).toBe(UserRepositoryMock.user);
 		expect(UserRepositoryMock.nbGetUserByMolUserIdCalled).toBe(2);
 	});
 
 	it("should return undefined user", async () => {
-		const user = await Container.get(UsersService).save(undefined);
+		const user = await Container.get(UsersService).getUserOrSave(undefined);
 		expect(user).toBe(undefined);
 	});
 });
@@ -43,7 +43,7 @@ class UserRepositoryMock extends UsersRepository {
 	public static user: User;
 	public static firstPromiseUserByMolUserId: Promise<User>;
 	public static promiseUserByMolUserId: Promise<User>;
-	public static promiseSave: Promise<User>;
+	public static promiseGetUserOrSave: Promise<User>;
 
 	public static nbGetUserByMolUserIdCalled = 0;
 	public async getUserByMolUserId(id: string): Promise<User> {
@@ -54,8 +54,8 @@ class UserRepositoryMock extends UsersRepository {
 			return UserRepositoryMock.promiseUserByMolUserId;
 	}
 
-	public async save(user: User): Promise<User> {
-		return UserRepositoryMock.promiseSave;
+	public async getUserOrSave(user: User): Promise<User> {
+		return UserRepositoryMock.promiseGetUserOrSave;
 	}
 }
 

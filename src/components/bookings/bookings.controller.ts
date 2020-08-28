@@ -19,7 +19,6 @@ import {
 	BookingRequest,
 	BookingResponse,
 	BookingSearchRequest,
-	CitizenBookingRequest
 } from "./bookings.apicontract";
 import { BookingsService } from "./bookings.service";
 import { TimeslotsService } from "../timeslots/timeslots.service";
@@ -54,11 +53,13 @@ export class BookingsController extends Controller {
 	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
 		bookingRequest.outOfSlotBooking = false;
 		const headers = getRequestHeaders(this);
-		const bookingRequestWithCitizen: CitizenBookingRequest = {
+		const bookingRequestWithCitizen = {
 			...bookingRequest,
-			userUinFin: headers.get(MOLSecurityHeaderKeys.USER_UINFIN),
-			userMolId: headers.get(MOLSecurityHeaderKeys.USER_ID)
-		};
+			createdByUser: {
+				userUinFin: headers.get(MOLSecurityHeaderKeys.USER_UINFIN),
+				userMolId: headers.get(MOLSecurityHeaderKeys.USER_ID)
+			}
+		} as BookingRequest;
 		const booking = await this.bookingsService.save(bookingRequestWithCitizen, serviceId);
 		this.setStatus(201);
 		return BookingsMapper.mapDataModel(booking);

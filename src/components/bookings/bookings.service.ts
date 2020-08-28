@@ -48,7 +48,7 @@ export class BookingsService {
 		} else {
 			await this.validateOutOfSlotBookings(booking);
 		}
-		booking.citizenUser = await this.usersService.save(booking?.citizenUser);
+		booking.citizenUser = await this.usersService.getUserOrSave(booking?.citizenUser);
 		await this.bookingsRepository.save(booking);
 		return this.getBooking(booking.id);
 	}
@@ -121,7 +121,7 @@ export class BookingsService {
 			bookingRequest.serviceProviderId,
 			bookingRequest.refId
 		);
-		booking.citizenUser = UsersFactory.createUser(bookingRequest);
+		booking.citizenUser = UsersFactory.createUser(bookingRequest.createdByUser);
 		booking.eventICalId = await this.getEventICalId(booking, serviceProvider);
 		return booking;
 	}

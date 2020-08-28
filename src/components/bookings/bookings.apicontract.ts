@@ -1,4 +1,5 @@
-import {BookingStatus} from "../../models";
+import { BookingStatus } from "../../models";
+import { UserRequest } from "../users/users.apicontract";
 
 export class BookingAcceptRequest {
 	public serviceProviderId: number;
@@ -16,18 +17,10 @@ export class BookingRequest {
 	 * An external reference Id for this booking (e.g. external Client Id or booking Id).
 	 */
 	public refId?: string;
-}
-
-export class CitizenBookingRequest extends BookingRequest {
 	/**
 	 * @ignore
 	 */
-	public userMolId?: string;
-	/**
-	 * @ignore
-	 */
-	public userUinFin?: string;
-	public static isCitizenBookingRequest = (p: any): p is CitizenBookingRequest => !!p.userMolId;
+	public createdByUser?: UserRequest;
 }
 
 
