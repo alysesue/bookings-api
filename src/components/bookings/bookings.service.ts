@@ -8,7 +8,6 @@ import { CalendarsService } from '../calendars/calendars.service';
 import { DateHelper } from "../../infrastructure/dateHelper";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
-import { UsersFactory } from "../users/users.factory";
 import { UserContext } from "../../infrastructure/userContext.middleware";
 
 @InRequestScope
@@ -49,10 +48,6 @@ export class BookingsService {
 			await this.validateOutOfSlotBookings(booking);
 		}
 
-		const currentUser = await this.userContext.getCurrentUser();
-		if (currentUser.isCitizen()) {
-			booking.citizenUser = currentUser;
-		}
 		await this.bookingsRepository.save(booking);
 		return this.getBooking(booking.id);
 	}
@@ -125,7 +120,11 @@ export class BookingsService {
 			bookingRequest.serviceProviderId,
 			bookingRequest.refId
 		);
-		booking.citizenUser = UsersFactory.createUser(bookingRequest.createdByUser);
+		const currentUser = await this.userContext.getCurrentUser();
+		if (currentUser.isCitizen()) {
+			booking.citizenUser = currentUser;
+		}
+
 		booking.eventICalId = await this.getEventICalId(booking, serviceProvider);
 		return booking;
 	}
