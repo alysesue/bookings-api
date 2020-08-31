@@ -30,7 +30,7 @@ describe("Service Provider repository", () => {
 		MockDBConnection.find.mockImplementation(() => Promise.resolve([]));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
-		const result = await spRepository.getServiceProvidersByIds({ ids: [4, 5], serviceId: 1 });
+		const result = await spRepository.getServiceProviders({ ids: [4, 5], serviceId: 1 });
 		expect(result).toStrictEqual([]);
 	});
 

@@ -33,6 +33,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	}
 
 	public async getServiceProviders(options: {
+		ids?: number[],
 		serviceId?: number,
 		includeSchedule?: boolean,
 		includeTimeslotsSchedule?: boolean
@@ -41,26 +42,8 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		if (options.serviceId) {
 			findConditions['_serviceId'] = options.serviceId;
 		}
-		const repository = await this.getRepository();
-		const entries = await repository.find({ where: [findConditions], relations: ['_calendar'] });
-
-		return await this.processIncludes(entries, options);
-	}
-
-	public async getServiceProvidersByIds(options: {
-		ids: number[],
-		serviceId?: number,
-		includeSchedule?: boolean,
-		includeTimeslotsSchedule?: boolean
-	} = { ids: [] }): Promise<ServiceProvider[]> {
-		if (options.ids.length === 0)
-			return [];
-
-		const findConditions: FindConditions<ServiceProvider> = {};
-		findConditions['_id'] = In(options.ids);
-
-		if (options.serviceId) {
-			findConditions['_serviceId'] = options.serviceId;
+		if (options.ids) {
+			findConditions['_id'] = In(options.ids);
 		}
 		const repository = await this.getRepository();
 		const entries = await repository.find({ where: [findConditions], relations: ['_calendar'] });

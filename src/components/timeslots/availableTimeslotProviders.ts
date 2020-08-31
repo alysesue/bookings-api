@@ -29,6 +29,10 @@ export class AvailableTimeslotProviders {
 		return this._availableServiceProviders;
 	}
 
+	public set availableServiceProviders(availableServiceProviders) {
+		this._availableServiceProviders = availableServiceProviders;
+	}
+
 	public get availabilityCount(): number {
 		return Math.max(this._availableServiceProviders.length - this.pendingBookingsCount, 0);
 	}

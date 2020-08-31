@@ -2,7 +2,7 @@ import { Inject, InRequestScope } from "typescript-ioc";
 import { Booking } from "../models";
 import { CalendarUserModel } from "../components/calendars/calendars.apicontract";
 import { GoogleApi } from "./google.api";
-import { Constants } from "../models/constants";
+import { CalendarTimezone } from "../const";
 
 @InRequestScope
 export class GoogleCalendarService {
@@ -15,7 +15,7 @@ export class GoogleCalendarService {
 		const calendarRequest = {
 			requestBody: {
 				summary: "Booking SG Calendar",
-				timeZone: Constants.CalendarTimezone,
+				timeZone: CalendarTimezone,
 			},
 		};
 		const response = await api.calendars.insert(calendarRequest);
@@ -30,7 +30,7 @@ export class GoogleCalendarService {
 			requestBody: {
 				timeMin: startTime.toISOString(),
 				timeMax: endTime.toISOString(),
-				timeZone: Constants.CalendarTimezone,
+				timeZone: CalendarTimezone,
 				items: googleCalendarIds,
 			},
 		};
@@ -67,11 +67,11 @@ export class GoogleCalendarService {
 				summary: "Booking SG Event",
 				start: {
 					dateTime: booking.startDateTime.toISOString(),
-					timeZone: Constants.CalendarTimezone,
+					timeZone: CalendarTimezone,
 				},
 				end: {
 					dateTime: booking.endDateTime.toISOString(),
-					timeZone: Constants.CalendarTimezone,
+					timeZone: CalendarTimezone,
 				},
 			},
 		};

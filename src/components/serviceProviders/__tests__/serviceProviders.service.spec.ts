@@ -3,7 +3,15 @@ import { cloneDeep } from "lodash";
 import { DeleteResult } from "typeorm";
 import { ServiceProvidersService } from "../serviceProviders.service";
 import { ServiceProvidersRepository } from "../serviceProviders.repository";
-import { Calendar, Schedule, Service, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from "../../../models";
+import {
+	Calendar,
+	Schedule,
+	Service,
+	ServiceProvider,
+	TimeOfDay,
+	TimeslotItem,
+	TimeslotsSchedule
+} from "../../../models";
 import { ServiceProviderModel, SetProviderScheduleRequest } from "../serviceProviders.apicontract";
 import { CalendarsService } from "../../calendars/calendars.service";
 import { SchedulesService } from "../../schedules/schedules.service";
@@ -12,6 +20,8 @@ import { TimeslotItemsService } from "../../timeslotItems/timeslotItems.service"
 import { Weekday } from "../../../enums/weekday";
 import { TimeslotItemRequest } from "../../timeslotItems/timeslotItems.apicontract";
 import { ServicesService } from "../../services/services.service";
+import { TimeslotsService } from "../../timeslots/timeslots.service";
+import { AvailableTimeslotProviders } from "../../timeslots/availableTimeslotProviders";
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -24,7 +34,7 @@ describe("ServiceProviders.Service", () => {
 	const timeslotItemMock = TimeslotItem.create(1, Weekday.Monday, TimeOfDay.create({
 		hours: 11,
 		minutes: 0
-	}), TimeOfDay.create({ hours: 11, minutes: 30 }));
+	}), TimeOfDay.create({hours: 11, minutes: 30}));
 	const timeslotsScheduleMock = new TimeslotsSchedule();
 	const serviceMockWithTemplate = new Service();
 	const request = new TimeslotItemRequest();
@@ -36,6 +46,7 @@ describe("ServiceProviders.Service", () => {
 		Container.bind(ServicesService).to(ServicesServiceMock);
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
 		Container.bind(SchedulesService).to(SchedulesServiceMock);
+		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 	});
 
 	afterEach(() => {
@@ -199,6 +210,28 @@ describe("ServiceProviders.Service", () => {
 		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(1);
 		expect(TimeslotItemsServiceMock.deleteTimeslot).toBeCalledTimes(0);
 	});
+
+	it('should return only available service providers', async () => {
+
+		const timeslot: AvailableTimeslotProviders = {} as AvailableTimeslotProviders;
+
+		timeslot.availableServiceProviders = [
+			{
+				_id: 1,
+				_name: 'Test'
+			} as unknown as ServiceProvider,
+			{
+				_id: 2,
+				_name: 'Test2'
+			} as unknown as ServiceProvider];
+		TimeslotsServiceMock.timeslotProviders = [timeslot];
+
+		const serviceProvidersService = Container.get(ServiceProvidersService);
+		const availableServiceProviders = await serviceProvidersService.getAvailableServiceProviders(new Date('2020-08-25T12:00'), new Date('2020-08-26T12:00'), 1);
+
+		expect(availableServiceProviders).toHaveLength(2)
+	});
+
 });
 
 
@@ -237,6 +270,14 @@ const SchedulesServiceObj = {
 class SchedulesServiceMock extends SchedulesService {
 	public async getSchedule(id: number): Promise<Schedule> {
 		return SchedulesServiceObj.getSchedule(id);
+	}
+}
+
+class TimeslotsServiceMock extends TimeslotsService {
+	public static timeslotProviders: AvailableTimeslotProviders[];
+
+	async getAggregatedTimeslots(startDateTime: Date, endDateTime: Date, serviceId: number, includeBookings: boolean = false, serviceProviderId?: number): Promise<AvailableTimeslotProviders[]> {
+		return Promise.resolve(TimeslotsServiceMock.timeslotProviders)
 	}
 }
 

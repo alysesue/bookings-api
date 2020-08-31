@@ -1,4 +1,3 @@
-import * as _ from "lodash";
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { TimeslotsScheduleRepository } from "../timeslotsSchedules/timeslotsSchedule.repository";
 import { mapTimeslotItemToEntity } from './timeslotItems.mapper';
@@ -15,7 +14,7 @@ export class TimeslotItemsService {
 	@Inject
 	private timeslotItemsRepository: TimeslotItemsRepository;
 
-	private mapItemAndValidate(timeslotsSchedule: TimeslotsSchedule, request: TimeslotItemRequest, entity: TimeslotItem): TimeslotItem {
+	private static mapItemAndValidate(timeslotsSchedule: TimeslotsSchedule, request: TimeslotItemRequest, entity: TimeslotItem): TimeslotItem {
 		entity._timeslotsScheduleId = timeslotsSchedule._id;
 		try {
 			mapTimeslotItemToEntity(request, entity);
@@ -35,7 +34,7 @@ export class TimeslotItemsService {
 	}
 
 	public async mapAndSaveTimeslotItem(timeslotsSchedule: TimeslotsSchedule, request: TimeslotItemRequest, entity: TimeslotItem) : Promise<TimeslotItem> {
-		const item = this.mapItemAndValidate(timeslotsSchedule, request, entity);
+		const item = TimeslotItemsService.mapItemAndValidate(timeslotsSchedule, request, entity);
 		return await this.timeslotItemsRepository.saveTimeslotItem(item);
 	}
 
@@ -56,17 +55,5 @@ export class TimeslotItemsService {
 
 	public async deleteTimeslot(timeslotId: number): Promise<DeleteResult>{
 		return await this.timeslotItemsRepository.deleteTimeslotItem(timeslotId);
-	}
-
-	public mapTimeslotItemsInTimeslotsSchedule(timeslotsItems: TimeslotItem[], timeslotsSchedule: TimeslotsSchedule)
-		:TimeslotItem[]{
-		const timeslotsItemServiceClone = _.cloneDeep(timeslotsItems);
-		if (timeslotsItemServiceClone) {
-			timeslotsItemServiceClone.forEach(e => {
-				delete e._id;
-				e._timeslotsSchedule = timeslotsSchedule;
-			});
-		}
-		return timeslotsItemServiceClone;
 	}
 }
