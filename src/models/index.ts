@@ -12,6 +12,7 @@ import { Timeslot } from './timeslot';
 import { TimeslotsSchedule } from "./entities/timeslotsSchedule";
 import { User } from "./entities/user";
 import { SingPassUser } from "./entities/singPassUser";
+import { AdminUser } from "./entities/adminUser";
 // TODO : rename
 import { TimeslotItem } from "./entities/timeslotItem";
 import { Unavailability } from "./entities/unavailability";
@@ -22,6 +23,7 @@ export {
 	BookingStatus,
 	User,
 	SingPassUser,
+	AdminUser,
 	Schedule,
 	Service,
 	WeekDayBreak,

@@ -12,13 +12,13 @@ describe("users controller", () => {
 	it("should get user profile", async () => {
 		const controller = Container.get(UsersController);
 		const headers = {
-			[MOLSecurityHeaderKeys.AUTH_TYPE] : MOLAuthType.USER,
-			[MOLSecurityHeaderKeys.USER_AUTH_LEVEL] : 2,
-			[MOLSecurityHeaderKeys.USER_ID] : 'abc',
+			[MOLSecurityHeaderKeys.AUTH_TYPE]: MOLAuthType.USER,
+			[MOLSecurityHeaderKeys.USER_AUTH_LEVEL]: 2,
+			[MOLSecurityHeaderKeys.USER_ID]: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
 		};
 		(controller as any).context = {};
 		(controller as any).context = { headers };
-		( controller as any).context.request = {};
+		(controller as any).context.request = {};
 
 		const profile = await controller.getProfile();
 		expect(profile).toBeDefined();
@@ -29,11 +29,11 @@ describe("users controller", () => {
 
 		const headers = {};
 		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.ADMIN;
-		headers[MOLSecurityHeaderKeys.ADMIN_ID] = '15234fe9c96d41639fb3311dd7a2925b';
+		headers[MOLSecurityHeaderKeys.ADMIN_ID] = 'df9e8028-f308-4fb7-a9d8-d8af00455981';
 
 		(controller as any).context = {};
 		(controller as any).context = { headers };
-		( controller as any).context.request = {};
+		(controller as any).context.request = {};
 
 		const profile = await controller.getProfile();
 		expect(profile).toBeDefined();

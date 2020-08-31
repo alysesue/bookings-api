@@ -3,11 +3,14 @@ import { MOLAuth } from "mol-lib-common";
 import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
 import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
 import { getRequestHeaders } from "../../infrastructure/requestHelper";
+import { Inject } from "typescript-ioc";
+import { UserContext } from "../../infrastructure/userContext.middleware";
 
 @Route("v1/users")
 @Tags('Users')
 export class UsersController extends Controller {
-
+	@Inject
+	private _userContext: UserContext;
 	/**
 	 * Returns information about the Singpass user.
 	 * It returns Unauthorized (401) status code if the user is not logged in.
@@ -20,9 +23,10 @@ export class UsersController extends Controller {
 	})
 	@Response(401, 'Valid authentication types: [admin,user]')
 	public async getProfile(): Promise<any> {
-		const headers = getRequestHeaders(this);
+		const user = await this._userContext.getCurrentUser();
+		// const headers = getRequestHeaders(this);
 		return {
-			uinfin: headers.get(MOLSecurityHeaderKeys.USER_UINFIN)
+			uinfin: user.singPassUser?.UinFin, // headers.get(MOLSecurityHeaderKeys.USER_UINFIN)
 		};
 	}
 }

@@ -3,8 +3,9 @@ import { UsersRepository } from "./users.repository";
 import { User } from "../../models";
 import { MOLAuthType } from "mol-lib-api-contract/auth/common/MOLAuthType";
 import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
-
-type headersType = { [key: string]: string };
+import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
+import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
+export type HeadersType = { [key: string]: string };
 
 @InRequestScope
 export class UsersService {
@@ -32,7 +33,8 @@ export class UsersService {
 		if (!userRepo) {
 			try {
 				userRepo = await this.usersRepository.save(user);
-			} catch {
+			} catch (e) {
+				logger.error("Exception when creating BookingSG User", e);
 				// concurrent insert fail case
 				userRepo = await getter();
 			}
@@ -40,37 +42,59 @@ export class UsersService {
 		return userRepo;
 	}
 
-	public async getOrSaveUserFromHeaders(headers: headersType): Promise<User> {
+	public async getOrSaveUserFromHeaders(headers: HeadersType): Promise<User> {
 		const authType = headers[MOLSecurityHeaderKeys.AUTH_TYPE];
+		if (!authType) {
+			return null;
+		}
+
+		let user: User;
 		switch (authType) {
 			case MOLAuthType.USER:
-				return await this.getOrSaveSingpassUser({
+				user = await this.getOrSaveSingpassUser({
 					molUserId: headers[MOLSecurityHeaderKeys.USER_ID],
 					molUserUinFin: headers[MOLSecurityHeaderKeys.USER_UINFIN],
 				});
+				break;
 			case MOLAuthType.ADMIN:
-				return await this.getOrSaveAdminUser({
+				user = await this.getOrSaveAdminUser({
 					molAdminId: headers[MOLSecurityHeaderKeys.ADMIN_ID],
-					molAdminUserName: headers[MOLSecurityHeaderKeys.ADMIN_USERNAME],
-					molAdminEmail: headers[MOLSecurityHeaderKeys.ADMIN_EMAIL],
-					molAdminName: headers[MOLSecurityHeaderKeys.ADMIN_NAME],
+					userName: headers[MOLSecurityHeaderKeys.ADMIN_USERNAME],
+					email: headers[MOLSecurityHeaderKeys.ADMIN_EMAIL],
+					name: headers[MOLSecurityHeaderKeys.ADMIN_NAME],
 				});
+				break;
 		}
 
-		return null;
+		if (!user) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage('BookingSG User could not be created. authType: ' + authType);
+		}
+
+		return user;
 	}
 
 	public async getOrSaveSingpassUser({ molUserId, molUserUinFin }:
 		{
 			molUserId: string, molUserUinFin: string
 		}): Promise<User> {
+		if (!molUserId || !molUserUinFin)
+			return null;
+
 		const user = User.createSingPassUser(molUserId, molUserUinFin);
 		return await this.getOrSaveInternal(user, () => this.usersRepository.getUserByMolUserId(molUserId));
 	}
 
-	public async getOrSaveAdminUser(props: {
-		molAdminId: string, molAdminUserName: string, molAdminEmail: string, molAdminName: string
+	public async getOrSaveAdminUser(data: {
+		molAdminId: string;
+		userName: string;
+		email: string;
+		name: string;
 	}): Promise<User> {
-		throw new Error('Not supported yet.');
+		if (!data.molAdminId || !data.email) {
+			return null;
+		}
+
+		const user = User.createAdminUser(data);
+		return await this.getOrSaveInternal(user, () => this.usersRepository.getUserByMolAdminId(data.molAdminId));
 	}
 }
