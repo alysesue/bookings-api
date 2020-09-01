@@ -12,22 +12,6 @@ export class UsersService {
 	@Inject
 	private usersRepository: UsersRepository;
 
-	// public async getUserOrSave(user?: User): Promise<User> {
-	// 	if (!user)
-	// 		return undefined;
-	// 	let userRepo = await this.usersRepository.getUserByMolUserId(user.singPassUser.molUserId);
-	// 	if (!userRepo) {
-	// 		try {
-	// 			userRepo = await this.usersRepository.save(user);
-	// 		} catch {
-	// 			// concurrency insert fail case
-	// 			userRepo = await this.usersRepository.getUserByMolUserId(user.singPassUser.molUserId);
-	// 		}
-	// 	}
-	// 	return userRepo;
-	// }
-
-
 	private async getOrSaveInternal(user: User, getter: () => Promise<User>): Promise<User> {
 		let userRepo = await getter();
 		if (!userRepo) {
