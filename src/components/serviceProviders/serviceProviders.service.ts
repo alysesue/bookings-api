@@ -48,9 +48,9 @@ export class ServiceProvidersService {
 		const availableServiceProviders = new Set<ServiceProvider>();
 
 		timeslots.forEach((timeslot) => {
-			for (let availableServiceProvider of timeslot.availableServiceProviders) {
-				availableServiceProviders.add(availableServiceProvider);
-			}
+			timeslot.availableServiceProviders.forEach(provider => {
+				availableServiceProviders.add(provider);
+			})
 		});
 		return Array.from(availableServiceProviders);
 	}
