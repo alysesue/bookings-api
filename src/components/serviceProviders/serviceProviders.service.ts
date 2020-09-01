@@ -11,6 +11,7 @@ import { SchedulesService } from '../schedules/schedules.service';
 import { TimeslotItemRequest } from "../timeslotItems/timeslotItems.apicontract";
 import { ServicesService } from "../services/services.service";
 import { TimeslotItemsService } from "../timeslotItems/timeslotItems.service";
+import { TimeslotsService } from "../timeslots/timeslots.service";
 
 @InRequestScope
 export class ServiceProvidersService {
@@ -30,12 +31,36 @@ export class ServiceProvidersService {
 	@Inject
 	private servicesService: ServicesService;
 
+	@Inject
+	private timeslotsService: TimeslotsService;
+
 	public async getServiceProviders(serviceId?: number, includeSchedule = false, includeTimeslotsSchedule = false): Promise<ServiceProvider[]> {
-		return await this.serviceProvidersRepository.getServiceProviders({ serviceId, includeSchedule, includeTimeslotsSchedule });
+		return await this.serviceProvidersRepository.getServiceProviders({
+			serviceId,
+			includeSchedule,
+			includeTimeslotsSchedule
+		});
+	}
+
+	public async getAvailableServiceProviders(from: Date, to: Date, serviceId?: number): Promise<ServiceProvider[]> {
+		const timeslots = await this.timeslotsService.getAggregatedTimeslots(from, to, serviceId, false);
+
+		const availableServiceProviders = new Set<ServiceProvider>();
+
+		timeslots.forEach((timeslot) => {
+			timeslot.availableServiceProviders.forEach(provider => {
+				availableServiceProviders.add(provider);
+			})
+		});
+		return Array.from(availableServiceProviders);
 	}
 
 	public async getServiceProvider(id: number, includeSchedule: boolean, includeTimeslotsSchedule: boolean): Promise<ServiceProvider> {
-		const sp = await this.serviceProvidersRepository.getServiceProvider({ id, includeSchedule, includeTimeslotsSchedule });
+		const sp = await this.serviceProvidersRepository.getServiceProvider({
+			id,
+			includeSchedule,
+			includeTimeslotsSchedule
+		});
 		if (!sp) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
 		}
@@ -70,7 +95,7 @@ export class ServiceProvidersService {
 	}
 
 	public async updateSp(request: ServiceProviderModel, spId: number) {
-		const sp = await this.serviceProvidersRepository.getServiceProvider({ id: spId });
+		const sp = await this.serviceProvidersRepository.getServiceProvider({id: spId});
 		if (!sp) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
 		}

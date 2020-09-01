@@ -1,4 +1,3 @@
-
 import { Container } from "typescript-ioc";
 import { UnavailabilitiesRepository } from "../unavailabilities.repository";
 import { UnavailabilitiesService } from "../unavailabilities.service";
@@ -105,7 +104,7 @@ describe("Unavailabilities service tests", () => {
 		spA.id = 5;
 		const spB = ServiceProvider.create('B', new Calendar(), 1);
 		spB.id = 2;
-		ServiceProvidersRepositoryMock.getServiceProvidersByIds.mockReturnValue(Promise.resolve([spA, spB]));
+		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([spA, spB]));
 
 		const request = new UnavailabilityRequest();
 		request.serviceId = 1;
@@ -165,9 +164,9 @@ class UnavailabilitiesRepositoryMock extends UnavailabilitiesRepository {
 }
 
 class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
-	public static getServiceProvidersByIds = jest.fn();
+	public static getServiceProviders = jest.fn();
 
-	public async getServiceProvidersByIds(...params): Promise<any> {
-		return await ServiceProvidersRepositoryMock.getServiceProvidersByIds(...params);
+	public async getServiceProviders(...params): Promise<any> {
+		return await ServiceProvidersRepositoryMock.getServiceProviders(...params);
 	}
 }

@@ -1,11 +1,11 @@
-import {Inject, InRequestScope} from "typescript-ioc";
+import { Inject, InRequestScope } from "typescript-ioc";
 import {
 	ServiceProviderListRequest,
 	ServiceProviderModel,
 	ServiceProviderResponseModel,
 	SetProviderScheduleRequest
 } from "./serviceProviders.apicontract";
-import {ServiceProvidersService} from "./serviceProviders.service";
+import { ServiceProvidersService } from "./serviceProviders.service";
 import {
 	Body,
 	Controller,
@@ -23,18 +23,18 @@ import {
 	SuccessResponse,
 	Tags
 } from "tsoa";
-import {parseCsv} from "../../utils";
-import {mapToResponse as mapScheduleToResponse} from '../schedules/schedules.mapper';
-import {ScheduleResponse} from "../schedules/schedules.apicontract";
-import {ServiceProvidersMapper} from "./serviceProviders.mapper";
+import { parseCsv } from "../../utils";
+import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
+import { ScheduleResponse } from "../schedules/schedules.apicontract";
+import { ServiceProvidersMapper } from "./serviceProviders.mapper";
 import {
 	TimeslotItemRequest,
 	TimeslotItemResponse,
 	TimeslotsScheduleResponse
 } from "../timeslotItems/timeslotItems.apicontract";
-import {mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse} from "../timeslotItems/timeslotItems.mapper";
-import {MOLAuth} from "mol-lib-common";
-import {MOLUserAuthLevel} from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
+import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.mapper";
+import { MOLAuth } from "mol-lib-common";
+import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
 
 @InRequestScope
 @Route("v1/service-providers")
@@ -102,6 +102,15 @@ export class ServiceProvidersController extends Controller {
 	@Response(401, 'Valid authentication types: [admin]')
 	public async getServiceProviders(@Header('x-api-service') serviceId?: number, @Query() includeTimeslotsSchedule = false): Promise<ServiceProviderResponseModel[]> {
 		const dataModels = await this.serviceProvidersService.getServiceProviders(serviceId, undefined, includeTimeslotsSchedule);
+		return this.mapper.mapDataModels(dataModels);
+	}
+
+	@Get("available")
+	@Security("service")
+	@MOLAuth({ admin: {} })
+	@Response(401, 'Valid authentication types: [admin]')
+	public async getAvailableServiceProviders(@Query() from: Date, @Query() to: Date, @Header('x-api-service') serviceId: number): Promise<ServiceProviderResponseModel[]> {
+		const dataModels = await this.serviceProvidersService.getAvailableServiceProviders(from, to, serviceId);
 		return this.mapper.mapDataModels(dataModels);
 	}
 
