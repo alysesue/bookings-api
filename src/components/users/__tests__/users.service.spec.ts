@@ -1,7 +1,13 @@
 import { Container } from "typescript-ioc";
-import { User } from "../../../models";
+import { SingPassUser, User } from "../../../models";
 import { UsersRepository } from "../users.repository";
 import { UsersService } from "../users.service";
+import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
+import { MOLAuthType } from "mol-lib-api-contract/auth/common/MOLAuthType";
+
+beforeAll(() => {
+	Container.bind(UsersRepository).to(UserRepositoryMock);
+});
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -9,53 +15,119 @@ afterAll(() => {
 });
 
 describe("Users Service", () => {
-	beforeAll(() => {
-		Container.bind(UsersRepository).to(UserRepositoryMock);
-		UserRepositoryMock.user = User.createSingPassUser('mol', 'uinfin');
-	});
-
 	afterEach(() => {
 		jest.resetAllMocks();
 	});
 
-	it("should return undefined user", async () => {
-		UserRepositoryMock.firstPromiseUserByMolUserId = Promise.resolve(UserRepositoryMock.user);
-		const user = await Container.get(UsersService).getUserOrSave(User.createSingPassUser('id', 'uinFin'));
-		expect(user).toBe(UserRepositoryMock.user);
+	it("should return singpass user", async () => {
+		const headers = {};
+		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.USER;
+		headers[MOLSecurityHeaderKeys.USER_ID] = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
+		headers[MOLSecurityHeaderKeys.USER_UINFIN] = 'ABC1234';
+
+		const userMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+		UserRepositoryMock.getUserByMolUserId.mockImplementation(() => Promise.resolve(userMock));
+
+		const service = Container.get(UsersService);
+		const user = await service.getOrSaveUserFromHeaders(headers);
+		expect(UserRepositoryMock.getUserByMolUserId).toBeCalled();
+		expect(user.singPassUser).toBeDefined();
 	});
 
-	it("should catch error undefined user", async () => {
-		UserRepositoryMock.firstPromiseUserByMolUserId = Promise.resolve(undefined);
-		UserRepositoryMock.promiseGetUserOrSave = Promise.reject(undefined);
-		UserRepositoryMock.promiseUserByMolUserId = Promise.resolve(UserRepositoryMock.user);
-		const user = await Container.get(UsersService).getUserOrSave(User.createSingPassUser('id', 'uinFin'));
-		expect(user).toBe(UserRepositoryMock.user);
-		expect(UserRepositoryMock.nbGetUserByMolUserIdCalled).toBe(2);
+	it("should validate singpass user", async () => {
+		const headers = {};
+		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.USER;
+
+		const userMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+		UserRepositoryMock.getUserByMolUserId.mockImplementation(() => Promise.resolve(userMock));
+
+		const service = Container.get(UsersService);
+		const test = async () => await service.getOrSaveUserFromHeaders(headers);
+		await expect(test).rejects.toThrowError();
 	});
 
-	it("should return undefined user", async () => {
-		const user = await Container.get(UsersService).getUserOrSave(undefined);
-		expect(user).toBe(undefined);
+	it("should save if user doesn't exist", async () => {
+		const headers = {};
+		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.USER;
+		headers[MOLSecurityHeaderKeys.USER_ID] = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
+		headers[MOLSecurityHeaderKeys.USER_UINFIN] = 'ABC1234';
+
+		UserRepositoryMock.getUserByMolUserId.mockImplementation(() => Promise.resolve(null));
+		UserRepositoryMock.save.mockImplementation((entry) => Promise.resolve(entry));
+
+		const service = Container.get(UsersService);
+		const user = await service.getOrSaveUserFromHeaders(headers);
+		expect(UserRepositoryMock.getUserByMolUserId).toBeCalled();
+		expect(UserRepositoryMock.save).toBeCalled();
+		expect(user.singPassUser).toBeDefined();
+	});
+
+	it("should return admin user", async () => {
+		const headers = {};
+		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.ADMIN;
+		headers[MOLSecurityHeaderKeys.ADMIN_ID] = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
+		headers[MOLSecurityHeaderKeys.ADMIN_USERNAME] = 'UserName';
+		headers[MOLSecurityHeaderKeys.ADMIN_EMAIL] = 'test@email.com';
+		headers[MOLSecurityHeaderKeys.ADMIN_NAME] = 'Name';
+
+		const userMock = User.createAdminUser({
+			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+			userName: 'UserName',
+			email: 'test@email.com',
+			name: 'Name'
+		});
+
+		UserRepositoryMock.getUserByMolAdminId.mockImplementation(() => Promise.resolve(userMock));
+
+		const service = Container.get(UsersService);
+		const user = await service.getOrSaveUserFromHeaders(headers);
+		expect(UserRepositoryMock.getUserByMolAdminId).toBeCalled();
+		expect(user.adminUser).toBeDefined();
+	});
+
+	it("should validate admin user", async () => {
+		const headers = {};
+		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.ADMIN;
+
+		const userMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+		UserRepositoryMock.getUserByMolAdminId.mockImplementation(() => Promise.resolve(userMock));
+		const service = Container.get(UsersService);
+		const test = async () => await service.getOrSaveUserFromHeaders(headers);
+		await expect(test).rejects.toThrowError();
+	});
+
+	it("should return null user", async () => {
+		const headers = {};
+		const service = Container.get(UsersService);
+		const user = await service.getOrSaveUserFromHeaders(headers);
+		expect(user).toBeNull();
+	});
+
+	it("should return null user", async () => {
+		const headers = {};
+		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = 'NEW_TYPE';
+		const service = Container.get(UsersService);
+		const test = async () => await service.getOrSaveUserFromHeaders(headers);
+
+		await expect(test).rejects.toThrowError();
 	});
 });
 
 class UserRepositoryMock extends UsersRepository {
-	public static user: User;
-	public static firstPromiseUserByMolUserId: Promise<User>;
-	public static promiseUserByMolUserId: Promise<User>;
-	public static promiseGetUserOrSave: Promise<User>;
+	public static save = jest.fn();
+	public static getUserByMolUserId = jest.fn();
+	public static getUserByMolAdminId = jest.fn();
 
-	public static nbGetUserByMolUserIdCalled = 0;
-	public async getUserByMolUserId(id: string): Promise<User> {
-		UserRepositoryMock.nbGetUserByMolUserIdCalled++;
-		if (UserRepositoryMock.nbGetUserByMolUserIdCalled === 1)
-			return UserRepositoryMock.firstPromiseUserByMolUserId;
-		else
-			return UserRepositoryMock.promiseUserByMolUserId;
+	public async save(...params): Promise<any> {
+		return await UserRepositoryMock.save(...params);
 	}
 
-	public async getUserOrSave(user: User): Promise<User> {
-		return UserRepositoryMock.promiseGetUserOrSave;
+	public async getUserByMolUserId(...params): Promise<any> {
+		return await UserRepositoryMock.getUserByMolUserId(...params);
+	}
+
+	public async getUserByMolAdminId(...params): Promise<any> {
+		return await UserRepositoryMock.getUserByMolAdminId(...params);
 	}
 }
 

@@ -1,9 +1,9 @@
-import {Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
-import {BookingStatus} from "../bookingStatus";
-import {ServiceProvider} from './serviceProvider';
-import {Service} from "./service";
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BookingStatus } from "../bookingStatus";
+import { ServiceProvider } from './serviceProvider';
+import { Service } from "./service";
 import * as timeSpan from "../../tools/timeSpan";
-import {User} from "./user";
+import { User } from "./user";
 
 @Entity()
 export class Booking {
@@ -48,20 +48,13 @@ export class Booking {
 	@Column({ nullable: true })
 	private _serviceProviderId?: number;
 
-	@ManyToOne(type => User, { cascade: true, nullable: true })
-	@JoinColumn({ name: '_citizenUserId' })
-	private _citizenUser: User;
+	@ManyToOne(type => User, { nullable: false })
+	@JoinColumn({ name: '_creatorId' })
+	private _creator: User;
 
-	@Column({ nullable: true })
-	private _citizenUserId: number;
-
-	public get citizenUserId(): number {
-		return this._citizenUserId;
-	}
-
-	public set citizenUserId(value: number) {
-		this._citizenUserId = value;
-	}
+	@Column({ nullable: true, type: "varchar", length: 20 })
+	@Index()
+	private _citizenUinFin: string;
 
 	constructor() {
 	}
@@ -122,16 +115,24 @@ export class Booking {
 		return this._serviceProviderId;
 	}
 
-	public get citizenUser(): User {
-		return this._citizenUser;
+	public get creator(): User {
+		return this._creator;
 	}
 
-	public set citizenUser(value: User) {
-		this._citizenUser = value;
+	public set creator(value: User) {
+		this._creator = value;
 	}
 
 	public get createdAt(): Date {
 		return this._createdAt;
+	}
+
+	public get citizenUinFin(): string {
+		return this._citizenUinFin;
+	}
+
+	public set citizenUinFin(value: string) {
+		this._citizenUinFin = value;
 	}
 
 	public bookingIntersects(other: { start: Date, end: Date }): boolean {

@@ -120,9 +120,9 @@ export class BookingsService {
 			bookingRequest.serviceProviderId,
 			bookingRequest.refId
 		);
-		const currentUser = await this.userContext.getCurrentUser();
-		if (currentUser.isCitizen()) {
-			booking.citizenUser = currentUser;
+		booking.creator = await this.userContext.getCurrentUser();
+		if (booking.creator.isCitizen()) {
+			booking.citizenUinFin = booking.creator.singPassUser.UinFin;
 		}
 
 		booking.eventICalId = await this.getEventICalId(booking, serviceProvider);

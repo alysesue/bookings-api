@@ -12,7 +12,7 @@ export class UsersRepository extends RepositoryBase<User> {
 	}
 
 	public async getUserByMolUserId(molUserId?: string): Promise<User> {
-		if (!molUserId) return undefined;
+		if (!molUserId) return null;
 
 		const repository = await this.getRepository();
 		const query = repository.createQueryBuilder("u")
@@ -22,7 +22,7 @@ export class UsersRepository extends RepositoryBase<User> {
 	}
 
 	public async getUserByMolAdminId(molAdminId?: string): Promise<User> {
-		if (!molAdminId) return undefined;
+		if (!molAdminId) return null;
 
 		const repository = await this.getRepository();
 		const query = repository.createQueryBuilder("u")
