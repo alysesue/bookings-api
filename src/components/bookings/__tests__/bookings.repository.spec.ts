@@ -1,23 +1,32 @@
 import { BookingsRepository } from "../bookings.repository";
 import { DbConnection } from "../../../core/db.connection";
-import { Booking, BookingStatus } from "../../../models";
+import { Booking, BookingStatus, User } from "../../../models";
 import { Container } from "typescript-ioc";
 import { InsertResult } from "typeorm";
+import { QueryAccessType } from "../../../core/repository";
+import { UserContext } from '../../../infrastructure/userContext.middleware';
+
+beforeAll(() => {
+	Container.bind(DbConnection).to(MockDBConnection);
+	Container.bind(UserContext).to(UserContextMock);
+});
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
-const bookingMock = new Booking();
-bookingMock.status = BookingStatus.Accepted;
-
 describe("Bookings repository", () => {
+	const singpassUserMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+
 	beforeEach(() => {
 		jest.resetAllMocks();
 	});
 
 	it("should search bookings", async () => {
+		const bookingMock = new Booking();
+		bookingMock.status = BookingStatus.Accepted;
+
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
@@ -25,9 +34,8 @@ describe("Bookings repository", () => {
 			getMany: jest.fn(() => Promise.resolve([bookingMock])),
 		};
 
-		Container.bind(DbConnection).to(MockDBConnection);
-
 		MockDBConnection.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
 		const bookingsRepository = Container.get(BookingsRepository);
 
@@ -37,16 +45,19 @@ describe("Bookings repository", () => {
 			statuses: [BookingStatus.Accepted],
 			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
 			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
+			accessType: QueryAccessType.Read,
 		});
 
 		expect(result).toStrictEqual([bookingMock]);
-		expect(queryBuilderMock.where).toBeCalledTimes(1);
+		expect(queryBuilderMock.where).toBeCalled();
 		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(2);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
 		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
 	});
 
 	it("should search bookings without status", async () => {
+		const bookingMock = new Booking();
+		bookingMock.status = BookingStatus.Accepted;
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
@@ -54,9 +65,8 @@ describe("Bookings repository", () => {
 			getMany: jest.fn(() => Promise.resolve([bookingMock])),
 		};
 
-		Container.bind(DbConnection).to(MockDBConnection);
-
 		MockDBConnection.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
 		const bookingsRepository = Container.get(BookingsRepository);
 
@@ -65,21 +75,22 @@ describe("Bookings repository", () => {
 			serviceProviderId: 1,
 			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
 			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
+			accessType: QueryAccessType.Read,
 		});
 
 		expect(result).toStrictEqual([bookingMock]);
-		expect(queryBuilderMock.where).toBeCalledTimes(1);
+		expect(queryBuilderMock.where).toBeCalled();
 		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(2);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
 		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
 	});
 
 	it("should save booking", async () => {
-		jest.resetAllMocks();
-		Container.bind(DbConnection).to(MockDBConnection);
 		const insertResult = new InsertResult();
 		insertResult.identifiers = [{ id: "abc" }];
 		MockDBConnection.insert.mockImplementation(() => insertResult);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
+
 		const bookingsRepository = Container.get(BookingsRepository);
 		const booking: Booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 
@@ -88,21 +99,27 @@ describe("Bookings repository", () => {
 	});
 
 	it('should update booking', async () => {
-		jest.resetAllMocks();
-		Container.bind(DbConnection).to(MockDBConnection);
-
 		const bookingsRepository = Container.get(BookingsRepository);
 		const booking: Booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 		MockDBConnection.save.mockImplementation(() => booking);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
 		await bookingsRepository.update(booking);
 		expect(MockDBConnection.save).toBeCalled();
 	});
 
 	it('should get booking', async () => {
-		Container.bind(DbConnection).to(MockDBConnection);
 		const booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
-		MockDBConnection.findOne.mockImplementation(() => Promise.resolve(booking));
+
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve(booking)),
+		};
+
+		MockDBConnection.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
+
 		const bookingsRepository = Container.get(BookingsRepository);
 		const result = await bookingsRepository.getBooking(1);
 		expect(result).toStrictEqual(booking);
@@ -129,5 +146,14 @@ class MockDBConnection extends DbConnection {
 			}),
 		};
 		return Promise.resolve(connection);
+	}
+}
+
+class UserContextMock extends UserContext {
+	public static getCurrentUser = jest.fn();
+
+	public init() { }
+	public async getCurrentUser(...params): Promise<any> {
+		return await UserContextMock.getCurrentUser(params);
 	}
 }

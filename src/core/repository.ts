@@ -28,3 +28,8 @@ export abstract class RepositoryBase<T> {
 		return this.connection.getConnection();
 	}
 }
+
+export enum QueryAccessType {
+	Read = 1,
+	Write
+}
