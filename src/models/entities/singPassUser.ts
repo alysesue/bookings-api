@@ -45,7 +45,7 @@ export class SingPassUser {
 		this._molUserId = molUserId;
 	}
 
-	public static create(molUserId: string, UinFin: string) {
+	public static create(molUserId: string, UinFin: string): SingPassUser {
 		const instance = new SingPassUser();
 		instance.molUserId = molUserId;
 		instance.UinFin = UinFin;

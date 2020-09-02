@@ -1,7 +1,18 @@
-export interface UserRequest {}
+export class ProfileResponse {
+	public userType: UserTypeContract;
+	public singpass: SingPassUserContract;
+	public admin: AdminUserContract;
+}
 
-export class Citizen implements UserRequest {
-	public userMolId?: string;
-	public userUinFin?: string;
-	public static isCitizen = (p : any): p is Citizen => !!p?.userMolId;
+export class SingPassUserContract {
+	public uinfin: string;
+}
+
+export class AdminUserContract {
+	public email: string;
+}
+
+export enum UserTypeContract {
+	singpass = 'singpass',
+	admin = 'admin',
 }

@@ -8,8 +8,7 @@ import { CalendarsService } from '../calendars/calendars.service';
 import { DateHelper } from "../../infrastructure/dateHelper";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
-import { UsersFactory } from "../users/users.factory";
-import { UsersService } from "../users/users.service";
+import { UserContext } from "../../infrastructure/userContext.middleware";
 
 @InRequestScope
 export class BookingsService {
@@ -24,7 +23,7 @@ export class BookingsService {
 	@Inject
 	private serviceProviderRepo: ServiceProvidersRepository;
 	@Inject
-	private usersService: UsersService;
+	private userContext: UserContext;
 
 	public formatEventId(event: string): string {
 		return event.split("@")[0];
@@ -48,7 +47,7 @@ export class BookingsService {
 		} else {
 			await this.validateOutOfSlotBookings(booking);
 		}
-		booking.citizenUser = await this.usersService.getUserOrSave(booking?.citizenUser);
+
 		await this.bookingsRepository.save(booking);
 		return this.getBooking(booking.id);
 	}
@@ -121,7 +120,11 @@ export class BookingsService {
 			bookingRequest.serviceProviderId,
 			bookingRequest.refId
 		);
-		booking.citizenUser = UsersFactory.createUser(bookingRequest.createdByUser);
+		booking.creator = await this.userContext.getCurrentUser();
+		if (booking.creator.isCitizen()) {
+			booking.citizenUinFin = booking.creator.singPassUser.UinFin;
+		}
+
 		booking.eventICalId = await this.getEventICalId(booking, serviceProvider);
 		return booking;
 	}

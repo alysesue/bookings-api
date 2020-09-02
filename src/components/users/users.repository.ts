@@ -12,13 +12,21 @@ export class UsersRepository extends RepositoryBase<User> {
 	}
 
 	public async getUserByMolUserId(molUserId?: string): Promise<User> {
-		if (!molUserId) return undefined;
+		if (!molUserId) return null;
 
 		const repository = await this.getRepository();
-		const molUserIdCondition = 'exists(select * from public.sing_pass_user as sg where sg."_userId" = u._id AND sg."_molUserId" = :molUserId)';
 		const query = repository.createQueryBuilder("u")
-			.where(molUserIdCondition, { molUserId })
-			.leftJoinAndSelect("u._singPassUser", "singPass");
+			.innerJoinAndSelect("u._singPassUser", "singpass", 'singpass."_molUserId" = :molUserId', { molUserId });
+
+		return await query.getOne();
+	}
+
+	public async getUserByMolAdminId(molAdminId?: string): Promise<User> {
+		if (!molAdminId) return null;
+
+		const repository = await this.getRepository();
+		const query = repository.createQueryBuilder("u")
+			.innerJoinAndSelect("u._adminUser", "admuser", 'admuser."_molAdminId" = :molAdminId', { molAdminId });
 
 		return await query.getOne();
 	}

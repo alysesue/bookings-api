@@ -9,7 +9,8 @@ const config = {
 		'**/*.controller.ts',
 		'!**/*{A,a}picontract{*,*/**/*}',
 		'!**/fixLF.js',
-		'!**/authentication.ts'
+		'!**/authentication.ts',
+		'!**/swagger.middleware.ts',
 	],
 	coverageThreshold: {
 		global: {

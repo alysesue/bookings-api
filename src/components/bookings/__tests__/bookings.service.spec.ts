@@ -3,7 +3,7 @@ import { BookingsService } from "../index";
 import { BookingsRepository } from "../bookings.repository";
 import { CalendarsService } from "../../calendars/calendars.service";
 import { Container } from "typescript-ioc";
-import { Booking, BookingStatus, Calendar, ServiceProvider } from "../../../models";
+import { Booking, BookingStatus, Calendar, ServiceProvider, User } from "../../../models";
 import { InsertResult } from "typeorm";
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "../bookings.apicontract";
 import { TimeslotsService } from '../../timeslots/timeslots.service';
@@ -11,12 +11,14 @@ import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotPro
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { DateHelper } from "../../../infrastructure/dateHelper";
 import { UnavailabilitiesService } from "../../unavailabilities/unavailabilities.service";
+import { UserContext } from '../../../infrastructure/userContext.middleware';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
+// tslint:disable-next-line: no-big-function
 describe("Bookings.Service", () => {
 	const calendar = new Calendar();
 	calendar.id = 1;
@@ -26,12 +28,21 @@ describe("Bookings.Service", () => {
 	serviceProvider.id = 1;
 	const bookingMock = Booking.create(1, new Date("2020-08-10"), new Date("2020-08-11"), 1, 'RHDH');
 
+	const adminMock = User.createAdminUser({
+		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+		userName: 'UserName',
+		email: 'test@email.com',
+		name: 'Name'
+	});
+	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+
 	beforeAll(() => {
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 		Container.bind(UnavailabilitiesService).to(UnavailabilitiesServiceMock);
+		Container.bind(UserContext).to(UserContextMock);
 	});
 
 	afterEach(() => {
@@ -44,6 +55,7 @@ describe("Bookings.Service", () => {
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		BookingRepositoryMock.searchBookingsMock = [];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
 
@@ -60,6 +72,7 @@ describe("Bookings.Service", () => {
 		BookingRepositoryMock.searchBookingsMock = [];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
 
@@ -76,6 +89,7 @@ describe("Bookings.Service", () => {
 		BookingRepositoryMock.searchBookingsMock = [];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = null;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		await expect(async () => await Container.get(BookingsService).save(bookingRequest, 1))
 			.rejects.toStrictEqual(
@@ -93,6 +107,7 @@ describe("Bookings.Service", () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		TimeslotsServiceMock.acceptedBookings = [bookingMock];
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
 
@@ -109,6 +124,7 @@ describe("Bookings.Service", () => {
 		BookingRepositoryMock.searchBookingsMock = [];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
 
@@ -127,6 +143,7 @@ describe("Bookings.Service", () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		TimeslotsServiceMock.acceptedBookings = [bookingMock];
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(true);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 
 		const test = async () => await Container.get(BookingsService).save(bookingRequest, 1);
 		await expect(test).rejects.toStrictEqual(
@@ -140,6 +157,7 @@ describe("Bookings.Service", () => {
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, -30);
 		BookingRepositoryMock.searchBookingsMock = [];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		const service = Container.get(BookingsService);
 		await expect(async () => await service.save(bookingRequest, 1)).rejects.toThrowError();
@@ -151,6 +169,7 @@ describe("Bookings.Service", () => {
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 30);
 		BookingRepositoryMock.saveMock = Promise.reject(new Error('Some DB error'));
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		const service = Container.get(BookingsService);
 		await expect(async () => await service.save(bookingRequest, 1)).rejects.toThrowError();
@@ -196,6 +215,7 @@ describe("Bookings.Service", () => {
 
 		BookingRepositoryMock.searchBookingsMock = [Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'))];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [];
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		const bookingService = Container.get(BookingsService);
 		await expect(async () => await bookingService.save(bookingRequest, 1))
@@ -211,6 +231,7 @@ describe("Bookings.Service", () => {
 		BookingRepositoryMock.searchBookingsMock = [Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'))];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		const bookingService = Container.get(BookingsService);
 		await expect(async () => await bookingService.save(bookingRequest, 1))
@@ -287,5 +308,14 @@ class UnavailabilitiesServiceMock extends UnavailabilitiesService {
 
 	public async isUnavailable(...params): Promise<any> {
 		return await UnavailabilitiesServiceMock.isUnavailable(...params);
+	}
+}
+
+class UserContextMock extends UserContext {
+	public static getCurrentUser = jest.fn();
+
+	public init() { }
+	public async getCurrentUser(...params): Promise<any> {
+		return await UserContextMock.getCurrentUser(params);
 	}
 }

@@ -19,7 +19,7 @@
 import * as KoaRouter from 'koa-router';
 import * as _ from 'lodash';
 
-import { Container } from 'typescript-ioc';
+import { ContainerContextMiddleware } from './infrastructure/containerContext.middleware';
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
@@ -93,7 +93,8 @@ export function RegisterRoutes(router: KoaRouter) {
             controller.setStatus(undefined);
             }
         {{else}}
-            const controller = Container.get({{../name}});
+			const containerContext = ContainerContextMiddleware.getContainerContext(context);
+            const controller = containerContext.resolve({{../name}});
         {{/if}}
 
         // =============================================================================
