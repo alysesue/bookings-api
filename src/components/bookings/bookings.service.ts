@@ -9,6 +9,7 @@ import { DateHelper } from "../../infrastructure/dateHelper";
 import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
 import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
 import { UserContext } from "../../infrastructure/userContext.middleware";
+import { QueryAccessType } from "../../core/repository";
 
 @InRequestScope
 export class BookingsService {
@@ -95,7 +96,7 @@ export class BookingsService {
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
-		return await this.bookingsRepository.search(searchRequest);
+		return await this.bookingsRepository.search({ ...searchRequest, accessType: QueryAccessType.Read });
 	}
 
 	private async createBooking(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
