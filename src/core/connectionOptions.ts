@@ -1,12 +1,12 @@
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
-import { AdminUser, Booking, Calendar, Schedule, Service, ServiceProvider, SingPassUser, TimeslotItem, TimeslotsSchedule, Unavailability, User, WeekDayBreak, WeekDaySchedule } from "../models";
+import { AdminUser, Booking, BookingChangeLog, Calendar, Schedule, Service, ServiceProvider, SingPassUser, TimeslotItem, TimeslotsSchedule, Unavailability, User, WeekDayBreak, WeekDaySchedule } from "../models";
 import { getConfig } from '../config/app-config';
 export function getConnectionOptions(): PostgresConnectionOptions {
 	const config = getConfig();
 	return {
 		database: config.database.instance,
 		entities: [
-			Booking, Calendar, Service, Schedule, ServiceProvider, WeekDayBreak, WeekDaySchedule, TimeslotsSchedule, TimeslotItem, Unavailability, User, SingPassUser, AdminUser
+			Booking, BookingChangeLog, Calendar, Service, Schedule, ServiceProvider, WeekDayBreak, WeekDaySchedule, TimeslotsSchedule, TimeslotItem, Unavailability, User, SingPassUser, AdminUser
 		],
 		logging: ["schema", "migration"],
 		host: config.database.host,

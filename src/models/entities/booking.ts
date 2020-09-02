@@ -33,6 +33,7 @@ export class Booking {
 	private _endDateTime: Date;
 
 	@Column()
+	@Index()
 	private _createdAt: Date;
 
 	@Column({ nullable: true })
@@ -69,6 +70,10 @@ export class Booking {
 
 	public get service(): Service {
 		return this._service;
+	}
+
+	public set service(value: Service) {
+		this._service = value;
 	}
 
 	public get eventICalId(): string {

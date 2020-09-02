@@ -10,6 +10,8 @@ import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders
 import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
 import { UserContext } from "../../infrastructure/userContext.middleware";
 import { QueryAccessType } from "../../core/repository";
+import { BookingChangeLog, BookingJsonSchemaV1, ChangeLogAction } from "../../models/entities/bookingChangeLog";
+import { ServicesService } from "../services/services.service";
 
 @InRequestScope
 export class BookingsService {
@@ -23,6 +25,10 @@ export class BookingsService {
 	private timeslotsService: TimeslotsService;
 	@Inject
 	private serviceProviderRepo: ServiceProvidersRepository;
+	@Inject
+	private servicesService: ServicesService;
+	@Inject
+	private changeLogsRepository: BookingChangeLogsRepository;
 	@Inject
 	private userContext: UserContext;
 
@@ -38,19 +44,61 @@ export class BookingsService {
 		return booking;
 	}
 
+	private mapBookingState(booking: Booking): BookingJsonSchemaV1 {
+		if (!booking)
+			return {} as BookingJsonSchemaV1;
+
+		const jsonObj = {
+			id: booking.id,
+			status: booking.status,
+			startDateTime: booking.startDateTime,
+			endDateTime: booking.startDateTime,
+			serviceId: booking.serviceId,
+			serviceName: booking.service.name,
+			CitizenUinFin: booking.citizenUinFin,
+			// TODO: ADD Citizen data;
+			// CitizenName: string,
+			// CitizenEmail: string,
+			// CitizenPhone: string,
+			// Location: string,
+			// Description: string,
+		} as BookingJsonSchemaV1;
+
+		if (booking.serviceProviderId) {
+			const serviceProvider = booking.serviceProvider;
+			jsonObj.serviceProviderId = booking.serviceProviderId;
+			jsonObj.serviceProviderName = serviceProvider.name;
+			jsonObj.serviceProviderEmail = serviceProvider.email;
+			// TODO: ADD SP PHONE jsonObj.serviceProviderPhone = serviceProvider.phone;
+		}
+
+		return jsonObj;
+	}
+
+	private async executeAndLogAction(action: ChangeLogAction, booking: Booking, operation: (booking: Booking) => Promise<Booking>): Promise<Booking> {
+		const user = await this.userContext.getCurrentUser();
+		const previousState = this.mapBookingState(booking);
+		const newBooking = await operation(booking);
+		const newState = this.mapBookingState(newBooking);
+
+		const changelog = BookingChangeLog.create({
+			action,
+			booking: newBooking,
+			user,
+			previousState,
+			newState
+		});
+
+		// TODO: save log and booking
+
+		return newBooking;
+	}
+
 	public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
-		const booking = await this.createBooking(bookingRequest, serviceId);
-
-		if (!bookingRequest.outOfSlotBooking) {
-			await this.validateTimeSlot(booking);
-		} else {
-			await this.validateOutOfSlotBookings(booking);
-		}
-
-		await this.bookingsRepository.save(booking);
-		return this.getBooking(booking.id);
+		return await this.executeAndLogAction(ChangeLogAction.Create, null,
+			async (_booking) => await this.createBooking(bookingRequest, serviceId));
 	}
 
 	public async cancelBooking(bookingId: number): Promise<Booking> {
@@ -73,6 +121,11 @@ export class BookingsService {
 	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequest): Promise<Booking> {
 		const booking = await this.getBookingForAccepting(bookingId);
 
+		return await this.executeAndLogAction(ChangeLogAction.Accept, booking,
+			async (_booking) => await this.acceptBookingInternal(_booking, acceptRequest));
+	}
+
+	private async acceptBookingInternal(booking: Booking, acceptRequest: BookingAcceptRequest): Promise<Booking> {
 		const provider = await this.serviceProviderRepo.getServiceProvider({ id: acceptRequest.serviceProviderId });
 		if (!provider) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${acceptRequest.serviceProviderId}' not found`);
@@ -90,8 +143,6 @@ export class BookingsService {
 		booking.eventICalId = eventICalId;
 		booking.acceptedAt = new Date();
 
-		await this.bookingsRepository.update(booking);
-
 		return booking;
 	}
 
@@ -100,18 +151,14 @@ export class BookingsService {
 	}
 
 	private async createBooking(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
-		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({ id: bookingRequest.serviceProviderId });
 		const duration = Math.floor(DateHelper.DiffInMinutes(bookingRequest.endDateTime, bookingRequest.startDateTime));
-
 		if (duration <= 0) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('End time for booking must be greater than start time');
 		}
 
-		if (bookingRequest.serviceProviderId) {
-			const provider = await this.serviceProviderRepo.getServiceProvider({ id: bookingRequest.serviceProviderId });
-			if (!provider) {
-				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${bookingRequest.serviceProviderId}' not found`);
-			}
+		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({ id: bookingRequest.serviceProviderId });
+		if (bookingRequest.serviceProviderId && !serviceProvider) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${bookingRequest.serviceProviderId}' not found`);
 		}
 
 		const booking = Booking.create(
@@ -121,12 +168,22 @@ export class BookingsService {
 			bookingRequest.serviceProviderId,
 			bookingRequest.refId
 		);
+		booking.serviceProvider = serviceProvider;
+		booking.service = await this.servicesService.getService(serviceId);
+
 		booking.creator = await this.userContext.getCurrentUser();
 		if (booking.creator.isCitizen()) {
 			booking.citizenUinFin = booking.creator.singPassUser.UinFin;
 		}
 
 		booking.eventICalId = await this.getEventICalId(booking, serviceProvider);
+
+		if (!bookingRequest.outOfSlotBooking) {
+			await this.validateTimeSlot(booking);
+		} else {
+			await this.validateOutOfSlotBookings(booking);
+		}
+
 		return booking;
 	}
 
