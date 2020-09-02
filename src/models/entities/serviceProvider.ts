@@ -8,9 +8,11 @@ import { TimeslotsSchedule } from "./timeslotsSchedule";
 
 @Entity()
 export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, IEntityWithTimeslotsSchedule {
-
 	@Column()
 	private _createdAt: Date;
+
+	constructor() {
+	}
 
 	@Column()
 	private _status: ServiceProviderStatus;
@@ -25,9 +27,11 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 
 	@Column({ nullable: false })
 	private _serviceId: number;
+
 	public get serviceId(): number {
 		return this._serviceId;
 	}
+
 	public set serviceId(value: number) {
 		this._serviceId = value;
 	}
@@ -36,15 +40,19 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
+	public get service(): Service {
+		return this._service;
+	}
+
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
-	public set id(id: number) {
-		this._id = id;
-	}
-
 	public get id(): number {
 		return this._id;
+	}
+
+	public set id(id: number) {
+		this._id = id;
 	}
 
 	@Column({ type: "varchar", length: 300 })
@@ -58,22 +66,6 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		this._name = value;
 	}
 
-
-	constructor() {
-	}
-
-	public static create(name: string, calendar: Calendar, serviceId: number, email?: string): ServiceProvider {
-		const instance = new ServiceProvider();
-		instance._serviceId = serviceId;
-		instance._name = name;
-		instance._createdAt = new Date();
-		instance._status = ServiceProviderStatus.Valid;
-		instance._calendar = calendar;
-		instance._email = email;
-		return instance;
-	}
-
-
 	@Column({ nullable: true })
 	private _email?: string;
 
@@ -85,6 +77,16 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		this._email = value;
 	}
 
+	@Column({ nullable: true })
+	private _phone?: string;
+
+	public get phone(): string {
+		return this._phone;
+	}
+
+	public set phone(value: string) {
+		this._phone = value;
+	}
 
 
 	@OneToOne("Calendar")
@@ -99,33 +101,39 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		this._calendar = calendar;
 	}
 
-	public get service(): Service {
-		return this._service;
-	}
-
 	@ManyToOne('Schedule', { nullable: true })
 	@JoinColumn({ name: '_scheduleId' })
 	public _schedule: Schedule;
-
-	public set schedule(schedule: Schedule) {
-		this._schedule = schedule;
-	}
 
 	public get schedule(): Schedule {
 		return this._schedule;
 	}
 
+	public set schedule(schedule: Schedule) {
+		this._schedule = schedule;
+	}
+
 	@Column({ nullable: true })
 	private _scheduleId?: number;
 
-	public set scheduleId(id: number) { this._scheduleId = id; }
-	public get scheduleId(): number { return this._scheduleId; }
+	public get scheduleId(): number {
+		return this._scheduleId;
+	}
+
+	public set scheduleId(id: number) {
+		this._scheduleId = id;
+	}
 
 	@Column({ nullable: true })
 	private _timeslotsScheduleId: number;
 
-	public set timeslotsScheduleId(id: number) { this._timeslotsScheduleId = id; }
-	public get timeslotsScheduleId(): number { return this._timeslotsScheduleId; }
+	public get timeslotsScheduleId(): number {
+		return this._timeslotsScheduleId;
+	}
+
+	public set timeslotsScheduleId(id: number) {
+		this._timeslotsScheduleId = id;
+	}
 
 	@OneToOne(type => TimeslotsSchedule, e => e._serviceProvider, {
 		cascade: true,
@@ -133,6 +141,23 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	@JoinColumn({ name: '_timeslotsScheduleId' })
 	private _timeslotsSchedule: TimeslotsSchedule;
 
-	public set timeslotsSchedule(value: TimeslotsSchedule) { this._timeslotsSchedule = value; }
-	public get timeslotsSchedule(): TimeslotsSchedule { return this._timeslotsSchedule; }
+	public get timeslotsSchedule(): TimeslotsSchedule {
+		return this._timeslotsSchedule;
+	}
+
+	public set timeslotsSchedule(value: TimeslotsSchedule) {
+		this._timeslotsSchedule = value;
+	}
+
+	public static create(name: string, calendar: Calendar, serviceId: number, email?: string, phone?: string): ServiceProvider {
+		const instance = new ServiceProvider();
+		instance._serviceId = serviceId;
+		instance._name = name;
+		instance._createdAt = new Date();
+		instance._status = ServiceProviderStatus.Valid;
+		instance._calendar = calendar;
+		instance._email = email;
+		instance._phone = phone;
+		return instance;
+	}
 }
