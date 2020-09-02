@@ -5,6 +5,7 @@ import { Container } from "typescript-ioc";
 import { InsertResult } from "typeorm";
 import { QueryAccessType } from "../../../core/repository";
 import { UserContext } from '../../../infrastructure/userContext.middleware';
+import { BookingSearchRequest } from "../bookings.apicontract";
 
 beforeAll(() => {
 	Container.bind(DbConnection).to(MockDBConnection);
@@ -44,9 +45,8 @@ describe("Bookings repository", () => {
 			serviceProviderId: 1,
 			statuses: [BookingStatus.Accepted],
 			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
-			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
-			accessType: QueryAccessType.Read,
-		});
+			to: new Date(Date.UTC(2020, 0, 1, 15, 0))
+		} as BookingSearchRequest, QueryAccessType.Read);
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
@@ -74,9 +74,8 @@ describe("Bookings repository", () => {
 			serviceId: 1,
 			serviceProviderId: 1,
 			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
-			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
-			accessType: QueryAccessType.Read,
-		});
+			to: new Date(Date.UTC(2020, 0, 1, 15, 0))
+		} as BookingSearchRequest, QueryAccessType.Read);
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();

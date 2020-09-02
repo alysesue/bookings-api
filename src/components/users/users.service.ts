@@ -5,6 +5,7 @@ import { MOLAuthType } from "mol-lib-api-contract/auth/common/MOLAuthType";
 import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
 import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
 import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
+
 export type HeadersType = { [key: string]: string };
 
 @InRequestScope
@@ -78,7 +79,7 @@ export class UsersService {
 			return null;
 		}
 
-		const user = User.createAdminUser(data);
-		return await this.getOrSaveInternal(user, () => this.usersRepository.getUserByMolAdminId(data.molAdminId));
+		const adminUser = User.createAdminUser(data);
+		return await this.getOrSaveInternal(adminUser, () => this.usersRepository.getUserByMolAdminId(data.molAdminId));
 	}
 }

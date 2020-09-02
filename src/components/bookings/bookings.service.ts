@@ -1,6 +1,6 @@
 import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
 import { Inject, InRequestScope } from "typescript-ioc";
-import { Booking, BookingStatus, ServiceProvider } from "../../models";
+import { Booking, BookingStatus, ServiceProvider, User } from "../../models";
 import { BookingsRepository } from "./bookings.repository";
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "./bookings.apicontract";
 import { TimeslotsService } from '../timeslots/timeslots.service';
@@ -53,11 +53,22 @@ export class BookingsService {
 		return this.getBooking(booking.id);
 	}
 
+	private static validateUinFin(citizenUinFin: string) {
+		return !citizenUinFin;
+	}
+
+	private static getCitizenUinFin(currentUser: User, bookingRequest: BookingRequest): string {
+		if (currentUser && currentUser.isCitizen()) {
+			return currentUser.singPassUser.UinFin;
+		}
+		return bookingRequest.citizenUinFin;
+	}
+
 	public async cancelBooking(bookingId: number): Promise<Booking> {
 		const booking = await this.getBookingForCancelling(bookingId);
 		const eventCalId = booking.eventICalId;
 		if (booking.status === BookingStatus.Accepted) {
-			const provider = await this.serviceProviderRepo.getServiceProvider({ id: booking.serviceProviderId });
+			const provider = await this.serviceProviderRepo.getServiceProvider({id: booking.serviceProviderId});
 			if (!provider) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${booking.serviceProviderId}' not found`);
 
@@ -73,7 +84,7 @@ export class BookingsService {
 	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequest): Promise<Booking> {
 		const booking = await this.getBookingForAccepting(bookingId);
 
-		const provider = await this.serviceProviderRepo.getServiceProvider({ id: acceptRequest.serviceProviderId });
+		const provider = await this.serviceProviderRepo.getServiceProvider({id: acceptRequest.serviceProviderId});
 		if (!provider) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${acceptRequest.serviceProviderId}' not found`);
 		}
@@ -96,23 +107,16 @@ export class BookingsService {
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
-		return await this.bookingsRepository.search({ ...searchRequest, accessType: QueryAccessType.Read });
+		return await this.bookingsRepository.search(searchRequest, QueryAccessType.Read);
 	}
 
 	private async createBooking(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
-		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({ id: bookingRequest.serviceProviderId });
-		const duration = Math.floor(DateHelper.DiffInMinutes(bookingRequest.endDateTime, bookingRequest.startDateTime));
+		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({id: bookingRequest.serviceProviderId});
+		const currentUser = await this.userContext.getCurrentUser();
 
-		if (duration <= 0) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('End time for booking must be greater than start time');
-		}
+		const citizenUinFin = BookingsService.getCitizenUinFin(currentUser, bookingRequest);
 
-		if (bookingRequest.serviceProviderId) {
-			const provider = await this.serviceProviderRepo.getServiceProvider({ id: bookingRequest.serviceProviderId });
-			if (!provider) {
-				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${bookingRequest.serviceProviderId}' not found`);
-			}
-		}
+		await this.validateBooking(bookingRequest, citizenUinFin);
 
 		const booking = Booking.create(
 			serviceId,
@@ -121,13 +125,29 @@ export class BookingsService {
 			bookingRequest.serviceProviderId,
 			bookingRequest.refId
 		);
-		booking.creator = await this.userContext.getCurrentUser();
-		if (booking.creator.isCitizen()) {
-			booking.citizenUinFin = booking.creator.singPassUser.UinFin;
-		}
-
+		booking.creator = currentUser;
+		booking.citizenUinFin = citizenUinFin;
 		booking.eventICalId = await this.getEventICalId(booking, serviceProvider);
 		return booking;
+	}
+
+	private async validateBooking(bookingRequest: BookingRequest, citizenUinFin: string) {
+		const duration = Math.floor(DateHelper.DiffInMinutes(bookingRequest.endDateTime, bookingRequest.startDateTime));
+
+		if (duration <= 0) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('End time for booking must be greater than start time');
+		}
+
+		if (bookingRequest.serviceProviderId) {
+			const provider = await this.serviceProviderRepo.getServiceProvider({id: bookingRequest.serviceProviderId});
+			if (!provider) {
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${bookingRequest.serviceProviderId}' not found`);
+			}
+		}
+
+		if (BookingsService.validateUinFin(citizenUinFin)){
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Citizen Uin/Fin not found');
+		}
 	}
 
 	private async getEventICalId(booking: Booking, serviceProvider: ServiceProvider) {
@@ -148,7 +168,7 @@ export class BookingsService {
 	}
 
 	private async validateOutOfSlotBookings(booking: Booking) {
-		const { startDateTime, endDateTime, serviceId, serviceProviderId } = booking;
+		const {startDateTime, endDateTime, serviceId, serviceProviderId} = booking;
 
 		const searchQuery = new BookingSearchRequest(startDateTime, endDateTime, [BookingStatus.Accepted, BookingStatus.PendingApproval], serviceId, serviceProviderId);
 
@@ -157,7 +177,7 @@ export class BookingsService {
 		const acceptedBookings = pendingAndAcceptedBookings.filter(acceptedBooking => acceptedBooking.status === BookingStatus.Accepted);
 
 		for (const item of acceptedBookings) {
-			const intersects = booking.bookingIntersects({ start: item.startDateTime, end: item.endDateTime });
+			const intersects = booking.bookingIntersects({start: item.startDateTime, end: item.endDateTime});
 			if (intersects) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking request not valid as it overlaps another accepted booking`);
 			}

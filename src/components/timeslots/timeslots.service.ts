@@ -50,7 +50,7 @@ export class TimeslotsService {
 		timeslotEntriesFromBookings: AggregatedEntry<Booking>[]): void {
 
 		const entriesLookup = mappedEntries.reduce((set, entry) =>
-			set.add(TimeslotsService.timeslotKeySelector(entry.startTime, entry.endTime)),
+				set.add(TimeslotsService.timeslotKeySelector(entry.startTime, entry.endTime)),
 			new Set<string>());
 
 		timeslotEntriesFromBookings.forEach(entry => {
@@ -86,9 +86,8 @@ export class TimeslotsService {
 			from: startDateTime,
 			to: endDateTime,
 			statuses: [BookingStatus.PendingApproval, BookingStatus.Accepted],
-			serviceId,
-			accessType: QueryAccessType.Read
-		});
+			serviceId
+		}, QueryAccessType.Read);
 
 		const acceptedBookings = bookings.filter(booking => booking.status === BookingStatus.Accepted);
 		const pendingBookings = bookings.filter(booking => booking.status === BookingStatus.PendingApproval);
@@ -118,7 +117,11 @@ export class TimeslotsService {
 
 	private async filterUnavailabilities(startDateTime: Date, endDateTime: Date, serviceId: number, entries: AvailableTimeslotProviders[])
 		: Promise<AvailableTimeslotProviders[]> {
-		const unavailabilities = await this.unavailabilitiesService.search({ from: startDateTime, to: endDateTime, serviceId });
+		const unavailabilities = await this.unavailabilitiesService.search({
+			from: startDateTime,
+			to: endDateTime,
+			serviceId
+		});
 
 		for (const unavailability of unavailabilities) {
 			for (const entry of entries) {
@@ -136,7 +139,7 @@ export class TimeslotsService {
 
 		for (const element of entries) {
 			const result = acceptedBookings.filter(booking => {
-				return booking.bookingIntersects({ start: element.startTime, end: element.endTime });
+				return booking.bookingIntersects({start: element.startTime, end: element.endTime});
 			}).map(booking => booking.serviceProviderId);
 			element.setOverlappingServiceProviders(result);
 

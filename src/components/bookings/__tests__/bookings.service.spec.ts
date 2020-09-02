@@ -103,6 +103,7 @@ describe("Bookings.Service", () => {
 		bookingRequest.serviceProviderId = 5;
 		bookingRequest.outOfSlotBooking = true;
 		bookingRequest.refId = 'RFM186';
+		bookingRequest.citizenUinFin = 'NRIC1234';
 		BookingRepositoryMock.searchBookingsMock = [];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		TimeslotsServiceMock.acceptedBookings = [bookingMock];
@@ -121,6 +122,7 @@ describe("Bookings.Service", () => {
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.outOfSlotBooking = false;
+		bookingRequest.citizenUinFin = 'NRIC1234';
 		BookingRepositoryMock.searchBookingsMock = [];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
@@ -139,6 +141,7 @@ describe("Bookings.Service", () => {
 		bookingRequest.serviceProviderId = 5;
 		bookingRequest.outOfSlotBooking = true;
 		bookingRequest.refId = 'RFM186';
+		bookingRequest.citizenUinFin = 'NRIC1234';
 		BookingRepositoryMock.searchBookingsMock = [];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		TimeslotsServiceMock.acceptedBookings = [bookingMock];
@@ -237,6 +240,23 @@ describe("Bookings.Service", () => {
 		await expect(async () => await bookingService.save(bookingRequest, 1))
 			.rejects
 			.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('No available service providers for this timeslot'));
+	});
+
+	it('should validate no citizenUinFin', async () => {
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 5;
+		BookingRepositoryMock.searchBookingsMock = [];
+		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(null));
+
+		const bookingService = Container.get(BookingsService);
+
+		await expect(async () => await bookingService.save(bookingRequest, 1))
+			.rejects
+			.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Citizen Uin/Fin not found'));
 	});
 
 	it("should return eventId", async () => {
