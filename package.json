@@ -4,6 +4,7 @@
 	"main": "index.js",
 	"scripts": {
 		"lint": "tslint -p ./tsconfig.json -c ./tslint.json ./src/**/*.ts",
+		"lint-fix": "tslint --fix -p ./tsconfig.json -c ./tslint.json ./src/**/*.ts",
 		"test": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
 		"atest": "npm run fixLF && node --expose-gc ./node_modules/jest/bin/jest --runInBand",
 		"test:cov": "npm run fixLF && node --expose-gc ./node_modules/jest/bin/jest --runInBand --collect-coverage",

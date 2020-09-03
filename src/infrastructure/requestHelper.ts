@@ -1,5 +1,5 @@
-import { Controller } from "tsoa";
-import * as Koa from "koa";
+import { Controller } from 'tsoa';
+import * as Koa from 'koa';
 
 export type RawHeaders = { [key: string]: string };
 
