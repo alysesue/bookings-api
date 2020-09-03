@@ -132,6 +132,7 @@ export class Booking {
 			if (builder.serviceProviderId) {
 				this._serviceProviderId = builder.serviceProviderId;
 				this._status = BookingStatus.Accepted;
+				console.log(this._createdAt);
 				this._acceptedAt = this._createdAt;
 			} else {
 				this._status = BookingStatus.PendingApproval;
@@ -213,6 +214,18 @@ export class Booking {
 
 	public get citizenUinFin(): string {
 		return this._citizenUinFin;
+	}
+
+	public get refId(): string {
+		return this._refId;
+	}
+
+	public get location(): string {
+		return this._location;
+	}
+
+	public get description(): string {
+		return this._description;
 	}
 
 	public bookingIntersects(other: { start: Date, end: Date }): boolean {

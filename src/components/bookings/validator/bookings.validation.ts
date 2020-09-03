@@ -14,13 +14,14 @@ interface IValidator {
 }
 
 @InRequestScope
-abstract class BookingsValidator {
+abstract class BookingsValidator implements IValidator {
 
 	protected static OverlapsAcceptedBooking = `Booking request not valid as it overlaps another accepted booking`;
 	protected static ServiceProviderNotAvailable = `The service provider is not available in the selected time range`;
 	protected static ServiceProvidersNotAvailable = `No available service providers in the selected time range`;
 	private static EndTimeLesserThanStartTime = 'End time for booking must be greater than start time';
 	private static CitizenUinFinNotFound = 'Citizen Uin/Fin not found';
+
 	@Inject
 	private serviceProvidersRepository: ServiceProvidersRepository
 
@@ -30,7 +31,7 @@ abstract class BookingsValidator {
 		return !citizenUinFin;
 	}
 
-	protected async validate(booking: Booking) {
+	public async validate(booking: Booking) {
 		const duration = Math.floor(DateHelper.DiffInMinutes(booking.endDateTime, booking.startDateTime));
 
 		if (duration <= 0) {
@@ -47,19 +48,22 @@ abstract class BookingsValidator {
 		if (BookingsValidator.validateUinFin(booking.citizenUinFin)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.CitizenUinFinNotFound);
 		}
+
+		await this.validateBooking(booking);
 	}
+
+	protected abstract async validateBooking(booking: Booking);
 }
 
 @InRequestScope
-class OutOfSlotBookingValidator extends BookingsValidator implements IValidator {
+class OutOfSlotBookingValidator extends BookingsValidator {
 
 	@Inject
 	private bookingsRepository: BookingsRepository;
 	@Inject
 	private unAvailabilitiesService: UnavailabilitiesService;
 
-	async validate(booking: Booking): Promise<void> {
-		await super.validate(booking);
+	async validateBooking(booking: Booking): Promise<void> {
 		const {startDateTime, endDateTime, serviceId, serviceProviderId} = booking;
 
 		const searchQuery = new BookingSearchRequest(startDateTime, endDateTime, [BookingStatus.Accepted], serviceId, serviceProviderId);
@@ -85,14 +89,12 @@ class OutOfSlotBookingValidator extends BookingsValidator implements IValidator 
 }
 
 @InRequestScope
-class SlotBookingsValidator extends BookingsValidator implements IValidator {
+class SlotBookingsValidator extends BookingsValidator {
 
 	@Inject
 	private timeslotsService: TimeslotsService;
 
-	async validate(booking: Booking): Promise<void> {
-		await super.validate(booking);
-
+	async validateBooking(booking: Booking): Promise<void> {
 		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.endDateTime, booking.serviceId, booking.serviceProviderId);
 
 		if (timeslotEntry.availabilityCount < 1) {
