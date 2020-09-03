@@ -1,4 +1,4 @@
-import {Container} from "typescript-ioc";
+import { Container } from "typescript-ioc";
 import {
 	Booking,
 	BookingStatus,
@@ -9,13 +9,14 @@ import {
 	TimeslotsSchedule,
 	Unavailability
 } from "../../../models";
-import {TimeslotsService} from "../timeslots.service";
-import {BookingsRepository} from "../../bookings/bookings.repository";
-import {DateHelper} from "../../../infrastructure/dateHelper";
-import {ServicesRepository} from '../../services/services.repository';
-import {ServiceProvidersRepository} from "../../serviceProviders/serviceProviders.repository";
-import {AvailableTimeslotProviders} from "../availableTimeslotProviders";
-import {UnavailabilitiesService} from "../../unavailabilities/unavailabilities.service";
+import { TimeslotsService } from "../timeslots.service";
+import { BookingsRepository } from "../../bookings/bookings.repository";
+import { DateHelper } from "../../../infrastructure/dateHelper";
+import { ServicesRepository } from '../../services/services.repository';
+import { ServiceProvidersRepository } from "../../serviceProviders/serviceProviders.repository";
+import { AvailableTimeslotProviders } from "../availableTimeslotProviders";
+import { UnavailabilitiesService } from "../../unavailabilities/unavailabilities.service";
+import { BookingBuilder } from "../../../models/entities/booking";
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -57,13 +58,23 @@ describe("Timeslots Service", () => {
 	ServiceProviderMock2.timeslotsScheduleId = ProviderScheduleMock._id;
 
 	// Booking in place for the last time slot
-	const BookingMock = Booking.create(1, DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
+	const BookingMock = new BookingBuilder()
+		.withServiceId(1)
+		.withStartDateTime(DateHelper.setHours(date, 17, 0))
+		.withEndDateTime(DateHelper.setHours(date, 18, 0))
+		.build();
+
+	const pendingBookingMock = new BookingBuilder()
+		.withServiceId(1)
+		.withStartDateTime(DateHelper.setHours(date, 17, 0))
+		.withEndDateTime(DateHelper.setHours(date, 18, 0))
+		.build();
+
 	BookingMock.status = BookingStatus.Accepted;
 	BookingMock.eventICalId = 'eventICalId';
 	BookingMock.serviceProvider = ServiceProviderMock;
 	BookingMock.serviceProviderId = ServiceProviderMock.id;
 
-	const pendingBookingMock = Booking.create(1, DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
 	pendingBookingMock.status = BookingStatus.PendingApproval;
 
 	const BookingsRepositoryMock = {
@@ -149,7 +160,12 @@ describe("Timeslots Service", () => {
 		const serviceProvider = ServiceProvider.create('Juku', undefined, 1);
 		serviceProvider.id = 1;
 
-		const testBooking = Booking.create(1, new Date(), new Date(), serviceProvider.id);
+		const testBooking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+
 		const availableTimeslotProvidersMock = new AvailableTimeslotProviders();
 		availableTimeslotProvidersMock.setRelatedServiceProviders([serviceProvider]);
 		availableTimeslotProvidersMock.setBookedServiceProviders([testBooking]);
@@ -184,7 +200,14 @@ describe("Timeslots Service", () => {
 });
 
 const getOutOfSlotBooking = (serviceProvider: ServiceProvider): Booking => {
-	const booking = Booking.create(1, new Date('2020-08-08T06:00Z'), new Date('2020-08-08T09:00Z'), serviceProvider.id, 'ref');
+	const booking = new BookingBuilder()
+		.withServiceId(1)
+		.withStartDateTime(new Date('2020-08-08T06:00Z'))
+		.withEndDateTime(new Date('2020-08-08T09:00Z'))
+		.withServiceProviderId(serviceProvider.id)
+		.withRefId('ref')
+		.build();
+
 	booking.serviceProvider = serviceProvider;
 	return booking;
 };

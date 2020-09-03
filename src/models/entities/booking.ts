@@ -5,20 +5,83 @@ import { Service } from "./service";
 import * as timeSpan from "../../tools/timeSpan";
 import { User } from "./user";
 
+
+export class BookingBuilder {
+	serviceId: number;
+	startDateTime: Date;
+	endDateTime: Date;
+	refId: string;
+	location: string;
+	description: string;
+	serviceProviderId: number;
+	creator: User;
+	citizenUinFin: string;
+
+	withServiceId(serviceId: number): BookingBuilder {
+		this.serviceId = serviceId;
+		return this;
+	}
+
+	withStartDateTime(startDateTime: Date): BookingBuilder {
+		this.startDateTime = startDateTime;
+		return this;
+	}
+
+	withEndDateTime(endDateTime: Date): BookingBuilder {
+		this.endDateTime = endDateTime;
+		return this;
+	}
+
+	withRefId(refId: string): BookingBuilder {
+		this.refId = refId;
+		return this;
+	}
+
+	withLocation(location: string): BookingBuilder {
+		this.location = location;
+		return this;
+	}
+
+	withDescription(description: string): BookingBuilder {
+		this.description = description;
+		return this;
+	}
+
+	withServiceProviderId(serviceProviderId: number): BookingBuilder {
+		this.serviceProviderId = serviceProviderId;
+		return this;
+	}
+
+	withCreator(currentUser: User): BookingBuilder {
+		this.creator = currentUser;
+		return this;
+	}
+
+	withCitizenUinFin(citizenUinFin: string): BookingBuilder {
+		this.citizenUinFin = citizenUinFin;
+		return this;
+	}
+
+	build(): Booking {
+		return new Booking(this);
+	}
+}
+
+
 @Entity()
 export class Booking {
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
-	@Column({ nullable: false })
+	@Column({nullable: false})
 	private _serviceId: number;
 
 	@ManyToOne(type => Service)
-	@JoinColumn({ name: '_serviceId' })
+	@JoinColumn({name: '_serviceId'})
 	private _service: Service;
 
-	@Column({ type: "varchar", length: 300, nullable: true })
+	@Column({type: "varchar", length: 300, nullable: true})
 	private _eventICalId: string;
 
 	@Column()
@@ -35,28 +98,53 @@ export class Booking {
 	@Column()
 	private _createdAt: Date;
 
-	@Column({ nullable: true })
+	@Column({nullable: true})
 	private _refId?: string;
 
-	@Column({ nullable: true })
+	@Column({nullable: true})
 	private _acceptedAt: Date;
 
-	@ManyToOne(type => ServiceProvider, { nullable: true })
-	@JoinColumn({ name: '_serviceProviderId' })
+	@ManyToOne(type => ServiceProvider, {nullable: true})
+	@JoinColumn({name: '_serviceProviderId'})
 	private _serviceProvider: ServiceProvider;
 
-	@Column({ nullable: true })
+	@Column({nullable: true})
 	private _serviceProviderId?: number;
 
-	@ManyToOne(type => User, { nullable: false })
-	@JoinColumn({ name: '_creatorId' })
+	@ManyToOne(type => User, {nullable: false})
+	@JoinColumn({name: '_creatorId'})
 	private _creator: User;
 
-	@Column({ nullable: true, type: "varchar", length: 20 })
+	@Column({nullable: true, type: "varchar", length: 20})
 	@Index()
 	private _citizenUinFin: string;
 
-	constructor() {
+	@Column({nullable: true})
+	private _location: string;
+
+	@Column({nullable: true})
+	private _description: string;
+
+	constructor(builder?: BookingBuilder) {
+		if (builder) {
+			this._createdAt = new Date();
+
+			if (builder.serviceProviderId) {
+				this._serviceProviderId = builder.serviceProviderId;
+				this._status = BookingStatus.Accepted;
+				this._acceptedAt = this._createdAt;
+			} else {
+				this._status = BookingStatus.PendingApproval;
+			}
+			this._serviceId = builder.serviceId;
+			this._startDateTime = builder.startDateTime;
+			this._endDateTime = builder.endDateTime;
+			this._refId = builder.refId;
+			this._location = builder.location;
+			this._description = builder.description;
+			this._creator = builder.creator;
+			this._citizenUinFin = builder.citizenUinFin;
+		}
 	}
 
 	public get id(): number {
@@ -119,10 +207,6 @@ export class Booking {
 		return this._creator;
 	}
 
-	public set creator(value: User) {
-		this._creator = value;
-	}
-
 	public get createdAt(): Date {
 		return this._createdAt;
 	}
@@ -131,33 +215,10 @@ export class Booking {
 		return this._citizenUinFin;
 	}
 
-	public set citizenUinFin(value: string) {
-		this._citizenUinFin = value;
-	}
-
 	public bookingIntersects(other: { start: Date, end: Date }): boolean {
 		if (!other.start || !other.end) {
 			return false;
 		}
 		return timeSpan.intersectsDateTimeSpan(other, this.startDateTime, this.endDateTime);
-	}
-
-	public static create(serviceId: number, startDateTime: Date, endDateTime: Date, serviceProviderId?: number, refId?: string) {
-		const instance = new Booking();
-		instance._serviceId = serviceId;
-		instance._startDateTime = startDateTime;
-		instance._endDateTime = endDateTime;
-		instance._createdAt = new Date();
-		instance._refId = refId;
-
-		if (serviceProviderId) {
-			instance._serviceProviderId = serviceProviderId;
-			instance._status = BookingStatus.Accepted;
-			instance._acceptedAt = instance.createdAt;
-		} else {
-			instance._status = BookingStatus.PendingApproval;
-		}
-
-		return instance;
 	}
 }

@@ -12,6 +12,10 @@ export class CalendarsService {
 	@Inject
 	private googleCalendarApi: GoogleCalendarService;
 
+	private static formatEventId(eventICalId: string): string {
+		return eventICalId.split("@")[0];
+	}
+
 	public async getCalendars(): Promise<Calendar[]> {
 		return await this.calendarsRepository.getCalendars();
 	}
@@ -41,8 +45,8 @@ export class CalendarsService {
 		return await this.googleCalendarApi.createEvent(booking, calendar.googleCalendarId);
 	}
 
-	public async deleteCalendarEvent(calendar: Calendar, eventId: string) {
-		await this.googleCalendarApi.deleteEvent(calendar.googleCalendarId, eventId);
+	public async deleteCalendarEvent(calendar: Calendar, calendarEventICalId: string) {
+		await this.googleCalendarApi.deleteEvent(calendar.googleCalendarId, CalendarsService.formatEventId(calendarEventICalId));
 	}
 
 	public async addUser(calendarUUID: string, model: CalendarUserModel): Promise<CalendarUserModel> {

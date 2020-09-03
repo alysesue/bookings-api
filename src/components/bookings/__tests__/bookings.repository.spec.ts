@@ -6,6 +6,7 @@ import { InsertResult } from "typeorm";
 import { QueryAccessType } from "../../../core/repository";
 import { UserContext } from '../../../infrastructure/userContext.middleware';
 import { BookingSearchRequest } from "../bookings.apicontract";
+import { BookingBuilder } from "../../../models/entities/booking";
 
 beforeAll(() => {
 	Container.bind(DbConnection).to(MockDBConnection);
@@ -86,20 +87,24 @@ describe("Bookings repository", () => {
 
 	it("should save booking", async () => {
 		const insertResult = new InsertResult();
-		insertResult.identifiers = [{ id: "abc" }];
+		insertResult.identifiers = [{id: "abc"}];
 		MockDBConnection.insert.mockImplementation(() => insertResult);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
 		const bookingsRepository = Container.get(BookingsRepository);
-		const booking: Booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const booking = new BookingBuilder().withServiceId(1).withStartDateTime(new Date('2020-10-01T01:00:00')).withEndDateTime(new Date('2020-10-01T02:00:00')).build();
 
 		const result = await bookingsRepository.save(booking);
-		expect(result.identifiers).toStrictEqual([{ id: "abc" }]);
+		expect(result.identifiers).toStrictEqual([{id: "abc"}]);
 	});
 
 	it('should update booking', async () => {
 		const bookingsRepository = Container.get(BookingsRepository);
-		const booking: Booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const booking: Booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
 		MockDBConnection.save.mockImplementation(() => booking);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
@@ -108,7 +113,7 @@ describe("Bookings repository", () => {
 	});
 
 	it('should get booking', async () => {
-		const booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const booking = new BookingBuilder().withServiceId(1).withStartDateTime(new Date('2020-10-01T01:00:00')).withEndDateTime(new Date('2020-10-01T02:00:00')).build();
 
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
@@ -151,7 +156,9 @@ class MockDBConnection extends DbConnection {
 class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn();
 
-	public init() { }
+	public init() {
+	}
+
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(params);
 	}

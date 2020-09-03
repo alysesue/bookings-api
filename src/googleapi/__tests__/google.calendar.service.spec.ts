@@ -1,9 +1,9 @@
 import { GoogleCalendarService } from "../google.calendar.service";
 import { calendar_v3 } from "googleapis";
 import * as mockEvents from "./createEventResponse.json";
-import { Booking } from "../../models";
 import { Container } from "typescript-ioc";
 import { GoogleApi } from "../google.api";
+import { BookingBuilder } from "../../models/entities/booking";
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -88,11 +88,13 @@ describe("Google calendar wrapper tests", () => {
 
 		const googleService = Container.get(GoogleCalendarService);
 		GoogleApiMock.createEventsMock = createEvents;
+		const testBooking1 = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
 
-		const result = await googleService.createEvent(
-			Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00')),
-			"calendar-id"
-		);
+		const result = await googleService.createEvent(testBooking1, "calendar-id");
 
 		expect(result).toBe("s1ov9v4ic15vcs30dtfgeoclg8@google.com");
 	});

@@ -5,6 +5,7 @@ import { CalendarsService } from "../calendars.service";
 import { GoogleCalendarService } from "../../../googleapi/google.calendar.service";
 import { CalendarUserModel } from "../calendars.apicontract";
 import { SchedulesRepository } from "../../schedules/schedules.repository";
+import { BookingBuilder } from "../../../models/entities/booking";
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -51,7 +52,11 @@ describe("Calendar service", () => {
 
 	it("should return available calendars", async () => {
 		const service = Container.get(CalendarsService);
-		const booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
 
 		const calendars = [
 			{
@@ -66,6 +71,20 @@ describe("Calendar service", () => {
 		);
 
 		expect(result).not.toBe(undefined);
+	});
+
+	it('should delete calendar', async () => {
+		const service = Container.get(CalendarsService);
+		const calendar = {
+			googleCalendarId: "googleid@group.calendar.google.com",
+		} as Calendar;
+
+		const calendarEventICalId = 'mpg1ahbqv20q4s6m2h3kriutr0@google.com';
+
+		await service.deleteCalendarEvent(calendar, calendarEventICalId);
+
+		expect(GoogleCalendarServiceMock.deleteEvent.mock.calls[0][0]).toBe('googleid@group.calendar.google.com');
+		expect(GoogleCalendarServiceMock.deleteEvent.mock.calls[0][1]).toBe('mpg1ahbqv20q4s6m2h3kriutr0');
 	});
 });
 
@@ -116,6 +135,8 @@ class CalendarRepositoryMockConstants {
 }
 
 class GoogleCalendarServiceMock extends GoogleCalendarService {
+	static deleteEvent = jest.fn();
+
 	constructor() {
 		super();
 	}
@@ -148,5 +169,9 @@ class GoogleCalendarServiceMock extends GoogleCalendarService {
 		calendarId: string
 	): Promise<string> {
 		return Promise.resolve("event-id");
+	}
+
+	public async deleteEvent(calendarId: string, eventId: string) {
+		return GoogleCalendarServiceMock.deleteEvent(calendarId, eventId);
 	}
 }
