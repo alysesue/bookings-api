@@ -1,11 +1,11 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { TimeslotsScheduleRepository } from "../timeslotsSchedules/timeslotsSchedule.repository";
+import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
 import { mapTimeslotItemToEntity } from './timeslotItems.mapper';
 import { TimeslotItemRequest } from './timeslotItems.apicontract';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { TimeslotItemsRepository } from './timeslotItems.repository';
 import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
-import { DeleteResult } from "typeorm";
+import { DeleteResult } from 'typeorm';
 
 @InRequestScope
 export class TimeslotItemsService {
@@ -14,7 +14,11 @@ export class TimeslotItemsService {
 	@Inject
 	private timeslotItemsRepository: TimeslotItemsRepository;
 
-	private static mapItemAndValidate(timeslotsSchedule: TimeslotsSchedule, request: TimeslotItemRequest, entity: TimeslotItem): TimeslotItem {
+	private static mapItemAndValidate(
+		timeslotsSchedule: TimeslotsSchedule,
+		request: TimeslotItemRequest,
+		entity: TimeslotItem,
+	): TimeslotItem {
 		entity._timeslotsScheduleId = timeslotsSchedule._id;
 		try {
 			mapTimeslotItemToEntity(request, entity);
@@ -23,7 +27,9 @@ export class TimeslotItemsService {
 		}
 
 		if (TimeOfDay.compare(entity.startTime, entity.endTime) >= 0) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Timeslot start time must be less than end time.');
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				'Timeslot start time must be less than end time.',
+			);
 		}
 
 		if (timeslotsSchedule.intersectsAnyExceptThis(entity)) {
@@ -33,15 +39,21 @@ export class TimeslotItemsService {
 		return entity;
 	}
 
-	public async mapAndSaveTimeslotItem(timeslotsSchedule: TimeslotsSchedule, request: TimeslotItemRequest, entity: TimeslotItem) : Promise<TimeslotItem> {
+	public async mapAndSaveTimeslotItem(
+		timeslotsSchedule: TimeslotsSchedule,
+		request: TimeslotItemRequest,
+		entity: TimeslotItem,
+	): Promise<TimeslotItem> {
 		const item = TimeslotItemsService.mapItemAndValidate(timeslotsSchedule, request, entity);
 		return await this.timeslotItemsRepository.saveTimeslotItem(item);
 	}
 
-	public async updateTimeslotItem(timeslotsSchedule: TimeslotsSchedule, timeslotId: number, request: TimeslotItemRequest)
-		: Promise<TimeslotItem> {
-
-		const timeslotItem = timeslotsSchedule?.timeslotItems.find(t => t._id === timeslotId);
+	public async updateTimeslotItem(
+		timeslotsSchedule: TimeslotsSchedule,
+		timeslotId: number,
+		request: TimeslotItemRequest,
+	): Promise<TimeslotItem> {
+		const timeslotItem = timeslotsSchedule?.timeslotItems.find((t) => t._id === timeslotId);
 		if (!timeslotItem) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Timeslot item not found');
 		}
@@ -49,11 +61,14 @@ export class TimeslotItemsService {
 		return this.mapAndSaveTimeslotItem(timeslotsSchedule, request, timeslotItem);
 	}
 
-	public async createTimeslotItem(timeslotsSchedule: TimeslotsSchedule, request: TimeslotItemRequest) : Promise<TimeslotItem> {
+	public async createTimeslotItem(
+		timeslotsSchedule: TimeslotsSchedule,
+		request: TimeslotItemRequest,
+	): Promise<TimeslotItem> {
 		return this.mapAndSaveTimeslotItem(timeslotsSchedule, request, new TimeslotItem());
 	}
 
-	public async deleteTimeslot(timeslotId: number): Promise<DeleteResult>{
+	public async deleteTimeslot(timeslotId: number): Promise<DeleteResult> {
 		return await this.timeslotItemsRepository.deleteTimeslotItem(timeslotId);
 	}
 }

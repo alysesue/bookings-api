@@ -1,29 +1,28 @@
-import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { IUser } from "../interfaces";
+import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { IUser } from '../interfaces';
 
 @Entity()
 export class AdminUser {
-	constructor() {
-	}
+	constructor() {}
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
 	@OneToOne('User', { nullable: false })
-	@JoinColumn({ name: "_userId" })
+	@JoinColumn({ name: '_userId' })
 	public _User: IUser;
 
-	@Column({ type: "uuid", nullable: false })
+	@Column({ type: 'uuid', nullable: false })
 	@Index({ unique: true })
 	private _molAdminId: string;
 
-	@Column({ type: "varchar", length: 100, nullable: true })
+	@Column({ type: 'varchar', length: 100, nullable: true })
 	private _userName: string;
 
-	@Column({ type: "varchar", length: 100, nullable: false })
+	@Column({ type: 'varchar', length: 100, nullable: false })
 	private _email: string;
 
-	@Column({ type: "varchar", length: 100, nullable: true })
+	@Column({ type: 'varchar', length: 100, nullable: true })
 	private _name: string;
 
 	public get id(): number {
@@ -66,8 +65,12 @@ export class AdminUser {
 		this._name = value;
 	}
 
-
-	public static create({ molAdminId, userName, email, name }: {
+	public static create({
+		molAdminId,
+		userName,
+		email,
+		name,
+	}: {
 		molAdminId: string;
 		userName: string;
 		email: string;

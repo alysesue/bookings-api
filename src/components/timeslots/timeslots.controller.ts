@@ -1,13 +1,13 @@
-import {Inject} from "typescript-ioc";
-import {Controller, Get, Header, Query, Response, Route, Security, Tags,} from "tsoa";
-import {AvailabilityEntryResponse, TimeslotEntryResponse} from "./timeslots.apicontract";
-import {TimeslotsService} from './timeslots.service';
-import {AvailableTimeslotProviders} from './availableTimeslotProviders';
-import {ServiceProvidersMapper} from "../serviceProviders/serviceProviders.mapper";
-import {MOLAuth} from "mol-lib-common";
-import {MOLUserAuthLevel} from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
+import { Inject } from 'typescript-ioc';
+import { Controller, Get, Header, Query, Response, Route, Security, Tags } from 'tsoa';
+import { AvailabilityEntryResponse, TimeslotEntryResponse } from './timeslots.apicontract';
+import { TimeslotsService } from './timeslots.service';
+import { AvailableTimeslotProviders } from './availableTimeslotProviders';
+import { ServiceProvidersMapper } from '../serviceProviders/serviceProviders.mapper';
+import { MOLAuth } from 'mol-lib-common';
+import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 
-@Route("v1/timeslots")
+@Route('v1/timeslots')
 @Tags('Timeslots')
 export class TimeslotsController extends Controller {
 	@Inject
@@ -25,16 +25,27 @@ export class TimeslotsController extends Controller {
 	 * @param serviceId The available service to be queried.
 	 * @param serviceProviderId (Optional) Filters timeslots for a specific service provider.
 	 */
-	@Get("availability")
-	@Security("service")
+	@Get('availability')
+	@Security('service')
 	@MOLAuth({
 		admin: {},
-		user: { minLevel: MOLUserAuthLevel.L2 }
+		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,user]')
-	public async getAvailability(@Query() startDate: Date, @Query() endDate: Date, @Header('x-api-service') serviceId: number, @Query() serviceProviderId?: number): Promise<AvailabilityEntryResponse[]> {
-		let availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId, false, serviceProviderId);
-		availableTimeslots = availableTimeslots.filter(e => e.availabilityCount > 0);
+	public async getAvailability(
+		@Query() startDate: Date,
+		@Query() endDate: Date,
+		@Header('x-api-service') serviceId: number,
+		@Query() serviceProviderId?: number,
+	): Promise<AvailabilityEntryResponse[]> {
+		let availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(
+			startDate,
+			endDate,
+			serviceId,
+			false,
+			serviceProviderId,
+		);
+		availableTimeslots = availableTimeslots.filter((e) => e.availabilityCount > 0);
 		return TimeslotsController.mapAvailabilityToResponse(availableTimeslots);
 	}
 
@@ -48,8 +59,8 @@ export class TimeslotsController extends Controller {
 	 * @param serviceProviderId (Optional) Filters timeslots for a specific service provider.
 	 * @param includeBookings (Optional)
 	 */
-	@Get("")
-	@Security("service")
+	@Get('')
+	@Security('service')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
 	public async getTimeslots(
@@ -57,13 +68,20 @@ export class TimeslotsController extends Controller {
 		@Query() endDate: Date,
 		@Header('x-api-service') serviceId: number,
 		@Query() includeBookings: boolean = false,
-		@Query() serviceProviderId?: number): Promise<TimeslotEntryResponse[]> {
-		const timeslots = await this.timeslotsService.getAggregatedTimeslots(startDate, endDate, serviceId, includeBookings, serviceProviderId);
-		return timeslots?.map(t => this.mapTimeslotEntry(t));
+		@Query() serviceProviderId?: number,
+	): Promise<TimeslotEntryResponse[]> {
+		const timeslots = await this.timeslotsService.getAggregatedTimeslots(
+			startDate,
+			endDate,
+			serviceId,
+			includeBookings,
+			serviceProviderId,
+		);
+		return timeslots?.map((t) => this.mapTimeslotEntry(t));
 	}
 
 	private static mapAvailabilityToResponse(entries: AvailableTimeslotProviders[]): AvailabilityEntryResponse[] {
-		return entries.map(e => this.mapAvailabilityEntry(e));
+		return entries.map((e) => this.mapAvailabilityEntry(e));
 	}
 
 	private static mapAvailabilityEntry(entry: AvailableTimeslotProviders): AvailabilityEntryResponse {
@@ -80,8 +98,12 @@ export class TimeslotsController extends Controller {
 		response.endTime = entry.endTime;
 		response.availabilityCount = entry.availabilityCount;
 		response.pendingBookingsCount = entry.pendingBookingsCount;
-		response.bookedServiceProviders = this.serviceProviderMapper.mapBookedServiceProviderEntries(entry.bookedServiceProviders);
-		response.availableServiceProviders = this.serviceProviderMapper.mapSummaryDataModels(entry.availableServiceProviders);
+		response.bookedServiceProviders = this.serviceProviderMapper.mapBookedServiceProviderEntries(
+			entry.bookedServiceProviders,
+		);
+		response.availableServiceProviders = this.serviceProviderMapper.mapSummaryDataModels(
+			entry.availableServiceProviders,
+		);
 		return response;
 	}
 }

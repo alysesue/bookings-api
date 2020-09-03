@@ -1,8 +1,8 @@
-import { Container } from "typescript-ioc";
-import { cloneDeep } from "lodash";
-import { DeleteResult } from "typeorm";
-import { ServiceProvidersService } from "../serviceProviders.service";
-import { ServiceProvidersRepository } from "../serviceProviders.repository";
+import { Container } from 'typescript-ioc';
+import { cloneDeep } from 'lodash';
+import { DeleteResult } from 'typeorm';
+import { ServiceProvidersService } from '../serviceProviders.service';
+import { ServiceProvidersRepository } from '../serviceProviders.repository';
 import {
 	Calendar,
 	Schedule,
@@ -10,31 +10,37 @@ import {
 	ServiceProvider,
 	TimeOfDay,
 	TimeslotItem,
-	TimeslotsSchedule
-} from "../../../models";
-import { ServiceProviderModel, SetProviderScheduleRequest } from "../serviceProviders.apicontract";
-import { CalendarsService } from "../../calendars/calendars.service";
-import { SchedulesService } from "../../schedules/schedules.service";
-import { TimeslotsScheduleRepository } from "../../timeslotsSchedules/timeslotsSchedule.repository";
-import { TimeslotItemsService } from "../../timeslotItems/timeslotItems.service";
-import { Weekday } from "../../../enums/weekday";
-import { TimeslotItemRequest } from "../../timeslotItems/timeslotItems.apicontract";
-import { ServicesService } from "../../services/services.service";
-import { TimeslotsService } from "../../timeslots/timeslots.service";
-import { AvailableTimeslotProviders } from "../../timeslots/availableTimeslotProviders";
+	TimeslotsSchedule,
+} from '../../../models';
+import { ServiceProviderModel, SetProviderScheduleRequest } from '../serviceProviders.apicontract';
+import { CalendarsService } from '../../calendars/calendars.service';
+import { SchedulesService } from '../../schedules/schedules.service';
+import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
+import { TimeslotItemsService } from '../../timeslotItems/timeslotItems.service';
+import { Weekday } from '../../../enums/weekday';
+import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
+import { ServicesService } from '../../services/services.service';
+import { TimeslotsService } from '../../timeslots/timeslots.service';
+import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
-describe("ServiceProviders.Service", () => {
+// tslint:disable-next-line:no-big-function
+describe('ServiceProviders.Service', () => {
 	const serviceProviderMock = new ServiceProvider();
 	const serviceProviderMockWithTemplate = new ServiceProvider();
-	const timeslotItemMock = TimeslotItem.create(1, Weekday.Monday, TimeOfDay.create({
-		hours: 11,
-		minutes: 0
-	}), TimeOfDay.create({hours: 11, minutes: 30}));
+	const timeslotItemMock = TimeslotItem.create(
+		1,
+		Weekday.Monday,
+		TimeOfDay.create({
+			hours: 11,
+			minutes: 0,
+		}),
+		TimeOfDay.create({ hours: 11, minutes: 30 }),
+	);
 	const timeslotsScheduleMock = new TimeslotsSchedule();
 	const serviceMockWithTemplate = new Service();
 	const request = new TimeslotItemRequest();
@@ -76,23 +82,23 @@ describe("ServiceProviders.Service", () => {
 		serviceMockWithTemplate.timeslotsSchedule.timeslotItems = [timeslotItemMock];
 
 		request.weekDay = Weekday.Thursday;
-		request.startTime = "11:00";
-		request.endTime = "12:00";
+		request.startTime = '11:00';
+		request.endTime = '12:00';
 	});
 
-	it("should get all service providers", async () => {
+	it('should get all service providers', async () => {
 		ServiceProvidersRepositoryMock.getServiceProvidersMock = [serviceProviderMock];
 		const result = await Container.get(ServiceProvidersService).getServiceProviders();
 		expect(result.length).toBe(1);
 	});
 
-	it("should get service provider by Id", async () => {
+	it('should get service provider by Id', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		const result = await Container.get(ServiceProvidersService).getServiceProvider(1, true, true);
-		expect(result.name).toBe("Service Provider");
+		expect(result.name).toBe('Service Provider');
 	});
 
-	it("should save a service provider", async () => {
+	it('should save a service provider', async () => {
 		CalendarsServiceMock.createCalendar = new Calendar();
 		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
 		await Container.get(ServiceProvidersService).saveServiceProviders([serviceProviderMock], 1);
@@ -111,8 +117,7 @@ describe("ServiceProviders.Service", () => {
 		expect(serviceProviderMock.schedule).toBe(schedule);
 	});
 
-
-	it("should update a service provider", async () => {
+	it('should update a service provider', async () => {
 		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
 		await Container.get(ServiceProvidersService).updateSp(serviceProviderMock, 1);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
@@ -143,7 +148,9 @@ describe("ServiceProviders.Service", () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMockWithTemplate;
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		const timeslotsScheduleResponse = await serviceProvidersService.getTimeslotItems(1);
-		expect(timeslotsScheduleResponse.timeslotItems[0]._weekDay).toBe(serviceProviderMockWithTemplate.timeslotsSchedule.timeslotItems[0]._weekDay);
+		expect(timeslotsScheduleResponse.timeslotItems[0]._weekDay).toBe(
+			serviceProviderMockWithTemplate.timeslotsSchedule.timeslotItems[0]._weekDay,
+		);
 	});
 
 	it('should get timeslots schedule from service if no timeslots schedule provider', async () => {
@@ -151,7 +158,9 @@ describe("ServiceProviders.Service", () => {
 		ServicesServiceMock.getServiceTimeslotsSchedule = serviceMockWithTemplate.timeslotsSchedule;
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		const timeslotsScheduleResponse = await serviceProvidersService.getTimeslotItems(1);
-		expect(timeslotsScheduleResponse.timeslotItems[0]._weekDay).toBe(serviceMockWithTemplate.timeslotsSchedule.timeslotItems[0]._weekDay);
+		expect(timeslotsScheduleResponse.timeslotItems[0]._weekDay).toBe(
+			serviceMockWithTemplate.timeslotsSchedule.timeslotItems[0]._weekDay,
+		);
 	});
 
 	it('should add timeslots schedule for service provider', async () => {
@@ -167,7 +176,6 @@ describe("ServiceProviders.Service", () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ServicesServiceMock.getServiceTimeslotsSchedule = serviceMockWithTemplate.timeslotsSchedule;
 		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMockWithTemplate);
-
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.addTimeslotItem(1, request);
@@ -212,35 +220,36 @@ describe("ServiceProviders.Service", () => {
 	});
 
 	it('should return only available service providers', async () => {
-
 		const timeslot: AvailableTimeslotProviders = {} as AvailableTimeslotProviders;
 
 		timeslot.availableServiceProviders = [
-			{
+			({
 				_id: 1,
-				_name: 'Test'
-			} as unknown as ServiceProvider,
-			{
+				_name: 'Test',
+			} as unknown) as ServiceProvider,
+			({
 				_id: 2,
-				_name: 'Test2'
-			} as unknown as ServiceProvider];
+				_name: 'Test2',
+			} as unknown) as ServiceProvider,
+		];
 		TimeslotsServiceMock.timeslotProviders = [timeslot];
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
-		const availableServiceProviders = await serviceProvidersService.getAvailableServiceProviders(new Date('2020-08-25T12:00'), new Date('2020-08-26T12:00'), 1);
+		const availableServiceProviders = await serviceProvidersService.getAvailableServiceProviders(
+			new Date('2020-08-25T12:00'),
+			new Date('2020-08-26T12:00'),
+			1,
+		);
 
-		expect(availableServiceProviders).toHaveLength(2)
+		expect(availableServiceProviders).toHaveLength(2);
 	});
-
 });
-
 
 class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	public static sp: ServiceProvider;
 	public static getServiceProvidersMock: ServiceProvider[];
 	public static getServiceProviderMock: ServiceProvider;
 	public static save = jest.fn();
-
 
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
 		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProvidersMock);
@@ -264,7 +273,7 @@ class CalendarsServiceMock extends CalendarsService {
 }
 
 const SchedulesServiceObj = {
-	getSchedule: jest.fn()
+	getSchedule: jest.fn(),
 };
 
 class SchedulesServiceMock extends SchedulesService {
@@ -276,8 +285,14 @@ class SchedulesServiceMock extends SchedulesService {
 class TimeslotsServiceMock extends TimeslotsService {
 	public static timeslotProviders: AvailableTimeslotProviders[];
 
-	async getAggregatedTimeslots(startDateTime: Date, endDateTime: Date, serviceId: number, includeBookings: boolean = false, serviceProviderId?: number): Promise<AvailableTimeslotProviders[]> {
-		return Promise.resolve(TimeslotsServiceMock.timeslotProviders)
+	public async getAggregatedTimeslots(
+		startDateTime: Date,
+		endDateTime: Date,
+		serviceId: number,
+		includeBookings: boolean = false,
+		serviceProviderId?: number,
+	): Promise<AvailableTimeslotProviders[]> {
+		return Promise.resolve(TimeslotsServiceMock.timeslotProviders);
 	}
 }
 
@@ -294,7 +309,11 @@ class TimeslotItemsServiceMock extends TimeslotItemsService {
 	public static deleteTimeslot = jest.fn();
 	public static mapAndSaveTimeslotItem = jest.fn();
 
-	public async mapAndSaveTimeslotItem(timeslotsSchedule: TimeslotsSchedule, request: TimeslotItemRequest, entity: TimeslotItem): Promise<TimeslotItem> {
+	public async mapAndSaveTimeslotItem(
+		timeslotsSchedule: TimeslotsSchedule,
+		request: TimeslotItemRequest,
+		entity: TimeslotItem,
+	): Promise<TimeslotItem> {
 		return await TimeslotItemsServiceMock.mapAndSaveTimeslotItem(timeslotsSchedule, request, entity);
 	}
 

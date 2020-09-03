@@ -1,4 +1,4 @@
-import { Schedule } from "../../models";
+import { Schedule } from '../../models';
 
 export class CalendarModel {
 	public uuid: string;

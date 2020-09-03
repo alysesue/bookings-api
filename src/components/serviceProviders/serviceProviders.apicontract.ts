@@ -1,6 +1,6 @@
 import { CalendarModel } from '../calendars/calendars.apicontract';
-import { TimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.apicontract";
-import { BookingResponse } from "../bookings/bookings.apicontract";
+import { TimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.apicontract';
+import { BookingResponse } from '../bookings/bookings.apicontract';
 
 export class ServiceProviderModel {
 	public name: string;
@@ -20,8 +20,14 @@ export class ServiceProviderResponseModel {
 	public timeslotsSchedule?: TimeslotsScheduleResponse;
 	public email?: string;
 
-
-	constructor(id: number, name: string, calendar: CalendarModel, serviceId: number, timeslotsSchedule?: TimeslotsScheduleResponse, email?: string) {
+	constructor(
+		id: number,
+		name: string,
+		calendar: CalendarModel,
+		serviceId: number,
+		timeslotsSchedule?: TimeslotsScheduleResponse,
+		email?: string,
+	) {
 		this.id = id;
 		this.name = name;
 		this.calendar = calendar;

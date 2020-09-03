@@ -2,7 +2,7 @@ import { SchedulesRepository } from '../schedules.repository';
 import { WeekDayBreakRepository } from '../weekdaybreak.repository';
 import { DbConnection } from '../../../core/db.connection';
 import { Container } from 'typescript-ioc';
-import { Schedule } from "../../../models";
+import { Schedule } from '../../../models';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -80,9 +80,8 @@ describe('Schedule repository', () => {
 const WeekDayBreakRepositoryMock = {
 	getBreaksForSchedules: jest.fn(() => Promise.resolve([])),
 	deleteBreaksForSchedule: jest.fn(() => Promise.resolve({})),
-	save: jest.fn(() => Promise.resolve([]))
+	save: jest.fn(() => Promise.resolve([])),
 };
-
 
 const scheduleMock = new Schedule();
 scheduleMock.id = 1;
@@ -99,7 +98,7 @@ export const InnerRepositoryMock = {
 	}),
 	find: jest.fn().mockImplementation(() => Promise.resolve([scheduleMock])),
 	save: jest.fn().mockImplementation(() => Promise.resolve(scheduleMock)),
-	delete: jest.fn().mockImplementation(() => Promise.resolve({}))
+	delete: jest.fn().mockImplementation(() => Promise.resolve({})),
 };
 
 export const GetRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);

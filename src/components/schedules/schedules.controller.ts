@@ -1,7 +1,20 @@
-import { Body, Controller, Delete, Deprecated, Get, Path, Post, Put, Response, Route, SuccessResponse, Tags } from 'tsoa';
-import { ScheduleRequest, ScheduleResponse } from "./schedules.apicontract";
-import { Inject } from "typescript-ioc";
-import { SchedulesService } from "./schedules.service";
+import {
+	Body,
+	Controller,
+	Delete,
+	Deprecated,
+	Get,
+	Path,
+	Post,
+	Put,
+	Response,
+	Route,
+	SuccessResponse,
+	Tags,
+} from 'tsoa';
+import { ScheduleRequest, ScheduleResponse } from './schedules.apicontract';
+import { Inject } from 'typescript-ioc';
+import { SchedulesService } from './schedules.service';
 import { MOLAuth } from 'mol-lib-common';
 
 @Route('v1/schedules')
@@ -21,7 +34,7 @@ export class SchedulesController extends Controller {
 	}
 
 	@Deprecated()
-	@Get("")
+	@Get('')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
 	public async getSchedules(): Promise<ScheduleResponse[]> {

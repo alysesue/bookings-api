@@ -39,8 +39,7 @@ export class TimeslotAggregator<TGroup> {
 
 	private compareEntryFn(a: AggregatedEntry<TGroup>, b: AggregatedEntry<TGroup>): number {
 		const diffStart = a.getTimeslot().getStartTime().getTime() - b.getTimeslot().getStartTime().getTime();
-		if (diffStart !== 0)
-			return diffStart;
+		if (diffStart !== 0) return diffStart;
 
 		return a.getTimeslot().getEndTime().getTime() - b.getTimeslot().getEndTime().getTime();
 	}
