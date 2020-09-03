@@ -17,6 +17,9 @@ export class BookingRequest {
 	 */
 	public refId?: string;
 	public citizenUinFin?: string;
+	public citizenName?: string;
+	public citizenEmail?: string;
+	public citizenPhone?: string;
 	public location?: string;
 	public description?: string;
 }

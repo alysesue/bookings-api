@@ -8,7 +8,7 @@ import { UnavailabilitiesService } from "../../unavailabilities/unavailabilities
 import { TimeslotsService } from "../../timeslots/timeslots.service";
 import { BookingSearchRequest } from "../bookings.apicontract";
 import { QueryAccessType } from "../../../core/repository";
-import { isSGUinfin } from "mol-lib-api-contract/utils";
+import { isEmail, isSGUinfin } from "mol-lib-api-contract/utils";
 
 export interface IValidator {
 	validate(booking: Booking);
@@ -22,6 +22,9 @@ abstract class BookingsValidator implements IValidator {
 	protected static ServiceProvidersNotAvailable = `No available service providers in the selected time range`;
 	private static EndTimeLesserThanStartTime = 'End time for booking must be greater than start time';
 	private static CitizenUinFinNotFound = 'Citizen Uin/Fin not found';
+	private static CitizenNameNotProvided = 'Citizen name not provided';
+	private static CitizenEmailNotProvided = 'Citizen email not provided';
+	private static CitizenEmailNotValid = 'Citizen email not valid';
 
 	@Inject
 	private serviceProvidersRepository: ServiceProvidersRepository
@@ -32,6 +35,27 @@ abstract class BookingsValidator implements IValidator {
 		const validUinFin = await isSGUinfin(citizenUinFin);
 		return validUinFin.pass;
 	}
+
+	private static async validateCitizenDetails(booking: Booking) {
+
+		if (!await BookingsValidator.validateUinFin(booking.citizenUinFin)) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.CitizenUinFinNotFound);
+		}
+
+		if (!booking.citizenName) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.CitizenNameNotProvided);
+		}
+
+		if (!booking.citizenEmail) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.CitizenEmailNotProvided);
+		}
+
+		if (!(await isEmail(booking.citizenEmail)).pass){
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.CitizenEmailNotValid);
+		}
+	}
+
+	protected abstract async validateBooking(booking: Booking);
 
 	public async validate(booking: Booking) {
 		const duration = Math.floor(DateHelper.DiffInMinutes(booking.endDateTime, booking.startDateTime));
@@ -46,15 +70,9 @@ abstract class BookingsValidator implements IValidator {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.ServiceProviderNotFound(booking.serviceProviderId));
 			}
 		}
-
-		if (!await BookingsValidator.validateUinFin(booking.citizenUinFin)) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.CitizenUinFinNotFound);
-		}
-
+		await BookingsValidator.validateCitizenDetails(booking);
 		await this.validateBooking(booking);
 	}
-
-	protected abstract async validateBooking(booking: Booking);
 }
 
 @InRequestScope

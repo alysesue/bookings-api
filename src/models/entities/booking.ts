@@ -16,6 +16,9 @@ export class BookingBuilder {
 	serviceProviderId: number;
 	creator: User;
 	citizenUinFin: string;
+	citizenPhone: string;
+	citizenName: string;
+	citizenEmail: string;
 
 	withServiceId(serviceId: number): BookingBuilder {
 		this.serviceId = serviceId;
@@ -59,6 +62,21 @@ export class BookingBuilder {
 
 	withCitizenUinFin(citizenUinFin: string): BookingBuilder {
 		this.citizenUinFin = citizenUinFin;
+		return this;
+	}
+
+	withCitizenPhone(citizenPhone: string): BookingBuilder {
+		this.citizenPhone = citizenPhone;
+		return this;
+	}
+
+	withCitizenName(citizenName: string): BookingBuilder {
+		this.citizenName = citizenName;
+		return this;
+	}
+
+	withCitizenEmail(citizenEmail: string): BookingBuilder {
+		this.citizenEmail = citizenEmail;
 		return this;
 	}
 
@@ -119,12 +137,6 @@ export class Booking {
 	@Index()
 	private _citizenUinFin: string;
 
-	@Column({nullable: true})
-	private _location: string;
-
-	@Column({nullable: true})
-	private _description: string;
-
 	constructor(builder?: BookingBuilder) {
 		if (builder) {
 			this._createdAt = new Date();
@@ -144,8 +156,27 @@ export class Booking {
 			this._description = builder.description;
 			this._creator = builder.creator;
 			this._citizenUinFin = builder.citizenUinFin;
+			this._citizenPhone = builder.citizenPhone;
+			this._citizenName = builder.citizenName;
+			this._citizenEmail = builder.citizenEmail;
 		}
 	}
+
+	@Column( {nullable:true} )
+	private _citizenName: string;
+
+	public get citizenName(): string {
+		return this._citizenName;
+	}
+
+	@Column({nullable: true})
+	private _location: string;
+
+	@Column({nullable: true})
+	private _description: string;
+
+	@Column({nullable: true})
+	private _citizenEmail: string;
 
 	public get id(): number {
 		return this._id;
@@ -225,6 +256,17 @@ export class Booking {
 
 	public get description(): string {
 		return this._description;
+	}
+
+	public get citizenEmail(): string {
+		return this._citizenEmail;
+	}
+
+	@Column({nullable: true})
+	private _citizenPhone: string;
+
+	public get citizenPhone(): string {
+		return this._citizenPhone
 	}
 
 	public bookingIntersects(other: { start: Date, end: Date }): boolean {

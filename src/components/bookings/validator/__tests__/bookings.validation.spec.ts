@@ -82,6 +82,8 @@ describe('Booking validation tests', () => {
 			.withServiceProviderId(5)
 			.withRefId('RFM186')
 			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('AndyMomIsFineIndeed@gmail.com')
 			.build();
 
 		BookingRepositoryMock.searchBookingsMock = [];
@@ -130,6 +132,8 @@ describe('Booking validation tests', () => {
 			.withStartDateTime(start)
 			.withEndDateTime(DateHelper.addMinutes(start, 60))
 			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('AndyMomIsFineIndeed@gmail.com')
 			.build();
 		BookingRepositoryMock.searchBookingsMock = [new BookingBuilder().withServiceId(1).withStartDateTime(new Date('2020-10-01T01:00:00')).withEndDateTime(new Date('2020-10-01T02:00:00')).build()];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [];
@@ -146,6 +150,8 @@ describe('Booking validation tests', () => {
 			.withStartDateTime(start)
 			.withEndDateTime(DateHelper.addMinutes(start, 60))
 			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('AndyMomIsFineIndeed@gmail.com')
 			.build();
 
 		BookingRepositoryMock.searchBookingsMock = [
@@ -177,5 +183,28 @@ describe('Booking validation tests', () => {
 			.rejects
 			.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Citizen Uin/Fin not found'));
 	});
+
+	it("should validate email", async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('AndyMomIsFineIndeed.com')
+			.build();
+
+		BookingRepositoryMock.searchBookingsMock = [
+			new BookingBuilder().withServiceId(1).withStartDateTime(new Date('2020-10-01T01:00:00')).withEndDateTime(new Date('2020-10-01T02:00:00')).build()
+		];
+		TimeslotsServiceMock.availableProvidersForTimeslot = [];
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(async () =>  await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking))
+			.rejects
+			.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Citizen email not valid'));
+	});
+
 
 });

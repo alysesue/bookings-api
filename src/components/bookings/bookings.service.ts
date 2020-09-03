@@ -116,6 +116,9 @@ export class BookingsService {
 			.withDescription(bookingRequest.description)
 			.withCreator(currentUser)
 			.withCitizenUinFin(BookingsService.getCitizenUinFin(currentUser, bookingRequest))
+			.withCitizenName(bookingRequest.citizenName)
+			.withCitizenPhone(bookingRequest.citizenPhone)
+			.withCitizenEmail(bookingRequest.citizenEmail)
 			.build()
 	}
 
