@@ -43,14 +43,17 @@ describe("Bookings.Service", () => {
 
 		getValidator(outOfSlotBooking: boolean): IValidator {
 			return new class implements IValidator {
-				validate(booking: Booking) {
-					BookingValidatorFactoryMock.validate(booking)
+				async validate(booking: Booking) {
+					return Promise.resolve(BookingValidatorFactoryMock.validate(booking));
 				}
 			}
 		}
 	}
 
+	let snapshot;
+
 	beforeAll(() => {
+		snapshot = Container.snapshot();
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
@@ -63,6 +66,10 @@ describe("Bookings.Service", () => {
 	afterEach(() => {
 		jest.resetAllMocks();
 	});
+
+	afterAll(() => {
+		snapshot.restore();
+	})
 
 	it("should save booking from booking request", async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();

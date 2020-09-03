@@ -132,7 +132,6 @@ export class Booking {
 			if (builder.serviceProviderId) {
 				this._serviceProviderId = builder.serviceProviderId;
 				this._status = BookingStatus.Accepted;
-				console.log(this._createdAt);
 				this._acceptedAt = this._createdAt;
 			} else {
 				this._status = BookingStatus.PendingApproval;
