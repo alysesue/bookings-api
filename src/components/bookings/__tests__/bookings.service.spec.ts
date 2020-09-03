@@ -13,6 +13,7 @@ import { DateHelper } from "../../../infrastructure/dateHelper";
 import { UnavailabilitiesService } from "../../unavailabilities/unavailabilities.service";
 import { UserContext } from '../../../infrastructure/userContext.middleware';
 import { BookingBuilder } from "../../../models/entities/booking";
+import { BookingsValidatorFactory, IValidator } from "../validator/bookings.validation";
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -37,6 +38,18 @@ describe("Bookings.Service", () => {
 	});
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 
+	class BookingValidatorFactoryMock extends BookingsValidatorFactory {
+		static validate = jest.fn();
+
+		getValidator(outOfSlotBooking: boolean): IValidator {
+			return new class implements IValidator {
+				validate(booking: Booking) {
+					BookingValidatorFactoryMock.validate(booking)
+				}
+			}
+		}
+	}
+
 	beforeAll(() => {
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
@@ -44,6 +57,7 @@ describe("Bookings.Service", () => {
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 		Container.bind(UnavailabilitiesService).to(UnavailabilitiesServiceMock);
 		Container.bind(UserContext).to(UserContextMock);
+		Container.bind(BookingsValidatorFactory).to(BookingValidatorFactoryMock);
 	});
 
 	afterEach(() => {

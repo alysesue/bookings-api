@@ -8,8 +8,9 @@ import { UnavailabilitiesService } from "../../unavailabilities/unavailabilities
 import { TimeslotsService } from "../../timeslots/timeslots.service";
 import { BookingSearchRequest } from "../bookings.apicontract";
 import { QueryAccessType } from "../../../core/repository";
+import { isSGUinfin } from "mol-lib-api-contract/utils";
 
-interface IValidator {
+export interface IValidator {
 	validate(booking: Booking);
 }
 
@@ -27,8 +28,9 @@ abstract class BookingsValidator implements IValidator {
 
 	private static ServiceProviderNotFound = (spId) => `Service provider '${spId}' not found`;
 
-	private static validateUinFin(citizenUinFin: string) {
-		return !citizenUinFin;
+	private static async validateUinFin(citizenUinFin: string) {
+		const validUinFin = await isSGUinfin(citizenUinFin);
+		return validUinFin.pass;
 	}
 
 	public async validate(booking: Booking) {
@@ -45,7 +47,7 @@ abstract class BookingsValidator implements IValidator {
 			}
 		}
 
-		if (BookingsValidator.validateUinFin(booking.citizenUinFin)) {
+		if (!await BookingsValidator.validateUinFin(booking.citizenUinFin)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.CitizenUinFinNotFound);
 		}
 
@@ -113,7 +115,7 @@ export class BookingsValidatorFactory {
 	@Inject
 	private outOfSlotBookingValidator: OutOfSlotBookingValidator;
 
-	public getValidator(outOfSlotBooking: boolean) {
+	public getValidator(outOfSlotBooking: boolean): IValidator {
 		if (outOfSlotBooking) {
 			return this.outOfSlotBookingValidator;
 		} else {

@@ -81,7 +81,7 @@ describe('Booking validation tests', () => {
 			.withEndDateTime(DateHelper.addMinutes(start, 45))
 			.withServiceProviderId(5)
 			.withRefId('RFM186')
-			.withCitizenUinFin('NRIC1234')
+			.withCitizenUinFin('G3382058K')
 			.build();
 
 		BookingRepositoryMock.searchBookingsMock = [];
@@ -129,7 +129,7 @@ describe('Booking validation tests', () => {
 		const booking = new BookingBuilder()
 			.withStartDateTime(start)
 			.withEndDateTime(DateHelper.addMinutes(start, 60))
-			.withCitizenUinFin('abc123')
+			.withCitizenUinFin('G3382058K')
 			.build();
 		BookingRepositoryMock.searchBookingsMock = [new BookingBuilder().withServiceId(1).withStartDateTime(new Date('2020-10-01T01:00:00')).withEndDateTime(new Date('2020-10-01T02:00:00')).build()];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [];
@@ -145,7 +145,7 @@ describe('Booking validation tests', () => {
 		const booking = new BookingBuilder()
 			.withStartDateTime(start)
 			.withEndDateTime(DateHelper.addMinutes(start, 60))
-			.withCitizenUinFin('abc123')
+			.withCitizenUinFin('G3382058K')
 			.build();
 
 		BookingRepositoryMock.searchBookingsMock = [
