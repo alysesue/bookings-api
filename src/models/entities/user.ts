@@ -1,12 +1,11 @@
-import { Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { IUser } from "../interfaces";
-import { SingPassUser } from "./singPassUser";
-import { AdminUser } from "./adminUser";
+import { Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { IUser } from '../interfaces';
+import { SingPassUser } from './singPassUser';
+import { AdminUser } from './adminUser';
 
 @Entity()
 export class User implements IUser {
-	constructor() {
-	}
+	constructor() {}
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
@@ -19,7 +18,7 @@ export class User implements IUser {
 		this._id = value;
 	}
 
-	@OneToOne(type => SingPassUser, e => e._User, { cascade: true, nullable: true })
+	@OneToOne((type) => SingPassUser, (e) => e._User, { cascade: true, nullable: true })
 	public _singPassUser: SingPassUser;
 
 	public get singPassUser(): SingPassUser {
@@ -30,7 +29,7 @@ export class User implements IUser {
 		this._singPassUser = value;
 	}
 
-	@OneToOne(type => AdminUser, e => e._User, { cascade: true, nullable: true })
+	@OneToOne((type) => AdminUser, (e) => e._User, { cascade: true, nullable: true })
 	public _adminUser: AdminUser;
 
 	public get adminUser(): AdminUser {
@@ -55,12 +54,7 @@ export class User implements IUser {
 		return instance;
 	}
 
-	public static createAdminUser(data: {
-		molAdminId: string;
-		userName: string;
-		email: string;
-		name: string;
-	}): User {
+	public static createAdminUser(data: { molAdminId: string; userName: string; email: string; name: string }): User {
 		const instance = new User();
 		instance.adminUser = AdminUser.create(data);
 		return instance;

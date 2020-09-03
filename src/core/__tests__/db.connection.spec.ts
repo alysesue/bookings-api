@@ -1,4 +1,4 @@
-import "../../infrastructure/tests/mockConfig";
+import '../../infrastructure/tests/mockConfig';
 import { DbConnection } from '../db.connection';
 
 jest.mock('../connectionOptions');

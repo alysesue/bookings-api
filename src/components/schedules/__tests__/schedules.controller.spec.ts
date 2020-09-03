@@ -1,7 +1,7 @@
-import { Container } from "typescript-ioc";
-import { ScheduleRequest, WeekDayScheduleContract } from "../schedules.apicontract";
-import { SchedulesService } from "../schedules.service";
-import { SchedulesController } from "../schedules.controller";
+import { Container } from 'typescript-ioc';
+import { ScheduleRequest, WeekDayScheduleContract } from '../schedules.apicontract';
+import { SchedulesService } from '../schedules.service';
+import { SchedulesController } from '../schedules.controller';
 import { Weekday } from '../../../enums/weekday';
 
 afterAll(() => {
@@ -13,14 +13,14 @@ beforeEach(() => {
 	jest.clearAllMocks();
 });
 
-jest.mock("mol-lib-common", () => {
+jest.mock('mol-lib-common', () => {
 	const actual = jest.requireActual('mol-lib-common');
 	const mock = (config: any) => {
 		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
 	};
 	return {
 		...actual,
-		MOLAuth: mock
+		MOLAuth: mock,
 	};
 });
 
@@ -36,8 +36,13 @@ const timeslot = {
 	name: 'schedule',
 	slotsDurationInMin: 60,
 	weekdaySchedules: [
-		{ weekday: Weekday.Monday, hasSchedule: true, openTime: '11:23', closeTime: '12:23' } as WeekDayScheduleContract
-	]
+		{
+			weekday: Weekday.Monday,
+			hasSchedule: true,
+			openTime: '11:23',
+			closeTime: '12:23',
+		} as WeekDayScheduleContract,
+	],
 } as ScheduleRequest;
 
 describe('Test templates schedules controller', () => {
@@ -72,5 +77,4 @@ describe('Test templates schedules controller', () => {
 		await schedulesController.deleteSchedule(3);
 		expect(deleteSchedule).toBeCalledTimes(1);
 	});
-
 });

@@ -1,12 +1,12 @@
-import { Controller, Get, Response, Route, Tags, } from "tsoa";
-import { MOLAuth } from "mol-lib-common";
-import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
-import { Inject } from "typescript-ioc";
-import { UserContext } from "../../infrastructure/userContext.middleware";
-import { User } from "../../models";
-import { AdminUserContract, ProfileResponse, SingPassUserContract, UserTypeContract } from "./users.apicontract";
+import { Controller, Get, Response, Route, Tags } from 'tsoa';
+import { MOLAuth } from 'mol-lib-common';
+import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
+import { Inject } from 'typescript-ioc';
+import { UserContext } from '../../infrastructure/userContext.middleware';
+import { User } from '../../models';
+import { AdminUserContract, ProfileResponse, SingPassUserContract, UserTypeContract } from './users.apicontract';
 
-@Route("v1/users")
+@Route('v1/users')
 @Tags('Users')
 export class UsersController extends Controller {
 	@Inject
@@ -16,10 +16,10 @@ export class UsersController extends Controller {
 	 * It returns Unauthorized (401) status code if the user is not logged in.
 	 * @param nric
 	 */
-	@Get("me")
+	@Get('me')
 	@MOLAuth({
 		admin: {},
-		user: { minLevel: MOLUserAuthLevel.L2 }
+		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,user]')
 	public async getProfile(): Promise<ProfileResponse> {

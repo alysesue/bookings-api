@@ -1,11 +1,11 @@
-import { Inject, InRequestScope } from "typescript-ioc";
+import { Inject, InRequestScope } from 'typescript-ioc';
 import {
 	ServiceProviderListRequest,
 	ServiceProviderModel,
 	ServiceProviderResponseModel,
-	SetProviderScheduleRequest
-} from "./serviceProviders.apicontract";
-import { ServiceProvidersService } from "./serviceProviders.service";
+	SetProviderScheduleRequest,
+} from './serviceProviders.apicontract';
+import { ServiceProvidersService } from './serviceProviders.service';
 import {
 	Body,
 	Controller,
@@ -21,26 +21,25 @@ import {
 	Route,
 	Security,
 	SuccessResponse,
-	Tags
-} from "tsoa";
-import { parseCsv } from "../../utils";
+	Tags,
+} from 'tsoa';
+import { parseCsv } from '../../utils';
 import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
-import { ScheduleResponse } from "../schedules/schedules.apicontract";
-import { ServiceProvidersMapper } from "./serviceProviders.mapper";
+import { ScheduleResponse } from '../schedules/schedules.apicontract';
+import { ServiceProvidersMapper } from './serviceProviders.mapper';
 import {
 	TimeslotItemRequest,
 	TimeslotItemResponse,
-	TimeslotsScheduleResponse
-} from "../timeslotItems/timeslotItems.apicontract";
-import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from "../timeslotItems/timeslotItems.mapper";
-import { MOLAuth } from "mol-lib-common";
-import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
+	TimeslotsScheduleResponse,
+} from '../timeslotItems/timeslotItems.apicontract';
+import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
+import { MOLAuth } from 'mol-lib-common';
+import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 
 @InRequestScope
-@Route("v1/service-providers")
+@Route('v1/service-providers')
 @Tags('Service Providers')
 export class ServiceProvidersController extends Controller {
-
 	@Inject
 	private serviceProvidersService: ServiceProvidersService;
 
@@ -50,15 +49,14 @@ export class ServiceProvidersController extends Controller {
 	// TODO: write test for this one
 	private static parseCsvModelToServiceProviders(csvModels: []) {
 		try {
-
 			const serviceProvidersRequest = csvModels as ServiceProviderModel[];
 
 			if (serviceProvidersRequest.length !== csvModels.length) {
-				throw new Error("Invalid model format");
+				throw new Error('Invalid model format');
 			}
 			return serviceProvidersRequest;
 		} catch (e) {
-			throw new Error("Invalid model format");
+			throw new Error('Invalid model format');
 		}
 	}
 
@@ -67,12 +65,15 @@ export class ServiceProvidersController extends Controller {
 	 * @param spRequest
 	 * @param serviceId The service id.
 	 */
-	@Post("")
-	@Security("service")
+	@Post('')
+	@Security('service')
 	@SuccessResponse(204, 'Created')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
-	public async addServiceProviders(@Body() spRequest: ServiceProviderListRequest, @Header('x-api-service') serviceId: number) {
+	public async addServiceProviders(
+		@Body() spRequest: ServiceProviderListRequest,
+		@Header('x-api-service') serviceId: number,
+	) {
 		await this.serviceProvidersService.saveServiceProviders(spRequest.serviceProviders, serviceId);
 	}
 
@@ -81,8 +82,8 @@ export class ServiceProvidersController extends Controller {
 	 * @param spRequest
 	 * @param serviceId The service id.
 	 */
-	@Post("/csv")
-	@Security("service")
+	@Post('/csv')
+	@Security('service')
 	@SuccessResponse(204, 'Created')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
@@ -96,20 +97,31 @@ export class ServiceProvidersController extends Controller {
 	 * @param serviceId (Optional) Filters by a service (id).
 	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
 	 */
-	@Get("")
-	@Security("optional-service")
+	@Get('')
+	@Security('optional-service')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
-	public async getServiceProviders(@Header('x-api-service') serviceId?: number, @Query() includeTimeslotsSchedule = false): Promise<ServiceProviderResponseModel[]> {
-		const dataModels = await this.serviceProvidersService.getServiceProviders(serviceId, undefined, includeTimeslotsSchedule);
+	public async getServiceProviders(
+		@Header('x-api-service') serviceId?: number,
+		@Query() includeTimeslotsSchedule = false,
+	): Promise<ServiceProviderResponseModel[]> {
+		const dataModels = await this.serviceProvidersService.getServiceProviders(
+			serviceId,
+			undefined,
+			includeTimeslotsSchedule,
+		);
 		return this.mapper.mapDataModels(dataModels);
 	}
 
-	@Get("available")
-	@Security("service")
+	@Get('available')
+	@Security('service')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
-	public async getAvailableServiceProviders(@Query() from: Date, @Query() to: Date, @Header('x-api-service') serviceId: number): Promise<ServiceProviderResponseModel[]> {
+	public async getAvailableServiceProviders(
+		@Query() from: Date,
+		@Query() to: Date,
+		@Header('x-api-service') serviceId: number,
+	): Promise<ServiceProviderResponseModel[]> {
 		const dataModels = await this.serviceProvidersService.getAvailableServiceProviders(from, to, serviceId);
 		return this.mapper.mapDataModels(dataModels);
 	}
@@ -118,10 +130,10 @@ export class ServiceProvidersController extends Controller {
 	 * Retrieves a single service provider.
 	 * @param spId The service provider id.
 	 */
-	@Get("{spId}")
+	@Get('{spId}')
 	@MOLAuth({
 		admin: {},
-		user: { minLevel: MOLUserAuthLevel.L2 }
+		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,user]')
 	public async getServiceProvider(@Path() spId: number): Promise<ServiceProviderResponseModel> {
@@ -129,30 +141,35 @@ export class ServiceProvidersController extends Controller {
 		return this.mapper.mapDataModel(dataModel);
 	}
 
-
 	/**
 	 * Updates a single service provider.
 	 * @param spId The service provider id.
 	 * @param spRequest
 	 */
-	@Put("{spId}")
-	public async updateServiceProvider(@Path() spId: number, @Body() spRequest: ServiceProviderModel): Promise<ServiceProviderResponseModel> {
+	@Put('{spId}')
+	public async updateServiceProvider(
+		@Path() spId: number,
+		@Body() spRequest: ServiceProviderModel,
+	): Promise<ServiceProviderResponseModel> {
 		const result = await this.serviceProvidersService.updateSp(spRequest, spId);
 		return this.mapper.mapDataModel(result);
 	}
 
 	@Deprecated()
 	@Put('{spId}/schedule')
-	@SuccessResponse(200, "Ok")
+	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
-	public async setServiceSchedule(@Path() spId: number, @Body() request: SetProviderScheduleRequest): Promise<ScheduleResponse> {
+	public async setServiceSchedule(
+		@Path() spId: number,
+		@Body() request: SetProviderScheduleRequest,
+	): Promise<ScheduleResponse> {
 		return mapScheduleToResponse(await this.serviceProvidersService.setProviderSchedule(spId, request));
 	}
 
 	@Deprecated()
 	@Get('{spId}/schedule')
-	@SuccessResponse(200, "Ok")
+	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
 	public async getServiceSchedule(@Path() spId: number): Promise<ScheduleResponse> {
@@ -163,8 +180,8 @@ export class ServiceProvidersController extends Controller {
 	 * Retrieves all weekly recurring timeslots for a service provider.
 	 * @param spId The service provider id.
 	 */
-	@Get("{spId}/timeslotSchedule")
-	@SuccessResponse(200, "Ok")
+	@Get('{spId}/timeslotSchedule')
+	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
 	public async getTimeslotsScheduleByServiceProviderId(@Path() spId: number): Promise<TimeslotsScheduleResponse> {
@@ -177,11 +194,14 @@ export class ServiceProvidersController extends Controller {
 	 * @param spId The service provider id.
 	 * @param request
 	 */
-	@Post("{spId}/timeslotSchedule/timeslots")
-	@SuccessResponse(201, "Created")
+	@Post('{spId}/timeslotSchedule/timeslots')
+	@SuccessResponse(201, 'Created')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
-	public async createTimeslotItem(@Path() spId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
+	public async createTimeslotItem(
+		@Path() spId: number,
+		@Body() request: TimeslotItemRequest,
+	): Promise<TimeslotItemResponse> {
 		const data = await this.serviceProvidersService.addTimeslotItem(spId, request);
 		this.setStatus(201);
 		return mapToTimeslotItemResponse(data);
@@ -193,11 +213,15 @@ export class ServiceProvidersController extends Controller {
 	 * @param timeslotId The weekly timeslot id.
 	 * @param request
 	 */
-	@Put("{spId}/timeslotSchedule/timeslots/{timeslotId}")
-	@SuccessResponse(200, "Ok")
+	@Put('{spId}/timeslotSchedule/timeslots/{timeslotId}')
+	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
-	public async updateTimeslotItem(@Path() spId: number, @Path() timeslotId: number, @Body() request: TimeslotItemRequest): Promise<TimeslotItemResponse> {
+	public async updateTimeslotItem(
+		@Path() spId: number,
+		@Path() timeslotId: number,
+		@Body() request: TimeslotItemRequest,
+	): Promise<TimeslotItemResponse> {
 		const data = await this.serviceProvidersService.updateTimeslotItem(spId, timeslotId, request);
 		return mapToTimeslotItemResponse(data);
 	}
@@ -207,8 +231,8 @@ export class ServiceProvidersController extends Controller {
 	 * @param spId The service provider id.
 	 * @param timeslotId The weekly timeslot id.
 	 */
-	@Delete("{spId}/timeslotSchedule/timeslots/{timeslotId}")
-	@SuccessResponse(204, "No Content")
+	@Delete('{spId}/timeslotSchedule/timeslots/{timeslotId}')
+	@SuccessResponse(204, 'No Content')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
 	public async deleteTimeslotItem(@Path() spId: number, @Path() timeslotId: number) {

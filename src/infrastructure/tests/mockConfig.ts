@@ -1,6 +1,5 @@
-
 export function mockConfig() {
-	jest.mock("../../config/app-config.ts", () => {
+	jest.mock('../../config/app-config.ts', () => {
 		return {
 			getConfig: () => ({
 				name: 'test',
@@ -14,8 +13,8 @@ export function mockConfig() {
 					instance: 'database',
 					username: 'user',
 					password: '',
-				}
-			})
+				},
+			}),
 		};
 	});
 }

@@ -1,27 +1,27 @@
-import { Container } from "typescript-ioc";
-import { TimeslotsController } from "../timeslots.controller";
-import { TimeslotsService } from "../timeslots.service";
+import { Container } from 'typescript-ioc';
+import { TimeslotsController } from '../timeslots.controller';
+import { TimeslotsService } from '../timeslots.service';
 import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
-import { DateHelper } from "../../../infrastructure/dateHelper";
+import { DateHelper } from '../../../infrastructure/dateHelper';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
-jest.mock("mol-lib-common", () => {
+jest.mock('mol-lib-common', () => {
 	const actual = jest.requireActual('mol-lib-common');
 	const mock = (config: any) => {
 		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
 	};
 	return {
 		...actual,
-		MOLAuth: mock
+		MOLAuth: mock,
 	};
 });
 
 const TimeslotsServiceMock = {
-	getAggregatedTimeslots: jest.fn(() => Promise.resolve([]))
+	getAggregatedTimeslots: jest.fn(() => Promise.resolve([])),
 };
 
 beforeEach(() => {
@@ -32,8 +32,8 @@ afterEach(() => {
 	jest.resetAllMocks();
 });
 
-describe("Timeslots Controller", () => {
-	it("should get availability", async () => {
+describe('Timeslots Controller', () => {
+	it('should get availability', async () => {
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
 			entry.startTime = new Date();
@@ -50,7 +50,7 @@ describe("Timeslots Controller", () => {
 		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalled();
 	});
 
-	it("should get timeslots", async () => {
+	it('should get timeslots', async () => {
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
 			entry.startTime = new Date();

@@ -1,9 +1,9 @@
-import { Inject, InRequestScope } from "typescript-ioc";
-import { Booking, Calendar } from "../../models";
-import { CalendarsRepository } from "./calendars.repository";
-import { GoogleCalendarService } from "../../googleapi/google.calendar.service";
-import { CalendarUserModel } from "./calendars.apicontract";
-import { isEmptyArray } from "../../tools/arrays";
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { Booking, Calendar } from '../../models';
+import { CalendarsRepository } from './calendars.repository';
+import { GoogleCalendarService } from '../../googleapi/google.calendar.service';
+import { CalendarUserModel } from './calendars.apicontract';
+import { isEmptyArray } from '../../tools/arrays';
 
 @InRequestScope
 export class CalendarsService {
@@ -23,16 +23,16 @@ export class CalendarsService {
 		return await this.calendarsRepository.saveCalendar(calendar);
 	}
 
-	public async getAvailableGoogleCalendarsForTimeSlot(
-		startTime: Date,
-		endTime: Date,
-		calendars: Calendar[]
-	) {
+	public async getAvailableGoogleCalendarsForTimeSlot(startTime: Date, endTime: Date, calendars: Calendar[]) {
 		const googleCalendarIds = calendars.map((cal) => ({
 			id: cal.googleCalendarId.toString(),
 		}));
 
-		const googleCalendars = await this.googleCalendarApi.getAvailableGoogleCalendars(startTime, endTime, googleCalendarIds);
+		const googleCalendars = await this.googleCalendarApi.getAvailableGoogleCalendars(
+			startTime,
+			endTime,
+			googleCalendarIds,
+		);
 
 		return calendars.filter((calendar) => isEmptyArray(googleCalendars[calendar.googleCalendarId].busy));
 	}
@@ -48,10 +48,10 @@ export class CalendarsService {
 	public async addUser(calendarUUID: string, model: CalendarUserModel): Promise<CalendarUserModel> {
 		const calendar = await this.calendarsRepository.getCalendarByUUID(calendarUUID);
 
-		const response = await this.googleCalendarApi.addCalendarUser(
-			calendar.googleCalendarId,
-			{role: "reader", email: model.email}
-		);
+		const response = await this.googleCalendarApi.addCalendarUser(calendar.googleCalendarId, {
+			role: 'reader',
+			email: model.email,
+		});
 
 		return {
 			email: response.email,

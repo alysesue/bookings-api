@@ -1,7 +1,7 @@
-import { Container } from "typescript-ioc";
-import { TimeslotsSchedule } from "../../../models";
-import { TimeslotsScheduleRepository } from "../timeslotsSchedule.repository";
-import { TimeslotsScheduleService } from "../timeslotsSchedule.service";
+import { Container } from 'typescript-ioc';
+import { TimeslotsSchedule } from '../../../models';
+import { TimeslotsScheduleRepository } from '../timeslotsSchedule.repository';
+import { TimeslotsScheduleService } from '../timeslotsSchedule.service';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -12,9 +12,8 @@ const createTimeslotsSchedule = jest.fn();
 const getTimeslotsScheduleById = jest.fn();
 const MockTimeslotsScheduleRepository = jest.fn().mockImplementation(() => ({
 	createTimeslotsSchedule,
-	getTimeslotsScheduleById
+	getTimeslotsScheduleById,
 }));
-
 
 describe('TimeslotsSchedule template services ', () => {
 	const timeslotsScheduleMock = new TimeslotsSchedule();
@@ -24,13 +23,11 @@ describe('TimeslotsSchedule template services ', () => {
 	});
 	beforeEach(() => {
 		timeslotsScheduleMock._id = 1;
-
 	});
 
 	afterEach(() => {
 		jest.clearAllMocks();
 	});
-
 
 	it('should get timeslots schedule', async () => {
 		getTimeslotsScheduleById.mockImplementation(() => Promise.resolve(timeslotsScheduleMock));
@@ -38,5 +35,4 @@ describe('TimeslotsSchedule template services ', () => {
 		await timeslotsScheduleService.getTimeslotsScheduleById(1);
 		expect(getTimeslotsScheduleById).toBeCalled();
 	});
-
 });

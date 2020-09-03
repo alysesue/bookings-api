@@ -3,8 +3,7 @@ import { DateHelper } from '../infrastructure/dateHelper';
 import { ValueTransformer } from 'typeorm';
 
 export class TimeOfDay {
-	private constructor() {
-	}
+	private constructor() {}
 
 	private _hours: number;
 
@@ -23,15 +22,13 @@ export class TimeOfDay {
 		return TimeOfDay.create(parsedTime);
 	}
 
-	public static create(time: { hours: number, minutes: number }): TimeOfDay {
+	public static create(time: { hours: number; minutes: number }): TimeOfDay {
 		if (!time) {
 			return null;
 		}
 
-		if (time.hours < 0 || time.hours > 23)
-			throw new Error(`Invalid hours value: ${time.hours}`);
-		if (time.minutes < 0 || time.minutes > 59)
-			throw new Error(`Invalid minutes value: ${time.minutes}`);
+		if (time.hours < 0 || time.hours > 23) throw new Error(`Invalid hours value: ${time.hours}`);
+		if (time.minutes < 0 || time.minutes > 59) throw new Error(`Invalid minutes value: ${time.minutes}`);
 
 		const instance = new TimeOfDay();
 		instance._hours = time.hours;

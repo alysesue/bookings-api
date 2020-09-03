@@ -12,19 +12,23 @@ export class WeekDayBreak implements ITimeSpan {
 	@ManyToOne('Schedule', { nullable: false })
 	@JoinColumn({ name: 'scheduleId' })
 	public schedule: ISchedule;
-	@Column("int")
+	@Column('int')
 	public weekDay: Weekday;
-	@Column({ type: "time", transformer: TimeTransformer })
+	@Column({ type: 'time', transformer: TimeTransformer })
 	public startTime: TimeOfDay;
-	@Column({ type: "time", transformer: TimeTransformer })
+	@Column({ type: 'time', transformer: TimeTransformer })
 	public endTime: TimeOfDay;
 	@Column({ nullable: false })
 	private scheduleId: number;
 
-	constructor() {
-	}
+	constructor() {}
 
-	public static create(weekDay: Weekday, startTime: TimeOfDay, endTime: TimeOfDay, schedule: ISchedule): WeekDayBreak {
+	public static create(
+		weekDay: Weekday,
+		startTime: TimeOfDay,
+		endTime: TimeOfDay,
+		schedule: ISchedule,
+	): WeekDayBreak {
 		if (!schedule) {
 			throw new Error('Schedule reference cannot be null.');
 		}

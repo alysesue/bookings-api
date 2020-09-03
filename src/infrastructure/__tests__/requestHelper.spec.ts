@@ -1,5 +1,5 @@
-import { getRequestHeaders } from "../requestHelper";
-import { Controller } from "tsoa";
+import { getRequestHeaders } from '../requestHelper';
+import { Controller } from 'tsoa';
 
 describe('request helper tests', () => {
 	it('should get headers', () => {
@@ -14,4 +14,4 @@ describe('request helper tests', () => {
 	});
 });
 
-class MyController extends Controller { }
+class MyController extends Controller {}

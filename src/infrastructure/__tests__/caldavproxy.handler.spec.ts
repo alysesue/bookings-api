@@ -1,11 +1,10 @@
 import { Container } from 'typescript-ioc';
 import { CalDavProxyHandler } from '../caldavproxy.handler';
-import { Context } from "koa";
+import { Context } from 'koa';
 import * as KoaProxy from 'koa-proxy';
 import { GoogleCalendarService } from '../../googleapi/google.calendar.service';
-import { GoogleApi } from "../../googleapi/google.api";
-import { basePath } from "../../config/app-config";
-
+import { GoogleApi } from '../../googleapi/google.api';
+import { basePath } from '../../config/app-config';
 
 beforeEach(() => {
 	// Clears mock counters, not implementation
@@ -19,14 +18,14 @@ jest.mock('koa-proxy', () => {
 });
 
 const GoogleApiMock = {
-	getAccessToken: jest.fn(() => Promise.resolve('test_access_token'))
+	getAccessToken: jest.fn(() => Promise.resolve('test_access_token')),
 };
 
 function buildSampleKoaContext(path: string): Context {
 	return {
 		path,
 		header: {},
-		request: { host: 'localhost', protocol: 'http' }
+		request: { host: 'localhost', protocol: 'http' },
 	} as Context;
 }
 
@@ -39,7 +38,9 @@ describe('Caldav proxy tests', () => {
 		const koaProxyMiddleware = KoaProxy();
 
 		const nextMiddleware = jest.fn().mockImplementation(() => Promise.resolve());
-		const context = buildSampleKoaContext(`${basePath}/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/user`);
+		const context = buildSampleKoaContext(
+			`${basePath}/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/user`,
+		);
 
 		await middleware(context, nextMiddleware);
 
@@ -59,7 +60,9 @@ describe('Caldav proxy tests', () => {
 		const koaProxyMiddleware = KoaProxy();
 
 		const nextMiddleware = jest.fn().mockImplementation(() => Promise.resolve());
-		const context = buildSampleKoaContext(`${basePath}/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/events`);
+		const context = buildSampleKoaContext(
+			`${basePath}/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/events`,
+		);
 
 		await middleware(context, nextMiddleware);
 
@@ -98,7 +101,9 @@ describe('Caldav proxy tests', () => {
 		const koaProxyMiddleware = KoaProxy();
 
 		const nextMiddleware = jest.fn().mockImplementation(() => Promise.resolve());
-		const context = buildSampleKoaContext(`${basePath}/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/wrongurl`);
+		const context = buildSampleKoaContext(
+			`${basePath}/caldav/jbrhqc65lfv77daijqcjl9bgak%40group.calendar.google.com/wrongurl`,
+		);
 
 		await middleware(context, nextMiddleware);
 

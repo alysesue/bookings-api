@@ -1,5 +1,5 @@
 import { Container } from 'typescript-ioc';
-import { ServicesService } from "../services.service";
+import { ServicesService } from '../services.service';
 import { ServicesValidation } from '../services.validation';
 
 afterAll(() => {
