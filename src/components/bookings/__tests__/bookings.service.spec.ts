@@ -3,7 +3,7 @@ import { BookingsService } from "../index";
 import { BookingsRepository } from "../bookings.repository";
 import { CalendarsService } from "../../calendars/calendars.service";
 import { Container } from "typescript-ioc";
-import { Booking, BookingStatus, Calendar, ServiceProvider, User } from "../../../models";
+import { Booking, BookingStatus, Calendar, Service, ServiceProvider, User } from "../../../models";
 import { InsertResult } from "typeorm";
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "../bookings.apicontract";
 import { TimeslotsService } from '../../timeslots/timeslots.service';
@@ -12,6 +12,8 @@ import { ServiceProvidersRepository } from '../../serviceProviders/serviceProvid
 import { DateHelper } from "../../../infrastructure/dateHelper";
 import { UnavailabilitiesService } from "../../unavailabilities/unavailabilities.service";
 import { UserContext } from '../../../infrastructure/userContext.middleware';
+import { BookingActionFunction, BookingChangeLogsService } from "../../../components/bookingChangeLogs/bookingChangeLogs.service";
+import { ServicesService } from "../../../components/services/services.service";
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -20,6 +22,8 @@ afterAll(() => {
 
 // tslint:disable-next-line: no-big-function
 describe("Bookings.Service", () => {
+	const service = new Service();
+	service.id = 1;
 	const calendar = new Calendar();
 	calendar.id = 1;
 	calendar.uuid = '123';
@@ -43,10 +47,20 @@ describe("Bookings.Service", () => {
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 		Container.bind(UnavailabilitiesService).to(UnavailabilitiesServiceMock);
 		Container.bind(UserContext).to(UserContextMock);
+		Container.bind(BookingChangeLogsService).to(BookingChangeLogsServiceMock);
+		Container.bind(ServicesService).to(ServicesServiceMock);
 	});
 
-	afterEach(() => {
+	beforeEach(() => {
 		jest.resetAllMocks();
+
+		BookingChangeLogsServiceMock.executeAndLogAction.mockImplementation(
+			async (booking: Booking, asyncFunction: BookingActionFunction) => {
+				const [, newBooking] = await asyncFunction(booking);
+				return newBooking;
+			});
+
+		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(service));
 	});
 
 	it("should save booking from booking request", async () => {
@@ -317,5 +331,22 @@ class UserContextMock extends UserContext {
 	public init() { }
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(params);
+	}
+}
+
+class BookingChangeLogsServiceMock extends BookingChangeLogsService {
+	public static executeAndLogAction = jest.fn();
+
+	public async executeAndLogAction(booking: Booking, actionFunction: BookingActionFunction): Promise<any> {
+		return await BookingChangeLogsServiceMock.executeAndLogAction(booking, actionFunction);
+	}
+}
+
+class ServicesServiceMock extends ServicesService {
+	public static getService = jest.fn();
+
+	public init() { }
+	public async getService(...params): Promise<any> {
+		return await ServicesServiceMock.getService(params);
 	}
 }

@@ -10,8 +10,9 @@ import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders
 import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
 import { UserContext } from "../../infrastructure/userContext.middleware";
 import { QueryAccessType } from "../../core/repository";
-import { BookingChangeLog, BookingJsonSchemaV1, ChangeLogAction } from "../../models/entities/bookingChangeLog";
+import { ChangeLogAction } from "../../models/entities/bookingChangeLog";
 import { ServicesService } from "../services/services.service";
+import { BookingChangeLogsService } from "../bookingChangeLogs/bookingChangeLogs.service";
 
 @InRequestScope
 export class BookingsService {
@@ -28,7 +29,7 @@ export class BookingsService {
 	@Inject
 	private servicesService: ServicesService;
 	@Inject
-	private changeLogsRepository: BookingChangeLogsRepository;
+	private changeLogsService: BookingChangeLogsService;
 	@Inject
 	private userContext: UserContext;
 
@@ -44,92 +45,53 @@ export class BookingsService {
 		return booking;
 	}
 
-	private mapBookingState(booking: Booking): BookingJsonSchemaV1 {
-		if (!booking)
-			return {} as BookingJsonSchemaV1;
-
-		const jsonObj = {
-			id: booking.id,
-			status: booking.status,
-			startDateTime: booking.startDateTime,
-			endDateTime: booking.startDateTime,
-			serviceId: booking.serviceId,
-			serviceName: booking.service.name,
-			CitizenUinFin: booking.citizenUinFin,
-			// TODO: ADD Citizen data;
-			// CitizenName: string,
-			// CitizenEmail: string,
-			// CitizenPhone: string,
-			// Location: string,
-			// Description: string,
-		} as BookingJsonSchemaV1;
-
-		if (booking.serviceProviderId) {
-			const serviceProvider = booking.serviceProvider;
-			jsonObj.serviceProviderId = booking.serviceProviderId;
-			jsonObj.serviceProviderName = serviceProvider.name;
-			jsonObj.serviceProviderEmail = serviceProvider.email;
-			// TODO: ADD SP PHONE jsonObj.serviceProviderPhone = serviceProvider.phone;
-		}
-
-		return jsonObj;
-	}
-
-	private async executeAndLogAction(action: ChangeLogAction, booking: Booking, operation: (booking: Booking) => Promise<Booking>): Promise<Booking> {
-		const user = await this.userContext.getCurrentUser();
-		const previousState = this.mapBookingState(booking);
-		const newBooking = await operation(booking);
-		const newState = this.mapBookingState(newBooking);
-
-		const changelog = BookingChangeLog.create({
-			action,
-			booking: newBooking,
-			user,
-			previousState,
-			newState
-		});
-
-		// TODO: save log and booking
-
-		return newBooking;
-	}
-
 	public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
-		return await this.executeAndLogAction(ChangeLogAction.Create, null,
-			async (_booking) => await this.createBooking(bookingRequest, serviceId));
+		const createAction = (_booking) => this.createBooking(bookingRequest, serviceId);
+		return await this.changeLogsService.executeAndLogAction(null, createAction);
 	}
 
 	public async cancelBooking(bookingId: number): Promise<Booking> {
-		const booking = await this.getBookingForCancelling(bookingId);
+		const booking = await this.getBooking(bookingId);
+		return await this.changeLogsService.executeAndLogAction(booking, this.cancelBookingInternal.bind(this));
+	}
+
+	private async cancelBookingInternal(booking: Booking): Promise<[ChangeLogAction, Booking]> {
+		if (booking.status === BookingStatus.Cancelled || booking.startDateTime < new Date()) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking ${booking.id} is in invalid state for cancelling`);
+		}
+
 		const eventCalId = booking.eventICalId;
 		if (booking.status === BookingStatus.Accepted) {
 			const provider = await this.serviceProviderRepo.getServiceProvider({ id: booking.serviceProviderId });
 			if (!provider) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${booking.serviceProviderId}' not found`);
-
 			}
 			await this.calendarsService.deleteCalendarEvent(provider.calendar, this.formatEventId(eventCalId));
 		}
 		booking.status = BookingStatus.Cancelled;
 		await this.bookingsRepository.update(booking);
 
-		return booking;
+		return [ChangeLogAction.Cancel, booking];
 	}
 
 	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequest): Promise<Booking> {
-		const booking = await this.getBookingForAccepting(bookingId);
-
-		return await this.executeAndLogAction(ChangeLogAction.Accept, booking,
-			async (_booking) => await this.acceptBookingInternal(_booking, acceptRequest));
+		const booking = await this.getBooking(bookingId);
+		const acceptAction = (_booking) => this.acceptBookingInternal(_booking, acceptRequest);
+		return await this.changeLogsService.executeAndLogAction(booking, acceptAction);
 	}
 
-	private async acceptBookingInternal(booking: Booking, acceptRequest: BookingAcceptRequest): Promise<Booking> {
+	private async acceptBookingInternal(booking: Booking, acceptRequest: BookingAcceptRequest): Promise<[ChangeLogAction, Booking]> {
+		if (booking.status !== BookingStatus.PendingApproval) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking ${booking.id} is in invalid state for accepting`);
+		}
+
 		const provider = await this.serviceProviderRepo.getServiceProvider({ id: acceptRequest.serviceProviderId });
 		if (!provider) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${acceptRequest.serviceProviderId}' not found`);
 		}
+
 		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.endDateTime, booking.serviceId);
 		const isProviderAvailable = timeslotEntry.availableServiceProviders.filter(e => e.id === acceptRequest.serviceProviderId).length > 0;
 		if (!isProviderAvailable) {
@@ -141,16 +103,17 @@ export class BookingsService {
 		booking.status = BookingStatus.Accepted;
 		booking.serviceProvider = provider;
 		booking.eventICalId = eventICalId;
-		booking.acceptedAt = new Date();
 
-		return booking;
+		await this.bookingsRepository.update(booking);
+
+		return [ChangeLogAction.Accept, booking];
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
 		return await this.bookingsRepository.search({ ...searchRequest, accessType: QueryAccessType.Read });
 	}
 
-	private async createBooking(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
+	private async createBooking(bookingRequest: BookingRequest, serviceId: number): Promise<[ChangeLogAction, Booking]> {
 		const duration = Math.floor(DateHelper.DiffInMinutes(bookingRequest.endDateTime, bookingRequest.startDateTime));
 		if (duration <= 0) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('End time for booking must be greater than start time');
@@ -171,9 +134,9 @@ export class BookingsService {
 		booking.serviceProvider = serviceProvider;
 		booking.service = await this.servicesService.getService(serviceId);
 
-		booking.creator = await this.userContext.getCurrentUser();
-		if (booking.creator.isCitizen()) {
-			booking.citizenUinFin = booking.creator.singPassUser.UinFin;
+		const user = await this.userContext.getCurrentUser();
+		if (user.isCitizen()) {
+			booking.citizenUinFin = user.singPassUser.UinFin;
 		}
 
 		booking.eventICalId = await this.getEventICalId(booking, serviceProvider);
@@ -184,7 +147,9 @@ export class BookingsService {
 			await this.validateOutOfSlotBookings(booking);
 		}
 
-		return booking;
+		await this.bookingsRepository.save(booking);
+
+		return [ChangeLogAction.Create, booking];
 	}
 
 	private async getEventICalId(booking: Booking, serviceProvider: ServiceProvider) {
@@ -228,22 +193,5 @@ export class BookingsService {
 		})) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`The service provider is not available in the selected time range.`);
 		}
-	}
-
-	private async getBookingForAccepting(bookingId: number): Promise<Booking> {
-		const booking = await this.getBooking(bookingId);
-		if (booking.status !== BookingStatus.PendingApproval) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking ${bookingId} is in invalid state for accepting`);
-		}
-		return booking;
-	}
-
-	private async getBookingForCancelling(bookingId: number): Promise<Booking> {
-		const booking = await this.getBooking(bookingId);
-		if (booking.status === BookingStatus.Cancelled || booking.startDateTime < new Date()) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking ${bookingId} is in invalid state for cancelling`);
-
-		}
-		return booking;
 	}
 }

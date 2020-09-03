@@ -1,16 +1,19 @@
-import { DbConnection } from '../../../core/db.connection';
 import { Container } from 'typescript-ioc';
 import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedule.repository';
 import { IEntityWithTimeslotsSchedule, ITimeslotsSchedule } from '../../../models/interfaces';
+import { TransactionManager } from '../../../core/transactionManager';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
+beforeAll(() => {
+	Container.bind(TransactionManager).to(TransactionManagerMock);
+});
+
 beforeEach(() => {
-	Container.bind(DbConnection).to(DbConnectionMock);
 	jest.clearAllMocks();
 });
 
@@ -69,7 +72,7 @@ const timeslotsScheduleMock = new TimeslotsSchedule();
 timeslotsScheduleMock._id = 2;
 timeslotsScheduleMock.timeslotItems = [TimeslotItem.create(1, 1, TimeOfDay.create({ hours: 11, minutes: 0 }), TimeOfDay.create({ hours: 11, minutes: 30 }))];
 
-export const InnerRepositoryMock = {
+const InnerRepositoryMock = {
 	find: jest.fn().mockImplementation(() => {
 		return Promise.resolve([timeslotsScheduleMock]);
 	}),
@@ -82,17 +85,14 @@ export const InnerRepositoryMock = {
 };
 
 
-export const GetRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);
+const GetRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);
 
 
-export const DbConnectionMock = jest.fn().mockImplementation(() => {
-	const getConnection = () => {
-		const connection = {
+class TransactionManagerMock extends TransactionManager {
+	public async getEntityManager(): Promise<any> {
+		const entityManager = {
 			getRepository: GetRepositoryMock,
 		};
-
-		return Promise.resolve(connection);
-	};
-
-	return { getConnection };
-});
+		return Promise.resolve(entityManager);
+	}
+}

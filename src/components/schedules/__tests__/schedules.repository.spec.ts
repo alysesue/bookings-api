@@ -1,18 +1,21 @@
 import { SchedulesRepository } from '../schedules.repository';
 import { WeekDayBreakRepository } from '../weekdaybreak.repository';
-import { DbConnection } from '../../../core/db.connection';
 import { Container } from 'typescript-ioc';
 import { Schedule } from "../../../models";
+import { TransactionManager } from '../../../core/transactionManager';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
-beforeEach(() => {
-	Container.bind(DbConnection).to(DbConnectionMock);
-	Container.bind(WeekDayBreakRepository).to(jest.fn(() => WeekDayBreakRepositoryMock));
 
+beforeAll(() => {
+	Container.bind(TransactionManager).to(TransactionManagerMock);
+	Container.bind(WeekDayBreakRepository).to(jest.fn(() => WeekDayBreakRepositoryMock));
+});
+
+beforeEach(() => {
 	jest.clearAllMocks();
 });
 
@@ -104,14 +107,11 @@ export const InnerRepositoryMock = {
 
 export const GetRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);
 
-export const DbConnectionMock = jest.fn().mockImplementation(() => {
-	const getConnection = () => {
-		const connection = {
+class TransactionManagerMock extends TransactionManager {
+	public async getEntityManager(): Promise<any> {
+		const entityManager = {
 			getRepository: GetRepositoryMock,
 		};
-
-		return Promise.resolve(connection);
-	};
-
-	return { getConnection };
-});
+		return Promise.resolve(entityManager);
+	}
+}

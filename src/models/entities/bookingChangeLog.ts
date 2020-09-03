@@ -12,7 +12,7 @@ export class BookingChangeLog {
 	@Index()
 	private _timestamp: Date;
 
-	@ManyToOne(type => Booking, { nullable: false, cascade: true })
+	@ManyToOne(type => Booking, { nullable: false })
 	@JoinColumn({ name: '_bookingId' })
 	private _booking: Booking;
 
@@ -100,21 +100,21 @@ type BookingJsonVersion = {
 
 export type BookingJsonSchemaV1 = {
 	id?: number;
-	status: number;
-	startDateTime: Date;
-	endDateTime: Date;
-	serviceId: number;
-	serviceName: string;
+	status?: number;
+	startDateTime?: Date;
+	endDateTime?: Date;
+	serviceId?: number;
+	serviceName?: string;
 	serviceProviderId?: number;
 	serviceProviderName?: string;
 	serviceProviderEmail?: string;
 	serviceProviderPhone?: string;
-	CitizenUinFin: string;
-	CitizenName: string;
-	CitizenEmail: string;
-	CitizenPhone: string;
-	Location: string;
-	Description: string;
+	CitizenUinFin?: string;
+	CitizenName?: string;
+	CitizenEmail?: string;
+	CitizenPhone?: string;
+	Location?: string;
+	Description?: string;
 };
 
 export enum ChangeLogAction {

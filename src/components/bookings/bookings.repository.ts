@@ -1,5 +1,5 @@
 import { Inject, InRequestScope } from "typescript-ioc";
-import { InsertResult, SelectQueryBuilder, Transaction } from "typeorm";
+import { InsertResult, SelectQueryBuilder } from "typeorm";
 import { Booking, BookingStatus } from "../../models";
 import { QueryAccessType, RepositoryBase } from "../../core/repository";
 import { UserContext } from "../../infrastructure/userContext.middleware";

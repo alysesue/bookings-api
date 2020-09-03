@@ -3,7 +3,6 @@ import { BookingStatus } from "../bookingStatus";
 import { ServiceProvider } from './serviceProvider';
 import { Service } from "./service";
 import * as timeSpan from "../../tools/timeSpan";
-import { User } from "./user";
 
 @Entity()
 export class Booking {
@@ -32,15 +31,8 @@ export class Booking {
 	@Index()
 	private _endDateTime: Date;
 
-	@Column()
-	@Index()
-	private _createdAt: Date;
-
 	@Column({ nullable: true })
 	private _refId?: string;
-
-	@Column({ nullable: true })
-	private _acceptedAt: Date;
 
 	@ManyToOne(type => ServiceProvider, { nullable: true })
 	@JoinColumn({ name: '_serviceProviderId' })
@@ -48,10 +40,6 @@ export class Booking {
 
 	@Column({ nullable: true })
 	private _serviceProviderId?: number;
-
-	@ManyToOne(type => User, { nullable: false })
-	@JoinColumn({ name: '_creatorId' })
-	private _creator: User;
 
 	@Column({ nullable: true, type: "varchar", length: 20 })
 	@Index()
@@ -100,10 +88,6 @@ export class Booking {
 		return this._endDateTime;
 	}
 
-	public set acceptedAt(acceptedAt: Date) {
-		this._acceptedAt = acceptedAt;
-	}
-
 	public get serviceProvider(): ServiceProvider {
 		return this._serviceProvider;
 	}
@@ -118,18 +102,6 @@ export class Booking {
 
 	public get serviceProviderId(): number | undefined {
 		return this._serviceProviderId;
-	}
-
-	public get creator(): User {
-		return this._creator;
-	}
-
-	public set creator(value: User) {
-		this._creator = value;
-	}
-
-	public get createdAt(): Date {
-		return this._createdAt;
 	}
 
 	public get citizenUinFin(): string {
@@ -152,13 +124,11 @@ export class Booking {
 		instance._serviceId = serviceId;
 		instance._startDateTime = startDateTime;
 		instance._endDateTime = endDateTime;
-		instance._createdAt = new Date();
 		instance._refId = refId;
 
 		if (serviceProviderId) {
 			instance._serviceProviderId = serviceProviderId;
 			instance._status = BookingStatus.Accepted;
-			instance._acceptedAt = instance.createdAt;
 		} else {
 			instance._status = BookingStatus.PendingApproval;
 		}
