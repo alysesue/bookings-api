@@ -27,19 +27,22 @@ export class BookingResponse {
 	public serviceName: string;
 	public serviceProviderId?: number;
 	public serviceProviderName?: string;
+	public citizenUinFin?: string;
 }
 
 export class BookingSearchRequest {
 	public serviceId?: number;
 	public serviceProviderId?: number;
 	public statuses?: BookingStatus[];
+	public citizenUinFins?: string[];
 	public from: Date;
 	public to: Date;
 
-	constructor(from: Date, to: Date, status?: BookingStatus[], serviceId?: number, serviceProviderId?: number) {
+	constructor(from: Date, to: Date, status?: BookingStatus[], citizenUinFins?: string[], serviceId?: number, serviceProviderId?: number) {
 		this.serviceId = serviceId;
 		this.serviceProviderId = serviceProviderId;
 		this.statuses = status;
+		this.citizenUinFins = citizenUinFins;
 		this.from = from;
 		this.to = to;
 	}

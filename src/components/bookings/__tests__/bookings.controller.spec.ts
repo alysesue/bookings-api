@@ -71,9 +71,10 @@ describe("Bookings.Controller", () => {
 		BookingsServiceMock.mockSearchBookings = [Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'))];
 		const from = new Date('2020-05-16T20:25:43.511Z');
 		const to = new Date('2020-05-16T21:25:43.511Z');
+		const citizenUinFins = ['abc123', "xyz456"];
 		const controller = Container.get(BookingsController);
 
-		const result = await controller.getBookings(from, to, [1], 1);
+		const result = await controller.getBookings(from, to, [1], citizenUinFins, 1);
 
 		expect(result).toHaveLength(1);
 	});

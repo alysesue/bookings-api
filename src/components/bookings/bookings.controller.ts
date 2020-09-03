@@ -24,9 +24,7 @@ import { BookingsService } from "./bookings.service";
 import { TimeslotsService } from "../timeslots/timeslots.service";
 import { MOLAuth } from "mol-lib-common";
 import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
-import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
 import { BookingsMapper } from "./bookings.mapper";
-import { getRequestHeaders } from "../../infrastructure/requestHelper";
 
 @Route("v1/bookings")
 @Tags('Bookings')
@@ -132,6 +130,7 @@ export class BookingsController extends Controller {
 	 * @param from The lower bound datetime limit (inclusive) for booking's start.
 	 * @param to  The upper bound datetime limit (inclusive) for booking's start.
 	 * @param status (Optional) filters by a list of status: Pending (1), Accepted (2), Cancelled (3).
+	 * @param citizenUinFins (Optional) filters by a list of citizen ids
 	 * @param serviceId (Optional) filters by a service (id).
 	 */
 	@Get('')
@@ -146,9 +145,10 @@ export class BookingsController extends Controller {
 		@Query() from: Date,
 		@Query() to: Date,
 		@Query() status?: number[],
+		@Query() citizenUinFins?: string[],
 		@Header("x-api-service") serviceId?: number): Promise<BookingResponse[]> {
 
-		const searchQuery = new BookingSearchRequest(from, to, status, serviceId);
+		const searchQuery = new BookingSearchRequest(from, to, status, citizenUinFins, serviceId);
 		const bookings = await this.bookingsService.searchBookings(searchQuery);
 		return BookingsMapper.mapDataModels(bookings);
 	}

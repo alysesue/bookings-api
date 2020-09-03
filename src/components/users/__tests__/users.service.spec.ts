@@ -1,5 +1,5 @@
 import { Container } from "typescript-ioc";
-import { SingPassUser, User } from "../../../models";
+import { User } from "../../../models";
 import { UsersRepository } from "../users.repository";
 import { UsersService } from "../users.service";
 import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";

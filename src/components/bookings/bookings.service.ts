@@ -148,13 +148,11 @@ export class BookingsService {
 	}
 
 	private async validateOutOfSlotBookings(booking: Booking) {
-		const { startDateTime, endDateTime, serviceId, serviceProviderId } = booking;
+		const { startDateTime, endDateTime, serviceId, serviceProviderId, citizenUinFin } = booking;
 
-		const searchQuery = new BookingSearchRequest(startDateTime, endDateTime, [BookingStatus.Accepted, BookingStatus.PendingApproval], serviceId, serviceProviderId);
+		const searchQuery = new BookingSearchRequest(startDateTime, endDateTime, [BookingStatus.Accepted], [citizenUinFin], serviceId, serviceProviderId);
 
-		const pendingAndAcceptedBookings = await this.searchBookings(searchQuery);
-
-		const acceptedBookings = pendingAndAcceptedBookings.filter(acceptedBooking => acceptedBooking.status === BookingStatus.Accepted);
+		const acceptedBookings = await this.searchBookings(searchQuery);
 
 		for (const item of acceptedBookings) {
 			const intersects = booking.bookingIntersects({ start: item.startDateTime, end: item.endDateTime });
