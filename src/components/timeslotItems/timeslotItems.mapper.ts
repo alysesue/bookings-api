@@ -1,9 +1,8 @@
-import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from "../../models";
-import { TimeslotItemRequest, TimeslotItemResponse, TimeslotsScheduleResponse } from "./timeslotItems.apicontract";
-
+import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { TimeslotItemRequest, TimeslotItemResponse, TimeslotsScheduleResponse } from './timeslotItems.apicontract';
 
 const mapTimeslotItems = (data: TimeslotItem[]): TimeslotItemResponse[] => {
-	return data.map(i => {
+	return data.map((i) => {
 		const item = new TimeslotItemResponse();
 		item.id = i._id;
 		item.weekDay = i._weekDay;
@@ -13,9 +12,7 @@ const mapTimeslotItems = (data: TimeslotItem[]): TimeslotItemResponse[] => {
 	});
 };
 
-
-export const mapToTimeslotsScheduleResponse = (data: TimeslotsSchedule)
-	: TimeslotsScheduleResponse => {
+export const mapToTimeslotsScheduleResponse = (data: TimeslotsSchedule): TimeslotsScheduleResponse => {
 	if (!data) {
 		return null;
 	}

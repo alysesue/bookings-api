@@ -1,13 +1,12 @@
-import { calendar_v3 } from "googleapis";
-import { JWT } from "google-auth-library";
-import { Singleton } from "typescript-ioc";
+import { calendar_v3 } from 'googleapis';
+import { JWT } from 'google-auth-library';
+import { Singleton } from 'typescript-ioc';
 import { getConfig } from '../config/app-config';
 
-const SCOPES = ["https://www.googleapis.com/auth/calendar"];
+const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 
 @Singleton
 export class GoogleApi {
-
 	private _authToken: any = null;
 
 	private static async loadJWTTokenFromJson(): Promise<JWT> {

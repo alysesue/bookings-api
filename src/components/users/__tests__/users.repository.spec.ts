@@ -1,7 +1,7 @@
-import { User } from "../../../models";
-import { Container } from "typescript-ioc";
-import { DbConnection } from "../../../core/db.connection";
-import { UsersRepository } from "../users.repository";
+import { User } from '../../../models';
+import { Container } from 'typescript-ioc';
+import { DbConnection } from '../../../core/db.connection';
+import { UsersRepository } from '../users.repository';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -11,19 +11,19 @@ afterAll(() => {
 const userMock = new User();
 userMock.id = 1;
 
-describe("User repository", () => {
+describe('User repository', () => {
 	beforeEach(() => {
 		Container.bind(DbConnection).to(MockDBConnection);
 		jest.resetAllMocks();
 	});
 
-	it("should save user", async () => {
-		const saveResult = [{ id: "abc" }];
+	it('should save user', async () => {
+		const saveResult = [{ id: 'abc' }];
 		MockDBConnection.save.mockImplementation(() => saveResult);
 		const userRepository = Container.get(UsersRepository);
 
 		const result = await userRepository.save({} as User);
-		expect(result).toStrictEqual([{ id: "abc" }]);
+		expect(result).toStrictEqual([{ id: 'abc' }]);
 	});
 
 	it('should getUserByMolUserId', async () => {
@@ -37,7 +37,7 @@ describe("User repository", () => {
 		MockDBConnection.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		const userRepository = Container.get(UsersRepository);
 
-		const result = await userRepository.getUserByMolUserId("d080f6ed-3b47-478a-a6c6-dfb5608a199d");
+		const result = await userRepository.getUserByMolUserId('d080f6ed-3b47-478a-a6c6-dfb5608a199d');
 		expect(result).toStrictEqual([userMock]);
 	});
 
@@ -52,7 +52,7 @@ describe("User repository", () => {
 		MockDBConnection.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		const userRepository = Container.get(UsersRepository);
 
-		const result = await userRepository.getUserByMolAdminId("d080f6ed-3b47-478a-a6c6-dfb5608a199d");
+		const result = await userRepository.getUserByMolAdminId('d080f6ed-3b47-478a-a6c6-dfb5608a199d');
 		expect(result).toStrictEqual([userMock]);
 	});
 });

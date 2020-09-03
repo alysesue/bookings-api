@@ -1,15 +1,14 @@
-import { Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { TimeslotItem } from "./timeslotItem";
-import { IService, IServiceProvider, ITimeslotsSchedule } from "../interfaces";
-import { DateHelper } from "../../infrastructure/dateHelper";
-import { groupByKey } from "../../tools/collections";
-import { TimeOfDay } from "../timeOfDay";
-import { Timeslot } from "../timeslot";
+import { Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { TimeslotItem } from './timeslotItem';
+import { IService, IServiceProvider, ITimeslotsSchedule } from '../interfaces';
+import { DateHelper } from '../../infrastructure/dateHelper';
+import { groupByKey } from '../../tools/collections';
+import { TimeOfDay } from '../timeOfDay';
+import { Timeslot } from '../timeslot';
 
 @Entity()
 export class TimeslotsSchedule implements ITimeslotsSchedule {
-	constructor() {
-	}
+	constructor() {}
 
 	@PrimaryGeneratedColumn()
 	public _id: number;
@@ -24,7 +23,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 		return this._serviceProvider;
 	}
 
-	@OneToMany(type => TimeslotItem, timeslot => timeslot._timeslotsSchedule, {
+	@OneToMany((type) => TimeslotItem, (timeslot) => timeslot._timeslotsSchedule, {
 		cascade: true,
 	})
 	public timeslotItems: TimeslotItem[];
@@ -38,11 +37,9 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 
 	public intersectsAnyExceptThis(timeslotItem: TimeslotItem) {
 		for (const entry of this.timeslotItems || []) {
-			if (entry._id === timeslotItem._id)
-				continue;
+			if (entry._id === timeslotItem._id) continue;
 
-			if (entry.intersects(timeslotItem))
-				return true;
+			if (entry.intersects(timeslotItem)) return true;
 		}
 		return false;
 	}
@@ -55,7 +52,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 		return TimeOfDay.compare(a._endTime, b._endTime);
 	}
 
-	public * generateValidTimeslots(range: { startDatetime: Date, endDatetime: Date }): Iterable<Timeslot> {
+	public *generateValidTimeslots(range: { startDatetime: Date; endDatetime: Date }): Iterable<Timeslot> {
 		if (range.endDatetime < range.startDatetime) {
 			return;
 		}
@@ -63,7 +60,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 		const initialDate = DateHelper.getDateOnly(range.startDatetime);
 		const daysCount = 1 + Math.floor(DateHelper.DiffInDays(DateHelper.getDateOnly(range.endDatetime), initialDate));
 
-		const validWeekDays = groupByKey(this.timeslotItems || [], t => t._weekDay);
+		const validWeekDays = groupByKey(this.timeslotItems || [], (t) => t._weekDay);
 		for (const [, weekdayTimeslots] of validWeekDays) {
 			weekdayTimeslots.sort(TimeslotsSchedule.sortTimeslots);
 		}
@@ -81,8 +78,8 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 
 			const weekDayRange = {
 				dayOfWeek: date,
-				startTimeOfDay: (day === 0) ? firstDayStartTime : null,
-				endTimeOfDay: (day === daysCount - 1) ? lastDayEndTime : null,
+				startTimeOfDay: day === 0 ? firstDayStartTime : null,
+				endTimeOfDay: day === daysCount - 1 ? lastDayEndTime : null,
 			};
 
 			for (const timeslot of this.generateWeekdayValidTimeslots(weekdayTimeslots, weekDayRange)) {
@@ -91,13 +88,19 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 		}
 	}
 
-	private * generateWeekdayValidTimeslots(weekdayTimeslots: TimeslotItem[], range: { dayOfWeek: Date, startTimeOfDay?: TimeOfDay, endTimeOfDay?: TimeOfDay }): Iterable<Timeslot> {
+	private *generateWeekdayValidTimeslots(
+		weekdayTimeslots: TimeslotItem[],
+		range: { dayOfWeek: Date; startTimeOfDay?: TimeOfDay; endTimeOfDay?: TimeOfDay },
+	): Iterable<Timeslot> {
 		for (const timeslotTemplate of weekdayTimeslots) {
-			if (range.startTimeOfDay && TimeOfDay.compare(timeslotTemplate._startTime, range.startTimeOfDay) < 0) continue;
+			if (range.startTimeOfDay && TimeOfDay.compare(timeslotTemplate._startTime, range.startTimeOfDay) < 0)
+				continue;
 			if (range.endTimeOfDay && TimeOfDay.compare(timeslotTemplate._endTime, range.endTimeOfDay) > 0) continue;
 
-			yield new Timeslot(timeslotTemplate._startTime.useTimeOfDay(range.dayOfWeek),
-				timeslotTemplate._endTime.useTimeOfDay(range.dayOfWeek));
+			yield new Timeslot(
+				timeslotTemplate._startTime.useTimeOfDay(range.dayOfWeek),
+				timeslotTemplate._endTime.useTimeOfDay(range.dayOfWeek),
+			);
 		}
 	}
 }

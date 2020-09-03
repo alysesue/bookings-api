@@ -1,14 +1,16 @@
 export type OkResult<T> = {
-	result: T
+	result: T;
 };
 
 export type ErrorResult<T> = {
-	errorResult: T
+	errorResult: T;
 };
 
 export type OptionalResult<TOk, TError> = OkResult<TOk> | ErrorResult<TError>;
 
-export function isErrorResult<TOk, TError>(optionalResult: OptionalResult<TOk, TError>): optionalResult is ErrorResult<TError> {
+export function isErrorResult<TOk, TError>(
+	optionalResult: OptionalResult<TOk, TError>,
+): optionalResult is ErrorResult<TError> {
 	return !!(optionalResult as ErrorResult<TError>).errorResult;
 }
 

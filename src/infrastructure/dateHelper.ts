@@ -44,9 +44,11 @@ export class DateHelper {
 	}
 
 	public static equalsDateOnly(dateA: Date, dateB: Date): boolean {
-		return dateA.getFullYear() === dateB.getFullYear()
-			&& dateA.getMonth() === dateB.getMonth()
-			&& dateA.getDate() === dateB.getDate();
+		return (
+			dateA.getFullYear() === dateB.getFullYear() &&
+			dateA.getMonth() === dateB.getMonth() &&
+			dateA.getDate() === dateB.getDate()
+		);
 	}
 
 	public static setHours(date: Date, hours: number, min: number): Date {
@@ -63,7 +65,14 @@ export class DateHelper {
 	}
 
 	public static UTCAsLocal(date: Date): Date {
-		return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(),
-			date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.getUTCMilliseconds());
+		return new Date(
+			date.getUTCFullYear(),
+			date.getUTCMonth(),
+			date.getUTCDate(),
+			date.getUTCHours(),
+			date.getUTCMinutes(),
+			date.getUTCSeconds(),
+			date.getUTCMilliseconds(),
+		);
 	}
 }

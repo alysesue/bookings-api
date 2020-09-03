@@ -1,31 +1,31 @@
-import { Container } from "typescript-ioc";
-import { Calendar, Schedule, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from "../../../models";
-import { ServiceProvidersController } from "../serviceProviders.controller";
-import { ServiceProvidersService } from "../serviceProviders.service";
-import { ServiceProviderModel, SetProviderScheduleRequest } from "../serviceProviders.apicontract";
-import { CalendarsService } from "../../calendars/calendars.service";
-import { TimeslotItemRequest } from "../../timeslotItems/timeslotItems.apicontract";
+import { Container } from 'typescript-ioc';
+import { Calendar, Schedule, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
+import { ServiceProvidersController } from '../serviceProviders.controller';
+import { ServiceProvidersService } from '../serviceProviders.service';
+import { ServiceProviderModel, SetProviderScheduleRequest } from '../serviceProviders.apicontract';
+import { CalendarsService } from '../../calendars/calendars.service';
+import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
-jest.mock("mol-lib-common", () => {
+jest.mock('mol-lib-common', () => {
 	const actual = jest.requireActual('mol-lib-common');
 	const mock = (config: any) => {
 		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
 	};
 	return {
 		...actual,
-		MOLAuth: mock
+		MOLAuth: mock,
 	};
 });
 
-describe("ServiceProviders.Controller", () => {
+describe('ServiceProviders.Controller', () => {
 	const calendar = new Calendar();
-	const sp1 = ServiceProvider.create("Monica", calendar, 1);
-	const sp2 = ServiceProvider.create("Timmy", calendar, 1);
+	const sp1 = ServiceProvider.create('Monica', calendar, 1);
+	const sp2 = ServiceProvider.create('Timmy', calendar, 1);
 
 	beforeAll(() => {
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
@@ -41,8 +41,8 @@ describe("ServiceProviders.Controller", () => {
 		mockItem._endTime = TimeOfDay.create({ hours: 9, minutes: 0 });
 
 		request.weekDay = 4;
-		request.startTime = "08:00";
-		request.endTime = "09:00";
+		request.startTime = '08:00';
+		request.endTime = '09:00';
 	});
 
 	beforeEach(() => {
@@ -50,7 +50,6 @@ describe("ServiceProviders.Controller", () => {
 	});
 
 	it('should get service providers', async () => {
-
 		ServiceProvidersMock.getServiceProviders.mockReturnValue([sp1, sp2]);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders();
@@ -59,7 +58,12 @@ describe("ServiceProviders.Controller", () => {
 
 	it('should get service providers with timeslots', async () => {
 		const timeslots = new TimeslotsSchedule();
-		const timeslotItem = TimeslotItem.create(1, 0, TimeOfDay.create({ hours: 8, minutes: 0 }), TimeOfDay.create({ hours: 9, minutes: 0 }));
+		const timeslotItem = TimeslotItem.create(
+			1,
+			0,
+			TimeOfDay.create({ hours: 8, minutes: 0 }),
+			TimeOfDay.create({ hours: 9, minutes: 0 }),
+		);
 		timeslots.timeslotItems = [timeslotItem];
 		sp1.timeslotsSchedule = timeslots;
 		ServiceProvidersMock.getServiceProviders.mockReturnValue([sp1]);
@@ -71,45 +75,48 @@ describe("ServiceProviders.Controller", () => {
 	});
 
 	it('should get a service provider', async () => {
-		ServiceProvidersMock.getServiceProvider.mockReturnValue(ServiceProvider.create("Monica", null, 1));
+		ServiceProvidersMock.getServiceProvider.mockReturnValue(ServiceProvider.create('Monica', null, 1));
 
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProvider(1);
 
-		expect(result.name).toEqual("Monica");
+		expect(result.name).toEqual('Monica');
 	});
 
 	it('should save multiple service providers', async () => {
-		ServiceProvidersMock.save.mockReturnValue([ServiceProvider.create("Monica", null, 1), ServiceProvider.create("Timmy", null, 1)]);
+		ServiceProvidersMock.save.mockReturnValue([
+			ServiceProvider.create('Monica', null, 1),
+			ServiceProvider.create('Timmy', null, 1),
+		]);
 		const controller = Container.get(ServiceProvidersController);
-		await controller.addServiceProviders({
-			serviceProviders: [
-				{
-					"name": "Test"
-				}
-			]
-		}, 1);
+		await controller.addServiceProviders(
+			{
+				serviceProviders: [
+					{
+						name: 'Test',
+					},
+				],
+			},
+			1,
+		);
 		const listRequest = ServiceProvidersMock.save.mock.calls[0][0] as ServiceProvider[];
 
 		expect(listRequest.length).toBe(1);
 	});
 
 	it('should save multiple service providers as text', async () => {
-		ServiceProvidersMock.save.mockReturnValue(
-			[
-				ServiceProvider.create("Monica", null, 1),
-				ServiceProvider.create("Timmy", null, 1)
-			]);
+		ServiceProvidersMock.save.mockReturnValue([
+			ServiceProvider.create('Monica', null, 1),
+			ServiceProvider.create('Timmy', null, 1),
+		]);
 		const controller = Container.get(ServiceProvidersController);
 
-		await controller.addServiceProvidersText("name\nJohn\nMary\nJuliet\n", 1);
+		await controller.addServiceProvidersText('name\nJohn\nMary\nJuliet\n', 1);
 
 		const listRequest = ServiceProvidersMock.save.mock.calls[0][0] as ServiceProvider[];
 
 		expect(listRequest.length).toBe(3);
-
 	});
-
 
 	it('should set provider schedule', async () => {
 		ServiceProvidersMock.setProviderSchedule.mockReturnValue(Promise.resolve(new Schedule()));
@@ -120,18 +127,17 @@ describe("ServiceProviders.Controller", () => {
 	});
 
 	it('should update a service provider', async () => {
-		ServiceProvidersMock.updateServiceProvider.mockReturnValue(ServiceProvider.create("Test", null, 1, "test@gmail.com"));
+		ServiceProvidersMock.updateServiceProvider.mockReturnValue(
+			ServiceProvider.create('Test', null, 1, 'test@gmail.com'),
+		);
 		const controller = Container.get(ServiceProvidersController);
-		const result = await controller.updateServiceProvider(
-			1, {
-			"name": "Test",
-			"email": "test@gmail.com"
+		const result = await controller.updateServiceProvider(1, {
+			name: 'Test',
+			email: 'test@gmail.com',
 		});
 		expect(ServiceProvidersMock.updateServiceProvider).toBeCalled();
-		expect(result.email).toBe("test@gmail.com");
-
+		expect(result.email).toBe('test@gmail.com');
 	});
-
 
 	it('should get provider schedule', async () => {
 		ServiceProvidersMock.getProviderSchedule.mockReturnValue(Promise.resolve(new Schedule()));
@@ -156,23 +162,21 @@ describe("ServiceProviders.Controller", () => {
 
 		const response = await Container.get(ServiceProvidersController).createTimeslotItem(1, request);
 		expect(response).toBeDefined();
-		expect(response.startTime).toEqual("08:00");
+		expect(response.startTime).toEqual('08:00');
 	});
 
 	it('should update provider schedule timeslots', async () => {
 		ServiceProvidersMock.updateTimeslotItemForServiceProvider.mockReturnValue(mockItem);
 		const response = await Container.get(ServiceProvidersController).updateTimeslotItem(1, 1, request);
 		expect(ServiceProvidersMock.updateTimeslotItemForServiceProvider).toBeCalled();
-		expect(response.startTime).toEqual("08:00");
+		expect(response.startTime).toEqual('08:00');
 	});
 
 	it('should call deleteTimeslotForServiceProvider', async () => {
 		ServiceProvidersMock.deleteTimeslotForServiceProvider.mockReturnValue(mockItem);
 		await Container.get(ServiceProvidersController).deleteTimeslotItem(1, 1);
 		expect(ServiceProvidersMock.deleteTimeslotForServiceProvider).toBeCalled();
-
 	});
-
 });
 
 const ServiceProvidersMock = {
@@ -185,11 +189,10 @@ const ServiceProvidersMock = {
 	getTimeslotItemsByServiceProviderId: jest.fn(),
 	createTimeslotItemForServiceProvider: jest.fn(),
 	updateTimeslotItemForServiceProvider: jest.fn(),
-	deleteTimeslotForServiceProvider: jest.fn()
+	deleteTimeslotForServiceProvider: jest.fn(),
 };
 
 class ServiceProvidersServiceMock extends ServiceProvidersService {
-
 	public async getServiceProvider(spId: number): Promise<ServiceProvider> {
 		return ServiceProvidersMock.getServiceProvider();
 	}
@@ -214,7 +217,10 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 		return ServiceProvidersMock.getTimeslotItemsByServiceProviderId(serviceProviderId);
 	}
 
-	public async addTimeslotItem(serviceProviderId: number, timeslotsSchedule: TimeslotItemRequest): Promise<TimeslotItem> {
+	public async addTimeslotItem(
+		serviceProviderId: number,
+		timeslotsSchedule: TimeslotItemRequest,
+	): Promise<TimeslotItem> {
 		return ServiceProvidersMock.createTimeslotItemForServiceProvider(serviceProviderId, timeslotsSchedule);
 	}
 
@@ -228,7 +234,7 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 }
 
 const CalendarsSvcMock = {
-	createCalendar: jest.fn()
+	createCalendar: jest.fn(),
 };
 
 class CalendarsServiceMock extends CalendarsService {

@@ -1,21 +1,20 @@
-import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
-import { Inject, InRequestScope } from "typescript-ioc";
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { cloneDeep } from 'lodash';
-import { Schedule, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from "../../models";
-import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
-import { ServiceProvidersRepository } from "./serviceProviders.repository";
-import { ServiceProviderModel, SetProviderScheduleRequest } from "./serviceProviders.apicontract";
-import { CalendarsService } from "../calendars/calendars.service";
-import { API_TIMEOUT_PERIOD } from "../../const";
+import { Schedule, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
+import { ServiceProvidersRepository } from './serviceProviders.repository';
+import { ServiceProviderModel, SetProviderScheduleRequest } from './serviceProviders.apicontract';
+import { CalendarsService } from '../calendars/calendars.service';
+import { API_TIMEOUT_PERIOD } from '../../const';
 import { SchedulesService } from '../schedules/schedules.service';
-import { TimeslotItemRequest } from "../timeslotItems/timeslotItems.apicontract";
-import { ServicesService } from "../services/services.service";
-import { TimeslotItemsService } from "../timeslotItems/timeslotItems.service";
-import { TimeslotsService } from "../timeslots/timeslots.service";
+import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
+import { ServicesService } from '../services/services.service';
+import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
+import { TimeslotsService } from '../timeslots/timeslots.service';
 
 @InRequestScope
 export class ServiceProvidersService {
-
 	@Inject
 	public serviceProvidersRepository: ServiceProvidersRepository;
 
@@ -34,11 +33,15 @@ export class ServiceProvidersService {
 	@Inject
 	private timeslotsService: TimeslotsService;
 
-	public async getServiceProviders(serviceId?: number, includeSchedule = false, includeTimeslotsSchedule = false): Promise<ServiceProvider[]> {
+	public async getServiceProviders(
+		serviceId?: number,
+		includeSchedule = false,
+		includeTimeslotsSchedule = false,
+	): Promise<ServiceProvider[]> {
 		return await this.serviceProvidersRepository.getServiceProviders({
 			serviceId,
 			includeSchedule,
-			includeTimeslotsSchedule
+			includeTimeslotsSchedule,
 		});
 	}
 
@@ -48,18 +51,22 @@ export class ServiceProvidersService {
 		const availableServiceProviders = new Set<ServiceProvider>();
 
 		timeslots.forEach((timeslot) => {
-			timeslot.availableServiceProviders.forEach(provider => {
+			timeslot.availableServiceProviders.forEach((provider) => {
 				availableServiceProviders.add(provider);
-			})
+			});
 		});
 		return Array.from(availableServiceProviders);
 	}
 
-	public async getServiceProvider(id: number, includeSchedule: boolean, includeTimeslotsSchedule: boolean): Promise<ServiceProvider> {
+	public async getServiceProvider(
+		id: number,
+		includeSchedule: boolean,
+		includeTimeslotsSchedule: boolean,
+	): Promise<ServiceProvider> {
 		const sp = await this.serviceProvidersRepository.getServiceProvider({
 			id,
 			includeSchedule,
-			includeTimeslotsSchedule
+			includeTimeslotsSchedule,
 		});
 		if (!sp) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
@@ -69,7 +76,7 @@ export class ServiceProvidersService {
 
 	private static validateService(serviceId: number) {
 		if (!serviceId) {
-			throw new Error("No service provided");
+			throw new Error('No service provided');
 		}
 	}
 
@@ -89,13 +96,13 @@ export class ServiceProvidersService {
 			const cal = await this.calendarsService.createCalendar();
 			return await this.serviceProvidersRepository.save(ServiceProvider.create(item.name, cal, serviceId));
 		} catch (e) {
-			logger.error("exception when creating service provider ", e.message);
+			logger.error('exception when creating service provider ', e.message);
 			throw e;
 		}
 	}
 
 	public async updateSp(request: ServiceProviderModel, spId: number) {
-		const sp = await this.serviceProvidersRepository.getServiceProvider({id: spId});
+		const sp = await this.serviceProvidersRepository.getServiceProvider({ id: spId });
 		if (!sp) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
 		}
@@ -104,7 +111,7 @@ export class ServiceProvidersService {
 			sp.name = request.name;
 			return await this.serviceProvidersRepository.save(sp);
 		} catch (e) {
-			logger.error("exception when updating service provider ", e.message);
+			logger.error('exception when updating service provider ', e.message);
 			throw e;
 		}
 	}
@@ -155,45 +162,75 @@ export class ServiceProvidersService {
 		return serviceProvider.timeslotsSchedule;
 	}
 
-	public async addTimeslotItem(serviceProviderId: number, request: TimeslotItemRequest)
-		: Promise<TimeslotItem> {
+	public async addTimeslotItem(serviceProviderId: number, request: TimeslotItemRequest): Promise<TimeslotItem> {
 		let serviceProvider = await this.getServiceProvider(serviceProviderId, false, true);
 		if (!serviceProvider.timeslotsSchedule) {
-			const serviceTimeslotsSchedule = await this.servicesService.getServiceTimeslotsSchedule(serviceProvider.serviceId);
-			serviceProvider = await this.copyAndSaveTimeslotsScheduleInServiceProvider(serviceProvider, serviceTimeslotsSchedule.timeslotItems);
+			const serviceTimeslotsSchedule = await this.servicesService.getServiceTimeslotsSchedule(
+				serviceProvider.serviceId,
+			);
+			serviceProvider = await this.copyAndSaveTimeslotsScheduleInServiceProvider(
+				serviceProvider,
+				serviceTimeslotsSchedule.timeslotItems,
+			);
 		}
 		return this.timeslotItemsService.createTimeslotItem(serviceProvider.timeslotsSchedule, request);
 	}
 
-	public async updateTimeslotItem(serviceProviderId: number, timeslotId: number, request: TimeslotItemRequest)
-		: Promise<TimeslotItem> {
+	public async updateTimeslotItem(
+		serviceProviderId: number,
+		timeslotId: number,
+		request: TimeslotItemRequest,
+	): Promise<TimeslotItem> {
 		const serviceProvider = await this.getServiceProvider(serviceProviderId, false, true);
 		if (!serviceProvider.timeslotsSchedule) {
-			const newItem = TimeslotItem.create(undefined, request.weekDay, TimeOfDay.parse(request.startTime), TimeOfDay.parse(request.endTime));
-			const serviceTimeslotsSchedule = await this.servicesService.getServiceTimeslotsSchedule(serviceProvider.serviceId);
-			const timeslotItemServiceWithoutTargetItem = serviceTimeslotsSchedule.timeslotItems.filter(t => t._id !== timeslotId);
+			const newItem = TimeslotItem.create(
+				undefined,
+				request.weekDay,
+				TimeOfDay.parse(request.startTime),
+				TimeOfDay.parse(request.endTime),
+			);
+			const serviceTimeslotsSchedule = await this.servicesService.getServiceTimeslotsSchedule(
+				serviceProvider.serviceId,
+			);
+			const timeslotItemServiceWithoutTargetItem = serviceTimeslotsSchedule.timeslotItems.filter(
+				(t) => t._id !== timeslotId,
+			);
 			timeslotItemServiceWithoutTargetItem.push(newItem);
 
-			await this.copyAndSaveTimeslotsScheduleInServiceProvider(serviceProvider, timeslotItemServiceWithoutTargetItem);
+			await this.copyAndSaveTimeslotsScheduleInServiceProvider(
+				serviceProvider,
+				timeslotItemServiceWithoutTargetItem,
+			);
 			return newItem;
 		}
-		const timeslotItem = serviceProvider.timeslotsSchedule.timeslotItems.find(t => t._id === timeslotId);
+		const timeslotItem = serviceProvider.timeslotsSchedule.timeslotItems.find((t) => t._id === timeslotId);
 		if (!timeslotItem) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Timeslot item not found');
 		}
-		return this.timeslotItemsService.mapAndSaveTimeslotItem(serviceProvider.timeslotsSchedule, request, timeslotItem);
+		return this.timeslotItemsService.mapAndSaveTimeslotItem(
+			serviceProvider.timeslotsSchedule,
+			request,
+			timeslotItem,
+		);
 	}
 
 	public async deleteTimeslotItem(serviceProviderId: number, timeslotId: number) {
 		const serviceProvider = await this.getServiceProvider(serviceProviderId, false, true);
 		if (!serviceProvider.timeslotsSchedule) {
-			const serviceTimeslotsSchedule = await this.servicesService.getServiceTimeslotsSchedule(serviceProvider.serviceId);
-			const timeslotItemServiceWithoutTargetItem = serviceTimeslotsSchedule.timeslotItems.filter(t => t._id !== timeslotId);
+			const serviceTimeslotsSchedule = await this.servicesService.getServiceTimeslotsSchedule(
+				serviceProvider.serviceId,
+			);
+			const timeslotItemServiceWithoutTargetItem = serviceTimeslotsSchedule.timeslotItems.filter(
+				(t) => t._id !== timeslotId,
+			);
 
-			await this.copyAndSaveTimeslotsScheduleInServiceProvider(serviceProvider, timeslotItemServiceWithoutTargetItem);
+			await this.copyAndSaveTimeslotsScheduleInServiceProvider(
+				serviceProvider,
+				timeslotItemServiceWithoutTargetItem,
+			);
 			return;
 		}
-		const timeslotItem = serviceProvider.timeslotsSchedule.timeslotItems.find(t => t._id === timeslotId);
+		const timeslotItem = serviceProvider.timeslotsSchedule.timeslotItems.find((t) => t._id === timeslotId);
 		if (!timeslotItem) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Timeslot item not found');
 		}
@@ -201,11 +238,14 @@ export class ServiceProvidersService {
 		await this.timeslotItemsService.deleteTimeslot(timeslotId);
 	}
 
-	private async copyAndSaveTimeslotsScheduleInServiceProvider(serviceProvider: ServiceProvider, timeslotItems: TimeslotItem[]): Promise<ServiceProvider> {
+	private async copyAndSaveTimeslotsScheduleInServiceProvider(
+		serviceProvider: ServiceProvider,
+		timeslotItems: TimeslotItem[],
+	): Promise<ServiceProvider> {
 		serviceProvider.timeslotsSchedule = TimeslotsSchedule.create(undefined, serviceProvider);
 
 		const items = cloneDeep(timeslotItems);
-		items.forEach(i => {
+		items.forEach((i) => {
 			i._id = undefined;
 			i._timeslotsScheduleId = undefined;
 			i._timeslotsSchedule = serviceProvider.timeslotsSchedule;
@@ -214,5 +254,4 @@ export class ServiceProvidersService {
 
 		return await this.serviceProvidersRepository.save(serviceProvider);
 	}
-
 }

@@ -1,10 +1,10 @@
-import {BookingsRepository} from "../bookings.repository";
-import {DbConnection} from "../../../core/db.connection";
-import {Booking, BookingStatus, User} from "../../../models";
-import {Container} from "typescript-ioc";
-import {InsertResult} from "typeorm";
-import {QueryAccessType} from "../../../core/repository";
-import {UserContext} from '../../../infrastructure/userContext.middleware';
+import { BookingsRepository } from '../bookings.repository';
+import { DbConnection } from '../../../core/db.connection';
+import { Booking, BookingStatus, User } from '../../../models';
+import { Container } from 'typescript-ioc';
+import { InsertResult } from 'typeorm';
+import { QueryAccessType } from '../../../core/repository';
+import { UserContext } from '../../../infrastructure/userContext.middleware';
 
 beforeAll(() => {
 	Container.bind(DbConnection).to(MockDBConnection);
@@ -16,14 +16,14 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
-describe("Bookings repository", () => {
+describe('Bookings repository', () => {
 	const singpassUserMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 
 	beforeEach(() => {
 		jest.resetAllMocks();
 	});
 
-	it("should search bookings with date range and access type", async () => {
+	it('should search bookings with date range and access type', async () => {
 		const bookingMock = new Booking();
 		bookingMock.status = BookingStatus.Accepted;
 
@@ -54,7 +54,7 @@ describe("Bookings repository", () => {
 		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
 	});
 
-	it("should search bookings with status", async () => {
+	it('should search bookings with status', async () => {
 		const bookingMock = new Booking();
 		bookingMock.status = BookingStatus.Accepted;
 		const queryBuilderMock = {
@@ -85,7 +85,7 @@ describe("Bookings repository", () => {
 		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
 	});
 
-	it("should search bookings with citizenUinFin", async () => {
+	it('should search bookings with citizenUinFin', async () => {
 		const bookingMock = new Booking();
 		bookingMock.status = BookingStatus.Accepted;
 		const queryBuilderMock = {
@@ -116,9 +116,9 @@ describe("Bookings repository", () => {
 		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
 	});
 
-	it("should save booking", async () => {
+	it('should save booking', async () => {
 		const insertResult = new InsertResult();
-		insertResult.identifiers = [{ id: "abc" }];
+		insertResult.identifiers = [{ id: 'abc' }];
 		MockDBConnection.insert.mockImplementation(() => insertResult);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
@@ -126,7 +126,7 @@ describe("Bookings repository", () => {
 		const booking: Booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 
 		const result = await bookingsRepository.save(booking);
-		expect(result.identifiers).toStrictEqual([{ id: "abc" }]);
+		expect(result.identifiers).toStrictEqual([{ id: 'abc' }]);
 	});
 
 	it('should update booking', async () => {
@@ -183,7 +183,7 @@ class MockDBConnection extends DbConnection {
 class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn();
 
-	public init() { }
+	public init() {}
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(params);
 	}

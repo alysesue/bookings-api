@@ -1,22 +1,22 @@
-import { Container } from "typescript-ioc";
-import { UnavailabilitiesService } from "../unavailabilities.service";
-import { UnavailabilitiesController } from "../unavailabilities.controller";
-import { UnavailabilityRequest } from "../unavailabilities.apicontract";
-import { Unavailability } from "../../../models";
+import { Container } from 'typescript-ioc';
+import { UnavailabilitiesService } from '../unavailabilities.service';
+import { UnavailabilitiesController } from '../unavailabilities.controller';
+import { UnavailabilityRequest } from '../unavailabilities.apicontract';
+import { Unavailability } from '../../../models';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
-jest.mock("mol-lib-common", () => {
+jest.mock('mol-lib-common', () => {
 	const actual = jest.requireActual('mol-lib-common');
 	const mock = (config: any) => {
 		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
 	};
 	return {
 		...actual,
-		MOLAuth: mock
+		MOLAuth: mock,
 	};
 });
 
@@ -49,7 +49,6 @@ describe('Unavailabilities controller tests', () => {
 	});
 
 	it('should get unavailabilities', async () => {
-
 		UnavailabilitiesServiceMock.search.mockReturnValue(Promise.resolve([]));
 		const controller = Container.get(UnavailabilitiesController);
 
@@ -61,7 +60,7 @@ describe('Unavailabilities controller tests', () => {
 			from,
 			to,
 			serviceId: 1,
-			serviceProviderId: 2
+			serviceProviderId: 2,
 		});
 
 		expect(result).toBeDefined();

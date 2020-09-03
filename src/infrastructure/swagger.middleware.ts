@@ -1,8 +1,8 @@
-import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
-import { basePath } from "../config/app-config";
-import * as fs from "fs";
-import * as swagger2 from "swagger2";
-import { ui } from "swagger2-koa";
+import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
+import { basePath } from '../config/app-config';
+import * as fs from 'fs';
+import * as swagger2 from 'swagger2';
+import { ui } from 'swagger2-koa';
 import { promisify } from 'util';
 
 // tslint:disable-next-line: tsr-detect-non-literal-fs-filename

@@ -3,7 +3,6 @@ import { DbConnection } from '../../../core/db.connection';
 import { Container } from 'typescript-ioc';
 import { Calendar } from '../../../models';
 
-
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
@@ -48,7 +47,7 @@ describe('Calendar repository', () => {
 const InnerRepositoryMock = {
 	find: jest.fn().mockImplementation(() => Promise.resolve([])),
 	save: jest.fn().mockImplementation(() => Promise.resolve({})),
-	findOne: jest.fn().mockImplementation(() => Promise.resolve({}))
+	findOne: jest.fn().mockImplementation(() => Promise.resolve({})),
 };
 
 const getRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);

@@ -1,14 +1,13 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Calendar } from "./calendar";
-import { ServiceProviderStatus } from "../serviceProviderStatus";
-import { Service } from "./service";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Calendar } from './calendar';
+import { ServiceProviderStatus } from '../serviceProviderStatus';
+import { Service } from './service';
 import { Schedule } from './schedule';
 import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
-import { TimeslotsSchedule } from "./timeslotsSchedule";
+import { TimeslotsSchedule } from './timeslotsSchedule';
 
 @Entity()
 export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, IEntityWithTimeslotsSchedule {
-
 	@Column()
 	private _createdAt: Date;
 
@@ -32,7 +31,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		this._serviceId = value;
 	}
 
-	@ManyToOne(type => Service)
+	@ManyToOne((type) => Service)
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
@@ -47,7 +46,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		return this._id;
 	}
 
-	@Column({ type: "varchar", length: 300 })
+	@Column({ type: 'varchar', length: 300 })
 	private _name: string;
 
 	public get name(): string {
@@ -58,9 +57,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		this._name = value;
 	}
 
-
-	constructor() {
-	}
+	constructor() {}
 
 	public static create(name: string, calendar: Calendar, serviceId: number, email?: string): ServiceProvider {
 		const instance = new ServiceProvider();
@@ -73,7 +70,6 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		return instance;
 	}
 
-
 	@Column({ nullable: true })
 	private _email?: string;
 
@@ -85,9 +81,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		this._email = value;
 	}
 
-
-
-	@OneToOne("Calendar")
+	@OneToOne('Calendar')
 	@JoinColumn()
 	public _calendar: Calendar;
 
@@ -118,21 +112,33 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	@Column({ nullable: true })
 	private _scheduleId?: number;
 
-	public set scheduleId(id: number) { this._scheduleId = id; }
-	public get scheduleId(): number { return this._scheduleId; }
+	public set scheduleId(id: number) {
+		this._scheduleId = id;
+	}
+	public get scheduleId(): number {
+		return this._scheduleId;
+	}
 
 	@Column({ nullable: true })
 	private _timeslotsScheduleId: number;
 
-	public set timeslotsScheduleId(id: number) { this._timeslotsScheduleId = id; }
-	public get timeslotsScheduleId(): number { return this._timeslotsScheduleId; }
+	public set timeslotsScheduleId(id: number) {
+		this._timeslotsScheduleId = id;
+	}
+	public get timeslotsScheduleId(): number {
+		return this._timeslotsScheduleId;
+	}
 
-	@OneToOne(type => TimeslotsSchedule, e => e._serviceProvider, {
+	@OneToOne((type) => TimeslotsSchedule, (e) => e._serviceProvider, {
 		cascade: true,
 	})
 	@JoinColumn({ name: '_timeslotsScheduleId' })
 	private _timeslotsSchedule: TimeslotsSchedule;
 
-	public set timeslotsSchedule(value: TimeslotsSchedule) { this._timeslotsSchedule = value; }
-	public get timeslotsSchedule(): TimeslotsSchedule { return this._timeslotsSchedule; }
+	public set timeslotsSchedule(value: TimeslotsSchedule) {
+		this._timeslotsSchedule = value;
+	}
+	public get timeslotsSchedule(): TimeslotsSchedule {
+		return this._timeslotsSchedule;
+	}
 }

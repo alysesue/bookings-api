@@ -1,4 +1,4 @@
-import {Container} from "typescript-ioc";
+import { Container } from 'typescript-ioc';
 import {
 	Booking,
 	BookingStatus,
@@ -7,22 +7,22 @@ import {
 	ServiceProvider,
 	Timeslot,
 	TimeslotsSchedule,
-	Unavailability
-} from "../../../models";
-import {TimeslotsService} from "../timeslots.service";
-import {BookingsRepository} from "../../bookings/bookings.repository";
-import {DateHelper} from "../../../infrastructure/dateHelper";
-import {ServicesRepository} from '../../services/services.repository';
-import {ServiceProvidersRepository} from "../../serviceProviders/serviceProviders.repository";
-import {AvailableTimeslotProviders} from "../availableTimeslotProviders";
-import {UnavailabilitiesService} from "../../unavailabilities/unavailabilities.service";
+	Unavailability,
+} from '../../../models';
+import { TimeslotsService } from '../timeslots.service';
+import { BookingsRepository } from '../../bookings/bookings.repository';
+import { DateHelper } from '../../../infrastructure/dateHelper';
+import { ServicesRepository } from '../../services/services.repository';
+import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
+import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
+import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
-describe("Timeslots Service", () => {
+describe('Timeslots Service', () => {
 	const date = new Date(2020, 4, 27);
 	const endDate = DateHelper.setHours(date, 11, 59);
 	const timeslot = new Timeslot(DateHelper.setHours(date, 15, 0), DateHelper.setHours(date, 16, 0));
@@ -30,15 +30,15 @@ describe("Timeslots Service", () => {
 	const timeslot3 = new Timeslot(DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
 	const timeslot4 = new Timeslot(DateHelper.setHours(date, 18, 30), DateHelper.setHours(date, 19, 30));
 
-	const TimeslotsScheduleMock = {
+	const TimeslotsScheduleMock = ({
 		_id: 1,
-		generateValidTimeslots: jest.fn(() => [timeslot, timeslot2, timeslot3, timeslot4])
-	} as unknown as TimeslotsSchedule;
+		generateValidTimeslots: jest.fn(() => [timeslot, timeslot2, timeslot3, timeslot4]),
+	} as unknown) as TimeslotsSchedule;
 
-	const ProviderScheduleMock = {
+	const ProviderScheduleMock = ({
 		_id: 2,
-		generateValidTimeslots: jest.fn(() => [timeslot3])
-	} as unknown as TimeslotsSchedule;
+		generateValidTimeslots: jest.fn(() => [timeslot3]),
+	} as unknown) as TimeslotsSchedule;
 
 	const CalendarMock = new Calendar();
 	CalendarMock.id = 1;
@@ -69,19 +69,18 @@ describe("Timeslots Service", () => {
 	const BookingsRepositoryMock = {
 		search: jest.fn(() => {
 			return Promise.resolve([pendingBookingMock, BookingMock]);
-		})
+		}),
 	};
 
 	const ServicesRepositoryMock = {
-		getServiceWithTimeslotsSchedule: jest.fn(() => Promise.resolve(ServiceMock))
+		getServiceWithTimeslotsSchedule: jest.fn(() => Promise.resolve(ServiceMock)),
 	};
 
 	const ServiceProvidersRepositoryMock = {
-		getServiceProviders: jest.fn(() => Promise.resolve([ServiceProviderMock, ServiceProviderMock2]))
+		getServiceProviders: jest.fn(() => Promise.resolve([ServiceProviderMock, ServiceProviderMock2])),
 	};
 
 	afterEach(() => {
-
 		// Clears mock counters, not implementation
 		jest.clearAllMocks();
 	});
@@ -97,9 +96,8 @@ describe("Timeslots Service", () => {
 	unavailability1.start = DateHelper.setHours(date, 19, 0);
 	unavailability1.end = DateHelper.setHours(date, 20, 0);
 
-
 	const UnavailabilitiesServiceMock = {
-		search: jest.fn(() => Promise.resolve([unavailability1, unavailability2]))
+		search: jest.fn(() => Promise.resolve([unavailability1, unavailability2])),
 	};
 
 	beforeEach(() => {
@@ -109,7 +107,7 @@ describe("Timeslots Service", () => {
 		Container.bind(UnavailabilitiesService).to(jest.fn(() => UnavailabilitiesServiceMock));
 	});
 
-	it("should aggregate results", async () => {
+	it('should aggregate results', async () => {
 		const service = Container.get(TimeslotsService);
 		const result = await service.getAggregatedTimeslots(date, endDate, 1);
 		expect(result.length).toBe(3);
@@ -118,7 +116,7 @@ describe("Timeslots Service", () => {
 		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 	});
 
-	it("should aggregate results by service provider", async () => {
+	it('should aggregate results by service provider', async () => {
 		const service = Container.get(TimeslotsService);
 		const result = await service.getAggregatedTimeslots(date, endDate, 1, false, 101);
 		expect(result.length).toBe(1);
@@ -127,7 +125,7 @@ describe("Timeslots Service", () => {
 		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 	});
 
-	it("should get available providers", async () => {
+	it('should get available providers', async () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 17, 0);
 		const endDateTime = DateHelper.setHours(date, 18, 0);
@@ -144,7 +142,7 @@ describe("Timeslots Service", () => {
 	it('should map accepted out-of-slot booking to timeslot response', async () => {
 		const service = Container.get(TimeslotsService);
 
-		const setBookedServiceProviders = AvailableTimeslotProviders.prototype.setBookedServiceProviders = jest.fn();
+		const setBookedServiceProviders = (AvailableTimeslotProviders.prototype.setBookedServiceProviders = jest.fn());
 
 		const serviceProvider = ServiceProvider.create('Juku', undefined, 1);
 		serviceProvider.id = 1;
@@ -165,7 +163,7 @@ describe("Timeslots Service", () => {
 	it('should merge bookings with same time range', async () => {
 		const service = Container.get(TimeslotsService);
 
-		const setBookedServiceProviders = AvailableTimeslotProviders.prototype.setBookedServiceProviders = jest.fn();
+		const setBookedServiceProviders = (AvailableTimeslotProviders.prototype.setBookedServiceProviders = jest.fn());
 
 		const serviceProvider1 = ServiceProvider.create('Juku', undefined, 1);
 		const serviceProvider2 = ServiceProvider.create('Andi', undefined, 1);
@@ -184,7 +182,13 @@ describe("Timeslots Service", () => {
 });
 
 const getOutOfSlotBooking = (serviceProvider: ServiceProvider): Booking => {
-	const booking = Booking.create(1, new Date('2020-08-08T06:00Z'), new Date('2020-08-08T09:00Z'), serviceProvider.id, 'ref');
+	const booking = Booking.create(
+		1,
+		new Date('2020-08-08T06:00Z'),
+		new Date('2020-08-08T09:00Z'),
+		serviceProvider.id,
+		'ref',
+	);
 	booking.serviceProvider = serviceProvider;
 	return booking;
 };

@@ -1,17 +1,17 @@
-import { Container } from "typescript-ioc";
-import { UnavailabilitiesRepository } from "../unavailabilities.repository";
-import { UnavailabilitiesService } from "../unavailabilities.service";
-import { UnavailabilityRequest } from "../unavailabilities.apicontract";
-import { Calendar, ServiceProvider, Unavailability } from "../../../models";
-import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
-import { ServiceProvidersRepository } from "../../serviceProviders/serviceProviders.repository";
+import { Container } from 'typescript-ioc';
+import { UnavailabilitiesRepository } from '../unavailabilities.repository';
+import { UnavailabilitiesService } from '../unavailabilities.service';
+import { UnavailabilityRequest } from '../unavailabilities.apicontract';
+import { Calendar, ServiceProvider, Unavailability } from '../../../models';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
-describe("Unavailabilities service tests", () => {
+describe('Unavailabilities service tests', () => {
 	beforeAll(() => {
 		Container.bind(UnavailabilitiesRepository).to(UnavailabilitiesRepositoryMock);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
@@ -21,7 +21,7 @@ describe("Unavailabilities service tests", () => {
 		jest.resetAllMocks();
 	});
 
-	it("should search for unavailabilities", async () => {
+	it('should search for unavailabilities', async () => {
 		UnavailabilitiesRepositoryMock.search.mockReturnValue(Promise.resolve([]));
 
 		const from = new Date('2020-01-01');
@@ -44,7 +44,7 @@ describe("Unavailabilities service tests", () => {
 		expect(results).toBeDefined();
 	});
 
-	it("should save an unavailability", async () => {
+	it('should save an unavailability', async () => {
 		const entity = new Unavailability();
 		entity.id = 1;
 		UnavailabilitiesRepositoryMock.save.mockReturnValue(Promise.resolve(entity));
@@ -60,7 +60,7 @@ describe("Unavailabilities service tests", () => {
 		expect(saved).toBeDefined();
 	});
 
-	it("should validate unavailability date range", async () => {
+	it('should validate unavailability date range', async () => {
 		const entity = new Unavailability();
 		entity.id = 1;
 		UnavailabilitiesRepositoryMock.save.mockReturnValue(Promise.resolve(entity));
@@ -74,11 +74,13 @@ describe("Unavailabilities service tests", () => {
 		const service = Container.get(UnavailabilitiesService);
 		const test = async () => await service.create(request);
 		await expect(test).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Unavailability start time must be less than end time.')
+			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				'Unavailability start time must be less than end time.',
+			),
 		);
 	});
 
-	it("should validate unavailable service providers length", async () => {
+	it('should validate unavailable service providers length', async () => {
 		const entity = new Unavailability();
 		entity.id = 1;
 		UnavailabilitiesRepositoryMock.save.mockReturnValue(Promise.resolve(entity));
@@ -92,14 +94,16 @@ describe("Unavailabilities service tests", () => {
 
 		const service = Container.get(UnavailabilitiesService);
 		const test = async () => await service.create(request);
-		const expectError = new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Unavailability must be applied to at least one service provider (or all).');
+		const expectError = new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+			'Unavailability must be applied to at least one service provider (or all).',
+		);
 
 		await expect(test).rejects.toStrictEqual(expectError);
 		request.serviceProviderIds = undefined;
 		await expect(test).rejects.toStrictEqual(expectError);
 	});
 
-	it("should validate unavailable service providers exist", async () => {
+	it('should validate unavailable service providers exist', async () => {
 		const spA = ServiceProvider.create('A', new Calendar(), 1);
 		spA.id = 5;
 		const spB = ServiceProvider.create('B', new Calendar(), 1);
@@ -115,13 +119,15 @@ describe("Unavailabilities service tests", () => {
 
 		const service = Container.get(UnavailabilitiesService);
 		const test = async () => await service.create(request);
-		const expectError = new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Invalid service provider id(s): 4, 3');
+		const expectError = new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+			'Invalid service provider id(s): 4, 3',
+		);
 
 		await expect(test).rejects.toStrictEqual(expectError);
 		expect(UnavailabilitiesRepositoryMock.save).not.toHaveBeenCalled();
 	});
 
-	it("should check for unavailabilities", async () => {
+	it('should check for unavailabilities', async () => {
 		UnavailabilitiesRepositoryMock.searchCount.mockReturnValue(Promise.resolve(1));
 
 		const from = new Date('2020-01-01');

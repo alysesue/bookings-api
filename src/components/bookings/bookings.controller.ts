@@ -1,4 +1,4 @@
-import { Inject } from "typescript-ioc";
+import { Inject } from 'typescript-ioc';
 import {
 	Body,
 	Controller,
@@ -12,21 +12,16 @@ import {
 	Route,
 	Security,
 	SuccessResponse,
-	Tags
-} from "tsoa";
-import {
-	BookingAcceptRequest,
-	BookingRequest,
-	BookingResponse,
-	BookingSearchRequest,
-} from "./bookings.apicontract";
-import { BookingsService } from "./bookings.service";
-import { TimeslotsService } from "../timeslots/timeslots.service";
-import { MOLAuth } from "mol-lib-common";
-import { MOLUserAuthLevel } from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
-import { BookingsMapper } from "./bookings.mapper";
+	Tags,
+} from 'tsoa';
+import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingSearchRequest } from './bookings.apicontract';
+import { BookingsService } from './bookings.service';
+import { TimeslotsService } from '../timeslots/timeslots.service';
+import { MOLAuth } from 'mol-lib-common';
+import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
+import { BookingsMapper } from './bookings.mapper';
 
-@Route("v1/bookings")
+@Route('v1/bookings')
 @Tags('Bookings')
 export class BookingsController extends Controller {
 	@Inject
@@ -45,10 +40,13 @@ export class BookingsController extends Controller {
 	 */
 	@Post()
 	@SuccessResponse(201, 'Created')
-	@Security("service")
+	@Security('service')
 	@MOLAuth({ user: { minLevel: MOLUserAuthLevel.L2 } })
 	@Response(401, 'Valid authentication types: [user]')
-	public async postBooking(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
+	public async postBooking(
+		@Body() bookingRequest: BookingRequest,
+		@Header('x-api-service') serviceId: number,
+	): Promise<any> {
 		bookingRequest.outOfSlotBooking = false;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
@@ -64,10 +62,13 @@ export class BookingsController extends Controller {
 	 */
 	@Post('admin')
 	@SuccessResponse(201, 'Created')
-	@Security("service")
+	@Security('service')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
-	public async postBookingOutOfSlot(@Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
+	public async postBookingOutOfSlot(
+		@Body() bookingRequest: BookingRequest,
+		@Header('x-api-service') serviceId: number,
+	): Promise<any> {
 		bookingRequest.outOfSlotBooking = true;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
@@ -95,13 +96,12 @@ export class BookingsController extends Controller {
 	@SuccessResponse(204, 'Cancelled')
 	@MOLAuth({
 		admin: {},
-		user: { minLevel: MOLUserAuthLevel.L2 }
+		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,user]')
 	public async cancelBooking(@Path() bookingId: number): Promise<any> {
 		await this.bookingsService.cancelBooking(bookingId);
 	}
-
 
 	/**
 	 * Updates an existing booking.
@@ -112,10 +112,14 @@ export class BookingsController extends Controller {
 	 */
 	@Put('{bookingId}')
 	@SuccessResponse(201, 'Updated')
-	@Security("service")
+	@Security('service')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
-	public async updateBooking(@Path() bookingId: number, @Body() bookingRequest: BookingRequest, @Header("x-api-service") serviceId: number): Promise<any> {
+	public async updateBooking(
+		@Path() bookingId: number,
+		@Body() bookingRequest: BookingRequest,
+		@Header('x-api-service') serviceId: number,
+	): Promise<any> {
 		const deletedBooking = await this.bookingsService.cancelBooking(bookingId);
 		if (deletedBooking) {
 			bookingRequest.outOfSlotBooking = true;
@@ -134,11 +138,11 @@ export class BookingsController extends Controller {
 	 * @param serviceId (Optional) filters by a service (id).
 	 */
 	@Get('')
-	@SuccessResponse(200, "Ok")
-	@Security("optional-service")
+	@SuccessResponse(200, 'Ok')
+	@Security('optional-service')
 	@MOLAuth({
 		admin: {},
-		user: { minLevel: MOLUserAuthLevel.L2 }
+		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,user]')
 	public async getBookings(
@@ -146,8 +150,8 @@ export class BookingsController extends Controller {
 		@Query() to: Date,
 		@Query() status?: number[],
 		@Query() citizenUinFins?: string[],
-		@Header("x-api-service") serviceId?: number): Promise<BookingResponse[]> {
-
+		@Header('x-api-service') serviceId?: number,
+	): Promise<BookingResponse[]> {
 		const searchQuery = new BookingSearchRequest(from, to, status, citizenUinFins, serviceId);
 		const bookings = await this.bookingsService.searchBookings(searchQuery);
 		return BookingsMapper.mapDataModels(bookings);
@@ -161,7 +165,7 @@ export class BookingsController extends Controller {
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({
 		admin: {},
-		user: { minLevel: MOLUserAuthLevel.L2 }
+		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,user]')
 	public async getBooking(@Path() bookingId: number): Promise<any> {
@@ -177,13 +181,17 @@ export class BookingsController extends Controller {
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({
 		admin: {},
-		user: { minLevel: MOLUserAuthLevel.L2 }
+		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,user]')
 	public async getBookingProviders(@Path() bookingId: number): Promise<any> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 
-		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.endDateTime, booking.serviceId);
+		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(
+			booking.startDateTime,
+			booking.endDateTime,
+			booking.serviceId,
+		);
 		return timeslotEntry.availableServiceProviders.map(BookingsMapper.mapProvider) || [];
 	}
 }

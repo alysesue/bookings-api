@@ -4,7 +4,11 @@ export function groupByKey<TKey, TValue>(elements: TValue[], keySelector: Select
 	return groupByKeyValue(elements, keySelector, (v) => v);
 }
 
-export function groupByKeyValue<TElement, TKey, TValue>(elements: TElement[], keySelector: Selector<TElement, TKey>, valueSelector: Selector<TElement, TValue>): Map<TKey, TValue[]> {
+export function groupByKeyValue<TElement, TKey, TValue>(
+	elements: TElement[],
+	keySelector: Selector<TElement, TKey>,
+	valueSelector: Selector<TElement, TValue>,
+): Map<TKey, TValue[]> {
 	const initial = new Map<TKey, TValue[]>();
 	if (!elements) {
 		return initial;
@@ -23,7 +27,10 @@ export function groupByKeyValue<TElement, TKey, TValue>(elements: TElement[], ke
 	return result;
 }
 
-export function groupByKeyLastValue<TKey, TValue>(elements: TValue[], keySelector: (value: TValue) => TKey): Map<TKey, TValue> {
+export function groupByKeyLastValue<TKey, TValue>(
+	elements: TValue[],
+	keySelector: (value: TValue) => TKey,
+): Map<TKey, TValue> {
 	const initial = new Map<TKey, TValue>();
 	if (!elements) {
 		return initial;

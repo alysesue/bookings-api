@@ -1,16 +1,16 @@
-import { ServicesRepository } from "../services.repository";
-import { DbConnection } from "../../../core/db.connection";
-import { Container } from "typescript-ioc";
-import { Schedule, Service, TimeslotsSchedule } from "../../../models";
+import { ServicesRepository } from '../services.repository';
+import { DbConnection } from '../../../core/db.connection';
+import { Container } from 'typescript-ioc';
+import { Schedule, Service, TimeslotsSchedule } from '../../../models';
 import { SchedulesRepository } from '../../schedules/schedules.repository';
-import { TimeslotsScheduleRepository } from "../../timeslotsSchedules/timeslotsSchedule.repository";
+import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
-describe("Services repository", () => {
+describe('Services repository', () => {
 	beforeEach(() => {
 		Container.bind(DbConnection).to(MockDBConnection);
 		Container.bind(SchedulesRepository).to(SchedulesRepositoryMock);
@@ -19,7 +19,7 @@ describe("Services repository", () => {
 		jest.resetAllMocks();
 	});
 
-	it("should get list of services", async () => {
+	it('should get list of services', async () => {
 		MockDBConnection.find.mockImplementation(() => Promise.resolve([]));
 
 		const repository = Container.get(ServicesRepository);
@@ -27,7 +27,7 @@ describe("Services repository", () => {
 		expect(result).toStrictEqual([]);
 	});
 
-	it("should get a service", async () => {
+	it('should get a service', async () => {
 		const data = new Service();
 		MockDBConnection.findOne.mockImplementation(() => Promise.resolve(data));
 
@@ -36,7 +36,7 @@ describe("Services repository", () => {
 		expect(result).toStrictEqual(data);
 	});
 
-	it("should get a service with schedule", async () => {
+	it('should get a service with schedule', async () => {
 		const data = new Service();
 		data.scheduleId = 11;
 
@@ -51,13 +51,15 @@ describe("Services repository", () => {
 		expect(result.schedule).toBe(schedule);
 	});
 
-	it("should get a service with TimeslotsSchedule", async () => {
+	it('should get a service with TimeslotsSchedule', async () => {
 		const data = new Service();
 		data.timeslotsScheduleId = 2;
 
 		const timeslotsSchedule = new TimeslotsSchedule();
 		timeslotsSchedule._id = 2;
-		TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock.mockImplementation(() => Promise.resolve(timeslotsSchedule));
+		TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock.mockImplementation(() =>
+			Promise.resolve(timeslotsSchedule),
+		);
 		MockDBConnection.findOne.mockImplementation(() => Promise.resolve(data));
 
 		const repository = Container.get(ServicesRepository);
@@ -66,9 +68,9 @@ describe("Services repository", () => {
 		expect(result.timeslotsSchedule).toBeDefined();
 	});
 
-	it("should save a service", async () => {
+	it('should save a service', async () => {
 		const service: Service = new Service();
-		service.name = "Coaches";
+		service.name = 'Coaches';
 
 		MockDBConnection.save.mockImplementation(() => Promise.resolve(service));
 		const repository = Container.get(ServicesRepository);
@@ -76,7 +78,6 @@ describe("Services repository", () => {
 		await repository.save(service);
 		expect(MockDBConnection.save.mock.calls[0][0]).toStrictEqual(service);
 	});
-
 });
 
 class MockDBConnection extends DbConnection {
@@ -90,12 +91,11 @@ class MockDBConnection extends DbConnection {
 				find: MockDBConnection.find,
 				findOne: MockDBConnection.findOne,
 				save: MockDBConnection.save,
-			})
+			}),
 		};
 		return Promise.resolve(connection);
 	}
 }
-
 
 class SchedulesRepositoryMock extends SchedulesRepository {
 	public static getSchedulesMock = jest.fn();
@@ -105,7 +105,6 @@ class SchedulesRepositoryMock extends SchedulesRepository {
 	}
 }
 
-
 class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
 	public static getTimeslotsScheduleByIdMock = jest.fn();
 
@@ -113,4 +112,3 @@ class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
 		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock(...params);
 	}
 }
-

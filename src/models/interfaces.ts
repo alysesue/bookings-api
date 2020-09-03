@@ -1,4 +1,4 @@
-import { TimeOfDay } from "./timeOfDay";
+import { TimeOfDay } from './timeOfDay';
 
 export interface ISchedule {
 	slotsDurationInMin: number;
@@ -9,8 +9,7 @@ export interface IEntityWithSchedule {
 	schedule: ISchedule;
 }
 
-export interface ITimeslotsSchedule {
-}
+export interface ITimeslotsSchedule {}
 
 export interface IEntityWithTimeslotsSchedule {
 	timeslotsScheduleId: number;
