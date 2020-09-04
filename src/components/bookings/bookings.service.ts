@@ -172,16 +172,10 @@ export class BookingsService {
 	}
 
 	private async validateOutOfSlotBookings(booking: Booking) {
-		const { startDateTime, endDateTime, serviceId, serviceProviderId, citizenUinFin } = booking;
+		const { startDateTime, endDateTime, serviceId, serviceProviderId } = booking;
 
-		const searchQuery = new BookingSearchRequest(
-			startDateTime,
-			endDateTime,
-			[BookingStatus.Accepted],
-			[citizenUinFin],
-			serviceId,
-			serviceProviderId,
-		);
+		const searchQuery = new BookingSearchRequest(startDateTime, endDateTime, [BookingStatus.Accepted], serviceId);
+		searchQuery.serviceProviderId = serviceProviderId;
 
 		const acceptedBookings = await this.searchBookings(searchQuery);
 

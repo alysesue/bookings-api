@@ -152,7 +152,7 @@ export class BookingsController extends Controller {
 		@Query() citizenUinFins?: string[],
 		@Header('x-api-service') serviceId?: number,
 	): Promise<BookingResponse[]> {
-		const searchQuery = new BookingSearchRequest(from, to, status, citizenUinFins, serviceId);
+		const searchQuery = new BookingSearchRequest(from, to, status, serviceId, citizenUinFins);
 		const bookings = await this.bookingsService.searchBookings(searchQuery);
 		return BookingsMapper.mapDataModels(bookings);
 	}
