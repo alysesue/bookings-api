@@ -38,12 +38,20 @@ export class BookingSearchRequest {
 	public serviceProviderId?: number;
 	public citizenUinFins?: string[];
 
-	constructor(from: Date, to: Date, statuses?: BookingStatus[], serviceId?: number, citizenUinFins?: string[]) {
+	constructor(
+		from: Date,
+		to: Date,
+		statuses?: BookingStatus[],
+		serviceId?: number,
+		citizenUinFins?: string[],
+		serviceProviderId?: number,
+	) {
 		this.from = from;
 		this.to = to;
 		this.statuses = statuses;
 		this.serviceId = serviceId;
 		this.citizenUinFins = citizenUinFins;
+		this.serviceProviderId = serviceProviderId;
 	}
 }
 
