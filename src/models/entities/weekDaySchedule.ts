@@ -8,7 +8,7 @@ import { ISchedule } from '../interfaces';
 import { WeekDayBreak } from './weekDayBreak';
 
 @Entity()
-@Index(["scheduleId", "weekDay"], { unique: true })
+@Index(['scheduleId', 'weekDay'], { unique: true })
 export class WeekDaySchedule {
 	@PrimaryGeneratedColumn()
 	public id: number;
@@ -16,19 +16,18 @@ export class WeekDaySchedule {
 	@ManyToOne('Schedule', { nullable: false })
 	@JoinColumn({ name: 'scheduleId' })
 	public schedule: ISchedule;
-	@Column("int")
+	@Column('int')
 	public weekDay: Weekday;
 	@Column()
 	public hasSchedule: boolean;
-	@Column({ type: "time", transformer: TimeTransformer, nullable: true })
+	@Column({ type: 'time', transformer: TimeTransformer, nullable: true })
 	public openTime?: TimeOfDay;
-	@Column({ type: "time", transformer: TimeTransformer, nullable: true })
+	@Column({ type: 'time', transformer: TimeTransformer, nullable: true })
 	public closeTime?: TimeOfDay;
 	@Column({ nullable: false })
 	private scheduleId: number;
 
-	constructor() {
-	}
+	constructor() {}
 
 	// This a logical relationship (WeekDaySchedule[1-*]WeekDayBreak), not mapped directly to database.
 	// It is set when loading schedules or mapping from api contract.
@@ -56,7 +55,7 @@ export class WeekDaySchedule {
 		return instance;
 	}
 
-	public * validateWeekDaySchedule(): Iterable<BusinessValidation> {
+	public *validateWeekDaySchedule(): Iterable<BusinessValidation> {
 		if (!this.schedule) {
 			throw new Error('Schedule entity not set in WeekDaySchedule');
 		}
@@ -70,18 +69,24 @@ export class WeekDaySchedule {
 		}
 	}
 
-	public * generateValidTimeslots(range: { dayOfWeek: Date, startTimeOfDay?: TimeOfDay, endTimeOfDay?: TimeOfDay }): Iterable<Timeslot> {
+	public *generateValidTimeslots(range: {
+		dayOfWeek: Date;
+		startTimeOfDay?: TimeOfDay;
+		endTimeOfDay?: TimeOfDay;
+	}): Iterable<Timeslot> {
 		if (!this.hasSchedule) {
 			return;
 		}
 
 		const slotDuration = this.schedule.slotsDurationInMin;
 
-		let startTime = range.startTimeOfDay ? this.getFirstBlockStartTime(range.startTimeOfDay.useTimeOfDay(range.dayOfWeek))
+		let startTime = range.startTimeOfDay
+			? this.getFirstBlockStartTime(range.startTimeOfDay.useTimeOfDay(range.dayOfWeek))
 			: this.getRelativeStartTime(range.dayOfWeek);
 		let currentEndTime = DateHelper.addMinutes(startTime, slotDuration);
 
-		const maxLastBlockEndTime = range.endTimeOfDay ? this.getMaxLastBlockEndTime(range.endTimeOfDay.useTimeOfDay(range.dayOfWeek))
+		const maxLastBlockEndTime = range.endTimeOfDay
+			? this.getMaxLastBlockEndTime(range.endTimeOfDay.useTimeOfDay(range.dayOfWeek))
 			: this.getRelativeEndTime(range.dayOfWeek);
 
 		while (currentEndTime <= maxLastBlockEndTime) {
@@ -94,32 +99,41 @@ export class WeekDaySchedule {
 		}
 	}
 
-	private * validateBreaks(): Iterable<BusinessValidation> {
+	private *validateBreaks(): Iterable<BusinessValidation> {
 		for (const entry of this._breaks) {
 			const diff = TimeOfDay.DiffInMinutes(entry.endTime, entry.startTime);
 			if (diff < 0) {
-				yield new BusinessValidation(`Break end time [${entry.endTime}] must be greater than start time [${entry.startTime}]`);
+				yield new BusinessValidation(
+					`Break end time [${entry.endTime}] must be greater than start time [${entry.startTime}]`,
+				);
 			}
 		}
 	}
 
-	private * validateOpenCloseTimes(): Iterable<BusinessValidation> {
-		if (!this.hasSchedule)
-			return;
+	private *validateOpenCloseTimes(): Iterable<BusinessValidation> {
+		if (!this.hasSchedule) return;
 
 		if (!this.openTime || !this.closeTime) {
-			yield new BusinessValidation(`Open and close times must be informed because schedule is enabled for this day of the week [${getWeekdayName(this.weekDay)}]`);
+			yield new BusinessValidation(
+				`Open and close times must be informed because schedule is enabled for this day of the week [${getWeekdayName(
+					this.weekDay,
+				)}]`,
+			);
 			return;
 		}
 
 		const diff = TimeOfDay.DiffInMinutes(this.closeTime, this.openTime);
 		if (diff < 0) {
-			yield new BusinessValidation(`Close time [${this.closeTime}] must be greater than open time [${this.openTime}]`);
+			yield new BusinessValidation(
+				`Close time [${this.closeTime}] must be greater than open time [${this.openTime}]`,
+			);
 			return;
 		}
 
 		if (diff < this.schedule.slotsDurationInMin) {
-			yield new BusinessValidation(`The interval between open and close times [${this.openTime} — ${this.closeTime}] must be greater than slot duration [${this.schedule.slotsDurationInMin} minutes]`);
+			yield new BusinessValidation(
+				`The interval between open and close times [${this.openTime} — ${this.closeTime}] must be greater than slot duration [${this.schedule.slotsDurationInMin} minutes]`,
+			);
 			return;
 		}
 	}

@@ -23,7 +23,7 @@ describe('TimeslotItems repository', () => {
 
 	it('should save TimeslotItem', async () => {
 		const repository = Container.get(TimeslotItemsRepository);
-		const data = TimeslotItem.create(1, 0, TimeOfDay.parse("08:00"), TimeOfDay.parse("09:00"));
+		const data = TimeslotItem.create(1, 0, TimeOfDay.parse('08:00'), TimeOfDay.parse('09:00'));
 		const result = await repository.saveTimeslotItem(data);
 		expect(result).not.toBe(undefined);
 		expect(GetRepositoryMock).toBeCalled();
@@ -32,7 +32,7 @@ describe('TimeslotItems repository', () => {
 
 	it('should save TimeslotItems', async () => {
 		const repository = Container.get(TimeslotItemsRepository);
-		const data = TimeslotItem.create(1, 0, TimeOfDay.parse("08:00"), TimeOfDay.parse("09:00"));
+		const data = TimeslotItem.create(1, 0, TimeOfDay.parse('08:00'), TimeOfDay.parse('09:00'));
 		const result = await repository.saveTimeslotItems([data]);
 		expect(result).not.toBe(undefined);
 		expect(GetRepositoryMock).toBeCalled();
@@ -46,7 +46,12 @@ describe('TimeslotItems repository', () => {
 	});
 });
 
-const timeslotItemMock = TimeslotItem.create(1, 1, TimeOfDay.create({ hours: 8, minutes: 0 }), TimeOfDay.create({ hours: 9, minutes: 0 }));
+const timeslotItemMock = TimeslotItem.create(
+	1,
+	1,
+	TimeOfDay.create({ hours: 8, minutes: 0 }),
+	TimeOfDay.create({ hours: 9, minutes: 0 }),
+);
 
 export const InnerRepositoryMock = {
 	save: jest.fn().mockImplementation(() => {
@@ -57,9 +62,8 @@ export const InnerRepositoryMock = {
 	}),
 	delete: jest.fn().mockImplementationOnce((...id) => {
 		return Promise.resolve([timeslotItemMock]);
-	})
+	}),
 };
-
 
 export const GetRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);
 

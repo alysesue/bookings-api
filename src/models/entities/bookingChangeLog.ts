@@ -1,10 +1,9 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { User } from "./user";
-import { Booking } from "./booking";
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from './user';
+import { Booking } from './booking';
 
 @Entity()
 export class BookingChangeLog {
-
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
@@ -12,21 +11,21 @@ export class BookingChangeLog {
 	@Index()
 	private _timestamp: Date;
 
-	@ManyToOne(type => Booking, { nullable: false })
+	@ManyToOne((type) => Booking, { nullable: false })
 	@JoinColumn({ name: '_bookingId' })
 	private _booking: Booking;
 
-	@ManyToOne(type => User, { nullable: false })
+	@ManyToOne((type) => User, { nullable: false })
 	@JoinColumn({ name: '_userId' })
 	private _user: User;
 
 	@Column()
 	private _action: ChangeLogAction;
 
-	@Column({ type: "jsonb", nullable: false })
+	@Column({ type: 'jsonb', nullable: false })
 	private _previousState: BookingJsonVersion;
 
-	@Column({ type: "jsonb", nullable: false })
+	@Column({ type: 'jsonb', nullable: false })
 	private _newState: BookingJsonVersion;
 
 	public get id(): number {
@@ -51,7 +50,7 @@ export class BookingChangeLog {
 
 	public get previousState(): BookingJsonSchemaV1 {
 		if (this._previousState.schemaVersion === 1) {
-			return this._previousState as unknown as BookingJsonSchemaV1;
+			return (this._previousState as unknown) as BookingJsonSchemaV1;
 		} else {
 			throw new Error('Unexpected booking json schema version: ' + this._previousState.schemaVersion);
 		}
@@ -63,7 +62,7 @@ export class BookingChangeLog {
 
 	public get newState(): BookingJsonSchemaV1 {
 		if (this._newState.schemaVersion === 1) {
-			return this._newState as unknown as BookingJsonSchemaV1;
+			return (this._newState as unknown) as BookingJsonSchemaV1;
 		} else {
 			throw new Error('Unexpected booking json schema version: ' + this._newState.schemaVersion);
 		}
@@ -73,14 +72,20 @@ export class BookingChangeLog {
 		this._newState = { schemaVersion: 1, ...value };
 	}
 
-	constructor() { }
+	constructor() {}
 
-	public static create({ booking, user, action, previousState, newState }: {
-		booking: Booking,
-		user: User,
-		action: ChangeLogAction,
-		previousState: BookingJsonSchemaV1,
-		newState: BookingJsonSchemaV1,
+	public static create({
+		booking,
+		user,
+		action,
+		previousState,
+		newState,
+	}: {
+		booking: Booking;
+		user: User;
+		action: ChangeLogAction;
+		previousState: BookingJsonSchemaV1;
+		newState: BookingJsonSchemaV1;
 	}): BookingChangeLog {
 		const instance = new BookingChangeLog();
 		instance._timestamp = new Date();
@@ -95,7 +100,7 @@ export class BookingChangeLog {
 }
 
 type BookingJsonVersion = {
-	schemaVersion: number
+	schemaVersion: number;
 };
 
 export type BookingJsonSchemaV1 = {
@@ -123,5 +128,5 @@ export enum ChangeLogAction {
 	Reject,
 	Cancel,
 	Update,
-	Reschedule
+	Reschedule,
 }

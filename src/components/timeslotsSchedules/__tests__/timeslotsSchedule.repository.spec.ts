@@ -59,9 +59,7 @@ describe('TimeslotsSchedule repository', () => {
 		await repository.getTimeslotsSchedules([]);
 		expect(InnerRepositoryMock.find).not.toHaveBeenCalled();
 	});
-
 });
-
 
 class SampleEntity implements IEntityWithTimeslotsSchedule {
 	public timeslotsScheduleId: number;
@@ -70,7 +68,14 @@ class SampleEntity implements IEntityWithTimeslotsSchedule {
 
 const timeslotsScheduleMock = new TimeslotsSchedule();
 timeslotsScheduleMock._id = 2;
-timeslotsScheduleMock.timeslotItems = [TimeslotItem.create(1, 1, TimeOfDay.create({ hours: 11, minutes: 0 }), TimeOfDay.create({ hours: 11, minutes: 30 }))];
+timeslotsScheduleMock.timeslotItems = [
+	TimeslotItem.create(
+		1,
+		1,
+		TimeOfDay.create({ hours: 11, minutes: 0 }),
+		TimeOfDay.create({ hours: 11, minutes: 30 }),
+	),
+];
 
 const InnerRepositoryMock = {
 	find: jest.fn().mockImplementation(() => {
@@ -84,9 +89,7 @@ const InnerRepositoryMock = {
 	}),
 };
 
-
 const GetRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);
-
 
 class TransactionManagerMock extends TransactionManager {
 	public async getEntityManager(): Promise<any> {

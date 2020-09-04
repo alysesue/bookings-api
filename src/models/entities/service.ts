@@ -1,11 +1,10 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Schedule } from './schedule';
 import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
-import { TimeslotsSchedule } from "./timeslotsSchedule";
+import { TimeslotsSchedule } from './timeslotsSchedule';
 
 @Entity()
 export class Service implements IService, IEntityWithSchedule, IEntityWithTimeslotsSchedule {
-
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
@@ -44,19 +43,31 @@ export class Service implements IService, IEntityWithSchedule, IEntityWithTimesl
 	@Column({ nullable: true })
 	private _scheduleId?: number;
 
-	public set scheduleId(id: number) { this._scheduleId = id; }
-	public get scheduleId(): number { return this._scheduleId; }
+	public set scheduleId(id: number) {
+		this._scheduleId = id;
+	}
+	public get scheduleId(): number {
+		return this._scheduleId;
+	}
 
 	@Column({ nullable: true })
 	private _timeslotsScheduleId: number;
 
-	public set timeslotsScheduleId(id: number) { this._timeslotsScheduleId = id; }
-	public get timeslotsScheduleId(): number { return this._timeslotsScheduleId; }
+	public set timeslotsScheduleId(id: number) {
+		this._timeslotsScheduleId = id;
+	}
+	public get timeslotsScheduleId(): number {
+		return this._timeslotsScheduleId;
+	}
 
-	@OneToOne(type => TimeslotsSchedule, e => e._service, { cascade: true })
+	@OneToOne((type) => TimeslotsSchedule, (e) => e._service, { cascade: true })
 	@JoinColumn({ name: '_timeslotsScheduleId' })
 	private _timeslotsSchedule: TimeslotsSchedule;
 
-	public set timeslotsSchedule(value: TimeslotsSchedule) { this._timeslotsSchedule = value; }
-	public get timeslotsSchedule(): TimeslotsSchedule { return this._timeslotsSchedule; }
+	public set timeslotsSchedule(value: TimeslotsSchedule) {
+		this._timeslotsSchedule = value;
+	}
+	public get timeslotsSchedule(): TimeslotsSchedule {
+		return this._timeslotsSchedule;
+	}
 }

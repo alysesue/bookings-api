@@ -1,7 +1,7 @@
-import { Container } from "typescript-ioc";
-import { UnavailabilitiesRepository } from "../unavailabilities.repository";
-import { Unavailability } from "../../../models";
-import { SelectQueryBuilder } from "typeorm";
+import { Container } from 'typescript-ioc';
+import { UnavailabilitiesRepository } from '../unavailabilities.repository';
+import { Unavailability } from '../../../models';
+import { SelectQueryBuilder } from 'typeorm';
 import { TransactionManager } from '../../../core/transactionManager';
 
 afterAll(() => {
@@ -13,12 +13,12 @@ beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
 });
 
-describe("Unavailabilities repository", () => {
+describe('Unavailabilities repository', () => {
 	afterEach(() => {
 		jest.resetAllMocks();
 	});
 
-	it("should save an unavailability", async () => {
+	it('should save an unavailability', async () => {
 		const entry = Unavailability.create();
 		entry.id = 1;
 
@@ -30,12 +30,12 @@ describe("Unavailabilities repository", () => {
 		expect(saved).toBeDefined();
 	});
 
-	it("should retrieve unavailabilities for a service", async () => {
-		const queryBuilderMock = {
+	it('should retrieve unavailabilities for a service', async () => {
+		const queryBuilderMock = ({
 			where: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve([])),
-		} as unknown as SelectQueryBuilder<Unavailability>;
+		} as unknown) as SelectQueryBuilder<Unavailability>;
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
@@ -47,20 +47,20 @@ describe("Unavailabilities repository", () => {
 			serviceId: 1,
 		});
 
-		const whereParam = "(u.\"_serviceId\" = :serviceId) AND (u.\"_start\" < :to AND u.\"_end\" > :from)";
+		const whereParam = '(u."_serviceId" = :serviceId) AND (u."_start" < :to AND u."_end" > :from)';
 		expect((queryBuilderMock.where as jest.Mock).mock.calls[0][0]).toBe(whereParam);
 		expect(queryBuilderMock.leftJoinAndSelect).toHaveBeenCalled();
 		expect(queryBuilderMock.getMany).toHaveBeenCalled();
 		expect(results).toBeDefined();
 	});
 
-	it("should count unavailabilities for a service", async () => {
-		const queryBuilderMock = {
+	it('should count unavailabilities for a service', async () => {
+		const queryBuilderMock = ({
 			where: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve([])),
 			getCount: jest.fn(() => Promise.resolve(1)),
-		} as unknown as SelectQueryBuilder<Unavailability>;
+		} as unknown) as SelectQueryBuilder<Unavailability>;
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
@@ -72,18 +72,18 @@ describe("Unavailabilities repository", () => {
 			serviceId: 1,
 		});
 
-		const whereParam = "(u.\"_serviceId\" = :serviceId) AND (u.\"_start\" < :to AND u.\"_end\" > :from)";
+		const whereParam = '(u."_serviceId" = :serviceId) AND (u."_start" < :to AND u."_end" > :from)';
 		expect((queryBuilderMock.where as jest.Mock).mock.calls[0][0]).toBe(whereParam);
 		expect(queryBuilderMock.getCount).toHaveBeenCalled();
 		expect(count).toBe(1);
 	});
 
-	it("should retrieve unavailabilities for a service provider", async () => {
-		const queryBuilderMock = {
+	it('should retrieve unavailabilities for a service provider', async () => {
+		const queryBuilderMock = ({
 			where: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve([])),
-		} as unknown as SelectQueryBuilder<Unavailability>;
+		} as unknown) as SelectQueryBuilder<Unavailability>;
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
@@ -93,10 +93,11 @@ describe("Unavailabilities repository", () => {
 			from: new Date(),
 			to: new Date(),
 			serviceId: 1,
-			serviceProviderId: 2
+			serviceProviderId: 2,
 		});
 
-		const whereParam = "(u.\"_serviceId\" = :serviceId) AND (u.\"_start\" < :to AND u.\"_end\" > :from) AND ((u.\"_allServiceProviders\" AND EXISTS(SELECT 1 FROM public.service_provider esp WHERE esp.\"_id\" = :serviceProviderId AND esp.\"_serviceId\" = u.\"_serviceId\")) OR EXISTS(SELECT 1 FROM public.unavailable_service_provider usp WHERE usp.\"unavailability_id\" = u.\"_id\" AND usp.\"serviceProvider_id\" = :serviceProviderId))";
+		const whereParam =
+			'(u."_serviceId" = :serviceId) AND (u."_start" < :to AND u."_end" > :from) AND ((u."_allServiceProviders" AND EXISTS(SELECT 1 FROM public.service_provider esp WHERE esp."_id" = :serviceProviderId AND esp."_serviceId" = u."_serviceId")) OR EXISTS(SELECT 1 FROM public.unavailable_service_provider usp WHERE usp."unavailability_id" = u."_id" AND usp."serviceProvider_id" = :serviceProviderId))';
 		expect((queryBuilderMock.where as jest.Mock).mock.calls[0][0]).toBe(whereParam);
 		expect(queryBuilderMock.leftJoinAndSelect).toHaveBeenCalled();
 		expect(queryBuilderMock.getMany).toHaveBeenCalled();
@@ -109,7 +110,6 @@ class TransactionManagerMock extends TransactionManager {
 	public static find = jest.fn();
 	public static findOne = jest.fn();
 	public static createQueryBuilder = jest.fn();
-
 
 	public async getEntityManager(): Promise<any> {
 		const entityManager = {

@@ -1,23 +1,22 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { BookingStatus } from "../bookingStatus";
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { BookingStatus } from '../bookingStatus';
 import { ServiceProvider } from './serviceProvider';
-import { Service } from "./service";
-import * as timeSpan from "../../tools/timeSpan";
+import { Service } from './service';
+import * as timeSpan from '../../tools/timeSpan';
 
 @Entity()
 export class Booking {
-
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
 	@Column({ nullable: false })
 	private _serviceId: number;
 
-	@ManyToOne(type => Service)
+	@ManyToOne((type) => Service)
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
-	@Column({ type: "varchar", length: 300, nullable: true })
+	@Column({ type: 'varchar', length: 300, nullable: true })
 	private _eventICalId: string;
 
 	@Column()
@@ -34,19 +33,18 @@ export class Booking {
 	@Column({ nullable: true })
 	private _refId?: string;
 
-	@ManyToOne(type => ServiceProvider, { nullable: true })
+	@ManyToOne((type) => ServiceProvider, { nullable: true })
 	@JoinColumn({ name: '_serviceProviderId' })
 	private _serviceProvider: ServiceProvider;
 
 	@Column({ nullable: true })
 	private _serviceProviderId?: number;
 
-	@Column({ nullable: true, type: "varchar", length: 20 })
+	@Column({ nullable: true, type: 'varchar', length: 20 })
 	@Index()
 	private _citizenUinFin: string;
 
-	constructor() {
-	}
+	constructor() {}
 
 	public get id(): number {
 		return this._id;
@@ -112,14 +110,20 @@ export class Booking {
 		this._citizenUinFin = value;
 	}
 
-	public bookingIntersects(other: { start: Date, end: Date }): boolean {
+	public bookingIntersects(other: { start: Date; end: Date }): boolean {
 		if (!other.start || !other.end) {
 			return false;
 		}
 		return timeSpan.intersectsDateTimeSpan(other, this.startDateTime, this.endDateTime);
 	}
 
-	public static create(serviceId: number, startDateTime: Date, endDateTime: Date, serviceProviderId?: number, refId?: string) {
+	public static create(
+		serviceId: number,
+		startDateTime: Date,
+		endDateTime: Date,
+		serviceProviderId?: number,
+		refId?: string,
+	) {
 		const instance = new Booking();
 		instance._serviceId = serviceId;
 		instance._startDateTime = startDateTime;

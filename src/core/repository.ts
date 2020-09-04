@@ -1,6 +1,6 @@
-import { EntityManager, Repository } from "typeorm";
-import { Inject } from "typescript-ioc";
-import { TransactionManager } from "./transactionManager";
+import { EntityManager, Repository } from 'typeorm';
+import { Inject } from 'typescript-ioc';
+import { TransactionManager } from './transactionManager';
 
 export abstract class RepositoryBase<T> {
 	@Inject
@@ -25,5 +25,5 @@ export abstract class RepositoryBase<T> {
 
 export enum QueryAccessType {
 	Read = 1,
-	Write
+	Write,
 }

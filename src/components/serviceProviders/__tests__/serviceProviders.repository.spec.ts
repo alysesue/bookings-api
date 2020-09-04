@@ -1,9 +1,9 @@
-import { ServiceProvidersRepository } from "../serviceProviders.repository";
-import { Container } from "typescript-ioc";
-import { ServiceProvider, TimeslotsSchedule } from "../../../models";
-import { SchedulesRepository } from "../../schedules/schedules.repository";
-import { IEntityWithSchedule } from "../../../models/interfaces";
-import { TimeslotsScheduleRepository } from "../../timeslotsSchedules/timeslotsSchedule.repository";
+import { ServiceProvidersRepository } from '../serviceProviders.repository';
+import { Container } from 'typescript-ioc';
+import { ServiceProvider, TimeslotsSchedule } from '../../../models';
+import { SchedulesRepository } from '../../schedules/schedules.repository';
+import { IEntityWithSchedule } from '../../../models/interfaces';
+import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TransactionManager } from '../../../core/transactionManager';
 
 afterAll(() => {
@@ -15,12 +15,12 @@ beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
 });
 
-describe("Service Provider repository", () => {
+describe('Service Provider repository', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
 	});
 
-	it("should get list of SP", async () => {
+	it('should get list of SP', async () => {
 		TransactionManagerMock.find.mockImplementation(() => Promise.resolve([]));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
@@ -28,7 +28,7 @@ describe("Service Provider repository", () => {
 		expect(result).toStrictEqual([]);
 	});
 
-	it("should get list of SP by ids", async () => {
+	it('should get list of SP by ids', async () => {
 		TransactionManagerMock.find.mockImplementation(() => Promise.resolve([]));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
@@ -36,16 +36,16 @@ describe("Service Provider repository", () => {
 		expect(result).toStrictEqual([]);
 	});
 
-	it("should get a service provider", async () => {
-		TransactionManagerMock.findOne.mockImplementation(() => Promise.resolve({ name: "Monica" }));
+	it('should get a service provider', async () => {
+		TransactionManagerMock.findOne.mockImplementation(() => Promise.resolve({ name: 'Monica' }));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProvider({ id: 1 });
 
-		expect(result).toStrictEqual({ name: "Monica" });
+		expect(result).toStrictEqual({ name: 'Monica' });
 	});
 
-	it("should get list of SP with schedule", async () => {
+	it('should get list of SP with schedule', async () => {
 		Container.bind(SchedulesRepository).to(SchedulesRepositoryMock);
 		TransactionManagerMock.find.mockImplementation(() => Promise.resolve([new ServiceProvider()]));
 		SchedulesRepositoryMock.populateSchedulesMock.mockImplementation((entries: any[]) => Promise.resolve(entries));
@@ -57,7 +57,7 @@ describe("Service Provider repository", () => {
 		expect(result.length).toBe(1);
 	});
 
-	it("should get a service provider with schedule", async () => {
+	it('should get a service provider with schedule', async () => {
 		Container.bind(SchedulesRepository).to(SchedulesRepositoryMock);
 		TransactionManagerMock.findOne.mockImplementation(() => Promise.resolve(new ServiceProvider()));
 		SchedulesRepositoryMock.populateSchedulesMock.mockImplementation((entries: any[]) => Promise.resolve(entries));
@@ -69,7 +69,7 @@ describe("Service Provider repository", () => {
 		expect(result).toBeDefined();
 	});
 
-	it("should get list of SP with TimeslotsSchedule", async () => {
+	it('should get list of SP with TimeslotsSchedule', async () => {
 		Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 
 		const sp = new ServiceProvider();
@@ -78,7 +78,9 @@ describe("Service Provider repository", () => {
 		const timeslotsSchedule = new TimeslotsSchedule();
 		timeslotsSchedule._id = 2;
 		TransactionManagerMock.find.mockImplementation(() => Promise.resolve([sp]));
-		TimeslotsScheduleRepositoryMock.getTimeslotsSchedulesMock.mockImplementation(() => Promise.resolve([timeslotsSchedule]));
+		TimeslotsScheduleRepositoryMock.getTimeslotsSchedulesMock.mockImplementation(() =>
+			Promise.resolve([timeslotsSchedule]),
+		);
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProviders({ serviceId: 1, includeTimeslotsSchedule: true });
@@ -89,7 +91,7 @@ describe("Service Provider repository", () => {
 		expect(result[0].timeslotsSchedule).toBeDefined();
 	});
 
-	it("should get a service provider with TimeslotsSchedule", async () => {
+	it('should get a service provider with TimeslotsSchedule', async () => {
 		Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 
 		const sp = new ServiceProvider();
@@ -98,7 +100,9 @@ describe("Service Provider repository", () => {
 		const timeslotsSchedule = new TimeslotsSchedule();
 		timeslotsSchedule._id = 2;
 		TransactionManagerMock.findOne.mockImplementation(() => sp);
-		TimeslotsScheduleRepositoryMock.getTimeslotsSchedulesMock.mockImplementation(() => Promise.resolve([timeslotsSchedule]));
+		TimeslotsScheduleRepositoryMock.getTimeslotsSchedulesMock.mockImplementation(() =>
+			Promise.resolve([timeslotsSchedule]),
+		);
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProvider({ id: 1, includeTimeslotsSchedule: true });
@@ -109,9 +113,8 @@ describe("Service Provider repository", () => {
 		expect(result.timeslotsSchedule).toBeDefined();
 	});
 
-
-	it("should save service provider", async () => {
-		const spInput: ServiceProvider = ServiceProvider.create("abc", null, 1);
+	it('should save service provider', async () => {
+		const spInput: ServiceProvider = ServiceProvider.create('abc', null, 1);
 
 		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(spInput));
 		const spRepository = Container.get(ServiceProvidersRepository);
@@ -150,7 +153,6 @@ class SchedulesRepositoryMock extends SchedulesRepository {
 		return await SchedulesRepositoryMock.populateSingleEntryScheduleMock(entry);
 	}
 }
-
 
 class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
 	public static getTimeslotsScheduleByIdMock = jest.fn();
