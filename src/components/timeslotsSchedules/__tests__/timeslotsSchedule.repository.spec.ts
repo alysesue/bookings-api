@@ -90,7 +90,6 @@ const InnerRepositoryMock = {
 };
 
 const GetRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);
-
 class TransactionManagerMock extends TransactionManager {
 	public async getEntityManager(): Promise<any> {
 		const entityManager = {

@@ -1,7 +1,7 @@
-import { Inject, InRequestScope } from "typescript-ioc";
-import { BookingChangeLog } from "../../models";
-import { RepositoryBase } from "../../core/repository";
-import { UserContext } from "../../infrastructure/userContext.middleware";
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { BookingChangeLog } from '../../models';
+import { RepositoryBase } from '../../core/repository';
+import { UserContext } from '../../infrastructure/userContext.middleware';
 
 @InRequestScope
 export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog> {

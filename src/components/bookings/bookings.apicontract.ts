@@ -1,4 +1,4 @@
-import { BookingStatus } from "../../models";
+import { BookingStatus } from '../../models';
 
 export class BookingAcceptRequest {
 	public serviceProviderId: number;

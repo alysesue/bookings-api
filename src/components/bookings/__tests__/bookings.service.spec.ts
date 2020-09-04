@@ -179,8 +179,8 @@ describe('Bookings.Service', () => {
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
-		const service = Container.get(BookingsService);
-		await expect(async () => await service.save(bookingRequest, 1)).rejects.toThrowError();
+		const bookingsService = Container.get(BookingsService);
+		await expect(async () => await bookingsService.save(bookingRequest, 1)).rejects.toThrowError();
 	});
 
 	it('should throw on booking save error', async () => {
@@ -191,8 +191,8 @@ describe('Bookings.Service', () => {
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
-		const service = Container.get(BookingsService);
-		await expect(async () => await service.save(bookingRequest, 1)).rejects.toThrowError();
+		const bookingsService = Container.get(BookingsService);
+		await expect(async () => await bookingsService.save(bookingRequest, 1)).rejects.toThrowError();
 	});
 
 	it('should accept booking', async () => {

@@ -1,6 +1,6 @@
-import { InRequestScope } from "typescript-ioc";
-import { RepositoryBase } from "../../core/repository";
-import { User } from "../../models";
+import { InRequestScope } from 'typescript-ioc';
+import { RepositoryBase } from '../../core/repository';
+import { User } from '../../models';
 
 @InRequestScope
 export class UsersRepository extends RepositoryBase<User> {
@@ -15,8 +15,9 @@ export class UsersRepository extends RepositoryBase<User> {
 		if (!molUserId) return null;
 
 		const repository = await this.getRepository();
-		const query = repository.createQueryBuilder("u")
-			.innerJoinAndSelect("u._singPassUser", "singpass", 'singpass."_molUserId" = :molUserId', { molUserId });
+		const query = repository
+			.createQueryBuilder('u')
+			.innerJoinAndSelect('u._singPassUser', 'singpass', 'singpass."_molUserId" = :molUserId', { molUserId });
 
 		return await query.getOne();
 	}
@@ -25,8 +26,9 @@ export class UsersRepository extends RepositoryBase<User> {
 		if (!molAdminId) return null;
 
 		const repository = await this.getRepository();
-		const query = repository.createQueryBuilder("u")
-			.innerJoinAndSelect("u._adminUser", "admuser", 'admuser."_molAdminId" = :molAdminId', { molAdminId });
+		const query = repository
+			.createQueryBuilder('u')
+			.innerJoinAndSelect('u._adminUser', 'admuser', 'admuser."_molAdminId" = :molAdminId', { molAdminId });
 
 		return await query.getOne();
 	}

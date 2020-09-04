@@ -1,8 +1,8 @@
-import { Inject, InRequestScope } from "typescript-ioc";
-import { Booking } from "../models";
-import { CalendarUserModel } from "../components/calendars/calendars.apicontract";
-import { GoogleApi } from "./google.api";
-import { CalendarTimezone } from "../const";
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { Booking } from '../models';
+import { CalendarUserModel } from '../components/calendars/calendars.apicontract';
+import { GoogleApi } from './google.api';
+import { CalendarTimezone } from '../const';
 
 @InRequestScope
 export class GoogleCalendarService {
@@ -14,7 +14,7 @@ export class GoogleCalendarService {
 
 		const calendarRequest = {
 			requestBody: {
-				summary: "Booking SG Calendar",
+				summary: 'Booking SG Calendar',
 				timeZone: CalendarTimezone,
 			},
 		};
@@ -39,7 +39,10 @@ export class GoogleCalendarService {
 		return freeBusyResponse.data.calendars;
 	}
 
-	public async addCalendarUser(calendarId: string, user: { role: string; email: string }): Promise<CalendarUserModel> {
+	public async addCalendarUser(
+		calendarId: string,
+		user: { role: string; email: string },
+	): Promise<CalendarUserModel> {
 		const api = await this.googleApi.getCalendarApi();
 
 		const params = {
@@ -47,7 +50,7 @@ export class GoogleCalendarService {
 			requestBody: {
 				role: user.role,
 				scope: {
-					type: "user",
+					type: 'user',
 					value: user.email,
 				},
 			},
@@ -64,7 +67,7 @@ export class GoogleCalendarService {
 		const params = {
 			calendarId,
 			requestBody: {
-				summary: "Booking SG Event",
+				summary: 'Booking SG Event',
 				start: {
 					dateTime: booking.startDateTime.toISOString(),
 					timeZone: CalendarTimezone,

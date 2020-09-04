@@ -1,6 +1,6 @@
 import { WeekDayBreakRepository } from '../weekdaybreak.repository';
 import { Container } from 'typescript-ioc';
-import { Schedule, TimeOfDay, WeekDayBreak } from "../../../models";
+import { Schedule, TimeOfDay, WeekDayBreak } from '../../../models';
 import { CreateQueryBuilder, TransactionManagerMock } from '../../../infrastructure/tests/dbconnectionmock';
 import { Weekday } from '../../../enums/weekday';
 import { DeleteResult } from 'typeorm';
@@ -29,7 +29,12 @@ describe('Schedule repository', () => {
 	it('should save breaks', async () => {
 		const service = Container.get(WeekDayBreakRepository);
 		const schedule = new Schedule();
-		const weekDayBreak = WeekDayBreak.create(Weekday.Monday, TimeOfDay.parse('11:30'), TimeOfDay.parse('12:30'), schedule);
+		const weekDayBreak = WeekDayBreak.create(
+			Weekday.Monday,
+			TimeOfDay.parse('11:30'),
+			TimeOfDay.parse('12:30'),
+			schedule,
+		);
 
 		const result = await service.save([weekDayBreak]);
 		expect(result).toBeDefined();
@@ -42,10 +47,10 @@ describe('Schedule repository', () => {
 			delete: jest.fn(() => ({
 				from: jest.fn(() => ({
 					where: jest.fn(() => ({
-						execute
-					}))
-				}))
-			}))
+						execute,
+					})),
+				})),
+			})),
 		}));
 
 		const service = Container.get(WeekDayBreakRepository);

@@ -1,9 +1,9 @@
-import { Container } from "typescript-ioc";
-import { UsersController } from "../users.controller";
-import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
-import { MOLAuthType } from "mol-lib-api-contract/auth/common/MOLAuthType";
+import { Container } from 'typescript-ioc';
+import { UsersController } from '../users.controller';
+import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
+import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { UserContext } from '../../../infrastructure/userContext.middleware';
-import { User } from "../../../models";
+import { User } from '../../../models';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -18,8 +18,8 @@ afterEach(() => {
 	jest.resetAllMocks();
 });
 
-describe("users controller", () => {
-	it("should get user profile", async () => {
+describe('users controller', () => {
+	it('should get user profile', async () => {
 		const headers = {
 			[MOLSecurityHeaderKeys.AUTH_TYPE]: MOLAuthType.USER,
 			[MOLSecurityHeaderKeys.USER_AUTH_LEVEL]: 2,
@@ -33,14 +33,14 @@ describe("users controller", () => {
 		const controller = Container.get(UsersController);
 		(controller as any).context = {
 			headers,
-			request: { headers }
+			request: { headers },
 		};
 
 		const profile = await controller.getProfile();
 		expect(profile).toBeDefined();
 	});
 
-	it("should get admin profile", async () => {
+	it('should get admin profile', async () => {
 		const headers = {};
 		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.ADMIN;
 		headers[MOLSecurityHeaderKeys.ADMIN_ID] = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
@@ -52,21 +52,21 @@ describe("users controller", () => {
 			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
 			userName: 'UserName',
 			email: 'test@email.com',
-			name: 'Name'
+			name: 'Name',
 		});
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
 
 		const controller = Container.get(UsersController);
 		(controller as any).context = {
 			headers,
-			request: { headers }
+			request: { headers },
 		};
 
 		const profile = await controller.getProfile();
 		expect(profile).toBeDefined();
 	});
 
-	it("should not get profile", async () => {
+	it('should not get profile', async () => {
 		const controller = Container.get(UsersController);
 
 		const headers = {};
@@ -80,7 +80,7 @@ describe("users controller", () => {
 class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn();
 
-	public init() { }
+	public init() {}
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(params);
 	}

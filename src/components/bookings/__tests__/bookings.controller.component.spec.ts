@@ -16,7 +16,6 @@ import { ServicesService } from '../../services/services.service';
 import { UserContext } from '../../../infrastructure/userContext.middleware';
 import { BookingChangeLogsService } from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
 import { BookingActionFunction } from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
-
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();

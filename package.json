@@ -3,8 +3,8 @@
 	"version": "0.0.1",
 	"main": "index.js",
 	"scripts": {
-		"lint": "tslint -p ./tsconfig.json -c ./tslint.json ./src/**/*.ts",
-		"lint-fix": "NODE_OPTIONS='--max-old-space-size=6096' tslint --fix  -p ./tsconfig.json -c ./tslint.json './src/**/*.ts'",
+		"lint": "tslint -p ./tsconfig.json -c ./tslint.json './src/**/*.ts'",
+		"lint-fix": "NODE_OPTIONS='--max-old-space-size=4096' tslint --fix  -p ./tsconfig.json -c ./tslint.json './src/**/*.ts'",
 		"test": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
 		"atest": "npm run fixLF && node --expose-gc ./node_modules/jest/bin/jest --runInBand",
 		"test:cov": "npm run fixLF && node --expose-gc ./node_modules/jest/bin/jest --runInBand --collect-coverage",
@@ -104,7 +104,6 @@
 		"reflect-metadata": "^0.1.13",
 		"swagger2": "^2.0.0",
 		"swagger2-koa": "^2.0.0",
-		"tslint-config-prettier": "^1.18.0",
 		"tslint-plugin-prettier": "^2.3.0",
 		"typeorm": "^0.2.25",
 		"typescript-ioc": "^3.2.2"
@@ -135,6 +134,7 @@
 		"ts-loader": "^7.0.2",
 		"ts-node": "^8.9.1",
 		"tslint": "^6.1.2",
+		"tslint-config-prettier": "^1.18.0",
 		"tslint-config-security": "^1.16.0",
 		"tslint-no-circular-imports": "^0.7.0",
 		"tslint-sonarts": "^1.9.0",

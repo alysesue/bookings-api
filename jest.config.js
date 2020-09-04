@@ -1,5 +1,5 @@
-const baseConfigModule = require('mol-lib-config/shared-config/jest.config')
-const baseConfig = baseConfigModule.createBaseConfig(baseConfigModule.TestType.UNIT_AND_INTERGRATION)
+const baseConfigModule = require('mol-lib-config/shared-config/jest.config');
+const baseConfig = baseConfigModule.createBaseConfig(baseConfigModule.TestType.UNIT_AND_INTERGRATION);
 
 const config = {
 	...baseConfig,

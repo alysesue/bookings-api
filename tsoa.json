@@ -6,10 +6,7 @@
 		"specVersion": 3,
 		"yaml": true,
 		"host": "localhost:3999/bookingsg/api",
-		"schemes": [
-			"http",
-			"https"
-		]
+		"schemes": ["http", "https"]
 	},
 	"routes": {
 		"routesDir": "./src",

@@ -1,4 +1,4 @@
-import { TransactionManager } from "../../core/transactionManager";
+import { TransactionManager } from '../../core/transactionManager';
 
 export const CreateQueryBuilder = jest.fn();
 
@@ -7,7 +7,7 @@ export const InnerRepositoryMock = {
 	find: jest.fn().mockImplementation(() => Promise.resolve([])),
 	save: jest.fn().mockImplementation(() => Promise.resolve({})),
 	delete: jest.fn().mockImplementation(() => Promise.resolve({})),
-	createQueryBuilder: CreateQueryBuilder
+	createQueryBuilder: CreateQueryBuilder,
 };
 
 export const GetRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);

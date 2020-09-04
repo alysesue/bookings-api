@@ -1,16 +1,15 @@
-import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
-import { Inject, InRequestScope } from "typescript-ioc";
-import { Schedule, Service, TimeslotItem, TimeslotsSchedule } from "../../models";
-import { ServicesRepository } from "./services.repository";
-import { ServiceRequest, SetScheduleRequest } from "./service.apicontract";
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { Schedule, Service, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { ServicesRepository } from './services.repository';
+import { ServiceRequest, SetScheduleRequest } from './service.apicontract';
 import { SchedulesService } from '../schedules/schedules.service';
-import { TimeslotItemRequest } from "../timeslotItems/timeslotItems.apicontract";
-import { TimeslotItemsService } from "../timeslotItems/timeslotItems.service";
-import { TimeslotsScheduleService } from "../timeslotsSchedules/timeslotsSchedule.service";
+import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
+import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
+import { TimeslotsScheduleService } from '../timeslotsSchedules/timeslotsSchedule.service';
 
 @InRequestScope
 export class ServicesService {
-
 	@Inject
 	private servicesRepository: ServicesRepository;
 
@@ -32,10 +31,8 @@ export class ServicesService {
 
 	public async updateService(id: number, request: ServiceRequest): Promise<Service> {
 		try {
-
 			const service = await this.servicesRepository.getService(id);
-			if (!service)
-				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
+			if (!service) throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 			service.name = request.name;
 			return await this.servicesRepository.save(service);
 		} catch (e) {
@@ -107,9 +104,15 @@ export class ServicesService {
 		await this.timeslotItemsService.deleteTimeslot(timeslotId);
 	}
 
-	public async updateTimeslotItem({ serviceId, timeslotId, request }
-		: { serviceId: number; timeslotId: number; request: TimeslotItemRequest; })
-		: Promise<TimeslotItem> {
+	public async updateTimeslotItem({
+		serviceId,
+		timeslotId,
+		request,
+	}: {
+		serviceId: number;
+		timeslotId: number;
+		request: TimeslotItemRequest;
+	}): Promise<TimeslotItem> {
 		const timeslotsSchedule = await this.getServiceTimeslotsSchedule(serviceId);
 		return this.timeslotItemsService.updateTimeslotItem(timeslotsSchedule, timeslotId, request);
 	}

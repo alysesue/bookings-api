@@ -1,16 +1,16 @@
-import { Inject, InRequestScope } from "typescript-ioc";
-import { Booking } from "../../models";
-import { UserContext } from "../../infrastructure/userContext.middleware";
-import { BookingChangeLog, BookingJsonSchemaV1, ChangeLogAction } from "../../models/entities/bookingChangeLog";
-import { BookingChangeLogsRepository } from "./bookingChangeLogs.repository";
-import { TransactionManager } from "../../core/transactionManager";
-import { IsolationLevel } from "typeorm/driver/types/IsolationLevel";
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { Booking } from '../../models';
+import { UserContext } from '../../infrastructure/userContext.middleware';
+import { BookingChangeLog, BookingJsonSchemaV1, ChangeLogAction } from '../../models/entities/bookingChangeLog';
+import { BookingChangeLogsRepository } from './bookingChangeLogs.repository';
+import { TransactionManager } from '../../core/transactionManager';
+import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 
 export type BookingActionFunction = (booking: Booking) => Promise<[ChangeLogAction, Booking]>;
 
 @InRequestScope
 export class BookingChangeLogsService {
-	private static readonly isolationLevel: IsolationLevel = "READ COMMITTED";
+	private static readonly isolationLevel: IsolationLevel = 'READ COMMITTED';
 
 	@Inject
 	private transactionManager: TransactionManager;
@@ -20,8 +20,7 @@ export class BookingChangeLogsService {
 	private userContext: UserContext;
 
 	private mapBookingState(booking: Booking): BookingJsonSchemaV1 {
-		if (!booking)
-			return {} as BookingJsonSchemaV1;
+		if (!booking) return {} as BookingJsonSchemaV1;
 
 		const jsonObj = {
 			id: booking.id,
@@ -63,7 +62,7 @@ export class BookingChangeLogsService {
 				booking: newBooking,
 				user,
 				previousState,
-				newState
+				newState,
 			});
 
 			await this.changeLogsRepository.saveLog(changelog);

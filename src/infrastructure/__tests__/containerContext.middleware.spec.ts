@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { basePath } from "../../config/app-config";
+import { basePath } from '../../config/app-config';
 import { ContainerContextMiddleware } from '../containerContext.middleware';
-import * as Koa from "koa";
+import * as Koa from 'koa';
 
 afterEach(() => {
 	jest.resetAllMocks();
@@ -11,7 +11,7 @@ function buildSampleKoaContext(path: string): Koa.Context {
 	return {
 		path,
 		header: {},
-		request: { host: 'localhost', protocol: 'http' }
+		request: { host: 'localhost', protocol: 'http' },
 	} as Koa.Context;
 }
 
@@ -40,7 +40,7 @@ describe('Container context test', () => {
 
 		await containerContextMiddleware(context, () => {
 			return nextMiddleware(context, () => {
-				return finalMiddleware(context, () => { });
+				return finalMiddleware(context, () => {});
 			});
 		});
 

@@ -4,11 +4,11 @@ import { GoogleApi } from '../google.api';
 
 jest.mock('../../config/app-config', () => {
 	const configMock = {
-		serviceAccount: '{}'
+		serviceAccount: '{}',
 	};
 
 	return {
-		getConfig: () => configMock
+		getConfig: () => configMock,
 	};
 });
 
@@ -17,11 +17,10 @@ jest.mock('google-auth-library', () => {
 	const authorizeMock = jest.fn(() => ({}));
 
 	class JWTMock {
-		public fromJSON(json: JWTInput) {
-		}
+		public fromJSON(json: JWTInput) {}
 
 		public createScoped(scopes?: string | string[]): JWT {
-			return this as unknown as JWT;
+			return (this as unknown) as JWT;
 		}
 
 		public async authorize(): Promise<Credentials> {
@@ -32,7 +31,7 @@ jest.mock('google-auth-library', () => {
 	return {
 		...actual,
 		JWT: JWTMock,
-		authorizeMock
+		authorizeMock,
 	};
 });
 
