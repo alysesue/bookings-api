@@ -19,7 +19,6 @@ import {
 	GetBookingFunction,
 } from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
 import { BookingActionFunction } from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
-import { InsertResult } from 'typeorm';
 
 afterAll(() => {
 	jest.resetAllMocks();
