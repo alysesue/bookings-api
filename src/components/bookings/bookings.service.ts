@@ -177,16 +177,13 @@ export class BookingsService {
 		const searchQuery = new BookingSearchRequest(
 			startDateTime,
 			endDateTime,
-			[BookingStatus.Accepted, BookingStatus.PendingApproval],
+			[BookingStatus.Accepted],
 			serviceId,
+			null,
 			serviceProviderId,
 		);
 
-		const pendingAndAcceptedBookings = await this.searchBookings(searchQuery);
-
-		const acceptedBookings = pendingAndAcceptedBookings.filter(
-			(acceptedBooking) => acceptedBooking.status === BookingStatus.Accepted,
-		);
+		const acceptedBookings = await this.searchBookings(searchQuery);
 
 		for (const item of acceptedBookings) {
 			const intersects = booking.bookingIntersects({ start: item.startDateTime, end: item.endDateTime });

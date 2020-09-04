@@ -18,6 +18,7 @@ export class BookingsMapper {
 			serviceProviderId: booking.serviceProviderId,
 			serviceProviderName: booking.serviceProvider?.name,
 			requestedAt: booking.createdAt,
+			citizenUinFin: booking.citizenUinFin,
 		} as BookingResponse;
 	}
 
