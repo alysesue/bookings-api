@@ -81,7 +81,7 @@ export class BookingChangeLogsService {
 	): Promise<Booking> {
 		const user = await this.userContext.getCurrentUser();
 		return await this.transactionManager.runInTransaction(BookingIsolationLevel, async () => {
-			const booking = bookingId ? await getBookingFunction(bookingId) : null;
+			const booking = await getBookingFunction(bookingId);
 			const previousState = this.mapBookingState(booking);
 			const [action, newBooking] = await actionFunction(booking);
 			const newState = this.mapBookingState(newBooking);

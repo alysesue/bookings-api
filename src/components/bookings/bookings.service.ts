@@ -38,6 +38,10 @@ export class BookingsService {
 	}
 
 	public async getBooking(bookingId: number): Promise<Booking> {
+		if (!bookingId) {
+			return null;
+		}
+
 		const booking = await this.bookingsRepository.getBooking(bookingId);
 		if (!booking) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingId} not found`);
@@ -78,7 +82,7 @@ export class BookingsService {
 			await this.calendarsService.deleteCalendarEvent(provider.calendar, this.formatEventId(eventCalId));
 		}
 		booking.status = BookingStatus.Cancelled;
-		await this.bookingsRepository.save(booking);
+		await this.bookingsRepository.update(booking);
 
 		return [ChangeLogAction.Cancel, booking];
 	}
@@ -123,7 +127,7 @@ export class BookingsService {
 		booking.serviceProvider = provider;
 		booking.eventICalId = eventICalId;
 
-		await this.bookingsRepository.save(booking);
+		await this.bookingsRepository.update(booking);
 
 		return [ChangeLogAction.Accept, booking];
 	}
@@ -175,7 +179,7 @@ export class BookingsService {
 			await this.validateOutOfSlotBookings(booking);
 		}
 
-		await this.bookingsRepository.save(booking);
+		await this.bookingsRepository.insert(booking);
 
 		return [ChangeLogAction.Create, booking];
 	}

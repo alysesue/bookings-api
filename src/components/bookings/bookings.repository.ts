@@ -1,5 +1,5 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { FindConditions, SelectQueryBuilder } from 'typeorm';
+import { FindConditions, InsertResult, SelectQueryBuilder } from 'typeorm';
 import { Booking, BookingStatus } from '../../models';
 import { QueryAccessType, RepositoryBase } from '../../core/repository';
 import { UserContext } from '../../infrastructure/userContext.middleware';
@@ -34,14 +34,12 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return await query.getOne();
 	}
 
-	public async save(booking: Booking): Promise<void> {
+	public async insert(booking: Booking): Promise<InsertResult> {
 		const repository = await this.getRepository();
+		return await repository.insert(booking);
+	}
 
-		if (!booking.id) {
-			await repository.insert(booking);
-			return;
-		}
-
+	public async update(booking: Booking): Promise<Booking> {
 		const versionUpdated = await this.updateBookingVersion(booking);
 		if (!versionUpdated) {
 			throw new BookingUpdateConcurrencyError(
@@ -49,7 +47,8 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 			);
 		}
 
-		await repository.save(booking);
+		const repository = await this.getRepository();
+		return await repository.save(booking);
 	}
 
 	private async updateBookingVersion(booking: Booking): Promise<boolean> {

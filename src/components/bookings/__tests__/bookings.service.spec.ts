@@ -15,6 +15,7 @@ import { UserContext } from '../../../infrastructure/userContext.middleware';
 import {
 	BookingActionFunction,
 	BookingChangeLogsService,
+	GetBookingFunction,
 } from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
 import { ServicesService } from '../../../components/services/services.service';
 
@@ -58,8 +59,13 @@ describe('Bookings.Service', () => {
 		jest.resetAllMocks();
 
 		BookingChangeLogsServiceMock.executeAndLogAction.mockImplementation(
-			async (_booking: Booking, asyncFunction: BookingActionFunction) => {
-				const [, newBooking] = await asyncFunction(_booking);
+			async (
+				bookingId: number,
+				getBookingFunction: GetBookingFunction,
+				actionFunction: BookingActionFunction,
+			) => {
+				const _booking = await getBookingFunction(bookingId);
+				const [, newBooking] = await actionFunction(_booking);
 				return newBooking;
 			},
 		);
@@ -292,7 +298,7 @@ class BookingRepositoryMock extends BookingsRepository {
 		return Promise.resolve(BookingRepositoryMock.booking);
 	}
 
-	public async save(booking: Booking): Promise<InsertResult> {
+	public async insert(booking: Booking): Promise<InsertResult> {
 		if (BookingRepositoryMock.saveMock) {
 			return BookingRepositoryMock.saveMock;
 		}
@@ -363,8 +369,8 @@ class UserContextMock extends UserContext {
 class BookingChangeLogsServiceMock extends BookingChangeLogsService {
 	public static executeAndLogAction = jest.fn();
 
-	public async executeAndLogAction(booking: Booking, actionFunction: BookingActionFunction): Promise<any> {
-		return await BookingChangeLogsServiceMock.executeAndLogAction(booking, actionFunction);
+	public async executeAndLogAction(...params): Promise<any> {
+		return await BookingChangeLogsServiceMock.executeAndLogAction(...params);
 	}
 }
 

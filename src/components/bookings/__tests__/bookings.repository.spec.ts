@@ -85,7 +85,7 @@ describe('Bookings repository', () => {
 		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
 	});
 
-	it('should save booking', async () => {
+	it('should insert booking', async () => {
 		const insertResult = new InsertResult();
 		insertResult.identifiers = [{ id: 'abc' }];
 		TransactionManagerMock.insert.mockImplementation(() => insertResult);
@@ -94,7 +94,7 @@ describe('Bookings repository', () => {
 		const bookingsRepository = Container.get(BookingsRepository);
 		const booking: Booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 
-		const result = await bookingsRepository.save(booking);
+		const result = await bookingsRepository.insert(booking);
 		expect(result.identifiers).toStrictEqual([{ id: 'abc' }]);
 	});
 
@@ -102,6 +102,7 @@ describe('Bookings repository', () => {
 		const bookingsRepository = Container.get(BookingsRepository);
 		const booking: Booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 		TransactionManagerMock.save.mockImplementation(() => booking);
+		TransactionManagerMock.query.mockImplementation(() => Promise.resolve([[], 1]));
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
 		await bookingsRepository.update(booking);
@@ -132,6 +133,7 @@ class TransactionManagerMock extends TransactionManager {
 	public static update = jest.fn();
 	public static findOne = jest.fn();
 	public static save = jest.fn();
+	public static query = jest.fn();
 	public static createQueryBuilder = jest.fn();
 
 	public async getEntityManager(): Promise<any> {
@@ -142,6 +144,7 @@ class TransactionManagerMock extends TransactionManager {
 				insert: TransactionManagerMock.insert,
 				update: TransactionManagerMock.update,
 				save: TransactionManagerMock.save,
+				query: TransactionManagerMock.query,
 				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
 			}),
 		};
