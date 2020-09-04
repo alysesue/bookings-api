@@ -4,14 +4,15 @@ import { UserContext } from '../../infrastructure/userContext.middleware';
 import { BookingChangeLog, BookingJsonSchemaV1, ChangeLogAction } from '../../models/entities/bookingChangeLog';
 import { BookingChangeLogsRepository } from './bookingChangeLogs.repository';
 import { TransactionManager } from '../../core/transactionManager';
-import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
+import { BookingIsolationLevel } from '../../models/entities/booking';
+import { BookingUpdateConcurrencyError } from '../../errors/BookingUpdateConcurrencyError';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
+export type GetBookingFunction = (bookingId: number) => Promise<Booking>;
 export type BookingActionFunction = (booking: Booking) => Promise<[ChangeLogAction, Booking]>;
 
 @InRequestScope
 export class BookingChangeLogsService {
-	private static readonly isolationLevel: IsolationLevel = 'READ COMMITTED';
-
 	@Inject
 	private transactionManager: TransactionManager;
 	@Inject
@@ -49,10 +50,38 @@ export class BookingChangeLogsService {
 		return jsonObj;
 	}
 
-	public async executeAndLogAction(booking: Booking, actionFunction: BookingActionFunction): Promise<Booking> {
-		const user = await this.userContext.getCurrentUser();
+	public async executeAndLogAction(
+		bookingId: number,
+		getBookingFunction: GetBookingFunction,
+		actionFunction: BookingActionFunction,
+	): Promise<Booking> {
+		const maxAttempts = 3;
+		let attempts = 0;
+		while (attempts < maxAttempts) {
+			try {
+				const result = await this.executeInTransation(bookingId, getBookingFunction, actionFunction);
+				return result;
+			} catch (e) {
+				if (e.name === BookingUpdateConcurrencyError.name) {
+					if (attempts >= maxAttempts) {
+						throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(e.message);
+					}
+				} else {
+					throw e;
+				}
+			}
+			attempts++;
+		}
+	}
 
-		return await this.transactionManager.runInTransaction(BookingChangeLogsService.isolationLevel, async () => {
+	private async executeInTransation(
+		bookingId: number,
+		getBookingFunction: GetBookingFunction,
+		actionFunction: BookingActionFunction,
+	): Promise<Booking> {
+		const user = await this.userContext.getCurrentUser();
+		return await this.transactionManager.runInTransaction(BookingIsolationLevel, async () => {
+			const booking = bookingId ? await getBookingFunction(bookingId) : null;
 			const previousState = this.mapBookingState(booking);
 			const [action, newBooking] = await actionFunction(booking);
 			const newState = this.mapBookingState(newBooking);

@@ -49,12 +49,15 @@ export class BookingsService {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
 		const createAction = (_booking) => this.createBooking(bookingRequest, serviceId);
-		return await this.changeLogsService.executeAndLogAction(null, createAction);
+		return await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), createAction);
 	}
 
 	public async cancelBooking(bookingId: number): Promise<Booking> {
-		const booking = await this.getBooking(bookingId);
-		return await this.changeLogsService.executeAndLogAction(booking, this.cancelBookingInternal.bind(this));
+		return await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBooking.bind(this),
+			this.cancelBookingInternal.bind(this),
+		);
 	}
 
 	private async cancelBookingInternal(booking: Booking): Promise<[ChangeLogAction, Booking]> {
@@ -75,15 +78,14 @@ export class BookingsService {
 			await this.calendarsService.deleteCalendarEvent(provider.calendar, this.formatEventId(eventCalId));
 		}
 		booking.status = BookingStatus.Cancelled;
-		await this.bookingsRepository.update(booking);
+		await this.bookingsRepository.save(booking);
 
 		return [ChangeLogAction.Cancel, booking];
 	}
 
 	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequest): Promise<Booking> {
-		const booking = await this.getBooking(bookingId);
 		const acceptAction = (_booking) => this.acceptBookingInternal(_booking, acceptRequest);
-		return await this.changeLogsService.executeAndLogAction(booking, acceptAction);
+		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), acceptAction);
 	}
 
 	private async acceptBookingInternal(
@@ -121,7 +123,7 @@ export class BookingsService {
 		booking.serviceProvider = provider;
 		booking.eventICalId = eventICalId;
 
-		await this.bookingsRepository.update(booking);
+		await this.bookingsRepository.save(booking);
 
 		return [ChangeLogAction.Accept, booking];
 	}

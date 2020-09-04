@@ -1,8 +1,9 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { InsertResult, SelectQueryBuilder } from 'typeorm';
+import { FindConditions, SelectQueryBuilder } from 'typeorm';
 import { Booking, BookingStatus } from '../../models';
 import { QueryAccessType, RepositoryBase } from '../../core/repository';
 import { UserContext } from '../../infrastructure/userContext.middleware';
+import { BookingUpdateConcurrencyError } from '../../errors/BookingUpdateConcurrencyError';
 
 @InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {
@@ -33,14 +34,40 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return await query.getOne();
 	}
 
-	public async save(booking: Booking): Promise<InsertResult> {
+	public async save(booking: Booking): Promise<void> {
 		const repository = await this.getRepository();
-		return repository.insert(booking);
+
+		if (!booking.id) {
+			await repository.insert(booking);
+			return;
+		}
+
+		const versionUpdated = await this.updateBookingVersion(booking);
+		if (!versionUpdated) {
+			throw new BookingUpdateConcurrencyError(
+				`Booking ${booking.id} has changed in a parallel operation. Please try again.`,
+			);
+		}
+
+		await repository.save(booking);
 	}
 
-	public async update(booking: Booking): Promise<Booking> {
+	private async updateBookingVersion(booking: Booking): Promise<boolean> {
 		const repository = await this.getRepository();
-		return repository.save(booking);
+
+		// atomic increment DB operation
+		const result = await repository.query(
+			'update public.booking set _version = _version + 1 where _id = $1 and _version = $2',
+			[booking.id, booking._version],
+		);
+		const [, affected] = result as [any, number];
+		const incremented = affected > 0;
+
+		if (incremented) {
+			booking._version++;
+		}
+
+		return incremented;
 	}
 
 	public async search({

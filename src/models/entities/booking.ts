@@ -3,9 +3,16 @@ import { BookingStatus } from '../bookingStatus';
 import { ServiceProvider } from './serviceProvider';
 import { Service } from './service';
 import * as timeSpan from '../../tools/timeSpan';
+import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
+
+export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
 @Entity()
 export class Booking {
+	// _version is updated in an atomic DB operation (see repository)
+	@Column({ update: false })
+	public _version: number;
+
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
@@ -44,7 +51,9 @@ export class Booking {
 	@Index()
 	private _citizenUinFin: string;
 
-	constructor() {}
+	constructor() {
+		this._version = 1;
+	}
 
 	public get id(): number {
 		return this._id;

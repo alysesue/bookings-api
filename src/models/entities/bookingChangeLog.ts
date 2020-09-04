@@ -15,6 +15,10 @@ export class BookingChangeLog {
 	@JoinColumn({ name: '_bookingId' })
 	private _booking: Booking;
 
+	@Column()
+	@Index()
+	private _bookingId: number;
+
 	@ManyToOne((type) => User, { nullable: false })
 	@JoinColumn({ name: '_userId' })
 	private _user: User;

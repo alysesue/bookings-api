@@ -19,9 +19,7 @@ import { BookingsService } from './bookings.service';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
-import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { BookingsMapper } from './bookings.mapper';
-import { getRequestHeaders } from '../../infrastructure/requestHelper';
 
 @Route('v1/bookings')
 @Tags('Bookings')
