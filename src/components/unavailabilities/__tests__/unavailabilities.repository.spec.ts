@@ -1,19 +1,19 @@
-import { DbConnection } from "../../../core/db.connection";
 import { Container } from "typescript-ioc";
 import { UnavailabilitiesRepository } from "../unavailabilities.repository";
 import { Unavailability } from "../../../models";
 import { SelectQueryBuilder } from "typeorm";
+import { TransactionManager } from '../../../core/transactionManager';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
-describe("Unavailabilities repository", () => {
-	beforeEach(() => {
-		Container.bind(DbConnection).to(MockDBConnection);
-	});
+beforeAll(() => {
+	Container.bind(TransactionManager).to(TransactionManagerMock);
+});
 
+describe("Unavailabilities repository", () => {
 	afterEach(() => {
 		jest.resetAllMocks();
 	});
@@ -22,11 +22,11 @@ describe("Unavailabilities repository", () => {
 		const entry = Unavailability.create();
 		entry.id = 1;
 
-		MockDBConnection.save.mockImplementation(() => Promise.resolve(entry));
+		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(entry));
 		const repository = Container.get(UnavailabilitiesRepository);
 
 		const saved = await repository.save(entry);
-		expect(MockDBConnection.save).toHaveBeenCalled();
+		expect(TransactionManagerMock.save).toHaveBeenCalled();
 		expect(saved).toBeDefined();
 	});
 
@@ -37,7 +37,7 @@ describe("Unavailabilities repository", () => {
 			getMany: jest.fn(() => Promise.resolve([])),
 		} as unknown as SelectQueryBuilder<Unavailability>;
 
-		MockDBConnection.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const repository = Container.get(UnavailabilitiesRepository);
 
@@ -62,7 +62,7 @@ describe("Unavailabilities repository", () => {
 			getCount: jest.fn(() => Promise.resolve(1)),
 		} as unknown as SelectQueryBuilder<Unavailability>;
 
-		MockDBConnection.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const repository = Container.get(UnavailabilitiesRepository);
 
@@ -85,7 +85,7 @@ describe("Unavailabilities repository", () => {
 			getMany: jest.fn(() => Promise.resolve([])),
 		} as unknown as SelectQueryBuilder<Unavailability>;
 
-		MockDBConnection.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const repository = Container.get(UnavailabilitiesRepository);
 
@@ -104,21 +104,22 @@ describe("Unavailabilities repository", () => {
 	});
 });
 
-class MockDBConnection extends DbConnection {
+class TransactionManagerMock extends TransactionManager {
 	public static save = jest.fn();
 	public static find = jest.fn();
 	public static findOne = jest.fn();
 	public static createQueryBuilder = jest.fn();
 
-	public async getConnection(): Promise<any> {
-		const connection = {
+
+	public async getEntityManager(): Promise<any> {
+		const entityManager = {
 			getRepository: () => ({
-				find: MockDBConnection.find,
-				findOne: MockDBConnection.findOne,
-				save: MockDBConnection.save,
-				createQueryBuilder: MockDBConnection.createQueryBuilder,
-			})
+				find: TransactionManagerMock.find,
+				findOne: TransactionManagerMock.findOne,
+				save: TransactionManagerMock.save,
+				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
+			}),
 		};
-		return Promise.resolve(connection);
+		return Promise.resolve(entityManager);
 	}
 }

@@ -29,7 +29,6 @@ describe("User repository", () => {
 		const result = await userRepository.save({} as User);
 		expect(result).toStrictEqual([{ id: "abc" }]);
 	});
-
 	it('should getUserByMolUserId', async () => {
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),

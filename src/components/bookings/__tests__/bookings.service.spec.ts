@@ -55,8 +55,8 @@ describe("Bookings.Service", () => {
 		jest.resetAllMocks();
 
 		BookingChangeLogsServiceMock.executeAndLogAction.mockImplementation(
-			async (booking: Booking, asyncFunction: BookingActionFunction) => {
-				const [, newBooking] = await asyncFunction(booking);
+			async (_booking: Booking, asyncFunction: BookingActionFunction) => {
+				const [, newBooking] = await asyncFunction(_booking);
 				return newBooking;
 			});
 
