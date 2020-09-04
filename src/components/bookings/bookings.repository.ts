@@ -73,6 +73,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		serviceId,
 		serviceProviderId,
 		statuses,
+		citizenUinFins,
 		from,
 		to,
 		accessType,
@@ -80,6 +81,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		serviceId?: number;
 		serviceProviderId?: number;
 		statuses?: BookingStatus[];
+		citizenUinFins?: string[];
 		from: Date;
 		to: Date;
 		accessType: QueryAccessType;
@@ -90,14 +92,22 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 		const statusesCondition = statuses ? 'booking."_status" IN (:...statuses)' : '';
 
+		const citizenUinFinsCondition = citizenUinFins ? 'booking."_citizenUinFin" IN (:...citizenUinFins)' : '';
+
 		const dateRangeCondition = '(booking."_startDateTime" < :to AND booking."_endDateTime" > :from)';
 
 		const query = (await this.createQueryForUser(accessType))
 			.where(
-				[serviceCondition, serviceProviderCondition, dateRangeCondition, statusesCondition]
+				[
+					serviceCondition,
+					serviceProviderCondition,
+					dateRangeCondition,
+					statusesCondition,
+					citizenUinFinsCondition,
+				]
 					.filter((c) => c)
 					.join(' AND '),
-				{ serviceId, serviceProviderId, from, to, statuses },
+				{ serviceId, serviceProviderId, from, to, statuses, citizenUinFins },
 			)
 			.leftJoinAndSelect('booking._serviceProvider', 'sp_relation')
 			.leftJoinAndSelect('booking._service', 'service_relation')
