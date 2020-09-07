@@ -20,7 +20,7 @@ export class BookingChangeLogsService {
 	@Inject
 	private userContext: UserContext;
 
-	private mapBookingState(booking: Booking): BookingJsonSchemaV1 {
+	private mapToJsonSchema(booking: Booking): BookingJsonSchemaV1 {
 		if (!booking) return {} as BookingJsonSchemaV1;
 
 		if (!booking.service) {
@@ -34,13 +34,13 @@ export class BookingChangeLogsService {
 			endDateTime: booking.endDateTime,
 			serviceId: booking.serviceId,
 			serviceName: booking.service.name,
-			CitizenUinFin: booking.citizenUinFin,
+			citizenUinFin: booking.citizenUinFin,
 			// TODO: ADD Citizen data;
-			// CitizenName: string,
-			// CitizenEmail: string,
-			// CitizenPhone: string,
-			// Location: string,
-			// Description: string,
+			// citizenName: string,
+			// citizenEmail: string,
+			// citizenPhone: string,
+			// location: string,
+			// description: string,
 		} as BookingJsonSchemaV1;
 
 		if (booking.serviceProviderId) {
@@ -88,9 +88,9 @@ export class BookingChangeLogsService {
 		const user = await this.userContext.getCurrentUser();
 		return await this.transactionManager.runInTransaction(BookingIsolationLevel, async () => {
 			const booking = await getBookingFunction(bookingId);
-			const previousState = this.mapBookingState(booking);
+			const previousState = this.mapToJsonSchema(booking);
 			const [action, newBooking] = await actionFunction(booking);
-			const newState = this.mapBookingState(newBooking);
+			const newState = this.mapToJsonSchema(newBooking);
 
 			const changelog = BookingChangeLog.create({
 				action,

@@ -110,12 +110,12 @@ export type BookingJsonSchemaV1 = {
 	serviceProviderName?: string;
 	serviceProviderEmail?: string;
 	serviceProviderPhone?: string;
-	CitizenUinFin?: string;
-	CitizenName?: string;
-	CitizenEmail?: string;
-	CitizenPhone?: string;
-	Location?: string;
-	Description?: string;
+	citizenUinFin?: string;
+	citizenName?: string;
+	citizenEmail?: string;
+	citizenPhone?: string;
+	location?: string;
+	description?: string;
 };
 
 export enum ChangeLogAction {
