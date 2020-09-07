@@ -1,9 +1,9 @@
-import { Container } from "typescript-ioc";
-import { SingPassUser, User } from "../../../models";
-import { UsersRepository } from "../users.repository";
-import { UsersService } from "../users.service";
-import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
-import { MOLAuthType } from "mol-lib-api-contract/auth/common/MOLAuthType";
+import { Container } from 'typescript-ioc';
+import { User } from '../../../models';
+import { UsersRepository } from '../users.repository';
+import { UsersService } from '../users.service';
+import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
+import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 
 beforeAll(() => {
 	Container.bind(UsersRepository).to(UserRepositoryMock);
@@ -14,12 +14,12 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
-describe("Users Service", () => {
+describe('Users Service', () => {
 	afterEach(() => {
 		jest.resetAllMocks();
 	});
 
-	it("should return singpass user", async () => {
+	it('should return singpass user', async () => {
 		const headers = {};
 		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.USER;
 		headers[MOLSecurityHeaderKeys.USER_ID] = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
@@ -34,7 +34,7 @@ describe("Users Service", () => {
 		expect(user.singPassUser).toBeDefined();
 	});
 
-	it("should validate singpass user", async () => {
+	it('should validate singpass user', async () => {
 		const headers = {};
 		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.USER;
 
@@ -62,7 +62,7 @@ describe("Users Service", () => {
 		expect(user.singPassUser).toBeDefined();
 	});
 
-	it("should return admin user", async () => {
+	it('should return admin user', async () => {
 		const headers = {};
 		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.ADMIN;
 		headers[MOLSecurityHeaderKeys.ADMIN_ID] = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
@@ -74,7 +74,7 @@ describe("Users Service", () => {
 			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
 			userName: 'UserName',
 			email: 'test@email.com',
-			name: 'Name'
+			name: 'Name',
 		});
 
 		UserRepositoryMock.getUserByMolAdminId.mockImplementation(() => Promise.resolve(userMock));
@@ -85,7 +85,7 @@ describe("Users Service", () => {
 		expect(user.adminUser).toBeDefined();
 	});
 
-	it("should validate admin user", async () => {
+	it('should validate admin user', async () => {
 		const headers = {};
 		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.ADMIN;
 
@@ -96,14 +96,14 @@ describe("Users Service", () => {
 		await expect(test).rejects.toThrowError();
 	});
 
-	it("should return null user", async () => {
+	it('should return null user', async () => {
 		const headers = {};
 		const service = Container.get(UsersService);
 		const user = await service.getOrSaveUserFromHeaders(headers);
 		expect(user).toBeNull();
 	});
 
-	it("should return null user", async () => {
+	it('should return null user', async () => {
 		const headers = {};
 		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = 'NEW_TYPE';
 		const service = Container.get(UsersService);
@@ -130,4 +130,3 @@ class UserRepositoryMock extends UsersRepository {
 		return await UserRepositoryMock.getUserByMolAdminId(...params);
 	}
 }
-

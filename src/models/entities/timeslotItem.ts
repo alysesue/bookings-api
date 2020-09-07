@@ -1,13 +1,12 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TimeOfDay, Transformer as TimeTransformer } from '../timeOfDay';
 import { Weekday } from '../../enums/weekday';
-import { ITimeslotsSchedule, ITimeSpan } from "../interfaces";
+import { ITimeslotsSchedule, ITimeSpan } from '../interfaces';
 import * as timeSpan from '../../tools/timeSpan';
 
 @Entity()
 export class TimeslotItem implements ITimeSpan {
-	constructor() {
-	}
+	constructor() {}
 
 	@PrimaryGeneratedColumn()
 	public _id: number;
@@ -19,19 +18,28 @@ export class TimeslotItem implements ITimeSpan {
 	@JoinColumn({ name: '_timeslotsScheduleId' })
 	public _timeslotsSchedule: ITimeslotsSchedule;
 
-	@Column("int")
+	@Column('int')
 	public _weekDay: Weekday;
 
-	@Column({ type: "time", transformer: TimeTransformer, nullable: false })
+	@Column({ type: 'time', transformer: TimeTransformer, nullable: false })
 	public _startTime: TimeOfDay;
 
-	@Column({ type: "time", transformer: TimeTransformer, nullable: false })
+	@Column({ type: 'time', transformer: TimeTransformer, nullable: false })
 	public _endTime: TimeOfDay;
 
-	public get startTime() { return this._startTime; }
-	public get endTime() { return this._endTime; }
+	public get startTime() {
+		return this._startTime;
+	}
+	public get endTime() {
+		return this._endTime;
+	}
 
-	public static create(timeslotScheduleId: number, weekDay: Weekday, startTime: TimeOfDay, endTime: TimeOfDay): TimeslotItem {
+	public static create(
+		timeslotScheduleId: number,
+		weekDay: Weekday,
+		startTime: TimeOfDay,
+		endTime: TimeOfDay,
+	): TimeslotItem {
 		const instance = new TimeslotItem();
 		instance._timeslotsScheduleId = timeslotScheduleId;
 		instance._startTime = startTime;

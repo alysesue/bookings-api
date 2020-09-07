@@ -1,5 +1,10 @@
-import { Schedule, TimeOfDay, WeekDayBreak, WeekDaySchedule } from "../../models";
-import { ScheduleRequest, ScheduleResponse, WeekDayBreakContract, WeekDayScheduleContract } from './schedules.apicontract';
+import { Schedule, TimeOfDay, WeekDayBreak, WeekDaySchedule } from '../../models';
+import {
+	ScheduleRequest,
+	ScheduleResponse,
+	WeekDayBreakContract,
+	WeekDayScheduleContract,
+} from './schedules.apicontract';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { getErrorResult, getOkResult, isErrorResult, OptionalResult } from '../../errors';
 
@@ -8,7 +13,7 @@ export const mapToEntity = (contract: ScheduleRequest, entity: Schedule): Option
 	entity.slotsDurationInMin = contract.slotsDurationInMin;
 	const errors: string[] = [];
 
-	const weekDaysContract = groupByKeyLastValue(contract.weekdaySchedules || [], w => w.weekday);
+	const weekDaysContract = groupByKeyLastValue(contract.weekdaySchedules || [], (w) => w.weekday);
 
 	entity.initWeekdaySchedules();
 
@@ -23,10 +28,13 @@ export const mapToEntity = (contract: ScheduleRequest, entity: Schedule): Option
 		}
 	}
 
-	return (errors.length > 0) ? { errorResult: errors } : { result: entity };
+	return errors.length > 0 ? { errorResult: errors } : { result: entity };
 };
 
-const setDayContractEntity = (contract: WeekDayScheduleContract, entity: WeekDaySchedule): OptionalResult<WeekDaySchedule, string[]> => {
+const setDayContractEntity = (
+	contract: WeekDayScheduleContract,
+	entity: WeekDaySchedule,
+): OptionalResult<WeekDaySchedule, string[]> => {
 	entity.hasSchedule = contract.hasSchedule;
 	const errors: string[] = [];
 
@@ -49,14 +57,17 @@ const setDayContractEntity = (contract: WeekDayScheduleContract, entity: WeekDay
 		entity.breaks = getOkResult(mappedBreaks);
 	}
 
-	return (errors.length > 0) ? { errorResult: errors } : { result: entity };
+	return errors.length > 0 ? { errorResult: errors } : { result: entity };
 };
 
-const mapBreaks = (daySchedule: WeekDayScheduleContract, entity: WeekDaySchedule): OptionalResult<WeekDayBreak[], string[]> => {
+const mapBreaks = (
+	daySchedule: WeekDayScheduleContract,
+	entity: WeekDaySchedule,
+): OptionalResult<WeekDayBreak[], string[]> => {
 	const errors: string[] = [];
 	const result: WeekDayBreak[] = [];
 
-	for (const entry of (daySchedule.breaks || [])) {
+	for (const entry of daySchedule.breaks || []) {
 		let startTime: TimeOfDay = null;
 		let endTime: TimeOfDay = null;
 
@@ -78,7 +89,7 @@ const mapBreaks = (daySchedule: WeekDayScheduleContract, entity: WeekDaySchedule
 		}
 	}
 
-	return (errors.length > 0) ? { errorResult: errors } : { result };
+	return errors.length > 0 ? { errorResult: errors } : { result };
 };
 
 export const mapToResponse = (template: Schedule): ScheduleResponse => {
@@ -90,7 +101,7 @@ export const mapToResponse = (template: Schedule): ScheduleResponse => {
 	response.id = template.id;
 	response.name = template.name;
 	response.slotsDurationInMin = template.slotsDurationInMin;
-	response.weekdaySchedules = template.weekdaySchedules?.map(w => mapDayScheduleToResponse(w)) || [];
+	response.weekdaySchedules = template.weekdaySchedules?.map((w) => mapDayScheduleToResponse(w)) || [];
 
 	return response;
 };
@@ -101,7 +112,7 @@ export const mapDayScheduleToResponse = (daySchedule: WeekDaySchedule): WeekDayS
 	dayContract.hasSchedule = daySchedule.hasSchedule;
 	dayContract.openTime = daySchedule.openTime?.toJSON();
 	dayContract.closeTime = daySchedule.closeTime?.toJSON();
-	dayContract.breaks = daySchedule.breaks?.map(e => mapBreaksToResponse(e));
+	dayContract.breaks = daySchedule.breaks?.map((e) => mapBreaksToResponse(e));
 
 	return dayContract;
 };

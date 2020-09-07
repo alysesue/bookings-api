@@ -1,6 +1,6 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Schedule } from '../../models';
-import { DeleteResult, FindManyOptions, In } from "typeorm";
+import { DeleteResult, FindManyOptions, In } from 'typeorm';
 import { groupByKey } from '../../tools/collections';
 import { WeekDayBreakRepository } from './weekdaybreak.repository';
 import { RepositoryBase } from '../../core/repository';
@@ -18,7 +18,7 @@ export class SchedulesRepository extends RepositoryBase<Schedule> {
 
 	public async getScheduleById(id: number): Promise<Schedule> {
 		const schedule = await (await this.getRepository()).findOne(id, {
-			relations: ['weekdaySchedules']
+			relations: ['weekdaySchedules'],
 		});
 		return this.populateSingleEntryBreaks(schedule);
 	}
@@ -36,7 +36,7 @@ export class SchedulesRepository extends RepositoryBase<Schedule> {
 	public async getScheduleByName(name: string): Promise<Schedule> {
 		const schedule = await (await this.getRepository()).findOne({
 			where: { name },
-			relations: ['weekdaySchedules']
+			relations: ['weekdaySchedules'],
 		});
 		return this.populateSingleEntryBreaks(schedule);
 	}
@@ -49,9 +49,9 @@ export class SchedulesRepository extends RepositoryBase<Schedule> {
 	}
 
 	private async populateBreaks(schedules: Schedule[]): Promise<Schedule[]> {
-		const scheduleIds = schedules.map(s => s.id);
+		const scheduleIds = schedules.map((s) => s.id);
 		const breaks = await this.weekDayBreakRepo.getBreaksForSchedules(scheduleIds);
-		const breaksPerSchedule = groupByKey(breaks, e => e.getScheduleId());
+		const breaksPerSchedule = groupByKey(breaks, (e) => e.getScheduleId());
 
 		for (const schedule of schedules) {
 			const scheduleBreaks = breaksPerSchedule.get(schedule.id) || [];
@@ -80,14 +80,14 @@ export class SchedulesRepository extends RepositoryBase<Schedule> {
 	}
 
 	public async populateSchedules<T extends IEntityWithSchedule>(entries: T[]): Promise<T[]> {
-		const scheduleIds = entries.map(e => e.scheduleId).filter(id => !!id);
+		const scheduleIds = entries.map((e) => e.scheduleId).filter((id) => !!id);
 		if (scheduleIds.length === 0) {
 			return entries;
 		}
 
-		const schedulesById = groupByKeyLastValue(await this.getSchedules(scheduleIds), s => s.id);
+		const schedulesById = groupByKeyLastValue(await this.getSchedules(scheduleIds), (s) => s.id);
 
-		for (const entry of entries.filter(c => !!c.scheduleId)) {
+		for (const entry of entries.filter((c) => !!c.scheduleId)) {
 			entry.schedule = schedulesById.get(entry.scheduleId);
 		}
 		return entries;

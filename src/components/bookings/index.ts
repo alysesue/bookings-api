@@ -1,7 +1,4 @@
-import { BookingsController } from "./bookings.controller";
-import { BookingsService } from "./bookings.service";
+import { BookingsController } from './bookings.controller';
+import { BookingsService } from './bookings.service';
 
-export {
-	BookingsController,
-	BookingsService,
-};
+export { BookingsController, BookingsService };

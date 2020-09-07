@@ -14,21 +14,20 @@ export class Schedule implements ISchedule {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
-	@Column({ type: "varchar", length: 100 })
+	@Column({ type: 'varchar', length: 100 })
 	public name: string;
 
-	@Column({ type: "int" })
+	@Column({ type: 'int' })
 	public slotsDurationInMin: number;
 
-	@OneToMany(type => WeekDaySchedule, weekdaySchedule => weekdaySchedule.schedule, { cascade: true })
+	@OneToMany((type) => WeekDaySchedule, (weekdaySchedule) => weekdaySchedule.schedule, { cascade: true })
 	public weekdaySchedules: WeekDaySchedule[];
 
-	constructor() {
-	}
+	constructor() {}
 
 	public initWeekdaySchedules(): void {
 		if (!this.weekdaySchedules || this.weekdaySchedules.length === 0) {
-			this.weekdaySchedules = WeekdayList.map(day => WeekDaySchedule.create(day, this));
+			this.weekdaySchedules = WeekdayList.map((day) => WeekDaySchedule.create(day, this));
 		} else {
 			this.ensureWeekdayParentIsSet();
 		}
@@ -42,9 +41,9 @@ export class Schedule implements ISchedule {
 
 	public setBreaks(breaks: WeekDayBreak[]): void {
 		this.verifyWeekdaySchedules();
-		breaks.filter(e => e.schedule !== this).forEach(e => e.schedule = this);
+		breaks.filter((e) => e.schedule !== this).forEach((e) => (e.schedule = this));
 
-		const breaksByWeekday = groupByKey(breaks, e => e.weekDay);
+		const breaksByWeekday = groupByKey(breaks, (e) => e.weekDay);
 		for (const daySchedule of this.weekdaySchedules) {
 			daySchedule.breaks = breaksByWeekday.get(daySchedule.weekDay) || [];
 		}
@@ -63,7 +62,7 @@ export class Schedule implements ISchedule {
 		return breaks;
 	}
 
-	public * validateSchedule(): Iterable<BusinessValidation> {
+	public *validateSchedule(): Iterable<BusinessValidation> {
 		this.ensureWeekdayParentIsSet();
 		for (const weekdaySchedule of this.weekdaySchedules) {
 			for (const validation of weekdaySchedule.validateWeekDaySchedule()) {
@@ -72,7 +71,7 @@ export class Schedule implements ISchedule {
 		}
 	}
 
-	public * generateValidTimeslots(range: { startDatetime: Date, endDatetime: Date }): Iterable<Timeslot> {
+	public *generateValidTimeslots(range: { startDatetime: Date; endDatetime: Date }): Iterable<Timeslot> {
 		this.ensureWeekdayParentIsSet();
 		if (range.endDatetime < range.startDatetime) {
 			return;
@@ -81,7 +80,10 @@ export class Schedule implements ISchedule {
 		const initialDate = DateHelper.getDateOnly(range.startDatetime);
 		const daysCount = 1 + Math.floor(DateHelper.DiffInDays(DateHelper.getDateOnly(range.endDatetime), initialDate));
 
-		const validWeekDays = groupByKeyLastValue(this.weekdaySchedules.filter(w => w.hasSchedule), w => w.weekDay);
+		const validWeekDays = groupByKeyLastValue(
+			this.weekdaySchedules.filter((w) => w.hasSchedule),
+			(w) => w.weekDay,
+		);
 		const firstDayStartTime = TimeOfDay.fromDate(range.startDatetime);
 		const lastDayEndTime = TimeOfDay.fromDate(range.endDatetime);
 
@@ -95,8 +97,8 @@ export class Schedule implements ISchedule {
 
 			const weekDayRange = {
 				dayOfWeek: date,
-				startTimeOfDay: (day === 0) ? firstDayStartTime : null,
-				endTimeOfDay: (day === daysCount - 1) ? lastDayEndTime : null,
+				startTimeOfDay: day === 0 ? firstDayStartTime : null,
+				endTimeOfDay: day === daysCount - 1 ? lastDayEndTime : null,
 			};
 
 			for (const timeslot of weekDaySchedule.generateValidTimeslots(weekDayRange)) {
@@ -107,6 +109,6 @@ export class Schedule implements ISchedule {
 
 	private ensureWeekdayParentIsSet(): void {
 		this.verifyWeekdaySchedules();
-		this.weekdaySchedules.filter(e => e.schedule !== this).forEach(e => e.schedule = this);
+		this.weekdaySchedules.filter((e) => e.schedule !== this).forEach((e) => (e.schedule = this));
 	}
 }

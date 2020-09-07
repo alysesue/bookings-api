@@ -1,10 +1,9 @@
-import { Inject, InRequestScope } from "typescript-ioc";
-import { ServicesService } from "./services.service";
-import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { ServicesService } from './services.service';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 @InRequestScope
 export class ServicesValidation {
-
 	@Inject
 	private servicesService: ServicesService;
 

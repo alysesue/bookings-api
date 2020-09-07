@@ -1,10 +1,9 @@
-import { Inject, InRequestScope } from "typescript-ioc";
-import { ServiceProvider } from "../../models";
-import { RepositoryBase } from "../../core/repository";
-import { FindConditions, In } from "typeorm";
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { ServiceProvider } from '../../models';
+import { RepositoryBase } from '../../core/repository';
+import { FindConditions, In } from 'typeorm';
 import { SchedulesRepository } from '../schedules/schedules.repository';
-import { TimeslotsScheduleRepository } from "../timeslotsSchedules/timeslotsSchedule.repository";
-
+import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
 
 @InRequestScope
 export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> {
@@ -17,10 +16,13 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		super(ServiceProvider);
 	}
 
-	private async processIncludes(entries: ServiceProvider[], options: {
-		includeSchedule?: boolean,
-		includeTimeslotsSchedule?: boolean
-	}): Promise<ServiceProvider[]> {
+	private async processIncludes(
+		entries: ServiceProvider[],
+		options: {
+			includeSchedule?: boolean;
+			includeTimeslotsSchedule?: boolean;
+		},
+	): Promise<ServiceProvider[]> {
 		if (options.includeSchedule) {
 			await this.scheduleRepository.populateSchedules(entries);
 		}
@@ -32,12 +34,14 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		return entries;
 	}
 
-	public async getServiceProviders(options: {
-		ids?: number[],
-		serviceId?: number,
-		includeSchedule?: boolean,
-		includeTimeslotsSchedule?: boolean
-	} = {}): Promise<ServiceProvider[]> {
+	public async getServiceProviders(
+		options: {
+			ids?: number[];
+			serviceId?: number;
+			includeSchedule?: boolean;
+			includeTimeslotsSchedule?: boolean;
+		} = {},
+	): Promise<ServiceProvider[]> {
 		const findConditions: FindConditions<ServiceProvider> = {};
 		if (options.serviceId) {
 			findConditions['_serviceId'] = options.serviceId;
@@ -52,9 +56,9 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	}
 
 	public async getServiceProvider(options: {
-		id: number,
-		includeSchedule?: boolean,
-		includeTimeslotsSchedule?: boolean
+		id: number;
+		includeSchedule?: boolean;
+		includeTimeslotsSchedule?: boolean;
 	}): Promise<ServiceProvider> {
 		const repository = await this.getRepository();
 		const entry = await repository.findOne(options.id, { relations: ['_calendar'] });

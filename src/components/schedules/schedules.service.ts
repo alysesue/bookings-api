@@ -1,9 +1,9 @@
-import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { DeleteResult } from "typeorm";
-import { SchedulesRepository } from "./schedules.repository";
+import { DeleteResult } from 'typeorm';
+import { SchedulesRepository } from './schedules.repository';
 import { Schedule } from '../../models';
-import { ScheduleRequest, ScheduleResponse } from "./schedules.apicontract";
+import { ScheduleRequest, ScheduleResponse } from './schedules.apicontract';
 import { mapToEntity, mapToResponse } from './schedules.mapper';
 import { getErrorResult, isErrorResult } from '../../errors';
 
@@ -14,7 +14,7 @@ export class SchedulesService {
 
 	public async createSchedule(template: ScheduleRequest): Promise<ScheduleResponse> {
 		const newSchedule = this.mapToEntityAndValidate(template, new Schedule());
-		const templateSet = (await this.schedulesRepository.saveSchedule(newSchedule));
+		const templateSet = await this.schedulesRepository.saveSchedule(newSchedule);
 		return mapToResponse(templateSet);
 	}
 
@@ -25,13 +25,13 @@ export class SchedulesService {
 		}
 		let schedule = this.mapToEntityAndValidate(template, existingSchedule);
 
-		schedule = (await this.schedulesRepository.saveSchedule(schedule));
+		schedule = await this.schedulesRepository.saveSchedule(schedule);
 		return mapToResponse(schedule);
 	}
 
 	public async getSchedules(): Promise<ScheduleResponse[]> {
 		const schedules = await this.schedulesRepository.getSchedules();
-		return schedules.map(s => mapToResponse(s));
+		return schedules.map((s) => mapToResponse(s));
 	}
 
 	public async getSchedule(id: number): Promise<Schedule> {
@@ -51,7 +51,7 @@ export class SchedulesService {
 
 		const validations = Array.from(schedule.validateSchedule());
 		if (validations.length > 0) {
-			const response = validations.map(val => val.message);
+			const response = validations.map((val) => val.message);
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setResponseData(response);
 		}
 

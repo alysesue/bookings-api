@@ -1,12 +1,12 @@
-import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Service } from "./service";
-import { ServiceProvider } from "./serviceProvider";
-import { IUnavailability } from "../interfaces";
-import { intersectsDateTime } from "../../tools/timeSpan";
+import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Service } from './service';
+import { ServiceProvider } from './serviceProvider';
+import { IUnavailability } from '../interfaces';
+import { intersectsDateTime } from '../../tools/timeSpan';
 
 @Entity()
 export class Unavailability implements IUnavailability {
-	constructor() { }
+	constructor() {}
 
 	public static create(): Unavailability {
 		const data = new Unavailability();
@@ -37,7 +37,7 @@ export class Unavailability implements IUnavailability {
 		this._serviceId = value;
 	}
 
-	@ManyToOne(type => Service)
+	@ManyToOne((type) => Service)
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
@@ -73,11 +73,11 @@ export class Unavailability implements IUnavailability {
 		this._allServiceProviders = value;
 	}
 
-	@ManyToMany(type => ServiceProvider, { cascade: true })
+	@ManyToMany((type) => ServiceProvider, { cascade: true })
 	@JoinTable({
 		name: 'unavailable_service_provider',
 		joinColumn: { name: 'unavailability_id' },
-		inverseJoinColumn: { name: 'serviceProvider_id' }
+		inverseJoinColumn: { name: 'serviceProvider_id' },
 	})
 	private _serviceProviders: ServiceProvider[];
 

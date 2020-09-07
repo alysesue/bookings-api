@@ -1,9 +1,9 @@
-import { Inject, InRequestScope } from "typescript-ioc";
-import { InsertResult, SelectQueryBuilder } from "typeorm";
-import { Booking } from "../../models";
-import { QueryAccessType, RepositoryBase } from "../../core/repository";
-import { UserContext } from "../../infrastructure/userContext.middleware";
-import { BookingSearchRequest } from "./bookings.apicontract";
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { InsertResult, SelectQueryBuilder } from 'typeorm';
+import { Booking } from '../../models';
+import { QueryAccessType, RepositoryBase } from '../../core/repository';
+import { UserContext } from '../../infrastructure/userContext.middleware';
+import { BookingSearchRequest } from './bookings.apicontract';
 
 @InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {
@@ -18,7 +18,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		const user = await this.userContext.getCurrentUser();
 
 		const repository = await this.getRepository();
-		let query = repository.createQueryBuilder("booking");
+		let query = repository.createQueryBuilder('booking');
 		if (user.isCitizen()) {
 			query = query.where('booking."_citizenUinFin" = :uinfin', { uinfin: user.singPassUser.UinFin });
 		}
@@ -28,8 +28,10 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 	public async getBooking(id: number, accessType = QueryAccessType.Read): Promise<Booking> {
 		const query = (await this.createQueryForUser(accessType))
-			.leftJoinAndSelect("booking._serviceProvider", "sp_relation")
-			.leftJoinAndSelect("booking._service", "service_relation");
+			.leftJoinAndSelect('booking._serviceProvider', 'sp_relation')
+			.leftJoinAndSelect('booking._service', 'service_relation')
+			.where('booking."_id" = :id', { id: id });
+
 
 		return await query.getOne();
 	}
@@ -52,16 +54,29 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 		const statusesCondition = request.statuses ? 'booking."_status" IN (:...statuses)' : '';
 
+		const citizenUinFinsCondition = request.citizenUinFins ? 'booking."_citizenUinFin" IN (:...citizenUinFins)' : '';
+
 		const dateRangeCondition = '(booking."_startDateTime" < :to AND booking."_endDateTime" > :from)';
 
 		const query = (await this.createQueryForUser(accessType))
-			.where([serviceCondition, serviceProviderCondition, dateRangeCondition, statusesCondition].filter(c => c).join(' AND '),
+			.where(
+				[
+					serviceCondition,
+					serviceProviderCondition,
+					dateRangeCondition,
+					statusesCondition,
+					citizenUinFinsCondition,
+				]
+					.filter(c => c)
+					.join(' AND '),
 				{
 					serviceId: request.serviceId,
 					serviceProviderId: request.serviceProviderId,
 					from: request.from,
 					to: request.to,
-					statuses: request.statuses
+					statuses: request.statuses,
+					citizenUinFins: request.citizenUinFins
+
 				})
 			.leftJoinAndSelect("booking._serviceProvider", "sp_relation")
 			.leftJoinAndSelect("booking._service", "service_relation")

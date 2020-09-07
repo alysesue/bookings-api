@@ -1,4 +1,4 @@
-import { ServiceProviderSummaryModel } from "../serviceProviders/serviceProviders.apicontract";
+import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
 
 export class UnavailabilityResponse {
 	public startTime: Date;

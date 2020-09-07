@@ -1,9 +1,9 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { BookingStatus } from "../bookingStatus";
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { BookingStatus } from '../bookingStatus';
 import { ServiceProvider } from './serviceProvider';
-import { Service } from "./service";
-import * as timeSpan from "../../tools/timeSpan";
-import { User } from "./user";
+import { Service } from './service';
+import * as timeSpan from '../../tools/timeSpan';
+import { User } from './user';
 
 
 export class BookingBuilder {
@@ -88,18 +88,17 @@ export class BookingBuilder {
 
 @Entity()
 export class Booking {
-
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
-	@Column({nullable: false})
+	@Column({ nullable: false })
 	private _serviceId: number;
 
-	@ManyToOne(type => Service)
-	@JoinColumn({name: '_serviceId'})
+	@ManyToOne((type) => Service)
+	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
-	@Column({type: "varchar", length: 300, nullable: true})
+	@Column({ type: 'varchar', length: 300, nullable: true })
 	private _eventICalId: string;
 
 	@Column()
@@ -116,24 +115,24 @@ export class Booking {
 	@Column()
 	private _createdAt: Date;
 
-	@Column({nullable: true})
+	@Column({ nullable: true })
 	private _refId?: string;
 
-	@Column({nullable: true})
+	@Column({ nullable: true })
 	private _acceptedAt: Date;
 
-	@ManyToOne(type => ServiceProvider, {nullable: true})
-	@JoinColumn({name: '_serviceProviderId'})
+	@ManyToOne((type) => ServiceProvider, { nullable: true })
+	@JoinColumn({ name: '_serviceProviderId' })
 	private _serviceProvider: ServiceProvider;
 
-	@Column({nullable: true})
+	@Column({ nullable: true })
 	private _serviceProviderId?: number;
 
-	@ManyToOne(type => User, {nullable: false})
-	@JoinColumn({name: '_creatorId'})
+	@ManyToOne((type) => User, { nullable: false })
+	@JoinColumn({ name: '_creatorId' })
 	private _creator: User;
 
-	@Column({nullable: true, type: "varchar", length: 20})
+	@Column({ nullable: true, type: 'varchar', length: 20 })
 	@Index()
 	private _citizenUinFin: string;
 
@@ -269,7 +268,7 @@ export class Booking {
 		return this._citizenPhone
 	}
 
-	public bookingIntersects(other: { start: Date, end: Date }): boolean {
+	public bookingIntersects(other: { start: Date; end: Date }): boolean {
 		if (!other.start || !other.end) {
 			return false;
 		}

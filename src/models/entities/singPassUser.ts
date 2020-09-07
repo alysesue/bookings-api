@@ -1,10 +1,9 @@
-import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { IUser } from "../interfaces";
+import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { IUser } from '../interfaces';
 
 @Entity()
 export class SingPassUser {
-	constructor() {
-	}
+	constructor() {}
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
@@ -18,10 +17,10 @@ export class SingPassUser {
 	}
 
 	@OneToOne('User', { nullable: false })
-	@JoinColumn({ name: "_userId" })
+	@JoinColumn({ name: '_userId' })
 	public _User: IUser;
 
-	@Column({ nullable: false, type: "varchar", length: 20 })
+	@Column({ nullable: false, type: 'varchar', length: 20 })
 	@Index({ unique: true })
 	private _UinFin: string;
 
@@ -33,7 +32,7 @@ export class SingPassUser {
 		this._UinFin = value;
 	}
 
-	@Column({ type: "uuid" })
+	@Column({ type: 'uuid' })
 	@Index({ unique: true })
 	private _molUserId: string;
 

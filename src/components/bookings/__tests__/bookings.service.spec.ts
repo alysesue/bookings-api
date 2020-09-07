@@ -1,19 +1,19 @@
-import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
-import { BookingsService } from "../index";
-import { BookingsRepository } from "../bookings.repository";
-import { CalendarsService } from "../../calendars/calendars.service";
-import { Container } from "typescript-ioc";
-import { Booking, BookingStatus, Calendar, ServiceProvider, User } from "../../../models";
-import { InsertResult } from "typeorm";
-import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "../bookings.apicontract";
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { BookingsService } from '../index';
+import { BookingsRepository } from '../bookings.repository';
+import { CalendarsService } from '../../calendars/calendars.service';
+import { Container } from 'typescript-ioc';
+import { Booking, BookingStatus, Calendar, ServiceProvider, User } from '../../../models';
+import { InsertResult } from 'typeorm';
+import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
-import { DateHelper } from "../../../infrastructure/dateHelper";
-import { UnavailabilitiesService } from "../../unavailabilities/unavailabilities.service";
+import { DateHelper } from '../../../infrastructure/dateHelper';
+import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { UserContext } from '../../../infrastructure/userContext.middleware';
-import { BookingBuilder } from "../../../models/entities/booking";
-import { BookingsValidatorFactory, IValidator } from "../validator/bookings.validation";
+import { BookingBuilder } from '../../../models/entities/booking';
+import { BookingsValidatorFactory, IValidator } from '../validator/bookings.validation';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -21,7 +21,7 @@ afterAll(() => {
 });
 
 // tslint:disable-next-line: no-big-function
-describe("Bookings.Service", () => {
+describe('Bookings.Service', () => {
 	const calendar = new Calendar();
 	calendar.id = 1;
 	calendar.uuid = '123';
@@ -34,7 +34,7 @@ describe("Bookings.Service", () => {
 		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
 		userName: 'UserName',
 		email: 'test@email.com',
-		name: 'Name'
+		name: 'Name',
 	});
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 
@@ -69,9 +69,9 @@ describe("Bookings.Service", () => {
 
 	afterAll(() => {
 		snapshot.restore();
-	})
+	});
 
-	it("should save booking from booking request", async () => {
+	it('should save booking from booking request', async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
@@ -86,7 +86,7 @@ describe("Bookings.Service", () => {
 		expect(booking.status).toBe(BookingStatus.PendingApproval);
 	});
 
-	it("should save direct booking", async () => {
+	it('should save direct booking', async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
@@ -103,7 +103,22 @@ describe("Bookings.Service", () => {
 		expect(booking.status).toBe(BookingStatus.Accepted);
 	});
 
-	it("should allow booking out of timeslots", async () => {
+	it('should validate service provider when saving direct booking', async () => {
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 5;
+		BookingRepositoryMock.searchBookingsMock = [];
+		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+		ServiceProvidersRepositoryMock.getServiceProviderMock = null;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(async () => await Container.get(BookingsService).save(bookingRequest, 1)).rejects.toStrictEqual(
+			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage("Service provider '5' not found"),
+		);
+	});
+
+	it('should allow booking out of timeslots', async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
@@ -124,7 +139,7 @@ describe("Bookings.Service", () => {
 		expect(booking.status).toBe(BookingStatus.Accepted);
 	});
 
-	it("should not allow booking out of timeslots", async () => {
+	it('should not allow booking out of timeslots', async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
@@ -143,7 +158,7 @@ describe("Bookings.Service", () => {
 
 	it("should accept booking", async () => {
 		const bookingService = Container.get(BookingsService);
-		CalendarsServiceMock.eventId = "event-id";
+		CalendarsServiceMock.eventId = 'event-id';
 		BookingRepositoryMock.booking = new BookingBuilder().withServiceId(1).withStartDateTime(new Date('2020-10-01T01:00:00')).withEndDateTime(new Date('2020-10-01T02:00:00')).build();
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
@@ -153,10 +168,10 @@ describe("Bookings.Service", () => {
 		const result = await bookingService.acceptBooking(1, acceptRequest);
 
 		expect(result.status).toBe(BookingStatus.Accepted);
-		expect(result.eventICalId).toBe("event-id");
+		expect(result.eventICalId).toBe('event-id');
 	});
 
-	it("should cancel booking", async () => {
+	it('should cancel booking', async () => {
 		const bookingService = Container.get(BookingsService);
 		BookingRepositoryMock.booking = new BookingBuilder().withServiceId(1).withStartDateTime(new Date('2020-10-01T01:00:00')).withEndDateTime(new Date('2020-10-01T02:00:00')).build();
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
@@ -166,11 +181,11 @@ describe("Bookings.Service", () => {
 		expect(result.status).toBe(BookingStatus.Cancelled);
 	});
 
-	it("should throw exception if booking not found", async () => {
+	it('should throw exception if booking not found', async () => {
 		const bookingService = Container.get(BookingsService);
 		BookingRepositoryMock.booking = undefined;
 		await expect(async () => await bookingService.getBooking(1)).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage("Booking 1 not found")
+			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Booking 1 not found'),
 		);
 	});
 });
@@ -214,7 +229,11 @@ export class TimeslotsServiceMock extends TimeslotsService {
 	public static availableProvidersForTimeslot: ServiceProvider[] = [];
 	public static acceptedBookings: Booking[] = [];
 
-	public async getAvailableProvidersForTimeslot(startDateTime: Date, endDateTime: Date, serviceId: number): Promise<AvailableTimeslotProviders> {
+	public async getAvailableProvidersForTimeslot(
+		startDateTime: Date,
+		endDateTime: Date,
+		serviceId: number,
+	): Promise<AvailableTimeslotProviders> {
 		const timeslotEntry = new AvailableTimeslotProviders();
 		timeslotEntry.startTime = startDateTime;
 		timeslotEntry.endTime = startDateTime;

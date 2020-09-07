@@ -1,8 +1,8 @@
-import * as Koa from "koa";
-import { Inject, InRequestScope } from "typescript-ioc";
-import { ContainerContext, ContainerContextMiddleware } from "./containerContext.middleware";
-import { User } from "../models";
-import { UsersService } from "../components/users/users.service";
+import * as Koa from 'koa';
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { ContainerContext, ContainerContextMiddleware } from './containerContext.middleware';
+import { User } from '../models';
+import { UsersService } from '../components/users/users.service';
 
 export class UserContextMiddleware {
 	public build(): Koa.Middleware {

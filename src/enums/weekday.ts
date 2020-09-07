@@ -5,10 +5,18 @@ export enum Weekday {
 	Wednesday = 3,
 	Thursday = 4,
 	Friday = 5,
-	Saturday = 6
+	Saturday = 6,
 }
 
-export const WeekdayList: Weekday[] = [Weekday.Sunday, Weekday.Monday, Weekday.Tuesday, Weekday.Wednesday, Weekday.Thursday, Weekday.Friday, Weekday.Saturday];
+export const WeekdayList: Weekday[] = [
+	Weekday.Sunday,
+	Weekday.Monday,
+	Weekday.Tuesday,
+	Weekday.Wednesday,
+	Weekday.Thursday,
+	Weekday.Friday,
+	Weekday.Saturday,
+];
 export const WeekdayNameList: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export function getWeekdayName(weekday: Weekday): string {

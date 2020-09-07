@@ -1,16 +1,16 @@
-import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
-import { Inject, InRequestScope } from "typescript-ioc";
-import { Booking, BookingStatus, User } from "../../models";
-import { BookingsRepository } from "./bookings.repository";
-import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from "./bookings.apicontract";
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { Booking, BookingStatus, User } from '../../models';
+import { BookingsRepository } from './bookings.repository';
+import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from './bookings.apicontract';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
-import { ServiceProvidersRepository } from "../serviceProviders/serviceProviders.repository";
-import { UnavailabilitiesService } from "../unavailabilities/unavailabilities.service";
-import { UserContext } from "../../infrastructure/userContext.middleware";
-import { QueryAccessType } from "../../core/repository";
-import { BookingBuilder } from "../../models/entities/booking";
-import { BookingsValidatorFactory } from "./validator/bookings.validation";
+import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
+import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
+import { UserContext } from '../../infrastructure/userContext.middleware';
+import { QueryAccessType } from '../../core/repository';
+import { BookingBuilder } from '../../models/entities/booking';
+import { BookingsValidatorFactory } from './validator/bookings.validation';
 
 @InRequestScope
 export class BookingsService {
@@ -63,8 +63,9 @@ export class BookingsService {
 		if (booking.status === BookingStatus.Accepted) {
 			const provider = await this.serviceProviderRepo.getServiceProvider({id: booking.serviceProviderId});
 			if (!provider) {
-				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${booking.serviceProviderId}' not found`);
-
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+					`Service provider '${booking.serviceProviderId}' not found`,
+				);
 			}
 			await this.calendarsService.deleteCalendarEvent(provider.calendar, eventCalId);
 		}
@@ -79,12 +80,21 @@ export class BookingsService {
 
 		const provider = await this.serviceProviderRepo.getServiceProvider({id: acceptRequest.serviceProviderId});
 		if (!provider) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${acceptRequest.serviceProviderId}' not found`);
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Service provider '${acceptRequest.serviceProviderId}' not found`,
+			);
 		}
-		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.endDateTime, booking.serviceId);
-		const isProviderAvailable = timeslotEntry.availableServiceProviders.filter(e => e.id === acceptRequest.serviceProviderId).length > 0;
+		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(
+			booking.startDateTime,
+			booking.endDateTime,
+			booking.serviceId,
+		);
+		const isProviderAvailable =
+			timeslotEntry.availableServiceProviders.filter((e) => e.id === acceptRequest.serviceProviderId).length > 0;
 		if (!isProviderAvailable) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service provider '${acceptRequest.serviceProviderId}' is not available for this booking.`);
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Service provider '${acceptRequest.serviceProviderId}' is not available for this booking.`,
+			);
 		}
 
 		const eventICalId = await this.calendarsService.createCalendarEvent(booking, provider.calendar);
@@ -133,7 +143,9 @@ export class BookingsService {
 	private async getBookingForAccepting(bookingId: number): Promise<Booking> {
 		const booking = await this.getBooking(bookingId);
 		if (booking.status !== BookingStatus.PendingApproval) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking ${bookingId} is in invalid state for accepting`);
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Booking ${bookingId} is in invalid state for accepting`,
+			);
 		}
 		return booking;
 	}
@@ -141,8 +153,9 @@ export class BookingsService {
 	private async getBookingForCancelling(bookingId: number): Promise<Booking> {
 		const booking = await this.getBooking(bookingId);
 		if (booking.status === BookingStatus.Cancelled || booking.startDateTime < new Date()) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking ${bookingId} is in invalid state for cancelling`);
-
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Booking ${bookingId} is in invalid state for cancelling`,
+			);
 		}
 		return booking;
 	}

@@ -1,12 +1,12 @@
 import * as parse from 'csv-parse/lib/sync';
 
-import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
+import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 
 export const parseCsv = (input: string | Buffer): [] => {
 	try {
 		return parse(input, {
 			columns: true,
-			skip_empty_lines: true
+			skip_empty_lines: true,
 		});
 	} catch (e) {
 		logger.error(e);

@@ -1,13 +1,12 @@
 // tslint:disable: tsr-detect-non-literal-regexp
-import * as Koa from "koa";
-import * as KoaProxy from "koa-proxy";
+import * as Koa from 'koa';
+import * as KoaProxy from 'koa-proxy';
 import { Inject, Singleton } from 'typescript-ioc';
-import { GoogleApi } from "../googleapi/google.api";
-import { basePath } from "../config/app-config";
+import { GoogleApi } from '../googleapi/google.api';
+import { basePath } from '../config/app-config';
 
 @Singleton
 export class CalDavProxyHandler {
-
 	public httpProtocol: string = null;
 	public httpHost: string = null;
 	@Inject
@@ -19,7 +18,7 @@ export class CalDavProxyHandler {
 
 	constructor() {
 		this.koaProxy = KoaProxy({
-			host: 'https://apidata.googleusercontent.com'
+			host: 'https://apidata.googleusercontent.com',
 		});
 
 		this._calidUserRegex = new RegExp(`^${basePath}/caldav/(.*)/user`);

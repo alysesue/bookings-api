@@ -65,19 +65,19 @@ describe('Time of day tests', () => {
 
 	it('should throw on invalid time of day', () => {
 		expect(() => {
-			TimeOfDay.create({hours: -1, minutes: 0});
+			TimeOfDay.create({ hours: -1, minutes: 0 });
 		}).toThrowError();
 
 		expect(() => {
-			TimeOfDay.create({hours: 0, minutes: -1});
+			TimeOfDay.create({ hours: 0, minutes: -1 });
 		}).toThrowError();
 
 		expect(() => {
-			TimeOfDay.create({hours: 24, minutes: 0});
+			TimeOfDay.create({ hours: 24, minutes: 0 });
 		}).toThrowError();
 
 		expect(() => {
-			TimeOfDay.create({hours: 0, minutes: 60});
+			TimeOfDay.create({ hours: 0, minutes: 60 });
 		}).toThrowError();
 	});
 
@@ -88,7 +88,7 @@ describe('Time of day tests', () => {
 	});
 
 	it('should transfrom to raw value', () => {
-		const timeB = TimeOfDay.create({hours: 11, minutes: 30});
+		const timeB = TimeOfDay.create({ hours: 11, minutes: 30 });
 		const raw = Transformer.to(timeB);
 		const rawNull = Transformer.to(null);
 

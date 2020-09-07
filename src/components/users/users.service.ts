@@ -1,11 +1,10 @@
-import { Inject, InRequestScope } from "typescript-ioc";
-import { UsersRepository } from "./users.repository";
-import { User } from "../../models";
-import { MOLAuthType } from "mol-lib-api-contract/auth/common/MOLAuthType";
-import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth/common/mol-security-headers";
-import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
-import { logger } from "mol-lib-common/debugging/logging/LoggerV2";
-
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { UsersRepository } from './users.repository';
+import { User } from '../../models';
+import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
+import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 export type HeadersType = { [key: string]: string };
 
 @InRequestScope
@@ -19,7 +18,7 @@ export class UsersService {
 			try {
 				userRepo = await this.usersRepository.save(user);
 			} catch (e) {
-				logger.error("Exception when creating BookingSG User", e);
+				logger.error('Exception when creating BookingSG User', e);
 				// concurrent insert fail case
 				userRepo = await getter();
 			}
@@ -52,18 +51,22 @@ export class UsersService {
 		}
 
 		if (!user) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage('BookingSG User could not be created. authType: ' + authType);
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
+				'BookingSG User could not be created. authType: ' + authType,
+			);
 		}
 
 		return user;
 	}
 
-	public async getOrSaveSingpassUser({ molUserId, molUserUinFin }:
-		{
-			molUserId: string, molUserUinFin: string
-		}): Promise<User> {
-		if (!molUserId || !molUserUinFin)
-			return null;
+	public async getOrSaveSingpassUser({
+		molUserId,
+		molUserUinFin,
+	}: {
+		molUserId: string;
+		molUserUinFin: string;
+	}): Promise<User> {
+		if (!molUserId || !molUserUinFin) return null;
 
 		const user = User.createSingPassUser(molUserId, molUserUinFin);
 		return await this.getOrSaveInternal(user, () => this.usersRepository.getUserByMolUserId(molUserId));

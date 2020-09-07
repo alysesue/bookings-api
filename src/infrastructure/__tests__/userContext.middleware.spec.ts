@@ -1,11 +1,10 @@
-import { basePath } from "../../config/app-config";
-import * as Koa from "koa";
+import { basePath } from '../../config/app-config';
+import * as Koa from 'koa';
 import { UserContext, UserContextMiddleware } from '../userContext.middleware';
-import { ContainerContextMiddleware } from "../containerContext.middleware";
-import { Container } from "typescript-ioc";
-import { UsersService } from "../../components/users/users.service";
-import { User } from "../../models";
-
+import { ContainerContextMiddleware } from '../containerContext.middleware';
+import { Container } from 'typescript-ioc';
+import { UsersService } from '../../components/users/users.service';
+import { User } from '../../models';
 
 beforeAll(() => {
 	Container.bind(UsersService).to(UsersServiceMock);
@@ -20,7 +19,7 @@ function buildSampleKoaContext(path: string): Koa.Context {
 	return {
 		path,
 		headers,
-		request: { host: 'localhost', protocol: 'http', headers }
+		request: { host: 'localhost', protocol: 'http', headers },
 	} as Koa.Context;
 }
 
@@ -48,7 +47,7 @@ describe('user Context tests', () => {
 		const context = buildSampleKoaContext(`${basePath}/somepath`);
 		await containerMiddleware(context, () => {
 			return userContextMiddleware(context, () => {
-				return nextMiddleware(context, () => { });
+				return nextMiddleware(context, () => {});
 			});
 		});
 
@@ -69,14 +68,13 @@ describe('user Context tests', () => {
 
 		const asyncTest = async () => {
 			return await userContextMiddleware(context, () => {
-				return nextMiddleware(context, () => { });
+				return nextMiddleware(context, () => {});
 			});
 		};
 
 		await expect(asyncTest).rejects.toThrowError();
 	});
 });
-
 
 class UsersServiceMock extends UsersService {
 	public static getOrSaveUserFromHeaders = jest.fn();
