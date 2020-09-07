@@ -1,5 +1,6 @@
 import { Server } from 'http';
 import * as Koa from 'koa';
+import * as noCache from 'koa-no-cache';
 import * as body from 'koa-body';
 import * as compress from 'koa-compress';
 import * as KoaRouter from 'koa-router';
@@ -49,6 +50,7 @@ export async function startServer(): Promise<Server> {
 			}),
 		)
 		.use(cors({ credentials: config.isDev }))
+		.use(noCache({ global: true }))
 		.use(await useSwagger())
 		.use(new KoaErrorHandler().build())
 		.use(new KoaLoggerContext().build())
