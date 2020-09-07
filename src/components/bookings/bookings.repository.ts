@@ -29,7 +29,9 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 	public async getBooking(id: number, accessType = QueryAccessType.Read): Promise<Booking> {
 		const query = (await this.createQueryForUser(accessType))
 			.leftJoinAndSelect('booking._serviceProvider', 'sp_relation')
-			.leftJoinAndSelect('booking._service', 'service_relation');
+			.leftJoinAndSelect('booking._service', 'service_relation')
+			.where('booking."_id" = :id', { id: id });
+
 
 		return await query.getOne();
 	}
