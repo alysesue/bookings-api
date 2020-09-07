@@ -95,7 +95,7 @@ describe('Bookings repository', () => {
 			getMany: jest.fn(() => Promise.resolve([bookingMock])),
 		};
 
-		MockDBConnection.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
 		const bookingsRepository = Container.get(BookingsRepository);

@@ -12,7 +12,7 @@ export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog
 		super(BookingChangeLog);
 	}
 
-	public async saveLog(changeLog: BookingChangeLog): Promise<BookingChangeLog> {
+	public async save(changeLog: BookingChangeLog): Promise<BookingChangeLog> {
 		const repository = await this.getRepository();
 		return repository.save(changeLog);
 	}

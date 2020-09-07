@@ -3,7 +3,7 @@ import { EntityManager } from 'typeorm';
 import { DbConnection } from './db.connection';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 
-type AsyncFunction<T> = () => Promise<T>;
+export type AsyncFunction<T> = () => Promise<T>;
 
 @InRequestScope
 export class TransactionManager {

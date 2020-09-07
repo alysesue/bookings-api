@@ -27,10 +27,10 @@ export class BookingChangeLog {
 	private _action: ChangeLogAction;
 
 	@Column({ type: 'jsonb', nullable: false })
-	private _previousState: BookingJsonVersion;
+	private _previousState: BookingJsonVersion & BookingJsonSchemaV1;
 
 	@Column({ type: 'jsonb', nullable: false })
-	private _newState: BookingJsonVersion;
+	private _newState: BookingJsonVersion & BookingJsonSchemaV1;
 
 	public get id(): number {
 		return this._id;
@@ -53,11 +53,7 @@ export class BookingChangeLog {
 	}
 
 	public get previousState(): BookingJsonSchemaV1 {
-		if (this._previousState.schemaVersion === 1) {
-			return (this._previousState as unknown) as BookingJsonSchemaV1;
-		} else {
-			throw new Error('Unexpected booking json schema version: ' + this._previousState.schemaVersion);
-		}
+		return this._previousState;
 	}
 
 	public setPreviousState(value: BookingJsonSchemaV1) {
@@ -65,11 +61,7 @@ export class BookingChangeLog {
 	}
 
 	public get newState(): BookingJsonSchemaV1 {
-		if (this._newState.schemaVersion === 1) {
-			return (this._newState as unknown) as BookingJsonSchemaV1;
-		} else {
-			throw new Error('Unexpected booking json schema version: ' + this._newState.schemaVersion);
-		}
+		return this._newState;
 	}
 
 	public setNewState(value: BookingJsonSchemaV1) {

@@ -1,9 +1,9 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { FindConditions, InsertResult, SelectQueryBuilder } from 'typeorm';
+import { InsertResult, SelectQueryBuilder } from 'typeorm';
 import { Booking, BookingStatus } from '../../models';
 import { QueryAccessType, RepositoryBase } from '../../core/repository';
 import { UserContext } from '../../infrastructure/userContext.middleware';
-import { BookingUpdateConcurrencyError } from '../../errors/BookingUpdateConcurrencyError';
+import { ConcurrencyError } from '../../errors/ConcurrencyError';
 
 @InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {
@@ -42,9 +42,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 	public async update(booking: Booking): Promise<Booking> {
 		const versionUpdated = await this.updateBookingVersion(booking);
 		if (!versionUpdated) {
-			throw new BookingUpdateConcurrencyError(
-				`Booking ${booking.id} has changed in a parallel operation. Please try again.`,
-			);
+			throw new ConcurrencyError(`Booking ${booking.id} has changed in a parallel operation. Please try again.`);
 		}
 
 		const repository = await this.getRepository();

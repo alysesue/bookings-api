@@ -38,7 +38,7 @@ describe('BookingChangeLogs repository', () => {
 
 		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(changeLog));
 
-		await repo.saveLog(changeLog);
+		await repo.save(changeLog);
 		expect(TransactionManagerMock.save).toBeCalled();
 	});
 });

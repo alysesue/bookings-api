@@ -5,7 +5,7 @@ import { BookingChangeLog, BookingJsonSchemaV1, ChangeLogAction } from '../../mo
 import { BookingChangeLogsRepository } from './bookingChangeLogs.repository';
 import { TransactionManager } from '../../core/transactionManager';
 import { BookingIsolationLevel } from '../../models/entities/booking';
-import { BookingUpdateConcurrencyError } from '../../errors/BookingUpdateConcurrencyError';
+import { ConcurrencyError } from '../../errors/ConcurrencyError';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 export type GetBookingFunction = (bookingId: number) => Promise<Booking>;
@@ -22,6 +22,10 @@ export class BookingChangeLogsService {
 
 	private mapBookingState(booking: Booking): BookingJsonSchemaV1 {
 		if (!booking) return {} as BookingJsonSchemaV1;
+
+		if (!booking.service) {
+			throw new Error('Booking.service not loaded in memory');
+		}
 
 		const jsonObj = {
 			id: booking.id,
@@ -41,6 +45,9 @@ export class BookingChangeLogsService {
 
 		if (booking.serviceProviderId) {
 			const serviceProvider = booking.serviceProvider;
+			if (!serviceProvider) {
+				throw new Error('Booking.serviceProvider not loaded in memory');
+			}
 			jsonObj.serviceProviderId = booking.serviceProviderId;
 			jsonObj.serviceProviderName = serviceProvider.name;
 			jsonObj.serviceProviderEmail = serviceProvider.email;
@@ -59,10 +66,9 @@ export class BookingChangeLogsService {
 		let attempts = 0;
 		while (attempts < maxAttempts) {
 			try {
-				const result = await this.executeInTransation(bookingId, getBookingFunction, actionFunction);
-				return result;
+				return await this.executeInTransation(bookingId, getBookingFunction, actionFunction);
 			} catch (e) {
-				if (e.name === BookingUpdateConcurrencyError.name) {
+				if (e.name === ConcurrencyError.name) {
 					if (attempts >= maxAttempts) {
 						throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(e.message);
 					}
@@ -94,7 +100,7 @@ export class BookingChangeLogsService {
 				newState,
 			});
 
-			await this.changeLogsRepository.saveLog(changelog);
+			await this.changeLogsRepository.save(changelog);
 			return newBooking;
 		});
 	}
