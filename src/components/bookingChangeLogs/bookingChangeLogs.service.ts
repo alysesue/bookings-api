@@ -31,7 +31,7 @@ export class BookingChangeLogsService {
 			id: booking.id,
 			status: booking.status,
 			startDateTime: booking.startDateTime,
-			endDateTime: booking.startDateTime,
+			endDateTime: booking.endDateTime,
 			serviceId: booking.serviceId,
 			serviceName: booking.service.name,
 			CitizenUinFin: booking.citizenUinFin,
