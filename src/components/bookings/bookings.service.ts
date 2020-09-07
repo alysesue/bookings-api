@@ -61,7 +61,7 @@ export class BookingsService {
 		const booking = await this.getBookingForCancelling(bookingId);
 		const eventCalId = booking.eventICalId;
 		if (booking.status === BookingStatus.Accepted) {
-			const provider = await this.serviceProviderRepo.getServiceProvider({id: booking.serviceProviderId});
+			const provider = await this.serviceProviderRepo.getServiceProvider({ id: booking.serviceProviderId });
 			if (!provider) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 					`Service provider '${booking.serviceProviderId}' not found`,
@@ -78,7 +78,7 @@ export class BookingsService {
 	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequest): Promise<Booking> {
 		const booking = await this.getBookingForAccepting(bookingId);
 
-		const provider = await this.serviceProviderRepo.getServiceProvider({id: acceptRequest.serviceProviderId});
+		const provider = await this.serviceProviderRepo.getServiceProvider({ id: acceptRequest.serviceProviderId });
 		if (!provider) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Service provider '${acceptRequest.serviceProviderId}' not found`,
@@ -129,12 +129,14 @@ export class BookingsService {
 			.withCitizenName(bookingRequest.citizenName)
 			.withCitizenPhone(bookingRequest.citizenPhone)
 			.withCitizenEmail(bookingRequest.citizenEmail)
-			.build()
+			.build();
 	}
 
 	private async getEventICalId(booking: Booking) {
 		if (booking.serviceProviderId) {
-			const serviceProvider = await this.serviceProviderRepo.getServiceProvider({id: booking.serviceProviderId});
+			const serviceProvider = await this.serviceProviderRepo.getServiceProvider({
+				id: booking.serviceProviderId,
+			});
 			return await this.calendarsService.createCalendarEvent(booking, serviceProvider.calendar);
 		}
 		return null;

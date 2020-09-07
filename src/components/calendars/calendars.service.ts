@@ -13,7 +13,7 @@ export class CalendarsService {
 	private googleCalendarApi: GoogleCalendarService;
 
 	private static formatEventId(eventICalId: string): string {
-		return eventICalId.split("@")[0];
+		return eventICalId.split('@')[0];
 	}
 
 	public async getCalendars(): Promise<Calendar[]> {
@@ -46,7 +46,10 @@ export class CalendarsService {
 	}
 
 	public async deleteCalendarEvent(calendar: Calendar, calendarEventICalId: string) {
-		await this.googleCalendarApi.deleteEvent(calendar.googleCalendarId, CalendarsService.formatEventId(calendarEventICalId));
+		await this.googleCalendarApi.deleteEvent(
+			calendar.googleCalendarId,
+			CalendarsService.formatEventId(calendarEventICalId),
+		);
 	}
 
 	public async addUser(calendarUUID: string, model: CalendarUserModel): Promise<CalendarUserModel> {

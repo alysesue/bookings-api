@@ -97,11 +97,9 @@ describe('Bookings.Controller', () => {
 		const startTime = new Date('2020-10-01T01:00:00');
 		const endTime = new Date('2020-10-01T02:00:00');
 
-		BookingsServiceMock.getBookingPromise = Promise.resolve(new BookingBuilder()
-			.withServiceId(1)
-			.withStartDateTime(startTime)
-			.withEndDateTime(endTime)
-			.build());
+		BookingsServiceMock.getBookingPromise = Promise.resolve(
+			new BookingBuilder().withServiceId(1).withStartDateTime(startTime).withEndDateTime(endTime).build(),
+		);
 
 		const result = await controller.getBooking(1);
 
@@ -128,8 +126,8 @@ describe('Bookings.Controller', () => {
 			[MOLSecurityHeaderKeys.USER_ID]: 'abc',
 		};
 
-		(controller as any).context = {headers};
-		(getRequestHeaders as jest.Mock).mockReturnValue({get: () => headers});
+		(controller as any).context = { headers };
+		(getRequestHeaders as jest.Mock).mockReturnValue({ get: () => headers });
 
 		const result = await controller.postBooking(new BookingRequest(), 1);
 

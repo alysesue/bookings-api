@@ -74,7 +74,7 @@ describe('Calendar service', () => {
 	it('should delete calendar', async () => {
 		const service = Container.get(CalendarsService);
 		const calendar = {
-			googleCalendarId: "googleid@group.calendar.google.com",
+			googleCalendarId: 'googleid@group.calendar.google.com',
 		} as Calendar;
 
 		const calendarEventICalId = 'mpg1ahbqv20q4s6m2h3kriutr0@google.com';
@@ -113,7 +113,7 @@ class CalendarRepositoryMockConstants {
 }
 
 class GoogleCalendarServiceMock extends GoogleCalendarService {
-	static deleteEvent = jest.fn();
+	public static deleteEvent = jest.fn();
 
 	constructor() {
 		super();

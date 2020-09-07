@@ -28,7 +28,12 @@ describe('Bookings.Service', () => {
 	calendar.googleCalendarId = 'google-id-1';
 	const serviceProvider = ServiceProvider.create('provider', calendar, 1);
 	serviceProvider.id = 1;
-	const bookingMock = new BookingBuilder().withServiceId(1).withStartDateTime(new Date('2020-10-01T01:00:00')).withEndDateTime(new Date('2020-10-01T02:00:00')).withRefId('REFID').build()
+	const bookingMock = new BookingBuilder()
+		.withServiceId(1)
+		.withStartDateTime(new Date('2020-10-01T01:00:00'))
+		.withEndDateTime(new Date('2020-10-01T02:00:00'))
+		.withRefId('REFID')
+		.build();
 
 	const adminMock = User.createAdminUser({
 		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
@@ -39,14 +44,14 @@ describe('Bookings.Service', () => {
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 
 	class BookingValidatorFactoryMock extends BookingsValidatorFactory {
-		static validate = jest.fn();
+		public static validate = jest.fn();
 
-		getValidator(outOfSlotBooking: boolean): IValidator {
-			return new class implements IValidator {
-				async validate(booking: Booking) {
+		public getValidator(outOfSlotBooking: boolean): IValidator {
+			return new (class implements IValidator {
+				public async validate(booking: Booking) {
 					return Promise.resolve(BookingValidatorFactoryMock.validate(booking));
 				}
-			}
+			})();
 		}
 	}
 
@@ -103,21 +108,6 @@ describe('Bookings.Service', () => {
 		expect(booking.status).toBe(BookingStatus.Accepted);
 	});
 
-	it('should validate service provider when saving direct booking', async () => {
-		const bookingRequest: BookingRequest = new BookingRequest();
-		bookingRequest.startDateTime = new Date();
-		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
-		bookingRequest.serviceProviderId = 5;
-		BookingRepositoryMock.searchBookingsMock = [];
-		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
-		ServiceProvidersRepositoryMock.getServiceProviderMock = null;
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
-
-		await expect(async () => await Container.get(BookingsService).save(bookingRequest, 1)).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage("Service provider '5' not found"),
-		);
-	});
-
 	it('should allow booking out of timeslots', async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
@@ -156,10 +146,14 @@ describe('Bookings.Service', () => {
 		expect(booking).not.toBe(undefined);
 	});
 
-	it("should accept booking", async () => {
+	it('should accept booking', async () => {
 		const bookingService = Container.get(BookingsService);
 		CalendarsServiceMock.eventId = 'event-id';
-		BookingRepositoryMock.booking = new BookingBuilder().withServiceId(1).withStartDateTime(new Date('2020-10-01T01:00:00')).withEndDateTime(new Date('2020-10-01T02:00:00')).build();
+		BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 
@@ -173,7 +167,11 @@ describe('Bookings.Service', () => {
 
 	it('should cancel booking', async () => {
 		const bookingService = Container.get(BookingsService);
-		BookingRepositoryMock.booking = new BookingBuilder().withServiceId(1).withStartDateTime(new Date('2020-10-01T01:00:00')).withEndDateTime(new Date('2020-10-01T02:00:00')).build();
+		BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		const result = await bookingService.cancelBooking(1);
@@ -262,8 +260,7 @@ export class UnavailabilitiesServiceMock extends UnavailabilitiesService {
 export class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn();
 
-	public init() {
-	}
+	public init() {}
 
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(params);

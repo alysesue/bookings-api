@@ -1,14 +1,14 @@
-import { Booking, BookingStatus } from "../../../models";
-import { Inject, InRequestScope } from "typescript-ioc";
-import { ServiceProvidersRepository } from "../../serviceProviders/serviceProviders.repository";
-import { DateHelper } from "../../../infrastructure/dateHelper";
-import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
-import { BookingsRepository } from "../bookings.repository";
-import { UnavailabilitiesService } from "../../unavailabilities/unavailabilities.service";
-import { TimeslotsService } from "../../timeslots/timeslots.service";
-import { BookingSearchRequest } from "../bookings.apicontract";
-import { QueryAccessType } from "../../../core/repository";
-import { isEmail, isSGUinfin } from "mol-lib-api-contract/utils";
+import { Booking, BookingStatus } from '../../../models';
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
+import { DateHelper } from '../../../infrastructure/dateHelper';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { BookingsRepository } from '../bookings.repository';
+import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
+import { TimeslotsService } from '../../timeslots/timeslots.service';
+import { BookingSearchRequest } from '../bookings.apicontract';
+import { QueryAccessType } from '../../../core/repository';
+import { isEmail, isSGUinfin } from 'mol-lib-api-contract/utils';
 
 export interface IValidator {
 	validate(booking: Booking);
@@ -16,7 +16,6 @@ export interface IValidator {
 
 @InRequestScope
 abstract class BookingsValidator implements IValidator {
-
 	protected static OverlapsAcceptedBooking = `Booking request not valid as it overlaps another accepted booking`;
 	protected static ServiceProviderNotAvailable = `The service provider is not available in the selected time range`;
 	protected static ServiceProvidersNotAvailable = `No available service providers in the selected time range`;
@@ -27,7 +26,7 @@ abstract class BookingsValidator implements IValidator {
 	private static CitizenEmailNotValid = 'Citizen email not valid';
 
 	@Inject
-	private serviceProvidersRepository: ServiceProvidersRepository
+	private serviceProvidersRepository: ServiceProvidersRepository;
 
 	private static ServiceProviderNotFound = (spId) => `Service provider '${spId}' not found`;
 
@@ -37,8 +36,7 @@ abstract class BookingsValidator implements IValidator {
 	}
 
 	private static async validateCitizenDetails(booking: Booking) {
-
-		if (!await BookingsValidator.validateUinFin(booking.citizenUinFin)) {
+		if (!(await BookingsValidator.validateUinFin(booking.citizenUinFin))) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.CitizenUinFinNotFound);
 		}
 
@@ -50,7 +48,7 @@ abstract class BookingsValidator implements IValidator {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.CitizenEmailNotProvided);
 		}
 
-		if (!(await isEmail(booking.citizenEmail)).pass){
+		if (!(await isEmail(booking.citizenEmail)).pass) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.CitizenEmailNotValid);
 		}
 	}
@@ -61,13 +59,19 @@ abstract class BookingsValidator implements IValidator {
 		const duration = Math.floor(DateHelper.DiffInMinutes(booking.endDateTime, booking.startDateTime));
 
 		if (duration <= 0) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.EndTimeLesserThanStartTime);
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				BookingsValidator.EndTimeLesserThanStartTime,
+			);
 		}
 
 		if (booking.serviceProviderId) {
-			const provider = await this.serviceProvidersRepository.getServiceProvider({id: booking.serviceProviderId});
+			const provider = await this.serviceProvidersRepository.getServiceProvider({
+				id: booking.serviceProviderId,
+			});
 			if (!provider) {
-				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.ServiceProviderNotFound(booking.serviceProviderId));
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+					BookingsValidator.ServiceProviderNotFound(booking.serviceProviderId),
+				);
 			}
 		}
 		await BookingsValidator.validateCitizenDetails(booking);
@@ -77,48 +81,68 @@ abstract class BookingsValidator implements IValidator {
 
 @InRequestScope
 class OutOfSlotBookingValidator extends BookingsValidator {
-
 	@Inject
 	private bookingsRepository: BookingsRepository;
 	@Inject
 	private unAvailabilitiesService: UnavailabilitiesService;
 
-	async validateBooking(booking: Booking): Promise<void> {
-		const {startDateTime, endDateTime, serviceId, serviceProviderId} = booking;
+	public async validateBooking(booking: Booking): Promise<void> {
+		const { startDateTime, endDateTime, serviceId, serviceProviderId } = booking;
 
-		const searchQuery = new BookingSearchRequest(startDateTime, endDateTime, [BookingStatus.Accepted], serviceId, serviceProviderId);
+		const searchQuery = new BookingSearchRequest(
+			startDateTime,
+			endDateTime,
+			[BookingStatus.Accepted],
+			serviceId,
+			[],
+			serviceProviderId,
+		);
 
 		const acceptedBookings = await this.bookingsRepository.search(searchQuery, QueryAccessType.Read);
 
-		if (acceptedBookings.some(item => booking.bookingIntersects({
-			start: item.startDateTime,
-			end: item.endDateTime
-		}))) {
+		if (
+			acceptedBookings.some((item) =>
+				booking.bookingIntersects({
+					start: item.startDateTime,
+					end: item.endDateTime,
+				}),
+			)
+		) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.OverlapsAcceptedBooking);
 		}
 
-		if (booking.serviceProviderId && await this.unAvailabilitiesService.isUnavailable({
-			from: startDateTime,
-			to: endDateTime,
-			serviceId: booking.serviceId,
-			serviceProviderId: booking.serviceProviderId
-		})) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.ServiceProviderNotAvailable);
+		if (
+			booking.serviceProviderId &&
+			(await this.unAvailabilitiesService.isUnavailable({
+				from: startDateTime,
+				to: endDateTime,
+				serviceId: booking.serviceId,
+				serviceProviderId: booking.serviceProviderId,
+			}))
+		) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				BookingsValidator.ServiceProviderNotAvailable,
+			);
 		}
 	}
 }
 
 @InRequestScope
 class SlotBookingsValidator extends BookingsValidator {
-
 	@Inject
 	private timeslotsService: TimeslotsService;
 
-	async validateBooking(booking: Booking): Promise<void> {
-		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(booking.startDateTime, booking.endDateTime, booking.serviceId, booking.serviceProviderId);
+	public async validateBooking(booking: Booking): Promise<void> {
+		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(
+			booking.startDateTime,
+			booking.endDateTime,
+			booking.serviceId,
+			booking.serviceProviderId,
+		);
 
 		if (timeslotEntry.availabilityCount < 1) {
-			const errorMessage = booking.serviceProviderId ? BookingsValidator.ServiceProviderNotAvailable
+			const errorMessage = booking.serviceProviderId
+				? BookingsValidator.ServiceProviderNotAvailable
 				: BookingsValidator.ServiceProvidersNotAvailable;
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(errorMessage);
 		}
@@ -127,7 +151,6 @@ class SlotBookingsValidator extends BookingsValidator {
 
 @InRequestScope
 export class BookingsValidatorFactory {
-
 	@Inject
 	private slotBookingValidator: SlotBookingsValidator;
 	@Inject

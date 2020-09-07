@@ -5,86 +5,84 @@ import { Service } from './service';
 import * as timeSpan from '../../tools/timeSpan';
 import { User } from './user';
 
-
 export class BookingBuilder {
-	serviceId: number;
-	startDateTime: Date;
-	endDateTime: Date;
-	refId: string;
-	location: string;
-	description: string;
-	serviceProviderId: number;
-	creator: User;
-	citizenUinFin: string;
-	citizenPhone: string;
-	citizenName: string;
-	citizenEmail: string;
+	public serviceId: number;
+	public startDateTime: Date;
+	public endDateTime: Date;
+	public refId: string;
+	public location: string;
+	public description: string;
+	public serviceProviderId: number;
+	public creator: User;
+	public citizenUinFin: string;
+	public citizenPhone: string;
+	public citizenName: string;
+	public citizenEmail: string;
 
-	withServiceId(serviceId: number): BookingBuilder {
+	public withServiceId(serviceId: number): BookingBuilder {
 		this.serviceId = serviceId;
 		return this;
 	}
 
-	withStartDateTime(startDateTime: Date): BookingBuilder {
+	public withStartDateTime(startDateTime: Date): BookingBuilder {
 		this.startDateTime = startDateTime;
 		return this;
 	}
 
-	withEndDateTime(endDateTime: Date): BookingBuilder {
+	public withEndDateTime(endDateTime: Date): BookingBuilder {
 		this.endDateTime = endDateTime;
 		return this;
 	}
 
-	withRefId(refId: string): BookingBuilder {
+	public withRefId(refId: string): BookingBuilder {
 		this.refId = refId;
 		return this;
 	}
 
-	withLocation(location: string): BookingBuilder {
+	public withLocation(location: string): BookingBuilder {
 		this.location = location;
 		return this;
 	}
 
-	withDescription(description: string): BookingBuilder {
+	public withDescription(description: string): BookingBuilder {
 		this.description = description;
 		return this;
 	}
 
-	withServiceProviderId(serviceProviderId: number): BookingBuilder {
+	public withServiceProviderId(serviceProviderId: number): BookingBuilder {
 		this.serviceProviderId = serviceProviderId;
 		return this;
 	}
 
-	withCreator(currentUser: User): BookingBuilder {
+	public withCreator(currentUser: User): BookingBuilder {
 		this.creator = currentUser;
 		return this;
 	}
 
-	withCitizenUinFin(citizenUinFin: string): BookingBuilder {
+	public withCitizenUinFin(citizenUinFin: string): BookingBuilder {
 		this.citizenUinFin = citizenUinFin;
 		return this;
 	}
 
-	withCitizenPhone(citizenPhone: string): BookingBuilder {
+	public withCitizenPhone(citizenPhone: string): BookingBuilder {
 		this.citizenPhone = citizenPhone;
 		return this;
 	}
 
-	withCitizenName(citizenName: string): BookingBuilder {
+	public withCitizenName(citizenName: string): BookingBuilder {
 		this.citizenName = citizenName;
 		return this;
 	}
 
-	withCitizenEmail(citizenEmail: string): BookingBuilder {
+	public withCitizenEmail(citizenEmail: string): BookingBuilder {
 		this.citizenEmail = citizenEmail;
 		return this;
 	}
 
-	build(): Booking {
+	public build(): Booking {
 		return new Booking(this);
 	}
 }
-
 
 @Entity()
 export class Booking {
@@ -161,20 +159,20 @@ export class Booking {
 		}
 	}
 
-	@Column( {nullable:true} )
+	@Column({ nullable: true })
 	private _citizenName: string;
 
 	public get citizenName(): string {
 		return this._citizenName;
 	}
 
-	@Column({nullable: true})
+	@Column({ nullable: true })
 	private _location: string;
 
-	@Column({nullable: true})
+	@Column({ nullable: true })
 	private _description: string;
 
-	@Column({nullable: true})
+	@Column({ nullable: true })
 	private _citizenEmail: string;
 
 	public get id(): number {
@@ -261,11 +259,11 @@ export class Booking {
 		return this._citizenEmail;
 	}
 
-	@Column({nullable: true})
+	@Column({ nullable: true })
 	private _citizenPhone: string;
 
 	public get citizenPhone(): string {
-		return this._citizenPhone
+		return this._citizenPhone;
 	}
 
 	public bookingIntersects(other: { start: Date; end: Date }): boolean {

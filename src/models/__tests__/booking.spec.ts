@@ -1,6 +1,6 @@
-import { BookingBuilder } from "../entities/booking";
-import { User } from "..";
-import { BookingStatus } from "../index";
+import { BookingBuilder } from '../entities/booking';
+import { User } from '..';
+import { BookingStatus } from '../index';
 
 describe('Booking tests', () => {
 	it('should create accepted booking with builder', () => {
