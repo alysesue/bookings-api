@@ -127,6 +127,10 @@ export class Booking {
 	@Column({ nullable: true })
 	private _serviceProviderId?: number;
 
+	@ManyToOne((type) => User, { nullable: false })
+	@JoinColumn({ name: '_creatorId' })
+	private _creator: User;
+
 	@Column({ nullable: true, type: 'varchar', length: 20 })
 	@Index()
 	private _citizenUinFin: string;
@@ -149,6 +153,7 @@ export class Booking {
 		instance._refId = builder.refId;
 		instance._location = builder.location;
 		instance._description = builder.description;
+		instance._creator = builder.creator;
 		instance._citizenUinFin = builder.citizenUinFin;
 		instance._citizenPhone = builder.citizenPhone;
 		instance._citizenName = builder.citizenName;
@@ -233,8 +238,16 @@ export class Booking {
 		return this._serviceProviderId;
 	}
 
+	public get creator(): User {
+		return this._creator;
+	}
+
 	public get citizenUinFin(): string {
 		return this._citizenUinFin;
+	}
+
+	public set citizenUinFin(value: string) {
+		this._citizenUinFin = value;
 	}
 
 	public get refId(): string {

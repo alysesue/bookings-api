@@ -7,6 +7,7 @@ import { BookingChangeLogsService } from '../bookingChangeLogs.service';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { BookingChangeLogsRepository } from '../bookingChangeLogs.repository';
 import { ConcurrencyError } from '../../../errors/ConcurrencyError';
+import { BookingBuilder } from '../../../models/entities/booking';
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
@@ -42,7 +43,11 @@ describe('BookingChangeLogs service', () => {
 		const service = new Service();
 		service.id = 1;
 		service.name = 'service';
-		const booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
 		booking.service = service;
 
 		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));
@@ -63,7 +68,11 @@ describe('BookingChangeLogs service', () => {
 	});
 
 	it('should throw when service is not loaded', async () => {
-		const booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
 
 		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));
 		const action = jest.fn(
@@ -83,7 +92,11 @@ describe('BookingChangeLogs service', () => {
 		const service = new Service();
 		service.id = 1;
 		service.name = 'service';
-		const booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
 		booking.service = service;
 		booking.status = BookingStatus.Accepted;
 		booking.serviceProviderId = 2;
@@ -108,7 +121,11 @@ describe('BookingChangeLogs service', () => {
 		const service = new Service();
 		service.id = 1;
 		service.name = 'service';
-		const booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
 		booking.service = service;
 
 		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));
@@ -143,7 +160,11 @@ describe('BookingChangeLogs service', () => {
 		const service = new Service();
 		service.id = 1;
 		service.name = 'service';
-		const booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
 		booking.service = service;
 
 		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));

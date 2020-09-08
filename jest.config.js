@@ -11,6 +11,7 @@ const config = {
 		'!**/fixLF.js',
 		'!**/authentication.ts',
 		'!**/swagger.middleware.ts',
+		'!**/transactionManager.ts',
 	],
 	coverageThreshold: {
 		global: {
