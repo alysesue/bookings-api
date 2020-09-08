@@ -1,10 +1,11 @@
-import { BookingsRepository } from '../bookings.repository';
+import { BookingSearchQuery, BookingsRepository } from '../bookings.repository';
 import { Booking, BookingStatus, User } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { InsertResult } from 'typeorm';
 import { QueryAccessType } from '../../../core/repository';
 import { UserContext } from '../../../infrastructure/userContext.middleware';
 import { TransactionManager } from '../../../core/transactionManager';
+import { BookingBuilder } from '../../../models/entities/booking';
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
@@ -39,13 +40,15 @@ describe('Bookings repository', () => {
 
 		const bookingsRepository = Container.get(BookingsRepository);
 
-		const result = await bookingsRepository.search({
-			serviceId: 1,
-			serviceProviderId: 1,
-			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
-			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
-			accessType: QueryAccessType.Read,
-		});
+		const result = await bookingsRepository.search(
+			{
+				serviceId: 1,
+				serviceProviderId: 1,
+				from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
+				to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
+			} as BookingSearchQuery,
+			QueryAccessType.Read,
+		);
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
@@ -69,14 +72,16 @@ describe('Bookings repository', () => {
 
 		const bookingsRepository = Container.get(BookingsRepository);
 
-		const result = await bookingsRepository.search({
-			serviceId: 1,
-			serviceProviderId: 1,
-			statuses: [BookingStatus.Accepted, BookingStatus.PendingApproval],
-			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
-			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
-			accessType: QueryAccessType.Read,
-		});
+		const result = await bookingsRepository.search(
+			{
+				serviceId: 1,
+				serviceProviderId: 1,
+				statuses: [BookingStatus.Accepted, BookingStatus.PendingApproval],
+				from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
+				to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
+			} as BookingSearchQuery,
+			QueryAccessType.Read,
+		);
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
@@ -100,14 +105,16 @@ describe('Bookings repository', () => {
 
 		const bookingsRepository = Container.get(BookingsRepository);
 
-		const result = await bookingsRepository.search({
-			serviceId: 1,
-			serviceProviderId: 1,
-			citizenUinFins: ['abc123', 'xyz456'],
-			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
-			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
-			accessType: QueryAccessType.Read,
-		});
+		const result = await bookingsRepository.search(
+			{
+				serviceId: 1,
+				serviceProviderId: 1,
+				citizenUinFins: ['abc123', 'xyz456'],
+				from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
+				to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
+			} as BookingSearchQuery,
+			QueryAccessType.Read,
+		);
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
@@ -123,7 +130,12 @@ describe('Bookings repository', () => {
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
 		const bookingsRepository = Container.get(BookingsRepository);
-		const booking: Booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		booking.id = 1;
 
 		const result = await bookingsRepository.insert(booking);
 		expect(result.identifiers).toStrictEqual([{ id: 'abc' }]);
@@ -131,7 +143,13 @@ describe('Bookings repository', () => {
 
 	it('should update booking', async () => {
 		const bookingsRepository = Container.get(BookingsRepository);
-		const booking: Booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		booking.id = 1;
+
 		TransactionManagerMock.save.mockImplementation(() => booking);
 		TransactionManagerMock.query.mockImplementation(() => Promise.resolve([[], 1]));
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
@@ -141,7 +159,12 @@ describe('Bookings repository', () => {
 	});
 
 	it('should get booking', async () => {
-		const booking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		booking.id = 1;
 
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),

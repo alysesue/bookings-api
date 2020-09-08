@@ -8,7 +8,7 @@ import { GoogleApi } from '../../../googleapi/google.api';
 import * as insertEventResponse from './createEventResponse.json';
 // @ts-ignore
 import * as freebusyResponse from './freebusyResponse.json';
-import { BookingAcceptRequest, BookingSearchRequest } from '../bookings.apicontract';
+import { BookingAcceptRequest } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
@@ -19,6 +19,7 @@ import {
 	GetBookingFunction,
 } from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
 import { BookingActionFunction } from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
+import { BookingBuilder } from '../../../models/entities/booking';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -62,7 +63,11 @@ describe('Booking Integration tests', () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = provider;
 		TimeslotsServiceMock.availableProvidersForTimeslot = [provider];
 
-		const bookingMock = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const bookingMock = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
 
 		BookingRepositoryMock.getBooking.mockImplementation(() => Promise.resolve(bookingMock));
 		BookingRepositoryMock.update.mockImplementation((b) => Promise.resolve(b));

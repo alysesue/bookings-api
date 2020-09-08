@@ -82,7 +82,7 @@ export class UsersService {
 			return null;
 		}
 
-		const user = User.createAdminUser(data);
-		return await this.getOrSaveInternal(user, () => this.usersRepository.getUserByMolAdminId(data.molAdminId));
+		const adminUser = User.createAdminUser(data);
+		return await this.getOrSaveInternal(adminUser, () => this.usersRepository.getUserByMolAdminId(data.molAdminId));
 	}
 }

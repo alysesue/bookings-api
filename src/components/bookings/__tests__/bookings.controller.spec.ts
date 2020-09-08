@@ -8,6 +8,7 @@ import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotPro
 import { getRequestHeaders } from '../../../infrastructure/requestHelper';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
+import { BookingBuilder } from '../../../models/entities/booking';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -30,6 +31,18 @@ jest.mock('mol-lib-common', () => {
 });
 
 describe('Bookings.Controller', () => {
+	const testBooking1 = new BookingBuilder()
+		.withServiceId(1)
+		.withStartDateTime(new Date('2020-10-01T01:00:00'))
+		.withEndDateTime(new Date('2020-10-01T02:00:00'))
+		.build();
+
+	const testBooking2 = new BookingBuilder()
+		.withServiceId(1)
+		.withStartDateTime(new Date('2020-10-01T15:00:00Z'))
+		.withEndDateTime(new Date('2020-10-02T16:00:00Z'))
+		.build();
+
 	beforeAll(() => {
 		Container.bind(BookingsService).to(BookingsServiceMock);
 		Container.bind(TimeslotsService).to(jest.fn(() => TimeslotsServiceMock));
@@ -38,9 +51,7 @@ describe('Bookings.Controller', () => {
 	it('should accept booking', async () => {
 		const controller = Container.get(BookingsController);
 		const bookingId = 1;
-		BookingsServiceMock.mockAcceptBooking = Promise.resolve(
-			Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00')),
-		);
+		BookingsServiceMock.mockAcceptBooking = Promise.resolve(testBooking1);
 		const request = new BookingAcceptRequest();
 		await controller.acceptBooking(bookingId, request);
 
@@ -50,9 +61,7 @@ describe('Bookings.Controller', () => {
 	it('should cancel booking', async () => {
 		const controller = Container.get(BookingsController);
 		const bookingId = 1;
-		BookingsServiceMock.mockCancelBooking = Promise.resolve(
-			Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00')),
-		);
+		BookingsServiceMock.mockCancelBooking = Promise.resolve(testBooking1);
 
 		await controller.cancelBooking(bookingId);
 
@@ -62,12 +71,8 @@ describe('Bookings.Controller', () => {
 	it('should update booking', async () => {
 		const controller = Container.get(BookingsController);
 		const bookingId = 1;
-		BookingsServiceMock.mockCancelBooking = Promise.resolve(
-			Booking.create(1, new Date('2020-09-01T01:00:00'), new Date('2020-09-02T02:00:00')),
-		);
-		BookingsServiceMock.mockPostBooking = Promise.resolve(
-			Booking.create(1, new Date('2020-10-01T15:00:00Z'), new Date('2020-10-02T16:00:00Z')),
-		);
+		BookingsServiceMock.mockCancelBooking = Promise.resolve(testBooking1);
+		BookingsServiceMock.mockPostBooking = Promise.resolve(testBooking2);
 
 		const res = await controller.updateBooking(bookingId, new BookingRequest(), 1);
 
@@ -76,9 +81,7 @@ describe('Bookings.Controller', () => {
 	});
 
 	it('should search bookings', async () => {
-		BookingsServiceMock.mockSearchBookings = [
-			Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00')),
-		];
+		BookingsServiceMock.mockSearchBookings = [testBooking1];
 		const from = new Date('2020-05-16T20:25:43.511Z');
 		const to = new Date('2020-05-16T21:25:43.511Z');
 		const citizenUinFins = ['abc123', 'xyz456'];
@@ -94,7 +97,9 @@ describe('Bookings.Controller', () => {
 		const startTime = new Date('2020-10-01T01:00:00');
 		const endTime = new Date('2020-10-01T02:00:00');
 
-		BookingsServiceMock.getBookingPromise = Promise.resolve(Booking.create(1, startTime, endTime));
+		BookingsServiceMock.getBookingPromise = Promise.resolve(
+			new BookingBuilder().withServiceId(1).withStartDateTime(startTime).withEndDateTime(endTime).build(),
+		);
 
 		const result = await controller.getBooking(1);
 
@@ -105,12 +110,7 @@ describe('Bookings.Controller', () => {
 
 	it('should get booking providers', async () => {
 		const controller = Container.get(BookingsController);
-
-		BookingsServiceMock.mockGetBooking = Booking.create(
-			1,
-			new Date('2020-10-01T01:00:00'),
-			new Date('2020-10-01T02:00:00'),
-		);
+		BookingsServiceMock.mockGetBooking = testBooking1;
 
 		const result = await controller.getBookingProviders(1);
 
@@ -119,9 +119,7 @@ describe('Bookings.Controller', () => {
 	});
 
 	it('should post booking', async () => {
-		BookingsServiceMock.mockPostBooking = Promise.resolve(
-			Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00')),
-		);
+		BookingsServiceMock.mockPostBooking = Promise.resolve(testBooking1);
 		const controller = Container.get(BookingsController);
 		const headers = {
 			[MOLSecurityHeaderKeys.USER_UINFIN]: MOLAuthType.USER,
@@ -137,9 +135,7 @@ describe('Bookings.Controller', () => {
 	});
 
 	it('should post out of timeslot booking', async () => {
-		BookingsServiceMock.mockPostBooking = Promise.resolve(
-			Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00')),
-		);
+		BookingsServiceMock.mockPostBooking = Promise.resolve(testBooking1);
 		const controller = Container.get(BookingsController);
 
 		const result = await controller.postBookingOutOfSlot(new BookingRequest(), 1);

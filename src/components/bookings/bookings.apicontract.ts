@@ -16,6 +16,12 @@ export class BookingRequest {
 	 * An external reference Id for this booking (e.g. external Client Id or booking Id).
 	 */
 	public refId?: string;
+	public citizenUinFin?: string;
+	public citizenName?: string;
+	public citizenEmail?: string;
+	public citizenPhone?: string;
+	public location?: string;
+	public description?: string;
 }
 
 export class BookingResponse {

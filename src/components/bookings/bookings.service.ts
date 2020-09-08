@@ -1,15 +1,16 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Booking, BookingStatus, ServiceProvider } from '../../models';
+import { Booking, BookingStatus, User } from '../../models';
 import { BookingsRepository } from './bookings.repository';
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from './bookings.apicontract';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
-import { DateHelper } from '../../infrastructure/dateHelper';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
 import { UserContext } from '../../infrastructure/userContext.middleware';
 import { QueryAccessType } from '../../core/repository';
+import { BookingBuilder } from '../../models/entities/booking';
+import { BookingsValidatorFactory } from './validator/bookings.validation';
 import { ChangeLogAction } from '../../models/entities/bookingChangeLog';
 import { ServicesService } from '../services/services.service';
 import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs.service';
@@ -27,21 +28,18 @@ export class BookingsService {
 	@Inject
 	private serviceProviderRepo: ServiceProvidersRepository;
 	@Inject
+	private userContext: UserContext;
+	@Inject
+	private bookingsValidatorFactory: BookingsValidatorFactory;
+	@Inject
 	private servicesService: ServicesService;
 	@Inject
 	private changeLogsService: BookingChangeLogsService;
-	@Inject
-	private userContext: UserContext;
-
-	public formatEventId(event: string): string {
-		return event.split('@')[0];
-	}
 
 	public async getBooking(bookingId: number): Promise<Booking> {
 		if (!bookingId) {
 			return null;
 		}
-
 		const booking = await this.bookingsRepository.getBooking(bookingId);
 		if (!booking) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingId} not found`);
@@ -49,11 +47,11 @@ export class BookingsService {
 		return booking;
 	}
 
-	public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
-		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
-		// Method calls with different services, or timeslots should still run in parallel.
-		const createAction = (_booking) => this.createBooking(bookingRequest, serviceId);
-		return await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), createAction);
+	private static getCitizenUinFin(currentUser: User, bookingRequest: BookingRequest): string {
+		if (currentUser && currentUser.isCitizen()) {
+			return currentUser.singPassUser.UinFin;
+		}
+		return bookingRequest.citizenUinFin;
 	}
 
 	public async cancelBooking(bookingId: number): Promise<Booking> {
@@ -79,10 +77,11 @@ export class BookingsService {
 					`Service provider '${booking.serviceProviderId}' not found`,
 				);
 			}
-			await this.calendarsService.deleteCalendarEvent(provider.calendar, this.formatEventId(eventCalId));
+			await this.calendarsService.deleteCalendarEvent(provider.calendar, eventCalId);
 		}
 		booking.status = BookingStatus.Cancelled;
 		await this.bookingsRepository.update(booking);
+		await this.loadBookingDependencies(booking);
 
 		return [ChangeLogAction.Cancel, booking];
 	}
@@ -128,120 +127,67 @@ export class BookingsService {
 		booking.eventICalId = eventICalId;
 
 		await this.bookingsRepository.update(booking);
+		await this.loadBookingDependencies(booking);
 
 		return [ChangeLogAction.Accept, booking];
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
-		return await this.bookingsRepository.search({ ...searchRequest, accessType: QueryAccessType.Read });
+		return await this.bookingsRepository.search(searchRequest, QueryAccessType.Read);
 	}
 
-	private async createBooking(
-		bookingRequest: BookingRequest,
-		serviceId: number,
-	): Promise<[ChangeLogAction, Booking]> {
-		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({
-			id: bookingRequest.serviceProviderId,
-		});
-		if (bookingRequest.serviceProviderId && !serviceProvider) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				`Service provider '${bookingRequest.serviceProviderId}' not found`,
-			);
+	private async loadBookingDependencies(booking: Booking): Promise<Booking> {
+		if (!booking.service) {
+			booking.service = await this.servicesService.getService(booking.serviceId);
 		}
-
-		const duration = Math.floor(DateHelper.DiffInMinutes(bookingRequest.endDateTime, bookingRequest.startDateTime));
-		if (duration <= 0) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				'End time for booking must be greater than start time',
-			);
+		if (booking.serviceProviderId && !booking.serviceProvider) {
+			booking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
+				id: booking.serviceProviderId,
+			});
 		}
+		return booking;
+	}
 
-		const booking = Booking.create(
-			serviceId,
-			bookingRequest.startDateTime,
-			bookingRequest.endDateTime,
-			bookingRequest.serviceProviderId,
-			bookingRequest.refId,
-		);
-		booking.serviceProvider = serviceProvider;
-		booking.service = await this.servicesService.getService(serviceId);
+	public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
+		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
+		// Method calls with different services, or timeslots should still run in parallel.
+		const saveAction = (_booking) => this.saveInternal(bookingRequest, serviceId);
+		return await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
+	}
 
-		const user = await this.userContext.getCurrentUser();
-		if (user.isCitizen()) {
-			booking.citizenUinFin = user.singPassUser.UinFin;
-		}
+	private async saveInternal(bookingRequest: BookingRequest, serviceId: number): Promise<[ChangeLogAction, Booking]> {
+		const currentUser = await this.userContext.getCurrentUser();
 
-		booking.eventICalId = await this.getEventICalId(booking, serviceProvider);
+		const booking = new BookingBuilder()
+			.withServiceId(serviceId)
+			.withStartDateTime(bookingRequest.startDateTime)
+			.withEndDateTime(bookingRequest.endDateTime)
+			.withServiceProviderId(bookingRequest.serviceProviderId)
+			.withRefId(bookingRequest.refId)
+			.withLocation(bookingRequest.location)
+			.withDescription(bookingRequest.description)
+			.withCreator(currentUser)
+			.withCitizenUinFin(BookingsService.getCitizenUinFin(currentUser, bookingRequest))
+			.withCitizenName(bookingRequest.citizenName)
+			.withCitizenPhone(bookingRequest.citizenPhone)
+			.withCitizenEmail(bookingRequest.citizenEmail)
+			.build();
 
-		if (!bookingRequest.outOfSlotBooking) {
-			await this.validateTimeSlot(booking);
-		} else {
-			await this.validateOutOfSlotBookings(booking);
-		}
-
+		await this.bookingsValidatorFactory.getValidator(bookingRequest.outOfSlotBooking).validate(booking);
+		booking.eventICalId = await this.getEventICalId(booking);
 		await this.bookingsRepository.insert(booking);
+		await this.loadBookingDependencies(booking);
 
 		return [ChangeLogAction.Create, booking];
 	}
 
-	private async getEventICalId(booking: Booking, serviceProvider: ServiceProvider) {
+	private async getEventICalId(booking: Booking) {
 		if (booking.serviceProviderId) {
+			const serviceProvider = await this.serviceProviderRepo.getServiceProvider({
+				id: booking.serviceProviderId,
+			});
 			return await this.calendarsService.createCalendarEvent(booking, serviceProvider.calendar);
 		}
-		return undefined;
-	}
-
-	private async validateTimeSlot(booking: Booking) {
-		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(
-			booking.startDateTime,
-			booking.endDateTime,
-			booking.serviceId,
-			booking.serviceProviderId,
-		);
-
-		if (timeslotEntry.availabilityCount < 1) {
-			const errorMessage = booking.serviceProviderId
-				? 'The service provider is not available for this timeslot'
-				: 'No available service providers for this timeslot';
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(errorMessage);
-		}
-	}
-
-	private async validateOutOfSlotBookings(booking: Booking) {
-		const { startDateTime, endDateTime, serviceId, serviceProviderId } = booking;
-
-		const searchQuery = new BookingSearchRequest(
-			startDateTime,
-			endDateTime,
-			[BookingStatus.Accepted],
-			serviceId,
-			null,
-			serviceProviderId,
-		);
-
-		const acceptedBookings = await this.searchBookings(searchQuery);
-
-		for (const item of acceptedBookings) {
-			const intersects = booking.bookingIntersects({ start: item.startDateTime, end: item.endDateTime });
-			if (intersects) {
-				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-					`Booking request not valid as it overlaps another accepted booking`,
-				);
-			}
-		}
-
-		if (
-			booking.serviceProviderId &&
-			(await this.unavailabilitiesService.isUnavailable({
-				from: startDateTime,
-				to: endDateTime,
-				serviceId: booking.serviceId,
-				serviceProviderId: booking.serviceProviderId,
-			}))
-		) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				`The service provider is not available in the selected time range.`,
-			);
-		}
+		return null;
 	}
 }
