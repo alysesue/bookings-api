@@ -1,6 +1,6 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Booking, BookingStatus, User } from '../../models';
+import { Booking, BookingStatus, ChangeLogAction, User } from '../../models';
 import { BookingsRepository } from './bookings.repository';
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from './bookings.apicontract';
 import { TimeslotsService } from '../timeslots/timeslots.service';
@@ -11,7 +11,6 @@ import { UserContext } from '../../infrastructure/userContext.middleware';
 import { QueryAccessType } from '../../core/repository';
 import { BookingBuilder } from '../../models/entities/booking';
 import { BookingsValidatorFactory } from './validator/bookings.validation';
-import { ChangeLogAction } from '../../models/entities/bookingChangeLog';
 import { ServicesService } from '../services/services.service';
 import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs.service';
 

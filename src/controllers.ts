@@ -1,4 +1,5 @@
 // STUB
+import './components/bookingChangeLogs/bookingChangeLogs.controller';
 import './components/bookings/bookings.controller';
 import './components/calendars/calendars.controller';
 import './components/schedules/schedules.controller';
