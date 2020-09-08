@@ -12,6 +12,7 @@ import { BookingAcceptRequest } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
+import { BookingBuilder } from '../../../models/entities/booking';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -30,7 +31,12 @@ jest.mock('mol-lib-common', () => {
 });
 
 const BookingRepositoryMock = (update) => {
-	const testBooking = Booking.create(1, new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+	const testBooking = new BookingBuilder()
+		.withServiceId(1)
+		.withStartDateTime(new Date('2020-10-01T01:00:00'))
+		.withEndDateTime(new Date('2020-10-01T02:00:00'))
+		.build();
+
 	return jest.fn().mockImplementation(() => ({
 		getBooking: jest.fn().mockReturnValue(testBooking),
 		update,

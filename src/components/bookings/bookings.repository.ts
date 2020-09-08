@@ -1,8 +1,9 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { InsertResult, SelectQueryBuilder } from 'typeorm';
-import { Booking, BookingStatus } from '../../models';
+import { Booking } from '../../models';
 import { QueryAccessType, RepositoryBase } from '../../core/repository';
 import { UserContext } from '../../infrastructure/userContext.middleware';
+import { BookingSearchRequest } from './bookings.apicontract';
 
 @InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {
@@ -44,30 +45,18 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return repository.save(booking);
 	}
 
-	public async search({
-		serviceId,
-		serviceProviderId,
-		statuses,
-		citizenUinFins,
-		from,
-		to,
-		accessType,
-	}: {
-		serviceId?: number;
-		serviceProviderId?: number;
-		statuses?: BookingStatus[];
-		citizenUinFins?: string[];
-		from: Date;
-		to: Date;
-		accessType: QueryAccessType;
-	}): Promise<Booking[]> {
-		const serviceCondition = serviceId ? 'booking."_serviceId" = :serviceId' : '';
+	public async search(request: BookingSearchRequest, accessType: QueryAccessType): Promise<Booking[]> {
+		const serviceCondition = request.serviceId ? 'booking."_serviceId" = :serviceId' : '';
 
-		const serviceProviderCondition = serviceProviderId ? 'booking."_serviceProviderId" = :serviceProviderId' : '';
+		const serviceProviderCondition = request.serviceProviderId
+			? 'booking."_serviceProviderId" = :serviceProviderId'
+			: '';
 
-		const statusesCondition = statuses ? 'booking."_status" IN (:...statuses)' : '';
+		const statusesCondition = request.statuses ? 'booking."_status" IN (:...statuses)' : '';
 
-		const citizenUinFinsCondition = citizenUinFins ? 'booking."_citizenUinFin" IN (:...citizenUinFins)' : '';
+		const citizenUinFinsCondition = request.citizenUinFins
+			? 'booking."_citizenUinFin" IN (:...citizenUinFins)'
+			: '';
 
 		const dateRangeCondition = '(booking."_startDateTime" < :to AND booking."_endDateTime" > :from)';
 
@@ -82,7 +71,14 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 				]
 					.filter((c) => c)
 					.join(' AND '),
-				{ serviceId, serviceProviderId, from, to, statuses, citizenUinFins },
+				{
+					serviceId: request.serviceId,
+					serviceProviderId: request.serviceProviderId,
+					from: request.from,
+					to: request.to,
+					statuses: request.statuses,
+					citizenUinFins: request.citizenUinFins,
+				},
 			)
 			.leftJoinAndSelect('booking._serviceProvider', 'sp_relation')
 			.leftJoinAndSelect('booking._service', 'service_relation')

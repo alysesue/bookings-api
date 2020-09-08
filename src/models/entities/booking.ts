@@ -5,6 +5,85 @@ import { Service } from './service';
 import * as timeSpan from '../../tools/timeSpan';
 import { User } from './user';
 
+export class BookingBuilder {
+	public serviceId: number;
+	public startDateTime: Date;
+	public endDateTime: Date;
+	public refId: string;
+	public location: string;
+	public description: string;
+	public serviceProviderId: number;
+	public creator: User;
+	public citizenUinFin: string;
+	public citizenPhone: string;
+	public citizenName: string;
+	public citizenEmail: string;
+
+	public withServiceId(serviceId: number): BookingBuilder {
+		this.serviceId = serviceId;
+		return this;
+	}
+
+	public withStartDateTime(startDateTime: Date): BookingBuilder {
+		this.startDateTime = startDateTime;
+		return this;
+	}
+
+	public withEndDateTime(endDateTime: Date): BookingBuilder {
+		this.endDateTime = endDateTime;
+		return this;
+	}
+
+	public withRefId(refId: string): BookingBuilder {
+		this.refId = refId;
+		return this;
+	}
+
+	public withLocation(location: string): BookingBuilder {
+		this.location = location;
+		return this;
+	}
+
+	public withDescription(description: string): BookingBuilder {
+		this.description = description;
+		return this;
+	}
+
+	public withServiceProviderId(serviceProviderId: number): BookingBuilder {
+		this.serviceProviderId = serviceProviderId;
+		return this;
+	}
+
+	public withCreator(currentUser: User): BookingBuilder {
+		this.creator = currentUser;
+		return this;
+	}
+
+	public withCitizenUinFin(citizenUinFin: string): BookingBuilder {
+		this.citizenUinFin = citizenUinFin;
+		return this;
+	}
+
+	public withCitizenPhone(citizenPhone: string): BookingBuilder {
+		this.citizenPhone = citizenPhone;
+		return this;
+	}
+
+	public withCitizenName(citizenName: string): BookingBuilder {
+		this.citizenName = citizenName;
+		return this;
+	}
+
+	public withCitizenEmail(citizenEmail: string): BookingBuilder {
+		this.citizenEmail = citizenEmail;
+		return this;
+	}
+
+	public build(): Booking {
+		return new Booking(this);
+	}
+}
+
 @Entity()
 export class Booking {
 	@PrimaryGeneratedColumn()
@@ -55,7 +134,46 @@ export class Booking {
 	@Index()
 	private _citizenUinFin: string;
 
-	constructor() {}
+	constructor(builder?: BookingBuilder) {
+		if (builder) {
+			this._createdAt = new Date();
+
+			if (builder.serviceProviderId) {
+				this._serviceProviderId = builder.serviceProviderId;
+				this._status = BookingStatus.Accepted;
+				this._acceptedAt = this._createdAt;
+			} else {
+				this._status = BookingStatus.PendingApproval;
+			}
+			this._serviceId = builder.serviceId;
+			this._startDateTime = builder.startDateTime;
+			this._endDateTime = builder.endDateTime;
+			this._refId = builder.refId;
+			this._location = builder.location;
+			this._description = builder.description;
+			this._creator = builder.creator;
+			this._citizenUinFin = builder.citizenUinFin;
+			this._citizenPhone = builder.citizenPhone;
+			this._citizenName = builder.citizenName;
+			this._citizenEmail = builder.citizenEmail;
+		}
+	}
+
+	@Column({ nullable: true })
+	private _citizenName: string;
+
+	public get citizenName(): string {
+		return this._citizenName;
+	}
+
+	@Column({ nullable: true })
+	private _location: string;
+
+	@Column({ nullable: true })
+	private _description: string;
+
+	@Column({ nullable: true })
+	private _citizenEmail: string;
 
 	public get id(): number {
 		return this._id;
@@ -117,10 +235,6 @@ export class Booking {
 		return this._creator;
 	}
 
-	public set creator(value: User) {
-		this._creator = value;
-	}
-
 	public get createdAt(): Date {
 		return this._createdAt;
 	}
@@ -129,8 +243,27 @@ export class Booking {
 		return this._citizenUinFin;
 	}
 
-	public set citizenUinFin(value: string) {
-		this._citizenUinFin = value;
+	public get refId(): string {
+		return this._refId;
+	}
+
+	public get location(): string {
+		return this._location;
+	}
+
+	public get description(): string {
+		return this._description;
+	}
+
+	public get citizenEmail(): string {
+		return this._citizenEmail;
+	}
+
+	@Column({ nullable: true })
+	private _citizenPhone: string;
+
+	public get citizenPhone(): string {
+		return this._citizenPhone;
 	}
 
 	public bookingIntersects(other: { start: Date; end: Date }): boolean {
@@ -138,30 +271,5 @@ export class Booking {
 			return false;
 		}
 		return timeSpan.intersectsDateTimeSpan(other, this.startDateTime, this.endDateTime);
-	}
-
-	public static create(
-		serviceId: number,
-		startDateTime: Date,
-		endDateTime: Date,
-		serviceProviderId?: number,
-		refId?: string,
-	) {
-		const instance = new Booking();
-		instance._serviceId = serviceId;
-		instance._startDateTime = startDateTime;
-		instance._endDateTime = endDateTime;
-		instance._createdAt = new Date();
-		instance._refId = refId;
-
-		if (serviceProviderId) {
-			instance._serviceProviderId = serviceProviderId;
-			instance._status = BookingStatus.Accepted;
-			instance._acceptedAt = instance.createdAt;
-		} else {
-			instance._status = BookingStatus.PendingApproval;
-		}
-
-		return instance;
 	}
 }
