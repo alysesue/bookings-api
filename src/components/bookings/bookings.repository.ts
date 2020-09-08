@@ -14,35 +14,13 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		super(Booking);
 	}
 
-	private async createQueryForUser(_accessType: QueryAccessType): Promise<SelectQueryBuilder<Booking>> {
-		const user = await this.userContext.getCurrentUser();
-
-		const repository = await this.getRepository();
-		let query = repository.createQueryBuilder('booking');
-		if (user.isCitizen()) {
-			query = query.where('booking."_citizenUinFin" = :uinfin', { uinfin: user.singPassUser.UinFin });
-		}
-
-		return query;
-	}
-
-	public async getBooking(id: number, accessType = QueryAccessType.Read): Promise<Booking> {
+	public async getBooking(bookingId: number, accessType = QueryAccessType.Read): Promise<Booking> {
 		const query = (await this.createQueryForUser(accessType))
 			.leftJoinAndSelect('booking._serviceProvider', 'sp_relation')
 			.leftJoinAndSelect('booking._service', 'service_relation')
-			.where('booking."_id" = :id', { id });
+			.where('booking."_id" = :id', { id: bookingId });
 
 		return await query.getOne();
-	}
-
-	public async save(booking: Booking): Promise<InsertResult> {
-		const repository = await this.getRepository();
-		return repository.insert(booking);
-	}
-
-	public async update(booking: Booking): Promise<Booking> {
-		const repository = await this.getRepository();
-		return repository.save(booking);
 	}
 
 	public async search(request: BookingSearchRequest, accessType: QueryAccessType): Promise<Booking[]> {
@@ -54,7 +32,9 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 		const statusesCondition = request.statuses ? 'booking."_status" IN (:...statuses)' : '';
 
-		const citizenUinFinsCondition = request.citizenUinFins ? 'booking."_citizenUinFin" IN (:citizenUinFins)' : '';
+		const citizenUinFinsCondition = request.citizenUinFins
+			? 'booking."_citizenUinFin" IN (:...citizenUinFins)'
+			: '';
 
 		const dateRangeCondition = '(booking."_startDateTime" < :to AND booking."_endDateTime" > :from)';
 
@@ -83,5 +63,27 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 			.orderBy('booking._id', 'DESC');
 
 		return await query.getMany();
+	}
+
+	public async save(booking: Booking): Promise<InsertResult> {
+		const repository = await this.getRepository();
+		return repository.insert(booking);
+	}
+
+	public async update(booking: Booking): Promise<Booking> {
+		const repository = await this.getRepository();
+		return repository.save(booking);
+	}
+
+	private async createQueryForUser(_accessType: QueryAccessType): Promise<SelectQueryBuilder<Booking>> {
+		const user = await this.userContext.getCurrentUser();
+
+		const repository = await this.getRepository();
+		let query = repository.createQueryBuilder('booking');
+		if (user.isCitizen()) {
+			query = query.where('booking."_citizenUinFin" = :uinfin', { uinfin: user.singPassUser.UinFin });
+		}
+
+		return query;
 	}
 }
