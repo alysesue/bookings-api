@@ -35,12 +35,6 @@ export class BookingChangeLogsService {
 			serviceId: booking.serviceId,
 			serviceName: booking.service.name,
 			citizenUinFin: booking.citizenUinFin,
-			// TODO: ADD Citizen data;
-			// citizenName: string,
-			// citizenEmail: string,
-			// citizenPhone: string,
-			// location: string,
-			// description: string,
 		} as BookingJsonSchemaV1;
 
 		if (booking.serviceProviderId) {
@@ -51,7 +45,6 @@ export class BookingChangeLogsService {
 			jsonObj.serviceProviderId = booking.serviceProviderId;
 			jsonObj.serviceProviderName = serviceProvider.name;
 			jsonObj.serviceProviderEmail = serviceProvider.email;
-			// TODO: ADD SP PHONE jsonObj.serviceProviderPhone = serviceProvider.phone;
 		}
 
 		return jsonObj;
