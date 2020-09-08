@@ -43,13 +43,14 @@ export class ServiceProvidersService {
 	}
 
 	private static validateServiceProviders(sps: ServiceProviderModel[]) {
-		const errors = sps.map((e) => ServiceProvidersService.validateServiceProvider(e)).flat(2);
-		if (errors?.length) {
+		const errors = sps.map((e) => ServiceProvidersService.validateServiceProvider(e));
+		const errorsFlat = [].concat(...errors);
+		if (errorsFlat?.length) {
 			const molError = new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Bulk of service providers incorrect`,
 			);
 			const data = {
-				errors,
+				errorsFlat,
 				rules: {
 					header: 'First line should be: name, email, phone',
 					email: 'Email should contain @ and .',
