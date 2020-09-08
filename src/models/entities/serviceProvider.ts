@@ -11,6 +11,8 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	@Column()
 	private _createdAt: Date;
 
+	constructor() {}
+
 	@Column()
 	private _status: ServiceProviderStatus;
 
@@ -24,9 +26,11 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 
 	@Column({ nullable: false })
 	private _serviceId: number;
+
 	public get serviceId(): number {
 		return this._serviceId;
 	}
+
 	public set serviceId(value: number) {
 		this._serviceId = value;
 	}
@@ -35,15 +39,19 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
+	public get service(): Service {
+		return this._service;
+	}
+
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
-	public set id(id: number) {
-		this._id = id;
-	}
-
 	public get id(): number {
 		return this._id;
+	}
+
+	public set id(id: number) {
+		this._id = id;
 	}
 
 	@Column({ type: 'varchar', length: 300 })
@@ -57,9 +65,13 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		this._name = value;
 	}
 
-	constructor() {}
-
-	public static create(name: string, calendar: Calendar, serviceId: number, email?: string): ServiceProvider {
+	public static create(
+		name: string,
+		calendar: Calendar,
+		serviceId: number,
+		email?: string,
+		phone?: string,
+	): ServiceProvider {
 		const instance = new ServiceProvider();
 		instance._serviceId = serviceId;
 		instance._name = name;
@@ -67,6 +79,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		instance._status = ServiceProviderStatus.Valid;
 		instance._calendar = calendar;
 		instance._email = email;
+		instance._phone = phone;
 		return instance;
 	}
 
@@ -81,6 +94,17 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		this._email = value;
 	}
 
+	@Column({ nullable: true })
+	private _phone?: string;
+
+	public get phone(): string {
+		return this._phone;
+	}
+
+	public set phone(value: string) {
+		this._phone = value;
+	}
+
 	@OneToOne('Calendar')
 	@JoinColumn()
 	public _calendar: Calendar;
@@ -93,20 +117,16 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		this._calendar = calendar;
 	}
 
-	public get service(): Service {
-		return this._service;
-	}
-
 	@ManyToOne('Schedule', { nullable: true })
 	@JoinColumn({ name: '_scheduleId' })
 	public _schedule: Schedule;
 
-	public set schedule(schedule: Schedule) {
-		this._schedule = schedule;
-	}
-
 	public get schedule(): Schedule {
 		return this._schedule;
+	}
+
+	public set schedule(schedule: Schedule) {
+		this._schedule = schedule;
 	}
 
 	@Column({ nullable: true })
