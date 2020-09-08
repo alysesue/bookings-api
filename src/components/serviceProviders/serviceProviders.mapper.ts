@@ -21,6 +21,7 @@ export class ServiceProvidersMapper {
 			spData.serviceId,
 			mappedTimeslotSchedule,
 			spData.email,
+			spData.phone,
 		);
 	}
 
