@@ -120,6 +120,7 @@ export class BookingsController extends Controller {
 		@Body() bookingRequest: BookingRequest,
 		@Header('x-api-service') serviceId: number,
 	): Promise<any> {
+		// todo: Refactor to not cancel the booking but update the existing one
 		const deletedBooking = await this.bookingsService.cancelBooking(bookingId);
 		if (deletedBooking) {
 			bookingRequest.outOfSlotBooking = true;
