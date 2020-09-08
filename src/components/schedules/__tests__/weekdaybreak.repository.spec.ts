@@ -1,19 +1,21 @@
 import { WeekDayBreakRepository } from '../weekdaybreak.repository';
-import { DbConnection } from '../../../core/db.connection';
 import { Container } from 'typescript-ioc';
 import { Schedule, TimeOfDay, WeekDayBreak } from '../../../models';
-import { CreateQueryBuilder, DbConnectionMock } from '../../../infrastructure/tests/dbconnectionmock';
+import { CreateQueryBuilder, TransactionManagerMock } from '../../../infrastructure/tests/dbconnectionmock';
 import { Weekday } from '../../../enums/weekday';
 import { DeleteResult } from 'typeorm';
+import { TransactionManager } from '../../../core/transactionManager';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
-beforeEach(() => {
-	Container.bind(DbConnection).to(DbConnectionMock);
+beforeAll(() => {
+	Container.bind(TransactionManager).to(TransactionManagerMock);
+});
 
+beforeEach(() => {
 	jest.clearAllMocks();
 });
 

@@ -1,9 +1,9 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { InsertResult, SelectQueryBuilder } from 'typeorm';
-import { Booking } from '../../models';
+import { Booking, BookingStatus } from '../../models';
 import { QueryAccessType, RepositoryBase } from '../../core/repository';
 import { UserContext } from '../../infrastructure/userContext.middleware';
-import { BookingSearchRequest } from './bookings.apicontract';
+import { ConcurrencyError } from '../../errors/ConcurrencyError';
 
 @InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {
@@ -35,17 +35,40 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return await query.getOne();
 	}
 
-	public async save(booking: Booking): Promise<InsertResult> {
+	public async insert(booking: Booking): Promise<InsertResult> {
 		const repository = await this.getRepository();
-		return repository.insert(booking);
+		return await repository.insert(booking);
 	}
 
 	public async update(booking: Booking): Promise<Booking> {
+		const versionUpdated = await this.updateBookingVersion(booking);
+		if (!versionUpdated) {
+			throw new ConcurrencyError(`Booking ${booking.id} has changed in a parallel operation. Please try again.`);
+		}
+
 		const repository = await this.getRepository();
-		return repository.save(booking);
+		return await repository.save(booking);
 	}
 
-	public async search(request: BookingSearchRequest, accessType: QueryAccessType): Promise<Booking[]> {
+	private async updateBookingVersion(booking: Booking): Promise<boolean> {
+		const repository = await this.getRepository();
+
+		// atomic increment DB operation
+		const result = await repository.query(
+			'update public.booking set _version = _version + 1 where _id = $1 and _version = $2',
+			[booking.id, booking._version],
+		);
+		const [, affected] = result as [any, number];
+		const incremented = affected > 0;
+
+		if (incremented) {
+			booking._version++;
+		}
+
+		return incremented;
+	}
+
+	public async search(request: BookingSearchQuery, accessType: QueryAccessType): Promise<Booking[]> {
 		const serviceCondition = request.serviceId ? 'booking."_serviceId" = :serviceId' : '';
 
 		const serviceProviderCondition = request.serviceProviderId
@@ -87,3 +110,12 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return await query.getMany();
 	}
 }
+
+export type BookingSearchQuery = {
+	from: Date;
+	to: Date;
+	statuses?: BookingStatus[];
+	serviceId?: number;
+	serviceProviderId?: number;
+	citizenUinFins?: string[];
+};

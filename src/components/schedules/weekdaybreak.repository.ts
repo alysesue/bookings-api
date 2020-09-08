@@ -18,8 +18,8 @@ export class WeekDayBreakRepository extends RepositoryBase<WeekDayBreak> {
 	}
 
 	public async deleteBreaksForSchedule(scheduleId: number): Promise<DeleteResult> {
-		const connection = await this.getConnection();
-		const query = connection
+		const repository = await this.getRepository();
+		const query = repository
 			.createQueryBuilder()
 			.delete()
 			.from(WeekDayBreak)

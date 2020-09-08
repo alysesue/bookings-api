@@ -1,17 +1,22 @@
 import { CalendarsRepository } from '../calendars.repository';
-import { DbConnection } from '../../../core/db.connection';
 import { Container } from 'typescript-ioc';
 import { Calendar } from '../../../models';
-
+import { TransactionManager } from '../../../core/transactionManager';
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
+beforeAll(() => {
+	Container.bind(TransactionManager).to(TransactionManagerMock);
+});
+
+beforeEach(() => {
+	jest.clearAllMocks();
+});
+
 describe('Calendar repository', () => {
 	it('should get calendars', async () => {
-		Container.bind(DbConnection).to(DbConnectionMock);
-
 		const calendarsRepository = Container.get(CalendarsRepository);
 		const result = await calendarsRepository.getCalendars();
 		expect(result).not.toBe(undefined);
@@ -21,8 +26,6 @@ describe('Calendar repository', () => {
 	});
 
 	it('should get calendar by UUID', async () => {
-		Container.bind(DbConnection).to(DbConnectionMock);
-
 		const calendarsRepository = Container.get(CalendarsRepository);
 		const result = await calendarsRepository.getCalendarByUUID('uuid');
 		expect(result).not.toBe(undefined);
@@ -31,8 +34,6 @@ describe('Calendar repository', () => {
 	});
 
 	it('should save calendars', async () => {
-		Container.bind(DbConnection).to(DbConnectionMock);
-
 		const calendarsRepository = Container.get(CalendarsRepository);
 		const myCalendar = { uuid: 'uuid' } as Calendar;
 
@@ -52,14 +53,11 @@ const InnerRepositoryMock = {
 
 const getRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);
 
-const DbConnectionMock = jest.fn().mockImplementation(() => {
-	const getConnection = () => {
-		const connection = {
+class TransactionManagerMock extends TransactionManager {
+	public async getEntityManager(): Promise<any> {
+		const entityManager = {
 			getRepository: getRepositoryMock,
 		};
-
-		return Promise.resolve(connection);
-	};
-
-	return { getConnection };
-});
+		return Promise.resolve(entityManager);
+	}
+}
