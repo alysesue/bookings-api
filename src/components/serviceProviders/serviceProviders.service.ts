@@ -1,3 +1,4 @@
+import { isEmail, isSGPhoneNumber } from 'mol-lib-api-contract/utils';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { cloneDeep } from 'lodash';
@@ -10,8 +11,6 @@ import { SchedulesService } from '../schedules/schedules.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
 import { ServicesService } from '../services/services.service';
 import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
-import { validatePhoneNumber } from '../../tools/phone';
-import { validateEmail } from '../../tools/email';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 
 @InRequestScope
@@ -36,9 +35,9 @@ export class ServiceProvidersService {
 
 	private static validateServiceProvider(sp: ServiceProviderModel): string[] {
 		const errors: string[] = [];
-		if (sp.phone && !validatePhoneNumber(sp.phone))
+		if (sp.phone && !isSGPhoneNumber(sp.phone))
 			errors.push(`For service provider: ${sp.name}. Phone number is invalid: ${sp.phone}.`);
-		if (sp.email && !validateEmail(sp.email))
+		if (sp.email && !isEmail(sp.email))
 			errors.push(`For service provider: ${sp.name}. Email is invalid: ${sp.email}.`);
 		return errors;
 	}
@@ -54,7 +53,7 @@ export class ServiceProvidersService {
 				rules: {
 					header: 'First line should be: name, email, phone',
 					email: 'Email should contain @ and .',
-					phone: 'Phone should follow the format +XX XXXX XXXX or +XXXXXXXXXX',
+					phone: 'Phone number should be a Singapore phone number',
 				},
 			};
 			molError.setResponseData(data);
