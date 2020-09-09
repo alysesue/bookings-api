@@ -20,10 +20,17 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 	): Promise<{ userCondition: string; userParams: object }> {
 		const user = await this.userContext.getCurrentUser();
 
-		return {
-			userCondition: `${alias}."_citizenUinFin" = :useruinfin`,
-			userParams: { useruinfin: user.singPassUser.UinFin },
-		};
+		if (user.isCitizen()) {
+			return {
+				userCondition: `${alias}."_citizenUinFin" = :useruinfin`,
+				userParams: { useruinfin: user.singPassUser.UinFin },
+			};
+		} else {
+			return {
+				userCondition: '',
+				userParams: {},
+			};
+		}
 	}
 
 	public async getBooking(bookingId: number, accessType = QueryAccessType.Read): Promise<Booking> {
