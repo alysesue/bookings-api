@@ -31,18 +31,14 @@ export type BookingResponse = {
 	endDateTime: Date;
 	serviceId: number;
 	serviceName: string;
-	serviceProvider?: {
-		serviceProviderId?: number;
-		serviceProviderName?: string;
-		serviceProviderEmail?: string;
-		serviceProviderPhone?: string;
-	};
-	citizen?: {
-		citizenUinFin?: string;
-		citizenName?: string;
-		citizenEmail?: string;
-		citizenPhone?: string;
-	};
+	serviceProviderId?: number;
+	serviceProviderName?: string;
+	serviceProviderEmail?: string;
+	serviceProviderPhone?: string;
+	citizenUinFin?: string;
+	citizenName?: string;
+	citizenEmail?: string;
+	citizenPhone?: string;
 	location?: string;
 	description?: string;
 	refId?: string;
