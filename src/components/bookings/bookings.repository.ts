@@ -109,11 +109,6 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 		return await query.getMany();
 	}
-
-	public async save(booking: Booking): Promise<InsertResult> {
-		const repository = await this.getRepository();
-		return repository.insert(booking);
-	}
 }
 
 export type BookingSearchQuery = {
