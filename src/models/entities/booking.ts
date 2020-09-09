@@ -3,7 +3,10 @@ import { BookingStatus } from '../bookingStatus';
 import { ServiceProvider } from './serviceProvider';
 import { Service } from './service';
 import * as timeSpan from '../../tools/timeSpan';
+import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { User } from './user';
+
+export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
 export class BookingBuilder {
 	public serviceId: number;
@@ -80,12 +83,16 @@ export class BookingBuilder {
 	}
 
 	public build(): Booking {
-		return new Booking(this);
+		return Booking.create(this);
 	}
 }
 
 @Entity()
 export class Booking {
+	// _version is updated in an atomic DB operation (see repository)
+	@Column({ update: false })
+	public _version: number;
+
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
@@ -110,14 +117,8 @@ export class Booking {
 	@Index()
 	private _endDateTime: Date;
 
-	@Column()
-	private _createdAt: Date;
-
 	@Column({ nullable: true })
 	private _refId?: string;
-
-	@Column({ nullable: true })
-	private _acceptedAt: Date;
 
 	@ManyToOne((type) => ServiceProvider, { nullable: true })
 	@JoinColumn({ name: '_serviceProviderId' })
@@ -134,29 +135,31 @@ export class Booking {
 	@Index()
 	private _citizenUinFin: string;
 
-	constructor(builder?: BookingBuilder) {
-		if (builder) {
-			this._createdAt = new Date();
+	constructor() {
+		this._version = 1;
+	}
 
-			if (builder.serviceProviderId) {
-				this._serviceProviderId = builder.serviceProviderId;
-				this._status = BookingStatus.Accepted;
-				this._acceptedAt = this._createdAt;
-			} else {
-				this._status = BookingStatus.PendingApproval;
-			}
-			this._serviceId = builder.serviceId;
-			this._startDateTime = builder.startDateTime;
-			this._endDateTime = builder.endDateTime;
-			this._refId = builder.refId;
-			this._location = builder.location;
-			this._description = builder.description;
-			this._creator = builder.creator;
-			this._citizenUinFin = builder.citizenUinFin;
-			this._citizenPhone = builder.citizenPhone;
-			this._citizenName = builder.citizenName;
-			this._citizenEmail = builder.citizenEmail;
+	public static create(builder: BookingBuilder): Booking {
+		const instance = new Booking();
+		if (builder.serviceProviderId) {
+			instance._serviceProviderId = builder.serviceProviderId;
+			instance._status = BookingStatus.Accepted;
+		} else {
+			instance._status = BookingStatus.PendingApproval;
 		}
+		instance._serviceId = builder.serviceId;
+		instance._startDateTime = builder.startDateTime;
+		instance._endDateTime = builder.endDateTime;
+		instance._refId = builder.refId;
+		instance._location = builder.location;
+		instance._description = builder.description;
+		instance._creator = builder.creator;
+		instance._citizenUinFin = builder.citizenUinFin;
+		instance._citizenPhone = builder.citizenPhone;
+		instance._citizenName = builder.citizenName;
+		instance._citizenEmail = builder.citizenEmail;
+
+		return instance;
 	}
 
 	@Column({ nullable: true })
@@ -179,12 +182,20 @@ export class Booking {
 		return this._id;
 	}
 
+	public set id(value: number) {
+		this._id = value;
+	}
+
 	public get serviceId(): number {
 		return this._serviceId;
 	}
 
 	public get service(): Service {
 		return this._service;
+	}
+
+	public set service(value: Service) {
+		this._service = value;
 	}
 
 	public get eventICalId(): string {
@@ -211,10 +222,6 @@ export class Booking {
 		return this._endDateTime;
 	}
 
-	public set acceptedAt(acceptedAt: Date) {
-		this._acceptedAt = acceptedAt;
-	}
-
 	public get serviceProvider(): ServiceProvider {
 		return this._serviceProvider;
 	}
@@ -235,12 +242,12 @@ export class Booking {
 		return this._creator;
 	}
 
-	public get createdAt(): Date {
-		return this._createdAt;
-	}
-
 	public get citizenUinFin(): string {
 		return this._citizenUinFin;
+	}
+
+	public set citizenUinFin(value: string) {
+		this._citizenUinFin = value;
 	}
 
 	public get refId(): string {

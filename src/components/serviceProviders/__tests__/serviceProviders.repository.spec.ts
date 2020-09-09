@@ -1,14 +1,18 @@
 import { ServiceProvidersRepository } from '../serviceProviders.repository';
-import { DbConnection } from '../../../core/db.connection';
 import { Container } from 'typescript-ioc';
 import { ServiceProvider, TimeslotsSchedule } from '../../../models';
 import { SchedulesRepository } from '../../schedules/schedules.repository';
 import { IEntityWithSchedule } from '../../../models/interfaces';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
+import { TransactionManager } from '../../../core/transactionManager';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
+});
+
+beforeAll(() => {
+	Container.bind(TransactionManager).to(TransactionManagerMock);
 });
 
 describe('Service Provider repository', () => {
@@ -17,8 +21,7 @@ describe('Service Provider repository', () => {
 	});
 
 	it('should get list of SP', async () => {
-		Container.bind(DbConnection).to(MockDBConnection);
-		MockDBConnection.find.mockImplementation(() => Promise.resolve([]));
+		TransactionManagerMock.find.mockImplementation(() => Promise.resolve([]));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProviders({ serviceId: 1 });
@@ -26,8 +29,7 @@ describe('Service Provider repository', () => {
 	});
 
 	it('should get list of SP by ids', async () => {
-		Container.bind(DbConnection).to(MockDBConnection);
-		MockDBConnection.find.mockImplementation(() => Promise.resolve([]));
+		TransactionManagerMock.find.mockImplementation(() => Promise.resolve([]));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProviders({ ids: [4, 5], serviceId: 1 });
@@ -35,8 +37,7 @@ describe('Service Provider repository', () => {
 	});
 
 	it('should get a service provider', async () => {
-		Container.bind(DbConnection).to(MockDBConnection);
-		MockDBConnection.findOne.mockImplementation(() => Promise.resolve({ name: 'Monica' }));
+		TransactionManagerMock.findOne.mockImplementation(() => Promise.resolve({ name: 'Monica' }));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProvider({ id: 1 });
@@ -45,9 +46,8 @@ describe('Service Provider repository', () => {
 	});
 
 	it('should get list of SP with schedule', async () => {
-		Container.bind(DbConnection).to(MockDBConnection);
 		Container.bind(SchedulesRepository).to(SchedulesRepositoryMock);
-		MockDBConnection.find.mockImplementation(() => Promise.resolve([new ServiceProvider()]));
+		TransactionManagerMock.find.mockImplementation(() => Promise.resolve([new ServiceProvider()]));
 		SchedulesRepositoryMock.populateSchedulesMock.mockImplementation((entries: any[]) => Promise.resolve(entries));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
@@ -58,9 +58,8 @@ describe('Service Provider repository', () => {
 	});
 
 	it('should get a service provider with schedule', async () => {
-		Container.bind(DbConnection).to(MockDBConnection);
 		Container.bind(SchedulesRepository).to(SchedulesRepositoryMock);
-		MockDBConnection.findOne.mockImplementation(() => Promise.resolve(new ServiceProvider()));
+		TransactionManagerMock.findOne.mockImplementation(() => Promise.resolve(new ServiceProvider()));
 		SchedulesRepositoryMock.populateSchedulesMock.mockImplementation((entries: any[]) => Promise.resolve(entries));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
@@ -71,7 +70,6 @@ describe('Service Provider repository', () => {
 	});
 
 	it('should get list of SP with TimeslotsSchedule', async () => {
-		Container.bind(DbConnection).to(MockDBConnection);
 		Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 
 		const sp = new ServiceProvider();
@@ -79,7 +77,7 @@ describe('Service Provider repository', () => {
 		sp.timeslotsScheduleId = 2;
 		const timeslotsSchedule = new TimeslotsSchedule();
 		timeslotsSchedule._id = 2;
-		MockDBConnection.find.mockImplementation(() => Promise.resolve([sp]));
+		TransactionManagerMock.find.mockImplementation(() => Promise.resolve([sp]));
 		TimeslotsScheduleRepositoryMock.getTimeslotsSchedulesMock.mockImplementation(() =>
 			Promise.resolve([timeslotsSchedule]),
 		);
@@ -87,14 +85,13 @@ describe('Service Provider repository', () => {
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProviders({ serviceId: 1, includeTimeslotsSchedule: true });
 
-		expect(MockDBConnection.find).toHaveBeenCalled();
+		expect(TransactionManagerMock.find).toHaveBeenCalled();
 		expect(TimeslotsScheduleRepositoryMock.getTimeslotsSchedulesMock).toHaveBeenCalled();
 		expect(result.length).toBe(1);
 		expect(result[0].timeslotsSchedule).toBeDefined();
 	});
 
 	it('should get a service provider with TimeslotsSchedule', async () => {
-		Container.bind(DbConnection).to(MockDBConnection);
 		Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 
 		const sp = new ServiceProvider();
@@ -102,7 +99,7 @@ describe('Service Provider repository', () => {
 		sp.timeslotsScheduleId = 2;
 		const timeslotsSchedule = new TimeslotsSchedule();
 		timeslotsSchedule._id = 2;
-		MockDBConnection.findOne.mockImplementation(() => sp);
+		TransactionManagerMock.findOne.mockImplementation(() => sp);
 		TimeslotsScheduleRepositoryMock.getTimeslotsSchedulesMock.mockImplementation(() =>
 			Promise.resolve([timeslotsSchedule]),
 		);
@@ -110,7 +107,7 @@ describe('Service Provider repository', () => {
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProvider({ id: 1, includeTimeslotsSchedule: true });
 
-		expect(MockDBConnection.findOne).toHaveBeenCalled();
+		expect(TransactionManagerMock.findOne).toHaveBeenCalled();
 		expect(TimeslotsScheduleRepositoryMock.getTimeslotsSchedulesMock).toHaveBeenCalled();
 		expect(result).toBeDefined();
 		expect(result.timeslotsSchedule).toBeDefined();
@@ -119,29 +116,28 @@ describe('Service Provider repository', () => {
 	it('should save service provider', async () => {
 		const spInput: ServiceProvider = ServiceProvider.create('abc', null, 1);
 
-		Container.bind(DbConnection).to(MockDBConnection);
-		MockDBConnection.save.mockImplementation(() => Promise.resolve(spInput));
+		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(spInput));
 		const spRepository = Container.get(ServiceProvidersRepository);
 
 		await spRepository.save(spInput);
-		expect(MockDBConnection.save.mock.calls[0][0]).toStrictEqual(spInput);
+		expect(TransactionManagerMock.save.mock.calls[0][0]).toStrictEqual(spInput);
 	});
 });
 
-class MockDBConnection extends DbConnection {
+class TransactionManagerMock extends TransactionManager {
 	public static save = jest.fn();
 	public static find = jest.fn();
 	public static findOne = jest.fn();
 
-	public async getConnection(): Promise<any> {
-		const connection = {
+	public async getEntityManager(): Promise<any> {
+		const entityManager = {
 			getRepository: () => ({
-				find: MockDBConnection.find,
-				findOne: MockDBConnection.findOne,
-				save: MockDBConnection.save,
+				find: TransactionManagerMock.find,
+				findOne: TransactionManagerMock.findOne,
+				save: TransactionManagerMock.save,
 			}),
 		};
-		return Promise.resolve(connection);
+		return Promise.resolve(entityManager);
 	}
 }
 

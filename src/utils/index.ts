@@ -7,6 +7,7 @@ export const parseCsv = (input: string | Buffer): [] => {
 		return parse(input, {
 			columns: true,
 			skip_empty_lines: true,
+			trim: true,
 		});
 	} catch (e) {
 		logger.error(e);

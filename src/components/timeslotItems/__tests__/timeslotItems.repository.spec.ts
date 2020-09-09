@@ -1,15 +1,18 @@
-import { DbConnection } from '../../../core/db.connection';
 import { Container } from 'typescript-ioc';
 import { TimeOfDay, TimeslotItem } from '../../../models';
 import { TimeslotItemsRepository } from '../timeslotItems.repository';
+import { TransactionManager } from '../../../core/transactionManager';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
+beforeAll(() => {
+	Container.bind(TransactionManager).to(TransactionManagerMock);
+});
+
 beforeEach(() => {
-	Container.bind(DbConnection).to(DbConnectionMock);
 	jest.clearAllMocks();
 });
 
@@ -64,14 +67,11 @@ export const InnerRepositoryMock = {
 
 export const GetRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);
 
-export const DbConnectionMock = jest.fn().mockImplementation(() => {
-	const getConnection = () => {
-		const connection = {
+class TransactionManagerMock extends TransactionManager {
+	public async getEntityManager(): Promise<any> {
+		const entityManager = {
 			getRepository: GetRepositoryMock,
 		};
-
-		return Promise.resolve(connection);
-	};
-
-	return { getConnection };
-});
+		return Promise.resolve(entityManager);
+	}
+}

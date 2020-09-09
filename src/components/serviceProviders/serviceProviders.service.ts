@@ -1,8 +1,8 @@
+import { isEmail, isSGPhoneNumber } from 'mol-lib-api-contract/utils';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { cloneDeep } from 'lodash';
 import { Schedule, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
-import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
 import { ServiceProviderModel, SetProviderScheduleRequest } from './serviceProviders.apicontract';
 import { CalendarsService } from '../calendars/calendars.service';
@@ -32,6 +32,35 @@ export class ServiceProvidersService {
 
 	@Inject
 	private timeslotsService: TimeslotsService;
+
+	private static validateServiceProvider(sp: ServiceProviderModel): string[] {
+		const errors: string[] = [];
+		if (sp.phone && !isSGPhoneNumber(sp.phone))
+			errors.push(`For service provider: ${sp.name}. Phone number is invalid: ${sp.phone}.`);
+		if (sp.email && !isEmail(sp.email))
+			errors.push(`For service provider: ${sp.name}. Email is invalid: ${sp.email}.`);
+		return errors;
+	}
+
+	private static validateServiceProviders(sps: ServiceProviderModel[]) {
+		const errors = sps.map((e) => ServiceProvidersService.validateServiceProvider(e));
+		const errorsFlat = [].concat(...errors);
+		if (errorsFlat?.length) {
+			const molError = new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Bulk of service providers incorrect`,
+			);
+			const data = {
+				errorsFlat,
+				rules: {
+					header: 'First line should be: name, email, phone',
+					email: 'Email should contain @ and .',
+					phone: 'Phone number should be a Singapore phone number',
+				},
+			};
+			molError.setResponseData(data);
+			throw molError;
+		}
+	}
 
 	public async getServiceProviders(
 		serviceId?: number,
@@ -74,13 +103,8 @@ export class ServiceProvidersService {
 		return sp;
 	}
 
-	private static validateService(serviceId: number) {
-		if (!serviceId) {
-			throw new Error('No service provided');
-		}
-	}
-
 	public async saveServiceProviders(listRequest: ServiceProviderModel[], serviceId: number) {
+		ServiceProvidersService.validateServiceProviders(listRequest);
 		for (let i = 0; i < listRequest.length; i++) {
 			await this.saveSp(listRequest[i], serviceId);
 
@@ -91,14 +115,10 @@ export class ServiceProvidersService {
 	}
 
 	public async saveSp(item: ServiceProviderModel, serviceId: number) {
-		try {
-			ServiceProvidersService.validateService(serviceId);
-			const cal = await this.calendarsService.createCalendar();
-			return await this.serviceProvidersRepository.save(ServiceProvider.create(item.name, cal, serviceId));
-		} catch (e) {
-			logger.error('exception when creating service provider ', e.message);
-			throw e;
-		}
+		const cal = await this.calendarsService.createCalendar();
+		return await this.serviceProvidersRepository.save(
+			ServiceProvider.create(item.name, cal, serviceId, item.email, item.phone),
+		);
 	}
 
 	public async updateSp(request: ServiceProviderModel, spId: number) {
@@ -106,18 +126,11 @@ export class ServiceProvidersService {
 		if (!sp) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
 		}
-		try {
-			sp.email = request.email;
-			sp.name = request.name;
-			return await this.serviceProvidersRepository.save(sp);
-		} catch (e) {
-			logger.error('exception when updating service provider ', e.message);
-			throw e;
-		}
-	}
-
-	private delay(ms) {
-		return new Promise((resolve) => setTimeout(resolve, ms));
+		ServiceProvidersService.validateServiceProviders([request]);
+		sp.email = request.email;
+		sp.phone = request.phone;
+		sp.name = request.name;
+		return await this.serviceProvidersRepository.save(sp);
 	}
 
 	public async setProviderSchedule(id: number, model: SetProviderScheduleRequest): Promise<Schedule> {
@@ -156,8 +169,9 @@ export class ServiceProvidersService {
 	public async getTimeslotItems(id: number): Promise<TimeslotsSchedule> {
 		const serviceProvider = await this.getServiceProvider(id, false, true);
 		if (!serviceProvider.timeslotsSchedule) {
-			const timeslotsSchedule = await this.servicesService.getServiceTimeslotsSchedule(serviceProvider.serviceId);
-			serviceProvider.timeslotsSchedule = timeslotsSchedule;
+			serviceProvider.timeslotsSchedule = await this.servicesService.getServiceTimeslotsSchedule(
+				serviceProvider.serviceId,
+			);
 		}
 		return serviceProvider.timeslotsSchedule;
 	}
@@ -236,6 +250,10 @@ export class ServiceProvidersService {
 		}
 
 		await this.timeslotItemsService.deleteTimeslot(timeslotId);
+	}
+
+	private delay(ms) {
+		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 
 	private async copyAndSaveTimeslotsScheduleInServiceProvider(

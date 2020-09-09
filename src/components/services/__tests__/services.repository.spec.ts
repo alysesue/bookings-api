@@ -1,26 +1,28 @@
 import { ServicesRepository } from '../services.repository';
-import { DbConnection } from '../../../core/db.connection';
 import { Container } from 'typescript-ioc';
 import { Schedule, Service, TimeslotsSchedule } from '../../../models';
 import { SchedulesRepository } from '../../schedules/schedules.repository';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
+import { TransactionManager } from '../../../core/transactionManager';
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
+beforeAll(() => {
+	Container.bind(TransactionManager).to(TransactionManagerMock);
+	Container.bind(SchedulesRepository).to(SchedulesRepositoryMock);
+	Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
+});
+
 describe('Services repository', () => {
 	beforeEach(() => {
-		Container.bind(DbConnection).to(MockDBConnection);
-		Container.bind(SchedulesRepository).to(SchedulesRepositoryMock);
-		Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
-
 		jest.resetAllMocks();
 	});
 
 	it('should get list of services', async () => {
-		MockDBConnection.find.mockImplementation(() => Promise.resolve([]));
+		TransactionManagerMock.find.mockImplementation(() => Promise.resolve([]));
 
 		const repository = Container.get(ServicesRepository);
 		const result = await repository.getAll();
@@ -29,7 +31,7 @@ describe('Services repository', () => {
 
 	it('should get a service', async () => {
 		const data = new Service();
-		MockDBConnection.findOne.mockImplementation(() => Promise.resolve(data));
+		TransactionManagerMock.findOne.mockImplementation(() => Promise.resolve(data));
 
 		const repository = Container.get(ServicesRepository);
 		const result = await repository.getService(1);
@@ -43,7 +45,7 @@ describe('Services repository', () => {
 		const schedule = new Schedule();
 		schedule.id = 11;
 		SchedulesRepositoryMock.getSchedulesMock.mockImplementation(() => Promise.resolve([schedule]));
-		MockDBConnection.findOne.mockImplementation(() => Promise.resolve(data));
+		TransactionManagerMock.findOne.mockImplementation(() => Promise.resolve(data));
 
 		const repository = Container.get(ServicesRepository);
 		const result = await repository.getServiceWithSchedule(1);
@@ -60,7 +62,7 @@ describe('Services repository', () => {
 		TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock.mockImplementation(() =>
 			Promise.resolve(timeslotsSchedule),
 		);
-		MockDBConnection.findOne.mockImplementation(() => Promise.resolve(data));
+		TransactionManagerMock.findOne.mockImplementation(() => Promise.resolve(data));
 
 		const repository = Container.get(ServicesRepository);
 		const result = await repository.getServiceWithTimeslotsSchedule(1);
@@ -72,28 +74,28 @@ describe('Services repository', () => {
 		const service: Service = new Service();
 		service.name = 'Coaches';
 
-		MockDBConnection.save.mockImplementation(() => Promise.resolve(service));
+		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(service));
 		const repository = Container.get(ServicesRepository);
 
 		await repository.save(service);
-		expect(MockDBConnection.save.mock.calls[0][0]).toStrictEqual(service);
+		expect(TransactionManagerMock.save.mock.calls[0][0]).toStrictEqual(service);
 	});
 });
 
-class MockDBConnection extends DbConnection {
+class TransactionManagerMock extends TransactionManager {
 	public static save = jest.fn();
 	public static find = jest.fn();
 	public static findOne = jest.fn();
 
-	public async getConnection(): Promise<any> {
-		const connection = {
+	public async getEntityManager(): Promise<any> {
+		const entityManager = {
 			getRepository: () => ({
-				find: MockDBConnection.find,
-				findOne: MockDBConnection.findOne,
-				save: MockDBConnection.save,
+				find: TransactionManagerMock.find,
+				findOne: TransactionManagerMock.findOne,
+				save: TransactionManagerMock.save,
 			}),
 		};
-		return Promise.resolve(connection);
+		return Promise.resolve(entityManager);
 	}
 }
 
