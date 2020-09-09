@@ -19,22 +19,30 @@ export class BookingRequest {
 	public citizenUinFin?: string;
 	public citizenName?: string;
 	public citizenEmail?: string;
-	public citizenPhone?: string;
-	public location?: string;
-	public description?: string;
+	public citizenPhone?: string | null;
+	public location?: string | null;
+	public description?: string | null;
 }
 
-export class BookingResponse {
-	public id: number;
-	public status: number;
-	public startDateTime: Date;
-	public endDateTime: Date;
-	public serviceId: number;
-	public serviceName: string;
-	public serviceProviderId?: number;
-	public serviceProviderName?: string;
-	public citizenUinFin?: string;
-}
+export type BookingResponse = {
+	id: number;
+	status: number;
+	startDateTime: Date;
+	endDateTime: Date;
+	serviceId: number;
+	serviceName: string;
+	serviceProviderId?: number;
+	serviceProviderName?: string;
+	serviceProviderEmail?: string;
+	serviceProviderPhone?: string;
+	citizenUinFin?: string;
+	citizenName?: string;
+	citizenEmail?: string;
+	citizenPhone?: string;
+	location?: string;
+	description?: string;
+	refId?: string;
+};
 
 export class BookingSearchRequest {
 	public from: Date;

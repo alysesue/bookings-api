@@ -17,7 +17,15 @@ export class BookingsMapper {
 			serviceName: booking.service?.name,
 			serviceProviderId: booking.serviceProviderId,
 			serviceProviderName: booking.serviceProvider?.name,
+			serviceProviderEmail: booking.serviceProvider?.email,
+			serviceProviderPhone: booking.serviceProvider?.phone,
 			citizenUinFin: booking.citizenUinFin,
+			citizenName: booking.citizenName,
+			citizenEmail: booking.citizenEmail,
+			citizenPhone: booking.citizenPhone,
+			location: booking.location,
+			description: booking.description,
+			refId: booking.refId,
 		} as BookingResponse;
 	}
 
