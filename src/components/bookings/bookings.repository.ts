@@ -28,14 +28,14 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 	public async getBooking(bookingId: number, accessType = QueryAccessType.Read): Promise<Booking> {
 		const { userCondition, userParams } = await this.createUserVisibilityCondition('booking', accessType);
+		const idCondition = 'booking."_id" = :id';
 
 		const repository = await this.getRepository();
 		const query = repository
 			.createQueryBuilder('booking')
-			.where(userCondition, { ...userParams })
+			.where([userCondition, idCondition].filter((c) => c).join(' AND '), { ...userParams, id: bookingId })
 			.leftJoinAndSelect('booking._serviceProvider', 'sp_relation')
-			.leftJoinAndSelect('booking._service', 'service_relation')
-			.where('booking."_id" = :id', { id: bookingId });
+			.leftJoinAndSelect('booking._service', 'service_relation');
 
 		return await query.getOne();
 	}
