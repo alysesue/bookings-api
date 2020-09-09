@@ -60,6 +60,9 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		includeSchedule?: boolean;
 		includeTimeslotsSchedule?: boolean;
 	}): Promise<ServiceProvider> {
+		if (!options.id) {
+			return null;
+		}
 		const repository = await this.getRepository();
 		const entry = await repository.findOne(options.id, { relations: ['_calendar'] });
 		if (!entry) {

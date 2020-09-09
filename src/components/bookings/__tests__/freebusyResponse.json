@@ -1,21 +1,19 @@
 {
-  "data": {
-    "kind": "calendar#freeBusy",
-    "timeMin": "2020-05-07T01:46:34.211Z",
-    "timeMax": "2020-05-08T01:46:34.211Z",
-    "groups": {
-      "google-id-1": {
-        "errors": [],
-        "calendars": [
-          "google-id-1"
-        ]
-      }
-    },
-    "calendars": {
-      "google-id-1": {
-        "errors": [],
-        "busy": []
-      }
-    }
-  }
+	"data": {
+		"kind": "calendar#freeBusy",
+		"timeMin": "2020-05-07T01:46:34.211Z",
+		"timeMax": "2020-05-08T01:46:34.211Z",
+		"groups": {
+			"google-id-1": {
+				"errors": [],
+				"calendars": ["google-id-1"]
+			}
+		},
+		"calendars": {
+			"google-id-1": {
+				"errors": [],
+				"busy": []
+			}
+		}
+	}
 }

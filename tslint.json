@@ -1,10 +1,12 @@
 {
-  "extends": [
-    "./node_modules/mol-lib-config/shared-config/tslint.json",
-    "tslint-config-prettier"
-  ],
-  "rulesDirectory": ["tslint-plugin-prettier"],
-  "rules": {
-    "prettier": true
-  }
+	"extends": [
+		"./node_modules/mol-lib-config/shared-config/tslint.json",
+		"tslint-config-prettier"
+	],
+	"rulesDirectory": [
+		"tslint-plugin-prettier"
+	],
+	"rules": {
+		"prettier": true
+	}
 }

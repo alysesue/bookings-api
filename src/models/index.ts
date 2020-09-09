@@ -1,4 +1,5 @@
 import { Booking } from './entities/booking';
+import { BookingChangeLog } from './entities/bookingChangeLog';
 import { BookingStatus } from './bookingStatus';
 import { Schedule } from './entities/schedule';
 import { WeekDaySchedule } from './entities/weekDaySchedule';
@@ -19,6 +20,7 @@ import { Unavailability } from './entities/unavailability';
 
 export {
 	Booking,
+	BookingChangeLog,
 	BusinessValidation,
 	BookingStatus,
 	User,
