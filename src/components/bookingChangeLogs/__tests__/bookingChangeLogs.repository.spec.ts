@@ -49,13 +49,11 @@ describe('BookingChangeLogs repository', () => {
 			getMany: jest.fn(() => Promise.resolve([])),
 		} as unknown) as SelectQueryBuilder<BookingChangeLog>;
 
+		const changedSince = new Date(Date.UTC(2020, 0, 1, 14, 0));
+		const changedUntil = new Date(Date.UTC(2020, 0, 31, 14, 0));
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const repository = Container.get(BookingChangeLogsRepository);
-
-		const changedSince = new Date(Date.UTC(2020, 0, 1, 14, 0));
-		const changedUntil = new Date(Date.UTC(2020, 0, 31, 14, 0));
-
 		const results = await repository.getLogs({ changedSince, changedUntil, bookingIds: [2, 3], serviceId: 1 });
 
 		const whereParam =
