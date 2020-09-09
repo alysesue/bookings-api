@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BookingChangeLogs controller should get logs 1`] = `
+Array [
+  BookingChangeLogResponse {
+    "bookingId": 1,
+    "changeLogs": Array [
+      ChangeLogEntryResponse {
+        "action": "create",
+        "changes": Object {
+          "citizenName": "c",
+        },
+        "previousBooking": Object {
+          "citizenEmail": "b@email.com",
+          "citizenName": "a",
+          "schemaVersion": 1,
+        },
+        "timestamp": 2020-01-01T14:00:00.000Z,
+        "user": ProfileResponse {
+          "admin": AdminUserContract {
+            "email": "test@email.com",
+          },
+          "userType": "admin",
+        },
+      },
+    ],
+  },
+]
+`;

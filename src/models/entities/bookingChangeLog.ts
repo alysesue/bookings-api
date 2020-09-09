@@ -49,6 +49,10 @@ export class BookingChangeLog {
 		return this._timestamp;
 	}
 
+	public set timestamp(value: Date) {
+		this._timestamp = value;
+	}
+
 	public get booking(): Booking {
 		return this._booking;
 	}
