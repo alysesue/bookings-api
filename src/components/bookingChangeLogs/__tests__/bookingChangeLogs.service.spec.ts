@@ -1,8 +1,7 @@
-import { Booking, BookingStatus, Service, User } from '../../../models';
+import { Booking, BookingChangeLog, BookingStatus, ChangeLogAction, Service, User } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { UserContext } from '../../../infrastructure/userContext.middleware';
 import { AsyncFunction, TransactionManager } from '../../../core/transactionManager';
-import { ChangeLogAction } from '../../../models/entities/bookingChangeLog';
 import { BookingChangeLogsService } from '../bookingChangeLogs.service';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { BookingChangeLogsRepository } from '../bookingChangeLogs.repository';
@@ -196,6 +195,16 @@ describe('BookingChangeLogs service', () => {
 		expect(firstAction).toBeCalled();
 		expect(retryAction).not.toBeCalled();
 	});
+
+	it('should get logs', async () => {
+		const changedSince = new Date(Date.UTC(2020, 0, 1, 14, 0));
+		const changedUntil = new Date(Date.UTC(2020, 0, 31, 14, 0));
+		BookingChangeLogsRepositoryMock.getLogs.mockImplementation(() => Promise.resolve(new Map()));
+
+		const svc = Container.get(BookingChangeLogsService);
+		await svc.getLogs({ changedSince, changedUntil, bookingIds: [2, 3], serviceId: 1 });
+		expect(BookingChangeLogsRepositoryMock.getLogs).toBeCalled();
+	});
 });
 
 class TransactionManagerMock extends TransactionManager {
@@ -217,8 +226,13 @@ class UserContextMock extends UserContext {
 
 class BookingChangeLogsRepositoryMock extends BookingChangeLogsRepository {
 	public static save = jest.fn();
+	public static getLogs = jest.fn<Promise<Map<number, BookingChangeLog[]>>, any>();
 
 	public async save(...params): Promise<any> {
 		await BookingChangeLogsRepositoryMock.save(...params);
+	}
+
+	public async getLogs(...params): Promise<any> {
+		await BookingChangeLogsRepositoryMock.getLogs(...params);
 	}
 }

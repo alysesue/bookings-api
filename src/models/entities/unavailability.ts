@@ -27,6 +27,7 @@ export class Unavailability implements IUnavailability {
 	}
 
 	@Column({ nullable: false })
+	@Index()
 	private _serviceId: number;
 
 	public get serviceId(): number {
