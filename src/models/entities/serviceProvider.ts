@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Calendar } from './calendar';
 import { ServiceProviderStatus } from '../serviceProviderStatus';
 import { Service } from './service';
@@ -25,6 +25,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	}
 
 	@Column({ nullable: false })
+	@Index()
 	private _serviceId: number;
 
 	public get serviceId(): number {

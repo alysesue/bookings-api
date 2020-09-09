@@ -1,9 +1,9 @@
-import { Booking, BookingChangeLog, User } from '../../../models';
+import { Booking, BookingChangeLog, ChangeLogAction, User } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { UserContext } from '../../../infrastructure/userContext.middleware';
 import { TransactionManager } from '../../../core/transactionManager';
 import { BookingChangeLogsRepository } from '../bookingChangeLogs.repository';
-import { ChangeLogAction } from '../../../models/entities/bookingChangeLog';
+import { SelectQueryBuilder } from 'typeorm';
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
@@ -40,6 +40,27 @@ describe('BookingChangeLogs repository', () => {
 
 		await repo.save(changeLog);
 		expect(TransactionManagerMock.save).toBeCalled();
+	});
+
+	it('should retrieve logs', async () => {
+		const queryBuilderMock = ({
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			getMany: jest.fn(() => Promise.resolve([])),
+		} as unknown) as SelectQueryBuilder<BookingChangeLog>;
+
+		const changedSince = new Date(Date.UTC(2020, 0, 1, 14, 0));
+		const changedUntil = new Date(Date.UTC(2020, 0, 31, 14, 0));
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const repository = Container.get(BookingChangeLogsRepository);
+		const results = await repository.getLogs({ changedSince, changedUntil, bookingIds: [2, 3], serviceId: 1 });
+
+		const whereParam =
+			'(changelog."_serviceId" = :serviceId) AND (changelog."_timestamp" >= :changedSince AND changelog."_timestamp" < :changedUntil) AND (changelog."_bookingId" IN (:...bookingIds))';
+		expect((queryBuilderMock.where as jest.Mock).mock.calls[0][0]).toBe(whereParam);
+		expect(queryBuilderMock.getMany).toHaveBeenCalled();
+		expect(results).toBeDefined();
 	});
 });
 

@@ -1,6 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from './user';
 import { Booking } from './booking';
+import { Service } from './service';
 
 @Entity()
 export class BookingChangeLog {
@@ -11,11 +12,19 @@ export class BookingChangeLog {
 	@Index()
 	private _timestamp: Date;
 
+	@Column({ nullable: false })
+	@Index()
+	private _serviceId: number;
+
+	@ManyToOne((type) => Service)
+	@JoinColumn({ name: '_serviceId' })
+	private _service: Service;
+
 	@ManyToOne((type) => Booking, { nullable: false })
 	@JoinColumn({ name: '_bookingId' })
 	private _booking: Booking;
 
-	@Column()
+	@Column({ nullable: false })
 	@Index()
 	private _bookingId: number;
 
@@ -40,8 +49,16 @@ export class BookingChangeLog {
 		return this._timestamp;
 	}
 
+	public set timestamp(value: Date) {
+		this._timestamp = value;
+	}
+
 	public get booking(): Booking {
 		return this._booking;
+	}
+
+	public get bookingId(): number {
+		return this._bookingId;
 	}
 
 	public get user(): User {
@@ -85,6 +102,7 @@ export class BookingChangeLog {
 	}): BookingChangeLog {
 		const instance = new BookingChangeLog();
 		instance._timestamp = new Date();
+		instance._serviceId = booking.serviceId;
 		instance._booking = booking;
 		instance._user = user;
 		instance._action = action;
