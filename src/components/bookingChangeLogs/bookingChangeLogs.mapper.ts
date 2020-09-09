@@ -29,7 +29,7 @@ export class BookingChangeLogsMapper {
 	private static mapChangeLogAction(action: ChangeLogAction): ChangeLogActionContract {
 		const value = BookingChangeLogsMapper._actionMap[action];
 		if (!value) {
-			throw new Error('Not mapping found for ChangeLogAction: ' + action);
+			throw new Error('No mapping found for ChangeLogAction: ' + action);
 		}
 		return value;
 	}
