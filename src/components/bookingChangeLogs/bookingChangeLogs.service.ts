@@ -1,8 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Booking } from '../../models';
+import { Booking, BookingChangeLog, BookingJsonSchemaV1, ChangeLogAction } from '../../models';
 import { UserContext } from '../../infrastructure/userContext.middleware';
-import { BookingChangeLog, BookingJsonSchemaV1, ChangeLogAction } from '../../models/entities/bookingChangeLog';
-import { BookingChangeLogsRepository } from './bookingChangeLogs.repository';
+import { BookingChangeLogsRepository, ChangeLogSearchQuery } from './bookingChangeLogs.repository';
 import { TransactionManager } from '../../core/transactionManager';
 import { BookingIsolationLevel } from '../../models/entities/booking';
 import { ConcurrencyError } from '../../errors/ConcurrencyError';
@@ -35,6 +34,11 @@ export class BookingChangeLogsService {
 			serviceId: booking.serviceId,
 			serviceName: booking.service.name,
 			citizenUinFin: booking.citizenUinFin,
+			citizenName: booking.citizenName,
+			citizenEmail: booking.citizenEmail,
+			citizenPhone: booking.citizenPhone,
+			location: booking.location,
+			description: booking.description,
 		} as BookingJsonSchemaV1;
 
 		if (booking.serviceProviderId) {
@@ -45,6 +49,8 @@ export class BookingChangeLogsService {
 			jsonObj.serviceProviderId = booking.serviceProviderId;
 			jsonObj.serviceProviderName = serviceProvider.name;
 			jsonObj.serviceProviderEmail = serviceProvider.email;
+			// TODO: service provider phone
+			// jsonObj.serviceProviderPhone = serviceProvider.phone;
 		}
 
 		return jsonObj;
@@ -96,5 +102,9 @@ export class BookingChangeLogsService {
 			await this.changeLogsRepository.save(changelog);
 			return newBooking;
 		});
+	}
+
+	public async getLogs(options: ChangeLogSearchQuery): Promise<Map<number, BookingChangeLog[]>> {
+		return await this.changeLogsRepository.getLogs(options);
 	}
 }

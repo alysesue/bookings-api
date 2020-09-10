@@ -93,6 +93,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 					citizenUinFinsCondition,
 				]
 					.filter((c) => c)
+					.map((c) => `(${c})`)
 					.join(' AND '),
 				{
 					serviceId: request.serviceId,

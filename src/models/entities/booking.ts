@@ -97,6 +97,7 @@ export class Booking {
 	private _id: number;
 
 	@Column({ nullable: false })
+	@Index()
 	private _serviceId: number;
 
 	@ManyToOne((type) => Service)
