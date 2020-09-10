@@ -33,33 +33,35 @@ export class ServiceProvidersService {
 	@Inject
 	private timeslotsService: TimeslotsService;
 
-	private static validateServiceProvider(sp: ServiceProviderModel): string[] {
+	private static async validateServiceProvider(sp: ServiceProviderModel): Promise<string[]> {
 		const errors: string[] = [];
-		if (sp.phone && !isSGPhoneNumber(sp.phone))
+		if (sp.phone && !(await isSGPhoneNumber(sp.phone)).pass)
 			errors.push(`For service provider: ${sp.name}. Phone number is invalid: ${sp.phone}.`);
-		if (sp.email && !isEmail(sp.email))
+		if (sp.email && !(await isEmail(sp.email)).pass)
 			errors.push(`For service provider: ${sp.name}. Email is invalid: ${sp.email}.`);
 		return errors;
 	}
 
-	private static validateServiceProviders(sps: ServiceProviderModel[]) {
-		const errors = sps.map((e) => ServiceProvidersService.validateServiceProvider(e));
-		const errorsFlat = [].concat(...errors);
-		if (errorsFlat?.length) {
-			const molError = new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				`Bulk of service providers incorrect`,
-			);
-			const data = {
-				errorsFlat,
-				rules: {
-					header: 'First line should be: name, email, phone',
-					email: 'Email should contain @ and .',
-					phone: 'Phone number should be a Singapore phone number',
-				},
-			};
-			molError.setResponseData(data);
-			throw molError;
-		}
+	private static async validateServiceProviders(sps: ServiceProviderModel[]) {
+		const errorsPromises = sps.map((e) => ServiceProvidersService.validateServiceProvider(e));
+		await Promise.all(errorsPromises).then((errors) => {
+			const errorsFlat = [].concat(...errors);
+			if (errorsFlat?.length) {
+				const molError = new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+					`Bulk of service providers incorrect`,
+				);
+				const data = {
+					errors: errorsFlat,
+					rules: {
+						header: 'First line should be: name, email, phone',
+						email: 'Email should contain @ and .',
+						phone: 'Phone number should be a Singapore phone number',
+					},
+				};
+				molError.setResponseData(data);
+				throw molError;
+			}
+		});
 	}
 
 	public async getServiceProviders(
@@ -104,7 +106,7 @@ export class ServiceProvidersService {
 	}
 
 	public async saveServiceProviders(listRequest: ServiceProviderModel[], serviceId: number) {
-		ServiceProvidersService.validateServiceProviders(listRequest);
+		await ServiceProvidersService.validateServiceProviders(listRequest);
 		for (let i = 0; i < listRequest.length; i++) {
 			await this.saveSp(listRequest[i], serviceId);
 
@@ -126,7 +128,7 @@ export class ServiceProvidersService {
 		if (!sp) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
 		}
-		ServiceProvidersService.validateServiceProviders([request]);
+		await ServiceProvidersService.validateServiceProviders([request]);
 		sp.email = request.email;
 		sp.phone = request.phone;
 		sp.name = request.name;
