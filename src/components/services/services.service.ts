@@ -24,7 +24,11 @@ export class ServicesService {
 
 	public async createService(request: ServiceRequest): Promise<Service> {
 		const service = new Service();
-		service.name = request.name;
+		if (request.name === null || request.name.match(/^ *$/) !== null) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service name is empty');
+		} else {
+			service.name = request.name;
+		}
 
 		return await this.servicesRepository.save(service);
 	}
