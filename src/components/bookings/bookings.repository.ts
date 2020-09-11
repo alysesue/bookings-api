@@ -1,5 +1,5 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { InsertResult, SelectQueryBuilder } from 'typeorm';
+import { InsertResult } from 'typeorm';
 import { Booking, BookingStatus } from '../../models';
 import { QueryAccessType, RepositoryBase } from '../../core/repository';
 import { UserContext } from '../../infrastructure/userContext.middleware';
@@ -14,23 +14,35 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		super(Booking);
 	}
 
-	private async createQueryForUser(_accessType: QueryAccessType): Promise<SelectQueryBuilder<Booking>> {
+	private async createUserVisibilityCondition(
+		alias: string,
+		_accessType: QueryAccessType,
+	): Promise<{ userCondition: string; userParams: object }> {
 		const user = await this.userContext.getCurrentUser();
 
-		const repository = await this.getRepository();
-		let query = repository.createQueryBuilder('booking');
 		if (user.isCitizen()) {
-			query = query.where('booking."_citizenUinFin" = :uinfin', { uinfin: user.singPassUser.UinFin });
+			return {
+				userCondition: `${alias}."_citizenUinFin" = :useruinfin`,
+				userParams: { useruinfin: user.singPassUser.UinFin },
+			};
+		} else {
+			return {
+				userCondition: '',
+				userParams: {},
+			};
 		}
-
-		return query;
 	}
 
 	public async getBooking(bookingId: number, accessType = QueryAccessType.Read): Promise<Booking> {
-		const query = (await this.createQueryForUser(accessType))
+		const { userCondition, userParams } = await this.createUserVisibilityCondition('booking', accessType);
+		const idCondition = 'booking."_id" = :id';
+
+		const repository = await this.getRepository();
+		const query = repository
+			.createQueryBuilder('booking')
+			.where([userCondition, idCondition].filter((c) => c).join(' AND '), { ...userParams, id: bookingId })
 			.leftJoinAndSelect('booking._serviceProvider', 'sp_relation')
-			.leftJoinAndSelect('booking._service', 'service_relation')
-			.where('booking."_id" = :id', { id: bookingId });
+			.leftJoinAndSelect('booking._service', 'service_relation');
 
 		return await query.getOne();
 	}
@@ -69,6 +81,8 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 	}
 
 	public async search(request: BookingSearchQuery, accessType: QueryAccessType): Promise<Booking[]> {
+		const { userCondition, userParams } = await this.createUserVisibilityCondition('booking', accessType);
+
 		const serviceCondition = request.serviceId ? 'booking."_serviceId" = :serviceId' : '';
 
 		const serviceProviderCondition = request.serviceProviderId
@@ -83,9 +97,12 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 		const dateRangeCondition = '(booking."_startDateTime" < :to AND booking."_endDateTime" > :from)';
 
-		const query = (await this.createQueryForUser(accessType))
+		const repository = await this.getRepository();
+		const query = repository
+			.createQueryBuilder('booking')
 			.where(
 				[
+					userCondition,
 					serviceCondition,
 					serviceProviderCondition,
 					dateRangeCondition,
@@ -96,6 +113,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 					.map((c) => `(${c})`)
 					.join(' AND '),
 				{
+					...userParams,
 					serviceId: request.serviceId,
 					serviceProviderId: request.serviceProviderId,
 					from: request.from,
