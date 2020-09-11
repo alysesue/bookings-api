@@ -89,11 +89,13 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 			? 'booking."_serviceProviderId" = :serviceProviderId'
 			: '';
 
-		const statusesCondition = request.statuses ? 'booking."_status" IN (:...statuses)' : '';
+		const statusesCondition =
+			request.statuses && request.statuses.length > 0 ? 'booking."_status" IN (:...statuses)' : '';
 
-		const citizenUinFinsCondition = request.citizenUinFins
-			? 'booking."_citizenUinFin" IN (:...citizenUinFins)'
-			: '';
+		const citizenUinFinsCondition =
+			request.citizenUinFins && request.citizenUinFins.length > 0
+				? 'booking."_citizenUinFin" IN (:...citizenUinFins)'
+				: '';
 
 		const dateRangeCondition = '(booking."_startDateTime" < :to AND booking."_endDateTime" > :from)';
 
