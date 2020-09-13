@@ -131,9 +131,9 @@ export class BookingsController extends Controller {
 	}
 
 	/**
-	 * Retrieves all bookings that have start time in the datetime range [from, to].
-	 * @param from The lower bound datetime limit (inclusive) for booking's start.
-	 * @param to  The upper bound datetime limit (inclusive) for booking's start.
+	 * Retrieves all bookings that intercept the datetime range provided [from, to].
+	 * @param from The lower bound datetime limit (inclusive) for booking's end time.
+	 * @param to  The upper bound datetime limit (inclusive) for booking's start time.
 	 * @param status (Optional) filters by a list of status: Pending (1), Accepted (2), Cancelled (3).
 	 * @param citizenUinFins (Optional) filters by a list of citizen ids
 	 * @param serviceId (Optional) filters by a service (id).
