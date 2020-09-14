@@ -77,9 +77,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 		const statusesCondition = request.statuses ? 'booking."_status" IN (:...statuses)' : '';
 
-		const citizenUinFinsCondition = request.citizenUinFins
-			? 'booking."_citizenUinFin" IN (:...citizenUinFins)'
-			: '';
+		const citizenUinFinsCondition = '';
 
 		const dateRangeCondition = '(booking."_startDateTime" < :to AND booking."_endDateTime" > :from)';
 
