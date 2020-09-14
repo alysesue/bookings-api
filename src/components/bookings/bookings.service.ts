@@ -85,6 +85,28 @@ export class BookingsService {
 		return [ChangeLogAction.Cancel, booking];
 	}
 
+
+	public async declineBooking(bookingId: number): Promise<Booking> {
+		return await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBooking.bind(this),
+			this.declineBookingInternal.bind(this),
+		);
+	}
+
+	private async declineBookingInternal(booking: Booking): Promise<[ChangeLogAction, Booking]> {
+		if (booking.status !== BookingStatus.PendingApproval || booking.startDateTime < new Date()) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Booking ${booking.id} is in invalid state for declining`,
+			);
+		}
+
+		booking.status = BookingStatus.Declined;
+		await this.bookingsRepository.update(booking);
+
+		return [ChangeLogAction.Decline, booking];
+	}
+
 	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequest): Promise<Booking> {
 		const acceptAction = (_booking) => this.acceptBookingInternal(_booking, acceptRequest);
 		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), acceptAction);

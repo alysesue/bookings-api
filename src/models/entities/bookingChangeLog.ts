@@ -85,7 +85,7 @@ export class BookingChangeLog {
 		this._newState = { schemaVersion: 1, ...value };
 	}
 
-	constructor() {}
+	constructor() { }
 
 	public static create({
 		booking,
@@ -143,4 +143,5 @@ export enum ChangeLogAction {
 	Cancel,
 	Update,
 	Reschedule,
+	Decline,
 }

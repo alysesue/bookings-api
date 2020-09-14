@@ -210,6 +210,19 @@ describe('Bookings.Service', () => {
 			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Booking 1 not found'),
 		);
 	});
+
+	it('should decline booking', async () => {
+		const bookingService = Container.get(BookingsService);
+		BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		const result = await bookingService.declineBooking(1);
+
+		expect(result.status).toBe(BookingStatus.Declined);
+	});
 });
 
 export class BookingRepositoryMock extends BookingsRepository {
@@ -284,7 +297,7 @@ export class UnavailabilitiesServiceMock extends UnavailabilitiesService {
 export class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn();
 
-	public init() {}
+	public init() { }
 
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(params);
@@ -302,7 +315,7 @@ class BookingChangeLogsServiceMock extends BookingChangeLogsService {
 class ServicesServiceMock extends ServicesService {
 	public static getService = jest.fn();
 
-	public init() {}
+	public init() { }
 	public async getService(...params): Promise<any> {
 		return await ServicesServiceMock.getService(params);
 	}
