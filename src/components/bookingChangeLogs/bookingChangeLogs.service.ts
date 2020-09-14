@@ -49,8 +49,7 @@ export class BookingChangeLogsService {
 			jsonObj.serviceProviderId = booking.serviceProviderId;
 			jsonObj.serviceProviderName = serviceProvider.name;
 			jsonObj.serviceProviderEmail = serviceProvider.email;
-			// TODO: service provider phone
-			// jsonObj.serviceProviderPhone = serviceProvider.phone;
+			jsonObj.serviceProviderPhone = serviceProvider.phone;
 		}
 
 		return jsonObj;
