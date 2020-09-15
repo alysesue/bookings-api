@@ -211,7 +211,7 @@ describe('Bookings.Service', () => {
 		);
 	});
 
-	it('should decline booking', async () => {
+	it('should reject booking', async () => {
 		const bookingService = Container.get(BookingsService);
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(1)
@@ -219,9 +219,9 @@ describe('Bookings.Service', () => {
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.build();
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
-		const result = await bookingService.declineBooking(1);
+		const result = await bookingService.rejectBooking(1);
 
-		expect(result.status).toBe(BookingStatus.Declined);
+		expect(result.status).toBe(BookingStatus.Rejected);
 	});
 });
 

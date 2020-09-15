@@ -200,13 +200,13 @@ export class BookingsController extends Controller {
 	 * Retrieves a list of available service providers for this booking timeslot.
 	 * @param bookingId The booking id.
 	 */
-	@Post('{bookingId}/decline')
+	@Post('{bookingId}/reject')
 	@SuccessResponse(200, 'Declined')
 	@MOLAuth({
 		admin: {}
 	})
 	@Response(401, 'Valid authentication types: [admin]')
-	public async declineBooking(@Path() bookingId: number): Promise<any> {
-		await this.bookingsService.declineBooking(bookingId);
+	public async rejectBooking(@Path() bookingId: number): Promise<any> {
+		await this.bookingsService.rejectBooking(bookingId);
 	}
 }
