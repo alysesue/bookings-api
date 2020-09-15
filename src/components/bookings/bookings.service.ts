@@ -99,7 +99,7 @@ export class BookingsService {
 	}
 
 	private async declineBookingInternal(booking: Booking): Promise<[ChangeLogAction, Booking]> {
-		if (booking.status !== BookingStatus.PendingApproval || booking.startDateTime < new Date()) {
+		if (booking.status !== BookingStatus.PendingApproval) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Booking ${booking.id} is in invalid state for declining`,
 			);
