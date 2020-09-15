@@ -1,6 +1,6 @@
 import { Booking, BookingChangeLog, BookingStatus, ChangeLogAction, Service, User } from '../../../models';
 import { Container } from 'typescript-ioc';
-import { UserContext } from '../../../infrastructure/userContext.middleware';
+import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AsyncFunction, TransactionManager } from '../../../core/transactionManager';
 import { BookingChangeLogsService } from '../bookingChangeLogs.service';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';

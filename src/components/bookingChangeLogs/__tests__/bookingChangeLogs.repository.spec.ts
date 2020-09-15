@@ -1,6 +1,6 @@
 import { Booking, BookingChangeLog, ChangeLogAction, User } from '../../../models';
 import { Container } from 'typescript-ioc';
-import { UserContext } from '../../../infrastructure/userContext.middleware';
+import { UserContext } from '../../../infrastructure/auth/userContext';
 import { TransactionManager } from '../../../core/transactionManager';
 import { BookingChangeLogsRepository } from '../bookingChangeLogs.repository';
 import { SelectQueryBuilder } from 'typeorm';

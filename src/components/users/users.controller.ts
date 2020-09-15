@@ -2,7 +2,7 @@ import { Controller, Get, Response, Route, Tags } from 'tsoa';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { Inject } from 'typescript-ioc';
-import { UserContext } from '../../infrastructure/userContext.middleware';
+import { UserContext } from '../../infrastructure/auth/userContext';
 import { ProfileResponse } from './users.apicontract';
 import { UsersMapper } from './users.mapper';
 

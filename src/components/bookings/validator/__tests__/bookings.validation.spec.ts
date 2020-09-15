@@ -7,7 +7,7 @@ import { CalendarsService } from '../../../calendars/calendars.service';
 import { TimeslotsService } from '../../../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../../../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../../../unavailabilities/unavailabilities.service';
-import { UserContext } from '../../../../infrastructure/userContext.middleware';
+import { UserContext } from '../../../../infrastructure/auth/userContext';
 import { BookingBuilder } from '../../../../models/entities/booking';
 import { User } from '../../../../models';
 import { BookingsValidatorFactory } from '../bookings.validation';

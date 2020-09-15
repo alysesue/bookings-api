@@ -13,7 +13,7 @@ import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { ServicesService } from '../../services/services.service';
-import { UserContext } from '../../../infrastructure/userContext.middleware';
+import { UserContext } from '../../../infrastructure/auth/userContext';
 import {
 	BookingChangeLogsService,
 	GetBookingFunction,

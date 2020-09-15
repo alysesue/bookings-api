@@ -2,7 +2,7 @@ import { Container } from 'typescript-ioc';
 import { UsersController } from '../users.controller';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
-import { UserContext } from '../../../infrastructure/userContext.middleware';
+import { UserContext } from '../../../infrastructure/auth/userContext';
 import { User } from '../../../models';
 
 afterAll(() => {

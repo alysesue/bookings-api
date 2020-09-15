@@ -17,6 +17,7 @@ import { AdminUser } from './entities/adminUser';
 // TODO : rename
 import { TimeslotItem } from './entities/timeslotItem';
 import { Unavailability } from './entities/unavailability';
+import { ServiceAdminGroupMap } from './entities/serviceAdminGroupMap';
 
 export {
 	Booking,
@@ -30,6 +31,7 @@ export {
 	AdminUser,
 	Schedule,
 	Service,
+	ServiceAdminGroupMap,
 	WeekDayBreak,
 	WeekDaySchedule,
 	Calendar,

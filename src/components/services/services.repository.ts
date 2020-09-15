@@ -39,4 +39,20 @@ export class ServicesRepository extends RepositoryBase<Service> {
 	public async getService(id: number): Promise<Service> {
 		return (await this.getRepository()).findOne(id);
 	}
+
+	public async getServicesForUserGroups(userGroups: string[]): Promise<Service[]> {
+		if (!userGroups || userGroups.length === 0) {
+			return [];
+		}
+
+		const repository = await this.getRepository();
+		// *** Don't filter by user permission here, as this is used by UserContext class
+		const query = repository
+			.createQueryBuilder('svc')
+			.innerJoin('svc._serviceAdminGroupMap', 'svcgroup', 'svcgroup."_userGroupRef" IN (:...userGroups)', {
+				userGroups,
+			});
+
+		return await query.getMany();
+	}
 }

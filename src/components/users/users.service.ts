@@ -5,10 +5,19 @@ import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
+import { UserGroupParser, UserGroupRole } from '../../infrastructure/auth/userGroupParser';
+import { AuthGroup, ServiceAdminAuthGroup, ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
+import { ServicesRepository } from '../services/services.repository';
+import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
+
 export type HeadersType = { [key: string]: string };
 
 @InRequestScope
 export class UsersService {
+	@Inject
+	private servicesRepository: ServicesRepository;
+	@Inject
+	private serviceProvidersRepository: ServiceProvidersRepository;
 	@Inject
 	private usersRepository: UsersRepository;
 
@@ -84,5 +93,36 @@ export class UsersService {
 
 		const adminUser = User.createAdminUser(data);
 		return await this.getOrSaveInternal(adminUser, () => this.usersRepository.getUserByMolAdminId(data.molAdminId));
+	}
+
+	public async getAdminUserGroupsFromHeaders(headers: HeadersType): Promise<AuthGroup[]> {
+		const groupListStr = headers[MOLSecurityHeaderKeys.ADMIN_GROUPS];
+		const groups: AuthGroup[] = [];
+		const parsedGroups = UserGroupParser.parseUserGroups(groupListStr);
+		if (parsedGroups.length === 0) {
+			return groups;
+		}
+
+		const svcAdminRoles = parsedGroups.filter((g) => g.userGroupRole === UserGroupRole.ServiceAdmin);
+		if (svcAdminRoles.length > 0) {
+			const serviceGroupRefs = svcAdminRoles.map((g) => g.groupStr);
+			const services = await this.servicesRepository.getServicesForUserGroups(serviceGroupRefs);
+			if (services.length > 0) {
+				groups.push(new ServiceAdminAuthGroup(services));
+			}
+		}
+
+		const serviceProviderRole = parsedGroups.find((g) => g.userGroupRole === UserGroupRole.ServiceProvider);
+		if (serviceProviderRole) {
+			const molAdminId = headers[MOLSecurityHeaderKeys.ADMIN_ID];
+			const serviceProvider = await this.serviceProvidersRepository.getServiceProviderByMolAdminId({
+				molAdminId,
+			});
+			if (serviceProvider) {
+				groups.push(new ServiceProviderAuthGroup(serviceProvider));
+			}
+		}
+
+		return groups;
 	}
 }

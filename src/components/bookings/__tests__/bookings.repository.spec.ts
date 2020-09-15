@@ -3,7 +3,7 @@ import { Booking, BookingStatus, User } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { InsertResult } from 'typeorm';
 import { QueryAccessType } from '../../../core/repository';
-import { UserContext } from '../../../infrastructure/userContext.middleware';
+import { UserContext } from '../../../infrastructure/auth/userContext';
 import { TransactionManager } from '../../../core/transactionManager';
 import { BookingBuilder } from '../../../models/entities/booking';
 

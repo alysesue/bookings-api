@@ -11,7 +11,7 @@ import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotPro
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { DateHelper } from '../../../infrastructure/dateHelper';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
-import { UserContext } from '../../../infrastructure/userContext.middleware';
+import { UserContext } from '../../../infrastructure/auth/userContext';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { BookingsValidatorFactory, IValidator } from '../validator/bookings.validation';
 import {
@@ -297,7 +297,7 @@ export class UnavailabilitiesServiceMock extends UnavailabilitiesService {
 export class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn();
 
-	public init() { }
+	public init() {}
 
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(params);
@@ -315,7 +315,7 @@ class BookingChangeLogsServiceMock extends BookingChangeLogsService {
 class ServicesServiceMock extends ServicesService {
 	public static getService = jest.fn();
 
-	public init() { }
+	public init() {}
 	public async getService(...params): Promise<any> {
 		return await ServicesServiceMock.getService(params);
 	}

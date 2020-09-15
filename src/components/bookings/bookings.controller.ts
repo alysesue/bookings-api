@@ -203,7 +203,7 @@ export class BookingsController extends Controller {
 	@Post('{bookingId}/reject')
 	@SuccessResponse(200, 'Rejected')
 	@MOLAuth({
-		admin: {}
+		admin: {},
 	})
 	@Response(401, 'Valid authentication types: [admin]')
 	public async rejectBooking(@Path() bookingId: number): Promise<any> {

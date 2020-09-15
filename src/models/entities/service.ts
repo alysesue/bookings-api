@@ -2,6 +2,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGenerate
 import { Schedule } from './schedule';
 import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
+import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
 
 @Entity()
 export class Service implements IService, IEntityWithSchedule, IEntityWithTimeslotsSchedule {
@@ -16,7 +17,10 @@ export class Service implements IService, IEntityWithSchedule, IEntityWithTimesl
 		return this._id;
 	}
 
-	@Column()
+	@OneToOne((type) => ServiceAdminGroupMap, (e) => e._service, { nullable: true })
+	public _serviceAdminGroupMap: ServiceAdminGroupMap;
+
+	@Column({ type: 'varchar', length: 100, nullable: false })
 	@Index({ unique: true })
 	private _name: string;
 

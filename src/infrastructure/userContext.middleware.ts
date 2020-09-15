@@ -1,8 +1,6 @@
 import * as Koa from 'koa';
-import { Inject, InRequestScope } from 'typescript-ioc';
-import { ContainerContext, ContainerContextMiddleware } from './containerContext.middleware';
-import { User } from '../models';
-import { UsersService } from '../components/users/users.service';
+import { UserContext } from './auth/userContext';
+import { ContainerContextMiddleware } from './containerContext.middleware';
 
 export class UserContextMiddleware {
 	public build(): Koa.Middleware {
@@ -13,30 +11,5 @@ export class UserContextMiddleware {
 
 			await next();
 		};
-	}
-}
-
-@InRequestScope
-export class UserContext {
-	@Inject
-	private containerContext: ContainerContext;
-	private _requestHeaders: any;
-	private _currentUser?: User;
-	private _loaded: boolean;
-
-	public init({ requestHeaders }: { requestHeaders: any }) {
-		this._requestHeaders = requestHeaders || {};
-		this._loaded = false;
-	}
-
-	public async getCurrentUser(): Promise<User> {
-		if (this._loaded) {
-			return this._currentUser;
-		}
-
-		const usersService = this.containerContext.resolve(UsersService);
-		this._currentUser = await usersService.getOrSaveUserFromHeaders(this._requestHeaders);
-		this._loaded = true;
-		return this._currentUser;
 	}
 }
