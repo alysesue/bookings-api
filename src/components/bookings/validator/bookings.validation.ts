@@ -3,10 +3,9 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { DateHelper } from '../../../infrastructure/dateHelper';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { BookingsRepository } from '../bookings.repository';
+import { BookingSearchQuery, BookingsRepository } from '../bookings.repository';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
-import { BookingSearchRequest } from '../bookings.apicontract';
 import { QueryAccessType } from '../../../core/repository';
 import { isEmail, isSGUinfin } from 'mol-lib-api-contract/utils';
 
@@ -89,14 +88,13 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 	public async validateBooking(booking: Booking): Promise<void> {
 		const { startDateTime, endDateTime, serviceId, serviceProviderId } = booking;
 
-		const searchQuery = new BookingSearchRequest(
-			startDateTime,
-			endDateTime,
-			[BookingStatus.Accepted],
+		const searchQuery: BookingSearchQuery = {
+			from: startDateTime,
+			to: endDateTime,
+			statuses: [BookingStatus.Accepted],
 			serviceId,
-			[],
 			serviceProviderId,
-		);
+		};
 
 		const acceptedBookings = await this.bookingsRepository.search(searchQuery, QueryAccessType.Read);
 
