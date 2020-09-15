@@ -142,6 +142,17 @@ describe('Bookings.Controller', () => {
 
 		expect(result as BookingResponse);
 	});
+
+	it('should reject booking', async () => {
+		const controller = Container.get(BookingsController);
+		const bookingId = 1;
+		BookingsServiceMock.mockRejectBooking = Promise.resolve(testBooking1);
+
+		await controller.rejectBooking(bookingId);
+
+		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
+	});
+
 });
 
 const TimeslotsServiceMock = {
@@ -154,6 +165,7 @@ class BookingsServiceMock extends BookingsService {
 	public static mockBooking: Booking;
 	public static mockAcceptBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockCancelBooking = Promise.resolve(BookingsServiceMock.mockBooking);
+	public static mockRejectBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockGetBooking: Booking;
 	public static mockPostBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockBookings: Booking[] = [];
@@ -174,6 +186,10 @@ class BookingsServiceMock extends BookingsService {
 	public async cancelBooking(bookingId: number): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
 		return BookingsServiceMock.mockCancelBooking;
+	}
+	public async rejectBooking(bookingId: number): Promise<Booking> {
+		BookingsServiceMock.mockBookingId = bookingId;
+		return BookingsServiceMock.mockRejectBooking;
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
