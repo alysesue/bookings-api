@@ -143,5 +143,4 @@ export enum ChangeLogAction {
 	Cancel,
 	Update,
 	Reschedule,
-	Decline,
 }

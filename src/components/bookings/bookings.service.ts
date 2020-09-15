@@ -35,15 +35,19 @@ export class BookingsService {
 	@Inject
 	private changeLogsService: BookingChangeLogsService;
 
-	public async getBooking(bookingId: number): Promise<Booking> {
+	public async getBooking(bookingId: number, accessType = QueryAccessType.Read): Promise<Booking> {
 		if (!bookingId) {
 			return null;
 		}
-		const booking = await this.bookingsRepository.getBooking(bookingId);
+		const booking = await this.bookingsRepository.getBooking(bookingId, accessType);
 		if (!booking) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingId} not found`);
 		}
 		return booking;
+	}
+
+	private async getBookingForChange(bookingId: number): Promise<Booking> {
+		return await this.getBooking(bookingId, QueryAccessType.Write);
 	}
 
 	private static getCitizenUinFin(currentUser: User, bookingRequest: BookingRequest): string {
@@ -56,7 +60,7 @@ export class BookingsService {
 	public async cancelBooking(bookingId: number): Promise<Booking> {
 		return await this.changeLogsService.executeAndLogAction(
 			bookingId,
-			this.getBooking.bind(this),
+			this.getBookingForChange.bind(this),
 			this.cancelBookingInternal.bind(this),
 		);
 	}
@@ -89,7 +93,7 @@ export class BookingsService {
 	public async declineBooking(bookingId: number): Promise<Booking> {
 		return await this.changeLogsService.executeAndLogAction(
 			bookingId,
-			this.getBooking.bind(this),
+			this.getBookingForChange.bind(this),
 			this.declineBookingInternal.bind(this),
 		);
 	}
@@ -104,12 +108,16 @@ export class BookingsService {
 		booking.status = BookingStatus.Declined;
 		await this.bookingsRepository.update(booking);
 
-		return [ChangeLogAction.Decline, booking];
+		return [ChangeLogAction.Reject, booking];
 	}
 
 	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequest): Promise<Booking> {
 		const acceptAction = (_booking) => this.acceptBookingInternal(_booking, acceptRequest);
-		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), acceptAction);
+		return await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBookingForChange.bind(this),
+			acceptAction,
+		);
 	}
 
 	private async acceptBookingInternal(
@@ -173,7 +181,7 @@ export class BookingsService {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
 		const saveAction = (_booking) => this.saveInternal(bookingRequest, serviceId);
-		return await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
+		return await this.changeLogsService.executeAndLogAction(null, this.getBookingForChange.bind(this), saveAction);
 	}
 
 	private async saveInternal(bookingRequest: BookingRequest, serviceId: number): Promise<[ChangeLogAction, Booking]> {
