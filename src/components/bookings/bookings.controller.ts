@@ -197,11 +197,11 @@ export class BookingsController extends Controller {
 	}
 
 	/**
-	 * Retrieves a list of available service providers for this booking timeslot.
+	 * Reject a booking request. Only Pending (1) bookings that can be rejected.
 	 * @param bookingId The booking id.
 	 */
 	@Post('{bookingId}/reject')
-	@SuccessResponse(200, 'Declined')
+	@SuccessResponse(200, 'Rejected')
 	@MOLAuth({
 		admin: {}
 	})
