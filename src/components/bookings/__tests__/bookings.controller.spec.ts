@@ -21,7 +21,7 @@ jest.mock('../../../infrastructure/requestHelper', () => ({
 
 jest.mock('mol-lib-common', () => {
 	const actual = jest.requireActual('mol-lib-common');
-	const mock = (config: any) => {
+	const mock = () => {
 		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
 	};
 	return {
@@ -71,8 +71,7 @@ describe('Bookings.Controller', () => {
 	it('should update booking', async () => {
 		const controller = Container.get(BookingsController);
 		const bookingId = 1;
-		BookingsServiceMock.mockCancelBooking = Promise.resolve(testBooking1);
-		BookingsServiceMock.mockPostBooking = Promise.resolve(testBooking2);
+		BookingsServiceMock.mockUpdateBooking = testBooking2;
 
 		const res = await controller.updateBooking(bookingId, new BookingRequest(), 1);
 
@@ -160,6 +159,7 @@ class BookingsServiceMock extends BookingsService {
 	public static mockSearchBookings: Booking[] = [];
 	public static mockBookingId;
 	public static getBookingPromise = Promise.resolve(BookingsServiceMock.mockGetBooking);
+	public static mockUpdateBooking: Booking;
 
 	public async getBooking(bookingId: number): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
@@ -177,10 +177,15 @@ class BookingsServiceMock extends BookingsService {
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
-		return Promise.resolve(BookingsServiceMock.mockSearchBookings);
+		return BookingsServiceMock.mockSearchBookings;
 	}
 
 	public async save(bookingRequest: BookingRequest): Promise<Booking> {
 		return BookingsServiceMock.mockPostBooking;
+	}
+
+	public async update(bookingId: number, bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
+		BookingsServiceMock.mockBookingId = bookingId;
+		return BookingsServiceMock.mockUpdateBooking;
 	}
 }

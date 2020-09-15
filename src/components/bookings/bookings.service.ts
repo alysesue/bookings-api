@@ -139,6 +139,29 @@ export class BookingsService {
 		return [ChangeLogAction.Accept, booking];
 	}
 
+	public async update(bookingId: number, bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
+		const updateAction = (_booking) => this.updateInternal(_booking, bookingRequest);
+		return await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBookingForChange.bind(this),
+			updateAction,
+		);
+	}
+
+	private async updateInternal(
+		previousBooking: Booking,
+		bookingRequest: BookingRequest,
+	): Promise<[ChangeLogAction, Booking]> {
+		const updatedBooking = previousBooking.clone();
+		Object.assign(updatedBooking, bookingRequest);
+
+		await this.bookingsValidatorFactory.getValidator(true).validate(updatedBooking);
+
+		await this.bookingsRepository.update(updatedBooking);
+
+		return [ChangeLogAction.Update, updatedBooking];
+	}
+
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
 		return await this.bookingsRepository.search(searchRequest, QueryAccessType.Read);
 	}

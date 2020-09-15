@@ -18,8 +18,8 @@ import {
 	BookingActionFunction,
 	BookingChangeLogsService,
 	GetBookingFunction,
-} from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
-import { ServicesService } from '../../../components/services/services.service';
+} from '../../bookingChangeLogs/bookingChangeLogs.service';
+import { ServicesService } from '../../services/services.service';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -210,6 +210,34 @@ describe('Bookings.Service', () => {
 			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Booking 1 not found'),
 		);
 	});
+
+	it('should update booking', async () => {
+		const bookingService = Container.get(BookingsService);
+
+		const start = new Date('2020-02-02T11:00');
+		const end = new Date('2020-02-02T12:00');
+		const bookingRequest = {
+			refId: 'ref1',
+			startDateTime: start,
+			endDateTime: end,
+			citizenEmail: 'test@mail.com',
+			citizenName: 'Jake',
+			citizenUinFin: 'S6979208A',
+		} as BookingRequest;
+
+		BookingRepositoryMock.booking = new BookingBuilder()
+			.withCitizenEmail('test@mail.com')
+			.withStartDateTime(start)
+			.withEndDateTime(end)
+			.build();
+
+		const booking = await bookingService.update(1, bookingRequest, 2);
+
+		expect(booking.refId).toBe('ref1');
+		expect(booking.citizenEmail).toBe('test@mail.com');
+		expect(booking.citizenName).toBe('Jake');
+		expect(booking.citizenUinFin).toBe('S6979208A');
+	});
 });
 
 export class BookingRepositoryMock extends BookingsRepository {
@@ -303,6 +331,7 @@ class ServicesServiceMock extends ServicesService {
 	public static getService = jest.fn();
 
 	public init() {}
+
 	public async getService(...params): Promise<any> {
 		return await ServicesServiceMock.getService(params);
 	}
