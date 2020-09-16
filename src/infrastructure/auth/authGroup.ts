@@ -1,4 +1,4 @@
-import { Service, ServiceProvider, User } from '../../models';
+import { Organisation, Service, ServiceProvider, User } from '../../models';
 
 export abstract class AuthGroup {
 	private _user: User;
@@ -16,6 +16,7 @@ export abstract class AuthGroup {
 // Visitor Pattern
 export interface IAuthGroupVisitor {
 	visitCitizen(_citizenGroup: CitizenAuthGroup): void;
+	visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void;
 	visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void;
 	visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void;
 }
@@ -31,6 +32,27 @@ export class CitizenAuthGroup extends AuthGroup {
 
 	public acceptVisitor(visitor: IAuthGroupVisitor): void {
 		visitor.visitCitizen(this);
+	}
+}
+
+export class OrganisationAdminAuthGroup extends AuthGroup {
+	private _organisations: Organisation[];
+
+	constructor(user: User, organisations: Organisation[]) {
+		super(user);
+		if (!organisations || organisations.length === 0) {
+			throw new Error('At least one organisation is required in OrganisationAdminAuthGroup.');
+		}
+
+		this._organisations = organisations;
+	}
+
+	public get organisations(): Organisation[] {
+		return this._organisations;
+	}
+
+	public acceptVisitor(visitor: IAuthGroupVisitor): void {
+		visitor.visitOrganisationAdmin(this);
 	}
 }
 

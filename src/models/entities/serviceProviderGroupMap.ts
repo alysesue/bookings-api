@@ -1,18 +1,22 @@
-import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { IServiceProvider } from '../interfaces';
 
 @Entity()
 export class ServiceProviderGroupMap {
-	@PrimaryGeneratedColumn()
-	private _id: number;
+	@PrimaryColumn()
+	private _serviceProviderId: number;
 
-	public set id(id: number) {
-		this._id = id;
+	public set serviceProviderId(value: number) {
+		this._serviceProviderId = value;
 	}
 
-	public get id(): number {
-		return this._id;
+	public get organisationId() {
+		return this._serviceProviderId;
 	}
+
+	@OneToOne('ServiceProvider', { nullable: false })
+	@JoinColumn({ name: '_serviceProviderId' })
+	public _serviceProvider: IServiceProvider;
 
 	@Column({ type: 'uuid' })
 	@Index({ unique: true })
@@ -25,12 +29,4 @@ export class ServiceProviderGroupMap {
 	public get molAdminId() {
 		return this._molAdminId;
 	}
-
-	@Column({ nullable: false })
-	@Index()
-	private _serviceProviderId: number;
-
-	@OneToOne('ServiceProvider', { nullable: false })
-	@JoinColumn({ name: '_serviceProviderId' })
-	public _serviceProvider: IServiceProvider;
 }

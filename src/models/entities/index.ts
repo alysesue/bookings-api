@@ -9,6 +9,8 @@ import { TimeslotsSchedule } from './timeslotsSchedule';
 import { TimeslotItem } from './timeslotItem';
 import { Unavailability } from './unavailability';
 import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
+import { Organisation } from './organisation';
+import { OrganisationAdminGroupMap } from './organisationAdminGroupMap';
 
 export {
 	Booking,
@@ -22,4 +24,6 @@ export {
 	TimeslotsSchedule,
 	TimeslotItem,
 	Unavailability,
+	Organisation,
+	OrganisationAdminGroupMap,
 };

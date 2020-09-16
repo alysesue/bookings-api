@@ -6,14 +6,22 @@ import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-secu
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 import { AdminUserGroupParser, ParsedUserGroup, UserGroupRole } from '../../infrastructure/auth/adminUserGroupParser';
-import { AuthGroup, ServiceAdminAuthGroup, ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
+import {
+	AuthGroup,
+	OrganisationAdminAuthGroup,
+	ServiceAdminAuthGroup,
+	ServiceProviderAuthGroup,
+} from '../../infrastructure/auth/authGroup';
 import { ServicesRepository } from '../services/services.repository';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
+import { OrganisationsRepository } from '../organisations/organisations.repository';
 
 export type HeadersType = { [key: string]: string };
 
 @InRequestScope
 export class UsersService {
+	@Inject
+	private organisationsRepository: OrganisationsRepository;
 	@Inject
 	private servicesRepository: ServicesRepository;
 	@Inject
@@ -95,6 +103,37 @@ export class UsersService {
 		return await this.getOrSaveInternal(adminUser, () => this.usersRepository.getUserByMolAdminId(data.molAdminId));
 	}
 
+	private async getOrganisationAdminUserGroup({
+		user,
+		parsedGroups,
+	}: {
+		user: User;
+		parsedGroups: ParsedUserGroup[];
+	}): Promise<AuthGroup> {
+		let organisationAdminUserGroup: OrganisationAdminAuthGroup = null;
+
+		const orgAdminRoles = parsedGroups.filter((g) => g.userGroupRole === UserGroupRole.OrganisationAdmin);
+		if (orgAdminRoles.length > 0) {
+			const orgGroupRefs = orgAdminRoles.map((g) => g.groupStr);
+			const organisations = await this.organisationsRepository.getOrganisationsForUserGroups(orgGroupRefs);
+
+			const notFoundGroupRefs = orgGroupRefs.filter(
+				(ref) => !organisations.find((s) => s._organisationAdminGroupMap.userGroupRef === ref),
+			);
+			if (notFoundGroupRefs.length > 0) {
+				logger.warn(
+					`Organisation(s) not found in BookingSG for user group(s): ${notFoundGroupRefs.join(', ')}`,
+				);
+			}
+
+			if (organisations.length > 0) {
+				organisationAdminUserGroup = new OrganisationAdminAuthGroup(user, organisations);
+			}
+		}
+
+		return organisationAdminUserGroup;
+	}
+
 	private async getServiceAdminUserGroup({
 		user,
 		parsedGroups,
@@ -143,7 +182,7 @@ export class UsersService {
 			if (serviceProvider) {
 				serviceProviderUserGroup = new ServiceProviderAuthGroup(user, serviceProvider);
 			} else {
-				logger.warn(`Service provider not found in BookingSG for mol-admin-id:  ${molAdminId}`);
+				logger.warn(`Service provider not found in BookingSG for mol-admin-id: ${molAdminId}`);
 			}
 		}
 
@@ -155,6 +194,11 @@ export class UsersService {
 		const groupListStr = headers[MOLSecurityHeaderKeys.ADMIN_GROUPS];
 		const parsedGroups = AdminUserGroupParser.parseUserGroups(groupListStr);
 		const groups: AuthGroup[] = [];
+
+		const orgAdmin = await this.getOrganisationAdminUserGroup({ user, parsedGroups });
+		if (orgAdmin) {
+			groups.push(orgAdmin);
+		}
 
 		const svcAdmin = await this.getServiceAdminUserGroup({ user, parsedGroups });
 		if (svcAdmin) {

@@ -1,18 +1,22 @@
-import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { IService } from '../interfaces';
 
 @Entity()
 export class ServiceAdminGroupMap {
-	@PrimaryGeneratedColumn()
-	private _id: number;
+	@PrimaryColumn()
+	private _serviceId: number;
 
-	public set id(id: number) {
-		this._id = id;
+	public set serviceId(value: number) {
+		this._serviceId = value;
 	}
 
-	public get id(): number {
-		return this._id;
+	public get serviceId() {
+		return this._serviceId;
 	}
+
+	@OneToOne('Service', { nullable: false })
+	@JoinColumn({ name: '_serviceId' })
+	public _service: IService;
 
 	@Column({ type: 'varchar', length: 200, nullable: false })
 	@Index({ unique: true })
@@ -25,12 +29,4 @@ export class ServiceAdminGroupMap {
 	public get userGroupRef() {
 		return this._userGroupRef;
 	}
-
-	@Column({ nullable: false })
-	@Index()
-	private _serviceId: number;
-
-	@OneToOne('Service', { nullable: false })
-	@JoinColumn({ name: '_serviceId' })
-	public _service: IService;
 }

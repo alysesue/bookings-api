@@ -3,6 +3,7 @@ import { Schedule } from './schedule';
 import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
+import { Organisation } from './organisation';
 
 @Entity()
 export class Service implements IService, IEntityWithSchedule, IEntityWithTimeslotsSchedule {
@@ -16,6 +17,14 @@ export class Service implements IService, IEntityWithSchedule, IEntityWithTimesl
 	public get id(): number {
 		return this._id;
 	}
+
+	@Column({ nullable: false })
+	@Index()
+	private _organisationId: number;
+
+	@ManyToOne((type) => Organisation)
+	@JoinColumn({ name: '_organisationId' })
+	private _organisation: Organisation;
 
 	@OneToOne((type) => ServiceAdminGroupMap, (e) => e._service, { nullable: true })
 	public _serviceAdminGroupMap: ServiceAdminGroupMap;

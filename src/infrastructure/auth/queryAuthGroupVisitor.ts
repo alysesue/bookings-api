@@ -3,6 +3,7 @@ import {
 	AuthGroup,
 	CitizenAuthGroup,
 	IAuthGroupVisitor,
+	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from './authGroup';
@@ -22,6 +23,7 @@ export abstract class QueryAuthGroupVisitor implements IAuthGroupVisitor {
 		return this._conditions.getVisibilityCondition();
 	}
 
+	public abstract visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void;
 	public abstract visitCitizen(_citizenGroup: CitizenAuthGroup): void;
 	public abstract visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void;
 	public abstract visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void;

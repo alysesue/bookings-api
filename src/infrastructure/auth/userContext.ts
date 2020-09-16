@@ -46,7 +46,7 @@ export class UserContext {
 			return [new CitizenAuthGroup(user)];
 		} else {
 			const usersService = this.containerContext.resolve(UsersService);
-			return await usersService.getAdminUserGroupsFromHeaders(this._requestHeaders);
+			return await usersService.getAdminUserGroupsFromHeaders(user, this._requestHeaders);
 		}
 	}
 }
