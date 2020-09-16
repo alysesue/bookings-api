@@ -1,4 +1,4 @@
-import { ChangeLogAction } from '../../models';
+import { Booking, ChangeLogAction } from '../../models';
 import {
 	AuthGroup,
 	CitizenAuthGroup,
@@ -9,35 +9,51 @@ import {
 import { QueryAuthGroupVisitor } from '../../infrastructure/auth/queryAuthGroupVisitor';
 
 export class BookingActionAuthVisitor implements IAuthGroupVisitor {
+	private _booking: Booking;
 	private _changeLogAction: ChangeLogAction;
 	private _hasPermission: boolean;
 
-	constructor(changeLogAction: ChangeLogAction) {
+	constructor(booking: Booking, changeLogAction: ChangeLogAction) {
+		if (!booking) {
+			throw new Error('BookingActionAuthVisitor - Booking cannot be null');
+		}
+
+		this._booking = booking;
 		this._changeLogAction = changeLogAction;
 		this._hasPermission = false;
 	}
 
-	private aggregatePermission(hasPermission: boolean): void {
+	private markWithPermission(): void {
 		// if any role has permission the result will be true.
-		this._hasPermission = this._hasPermission || hasPermission;
+		this._hasPermission = true;
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
-		switch (this._changeLogAction) {
-			case ChangeLogAction.Create:
-			case ChangeLogAction.Update:
-			case ChangeLogAction.Reschedule:
-			case ChangeLogAction.Cancel:
-				this.aggregatePermission(true);
+		const uinFin = _citizenGroup.user.singPassUser.UinFin;
+		if (this._booking.citizenUinFin === uinFin) {
+			switch (this._changeLogAction) {
+				case ChangeLogAction.Create:
+				case ChangeLogAction.Update:
+				case ChangeLogAction.Reschedule:
+				case ChangeLogAction.Cancel:
+					this.markWithPermission();
+			}
 		}
 	}
 
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
-		this.aggregatePermission(true);
+		const serviceId = this._booking.serviceId || this._booking.service?.id;
+		if (_userGroup.hasServiceId(serviceId)) {
+			this.markWithPermission();
+		}
 	}
 
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
-		this.aggregatePermission(true);
+		const serviceProviderId = this._booking.serviceProviderId || this._booking.serviceProvider?.id;
+		// tslint:disable-next-line: tsr-detect-possible-timing-attacks
+		if (_userGroup.authorisedServiceProvider.id === serviceProviderId) {
+			this.markWithPermission();
+		}
 	}
 
 	public hasPermission(authGroups: AuthGroup[]): boolean {
@@ -58,7 +74,7 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
-		const authorisedUinFin = _citizenGroup.citizenUser.singPassUser.UinFin;
+		const authorisedUinFin = _citizenGroup.user.singPassUser.UinFin;
 		this.addAuthCondition(`${this._alias}."_citizenUinFin" = :authorisedUinFin`, {
 			authorisedUinFin,
 		});

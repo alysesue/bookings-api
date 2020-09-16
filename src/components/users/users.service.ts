@@ -5,7 +5,7 @@ import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
-import { UserGroupParser, UserGroupRole } from '../../infrastructure/auth/userGroupParser';
+import { AdminUserGroupParser, ParsedUserGroup, UserGroupRole } from '../../infrastructure/auth/adminUserGroupParser';
 import { AuthGroup, ServiceAdminAuthGroup, ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
 import { ServicesRepository } from '../services/services.repository';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
@@ -95,32 +95,75 @@ export class UsersService {
 		return await this.getOrSaveInternal(adminUser, () => this.usersRepository.getUserByMolAdminId(data.molAdminId));
 	}
 
-	public async getAdminUserGroupsFromHeaders(headers: HeadersType): Promise<AuthGroup[]> {
-		const groupListStr = headers[MOLSecurityHeaderKeys.ADMIN_GROUPS];
-		const groups: AuthGroup[] = [];
-		const parsedGroups = UserGroupParser.parseUserGroups(groupListStr);
-		if (parsedGroups.length === 0) {
-			return groups;
-		}
+	private async getServiceAdminUserGroup({
+		user,
+		parsedGroups,
+	}: {
+		user: User;
+		parsedGroups: ParsedUserGroup[];
+	}): Promise<AuthGroup> {
+		let serviceAdminUserGroup: ServiceAdminAuthGroup = null;
 
 		const svcAdminRoles = parsedGroups.filter((g) => g.userGroupRole === UserGroupRole.ServiceAdmin);
 		if (svcAdminRoles.length > 0) {
 			const serviceGroupRefs = svcAdminRoles.map((g) => g.groupStr);
 			const services = await this.servicesRepository.getServicesForUserGroups(serviceGroupRefs);
+
+			const notFoundGroupRefs = serviceGroupRefs.filter(
+				(ref) => !services.find((s) => s._serviceAdminGroupMap.userGroupRef === ref),
+			);
+			if (notFoundGroupRefs.length > 0) {
+				logger.warn(`Service(s) not found in BookingSG for user group(s): ${notFoundGroupRefs.join(', ')}`);
+			}
+
 			if (services.length > 0) {
-				groups.push(new ServiceAdminAuthGroup(services));
+				serviceAdminUserGroup = new ServiceAdminAuthGroup(user, services);
 			}
 		}
 
+		return serviceAdminUserGroup;
+	}
+
+	private async getServiceProviderUserGroup({
+		user,
+		parsedGroups,
+		molAdminId,
+	}: {
+		user: User;
+		parsedGroups: ParsedUserGroup[];
+		molAdminId: string;
+	}): Promise<AuthGroup> {
+		let serviceProviderUserGroup: ServiceProviderAuthGroup = null;
+
 		const serviceProviderRole = parsedGroups.find((g) => g.userGroupRole === UserGroupRole.ServiceProvider);
 		if (serviceProviderRole) {
-			const molAdminId = headers[MOLSecurityHeaderKeys.ADMIN_ID];
 			const serviceProvider = await this.serviceProvidersRepository.getServiceProviderByMolAdminId({
 				molAdminId,
 			});
 			if (serviceProvider) {
-				groups.push(new ServiceProviderAuthGroup(serviceProvider));
+				serviceProviderUserGroup = new ServiceProviderAuthGroup(user, serviceProvider);
+			} else {
+				logger.warn(`Service provider not found in BookingSG for mol-admin-id:  ${molAdminId}`);
 			}
+		}
+
+		return serviceProviderUserGroup;
+	}
+
+	public async getAdminUserGroupsFromHeaders(user: User, headers: HeadersType): Promise<AuthGroup[]> {
+		const molAdminId = headers[MOLSecurityHeaderKeys.ADMIN_ID];
+		const groupListStr = headers[MOLSecurityHeaderKeys.ADMIN_GROUPS];
+		const parsedGroups = AdminUserGroupParser.parseUserGroups(groupListStr);
+		const groups: AuthGroup[] = [];
+
+		const svcAdmin = await this.getServiceAdminUserGroup({ user, parsedGroups });
+		if (svcAdmin) {
+			groups.push(svcAdmin);
+		}
+
+		const svcProviderAdmin = await this.getServiceProviderUserGroup({ user, parsedGroups, molAdminId });
+		if (svcProviderAdmin) {
+			groups.push(svcProviderAdmin);
 		}
 
 		return groups;

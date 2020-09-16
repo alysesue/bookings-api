@@ -1,6 +1,6 @@
 import { logger, LoggerV2 } from 'mol-lib-common/debugging/logging/LoggerV2';
 
-export class UserGroupParser {
+export class AdminUserGroupParser {
 	private static readonly BookingSGReference = 'bookingsg';
 
 	public static parseUserGroups(groupListStr: string): ParsedUserGroup[] {
@@ -10,7 +10,7 @@ export class UserGroupParser {
 
 		return groupListStr
 			.split(',')
-			.map((g) => UserGroupParser.parseUserGroup(g))
+			.map((g) => AdminUserGroupParser.parseUserGroup(g))
 			.filter((g) => g);
 	}
 
@@ -19,7 +19,7 @@ export class UserGroupParser {
 			.toLowerCase()
 			.split(':')
 			.map((c) => c.trim());
-		if (!chunks || chunks.length !== 3 || chunks[0] !== UserGroupParser.BookingSGReference) {
+		if (!chunks || chunks.length !== 3 || chunks[0] !== AdminUserGroupParser.BookingSGReference) {
 			return null;
 		}
 		const product = chunks[0];
@@ -36,7 +36,7 @@ export class UserGroupParser {
 			return null;
 		}
 
-		const userGroupRole = UserGroupParser.parseGroupRole(roleStr);
+		const userGroupRole = AdminUserGroupParser.parseGroupRole(roleStr);
 		if (!userGroupRole) {
 			return null;
 		}

@@ -58,11 +58,11 @@ export class BookingsService {
 		return bookingRequest.citizenUinFin;
 	}
 
-	private async verifyActionPermission(action: ChangeLogAction): Promise<void> {
+	private async verifyActionPermission(booking: Booking, action: ChangeLogAction): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
-		if (!new BookingActionAuthVisitor(action).hasPermission(authGroups)) {
+		if (!new BookingActionAuthVisitor(booking, action).hasPermission(authGroups)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
-				`User cannot perform this booking action: ${action}`,
+				`User cannot perform this booking action for this service: ${action}`,
 			);
 		}
 	}
@@ -76,8 +76,6 @@ export class BookingsService {
 	}
 
 	private async cancelBookingInternal(booking: Booking): Promise<[ChangeLogAction, Booking]> {
-		await this.verifyActionPermission(ChangeLogAction.Cancel);
-
 		if (booking.status === BookingStatus.Cancelled || booking.startDateTime < new Date()) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Booking ${booking.id} is in invalid state for cancelling`,
@@ -95,6 +93,8 @@ export class BookingsService {
 			await this.calendarsService.deleteCalendarEvent(provider.calendar, eventCalId);
 		}
 		booking.status = BookingStatus.Cancelled;
+
+		await this.verifyActionPermission(booking, ChangeLogAction.Cancel);
 		await this.bookingsRepository.update(booking);
 		await this.loadBookingDependencies(booking);
 
@@ -110,8 +110,6 @@ export class BookingsService {
 	}
 
 	private async rejectBookingInternal(booking: Booking): Promise<[ChangeLogAction, Booking]> {
-		await this.verifyActionPermission(ChangeLogAction.Reject);
-
 		if (booking.status !== BookingStatus.PendingApproval) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Booking ${booking.id} is in invalid state for rejection`,
@@ -119,7 +117,10 @@ export class BookingsService {
 		}
 
 		booking.status = BookingStatus.Rejected;
+
+		await this.verifyActionPermission(booking, ChangeLogAction.Reject);
 		await this.bookingsRepository.update(booking);
+		await this.loadBookingDependencies(booking);
 
 		return [ChangeLogAction.Reject, booking];
 	}
@@ -137,8 +138,6 @@ export class BookingsService {
 		booking: Booking,
 		acceptRequest: BookingAcceptRequest,
 	): Promise<[ChangeLogAction, Booking]> {
-		await this.verifyActionPermission(ChangeLogAction.Accept);
-
 		if (booking.status !== BookingStatus.PendingApproval) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Booking ${booking.id} is in invalid state for accepting`,
@@ -170,6 +169,7 @@ export class BookingsService {
 		booking.serviceProvider = provider;
 		booking.eventICalId = eventICalId;
 
+		await this.verifyActionPermission(booking, ChangeLogAction.Accept);
 		await this.bookingsRepository.update(booking);
 		await this.loadBookingDependencies(booking);
 
@@ -200,8 +200,6 @@ export class BookingsService {
 	}
 
 	private async saveInternal(bookingRequest: BookingRequest, serviceId: number): Promise<[ChangeLogAction, Booking]> {
-		await this.verifyActionPermission(ChangeLogAction.Create);
-
 		const currentUser = await this.userContext.getCurrentUser();
 		const booking = new BookingBuilder()
 			.withServiceId(serviceId)
@@ -220,6 +218,8 @@ export class BookingsService {
 
 		await this.bookingsValidatorFactory.getValidator(bookingRequest.outOfSlotBooking).validate(booking);
 		booking.eventICalId = await this.getEventICalId(booking);
+
+		await this.verifyActionPermission(booking, ChangeLogAction.Create);
 		await this.bookingsRepository.insert(booking);
 		await this.loadBookingDependencies(booking);
 

@@ -49,9 +49,14 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		// *** Don't filter by user permission here, as this is used by UserContext class
 		const query = repository
 			.createQueryBuilder('svc')
-			.innerJoin('svc._serviceAdminGroupMap', 'svcgroup', 'svcgroup."_userGroupRef" IN (:...userGroups)', {
-				userGroups,
-			});
+			.innerJoinAndSelect(
+				'svc._serviceAdminGroupMap',
+				'svcgroup',
+				'svcgroup."_userGroupRef" IN (:...userGroups)',
+				{
+					userGroups,
+				},
+			);
 
 		return await query.getMany();
 	}

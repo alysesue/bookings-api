@@ -1,6 +1,15 @@
 import { Service, ServiceProvider, User } from '../../models';
 
 export abstract class AuthGroup {
+	private _user: User;
+	constructor(user: User) {
+		this._user = user;
+	}
+
+	public get user(): User {
+		return this._user;
+	}
+
 	public abstract acceptVisitor(visitor: IAuthGroupVisitor): void;
 }
 
@@ -12,19 +21,12 @@ export interface IAuthGroupVisitor {
 }
 
 export class CitizenAuthGroup extends AuthGroup {
-	private _citizenUser: User;
-
 	constructor(citizenUser: User) {
-		super();
+		super(citizenUser);
+
 		if (!citizenUser.isCitizen()) {
 			throw new Error('CitizenAuthGroup must be created with a citizen User.');
 		}
-
-		this._citizenUser = citizenUser;
-	}
-
-	public get citizenUser(): User {
-		return this._citizenUser;
 	}
 
 	public acceptVisitor(visitor: IAuthGroupVisitor): void {
@@ -35,8 +37,8 @@ export class CitizenAuthGroup extends AuthGroup {
 export class ServiceAdminAuthGroup extends AuthGroup {
 	private _authorisedServices: Service[];
 
-	constructor(services: Service[]) {
-		super();
+	constructor(user: User, services: Service[]) {
+		super(user);
 		if (!services || services.length === 0) {
 			throw new Error('At least one service is required in ServiceAdminUserGroup.');
 		}
@@ -48,6 +50,10 @@ export class ServiceAdminAuthGroup extends AuthGroup {
 		return this._authorisedServices;
 	}
 
+	public hasServiceId(serviceId: number): boolean {
+		return this._authorisedServices.findIndex((s) => s.id === serviceId) >= 0;
+	}
+
 	public acceptVisitor(visitor: IAuthGroupVisitor): void {
 		visitor.visitServiceAdmin(this);
 	}
@@ -56,8 +62,8 @@ export class ServiceAdminAuthGroup extends AuthGroup {
 export class ServiceProviderAuthGroup extends AuthGroup {
 	private _authorisedServiceProvider: ServiceProvider;
 
-	constructor(serviceProvider: ServiceProvider) {
-		super();
+	constructor(user: User, serviceProvider: ServiceProvider) {
+		super(user);
 		if (!serviceProvider) {
 			throw new Error('Service provider is required in ServiceProviderUserGroup.');
 		}
