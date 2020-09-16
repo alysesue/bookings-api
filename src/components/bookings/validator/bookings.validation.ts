@@ -1,4 +1,4 @@
-import { Booking, BookingStatus } from '../../../models';
+import { Booking, BookingStatus, ServiceProvider } from '../../../models';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { DateHelper } from '../../../infrastructure/dateHelper';

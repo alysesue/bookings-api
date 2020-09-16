@@ -91,8 +91,8 @@ export class ServiceProvidersService {
 
 	public async getServiceProvider(
 		id: number,
-		includeSchedule: boolean,
-		includeTimeslotsSchedule: boolean,
+		includeSchedule = false,
+		includeTimeslotsSchedule = false,
 	): Promise<ServiceProvider> {
 		const sp = await this.serviceProvidersRepository.getServiceProvider({
 			id,
@@ -100,7 +100,7 @@ export class ServiceProvidersService {
 			includeTimeslotsSchedule,
 		});
 		if (!sp) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Service provider with id ${id} not found`);
 		}
 		return sp;
 	}

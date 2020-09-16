@@ -1,6 +1,6 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Booking, BookingStatus, ChangeLogAction, User } from '../../models';
+import { Booking, BookingStatus, ChangeLogAction, ServiceProvider, User } from '../../models';
 import { BookingsRepository } from './bookings.repository';
 import {
 	BookingAcceptRequest,
@@ -18,6 +18,7 @@ import { ServicesService } from '../services/services.service';
 import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs.service';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { BookingActionAuthVisitor } from './bookings.auth';
+import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
 
 @InRequestScope
 export class BookingsService {
@@ -31,6 +32,8 @@ export class BookingsService {
 	private timeslotsService: TimeslotsService;
 	@Inject
 	private serviceProviderRepo: ServiceProvidersRepository;
+	@Inject
+	private serviceProvidersService: ServiceProvidersService;
 	@Inject
 	private userContext: UserContext;
 	@Inject
@@ -237,9 +240,7 @@ export class BookingsService {
 			booking.service = await this.servicesService.getService(booking.serviceId);
 		}
 		if (booking.serviceProviderId && !booking.serviceProvider) {
-			booking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
-				id: booking.serviceProviderId,
-			});
+			booking.serviceProvider = await this.serviceProvidersService.getServiceProvider(booking.serviceProviderId);
 		}
 		return booking;
 	}
@@ -253,6 +254,10 @@ export class BookingsService {
 
 	private async saveInternal(bookingRequest: BookingRequest, serviceId: number): Promise<[ChangeLogAction, Booking]> {
 		const currentUser = await this.userContext.getCurrentUser();
+		let serviceProvider: ServiceProvider | undefined;
+		if (bookingRequest.serviceProviderId) {
+			serviceProvider = await this.serviceProvidersService.getServiceProvider(bookingRequest.serviceProviderId);
+		}
 		const booking = new BookingBuilder()
 			.withServiceId(serviceId)
 			.withStartDateTime(bookingRequest.startDateTime)
@@ -266,8 +271,10 @@ export class BookingsService {
 			.withCitizenName(bookingRequest.citizenName)
 			.withCitizenPhone(bookingRequest.citizenPhone)
 			.withCitizenEmail(bookingRequest.citizenEmail)
+			.withAutoAccept(serviceProvider?.autoAcceptBookings)
 			.build();
 
+		await this.loadBookingDependencies(booking);
 		await this.bookingsValidatorFactory.getValidator(bookingRequest.outOfSlotBooking).validate(booking);
 		booking.eventICalId = await this.getEventICalId(booking);
 
@@ -279,11 +286,8 @@ export class BookingsService {
 	}
 
 	private async getEventICalId(booking: Booking) {
-		if (booking.serviceProviderId) {
-			const serviceProvider = await this.serviceProviderRepo.getServiceProvider({
-				id: booking.serviceProviderId,
-			});
-			return await this.calendarsService.createCalendarEvent(booking, serviceProvider.calendar);
+		if (booking.serviceProvider) {
+			return await this.calendarsService.createCalendarEvent(booking, booking.serviceProvider.calendar);
 		}
 		return null;
 	}

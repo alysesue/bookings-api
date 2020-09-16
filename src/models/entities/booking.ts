@@ -22,6 +22,7 @@ export class BookingBuilder {
 	public citizenPhone: string;
 	public citizenName: string;
 	public citizenEmail: string;
+	public autoAccept: boolean;
 
 	public withServiceId(serviceId: number): BookingBuilder {
 		this.serviceId = serviceId;
@@ -80,6 +81,11 @@ export class BookingBuilder {
 
 	public withCitizenEmail(citizenEmail: string): BookingBuilder {
 		this.citizenEmail = citizenEmail;
+		return this;
+	}
+
+	public withAutoAccept(autoAccept = false): BookingBuilder {
+		this.autoAccept = autoAccept;
 		return this;
 	}
 
@@ -162,7 +168,7 @@ export class Booking {
 		const instance = new Booking();
 		if (builder.serviceProviderId) {
 			instance._serviceProviderId = builder.serviceProviderId;
-			instance._status = BookingStatus.Accepted;
+			instance._status = builder.autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
 		} else {
 			instance._status = BookingStatus.PendingApproval;
 		}

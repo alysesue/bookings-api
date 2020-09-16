@@ -69,32 +69,12 @@ describe('Booking validation tests', () => {
 		);
 	});
 
-	it('should validate service provider when saving direct booking', async () => {
-		const start = new Date();
-		const booking = new BookingBuilder()
-			.withStartDateTime(start)
-			.withEndDateTime(DateHelper.addMinutes(start, 45))
-			.withServiceProviderId(5)
-			.build();
-
-		BookingRepositoryMock.searchBookingsMock = [];
-		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
-		ServiceProvidersRepositoryMock.getServiceProviderMock = null;
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
-
-		await expect(
-			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
-		).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage("Service provider '5' not found"),
-		);
-	});
-
 	it('should not allow booking out of timeslots due to unavailability', async () => {
 		const start = new Date();
 		const booking = new BookingBuilder()
 			.withStartDateTime(start)
 			.withEndDateTime(DateHelper.addMinutes(start, 45))
-			.withServiceProviderId(5)
+			.withServiceProviderId(1)
 			.withRefId('RFM186')
 			.withCitizenUinFin('G3382058K')
 			.withCitizenName('Andy')
@@ -102,7 +82,6 @@ describe('Booking validation tests', () => {
 			.build();
 
 		BookingRepositoryMock.searchBookingsMock = [];
-		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		TimeslotsServiceMock.acceptedBookings = [bookingMock];
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(true);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
@@ -214,7 +193,6 @@ describe('Booking validation tests', () => {
 
 		BookingRepositoryMock.searchBookingsMock = [];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
-		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(null));
 
 		await expect(
@@ -240,33 +218,10 @@ describe('Booking validation tests', () => {
 				.build(),
 		];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [];
-		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
 		).rejects.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Citizen email not valid'));
-	});
-
-	it('should validate service provider when saving direct booking', async () => {
-		const start = new Date();
-		const booking = new BookingBuilder()
-			.withStartDateTime(start)
-			.withEndDateTime(DateHelper.addMinutes(start, 45))
-			.withCitizenUinFin('G3382058K')
-			.withCitizenName('Andy')
-			.withServiceProviderId(5)
-			.withCitizenEmail('invalidemail.com')
-			.build();
-		BookingRepositoryMock.searchBookingsMock = [];
-		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
-		ServiceProvidersRepositoryMock.getServiceProviderMock = null;
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
-
-		await expect(
-			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
-		).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage("Service provider '5' not found"),
-		);
 	});
 });
