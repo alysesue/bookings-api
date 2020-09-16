@@ -5,6 +5,7 @@ import { Service } from './service';
 import * as timeSpan from '../../tools/timeSpan';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { User } from './user';
+import { ChangeLogAction } from '../changeLogAction';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
@@ -186,6 +187,10 @@ export class Booking {
 		return this._citizenName;
 	}
 
+	public set citizenName(citizenName: string) {
+		this._citizenName = citizenName;
+	}
+
 	public get id(): number {
 		return this._id;
 	}
@@ -226,16 +231,24 @@ export class Booking {
 		return this._description;
 	}
 
-	public get startDateTime(): Date {
-		return this._startDateTime;
-	}
-
 	public set description(description: string) {
 		this._description = description;
 	}
 
+	public get startDateTime(): Date {
+		return this._startDateTime;
+	}
+
+	public set startDateTime(startDateTime: Date) {
+		this._startDateTime = startDateTime;
+	}
+
 	public get endDateTime(): Date {
 		return this._endDateTime;
+	}
+
+	public set endDateTime(endDateTime: Date) {
+		this._endDateTime = endDateTime;
 	}
 
 	public get serviceProvider(): ServiceProvider {
@@ -273,32 +286,20 @@ export class Booking {
 		return this._refId;
 	}
 
-	public get citizenEmail(): string {
-		return this._citizenEmail;
+	public set refId(refId: string) {
+		this._refId = refId;
 	}
 
-	public get location(): string {
-		return this._location;
+	public get citizenEmail(): string {
+		return this._citizenEmail;
 	}
 
 	public set citizenEmail(citizenEmail: string) {
 		this._citizenEmail = citizenEmail;
 	}
 
-	public set citizenName(citizenName: string) {
-		this._citizenName = citizenName;
-	}
-
-	public set startDateTime(startDateTime: Date) {
-		this._startDateTime = startDateTime;
-	}
-
-	public set endDateTime(endDateTime: Date) {
-		this._endDateTime = endDateTime;
-	}
-
-	public set refId(refId: string) {
-		this._refId = refId;
+	public get location(): string {
+		return this._location;
 	}
 
 	public set location(location: string) {
@@ -316,5 +317,15 @@ export class Booking {
 			return false;
 		}
 		return timeSpan.intersectsDateTimeSpan(other, this.startDateTime, this.endDateTime);
+	}
+
+	public getUpdateChangeType(previousBooking?: Booking): ChangeLogAction {
+		if (this.startDateTime !== previousBooking.startDateTime || this.endDateTime !== previousBooking.endDateTime) {
+			return ChangeLogAction.Reschedule;
+		} else if (this.serviceProviderId !== previousBooking.serviceProviderId) {
+			return ChangeLogAction.Reschedule;
+		} else {
+			return ChangeLogAction.Update;
+		}
 	}
 }

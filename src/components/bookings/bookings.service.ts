@@ -35,17 +35,6 @@ export class BookingsService {
 	@Inject
 	private changeLogsService: BookingChangeLogsService;
 
-	public async getBooking(bookingId: number, accessType = QueryAccessType.Read): Promise<Booking> {
-		if (!bookingId) {
-			return null;
-		}
-		const booking = await this.bookingsRepository.getBooking(bookingId, accessType);
-		if (!booking) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingId} not found`);
-		}
-		return booking;
-	}
-
 	private async getBookingForChange(bookingId: number): Promise<Booking> {
 		return await this.getBooking(bookingId, QueryAccessType.Write);
 	}
@@ -62,6 +51,35 @@ export class BookingsService {
 			bookingId,
 			this.getBookingForChange.bind(this),
 			this.cancelBookingInternal.bind(this),
+		);
+	}
+
+	public async getBooking(bookingId: number, accessType = QueryAccessType.Read): Promise<Booking> {
+		if (!bookingId) {
+			return null;
+		}
+		const booking = await this.bookingsRepository.getBooking(bookingId, accessType);
+		if (!booking) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingId} not found`);
+		}
+		return booking;
+	}
+
+	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequest): Promise<Booking> {
+		const acceptAction = (_booking) => this.acceptBookingInternal(_booking, acceptRequest);
+		return await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBookingForChange.bind(this),
+			acceptAction,
+		);
+	}
+
+	public async update(bookingId: number, bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
+		const updateAction = (_booking) => this.updateInternal(_booking, bookingRequest);
+		return await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBookingForChange.bind(this),
+			updateAction,
 		);
 	}
 
@@ -87,15 +105,6 @@ export class BookingsService {
 		await this.loadBookingDependencies(booking);
 
 		return [ChangeLogAction.Cancel, booking];
-	}
-
-	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequest): Promise<Booking> {
-		const acceptAction = (_booking) => this.acceptBookingInternal(_booking, acceptRequest);
-		return await this.changeLogsService.executeAndLogAction(
-			bookingId,
-			this.getBookingForChange.bind(this),
-			acceptAction,
-		);
 	}
 
 	private async acceptBookingInternal(
@@ -139,15 +148,6 @@ export class BookingsService {
 		return [ChangeLogAction.Accept, booking];
 	}
 
-	public async update(bookingId: number, bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
-		const updateAction = (_booking) => this.updateInternal(_booking, bookingRequest);
-		return await this.changeLogsService.executeAndLogAction(
-			bookingId,
-			this.getBookingForChange.bind(this),
-			updateAction,
-		);
-	}
-
 	private async updateInternal(
 		previousBooking: Booking,
 		bookingRequest: BookingRequest,
@@ -159,7 +159,7 @@ export class BookingsService {
 
 		await this.bookingsRepository.update(updatedBooking);
 
-		return [ChangeLogAction.Update, updatedBooking];
+		return [updatedBooking.getUpdateChangeType(previousBooking), updatedBooking];
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {

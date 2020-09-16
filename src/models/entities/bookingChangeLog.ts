@@ -2,6 +2,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } 
 import { User } from './user';
 import { Booking } from './booking';
 import { Service } from './service';
+import { ChangeLogAction } from '../changeLogAction';
 
 @Entity()
 export class BookingChangeLog {
@@ -135,12 +136,3 @@ export type BookingJsonSchemaV1 = {
 	location?: string;
 	description?: string;
 };
-
-export enum ChangeLogAction {
-	Create = 1,
-	Accept,
-	Reject,
-	Cancel,
-	Update,
-	Reschedule,
-}

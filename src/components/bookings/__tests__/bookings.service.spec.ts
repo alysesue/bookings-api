@@ -3,7 +3,7 @@ import { BookingsService } from '../index';
 import { BookingsRepository } from '../bookings.repository';
 import { CalendarsService } from '../../calendars/calendars.service';
 import { Container } from 'typescript-ioc';
-import { Booking, BookingStatus, Calendar, Service, ServiceProvider, User } from '../../../models';
+import { Booking, BookingStatus, Calendar, ChangeLogAction, Service, ServiceProvider, User } from '../../../models';
 import { InsertResult } from 'typeorm';
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
@@ -25,6 +25,19 @@ afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
+
+function getBookingRequest() {
+	const start = new Date('2020-02-01T11:00');
+	const end = new Date('2020-02-01T12:00');
+	return {
+		refId: 'ref1',
+		startDateTime: start,
+		endDateTime: end,
+		citizenEmail: 'test@mail.com',
+		citizenName: 'Jake',
+		citizenUinFin: 'S6979208A',
+	} as BookingRequest;
+}
 
 // tslint:disable-next-line: no-big-function
 describe('Bookings.Service', () => {
@@ -88,12 +101,14 @@ describe('Bookings.Service', () => {
 				actionFunction: BookingActionFunction,
 			) => {
 				const _booking = await getBookingFunction(bookingId);
-				const [, newBooking] = await actionFunction(_booking);
+				const [action, newBooking] = await actionFunction(_booking);
+				BookingChangeLogsServiceMock.action = action;
 				return newBooking;
 			},
 		);
 
 		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(service));
+		BookingChangeLogsServiceMock.action = 0;
 	});
 
 	afterAll(() => {
@@ -238,6 +253,36 @@ describe('Bookings.Service', () => {
 		expect(booking.citizenName).toBe('Jake');
 		expect(booking.citizenUinFin).toBe('S6979208A');
 	});
+
+	it('should call log with reschedule action', async () => {
+		const bookingService = Container.get(BookingsService);
+		const bookingRequest = getBookingRequest();
+
+		BookingRepositoryMock.booking = new BookingBuilder()
+			.withCitizenEmail('test@mail.com')
+			.withStartDateTime(new Date('2020-09-01'))
+			.withEndDateTime(new Date('2020-09-02'))
+			.build();
+
+		await bookingService.update(1, bookingRequest, 2);
+
+		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Reschedule);
+	});
+
+	it('should call log with update action', async () => {
+		const bookingService = Container.get(BookingsService);
+		const bookingRequest = getBookingRequest();
+
+		BookingRepositoryMock.booking = new BookingBuilder()
+			.withCitizenEmail('test@mail.com')
+			.withStartDateTime(bookingRequest.startDateTime)
+			.withEndDateTime(bookingRequest.endDateTime)
+			.build();
+
+		await bookingService.update(1, bookingRequest, 2);
+
+		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Update);
+	});
 });
 
 export class BookingRepositoryMock extends BookingsRepository {
@@ -321,6 +366,7 @@ export class UserContextMock extends UserContext {
 
 class BookingChangeLogsServiceMock extends BookingChangeLogsService {
 	public static executeAndLogAction = jest.fn();
+	public static action: ChangeLogAction;
 
 	public async executeAndLogAction(...params): Promise<any> {
 		return await BookingChangeLogsServiceMock.executeAndLogAction(...params);
