@@ -66,13 +66,6 @@ export class AvailableTimeslotProviders {
 			.filter((booking) => booking.serviceProvider)
 			.map((booking) => booking.serviceProvider);
 
-		entry.getGroups().forEach((booking) => {
-			if (!instance._bookedServiceProviders.has(booking.serviceProvider)) {
-				instance._bookedServiceProviders.set(booking.serviceProvider, []);
-			}
-			instance._bookedServiceProviders.get(booking.serviceProvider).push(booking);
-		});
-
 		return instance;
 	}
 
