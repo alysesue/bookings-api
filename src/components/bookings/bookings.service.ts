@@ -7,7 +7,6 @@ import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
-import { QueryAccessType } from '../../core/repository';
 import { BookingBuilder } from '../../models/entities/booking';
 import { BookingsValidatorFactory } from './validator/bookings.validation';
 import { ServicesService } from '../services/services.service';
@@ -36,19 +35,15 @@ export class BookingsService {
 	@Inject
 	private changeLogsService: BookingChangeLogsService;
 
-	public async getBooking(bookingId: number, accessType = QueryAccessType.Read): Promise<Booking> {
+	public async getBooking(bookingId: number): Promise<Booking> {
 		if (!bookingId) {
 			return null;
 		}
-		const booking = await this.bookingsRepository.getBooking(bookingId, accessType);
+		const booking = await this.bookingsRepository.getBooking(bookingId);
 		if (!booking) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingId} not found`);
 		}
 		return booking;
-	}
-
-	private async getBookingForChange(bookingId: number): Promise<Booking> {
-		return await this.getBooking(bookingId, QueryAccessType.Write);
 	}
 
 	private static getCitizenUinFin(currentUser: User, bookingRequest: BookingRequest): string {
@@ -62,7 +57,7 @@ export class BookingsService {
 		const authGroups = await this.userContext.getAuthGroups();
 		if (!new BookingActionAuthVisitor(booking, action).hasPermission(authGroups)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
-				`User cannot perform this booking action for this service: ${action}`,
+				`User cannot perform this booking action (${action}) for this service.`,
 			);
 		}
 	}
@@ -70,7 +65,7 @@ export class BookingsService {
 	public async cancelBooking(bookingId: number): Promise<Booking> {
 		return await this.changeLogsService.executeAndLogAction(
 			bookingId,
-			this.getBookingForChange.bind(this),
+			this.getBooking.bind(this),
 			this.cancelBookingInternal.bind(this),
 		);
 	}
@@ -104,7 +99,7 @@ export class BookingsService {
 	public async rejectBooking(bookingId: number): Promise<Booking> {
 		return await this.changeLogsService.executeAndLogAction(
 			bookingId,
-			this.getBookingForChange.bind(this),
+			this.getBooking.bind(this),
 			this.rejectBookingInternal.bind(this),
 		);
 	}
@@ -127,11 +122,7 @@ export class BookingsService {
 
 	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequest): Promise<Booking> {
 		const acceptAction = (_booking) => this.acceptBookingInternal(_booking, acceptRequest);
-		return await this.changeLogsService.executeAndLogAction(
-			bookingId,
-			this.getBookingForChange.bind(this),
-			acceptAction,
-		);
+		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), acceptAction);
 	}
 
 	private async acceptBookingInternal(
@@ -177,7 +168,7 @@ export class BookingsService {
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
-		return await this.bookingsRepository.search(searchRequest, QueryAccessType.Read);
+		return await this.bookingsRepository.search(searchRequest);
 	}
 
 	private async loadBookingDependencies(booking: Booking): Promise<Booking> {
@@ -196,7 +187,7 @@ export class BookingsService {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
 		const saveAction = (_booking) => this.saveInternal(bookingRequest, serviceId);
-		return await this.changeLogsService.executeAndLogAction(null, this.getBookingForChange.bind(this), saveAction);
+		return await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
 	}
 
 	private async saveInternal(bookingRequest: BookingRequest, serviceId: number): Promise<[ChangeLogAction, Booking]> {

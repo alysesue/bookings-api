@@ -8,7 +8,6 @@ import { ServicesRepository } from '../services/services.repository';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
-import { QueryAccessType } from '../../core/repository';
 
 @Scoped(Scope.Request)
 export class TimeslotsService {
@@ -107,15 +106,12 @@ export class TimeslotsService {
 	): Promise<AvailableTimeslotProviders[]> {
 		let aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime, serviceId);
 
-		const bookings = await this.bookingsRepository.search(
-			{
-				from: startDateTime,
-				to: endDateTime,
-				statuses: [BookingStatus.PendingApproval, BookingStatus.Accepted],
-				serviceId,
-			},
-			QueryAccessType.Read,
-		);
+		const bookings = await this.bookingsRepository.search({
+			from: startDateTime,
+			to: endDateTime,
+			statuses: [BookingStatus.PendingApproval, BookingStatus.Accepted],
+			serviceId,
+		});
 
 		const acceptedBookings = bookings.filter((booking) => booking.status === BookingStatus.Accepted);
 		const pendingBookings = bookings.filter((booking) => booking.status === BookingStatus.PendingApproval);

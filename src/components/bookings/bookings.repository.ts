@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { InsertResult } from 'typeorm';
 import { Booking, BookingStatus } from '../../models';
-import { QueryAccessType, RepositoryBase } from '../../core/repository';
+import { RepositoryBase } from '../../core/repository';
 import { ConcurrencyError } from '../../errors/ConcurrencyError';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { BookingQueryAuthVisitor } from './bookings.auth';
@@ -15,7 +15,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		super(Booking);
 	}
 
-	public async getBooking(bookingId: number, _accessType = QueryAccessType.Read): Promise<Booking> {
+	public async getBooking(bookingId: number): Promise<Booking> {
 		const authGroups = await this.userContext.getAuthGroups();
 		const { userCondition, userParams } = await new BookingQueryAuthVisitor(
 			'booking',
@@ -65,7 +65,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return incremented;
 	}
 
-	public async search(request: BookingSearchQuery, accessType: QueryAccessType): Promise<Booking[]> {
+	public async search(request: BookingSearchQuery): Promise<Booking[]> {
 		const authGroups = await this.userContext.getAuthGroups();
 		const { userCondition, userParams } = await new BookingQueryAuthVisitor(
 			'booking',

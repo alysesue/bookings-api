@@ -6,7 +6,6 @@ import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { BookingSearchQuery, BookingsRepository } from '../bookings.repository';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
-import { QueryAccessType } from '../../../core/repository';
 import { isEmail, isSGUinfin } from 'mol-lib-api-contract/utils';
 
 export interface IValidator {
@@ -96,7 +95,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 			serviceProviderId,
 		};
 
-		const acceptedBookings = await this.bookingsRepository.search(searchQuery, QueryAccessType.Read);
+		const acceptedBookings = await this.bookingsRepository.search(searchQuery);
 
 		if (
 			acceptedBookings.some((item) =>

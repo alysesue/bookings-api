@@ -2,7 +2,6 @@ import { BookingSearchQuery, BookingsRepository } from '../bookings.repository';
 import { Booking, BookingStatus, User } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { InsertResult } from 'typeorm';
-import { QueryAccessType } from '../../../core/repository';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { TransactionManager } from '../../../core/transactionManager';
 import { BookingBuilder } from '../../../models/entities/booking';
@@ -40,15 +39,12 @@ describe('Bookings repository', () => {
 
 		const bookingsRepository = Container.get(BookingsRepository);
 
-		const result = await bookingsRepository.search(
-			{
-				serviceId: 1,
-				serviceProviderId: 1,
-				from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
-				to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
-			} as BookingSearchQuery,
-			QueryAccessType.Read,
-		);
+		const result = await bookingsRepository.search({
+			serviceId: 1,
+			serviceProviderId: 1,
+			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
+			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
+		} as BookingSearchQuery);
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
@@ -72,16 +68,13 @@ describe('Bookings repository', () => {
 
 		const bookingsRepository = Container.get(BookingsRepository);
 
-		const result = await bookingsRepository.search(
-			{
-				serviceId: 1,
-				serviceProviderId: 1,
-				statuses: [BookingStatus.Accepted, BookingStatus.PendingApproval],
-				from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
-				to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
-			} as BookingSearchQuery,
-			QueryAccessType.Read,
-		);
+		const result = await bookingsRepository.search({
+			serviceId: 1,
+			serviceProviderId: 1,
+			statuses: [BookingStatus.Accepted, BookingStatus.PendingApproval],
+			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
+			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
+		} as BookingSearchQuery);
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
@@ -105,16 +98,13 @@ describe('Bookings repository', () => {
 
 		const bookingsRepository = Container.get(BookingsRepository);
 
-		const result = await bookingsRepository.search(
-			{
-				serviceId: 1,
-				serviceProviderId: 1,
-				citizenUinFins: ['abc123', 'xyz456'],
-				from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
-				to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
-			} as BookingSearchQuery,
-			QueryAccessType.Read,
-		);
+		const result = await bookingsRepository.search({
+			serviceId: 1,
+			serviceProviderId: 1,
+			citizenUinFins: ['abc123', 'xyz456'],
+			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
+			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
+		} as BookingSearchQuery);
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();

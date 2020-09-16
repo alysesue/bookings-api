@@ -80,13 +80,6 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
 		});
 	}
 
-	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
-		const authorisedServiceProviderId = _userGroup.authorisedServiceProvider.id;
-		this.addAuthCondition(`${this._alias}."_serviceProviderId" = :authorisedServiceProviderId`, {
-			authorisedServiceProviderId,
-		});
-	}
-
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		const authorisedBookingServiceIds = _userGroup.authorisedServices.map((s) => s.id);
 		if (authorisedBookingServiceIds.length > 0) {
@@ -94,5 +87,12 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
 				authorisedBookingServiceIds,
 			});
 		}
+	}
+
+	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
+		const authorisedServiceProviderId = _userGroup.authorisedServiceProvider.id;
+		this.addAuthCondition(`${this._alias}."_serviceProviderId" = :authorisedServiceProviderId`, {
+			authorisedServiceProviderId,
+		});
 	}
 }
