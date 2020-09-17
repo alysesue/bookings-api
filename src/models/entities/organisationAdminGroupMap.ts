@@ -18,15 +18,15 @@ export class OrganisationAdminGroupMap {
 	@JoinColumn({ name: '_organisationId' })
 	public _organisation: IOrganisation;
 
-	@Column({ type: 'varchar', length: 200, nullable: false })
+	@Column({ type: 'varchar', length: 20, nullable: false })
 	@Index({ unique: true })
-	private _userGroupRef: string;
+	private _organisationRef: string;
 
-	public set userGroupRef(value: string) {
-		this._userGroupRef = value;
+	public set organisationRef(value: string) {
+		this._organisationRef = value;
 	}
 
-	public get userGroupRef() {
-		return this._userGroupRef;
+	public get organisationRef() {
+		return this._organisationRef;
 	}
 }

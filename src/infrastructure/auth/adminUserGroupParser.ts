@@ -1,8 +1,12 @@
+// tslint:disable: tsr-detect-possible-timing-attacks
 import { logger, LoggerV2 } from 'mol-lib-common/debugging/logging/LoggerV2';
 
-export class AdminUserGroupParser {
-	private static readonly BookingSGReference = 'bookingsg';
+const BookingSGToken = 'bookingsg';
+const OrgAdminToken = 'org-admin';
+const ServiceAdminToken = 'svc-admin-';
+const ServiceProviderToken = 'service-provider';
 
+export class AdminUserGroupParser {
 	public static parseUserGroups(groupListStr: string): ParsedUserGroup[] {
 		if (!groupListStr) {
 			return [];
@@ -19,38 +23,49 @@ export class AdminUserGroupParser {
 			.toLowerCase()
 			.split(':')
 			.map((c) => c.trim());
-		if (!chunks || chunks.length !== 3 || chunks[0] !== AdminUserGroupParser.BookingSGReference) {
+		if (!chunks || chunks.length !== 3) {
 			return null;
 		}
-		const product = chunks[0];
+
+		const productRef = chunks[0];
 		const roleStr = chunks[1];
-		const organisation = chunks[2];
+		const organisationRef = chunks[2];
+		if (productRef !== BookingSGToken) {
+			return null;
+		}
 
 		if (!roleStr) {
 			logger.log(LoggerV2.LogLevel.WARN, 'Invalid group role - missing role: ' + groupStr);
 			return null;
 		}
 
-		if (!organisation) {
+		if (!organisationRef) {
 			logger.log(LoggerV2.LogLevel.WARN, 'Invalid group role - missing organisation: ' + groupStr);
 			return null;
 		}
 
-		const userGroupRole = AdminUserGroupParser.parseGroupRole(roleStr);
-		if (!userGroupRole) {
+		const parsedRole = AdminUserGroupParser.parseGroupRole(roleStr);
+		if (!parsedRole) {
 			return null;
 		}
 
-		return { groupStr, product, userGroupRole, organisation };
+		return {
+			groupStr,
+			productRef,
+			userGroupRole: parsedRole.userGroupRole,
+			serviceRef: parsedRole.serviceRef,
+			organisationRef,
+		};
 	}
 
-	private static parseGroupRole(roleStr: string): UserGroupRole {
-		if (roleStr.startsWith('org-admin')) {
-			return UserGroupRole.OrganisationAdmin;
-		} else if (roleStr.startsWith('svc-admin')) {
-			return UserGroupRole.ServiceAdmin;
-		} else if (roleStr.startsWith('service-provider')) {
-			return UserGroupRole.ServiceProvider;
+	private static parseGroupRole(roleStr: string): { userGroupRole: UserGroupRole; serviceRef?: string } {
+		if (roleStr === OrgAdminToken) {
+			return { userGroupRole: UserGroupRole.OrganisationAdmin };
+		} else if (roleStr.startsWith(ServiceAdminToken)) {
+			const serviceRef = roleStr.substr(ServiceAdminToken.length);
+			return { userGroupRole: UserGroupRole.ServiceAdmin, serviceRef };
+		} else if (roleStr === ServiceProviderToken) {
+			return { userGroupRole: UserGroupRole.ServiceProvider };
 		}
 
 		return null;
@@ -65,7 +80,8 @@ export enum UserGroupRole {
 
 export type ParsedUserGroup = {
 	groupStr: string;
-	product: string;
+	productRef: string;
 	userGroupRole: UserGroupRole;
-	organisation: string;
+	serviceRef?: string;
+	organisationRef: string;
 };

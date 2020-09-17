@@ -8,8 +8,12 @@ export class OrganisationsRepository extends RepositoryBase<Organisation> {
 		super(Organisation);
 	}
 
-	public async getOrganisationsForUserGroups(userGroups: string[]): Promise<Organisation[]> {
-		if (!userGroups || userGroups.length === 0) {
+	public async save(organisation: Organisation): Promise<Organisation> {
+		return (await this.getRepository()).save(organisation);
+	}
+
+	public async getOrganisationsForUserGroups(organisationRefs: string[]): Promise<Organisation[]> {
+		if (!organisationRefs || organisationRefs.length === 0) {
 			return [];
 		}
 
@@ -20,12 +24,11 @@ export class OrganisationsRepository extends RepositoryBase<Organisation> {
 			.innerJoinAndSelect(
 				'org._organisationAdminGroupMap',
 				'orggroup',
-				'orggroup."_userGroupRef" IN (:...userGroups)',
+				'orggroup."_organisationRef" IN (:...organisationRefs)',
 				{
-					userGroups,
+					organisationRefs,
 				},
-			)
-			.orderBy('org._id');
+			);
 
 		return await query.getMany();
 	}

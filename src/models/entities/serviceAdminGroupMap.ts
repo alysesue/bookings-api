@@ -18,15 +18,15 @@ export class ServiceAdminGroupMap {
 	@JoinColumn({ name: '_serviceId' })
 	public _service: IService;
 
-	@Column({ type: 'varchar', length: 200, nullable: false })
+	@Column({ type: 'varchar', length: 40, nullable: false })
 	@Index({ unique: true })
-	private _userGroupRef: string;
+	private _serviceOrganisationRef: string;
 
-	public set userGroupRef(value: string) {
-		this._userGroupRef = value;
+	public set serviceOrganisationRef(value: string) {
+		this._serviceOrganisationRef = value;
 	}
 
-	public get userGroupRef() {
-		return this._userGroupRef;
+	public get serviceOrganisationRef() {
+		return this._serviceOrganisationRef;
 	}
 }

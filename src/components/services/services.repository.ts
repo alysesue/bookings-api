@@ -40,10 +40,12 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		return (await this.getRepository()).findOne(id);
 	}
 
-	public async getServicesForUserGroups(userGroups: string[]): Promise<Service[]> {
-		if (!userGroups || userGroups.length === 0) {
+	public async getServicesForUserGroups(serviceInfos: ServiceRefInfo[]): Promise<Service[]> {
+		if (!serviceInfos || serviceInfos.length === 0) {
 			return [];
 		}
+
+		const references = serviceInfos.map((r) => `${r.serviceRef}:${r.organisationRef}`);
 
 		const repository = await this.getRepository();
 		// *** Don't filter by user permission here, as this is used by UserContext class
@@ -52,12 +54,17 @@ export class ServicesRepository extends RepositoryBase<Service> {
 			.innerJoinAndSelect(
 				'svc._serviceAdminGroupMap',
 				'svcgroup',
-				'svcgroup."_userGroupRef" IN (:...userGroups)',
+				'svcgroup."_serviceOrganisationRef" IN (:...references)',
 				{
-					userGroups,
+					references,
 				},
 			);
 
 		return await query.getMany();
 	}
 }
+
+export type ServiceRefInfo = {
+	serviceRef: string;
+	organisationRef: string;
+};

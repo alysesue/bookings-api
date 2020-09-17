@@ -12,16 +12,16 @@ import {
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
-import { ServicesRepository } from '../services/services.repository';
+import { ServiceRefInfo, ServicesRepository } from '../services/services.repository';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
-import { OrganisationsRepository } from '../organisations/organisations.repository';
+import { OrganisationInfo, OrganisationsService } from '../organisations/organisations.service';
 
 export type HeadersType = { [key: string]: string };
 
 @InRequestScope
 export class UsersService {
 	@Inject
-	private organisationsRepository: OrganisationsRepository;
+	private organisationsService: OrganisationsService;
 	@Inject
 	private servicesRepository: ServicesRepository;
 	@Inject
@@ -33,12 +33,12 @@ export class UsersService {
 		let userRepo = await getter();
 		if (!userRepo) {
 			try {
-				userRepo = await this.usersRepository.save(user);
+				await this.usersRepository.save(user);
 			} catch (e) {
-				logger.error('Exception when creating BookingSG User', e);
 				// concurrent insert fail case
-				userRepo = await getter();
+				logger.warn('Exception when creating BookingSG User', e);
 			}
+			userRepo = await getter();
 		}
 		return userRepo;
 	}
@@ -112,23 +112,19 @@ export class UsersService {
 	}): Promise<AuthGroup> {
 		let organisationAdminUserGroup: OrganisationAdminAuthGroup = null;
 
-		const orgAdminRoles = parsedGroups.filter((g) => g.userGroupRole === UserGroupRole.OrganisationAdmin);
-		if (orgAdminRoles.length > 0) {
-			const orgGroupRefs = orgAdminRoles.map((g) => g.groupStr);
-			const organisations = await this.organisationsRepository.getOrganisationsForUserGroups(orgGroupRefs);
+		const orgAdminRoles = parsedGroups
+			.filter((g) => g.userGroupRole === UserGroupRole.OrganisationAdmin)
+			.map<OrganisationInfo>((g) => ({
+				organisationRef: g.organisationRef,
+			}));
 
-			const notFoundGroupRefs = orgGroupRefs.filter(
-				(ref) => !organisations.find((s) => s._organisationAdminGroupMap.userGroupRef === ref),
-			);
-			if (notFoundGroupRefs.length > 0) {
-				logger.warn(
-					`Organisation(s) not found in BookingSG for user group(s): ${notFoundGroupRefs.join(', ')}`,
-				);
-			}
+		if (orgAdminRoles.length === 0) {
+			return organisationAdminUserGroup;
+		}
 
-			if (organisations.length > 0) {
-				organisationAdminUserGroup = new OrganisationAdminAuthGroup(user, organisations);
-			}
+		const organisations = await this.organisationsService.getOrganisationsForGroups(orgAdminRoles);
+		if (organisations.length > 0) {
+			organisationAdminUserGroup = new OrganisationAdminAuthGroup(user, organisations);
 		}
 
 		return organisationAdminUserGroup;
@@ -145,14 +141,22 @@ export class UsersService {
 
 		const svcAdminRoles = parsedGroups.filter((g) => g.userGroupRole === UserGroupRole.ServiceAdmin);
 		if (svcAdminRoles.length > 0) {
-			const serviceGroupRefs = svcAdminRoles.map((g) => g.groupStr);
+			const serviceGroupRefs = svcAdminRoles.map<ServiceRefInfo>((g) => ({
+				serviceRef: g.serviceRef,
+				organisationRef: g.organisationRef,
+			}));
 			const services = await this.servicesRepository.getServicesForUserGroups(serviceGroupRefs);
 
-			const notFoundGroupRefs = serviceGroupRefs.filter(
-				(ref) => !services.find((s) => s._serviceAdminGroupMap.userGroupRef === ref),
+			const notFoundGroupRefs = parsedGroups.filter(
+				(g) =>
+					!services.find(
+						(s) =>
+							s._serviceAdminGroupMap.serviceOrganisationRef === `${g.serviceRef}:${g.organisationRef}`,
+					),
 			);
 			if (notFoundGroupRefs.length > 0) {
-				logger.warn(`Service(s) not found in BookingSG for user group(s): ${notFoundGroupRefs.join(', ')}`);
+				const notFoundStr = notFoundGroupRefs.map((g) => g.groupStr).join(', ');
+				logger.warn(`Service(s) not found in BookingSG for user group(s): ${notFoundStr}`);
 			}
 
 			if (services.length > 0) {

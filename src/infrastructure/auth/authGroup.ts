@@ -45,6 +45,7 @@ export class OrganisationAdminAuthGroup extends AuthGroup {
 		}
 
 		this._authorisedOrganisations = organisations;
+		this._authorisedOrganisations.sort((a, b) => a.id - b.id);
 	}
 
 	public get authorisedOrganisations(): Organisation[] {
