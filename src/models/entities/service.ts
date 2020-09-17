@@ -22,6 +22,14 @@ export class Service implements IService, IEntityWithSchedule, IEntityWithTimesl
 	@Index()
 	private _organisationId: number;
 
+	public set organisationId(value: number) {
+		this._organisationId = value;
+	}
+
+	public get organisationId() {
+		return this._organisationId;
+	}
+
 	@ManyToOne((type) => Organisation)
 	@JoinColumn({ name: '_organisationId' })
 	private _organisation: Organisation;

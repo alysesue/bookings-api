@@ -24,7 +24,8 @@ export class OrganisationsRepository extends RepositoryBase<Organisation> {
 				{
 					userGroups,
 				},
-			);
+			)
+			.orderBy('org._id');
 
 		return await query.getMany();
 	}

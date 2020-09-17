@@ -36,7 +36,7 @@ export class CitizenAuthGroup extends AuthGroup {
 }
 
 export class OrganisationAdminAuthGroup extends AuthGroup {
-	private _organisations: Organisation[];
+	private _authorisedOrganisations: Organisation[];
 
 	constructor(user: User, organisations: Organisation[]) {
 		super(user);
@@ -44,11 +44,15 @@ export class OrganisationAdminAuthGroup extends AuthGroup {
 			throw new Error('At least one organisation is required in OrganisationAdminAuthGroup.');
 		}
 
-		this._organisations = organisations;
+		this._authorisedOrganisations = organisations;
 	}
 
-	public get organisations(): Organisation[] {
-		return this._organisations;
+	public get authorisedOrganisations(): Organisation[] {
+		return this._authorisedOrganisations;
+	}
+
+	public hasOrganisationId(organisationId: number) {
+		return this._authorisedOrganisations.findIndex((org) => org.id === organisationId) >= 0;
 	}
 
 	public acceptVisitor(visitor: IAuthGroupVisitor): void {

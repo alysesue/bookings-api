@@ -89,9 +89,9 @@ export class BookingsService {
 		}
 		booking.status = BookingStatus.Cancelled;
 
+		await this.loadBookingDependencies(booking);
 		await this.verifyActionPermission(booking, ChangeLogAction.Cancel);
 		await this.bookingsRepository.update(booking);
-		await this.loadBookingDependencies(booking);
 
 		return [ChangeLogAction.Cancel, booking];
 	}
@@ -113,9 +113,9 @@ export class BookingsService {
 
 		booking.status = BookingStatus.Rejected;
 
+		await this.loadBookingDependencies(booking);
 		await this.verifyActionPermission(booking, ChangeLogAction.Reject);
 		await this.bookingsRepository.update(booking);
-		await this.loadBookingDependencies(booking);
 
 		return [ChangeLogAction.Reject, booking];
 	}
@@ -160,9 +160,9 @@ export class BookingsService {
 		booking.serviceProvider = provider;
 		booking.eventICalId = eventICalId;
 
+		await this.loadBookingDependencies(booking);
 		await this.verifyActionPermission(booking, ChangeLogAction.Accept);
 		await this.bookingsRepository.update(booking);
-		await this.loadBookingDependencies(booking);
 
 		return [ChangeLogAction.Accept, booking];
 	}
@@ -210,9 +210,9 @@ export class BookingsService {
 		await this.bookingsValidatorFactory.getValidator(bookingRequest.outOfSlotBooking).validate(booking);
 		booking.eventICalId = await this.getEventICalId(booking);
 
+		await this.loadBookingDependencies(booking);
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
 		await this.bookingsRepository.insert(booking);
-		await this.loadBookingDependencies(booking);
 
 		return [ChangeLogAction.Create, booking];
 	}

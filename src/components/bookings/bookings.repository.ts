@@ -19,6 +19,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		const authGroups = await this.userContext.getAuthGroups();
 		const { userCondition, userParams } = await new BookingQueryAuthVisitor(
 			'booking',
+			'service_relation',
 		).createUserVisibilityCondition(authGroups);
 		const idCondition = 'booking."_id" = :id';
 
@@ -69,6 +70,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		const authGroups = await this.userContext.getAuthGroups();
 		const { userCondition, userParams } = await new BookingQueryAuthVisitor(
 			'booking',
+			'service_relation',
 		).createUserVisibilityCondition(authGroups);
 
 		const serviceCondition = request.serviceId ? 'booking."_serviceId" = :serviceId' : '';
