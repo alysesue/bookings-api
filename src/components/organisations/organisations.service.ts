@@ -21,31 +21,27 @@ export class OrganisationsService {
 		return null;
 	}
 
-	private async getOrCreateOrganisation(organisationInfo: OrganisationInfo): Promise<Organisation> {
-		let organisation = this.getFirstOrNull(
+	private async createOrganisation(organisationInfo: OrganisationInfo): Promise<Organisation> {
+		let organisation;
+		try {
+			const newOrg = new Organisation();
+			// Organisation name will have organisationRef as the initial value, but it may change later.
+			newOrg.name = organisationInfo.organisationRef;
+			const groupMap = new OrganisationAdminGroupMap();
+			groupMap.organisationRef = organisationInfo.organisationRef;
+			newOrg._organisationAdminGroupMap = groupMap;
+
+			this.transactionManager.runInTransaction(DefaultIsolationLevel, async () => {
+				await this.organisationsRepository.save(newOrg);
+			});
+		} catch (e) {
+			// concurrent insert fail case
+			logger.warn(`Exception when creating Organisation: ${organisationInfo.organisationRef}`, e);
+		}
+
+		organisation = this.getFirstOrNull(
 			await this.organisationsRepository.getOrganisationsForUserGroups([organisationInfo.organisationRef]),
 		);
-		if (!organisation) {
-			try {
-				const newOrg = new Organisation();
-				// Organisation name will have organisationRef as the initial value, but it may change later.
-				newOrg.name = organisationInfo.organisationRef;
-				const groupMap = new OrganisationAdminGroupMap();
-				groupMap.organisationRef = organisationInfo.organisationRef;
-				newOrg._organisationAdminGroupMap = groupMap;
-
-				this.transactionManager.runInTransaction(DefaultIsolationLevel, async () => {
-					await this.organisationsRepository.save(newOrg);
-				});
-			} catch (e) {
-				// concurrent insert fail case
-				logger.warn(`Exception when creating Organisation: ${organisationInfo.organisationRef}`, e);
-			}
-
-			organisation = this.getFirstOrNull(
-				await this.organisationsRepository.getOrganisationsForUserGroups([organisationInfo.organisationRef]),
-			);
-		}
 		return organisation;
 	}
 
@@ -58,7 +54,7 @@ export class OrganisationsService {
 		);
 
 		for (const notFoundOrg of notFoundOrgs) {
-			const newOrg = await this.getOrCreateOrganisation(notFoundOrg);
+			const newOrg = await this.createOrganisation(notFoundOrg);
 			if (newOrg) {
 				organisations.push(newOrg);
 			}
