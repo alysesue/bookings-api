@@ -52,8 +52,18 @@ describe('Users Service', () => {
 		headers[MOLSecurityHeaderKeys.USER_ID] = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
 		headers[MOLSecurityHeaderKeys.USER_UINFIN] = 'ABC1234';
 
-		UserRepositoryMock.getUserByMolUserId.mockImplementation(() => Promise.resolve(null));
-		UserRepositoryMock.save.mockImplementation((entry) => Promise.resolve(entry));
+		const userMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+
+		let savedCalled = false;
+		UserRepositoryMock.getUserByMolUserId.mockImplementation(() => Promise.resolve(savedCalled ? userMock : null));
+		UserRepositoryMock.save.mockImplementation((entry) => {
+			return new Promise((resolve) =>
+				setTimeout(() => {
+					savedCalled = true;
+					resolve(entry);
+				}, 10),
+			);
+		});
 
 		const service = Container.get(UsersService);
 		const user = await service.getOrSaveUserFromHeaders(headers);

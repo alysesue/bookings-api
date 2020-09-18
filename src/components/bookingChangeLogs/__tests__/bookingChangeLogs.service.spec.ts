@@ -7,6 +7,7 @@ import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { BookingChangeLogsRepository } from '../bookingChangeLogs.repository';
 import { ConcurrencyError } from '../../../errors/ConcurrencyError';
 import { BookingBuilder } from '../../../models/entities/booking';
+import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
@@ -216,11 +217,16 @@ class TransactionManagerMock extends TransactionManager {
 }
 
 class UserContextMock extends UserContext {
-	public static getCurrentUser = jest.fn();
+	public static getCurrentUser = jest.fn<Promise<User>, any>();
+	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
 	public init() {}
 	public async getCurrentUser(...params): Promise<any> {
-		return await UserContextMock.getCurrentUser(params);
+		return await UserContextMock.getCurrentUser(...params);
+	}
+
+	public async getAuthGroups(...params): Promise<any> {
+		return await UserContextMock.getAuthGroups(...params);
 	}
 }
 

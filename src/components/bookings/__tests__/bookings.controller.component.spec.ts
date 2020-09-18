@@ -20,6 +20,7 @@ import {
 } from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
 import { BookingActionFunction } from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
 import { BookingBuilder } from '../../../models/entities/booking';
+import { AuthGroup, CitizenAuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -49,7 +50,12 @@ describe('Booking Integration tests', () => {
 		const provider = ServiceProvider.create('Provider', calendar, 2);
 		provider.id = 11;
 
-		const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+		const adminMock = User.createAdminUser({
+			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+			userName: 'UserName',
+			email: 'test@email.com',
+			name: 'Name',
+		});
 
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
 		Container.bind(CalendarsRepository).to(CalendarsRepositoryMock());
@@ -64,7 +70,7 @@ describe('Booking Integration tests', () => {
 		TimeslotsServiceMock.availableProvidersForTimeslot = [provider];
 
 		const bookingMock = new BookingBuilder()
-			.withServiceId(1)
+			.withServiceId(2)
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.build();
@@ -84,7 +90,10 @@ describe('Booking Integration tests', () => {
 			},
 		);
 		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(service));
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
 
 		const controller = Container.get(BookingsController);
 
@@ -159,11 +168,16 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 }
 
 class UserContextMock extends UserContext {
-	public static getCurrentUser = jest.fn();
+	public static getCurrentUser = jest.fn<Promise<User>, any>();
+	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
 	public init() {}
 	public async getCurrentUser(...params): Promise<any> {
-		return await UserContextMock.getCurrentUser(params);
+		return await UserContextMock.getCurrentUser(...params);
+	}
+
+	public async getAuthGroups(...params): Promise<any> {
+		return await UserContextMock.getAuthGroups(...params);
 	}
 }
 
