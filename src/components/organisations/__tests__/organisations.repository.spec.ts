@@ -8,7 +8,6 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
-
 describe('Organisations repository', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
@@ -20,7 +19,7 @@ describe('Organisations repository', () => {
 
 	const organisationMock = new Organisation();
 	organisationMock.id = 1;
-	organisationMock.name = "mock organisation";
+	organisationMock.name = 'mock organisation';
 
 	it('should get organisations for user groups', async () => {
 		const queryBuilderMock = {
@@ -31,7 +30,7 @@ describe('Organisations repository', () => {
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const repository = Container.get(OrganisationsRepository);
-		const result = await repository.getOrganisationsForUserGroups(["Organisation1"]);
+		const result = await repository.getOrganisationsForUserGroups(['Organisation1']);
 		expect(result).toEqual([organisationMock]);
 	});
 });
