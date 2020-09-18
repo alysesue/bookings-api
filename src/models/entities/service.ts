@@ -34,6 +34,14 @@ export class Service implements IService, IEntityWithSchedule, IEntityWithTimesl
 	@JoinColumn({ name: '_organisationId' })
 	private _organisation: Organisation;
 
+	public set organisation(value: Organisation) {
+		this._organisation = value;
+	}
+
+	public get organisation() {
+		return this._organisation;
+	}
+
 	@OneToOne((type) => ServiceAdminGroupMap, (e) => e._service, { nullable: true })
 	public _serviceAdminGroupMap: ServiceAdminGroupMap;
 

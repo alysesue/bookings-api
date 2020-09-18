@@ -96,20 +96,16 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		const authorisedOrganisationIds = _userGroup.authorisedOrganisations.map((org) => org.id);
-		if (authorisedOrganisationIds.length > 0) {
-			this.addAuthCondition(`${this._serviceAlias}."_organisationId" IN (:...authorisedOrganisationIds)`, {
-				authorisedOrganisationIds,
-			});
-		}
+		this.addAuthCondition(`${this._serviceAlias}."_organisationId" IN (:...authorisedOrganisationIds)`, {
+			authorisedOrganisationIds,
+		});
 	}
 
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		const authorisedBookingServiceIds = _userGroup.authorisedServices.map((s) => s.id);
-		if (authorisedBookingServiceIds.length > 0) {
-			this.addAuthCondition(`${this._alias}."_serviceId" IN (:...authorisedBookingServiceIds)`, {
-				authorisedBookingServiceIds,
-			});
-		}
+		this.addAuthCondition(`${this._alias}."_serviceId" IN (:...authorisedBookingServiceIds)`, {
+			authorisedBookingServiceIds,
+		});
 	}
 
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {

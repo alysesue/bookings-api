@@ -40,6 +40,9 @@ export class OrganisationAdminAuthGroup extends AuthGroup {
 
 	constructor(user: User, organisations: Organisation[]) {
 		super(user);
+		if (!user.isAdmin()) {
+			throw new Error('OrganisationAdminAuthGroup must be created with an admin User.');
+		}
 		if (!organisations || organisations.length === 0) {
 			throw new Error('At least one organisation is required in OrganisationAdminAuthGroup.');
 		}
@@ -66,6 +69,9 @@ export class ServiceAdminAuthGroup extends AuthGroup {
 
 	constructor(user: User, services: Service[]) {
 		super(user);
+		if (!user.isAdmin()) {
+			throw new Error('ServiceAdminAuthGroup must be created with an admin User.');
+		}
 		if (!services || services.length === 0) {
 			throw new Error('At least one service is required in ServiceAdminUserGroup.');
 		}
@@ -91,6 +97,9 @@ export class ServiceProviderAuthGroup extends AuthGroup {
 
 	constructor(user: User, serviceProvider: ServiceProvider) {
 		super(user);
+		if (!user.isAdmin()) {
+			throw new Error('ServiceProviderAuthGroup must be created with an admin User.');
+		}
 		if (!serviceProvider) {
 			throw new Error('Service provider is required in ServiceProviderUserGroup.');
 		}
