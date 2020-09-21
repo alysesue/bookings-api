@@ -246,7 +246,7 @@ describe('Bookings.Service', () => {
 			.withEndDateTime(end)
 			.build();
 
-		const booking = await bookingService.update(1, bookingRequest, 2);
+		const booking = await bookingService.update(1, bookingRequest, 2, true);
 
 		expect(booking.refId).toBe('ref1');
 		expect(booking.citizenEmail).toBe('test@mail.com');
@@ -264,7 +264,7 @@ describe('Bookings.Service', () => {
 			.withEndDateTime(new Date('2020-09-02'))
 			.build();
 
-		await bookingService.update(1, bookingRequest, 2);
+		await bookingService.update(1, bookingRequest, 2, true);
 
 		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Reschedule);
 	});
@@ -279,7 +279,7 @@ describe('Bookings.Service', () => {
 			.withEndDateTime(bookingRequest.endDateTime)
 			.build();
 
-		await bookingService.update(1, bookingRequest, 2);
+		await bookingService.update(1, bookingRequest, 2, true);
 
 		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Update);
 	});
@@ -295,6 +295,48 @@ describe('Bookings.Service', () => {
 		const result = await bookingService.rejectBooking(1);
 
 		expect(result.status).toBe(BookingStatus.Rejected);
+	});
+
+	describe('Reschedule', () => {
+		it('should reschedule booking', async () => {
+			const bookingService = Container.get(BookingsService);
+			BookingRepositoryMock.booking = new BookingBuilder()
+				.withServiceId(1)
+				.withStartDateTime(new Date('2020-10-01T01:00:00'))
+				.withEndDateTime(new Date('2020-10-01T02:00:00'))
+				.withServiceProviderId(1)
+				.build();
+
+			const rescheduleRequest = {
+				startDateTime: new Date('2020-10-01T05:00:00'),
+				endDateTime: new Date('2020-10-01T06:00:00'),
+			} as BookingRequest;
+
+			const result = await bookingService.reschedule(1, rescheduleRequest, false);
+			expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Reschedule);
+			expect(result.status).toStrictEqual(BookingStatus.PendingApproval);
+		});
+
+		it('should not reschedule rejected booking', async () => {
+			const bookingService = Container.get(BookingsService);
+			BookingRepositoryMock.booking = new BookingBuilder()
+				.withServiceId(1)
+				.withStartDateTime(new Date('2020-10-01T01:00:00'))
+				.withEndDateTime(new Date('2020-10-01T02:00:00'))
+				.withServiceProviderId(1)
+				.build();
+
+			BookingRepositoryMock.booking.status = BookingStatus.Rejected;
+
+			const rescheduleRequest = {
+				startDateTime: new Date('2020-10-01T05:00:00'),
+				endDateTime: new Date('2020-10-01T06:00:00'),
+			} as BookingRequest;
+
+			await expect(
+				async () => await bookingService.reschedule(1, rescheduleRequest, false),
+			).rejects.toThrowError();
+		});
 	});
 });
 
@@ -370,7 +412,7 @@ export class UnavailabilitiesServiceMock extends UnavailabilitiesService {
 export class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn();
 
-	public init() { }
+	public init() {}
 
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(params);
@@ -389,7 +431,7 @@ class BookingChangeLogsServiceMock extends BookingChangeLogsService {
 class ServicesServiceMock extends ServicesService {
 	public static getService = jest.fn();
 
-	public init() { }
+	public init() {}
 
 	public async getService(...params): Promise<any> {
 		return await ServicesServiceMock.getService(params);

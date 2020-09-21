@@ -328,4 +328,8 @@ export class Booking {
 			return ChangeLogAction.Update;
 		}
 	}
+
+	public isValidForRescheduling(): boolean {
+		return this.status === BookingStatus.Accepted || this.status === BookingStatus.PendingApproval;
+	}
 }

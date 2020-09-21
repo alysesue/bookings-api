@@ -2,7 +2,12 @@ import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Booking, BookingStatus, ChangeLogAction, User } from '../../models';
 import { BookingsRepository } from './bookings.repository';
-import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from './bookings.apicontract';
+import {
+	BookingAcceptRequest,
+	BookingRequest,
+	BookingSearchRequest,
+	RescheduleBookingRequest,
+} from './bookings.apicontract';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
@@ -74,8 +79,13 @@ export class BookingsService {
 		);
 	}
 
-	public async update(bookingId: number, bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
-		const updateAction = (_booking) => this.updateInternal(_booking, bookingRequest);
+	public async update(
+		bookingId: number,
+		bookingRequest: BookingRequest,
+		serviceId: number,
+		isAdmin: boolean,
+	): Promise<Booking> {
+		const updateAction = (_booking) => this.updateInternal(_booking, bookingRequest, isAdmin);
 		return await this.changeLogsService.executeAndLogAction(
 			bookingId,
 			this.getBookingForChange.bind(this),
@@ -128,6 +138,34 @@ export class BookingsService {
 		return [ChangeLogAction.Reject, booking];
 	}
 
+	public async reschedule(bookingId: number, rescheduleRequest: BookingRequest, isAdmin: boolean): Promise<Booking> {
+		const rescheduleAction = (_booking) => this.rescheduleInternal(_booking, rescheduleRequest, isAdmin);
+		return await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBookingForChange.bind(this),
+			rescheduleAction,
+		);
+	}
+
+	private async rescheduleInternal(booking: Booking, rescheduleRequest: BookingRequest, isAdmin: boolean) {
+		if (!booking.isValidForRescheduling()) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Booking in invalid state for rescheduling');
+		}
+
+		const request = {
+			...rescheduleRequest,
+			status: BookingStatus.PendingApproval,
+			serviceProvider: null,
+		} as RescheduleBookingRequest;
+
+		if (booking.status === BookingStatus.Accepted && booking.serviceProvider?.calendar) {
+			await this.calendarsService.deleteCalendarEvent(booking.serviceProvider.calendar, booking.eventICalId);
+			request.eventICalId = null;
+		}
+
+		return await this.updateInternal(booking, request, isAdmin);
+	}
+
 	private async acceptBookingInternal(
 		booking: Booking,
 		acceptRequest: BookingAcceptRequest,
@@ -172,11 +210,12 @@ export class BookingsService {
 	private async updateInternal(
 		previousBooking: Booking,
 		bookingRequest: BookingRequest,
+		isAdmin: boolean,
 	): Promise<[ChangeLogAction, Booking]> {
 		const updatedBooking = previousBooking.clone();
 		Object.assign(updatedBooking, bookingRequest);
 
-		await this.bookingsValidatorFactory.getValidator(true).validate(updatedBooking);
+		await this.bookingsValidatorFactory.getValidator(isAdmin).validate(updatedBooking);
 
 		await this.bookingsRepository.update(updatedBooking);
 

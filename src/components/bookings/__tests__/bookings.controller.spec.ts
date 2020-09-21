@@ -151,7 +151,6 @@ describe('Bookings.Controller', () => {
 
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 	});
-
 });
 
 const TimeslotsServiceMock = {
