@@ -1,4 +1,4 @@
-import { ServicesRepository } from '../services.repository';
+import { ServicesRepository, ServiceRefInfo } from '../services.repository';
 import { Container } from 'typescript-ioc';
 import { Schedule, Service, TimeslotsSchedule } from '../../../models';
 import { SchedulesRepository } from '../../schedules/schedules.repository';
@@ -80,9 +80,45 @@ describe('Services repository', () => {
 		await repository.save(service);
 		expect(TransactionManagerMock.save.mock.calls[0][0]).toStrictEqual(service);
 	});
+
+	it('should get organisations for user groups', async () => {
+		const serviceMock: Service = new Service();
+		serviceMock.name = 'Coaches';
+
+		const serviceRefInfo: ServiceRefInfo = {
+			serviceRef: "serviceRef",
+			organisationRef: "OrganisationRef"
+		};
+
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			getMany: jest.fn(() => Promise.resolve([serviceMock])),
+		};
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const repository = Container.get(ServicesRepository);
+		const result = await repository.getServicesForUserGroups([serviceRefInfo]);
+		expect(result).toEqual([serviceMock]);
+	});
+
+	it('should return empty', async () => {
+
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			getMany: jest.fn(() => Promise.resolve([])),
+		};
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const repository = Container.get(ServicesRepository);
+		const result = await repository.getServicesForUserGroups([]);
+		expect(result).toEqual([]);
+	});
 });
 
 class TransactionManagerMock extends TransactionManager {
+	public static createQueryBuilder = jest.fn();
 	public static save = jest.fn();
 	public static find = jest.fn();
 	public static findOne = jest.fn();
@@ -90,6 +126,7 @@ class TransactionManagerMock extends TransactionManager {
 	public async getEntityManager(): Promise<any> {
 		const entityManager = {
 			getRepository: () => ({
+				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
 				find: TransactionManagerMock.find,
 				findOne: TransactionManagerMock.findOne,
 				save: TransactionManagerMock.save,
