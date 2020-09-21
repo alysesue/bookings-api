@@ -26,7 +26,13 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		const repository = await this.getRepository();
 		const query = repository
 			.createQueryBuilder('booking')
-			.where([userCondition, idCondition].filter((c) => c).join(' AND '), { ...userParams, id: bookingId })
+			.where(
+				[userCondition, idCondition]
+					.filter((c) => c)
+					.map((c) => `(${c})`)
+					.join(' AND '),
+				{ ...userParams, id: bookingId },
+			)
 			.leftJoinAndSelect('booking._serviceProvider', 'sp_relation')
 			.leftJoinAndSelect('booking._service', 'service_relation');
 
