@@ -1,12 +1,11 @@
-import { Calendar, ChangeLogAction, Organisation, Service, ServiceProvider, User } from '../../../models';
-import { BookingActionAuthVisitor, BookingQueryAuthVisitor } from '../bookings.auth';
+import { Calendar, Organisation, Service, ServiceProvider, User } from '../../../models';
+import { BookingQueryAuthVisitor } from '../bookings.auth';
 import {
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
-import { QueryAuthGroupVisitor } from '../../../infrastructure/auth/queryAuthGroupVisitor';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -43,7 +42,7 @@ describe('Bookings query auth', () => {
 		const groups = [new CitizenAuthGroup(singpassMock)];
 		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('((b."_citizenUinFin" = :authorisedUinFin))');
+		expect(result.userCondition).toStrictEqual('(b."_citizenUinFin" = :authorisedUinFin)');
 		expect(result.userParams).toStrictEqual({
 			authorisedUinFin: 'ABC1234',
 		});
@@ -53,7 +52,7 @@ describe('Bookings query auth', () => {
 		const groups = [new OrganisationAdminAuthGroup(adminMock, [organisation])];
 		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('((s."_organisationId" IN (:...authorisedOrganisationIds)))');
+		expect(result.userCondition).toStrictEqual('(s."_organisationId" IN (:...authorisedOrganisationIds))');
 		expect(result.userParams).toStrictEqual({
 			authorisedOrganisationIds: [2],
 		});
@@ -63,7 +62,7 @@ describe('Bookings query auth', () => {
 		const groups = [new ServiceAdminAuthGroup(adminMock, [service])];
 		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('((b."_serviceId" IN (:...authorisedBookingServiceIds)))');
+		expect(result.userCondition).toStrictEqual('(b."_serviceId" IN (:...authorisedBookingServiceIds))');
 		expect(result.userParams).toStrictEqual({
 			authorisedBookingServiceIds: [3],
 		});
@@ -75,7 +74,7 @@ describe('Bookings query auth', () => {
 		const groups = [new ServiceProviderAuthGroup(adminMock, serviceProvider)];
 		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('((b."_serviceProviderId" = :authorisedServiceProviderId))');
+		expect(result.userCondition).toStrictEqual('(b."_serviceProviderId" = :authorisedServiceProviderId)');
 		expect(result.userParams).toStrictEqual({
 			authorisedServiceProviderId: 5,
 		});

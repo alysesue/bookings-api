@@ -26,10 +26,13 @@ export class AuthConditionCollection {
 			};
 		}
 
-		const joinedCondition = this._authConditions.map((c) => `(${c})`).join(' OR ');
+		let joinedCondition = this._authConditions.map((c) => `(${c})`).join(' OR ');
+		if (this._authConditions.length > 1) {
+			joinedCondition = `(${joinedCondition})`;
+		}
 
 		return {
-			userCondition: `(${joinedCondition})`,
+			userCondition: joinedCondition,
 			userParams: this._authParams,
 		};
 	}

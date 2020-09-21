@@ -1,5 +1,5 @@
 // tslint:disable: tsr-detect-possible-timing-attacks
-import { logger, LoggerV2 } from 'mol-lib-common/debugging/logging/LoggerV2';
+import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 
 const BookingSGToken = 'bookingsg';
 const OrgAdminToken = 'org-admin';
@@ -35,12 +35,12 @@ export class AdminUserGroupParser {
 		}
 
 		if (!roleStr) {
-			logger.log(LoggerV2.LogLevel.WARN, 'Invalid group role - missing role: ' + groupStr);
+			logger.warn('Invalid group role - missing role: ' + groupStr);
 			return null;
 		}
 
 		if (!organisationRef) {
-			logger.log(LoggerV2.LogLevel.WARN, 'Invalid group role - missing organisation: ' + groupStr);
+			logger.warn('Invalid group role - missing organisation: ' + groupStr);
 			return null;
 		}
 
