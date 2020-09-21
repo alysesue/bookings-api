@@ -190,4 +190,18 @@ export class BookingsController extends Controller {
 		);
 		return timeslotEntry.availableServiceProviders.map(BookingsMapper.mapProvider) || [];
 	}
+
+	/**
+	 * Reject a booking request. Only Pending (1) bookings that can be rejected.
+	 * @param bookingId The booking id.
+	 */
+	@Post('{bookingId}/reject')
+	@SuccessResponse(200, 'Rejected')
+	@MOLAuth({
+		admin: {}
+	})
+	@Response(401, 'Valid authentication types: [admin]')
+	public async rejectBooking(@Path() bookingId: number): Promise<any> {
+		await this.bookingsService.rejectBooking(bookingId);
+	}
 }

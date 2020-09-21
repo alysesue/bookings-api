@@ -283,6 +283,19 @@ describe('Bookings.Service', () => {
 
 		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Update);
 	});
+
+	it('should reject booking', async () => {
+		const bookingService = Container.get(BookingsService);
+		BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		const result = await bookingService.rejectBooking(1);
+
+		expect(result.status).toBe(BookingStatus.Rejected);
+	});
 });
 
 export class BookingRepositoryMock extends BookingsRepository {
@@ -357,7 +370,7 @@ export class UnavailabilitiesServiceMock extends UnavailabilitiesService {
 export class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn();
 
-	public init() {}
+	public init() { }
 
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(params);
@@ -376,7 +389,7 @@ class BookingChangeLogsServiceMock extends BookingChangeLogsService {
 class ServicesServiceMock extends ServicesService {
 	public static getService = jest.fn();
 
-	public init() {}
+	public init() { }
 
 	public async getService(...params): Promise<any> {
 		return await ServicesServiceMock.getService(params);

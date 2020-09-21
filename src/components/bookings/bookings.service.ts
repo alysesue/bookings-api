@@ -107,6 +107,27 @@ export class BookingsService {
 		return [ChangeLogAction.Cancel, booking];
 	}
 
+	public async rejectBooking(bookingId: number): Promise<Booking> {
+		return await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBookingForChange.bind(this),
+			this.rejectBookingInternal.bind(this),
+		);
+	}
+
+	private async rejectBookingInternal(booking: Booking): Promise<[ChangeLogAction, Booking]> {
+		if (booking.status !== BookingStatus.PendingApproval) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Booking ${booking.id} is in invalid state for rejection`,
+			);
+		}
+
+		booking.status = BookingStatus.Rejected;
+		await this.bookingsRepository.update(booking);
+
+		return [ChangeLogAction.Reject, booking];
+	}
+
 	private async acceptBookingInternal(
 		booking: Booking,
 		acceptRequest: BookingAcceptRequest,
