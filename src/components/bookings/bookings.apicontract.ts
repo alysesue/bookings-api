@@ -1,4 +1,4 @@
-import { BookingStatus } from '../../models';
+import { BookingStatus, ServiceProvider } from '../../models';
 
 export class BookingAcceptRequest {
 	public serviceProviderId: number;
@@ -15,13 +15,19 @@ export class BookingRequest {
 	/**
 	 * An external reference Id for this booking (e.g. external Client Id or booking Id).
 	 */
-	public refId?: string;
+	public refId?: string | null;
 	public citizenUinFin?: string;
 	public citizenName?: string;
 	public citizenEmail?: string;
 	public citizenPhone?: string | null;
 	public location?: string | null;
 	public description?: string | null;
+}
+
+export interface RescheduleBookingRequest extends BookingRequest {
+	status: BookingStatus;
+	eventICalId: string;
+	serviceProvider: ServiceProvider;
 }
 
 export type BookingResponse = {

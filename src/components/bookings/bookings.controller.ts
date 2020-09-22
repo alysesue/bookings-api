@@ -78,6 +78,23 @@ export class BookingsController extends Controller {
 	/**
 	 * Approves a booking and allocates a service provider to it. The booking must have Pending (1) status and the service provider (serviceProviderId) must be available for this booking timeslot otherwise the request will fail.
 	 * @param bookingId The booking id.
+	 * @param rescheduleRequest A new booking request for reschedule
+	 */
+	@Post('{bookingId}/reschedule')
+	@SuccessResponse(204, 'Accepted')
+	@MOLAuth({ user: { minLevel: MOLUserAuthLevel.L2 } })
+	@Response(401, 'Valid authentication types: [citizen]')
+	public async reschedule(
+		@Path() bookingId: number,
+		@Body() rescheduleRequest: BookingRequest,
+	): Promise<BookingResponse> {
+		const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest, false);
+		return BookingsMapper.mapDataModel(rescheduledBooking);
+	}
+
+	/**
+	 * Approves a booking and allocates a service provider to it. The booking must have Pending (1) status and the service provider (serviceProviderId) must be available for this booking timeslot otherwise the request will fail.
+	 * @param bookingId The booking id.
 	 * @param acceptRequest
 	 */
 	@Post('{bookingId}/accept')
@@ -120,14 +137,9 @@ export class BookingsController extends Controller {
 		@Body() bookingRequest: BookingRequest,
 		@Header('x-api-service') serviceId: number,
 	): Promise<any> {
-		// todo: Refactor to not cancel the booking but update the existing one
-		const deletedBooking = await this.bookingsService.cancelBooking(bookingId);
-		if (deletedBooking) {
-			bookingRequest.outOfSlotBooking = true;
-			const booking = await this.bookingsService.save(bookingRequest, serviceId);
-			this.setStatus(201);
-			return BookingsMapper.mapDataModel(booking);
-		}
+		const booking = await this.bookingsService.update(bookingId, bookingRequest, serviceId, true);
+		this.setStatus(201);
+		return BookingsMapper.mapDataModel(booking);
 	}
 
 	/**
@@ -203,7 +215,7 @@ export class BookingsController extends Controller {
 	@Post('{bookingId}/reject')
 	@SuccessResponse(200, 'Rejected')
 	@MOLAuth({
-		admin: {}
+		admin: {},
 	})
 	@Response(401, 'Valid authentication types: [admin]')
 	public async rejectBooking(@Path() bookingId: number): Promise<any> {

@@ -1,5 +1,5 @@
 import { Booking } from './entities/booking';
-import { BookingChangeLog, BookingJsonSchemaV1, ChangeLogAction } from './entities/bookingChangeLog';
+import { BookingChangeLog, BookingJsonSchemaV1 } from './entities/bookingChangeLog';
 import { BookingStatus } from './bookingStatus';
 import { Schedule } from './entities/schedule';
 import { WeekDaySchedule } from './entities/weekDaySchedule';
@@ -17,6 +17,7 @@ import { AdminUser } from './entities/adminUser';
 // TODO : rename
 import { TimeslotItem } from './entities/timeslotItem';
 import { Unavailability } from './entities/unavailability';
+import { ChangeLogAction } from './changeLogAction';
 
 export {
 	Booking,
