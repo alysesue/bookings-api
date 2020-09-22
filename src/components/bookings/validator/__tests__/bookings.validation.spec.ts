@@ -7,7 +7,7 @@ import { CalendarsService } from '../../../calendars/calendars.service';
 import { TimeslotsService } from '../../../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../../../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../../../unavailabilities/unavailabilities.service';
-import { UserContext } from '../../../../infrastructure/userContext.middleware';
+import { UserContext } from '../../../../infrastructure/auth/userContext';
 import { BookingBuilder } from '../../../../models/entities/booking';
 import { User } from '../../../../models';
 import { BookingsValidatorFactory } from '../bookings.validation';
@@ -131,20 +131,19 @@ describe('Booking validation tests', () => {
 		).rejects.toThrowError();
 	});
 
-	it('should throw on booking save error', async () => {
+	it('should throw on validation error', async () => {
 		const start = new Date();
 		const booking = new BookingBuilder()
 			.withStartDateTime(start)
 			.withEndDateTime(DateHelper.addMinutes(start, 30))
 			.build();
 
-		BookingRepositoryMock.saveMock = Promise.reject(new Error('Some DB error'));
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
-		await expect(
-			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
-		).rejects.toThrowError();
+		const asyncTest = async () =>
+			await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking);
+		await expect(asyncTest).rejects.toThrowError();
 	});
 
 	it('should validate available service providers', async () => {

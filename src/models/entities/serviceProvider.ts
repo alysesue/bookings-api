@@ -5,13 +5,27 @@ import { Service } from './service';
 import { Schedule } from './schedule';
 import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
+import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
 
 @Entity()
 export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, IEntityWithTimeslotsSchedule {
+	constructor() {}
+	@PrimaryGeneratedColumn()
+	private _id: number;
+
+	public get id(): number {
+		return this._id;
+	}
+
+	public set id(id: number) {
+		this._id = id;
+	}
+
+	@OneToOne((type) => ServiceProviderGroupMap, (e) => e._serviceProvider, { nullable: true })
+	public _serviceProviderGroupMap: ServiceProviderGroupMap;
+
 	@Column()
 	private _createdAt: Date;
-
-	constructor() {}
 
 	@Column()
 	private _status: ServiceProviderStatus;
@@ -42,17 +56,6 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 
 	public get service(): Service {
 		return this._service;
-	}
-
-	@PrimaryGeneratedColumn()
-	private _id: number;
-
-	public get id(): number {
-		return this._id;
-	}
-
-	public set id(id: number) {
-		this._id = id;
 	}
 
 	@Column({ type: 'varchar', length: 300 })

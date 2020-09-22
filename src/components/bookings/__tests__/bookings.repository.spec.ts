@@ -2,10 +2,10 @@ import { BookingSearchQuery, BookingsRepository } from '../bookings.repository';
 import { Booking, BookingStatus, User } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { InsertResult } from 'typeorm';
-import { QueryAccessType } from '../../../core/repository';
-import { UserContext } from '../../../infrastructure/userContext.middleware';
+import { UserContext } from '../../../infrastructure/auth/userContext';
 import { TransactionManager } from '../../../core/transactionManager';
 import { BookingBuilder } from '../../../models/entities/booking';
+import { AuthGroup, CitizenAuthGroup } from '../../../infrastructure/auth/authGroup';
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
@@ -22,6 +22,11 @@ describe('Bookings repository', () => {
 
 	beforeEach(() => {
 		jest.resetAllMocks();
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new CitizenAuthGroup(singpassUserMock)]),
+		);
 	});
 
 	it('should search bookings with date range and access type', async () => {
@@ -36,19 +41,15 @@ describe('Bookings repository', () => {
 		};
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
 		const bookingsRepository = Container.get(BookingsRepository);
 
-		const result = await bookingsRepository.search(
-			{
-				serviceId: 1,
-				serviceProviderId: 1,
-				from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
-				to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
-			} as BookingSearchQuery,
-			QueryAccessType.Read,
-		);
+		const result = await bookingsRepository.search({
+			serviceId: 1,
+			serviceProviderId: 1,
+			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
+			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
+		} as BookingSearchQuery);
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
@@ -68,20 +69,16 @@ describe('Bookings repository', () => {
 		};
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
 		const bookingsRepository = Container.get(BookingsRepository);
 
-		const result = await bookingsRepository.search(
-			{
-				serviceId: 1,
-				serviceProviderId: 1,
-				statuses: [BookingStatus.Accepted, BookingStatus.PendingApproval],
-				from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
-				to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
-			} as BookingSearchQuery,
-			QueryAccessType.Read,
-		);
+		const result = await bookingsRepository.search({
+			serviceId: 1,
+			serviceProviderId: 1,
+			statuses: [BookingStatus.Accepted, BookingStatus.PendingApproval],
+			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
+			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
+		} as BookingSearchQuery);
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
@@ -101,20 +98,16 @@ describe('Bookings repository', () => {
 		};
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
 		const bookingsRepository = Container.get(BookingsRepository);
 
-		const result = await bookingsRepository.search(
-			{
-				serviceId: 1,
-				serviceProviderId: 1,
-				citizenUinFins: ['abc123', 'xyz456'],
-				from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
-				to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
-			} as BookingSearchQuery,
-			QueryAccessType.Read,
-		);
+		const result = await bookingsRepository.search({
+			serviceId: 1,
+			serviceProviderId: 1,
+			citizenUinFins: ['abc123', 'xyz456'],
+			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
+			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
+		} as BookingSearchQuery);
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
@@ -127,7 +120,6 @@ describe('Bookings repository', () => {
 		const insertResult = new InsertResult();
 		insertResult.identifiers = [{ id: 'abc' }];
 		TransactionManagerMock.insert.mockImplementation(() => insertResult);
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
 		const bookingsRepository = Container.get(BookingsRepository);
 		const booking = new BookingBuilder()
@@ -152,7 +144,6 @@ describe('Bookings repository', () => {
 
 		TransactionManagerMock.save.mockImplementation(() => booking);
 		TransactionManagerMock.query.mockImplementation(() => Promise.resolve([[], 1]));
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
 		await bookingsRepository.update(booking);
 		expect(TransactionManagerMock.save).toBeCalled();
@@ -173,7 +164,6 @@ describe('Bookings repository', () => {
 		};
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 
 		const bookingsRepository = Container.get(BookingsRepository);
 		const result = await bookingsRepository.getBooking(1);
@@ -207,10 +197,15 @@ class TransactionManagerMock extends TransactionManager {
 }
 
 class UserContextMock extends UserContext {
-	public static getCurrentUser = jest.fn();
+	public static getCurrentUser = jest.fn<Promise<User>, any>();
+	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
 	public init() {}
 	public async getCurrentUser(...params): Promise<any> {
-		return await UserContextMock.getCurrentUser(params);
+		return await UserContextMock.getCurrentUser(...params);
+	}
+
+	public async getAuthGroups(...params): Promise<any> {
+		return await UserContextMock.getAuthGroups(...params);
 	}
 }

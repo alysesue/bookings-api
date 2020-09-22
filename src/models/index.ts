@@ -8,6 +8,7 @@ import { Calendar } from './entities/calendar';
 import { Service } from './entities/service';
 import { TimeOfDay } from './timeOfDay';
 import { ServiceProvider } from './entities/serviceProvider';
+import { ServiceProviderGroupMap } from './entities/serviceProviderGroupMap';
 import { BusinessValidation } from './businessValidation';
 import { Timeslot } from './timeslot';
 import { TimeslotsSchedule } from './entities/timeslotsSchedule';
@@ -17,7 +18,10 @@ import { AdminUser } from './entities/adminUser';
 // TODO : rename
 import { TimeslotItem } from './entities/timeslotItem';
 import { Unavailability } from './entities/unavailability';
+import { ServiceAdminGroupMap } from './entities/serviceAdminGroupMap';
 import { ChangeLogAction } from './changeLogAction';
+import { Organisation } from './entities/organisation';
+import { OrganisationAdminGroupMap } from './entities/organisationAdminGroupMap';
 
 export {
 	Booking,
@@ -31,13 +35,17 @@ export {
 	AdminUser,
 	Schedule,
 	Service,
+	ServiceAdminGroupMap,
 	WeekDayBreak,
 	WeekDaySchedule,
 	Calendar,
 	TimeOfDay,
 	Timeslot,
 	ServiceProvider,
+	ServiceProviderGroupMap,
 	TimeslotsSchedule,
 	TimeslotItem,
 	Unavailability,
+	Organisation,
+	OrganisationAdminGroupMap,
 };

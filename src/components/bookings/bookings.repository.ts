@@ -1,9 +1,10 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { InsertResult } from 'typeorm';
 import { Booking, BookingStatus } from '../../models';
-import { QueryAccessType, RepositoryBase } from '../../core/repository';
-import { UserContext } from '../../infrastructure/userContext.middleware';
+import { RepositoryBase } from '../../core/repository';
 import { ConcurrencyError } from '../../errors/ConcurrencyError';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { BookingQueryAuthVisitor } from './bookings.auth';
 
 @InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {
@@ -14,33 +15,24 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		super(Booking);
 	}
 
-	private async createUserVisibilityCondition(
-		alias: string,
-		_accessType: QueryAccessType,
-	): Promise<{ userCondition: string; userParams: object }> {
-		const user = await this.userContext.getCurrentUser();
-
-		if (user.isCitizen()) {
-			return {
-				userCondition: `${alias}."_citizenUinFin" = :useruinfin`,
-				userParams: { useruinfin: user.singPassUser.UinFin },
-			};
-		} else {
-			return {
-				userCondition: '',
-				userParams: {},
-			};
-		}
-	}
-
-	public async getBooking(bookingId: number, accessType = QueryAccessType.Read): Promise<Booking> {
-		const { userCondition, userParams } = await this.createUserVisibilityCondition('booking', accessType);
+	public async getBooking(bookingId: number): Promise<Booking> {
+		const authGroups = await this.userContext.getAuthGroups();
+		const { userCondition, userParams } = await new BookingQueryAuthVisitor(
+			'booking',
+			'service_relation',
+		).createUserVisibilityCondition(authGroups);
 		const idCondition = 'booking."_id" = :id';
 
 		const repository = await this.getRepository();
 		const query = repository
 			.createQueryBuilder('booking')
-			.where([userCondition, idCondition].filter((c) => c).join(' AND '), { ...userParams, id: bookingId })
+			.where(
+				[userCondition, idCondition]
+					.filter((c) => c)
+					.map((c) => `(${c})`)
+					.join(' AND '),
+				{ ...userParams, id: bookingId },
+			)
 			.leftJoinAndSelect('booking._serviceProvider', 'sp_relation')
 			.leftJoinAndSelect('booking._service', 'service_relation');
 
@@ -80,8 +72,12 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return incremented;
 	}
 
-	public async search(request: BookingSearchQuery, accessType: QueryAccessType): Promise<Booking[]> {
-		const { userCondition, userParams } = await this.createUserVisibilityCondition('booking', accessType);
+	public async search(request: BookingSearchQuery): Promise<Booking[]> {
+		const authGroups = await this.userContext.getAuthGroups();
+		const { userCondition, userParams } = await new BookingQueryAuthVisitor(
+			'booking',
+			'service_relation',
+		).createUserVisibilityCondition(authGroups);
 
 		const serviceCondition = request.serviceId ? 'booking."_serviceId" = :serviceId' : '';
 

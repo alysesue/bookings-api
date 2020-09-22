@@ -20,6 +20,10 @@ export interface IUser {
 	id: number;
 }
 
+export interface IOrganisation {
+	id: number;
+}
+
 export interface IService {
 	id: number;
 }

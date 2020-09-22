@@ -7,24 +7,44 @@ import { SchedulesService } from '../schedules/schedules.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
 import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
 import { TimeslotsScheduleService } from '../timeslotsSchedules/timeslotsSchedule.service';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { OrganisationAdminAuthGroup } from '../../infrastructure/auth/authGroup';
 
 @InRequestScope
 export class ServicesService {
 	@Inject
 	private servicesRepository: ServicesRepository;
-
 	@Inject
 	private schedulesService: SchedulesService;
-
 	@Inject
 	private timeslotItemsService: TimeslotItemsService;
-
 	@Inject
 	private timeslotsScheduleService: TimeslotsScheduleService;
+	@Inject
+	private userContext: UserContext;
 
 	public async createService(request: ServiceRequest): Promise<Service> {
+		// TODO: implement authorisation in some AuthVisitor. No need to do casting.
+		const orgAdmins = (await this.userContext.getAuthGroups()).filter(
+			(g) => g instanceof OrganisationAdminAuthGroup,
+		) as OrganisationAdminAuthGroup[];
+
+		if (
+			orgAdmins.length === 0 ||
+			(request.organisationId && !orgAdmins[0].hasOrganisationId(request.organisationId))
+		) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
+				'User not authorized to add services.',
+			);
+		}
+
 		const service = new Service();
 		service.name = request.name;
+		if (request.organisationId) {
+			service.organisationId = request.organisationId;
+		} else {
+			service.organisationId = orgAdmins[0].authorisedOrganisations[0].id;
+		}
 
 		return await this.servicesRepository.save(service);
 	}

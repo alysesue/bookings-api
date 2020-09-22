@@ -1,9 +1,10 @@
 import { Booking, BookingChangeLog, ChangeLogAction, User } from '../../../models';
 import { Container } from 'typescript-ioc';
-import { UserContext } from '../../../infrastructure/userContext.middleware';
+import { UserContext } from '../../../infrastructure/auth/userContext';
 import { TransactionManager } from '../../../core/transactionManager';
 import { BookingChangeLogsRepository } from '../bookingChangeLogs.repository';
 import { SelectQueryBuilder } from 'typeorm';
+import { AuthGroup, CitizenAuthGroup } from '../../../infrastructure/auth/authGroup';
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
@@ -22,6 +23,9 @@ describe('BookingChangeLogs repository', () => {
 		jest.resetAllMocks();
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new CitizenAuthGroup(singpassUserMock)]),
+		);
 	});
 
 	it('should saveLog', async () => {
@@ -88,10 +92,15 @@ class TransactionManagerMock extends TransactionManager {
 }
 
 class UserContextMock extends UserContext {
-	public static getCurrentUser = jest.fn();
+	public static getCurrentUser = jest.fn<Promise<User>, any>();
+	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
 	public init() {}
 	public async getCurrentUser(...params): Promise<any> {
-		return await UserContextMock.getCurrentUser(params);
+		return await UserContextMock.getCurrentUser(...params);
+	}
+
+	public async getAuthGroups(...params): Promise<any> {
+		return await UserContextMock.getAuthGroups(...params);
 	}
 }

@@ -11,7 +11,7 @@ import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotPro
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { DateHelper } from '../../../infrastructure/dateHelper';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
-import { UserContext } from '../../../infrastructure/userContext.middleware';
+import { UserContext } from '../../../infrastructure/auth/userContext';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { BookingsValidatorFactory, IValidator } from '../validator/bookings.validation';
 import {
@@ -20,6 +20,12 @@ import {
 	GetBookingFunction,
 } from '../../bookingChangeLogs/bookingChangeLogs.service';
 import { ServicesService } from '../../services/services.service';
+import {
+	AuthGroup,
+	CitizenAuthGroup,
+	ServiceAdminAuthGroup,
+	ServiceProviderAuthGroup,
+} from '../../../infrastructure/auth/authGroup';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -122,6 +128,7 @@ describe('Bookings.Service', () => {
 		BookingRepositoryMock.searchBookingsMock = [];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
 
@@ -134,11 +141,12 @@ describe('Bookings.Service', () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
-		bookingRequest.serviceProviderId = 5;
+		bookingRequest.serviceProviderId = 1;
 		BookingRepositoryMock.searchBookingsMock = [];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
 
@@ -151,7 +159,7 @@ describe('Bookings.Service', () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
-		bookingRequest.serviceProviderId = 5;
+		bookingRequest.serviceProviderId = 1;
 		bookingRequest.outOfSlotBooking = true;
 		bookingRequest.refId = 'RFM186';
 		bookingRequest.citizenUinFin = 'NRIC1234';
@@ -160,6 +168,9 @@ describe('Bookings.Service', () => {
 		TimeslotsServiceMock.acceptedBookings = [bookingMock];
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProvider)]),
+		);
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
 
@@ -178,6 +189,9 @@ describe('Bookings.Service', () => {
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
 
@@ -196,6 +210,11 @@ describe('Bookings.Service', () => {
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
+
 		const acceptRequest = new BookingAcceptRequest();
 		acceptRequest.serviceProviderId = 1;
 		const result = await bookingService.acceptBooking(1, acceptRequest);
@@ -213,6 +232,12 @@ describe('Bookings.Service', () => {
 			.build();
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
+
 		const result = await bookingService.cancelBooking(1);
 
 		expect(result.status).toBe(BookingStatus.Cancelled);
@@ -241,10 +266,16 @@ describe('Bookings.Service', () => {
 		} as BookingRequest;
 
 		BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(service.id)
 			.withCitizenEmail('test@mail.com')
 			.withStartDateTime(start)
 			.withEndDateTime(end)
 			.build();
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
 
 		const booking = await bookingService.update(1, bookingRequest, 2, true);
 
@@ -259,10 +290,16 @@ describe('Bookings.Service', () => {
 		const bookingRequest = getBookingRequest();
 
 		BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(service.id)
 			.withCitizenEmail('test@mail.com')
 			.withStartDateTime(new Date('2020-09-01'))
 			.withEndDateTime(new Date('2020-09-02'))
 			.build();
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
 
 		await bookingService.update(1, bookingRequest, 2, true);
 
@@ -274,10 +311,16 @@ describe('Bookings.Service', () => {
 		const bookingRequest = getBookingRequest();
 
 		BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(service.id)
 			.withCitizenEmail('test@mail.com')
 			.withStartDateTime(bookingRequest.startDateTime)
 			.withEndDateTime(bookingRequest.endDateTime)
 			.build();
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
 
 		await bookingService.update(1, bookingRequest, 2, true);
 
@@ -292,6 +335,12 @@ describe('Bookings.Service', () => {
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.build();
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
+
 		const result = await bookingService.rejectBooking(1);
 
 		expect(result.status).toBe(BookingStatus.Rejected);
@@ -301,7 +350,7 @@ describe('Bookings.Service', () => {
 		it('should reschedule booking', async () => {
 			const bookingService = Container.get(BookingsService);
 			BookingRepositoryMock.booking = new BookingBuilder()
-				.withServiceId(1)
+				.withServiceId(service.id)
 				.withStartDateTime(new Date('2020-10-01T01:00:00'))
 				.withEndDateTime(new Date('2020-10-01T02:00:00'))
 				.withServiceProviderId(1)
@@ -311,6 +360,11 @@ describe('Bookings.Service', () => {
 				startDateTime: new Date('2020-10-01T05:00:00'),
 				endDateTime: new Date('2020-10-01T06:00:00'),
 			} as BookingRequest;
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+			);
 
 			const result = await bookingService.reschedule(1, rescheduleRequest, false);
 			expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Reschedule);
@@ -332,6 +386,11 @@ describe('Bookings.Service', () => {
 				startDateTime: new Date('2020-10-01T05:00:00'),
 				endDateTime: new Date('2020-10-01T06:00:00'),
 			} as BookingRequest;
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+			);
 
 			await expect(
 				async () => await bookingService.reschedule(1, rescheduleRequest, false),
@@ -410,12 +469,16 @@ export class UnavailabilitiesServiceMock extends UnavailabilitiesService {
 }
 
 export class UserContextMock extends UserContext {
-	public static getCurrentUser = jest.fn();
+	public static getCurrentUser = jest.fn<Promise<User>, any>();
+	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
 	public init() {}
-
 	public async getCurrentUser(...params): Promise<any> {
-		return await UserContextMock.getCurrentUser(params);
+		return await UserContextMock.getCurrentUser(...params);
+	}
+
+	public async getAuthGroups(...params): Promise<any> {
+		return await UserContextMock.getAuthGroups(...params);
 	}
 }
 

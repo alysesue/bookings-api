@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { BookingChangeLog } from '../../models';
 import { RepositoryBase } from '../../core/repository';
-import { UserContext } from '../../infrastructure/userContext.middleware';
+import { UserContext } from '../../infrastructure/auth/userContext';
 import { groupByKey } from '../../tools/collections';
 
 @InRequestScope
