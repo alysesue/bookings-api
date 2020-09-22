@@ -34,7 +34,6 @@ describe('Organisations repository', () => {
 		expect(result).toEqual([organisationMock]);
 	});
 
-
 	it('should return empty', async () => {
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
@@ -51,7 +50,7 @@ describe('Organisations repository', () => {
 	it('should save organisation', async () => {
 		const data = new Organisation();
 		data.id = 1;
-		data.name = "Organisation1";
+		data.name = 'Organisation1';
 
 		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(data));
 		const repository = Container.get(OrganisationsRepository);
@@ -63,7 +62,6 @@ describe('Organisations repository', () => {
 class TransactionManagerMock extends TransactionManager {
 	public static createQueryBuilder = jest.fn();
 	public static save = jest.fn();
-
 
 	public async getEntityManager(): Promise<any> {
 		const entityManager = {

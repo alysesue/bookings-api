@@ -1,5 +1,5 @@
 import { Booking } from './entities/booking';
-import { BookingChangeLog, BookingJsonSchemaV1, ChangeLogAction } from './entities/bookingChangeLog';
+import { BookingChangeLog, BookingJsonSchemaV1 } from './entities/bookingChangeLog';
 import { BookingStatus } from './bookingStatus';
 import { Schedule } from './entities/schedule';
 import { WeekDaySchedule } from './entities/weekDaySchedule';
@@ -19,6 +19,7 @@ import { AdminUser } from './entities/adminUser';
 import { TimeslotItem } from './entities/timeslotItem';
 import { Unavailability } from './entities/unavailability';
 import { ServiceAdminGroupMap } from './entities/serviceAdminGroupMap';
+import { ChangeLogAction } from './changeLogAction';
 import { Organisation } from './entities/organisation';
 import { OrganisationAdminGroupMap } from './entities/organisationAdminGroupMap';
 

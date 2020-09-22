@@ -2,7 +2,12 @@ import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Booking, BookingStatus, ChangeLogAction, User } from '../../models';
 import { BookingsRepository } from './bookings.repository';
-import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from './bookings.apicontract';
+import {
+	BookingAcceptRequest,
+	BookingRequest,
+	BookingSearchRequest,
+	RescheduleBookingRequest,
+} from './bookings.apicontract';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { CalendarsService } from '../calendars/calendars.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
@@ -35,17 +40,6 @@ export class BookingsService {
 	@Inject
 	private changeLogsService: BookingChangeLogsService;
 
-	public async getBooking(bookingId: number): Promise<Booking> {
-		if (!bookingId) {
-			return null;
-		}
-		const booking = await this.bookingsRepository.getBooking(bookingId);
-		if (!booking) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingId} not found`);
-		}
-		return booking;
-	}
-
 	private static getCitizenUinFin(currentUser: User, bookingRequest: BookingRequest): string {
 		if (currentUser && currentUser.isCitizen()) {
 			return currentUser.singPassUser.UinFin;
@@ -68,6 +62,32 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			this.cancelBookingInternal.bind(this),
 		);
+	}
+
+	public async getBooking(bookingId: number): Promise<Booking> {
+		if (!bookingId) {
+			return null;
+		}
+		const booking = await this.bookingsRepository.getBooking(bookingId);
+		if (!booking) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingId} not found`);
+		}
+		return booking;
+	}
+
+	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequest): Promise<Booking> {
+		const acceptAction = (_booking) => this.acceptBookingInternal(_booking, acceptRequest);
+		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), acceptAction);
+	}
+
+	public async update(
+		bookingId: number,
+		bookingRequest: BookingRequest,
+		serviceId: number,
+		isAdmin: boolean,
+	): Promise<Booking> {
+		const updateAction = (_booking) => this.updateInternal(_booking, bookingRequest, isAdmin);
+		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), updateAction);
 	}
 
 	private async cancelBookingInternal(booking: Booking): Promise<[ChangeLogAction, Booking]> {
@@ -120,9 +140,32 @@ export class BookingsService {
 		return [ChangeLogAction.Reject, booking];
 	}
 
-	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequest): Promise<Booking> {
-		const acceptAction = (_booking) => this.acceptBookingInternal(_booking, acceptRequest);
-		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), acceptAction);
+	public async reschedule(bookingId: number, rescheduleRequest: BookingRequest, isAdmin: boolean): Promise<Booking> {
+		const rescheduleAction = (_booking) => this.rescheduleInternal(_booking, rescheduleRequest, isAdmin);
+		return await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBooking.bind(this),
+			rescheduleAction,
+		);
+	}
+
+	private async rescheduleInternal(booking: Booking, rescheduleRequest: BookingRequest, isAdmin: boolean) {
+		if (!booking.isValidForRescheduling()) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Booking in invalid state for rescheduling');
+		}
+
+		const request = {
+			...rescheduleRequest,
+			status: BookingStatus.PendingApproval,
+			serviceProvider: null,
+		} as RescheduleBookingRequest;
+
+		if (booking.status === BookingStatus.Accepted && booking.serviceProvider?.calendar) {
+			await this.calendarsService.deleteCalendarEvent(booking.serviceProvider.calendar, booking.eventICalId);
+			request.eventICalId = null;
+		}
+
+		return await this.updateInternal(booking, request, isAdmin);
 	}
 
 	private async acceptBookingInternal(
@@ -165,6 +208,24 @@ export class BookingsService {
 		await this.bookingsRepository.update(booking);
 
 		return [ChangeLogAction.Accept, booking];
+	}
+
+	private async updateInternal(
+		previousBooking: Booking,
+		bookingRequest: BookingRequest,
+		isAdmin: boolean,
+	): Promise<[ChangeLogAction, Booking]> {
+		const updatedBooking = previousBooking.clone();
+		Object.assign(updatedBooking, bookingRequest);
+
+		await this.bookingsValidatorFactory.getValidator(isAdmin).validate(updatedBooking);
+
+		const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
+		await this.loadBookingDependencies(updatedBooking);
+		await this.verifyActionPermission(updatedBooking, changeLogAction);
+		await this.bookingsRepository.update(updatedBooking);
+
+		return [changeLogAction, updatedBooking];
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {

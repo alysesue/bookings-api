@@ -1,4 +1,4 @@
-import { ServicesRepository, ServiceRefInfo } from '../services.repository';
+import { ServiceRefInfo, ServicesRepository } from '../services.repository';
 import { Container } from 'typescript-ioc';
 import { Schedule, Service, TimeslotsSchedule } from '../../../models';
 import { SchedulesRepository } from '../../schedules/schedules.repository';
@@ -86,8 +86,8 @@ describe('Services repository', () => {
 		serviceMock.name = 'Coaches';
 
 		const serviceRefInfo: ServiceRefInfo = {
-			serviceRef: "serviceRef",
-			organisationRef: "OrganisationRef"
+			serviceRef: 'serviceRef',
+			organisationRef: 'OrganisationRef',
 		};
 
 		const queryBuilderMock = {
@@ -103,7 +103,6 @@ describe('Services repository', () => {
 	});
 
 	it('should return empty', async () => {
-
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
