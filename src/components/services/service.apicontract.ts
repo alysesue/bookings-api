@@ -5,7 +5,7 @@ export class ServiceResponse {
 
 export class ServiceRequest {
 	public name: string;
-	public organisationId: number;
+	public organisationId?: number;
 }
 
 export class SetScheduleRequest {

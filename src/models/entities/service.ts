@@ -18,7 +18,8 @@ export class Service implements IService, IEntityWithSchedule, IEntityWithTimesl
 		return this._id;
 	}
 
-	@Column({ nullable: false })
+	// TODO: make nullable false here. Requires some DB cleanup...
+	@Column({ nullable: true })
 	@Index()
 	private _organisationId: number;
 

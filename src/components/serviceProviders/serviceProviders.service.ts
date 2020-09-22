@@ -171,9 +171,7 @@ export class ServiceProvidersService {
 	public async getTimeslotItems(id: number): Promise<TimeslotsSchedule> {
 		const serviceProvider = await this.getServiceProvider(id, false, true);
 		if (!serviceProvider.timeslotsSchedule) {
-			serviceProvider.timeslotsSchedule = await this.servicesService.getServiceTimeslotsSchedule(
-				serviceProvider.serviceId,
-			);
+			return await this.servicesService.getServiceTimeslotsSchedule(serviceProvider.serviceId);
 		}
 		return serviceProvider.timeslotsSchedule;
 	}
@@ -186,7 +184,7 @@ export class ServiceProvidersService {
 			);
 			serviceProvider = await this.copyAndSaveTimeslotsScheduleInServiceProvider(
 				serviceProvider,
-				serviceTimeslotsSchedule.timeslotItems,
+				serviceTimeslotsSchedule?.timeslotItems || [],
 			);
 		}
 		return this.timeslotItemsService.createTimeslotItem(serviceProvider.timeslotsSchedule, request);
@@ -208,7 +206,7 @@ export class ServiceProvidersService {
 			const serviceTimeslotsSchedule = await this.servicesService.getServiceTimeslotsSchedule(
 				serviceProvider.serviceId,
 			);
-			const timeslotItemServiceWithoutTargetItem = serviceTimeslotsSchedule.timeslotItems.filter(
+			const timeslotItemServiceWithoutTargetItem = (serviceTimeslotsSchedule?.timeslotItems || []).filter(
 				(t) => t._id !== timeslotId,
 			);
 			timeslotItemServiceWithoutTargetItem.push(newItem);
@@ -236,7 +234,7 @@ export class ServiceProvidersService {
 			const serviceTimeslotsSchedule = await this.servicesService.getServiceTimeslotsSchedule(
 				serviceProvider.serviceId,
 			);
-			const timeslotItemServiceWithoutTargetItem = serviceTimeslotsSchedule.timeslotItems.filter(
+			const timeslotItemServiceWithoutTargetItem = (serviceTimeslotsSchedule?.timeslotItems || []).filter(
 				(t) => t._id !== timeslotId,
 			);
 

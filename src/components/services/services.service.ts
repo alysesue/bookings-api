@@ -29,7 +29,10 @@ export class ServicesService {
 			(g) => g instanceof OrganisationAdminAuthGroup,
 		) as OrganisationAdminAuthGroup[];
 
-		if (orgAdmins.length === 0 || !orgAdmins[0].hasOrganisationId(request.organisationId)) {
+		if (
+			orgAdmins.length === 0 ||
+			(request.organisationId && !orgAdmins[0].hasOrganisationId(request.organisationId))
+		) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
 				'User not authorized to add services.',
 			);
@@ -37,7 +40,11 @@ export class ServicesService {
 
 		const service = new Service();
 		service.name = request.name;
-		service.organisationId = request.organisationId;
+		if (request.organisationId) {
+			service.organisationId = request.organisationId;
+		} else {
+			service.organisationId = orgAdmins[0].authorisedOrganisations[0].id;
+		}
 
 		return await this.servicesRepository.save(service);
 	}
