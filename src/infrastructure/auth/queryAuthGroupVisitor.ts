@@ -15,6 +15,10 @@ export abstract class QueryAuthGroupVisitor implements IAuthGroupVisitor {
 		this._conditions = new AuthConditionCollection();
 	}
 
+	protected addAsTrue(): void {
+		this._conditions.addAsTrue();
+	}
+
 	protected addAuthCondition(condition: string, params: {}): void {
 		this._conditions.addAuthCondition(condition, params);
 	}

@@ -104,7 +104,11 @@ export class ServicesService {
 	}
 
 	public async getService(id: number): Promise<Service> {
-		return await this.servicesRepository.getService(id);
+		const service = await this.servicesRepository.getService(id);
+		if (!service) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
+		}
+		return service;
 	}
 
 	public async getServiceTimeslotsSchedule(id: number): Promise<TimeslotsSchedule> {

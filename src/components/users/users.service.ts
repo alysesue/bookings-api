@@ -12,9 +12,9 @@ import {
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
-import { ServiceRefInfo, ServicesRepository } from '../services/services.repository';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { OrganisationInfo, OrganisationsService } from '../organisations/organisations.service';
+import { ServiceRefInfo, ServicesRepositoryNoAuth } from '../services/services.noauth.repository';
 
 export type HeadersType = { [key: string]: string };
 
@@ -23,7 +23,7 @@ export class UsersService {
 	@Inject
 	private organisationsService: OrganisationsService;
 	@Inject
-	private servicesRepository: ServicesRepository;
+	private servicesRepositoryNoAuth: ServicesRepositoryNoAuth;
 	@Inject
 	private serviceProvidersRepository: ServiceProvidersRepository;
 	@Inject
@@ -145,7 +145,7 @@ export class UsersService {
 				serviceRef: g.serviceRef,
 				organisationRef: g.organisationRef,
 			}));
-			const services = await this.servicesRepository.getServicesForUserGroups(serviceGroupRefs);
+			const services = await this.servicesRepositoryNoAuth.getServicesForUserGroups(serviceGroupRefs);
 
 			const notFoundGroupRefs = parsedGroups.filter(
 				(g) =>
