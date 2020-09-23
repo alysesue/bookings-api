@@ -50,15 +50,6 @@ export class BookingsService {
 		return bookingRequest.citizenUinFin;
 	}
 
-	private async verifyActionPermission(booking: Booking, action: ChangeLogAction): Promise<void> {
-		const authGroups = await this.userContext.getAuthGroups();
-		if (!new BookingActionAuthVisitor(booking, action).hasPermission(authGroups)) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
-				`User cannot perform this booking action (${action}) for this service.`,
-			);
-		}
-	}
-
 	public async cancelBooking(bookingId: number): Promise<Booking> {
 		return await this.changeLogsService.executeAndLogAction(
 			bookingId,
@@ -93,6 +84,43 @@ export class BookingsService {
 		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), updateAction);
 	}
 
+	public async rejectBooking(bookingId: number): Promise<Booking> {
+		return await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBooking.bind(this),
+			this.rejectBookingInternal.bind(this),
+		);
+	}
+
+	public async reschedule(bookingId: number, rescheduleRequest: BookingRequest, isAdmin: boolean): Promise<Booking> {
+		const rescheduleAction = (_booking) => this.rescheduleInternal(_booking, rescheduleRequest, isAdmin);
+		return await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBooking.bind(this),
+			rescheduleAction,
+		);
+	}
+
+	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
+		return await this.bookingsRepository.search(searchRequest);
+	}
+
+	public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
+		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
+		// Method calls with different services, or timeslots should still run in parallel.
+		const saveAction = (_booking) => this.saveInternal(bookingRequest, serviceId);
+		return await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
+	}
+
+	private async verifyActionPermission(booking: Booking, action: ChangeLogAction): Promise<void> {
+		const authGroups = await this.userContext.getAuthGroups();
+		if (!new BookingActionAuthVisitor(booking, action).hasPermission(authGroups)) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
+				`User cannot perform this booking action (${action}) for this service.`,
+			);
+		}
+	}
+
 	private async cancelBookingInternal(booking: Booking): Promise<[ChangeLogAction, Booking]> {
 		if (booking.status === BookingStatus.Cancelled || booking.startDateTime < new Date()) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
@@ -119,14 +147,6 @@ export class BookingsService {
 		return [ChangeLogAction.Cancel, booking];
 	}
 
-	public async rejectBooking(bookingId: number): Promise<Booking> {
-		return await this.changeLogsService.executeAndLogAction(
-			bookingId,
-			this.getBooking.bind(this),
-			this.rejectBookingInternal.bind(this),
-		);
-	}
-
 	private async rejectBookingInternal(booking: Booking): Promise<[ChangeLogAction, Booking]> {
 		if (booking.status !== BookingStatus.PendingApproval) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
@@ -141,15 +161,6 @@ export class BookingsService {
 		await this.bookingsRepository.update(booking);
 
 		return [ChangeLogAction.Reject, booking];
-	}
-
-	public async reschedule(bookingId: number, rescheduleRequest: BookingRequest, isAdmin: boolean): Promise<Booking> {
-		const rescheduleAction = (_booking) => this.rescheduleInternal(_booking, rescheduleRequest, isAdmin);
-		return await this.changeLogsService.executeAndLogAction(
-			bookingId,
-			this.getBooking.bind(this),
-			rescheduleAction,
-		);
 	}
 
 	private async rescheduleInternal(booking: Booking, rescheduleRequest: BookingRequest, isAdmin: boolean) {
@@ -231,10 +242,6 @@ export class BookingsService {
 		return [changeLogAction, updatedBooking];
 	}
 
-	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
-		return await this.bookingsRepository.search(searchRequest);
-	}
-
 	private async loadBookingDependencies(booking: Booking): Promise<Booking> {
 		if (!booking.service) {
 			booking.service = await this.servicesService.getService(booking.serviceId);
@@ -243,13 +250,6 @@ export class BookingsService {
 			booking.serviceProvider = await this.serviceProvidersService.getServiceProvider(booking.serviceProviderId);
 		}
 		return booking;
-	}
-
-	public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
-		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
-		// Method calls with different services, or timeslots should still run in parallel.
-		const saveAction = (_booking) => this.saveInternal(bookingRequest, serviceId);
-		return await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
 	}
 
 	private async saveInternal(bookingRequest: BookingRequest, serviceId: number): Promise<[ChangeLogAction, Booking]> {
@@ -274,11 +274,11 @@ export class BookingsService {
 			.withAutoAccept(serviceProvider?.autoAcceptBookings)
 			.build();
 
+		booking.serviceProvider = serviceProvider;
 		await this.loadBookingDependencies(booking);
 		await this.bookingsValidatorFactory.getValidator(bookingRequest.outOfSlotBooking).validate(booking);
 		booking.eventICalId = await this.getEventICalId(booking);
 
-		await this.loadBookingDependencies(booking);
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
 		await this.bookingsRepository.insert(booking);
 
