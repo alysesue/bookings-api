@@ -9,6 +9,7 @@ import {
 } from './authGroup';
 
 export abstract class QueryAuthGroupVisitor implements IAuthGroupVisitor {
+	//
 	private _conditions: AuthConditionCollection;
 
 	constructor() {

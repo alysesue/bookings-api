@@ -1,6 +1,7 @@
 export type UserConditionParams = { userCondition: string; userParams: {} };
 
 export class AuthConditionCollection {
+	//
 	private _authConditions: string[];
 	private _authParams: {};
 
