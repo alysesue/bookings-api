@@ -7,6 +7,8 @@ import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IServiceProvider } f
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
 
+const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
+
 @Entity()
 export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, IEntityWithTimeslotsSchedule {
 	constructor() {}
@@ -24,6 +26,16 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	@OneToOne((type) => ServiceProviderGroupMap, (e) => e._serviceProvider, { nullable: true })
 	public _serviceProviderGroupMap: ServiceProviderGroupMap;
 
+	public get autoAcceptBookings(): boolean {
+		return this._autoAcceptBookings;
+	}
+	public get createdAt(): Date {
+		return this._createdAt;
+	}
+
+	public set createdAt(value: Date) {
+		this._createdAt = value;
+	}
 	@Column()
 	private _createdAt: Date;
 
@@ -84,6 +96,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		instance._calendar = calendar;
 		instance._email = email;
 		instance._phone = phone;
+		instance._autoAcceptBookings = DEFAULT_AUTO_ACCEPT_BOOKINGS;
 		return instance;
 	}
 
@@ -165,4 +178,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	public get timeslotsSchedule(): TimeslotsSchedule {
 		return this._timeslotsSchedule;
 	}
+
+	@Column({ type: 'boolean', default: DEFAULT_AUTO_ACCEPT_BOOKINGS })
+	private _autoAcceptBookings: boolean;
 }

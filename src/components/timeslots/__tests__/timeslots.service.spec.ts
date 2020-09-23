@@ -203,6 +203,7 @@ const getOutOfSlotBooking = (serviceProvider: ServiceProvider): Booking => {
 		.withStartDateTime(new Date('2020-08-08T06:00Z'))
 		.withEndDateTime(new Date('2020-08-08T09:00Z'))
 		.withServiceProviderId(serviceProvider.id)
+		.withAutoAccept(serviceProvider.autoAcceptBookings)
 		.withRefId('ref')
 		.build();
 
