@@ -18,14 +18,14 @@ import {
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
-import { ServicesRepository } from '../../../components/services/services.repository';
 import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 import { ServiceProvidersRepository } from '../../../components/serviceProviders/serviceProviders.repository';
+import { ServicesRepositoryNoAuth } from '../../services/services.noauth.repository';
 
 beforeAll(() => {
 	Container.bind(UsersRepository).to(UserRepositoryMock);
 	Container.bind(OrganisationsService).to(OrganisationsServiceMock);
-	Container.bind(ServicesRepository).to(ServicesRepositoryMock);
+	Container.bind(ServicesRepositoryNoAuth).to(ServicesRepositoryNoAuthMock);
 	Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 });
 
@@ -201,7 +201,7 @@ describe('Users Service', () => {
 		service._serviceAdminGroupMap.serviceId = service.id;
 		service._serviceAdminGroupMap.serviceOrganisationRef = 'career-coaching:localorg';
 
-		ServicesRepositoryMock.getServicesForUserGroups.mockImplementation(() => Promise.resolve([service]));
+		ServicesRepositoryNoAuthMock.getServicesForUserGroups.mockImplementation(() => Promise.resolve([service]));
 		(logger.warn as jest.Mock).mockImplementation(() => {});
 
 		const groups = await Container.get(UsersService).getAdminUserGroupsFromHeaders(adminMock, headers);
@@ -271,11 +271,11 @@ class OrganisationsServiceMock extends OrganisationsService {
 	}
 }
 
-class ServicesRepositoryMock extends ServicesRepository {
+class ServicesRepositoryNoAuthMock extends ServicesRepositoryNoAuth {
 	public static getServicesForUserGroups = jest.fn<Promise<Service[]>, any>();
 
 	public async getServicesForUserGroups(...params): Promise<any> {
-		return await ServicesRepositoryMock.getServicesForUserGroups(...params);
+		return await ServicesRepositoryNoAuthMock.getServicesForUserGroups(...params);
 	}
 }
 

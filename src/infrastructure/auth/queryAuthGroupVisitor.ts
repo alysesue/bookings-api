@@ -9,11 +9,14 @@ import {
 } from './authGroup';
 
 export abstract class QueryAuthGroupVisitor implements IAuthGroupVisitor {
-	//
 	private _conditions: AuthConditionCollection;
 
 	constructor() {
 		this._conditions = new AuthConditionCollection();
+	}
+
+	protected addAsTrue(): void {
+		this._conditions.addAsTrue();
 	}
 
 	protected addAuthCondition(condition: string, params: {}): void {

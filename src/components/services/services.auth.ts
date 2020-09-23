@@ -6,7 +6,7 @@ import {
 } from '../../infrastructure/auth/authGroup';
 import { QueryAuthGroupVisitor } from '../../infrastructure/auth/queryAuthGroupVisitor';
 
-export class OrganisationQueryAuthVisitor extends QueryAuthGroupVisitor {
+export class ServicesQueryAuthVisitor extends QueryAuthGroupVisitor {
 	private _alias: string;
 
 	constructor(alias: string) {
@@ -20,23 +20,22 @@ export class OrganisationQueryAuthVisitor extends QueryAuthGroupVisitor {
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		const authorisedOrganisationIds = _userGroup.authorisedOrganisations.map((org) => org.id);
-		this.addAuthCondition(`${this._alias}._id IN (:...authorisedOrganisationIds)`, { authorisedOrganisationIds });
-	}
-
-	private addFilterForServiceIds(authorisedServiceIds: number[]) {
-		this.addAuthCondition(
-			`EXISTS (SELECT 1 FROM public.service as svc where svc."_organisationId" = ${this._alias}._id and svc._id IN (:...authorisedServiceIds))`,
-			{ authorisedServiceIds },
-		);
+		this.addAuthCondition(`${this._alias}."_organisationId" IN (:...authorisedOrganisationIds)`, {
+			authorisedOrganisationIds,
+		});
 	}
 
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		const authorisedServiceIds = _userGroup.authorisedServices.map((s) => s.id);
-		this.addFilterForServiceIds(authorisedServiceIds);
+		this.addAuthCondition(`${this._alias}._id IN (:...authorisedServiceIds)`, {
+			authorisedServiceIds,
+		});
 	}
 
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
-		const serviceId = _userGroup.authorisedServiceProvider.serviceId;
-		this.addFilterForServiceIds([serviceId]);
+		const serviceProviderServiceId = _userGroup.authorisedServiceProvider.serviceId;
+		this.addAuthCondition(`${this._alias}._id = :serviceProviderServiceId`, {
+			serviceProviderServiceId,
+		});
 	}
 }

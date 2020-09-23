@@ -1,5 +1,5 @@
 import { Calendar, Organisation, Service, ServiceProvider, User } from '../../../models';
-import { OrganisationQueryAuthVisitor } from '../organisations.auth';
+import { ServicesQueryAuthVisitor } from '../services.auth';
 import {
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
@@ -13,7 +13,7 @@ afterAll(() => {
 });
 
 // tslint:disable-next-line: no-big-function
-describe('Organisations query auth', () => {
+describe('Services query auth', () => {
 	const organisation = new Organisation();
 	organisation.id = 2;
 
@@ -32,15 +32,15 @@ describe('Organisations query auth', () => {
 	});
 
 	it('should return FALSE query when user has no groups', async () => {
-		const result = await new OrganisationQueryAuthVisitor('o').createUserVisibilityCondition([]);
+		const result = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition([]);
 
 		expect(result.userCondition).toStrictEqual('FALSE');
 		expect(result.userParams).toStrictEqual({});
 	});
 
-	it(`should return no filter for citizen (all organisations visible)`, async () => {
+	it(`should return no filter for citizen (all services visible)`, async () => {
 		const groups = [new CitizenAuthGroup(singpassMock)];
-		const result = await new OrganisationQueryAuthVisitor('o').createUserVisibilityCondition(groups);
+		const result = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(groups);
 
 		expect(result.userCondition).toStrictEqual('');
 		expect(result.userParams).toStrictEqual({});
@@ -48,9 +48,9 @@ describe('Organisations query auth', () => {
 
 	it(`should filter by organisation id`, async () => {
 		const groups = [new OrganisationAdminAuthGroup(adminMock, [organisation])];
-		const result = await new OrganisationQueryAuthVisitor('o').createUserVisibilityCondition(groups);
+		const result = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('(o._id IN (:...authorisedOrganisationIds))');
+		expect(result.userCondition).toStrictEqual('(svc."_organisationId" IN (:...authorisedOrganisationIds))');
 		expect(result.userParams).toStrictEqual({
 			authorisedOrganisationIds: [2],
 		});
@@ -58,11 +58,9 @@ describe('Organisations query auth', () => {
 
 	it(`should filter by service id`, async () => {
 		const groups = [new ServiceAdminAuthGroup(adminMock, [service])];
-		const result = await new OrganisationQueryAuthVisitor('o').createUserVisibilityCondition(groups);
+		const result = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual(
-			'(EXISTS (SELECT 1 FROM public.service as svc where svc."_organisationId" = o._id and svc._id IN (:...authorisedServiceIds)))',
-		);
+		expect(result.userCondition).toStrictEqual('(svc._id IN (:...authorisedServiceIds))');
 		expect(result.userParams).toStrictEqual({
 			authorisedServiceIds: [3],
 		});
@@ -72,13 +70,11 @@ describe('Organisations query auth', () => {
 		const serviceProvider = ServiceProvider.create('Peter', new Calendar(), service.id, 'test@email.com', '0000');
 		serviceProvider.id = 5;
 		const groups = [new ServiceProviderAuthGroup(adminMock, serviceProvider)];
-		const result = await new OrganisationQueryAuthVisitor('o').createUserVisibilityCondition(groups);
+		const result = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual(
-			'(EXISTS (SELECT 1 FROM public.service as svc where svc."_organisationId" = o._id and svc._id IN (:...authorisedServiceIds)))',
-		);
+		expect(result.userCondition).toStrictEqual('(svc._id = :serviceProviderServiceId)');
 		expect(result.userParams).toStrictEqual({
-			authorisedServiceIds: [3],
+			serviceProviderServiceId: 3,
 		});
 	});
 
@@ -89,10 +85,10 @@ describe('Organisations query auth', () => {
 			new OrganisationAdminAuthGroup(adminMock, [organisation]),
 			new ServiceAdminAuthGroup(adminMock, [service]),
 		];
-		const result = await new OrganisationQueryAuthVisitor('o').createUserVisibilityCondition(groups);
+		const result = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(groups);
 
 		expect(result.userCondition).toStrictEqual(
-			'((o._id IN (:...authorisedOrganisationIds)) OR (EXISTS (SELECT 1 FROM public.service as svc where svc."_organisationId" = o._id and svc._id IN (:...authorisedServiceIds))))',
+			'((svc."_organisationId" IN (:...authorisedOrganisationIds)) OR (svc._id IN (:...authorisedServiceIds)))',
 		);
 		expect(result.userParams).toStrictEqual({
 			authorisedOrganisationIds: [2],
