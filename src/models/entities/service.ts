@@ -2,6 +2,8 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGenerate
 import { Schedule } from './schedule';
 import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
+import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
+import { Organisation } from './organisation';
 
 @Entity()
 export class Service implements IService, IEntityWithSchedule, IEntityWithTimeslotsSchedule {
@@ -16,7 +18,35 @@ export class Service implements IService, IEntityWithSchedule, IEntityWithTimesl
 		return this._id;
 	}
 
-	@Column()
+	// TODO: make nullable false here. Requires some DB cleanup...
+	@Column({ nullable: true })
+	@Index()
+	private _organisationId: number;
+
+	public set organisationId(value: number) {
+		this._organisationId = value;
+	}
+
+	public get organisationId() {
+		return this._organisationId;
+	}
+
+	@ManyToOne((type) => Organisation)
+	@JoinColumn({ name: '_organisationId' })
+	private _organisation: Organisation;
+
+	public set organisation(value: Organisation) {
+		this._organisation = value;
+	}
+
+	public get organisation() {
+		return this._organisation;
+	}
+
+	@OneToOne((type) => ServiceAdminGroupMap, (e) => e._service, { nullable: true })
+	public _serviceAdminGroupMap: ServiceAdminGroupMap;
+
+	@Column({ type: 'varchar', length: 100, nullable: false })
 	@Index({ unique: true })
 	private _name: string;
 

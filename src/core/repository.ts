@@ -22,8 +22,3 @@ export abstract class RepositoryBase<T> {
 		return entityManager.getRepository<T>(this.modelType);
 	}
 }
-
-export enum QueryAccessType {
-	Read = 1,
-	Write,
-}

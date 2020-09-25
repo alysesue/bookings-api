@@ -5,13 +5,39 @@ import { Service } from './service';
 import { Schedule } from './schedule';
 import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
+import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
+
+const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
 
 @Entity()
 export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, IEntityWithTimeslotsSchedule {
+	constructor() {}
+	@PrimaryGeneratedColumn()
+	private _id: number;
+
+	public get id(): number {
+		return this._id;
+	}
+
+	public set id(id: number) {
+		this._id = id;
+	}
+
+	@OneToOne((type) => ServiceProviderGroupMap, (e) => e._serviceProvider, { nullable: true })
+	public _serviceProviderGroupMap: ServiceProviderGroupMap;
+
+	public get autoAcceptBookings(): boolean {
+		return this._autoAcceptBookings;
+	}
+	public get createdAt(): Date {
+		return this._createdAt;
+	}
+
+	public set createdAt(value: Date) {
+		this._createdAt = value;
+	}
 	@Column()
 	private _createdAt: Date;
-
-	constructor() {}
 
 	@Column()
 	private _status: ServiceProviderStatus;
@@ -44,17 +70,6 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		return this._service;
 	}
 
-	@PrimaryGeneratedColumn()
-	private _id: number;
-
-	public get id(): number {
-		return this._id;
-	}
-
-	public set id(id: number) {
-		this._id = id;
-	}
-
 	@Column({ type: 'varchar', length: 300 })
 	private _name: string;
 
@@ -81,6 +96,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		instance._calendar = calendar;
 		instance._email = email;
 		instance._phone = phone;
+		instance._autoAcceptBookings = DEFAULT_AUTO_ACCEPT_BOOKINGS;
 		return instance;
 	}
 
@@ -162,4 +178,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	public get timeslotsSchedule(): TimeslotsSchedule {
 		return this._timeslotsSchedule;
 	}
+
+	@Column({ type: 'boolean', default: DEFAULT_AUTO_ACCEPT_BOOKINGS })
+	private _autoAcceptBookings: boolean;
 }

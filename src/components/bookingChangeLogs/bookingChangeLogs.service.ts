@@ -1,11 +1,11 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Booking, BookingChangeLog, BookingJsonSchemaV1, ChangeLogAction } from '../../models';
-import { UserContext } from '../../infrastructure/userContext.middleware';
 import { BookingChangeLogsRepository, ChangeLogSearchQuery } from './bookingChangeLogs.repository';
 import { TransactionManager } from '../../core/transactionManager';
 import { BookingIsolationLevel } from '../../models/entities/booking';
 import { ConcurrencyError } from '../../errors/ConcurrencyError';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { UserContext } from '../../infrastructure/auth/userContext';
 
 export type GetBookingFunction = (bookingId: number) => Promise<Booking>;
 export type BookingActionFunction = (booking: Booking) => Promise<[ChangeLogAction, Booking]>;

@@ -2,13 +2,15 @@ import { DeleteResult } from 'typeorm';
 import { Container } from 'typescript-ioc';
 import { ServicesService } from '../services.service';
 import { ServiceRequest, SetScheduleRequest } from '../service.apicontract';
-import { Schedule, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
+import { Organisation, Schedule, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule, User } from '../../../models';
 import { ServicesRepository } from '../services.repository';
 import { SchedulesService } from '../../schedules/schedules.service';
 import { TimeslotsScheduleService } from '../../timeslotsSchedules/timeslotsSchedule.service';
 import { TimeslotItemsService } from '../../timeslotItems/timeslotItems.service';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 import { Weekday } from '../../../enums/weekday';
+import { UserContext } from '../../../infrastructure/auth/userContext';
+import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -33,6 +35,8 @@ beforeEach(() => {
 	Container.bind(SchedulesService).to(SchedulesServiceMockClass);
 	Container.bind(TimeslotsScheduleService).to(TimeslotsScheduleMockClass);
 	Container.bind(TimeslotItemsService).to(TimeslotItemsServiceMock);
+	Container.bind(UserContext).to(UserContextMock);
+
 	timeslotItemRequest.weekDay = 0;
 	timeslotItemRequest.startTime = '9:00';
 	timeslotItemRequest.endTime = '10:00';
@@ -43,27 +47,45 @@ beforeEach(() => {
 	serviceMockWithTemplate.timeslotsSchedule = timeslotsScheduleMock;
 });
 
-afterEach(() => {
-	// Clears mock counters, not implementation
+const userMock = User.createAdminUser({
+	molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+	userName: 'UserName',
+	email: 'test@email.com',
+	name: 'Name',
+});
+
+const organisation = new Organisation();
+organisation.id = 1;
+
+beforeEach(() => {
 	jest.resetAllMocks();
+
+	UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
+	UserContextMock.getAuthGroups.mockImplementation(() =>
+		Promise.resolve([new OrganisationAdminAuthGroup(userMock, [organisation])]),
+	);
 });
 
 describe('Services service tests', () => {
 	it('should save service', async () => {
 		const request = new ServiceRequest();
 		request.name = 'John';
-		await Container.get(ServicesService).createService(request);
+		request.organisationId = 1;
 
+		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMockClass.save.mock.calls[0][0].name).toBe('John');
 	});
 
 	it('should update service', async () => {
 		const newService = new Service();
+		newService.id = 1;
+		newService.organisationId = 1;
 		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(newService));
 		const request = new ServiceRequest();
 		request.name = 'John';
-		await Container.get(ServicesService).updateService(1, request);
+		request.organisationId = 1;
 
+		await Container.get(ServicesService).updateService(1, request);
 		expect(ServicesRepositoryMockClass.save.mock.calls[0][0].name).toBe('John');
 	});
 
@@ -71,6 +93,7 @@ describe('Services service tests', () => {
 		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(undefined));
 		const request = new ServiceRequest();
 		request.name = 'John';
+
 		await expect(async () => await Container.get(ServicesService).updateService(1, request)).rejects.toThrowError();
 	});
 
@@ -275,5 +298,19 @@ class TimeslotsScheduleMockClass extends TimeslotItemsService {
 
 	public async getTimeslotsScheduleById(id: number): Promise<TimeslotsSchedule> {
 		return await TimeslotsScheduleMockClass.getTimeslotsScheduleById(id);
+	}
+}
+
+class UserContextMock extends UserContext {
+	public static getCurrentUser = jest.fn<Promise<User>, any>();
+	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
+
+	public init() {}
+	public async getCurrentUser(...params): Promise<any> {
+		return await UserContextMock.getCurrentUser(...params);
+	}
+
+	public async getAuthGroups(...params): Promise<any> {
+		return await UserContextMock.getAuthGroups(...params);
 	}
 }

@@ -8,11 +8,15 @@ import { ServiceProvider } from './serviceProvider';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { TimeslotItem } from './timeslotItem';
 import { Unavailability } from './unavailability';
+import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
+import { Organisation } from './organisation';
+import { OrganisationAdminGroupMap } from './organisationAdminGroupMap';
 
 export {
 	Booking,
 	Schedule,
 	Service,
+	ServiceAdminGroupMap,
 	WeekDayBreak,
 	WeekDaySchedule,
 	Calendar,
@@ -20,4 +24,6 @@ export {
 	TimeslotsSchedule,
 	TimeslotItem,
 	Unavailability,
+	Organisation,
+	OrganisationAdminGroupMap,
 };

@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { BookingChangeLog } from '../../models';
 import { RepositoryBase } from '../../core/repository';
-import { UserContext } from '../../infrastructure/userContext.middleware';
+import { UserContext } from '../../infrastructure/auth/userContext';
 import { groupByKey } from '../../tools/collections';
 
 @InRequestScope
@@ -26,13 +26,18 @@ export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog
 		const bookingIdsCondition = bookingIds ? 'changelog."_bookingId" IN (:...bookingIds)' : '';
 
 		const repository = await this.getRepository();
-		const query = repository.createQueryBuilder('changelog').where(
-			[serviceCondition, dateCondition, bookingIdsCondition]
-				.filter((c) => c)
-				.map((c) => `(${c})`)
-				.join(' AND '),
-			{ changedSince, changedUntil, serviceId, bookingIds },
-		);
+		const query = repository
+			.createQueryBuilder('changelog')
+			.where(
+				[serviceCondition, dateCondition, bookingIdsCondition]
+					.filter((c) => c)
+					.map((c) => `(${c})`)
+					.join(' AND '),
+				{ changedSince, changedUntil, serviceId, bookingIds },
+			)
+			.leftJoinAndSelect('changelog._user', 'loguser')
+			.leftJoinAndSelect('loguser._singPassUser', 'singpass')
+			.leftJoinAndSelect('loguser._adminUser', 'admin');
 
 		const entries = await query.getMany();
 

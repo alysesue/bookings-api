@@ -173,7 +173,7 @@ export function RegisterRoutes(router: KoaRouter) {
     let promises: Promise<any>[] = [];
 
         for (const name in secMethod) {
-        promises.push(koaAuthentication(context.request, name, secMethod[name]));
+        promises.push(koaAuthentication(context, name, secMethod[name]));
         }
 
         return Promise.all(promises)
@@ -181,7 +181,7 @@ export function RegisterRoutes(router: KoaRouter) {
         .catch(fail);
         } else {
         for (const name in secMethod) {
-        return koaAuthentication(context.request, name, secMethod[name])
+        return koaAuthentication(context, name, secMethod[name])
         .then(succeed)
         .catch(fail);
         }

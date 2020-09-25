@@ -1,4 +1,4 @@
-import { Booking, BookingStatus } from '../../../models';
+import { Booking, BookingStatus, ServiceProvider } from '../../../models';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { DateHelper } from '../../../infrastructure/dateHelper';
@@ -6,7 +6,6 @@ import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { BookingSearchQuery, BookingsRepository } from '../bookings.repository';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
-import { QueryAccessType } from '../../../core/repository';
 import { isEmail, isSGUinfin } from 'mol-lib-api-contract/utils';
 
 export interface IValidator {
@@ -52,9 +51,7 @@ abstract class BookingsValidator implements IValidator {
 		}
 	}
 
-	protected abstract async validateBooking(booking: Booking);
-
-	public async validate(booking: Booking) {
+	private static validateDuration(booking: Booking): void {
 		const duration = Math.floor(DateHelper.DiffInMinutes(booking.endDateTime, booking.startDateTime));
 
 		if (duration <= 0) {
@@ -62,7 +59,18 @@ abstract class BookingsValidator implements IValidator {
 				BookingsValidator.EndTimeLesserThanStartTime,
 			);
 		}
+	}
 
+	public async validate(booking: Booking): Promise<void> {
+		BookingsValidator.validateDuration(booking);
+		await this.validateServiceProviderExisting(booking);
+		await BookingsValidator.validateCitizenDetails(booking);
+		await this.validateAvailability(booking);
+	}
+
+	protected abstract async validateAvailability(booking: Booking);
+
+	private async validateServiceProviderExisting(booking: Booking) {
 		if (booking.serviceProviderId) {
 			const provider = await this.serviceProvidersRepository.getServiceProvider({
 				id: booking.serviceProviderId,
@@ -73,8 +81,6 @@ abstract class BookingsValidator implements IValidator {
 				);
 			}
 		}
-		await BookingsValidator.validateCitizenDetails(booking);
-		await this.validateBooking(booking);
 	}
 }
 
@@ -85,35 +91,14 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 	@Inject
 	private unAvailabilitiesService: UnavailabilitiesService;
 
-	public async validateBooking(booking: Booking): Promise<void> {
-		const { startDateTime, endDateTime, serviceId, serviceProviderId } = booking;
-
-		const searchQuery: BookingSearchQuery = {
-			from: startDateTime,
-			to: endDateTime,
-			statuses: [BookingStatus.Accepted],
-			serviceId,
-			serviceProviderId,
-		};
-
-		const acceptedBookings = await this.bookingsRepository.search(searchQuery, QueryAccessType.Read);
-
-		if (
-			acceptedBookings.some((item) =>
-				booking.bookingIntersects({
-					start: item.startDateTime,
-					end: item.endDateTime,
-				}),
-			)
-		) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.OverlapsAcceptedBooking);
-		}
+	public async validateAvailability(booking: Booking) {
+		await this.validateOverlapping(booking);
 
 		if (
 			booking.serviceProviderId &&
 			(await this.unAvailabilitiesService.isUnavailable({
-				from: startDateTime,
-				to: endDateTime,
+				from: booking.startDateTime,
+				to: booking.endDateTime,
 				serviceId: booking.serviceId,
 				serviceProviderId: booking.serviceProviderId,
 			}))
@@ -123,6 +108,30 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 			);
 		}
 	}
+
+	private async validateOverlapping(booking: Booking): Promise<void> {
+		const searchQuery: BookingSearchQuery = {
+			from: booking.startDateTime,
+			to: booking.endDateTime,
+			statuses: [BookingStatus.Accepted],
+			serviceId: booking.serviceId,
+			serviceProviderId: booking.serviceProviderId,
+		};
+
+		const acceptedBookings = await this.bookingsRepository.search(searchQuery);
+
+		if (
+			acceptedBookings.some((item) =>
+				booking.bookingIntersects({
+					start: item.startDateTime,
+					end: item.endDateTime,
+					id: item.id,
+				}),
+			)
+		) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(BookingsValidator.OverlapsAcceptedBooking);
+		}
+	}
 }
 
 @InRequestScope
@@ -130,7 +139,7 @@ class SlotBookingsValidator extends BookingsValidator {
 	@Inject
 	private timeslotsService: TimeslotsService;
 
-	public async validateBooking(booking: Booking): Promise<void> {
+	public async validateAvailability(booking: Booking) {
 		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(
 			booking.startDateTime,
 			booking.endDateTime,

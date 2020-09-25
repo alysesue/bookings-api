@@ -2,8 +2,9 @@ import { Container } from 'typescript-ioc';
 import { UsersController } from '../users.controller';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
-import { UserContext } from '../../../infrastructure/userContext.middleware';
-import { User } from '../../../models';
+import { UserContext } from '../../../infrastructure/auth/userContext';
+import { Service, User } from '../../../models';
+import { AuthGroup, CitizenAuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -29,6 +30,7 @@ describe('users controller', () => {
 
 		const userMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(userMock)]));
 
 		const controller = Container.get(UsersController);
 		(controller as any).context = {
@@ -54,7 +56,13 @@ describe('users controller', () => {
 			email: 'test@email.com',
 			name: 'Name',
 		});
+		const service = new Service();
+		service.id = 1;
+
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(userMock, [service])]),
+		);
 
 		const controller = Container.get(UsersController);
 		(controller as any).context = {
@@ -78,10 +86,15 @@ describe('users controller', () => {
 });
 
 class UserContextMock extends UserContext {
-	public static getCurrentUser = jest.fn();
+	public static getCurrentUser = jest.fn<Promise<User>, any>();
+	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
 	public init() {}
 	public async getCurrentUser(...params): Promise<any> {
-		return await UserContextMock.getCurrentUser(params);
+		return await UserContextMock.getCurrentUser(...params);
+	}
+
+	public async getAuthGroups(...params): Promise<any> {
+		return await UserContextMock.getAuthGroups(...params);
 	}
 }

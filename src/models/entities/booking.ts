@@ -5,6 +5,7 @@ import { Service } from './service';
 import * as timeSpan from '../../tools/timeSpan';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { User } from './user';
+import { ChangeLogAction } from '../changeLogAction';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
@@ -21,6 +22,7 @@ export class BookingBuilder {
 	public citizenPhone: string;
 	public citizenName: string;
 	public citizenEmail: string;
+	public autoAccept: boolean;
 
 	public withServiceId(serviceId: number): BookingBuilder {
 		this.serviceId = serviceId;
@@ -82,6 +84,11 @@ export class BookingBuilder {
 		return this;
 	}
 
+	public withAutoAccept(autoAccept = false): BookingBuilder {
+		this.autoAccept = autoAccept;
+		return this;
+	}
+
 	public build(): Booking {
 		return Booking.create(this);
 	}
@@ -126,15 +133,32 @@ export class Booking {
 	private _serviceProvider: ServiceProvider;
 
 	@Column({ nullable: true })
+	@Index()
 	private _serviceProviderId?: number;
 
 	@ManyToOne((type) => User, { nullable: false })
 	@JoinColumn({ name: '_creatorId' })
 	private _creator: User;
 
+	@Column({ nullable: true })
+	private _citizenName: string;
+
 	@Column({ nullable: true, type: 'varchar', length: 20 })
 	@Index()
 	private _citizenUinFin: string;
+	@Column({ nullable: true })
+	private _location: string;
+
+	@Column({ nullable: true })
+	private _citizenPhone: string;
+
+	public get citizenPhone(): string {
+		return this._citizenPhone;
+	}
+
+	public set citizenPhone(citizenPhone: string) {
+		this._citizenPhone = citizenPhone;
+	}
 
 	constructor() {
 		this._version = 1;
@@ -144,7 +168,7 @@ export class Booking {
 		const instance = new Booking();
 		if (builder.serviceProviderId) {
 			instance._serviceProviderId = builder.serviceProviderId;
-			instance._status = BookingStatus.Accepted;
+			instance._status = builder.autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
 		} else {
 			instance._status = BookingStatus.PendingApproval;
 		}
@@ -164,20 +188,15 @@ export class Booking {
 	}
 
 	@Column({ nullable: true })
-	private _citizenName: string;
+	private _description: string;
 
 	public get citizenName(): string {
 		return this._citizenName;
 	}
 
-	@Column({ nullable: true })
-	private _location: string;
-
-	@Column({ nullable: true })
-	private _description: string;
-
-	@Column({ nullable: true })
-	private _citizenEmail: string;
+	public set citizenName(citizenName: string) {
+		this._citizenName = citizenName;
+	}
 
 	public get id(): number {
 		return this._id;
@@ -215,12 +234,28 @@ export class Booking {
 		this._status = newStatus;
 	}
 
+	public get description(): string {
+		return this._description;
+	}
+
+	public set description(description: string) {
+		this._description = description;
+	}
+
 	public get startDateTime(): Date {
 		return this._startDateTime;
 	}
 
+	public set startDateTime(startDateTime: Date) {
+		this._startDateTime = startDateTime;
+	}
+
 	public get endDateTime(): Date {
 		return this._endDateTime;
+	}
+
+	public set endDateTime(endDateTime: Date) {
+		this._endDateTime = endDateTime;
 	}
 
 	public get serviceProvider(): ServiceProvider {
@@ -251,33 +286,57 @@ export class Booking {
 		this._citizenUinFin = value;
 	}
 
+	@Column({ nullable: true })
+	private _citizenEmail: string;
+
 	public get refId(): string {
 		return this._refId;
 	}
 
-	public get location(): string {
-		return this._location;
-	}
-
-	public get description(): string {
-		return this._description;
+	public set refId(refId: string) {
+		this._refId = refId;
 	}
 
 	public get citizenEmail(): string {
 		return this._citizenEmail;
 	}
 
-	@Column({ nullable: true })
-	private _citizenPhone: string;
-
-	public get citizenPhone(): string {
-		return this._citizenPhone;
+	public set citizenEmail(citizenEmail: string) {
+		this._citizenEmail = citizenEmail;
 	}
 
-	public bookingIntersects(other: { start: Date; end: Date }): boolean {
-		if (!other.start || !other.end) {
+	public get location(): string {
+		return this._location;
+	}
+
+	public set location(location: string) {
+		this._location = location;
+	}
+
+	public clone(): Booking {
+		const instance = new Booking();
+		Object.assign(instance, this);
+		return instance;
+	}
+
+	public bookingIntersects(other: { start: Date; end: Date; id?: number }): boolean {
+		if (!other.start || !other.end || (other.id && other.id === this.id)) {
 			return false;
 		}
 		return timeSpan.intersectsDateTimeSpan(other, this.startDateTime, this.endDateTime);
+	}
+
+	public getUpdateChangeType(previousBooking?: Booking): ChangeLogAction {
+		if (this.startDateTime !== previousBooking.startDateTime || this.endDateTime !== previousBooking.endDateTime) {
+			return ChangeLogAction.Reschedule;
+		} else if (this.serviceProviderId !== previousBooking.serviceProviderId) {
+			return ChangeLogAction.Reschedule;
+		} else {
+			return ChangeLogAction.Update;
+		}
+	}
+
+	public isValidForRescheduling(): boolean {
+		return this.status === BookingStatus.Accepted || this.status === BookingStatus.PendingApproval;
 	}
 }

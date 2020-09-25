@@ -72,6 +72,20 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		return (await this.processIncludes([entry], options))[0];
 	}
 
+	public async getServiceProviderByMolAdminId({ molAdminId }: { molAdminId: string }): Promise<ServiceProvider> {
+		if (!molAdminId) {
+			return null;
+		}
+		const repository = await this.getRepository();
+		// *** Don't filter by user permission here, as this is used by UserContext class
+		const query = repository
+			.createQueryBuilder('sp')
+			.innerJoin('sp._serviceProviderGroupMap', 'spgroup', 'spgroup."_molAdminId" = :molAdminId', { molAdminId })
+			.leftJoinAndSelect('sp._calendar', 'calendar');
+
+		return await query.getOne();
+	}
+
 	public async save(serviceProviders: ServiceProvider): Promise<ServiceProvider> {
 		return (await this.getRepository()).save(serviceProviders);
 	}
