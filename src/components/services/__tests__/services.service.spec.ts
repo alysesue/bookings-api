@@ -217,6 +217,12 @@ describe('Services service tests', () => {
 		});
 		expect(TimeslotItemsServiceMock.updateTimeslotItem).toBeCalledTimes(1);
 	});
+
+	it('should throw Service name is empty', async () => {
+		const request = new ServiceRequest();
+		request.name = '   ';
+		await expect(async () => await Container.get(ServicesService).createService(request)).rejects.toThrowError();
+	});
 });
 
 class ServicesRepositoryMockClass extends ServicesRepository {
