@@ -5,6 +5,7 @@ import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { Service, User } from '../../../models';
 import { AuthGroup, CitizenAuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { UserProfileResponse } from '../users.apicontract';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -39,7 +40,13 @@ describe('users controller', () => {
 		};
 
 		const profile = await controller.getProfile();
-		expect(profile).toBeDefined();
+		expect(profile).toEqual({
+			groups: [{ authGroupType: 'citizen' }],
+			user: {
+				singpass: { uinfin: 'ABC1234' },
+				userType: 'singpass',
+			},
+		} as UserProfileResponse);
 	});
 
 	it('should get admin profile', async () => {
@@ -58,6 +65,7 @@ describe('users controller', () => {
 		});
 		const service = new Service();
 		service.id = 1;
+		service.name = 'service1';
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
@@ -71,7 +79,10 @@ describe('users controller', () => {
 		};
 
 		const profile = await controller.getProfile();
-		expect(profile).toBeDefined();
+		expect(profile).toEqual({
+			groups: [{ authGroupType: 'service-admin', services: [{ id: 1, name: 'service1' }] }],
+			user: { admin: { email: 'test@email.com' }, userType: 'admin' },
+		} as UserProfileResponse);
 	});
 
 	it('should not get profile', async () => {
