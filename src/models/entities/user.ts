@@ -2,6 +2,7 @@ import { Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IUser } from '../interfaces';
 import { SingPassUser } from './singPassUser';
 import { AdminUser } from './adminUser';
+import { AgencyUser } from './agencyUser';
 
 @Entity()
 export class User implements IUser {
@@ -40,12 +41,27 @@ export class User implements IUser {
 		this._adminUser = value;
 	}
 
+	@OneToOne((type) => AgencyUser, (e) => e._User, { cascade: true, nullable: true })
+	public _agencyUser: AgencyUser;
+
+	public get agencyUser(): AgencyUser {
+		return this._agencyUser;
+	}
+
+	public set agencyUser(value: AgencyUser) {
+		this._agencyUser = value;
+	}
+
 	public isCitizen(): boolean {
 		return !!this._singPassUser;
 	}
 
 	public isAdmin(): boolean {
 		return !!this._adminUser;
+	}
+
+	public isAgency(): boolean {
+		return !!this._agencyUser;
 	}
 
 	public static createSingPassUser(molUserId: string, userUinFin: string): User {
@@ -57,6 +73,12 @@ export class User implements IUser {
 	public static createAdminUser(data: { molAdminId: string; userName: string; email: string; name: string }): User {
 		const instance = new User();
 		instance.adminUser = AdminUser.create(data);
+		return instance;
+	}
+
+	public static createAgencyUser(data: { agencyAppId: string; agencyName: string }): User {
+		const instance = new User();
+		instance.agencyUser = AgencyUser.create(data);
 		return instance;
 	}
 }
