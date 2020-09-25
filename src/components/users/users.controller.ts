@@ -3,8 +3,8 @@ import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { Inject } from 'typescript-ioc';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { ProfileResponse } from './users.apicontract';
-import { UsersMapper } from './users.mapper';
+import { UserProfileResponse } from './users.apicontract';
+import { UserProfileMapper } from './users.mapper';
 
 @Route('v1/users')
 @Tags('Users')
@@ -22,8 +22,9 @@ export class UsersController extends Controller {
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,user]')
-	public async getProfile(): Promise<ProfileResponse> {
+	public async getProfile(): Promise<UserProfileResponse> {
 		const user = await this._userContext.getCurrentUser();
-		return UsersMapper.mapToResponse(user);
+		const groups = await this._userContext.getAuthGroups();
+		return UserProfileMapper.mapToResponse({ user, groups });
 	}
 }

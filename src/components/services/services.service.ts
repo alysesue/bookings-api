@@ -39,7 +39,11 @@ export class ServicesService {
 		}
 
 		const service = new Service();
-		service.name = request.name;
+		service.name = request.name?.trim();
+		if (!service.name) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service name is empty');
+		}
+
 		if (request.organisationId) {
 			service.organisationId = request.organisationId;
 		} else {
