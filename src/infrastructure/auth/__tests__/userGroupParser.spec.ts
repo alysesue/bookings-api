@@ -133,7 +133,7 @@ describe('user group parser tests', () => {
 	it('should parse agency from headers', async () => {
 		const headers = {};
 		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.AGENCY;
-		headers[MOLSecurityHeaderKeys.AGENCY_APP_ID] = '53809107-16ac-4b1b-8434-d05888ae1f6e';
+		headers[MOLSecurityHeaderKeys.AGENCY_APP_ID] = 'agency-first-app';
 		headers[MOLSecurityHeaderKeys.AGENCY_NAME] = 'agency1';
 
 		const parsed = UserGroupParser.parseUserGroupsFromHeaders(headers);

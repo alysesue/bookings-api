@@ -171,7 +171,7 @@ describe('Users Service', () => {
 		headers[MOLSecurityHeaderKeys.ADMIN_GROUPS] = '';
 
 		const service = Container.get(UsersService);
-		const groups = await service.getAdminUserGroupsFromHeaders(adminMock, headers);
+		const groups = await service.getUserGroupsFromHeaders(adminMock, headers);
 
 		expect(groups).toBeDefined();
 		expect(groups.length).toBe(0);
@@ -185,7 +185,7 @@ describe('Users Service', () => {
 		organisation.id = 1;
 		OrganisationsServiceMock.getOrganisationsForGroups.mockImplementation(() => Promise.resolve([organisation]));
 
-		const groups = await Container.get(UsersService).getAdminUserGroupsFromHeaders(adminMock, headers);
+		const groups = await Container.get(UsersService).getUserGroupsFromHeaders(adminMock, headers);
 		expect(groups.length).toBe(1);
 		expect(groups[0] instanceof OrganisationAdminAuthGroup).toBe(true);
 	});
@@ -204,7 +204,7 @@ describe('Users Service', () => {
 		ServicesRepositoryNoAuthMock.getServicesForUserGroups.mockImplementation(() => Promise.resolve([service]));
 		(logger.warn as jest.Mock).mockImplementation(() => {});
 
-		const groups = await Container.get(UsersService).getAdminUserGroupsFromHeaders(adminMock, headers);
+		const groups = await Container.get(UsersService).getUserGroupsFromHeaders(adminMock, headers);
 		expect(logger.warn as jest.Mock).toBeCalledWith(
 			'Service(s) not found in BookingSG for user group(s): bookingsg:svc-admin-some-service:localorg',
 		);
@@ -225,7 +225,7 @@ describe('Users Service', () => {
 		);
 		(logger.warn as jest.Mock).mockImplementation(() => {});
 
-		const groups = await Container.get(UsersService).getAdminUserGroupsFromHeaders(adminMock, headers);
+		const groups = await Container.get(UsersService).getUserGroupsFromHeaders(adminMock, headers);
 		expect(groups.length).toBe(1);
 		expect(groups[0] instanceof ServiceProviderAuthGroup).toBe(true);
 	});
@@ -237,7 +237,7 @@ describe('Users Service', () => {
 		ServiceProvidersRepositoryMock.getServiceProviderByMolAdminId.mockImplementation(() => Promise.resolve(null));
 		(logger.warn as jest.Mock).mockImplementation(() => {});
 
-		const groups = await Container.get(UsersService).getAdminUserGroupsFromHeaders(adminMock, headers);
+		const groups = await Container.get(UsersService).getUserGroupsFromHeaders(adminMock, headers);
 		expect(logger.warn as jest.Mock).toBeCalledWith(
 			'Service provider not found in BookingSG for mol-admin-id: d080f6ed-3b47-478a-a6c6-dfb5608a199d',
 		);

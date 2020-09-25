@@ -9,7 +9,7 @@ export class OrganisationsRepository extends RepositoryBase<Organisation> {
 	}
 
 	public async save(organisation: Organisation): Promise<Organisation> {
-		return (await this.getRepository()).save(organisation);
+		return await (await this.getRepository()).save(organisation);
 	}
 
 	public async getOrganisationsForUserGroups(organisationRefs: string[]): Promise<Organisation[]> {

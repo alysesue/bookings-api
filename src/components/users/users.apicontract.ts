@@ -5,8 +5,12 @@ export class UserProfileResponse {
 
 export class UserTypeResponse {
 	public userType: UserTypeContract;
+	/** This field is used when userType='singpass', for citizen users */
 	public singpass?: SingPassUserContract;
+	/** This field is used when userType='admin', for admin users */
 	public admin?: AdminUserContract;
+	/** This field is used when userType='agency', for agency users (system to system) */
+	public agency?: AgencyUserContract;
 }
 
 export class SingPassUserContract {
@@ -17,9 +21,15 @@ export class AdminUserContract {
 	public email: string;
 }
 
+export class AgencyUserContract {
+	public appId: string;
+	public name: string;
+}
+
 export enum UserTypeContract {
 	singpass = 'singpass',
 	admin = 'admin',
+	agency = 'agency',
 }
 
 export class AuthGroupResponse {

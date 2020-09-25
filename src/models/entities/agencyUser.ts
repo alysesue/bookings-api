@@ -12,7 +12,7 @@ export class AgencyUser {
 	@JoinColumn({ name: '_userId' })
 	public _User: IUser;
 
-	@Column({ type: 'uuid', nullable: false })
+	@Column({ type: 'varchar', length: 100, nullable: false })
 	@Index({ unique: true })
 	private _agencyAppId: string;
 

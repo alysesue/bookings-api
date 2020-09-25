@@ -210,7 +210,7 @@ export class UsersService {
 		return serviceProviderUserGroup;
 	}
 
-	public async getAdminUserGroupsFromHeaders(user: User, headers: HeadersType): Promise<AuthGroup[]> {
+	public async getUserGroupsFromHeaders(user: User, headers: HeadersType): Promise<AuthGroup[]> {
 		const molAdminId = headers[MOLSecurityHeaderKeys.ADMIN_ID];
 		const parsedGroups = UserGroupParser.parseUserGroupsFromHeaders(headers);
 		const groups: AuthGroup[] = [];

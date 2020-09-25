@@ -3,9 +3,6 @@ import { TransactionManager } from '../../core/transactionManager';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Organisation, OrganisationAdminGroupMap } from '../../models';
 import { OrganisationsRepository } from './organisations.repository';
-import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
-
-const DefaultIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
 @InRequestScope
 export class OrganisationsService {
@@ -31,9 +28,7 @@ export class OrganisationsService {
 			groupMap.organisationRef = organisationInfo.organisationRef;
 			newOrg._organisationAdminGroupMap = groupMap;
 
-			this.transactionManager.runInTransaction(DefaultIsolationLevel, async () => {
-				await this.organisationsRepository.save(newOrg);
-			});
+			await this.organisationsRepository.save(newOrg);
 		} catch (e) {
 			// concurrent insert fail case
 			logger.warn(`Exception when creating Organisation: ${organisationInfo.organisationRef}`, e);
