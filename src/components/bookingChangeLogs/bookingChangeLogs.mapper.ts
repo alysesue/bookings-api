@@ -5,7 +5,7 @@ import {
 	ChangeLogEntryResponse,
 } from './bookingChangeLogs.apicontract';
 import { BookingChangeLog, BookingJsonSchemaV1, ChangeLogAction } from '../../models';
-import { UsersMapper } from '../users/users.mapper';
+import { UserProfileMapper } from '../users/users.mapper';
 
 type GenericState = { [key: string]: any };
 
@@ -51,7 +51,7 @@ export class BookingChangeLogsMapper {
 	public static mapChangeLog(changeLog: BookingChangeLog): ChangeLogEntryResponse {
 		const instance = new ChangeLogEntryResponse();
 		instance.timestamp = changeLog.timestamp;
-		instance.user = UsersMapper.mapToResponse(changeLog.user);
+		instance.user = UserProfileMapper.mapUserToResponse(changeLog.user);
 		instance.action = BookingChangeLogsMapper.mapChangeLogAction(changeLog.action);
 		instance.previousBooking = BookingChangeLogsMapper.mapBookingState(changeLog.previousState);
 		const changes = BookingChangeLogsMapper.getChanges(changeLog.previousState, changeLog.newState);

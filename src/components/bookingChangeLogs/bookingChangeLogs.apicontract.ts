@@ -1,4 +1,4 @@
-import { ProfileResponse } from '../users/users.apicontract';
+import { UserTypeResponse } from '../users/users.apicontract';
 
 export class BookingChangeLogResponse {
 	public bookingId: number;
@@ -7,7 +7,7 @@ export class BookingChangeLogResponse {
 
 export class ChangeLogEntryResponse {
 	public timestamp: Date;
-	public user: ProfileResponse;
+	public user: UserTypeResponse;
 	public action: ChangeLogActionContract;
 	public previousBooking: BookingStateResponse;
 	public changes: BookingStateResponse;
