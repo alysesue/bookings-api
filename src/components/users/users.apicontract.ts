@@ -40,6 +40,7 @@ export class AuthGroupResponse {
 }
 
 export class OrganisationAdminGroupContract {
+	public id: number;
 	public name: string;
 }
 

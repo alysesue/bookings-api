@@ -96,4 +96,21 @@ describe('User repository', () => {
 		expect(resultA).toBeNull();
 		expect(resultB).toBeNull();
 	});
+
+	it('should not getUserByAgencyAppId  when id is null', async () => {
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			orderBy: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve([userMock])),
+		};
+		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		const userRepository = Container.get(UsersRepository);
+
+		const resultA = await userRepository.getUserByAgencyAppId(null);
+		const resultB = await userRepository.getUserByAgencyAppId();
+		expect(resultA).toBeNull();
+		expect(resultB).toBeNull();
+	});
 });

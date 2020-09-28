@@ -71,6 +71,7 @@ class AuthGroupResponseVisitor implements IAuthGroupVisitor {
 		this._mappedGroups.push({
 			authGroupType: AuthGroupTypeContract.organisationAdmin,
 			organisations: _userGroup.authorisedOrganisations.map<OrganisationAdminGroupContract>((o) => ({
+				id: o.id,
 				name: o.name,
 			})),
 		});

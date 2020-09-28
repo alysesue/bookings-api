@@ -56,6 +56,14 @@ function getAdminHeaders() {
 	return headers;
 }
 
+function getAgencyHeaders() {
+	const headers = {};
+	headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.AGENCY;
+	headers[MOLSecurityHeaderKeys.AGENCY_APP_ID] = 'agency-first-app';
+	headers[MOLSecurityHeaderKeys.AGENCY_NAME] = 'agency1';
+	return headers;
+}
+
 describe('Users Service', () => {
 	afterEach(() => {
 		jest.resetAllMocks();
@@ -186,6 +194,19 @@ describe('Users Service', () => {
 		OrganisationsServiceMock.getOrganisationsForGroups.mockImplementation(() => Promise.resolve([organisation]));
 
 		const groups = await Container.get(UsersService).getUserGroupsFromHeaders(adminMock, headers);
+		expect(groups.length).toBe(1);
+		expect(groups[0] instanceof OrganisationAdminAuthGroup).toBe(true);
+	});
+
+	it('should return organisation admin for agency user', async () => {
+		const headers = getAgencyHeaders();
+		const agencyUserMock = User.createAgencyUser({ agencyAppId: 'agency-first-app', agencyName: 'agency1' });
+
+		const organisation = new Organisation();
+		organisation.id = 1;
+		OrganisationsServiceMock.getOrganisationsForGroups.mockImplementation(() => Promise.resolve([organisation]));
+
+		const groups = await Container.get(UsersService).getUserGroupsFromHeaders(agencyUserMock, headers);
 		expect(groups.length).toBe(1);
 		expect(groups[0] instanceof OrganisationAdminAuthGroup).toBe(true);
 	});
