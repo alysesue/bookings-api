@@ -9,6 +9,7 @@ import {
 import { User } from '../../models';
 import {
 	AdminUserContract,
+	AgencyUserContract,
 	AuthGroupResponse,
 	AuthGroupTypeContract,
 	OrganisationAdminGroupContract,
@@ -37,6 +38,11 @@ export class UserProfileMapper {
 			instance.userType = UserTypeContract.admin;
 			instance.admin = new AdminUserContract();
 			instance.admin.email = user.adminUser.email;
+		} else if (user.isAgency()) {
+			instance.userType = UserTypeContract.agency;
+			instance.agency = new AgencyUserContract();
+			instance.agency.appId = user.agencyUser.agencyAppId;
+			instance.agency.name = user.agencyUser.agencyName;
 		} else {
 			throw new Error('User cannot be mapped to UserTypeResponse. Id: ' + user.id);
 		}
@@ -65,6 +71,7 @@ class AuthGroupResponseVisitor implements IAuthGroupVisitor {
 		this._mappedGroups.push({
 			authGroupType: AuthGroupTypeContract.organisationAdmin,
 			organisations: _userGroup.authorisedOrganisations.map<OrganisationAdminGroupContract>((o) => ({
+				id: o.id,
 				name: o.name,
 			})),
 		});

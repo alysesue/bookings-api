@@ -24,9 +24,10 @@ export class BookingChangeLogsController extends Controller {
 	@Security('optional-service')
 	@MOLAuth({
 		admin: {},
+		agency: {},
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
-	@Response(401, 'Valid authentication types: [admin,user]')
+	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getChangeLogs(
 		@Query() changedSince: Date,
 		@Query() changedUntil: Date,

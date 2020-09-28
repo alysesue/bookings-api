@@ -3,8 +3,13 @@ import { UsersController } from '../users.controller';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { UserContext } from '../../../infrastructure/auth/userContext';
-import { Service, User } from '../../../models';
-import { AuthGroup, CitizenAuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { Organisation, Service, User } from '../../../models';
+import {
+	AuthGroup,
+	CitizenAuthGroup,
+	OrganisationAdminAuthGroup,
+	ServiceAdminAuthGroup,
+} from '../../../infrastructure/auth/authGroup';
 import { UserProfileResponse } from '../users.apicontract';
 
 afterAll(() => {
@@ -82,6 +87,35 @@ describe('users controller', () => {
 		expect(profile).toEqual({
 			groups: [{ authGroupType: 'service-admin', services: [{ id: 1, name: 'service1' }] }],
 			user: { admin: { email: 'test@email.com' }, userType: 'admin' },
+		} as UserProfileResponse);
+	});
+
+	it('should get agency profile', async () => {
+		const headers = {};
+		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.AGENCY;
+		headers[MOLSecurityHeaderKeys.AGENCY_APP_ID] = 'agency-first-app';
+		headers[MOLSecurityHeaderKeys.AGENCY_NAME] = 'agency1';
+
+		const userMock = User.createAgencyUser({ agencyAppId: 'agency-first-app', agencyName: 'agency1' });
+		const organisation = new Organisation();
+		organisation.id = 2;
+		organisation.name = 'agency1';
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new OrganisationAdminAuthGroup(userMock, [organisation])]),
+		);
+
+		const controller = Container.get(UsersController);
+		(controller as any).context = {
+			headers,
+			request: { headers },
+		};
+
+		const profile = await controller.getProfile();
+		expect(profile).toEqual({
+			groups: [{ authGroupType: 'organisation-admin', organisations: [{ id: 2, name: 'agency1' }] }],
+			user: { agency: { appId: 'agency-first-app', name: 'agency1' }, userType: 'agency' },
 		} as UserProfileResponse);
 	});
 

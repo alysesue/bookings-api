@@ -1,3 +1,5 @@
+import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
+import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 // tslint:disable: tsr-detect-possible-timing-attacks
 import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 
@@ -6,19 +8,55 @@ const OrgAdminToken = 'org-admin';
 const ServiceAdminToken = 'svc-admin-';
 const ServiceProviderToken = 'service-provider';
 
-export class AdminUserGroupParser {
-	public static parseUserGroups(groupListStr: string): ParsedUserGroup[] {
+export class UserGroupParser {
+	public static parseUserGroupsFromHeaders(headers: { [key: string]: string }): ParsedUserGroup[] {
+		if (!headers) {
+			return [];
+		}
+
+		const parsedUserGroups = [];
+		const authType = headers[MOLSecurityHeaderKeys.AUTH_TYPE];
+		if (authType === MOLAuthType.ADMIN) {
+			const groupListStr = headers[MOLSecurityHeaderKeys.ADMIN_GROUPS];
+			const parsedAdminUserGroups = UserGroupParser.parseAdminUserGroups(groupListStr);
+			parsedUserGroups.push(...parsedAdminUserGroups);
+		} else if (authType === MOLAuthType.AGENCY) {
+			const agencyName = headers[MOLSecurityHeaderKeys.AGENCY_NAME];
+			const agencyGroup = UserGroupParser.parseAgencyUserGroup(agencyName);
+			if (agencyGroup) {
+				parsedUserGroups.push(agencyGroup);
+			}
+		}
+
+		return parsedUserGroups;
+	}
+
+	public static parseAgencyUserGroup(agencyName: string): ParsedUserGroup {
+		const trimAgencyName = agencyName?.trim().toLowerCase();
+		if (trimAgencyName) {
+			return {
+				groupStr: `${BookingSGToken}:${OrgAdminToken}:${trimAgencyName}`,
+				productRef: BookingSGToken,
+				userGroupRole: UserGroupRole.OrganisationAdmin,
+				serviceRef: undefined,
+				organisationRef: trimAgencyName,
+			};
+		}
+		return null;
+	}
+
+	public static parseAdminUserGroups(groupListStr: string): ParsedUserGroup[] {
 		if (!groupListStr) {
 			return [];
 		}
 
 		return groupListStr
 			.split(',')
-			.map((g) => AdminUserGroupParser.parseUserGroup(g))
+			.map((g) => UserGroupParser.parseAdminUserGroup(g))
 			.filter((g) => g);
 	}
 
-	private static parseUserGroup(groupStr: string): ParsedUserGroup {
+	private static parseAdminUserGroup(groupStr: string): ParsedUserGroup {
 		const chunks = groupStr
 			.toLowerCase()
 			.split(':')
@@ -44,7 +82,7 @@ export class AdminUserGroupParser {
 			return null;
 		}
 
-		const parsedRole = AdminUserGroupParser.parseGroupRole(roleStr);
+		const parsedRole = UserGroupParser.parseGroupRole(roleStr);
 		if (!parsedRole) {
 			return null;
 		}

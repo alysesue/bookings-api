@@ -40,8 +40,8 @@ export class OrganisationAdminAuthGroup extends AuthGroup {
 
 	constructor(user: User, organisations: Organisation[]) {
 		super(user);
-		if (!user.isAdmin()) {
-			throw new Error('OrganisationAdminAuthGroup must be created with an admin User.');
+		if (!user.isAdmin() && !user.isAgency()) {
+			throw new Error('OrganisationAdminAuthGroup must be created with an admin or agency User.');
 		}
 		if (!organisations || organisations.length === 0) {
 			throw new Error('At least one organisation is required in OrganisationAdminAuthGroup.');

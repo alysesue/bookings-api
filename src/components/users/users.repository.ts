@@ -32,4 +32,17 @@ export class UsersRepository extends RepositoryBase<User> {
 
 		return await query.getOne();
 	}
+
+	public async getUserByAgencyAppId(agencyAppId?: string): Promise<User> {
+		if (!agencyAppId) return null;
+
+		const repository = await this.getRepository();
+		const query = repository
+			.createQueryBuilder('u')
+			.innerJoinAndSelect('u._agencyUser', 'agencyuser', 'agencyuser."_agencyAppId" = :agencyAppId', {
+				agencyAppId,
+			});
+
+		return await query.getOne();
+	}
 }

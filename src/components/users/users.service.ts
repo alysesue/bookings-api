@@ -5,7 +5,7 @@ import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
-import { AdminUserGroupParser, ParsedUserGroup, UserGroupRole } from '../../infrastructure/auth/adminUserGroupParser';
+import { ParsedUserGroup, UserGroupParser, UserGroupRole } from '../../infrastructure/auth/userGroupParser';
 import {
 	AuthGroup,
 	OrganisationAdminAuthGroup,
@@ -65,6 +65,12 @@ export class UsersService {
 					name: headers[MOLSecurityHeaderKeys.ADMIN_NAME],
 				});
 				break;
+			case MOLAuthType.AGENCY:
+				user = await this.getOrSaveAgencyUser({
+					agencyAppId: headers[MOLSecurityHeaderKeys.AGENCY_APP_ID],
+					agencyName: headers[MOLSecurityHeaderKeys.AGENCY_NAME],
+				});
+				break;
 		}
 
 		if (!user) {
@@ -101,6 +107,17 @@ export class UsersService {
 
 		const adminUser = User.createAdminUser(data);
 		return await this.getOrSaveInternal(adminUser, () => this.usersRepository.getUserByMolAdminId(data.molAdminId));
+	}
+
+	public async getOrSaveAgencyUser(data: { agencyAppId: string; agencyName: string }): Promise<User> {
+		if (!data.agencyAppId || !data.agencyName) {
+			return null;
+		}
+
+		const agencyUser = User.createAgencyUser(data);
+		return await this.getOrSaveInternal(agencyUser, () =>
+			this.usersRepository.getUserByAgencyAppId(data.agencyAppId),
+		);
 	}
 
 	private async getOrganisationAdminUserGroup({
@@ -193,10 +210,9 @@ export class UsersService {
 		return serviceProviderUserGroup;
 	}
 
-	public async getAdminUserGroupsFromHeaders(user: User, headers: HeadersType): Promise<AuthGroup[]> {
+	public async getUserGroupsFromHeaders(user: User, headers: HeadersType): Promise<AuthGroup[]> {
 		const molAdminId = headers[MOLSecurityHeaderKeys.ADMIN_ID];
-		const groupListStr = headers[MOLSecurityHeaderKeys.ADMIN_GROUPS];
-		const parsedGroups = AdminUserGroupParser.parseUserGroups(groupListStr);
+		const parsedGroups = UserGroupParser.parseUserGroupsFromHeaders(headers);
 		const groups: AuthGroup[] = [];
 
 		const orgAdmin = await this.getOrganisationAdminUserGroup({ user, parsedGroups });

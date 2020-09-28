@@ -37,7 +37,8 @@ export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog
 			)
 			.leftJoinAndSelect('changelog._user', 'loguser')
 			.leftJoinAndSelect('loguser._singPassUser', 'singpass')
-			.leftJoinAndSelect('loguser._adminUser', 'admin');
+			.leftJoinAndSelect('loguser._adminUser', 'admin')
+			.leftJoinAndSelect('loguser._agencyUser', 'agency');
 
 		const entries = await query.getMany();
 
