@@ -2,15 +2,15 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGenerate
 import { Calendar } from './calendar';
 import { ServiceProviderStatus } from '../serviceProviderStatus';
 import { Service } from './service';
-import { Schedule } from './schedule';
-import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
+import { ScheduleForm } from './scheduleForm';
+import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
 
 const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
 
 @Entity()
-export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, IEntityWithTimeslotsSchedule {
+export class ServiceProvider implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
 	constructor() {}
 	@PrimaryGeneratedColumn()
 	private _id: number;
@@ -134,26 +134,26 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		this._calendar = calendar;
 	}
 
-	@ManyToOne('Schedule', { nullable: true })
-	@JoinColumn({ name: '_scheduleId' })
-	public _schedule: Schedule;
+	@ManyToOne('ScheduleForm', { nullable: true })
+	@JoinColumn({ name: '_scheduleFormId' })
+	public _scheduleForm: ScheduleForm;
 
-	public get schedule(): Schedule {
-		return this._schedule;
+	public get scheduleForm(): ScheduleForm {
+		return this._scheduleForm;
 	}
 
-	public set schedule(schedule: Schedule) {
-		this._schedule = schedule;
+	public set scheduleForm(scheduleForm: ScheduleForm) {
+		this._scheduleForm = scheduleForm;
 	}
 
 	@Column({ nullable: true })
-	private _scheduleId?: number;
+	private _scheduleFormId?: number;
 
-	public set scheduleId(id: number) {
-		this._scheduleId = id;
+	public set scheduleFormId(id: number) {
+		this._scheduleFormId = id;
 	}
-	public get scheduleId(): number {
-		return this._scheduleId;
+	public get scheduleFormId(): number {
+		return this._scheduleFormId;
 	}
 
 	@Column({ nullable: true })

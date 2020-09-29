@@ -1,7 +1,7 @@
 import { ServicesRepository } from '../services.repository';
 import { Container } from 'typescript-ioc';
-import { Schedule, Service, TimeslotsSchedule, User } from '../../../models';
-import { SchedulesRepository } from '../../schedules/schedules.repository';
+import { ScheduleForm, Service, TimeslotsSchedule, User } from '../../../models';
+import { SchedulesFormRepository } from '../../schedulesForm/schedulesForm.repository';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TransactionManager } from '../../../core/transactionManager';
 import { UserContext } from '../../../infrastructure/auth/userContext';
@@ -15,7 +15,7 @@ afterAll(() => {
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
-	Container.bind(SchedulesRepository).to(SchedulesRepositoryMock);
+	Container.bind(SchedulesFormRepository).to(SchedulesFormRepositoryMock);
 	Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 	Container.bind(UserContext).to(UserContextMock);
 });
@@ -61,13 +61,13 @@ describe('Services repository', () => {
 		expect(result).toStrictEqual(data);
 	});
 
-	it('should get a service with schedule', async () => {
+	it('should get a service with scheduleForm', async () => {
 		const data = new Service();
-		data.scheduleId = 11;
+		data.scheduleFormId = 11;
 
-		const schedule = new Schedule();
+		const schedule = new ScheduleForm();
 		schedule.id = 11;
-		SchedulesRepositoryMock.getSchedulesMock.mockImplementation(() => Promise.resolve([schedule]));
+		SchedulesFormRepositoryMock.getSchedulesFormMock.mockImplementation(() => Promise.resolve([schedule]));
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
@@ -76,9 +76,9 @@ describe('Services repository', () => {
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const repository = Container.get(ServicesRepository);
-		const result = await repository.getServiceWithSchedule(1);
+		const result = await repository.getServiceWithScheduleForm(1);
 		expect(result).toBeDefined();
-		expect(result.schedule).toBe(schedule);
+		expect(result.scheduleForm).toBe(scheduleForm);
 	});
 
 	it('should get a service with TimeslotsSchedule', async () => {
@@ -168,11 +168,11 @@ class TransactionManagerMock extends TransactionManager {
 	}
 }
 
-class SchedulesRepositoryMock extends SchedulesRepository {
-	public static getSchedulesMock = jest.fn();
+class SchedulesFormRepositoryMock extends SchedulesFormRepository {
+	public static getSchedulesFormMock = jest.fn();
 
-	public async getSchedules(...params): Promise<Schedule[]> {
-		return await SchedulesRepositoryMock.getSchedulesMock(...params);
+	public async getSchedulesForm(...params): Promise<ScheduleForm[]> {
+		return await SchedulesFormRepositoryMock.getSchedulesFormMock(...params);
 	}
 }
 

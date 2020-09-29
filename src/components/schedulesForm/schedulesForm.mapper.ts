@@ -1,14 +1,17 @@
-import { Schedule, TimeOfDay, WeekDayBreak, WeekDaySchedule } from '../../models';
+import { ScheduleForm, TimeOfDay, WeekDayBreak, WeekDaySchedule } from '../../models';
 import {
-	ScheduleRequest,
-	ScheduleResponse,
+	ScheduleFormRequest,
+	ScheduleFormResponse,
 	WeekDayBreakContract,
 	WeekDayScheduleContract,
-} from './schedules.apicontract';
+} from './schedulesForm.apicontract';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { getErrorResult, getOkResult, isErrorResult, OptionalResult } from '../../errors';
 
-export const mapToEntity = (contract: ScheduleRequest, entity: Schedule): OptionalResult<Schedule, string[]> => {
+export const mapToEntity = (
+	contract: ScheduleFormRequest,
+	entity: ScheduleForm,
+): OptionalResult<ScheduleForm, string[]> => {
 	entity.name = contract.name;
 	entity.slotsDurationInMin = contract.slotsDurationInMin;
 	const errors: string[] = [];
@@ -35,7 +38,7 @@ const setDayContractEntity = (
 	contract: WeekDayScheduleContract,
 	entity: WeekDaySchedule,
 ): OptionalResult<WeekDaySchedule, string[]> => {
-	entity.hasSchedule = contract.hasSchedule;
+	entity.hasScheduleForm = contract.hasScheduleForm;
 	const errors: string[] = [];
 
 	try {
@@ -84,7 +87,7 @@ const mapBreaks = (
 		}
 
 		if (startTime && endTime) {
-			const mapped = WeekDayBreak.create(daySchedule.weekday, startTime, endTime, entity.schedule);
+			const mapped = WeekDayBreak.create(daySchedule.weekday, startTime, endTime, entity.scheduleForm);
 			result.push(mapped);
 		}
 	}
@@ -92,12 +95,12 @@ const mapBreaks = (
 	return errors.length > 0 ? { errorResult: errors } : { result };
 };
 
-export const mapToResponse = (template: Schedule): ScheduleResponse => {
+export const mapToResponse = (template: ScheduleForm): ScheduleFormResponse => {
 	if (!template) {
 		return null;
 	}
 
-	const response = new ScheduleResponse();
+	const response = new ScheduleFormResponse();
 	response.id = template.id;
 	response.name = template.name;
 	response.slotsDurationInMin = template.slotsDurationInMin;
@@ -109,7 +112,7 @@ export const mapToResponse = (template: Schedule): ScheduleResponse => {
 export const mapDayScheduleToResponse = (daySchedule: WeekDaySchedule): WeekDayScheduleContract => {
 	const dayContract = new WeekDayScheduleContract();
 	dayContract.weekday = daySchedule.weekDay;
-	dayContract.hasSchedule = daySchedule.hasSchedule;
+	dayContract.hasScheduleForm = daySchedule.hasScheduleForm;
 	dayContract.openTime = daySchedule.openTime?.toJSON();
 	dayContract.closeTime = daySchedule.closeTime?.toJSON();
 	dayContract.breaks = daySchedule.breaks?.map((e) => mapBreaksToResponse(e));

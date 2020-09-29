@@ -1,13 +1,13 @@
 import { TimeOfDay, WeekDayBreak } from '../index';
 import { Weekday } from '../../enums/weekday';
-import { ISchedule } from '../interfaces';
+import { IScheduleForm } from '../interfaces';
 
 describe('week day break tests', () => {
 	const dayBreak = WeekDayBreak.create(
 		Weekday.Monday,
 		TimeOfDay.create({ hours: 11, minutes: 30 }),
 		TimeOfDay.create({ hours: 12, minutes: 45 }),
-		{ slotsDurationInMin: 30 } as ISchedule,
+		{ slotsDurationInMin: 30 } as IScheduleForm,
 	);
 
 	it('should not create without schedule', () => {

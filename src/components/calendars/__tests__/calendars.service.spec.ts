@@ -4,7 +4,7 @@ import { Booking, Calendar } from '../../../models';
 import { CalendarsService } from '../calendars.service';
 import { GoogleCalendarService } from '../../../googleapi/google.calendar.service';
 import { CalendarUserModel } from '../calendars.apicontract';
-import { SchedulesRepository } from '../../schedules/schedules.repository';
+import { SchedulesFormRepository } from '../../schedulesForm/schedulesForm.repository';
 import { BookingBuilder } from '../../../models/entities/booking';
 
 afterAll(() => {
@@ -19,7 +19,7 @@ describe('Calendar service', () => {
 		// Clears mock counters, not implementation
 		jest.clearAllMocks();
 		Container.bind(CalendarsRepository).to(CalendarRepositoryMock);
-		Container.bind(SchedulesRepository).to(SchedulesRepositoryMock);
+		Container.bind(SchedulesFormRepository).to(SchedulesFormRepositoryMock);
 		Container.bind(GoogleCalendarService).to(GoogleCalendarServiceMock);
 	});
 	it('should get calendars', async () => {
@@ -103,7 +103,7 @@ const SchedulesRepositoryObj = {
 	getScheduleById: jest.fn().mockImplementation(() => Promise.resolve({})),
 };
 
-const SchedulesRepositoryMock = jest.fn().mockImplementation(() => SchedulesRepositoryObj);
+const SchedulesFormRepositoryMock = jest.fn().mockImplementation(() => SchedulesRepositoryObj);
 
 const CalendarRepositoryMock = jest.fn().mockImplementation(() => CalendarRepositoryObj);
 

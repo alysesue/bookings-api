@@ -1,8 +1,8 @@
 import { Container } from 'typescript-ioc';
-import { Calendar, Schedule, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
+import { Calendar, ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
 import { ServiceProvidersController } from '../serviceProviders.controller';
 import { ServiceProvidersService } from '../serviceProviders.service';
-import { ServiceProviderModel, SetProviderScheduleRequest } from '../serviceProviders.apicontract';
+import { ServiceProviderModel, SetProviderScheduleFormRequest } from '../serviceProviders.apicontract';
 import { CalendarsService } from '../../calendars/calendars.service';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 
@@ -118,12 +118,12 @@ describe('ServiceProviders.Controller', () => {
 		expect(listRequest.length).toBe(3);
 	});
 
-	it('should set provider schedule', async () => {
-		ServiceProvidersMock.setProviderSchedule.mockReturnValue(Promise.resolve(new Schedule()));
-		const providerScheduleRequest = new SetProviderScheduleRequest();
-		providerScheduleRequest.scheduleId = 2;
-		await Container.get(ServiceProvidersController).setServiceSchedule(1, providerScheduleRequest);
-		expect(ServiceProvidersMock.setProviderSchedule).toBeCalled();
+	it('should set provider scheduleForm', async () => {
+		ServiceProvidersMock.setProviderScheduleForm.mockReturnValue(Promise.resolve(new ScheduleForm()));
+		const providerScheduleFormRequest = new SetProviderScheduleFormRequest();
+		providerScheduleFormRequest.scheduleFormId = 2;
+		await Container.get(ServiceProvidersController).setServiceScheduleForm(1, providerScheduleFormRequest);
+		expect(ServiceProvidersMock.setProviderScheduleForm).toBeCalled();
 	});
 
 	it('should update a service provider', async () => {
@@ -139,14 +139,14 @@ describe('ServiceProviders.Controller', () => {
 		expect(result.email).toBe('test@gmail.com');
 	});
 
-	it('should get provider schedule', async () => {
-		ServiceProvidersMock.getProviderSchedule.mockReturnValue(Promise.resolve(new Schedule()));
-		await Container.get(ServiceProvidersController).getServiceSchedule(1);
+	it('should get provider scheduleForm', async () => {
+		ServiceProvidersMock.getProviderScheduleForm.mockReturnValue(Promise.resolve(new ScheduleForm()));
+		await Container.get(ServiceProvidersController).getServiceScheduleForm(1);
 
-		expect(ServiceProvidersMock.getProviderSchedule).toBeCalled();
+		expect(ServiceProvidersMock.getProviderScheduleForm).toBeCalled();
 	});
 
-	it('should get provider timeslots schedule', async () => {
+	it('should get provider timeslots scheduleForm', async () => {
 		const mockItemId = 11;
 		const mockResult = new TimeslotsSchedule();
 		mockItem._id = mockItemId;
@@ -184,8 +184,8 @@ const ServiceProvidersMock = {
 	getServiceProviders: jest.fn(),
 	updateServiceProvider: jest.fn(),
 	save: jest.fn(),
-	setProviderSchedule: jest.fn(),
-	getProviderSchedule: jest.fn(),
+	setProviderScheduleForm: jest.fn(),
+	getProviderScheduleForm: jest.fn(),
 	getTimeslotItemsByServiceProviderId: jest.fn(),
 	createTimeslotItemForServiceProvider: jest.fn(),
 	updateTimeslotItemForServiceProvider: jest.fn(),
@@ -205,12 +205,12 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 	public async updateSp(request: ServiceProviderModel, spId: number): Promise<ServiceProvider> {
 		return ServiceProvidersMock.updateServiceProvider(request);
 	}
-	public async setProviderSchedule(...params): Promise<Schedule> {
-		return ServiceProvidersMock.setProviderSchedule(...params);
+	public async setProviderScheduleForm(...params): Promise<ScheduleForm> {
+		return ServiceProvidersMock.setProviderScheduleForm(...params);
 	}
 
-	public async getProviderSchedule(...params): Promise<Schedule> {
-		return ServiceProvidersMock.getProviderSchedule(...params);
+	public async getProviderScheduleForm(...params): Promise<ScheduleForm> {
+		return ServiceProvidersMock.getProviderScheduleForm(...params);
 	}
 
 	public async getTimeslotItems(serviceProviderId: number): Promise<TimeslotsSchedule> {

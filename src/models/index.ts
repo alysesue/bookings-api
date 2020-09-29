@@ -1,7 +1,7 @@
 import { Booking } from './entities/booking';
 import { BookingChangeLog, BookingJsonSchemaV1 } from './entities/bookingChangeLog';
 import { BookingStatus } from './bookingStatus';
-import { Schedule } from './entities/schedule';
+import { ScheduleForm } from './entities/scheduleForm';
 import { WeekDaySchedule } from './entities/weekDaySchedule';
 import { WeekDayBreak } from './entities/weekDayBreak';
 import { Calendar } from './entities/calendar';
@@ -35,7 +35,7 @@ export {
 	SingPassUser,
 	AdminUser,
 	AgencyUser,
-	Schedule,
+	ScheduleForm,
 	Service,
 	ServiceAdminGroupMap,
 	WeekDayBreak,

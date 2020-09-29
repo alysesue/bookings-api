@@ -1,9 +1,9 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Schedule, Service, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { ScheduleForm, Service, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { ServicesRepository } from './services.repository';
-import { ServiceRequest, SetScheduleRequest } from './service.apicontract';
-import { SchedulesService } from '../schedules/schedules.service';
+import { ServiceRequest, SetScheduleFormRequest } from './service.apicontract';
+import { SchedulesFormService } from '../schedulesForm/schedulesForm.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
 import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
 import { TimeslotsScheduleService } from '../timeslotsSchedules/timeslotsSchedule.service';
@@ -15,7 +15,7 @@ export class ServicesService {
 	@Inject
 	private servicesRepository: ServicesRepository;
 	@Inject
-	private schedulesService: SchedulesService;
+	private schedulesFormService: SchedulesFormService;
 	@Inject
 	private timeslotItemsService: TimeslotItemsService;
 	@Inject
@@ -66,41 +66,41 @@ export class ServicesService {
 		}
 	}
 
-	public async setServiceSchedule(id: number, model: SetScheduleRequest): Promise<Schedule> {
+	public async setServiceScheduleForm(id: number, model: SetScheduleFormRequest): Promise<ScheduleForm> {
 		const service = await this.servicesRepository.getService(id);
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
 
-		let schedule: Schedule = null;
-		if (model.scheduleId) {
-			schedule = await this.schedulesService.getSchedule(model.scheduleId);
-			if (!schedule) {
-				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Schedule not found');
+		let scheduleForm: ScheduleForm = null;
+		if (model.scheduleFormId) {
+			scheduleForm = await this.schedulesFormService.getScheduleForm(model.scheduleFormId);
+			if (!scheduleForm) {
+				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('ScheduleForm not found');
 			}
 		}
 
-		service.schedule = schedule;
+		service.scheduleForm = scheduleForm;
 		await this.servicesRepository.save(service);
-		return schedule;
+		return scheduleForm;
 	}
 
-	public async getServiceSchedule(id: number): Promise<Schedule> {
+	public async getServiceScheduleForm(id: number): Promise<ScheduleForm> {
 		const service = await this.servicesRepository.getService(id);
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
 
-		let schedule: Schedule = null;
-		if (service.scheduleId) {
-			schedule = await this.schedulesService.getSchedule(service.scheduleId);
+		let scheduleForm: ScheduleForm = null;
+		if (service.scheduleFormId) {
+			scheduleForm = await this.schedulesFormService.getScheduleForm(service.scheduleFormId);
 		}
 
-		if (!schedule) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service schedule not found');
+		if (!scheduleForm) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service scheduleForm not found');
 		}
 
-		return schedule;
+		return scheduleForm;
 	}
 
 	public async getServices(): Promise<Service[]> {

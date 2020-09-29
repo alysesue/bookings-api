@@ -1,5 +1,5 @@
 import { Booking } from './booking';
-import { Schedule } from './schedule';
+import { ScheduleForm } from './scheduleForm';
 import { WeekDaySchedule } from './weekDaySchedule';
 import { WeekDayBreak } from './weekDayBreak';
 import { Calendar } from './calendar';
@@ -14,7 +14,7 @@ import { OrganisationAdminGroupMap } from './organisationAdminGroupMap';
 
 export {
 	Booking,
-	Schedule,
+	ScheduleForm,
 	Service,
 	ServiceAdminGroupMap,
 	WeekDayBreak,

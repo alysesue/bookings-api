@@ -1,8 +1,8 @@
 import { ServiceProvidersRepository } from '../serviceProviders.repository';
 import { Container } from 'typescript-ioc';
+import { SchedulesFormRepository } from '../../schedulesForm/schedulesForm.repository';
+import { IEntityWithScheduleForm } from '../../../models/interfaces';
 import { Organisation, ServiceProvider, TimeslotsSchedule, User } from '../../../models';
-import { SchedulesRepository } from '../../schedules/schedules.repository';
-import { IEntityWithSchedule } from '../../../models/interfaces';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TransactionManager } from '../../../core/transactionManager';
 import { ServiceProvidersQueryAuthVisitor } from '../serviceProviders.auth';
@@ -20,7 +20,7 @@ afterAll(() => {
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
 	Container.bind(UserContext).to(UserContextMock);
-	Container.bind(SchedulesRepository).to(SchedulesRepositoryMock);
+	Container.bind(SchedulesFormRepository).to(SchedulesFormRepositoryMock);
 	Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 });
 
@@ -128,23 +128,23 @@ describe('Service Provider repository', () => {
 
 	it('should get list of SP with schedule', async () => {
 		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([new ServiceProvider()]));
-		SchedulesRepositoryMock.populateSchedulesMock.mockImplementation((entries: any[]) => Promise.resolve(entries));
+		SchedulesFormRepositoryMock.populateSchedulesFormMock.mockImplementation((entries: any[]) => Promise.resolve(entries));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
-		const result = await spRepository.getServiceProviders({ serviceId: 1, includeSchedule: true });
+		const result = await spRepository.getServiceProviders({ serviceId: 1, includeScheduleForm: true });
 
-		expect(SchedulesRepositoryMock.populateSchedulesMock).toHaveBeenCalled();
+		expect(SchedulesFormRepositoryMock.populateSchedulesFormMock).toHaveBeenCalled();
 		expect(result.length).toBe(1);
 	});
 
 	it('should get a service provider with schedule', async () => {
 		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(new ServiceProvider()));
-		SchedulesRepositoryMock.populateSchedulesMock.mockImplementation((entries: any[]) => Promise.resolve(entries));
+		SchedulesFormRepositoryMock.populateSchedulesFormMock.mockImplementation((entries: any[]) => Promise.resolve(entries));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
-		const result = await spRepository.getServiceProvider({ id: 1, includeSchedule: true });
+		const result = await spRepository.getServiceProvider({ id: 1, includeScheduleForm: true });
 
-		expect(SchedulesRepositoryMock.populateSchedulesMock).toHaveBeenCalled();
+		expect(SchedulesFormRepositoryMock.populateSchedulesFormMock).toHaveBeenCalled();
 		expect(result).toBeDefined();
 	});
 
@@ -230,16 +230,16 @@ class TransactionManagerMock extends TransactionManager {
 	}
 }
 
-class SchedulesRepositoryMock extends SchedulesRepository {
-	public static populateSchedulesMock = jest.fn();
-	public static populateSingleEntryScheduleMock = jest.fn();
+class SchedulesFormRepositoryMock extends SchedulesFormRepository {
+	public static populateSchedulesFormMock = jest.fn();
+	public static populateSingleEntryScheduleFormMock = jest.fn();
 
-	public async populateSchedules<T extends IEntityWithSchedule>(entries: T[]): Promise<T[]> {
-		return await SchedulesRepositoryMock.populateSchedulesMock(entries);
+	public async populateSchedulesForm<T extends IEntityWithScheduleForm>(entries: T[]): Promise<T[]> {
+		return await SchedulesFormRepositoryMock.populateSchedulesFormMock(entries);
 	}
 
-	public async populateSingleEntrySchedule<T extends IEntityWithSchedule>(entry: T): Promise<T> {
-		return await SchedulesRepositoryMock.populateSingleEntryScheduleMock(entry);
+	public async populateSingleEntryScheduleForm<T extends IEntityWithScheduleForm>(entry: T): Promise<T> {
+		return await SchedulesFormRepositoryMock.populateSingleEntryScheduleFormMock(entry);
 	}
 }
 

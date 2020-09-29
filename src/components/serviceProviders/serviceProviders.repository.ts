@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ServiceProvider } from '../../models';
 import { RepositoryBase } from '../../core/repository';
-import { SchedulesRepository } from '../schedules/schedules.repository';
+import { SchedulesFormRepository } from '../schedulesForm/schedulesForm.repository';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
 import { ServiceProvidersQueryAuthVisitor } from './serviceProviders.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
@@ -13,7 +13,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	@Inject
 	private userContext: UserContext;
 	@Inject
-	private scheduleRepository: SchedulesRepository;
+	private scheduleRepository: SchedulesFormRepository;
 	@Inject
 	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
 
@@ -24,12 +24,12 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	private async processIncludes(
 		entries: ServiceProvider[],
 		options: {
-			includeSchedule?: boolean;
+			includeScheduleForm?: boolean;
 			includeTimeslotsSchedule?: boolean;
 		},
 	): Promise<ServiceProvider[]> {
-		if (options.includeSchedule) {
-			await this.scheduleRepository.populateSchedules(entries);
+		if (options.includeScheduleForm) {
+			await this.scheduleRepository.populateSchedulesForm(entries);
 		}
 
 		if (options.includeTimeslotsSchedule) {
@@ -65,7 +65,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		options: {
 			ids?: number[];
 			serviceId?: number;
-			includeSchedule?: boolean;
+			includeScheduleForm?: boolean;
 			includeTimeslotsSchedule?: boolean;
 			skipAuthorisation?: boolean;
 		} = {},
@@ -82,7 +82,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 
 	public async getServiceProvider(options: {
 		id: number;
-		includeSchedule?: boolean;
+		includeScheduleForm?: boolean;
 		includeTimeslotsSchedule?: boolean;
 		skipAuthorisation?: boolean;
 	}): Promise<ServiceProvider> {
