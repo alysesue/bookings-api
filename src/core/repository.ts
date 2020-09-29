@@ -1,13 +1,17 @@
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, ObjectType, Repository } from 'typeorm';
 import { Inject } from 'typescript-ioc';
 import { TransactionManager } from './transactionManager';
 
 export abstract class RepositoryBase<T> {
 	@Inject
 	private transactionManager: TransactionManager;
-	private readonly modelType;
+	private readonly modelType: ObjectType<T>;
 
-	protected constructor(modelType) {
+	constructor(modelType: ObjectType<T>) {
+		if (!modelType) {
+			throw new Error('modelType parameter is required in RepositoryBase.');
+		}
+
 		this.modelType = modelType;
 	}
 

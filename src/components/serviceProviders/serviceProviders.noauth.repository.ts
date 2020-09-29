@@ -5,6 +5,10 @@ import { RepositoryBase } from '../../core/repository';
 // Repository access without authorisation (used by UserContext)
 @InRequestScope
 export class ServiceProvidersRepositoryNoAuth extends RepositoryBase<ServiceProvider> {
+	constructor() {
+		super(ServiceProvider);
+	}
+
 	public async getServiceProviderByMolAdminId({ molAdminId }: { molAdminId: string }): Promise<ServiceProvider> {
 		if (!molAdminId) {
 			return null;
