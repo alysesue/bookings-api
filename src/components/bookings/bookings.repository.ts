@@ -74,10 +74,10 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 	public async search(request: BookingSearchQuery): Promise<Booking[]> {
 		const authGroups = await this.userContext.getAuthGroups();
-		const { userCondition, userParams } = await new BookingQueryAuthVisitor(
-			'booking',
-			'service_relation',
-		).createUserVisibilityCondition(authGroups);
+		const { userCondition, userParams } = await new BookingQueryAuthVisitor('booking', 'service_relation', {
+			includeAll: request.includeAllBookings,
+			serviceId: request.serviceId,
+		}).createUserVisibilityCondition(authGroups);
 
 		const serviceCondition = request.serviceId ? 'booking."_serviceId" = :serviceId' : '';
 
@@ -135,4 +135,5 @@ export type BookingSearchQuery = {
 	serviceId?: number;
 	serviceProviderId?: number;
 	citizenUinFins?: string[];
+	includeAllBookings?: boolean;
 };

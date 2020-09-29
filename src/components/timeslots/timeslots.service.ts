@@ -111,6 +111,7 @@ export class TimeslotsService {
 			to: endDateTime,
 			statuses: [BookingStatus.PendingApproval, BookingStatus.Accepted],
 			serviceId,
+			includeAllBookings: true,
 		});
 
 		const acceptedBookings = bookings.filter((booking) => booking.status === BookingStatus.Accepted);

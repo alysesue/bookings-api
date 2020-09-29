@@ -97,4 +97,17 @@ describe('Bookings query auth', () => {
 			authorisedServiceProviderId: 5,
 		});
 	});
+
+	it('should query all bookings for service if bypass auth filter', async () => {
+		const groups = [new CitizenAuthGroup(singpassMock)];
+		const result = await new BookingQueryAuthVisitor('b', 's', {
+			includeAll: true,
+			serviceId: 11,
+		}).createUserVisibilityCondition(groups);
+
+		expect(result.userCondition).toStrictEqual('(b."_serviceId" = :serviceId)');
+		expect(result.userParams).toStrictEqual({
+			serviceId: 11,
+		});
+	});
 });

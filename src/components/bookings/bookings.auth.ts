@@ -11,7 +11,7 @@ import { QueryAuthGroupVisitor } from '../../infrastructure/auth/queryAuthGroupV
 
 export class BookingActionAuthVisitor implements IAuthGroupVisitor {
 	private _booking: Booking;
-	private _changeLogAction: ChangeLogAction;
+	private readonly _changeLogAction: ChangeLogAction;
 	private _hasPermission: boolean;
 
 	constructor(booking: Booking, changeLogAction: ChangeLogAction) {
@@ -78,19 +78,23 @@ export class BookingActionAuthVisitor implements IAuthGroupVisitor {
 }
 
 export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
-	private _alias: string;
-	private _serviceAlias: string;
+	private readonly _alias: string;
+	private readonly _options: BookingQueryOptions;
+	private readonly _serviceAlias: string;
 
-	constructor(alias: string, serviceAlias: string) {
+	constructor(alias: string, serviceAlias: string, options?: BookingQueryOptions) {
 		super();
 		this._alias = alias;
 		this._serviceAlias = serviceAlias;
+		this._options = options;
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
-		const authorisedUinFin = _citizenGroup.user.singPassUser.UinFin;
-		this.addAuthCondition(`${this._alias}."_citizenUinFin" = :authorisedUinFin`, {
-			authorisedUinFin,
+		this.visit(() => {
+			const authorisedUinFin = _citizenGroup.user.singPassUser.UinFin;
+			this.addAuthCondition(`${this._alias}."_citizenUinFin" = :authorisedUinFin`, {
+				authorisedUinFin,
+			});
 		});
 	}
 
@@ -114,4 +118,22 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
 			authorisedServiceProviderId,
 		});
 	}
+
+	private visit(authorizedVisit: () => void): void {
+		if (!this._options || !this._options.includeAll) {
+			authorizedVisit();
+		} else {
+			this.byPassBookingAuthCondition();
+		}
+	}
+
+	private byPassBookingAuthCondition(): void {
+		if (this._options.serviceId) {
+			this.addAuthCondition(`${this._alias}."_serviceId" = :serviceId`, {
+				serviceId: this._options.serviceId,
+			});
+		}
+	}
 }
+
+export type BookingQueryOptions = { includeAll: boolean; serviceId: number };
