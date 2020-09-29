@@ -83,6 +83,18 @@ describe('Service Provider repository', () => {
 		expect(result).toBeDefined();
 	});
 
+	it('should skip authorisation check', async () => {
+		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([]));
+
+		const spRepository = Container.get(ServiceProvidersRepository);
+
+		const result = await spRepository.getServiceProviders({ serviceId: 1, skipAuthorisation: true });
+		expect(TransactionManagerMock.createQueryBuilder).toBeCalled();
+		expect(queryBuilderMock.getMany).toBeCalled();
+		expect(QueryAuthVisitorMock.createUserVisibilityCondition).not.toBeCalled();
+		expect(result).toBeDefined();
+	});
+
 	it('should get list of SP by ids', async () => {
 		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([]));
 

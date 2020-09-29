@@ -118,7 +118,7 @@ export class TimeslotsService {
 
 		if (serviceProviderId) {
 			aggregatedEntries = aggregatedEntries.filter((entry) =>
-				entry.getGroups().find((sp) => sp.id === serviceProviderId),
+				entry.findGroup((sp) => sp.id === serviceProviderId),
 			);
 		}
 
@@ -135,10 +135,16 @@ export class TimeslotsService {
 		this.setBookedProviders(mappedEntries, acceptedBookings);
 		TimeslotsService.setPendingTimeslots(mappedEntries, pendingBookings);
 
-		if (serviceProviderId) {
-			for (const entry of mappedEntries) {
-				entry.keepOnlyServiceProvider(serviceProviderId);
+		const visibleServiceProviderIds = (await this.serviceProvidersRepo.getServiceProviders({ serviceId })).map(
+			(sp) => sp.id,
+		);
+
+		for (const entry of mappedEntries) {
+			if (serviceProviderId) {
+				entry.filterServiceProviders([serviceProviderId]);
 			}
+
+			entry.filterServiceProviders(visibleServiceProviderIds);
 		}
 
 		return mappedEntries;
@@ -201,6 +207,7 @@ export class TimeslotsService {
 		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({
 			serviceId,
 			includeTimeslotsSchedule: true,
+			skipAuthorisation: true, // loads all SPs regardless of user role
 		});
 
 		const validServiceTimeslots = Array.from(

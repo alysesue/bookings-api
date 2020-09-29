@@ -12,7 +12,6 @@ import {
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
-import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { OrganisationInfo, OrganisationsService } from '../organisations/organisations.service';
 import { ServiceRefInfo, ServicesRepositoryNoAuth } from '../services/services.noauth.repository';
 import { ServiceProvidersRepositoryNoAuth } from '../serviceProviders/serviceProviders.noauth.repository';

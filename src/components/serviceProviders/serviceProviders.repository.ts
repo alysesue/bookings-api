@@ -42,12 +42,14 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	private async createSelectQuery(
 		queryFilters: string[],
 		queryParams: {},
+		options: {
+			skipAuthorisation?: boolean;
+		},
 	): Promise<SelectQueryBuilder<ServiceProvider>> {
 		const authGroups = await this.userContext.getAuthGroups();
-		const { userCondition, userParams } = await new ServiceProvidersQueryAuthVisitor(
-			'sp',
-			'service',
-		).createUserVisibilityCondition(authGroups);
+		const { userCondition, userParams } = options.skipAuthorisation
+			? { userCondition: '', userParams: {} }
+			: await new ServiceProvidersQueryAuthVisitor('sp', 'service').createUserVisibilityCondition(authGroups);
 
 		const repository = await this.getRepository();
 		const query = repository
@@ -65,13 +67,14 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			serviceId?: number;
 			includeSchedule?: boolean;
 			includeTimeslotsSchedule?: boolean;
+			skipAuthorisation?: boolean;
 		} = {},
 	): Promise<ServiceProvider[]> {
 		const { serviceId, ids } = options;
 		const serviceCondition = serviceId ? 'sp."_serviceId" = :serviceId ' : '';
 		const idsCondition = ids && ids.length > 0 ? 'sp._id IN (:...ids)' : '';
 
-		const query = await this.createSelectQuery([serviceCondition, idsCondition], { serviceId, ids });
+		const query = await this.createSelectQuery([serviceCondition, idsCondition], { serviceId, ids }, options);
 		const entries = await query.getMany();
 
 		return await this.processIncludes(entries, options);
@@ -81,6 +84,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		id: number;
 		includeSchedule?: boolean;
 		includeTimeslotsSchedule?: boolean;
+		skipAuthorisation?: boolean;
 	}): Promise<ServiceProvider> {
 		const { id } = options;
 		if (!id) {
@@ -88,7 +92,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		}
 
 		const idCondition = 'sp._id = :id';
-		const query = await this.createSelectQuery([idCondition], { id });
+		const query = await this.createSelectQuery([idCondition], { id }, options);
 		const entry = await query.getOne();
 
 		if (!entry) {
