@@ -120,19 +120,21 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
 	}
 
 	private visit(authorizedVisit: () => void): void {
-		if (!this._options || !this._options.includeAll) {
+		if (this.shouldNotByPassAuthCondition()) {
 			authorizedVisit();
 		} else {
 			this.byPassBookingAuthCondition();
 		}
 	}
 
+	private shouldNotByPassAuthCondition() {
+		return !this._options || !this._options.includeAll || !this._options.serviceId;
+	}
+
 	private byPassBookingAuthCondition(): void {
-		if (this._options.serviceId) {
-			this.addAuthCondition(`${this._alias}."_serviceId" = :serviceId`, {
-				serviceId: this._options.serviceId,
-			});
-		}
+		this.addAuthCondition(`${this._alias}."_serviceId" = :serviceId`, {
+			serviceId: this._options.serviceId,
+		});
 	}
 }
 
