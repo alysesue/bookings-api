@@ -135,11 +135,29 @@ export class TimeslotsService {
 		this.setBookedProviders(mappedEntries, acceptedBookings);
 		TimeslotsService.setPendingTimeslots(mappedEntries, pendingBookings);
 
+		mappedEntries = await this.filterVisibleServiceProviders({
+			entries: mappedEntries,
+			serviceId,
+			serviceProviderId,
+		});
+
+		return mappedEntries;
+	}
+
+	private async filterVisibleServiceProviders({
+		entries,
+		serviceId,
+		serviceProviderId,
+	}: {
+		entries: AvailableTimeslotProviders[];
+		serviceId: number;
+		serviceProviderId?: number;
+	}) {
 		const visibleServiceProviderIds = (await this.serviceProvidersRepo.getServiceProviders({ serviceId })).map(
 			(sp) => sp.id,
 		);
 
-		for (const entry of mappedEntries) {
+		for (const entry of entries) {
 			if (serviceProviderId) {
 				entry.filterServiceProviders([serviceProviderId]);
 			}
@@ -147,7 +165,7 @@ export class TimeslotsService {
 			entry.filterServiceProviders(visibleServiceProviderIds);
 		}
 
-		return mappedEntries;
+		return entries.filter((e) => e.availableServiceProviders.length > 0 || e.bookedServiceProviders.size > 0);
 	}
 
 	private async filterUnavailabilities(
