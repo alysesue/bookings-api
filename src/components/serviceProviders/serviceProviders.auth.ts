@@ -34,6 +34,6 @@ export class ServiceProvidersQueryAuthVisitor extends QueryAuthGroupVisitor {
 
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
 		const authorisedServiceProviderId = _userGroup.authorisedServiceProvider.id;
-		this.addAuthCondition(`${this._alias}."_id" = :authorisedServiceProviderId`, { authorisedServiceProviderId });
+		this.addAuthCondition(`${this._alias}._id = :authorisedServiceProviderId`, { authorisedServiceProviderId });
 	}
 }

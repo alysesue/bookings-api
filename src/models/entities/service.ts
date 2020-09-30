@@ -6,6 +6,7 @@ import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
 import { Organisation } from './organisation';
 
 @Entity()
+@Index(['_organisationId', '_name'], { unique: true })
 export class Service implements IService, IEntityWithSchedule, IEntityWithTimeslotsSchedule {
 	@PrimaryGeneratedColumn()
 	private _id: number;
@@ -18,8 +19,7 @@ export class Service implements IService, IEntityWithSchedule, IEntityWithTimesl
 		return this._id;
 	}
 
-	// TODO: make nullable false here. Requires some DB cleanup...
-	@Column({ nullable: true })
+	@Column({ nullable: false })
 	@Index()
 	private _organisationId: number;
 
@@ -47,7 +47,6 @@ export class Service implements IService, IEntityWithSchedule, IEntityWithTimesl
 	public _serviceAdminGroupMap: ServiceAdminGroupMap;
 
 	@Column({ type: 'varchar', length: 100, nullable: false })
-	@Index({ unique: true })
 	private _name: string;
 
 	public set name(name: string) {
