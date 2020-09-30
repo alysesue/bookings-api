@@ -93,7 +93,10 @@ export class TimeslotsService {
 
 		for (const element of entries) {
 			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
-			element.pendingBookingsCount = pendingBookingsLookup.get(elementKey)?.length || 0;
+			const elementPendingBookings = pendingBookingsLookup.get(elementKey);
+			if (elementPendingBookings) {
+				element.setPendingBookings(elementPendingBookings);
+			}
 		}
 	}
 
@@ -165,7 +168,7 @@ export class TimeslotsService {
 			entry.filterServiceProviders(visibleServiceProviderIds);
 		}
 
-		return entries.filter((e) => e.availableServiceProviders.length > 0 || e.bookedServiceProviders.size > 0);
+		return entries.filter((e) => e.totalCount > 0);
 	}
 
 	private async filterUnavailabilities(
@@ -188,7 +191,7 @@ export class TimeslotsService {
 			}
 		}
 
-		return entries.filter((e) => e.availableServiceProviders.length > 0 || e.bookedServiceProviders.size > 0);
+		return entries.filter((e) => e.totalCount > 0);
 	}
 
 	private setBookedProviders(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {

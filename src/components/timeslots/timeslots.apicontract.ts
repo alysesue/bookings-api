@@ -28,4 +28,8 @@ export class TimeslotEntryResponse {
 	 * The remaining number of available bookings that can be made in this timeslot. This value may be less than the count of available service providers due to pending bookings.
 	 */
 	public availabilityCount: number;
+	/**
+	 * The original availability for this timeslot prior to any bookings.
+	 */
+	public totalCount: number;
 }
