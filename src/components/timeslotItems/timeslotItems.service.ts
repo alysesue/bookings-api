@@ -4,8 +4,10 @@ import { mapTimeslotItemToEntity } from './timeslotItems.mapper';
 import { TimeslotItemRequest } from './timeslotItems.apicontract';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { TimeslotItemsRepository } from './timeslotItems.repository';
-import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { TimeOfDay, TimeslotItem, TimeslotsSchedule, ChangeLogAction } from '../../models';
 import { DeleteResult } from 'typeorm';
+import { TimeslotItemsActionAuthVisitor } from './timeslotItems.auth';
+import { UserContext } from '../../infrastructure/auth/userContext';
 
 @InRequestScope
 export class TimeslotItemsService {
@@ -13,6 +15,19 @@ export class TimeslotItemsService {
 	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
 	@Inject
 	private timeslotItemsRepository: TimeslotItemsRepository;
+	@Inject
+	private userContext: UserContext;
+
+
+	private async verifyActionPermission(timeslotSchedule: TimeslotsSchedule, action: ChangeLogAction): Promise<void> {
+		const authGroups = await this.userContext.getAuthGroups();
+		if (!new TimeslotItemsActionAuthVisitor(timeslotSchedule, action).hasPermission(authGroups)) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
+				`User cannot perform this timeslot item action (${action}) for this service.`,
+			);
+		}
+	}
+
 
 	private static mapItemAndValidate(
 		timeslotsSchedule: TimeslotsSchedule,
@@ -58,6 +73,7 @@ export class TimeslotItemsService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Timeslot item not found');
 		}
 
+		await this.verifyActionPermission(timeslotsSchedule, ChangeLogAction.Update);
 		return this.mapAndSaveTimeslotItem(timeslotsSchedule, request, timeslotItem);
 	}
 
@@ -65,10 +81,14 @@ export class TimeslotItemsService {
 		timeslotsSchedule: TimeslotsSchedule,
 		request: TimeslotItemRequest,
 	): Promise<TimeslotItem> {
+		await this.verifyActionPermission(timeslotsSchedule, ChangeLogAction.Create);
+
 		return this.mapAndSaveTimeslotItem(timeslotsSchedule, request, new TimeslotItem());
 	}
 
 	public async deleteTimeslot(timeslotId: number): Promise<DeleteResult> {
+		await this.verifyActionPermission(timeslotsSchedule, ChangeLogAction.Cancel);
+
 		return await this.timeslotItemsRepository.deleteTimeslotItem(timeslotId);
 	}
 }
