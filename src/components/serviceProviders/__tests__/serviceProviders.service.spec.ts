@@ -11,6 +11,7 @@ import {
 	TimeOfDay,
 	TimeslotItem,
 	TimeslotsSchedule,
+	User,
 } from '../../../models';
 import { ServiceProviderModel, SetProviderScheduleRequest } from '../serviceProviders.apicontract';
 import { CalendarsService } from '../../calendars/calendars.service';
@@ -22,6 +23,8 @@ import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontra
 import { ServicesService } from '../../services/services.service';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
+import { UserContext } from '../../../infrastructure/auth/userContext';
+import { AuthGroup, CitizenAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -45,6 +48,21 @@ describe('ServiceProviders.Service', () => {
 	const serviceMockWithTemplate = new Service();
 	const request = new TimeslotItemRequest();
 
+	const calendar = new Calendar();
+	calendar.id = 1;
+	calendar.uuid = '123';
+	calendar.googleCalendarId = 'google-id-1';
+
+	const serviceProvider = ServiceProvider.create('provider', calendar, 1);
+	serviceProvider.id = 1;
+	const adminMock = User.createAdminUser({
+		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+		userName: 'UserName',
+		email: 'test@email.com',
+		name: 'Name',
+	});
+	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+
 	beforeAll(() => {
 		Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 		Container.bind(TimeslotItemsService).to(TimeslotItemsServiceMock);
@@ -53,6 +71,8 @@ describe('ServiceProviders.Service', () => {
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
 		Container.bind(SchedulesService).to(SchedulesServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
+		Container.bind(UserContext).to(UserContextMock);
+
 	});
 
 	afterEach(() => {
@@ -165,6 +185,8 @@ describe('ServiceProviders.Service', () => {
 
 	it('should add timeslots schedule for service provider', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMockWithTemplate;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProvider)]));
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.addTimeslotItem(1, request);
@@ -332,5 +354,19 @@ class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
 
 	public async createTimeslotsSchedule(data: TimeslotsSchedule): Promise<TimeslotsSchedule> {
 		return Promise.resolve(TimeslotsScheduleRepositoryMock.createTimeslotsScheduleMock);
+	}
+}
+
+export class UserContextMock extends UserContext {
+	public static getCurrentUser = jest.fn<Promise<User>, any>();
+	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
+
+	public init() { }
+	public async getCurrentUser(...params): Promise<any> {
+		return await UserContextMock.getCurrentUser(...params);
+	}
+
+	public async getAuthGroups(...params): Promise<any> {
+		return await UserContextMock.getAuthGroups(...params);
 	}
 }
