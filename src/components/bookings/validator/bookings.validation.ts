@@ -116,6 +116,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 			statuses: [BookingStatus.Accepted],
 			serviceId: booking.serviceId,
 			serviceProviderId: booking.serviceProviderId,
+			byPassAuth: true,
 		};
 
 		const acceptedBookings = await this.bookingsRepository.search(searchQuery);

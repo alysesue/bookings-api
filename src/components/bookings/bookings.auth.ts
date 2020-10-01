@@ -117,9 +117,18 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
 	}
 }
 
-export class BookingQueryNoAuthVisitor extends BookingQueryAuthVisitor {
+class BookingQueryNoAuthVisitor extends BookingQueryAuthVisitor {
 	public async createUserVisibilityCondition(authGroups: AuthGroup[]): Promise<UserConditionParams> {
 		this.addAsTrue();
 		return this.getVisibilityCondition();
+	}
+}
+
+export class BookingQueryVisitorFactory {
+	public static getBookingQueryVisitor(byPassAuth: boolean): BookingQueryAuthVisitor {
+		if (byPassAuth) {
+			return new BookingQueryNoAuthVisitor('booking', 'service_relation');
+		}
+		return new BookingQueryNoAuthVisitor('booking', 'service_relation');
 	}
 }
