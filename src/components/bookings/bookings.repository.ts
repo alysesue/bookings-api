@@ -135,5 +135,4 @@ export type BookingSearchQuery = {
 	serviceId?: number;
 	serviceProviderId?: number;
 	citizenUinFins?: string[];
-	includeAllBookings?: boolean;
 };
