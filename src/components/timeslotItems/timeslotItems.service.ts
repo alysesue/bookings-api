@@ -87,8 +87,15 @@ export class TimeslotItemsService {
 	}
 
 	public async deleteTimeslot(timeslotId: number): Promise<DeleteResult> {
-		await this.verifyActionPermission(timeslotsSchedule, ChangeLogAction.Cancel);
+		const timeslotSchedule = await this.getTimeslotsScheduleByTimeslotItemId(timeslotId);
+		await this.verifyActionPermission(timeslotSchedule, ChangeLogAction.Cancel);
 
 		return await this.timeslotItemsRepository.deleteTimeslotItem(timeslotId);
 	}
+
+	private async getTimeslotsScheduleByTimeslotItemId(id: number): Promise<TimeslotsSchedule> {
+		const timeslotItem = await this.timeslotItemsRepository.getTimeslotItem(id);
+		return this.timeslotsScheduleRepository.getTimeslotsScheduleById(timeslotItem._timeslotsScheduleId);
+	}
+
 }
