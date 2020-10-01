@@ -8,6 +8,7 @@ import {
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
 import { QueryAuthGroupVisitor } from '../../infrastructure/auth/queryAuthGroupVisitor';
+import { UserConditionParams } from '../../infrastructure/auth/authConditionCollection';
 
 export class BookingActionAuthVisitor implements IAuthGroupVisitor {
 	private _booking: Booking;
@@ -79,22 +80,18 @@ export class BookingActionAuthVisitor implements IAuthGroupVisitor {
 
 export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
 	private readonly _alias: string;
-	private readonly _options: BookingQueryOptions;
 	private readonly _serviceAlias: string;
 
-	constructor(alias: string, serviceAlias: string, options?: BookingQueryOptions) {
+	constructor(alias: string, serviceAlias: string) {
 		super();
 		this._alias = alias;
 		this._serviceAlias = serviceAlias;
-		this._options = options;
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
-		this.visit(() => {
-			const authorisedUinFin = _citizenGroup.user.singPassUser.UinFin;
-			this.addAuthCondition(`${this._alias}."_citizenUinFin" = :authorisedUinFin`, {
-				authorisedUinFin,
-			});
+		const authorisedUinFin = _citizenGroup.user.singPassUser.UinFin;
+		this.addAuthCondition(`${this._alias}."_citizenUinFin" = :authorisedUinFin`, {
+			authorisedUinFin,
 		});
 	}
 
@@ -118,24 +115,11 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
 			authorisedServiceProviderId,
 		});
 	}
-
-	private visit(authorizedVisit: () => void): void {
-		if (this.shouldNotByPassAuthCondition()) {
-			authorizedVisit();
-		} else {
-			this.byPassBookingAuthCondition();
-		}
-	}
-
-	private shouldNotByPassAuthCondition() {
-		return !this._options || !this._options.includeAll || !this._options.serviceId;
-	}
-
-	private byPassBookingAuthCondition(): void {
-		this.addAuthCondition(`${this._alias}."_serviceId" = :serviceId`, {
-			serviceId: this._options.serviceId,
-		});
-	}
 }
 
-export type BookingQueryOptions = { includeAll: boolean; serviceId: number };
+export class BookingQueryNoAuthVisitor extends BookingQueryAuthVisitor {
+	public async createUserVisibilityCondition(authGroups: AuthGroup[]): Promise<UserConditionParams> {
+		this.addAsTrue();
+		return this.getVisibilityCondition();
+	}
+}

@@ -4,7 +4,7 @@ import { Booking, BookingStatus } from '../../models';
 import { RepositoryBase } from '../../core/repository';
 import { ConcurrencyError } from '../../errors/ConcurrencyError';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { BookingQueryAuthVisitor } from './bookings.auth';
+import { BookingQueryAuthVisitor, BookingQueryNoAuthVisitor } from './bookings.auth';
 
 @InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {
@@ -74,10 +74,10 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 	public async search(request: BookingSearchQuery): Promise<Booking[]> {
 		const authGroups = await this.userContext.getAuthGroups();
-		const { userCondition, userParams } = await new BookingQueryAuthVisitor('booking', 'service_relation', {
-			includeAll: request.includeAllBookings,
-			serviceId: request.serviceId,
-		}).createUserVisibilityCondition(authGroups);
+		const { userCondition, userParams } = await new BookingQueryNoAuthVisitor(
+			'booking',
+			'service_relation',
+		).createUserVisibilityCondition(authGroups);
 
 		const serviceCondition = request.serviceId ? 'booking."_serviceId" = :serviceId' : '';
 

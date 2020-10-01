@@ -1,5 +1,5 @@
 import { Calendar, Organisation, Service, ServiceProvider, User } from '../../../models';
-import { BookingQueryAuthVisitor } from '../bookings.auth';
+import { BookingQueryAuthVisitor, BookingQueryNoAuthVisitor } from '../bookings.auth';
 import {
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
@@ -12,6 +12,8 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
+const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+
 // tslint:disable-next-line: no-big-function
 describe('Bookings query auth', () => {
 	const organisation = new Organisation();
@@ -23,7 +25,6 @@ describe('Bookings query auth', () => {
 	service.organisationId = organisation.id;
 	service.organisation = organisation;
 
-	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 	const adminMock = User.createAdminUser({
 		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
 		userName: 'UserName',
@@ -97,17 +98,13 @@ describe('Bookings query auth', () => {
 			authorisedServiceProviderId: 5,
 		});
 	});
+});
 
+describe('No auth booking query visitor', () => {
 	it('should query all bookings for service if bypass auth filter', async () => {
 		const groups = [new CitizenAuthGroup(singpassMock)];
-		const result = await new BookingQueryAuthVisitor('b', 's', {
-			includeAll: true,
-			serviceId: 11,
-		}).createUserVisibilityCondition(groups);
+		const result = await new BookingQueryNoAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('(b."_serviceId" = :serviceId)');
-		expect(result.userParams).toStrictEqual({
-			serviceId: 11,
-		});
+		expect(result.userCondition).toStrictEqual('');
 	});
 });

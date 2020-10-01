@@ -225,9 +225,15 @@ describe('Bookings.Service', () => {
 
 	it('should cancel booking', async () => {
 		const bookingService = Container.get(BookingsService);
+		const startDate = new Date();
+		startDate.setDate(new Date().getDate() + 1);
+
+		const endDate = new Date(startDate);
+		endDate.setHours(endDate.getHours() + 1);
+
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(1)
-			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withStartDateTime(startDate)
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.build();
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
@@ -473,6 +479,7 @@ export class UserContextMock extends UserContext {
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
 	public init() {}
+
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(...params);
 	}
