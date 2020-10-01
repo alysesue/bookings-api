@@ -1,5 +1,5 @@
 import { Calendar, Organisation, Service, ServiceProvider, User } from '../../../models';
-import { BookingQueryAuthVisitor, BookingQueryNoAuthVisitor } from '../bookings.auth';
+import { BookingQueryAuthVisitor, BookingQueryVisitorFactory } from '../bookings.auth';
 import {
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
@@ -103,7 +103,9 @@ describe('Bookings query auth', () => {
 describe('No auth booking query visitor', () => {
 	it('should query all bookings for service if bypass auth filter', async () => {
 		const groups = [new CitizenAuthGroup(singpassMock)];
-		const result = await new BookingQueryNoAuthVisitor('b', 's').createUserVisibilityCondition(groups);
+		const result = await BookingQueryVisitorFactory.getBookingQueryVisitor(true).createUserVisibilityCondition(
+			groups,
+		);
 
 		expect(result.userCondition).toStrictEqual('');
 	});
