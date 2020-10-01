@@ -9,14 +9,14 @@ export class AvailableTimeslotProviders {
 
 	private _relatedServiceProviders: ServiceProvider[];
 	private _bookedServiceProviders: Map<ServiceProvider, Booking[]>;
-	private _pendingServiceProviders: Map<ServiceProvider, Booking[]>;
+	private _assignedPendingServiceProviders: Map<ServiceProvider, Booking[]>;
 	private _overlappingServiceProviders: ServiceProvider[];
 	private _availableServiceProviders: ServiceProvider[];
 
 	constructor() {
 		this._relatedServiceProviders = [];
 		this._bookedServiceProviders = new Map<ServiceProvider, Booking[]>();
-		this._pendingServiceProviders = new Map<ServiceProvider, Booking[]>();
+		this._assignedPendingServiceProviders = new Map<ServiceProvider, Booking[]>();
 		this._overlappingServiceProviders = [];
 		this._availableServiceProviders = [];
 		this._unlinkedPendingBookingsCount = 0;
@@ -46,7 +46,7 @@ export class AvailableTimeslotProviders {
 		return (
 			this._availableServiceProviders.length +
 			this._bookedServiceProviders.size +
-			this._pendingServiceProviders.size
+			this._assignedPendingServiceProviders.size
 		);
 	}
 
@@ -120,15 +120,15 @@ export class AvailableTimeslotProviders {
 	}
 
 	public setPendingBookings(bookings: Booking[]): void {
-		const linkedBookings = bookings.filter((b) => b.serviceProviderId);
-		const pendingProviderIds = new Set<number>(linkedBookings.map((b) => b.serviceProviderId));
+		const assignedPendingBookings = bookings.filter((b) => b.serviceProviderId);
+		const assignedPendingProviderIds = new Set<number>(assignedPendingBookings.map((b) => b.serviceProviderId));
 
-		this._pendingServiceProviders = groupByKey(linkedBookings, (b) => b.serviceProvider);
+		this._assignedPendingServiceProviders = groupByKey(assignedPendingBookings, (b) => b.serviceProvider);
 		this._availableServiceProviders = this._availableServiceProviders.filter(
-			(sp) => !pendingProviderIds.has(sp.id),
+			(sp) => !assignedPendingProviderIds.has(sp.id),
 		);
 
-		this._unlinkedPendingBookingsCount = bookings.length - linkedBookings.length;
+		this._unlinkedPendingBookingsCount = bookings.length - assignedPendingBookings.length;
 	}
 
 	public filterServiceProviders(providerIds: number[]) {
@@ -141,8 +141,10 @@ export class AvailableTimeslotProviders {
 		this._bookedServiceProviders = new Map(
 			Array.from(this._bookedServiceProviders.entries()).filter(([sp]) => providerIdsCollection.has(sp.id)),
 		);
-		this._pendingServiceProviders = new Map(
-			Array.from(this._pendingServiceProviders.entries()).filter(([sp]) => providerIdsCollection.has(sp.id)),
+		this._assignedPendingServiceProviders = new Map(
+			Array.from(this._assignedPendingServiceProviders.entries()).filter(([sp]) =>
+				providerIdsCollection.has(sp.id),
+			),
 		);
 		this._overlappingServiceProviders = this._overlappingServiceProviders.filter((sp) =>
 			providerIdsCollection.has(sp.id),
