@@ -10,7 +10,6 @@ import {
 	Body,
 	Controller,
 	Delete,
-	Deprecated,
 	Get,
 	Header,
 	Path,
@@ -155,7 +154,6 @@ export class ServiceProvidersController extends Controller {
 		return this.mapper.mapDataModel(result);
 	}
 
-	@Deprecated()
 	@Put('{spId}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {} })
@@ -167,7 +165,6 @@ export class ServiceProvidersController extends Controller {
 		return mapScheduleToResponse(await this.serviceProvidersService.setProviderScheduleForm(spId, request));
 	}
 
-	@Deprecated()
 	@Get('{spId}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {} })

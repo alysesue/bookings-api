@@ -93,7 +93,7 @@ export class ServicesController extends Controller {
 	}
 
 	@Deprecated()
-	@Get('{id}/sScheduleFormResponse')
+	@Get('{id}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')

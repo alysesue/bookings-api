@@ -9,21 +9,21 @@ export class WeekDayBreakRepository extends RepositoryBase<WeekDayBreak> {
 		super(WeekDayBreak);
 	}
 
-	public async getBreaksForSchedules(scheduleIds: number[]): Promise<WeekDayBreak[]> {
+	public async getBreaksForSchedules(scheduleFormIds: number[]): Promise<WeekDayBreak[]> {
 		return (await this.getRepository()).find({
 			where: {
-				scheduleId: In(scheduleIds),
+				scheduleFormId: In(scheduleFormIds),
 			},
 		});
 	}
 
-	public async deleteBreaksForSchedule(scheduleId: number): Promise<DeleteResult> {
+	public async deleteBreaksForSchedule(scheduleFormId: number): Promise<DeleteResult> {
 		const repository = await this.getRepository();
 		const query = repository
 			.createQueryBuilder()
 			.delete()
 			.from(WeekDayBreak)
-			.where('scheduleId = :scheduleId', { scheduleId });
+			.where('scheduleFormId = :scheduleFormId', { scheduleFormId });
 
 		return query.execute();
 	}

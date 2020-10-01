@@ -23,7 +23,6 @@ export class SchedulesFormController extends Controller {
 	@Inject
 	private scheduleFormService: SchedulesFormService;
 
-	@Deprecated()
 	@Post('')
 	@SuccessResponse(201, 'Created')
 	@MOLAuth({ admin: {} })
@@ -33,7 +32,6 @@ export class SchedulesFormController extends Controller {
 		return await this.scheduleFormService.createScheduleForm(timeslot);
 	}
 
-	@Deprecated()
 	@Get('')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
@@ -41,7 +39,6 @@ export class SchedulesFormController extends Controller {
 		return await this.scheduleFormService.getSchedulesForm();
 	}
 
-	@Deprecated()
 	@Put('{id}')
 	@SuccessResponse(200, 'Updated')
 	@MOLAuth({ admin: {} })
@@ -53,7 +50,6 @@ export class SchedulesFormController extends Controller {
 		return await this.scheduleFormService.updateScheduleForm(id, timeslot);
 	}
 
-	@Deprecated()
 	@Delete('{id}')
 	@SuccessResponse(200, 'Deleted')
 	@MOLAuth({ admin: {} })

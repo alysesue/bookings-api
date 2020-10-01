@@ -128,7 +128,9 @@ describe('Service Provider repository', () => {
 
 	it('should get list of SP with schedule', async () => {
 		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([new ServiceProvider()]));
-		SchedulesFormRepositoryMock.populateSchedulesFormMock.mockImplementation((entries: any[]) => Promise.resolve(entries));
+		SchedulesFormRepositoryMock.populateSchedulesFormMock.mockImplementation((entries: any[]) =>
+			Promise.resolve(entries),
+		);
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProviders({ serviceId: 1, includeScheduleForm: true });
@@ -139,7 +141,9 @@ describe('Service Provider repository', () => {
 
 	it('should get a service provider with schedule', async () => {
 		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(new ServiceProvider()));
-		SchedulesFormRepositoryMock.populateSchedulesFormMock.mockImplementation((entries: any[]) => Promise.resolve(entries));
+		SchedulesFormRepositoryMock.populateSchedulesFormMock.mockImplementation((entries: any[]) =>
+			Promise.resolve(entries),
+		);
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProvider({ id: 1, includeScheduleForm: true });

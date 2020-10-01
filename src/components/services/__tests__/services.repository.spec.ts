@@ -65,9 +65,9 @@ describe('Services repository', () => {
 		const data = new Service();
 		data.scheduleFormId = 11;
 
-		const schedule = new ScheduleForm();
-		schedule.id = 11;
-		SchedulesFormRepositoryMock.getSchedulesFormMock.mockImplementation(() => Promise.resolve([schedule]));
+		const scheduleForm = new ScheduleForm();
+		scheduleForm.id = 11;
+		SchedulesFormRepositoryMock.getSchedulesFormMock.mockImplementation(() => Promise.resolve([scheduleForm]));
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
