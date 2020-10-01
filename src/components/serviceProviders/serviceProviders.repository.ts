@@ -1,12 +1,17 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ServiceProvider } from '../../models';
 import { RepositoryBase } from '../../core/repository';
-import { FindConditions, In } from 'typeorm';
 import { SchedulesRepository } from '../schedules/schedules.repository';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
+import { ServiceProvidersQueryAuthVisitor } from './serviceProviders.auth';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { andWhere } from '../../tools/queryConditions';
+import { SelectQueryBuilder } from 'typeorm';
 
 @InRequestScope
 export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> {
+	@Inject
+	private userContext: UserContext;
 	@Inject
 	private scheduleRepository: SchedulesRepository;
 	@Inject
@@ -34,23 +39,43 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		return entries;
 	}
 
+	private async createSelectQuery(
+		queryFilters: string[],
+		queryParams: {},
+		options: {
+			skipAuthorisation?: boolean;
+		},
+	): Promise<SelectQueryBuilder<ServiceProvider>> {
+		const authGroups = await this.userContext.getAuthGroups();
+		const { userCondition, userParams } = options.skipAuthorisation
+			? { userCondition: '', userParams: {} }
+			: await new ServiceProvidersQueryAuthVisitor('sp', 'service').createUserVisibilityCondition(authGroups);
+
+		const repository = await this.getRepository();
+		const query = repository
+			.createQueryBuilder('sp')
+			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
+			.leftJoin('sp._service', 'service')
+			.leftJoinAndSelect('sp._calendar', 'calendar');
+
+		return query;
+	}
+
 	public async getServiceProviders(
 		options: {
 			ids?: number[];
 			serviceId?: number;
 			includeSchedule?: boolean;
 			includeTimeslotsSchedule?: boolean;
+			skipAuthorisation?: boolean;
 		} = {},
 	): Promise<ServiceProvider[]> {
-		const findConditions: FindConditions<ServiceProvider> = {};
-		if (options.serviceId) {
-			findConditions['_serviceId'] = options.serviceId;
-		}
-		if (options.ids) {
-			findConditions['_id'] = In(options.ids);
-		}
-		const repository = await this.getRepository();
-		const entries = await repository.find({ where: [findConditions], relations: ['_calendar'] });
+		const { serviceId, ids } = options;
+		const serviceCondition = serviceId ? 'sp."_serviceId" = :serviceId ' : '';
+		const idsCondition = ids && ids.length > 0 ? 'sp._id IN (:...ids)' : '';
+
+		const query = await this.createSelectQuery([serviceCondition, idsCondition], { serviceId, ids }, options);
+		const entries = await query.getMany();
 
 		return await this.processIncludes(entries, options);
 	}
@@ -59,31 +84,21 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		id: number;
 		includeSchedule?: boolean;
 		includeTimeslotsSchedule?: boolean;
+		skipAuthorisation?: boolean;
 	}): Promise<ServiceProvider> {
-		if (!options.id) {
+		const { id } = options;
+		if (!id) {
 			return null;
 		}
-		const repository = await this.getRepository();
-		const entry = await repository.findOne(options.id, { relations: ['_calendar'] });
+
+		const idCondition = 'sp._id = :id';
+		const query = await this.createSelectQuery([idCondition], { id }, options);
+		const entry = await query.getOne();
+
 		if (!entry) {
 			return entry;
 		}
-
 		return (await this.processIncludes([entry], options))[0];
-	}
-
-	public async getServiceProviderByMolAdminId({ molAdminId }: { molAdminId: string }): Promise<ServiceProvider> {
-		if (!molAdminId) {
-			return null;
-		}
-		const repository = await this.getRepository();
-		// *** Don't filter by user permission here, as this is used by UserContext class
-		const query = repository
-			.createQueryBuilder('sp')
-			.innerJoin('sp._serviceProviderGroupMap', 'spgroup', 'spgroup."_molAdminId" = :molAdminId', { molAdminId })
-			.leftJoinAndSelect('sp._calendar', 'calendar');
-
-		return await query.getOne();
 	}
 
 	public async save(serviceProviders: ServiceProvider): Promise<ServiceProvider> {

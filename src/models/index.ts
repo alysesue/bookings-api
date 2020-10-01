@@ -22,6 +22,7 @@ import { ServiceAdminGroupMap } from './entities/serviceAdminGroupMap';
 import { ChangeLogAction } from './changeLogAction';
 import { Organisation } from './entities/organisation';
 import { OrganisationAdminGroupMap } from './entities/organisationAdminGroupMap';
+import { AgencyUser } from './entities/agencyUser';
 
 export {
 	Booking,
@@ -33,6 +34,7 @@ export {
 	User,
 	SingPassUser,
 	AdminUser,
+	AgencyUser,
 	Schedule,
 	Service,
 	ServiceAdminGroupMap,

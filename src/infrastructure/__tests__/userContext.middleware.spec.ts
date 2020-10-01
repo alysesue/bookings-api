@@ -65,7 +65,7 @@ describe('user Context tests', () => {
 			name: 'Name',
 		});
 		UsersServiceMock.getOrSaveUserFromHeaders.mockImplementation(() => Promise.resolve(adminMock));
-		UsersServiceMock.getAdminUserGroupsFromHeaders.mockImplementation(() => Promise.resolve([]));
+		UsersServiceMock.getUserGroupsFromHeaders.mockImplementation(() => Promise.resolve([]));
 
 		const nextMiddleware = jest.fn().mockImplementation(async (ctx: Koa.Context, next: Koa.Next) => {
 			const container = ContainerContextMiddleware.getContainerContext(ctx);
@@ -118,13 +118,13 @@ describe('user Context tests', () => {
 
 class UsersServiceMock extends UsersService {
 	public static getOrSaveUserFromHeaders = jest.fn<Promise<User>, any>();
-	public static getAdminUserGroupsFromHeaders = jest.fn<Promise<AuthGroup[]>, any>();
+	public static getUserGroupsFromHeaders = jest.fn<Promise<AuthGroup[]>, any>();
 
 	public async getOrSaveUserFromHeaders(...params): Promise<any> {
 		return await UsersServiceMock.getOrSaveUserFromHeaders(...params);
 	}
 
-	public async getAdminUserGroupsFromHeaders(...params): Promise<any> {
-		return await UsersServiceMock.getAdminUserGroupsFromHeaders(...params);
+	public async getUserGroupsFromHeaders(...params): Promise<any> {
+		return await UsersServiceMock.getUserGroupsFromHeaders(...params);
 	}
 }

@@ -1,6 +1,7 @@
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import {
 	AdminUser,
+	AgencyUser,
 	Booking,
 	BookingChangeLog,
 	Calendar,
@@ -27,6 +28,7 @@ export function getConnectionOptions(): PostgresConnectionOptions {
 		database: config.database.instance,
 		entities: [
 			AdminUser,
+			AgencyUser,
 			Booking,
 			BookingChangeLog,
 			Calendar,

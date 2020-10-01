@@ -1,40 +1,53 @@
 import { AggregatedEntry } from './timeslotAggregator';
 import { Booking, ServiceProvider, Unavailability } from '../../models';
+import { groupByKey } from '../../tools/collections';
 
 export class AvailableTimeslotProviders {
 	public startTime: Date;
 	public endTime: Date;
-	public pendingBookingsCount: number;
+	private _unlinkedPendingBookingsCount: number;
 
 	private _relatedServiceProviders: ServiceProvider[];
+	private _bookedServiceProviders: Map<ServiceProvider, Booking[]>;
+	private _assignedPendingServiceProviders: Map<ServiceProvider, Booking[]>;
 	private _overlappingServiceProviders: ServiceProvider[];
+	private _availableServiceProviders: ServiceProvider[];
 
 	constructor() {
 		this._relatedServiceProviders = [];
 		this._bookedServiceProviders = new Map<ServiceProvider, Booking[]>();
+		this._assignedPendingServiceProviders = new Map<ServiceProvider, Booking[]>();
 		this._overlappingServiceProviders = [];
 		this._availableServiceProviders = [];
-		this.pendingBookingsCount = 0;
+		this._unlinkedPendingBookingsCount = 0;
 	}
-
-	private _bookedServiceProviders: Map<ServiceProvider, Booking[]>;
 
 	public get bookedServiceProviders(): Map<ServiceProvider, Booking[]> {
 		return this._bookedServiceProviders;
 	}
 
-	private _availableServiceProviders: ServiceProvider[];
-
 	public get availableServiceProviders(): ServiceProvider[] {
 		return this._availableServiceProviders;
 	}
 
-	public set availableServiceProviders(availableServiceProviders) {
+	public set availableServiceProviders(availableServiceProviders: ServiceProvider[]) {
 		this._availableServiceProviders = availableServiceProviders;
 	}
 
+	public get unlinkedPendingBookingsCount(): number {
+		return this._unlinkedPendingBookingsCount;
+	}
+
 	public get availabilityCount(): number {
-		return Math.max(this._availableServiceProviders.length - this.pendingBookingsCount, 0);
+		return Math.max(this._availableServiceProviders.length - this._unlinkedPendingBookingsCount, 0);
+	}
+
+	public get totalCount(): number {
+		return (
+			this._availableServiceProviders.length +
+			this._bookedServiceProviders.size +
+			this._assignedPendingServiceProviders.size
+		);
 	}
 
 	public static empty(startTime: Date, endTime: Date): AvailableTimeslotProviders {
@@ -78,13 +91,7 @@ export class AvailableTimeslotProviders {
 	public setBookedServiceProviders(bookings: Booking[]) {
 		const bookedProviderIds = new Set<number>(bookings.map((b) => b.serviceProviderId));
 
-		bookings.forEach((booking) => {
-			if (!this._bookedServiceProviders.has(booking.serviceProvider)) {
-				this._bookedServiceProviders.set(booking.serviceProvider, []);
-			}
-			this._bookedServiceProviders.get(booking.serviceProvider).push(booking);
-		});
-
+		this._bookedServiceProviders = groupByKey(bookings, (b) => b.serviceProvider);
 		this._availableServiceProviders = this._availableServiceProviders.filter((sp) => !bookedProviderIds.has(sp.id));
 	}
 
@@ -112,17 +119,42 @@ export class AvailableTimeslotProviders {
 		}
 	}
 
-	public keepOnlyServiceProvider(providerId: number) {
-		// isAvailableBeforeFilter: Does timeslot entry contain less pending bookings then available providers?
-		const isAvailableBeforeFilter = this.availabilityCount > 0;
-		this._relatedServiceProviders = this._relatedServiceProviders.filter((sp) => sp.id === providerId);
-		this._bookedServiceProviders = new Map(
-			Array.from(this._bookedServiceProviders.entries()).filter(([sp]) => sp.id === providerId),
+	public setPendingBookings(bookings: Booking[]): void {
+		const assignedPendingBookings = bookings.filter((b) => b.serviceProviderId);
+		const assignedPendingProviderIds = new Set<number>(assignedPendingBookings.map((b) => b.serviceProviderId));
+
+		this._assignedPendingServiceProviders = groupByKey(assignedPendingBookings, (b) => b.serviceProvider);
+		this._availableServiceProviders = this._availableServiceProviders.filter(
+			(sp) => !assignedPendingProviderIds.has(sp.id),
 		);
-		this._overlappingServiceProviders = this._overlappingServiceProviders.filter((sp) => sp.id === providerId);
-		this._availableServiceProviders = this._availableServiceProviders.filter((sp) => sp.id === providerId);
-		if (this._availableServiceProviders.length > 0 && isAvailableBeforeFilter) {
-			this.pendingBookingsCount = 0;
-		}
+
+		this._unlinkedPendingBookingsCount = bookings.length - assignedPendingBookings.length;
+	}
+
+	public filterServiceProviders(providerIds: number[]) {
+		const providerIdsCollection = new Set<number>(providerIds);
+
+		// availabilityBefore: Does timeslot entry contain less pending bookings then available providers?
+		const availabilityCountBefore = this.availabilityCount;
+
+		this._relatedServiceProviders = this._relatedServiceProviders.filter((sp) => providerIdsCollection.has(sp.id));
+		this._bookedServiceProviders = new Map(
+			Array.from(this._bookedServiceProviders.entries()).filter(([sp]) => providerIdsCollection.has(sp.id)),
+		);
+		this._assignedPendingServiceProviders = new Map(
+			Array.from(this._assignedPendingServiceProviders.entries()).filter(([sp]) =>
+				providerIdsCollection.has(sp.id),
+			),
+		);
+		this._overlappingServiceProviders = this._overlappingServiceProviders.filter((sp) =>
+			providerIdsCollection.has(sp.id),
+		);
+		this._availableServiceProviders = this._availableServiceProviders.filter((sp) =>
+			providerIdsCollection.has(sp.id),
+		);
+		const newCapacity = this._availableServiceProviders.length;
+
+		const newAvailabilityCount = Math.min(newCapacity, availabilityCountBefore);
+		this._unlinkedPendingBookingsCount = newCapacity - newAvailabilityCount;
 	}
 }

@@ -19,9 +19,10 @@ export class UsersController extends Controller {
 	@Get('me')
 	@MOLAuth({
 		admin: {},
+		agency: {},
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
-	@Response(401, 'Valid authentication types: [admin,user]')
+	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getProfile(): Promise<UserProfileResponse> {
 		const user = await this._userContext.getCurrentUser();
 		const groups = await this._userContext.getAuthGroups();
