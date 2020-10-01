@@ -18,7 +18,7 @@ import {
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
 	UserContextMock,
-} from '../../__tests__/bookings.service.spec';
+} from '../../__tests__/bookings.mocks';
 
 // tslint:disable-next-line:no-big-function
 describe('Booking validation tests', () => {
@@ -48,12 +48,12 @@ describe('Booking validation tests', () => {
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
-		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 		Container.bind(UnavailabilitiesService).to(UnavailabilitiesServiceMock);
+		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
 	});
 
-	afterEach(() => {
+	beforeEach(() => {
 		jest.resetAllMocks();
 	});
 
@@ -81,6 +81,7 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmail.com')
 			.build();
 
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		BookingRepositoryMock.searchBookingsMock = [];
 		TimeslotsServiceMock.acceptedBookings = [bookingMock];
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(true);

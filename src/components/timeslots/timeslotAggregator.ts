@@ -68,4 +68,11 @@ export class AggregatedEntry<TGroup> {
 			this._groups.add(group);
 		}
 	}
+
+	public findGroup(predicate: (group: TGroup) => boolean): TGroup {
+		for (const value of this._groups.values()) {
+			if (predicate(value)) return value;
+		}
+		return undefined;
+	}
 }

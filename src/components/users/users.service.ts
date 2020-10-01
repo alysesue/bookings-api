@@ -12,9 +12,9 @@ import {
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
-import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { OrganisationInfo, OrganisationsService } from '../organisations/organisations.service';
 import { ServiceRefInfo, ServicesRepositoryNoAuth } from '../services/services.noauth.repository';
+import { ServiceProvidersRepositoryNoAuth } from '../serviceProviders/serviceProviders.noauth.repository';
 
 export type HeadersType = { [key: string]: string };
 
@@ -25,7 +25,7 @@ export class UsersService {
 	@Inject
 	private servicesRepositoryNoAuth: ServicesRepositoryNoAuth;
 	@Inject
-	private serviceProvidersRepository: ServiceProvidersRepository;
+	private serviceProvidersRepositoryNoAuth: ServiceProvidersRepositoryNoAuth;
 	@Inject
 	private usersRepository: UsersRepository;
 
@@ -197,7 +197,7 @@ export class UsersService {
 
 		const serviceProviderRole = parsedGroups.find((g) => g.userGroupRole === UserGroupRole.ServiceProvider);
 		if (serviceProviderRole) {
-			const serviceProvider = await this.serviceProvidersRepository.getServiceProviderByMolAdminId({
+			const serviceProvider = await this.serviceProvidersRepositoryNoAuth.getServiceProviderByMolAdminId({
 				molAdminId,
 			});
 			if (serviceProvider) {
