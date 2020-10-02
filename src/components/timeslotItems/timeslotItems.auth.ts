@@ -12,9 +12,8 @@ export class TimeslotItemsActionAuthVisitor implements IAuthGroupVisitor {
 
 	private _timeslotItem: TimeslotItem;
 	private _timeslotSchedule: TimeslotsSchedule;
-	private _changeLogAction: ChangeLogAction;
 	private _hasPermission: boolean;
-	constructor(timeslotSchedule: TimeslotsSchedule, changeLogAction: ChangeLogAction) {
+	constructor(timeslotSchedule: TimeslotsSchedule) {
 		if (!timeslotSchedule) {
 			throw new Error('TimeslotItemsActionAuthVisitor - Timeslot Schedule cannot be null');
 		}
@@ -23,7 +22,6 @@ export class TimeslotItemsActionAuthVisitor implements IAuthGroupVisitor {
 		}
 		//		this._timeslotItem = timeslotItem;
 		this._timeslotSchedule = timeslotSchedule;
-		this._changeLogAction = changeLogAction;
 		this._hasPermission = false;
 	}
 

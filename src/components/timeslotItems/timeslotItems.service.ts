@@ -82,7 +82,6 @@ export class TimeslotItemsService {
 		request: TimeslotItemRequest,
 	): Promise<TimeslotItem> {
 		await this.verifyActionPermission(timeslotsSchedule, ChangeLogAction.Create);
-
 		return this.mapAndSaveTimeslotItem(timeslotsSchedule, request, new TimeslotItem());
 	}
 
