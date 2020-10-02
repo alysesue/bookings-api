@@ -10,15 +10,15 @@ export abstract class AuthGroup {
 		return this._user;
 	}
 
-	public abstract acceptVisitor(visitor: IAuthGroupVisitor): void;
+	public abstract acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void>;
 }
 
 // Visitor Pattern
 export interface IAuthGroupVisitor {
-	visitCitizen(_citizenGroup: CitizenAuthGroup): void;
-	visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void;
-	visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void;
-	visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void;
+	visitCitizen(_citizenGroup: CitizenAuthGroup): void | Promise<void>;
+	visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void | Promise<void>;
+	visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void | Promise<void>;
+	visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void | Promise<void>;
 }
 
 export class CitizenAuthGroup extends AuthGroup {
@@ -30,8 +30,8 @@ export class CitizenAuthGroup extends AuthGroup {
 		}
 	}
 
-	public acceptVisitor(visitor: IAuthGroupVisitor): void {
-		visitor.visitCitizen(this);
+	public acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void> {
+		return visitor.visitCitizen(this);
 	}
 }
 
@@ -59,8 +59,8 @@ export class OrganisationAdminAuthGroup extends AuthGroup {
 		return this._authorisedOrganisations.findIndex((org) => org.id === organisationId) >= 0;
 	}
 
-	public acceptVisitor(visitor: IAuthGroupVisitor): void {
-		visitor.visitOrganisationAdmin(this);
+	public acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void> {
+		return visitor.visitOrganisationAdmin(this);
 	}
 }
 
@@ -87,8 +87,8 @@ export class ServiceAdminAuthGroup extends AuthGroup {
 		return this._authorisedServices.findIndex((s) => s.id === serviceId) >= 0;
 	}
 
-	public acceptVisitor(visitor: IAuthGroupVisitor): void {
-		visitor.visitServiceAdmin(this);
+	public acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void> {
+		return visitor.visitServiceAdmin(this);
 	}
 }
 
@@ -111,7 +111,7 @@ export class ServiceProviderAuthGroup extends AuthGroup {
 		return this._authorisedServiceProvider;
 	}
 
-	public acceptVisitor(visitor: IAuthGroupVisitor): void {
-		visitor.visitServiceProvider(this);
+	public acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void> {
+		return visitor.visitServiceProvider(this);
 	}
 }

@@ -18,16 +18,15 @@ export class TimeslotItemsService {
 	@Inject
 	private userContext: UserContext;
 
-
 	private async verifyActionPermission(timeslotSchedule: TimeslotsSchedule, action: ChangeLogAction): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
-		if (!new TimeslotItemsActionAuthVisitor(timeslotSchedule, action).hasPermission(authGroups)) {
+		const hasPermission = await new TimeslotItemsActionAuthVisitor(timeslotSchedule).hasPermission(authGroups);
+		if (!hasPermission) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
 				`User cannot perform this timeslot item action (${action}) for this service.`,
 			);
 		}
 	}
-
 
 	private static mapItemAndValidate(
 		timeslotsSchedule: TimeslotsSchedule,
@@ -96,5 +95,4 @@ export class TimeslotItemsService {
 		const timeslotItem = await this.timeslotItemsRepository.getTimeslotItem(id);
 		return this.timeslotsScheduleRepository.getTimeslotsScheduleById(timeslotItem._timeslotsScheduleId);
 	}
-
 }
