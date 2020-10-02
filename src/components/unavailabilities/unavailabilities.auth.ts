@@ -40,8 +40,8 @@ export class UnavailabilitiesQueryAuthVisitor extends QueryAuthGroupVisitor {
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
 		const authorisedServiceProviderId = _userGroup.authorisedServiceProvider.id;
 		this.addAuthCondition(
-			'(u."_allServiceProviders" AND EXISTS(SELECT 1 FROM public.service_provider esp WHERE esp."_id" = :authorisedServiceProviderId AND esp."_serviceId" = u."_serviceId")) OR ' +
-				'EXISTS(SELECT 1 FROM public.unavailable_service_provider usp WHERE usp."unavailability_id" = u."_id" AND usp."serviceProvider_id" = :authorisedServiceProviderId)',
+			`(${this._alias}."_allServiceProviders" AND EXISTS(SELECT 1 FROM public.service_provider esp WHERE esp."_id" = :authorisedServiceProviderId AND esp."_serviceId" = ${this._alias}."_serviceId")) OR ` +
+				`EXISTS(SELECT 1 FROM public.unavailable_service_provider usp WHERE usp."unavailability_id" = ${this._alias}."_id" AND usp."serviceProvider_id" = :authorisedServiceProviderId)`,
 			{
 				authorisedServiceProviderId,
 			},
