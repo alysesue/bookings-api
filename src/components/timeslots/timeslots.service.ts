@@ -181,6 +181,7 @@ export class TimeslotsService {
 			from: startDateTime,
 			to: endDateTime,
 			serviceId,
+			skipAuthorisation: true,
 		});
 
 		for (const unavailability of unavailabilities) {
