@@ -12,6 +12,7 @@ import {
 	TimeslotItem,
 	TimeslotsSchedule,
 	User,
+	ChangeLogAction,
 } from '../../../models';
 import { ServiceProviderModel, SetProviderScheduleRequest } from '../serviceProviders.apicontract';
 import { CalendarsService } from '../../calendars/calendars.service';
@@ -24,7 +25,8 @@ import { ServicesService } from '../../services/services.service';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { UserContext } from '../../../infrastructure/auth/userContext';
-import { AuthGroup, CitizenAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { AuthGroup, ServiceProviderAuthGroup, IAuthGroupVisitor } from '../../../infrastructure/auth/authGroup';
+import { TimeslotItemsActionAuthVisitor } from '../../timeslotItems/timeslotItems.auth';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -45,6 +47,7 @@ describe('ServiceProviders.Service', () => {
 		TimeOfDay.create({ hours: 11, minutes: 30 }),
 	);
 	const timeslotsScheduleMock = new TimeslotsSchedule();
+	timeslotsScheduleMock._serviceProvider = serviceProviderMock;
 	const serviceMockWithTemplate = new Service();
 	const request = new TimeslotItemRequest();
 
@@ -53,7 +56,7 @@ describe('ServiceProviders.Service', () => {
 	calendar.uuid = '123';
 	calendar.googleCalendarId = 'google-id-1';
 
-	const serviceProvider = ServiceProvider.create('provider', calendar, 1);
+	const serviceProvider = new ServiceProvider();
 	serviceProvider.id = 1;
 	const adminMock = User.createAdminUser({
 		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
@@ -72,6 +75,8 @@ describe('ServiceProviders.Service', () => {
 		Container.bind(SchedulesService).to(SchedulesServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 		Container.bind(UserContext).to(UserContextMock);
+		// Container.bind(TimeslotItemsActionAuthVisitor).to(TimeslotItemsActionAuthVisitorMock);
+
 
 	});
 
@@ -369,4 +374,8 @@ export class UserContextMock extends UserContext {
 	public async getAuthGroups(...params): Promise<any> {
 		return await UserContextMock.getAuthGroups(...params);
 	}
+}
+
+class TimeslotItemsActionAuthVisitorMock extends TimeslotItemsActionAuthVisitor {
+
 }

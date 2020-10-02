@@ -19,14 +19,14 @@ import {
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
 import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
-import { ServiceProvidersRepository } from '../../../components/serviceProviders/serviceProviders.repository';
 import { ServicesRepositoryNoAuth } from '../../services/services.noauth.repository';
+import { ServiceProvidersRepositoryNoAuth } from '../../../components/serviceProviders/serviceProviders.noauth.repository';
 
 beforeAll(() => {
 	Container.bind(UsersRepository).to(UserRepositoryMock);
 	Container.bind(OrganisationsService).to(OrganisationsServiceMock);
 	Container.bind(ServicesRepositoryNoAuth).to(ServicesRepositoryNoAuthMock);
-	Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
+	Container.bind(ServiceProvidersRepositoryNoAuth).to(ServiceProvidersRepositoryNoAuthMock);
 });
 
 afterAll(() => {
@@ -64,6 +64,7 @@ function getAgencyHeaders() {
 	return headers;
 }
 
+// tslint:disable-next-line: no-big-function
 describe('Users Service', () => {
 	afterEach(() => {
 		jest.resetAllMocks();
@@ -241,7 +242,7 @@ describe('Users Service', () => {
 		serviceProvider._serviceProviderGroupMap = new ServiceProviderGroupMap();
 		serviceProvider._serviceProviderGroupMap.molAdminId = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
 
-		ServiceProvidersRepositoryMock.getServiceProviderByMolAdminId.mockImplementation(() =>
+		ServiceProvidersRepositoryNoAuthMock.getServiceProviderByMolAdminId.mockImplementation(() =>
 			Promise.resolve(serviceProvider),
 		);
 		(logger.warn as jest.Mock).mockImplementation(() => {});
@@ -255,7 +256,9 @@ describe('Users Service', () => {
 		const headers = getAdminHeaders();
 		headers[MOLSecurityHeaderKeys.ADMIN_GROUPS] = 'bookingsg:service-provider:localorg';
 
-		ServiceProvidersRepositoryMock.getServiceProviderByMolAdminId.mockImplementation(() => Promise.resolve(null));
+		ServiceProvidersRepositoryNoAuthMock.getServiceProviderByMolAdminId.mockImplementation(() =>
+			Promise.resolve(null),
+		);
 		(logger.warn as jest.Mock).mockImplementation(() => {});
 
 		const groups = await Container.get(UsersService).getUserGroupsFromHeaders(adminMock, headers);
@@ -300,10 +303,10 @@ class ServicesRepositoryNoAuthMock extends ServicesRepositoryNoAuth {
 	}
 }
 
-class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
+class ServiceProvidersRepositoryNoAuthMock extends ServiceProvidersRepositoryNoAuth {
 	public static getServiceProviderByMolAdminId = jest.fn<Promise<ServiceProvider>, any>();
 
 	public async getServiceProviderByMolAdminId(...params): Promise<any> {
-		return await ServiceProvidersRepositoryMock.getServiceProviderByMolAdminId(...params);
+		return await ServiceProvidersRepositoryNoAuthMock.getServiceProviderByMolAdminId(...params);
 	}
 }

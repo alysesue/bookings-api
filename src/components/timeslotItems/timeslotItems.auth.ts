@@ -33,7 +33,7 @@ export class TimeslotItemsActionAuthVisitor implements IAuthGroupVisitor {
 
 
 	visitCitizen(_citizenGroup: CitizenAuthGroup): void {
-
+		this._hasPermission = false;
 	}
 	visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 	}

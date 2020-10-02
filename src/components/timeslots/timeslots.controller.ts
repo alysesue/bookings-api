@@ -97,13 +97,15 @@ export class TimeslotsController extends Controller {
 		response.startTime = entry.startTime;
 		response.endTime = entry.endTime;
 		response.availabilityCount = entry.availabilityCount;
-		response.pendingBookingsCount = entry.pendingBookingsCount;
+		response.pendingBookingsCount = entry.unlinkedPendingBookingsCount;
 		response.bookedServiceProviders = this.serviceProviderMapper.mapBookedServiceProviderEntries(
 			entry.bookedServiceProviders,
 		);
 		response.availableServiceProviders = this.serviceProviderMapper.mapSummaryDataModels(
 			entry.availableServiceProviders,
 		);
+		response.totalCount = entry.totalCount;
+
 		return response;
 	}
 }

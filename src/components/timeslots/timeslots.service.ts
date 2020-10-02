@@ -93,7 +93,10 @@ export class TimeslotsService {
 
 		for (const element of entries) {
 			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
-			element.pendingBookingsCount = pendingBookingsLookup.get(elementKey)?.length || 0;
+			const elementPendingBookings = pendingBookingsLookup.get(elementKey);
+			if (elementPendingBookings) {
+				element.setPendingBookings(elementPendingBookings);
+			}
 		}
 	}
 
@@ -118,7 +121,7 @@ export class TimeslotsService {
 
 		if (serviceProviderId) {
 			aggregatedEntries = aggregatedEntries.filter((entry) =>
-				entry.getGroups().find((sp) => sp.id === serviceProviderId),
+				entry.findGroup((sp) => sp.id === serviceProviderId),
 			);
 		}
 
@@ -135,13 +138,37 @@ export class TimeslotsService {
 		this.setBookedProviders(mappedEntries, acceptedBookings);
 		TimeslotsService.setPendingTimeslots(mappedEntries, pendingBookings);
 
-		if (serviceProviderId) {
-			for (const entry of mappedEntries) {
-				entry.keepOnlyServiceProvider(serviceProviderId);
-			}
-		}
+		mappedEntries = await this.filterVisibleServiceProviders({
+			entries: mappedEntries,
+			serviceId,
+			serviceProviderId,
+		});
 
 		return mappedEntries;
+	}
+
+	private async filterVisibleServiceProviders({
+		entries,
+		serviceId,
+		serviceProviderId,
+	}: {
+		entries: AvailableTimeslotProviders[];
+		serviceId: number;
+		serviceProviderId?: number;
+	}) {
+		const visibleServiceProviderIds = (await this.serviceProvidersRepo.getServiceProviders({ serviceId })).map(
+			(sp) => sp.id,
+		);
+
+		for (const entry of entries) {
+			if (serviceProviderId) {
+				entry.filterServiceProviders([serviceProviderId]);
+			}
+
+			entry.filterServiceProviders(visibleServiceProviderIds);
+		}
+
+		return entries.filter((e) => e.totalCount > 0);
 	}
 
 	private async filterUnavailabilities(
@@ -164,7 +191,7 @@ export class TimeslotsService {
 			}
 		}
 
-		return entries.filter((e) => e.availableServiceProviders.length > 0 || e.bookedServiceProviders.size > 0);
+		return entries.filter((e) => e.totalCount > 0);
 	}
 
 	private setBookedProviders(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {
@@ -201,6 +228,7 @@ export class TimeslotsService {
 		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({
 			serviceId,
 			includeTimeslotsSchedule: true,
+			skipAuthorisation: true, // loads all SPs regardless of user role
 		});
 
 		const validServiceTimeslots = Array.from(

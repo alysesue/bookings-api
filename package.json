@@ -3,6 +3,7 @@
 	"version": "0.0.1",
 	"main": "index.js",
 	"scripts": {
+		"preinstall": "npx npm-force-resolutions",
 		"lint": "tslint -p ./tsconfig.json -c ./tslint.json './src/**/*.ts'",
 		"lint-fix": "NODE_OPTIONS='--max-old-space-size=4096' tslint --fix  -p ./tsconfig.json -c ./tslint.json './src/**/*.ts'",
 		"test": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
@@ -96,9 +97,10 @@
 		"googleapis": "^49.0.0",
 		"koa-no-cache": "^2.0.0",
 		"koa-proxy": "^1.0.0-alpha.3",
-		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:~6.0.3",
-		"mol-lib-common": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-common.git#semver:~4.0.6",
+		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:~6.1.17",
+		"mol-lib-common": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-common.git#semver:~4.1.12",
 		"moment": "^2.25.3",
+		"node-forge": "^0.10.0",
 		"pg": "^8.2.1",
 		"prettier": "^2.1.1",
 		"react-popper": "^2.2.3",
@@ -140,5 +142,8 @@
 		"tslint-no-circular-imports": "^0.7.0",
 		"tslint-sonarts": "^1.9.0",
 		"typescript": "^3.8.3"
+	},
+	"resolutions": {
+		"node-forge": "^0.10.0"
 	}
 }
