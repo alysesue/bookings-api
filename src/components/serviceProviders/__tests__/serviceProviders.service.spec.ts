@@ -75,7 +75,7 @@ describe('ServiceProviders.Service', () => {
 		Container.bind(SchedulesService).to(SchedulesServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 		Container.bind(UserContext).to(UserContextMock);
-		// Container.bind(TimeslotItemsActionAuthVisitor).to(TimeslotItemsActionAuthVisitorMock);
+		Container.bind(TimeslotItemsActionAuthVisitor).to(TimeslotItemsActionAuthVisitorMock);
 
 
 	});
@@ -109,6 +109,7 @@ describe('ServiceProviders.Service', () => {
 		request.weekDay = Weekday.Thursday;
 		request.startTime = '11:00';
 		request.endTime = '12:00';
+
 	});
 
 	it('should get all service providers', async () => {
@@ -193,6 +194,8 @@ describe('ServiceProviders.Service', () => {
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProvider)]));
 
+		new TimeslotItemsActionAuthVisitorMock(timeslotsScheduleMock, ChangeLogAction.Create);
+
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.addTimeslotItem(1, request);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(0);
@@ -203,6 +206,12 @@ describe('ServiceProviders.Service', () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ServicesServiceMock.getServiceTimeslotsSchedule = serviceMockWithTemplate.timeslotsSchedule;
 		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMockWithTemplate);
+
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProviderMockWithTemplate)]));
+
+		new TimeslotItemsActionAuthVisitorMock(serviceMockWithTemplate.timeslotsSchedule, ChangeLogAction.Create);
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.addTimeslotItem(1, request);
