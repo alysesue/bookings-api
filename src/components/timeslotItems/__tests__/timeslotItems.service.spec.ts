@@ -251,7 +251,7 @@ export class TimeslotItemsActionAuthVisitorMock extends TimeslotItemsActionAuthV
 		const timeslotScheduleMock = new TimeslotsSchedule();
 		timeslotScheduleMock._id = 1;
 
-		super(timeslotScheduleMock, ChangeLogAction.Create);
+		super(timeslotScheduleMock);
 	}
 	public visitCitizen(...params): any {
 		return TimeslotItemsActionAuthVisitorMock.visitCitizen(...params);
