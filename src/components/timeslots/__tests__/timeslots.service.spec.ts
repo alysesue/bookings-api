@@ -23,6 +23,7 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
+// tslint:disable-next-line:no-big-function
 describe('Timeslots Service', () => {
 	const date = new Date(2020, 4, 27);
 	const endDate = DateHelper.setHours(date, 11, 59);
@@ -217,6 +218,43 @@ describe('Timeslots Service', () => {
 		await service.getAggregatedTimeslots(new Date(), new Date(), 1, true);
 
 		expect(setBookedServiceProviders).toHaveBeenCalledWith([testBooking1, testBooking2]);
+	});
+
+	it('should filter out bookings not related to a authorised role', async () => {
+		TimeslotsScheduleMock.generateValidTimeslots.mockReturnValue([]);
+
+		const visibleServiceProvider = ServiceProvider.create('Justus', undefined, 1, 'email@aa.ee', '55669883');
+		visibleServiceProvider.id = 2;
+
+		const nonVisibleServiceProvider = ServiceProvider.create('JAMAICA', undefined, 1, 'email1@aa.ee', '55669883');
+		nonVisibleServiceProvider.id = 1;
+
+		const testBookings = [
+			new BookingBuilder()
+				.withServiceId(1)
+				.withStartDateTime(new Date('2020-02-02T11:00'))
+				.withEndDateTime(new Date('2020-02-02T12:00'))
+				.withServiceProviderId(1)
+				.build(),
+			new BookingBuilder()
+				.withServiceId(1)
+				.withStartDateTime(new Date('2020-02-02T11:00'))
+				.withEndDateTime(new Date('2020-02-02T12:00'))
+				.withServiceProviderId(2)
+				.build(),
+		];
+
+		testBookings[0].serviceProvider = nonVisibleServiceProvider;
+		testBookings[1].serviceProvider = visibleServiceProvider;
+
+		BookingsRepositoryMock.search.mockReturnValue(testBookings);
+
+		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue([visibleServiceProvider]);
+
+		const service = Container.get(TimeslotsService);
+		const result = await service.getAggregatedTimeslots(new Date(), new Date(), 1, true);
+
+		expect(result).toHaveLength(1);
 	});
 });
 
