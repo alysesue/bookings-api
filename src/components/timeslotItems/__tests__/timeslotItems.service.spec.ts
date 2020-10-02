@@ -1,10 +1,12 @@
 import { Container } from 'typescript-ioc';
-import { Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
+import { Service, TimeOfDay, TimeslotItem, TimeslotsSchedule, User } from '../../../models';
 import { TimeslotItemsService } from '../timeslotItems.service';
 import { TimeslotItemRequest } from '../timeslotItems.apicontract';
 import { TimeslotItemsRepository } from '../timeslotItems.repository';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Weekday } from '../../../enums/weekday';
+import { UserContext } from '../../../infrastructure/auth/userContext';
+import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -21,6 +23,9 @@ const TimeslotItemsRepositoryMock = jest.fn().mockImplementation(() => ({
 }));
 
 describe('TimeslotsSchedule template services ', () => {
+	const service = new Service();
+	service.id = 1;
+
 	const timeslotItemMock = TimeslotItem.create(
 		1,
 		Weekday.Monday,
@@ -32,6 +37,15 @@ describe('TimeslotsSchedule template services ', () => {
 	);
 	const timeslotsScheduleMock = new TimeslotsSchedule();
 	const request = new TimeslotItemRequest();
+
+	const adminMock = User.createAdminUser({
+		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+		userName: 'UserName',
+		email: 'test@email.com',
+		name: 'Name',
+	});
+	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+
 
 	beforeAll(() => {
 		Container.bind(TimeslotItemsRepository).to(TimeslotItemsRepositoryMock);
@@ -51,6 +65,11 @@ describe('TimeslotsSchedule template services ', () => {
 	});
 
 	it('should create timeslots item', async () => {
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
+
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.createTimeslotItem(timeslotsScheduleMock, request);
 		expect(saveTimeslotItem).toBeCalled();
@@ -192,3 +211,17 @@ describe('TimeslotsSchedule template services ', () => {
 		expect(deleteTimeslotItem).toBeCalledTimes(1);
 	});
 });
+
+export class UserContextMock extends UserContext {
+	public static getCurrentUser = jest.fn<Promise<User>, any>();
+	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
+
+	public init() { }
+	public async getCurrentUser(...params): Promise<any> {
+		return await UserContextMock.getCurrentUser(...params);
+	}
+
+	public async getAuthGroups(...params): Promise<any> {
+		return await UserContextMock.getAuthGroups(...params);
+	}
+}
