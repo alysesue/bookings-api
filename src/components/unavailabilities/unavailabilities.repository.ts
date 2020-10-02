@@ -37,7 +37,7 @@ export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {
 		const query = repository
 			.createQueryBuilder('u')
 			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
-			.leftJoin('sp._service', 'service');
+			.leftJoin('u._service', 'service');
 
 		return query;
 	}
