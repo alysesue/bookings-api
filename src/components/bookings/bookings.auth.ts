@@ -8,10 +8,11 @@ import {
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
 import { QueryAuthGroupVisitor } from '../../infrastructure/auth/queryAuthGroupVisitor';
+import { UserConditionParams } from '../../infrastructure/auth/authConditionCollection';
 
 export class BookingActionAuthVisitor implements IAuthGroupVisitor {
 	private _booking: Booking;
-	private _changeLogAction: ChangeLogAction;
+	private readonly _changeLogAction: ChangeLogAction;
 	private _hasPermission: boolean;
 
 	constructor(booking: Booking, changeLogAction: ChangeLogAction) {
@@ -78,8 +79,8 @@ export class BookingActionAuthVisitor implements IAuthGroupVisitor {
 }
 
 export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
-	private _alias: string;
-	private _serviceAlias: string;
+	private readonly _alias: string;
+	private readonly _serviceAlias: string;
 
 	constructor(alias: string, serviceAlias: string) {
 		super();
@@ -113,5 +114,21 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
 		this.addAuthCondition(`${this._alias}."_serviceProviderId" = :authorisedServiceProviderId`, {
 			authorisedServiceProviderId,
 		});
+	}
+}
+
+class BookingQueryNoAuthVisitor extends BookingQueryAuthVisitor {
+	public async createUserVisibilityCondition(authGroups: AuthGroup[]): Promise<UserConditionParams> {
+		this.addAsTrue();
+		return this.getVisibilityCondition();
+	}
+}
+
+export class BookingQueryVisitorFactory {
+	public static getBookingQueryVisitor(byPassAuth: boolean): BookingQueryAuthVisitor {
+		if (byPassAuth) {
+			return new BookingQueryNoAuthVisitor('booking', 'service_relation');
+		}
+		return new BookingQueryNoAuthVisitor('booking', 'service_relation');
 	}
 }

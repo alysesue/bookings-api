@@ -11,7 +11,7 @@ import {
 export abstract class QueryAuthGroupVisitor implements IAuthGroupVisitor {
 	private _conditions: AuthConditionCollection;
 
-	constructor() {
+	protected constructor() {
 		this._conditions = new AuthConditionCollection();
 	}
 

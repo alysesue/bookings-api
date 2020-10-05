@@ -231,10 +231,16 @@ describe('Bookings.Service', () => {
 	});
 
 	it('should cancel booking', async () => {
+		const startDate = new Date();
+		startDate.setDate(new Date().getDate() + 1);
+
+		const endDate = new Date(startDate);
+		endDate.setHours(endDate.getHours() + 1);
+
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(1)
-			.withStartDateTime(new Date('3020-10-01T01:00:00'))
-			.withEndDateTime(new Date('3020-10-01T02:00:00'))
+			.withStartDateTime(startDate)
+			.withEndDateTime(endDate)
 			.build();
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
