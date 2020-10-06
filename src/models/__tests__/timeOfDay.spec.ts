@@ -1,4 +1,5 @@
 import { TimeOfDay, Transformer } from '../timeOfDay';
+import { intersects } from '../../tools/timeSpan';
 
 describe('Time of day tests', () => {
 	it('should parse time of day', () => {
