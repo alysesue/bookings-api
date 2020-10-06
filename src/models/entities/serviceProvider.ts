@@ -170,7 +170,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		cascade: true,
 	})
 	@JoinColumn({ name: '_timeslotsScheduleId' })
-	public _timeslotsSchedule: TimeslotsSchedule;
+	private _timeslotsSchedule: TimeslotsSchedule;
 
 	public set timeslotsSchedule(value: TimeslotsSchedule) {
 		this._timeslotsSchedule = value;

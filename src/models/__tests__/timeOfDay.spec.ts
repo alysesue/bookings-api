@@ -1,4 +1,5 @@
 import { TimeOfDay, Transformer } from '../timeOfDay';
+import { intersects } from '../../tools/timeSpan';
 
 describe('Time of day tests', () => {
 	it('should parse time of day', () => {
@@ -63,22 +64,12 @@ describe('Time of day tests', () => {
 		expect(diffInverse).toBe(-31);
 	});
 
-	it('should throw on invalid time of day', () => {
-		expect(() => {
-			TimeOfDay.create({ hours: -1, minutes: 0 });
-		}).toThrowError();
+	it('should add minutes', () => {
+		const timeA = TimeOfDay.parse('11:30');
 
-		expect(() => {
-			TimeOfDay.create({ hours: 0, minutes: -1 });
-		}).toThrowError();
+		const res = TimeOfDay.addMinuntes(timeA, 30);
 
-		expect(() => {
-			TimeOfDay.create({ hours: 24, minutes: 0 });
-		}).toThrowError();
-
-		expect(() => {
-			TimeOfDay.create({ hours: 0, minutes: 60 });
-		}).toThrowError();
+		expect(res.toString()).toBe('12:00');
 	});
 
 	it('should transfrom from raw value', () => {

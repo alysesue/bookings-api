@@ -55,6 +55,12 @@ export class TimeOfDay {
 		return a._minutes - b._minutes;
 	}
 
+	public static addMinuntes(a: TimeOfDay, minutes: number): TimeOfDay {
+		const date = new Date('01-01-2017 ' + a.hours + ':' + a.minutes);
+		date.setMinutes(date.getMinutes() + minutes);
+		return this.fromDate(date);
+	}
+
 	public static DiffInMinutes(a: TimeOfDay, b: TimeOfDay): number {
 		return a.AsMinutes() - b.AsMinutes();
 	}
