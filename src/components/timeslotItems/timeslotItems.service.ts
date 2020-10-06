@@ -18,12 +18,12 @@ export class TimeslotItemsService {
 	@Inject
 	private userContext: UserContext;
 
-	private async verifyActionPermission(timeslotSchedule: TimeslotsSchedule, action: ChangeLogAction): Promise<void> {
+	private async verifyActionPermission(timeslotSchedule: TimeslotsSchedule): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
 		const hasPermission = await new TimeslotItemsActionAuthVisitor(timeslotSchedule).hasPermission(authGroups);
 		if (!hasPermission) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
-				`User cannot perform this timeslot item action (${action}) for this service.`,
+				`User cannot perform this timeslot item action for this service.`,
 			);
 		}
 	}
@@ -72,7 +72,7 @@ export class TimeslotItemsService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Timeslot item not found');
 		}
 
-		await this.verifyActionPermission(timeslotsSchedule, ChangeLogAction.Update);
+		await this.verifyActionPermission(timeslotsSchedule);
 		return this.mapAndSaveTimeslotItem(timeslotsSchedule, request, timeslotItem);
 	}
 
@@ -80,13 +80,13 @@ export class TimeslotItemsService {
 		timeslotsSchedule: TimeslotsSchedule,
 		request: TimeslotItemRequest,
 	): Promise<TimeslotItem> {
-		await this.verifyActionPermission(timeslotsSchedule, ChangeLogAction.Create);
+		await this.verifyActionPermission(timeslotsSchedule);
 		return this.mapAndSaveTimeslotItem(timeslotsSchedule, request, new TimeslotItem());
 	}
 
 	public async deleteTimeslot(timeslotId: number): Promise<DeleteResult> {
 		const timeslotSchedule = await this.getTimeslotsScheduleByTimeslotItemId(timeslotId);
-		await this.verifyActionPermission(timeslotSchedule, ChangeLogAction.Cancel);
+		await this.verifyActionPermission(timeslotSchedule);
 
 		return await this.timeslotItemsRepository.deleteTimeslotItem(timeslotId);
 	}

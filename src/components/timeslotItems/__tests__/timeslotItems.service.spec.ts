@@ -26,7 +26,7 @@ const TimeslotItemsRepositoryMock = jest.fn().mockImplementation(() => ({
 	getTimeslotItem,
 }));
 
-describe('TimeslotsItem template services ', () => {
+describe('TimeslotsItem services ', () => {
 	const service = new Service();
 	service.id = 1;
 
@@ -229,6 +229,9 @@ describe('TimeslotsItem template services ', () => {
 	});
 
 	it('should delete timeslot item', async () => {
+		const serviceMock = new Service();
+		serviceMock.id = 1;
+		TimeslotsScheduleRepositoryMock.getTimeslotsScheduleById.mockReturnValue(Promise.resolve(timeslotsScheduleMock));
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.deleteTimeslot(1);
 		expect(deleteTimeslotItem).toBeCalledTimes(1);
@@ -250,7 +253,12 @@ export class UserContextMock extends UserContext {
 }
 
 export class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
+	// public static getOrganisationsForUserGroups = jest.fn<Promise<TimeslotsSchedule>, any>();
 	public static getTimeslotsScheduleById = jest.fn<Promise<TimeslotsSchedule>, any>();
+
+	// public async getOrganisationsForUserGroups(...params): Promise<any> {
+	// 	return await TimeslotsScheduleRepositoryMock.getOrganisationsForUserGroups(...params);
+	// }
 	public async getTimeslotsScheduleById(...params): Promise<any> {
 		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleById(...params);
 	}
