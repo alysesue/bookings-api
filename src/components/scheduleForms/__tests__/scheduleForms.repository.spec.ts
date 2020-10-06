@@ -1,7 +1,7 @@
-import { SchedulesRepository } from '../schedules.repository';
+import { ScheduleFormsRepository } from '../scheduleForms.repository';
 import { WeekDayBreakRepository } from '../weekdaybreak.repository';
 import { Container } from 'typescript-ioc';
-import { Schedule } from '../../../models';
+import { ScheduleForm } from '../../../models';
 import { TransactionManager } from '../../../core/transactionManager';
 
 afterAll(() => {
@@ -19,59 +19,59 @@ beforeEach(() => {
 });
 
 const NullScheduleId = 55;
-describe('Schedule repository', () => {
-	it('should get schedules', async () => {
-		const repository = Container.get(SchedulesRepository);
-		const result = await repository.getSchedules();
+describe('ScheduleForm repository', () => {
+	it('should get schedules form', async () => {
+		const repository = Container.get(ScheduleFormsRepository);
+		const result = await repository.getScheduleForms();
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
 		expect(InnerRepositoryMock.find).toBeCalledTimes(1);
 	});
 
-	it('should get schedules with id', async () => {
-		const repository = Container.get(SchedulesRepository);
-		const result = await repository.getScheduleById(1);
+	it('should get schedules form with id', async () => {
+		const repository = Container.get(ScheduleFormsRepository);
+		const result = await repository.getScheduleFormById(1);
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
 		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
 	});
 
-	it('should return null when schedule not found', async () => {
-		const repository = Container.get(SchedulesRepository);
-		const result = await repository.getScheduleById(NullScheduleId);
+	it('should return null when schedule form not found', async () => {
+		const repository = Container.get(ScheduleFormsRepository);
+		const result = await repository.getScheduleFormById(NullScheduleId);
 		expect(result).toBe(null);
 
 		expect(GetRepositoryMock).toBeCalled();
 		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
 	});
 
-	it('should get schedules with name', async () => {
-		const repository = Container.get(SchedulesRepository);
-		const result = await repository.getScheduleByName('test');
+	it('should get schedules form with name', async () => {
+		const repository = Container.get(ScheduleFormsRepository);
+		const result = await repository.getScheduleFormByName('test');
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
 		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
 	});
 
-	it('should add schedules', async () => {
-		const schedule = new Schedule();
-		schedule.id = 2;
-		schedule.initWeekdaySchedules();
+	it('should add schedules form', async () => {
+		const scheduleForm = new ScheduleForm();
+		scheduleForm.id = 2;
+		scheduleForm.initWeekdaySchedules();
 
-		const repository = Container.get(SchedulesRepository);
-		const result = await repository.saveSchedule(schedule);
+		const repository = Container.get(ScheduleFormsRepository);
+		const result = await repository.saveScheduleForm(scheduleForm);
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
 		expect(InnerRepositoryMock.save).toBeCalledTimes(1);
 	});
 
-	it('should remove schedules', async () => {
-		const repository = Container.get(SchedulesRepository);
-		const result = await repository.deleteSchedule(34848);
+	it('should remove schedules form', async () => {
+		const repository = Container.get(ScheduleFormsRepository);
+		const result = await repository.deleteScheduleForm(34848);
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
@@ -85,10 +85,10 @@ const WeekDayBreakRepositoryMock = {
 	save: jest.fn(() => Promise.resolve([])),
 };
 
-const scheduleMock = new Schedule();
-scheduleMock.id = 1;
-scheduleMock.name = 'test';
-scheduleMock.initWeekdaySchedules();
+const scheduleFormMock = new ScheduleForm();
+scheduleFormMock.id = 1;
+scheduleFormMock.name = 'test';
+scheduleFormMock.initWeekdaySchedules();
 
 export const InnerRepositoryMock = {
 	findOne: jest.fn().mockImplementation((...params) => {
@@ -96,10 +96,10 @@ export const InnerRepositoryMock = {
 			return Promise.resolve(null);
 		}
 
-		return Promise.resolve(scheduleMock);
+		return Promise.resolve(scheduleFormMock);
 	}),
-	find: jest.fn().mockImplementation(() => Promise.resolve([scheduleMock])),
-	save: jest.fn().mockImplementation(() => Promise.resolve(scheduleMock)),
+	find: jest.fn().mockImplementation(() => Promise.resolve([scheduleFormMock])),
+	save: jest.fn().mockImplementation(() => Promise.resolve(scheduleFormMock)),
 	delete: jest.fn().mockImplementation(() => Promise.resolve({})),
 };
 

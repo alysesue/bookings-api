@@ -1,4 +1,4 @@
-import { Schedule, WeekDaySchedule } from '../index';
+import { ScheduleForm, WeekDaySchedule } from '../index';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Weekday } from '../../enums/weekday';
 import { TimeOfDay } from '../timeOfDay';
@@ -13,17 +13,17 @@ function createDayOfWeekTemplate(
 	weekday: Weekday,
 	openTime: string,
 	closeTime: string,
-	schedule: Schedule,
+	schedule: ScheduleForm,
 ): WeekDaySchedule {
 	const weekDaySchedule = WeekDaySchedule.create(weekday, schedule);
-	weekDaySchedule.hasSchedule = true;
+	weekDaySchedule.hasScheduleForm = true;
 	weekDaySchedule.openTime = TimeOfDay.parse(openTime);
 	weekDaySchedule.closeTime = TimeOfDay.parse(closeTime);
 	return weekDaySchedule;
 }
 
 describe('Timeslots template', () => {
-	const template = new Schedule();
+	const template = new ScheduleForm();
 	template.name = 'test';
 	template.slotsDurationInMin = 60;
 	const wednesday = createDayOfWeekTemplate(Weekday.Wednesday, '09:30', '17:30', template);
@@ -140,28 +140,28 @@ describe('Timeslots template', () => {
 	});
 
 	it('should init weekday schedules', () => {
-		const newSchedule = new Schedule();
-		newSchedule.initWeekdaySchedules();
+		const newScheduleForm = new ScheduleForm();
+		newScheduleForm.initWeekdaySchedules();
 
-		expect(newSchedule.weekdaySchedules).toBeDefined();
+		expect(newScheduleForm.weekdaySchedules).toBeDefined();
 	});
 
 	it('should init set weekday schedules parent', () => {
-		const newSchedule = new Schedule();
+		const newScheduleForm = new ScheduleForm();
 		const weekDay = new WeekDaySchedule();
 		weekDay.weekDay = Weekday.Monday;
-		newSchedule.weekdaySchedules = [weekDay];
+		newScheduleForm.weekdaySchedules = [weekDay];
 
-		newSchedule.initWeekdaySchedules();
-		newSchedule.verifyWeekdaySchedules();
-		expect(weekDay.schedule).toBe(newSchedule);
+		newScheduleForm.initWeekdaySchedules();
+		newScheduleForm.verifyWeekdaySchedules();
+		expect(weekDay.scheduleForm).toBe(newScheduleForm);
 	});
 
 	it('should verify weekday schedules is initialized', () => {
-		const newSchedule = new Schedule();
+		const newScheduleForm = new ScheduleForm();
 
 		expect(() => {
-			newSchedule.verifyWeekdaySchedules();
+			newScheduleForm.verifyWeekdaySchedules();
 		}).toThrowError();
 	});
 
@@ -172,20 +172,20 @@ describe('Timeslots template', () => {
 	});
 
 	it('should generate timeslot with exact match', () => {
-		const customSchedule = new Schedule();
-		customSchedule.slotsDurationInMin = 60;
-		const monday = createDayOfWeekTemplate(Weekday.Monday, '08:00', '12:00', customSchedule);
+		const customScheduleForm = new ScheduleForm();
+		customScheduleForm.slotsDurationInMin = 60;
+		const monday = createDayOfWeekTemplate(Weekday.Monday, '08:00', '12:00', customScheduleForm);
 		monday.breaks = [
-			WeekDayBreak.create(Weekday.Monday, TimeOfDay.parse('08:00'), TimeOfDay.parse('09:00'), customSchedule),
+			WeekDayBreak.create(Weekday.Monday, TimeOfDay.parse('08:00'), TimeOfDay.parse('09:00'), customScheduleForm),
 		];
 
-		customSchedule.weekdaySchedules = [monday];
+		customScheduleForm.weekdaySchedules = [monday];
 
 		const startTime = new Date(Date.parse('2020-6-8, 9:00:00 AM'));
 		const endTime = new Date(Date.parse('2020-6-8, 10:00:00 AM'));
 
 		const generated = Array.from(
-			customSchedule.generateValidTimeslots({ startDatetime: startTime, endDatetime: endTime }),
+			customScheduleForm.generateValidTimeslots({ startDatetime: startTime, endDatetime: endTime }),
 		);
 		expect(generated.length).toBe(1);
 	});

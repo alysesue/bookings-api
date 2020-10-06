@@ -46,8 +46,8 @@ export class ServiceProviderListRequest {
 	public serviceProviders: ServiceProviderModel[];
 }
 
-export class SetProviderScheduleRequest {
-	public scheduleId?: number;
+export class SetProviderScheduleFormRequest {
+	public scheduleFormId?: number;
 }
 
 export class ServiceProviderSummaryModel {

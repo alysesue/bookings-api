@@ -1,13 +1,13 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Schedule } from './schedule';
-import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
+import { ScheduleForm } from './scheduleForm';
+import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
 import { Organisation } from './organisation';
 
 @Entity()
 @Index(['_organisationId', '_name'], { unique: true })
-export class Service implements IService, IEntityWithSchedule, IEntityWithTimeslotsSchedule {
+export class Service implements IService, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
@@ -57,26 +57,26 @@ export class Service implements IService, IEntityWithSchedule, IEntityWithTimesl
 		return this._name;
 	}
 
-	@ManyToOne('Schedule', { nullable: true })
-	@JoinColumn({ name: '_scheduleId' })
-	public _schedule: Schedule;
+	@ManyToOne('ScheduleForm', { nullable: true })
+	@JoinColumn({ name: '_scheduleFormId' })
+	public _scheduleForm: ScheduleForm;
 
-	public set schedule(schedule: Schedule) {
-		this._schedule = schedule;
+	public set scheduleForm(schedule: ScheduleForm) {
+		this._scheduleForm = schedule;
 	}
 
-	public get schedule(): Schedule {
-		return this._schedule;
+	public get scheduleForm(): ScheduleForm {
+		return this._scheduleForm;
 	}
 
 	@Column({ nullable: true })
-	private _scheduleId?: number;
+	private _scheduleFormId?: number;
 
-	public set scheduleId(id: number) {
-		this._scheduleId = id;
+	public set scheduleFormId(id: number) {
+		this._scheduleFormId = id;
 	}
-	public get scheduleId(): number {
-		return this._scheduleId;
+	public get scheduleFormId(): number {
+		return this._scheduleFormId;
 	}
 
 	@Column({ nullable: true })

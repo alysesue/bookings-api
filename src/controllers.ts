@@ -2,7 +2,7 @@
 import './components/bookingChangeLogs/bookingChangeLogs.controller';
 import './components/bookings/bookings.controller';
 import './components/calendars/calendars.controller';
-import './components/schedules/schedules.controller';
+import './components/scheduleForms/scheduleForms.controller';
 import './infrastructure/infrastructure.controller';
 import './components/timeslots/timeslots.controller';
 import './components/services/services.controller';
