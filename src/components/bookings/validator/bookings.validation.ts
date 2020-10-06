@@ -101,6 +101,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 				to: booking.endDateTime,
 				serviceId: booking.serviceId,
 				serviceProviderId: booking.serviceProviderId,
+				skipAuthorisation: true,
 			}))
 		) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
