@@ -194,7 +194,7 @@ describe('ServiceProviders.Service', () => {
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProvider)]));
 
-		new TimeslotItemsActionAuthVisitorMock(timeslotsScheduleMock, ChangeLogAction.Create);
+		new TimeslotItemsActionAuthVisitorMock(timeslotsScheduleMock);
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.addTimeslotItem(1, request);
@@ -210,8 +210,6 @@ describe('ServiceProviders.Service', () => {
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProviderMockWithTemplate)]));
-
-		new TimeslotItemsActionAuthVisitorMock(serviceMockWithTemplate.timeslotsSchedule, ChangeLogAction.Create);
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.addTimeslotItem(1, request);
@@ -386,5 +384,8 @@ export class UserContextMock extends UserContext {
 }
 
 class TimeslotItemsActionAuthVisitorMock extends TimeslotItemsActionAuthVisitor {
-
+	public static hasPermission = jest.fn();
+	public hasPermission(...params): any {
+		return TimeslotItemsActionAuthVisitorMock.hasPermission(...params);
+	}
 }

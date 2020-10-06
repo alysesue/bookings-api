@@ -1,5 +1,5 @@
 import { Container } from 'typescript-ioc';
-import { Service, TimeOfDay, TimeslotItem, TimeslotsSchedule, User, ChangeLogAction } from '../../../models';
+import { Service, TimeOfDay, TimeslotItem, TimeslotsSchedule, User, ChangeLogAction, ServiceProvider } from '../../../models';
 import { TimeslotItemsService } from '../timeslotItems.service';
 import { TimeslotItemRequest } from '../timeslotItems.apicontract';
 import { TimeslotItemsRepository } from '../timeslotItems.repository';
@@ -40,6 +40,7 @@ describe('TimeslotsItem template services ', () => {
 		TimeOfDay.create({ hours: 11, minutes: 30 }),
 	);
 	const timeslotsScheduleMock = new TimeslotsSchedule();
+	timeslotsScheduleMock._service = service;
 	const request = new TimeslotItemRequest();
 
 	const adminMock = User.createAdminUser({
@@ -59,9 +60,17 @@ describe('TimeslotsItem template services ', () => {
 
 	});
 	beforeEach(() => {
-		timeslotItemMock._id = 4;
 
+		const serviceMock = new Service();
+		serviceMock.id = 1;
+
+		const serviceProvideMock = new ServiceProvider();
+		serviceProvideMock.id = 1;
+
+		timeslotItemMock._id = 4;
 		timeslotsScheduleMock._id = 1;
+		timeslotsScheduleMock._service = serviceMock;
+		timeslotsScheduleMock._serviceProvider = serviceProvideMock;
 
 		request.weekDay = Weekday.Thursday;
 		request.startTime = '11:00';
@@ -107,7 +116,7 @@ describe('TimeslotsItem template services ', () => {
 		).rejects.toStrictEqual(
 			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Value asdasd is not a valid time.'),
 		);
-	});
+	})
 
 	it('should validate overlaps', async () => {
 		request.weekDay = Weekday.Monday;
@@ -123,6 +132,9 @@ describe('TimeslotsItem template services ', () => {
 	});
 
 	it('should not validate overlap when updating same item', async () => {
+
+		const serviceMock = new Service();
+		serviceMock.id = 1;
 		request.weekDay = Weekday.Monday;
 		request.startTime = '11:15';
 		request.endTime = '12:15';
@@ -137,9 +149,11 @@ describe('TimeslotsItem template services ', () => {
 			TimeOfDay.create({ hours: 11, minutes: 30 }),
 		);
 		timeslotItemMockForUpdate._id = 4;
+		timeslotsScheduleMock._service = serviceMock;
 		const scheduleForUpdate = new TimeslotsSchedule();
 		scheduleForUpdate._id = 1;
 		scheduleForUpdate.timeslotItems = [timeslotItemMockForUpdate];
+		scheduleForUpdate._service = serviceMock;
 
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.updateTimeslotItem(scheduleForUpdate, 4, request);
@@ -178,6 +192,7 @@ describe('TimeslotsItem template services ', () => {
 		const scheduleForUpdate = new TimeslotsSchedule();
 		scheduleForUpdate._id = 1;
 		scheduleForUpdate.timeslotItems = [timeslotItemMockForUpdate];
+		scheduleForUpdate._service = serviceMockForUpdate;
 
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.updateTimeslotItem(scheduleForUpdate, 4, request);
@@ -246,6 +261,7 @@ export class TimeslotItemsActionAuthVisitorMock extends TimeslotItemsActionAuthV
 	public static visitOrganisationAdmin = jest.fn();
 	public static visitServiceAdmin = jest.fn();
 	public static visitServiceProvider = jest.fn();
+	public static hasPermission = jest.fn();
 
 	constructor() {
 		const timeslotScheduleMock = new TimeslotsSchedule();
@@ -253,6 +269,11 @@ export class TimeslotItemsActionAuthVisitorMock extends TimeslotItemsActionAuthV
 
 		super(timeslotScheduleMock);
 	}
+
+	public hasPermission(...params): any {
+		return TimeslotItemsActionAuthVisitorMock.hasPermission(...params);
+	}
+
 	public visitCitizen(...params): any {
 		return TimeslotItemsActionAuthVisitorMock.visitCitizen(...params);
 	}
