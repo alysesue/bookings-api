@@ -16,8 +16,8 @@ import {
 import { ServiceRequest, ServiceResponse, SetScheduleFormRequest } from './service.apicontract';
 import { ServicesService } from './services.service';
 import { Service } from '../../models';
-import { mapToResponse as mapSScheduleFormResponseToResponse } from '../schedulesForm/schedulesForm.mapper';
-import { ScheduleFormResponse } from '../schedulesForm/schedulesForm.apicontract';
+import { mapToResponse as mapSScheduleFormResponseToResponse } from '../scheduleForms/scheduleForms.mapper';
+import { ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
 import {
 	TimeslotItemRequest,
 	TimeslotItemResponse,

@@ -4,7 +4,7 @@ import {
 	ScheduleFormResponse,
 	WeekDayBreakContract,
 	WeekDayScheduleContract,
-} from './schedulesForm.apicontract';
+} from './scheduleForms.apicontract';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { getErrorResult, getOkResult, isErrorResult, OptionalResult } from '../../errors';
 

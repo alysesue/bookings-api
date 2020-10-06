@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ServiceProvider } from '../../models';
 import { RepositoryBase } from '../../core/repository';
-import { SchedulesFormRepository } from '../schedulesForm/schedulesForm.repository';
+import { ScheduleFormsRepository } from '../scheduleForms/scheduleForms.repository';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
 import { ServiceProvidersQueryAuthVisitor } from './serviceProviders.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
@@ -13,7 +13,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	@Inject
 	private userContext: UserContext;
 	@Inject
-	private scheduleRepository: SchedulesFormRepository;
+	private scheduleRepository: ScheduleFormsRepository;
 	@Inject
 	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
 
@@ -29,7 +29,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		},
 	): Promise<ServiceProvider[]> {
 		if (options.includeScheduleForm) {
-			await this.scheduleRepository.populateSchedulesForm(entries);
+			await this.scheduleRepository.populateScheduleForms(entries);
 		}
 
 		if (options.includeTimeslotsSchedule) {

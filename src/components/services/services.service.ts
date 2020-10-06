@@ -3,7 +3,7 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { ScheduleForm, Service, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { ServicesRepository } from './services.repository';
 import { ServiceRequest, SetScheduleFormRequest } from './service.apicontract';
-import { SchedulesFormService } from '../schedulesForm/schedulesForm.service';
+import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
 import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
 import { TimeslotsScheduleService } from '../timeslotsSchedules/timeslotsSchedule.service';
@@ -15,7 +15,7 @@ export class ServicesService {
 	@Inject
 	private servicesRepository: ServicesRepository;
 	@Inject
-	private schedulesFormService: SchedulesFormService;
+	private scheduleFormsService: ScheduleFormsService;
 	@Inject
 	private timeslotItemsService: TimeslotItemsService;
 	@Inject
@@ -74,7 +74,7 @@ export class ServicesService {
 
 		let scheduleForm: ScheduleForm = null;
 		if (model.scheduleFormId) {
-			scheduleForm = await this.schedulesFormService.getScheduleForm(model.scheduleFormId);
+			scheduleForm = await this.scheduleFormsService.getScheduleForm(model.scheduleFormId);
 			if (!scheduleForm) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('ScheduleForm not found');
 			}
@@ -93,7 +93,7 @@ export class ServicesService {
 
 		let scheduleForm: ScheduleForm = null;
 		if (service.scheduleFormId) {
-			scheduleForm = await this.schedulesFormService.getScheduleForm(service.scheduleFormId);
+			scheduleForm = await this.scheduleFormsService.getScheduleForm(service.scheduleFormId);
 		}
 
 		if (!scheduleForm) {

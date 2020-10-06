@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Service } from '../../models';
 import { RepositoryBase } from '../../core/repository';
-import { SchedulesFormRepository } from '../schedulesForm/schedulesForm.repository';
+import { ScheduleFormsRepository } from '../scheduleForms/scheduleForms.repository';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { SelectQueryBuilder } from 'typeorm';
@@ -12,7 +12,7 @@ export class ServicesRepository extends RepositoryBase<Service> {
 	@Inject
 	private userContext: UserContext;
 	@Inject
-	private scheduleFormRepository: SchedulesFormRepository;
+	private scheduleFormRepository: ScheduleFormsRepository;
 	@Inject
 	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
 

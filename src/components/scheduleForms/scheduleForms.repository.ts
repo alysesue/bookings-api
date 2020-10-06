@@ -8,7 +8,7 @@ import { groupByKeyLastValue } from '../../tools/collections';
 import { IEntityWithScheduleForm } from '../../models/interfaces';
 
 @InRequestScope
-export class SchedulesFormRepository extends RepositoryBase<ScheduleForm> {
+export class ScheduleFormsRepository extends RepositoryBase<ScheduleForm> {
 	@Inject
 	private weekDayBreakRepo: WeekDayBreakRepository;
 
@@ -23,7 +23,7 @@ export class SchedulesFormRepository extends RepositoryBase<ScheduleForm> {
 		return this.populateSingleEntryBreaks(scheduleForm);
 	}
 
-	public async getSchedulesForm(ids?: number[]): Promise<ScheduleForm[]> {
+	public async getScheduleForms(ids?: number[]): Promise<ScheduleForm[]> {
 		const options: FindManyOptions<ScheduleForm> = { relations: ['weekdaySchedules'] };
 		if (ids) {
 			options.where = { id: In(ids) };
@@ -79,13 +79,13 @@ export class SchedulesFormRepository extends RepositoryBase<ScheduleForm> {
 		return (await this.getRepository()).delete(scheduleFormId);
 	}
 
-	public async populateSchedulesForm<T extends IEntityWithScheduleForm>(entries: T[]): Promise<T[]> {
+	public async populateScheduleForms<T extends IEntityWithScheduleForm>(entries: T[]): Promise<T[]> {
 		const scheduleFormIds = entries.map((e) => e.scheduleFormId).filter((id) => !!id);
 		if (scheduleFormIds.length === 0) {
 			return entries;
 		}
 
-		const scheduleFormsById = groupByKeyLastValue(await this.getSchedulesForm(scheduleFormIds), (s) => s.id);
+		const scheduleFormsById = groupByKeyLastValue(await this.getScheduleForms(scheduleFormIds), (s) => s.id);
 
 		for (const entry of entries.filter((c) => !!c.scheduleFormId)) {
 			entry.scheduleForm = scheduleFormsById.get(entry.scheduleFormId);
@@ -98,6 +98,6 @@ export class SchedulesFormRepository extends RepositoryBase<ScheduleForm> {
 			return entry;
 		}
 
-		return (await this.populateSchedulesForm([entry]))[0];
+		return (await this.populateScheduleForms([entry]))[0];
 	}
 }

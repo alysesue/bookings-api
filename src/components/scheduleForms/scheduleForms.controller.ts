@@ -12,16 +12,16 @@ import {
 	SuccessResponse,
 	Tags,
 } from 'tsoa';
-import { ScheduleFormRequest, ScheduleFormResponse } from './schedulesForm.apicontract';
+import { ScheduleFormRequest, ScheduleFormResponse } from './scheduleForms.apicontract';
 import { Inject } from 'typescript-ioc';
-import { SchedulesFormService } from './schedulesForm.service';
+import { ScheduleFormsService } from './scheduleForms.service';
 import { MOLAuth } from 'mol-lib-common';
 
-@Route('v1/schedulesForm')
-@Tags('SchedulesForm')
-export class SchedulesFormController extends Controller {
+@Route('v1/scheduleForms')
+@Tags('ScheduleForms')
+export class ScheduleFormsController extends Controller {
 	@Inject
-	private scheduleFormService: SchedulesFormService;
+	private scheduleFormService: ScheduleFormsService;
 
 	@Post('')
 	@SuccessResponse(201, 'Created')
@@ -35,8 +35,8 @@ export class SchedulesFormController extends Controller {
 	@Get('')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
-	public async getSchedulesForm(): Promise<ScheduleFormResponse[]> {
-		return await this.scheduleFormService.getSchedulesForm();
+	public async getScheduleForms(): Promise<ScheduleFormResponse[]> {
+		return await this.scheduleFormService.getScheduleForms();
 	}
 
 	@Put('{id}')

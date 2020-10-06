@@ -1,6 +1,6 @@
 import { ServiceProvidersRepository } from '../serviceProviders.repository';
 import { Container } from 'typescript-ioc';
-import { SchedulesFormRepository } from '../../schedulesForm/schedulesForm.repository';
+import { ScheduleFormsRepository } from '../../scheduleForms/scheduleForms.repository';
 import { IEntityWithScheduleForm } from '../../../models/interfaces';
 import { Organisation, ServiceProvider, TimeslotsSchedule, User } from '../../../models';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
@@ -20,7 +20,7 @@ afterAll(() => {
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
 	Container.bind(UserContext).to(UserContextMock);
-	Container.bind(SchedulesFormRepository).to(SchedulesFormRepositoryMock);
+	Container.bind(ScheduleFormsRepository).to(ScheduleFormsRepositoryMock);
 	Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 });
 
@@ -128,27 +128,27 @@ describe('Service Provider repository', () => {
 
 	it('should get list of SP with schedule', async () => {
 		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([new ServiceProvider()]));
-		SchedulesFormRepositoryMock.populateSchedulesFormMock.mockImplementation((entries: any[]) =>
+		ScheduleFormsRepositoryMock.populateScheduleFormsMock.mockImplementation((entries: any[]) =>
 			Promise.resolve(entries),
 		);
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProviders({ serviceId: 1, includeScheduleForm: true });
 
-		expect(SchedulesFormRepositoryMock.populateSchedulesFormMock).toHaveBeenCalled();
+		expect(ScheduleFormsRepositoryMock.populateScheduleFormsMock).toHaveBeenCalled();
 		expect(result.length).toBe(1);
 	});
 
 	it('should get a service provider with schedule', async () => {
 		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(new ServiceProvider()));
-		SchedulesFormRepositoryMock.populateSchedulesFormMock.mockImplementation((entries: any[]) =>
+		ScheduleFormsRepositoryMock.populateScheduleFormsMock.mockImplementation((entries: any[]) =>
 			Promise.resolve(entries),
 		);
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProvider({ id: 1, includeScheduleForm: true });
 
-		expect(SchedulesFormRepositoryMock.populateSchedulesFormMock).toHaveBeenCalled();
+		expect(ScheduleFormsRepositoryMock.populateScheduleFormsMock).toHaveBeenCalled();
 		expect(result).toBeDefined();
 	});
 
@@ -234,16 +234,16 @@ class TransactionManagerMock extends TransactionManager {
 	}
 }
 
-class SchedulesFormRepositoryMock extends SchedulesFormRepository {
-	public static populateSchedulesFormMock = jest.fn();
+class ScheduleFormsRepositoryMock extends ScheduleFormsRepository {
+	public static populateScheduleFormsMock = jest.fn();
 	public static populateSingleEntryScheduleFormMock = jest.fn();
 
-	public async populateSchedulesForm<T extends IEntityWithScheduleForm>(entries: T[]): Promise<T[]> {
-		return await SchedulesFormRepositoryMock.populateSchedulesFormMock(entries);
+	public async populateScheduleForms<T extends IEntityWithScheduleForm>(entries: T[]): Promise<T[]> {
+		return await ScheduleFormsRepositoryMock.populateScheduleFormsMock(entries);
 	}
 
 	public async populateSingleEntryScheduleForm<T extends IEntityWithScheduleForm>(entry: T): Promise<T> {
-		return await SchedulesFormRepositoryMock.populateSingleEntryScheduleFormMock(entry);
+		return await ScheduleFormsRepositoryMock.populateSingleEntryScheduleFormMock(entry);
 	}
 }
 

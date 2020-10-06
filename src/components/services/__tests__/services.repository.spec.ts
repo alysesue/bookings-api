@@ -1,7 +1,7 @@
 import { ServicesRepository } from '../services.repository';
 import { Container } from 'typescript-ioc';
 import { ScheduleForm, Service, TimeslotsSchedule, User } from '../../../models';
-import { SchedulesFormRepository } from '../../schedulesForm/schedulesForm.repository';
+import { ScheduleFormsRepository } from '../../scheduleForms/scheduleForms.repository';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TransactionManager } from '../../../core/transactionManager';
 import { UserContext } from '../../../infrastructure/auth/userContext';
@@ -15,7 +15,7 @@ afterAll(() => {
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
-	Container.bind(SchedulesFormRepository).to(SchedulesFormRepositoryMock);
+	Container.bind(ScheduleFormsRepository).to(ScheduleFormsRepositoryMock);
 	Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 	Container.bind(UserContext).to(UserContextMock);
 });
@@ -67,7 +67,7 @@ describe('Services repository', () => {
 
 		const scheduleForm = new ScheduleForm();
 		scheduleForm.id = 11;
-		SchedulesFormRepositoryMock.getSchedulesFormMock.mockImplementation(() => Promise.resolve([scheduleForm]));
+		ScheduleFormsRepositoryMock.getScheduleFormsMock.mockImplementation(() => Promise.resolve([scheduleForm]));
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
@@ -168,11 +168,11 @@ class TransactionManagerMock extends TransactionManager {
 	}
 }
 
-class SchedulesFormRepositoryMock extends SchedulesFormRepository {
-	public static getSchedulesFormMock = jest.fn();
+class ScheduleFormsRepositoryMock extends ScheduleFormsRepository {
+	public static getScheduleFormsMock = jest.fn();
 
-	public async getSchedulesForm(...params): Promise<ScheduleForm[]> {
-		return await SchedulesFormRepositoryMock.getSchedulesFormMock(...params);
+	public async getScheduleForms(...params): Promise<ScheduleForm[]> {
+		return await ScheduleFormsRepositoryMock.getScheduleFormsMock(...params);
 	}
 }
 

@@ -1,4 +1,4 @@
-import { SchedulesFormRepository } from '../schedulesForm.repository';
+import { ScheduleFormsRepository } from '../scheduleForms.repository';
 import { WeekDayBreakRepository } from '../weekdaybreak.repository';
 import { Container } from 'typescript-ioc';
 import { ScheduleForm } from '../../../models';
@@ -21,8 +21,8 @@ beforeEach(() => {
 const NullScheduleId = 55;
 describe('ScheduleForm repository', () => {
 	it('should get schedules form', async () => {
-		const repository = Container.get(SchedulesFormRepository);
-		const result = await repository.getSchedulesForm();
+		const repository = Container.get(ScheduleFormsRepository);
+		const result = await repository.getScheduleForms();
 		expect(result).not.toBe(undefined);
 
 		expect(GetRepositoryMock).toBeCalled();
@@ -30,7 +30,7 @@ describe('ScheduleForm repository', () => {
 	});
 
 	it('should get schedules form with id', async () => {
-		const repository = Container.get(SchedulesFormRepository);
+		const repository = Container.get(ScheduleFormsRepository);
 		const result = await repository.getScheduleFormById(1);
 		expect(result).not.toBe(undefined);
 
@@ -39,7 +39,7 @@ describe('ScheduleForm repository', () => {
 	});
 
 	it('should return null when schedule form not found', async () => {
-		const repository = Container.get(SchedulesFormRepository);
+		const repository = Container.get(ScheduleFormsRepository);
 		const result = await repository.getScheduleFormById(NullScheduleId);
 		expect(result).toBe(null);
 
@@ -48,7 +48,7 @@ describe('ScheduleForm repository', () => {
 	});
 
 	it('should get schedules form with name', async () => {
-		const repository = Container.get(SchedulesFormRepository);
+		const repository = Container.get(ScheduleFormsRepository);
 		const result = await repository.getScheduleFormByName('test');
 		expect(result).not.toBe(undefined);
 
@@ -61,7 +61,7 @@ describe('ScheduleForm repository', () => {
 		scheduleForm.id = 2;
 		scheduleForm.initWeekdaySchedules();
 
-		const repository = Container.get(SchedulesFormRepository);
+		const repository = Container.get(ScheduleFormsRepository);
 		const result = await repository.saveScheduleForm(scheduleForm);
 		expect(result).not.toBe(undefined);
 
@@ -70,7 +70,7 @@ describe('ScheduleForm repository', () => {
 	});
 
 	it('should remove schedules form', async () => {
-		const repository = Container.get(SchedulesFormRepository);
+		const repository = Container.get(ScheduleFormsRepository);
 		const result = await repository.deleteScheduleForm(34848);
 		expect(result).not.toBe(undefined);
 

@@ -23,8 +23,8 @@ import {
 	Tags,
 } from 'tsoa';
 import { parseCsv } from '../../utils';
-import { mapToResponse as mapScheduleToResponse } from '../schedulesForm/schedulesForm.mapper';
-import { ScheduleFormResponse } from '../schedulesForm/schedulesForm.apicontract';
+import { mapToResponse as mapScheduleToResponse } from '../scheduleForms/scheduleForms.mapper';
+import { ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
 import { ServiceProvidersMapper } from './serviceProviders.mapper';
 import {
 	TimeslotItemRequest,

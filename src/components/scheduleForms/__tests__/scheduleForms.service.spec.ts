@@ -1,9 +1,9 @@
-import { SchedulesFormService } from '../schedulesForm.service';
-import { ScheduleFormRequest, WeekDayBreakContract, WeekDayScheduleContract } from '../schedulesForm.apicontract';
-import { SchedulesFormRepository } from '../schedulesForm.repository';
+import { ScheduleFormsService } from '../scheduleForms.service';
+import { ScheduleFormRequest, WeekDayBreakContract, WeekDayScheduleContract } from '../scheduleForms.apicontract';
+import { ScheduleFormsRepository } from '../scheduleForms.repository';
 import { Container } from 'typescript-ioc';
 import { ScheduleForm } from '../../../models';
-import { mapToEntity } from '../schedulesForm.mapper';
+import { mapToEntity } from '../scheduleForms.mapper';
 import { Weekday } from '../../../enums/weekday';
 import { MOLErrorV2 } from 'mol-lib-api-contract';
 
@@ -29,13 +29,13 @@ const ScheduleFormRequestCommon = {
 const scheduleCommon = new ScheduleForm();
 mapToEntity(ScheduleFormRequestCommon, scheduleCommon);
 
-const getSchedulesForm = jest.fn().mockImplementation(() => Promise.resolve([scheduleCommon]));
+const getScheduleForms = jest.fn().mockImplementation(() => Promise.resolve([scheduleCommon]));
 const getScheduleFormById = jest.fn().mockImplementation(() => Promise.resolve(scheduleCommon));
 const getScheduleFormByName = jest.fn().mockImplementation(() => Promise.resolve(scheduleCommon));
 const saveScheduleForm = jest.fn().mockImplementation(() => Promise.resolve(scheduleCommon));
 const deleteScheduleForm = jest.fn().mockImplementation(() => Promise.resolve(undefined));
-const MockSchedulesFormRepository = jest.fn().mockImplementation(() => ({
-	getSchedulesForm,
+const MockScheduleFormsRepository = jest.fn().mockImplementation(() => ({
+	getScheduleForms,
 	saveScheduleForm,
 	getScheduleFormById,
 	getScheduleFormByName,
@@ -43,17 +43,17 @@ const MockSchedulesFormRepository = jest.fn().mockImplementation(() => ({
 }));
 
 describe('Schedules form template services ', () => {
-	let schedulesFormService: SchedulesFormService;
+	let scheduleFormsService: ScheduleFormsService;
 	beforeAll(() => {
-		Container.bind(SchedulesFormRepository).to(MockSchedulesFormRepository);
-		schedulesFormService = Container.get(SchedulesFormService);
+		Container.bind(ScheduleFormsRepository).to(MockScheduleFormsRepository);
+		scheduleFormsService = Container.get(ScheduleFormsService);
 	});
 	beforeEach(() => {
 		jest.clearAllMocks();
 	});
 
 	it('should throw error because open and close times have wrong format', async () => {
-		const schedulesFormRequest: ScheduleFormRequest = {
+		const scheduleFormsRequest: ScheduleFormRequest = {
 			name: 'schedule',
 			slotsDurationInMin: 5,
 			weekdaySchedules: [
@@ -67,7 +67,7 @@ describe('Schedules form template services ', () => {
 		} as ScheduleFormRequest;
 
 		try {
-			await schedulesFormService.createScheduleForm(schedulesFormRequest);
+			await scheduleFormsService.createScheduleForm(scheduleFormsRequest);
 		} catch (e) {
 			expect(e.message).toBe('Invalid request parameters.');
 			expect((e as MOLErrorV2).responseData).toMatchSnapshot();
@@ -76,7 +76,7 @@ describe('Schedules form template services ', () => {
 	});
 
 	it('should throw error because close time have wrong format', async () => {
-		const schedulesFormRequest: ScheduleFormRequest = {
+		const scheduleFormsRequest: ScheduleFormRequest = {
 			name: 'schedule',
 			slotsDurationInMin: 5,
 			weekdaySchedules: [
@@ -90,7 +90,7 @@ describe('Schedules form template services ', () => {
 		} as ScheduleFormRequest;
 
 		try {
-			await schedulesFormService.createScheduleForm(schedulesFormRequest);
+			await scheduleFormsService.createScheduleForm(scheduleFormsRequest);
 		} catch (e) {
 			expect(e.message).toBe('Invalid request parameters.');
 			expect((e as MOLErrorV2).responseData).toMatchSnapshot();
@@ -99,7 +99,7 @@ describe('Schedules form template services ', () => {
 	});
 
 	it('should throw error because openTime > closeTime', async () => {
-		const schedulesFormRequest: ScheduleFormRequest = {
+		const scheduleFormsRequest: ScheduleFormRequest = {
 			name: 'schedule',
 			slotsDurationInMin: 5,
 			weekdaySchedules: [
@@ -113,7 +113,7 @@ describe('Schedules form template services ', () => {
 		} as ScheduleFormRequest;
 
 		try {
-			await schedulesFormService.createScheduleForm(schedulesFormRequest);
+			await scheduleFormsService.createScheduleForm(scheduleFormsRequest);
 		} catch (e) {
 			expect(e.message).toBe('Invalid request parameters.');
 			expect((e as MOLErrorV2).responseData).toMatchSnapshot();
@@ -122,7 +122,7 @@ describe('Schedules form template services ', () => {
 	});
 
 	it('should throw error because slotsDurationInMin < (closeTime - openTime)', async () => {
-		const schedulesFormRequest: ScheduleFormRequest = {
+		const scheduleFormsRequest: ScheduleFormRequest = {
 			name: 'schedule',
 			slotsDurationInMin: 65,
 			weekdaySchedules: [
@@ -136,7 +136,7 @@ describe('Schedules form template services ', () => {
 		} as ScheduleFormRequest;
 
 		try {
-			await schedulesFormService.createScheduleForm(schedulesFormRequest);
+			await scheduleFormsService.createScheduleForm(scheduleFormsRequest);
 		} catch (e) {
 			expect(e.message).toBe('Invalid request parameters.');
 			expect((e as MOLErrorV2).responseData).toMatchSnapshot();
@@ -145,25 +145,25 @@ describe('Schedules form template services ', () => {
 	});
 
 	it('should create new Schedule ', async () => {
-		await schedulesFormService.createScheduleForm(ScheduleFormRequestCommon);
+		await scheduleFormsService.createScheduleForm(ScheduleFormRequestCommon);
 		expect(saveScheduleForm).toBeCalledTimes(1);
 	});
 
 	it('should update the template', async () => {
-		const template = await schedulesFormService.updateScheduleForm(1, ScheduleFormRequestCommon);
+		const template = await scheduleFormsService.updateScheduleForm(1, ScheduleFormRequestCommon);
 
 		expect(saveScheduleForm).toBeCalled();
 		expect(getScheduleFormById).toBeCalled();
 		expect(template.name).toStrictEqual(ScheduleFormRequestCommon.name);
 	});
 
-	it('should get schedulesForm', async () => {
-		await schedulesFormService.getSchedulesForm();
-		expect(getSchedulesForm).toBeCalled();
+	it('should get scheduleForms', async () => {
+		await scheduleFormsService.getScheduleForms();
+		expect(getScheduleForms).toBeCalled();
 	});
 
 	it('should call delete repository', async () => {
-		await schedulesFormService.deleteScheduleForm(3);
+		await scheduleFormsService.deleteScheduleForm(3);
 		expect(deleteScheduleForm).toBeCalled();
 	});
 });

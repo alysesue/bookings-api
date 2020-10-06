@@ -7,7 +7,7 @@ import { ServiceProvidersRepository } from './serviceProviders.repository';
 import { ServiceProviderModel, SetProviderScheduleFormRequest } from './serviceProviders.apicontract';
 import { CalendarsService } from '../calendars/calendars.service';
 import { API_TIMEOUT_PERIOD } from '../../const';
-import { SchedulesFormService } from '../schedulesForm/schedulesForm.service';
+import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
 import { ServicesService } from '../services/services.service';
 import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
@@ -22,7 +22,7 @@ export class ServiceProvidersService {
 	public calendarsService: CalendarsService;
 
 	@Inject
-	private schedulesService: SchedulesFormService;
+	private schedulesService: ScheduleFormsService;
 
 	@Inject
 	private timeslotItemsService: TimeslotItemsService;
