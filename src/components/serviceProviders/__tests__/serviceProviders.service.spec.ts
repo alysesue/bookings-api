@@ -120,6 +120,9 @@ describe('ServiceProviders.Service', () => {
 	});
 
 	it('should set provider schedule', async () => {
+		UserContextMock.getAuthGroups.mockReturnValue(
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
+		);
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ScheduleFormsServiceObj.getScheduleForm.mockImplementation(() => Promise.resolve(new ScheduleForm()));
 
@@ -148,14 +151,20 @@ describe('ServiceProviders.Service', () => {
 	});
 
 	it('should set provider schedule to null', async () => {
+		const service = new Service();
+		service.id = 1;
+		UserContextMock.getAuthGroups.mockReturnValue(
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
+		serviceProviderMock.serviceId = 1;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ScheduleFormsServiceObj.getScheduleForm.mockImplementation(() => Promise.resolve());
 
-		const providerSchedulerequest = new SetProviderScheduleFormRequest();
-		providerSchedulerequest.scheduleFormId = null;
+		const providerScheduleRequest = new SetProviderScheduleFormRequest();
+		providerScheduleRequest.scheduleFormId = null;
 		const scheduleForm = await Container.get(ServiceProvidersService).setProviderScheduleForm(
 			1,
-			providerSchedulerequest,
+			providerScheduleRequest,
 		);
 
 		expect(scheduleForm).toBe(null);

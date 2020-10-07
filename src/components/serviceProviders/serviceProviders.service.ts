@@ -150,6 +150,8 @@ export class ServiceProvidersService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service Provider not found');
 		}
 
+		await this.verifyActionPermission(serviceProvider, CrudAction.Update);
+
 		let schedule: ScheduleForm = null;
 		if (model.scheduleFormId) {
 			schedule = await this.schedulesService.getScheduleForm(model.scheduleFormId);
