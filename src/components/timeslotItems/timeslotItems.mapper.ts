@@ -13,12 +13,12 @@ const mapTimeslotItems = (data: TimeslotItem[]): TimeslotItemResponse[] => {
 };
 
 export const mapToTimeslotsScheduleResponse = (data: TimeslotsSchedule): TimeslotsScheduleResponse => {
-	if (!data) {
-		return null;
-	}
 
 	const response = new TimeslotsScheduleResponse();
-	response.timeslots = mapTimeslotItems(data.timeslotItems);
+	response.timeslots = [];
+	if (data) {
+		response.timeslots = mapTimeslotItems(data.timeslotItems);
+	}
 
 	return response;
 };
