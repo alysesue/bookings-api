@@ -238,9 +238,10 @@ describe('Users Service', () => {
 		const headers = getAdminHeaders();
 		headers[MOLSecurityHeaderKeys.ADMIN_GROUPS] = 'bookingsg:service-provider:localorg';
 
-		const serviceProvider = ServiceProvider.create('Peter', new Calendar(), 1, 'test@email.com', '0000');
+		const serviceProvider = ServiceProvider.create('Peter', 1, 'test@email.com', '0000');
 		serviceProvider._serviceProviderGroupMap = new ServiceProviderGroupMap();
 		serviceProvider._serviceProviderGroupMap.molAdminId = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
+		serviceProvider.calendar = new Calendar();
 
 		ServiceProvidersRepositoryNoAuthMock.getServiceProviderByMolAdminId.mockImplementation(() =>
 			Promise.resolve(serviceProvider),

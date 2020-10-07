@@ -12,6 +12,9 @@ import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract'
 import { ServicesService } from '../services/services.service';
 import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
 import { TimeslotsService } from '../timeslots/timeslots.service';
+import { ServiceProvidersActionAuthVisitor } from './serviceProviders.auth';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { CrudAction } from '../../enums/crudAction';
 
 @InRequestScope
 export class ServiceProvidersService {
@@ -32,6 +35,9 @@ export class ServiceProvidersService {
 
 	@Inject
 	private timeslotsService: TimeslotsService;
+
+	@Inject
+	private userContext: UserContext;
 
 	private static async validateServiceProvider(sp: ServiceProviderModel): Promise<string[]> {
 		const errors: string[] = [];
@@ -117,22 +123,24 @@ export class ServiceProvidersService {
 	}
 
 	public async saveSp(item: ServiceProviderModel, serviceId: number) {
-		const cal = await this.calendarsService.createCalendar();
-		return await this.serviceProvidersRepository.save(
-			ServiceProvider.create(item.name, cal, serviceId, item.email, item.phone),
-		);
+		const serviceProvider = ServiceProvider.create(item.name, serviceId, item.email, item.phone);
+		await this.verifyActionPermission(serviceProvider, CrudAction.Create);
+
+		serviceProvider.calendar = await this.calendarsService.createCalendar();
+		return await this.serviceProvidersRepository.save(serviceProvider);
 	}
 
 	public async updateSp(request: ServiceProviderModel, spId: number) {
-		const sp = await this.serviceProvidersRepository.getServiceProvider({ id: spId });
-		if (!sp) {
+		const serviceProvider = await this.serviceProvidersRepository.getServiceProvider({ id: spId });
+		if (!serviceProvider) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
 		}
+		await this.verifyActionPermission(serviceProvider, CrudAction.Update);
 		await ServiceProvidersService.validateServiceProviders([request]);
-		sp.email = request.email;
-		sp.phone = request.phone;
-		sp.name = request.name;
-		return await this.serviceProvidersRepository.save(sp);
+		serviceProvider.email = request.email;
+		serviceProvider.phone = request.phone;
+		serviceProvider.name = request.name;
+		return await this.serviceProvidersRepository.save(serviceProvider);
 	}
 
 	public async setProviderScheduleForm(id: number, model: SetProviderScheduleFormRequest): Promise<ScheduleForm> {
@@ -271,5 +279,14 @@ export class ServiceProvidersService {
 		serviceProvider.timeslotsSchedule.timeslotItems = items;
 
 		return await this.serviceProvidersRepository.save(serviceProvider);
+	}
+
+	private async verifyActionPermission(serviceProvider: ServiceProvider, action: CrudAction): Promise<void> {
+		const authGroups = await this.userContext.getAuthGroups();
+		if (!new ServiceProvidersActionAuthVisitor(serviceProvider, action).hasPermission(authGroups)) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
+				`User cannot perform this service-provider action (${action}) for this service.`,
+			);
+		}
 	}
 }

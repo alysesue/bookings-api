@@ -40,3 +40,29 @@ export abstract class QueryAuthGroupVisitor implements IAuthGroupVisitor {
 		return this.getVisibilityCondition();
 	}
 }
+
+export abstract class PermissionAwareAuthGroupVisitor implements IAuthGroupVisitor {
+	private _hasPermission: boolean;
+
+	protected constructor() {
+		this._hasPermission = false;
+	}
+
+	public abstract visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void;
+	public abstract visitCitizen(_citizenGroup: CitizenAuthGroup): void;
+	public abstract visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void;
+	public abstract visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void;
+
+	public hasPermission(authGroups: AuthGroup[]): boolean {
+		for (const group of authGroups) {
+			group.acceptVisitor(this);
+		}
+
+		return this._hasPermission;
+	}
+
+	protected markWithPermission(): void {
+		// if any role has permission the result will be true.
+		this._hasPermission = true;
+	}
+}

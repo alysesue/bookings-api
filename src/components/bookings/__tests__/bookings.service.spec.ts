@@ -60,8 +60,9 @@ describe('Bookings.Service', () => {
 	calendar.id = 1;
 	calendar.uuid = '123';
 	calendar.googleCalendarId = 'google-id-1';
-	const serviceProvider = ServiceProvider.create('provider', calendar, 1);
+	const serviceProvider = ServiceProvider.create('provider', 1);
 	serviceProvider.id = 1;
+	serviceProvider.calendar = calendar;
 	const bookingMock = new BookingBuilder()
 		.withServiceId(1)
 		.withStartDateTime(new Date('2020-10-01T01:00:00'))
