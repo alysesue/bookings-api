@@ -65,7 +65,7 @@ export class OrganisationAdminAuthGroup extends AuthGroup {
 }
 
 export class ServiceAdminAuthGroup extends AuthGroup {
-	private _authorisedServices: Service[];
+	private readonly _authorisedServices: Service[];
 
 	constructor(user: User, services: Service[]) {
 		super(user);

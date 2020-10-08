@@ -11,7 +11,7 @@ const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
 
 @Entity()
 export class ServiceProvider implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
-	constructor() {}
+	private constructor() {}
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
@@ -29,6 +29,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 	public get autoAcceptBookings(): boolean {
 		return this._autoAcceptBookings;
 	}
+
 	public get createdAt(): Date {
 		return this._createdAt;
 	}
@@ -36,6 +37,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 	public set createdAt(value: Date) {
 		this._createdAt = value;
 	}
+
 	@Column()
 	private _createdAt: Date;
 
@@ -66,6 +68,9 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
+	public set service(service: Service) {
+		this._service = service;
+	}
 	public get service(): Service {
 		return this._service;
 	}
@@ -81,19 +86,12 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._name = value;
 	}
 
-	public static create(
-		name: string,
-		calendar: Calendar,
-		serviceId: number,
-		email?: string,
-		phone?: string,
-	): ServiceProvider {
+	public static create(name: string, serviceId: number, email?: string, phone?: string) {
 		const instance = new ServiceProvider();
 		instance._serviceId = serviceId;
 		instance._name = name;
 		instance._createdAt = new Date();
 		instance._status = ServiceProviderStatus.Valid;
-		instance._calendar = calendar;
 		instance._email = email;
 		instance._phone = phone;
 		instance._autoAcceptBookings = DEFAULT_AUTO_ACCEPT_BOOKINGS;
@@ -152,6 +150,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 	public set scheduleFormId(id: number) {
 		this._scheduleFormId = id;
 	}
+
 	public get scheduleFormId(): number {
 		return this._scheduleFormId;
 	}
@@ -162,6 +161,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 	public set timeslotsScheduleId(id: number) {
 		this._timeslotsScheduleId = id;
 	}
+
 	public get timeslotsScheduleId(): number {
 		return this._timeslotsScheduleId;
 	}
@@ -175,6 +175,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 	public set timeslotsSchedule(value: TimeslotsSchedule) {
 		this._timeslotsSchedule = value;
 	}
+
 	public get timeslotsSchedule(): TimeslotsSchedule {
 		return this._timeslotsSchedule;
 	}

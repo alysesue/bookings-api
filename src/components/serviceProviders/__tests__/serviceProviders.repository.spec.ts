@@ -112,7 +112,7 @@ describe('Service Provider repository', () => {
 	});
 
 	it('should get a service provider', async () => {
-		const serviceProvider = new ServiceProvider();
+		const serviceProvider = ServiceProvider.create('J', 1);
 		serviceProvider.id = 1;
 		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(serviceProvider));
 
@@ -127,10 +127,7 @@ describe('Service Provider repository', () => {
 	});
 
 	it('should get list of SP with schedule', async () => {
-		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([new ServiceProvider()]));
-		ScheduleFormsRepositoryMock.populateScheduleFormsMock.mockImplementation((entries: any[]) =>
-			Promise.resolve(entries),
-		);
+		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([ServiceProvider.create('J', 1)]));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProviders({ serviceId: 1, includeScheduleForm: true });
@@ -140,10 +137,7 @@ describe('Service Provider repository', () => {
 	});
 
 	it('should get a service provider with schedule', async () => {
-		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(new ServiceProvider()));
-		ScheduleFormsRepositoryMock.populateScheduleFormsMock.mockImplementation((entries: any[]) =>
-			Promise.resolve(entries),
-		);
+		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(ServiceProvider.create('J', 1)));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 		const result = await spRepository.getServiceProvider({ id: 1, includeScheduleForm: true });
@@ -153,7 +147,7 @@ describe('Service Provider repository', () => {
 	});
 
 	it('should get list of SP with TimeslotsSchedule', async () => {
-		const sp = new ServiceProvider();
+		const sp = ServiceProvider.create('', 1);
 		sp.id = 1;
 		sp.timeslotsScheduleId = 2;
 
@@ -177,7 +171,7 @@ describe('Service Provider repository', () => {
 	});
 
 	it('should get a service provider with TimeslotsSchedule', async () => {
-		const sp = new ServiceProvider();
+		const sp = ServiceProvider.create('sp1', 1);
 		sp.id = 1;
 		sp.timeslotsScheduleId = 2;
 
@@ -201,7 +195,7 @@ describe('Service Provider repository', () => {
 	});
 
 	it('should save service provider', async () => {
-		const spInput: ServiceProvider = ServiceProvider.create('abc', null, 1);
+		const spInput: ServiceProvider = ServiceProvider.create('abc', 1);
 
 		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(spInput));
 		const spRepository = Container.get(ServiceProvidersRepository);

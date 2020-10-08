@@ -1,4 +1,4 @@
-import { Calendar, Organisation, Service, ServiceProvider, User } from '../../../models';
+import { Organisation, Service, ServiceProvider, User } from '../../../models';
 import {
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
@@ -66,7 +66,7 @@ describe('Unavailabilities query auth', () => {
 	});
 
 	it(`should filter by service provider id`, async () => {
-		const serviceProvider = ServiceProvider.create('Peter', new Calendar(), service.id, 'test@email.com', '0000');
+		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
 		serviceProvider.id = 5;
 		const groups = [new ServiceProviderAuthGroup(adminMock, serviceProvider)];
 		const result = await new UnavailabilitiesQueryAuthVisitor('un', 'svc').createUserVisibilityCondition(groups);
@@ -81,7 +81,7 @@ describe('Unavailabilities query auth', () => {
 	});
 
 	it(`should combine user groups' permission (union)`, async () => {
-		const serviceProvider = ServiceProvider.create('Peter', new Calendar(), service.id, 'test@email.com', '0000');
+		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
 		serviceProvider.id = 5;
 		const groups = [
 			new ServiceAdminAuthGroup(adminMock, [service]),

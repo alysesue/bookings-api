@@ -23,10 +23,11 @@ jest.mock('mol-lib-common', () => {
 });
 
 describe('ServiceProviders.Controller', () => {
-	const calendar = new Calendar();
-	const sp1 = ServiceProvider.create('Monica', calendar, 1);
-	const sp2 = ServiceProvider.create('Timmy', calendar, 1);
+	const sp1 = ServiceProvider.create('Monica', 1);
+	const sp2 = ServiceProvider.create('Timmy', 1);
 
+	sp1.calendar = new Calendar();
+	sp2.calendar = new Calendar();
 	beforeAll(() => {
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
@@ -75,7 +76,7 @@ describe('ServiceProviders.Controller', () => {
 	});
 
 	it('should get a service provider', async () => {
-		ServiceProvidersMock.getServiceProvider.mockReturnValue(ServiceProvider.create('Monica', null, 1));
+		ServiceProvidersMock.getServiceProvider.mockReturnValue(ServiceProvider.create('Monica', 1));
 
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProvider(1);
@@ -85,8 +86,8 @@ describe('ServiceProviders.Controller', () => {
 
 	it('should save multiple service providers', async () => {
 		ServiceProvidersMock.save.mockReturnValue([
-			ServiceProvider.create('Monica', null, 1),
-			ServiceProvider.create('Timmy', null, 1),
+			ServiceProvider.create('Monica', 1),
+			ServiceProvider.create('Timmy', 1),
 		]);
 		const controller = Container.get(ServiceProvidersController);
 		await controller.addServiceProviders(
@@ -106,8 +107,8 @@ describe('ServiceProviders.Controller', () => {
 
 	it('should save multiple service providers as text', async () => {
 		ServiceProvidersMock.save.mockReturnValue([
-			ServiceProvider.create('Monica', null, 1),
-			ServiceProvider.create('Timmy', null, 1),
+			ServiceProvider.create('Monica', 1),
+			ServiceProvider.create('Timmy', 1),
 		]);
 		const controller = Container.get(ServiceProvidersController);
 
@@ -127,9 +128,7 @@ describe('ServiceProviders.Controller', () => {
 	});
 
 	it('should update a service provider', async () => {
-		ServiceProvidersMock.updateServiceProvider.mockReturnValue(
-			ServiceProvider.create('Test', null, 1, 'test@gmail.com'),
-		);
+		ServiceProvidersMock.updateServiceProvider.mockReturnValue(ServiceProvider.create('Test', 1, 'test@gmail.com'));
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.updateServiceProvider(1, {
 			name: 'Test',

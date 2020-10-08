@@ -50,11 +50,13 @@ describe('Timeslots Service', () => {
 	ServiceMock.timeslotsSchedule = (TimeslotsScheduleMock as unknown) as TimeslotsSchedule;
 	ServiceMock.timeslotsScheduleId = TimeslotsScheduleMock._id;
 
-	const ServiceProviderMock = ServiceProvider.create('Provider', CalendarMock, ServiceMock.id);
+	const ServiceProviderMock = ServiceProvider.create('Provider', ServiceMock.id);
 	ServiceProviderMock.id = 100;
+	ServiceProviderMock.calendar = CalendarMock;
 
-	const ServiceProviderMock2 = ServiceProvider.create('Provider with schedule', CalendarMock, ServiceMock.id);
+	const ServiceProviderMock2 = ServiceProvider.create('Provider with schedule', ServiceMock.id);
 	ServiceProviderMock2.id = 101;
+	ServiceProviderMock2.calendar = CalendarMock;
 	ServiceProviderMock2.timeslotsSchedule = (ProviderScheduleMock as unknown) as TimeslotsSchedule;
 	ServiceProviderMock2.timeslotsScheduleId = ProviderScheduleMock._id;
 
@@ -205,8 +207,8 @@ describe('Timeslots Service', () => {
 
 		const setBookedServiceProviders = (AvailableTimeslotProviders.prototype.setBookedServiceProviders = jest.fn());
 
-		const serviceProvider1 = ServiceProvider.create('Juku', undefined, 1);
-		const serviceProvider2 = ServiceProvider.create('Andi', undefined, 1);
+		const serviceProvider1 = ServiceProvider.create('Juku', 1);
+		const serviceProvider2 = ServiceProvider.create('Andi', 1);
 		serviceProvider1.id = 1;
 		serviceProvider2.id = 2;
 
@@ -223,10 +225,10 @@ describe('Timeslots Service', () => {
 	it('should filter out bookings not related to a authorised role', async () => {
 		TimeslotsScheduleMock.generateValidTimeslots.mockReturnValue([]);
 
-		const visibleServiceProvider = ServiceProvider.create('Justus', undefined, 1, 'email@aa.ee', '55669883');
+		const visibleServiceProvider = ServiceProvider.create('Justus', 1, 'email@aa.ee', '55669883');
 		visibleServiceProvider.id = 2;
 
-		const nonVisibleServiceProvider = ServiceProvider.create('JAMAICA', undefined, 1, 'email1@aa.ee', '55669883');
+		const nonVisibleServiceProvider = ServiceProvider.create('JAMAICA', 1, 'email1@aa.ee', '55669883');
 		nonVisibleServiceProvider.id = 1;
 
 		const testBookings = [

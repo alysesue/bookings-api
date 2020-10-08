@@ -70,8 +70,9 @@ describe('Bookings query auth', () => {
 	});
 
 	it(`should filter by service provider id`, async () => {
-		const serviceProvider = ServiceProvider.create('Peter', new Calendar(), service.id, 'test@email.com', '0000');
+		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
 		serviceProvider.id = 5;
+		serviceProvider.calendar = new Calendar();
 		const groups = [new ServiceProviderAuthGroup(adminMock, serviceProvider)];
 		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
@@ -82,8 +83,9 @@ describe('Bookings query auth', () => {
 	});
 
 	it(`should combine user groups' permission (union)`, async () => {
-		const serviceProvider = ServiceProvider.create('Peter', new Calendar(), service.id, 'test@email.com', '0000');
+		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
 		serviceProvider.id = 5;
+		serviceProvider.calendar = new Calendar();
 		const groups = [
 			new ServiceAdminAuthGroup(adminMock, [service]),
 			new ServiceProviderAuthGroup(adminMock, serviceProvider),

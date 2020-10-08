@@ -2,7 +2,7 @@ import { Container } from 'typescript-ioc';
 import { UnavailabilitiesRepository } from '../unavailabilities.repository';
 import { UnavailabilitiesService } from '../unavailabilities.service';
 import { UnavailabilityRequest } from '../unavailabilities.apicontract';
-import { Calendar, ServiceProvider, Unavailability } from '../../../models';
+import { ServiceProvider, Unavailability } from '../../../models';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 
@@ -104,9 +104,9 @@ describe('Unavailabilities service tests', () => {
 	});
 
 	it('should validate unavailable service providers exist', async () => {
-		const spA = ServiceProvider.create('A', new Calendar(), 1);
+		const spA = ServiceProvider.create('A', 1);
 		spA.id = 5;
-		const spB = ServiceProvider.create('B', new Calendar(), 1);
+		const spB = ServiceProvider.create('B', 1);
 		spB.id = 2;
 		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([spA, spB]));
 

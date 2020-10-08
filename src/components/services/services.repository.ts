@@ -72,7 +72,6 @@ export class ServicesRepository extends RepositoryBase<Service> {
 
 	public async getService(id: number): Promise<Service> {
 		const query = await this.getServiceQueryById(id);
-		const entry = await query.getOne();
-		return entry;
+		return await query.getOne();
 	}
 }
