@@ -8,6 +8,8 @@ import { TimeOfDay, TimeslotItem, TimeslotsSchedule, ChangeLogAction } from '../
 import { DeleteResult } from 'typeorm';
 import { TimeslotItemsActionAuthVisitor } from './timeslotItems.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
+import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
+import { ServicesService } from '../services/services.service';
 
 @InRequestScope
 export class TimeslotItemsService {
@@ -16,11 +18,22 @@ export class TimeslotItemsService {
 	@Inject
 	private timeslotItemsRepository: TimeslotItemsRepository;
 	@Inject
+	private serviceProvidersService: ServiceProvidersService;
+	@Inject
+	private servicesService: ServicesService;
+	@Inject
 	private userContext: UserContext;
 
 	private async verifyActionPermission(timeslotSchedule: TimeslotsSchedule): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
-		const hasPermission = await new TimeslotItemsActionAuthVisitor(timeslotSchedule).hasPermission(authGroups);
+		let timeslotScheduleData = timeslotSchedule;
+		if (!timeslotSchedule._service && !timeslotSchedule._serviceProvider) {
+			timeslotScheduleData = await this.timeslotsScheduleRepository.getTimeslotsScheduleById(timeslotSchedule._id, { retrieveService: true, retrieveServiceProvider: true });
+			if (timeslotScheduleData._serviceProvider && !timeslotScheduleData._serviceProvider.service) {
+				timeslotScheduleData._serviceProvider.service = await this.servicesService.getService(timeslotScheduleData._serviceProvider.serviceId);
+			}
+		}
+		const hasPermission = new TimeslotItemsActionAuthVisitor(timeslotScheduleData).hasPermission(authGroups);
 		if (!hasPermission) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
 				`User cannot perform this timeslot item action for this service.`,

@@ -10,22 +10,18 @@ import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/a
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TimeslotItemsActionAuthVisitor } from '../timeslotItems.auth';
 
+jest.mock('../timeslotItems.auth');
+
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
-const saveTimeslotItem = jest.fn().mockImplementation((item) => Promise.resolve(item));
-const saveTimeslotItems = jest.fn().mockImplementation((item) => Promise.resolve([item]));
+const saveTimeslotItem = jest.fn();
+const saveTimeslotItems = jest.fn();
 const deleteTimeslotItem = jest.fn();
-const getTimeslotItem = jest.fn().mockImplementation((item) => Promise.resolve(item));
-const TimeslotItemsRepositoryMock = jest.fn().mockImplementation(() => ({
-	saveTimeslotItem,
-	deleteTimeslotItem,
-	saveTimeslotItems,
-	getTimeslotItem,
-}));
-
+const getTimeslotItem = jest.fn();
+const TimeslotItemsRepositoryMock = jest.fn();
 describe('TimeslotsItem services ', () => {
 	const service = new Service();
 	service.id = 1;
@@ -49,17 +45,28 @@ describe('TimeslotsItem services ', () => {
 		email: 'test@email.com',
 		name: 'Name',
 	});
-	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+	const visitorObj = {
+		hasPermission: jest.fn(),
+	}
 
 
 	beforeAll(() => {
 		Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 		Container.bind(TimeslotItemsRepository).to(TimeslotItemsRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
-		Container.bind(TimeslotItemsActionAuthVisitor).to(TimeslotItemsActionAuthVisitorMock);
 
 	});
 	beforeEach(() => {
+		TimeslotItemsRepositoryMock.mockImplementation(() => ({
+			saveTimeslotItem,
+			deleteTimeslotItem,
+			saveTimeslotItems,
+			getTimeslotItem,
+		}));
+
+		saveTimeslotItem.mockImplementation((item) => Promise.resolve(item));
+		saveTimeslotItems.mockImplementation((item) => Promise.resolve([item]));
+		getTimeslotItem.mockImplementation((item) => Promise.resolve(item));
 
 		const serviceMock = new Service();
 		serviceMock.id = 1;
@@ -75,10 +82,16 @@ describe('TimeslotsItem services ', () => {
 		request.weekDay = Weekday.Thursday;
 		request.startTime = '11:00';
 		request.endTime = '12:00';
+
+		visitorObj.hasPermission.mockReturnValue(true);
+
+		(TimeslotItemsActionAuthVisitor as jest.Mock).mockImplementation(() => {
+			return visitorObj;
+		});
 	});
 
 	afterEach(() => {
-		jest.clearAllMocks();
+		jest.resetAllMocks();
 	});
 
 	it('should create timeslots item', async () => {
@@ -90,6 +103,7 @@ describe('TimeslotsItem services ', () => {
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.createTimeslotItem(timeslotsScheduleMock, request);
 		expect(saveTimeslotItem).toBeCalled();
+		expect(visitorObj.hasPermission).toBeCalled();
 	});
 
 	it('should validate start time is less than end time', async () => {
@@ -197,6 +211,7 @@ describe('TimeslotsItem services ', () => {
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.updateTimeslotItem(scheduleForUpdate, 4, request);
 		expect(saveTimeslotItem).toBeCalled();
+		expect(visitorObj.hasPermission).toBeCalled();
 	});
 
 	it('should throw when updating wrong timeslot id', async () => {
@@ -235,6 +250,7 @@ describe('TimeslotsItem services ', () => {
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.deleteTimeslot(1);
 		expect(deleteTimeslotItem).toBeCalledTimes(1);
+		expect(visitorObj.hasPermission).toBeCalled();
 	});
 });
 
@@ -253,48 +269,9 @@ export class UserContextMock extends UserContext {
 }
 
 export class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
-	// public static getOrganisationsForUserGroups = jest.fn<Promise<TimeslotsSchedule>, any>();
 	public static getTimeslotsScheduleById = jest.fn<Promise<TimeslotsSchedule>, any>();
 
-	// public async getOrganisationsForUserGroups(...params): Promise<any> {
-	// 	return await TimeslotsScheduleRepositoryMock.getOrganisationsForUserGroups(...params);
-	// }
 	public async getTimeslotsScheduleById(...params): Promise<any> {
 		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleById(...params);
-	}
-}
-
-export class TimeslotItemsActionAuthVisitorMock extends TimeslotItemsActionAuthVisitor {
-	public static visitCitizen = jest.fn();
-	public static visitOrganisationAdmin = jest.fn();
-	public static visitServiceAdmin = jest.fn();
-	public static visitServiceProvider = jest.fn();
-	public static hasPermission = jest.fn();
-
-	constructor() {
-		const timeslotScheduleMock = new TimeslotsSchedule();
-		timeslotScheduleMock._id = 1;
-
-		super(timeslotScheduleMock);
-	}
-
-	public hasPermission(...params): any {
-		return TimeslotItemsActionAuthVisitorMock.hasPermission(...params);
-	}
-
-	public visitCitizen(...params): any {
-		return TimeslotItemsActionAuthVisitorMock.visitCitizen(...params);
-	}
-
-	public visitOrganisationAdmin(...params): any {
-		return TimeslotItemsActionAuthVisitorMock.visitOrganisationAdmin(...params);
-	}
-
-	public visitServiceAdmin(...params): any {
-		return TimeslotItemsActionAuthVisitorMock.visitServiceAdmin(...params);
-	}
-
-	public visitServiceProvider(...params): any {
-		return TimeslotItemsActionAuthVisitorMock.visitServiceProvider(...params);
 	}
 }

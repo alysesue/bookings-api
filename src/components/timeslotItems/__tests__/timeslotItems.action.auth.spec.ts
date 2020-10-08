@@ -1,5 +1,4 @@
-import { BookingBuilder } from '../../../models/entities/booking';
-import { Calendar, ChangeLogAction, Organisation, Service, ServiceProvider, User, TimeslotsSchedule } from '../../../models';
+import { Calendar, Organisation, Service, ServiceProvider, User, TimeslotsSchedule } from '../../../models';
 import { TimeslotItemsActionAuthVisitor } from '../timeslotItems.auth';
 import {
 	CitizenAuthGroup,
@@ -18,12 +17,6 @@ describe('TimeslotItems action auth', () => {
 	const organisation = new Organisation();
 	organisation.id = 2;
 
-	const service = new Service();
-	service.id = 3;
-	service.name = 'service';
-	service.organisationId = organisation.id;
-	service.organisation = organisation;
-
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 	const adminMock = User.createAdminUser({
 		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
@@ -34,16 +27,13 @@ describe('TimeslotItems action auth', () => {
 
 	it('should validate param to have service or service provider', async () => {
 		const timeslotsScheduleMock = new TimeslotsSchedule();
-
 		const groups = [new CitizenAuthGroup(singpassMock)];
-
-		expect(new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toThrow();
+		expect(() => new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toThrow();
 	});
 	it('should validate FALSE for citizen action permission', async () => {
 		const serviceMock = new Service();
 		const timeslotsScheduleMock = new TimeslotsSchedule();
 		timeslotsScheduleMock._service = serviceMock;
-
 		const groups = [new CitizenAuthGroup(singpassMock)];
 
 		expect(new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toBe(false);
@@ -51,6 +41,7 @@ describe('TimeslotItems action auth', () => {
 
 	it('should validate FALSE for other organisation admin action permission', async () => {
 		const serviceMock = new Service();
+		serviceMock.organisationId = 2;
 		const timeslotsScheduleMock = new TimeslotsSchedule();
 		timeslotsScheduleMock._service = serviceMock;
 		const organisation = new Organisation();
@@ -63,6 +54,7 @@ describe('TimeslotItems action auth', () => {
 
 	it('should validate TRUE for the same organisation admin action permission', async () => {
 		const serviceMock = new Service();
+		serviceMock.organisationId = 2;
 		const timeslotsScheduleMock = new TimeslotsSchedule();
 		timeslotsScheduleMock._service = serviceMock;
 		const organisation = new Organisation();
@@ -74,44 +66,61 @@ describe('TimeslotItems action auth', () => {
 	});
 
 	it('should validate FALSE for other service admin action permission', async () => {
+		const authorisedService = new Service();
+		authorisedService.id = 3;
+
 		const serviceMock = new Service();
 		serviceMock.id = 1;
 		const timeslotsScheduleMock = new TimeslotsSchedule();
 		timeslotsScheduleMock._service = serviceMock;
 
-		const groups = [new ServiceAdminAuthGroup(adminMock, [service])];
+		const groups = [new ServiceAdminAuthGroup(adminMock, [authorisedService])];
 
 		expect(new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toBe(false);
 	});
 
 	it('should validate TRUE for other service admin action permission', async () => {
+		const authorisedService = new Service();
+		authorisedService.id = 3;
+
 		const serviceMock = new Service();
 		serviceMock.id = 3;
 		const timeslotsScheduleMock = new TimeslotsSchedule();
 		timeslotsScheduleMock._service = serviceMock;
 
-		const groups = [new ServiceAdminAuthGroup(adminMock, [service])];
+		const groups = [new ServiceAdminAuthGroup(adminMock, [authorisedService])];
 
-		expect(new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toBe(false);
+		expect(new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toBe(true);
 	});
 
 	it('should validate FALSE for other service provider timeslot by service admin action permission', async () => {
+		const authorisedService = new Service();
+		authorisedService.id = 3;
+
+
 		const serviceMock = new Service();
 		serviceMock.id = 10;
 		const serviceProviderB = ServiceProvider.create('Peter', new Calendar(), serviceMock.id, 'test@email.com', '0000');
+		serviceProviderB.service = serviceMock;
 
 		const timeslotsScheduleMock = new TimeslotsSchedule();
 		timeslotsScheduleMock._serviceProvider = serviceProviderB;
 
-		const groups = [new ServiceAdminAuthGroup(adminMock, [service])];
+		const groups = [new ServiceAdminAuthGroup(adminMock, [authorisedService])];
 
 		expect(new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toBe(false);
 	});
 
 	it('should validate FALSE for other service provider action permission', async () => {
+		const service = new Service();
+		service.id = 3;
 
 		const serviceProviderA = ServiceProvider.create('Alice', new Calendar(), service.id, 'test@email.com', '0000');
+		serviceProviderA.id = 1;
+		serviceProviderA.service = service;
 		const serviceProviderB = ServiceProvider.create('Peter', new Calendar(), service.id, 'test@email.com', '0000');
+		serviceProviderB.id = 2;
+		serviceProviderB.service = service;
 		const timeslotsScheduleMock = new TimeslotsSchedule();
 		timeslotsScheduleMock._serviceProvider = serviceProviderB;
 
@@ -121,7 +130,12 @@ describe('TimeslotItems action auth', () => {
 	});
 
 	it('should validate TRUE for other service provider action permission', async () => {
+		const service = new Service();
+		service.id = 3;
+
 		const serviceProvider = ServiceProvider.create('Peter', new Calendar(), service.id, 'test@email.com', '0000');
+		serviceProvider.id = 1;
+		serviceProvider.service = service;
 		const timeslotsScheduleMock = new TimeslotsSchedule();
 		timeslotsScheduleMock._serviceProvider = serviceProvider;
 

@@ -1,4 +1,5 @@
 import { TimeOfDay } from './timeOfDay';
+import { Service } from 'mol-lib-api-contract';
 
 export interface ISchedule {
 	slotsDurationInMin: number;
@@ -9,7 +10,7 @@ export interface IEntityWithSchedule {
 	schedule: ISchedule;
 }
 
-export interface ITimeslotsSchedule {}
+export interface ITimeslotsSchedule { }
 
 export interface IEntityWithTimeslotsSchedule {
 	timeslotsScheduleId: number;
@@ -26,10 +27,13 @@ export interface IOrganisation {
 
 export interface IService {
 	id: number;
+	organisationId: number;
 }
 
 export interface IServiceProvider {
 	id: number;
+	serviceId: number;
+	service: IService;
 }
 
 export interface ITimeSpan {

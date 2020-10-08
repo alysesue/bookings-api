@@ -12,7 +12,6 @@ import {
 	TimeslotItem,
 	TimeslotsSchedule,
 	User,
-	ChangeLogAction,
 } from '../../../models';
 import { ServiceProviderModel, SetProviderScheduleRequest } from '../serviceProviders.apicontract';
 import { CalendarsService } from '../../calendars/calendars.service';
@@ -25,8 +24,7 @@ import { ServicesService } from '../../services/services.service';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { UserContext } from '../../../infrastructure/auth/userContext';
-import { AuthGroup, ServiceProviderAuthGroup, IAuthGroupVisitor } from '../../../infrastructure/auth/authGroup';
-import { TimeslotItemsActionAuthVisitor } from '../../timeslotItems/timeslotItems.auth';
+import { AuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -75,9 +73,6 @@ describe('ServiceProviders.Service', () => {
 		Container.bind(SchedulesService).to(SchedulesServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 		Container.bind(UserContext).to(UserContextMock);
-		Container.bind(TimeslotItemsActionAuthVisitor).to(TimeslotItemsActionAuthVisitorMock);
-
-
 	});
 
 	afterEach(() => {
@@ -194,12 +189,11 @@ describe('ServiceProviders.Service', () => {
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProvider)]));
 
-		new TimeslotItemsActionAuthVisitorMock(timeslotsScheduleMock);
-
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.addTimeslotItem(1, request);
+		TimeslotItemsServiceMock.createTimeslotItem.mockImplementation(() => Promise.resolve(timeslotItemMock));
 		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(0);
-		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem).toBeCalledTimes(1);
+		expect(TimeslotItemsServiceMock.createTimeslotItem).toBeCalledTimes(1);
 	});
 
 	it('should copy timeslots item  service to  service provider and save it', async () => {
@@ -211,10 +205,12 @@ describe('ServiceProviders.Service', () => {
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProviderMockWithTemplate)]));
 
+		TimeslotItemsServiceMock.createTimeslotItem.mockImplementation(() => Promise.resolve(timeslotItemMock));
+
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.addTimeslotItem(1, request);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(1);
-		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem).toBeCalledTimes(1);
+		expect(TimeslotItemsServiceMock.createTimeslotItem).toBeCalledTimes(1);
 	});
 
 	it('should update timeslots schedule service provider', async () => {
@@ -342,6 +338,7 @@ class TimeslotItemsServiceMock extends TimeslotItemsService {
 	public static mapAndSaveTimeslotItemsToTimeslotsSchedule = jest.fn();
 	public static deleteTimeslot = jest.fn();
 	public static mapAndSaveTimeslotItem = jest.fn();
+	public static createTimeslotItem = jest.fn();
 
 	public async mapAndSaveTimeslotItem(
 		timeslotsSchedule: TimeslotsSchedule,
@@ -354,6 +351,10 @@ class TimeslotItemsServiceMock extends TimeslotItemsService {
 	public async deleteTimeslot(timeslotId: number): Promise<DeleteResult> {
 		return await TimeslotItemsServiceMock.deleteTimeslot(timeslotId);
 	}
+	public async createTimeslotItem(...params): Promise<any> {
+		return await TimeslotItemsServiceMock.createTimeslotItem(...params);
+	}
+
 }
 
 class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
@@ -380,12 +381,5 @@ export class UserContextMock extends UserContext {
 
 	public async getAuthGroups(...params): Promise<any> {
 		return await UserContextMock.getAuthGroups(...params);
-	}
-}
-
-class TimeslotItemsActionAuthVisitorMock extends TimeslotItemsActionAuthVisitor {
-	public static hasPermission = jest.fn();
-	public hasPermission(...params): any {
-		return TimeslotItemsActionAuthVisitorMock.hasPermission(...params);
 	}
 }
