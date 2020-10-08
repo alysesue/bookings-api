@@ -39,11 +39,28 @@ describe('TimeslotItems action auth', () => {
 		expect(new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toBe(false);
 	});
 
-	it('should validate FALSE for other organisation admin action permission', async () => {
+	it('should validate FALSE for serice in different organisation admin action permission', async () => {
 		const serviceMock = new Service();
 		serviceMock.organisationId = 2;
 		const timeslotsScheduleMock = new TimeslotsSchedule();
 		timeslotsScheduleMock._service = serviceMock;
+		const organisation = new Organisation();
+		organisation.id = 3;
+
+		const groups = [new OrganisationAdminAuthGroup(adminMock, [organisation])];
+
+		expect(new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toBe(false);
+	});
+
+	it('should validate FALSE for SP in different organisation admin action permission', async () => {
+		const serviceMock = new Service();
+		serviceMock.id = 1;
+		serviceMock.organisationId = 2;
+		const spMock = ServiceProvider.create('Peter', serviceMock.id, 'test@email.com', '0000');
+		spMock.service = serviceMock;
+
+		const timeslotsScheduleMock = new TimeslotsSchedule();
+		timeslotsScheduleMock._serviceProvider = spMock;
 		const organisation = new Organisation();
 		organisation.id = 3;
 
