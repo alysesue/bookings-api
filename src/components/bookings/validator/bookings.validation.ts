@@ -1,4 +1,4 @@
-import { Booking, BookingStatus, ServiceProvider } from '../../../models';
+import { Booking, BookingStatus } from '../../../models';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { DateHelper } from '../../../infrastructure/dateHelper';
@@ -101,6 +101,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 				to: booking.endDateTime,
 				serviceId: booking.serviceId,
 				serviceProviderId: booking.serviceProviderId,
+				skipAuthorisation: true,
 			}))
 		) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
@@ -116,6 +117,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 			statuses: [BookingStatus.Accepted],
 			serviceId: booking.serviceId,
 			serviceProviderId: booking.serviceProviderId,
+			byPassAuth: true,
 		};
 
 		const acceptedBookings = await this.bookingsRepository.search(searchQuery);

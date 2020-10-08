@@ -13,11 +13,11 @@ import {
 	SuccessResponse,
 	Tags,
 } from 'tsoa';
-import { ServiceRequest, ServiceResponse, SetScheduleRequest } from './service.apicontract';
+import { ServiceRequest, ServiceResponse, SetScheduleFormRequest } from './service.apicontract';
 import { ServicesService } from './services.service';
 import { Service } from '../../models';
-import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
-import { ScheduleResponse } from '../schedules/schedules.apicontract';
+import { mapToResponse as mapSScheduleFormResponseToResponse } from '../scheduleForms/scheduleForms.mapper';
+import { ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
 import {
 	TimeslotItemRequest,
 	TimeslotItemResponse,
@@ -81,24 +81,24 @@ export class ServicesController extends Controller {
 	}
 
 	@Deprecated()
-	@Put('{id}/schedule')
+	@Put('{id}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
-	public async setServiceSchedule(
+	public async setServiceScheduleForm(
 		@Path() id: number,
-		@Body() request: SetScheduleRequest,
-	): Promise<ScheduleResponse> {
-		return mapScheduleToResponse(await this.servicesService.setServiceSchedule(id, request));
+		@Body() request: SetScheduleFormRequest,
+	): Promise<ScheduleFormResponse> {
+		return mapSScheduleFormResponseToResponse(await this.servicesService.setServiceScheduleForm(id, request));
 	}
 
 	@Deprecated()
-	@Get('{id}/schedule')
+	@Get('{id}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
-	public async getServiceSchedule(@Path() id: number): Promise<ScheduleResponse> {
-		return mapScheduleToResponse(await this.servicesService.getServiceSchedule(id));
+	public async getServiceScheduleForm(@Path() id: number): Promise<ScheduleFormResponse> {
+		return mapSScheduleFormResponseToResponse(await this.servicesService.getServiceScheduleForm(id));
 	}
 
 	/**

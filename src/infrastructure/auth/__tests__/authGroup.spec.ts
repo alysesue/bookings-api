@@ -1,4 +1,4 @@
-import { Calendar, Organisation, Service, ServiceProvider, User } from '../../../models';
+import { Organisation, Service, ServiceProvider, User } from '../../../models';
 import {
 	CitizenAuthGroup,
 	IAuthGroupVisitor,
@@ -21,7 +21,7 @@ describe('auth group tests', () => {
 	organisation.id = 1;
 	const service = new Service();
 	service.id = 1;
-	const serviceProvider = ServiceProvider.create('Peter', new Calendar(), service.id, 'test@email.com', '0000');
+	const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
 
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 	const adminMock = User.createAdminUser({

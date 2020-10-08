@@ -1,8 +1,8 @@
 import { Container } from 'typescript-ioc';
 import { ServicesController } from '../services.controller';
-import { ServiceRequest, SetScheduleRequest } from '../service.apicontract';
+import { ServiceRequest, SetScheduleFormRequest } from '../service.apicontract';
 import { ServicesService } from '../services.service';
-import { Schedule, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
+import { ScheduleForm, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 import { Weekday } from '../../../enums/weekday';
 
@@ -54,21 +54,21 @@ describe('Services controller tests', () => {
 		expect(response).toHaveLength(2);
 	});
 
-	it('should set service schedule', async () => {
-		ServicesServiceMock.setServiceSchedule.mockReturnValue(Promise.resolve(new Schedule()));
-		const request = new SetScheduleRequest();
-		request.scheduleId = 2;
+	it('should set service ScheduleForm', async () => {
+		ServicesServiceMock.setServiceScheduleForm.mockReturnValue(Promise.resolve(new ScheduleForm()));
+		const request = new SetScheduleFormRequest();
+		request.scheduleFormId = 2;
 
-		await Container.get(ServicesController).setServiceSchedule(1, request);
+		await Container.get(ServicesController).setServiceScheduleForm(1, request);
 
-		expect(ServicesServiceMock.setServiceSchedule).toBeCalled();
+		expect(ServicesServiceMock.setServiceScheduleForm).toBeCalled();
 	});
 
-	it('should get service schedule', async () => {
-		ServicesServiceMock.getServiceSchedule.mockReturnValue(Promise.resolve(new Schedule()));
-		await Container.get(ServicesController).getServiceSchedule(1);
+	it('should get service ScheduleForm', async () => {
+		ServicesServiceMock.getServiceScheduleForm.mockReturnValue(Promise.resolve(new ScheduleForm()));
+		await Container.get(ServicesController).getServiceScheduleForm(1);
 
-		expect(ServicesServiceMock.getServiceSchedule).toBeCalled();
+		expect(ServicesServiceMock.getServiceScheduleForm).toBeCalled();
 	});
 
 	it('should get a service', async () => {
@@ -143,8 +143,8 @@ const ServicesServiceMock = {
 	createService: jest.fn(),
 	updateService: jest.fn(),
 	getServices: jest.fn(),
-	setServiceSchedule: jest.fn(),
-	getServiceSchedule: jest.fn(),
+	setServiceScheduleForm: jest.fn(),
+	getServiceScheduleForm: jest.fn(),
 	getService: jest.fn(),
 	deleteTimeslotsScheduleItem: jest.fn(),
 	updateTimeslotItem: jest.fn(),
@@ -165,12 +165,12 @@ class ServicesServiceMockClass extends ServicesService {
 		return ServicesServiceMock.getServices();
 	}
 
-	public async setServiceSchedule(id: number, model: SetScheduleRequest): Promise<Schedule> {
-		return ServicesServiceMock.setServiceSchedule(id, model);
+	public async setServiceScheduleForm(id: number, model: SetScheduleFormRequest): Promise<ScheduleForm> {
+		return ServicesServiceMock.setServiceScheduleForm(id, model);
 	}
 
-	public async getServiceSchedule(id: number): Promise<Schedule> {
-		return ServicesServiceMock.getServiceSchedule(id);
+	public async getServiceScheduleForm(id: number): Promise<ScheduleForm> {
+		return ServicesServiceMock.getServiceScheduleForm(id);
 	}
 
 	public async getService(serviceId: number): Promise<Service> {

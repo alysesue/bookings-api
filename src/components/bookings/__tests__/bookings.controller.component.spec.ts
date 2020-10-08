@@ -15,12 +15,12 @@ import { ServiceProvidersRepository } from '../../serviceProviders/serviceProvid
 import { ServicesService } from '../../services/services.service';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import {
+	BookingActionFunction,
 	BookingChangeLogsService,
 	GetBookingFunction,
 } from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
-import { BookingActionFunction } from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
 import { BookingBuilder } from '../../../models/entities/booking';
-import { AuthGroup, CitizenAuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -47,8 +47,9 @@ describe('Booking Integration tests', () => {
 
 		const service = new Service();
 		service.id = 2;
-		const provider = ServiceProvider.create('Provider', calendar, 2);
+		const provider = ServiceProvider.create('Provider', 2);
 		provider.id = 11;
+		provider.calendar = calendar;
 
 		const adminMock = User.createAdminUser({
 			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',

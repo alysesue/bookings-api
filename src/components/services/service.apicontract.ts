@@ -8,6 +8,6 @@ export class ServiceRequest {
 	public organisationId?: number;
 }
 
-export class SetScheduleRequest {
-	public scheduleId?: number;
+export class SetScheduleFormRequest {
+	public scheduleFormId?: number;
 }

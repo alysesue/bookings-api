@@ -114,6 +114,7 @@ export class TimeslotsService {
 			to: endDateTime,
 			statuses: [BookingStatus.PendingApproval, BookingStatus.Accepted],
 			serviceId,
+			byPassAuth: true,
 		});
 
 		const acceptedBookings = bookings.filter((booking) => booking.status === BookingStatus.Accepted);
@@ -181,6 +182,7 @@ export class TimeslotsService {
 			from: startDateTime,
 			to: endDateTime,
 			serviceId,
+			skipAuthorisation: true,
 		});
 
 		for (const unavailability of unavailabilities) {

@@ -3,14 +3,13 @@ import {
 	ServiceProviderListRequest,
 	ServiceProviderModel,
 	ServiceProviderResponseModel,
-	SetProviderScheduleRequest,
+	SetProviderScheduleFormRequest,
 } from './serviceProviders.apicontract';
 import { ServiceProvidersService } from './serviceProviders.service';
 import {
 	Body,
 	Controller,
 	Delete,
-	Deprecated,
 	Get,
 	Header,
 	Path,
@@ -24,8 +23,8 @@ import {
 	Tags,
 } from 'tsoa';
 import { parseCsv } from '../../utils';
-import { mapToResponse as mapScheduleToResponse } from '../schedules/schedules.mapper';
-import { ScheduleResponse } from '../schedules/schedules.apicontract';
+import { mapToResponse as mapScheduleToResponse } from '../scheduleForms/scheduleForms.mapper';
+import { ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
 import { ServiceProvidersMapper } from './serviceProviders.mapper';
 import {
 	TimeslotItemRequest,
@@ -155,25 +154,23 @@ export class ServiceProvidersController extends Controller {
 		return this.mapper.mapDataModel(result);
 	}
 
-	@Deprecated()
-	@Put('{spId}/schedule')
+	@Put('{spId}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
-	public async setServiceSchedule(
+	public async setServiceScheduleForm(
 		@Path() spId: number,
-		@Body() request: SetProviderScheduleRequest,
-	): Promise<ScheduleResponse> {
-		return mapScheduleToResponse(await this.serviceProvidersService.setProviderSchedule(spId, request));
+		@Body() request: SetProviderScheduleFormRequest,
+	): Promise<ScheduleFormResponse> {
+		return mapScheduleToResponse(await this.serviceProvidersService.setProviderScheduleForm(spId, request));
 	}
 
-	@Deprecated()
-	@Get('{spId}/schedule')
+	@Get('{spId}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {} })
 	@Response(401, 'Valid authentication types: [admin]')
-	public async getServiceSchedule(@Path() spId: number): Promise<ScheduleResponse> {
-		return mapScheduleToResponse(await this.serviceProvidersService.getProviderSchedule(spId));
+	public async getServiceScheduleForm(@Path() spId: number): Promise<ScheduleFormResponse> {
+		return mapScheduleToResponse(await this.serviceProvidersService.getProviderScheduleForm(spId));
 	}
 
 	/**

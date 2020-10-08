@@ -100,7 +100,7 @@ describe('TimeslotItems action auth', () => {
 
 		const serviceMock = new Service();
 		serviceMock.id = 10;
-		const serviceProviderB = ServiceProvider.create('Peter', new Calendar(), serviceMock.id, 'test@email.com', '0000');
+		const serviceProviderB = ServiceProvider.create('Peter', serviceMock.id, 'test@email.com', '0000');
 		serviceProviderB.service = serviceMock;
 
 		const timeslotsScheduleMock = new TimeslotsSchedule();
@@ -115,10 +115,10 @@ describe('TimeslotItems action auth', () => {
 		const service = new Service();
 		service.id = 3;
 
-		const serviceProviderA = ServiceProvider.create('Alice', new Calendar(), service.id, 'test@email.com', '0000');
+		const serviceProviderA = ServiceProvider.create('Alice', service.id, 'test@email.com', '0000');
 		serviceProviderA.id = 1;
 		serviceProviderA.service = service;
-		const serviceProviderB = ServiceProvider.create('Peter', new Calendar(), service.id, 'test@email.com', '0000');
+		const serviceProviderB = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
 		serviceProviderB.id = 2;
 		serviceProviderB.service = service;
 		const timeslotsScheduleMock = new TimeslotsSchedule();
@@ -133,7 +133,7 @@ describe('TimeslotItems action auth', () => {
 		const service = new Service();
 		service.id = 3;
 
-		const serviceProvider = ServiceProvider.create('Peter', new Calendar(), service.id, 'test@email.com', '0000');
+		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
 		serviceProvider.id = 1;
 		serviceProvider.service = service;
 		const timeslotsScheduleMock = new TimeslotsSchedule();

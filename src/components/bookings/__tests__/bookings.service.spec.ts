@@ -60,9 +60,10 @@ describe('Bookings.Service', () => {
 	calendar.id = 1;
 	calendar.uuid = '123';
 	calendar.googleCalendarId = 'google-id-1';
-	const serviceProvider = ServiceProvider.create('provider', calendar, 1);
+	const serviceProvider = ServiceProvider.create('provider', 1);
 	serviceProvider.id = 1;
-	//	serviceProvider.timeslotsSchedule = timeslotSchedule;
+	serviceProvider.calendar = calendar;
+
 	const timeslotSchedule = new TimeslotsSchedule();
 	timeslotSchedule._id = 1;
 	timeslotSchedule._serviceProvider = serviceProvider;
@@ -236,10 +237,16 @@ describe('Bookings.Service', () => {
 	});
 
 	it('should cancel booking', async () => {
+		const startDate = new Date();
+		startDate.setDate(new Date().getDate() + 1);
+
+		const endDate = new Date(startDate);
+		endDate.setHours(endDate.getHours() + 1);
+
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(1)
-			.withStartDateTime(new Date('3020-10-01T01:00:00'))
-			.withEndDateTime(new Date('3020-10-01T02:00:00'))
+			.withStartDateTime(startDate)
+			.withEndDateTime(endDate)
 			.build();
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;

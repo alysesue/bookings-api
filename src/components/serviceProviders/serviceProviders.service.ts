@@ -2,16 +2,19 @@ import { isEmail, isSGPhoneNumber } from 'mol-lib-api-contract/utils';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { cloneDeep } from 'lodash';
-import { Schedule, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
-import { ServiceProviderModel, SetProviderScheduleRequest } from './serviceProviders.apicontract';
+import { ServiceProviderModel, SetProviderScheduleFormRequest } from './serviceProviders.apicontract';
 import { CalendarsService } from '../calendars/calendars.service';
 import { API_TIMEOUT_PERIOD } from '../../const';
-import { SchedulesService } from '../schedules/schedules.service';
+import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
 import { ServicesService } from '../services/services.service';
 import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
 import { TimeslotsService } from '../timeslots/timeslots.service';
+import { ServiceProvidersActionAuthVisitor } from './serviceProviders.auth';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { CrudAction } from '../../enums/crudAction';
 
 @InRequestScope
 export class ServiceProvidersService {
@@ -22,7 +25,7 @@ export class ServiceProvidersService {
 	public calendarsService: CalendarsService;
 
 	@Inject
-	private schedulesService: SchedulesService;
+	private schedulesService: ScheduleFormsService;
 
 	@Inject
 	private timeslotItemsService: TimeslotItemsService;
@@ -32,6 +35,9 @@ export class ServiceProvidersService {
 
 	@Inject
 	private timeslotsService: TimeslotsService;
+
+	@Inject
+	private userContext: UserContext;
 
 	private static async validateServiceProvider(sp: ServiceProviderModel): Promise<string[]> {
 		const errors: string[] = [];
@@ -66,12 +72,12 @@ export class ServiceProvidersService {
 
 	public async getServiceProviders(
 		serviceId?: number,
-		includeSchedule = false,
+		includeScheduleForm = false,
 		includeTimeslotsSchedule = false,
 	): Promise<ServiceProvider[]> {
 		return await this.serviceProvidersRepository.getServiceProviders({
 			serviceId,
-			includeSchedule,
+			includeScheduleForm,
 			includeTimeslotsSchedule,
 		});
 	}
@@ -91,12 +97,12 @@ export class ServiceProvidersService {
 
 	public async getServiceProvider(
 		id: number,
-		includeSchedule = false,
+		includeScheduleForm = false,
 		includeTimeslotsSchedule = false,
 	): Promise<ServiceProvider> {
 		const sp = await this.serviceProvidersRepository.getServiceProvider({
 			id,
-			includeSchedule,
+			includeScheduleForm,
 			includeTimeslotsSchedule,
 		});
 		if (!sp) {
@@ -117,55 +123,60 @@ export class ServiceProvidersService {
 	}
 
 	public async saveSp(item: ServiceProviderModel, serviceId: number) {
-		const cal = await this.calendarsService.createCalendar();
-		return await this.serviceProvidersRepository.save(
-			ServiceProvider.create(item.name, cal, serviceId, item.email, item.phone),
-		);
+		const serviceProvider = ServiceProvider.create(item.name, serviceId, item.email, item.phone);
+		serviceProvider.service = await this.servicesService.getService(serviceId);
+		await this.verifyActionPermission(serviceProvider, CrudAction.Create);
+
+		serviceProvider.calendar = await this.calendarsService.createCalendar();
+		return await this.serviceProvidersRepository.save(serviceProvider);
 	}
 
 	public async updateSp(request: ServiceProviderModel, spId: number) {
-		const sp = await this.serviceProvidersRepository.getServiceProvider({ id: spId });
-		if (!sp) {
+		const serviceProvider = await this.serviceProvidersRepository.getServiceProvider({ id: spId });
+		if (!serviceProvider) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
 		}
+		await this.verifyActionPermission(serviceProvider, CrudAction.Update);
 		await ServiceProvidersService.validateServiceProviders([request]);
-		sp.email = request.email;
-		sp.phone = request.phone;
-		sp.name = request.name;
-		return await this.serviceProvidersRepository.save(sp);
+		serviceProvider.email = request.email;
+		serviceProvider.phone = request.phone;
+		serviceProvider.name = request.name;
+		return await this.serviceProvidersRepository.save(serviceProvider);
 	}
 
-	public async setProviderSchedule(id: number, model: SetProviderScheduleRequest): Promise<Schedule> {
+	public async setProviderScheduleForm(id: number, model: SetProviderScheduleFormRequest): Promise<ScheduleForm> {
 		const serviceProvider = await this.getServiceProvider(id, true, false);
 
 		if (!serviceProvider) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service Provider not found');
 		}
 
-		let schedule: Schedule = null;
-		if (model.scheduleId) {
-			schedule = await this.schedulesService.getSchedule(model.scheduleId);
+		await this.verifyActionPermission(serviceProvider, CrudAction.Update);
+
+		let schedule: ScheduleForm = null;
+		if (model.scheduleFormId) {
+			schedule = await this.schedulesService.getScheduleForm(model.scheduleFormId);
 			if (!schedule) {
-				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Schedule not found');
+				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('ScheduleForm not found');
 			}
 		}
 
-		serviceProvider.schedule = schedule;
+		serviceProvider.scheduleForm = schedule;
 		await this.serviceProvidersRepository.save(serviceProvider);
 		return schedule;
 	}
 
-	public async getProviderSchedule(id: number): Promise<Schedule> {
+	public async getProviderScheduleForm(id: number): Promise<ScheduleForm> {
 		const serviceProvider = await this.getServiceProvider(id, true, false);
 		if (!serviceProvider) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service Provider not found');
 		}
 
-		if (!serviceProvider.schedule) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service schedule not found');
+		if (!serviceProvider.scheduleForm) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service schedule form not found');
 		}
 
-		return serviceProvider.schedule;
+		return serviceProvider.scheduleForm;
 	}
 
 	public async getTimeslotItems(id: number): Promise<TimeslotsSchedule> {
@@ -271,5 +282,14 @@ export class ServiceProvidersService {
 		serviceProvider.timeslotsSchedule.timeslotItems = items;
 
 		return await this.serviceProvidersRepository.save(serviceProvider);
+	}
+
+	private async verifyActionPermission(serviceProvider: ServiceProvider, action: CrudAction): Promise<void> {
+		const authGroups = await this.userContext.getAuthGroups();
+		if (!new ServiceProvidersActionAuthVisitor(serviceProvider, action).hasPermission(authGroups)) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
+				`User cannot perform this service-provider action (${action}) for this service.`,
+			);
+		}
 	}
 }

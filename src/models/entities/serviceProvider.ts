@@ -2,15 +2,15 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGenerate
 import { Calendar } from './calendar';
 import { ServiceProviderStatus } from '../serviceProviderStatus';
 import { Service } from './service';
-import { Schedule } from './schedule';
-import { IEntityWithSchedule, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
+import { ScheduleForm } from './scheduleForm';
+import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
 
 const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
 
 @Entity()
-export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, IEntityWithTimeslotsSchedule {
+export class ServiceProvider implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
 	constructor() { }
 	@PrimaryGeneratedColumn()
 	private _id: number;
@@ -29,6 +29,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	public get autoAcceptBookings(): boolean {
 		return this._autoAcceptBookings;
 	}
+
 	public get createdAt(): Date {
 		return this._createdAt;
 	}
@@ -36,6 +37,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	public set createdAt(value: Date) {
 		this._createdAt = value;
 	}
+
 	@Column()
 	private _createdAt: Date;
 
@@ -66,11 +68,11 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
+	public set service(service: Service) {
+		this._service = service;
+	}
 	public get service(): Service {
 		return this._service;
-	}
-	public set service(value: Service) {
-		this._service = value;
 	}
 
 	@Column({ type: 'varchar', length: 300 })
@@ -84,19 +86,12 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		this._name = value;
 	}
 
-	public static create(
-		name: string,
-		calendar: Calendar,
-		serviceId: number,
-		email?: string,
-		phone?: string,
-	): ServiceProvider {
+	public static create(name: string, serviceId: number, email?: string, phone?: string) {
 		const instance = new ServiceProvider();
 		instance._serviceId = serviceId;
 		instance._name = name;
 		instance._createdAt = new Date();
 		instance._status = ServiceProviderStatus.Valid;
-		instance._calendar = calendar;
 		instance._email = email;
 		instance._phone = phone;
 		instance._autoAcceptBookings = DEFAULT_AUTO_ACCEPT_BOOKINGS;
@@ -137,26 +132,27 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 		this._calendar = calendar;
 	}
 
-	@ManyToOne('Schedule', { nullable: true })
-	@JoinColumn({ name: '_scheduleId' })
-	public _schedule: Schedule;
+	@ManyToOne('ScheduleForm', { nullable: true })
+	@JoinColumn({ name: '_scheduleFormId' })
+	public _scheduleForm: ScheduleForm;
 
-	public get schedule(): Schedule {
-		return this._schedule;
+	public get scheduleForm(): ScheduleForm {
+		return this._scheduleForm;
 	}
 
-	public set schedule(schedule: Schedule) {
-		this._schedule = schedule;
+	public set scheduleForm(scheduleForm: ScheduleForm) {
+		this._scheduleForm = scheduleForm;
 	}
 
 	@Column({ nullable: true })
-	private _scheduleId?: number;
+	private _scheduleFormId?: number;
 
-	public set scheduleId(id: number) {
-		this._scheduleId = id;
+	public set scheduleFormId(id: number) {
+		this._scheduleFormId = id;
 	}
-	public get scheduleId(): number {
-		return this._scheduleId;
+
+	public get scheduleFormId(): number {
+		return this._scheduleFormId;
 	}
 
 	@Column({ nullable: true })
@@ -165,6 +161,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	public set timeslotsScheduleId(id: number) {
 		this._timeslotsScheduleId = id;
 	}
+
 	public get timeslotsScheduleId(): number {
 		return this._timeslotsScheduleId;
 	}
@@ -178,6 +175,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithSchedule, I
 	public set timeslotsSchedule(value: TimeslotsSchedule) {
 		this._timeslotsSchedule = value;
 	}
+
 	public get timeslotsSchedule(): TimeslotsSchedule {
 		return this._timeslotsSchedule;
 	}

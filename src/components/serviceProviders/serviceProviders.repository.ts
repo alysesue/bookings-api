@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ServiceProvider } from '../../models';
 import { RepositoryBase } from '../../core/repository';
-import { SchedulesRepository } from '../schedules/schedules.repository';
+import { ScheduleFormsRepository } from '../scheduleForms/scheduleForms.repository';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
 import { ServiceProvidersQueryAuthVisitor } from './serviceProviders.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
@@ -13,7 +13,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	@Inject
 	private userContext: UserContext;
 	@Inject
-	private scheduleRepository: SchedulesRepository;
+	private scheduleRepository: ScheduleFormsRepository;
 	@Inject
 	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
 
@@ -24,12 +24,12 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	private async processIncludes(
 		entries: ServiceProvider[],
 		options: {
-			includeSchedule?: boolean;
+			includeScheduleForm?: boolean;
 			includeTimeslotsSchedule?: boolean;
 		},
 	): Promise<ServiceProvider[]> {
-		if (options.includeSchedule) {
-			await this.scheduleRepository.populateSchedules(entries);
+		if (options.includeScheduleForm) {
+			await this.scheduleRepository.populateScheduleForms(entries);
 		}
 
 		if (options.includeTimeslotsSchedule) {
@@ -39,33 +39,11 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		return entries;
 	}
 
-	private async createSelectQuery(
-		queryFilters: string[],
-		queryParams: {},
-		options: {
-			skipAuthorisation?: boolean;
-		},
-	): Promise<SelectQueryBuilder<ServiceProvider>> {
-		const authGroups = await this.userContext.getAuthGroups();
-		const { userCondition, userParams } = options.skipAuthorisation
-			? { userCondition: '', userParams: {} }
-			: await new ServiceProvidersQueryAuthVisitor('sp', 'service').createUserVisibilityCondition(authGroups);
-
-		const repository = await this.getRepository();
-		const query = repository
-			.createQueryBuilder('sp')
-			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
-			.leftJoin('sp._service', 'service')
-			.leftJoinAndSelect('sp._calendar', 'calendar');
-
-		return query;
-	}
-
 	public async getServiceProviders(
 		options: {
 			ids?: number[];
 			serviceId?: number;
-			includeSchedule?: boolean;
+			includeScheduleForm?: boolean;
 			includeTimeslotsSchedule?: boolean;
 			skipAuthorisation?: boolean;
 		} = {},
@@ -82,7 +60,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 
 	public async getServiceProvider(options: {
 		id: number;
-		includeSchedule?: boolean;
+		includeScheduleForm?: boolean;
 		includeTimeslotsSchedule?: boolean;
 		skipAuthorisation?: boolean;
 	}): Promise<ServiceProvider> {
@@ -99,6 +77,26 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			return entry;
 		}
 		return (await this.processIncludes([entry], options))[0];
+	}
+
+	private async createSelectQuery(
+		queryFilters: string[],
+		queryParams: {},
+		options: {
+			skipAuthorisation?: boolean;
+		},
+	): Promise<SelectQueryBuilder<ServiceProvider>> {
+		const authGroups = await this.userContext.getAuthGroups();
+		const { userCondition, userParams } = options.skipAuthorisation
+			? { userCondition: '', userParams: {} }
+			: await new ServiceProvidersQueryAuthVisitor('sp', 'service').createUserVisibilityCondition(authGroups);
+
+		const repository = await this.getRepository();
+		return repository
+			.createQueryBuilder('sp')
+			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
+			.leftJoin('sp._service', 'service')
+			.leftJoinAndSelect('sp._calendar', 'calendar');
 	}
 
 	public async save(serviceProviders: ServiceProvider): Promise<ServiceProvider> {

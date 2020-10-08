@@ -4,28 +4,28 @@ import { Timeslot } from '../timeslot';
 import { TimeOfDay, Transformer as TimeTransformer } from '../timeOfDay';
 import { BusinessValidation } from '../businessValidation';
 import { getWeekdayName, Weekday } from '../../enums/weekday';
-import { ISchedule } from '../interfaces';
+import { IScheduleForm } from '../interfaces';
 import { WeekDayBreak } from './weekDayBreak';
 
 @Entity()
-@Index(['scheduleId', 'weekDay'], { unique: true })
+@Index(['scheduleFormId', 'weekDay'], { unique: true })
 export class WeekDaySchedule {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
-	@ManyToOne('Schedule', { nullable: false })
-	@JoinColumn({ name: 'scheduleId' })
-	public schedule: ISchedule;
+	@ManyToOne('ScheduleForm', { nullable: false })
+	@JoinColumn({ name: 'scheduleFormId' })
+	public scheduleForm: IScheduleForm;
 	@Column('int')
 	public weekDay: Weekday;
 	@Column()
-	public hasSchedule: boolean;
+	public hasScheduleForm: boolean;
 	@Column({ type: 'time', transformer: TimeTransformer, nullable: true })
 	public openTime?: TimeOfDay;
 	@Column({ type: 'time', transformer: TimeTransformer, nullable: true })
 	public closeTime?: TimeOfDay;
 	@Column({ nullable: false })
-	private scheduleId: number;
+	private scheduleFormId: number;
 
 	constructor() {}
 
@@ -41,23 +41,23 @@ export class WeekDaySchedule {
 		this._breaks = breaks;
 	}
 
-	public static create(weekDay: Weekday, schedule: ISchedule): WeekDaySchedule {
-		if (!schedule) {
-			throw new Error('Schedule reference cannot be null.');
+	public static create(weekDay: Weekday, scheduleForm: IScheduleForm): WeekDaySchedule {
+		if (!scheduleForm) {
+			throw new Error('ScheduleForm reference cannot be null.');
 		}
 
 		const instance = new WeekDaySchedule();
 		instance.weekDay = weekDay;
-		instance.schedule = schedule;
+		instance.scheduleForm = scheduleForm;
 		instance.breaks = [];
-		instance.hasSchedule = false;
+		instance.hasScheduleForm = false;
 
 		return instance;
 	}
 
 	public *validateWeekDaySchedule(): Iterable<BusinessValidation> {
-		if (!this.schedule) {
-			throw new Error('Schedule entity not set in WeekDaySchedule');
+		if (!this.scheduleForm) {
+			throw new Error('ScheduleForm entity not set in WeekDaySchedule');
 		}
 
 		for (const validation of this.validateOpenCloseTimes()) {
@@ -74,11 +74,11 @@ export class WeekDaySchedule {
 		startTimeOfDay?: TimeOfDay;
 		endTimeOfDay?: TimeOfDay;
 	}): Iterable<Timeslot> {
-		if (!this.hasSchedule) {
+		if (!this.hasScheduleForm) {
 			return;
 		}
 
-		const slotDuration = this.schedule.slotsDurationInMin;
+		const slotDuration = this.scheduleForm.slotsDurationInMin;
 
 		let startTime = range.startTimeOfDay
 			? this.getFirstBlockStartTime(range.startTimeOfDay.useTimeOfDay(range.dayOfWeek))
@@ -111,7 +111,7 @@ export class WeekDaySchedule {
 	}
 
 	private *validateOpenCloseTimes(): Iterable<BusinessValidation> {
-		if (!this.hasSchedule) return;
+		if (!this.hasScheduleForm) return;
 
 		if (!this.openTime || !this.closeTime) {
 			yield new BusinessValidation(
@@ -130,9 +130,9 @@ export class WeekDaySchedule {
 			return;
 		}
 
-		if (diff < this.schedule.slotsDurationInMin) {
+		if (diff < this.scheduleForm.slotsDurationInMin) {
 			yield new BusinessValidation(
-				`The interval between open and close times [${this.openTime} — ${this.closeTime}] must be greater than slot duration [${this.schedule.slotsDurationInMin} minutes]`,
+				`The interval between open and close times [${this.openTime} — ${this.closeTime}] must be greater than slot duration [${this.scheduleForm.slotsDurationInMin} minutes]`,
 			);
 			return;
 		}
@@ -148,7 +148,7 @@ export class WeekDaySchedule {
 
 	private getFirstBlockStartTime(startDatetime: Date): Date {
 		let relativeStartDatetime = this.getRelativeStartTime(startDatetime);
-		const slotDuration = this.schedule.slotsDurationInMin;
+		const slotDuration = this.scheduleForm.slotsDurationInMin;
 
 		if (relativeStartDatetime < startDatetime) {
 			const minutes = DateHelper.DiffInMinutes(startDatetime, relativeStartDatetime);

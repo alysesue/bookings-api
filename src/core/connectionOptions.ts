@@ -7,7 +7,7 @@ import {
 	Calendar,
 	Organisation,
 	OrganisationAdminGroupMap,
-	Schedule,
+	ScheduleForm,
 	Service,
 	ServiceAdminGroupMap,
 	ServiceProvider,
@@ -21,9 +21,14 @@ import {
 	WeekDaySchedule,
 } from '../models';
 import { getConfig } from '../config/app-config';
+import { LoggerOptions } from 'typeorm/logger/LoggerOptions';
 
 export function getConnectionOptions(): PostgresConnectionOptions {
 	const config = getConfig();
+	const logging: LoggerOptions = ['schema', 'migration', 'error'];
+	if (config.isDev) {
+		logging.push('query');
+	}
 	return {
 		database: config.database.instance,
 		entities: [
@@ -34,7 +39,7 @@ export function getConnectionOptions(): PostgresConnectionOptions {
 			Calendar,
 			Organisation,
 			OrganisationAdminGroupMap,
-			Schedule,
+			ScheduleForm,
 			Service,
 			ServiceAdminGroupMap,
 			ServiceProvider,
@@ -47,7 +52,7 @@ export function getConnectionOptions(): PostgresConnectionOptions {
 			WeekDayBreak,
 			WeekDaySchedule,
 		],
-		logging: ['schema', 'migration'],
+		logging,
 		host: config.database.host,
 		port: +config.database.port,
 		username: config.database.username,

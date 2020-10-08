@@ -1,13 +1,13 @@
 import { TimeOfDay } from './timeOfDay';
 import { Service } from 'mol-lib-api-contract';
 
-export interface ISchedule {
+export interface IScheduleForm {
 	slotsDurationInMin: number;
 }
 
-export interface IEntityWithSchedule {
-	scheduleId: number;
-	schedule: ISchedule;
+export interface IEntityWithScheduleForm {
+	scheduleFormId: number;
+	scheduleForm: IScheduleForm;
 }
 
 export interface ITimeslotsSchedule { }

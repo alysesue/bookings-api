@@ -1,4 +1,4 @@
-export class ScheduleRequest {
+export class ScheduleFormRequest {
 	/**
 	 * @maxLength 100
 	 */
@@ -26,7 +26,7 @@ export class WeekDayBreakContract {
 
 export class WeekDayScheduleContract {
 	public weekday: number;
-	public hasSchedule: boolean;
+	public hasScheduleForm: boolean;
 	/**
 	 * @maxLength 5
 	 */
@@ -38,7 +38,7 @@ export class WeekDayScheduleContract {
 	public breaks: WeekDayBreakContract[];
 }
 
-export class ScheduleResponse {
+export class ScheduleFormResponse {
 	public id: number;
 	public name: string;
 	public slotsDurationInMin: number;

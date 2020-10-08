@@ -5,12 +5,12 @@ import { TimeOfDay } from '../timeOfDay';
 import { groupByKey, groupByKeyLastValue } from '../../tools/collections';
 import { BusinessValidation } from '../businessValidation';
 import { WeekdayList } from '../../enums/weekday';
-import { ISchedule } from '../interfaces';
+import { IScheduleForm } from '../interfaces';
 import { WeekDayBreak } from './weekDayBreak';
 import { WeekDaySchedule } from './weekDaySchedule';
 
 @Entity()
-export class Schedule implements ISchedule {
+export class ScheduleForm implements IScheduleForm {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
@@ -20,7 +20,7 @@ export class Schedule implements ISchedule {
 	@Column({ type: 'int' })
 	public slotsDurationInMin: number;
 
-	@OneToMany((type) => WeekDaySchedule, (weekdaySchedule) => weekdaySchedule.schedule, { cascade: true })
+	@OneToMany((type) => WeekDaySchedule, (weekdaySchedule) => weekdaySchedule.scheduleForm, { cascade: true })
 	public weekdaySchedules: WeekDaySchedule[];
 
 	constructor() {}
@@ -41,7 +41,7 @@ export class Schedule implements ISchedule {
 
 	public setBreaks(breaks: WeekDayBreak[]): void {
 		this.verifyWeekdaySchedules();
-		breaks.filter((e) => e.schedule !== this).forEach((e) => (e.schedule = this));
+		breaks.filter((e) => e.scheduleForm !== this).forEach((e) => (e.scheduleForm = this));
 
 		const breaksByWeekday = groupByKey(breaks, (e) => e.weekDay);
 		for (const daySchedule of this.weekdaySchedules) {
@@ -81,7 +81,7 @@ export class Schedule implements ISchedule {
 		const daysCount = 1 + Math.floor(DateHelper.DiffInDays(DateHelper.getDateOnly(range.endDatetime), initialDate));
 
 		const validWeekDays = groupByKeyLastValue(
-			this.weekdaySchedules.filter((w) => w.hasSchedule),
+			this.weekdaySchedules.filter((w) => w.hasScheduleForm),
 			(w) => w.weekDay,
 		);
 		const firstDayStartTime = TimeOfDay.fromDate(range.startDatetime);
@@ -109,6 +109,6 @@ export class Schedule implements ISchedule {
 
 	private ensureWeekdayParentIsSet(): void {
 		this.verifyWeekdaySchedules();
-		this.weekdaySchedules.filter((e) => e.schedule !== this).forEach((e) => (e.schedule = this));
+		this.weekdaySchedules.filter((e) => e.scheduleForm !== this).forEach((e) => (e.scheduleForm = this));
 	}
 }

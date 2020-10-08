@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Service } from '../../models';
 import { RepositoryBase } from '../../core/repository';
-import { SchedulesRepository } from '../schedules/schedules.repository';
+import { ScheduleFormsRepository } from '../scheduleForms/scheduleForms.repository';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { SelectQueryBuilder } from 'typeorm';
@@ -12,7 +12,7 @@ export class ServicesRepository extends RepositoryBase<Service> {
 	@Inject
 	private userContext: UserContext;
 	@Inject
-	private scheduleRepository: SchedulesRepository;
+	private scheduleFormRepository: ScheduleFormsRepository;
 	@Inject
 	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
 
@@ -42,10 +42,10 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		return query;
 	}
 
-	public async getServiceWithSchedule(id: number): Promise<Service> {
+	public async getServiceWithScheduleForm(id: number): Promise<Service> {
 		const query = await this.getServiceQueryById(id);
 		const entry = await query.getOne();
-		return this.scheduleRepository.populateSingleEntrySchedule(entry);
+		return this.scheduleFormRepository.populateSingleEntryScheduleForm(entry);
 	}
 
 	public async getServiceWithTimeslotsSchedule(id: number): Promise<Service> {
@@ -72,7 +72,6 @@ export class ServicesRepository extends RepositoryBase<Service> {
 
 	public async getService(id: number): Promise<Service> {
 		const query = await this.getServiceQueryById(id);
-		const entry = await query.getOne();
-		return entry;
+		return await query.getOne();
 	}
 }
