@@ -110,7 +110,7 @@ describe('Service providers Auth', () => {
 		);
 
 		const serviceProviderToUpdate = ServiceProvider.create('new sp', 1);
-		serviceProviderToUpdate.service = service;
+		serviceProviderToUpdate.service = new Service();
 		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProviderToUpdate, CrudAction.Update);
 		authVisitor.visitServiceAdmin(serviceAdminAuthGroup);
 
