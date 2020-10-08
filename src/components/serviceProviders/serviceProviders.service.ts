@@ -124,6 +124,7 @@ export class ServiceProvidersService {
 
 	public async saveSp(item: ServiceProviderModel, serviceId: number) {
 		const serviceProvider = ServiceProvider.create(item.name, serviceId, item.email, item.phone);
+		serviceProvider.service = await this.servicesService.getService(serviceId);
 		await this.verifyActionPermission(serviceProvider, CrudAction.Create);
 
 		serviceProvider.calendar = await this.calendarsService.createCalendar();

@@ -123,7 +123,11 @@ describe('ServiceProviders.Service', () => {
 		UserContextMock.getAuthGroups.mockReturnValue(
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
 		);
-		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
+		const serviceProvider = ServiceProvider.create('sp', 1);
+		const service = new Service();
+		service.id = 1;
+		serviceProvider.service = service;
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		ScheduleFormsServiceObj.getScheduleForm.mockImplementation(() => Promise.resolve(new ScheduleForm()));
 
 		const providerSchedulerequest = new SetProviderScheduleFormRequest();
@@ -134,15 +138,15 @@ describe('ServiceProviders.Service', () => {
 		);
 
 		expect(schedule).toBeDefined();
-		expect(serviceProviderMock.scheduleForm).toBe(schedule);
+		expect(serviceProvider.scheduleForm).toBe(schedule);
 	});
 
 	it('should update a service provider', async () => {
-		serviceProviderMock.serviceId = 1;
-		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
-		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
 		const service = new Service();
 		service.id = 1;
+		serviceProviderMock.service = service;
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
+		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
 		UserContextMock.getAuthGroups.mockReturnValue(
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
@@ -157,6 +161,7 @@ describe('ServiceProviders.Service', () => {
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
 		serviceProviderMock.serviceId = 1;
+		serviceProviderMock.service = service;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ScheduleFormsServiceObj.getScheduleForm.mockImplementation(() => Promise.resolve());
 
@@ -334,9 +339,13 @@ class TimeslotsServiceMock extends TimeslotsService {
 
 class ServicesServiceMock extends ServicesService {
 	public static getServiceTimeslotsSchedule: TimeslotsSchedule;
-
+	public static serviceMock: Service = new Service();
 	public async getServiceTimeslotsSchedule(): Promise<TimeslotsSchedule> {
 		return Promise.resolve(ServicesServiceMock.getServiceTimeslotsSchedule);
+	}
+
+	public async getService(id: number): Promise<Service> {
+		return Promise.resolve(ServicesServiceMock.serviceMock);
 	}
 }
 

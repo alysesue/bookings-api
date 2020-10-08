@@ -51,6 +51,14 @@ export class ServiceProvidersActionAuthVisitor extends PermissionAwareAuthGroupV
 		super();
 		this.serviceProvider = serviceProvider;
 		this.action = action;
+
+		if (!this.serviceProvider) {
+			throw new Error('ServiceProvidersActionAuthVisitor - service provider cannot be null');
+		}
+
+		if (!this.serviceProvider.service) {
+			throw new Error('ServiceProvidersActionAuthVisitor - service cannot be null');
+		}
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
