@@ -55,7 +55,7 @@ describe('ServiceProviders.Service', () => {
 	calendar.uuid = '123';
 	calendar.googleCalendarId = 'google-id-1';
 
-	const serviceProvider = new ServiceProvider();
+	const serviceProvider = ServiceProvider.create('Peter', 1, 'test@email.com', '0000');
 	serviceProvider.id = 1;
 	const adminMock = User.createAdminUser({
 		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
