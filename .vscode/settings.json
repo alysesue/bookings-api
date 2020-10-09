@@ -6,9 +6,6 @@
 	"[sql]": {
 		"editor.formatOnSave": false
 	},
-	"[hbs]": {
-		"editor.formatOnSave": false
-	},	
 	"auto-close-tag.activationOnLanguage": [
 		"html",
 		"javascriptreact",
@@ -18,21 +15,21 @@
 		"source.fixAll.tslint": true
 	},
 	"editor.detectIndentation": false,
+	"editor.formatOnSave": true,
 	"editor.insertSpaces": false,
 	"files.associations": {
 		"*.tsconfig.json": "jsonc",
 		"*.tslint.json": "jsonc"
 	},
-  "files.insertFinalNewline": true,
-  "files.trimTrailingWhitespace": true,
-  "plantuml.diagramsRoot": "diagrams/src",
-  "plantuml.exportFormat": "svg",
-  "plantuml.exportOutDir": "diagrams/out",
-  "search.useIgnoreFiles": true,
-  "sequencediagrams.diagram.style": "simple",
-  "tslint.jsEnable": true,
-  "typescript.tsdk": "./node_modules/typescript/lib",
-  "typescriptHero.imports.multiLineWrapThreshold": 120,
-"typescriptHero.imports.stringQuoteStyle": "\"",
-"editor.formatOnSave": true
+	"files.insertFinalNewline": true,
+	"files.trimTrailingWhitespace": true,
+	"plantuml.diagramsRoot": "diagrams/src",
+	"plantuml.exportFormat": "svg",
+	"plantuml.exportOutDir": "diagrams/out",
+	"search.useIgnoreFiles": true,
+	"sequencediagrams.diagram.style": "simple",
+	"tslint.jsEnable": true,
+	"typescript.tsdk": "./node_modules/typescript/lib",
+	"typescriptHero.imports.multiLineWrapThreshold": 120,
+	"typescriptHero.imports.stringQuoteStyle": "\""
 }

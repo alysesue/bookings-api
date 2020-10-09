@@ -4,12 +4,11 @@ import { mapTimeslotItemToEntity } from './timeslotItems.mapper';
 import { TimeslotItemRequest } from './timeslotItems.apicontract';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { TimeslotItemsRepository } from './timeslotItems.repository';
-import { TimeOfDay, TimeslotItem, TimeslotsSchedule, ChangeLogAction } from '../../models';
+import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { DeleteResult } from 'typeorm';
 import { TimeslotItemsActionAuthVisitor } from './timeslotItems.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
-import { ServicesService } from '../services/services.service';
+import { ServicesRepository } from '../services/services.repository';
 
 @InRequestScope
 export class TimeslotItemsService {
@@ -18,9 +17,7 @@ export class TimeslotItemsService {
 	@Inject
 	private timeslotItemsRepository: TimeslotItemsRepository;
 	@Inject
-	private serviceProvidersService: ServiceProvidersService;
-	@Inject
-	private servicesService: ServicesService;
+	private servicesRepository: ServicesRepository;
 	@Inject
 	private userContext: UserContext;
 
@@ -28,9 +25,12 @@ export class TimeslotItemsService {
 		const authGroups = await this.userContext.getAuthGroups();
 		let timeslotScheduleData = timeslotSchedule;
 		if (!timeslotSchedule._service && !timeslotSchedule._serviceProvider) {
-			timeslotScheduleData = await this.timeslotsScheduleRepository.getTimeslotsScheduleById(timeslotSchedule._id, { retrieveService: true, retrieveServiceProvider: true });
+			timeslotScheduleData = await this.timeslotsScheduleRepository.getTimeslotsScheduleById(
+				timeslotSchedule._id,
+				{ retrieveService: true, retrieveServiceProvider: true },
+			);
 			if (timeslotScheduleData._serviceProvider && !timeslotScheduleData._serviceProvider.service) {
-				timeslotScheduleData._serviceProvider.service = await this.servicesService.getService(timeslotScheduleData._serviceProvider.serviceId);
+				timeslotScheduleData._serviceProvider.service = await this.servicesRepository.getService(timeslotScheduleData._serviceProvider.serviceId);
 			}
 		}
 		const hasPermission = new TimeslotItemsActionAuthVisitor(timeslotScheduleData).hasPermission(authGroups);

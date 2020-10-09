@@ -16,14 +16,17 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 		return await repository.save(data);
 	}
 
-	public async getTimeslotsScheduleById(id: number, options: { retrieveService?: boolean, retrieveServiceProvider?: boolean } = {}): Promise<TimeslotsSchedule> {
+	public async getTimeslotsScheduleById(
+		id: number,
+		options: { retrieveService?: boolean; retrieveServiceProvider?: boolean } = {},
+	): Promise<TimeslotsSchedule> {
 		if (!id) return null;
 		const repository = await this.getRepository();
 		const entry = await repository.findOne(id, { relations: this.getRelations(options) });
 		return entry;
 	}
 
-	private getRelations(options: { retrieveService?: boolean, retrieveServiceProvider?: boolean }): string[] {
+	private getRelations(options: { retrieveService?: boolean; retrieveServiceProvider?: boolean }): string[] {
 		const relations = ['timeslotItems'];
 		if (options.retrieveService) relations.push('_service');
 		if (options.retrieveServiceProvider) relations.push('_serviceProvider');

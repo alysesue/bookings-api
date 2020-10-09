@@ -11,7 +11,6 @@ import { TimeslotsSchedule } from '../../models';
 import { PermissionAwareAuthGroupVisitor } from '../../infrastructure/auth/queryAuthGroupVisitor';
 
 export class TimeslotItemsActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
-
 	private _timeslotSchedule: TimeslotsSchedule;
 	constructor(timeslotSchedule: TimeslotsSchedule) {
 		super();
@@ -24,16 +23,13 @@ export class TimeslotItemsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 			);
 		}
 		if (timeslotSchedule.serviceProvider && !timeslotSchedule.serviceProvider.service) {
-			throw new Error(
-				'TimeslotItemsActionAuthVisitor - Service is not loaded in Service Provider.',
-			);
+			throw new Error('TimeslotItemsActionAuthVisitor - Service is not loaded in Service Provider.');
 		}
-
 
 		this._timeslotSchedule = timeslotSchedule;
 	}
 
-	public visitCitizen(_citizenGroup: CitizenAuthGroup): void { }
+	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		if (this._timeslotSchedule._service) {
@@ -51,15 +47,18 @@ export class TimeslotItemsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		if (this._timeslotSchedule._service && _userGroup.hasServiceId(this._timeslotSchedule._service.id)) {
 			this.markWithPermission();
-		} else if (this._timeslotSchedule._serviceProvider) {
-			if (_userGroup.hasServiceId(this._timeslotSchedule._serviceProvider.serviceId)) {
-				this.markWithPermission();
-			}
+		} else if (
+			this._timeslotSchedule._serviceProvider &&
+			_userGroup.hasServiceId(this._timeslotSchedule._serviceProvider.serviceId)
+		) {
+			this.markWithPermission();
 		}
 	}
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
-		if (this._timeslotSchedule._serviceProvider &&
-			_userGroup.authorisedServiceProvider.id === this._timeslotSchedule._serviceProvider.id) {
+		if (
+			this._timeslotSchedule._serviceProvider &&
+			_userGroup.authorisedServiceProvider.id === this._timeslotSchedule._serviceProvider.id
+		) {
 			this.markWithPermission();
 		}
 	}

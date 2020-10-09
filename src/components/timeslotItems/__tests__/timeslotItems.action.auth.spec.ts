@@ -1,4 +1,4 @@
-import { Calendar, Organisation, Service, ServiceProvider, User, TimeslotsSchedule } from '../../../models';
+import { Calendar, Organisation, Service, ServiceProvider, TimeslotsSchedule, User } from '../../../models';
 import { TimeslotItemsActionAuthVisitor } from '../timeslotItems.auth';
 import {
 	CitizenAuthGroup,
@@ -44,10 +44,10 @@ describe('TimeslotItems action auth', () => {
 		serviceMock.organisationId = 2;
 		const timeslotsScheduleMock = new TimeslotsSchedule();
 		timeslotsScheduleMock._service = serviceMock;
-		const organisation = new Organisation();
-		organisation.id = 3;
+		const organisationMock = new Organisation();
+		organisationMock.id = 3;
 
-		const groups = [new OrganisationAdminAuthGroup(adminMock, [organisation])];
+		const groups = [new OrganisationAdminAuthGroup(adminMock, [organisationMock])];
 
 		expect(new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toBe(false);
 	});
@@ -61,10 +61,10 @@ describe('TimeslotItems action auth', () => {
 
 		const timeslotsScheduleMock = new TimeslotsSchedule();
 		timeslotsScheduleMock._serviceProvider = spMock;
-		const organisation = new Organisation();
-		organisation.id = 3;
+		const organisationMock = new Organisation();
+		organisationMock.id = 3;
 
-		const groups = [new OrganisationAdminAuthGroup(adminMock, [organisation])];
+		const groups = [new OrganisationAdminAuthGroup(adminMock, [organisationMock])];
 
 		expect(new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toBe(false);
 	});
@@ -74,10 +74,10 @@ describe('TimeslotItems action auth', () => {
 		serviceMock.organisationId = 2;
 		const timeslotsScheduleMock = new TimeslotsSchedule();
 		timeslotsScheduleMock._service = serviceMock;
-		const organisation = new Organisation();
-		organisation.id = 2;
+		const organisationMock = new Organisation();
+		organisationMock.id = 2;
 
-		const groups = [new OrganisationAdminAuthGroup(adminMock, [organisation])];
+		const groups = [new OrganisationAdminAuthGroup(adminMock, [organisationMock])];
 
 		expect(new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toBe(true);
 	});
@@ -113,7 +113,6 @@ describe('TimeslotItems action auth', () => {
 	it('should validate FALSE for other service provider timeslot by service admin action permission', async () => {
 		const authorisedService = new Service();
 		authorisedService.id = 3;
-
 
 		const serviceMock = new Service();
 		serviceMock.id = 10;
@@ -159,7 +158,5 @@ describe('TimeslotItems action auth', () => {
 		const groups = [new ServiceProviderAuthGroup(adminMock, serviceProvider)];
 
 		expect(new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toBe(true);
-
 	});
-
 });

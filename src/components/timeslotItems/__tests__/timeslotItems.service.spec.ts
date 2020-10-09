@@ -1,5 +1,5 @@
 import { Container } from 'typescript-ioc';
-import { Service, TimeOfDay, TimeslotItem, TimeslotsSchedule, User, ChangeLogAction, ServiceProvider } from '../../../models';
+import { Service, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule, User } from '../../../models';
 import { TimeslotItemsService } from '../timeslotItems.service';
 import { TimeslotItemRequest } from '../timeslotItems.apicontract';
 import { TimeslotItemsRepository } from '../timeslotItems.repository';
@@ -47,14 +47,12 @@ describe('TimeslotsItem services ', () => {
 	});
 	const visitorObj = {
 		hasPermission: jest.fn(),
-	}
-
+	};
 
 	beforeAll(() => {
 		Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 		Container.bind(TimeslotItemsRepository).to(TimeslotItemsRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
-
 	});
 	beforeEach(() => {
 		TimeslotItemsRepositoryMock.mockImplementation(() => ({
@@ -71,7 +69,7 @@ describe('TimeslotsItem services ', () => {
 		const serviceMock = new Service();
 		serviceMock.id = 1;
 
-		const serviceProvideMock = new ServiceProvider();
+		const serviceProvideMock = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
 		serviceProvideMock.id = 1;
 
 		timeslotItemMock._id = 4;
@@ -130,7 +128,7 @@ describe('TimeslotsItem services ', () => {
 		).rejects.toStrictEqual(
 			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Value asdasd is not a valid time.'),
 		);
-	})
+	});
 
 	it('should validate overlaps', async () => {
 		request.weekDay = Weekday.Monday;
@@ -146,7 +144,6 @@ describe('TimeslotsItem services ', () => {
 	});
 
 	it('should not validate overlap when updating same item', async () => {
-
 		const serviceMock = new Service();
 		serviceMock.id = 1;
 		request.weekDay = Weekday.Monday;
@@ -246,7 +243,9 @@ describe('TimeslotsItem services ', () => {
 	it('should delete timeslot item', async () => {
 		const serviceMock = new Service();
 		serviceMock.id = 1;
-		TimeslotsScheduleRepositoryMock.getTimeslotsScheduleById.mockReturnValue(Promise.resolve(timeslotsScheduleMock));
+		TimeslotsScheduleRepositoryMock.getTimeslotsScheduleById.mockReturnValue(
+			Promise.resolve(timeslotsScheduleMock),
+		);
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.deleteTimeslot(1);
 		expect(deleteTimeslotItem).toBeCalledTimes(1);
@@ -258,7 +257,7 @@ export class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
-	public init() { }
+	public init() {}
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(...params);
 	}

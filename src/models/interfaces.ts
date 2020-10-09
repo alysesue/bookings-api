@@ -10,7 +10,7 @@ export interface IEntityWithScheduleForm {
 	scheduleForm: IScheduleForm;
 }
 
-export interface ITimeslotsSchedule { }
+export interface ITimeslotsSchedule {}
 
 export interface IEntityWithTimeslotsSchedule {
 	timeslotsScheduleId: number;

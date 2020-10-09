@@ -104,6 +104,10 @@ src/
 
 ## Coding Conventions
 
+### Theming with styled-components
+
+<https://confluence.ship.gov.sg/display/MOL/Theming+with+styled-components>
+
 ### Code
 
 - Apply [clean code](https://github.com/ryanmcdermott/clean-code-javascript) best practices
@@ -134,6 +138,126 @@ src/
 - Prefer the use of JS-Joda dates to maintain the type and intent of the data
 - E.g. Use `ZonedDateTime` for a specific period in time such as content publish time
 - E.g. Use `LocalDate` for birthdays
+
+### Imports / Exports
+
+#### Avoid circular dependencies and improve import performance, by using `index.ts` barrel files in subdirectory
+
+- Only folders representing a domain/feature should have an `index.ts` file.
+- Domain/feature `index.ts` files export all the components of the current and children folders.
+- `index.ts` files should not import/export other `index.ts` files.
+- `index.ts` files are the only ones where relative paths and `export *` are allowed.
+- In a component/module
+  - Use relative imports to single components/modules of the same domain/feature level.
+  - Use absolute imports to folders containing `index.ts` files of other domain/feature levels.
+- Shared modules should not import specific domain modules.
+
+E.g. given the following folder hierarchy:
+
+```txt
+src/
+  components/
+    models/
+      users/
+        Admin.ts
+        index.ts
+        Manager.ts
+        User.ts
+      reports/
+        archive/
+          Expired.ts
+          Deletes.ts
+        index.ts
+        Report.ts
+    services/
+      users/
+        index.ts
+        UserService.ts
+      reports/
+        index.ts
+        ReportService.ts
+  shared/
+    index.ts
+    Utils.ts
+```
+
+- `components/`, `components/models/`, and `services/` folders don't have an `index.ts` file because there are too high level folders and don't represent a domain/feature.
+- `components/models/reports/archive/` folder doesn't have an `index.ts` file because it is part of the reports domain/feature. `archive/` components are exported in `reports/index.ts` file.
+- `Utils.ts` can not import any modules `from components/`.
+- `services/reports/index.ts` file exports `ReportService.ts` this way: `export * from "./ReportService";`
+- `services/reports/index.ts` file exports `archive/Expired.ts` this way: `export * from "./archive/Expired.ts";`
+- `ReportService.ts` imports `Report.ts` and `Expired.ts` this way: `import { Expired, Report } from "src/components/models/reports";`
+- `Admin.ts` imports `Utils.ts` this way: `import { Utils } from "src/shared";`
+
+#### Make imports/exports less confusing and easier to find references in codebase by
+
+- Not using export default
+
+```js
+// Nope!
+export default () => { };
+// Yay!
+export const MyComponent = () => { };
+```
+
+- Avoiding renaming imports
+
+```js
+// Nope!
+import { MyComponent as comp } from "src/components";
+// Yay!
+import { MyComponent } from "src/components";
+```
+
+- Exporting near the top-level. Limit nesting.
+
+```js
+// Nope!
+export const BigComponent {
+  myConst: "value";
+  myHelperFunc: () => { };
+  MyComponent: () => { };
+};
+// Yay!
+export const myConst = "value";
+export function myHelperFunc() { };
+export const MyComponent = () => { };
+```
+
+- Explicitly listing imported names
+
+```js
+// Nope!
+import MyComponent from "src/components";
+import myHelperFunc from "src/components";
+import myConst from "src/components";
+// Yay!
+import { MyComponent, myHelperFunc, myConst } from "src/components";
+```
+
+- No star import. Even if it creates more line of code, keep listing imported names.
+
+```js
+// Nope!
+import * as components from "src/components";
+// Yay!
+import { MyComponent, myHelperFunc, myConst } from "src/components";
+```
+
+- No Re-export. Unless you want to extend a module, but such case should not happen.
+
+```js
+// Nope!
+export { TheOldComponent as MyComponent } from "src/components";
+export * as TheOldComponent from "src/components";` Nope!
+```
+
+- No Namespace. Provides very little value when working with modules.
+
+#### If you'd like to read more about it
+
+- [Circular dependencies](https://medium.com/visual-development/how-to-fix-nasty-circular-dependency-issues-once-and-for-all-in-javascript-typescript-a04c987cf0de)
+- [Modules in TypeScript](https://www.typescriptlang.org/docs/handbook/modules.html)
 
 ---
 

@@ -104,7 +104,6 @@ describe('ServiceProviders.Service', () => {
 		request.weekDay = Weekday.Thursday;
 		request.startTime = '11:00';
 		request.endTime = '12:00';
-
 	});
 
 	it('should get all service providers', async () => {
@@ -133,11 +132,11 @@ describe('ServiceProviders.Service', () => {
 		UserContextMock.getAuthGroups.mockReturnValue(
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
 		);
-		const serviceProvider = ServiceProvider.create('sp', 1);
+		const spMock = ServiceProvider.create('sp', 1);
 		const service = new Service();
 		service.id = 1;
-		serviceProvider.service = service;
-		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		spMock.service = service;
+		ServiceProvidersRepositoryMock.getServiceProviderMock = spMock;
 		ScheduleFormsServiceObj.getScheduleForm.mockImplementation(() => Promise.resolve(new ScheduleForm()));
 
 		const providerSchedulerequest = new SetProviderScheduleFormRequest();
@@ -217,7 +216,9 @@ describe('ServiceProviders.Service', () => {
 	it('should add timeslots schedule for service provider', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMockWithTemplate;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
-		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProvider)]));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProvider)]),
+		);
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.addTimeslotItem(1, request);
@@ -231,9 +232,10 @@ describe('ServiceProviders.Service', () => {
 		ServicesServiceMock.getServiceTimeslotsSchedule = serviceMockWithTemplate.timeslotsSchedule;
 		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMockWithTemplate);
 
-
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
-		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProviderMockWithTemplate)]));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProviderMockWithTemplate)]),
+		);
 
 		TimeslotItemsServiceMock.createTimeslotItem.mockImplementation(() => Promise.resolve(timeslotItemMock));
 
@@ -388,7 +390,6 @@ class TimeslotItemsServiceMock extends TimeslotItemsService {
 	public async createTimeslotItem(...params): Promise<any> {
 		return await TimeslotItemsServiceMock.createTimeslotItem(...params);
 	}
-
 }
 
 class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
