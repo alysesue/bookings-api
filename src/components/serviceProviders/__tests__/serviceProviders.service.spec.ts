@@ -132,11 +132,11 @@ describe('ServiceProviders.Service', () => {
 		UserContextMock.getAuthGroups.mockReturnValue(
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
 		);
-		const spMock = ServiceProvider.create('sp', 1);
 		const service = new Service();
 		service.id = 1;
-		spMock.service = service;
-		ServiceProvidersRepositoryMock.getServiceProviderMock = spMock;
+		const serviceProviderData = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
+		serviceProviderData.service = service;
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderData;
 		ScheduleFormsServiceObj.getScheduleForm.mockImplementation(() => Promise.resolve(new ScheduleForm()));
 
 		const providerSchedulerequest = new SetProviderScheduleFormRequest();
@@ -147,7 +147,7 @@ describe('ServiceProviders.Service', () => {
 		);
 
 		expect(schedule).toBeDefined();
-		expect(serviceProvider.scheduleForm).toBe(schedule);
+		expect(serviceProviderData.scheduleForm).toBe(schedule);
 	});
 
 	it('should update a service provider', async () => {
