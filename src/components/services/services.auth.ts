@@ -4,7 +4,50 @@ import {
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
-import { QueryAuthGroupVisitor } from '../../infrastructure/auth/queryAuthGroupVisitor';
+import {PermissionAwareAuthGroupVisitor, QueryAuthGroupVisitor} from '../../infrastructure/auth/queryAuthGroupVisitor';
+import {ChangeLogAction, Service, ServiceProvider} from "../../models";
+
+export class ServicesActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
+	private _service: Service;
+	private _serviceProvider: ServiceProvider;
+	private readonly _changeLogAction: ChangeLogAction;
+
+	constructor(service: Service, changeLogAction: ChangeLogAction) {
+		super();
+
+		if(!service) {
+			throw new Error('ServicesActionAuthVisitor - Services cannot be null or undefined')
+		}
+
+		this._service = service;
+		this._changeLogAction = changeLogAction;
+	}
+
+	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
+		//TODO
+	}
+
+	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
+		const organisationId = this._service.organisationId;
+		if(_userGroup.hasOrganisationId(organisationId)) {
+			this.markWithPermission()
+		}
+	}
+
+	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
+		const serviceId = this._service.id;
+		if(_userGroup.hasServiceId(serviceId)) {
+			this.markWithPermission();
+		}
+	}
+
+	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
+		const serviceProviderId = this._serviceProvider.id;
+		if(_userGroup.authorisedServiceProvider.id === serviceProviderId) {
+			this.markWithPermission();
+		}
+	}
+}
 
 export class ServicesQueryAuthVisitor extends QueryAuthGroupVisitor {
 	private _alias: string;
