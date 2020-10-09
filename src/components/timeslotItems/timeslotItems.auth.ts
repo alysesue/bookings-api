@@ -8,12 +8,13 @@ import {
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
 import { TimeslotsSchedule } from '../../models';
+import { PermissionAwareAuthGroupVisitor } from '../../infrastructure/auth/queryAuthGroupVisitor';
 
-export class TimeslotItemsActionAuthVisitor implements IAuthGroupVisitor {
+export class TimeslotItemsActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 
 	private _timeslotSchedule: TimeslotsSchedule;
-	private _hasPermission: boolean;
 	constructor(timeslotSchedule: TimeslotsSchedule) {
+		super();
 		if (!timeslotSchedule) {
 			throw new Error('TimeslotItemsActionAuthVisitor - Timeslot Schedule cannot be null.');
 		}
@@ -30,19 +31,6 @@ export class TimeslotItemsActionAuthVisitor implements IAuthGroupVisitor {
 
 
 		this._timeslotSchedule = timeslotSchedule;
-		this._hasPermission = false;
-	}
-
-	public hasPermission(authGroups: AuthGroup[]): boolean {
-		for (const group of authGroups) {
-			group.acceptVisitor(this);
-		}
-		return this._hasPermission;
-	}
-
-	private markWithPermission(): void {
-		// if any role has permission the result will be true.
-		this._hasPermission = true;
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void { }

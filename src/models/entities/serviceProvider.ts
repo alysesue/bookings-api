@@ -11,7 +11,7 @@ const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
 
 @Entity()
 export class ServiceProvider implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
-	constructor() { }
+	private constructor() { }
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
