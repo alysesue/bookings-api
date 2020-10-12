@@ -95,7 +95,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		return repository
 			.createQueryBuilder('sp')
 			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
-			.leftJoin('sp._service', 'service')
+			.leftJoinAndSelect('sp._service', 'service')
 			.leftJoinAndSelect('sp._calendar', 'calendar');
 	}
 
