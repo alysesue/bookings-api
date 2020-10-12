@@ -13,7 +13,6 @@ const mapTimeslotItems = (data: TimeslotItem[]): TimeslotItemResponse[] => {
 };
 
 export const mapToTimeslotsScheduleResponse = (data: TimeslotsSchedule): TimeslotsScheduleResponse => {
-
 	const response = new TimeslotsScheduleResponse();
 	response.timeslots = [];
 	if (data) {
