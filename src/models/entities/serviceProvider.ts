@@ -11,7 +11,7 @@ const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
 
 @Entity()
 export class ServiceProvider implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
-	private constructor() {}
+	private constructor() { }
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
@@ -170,7 +170,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		cascade: true,
 	})
 	@JoinColumn({ name: '_timeslotsScheduleId' })
-	private _timeslotsSchedule: TimeslotsSchedule;
+	public _timeslotsSchedule: TimeslotsSchedule;
 
 	public set timeslotsSchedule(value: TimeslotsSchedule) {
 		this._timeslotsSchedule = value;

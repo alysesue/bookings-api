@@ -91,7 +91,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 
 	@OneToOne((type) => TimeslotsSchedule, (e) => e._service, { cascade: true })
 	@JoinColumn({ name: '_timeslotsScheduleId' })
-	private _timeslotsSchedule: TimeslotsSchedule;
+	public _timeslotsSchedule: TimeslotsSchedule;
 
 	public set timeslotsSchedule(value: TimeslotsSchedule) {
 		this._timeslotsSchedule = value;
