@@ -31,4 +31,8 @@ export class TimeslotItemRequest {
 	 * The timeslot's end time in 24 hour format: HH:mm
 	 */
 	public endTime: string;
+	/**
+	 * The number of capacity for this timeslot
+	 */
+	public capacity: number;
 }

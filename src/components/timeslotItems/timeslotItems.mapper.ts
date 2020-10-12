@@ -40,5 +40,6 @@ export const mapTimeslotItemToEntity = (request: TimeslotItemRequest, entity: Ti
 	entity._weekDay = request.weekDay;
 	entity._startTime = TimeOfDay.parse(request.startTime);
 	entity._endTime = TimeOfDay.parse(request.endTime);
+	entity._capacity = request.capacity;
 	return entity;
 };
