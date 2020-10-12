@@ -22,6 +22,8 @@ const saveTimeslotItems = jest.fn();
 const deleteTimeslotItem = jest.fn();
 const getTimeslotItem = jest.fn();
 const TimeslotItemsRepositoryMock = jest.fn();
+
+// tslint:disable-next-line: no-big-function
 describe('TimeslotsItem services ', () => {
 	const service = new Service();
 	service.id = 1;
