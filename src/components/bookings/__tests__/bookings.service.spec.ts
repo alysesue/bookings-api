@@ -3,7 +3,16 @@ import { BookingsService } from '../index';
 import { BookingsRepository } from '../bookings.repository';
 import { CalendarsService } from '../../calendars/calendars.service';
 import { Container } from 'typescript-ioc';
-import { Booking, BookingStatus, Calendar, ChangeLogAction, Service, ServiceProvider, User } from '../../../models';
+import {
+	Booking,
+	BookingStatus,
+	Calendar,
+	ChangeLogAction,
+	Service,
+	ServiceProvider,
+	TimeslotsSchedule,
+	User,
+} from '../../../models';
 import { BookingAcceptRequest, BookingRequest } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
@@ -63,6 +72,11 @@ describe('Bookings.Service', () => {
 	const serviceProvider = ServiceProvider.create('provider', 1);
 	serviceProvider.id = 1;
 	serviceProvider.calendar = calendar;
+
+	const timeslotSchedule = new TimeslotsSchedule();
+	timeslotSchedule._id = 1;
+	timeslotSchedule._serviceProvider = serviceProvider;
+
 	const bookingMock = new BookingBuilder()
 		.withServiceId(1)
 		.withStartDateTime(new Date('2020-10-01T01:00:00'))

@@ -1,26 +1,33 @@
 import { Container } from 'typescript-ioc';
-import { Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
+import { Service, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule, User } from '../../../models';
 import { TimeslotItemsService } from '../timeslotItems.service';
 import { TimeslotItemRequest } from '../timeslotItems.apicontract';
 import { TimeslotItemsRepository } from '../timeslotItems.repository';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Weekday } from '../../../enums/weekday';
+import { UserContext } from '../../../infrastructure/auth/userContext';
+import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
+import { TimeslotItemsActionAuthVisitor } from '../timeslotItems.auth';
+
+jest.mock('../timeslotItems.auth');
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
-const saveTimeslotItem = jest.fn().mockImplementation((item) => Promise.resolve(item));
-const saveTimeslotItems = jest.fn().mockImplementation((item) => Promise.resolve([item]));
+const saveTimeslotItem = jest.fn();
+const saveTimeslotItems = jest.fn();
 const deleteTimeslotItem = jest.fn();
-const TimeslotItemsRepositoryMock = jest.fn().mockImplementation(() => ({
-	saveTimeslotItem,
-	deleteTimeslotItem,
-	saveTimeslotItems,
-}));
+const getTimeslotItem = jest.fn();
+const TimeslotItemsRepositoryMock = jest.fn();
 
-describe('TimeslotsSchedule template services ', () => {
+// tslint:disable-next-line: no-big-function
+describe('TimeslotsItem services ', () => {
+	const service = new Service();
+	service.id = 1;
+
 	const timeslotItemMock = TimeslotItem.create(
 		1,
 		Weekday.Monday,
@@ -31,29 +38,72 @@ describe('TimeslotsSchedule template services ', () => {
 		TimeOfDay.create({ hours: 11, minutes: 30 }),
 	);
 	const timeslotsScheduleMock = new TimeslotsSchedule();
+	timeslotsScheduleMock._service = service;
 	const request = new TimeslotItemRequest();
 
+	const adminMock = User.createAdminUser({
+		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+		userName: 'UserName',
+		email: 'test@email.com',
+		name: 'Name',
+	});
+	const visitorObj = {
+		hasPermission: jest.fn(),
+	};
+
 	beforeAll(() => {
+		Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
 		Container.bind(TimeslotItemsRepository).to(TimeslotItemsRepositoryMock);
+		Container.bind(UserContext).to(UserContextMock);
 	});
 	beforeEach(() => {
-		timeslotItemMock._id = 4;
+		TimeslotItemsRepositoryMock.mockImplementation(() => ({
+			saveTimeslotItem,
+			deleteTimeslotItem,
+			saveTimeslotItems,
+			getTimeslotItem,
+		}));
 
+		saveTimeslotItem.mockImplementation((item) => Promise.resolve(item));
+		saveTimeslotItems.mockImplementation((item) => Promise.resolve([item]));
+		getTimeslotItem.mockImplementation((item) => Promise.resolve(item));
+
+		const serviceMock = new Service();
+		serviceMock.id = 1;
+
+		const serviceProvideMock = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
+		serviceProvideMock.id = 1;
+
+		timeslotItemMock._id = 4;
 		timeslotsScheduleMock._id = 1;
+		timeslotsScheduleMock._service = serviceMock;
+		timeslotsScheduleMock._serviceProvider = serviceProvideMock;
 
 		request.weekDay = Weekday.Thursday;
 		request.startTime = '11:00';
 		request.endTime = '12:00';
+
+		visitorObj.hasPermission.mockReturnValue(true);
+
+		(TimeslotItemsActionAuthVisitor as jest.Mock).mockImplementation(() => {
+			return visitorObj;
+		});
 	});
 
 	afterEach(() => {
-		jest.clearAllMocks();
+		jest.resetAllMocks();
 	});
 
 	it('should create timeslots item', async () => {
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
+
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.createTimeslotItem(timeslotsScheduleMock, request);
 		expect(saveTimeslotItem).toBeCalled();
+		expect(visitorObj.hasPermission).toBeCalled();
 	});
 
 	it('should validate start time is less than end time', async () => {
@@ -96,6 +146,8 @@ describe('TimeslotsSchedule template services ', () => {
 	});
 
 	it('should not validate overlap when updating same item', async () => {
+		const serviceMock = new Service();
+		serviceMock.id = 1;
 		request.weekDay = Weekday.Monday;
 		request.startTime = '11:15';
 		request.endTime = '12:15';
@@ -110,9 +162,11 @@ describe('TimeslotsSchedule template services ', () => {
 			TimeOfDay.create({ hours: 11, minutes: 30 }),
 		);
 		timeslotItemMockForUpdate._id = 4;
+		timeslotsScheduleMock._service = serviceMock;
 		const scheduleForUpdate = new TimeslotsSchedule();
 		scheduleForUpdate._id = 1;
 		scheduleForUpdate.timeslotItems = [timeslotItemMockForUpdate];
+		scheduleForUpdate._service = serviceMock;
 
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.updateTimeslotItem(scheduleForUpdate, 4, request);
@@ -151,10 +205,12 @@ describe('TimeslotsSchedule template services ', () => {
 		const scheduleForUpdate = new TimeslotsSchedule();
 		scheduleForUpdate._id = 1;
 		scheduleForUpdate.timeslotItems = [timeslotItemMockForUpdate];
+		scheduleForUpdate._service = serviceMockForUpdate;
 
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.updateTimeslotItem(scheduleForUpdate, 4, request);
 		expect(saveTimeslotItem).toBeCalled();
+		expect(visitorObj.hasPermission).toBeCalled();
 	});
 
 	it('should throw when updating wrong timeslot id', async () => {
@@ -187,8 +243,36 @@ describe('TimeslotsSchedule template services ', () => {
 	});
 
 	it('should delete timeslot item', async () => {
+		const serviceMock = new Service();
+		serviceMock.id = 1;
+		TimeslotsScheduleRepositoryMock.getTimeslotsScheduleById.mockReturnValue(
+			Promise.resolve(timeslotsScheduleMock),
+		);
 		const timeslotItemsService = Container.get(TimeslotItemsService);
 		await timeslotItemsService.deleteTimeslot(1);
 		expect(deleteTimeslotItem).toBeCalledTimes(1);
+		expect(visitorObj.hasPermission).toBeCalled();
 	});
 });
+
+export class UserContextMock extends UserContext {
+	public static getCurrentUser = jest.fn<Promise<User>, any>();
+	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
+
+	public init() {}
+	public async getCurrentUser(...params): Promise<any> {
+		return await UserContextMock.getCurrentUser(...params);
+	}
+
+	public async getAuthGroups(...params): Promise<any> {
+		return await UserContextMock.getAuthGroups(...params);
+	}
+}
+
+export class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
+	public static getTimeslotsScheduleById = jest.fn<Promise<TimeslotsSchedule>, any>();
+
+	public async getTimeslotsScheduleById(...params): Promise<any> {
+		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleById(...params);
+	}
+}

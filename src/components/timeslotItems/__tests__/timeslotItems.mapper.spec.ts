@@ -1,10 +1,8 @@
-import { mapToTimeslotsScheduleResponse } from "../timeslotItems.mapper";
-import { TimeslotsSchedule, Service, TimeslotItem, TimeOfDay } from "../../../models";
+import { mapToTimeslotsScheduleResponse } from '../timeslotItems.mapper';
+import { Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
 
 describe('TimeslotsSchedule template services ', () => {
-
 	it('should map TimeslotsSchedule to TimeslotsScheduleResponse', async () => {
-
 		const timeslotItemA = new TimeslotItem();
 		timeslotItemA._id = 1;
 		timeslotItemA._startTime = TimeOfDay.create({ hours: 8, minutes: 0 });
@@ -23,16 +21,12 @@ describe('TimeslotsSchedule template services ', () => {
 		const res = mapToTimeslotsScheduleResponse(inputData);
 
 		expect(res.timeslots.length).toBe(2);
-
 	});
 
 	it('should return empty timeslots array if there is not timetslot data', async () => {
-
 		const res = mapToTimeslotsScheduleResponse(null);
 
 		expect(res.timeslots).toBeDefined();
 		expect(res.timeslots.length).toBe(0);
-
-
 	});
-})
+});
