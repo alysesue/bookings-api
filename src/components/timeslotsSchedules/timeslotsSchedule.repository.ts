@@ -28,8 +28,8 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 
 	private getRelations(options: { retrieveService?: boolean; retrieveServiceProvider?: boolean }): string[] {
 		const relations = ['timeslotItems'];
-		if (options.retrieveService) relations.push('_service');
-		if (options.retrieveServiceProvider) relations.push('_serviceProvider');
+		if (options.retrieveService === true) relations.push('_service');
+		if (options.retrieveServiceProvider === true) relations.push('_serviceProvider');
 		return relations;
 	}
 
