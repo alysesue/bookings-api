@@ -13,6 +13,7 @@ const config = {
 		'!**/authentication.ts',
 		'!**/swagger.middleware.ts',
 		'!**/transactionManager.ts',
+		'!**/connectionOptions.ts',
 	],
 	coverageThreshold: {
 		global: {
