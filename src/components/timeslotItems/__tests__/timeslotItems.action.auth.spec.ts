@@ -1,5 +1,5 @@
-import { Calendar, Organisation, Service, ServiceProvider, TimeslotsSchedule, User } from '../../../models';
-import { TimeslotItemsActionAuthVisitor } from '../timeslotItems.auth';
+import { Organisation, Service, ServiceProvider, TimeslotsSchedule, User } from '../../../models';
+import { TimeslotItemsActionAuthVisitor, TimeslotItemsAuthQueryVisitor } from '../timeslotItems.auth';
 import {
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
@@ -158,5 +158,31 @@ describe('TimeslotItems action auth', () => {
 		const groups = [new ServiceProviderAuthGroup(adminMock, serviceProvider)];
 
 		expect(new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toBe(true);
+	});
+});
+
+describe('timeslotSchedule auth query tests', () => {
+	it('should return timeslotSchedule for org admin', () => {
+		const organisation = new Organisation();
+		const userGroup = new OrganisationAdminAuthGroup(
+			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
+			[organisation],
+		);
+
+		const auth = new TimeslotItemsAuthQueryVisitor('s', 'sp');
+
+		console.log(auth.createUserVisibilityCondition([userGroup]))
+	});
+
+	it('should ', () => {
+		const service = new Service();
+		const userGroup = new ServiceAdminAuthGroup(
+			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
+			[service],
+		);
+
+		const auth = new TimeslotItemsAuthQueryVisitor('s', 'sp');
+
+		console.log(auth.createUserVisibilityCondition([userGroup]))
 	});
 });

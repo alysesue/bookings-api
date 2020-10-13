@@ -1,12 +1,18 @@
-import { InRequestScope } from 'typescript-ioc';
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { RepositoryBase } from '../../core/repository';
 import { TimeslotsSchedule } from '../../models';
 import { FindManyOptions, In } from 'typeorm';
 import { IEntityWithTimeslotsSchedule } from '../../models/interfaces';
 import { groupByKeyLastValue } from '../../tools/collections';
+import { UserContext } from "../../infrastructure/auth/userContext";
+import { TimeslotItemsAuthQueryVisitor } from "../timeslotItems/timeslotItems.auth";
 
 @InRequestScope
 export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedule> {
+
+	@Inject
+	private _userContext: UserContext;
+
 	constructor() {
 		super(TimeslotsSchedule);
 	}
@@ -18,26 +24,33 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 
 	public async getTimeslotsScheduleById(
 		id: number,
-		options: { retrieveService?: boolean; retrieveServiceProvider?: boolean } = {},
+		options: TimeslotsScheduleSearchOptions = {},
 	): Promise<TimeslotsSchedule> {
 		if (!id) return null;
 		const repository = await this.getRepository();
-		const entry = await repository.findOne(id, { relations: this.getRelations(options) });
-		return entry;
-	}
 
-	private getRelations(options: { retrieveService?: boolean; retrieveServiceProvider?: boolean }): string[] {
-		const relations = ['timeslotItems'];
-		if (options.retrieveService) relations.push('_service');
-		if (options.retrieveServiceProvider) relations.push('_serviceProvider');
-		return relations;
+		const {userCondition, userParams} = await new TimeslotItemsAuthQueryVisitor('s', 'sp')
+			.createUserVisibilityCondition(await this._userContext.getAuthGroups());
+
+		let queryBuilder = repository
+			.createQueryBuilder('ts')
+			.leftJoinAndMapMany('ts.timeslotItems', 'timeslot_item', 'items', 'items._timeslotsScheduleId = ts._id')
+			.leftJoinAndMapOne('ts._service', 'service', 's', 's._timeslotsScheduleId = ts._id')
+			.leftJoinAndMapOne('ts._serviceProvider', 'service_provider', 'sp', 'sp._timeslotsScheduleId = ts._id')
+
+		return await queryBuilder.where(
+			['ts._id = :id', userCondition]
+				.filter((c) => c)
+				.map((c) => `(${ c })`)
+				.join(' AND '), {id, ...userParams})
+			.getOne();
 	}
 
 	public async getTimeslotsSchedules(ids: number[]): Promise<TimeslotsSchedule[]> {
 		if (ids.length === 0) return [];
 
-		const options: FindManyOptions<TimeslotsSchedule> = { relations: ['timeslotItems'] };
-		options.where = { _id: In(ids) };
+		const options: FindManyOptions<TimeslotsSchedule> = {relations: ['timeslotItems']};
+		options.where = {_id: In(ids)};
 
 		return await (await this.getRepository()).find(options);
 	}
@@ -53,3 +66,5 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 		return entries;
 	}
 }
+
+export type TimeslotsScheduleSearchOptions = { retrieveService?: boolean; retrieveServiceProvider?: boolean };

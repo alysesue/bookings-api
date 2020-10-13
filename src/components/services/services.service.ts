@@ -117,7 +117,7 @@ export class ServicesService {
 
 	public async getServiceTimeslotsSchedule(id: number): Promise<TimeslotsSchedule> {
 		const service = await this.getService(id);
-		return await this.timeslotsScheduleService.getTimeslotsScheduleById(service.timeslotsScheduleId);
+		return await this.timeslotsScheduleService.getTimeslotsScheduleById(service.timeslotsScheduleId, {retrieveService: true});
 	}
 
 	public async addTimeslotItem(serviceId: number, request: TimeslotItemRequest): Promise<TimeslotItem> {

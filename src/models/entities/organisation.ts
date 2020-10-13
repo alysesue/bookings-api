@@ -1,4 +1,4 @@
-import { Column, Entity, Index, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IOrganisation } from '../interfaces';
 import { OrganisationAdminGroupMap } from './organisationAdminGroupMap';
 

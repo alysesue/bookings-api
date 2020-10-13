@@ -32,7 +32,7 @@ describe('TimeslotsSchedule template services ', () => {
 	it('should get timeslots schedule', async () => {
 		getTimeslotsScheduleById.mockImplementation(() => Promise.resolve(timeslotsScheduleMock));
 		const timeslotsScheduleService = Container.get(TimeslotsScheduleService);
-		await timeslotsScheduleService.getTimeslotsScheduleById(1);
+		await timeslotsScheduleService.getTimeslotsScheduleById(1, {retrieveService: true});
 		expect(getTimeslotsScheduleById).toBeCalled();
 	});
 });

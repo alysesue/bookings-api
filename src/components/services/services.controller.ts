@@ -129,6 +129,8 @@ export class ServicesController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getTimeslotsScheduleByServiceId(serviceId: number): Promise<TimeslotsScheduleResponse> {
 		const data = await this.servicesService.getServiceTimeslotsSchedule(serviceId);
+		console.log(data);
+		console.log(data.timeslotItems);
 		return mapToTimeslotsScheduleResponse(data);
 	}
 
