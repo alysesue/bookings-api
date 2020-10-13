@@ -34,7 +34,7 @@ export class TimeslotItem implements ITimeSpan {
 		return this._endTime;
 	}
 
-	@Column({ nullable: false })
+	@Column({ nullable: false, default: 1 })
 	public _capacity: number;
 
 

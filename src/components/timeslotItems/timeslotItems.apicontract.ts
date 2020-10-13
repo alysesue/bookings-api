@@ -38,5 +38,5 @@ export class TimeslotItemRequest {
 	/**
 	 * The number of capacity for this timeslot
 	 */
-	public capacity: number;
+	public capacity: number = 1;
 }
