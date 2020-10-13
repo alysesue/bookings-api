@@ -150,7 +150,7 @@ describe('Schedules form template services ', () => {
 	});
 
 	it('should create new Schedule ', async () => {
-		const sp = new ServiceProvider();
+		const sp = ServiceProvider.create('sp', 2);
 		sp.id = 1;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
 		await scheduleFormsService.createScheduleForm(scheduleFormRequestCommon);
@@ -176,7 +176,7 @@ describe('Schedules form template services ', () => {
 	});
 
 	it('should generate timeslots', async () => {
-		const sp = new ServiceProvider();
+		const sp = ServiceProvider.create('sp', 2);
 		sp.id = 1;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
 		await scheduleFormsService.createScheduleForm(scheduleFormRequestCommon);
@@ -240,8 +240,8 @@ describe('Schedules form template services ', () => {
 				} as WeekDayScheduleContract,
 			],
 		} as ScheduleFormRequest;
+		const sp = ServiceProvider.create('sp', 2);
 
-		const sp = new ServiceProvider();
 		sp.id = 1;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
 		await scheduleFormsService.createScheduleForm(scheduleFormRequestComplex);
