@@ -67,8 +67,8 @@ export class ServiceProvidersController extends Controller {
 	@Post('')
 	@Security('service')
 	@SuccessResponse(204, 'Created')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async addServiceProviders(
 		@Body() spRequest: ServiceProviderListRequest,
 		@Header('x-api-service') serviceId: number,
@@ -84,8 +84,8 @@ export class ServiceProvidersController extends Controller {
 	@Post('/csv')
 	@Security('service')
 	@SuccessResponse(204, 'Created')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async addServiceProvidersText(@Body() spRequest: string, @Header('x-api-service') serviceId: number) {
 		const request = ServiceProvidersController.parseCsvModelToServiceProviders(parseCsv(spRequest));
 		await this.serviceProvidersService.saveServiceProviders(request, serviceId);
@@ -98,8 +98,8 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Get('')
 	@Security('optional-service')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getServiceProviders(
 		@Header('x-api-service') serviceId?: number,
 		@Query() includeTimeslotsSchedule = false,
@@ -114,8 +114,8 @@ export class ServiceProvidersController extends Controller {
 
 	@Get('available')
 	@Security('service')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getAvailableServiceProviders(
 		@Query() from: Date,
 		@Query() to: Date,
@@ -132,9 +132,10 @@ export class ServiceProvidersController extends Controller {
 	@Get('{spId}')
 	@MOLAuth({
 		admin: {},
+		agency: {},
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
-	@Response(401, 'Valid authentication types: [admin,user]')
+	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getServiceProvider(@Path() spId: number): Promise<ServiceProviderResponseModel> {
 		const dataModel = await this.serviceProvidersService.getServiceProvider(spId, true, true);
 		return this.mapper.mapDataModel(dataModel);
@@ -156,8 +157,8 @@ export class ServiceProvidersController extends Controller {
 
 	@Put('{spId}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async setServiceScheduleForm(
 		@Path() spId: number,
 		@Body() request: SetProviderScheduleFormRequest,
@@ -167,8 +168,8 @@ export class ServiceProvidersController extends Controller {
 
 	@Get('{spId}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getServiceScheduleForm(@Path() spId: number): Promise<ScheduleFormResponse> {
 		return mapScheduleToResponse(await this.serviceProvidersService.getProviderScheduleForm(spId));
 	}
@@ -179,8 +180,8 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Get('{spId}/timeslotSchedule')
 	@SuccessResponse(200, 'Ok')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getTimeslotsScheduleByServiceProviderId(@Path() spId: number): Promise<TimeslotsScheduleResponse> {
 		const data = await this.serviceProvidersService.getTimeslotItems(spId);
 		return mapToTimeslotsScheduleResponse(data);
@@ -193,8 +194,8 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Post('{spId}/timeslotSchedule/timeslots')
 	@SuccessResponse(201, 'Created')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async createTimeslotItem(
 		@Path() spId: number,
 		@Body() request: TimeslotItemRequest,
@@ -212,8 +213,8 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Put('{spId}/timeslotSchedule/timeslots/{timeslotId}')
 	@SuccessResponse(200, 'Ok')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async updateTimeslotItem(
 		@Path() spId: number,
 		@Path() timeslotId: number,
@@ -230,8 +231,8 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Delete('{spId}/timeslotSchedule/timeslots/{timeslotId}')
 	@SuccessResponse(204, 'No Content')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async deleteTimeslotItem(@Path() spId: number, @Path() timeslotId: number) {
 		await this.serviceProvidersService.deleteTimeslotItem(spId, timeslotId);
 	}

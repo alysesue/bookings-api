@@ -1,4 +1,4 @@
-import { Entity, OneToMany, PrimaryGeneratedColumn, OneToOne } from 'typeorm';
+import { Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TimeslotItem } from './timeslotItem';
 import { IService, IServiceProvider, ITimeslotsSchedule } from '../interfaces';
 import { DateHelper } from '../../infrastructure/dateHelper';
@@ -8,7 +8,7 @@ import { Timeslot } from '../timeslot';
 
 @Entity()
 export class TimeslotsSchedule implements ITimeslotsSchedule {
-	constructor() { }
+	constructor() {}
 
 	@PrimaryGeneratedColumn()
 	public _id: number;

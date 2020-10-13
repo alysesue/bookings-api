@@ -25,24 +25,24 @@ export class ScheduleFormsController extends Controller {
 
 	@Post('')
 	@SuccessResponse(201, 'Created')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async createScheduleForm(@Body() timeslot: ScheduleFormRequest): Promise<ScheduleFormResponse> {
 		this.setStatus(201);
 		return await this.scheduleFormService.createScheduleForm(timeslot);
 	}
 
 	@Get('')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getScheduleForms(): Promise<ScheduleFormResponse[]> {
 		return await this.scheduleFormService.getScheduleForms();
 	}
 
 	@Put('{id}')
 	@SuccessResponse(200, 'Updated')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async updateScheduleForm(
 		@Path() id: number,
 		@Body() timeslot: ScheduleFormRequest,
@@ -52,8 +52,8 @@ export class ScheduleFormsController extends Controller {
 
 	@Delete('{id}')
 	@SuccessResponse(200, 'Deleted')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async deleteScheduleForm(@Path() id: number): Promise<any> {
 		return await this.scheduleFormService.deleteScheduleForm(id);
 	}

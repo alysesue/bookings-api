@@ -16,8 +16,8 @@ export class CalendarsController extends Controller {
 	 * @param model
 	 */
 	@Post('{calendarUUID}/useraccess')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async addUser(@Path() calendarUUID: string, @Body() model: CalendarUserModel): Promise<CalendarUserModel> {
 		return await this.calendarsService.addUser(calendarUUID, model);
 	}
