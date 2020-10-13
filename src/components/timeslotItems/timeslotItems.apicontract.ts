@@ -17,7 +17,7 @@ export class TimeslotItemResponse {
 	 */
 	public endTime: string;
 	/**
-	 * he number of capacity for this timeslot
+	 * The number of capacity for this timeslot
 	 */
 	public capacity: number;
 }
