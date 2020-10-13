@@ -6,7 +6,7 @@ import * as timeSpan from '../../tools/timeSpan';
 
 @Entity()
 export class TimeslotItem implements ITimeSpan {
-	constructor() {}
+	constructor() { }
 
 	@PrimaryGeneratedColumn()
 	public _id: number;
@@ -34,17 +34,23 @@ export class TimeslotItem implements ITimeSpan {
 		return this._endTime;
 	}
 
+	@Column({ nullable: false, default: 1 })
+	public _capacity: number;
+
+
 	public static create(
 		timeslotScheduleId: number,
 		weekDay: Weekday,
 		startTime: TimeOfDay,
 		endTime: TimeOfDay,
+		capacity: number = 1,
 	): TimeslotItem {
 		const instance = new TimeslotItem();
 		instance._timeslotsScheduleId = timeslotScheduleId;
 		instance._startTime = startTime;
 		instance._endTime = endTime;
 		instance._weekDay = weekDay;
+		instance._capacity = capacity;
 		return instance;
 	}
 

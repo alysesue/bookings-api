@@ -8,6 +8,7 @@ const mapTimeslotItems = (data: TimeslotItem[]): TimeslotItemResponse[] => {
 		item.weekDay = i._weekDay;
 		item.startTime = i._startTime.toString();
 		item.endTime = i._endTime.toString();
+		item.capacity = i._capacity;
 		return item;
 	});
 };
@@ -32,6 +33,7 @@ export const mapToTimeslotItemResponse = (data: TimeslotItem): TimeslotItemRespo
 	response.weekDay = data._weekDay;
 	response.startTime = data._startTime.toString();
 	response.endTime = data._endTime.toString();
+	response.capacity = data._capacity;
 
 	return response;
 };
@@ -40,5 +42,6 @@ export const mapTimeslotItemToEntity = (request: TimeslotItemRequest, entity: Ti
 	entity._weekDay = request.weekDay;
 	entity._startTime = TimeOfDay.parse(request.startTime);
 	entity._endTime = TimeOfDay.parse(request.endTime);
+	entity._capacity = request.capacity;
 	return entity;
 };

@@ -119,6 +119,16 @@ describe('TimeslotsItem services ', () => {
 		);
 	});
 
+	it('should set capacity=1 by default', async () => {
+		request.weekDay = Weekday.Thursday;
+		request.startTime = '06:00';
+		request.endTime = '07:00';
+
+		const timeslotItemsService = Container.get(TimeslotItemsService);
+		const res = await timeslotItemsService.createTimeslotItem(timeslotsScheduleMock, request);
+		expect(res._capacity).toBe(1);
+	});
+
 	it('should validate start time / end time when creating timeslots item', async () => {
 		request.weekDay = Weekday.Thursday;
 		request.startTime = 'asdasd';
@@ -259,7 +269,7 @@ export class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
-	public init() {}
+	public init() { }
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(...params);
 	}
