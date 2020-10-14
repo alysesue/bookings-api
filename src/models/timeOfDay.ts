@@ -11,10 +11,29 @@ export class TimeOfDay {
 		return this._hours;
 	}
 
+	public set hours(value: number) {
+		this._hours = value;
+	}
+
 	private _minutes: number;
 
 	public get minutes(): number {
 		return this._minutes;
+	}
+
+	public set minutes(value: number) {
+		this._minutes = value;
+	}
+
+	public addMinutes(numOfMinutes: number): TimeOfDay {
+		const minutes = this.AsMinutes() + numOfMinutes;
+		return TimeOfDay.minutesToTimeOfDay(minutes);
+	}
+
+	public static minutesToTimeOfDay(minutesEntry: number): TimeOfDay {
+		const hours = Math.trunc(minutesEntry / 60) % 24;
+		const minutes = minutesEntry % 60;
+		return TimeOfDay.create({ hours, minutes });
 	}
 
 	public static parse(time: string): TimeOfDay {
@@ -53,12 +72,6 @@ export class TimeOfDay {
 			return diffHours;
 		}
 		return a._minutes - b._minutes;
-	}
-
-	public static addMinuntes(a: TimeOfDay, minutes: number): TimeOfDay {
-		const date = new Date('01-01-2017 ' + a.hours + ':' + a.minutes);
-		date.setMinutes(date.getMinutes() + minutes);
-		return this.fromDate(date);
 	}
 
 	public static DiffInMinutes(a: TimeOfDay, b: TimeOfDay): number {

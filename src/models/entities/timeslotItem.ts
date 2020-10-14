@@ -3,6 +3,8 @@ import { TimeOfDay, Transformer as TimeTransformer } from '../timeOfDay';
 import { Weekday } from '../../enums/weekday';
 import { ITimeslotsSchedule, ITimeSpan } from '../interfaces';
 import * as timeSpan from '../../tools/timeSpan';
+import { ScheduleForm } from './scheduleForm';
+import { intersects } from '../../tools/timeSpan';
 
 @Entity()
 export class TimeslotItem implements ITimeSpan {
@@ -60,5 +62,40 @@ export class TimeslotItem implements ITimeSpan {
 		}
 
 		return timeSpan.intersectsSpan(this, other);
+	}
+
+	public static generateTimeslotsItems(scheduleForm: ScheduleForm, timeslotsScheduleId: number): TimeslotItem[] {
+		const timeslotItems = [];
+		const activeWeekdaySchedules = scheduleForm.weekdaySchedules.filter((weekday) => weekday.hasScheduleForm);
+		activeWeekdaySchedules.forEach((weekDay) => {
+			let startTimeslotItem = weekDay.openTime;
+			let endTimeslotItem = startTimeslotItem.addMinutes(scheduleForm.slotsDurationInMin);
+			while (TimeOfDay.compare(weekDay.closeTime, endTimeslotItem) >= 0) {
+				const findOverlapsBreak = weekDay.breaks.find((breakRange) =>
+					intersects(
+						{
+							startTime: startTimeslotItem,
+							endTime: endTimeslotItem,
+						},
+						breakRange.startTime,
+						breakRange.endTime,
+					),
+				);
+				if (findOverlapsBreak) {
+					startTimeslotItem = findOverlapsBreak.endTime;
+				} else {
+					const timeslotItem = TimeslotItem.create(
+						timeslotsScheduleId,
+						weekDay.weekDay,
+						startTimeslotItem,
+						endTimeslotItem,
+					);
+					timeslotItems.push(timeslotItem);
+					startTimeslotItem = endTimeslotItem;
+				}
+				endTimeslotItem = startTimeslotItem.addMinutes(scheduleForm.slotsDurationInMin);
+			}
+		});
+		return timeslotItems;
 	}
 }

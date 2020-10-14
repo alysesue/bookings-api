@@ -27,43 +27,11 @@ export class ScheduleFormsService {
 	private async generateTimeslots(serviceProviderId: number, scheduleForm: ScheduleForm) {
 		const serviceProvider = await this.serviceProvidersRepository.getServiceProvider({ id: serviceProviderId });
 		serviceProvider.timeslotsSchedule = TimeslotsSchedule.create(undefined, serviceProvider);
-		serviceProvider.timeslotsSchedule.timeslotItems = this.generateTimeslotsItems(serviceProvider, scheduleForm);
+		serviceProvider.timeslotsSchedule.timeslotItems = TimeslotItem.generateTimeslotsItems(
+			scheduleForm,
+			serviceProvider.timeslotsScheduleId,
+		);
 		await this.serviceProvidersRepository.save(serviceProvider);
-	}
-
-	private generateTimeslotsItems(serviceProvider: ServiceProvider, scheduleForm: ScheduleForm): TimeslotItem[] {
-		const timeslotItems = [];
-		const activeWeekdaySchedules = scheduleForm.weekdaySchedules.filter((weekday) => weekday.hasScheduleForm);
-		activeWeekdaySchedules.forEach((weekDay) => {
-			let startTimeslotItem = weekDay.openTime;
-			let endTimeslotItem = TimeOfDay.addMinuntes(startTimeslotItem, scheduleForm.slotsDurationInMin);
-			while (TimeOfDay.compare(weekDay.closeTime, endTimeslotItem) >= 0) {
-				const findOverlapsBreak = weekDay.breaks.find((breakRange) =>
-					intersects(
-						{
-							startTime: startTimeslotItem,
-							endTime: endTimeslotItem,
-						},
-						breakRange.startTime,
-						breakRange.endTime,
-					),
-				);
-				if (findOverlapsBreak) {
-					startTimeslotItem = findOverlapsBreak.endTime;
-				} else {
-					const timeslotItem = TimeslotItem.create(
-						serviceProvider.timeslotsScheduleId,
-						weekDay.weekDay,
-						startTimeslotItem,
-						endTimeslotItem,
-					);
-					timeslotItems.push(timeslotItem);
-					startTimeslotItem = endTimeslotItem;
-				}
-				endTimeslotItem = TimeOfDay.addMinuntes(startTimeslotItem, scheduleForm.slotsDurationInMin);
-			}
-		});
-		return timeslotItems;
 	}
 
 	public async updateScheduleForm(id: number, template: ScheduleFormRequest): Promise<ScheduleFormResponse> {

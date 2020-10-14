@@ -64,11 +64,18 @@ describe('Time of day tests', () => {
 	});
 
 	it('should add minutes', () => {
-		const timeA = TimeOfDay.parse('11:30');
-
-		const res = TimeOfDay.addMinuntes(timeA, 30);
-
+		let timeOfDay = TimeOfDay.parse('11:30');
+		let res = timeOfDay.addMinutes(30);
 		expect(res.toString()).toBe('12:00');
+		timeOfDay = TimeOfDay.parse('23:30');
+		res = timeOfDay.addMinutes(30);
+		expect(res.toString()).toBe('00:00');
+	});
+
+	it('should create TimeOfDay with minutes', () => {
+		const timeOfDay = TimeOfDay.minutesToTimeOfDay(125);
+		expect(timeOfDay.toString()).toBe('02:05');
+		expect(() => TimeOfDay.minutesToTimeOfDay(-125)).toThrow('Invalid hours value: -2');
 	});
 
 	it('should transfrom from raw value', () => {
