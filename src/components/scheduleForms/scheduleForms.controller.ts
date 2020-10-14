@@ -2,7 +2,6 @@ import {
 	Body,
 	Controller,
 	Delete,
-	Deprecated,
 	Get,
 	Path,
 	Post,

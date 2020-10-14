@@ -41,6 +41,8 @@ beforeEach(() => {
 	timeslotItemRequest.startTime = '9:00';
 	timeslotItemRequest.endTime = '10:00';
 	serviceMockWithTemplate.id = 1;
+	serviceMockWithTemplate.organisationId = 1;
+	serviceMockWithTemplate.name = 'John';
 	timeslotItemMock._id = 4;
 	timeslotsScheduleMock._id = 1;
 	timeslotsScheduleMock.timeslotItems = [timeslotItemMock];
@@ -99,6 +101,8 @@ describe('Services service tests', () => {
 
 	it('should set service scheduleForm', async () => {
 		const newService = new Service();
+		newService.organisationId = 1;
+		newService.id = 1;
 		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(newService));
 		ScheduleFormsServiceMock.getScheduleForm.mockImplementation(() => Promise.resolve(new ScheduleForm()));
 
@@ -113,6 +117,8 @@ describe('Services service tests', () => {
 
 	it('should set service scheduleForm to null', async () => {
 		const newService = new Service();
+		newService.organisationId = 1;
+		newService.id = 1;
 		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(newService));
 		ScheduleFormsServiceMock.getScheduleForm.mockImplementation(() => Promise.resolve());
 

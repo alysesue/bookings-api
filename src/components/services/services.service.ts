@@ -1,14 +1,15 @@
-import {ErrorCodeV2, MOLErrorV2} from 'mol-lib-api-contract';
-import {Inject, InRequestScope} from 'typescript-ioc';
-import {ChangeLogAction, ScheduleForm, Service, TimeslotItem, TimeslotsSchedule} from '../../models';
-import {ServicesRepository} from './services.repository';
-import {ServiceRequest, SetScheduleFormRequest} from './service.apicontract';
-import {ScheduleFormsService} from '../scheduleForms/scheduleForms.service';
-import {TimeslotItemRequest} from '../timeslotItems/timeslotItems.apicontract';
-import {TimeslotItemsService} from '../timeslotItems/timeslotItems.service';
-import {TimeslotsScheduleService} from '../timeslotsSchedules/timeslotsSchedule.service';
-import {UserContext} from '../../infrastructure/auth/userContext';
-import {ServicesActionAuthVisitor} from "./services.auth";
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { ScheduleForm, Service, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { ServicesRepository } from './services.repository';
+import { ServiceRequest, SetScheduleFormRequest } from './service.apicontract';
+import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
+import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
+import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
+import { TimeslotsScheduleService } from '../timeslotsSchedules/timeslotsSchedule.service';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { ServicesActionAuthVisitor } from './services.auth';
+import { CrudAction } from '../../enums/crudAction';
 
 @InRequestScope
 export class ServicesService {
@@ -23,21 +24,19 @@ export class ServicesService {
 	@Inject
 	private userContext: UserContext;
 
-	public async createService(request: ServiceRequest, serviceObject: Service): Promise<Service> {
-		await this.verifyActionPermission(serviceObject, ChangeLogAction.Create);
-
+	public async createService(request: ServiceRequest): Promise<Service> {
 		const service = new Service();
 		service.name = request.name?.trim();
 		if (!service.name) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service name is empty');
 		}
+		const orgAdmins = await this.verifyActionPermission(service, CrudAction.Create);
 
 		if (request.organisationId) {
 			service.organisationId = request.organisationId;
+		} else {
+			service.organisationId = orgAdmins[0].authorisedOrganisations[0].id;
 		}
-		// else {
-		// 	service.organisationId = orgAdmins[0].authorisedOrganisations[0].id;
-		// }
 
 		return await this.servicesRepository.save(service);
 	}
@@ -47,7 +46,7 @@ export class ServicesService {
 			const service = await this.servicesRepository.getService(id);
 			if (!service) throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 			service.name = request.name;
-			await this.verifyActionPermission(request, ChangeLogAction.Update);
+			await this.verifyActionPermission(service, CrudAction.Update);
 			return await this.servicesRepository.save(service);
 		} catch (e) {
 			if (e.message.startsWith('duplicate key value violates unique constraint'))
@@ -145,11 +144,11 @@ export class ServicesService {
 		return service.timeslotsSchedule;
 	}
 
-	private async verifyActionPermission(service: Service, changeLogAction: ChangeLogAction): Promise<void> {
+	private async verifyActionPermission(service: Service, action: CrudAction): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
-		if(!new ServicesActionAuthVisitor(service, changeLogAction).hasPermission(authGroups)) {
+		if (!new ServicesActionAuthVisitor(service, action).hasPermission(authGroups)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
-				`User cannot perform this action (${changeLogAction}) for services.`,
+				`User cannot perform this action (${action}) for services.`,
 			);
 		}
 	}

@@ -1,8 +1,6 @@
 // tslint:disable: tsr-detect-possible-timing-attacks
 import {
-	AuthGroup,
 	CitizenAuthGroup,
-	IAuthGroupVisitor,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,

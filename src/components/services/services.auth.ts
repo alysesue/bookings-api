@@ -4,49 +4,61 @@ import {
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
-import {PermissionAwareAuthGroupVisitor, QueryAuthGroupVisitor} from '../../infrastructure/auth/queryAuthGroupVisitor';
-import {ChangeLogAction, Service, ServiceProvider} from "../../models";
+import {
+	PermissionAwareAuthGroupVisitor,
+	QueryAuthGroupVisitor,
+} from '../../infrastructure/auth/queryAuthGroupVisitor';
+import { Service } from '../../models';
+import { CrudAction } from '../../enums/crudAction';
 
 export class ServicesActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
-	private _service: Service;
-	private _serviceProvider: ServiceProvider;
-	private readonly _changeLogAction: ChangeLogAction;
+	private readonly _service: Service;
+	private readonly _action: CrudAction;
 
-	constructor(service: Service, changeLogAction: ChangeLogAction) {
+	constructor(service: Service, action: CrudAction) {
 		super();
+		this._service = service;
+		this._action = action;
 
-		if(!service) {
-			throw new Error('ServicesActionAuthVisitor - Services cannot be null or undefined')
+		if (!service) {
+			throw new Error('ServicesActionAuthVisitor - Services cannot be null or undefined');
 		}
 
-		this._service = service;
-		this._changeLogAction = changeLogAction;
+		if (!service.organisationId) {
+			throw new Error('ServicesActionAuthVisitor - Organisation ID cannot be null or undefined');
+		}
+
+		if (!service.id) {
+			throw new Error('ServicesActionAuthVisitor - Service ID cannot be null or undefined');
+		}
 	}
 
-	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
-		//TODO
-	}
+	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		const organisationId = this._service.organisationId;
-		if(_userGroup.hasOrganisationId(organisationId)) {
-			this.markWithPermission()
+		if (_userGroup.hasOrganisationId(organisationId)) {
+			this.markWithPermission();
 		}
 	}
 
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		const serviceId = this._service.id;
-		if(_userGroup.hasServiceId(serviceId)) {
-			this.markWithPermission();
+		switch (this._action) {
+			case CrudAction.Create:
+			case CrudAction.Delete:
+				return;
+			case CrudAction.Update:
+				if (_userGroup.hasServiceId(serviceId)) {
+					this.markWithPermission();
+				}
+				return;
+			default:
+				return;
 		}
 	}
 
-	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
-		const serviceProviderId = this._serviceProvider.id;
-		if(_userGroup.authorisedServiceProvider.id === serviceProviderId) {
-			this.markWithPermission();
-		}
-	}
+	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {}
 }
 
 export class ServicesQueryAuthVisitor extends QueryAuthGroupVisitor {
