@@ -8,6 +8,7 @@ import { ServicesRepository } from '../services/services.repository';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
+import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
 
 @Scoped(Scope.Request)
 export class TimeslotsService {
@@ -31,7 +32,7 @@ export class TimeslotsService {
 		const aggregator = new TimeslotAggregator<Booking>();
 
 		for (const booking of bookings) {
-			const timeslotForBooking = new Timeslot(booking.startDateTime, booking.endDateTime);
+			const timeslotForBooking = new TimeslotWithCapacity(booking.startDateTime, booking.endDateTime, 0);
 			aggregator.aggregate(booking, [timeslotForBooking]);
 		}
 
@@ -109,6 +110,7 @@ export class TimeslotsService {
 	): Promise<AvailableTimeslotProviders[]> {
 		let aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime, serviceId);
 
+		console.log('aggregatedEntries', aggregatedEntries)
 		const bookings = await this.bookingsRepository.search({
 			from: startDateTime,
 			to: endDateTime,
@@ -161,13 +163,13 @@ export class TimeslotsService {
 			(sp) => sp.id,
 		);
 
-		for (const entry of entries) {
-			if (serviceProviderId) {
-				entry.filterServiceProviders([serviceProviderId]);
-			}
+		// for (const entry of entries) {
+		// 	if (serviceProviderId) {
+		// 		entry.filterServiceProviders([serviceProviderId]);
+		// 	}
 
-			entry.filterServiceProviders(visibleServiceProviderIds);
-		}
+		// 	entry.filterServiceProviders(visibleServiceProviderIds);
+		// }
 
 		return entries.filter((e) => e.totalCount > 0);
 	}
@@ -233,6 +235,8 @@ export class TimeslotsService {
 			skipAuthorisation: true, // loads all SPs regardless of user role
 		});
 
+		//		console.log('timeslotItems', serviceProviders[0]._timeslotsSchedule.timeslotItems)
+
 		const validServiceTimeslots = Array.from(
 			service.timeslotsSchedule?.generateValidTimeslots({
 				startDatetime: minStartTime,
@@ -243,9 +247,9 @@ export class TimeslotsService {
 		for (const provider of serviceProviders) {
 			const serviceProviderTimeslots = provider.timeslotsSchedule
 				? provider.timeslotsSchedule.generateValidTimeslots({
-						startDatetime: minStartTime,
-						endDatetime: maxEndTime,
-				  })
+					startDatetime: minStartTime,
+					endDatetime: maxEndTime,
+				})
 				: validServiceTimeslots;
 
 			aggregator.aggregate(provider, serviceProviderTimeslots);

@@ -1,4 +1,5 @@
 import { Timeslot } from '../../models';
+import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
 
 export class TimeslotAggregator<TGroup> {
 	private _map: any;
@@ -30,10 +31,10 @@ export class TimeslotAggregator<TGroup> {
 		return entry;
 	}
 
-	public aggregate(group: TGroup, generator: Iterable<Timeslot>): void {
+	public aggregate(group: TGroup, generator: Iterable<TimeslotWithCapacity>): void {
 		for (const timeslot of generator) {
 			const entry = this.getOrAddEntry(timeslot);
-			entry.addGroup(group);
+			entry.addGroup(group, timeslot.getCapacity());
 		}
 	}
 
@@ -53,25 +54,26 @@ export class TimeslotAggregator<TGroup> {
 
 export class AggregatedEntry<TGroup> {
 	private _timeslot: Timeslot;
-	private _groups: Set<TGroup>;
+	private _groups: Map<TGroup, number>;
 
 	public getTimeslot = () => this._timeslot;
-	public getGroups = () => [...this._groups];
+	public getGroups = () => new Map<TGroup, number>(this._groups);
 
 	constructor(timeslot: Timeslot) {
 		this._timeslot = timeslot;
-		this._groups = new Set<TGroup>();
+		this._groups = new Map<TGroup, number>();
 	}
 
-	public addGroup(group: TGroup): void {
+	public addGroup(group: TGroup, capacity: number): void {
 		if (!this._groups.has(group)) {
-			this._groups.add(group);
+			this._groups.set(group, capacity);
 		}
+
 	}
 
-	public findGroup(predicate: (group: TGroup) => boolean): TGroup {
-		for (const value of this._groups.values()) {
-			if (predicate(value)) return value;
+	public findGroup(predicate: (group: TGroup) => boolean): [TGroup, number] {
+		for (const value of this._groups) {
+			if (predicate(value[0])) { return value };
 		}
 		return undefined;
 	}

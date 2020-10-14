@@ -5,6 +5,7 @@ import { DateHelper } from '../../infrastructure/dateHelper';
 import { groupByKey } from '../../tools/collections';
 import { TimeOfDay } from '../timeOfDay';
 import { Timeslot } from '../timeslot';
+import { TimeslotWithCapacity } from '../timeslotWithCapacity';
 
 @Entity()
 export class TimeslotsSchedule implements ITimeslotsSchedule {
@@ -54,7 +55,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 		return TimeOfDay.compare(a._endTime, b._endTime);
 	}
 
-	public *generateValidTimeslots(range: { startDatetime: Date; endDatetime: Date }): Iterable<Timeslot> {
+	public *generateValidTimeslots(range: { startDatetime: Date; endDatetime: Date }): Iterable<TimeslotWithCapacity> {
 		if (range.endDatetime < range.startDatetime) {
 			return;
 		}
@@ -93,15 +94,16 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 	private *generateWeekdayValidTimeslots(
 		weekdayTimeslots: TimeslotItem[],
 		range: { dayOfWeek: Date; startTimeOfDay?: TimeOfDay; endTimeOfDay?: TimeOfDay },
-	): Iterable<Timeslot> {
+	): Iterable<TimeslotWithCapacity> {
 		for (const timeslotTemplate of weekdayTimeslots) {
 			if (range.startTimeOfDay && TimeOfDay.compare(timeslotTemplate._startTime, range.startTimeOfDay) < 0)
 				continue;
 			if (range.endTimeOfDay && TimeOfDay.compare(timeslotTemplate._endTime, range.endTimeOfDay) > 0) continue;
 
-			yield new Timeslot(
+			yield new TimeslotWithCapacity(
 				timeslotTemplate._startTime.useTimeOfDay(range.dayOfWeek),
 				timeslotTemplate._endTime.useTimeOfDay(range.dayOfWeek),
+				timeslotTemplate._capacity
 			);
 		}
 	}
