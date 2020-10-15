@@ -95,6 +95,7 @@ export class ServiceProvidersController extends Controller {
 	 * Retrieves service providers.
 	 * @param serviceId (Optional) Filters by a service (id).
 	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
+	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
 	 */
 	@Get('')
 	@Security('optional-service')
@@ -103,10 +104,11 @@ export class ServiceProvidersController extends Controller {
 	public async getServiceProviders(
 		@Header('x-api-service') serviceId?: number,
 		@Query() includeTimeslotsSchedule = false,
+		@Query() includeScheduleForm = false,
 	): Promise<ServiceProviderResponseModel[]> {
 		const dataModels = await this.serviceProvidersService.getServiceProviders(
 			serviceId,
-			undefined,
+			includeScheduleForm,
 			includeTimeslotsSchedule,
 		);
 		return this.mapper.mapDataModels(dataModels);

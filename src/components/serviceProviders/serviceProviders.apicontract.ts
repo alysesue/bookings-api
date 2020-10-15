@@ -1,6 +1,7 @@
 import { CalendarModel } from '../calendars/calendars.apicontract';
 import { TimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.apicontract';
 import { BookingResponse } from '../bookings/bookings.apicontract';
+import { ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
 
 export class ServiceProviderModel {
 	public name: string;
@@ -20,15 +21,18 @@ export class ServiceProviderResponseModel {
 	public calendar: CalendarModel;
 	public serviceId: number;
 	public timeslotsSchedule?: TimeslotsScheduleResponse;
+	public scheduleForm?: ScheduleFormResponse;
 	public email?: string;
 	public phone?: string;
 
+	// tslint:disable-next-line
 	constructor(
 		id: number,
 		name: string,
 		calendar: CalendarModel,
 		serviceId: number,
 		timeslotsSchedule?: TimeslotsScheduleResponse,
+		scheduleForm?: ScheduleFormResponse,
 		email?: string,
 		phone?: string,
 	) {
@@ -37,6 +41,7 @@ export class ServiceProviderResponseModel {
 		this.calendar = calendar;
 		this.serviceId = serviceId;
 		this.timeslotsSchedule = timeslotsSchedule;
+		this.scheduleForm = scheduleForm;
 		this.email = email;
 		this.phone = phone;
 	}
