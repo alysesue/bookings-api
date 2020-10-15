@@ -1,16 +1,4 @@
-import {
-	Body,
-	Controller,
-	Delete,
-	Get,
-	Path,
-	Post,
-	Put,
-	Response,
-	Route,
-	SuccessResponse,
-	Tags,
-} from 'tsoa';
+import { Body, Controller, Delete, Get, Path, Post, Put, Response, Route, SuccessResponse, Tags } from 'tsoa';
 import { ScheduleFormRequest, ScheduleFormResponse } from './scheduleForms.apicontract';
 import { Inject } from 'typescript-ioc';
 import { ScheduleFormsService } from './scheduleForms.service';

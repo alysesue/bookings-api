@@ -11,6 +11,9 @@ import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontra
 import { Weekday } from '../../../enums/weekday';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { ServicesActionAuthVisitor } from '../services.auth';
+
+jest.mock('../services.auth');
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -30,13 +33,20 @@ const timeslotItemMock = TimeslotItem.create(
 	TimeOfDay.create({ hours: 11, minutes: 30 }),
 );
 
-beforeEach(() => {
+const visitorObject = {
+	hasPermission: jest.fn(),
+};
+
+beforeAll(() => {
 	Container.bind(ServicesRepository).to(ServicesRepositoryMockClass);
 	Container.bind(ScheduleFormsService).to(ScheduleFormsServiceMockClass);
 	Container.bind(TimeslotsScheduleService).to(TimeslotsScheduleMockClass);
 	Container.bind(TimeslotItemsService).to(TimeslotItemsServiceMock);
 	Container.bind(UserContext).to(UserContextMock);
+});
 
+beforeEach(() => {
+	jest.resetAllMocks();
 	timeslotItemRequest.weekDay = 0;
 	timeslotItemRequest.startTime = '9:00';
 	timeslotItemRequest.endTime = '10:00';
@@ -47,6 +57,12 @@ beforeEach(() => {
 	timeslotsScheduleMock._id = 1;
 	timeslotsScheduleMock.timeslotItems = [timeslotItemMock];
 	serviceMockWithTemplate.timeslotsSchedule = timeslotsScheduleMock;
+	visitorObject.hasPermission.mockReturnValue(true);
+	(ServicesActionAuthVisitor as jest.Mock).mockImplementation(() => visitorObject);
+	UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
+	UserContextMock.getAuthGroups.mockImplementation(() =>
+		Promise.resolve([new OrganisationAdminAuthGroup(userMock, [organisation])]),
+	);
 });
 
 const userMock = User.createAdminUser({
@@ -58,15 +74,6 @@ const userMock = User.createAdminUser({
 
 const organisation = new Organisation();
 organisation.id = 1;
-
-beforeEach(() => {
-	jest.resetAllMocks();
-
-	UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
-	UserContextMock.getAuthGroups.mockImplementation(() =>
-		Promise.resolve([new OrganisationAdminAuthGroup(userMock, [organisation])]),
-	);
-});
 
 describe('Services service tests', () => {
 	it('should save service', async () => {
@@ -228,6 +235,22 @@ describe('Services service tests', () => {
 		const request = new ServiceRequest();
 		request.name = '   ';
 		await expect(async () => await Container.get(ServicesService).createService(request)).rejects.toThrowError();
+	});
+
+	it('should get first authorised organisation', () => {
+		const orgAdmins = [new OrganisationAdminAuthGroup(userMock, [organisation])];
+
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve(orgAdmins));
+
+		expect(orgAdmins[0] instanceof OrganisationAdminAuthGroup).toBe(true);
+	});
+
+	it('should not get first authorised organisation', () => {
+		const orgAdmins = [];
+
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve(orgAdmins));
+
+		expect(orgAdmins[0] instanceof OrganisationAdminAuthGroup).toBe(false);
 	});
 });
 
