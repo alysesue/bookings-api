@@ -22,6 +22,7 @@ export class ServiceProviderResponseModel {
 	public timeslotsSchedule?: TimeslotsScheduleResponse;
 	public email?: string;
 	public phone?: string;
+	public agencyUserId?: string;
 
 	constructor(
 		id: number,

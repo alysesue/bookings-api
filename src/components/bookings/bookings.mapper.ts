@@ -16,6 +16,7 @@ export class BookingsMapper {
 			serviceId: booking.serviceId,
 			serviceName: booking.service?.name,
 			serviceProviderId: booking.serviceProviderId,
+			serviceProviderAgencyUserId: booking.serviceProvider?.agencyUserId,
 			serviceProviderName: booking.serviceProvider?.name,
 			serviceProviderEmail: booking.serviceProvider?.email,
 			serviceProviderPhone: booking.serviceProvider?.phone,

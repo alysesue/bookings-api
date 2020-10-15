@@ -7,6 +7,8 @@ import { ServiceProvidersQueryAuthVisitor } from './serviceProviders.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { andWhere } from '../../tools/queryConditions';
 import { SelectQueryBuilder } from 'typeorm';
+import { UsersRepository } from '../users/users.repository';
+import { groupByKeyLastValue } from '../../tools/collections';
 
 @InRequestScope
 export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> {
@@ -16,6 +18,8 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	private scheduleRepository: ScheduleFormsRepository;
 	@Inject
 	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
+	@Inject
+	private usersRepository: UsersRepository;
 
 	constructor() {
 		super(ServiceProvider);
@@ -36,7 +40,20 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			await this.timeslotsScheduleRepository.populateTimeslotsSchedules(entries);
 		}
 
+		await this.includeLinkedUsers(entries);
 		return entries;
+	}
+
+	private async includeLinkedUsers(entries: ServiceProvider[]): Promise<void> {
+		const entriesWithMolAdminId = entries.filter((e) => !!e._serviceProviderGroupMap?.molAdminId);
+		const molAdminIds = entriesWithMolAdminId.map((e) => e._serviceProviderGroupMap.molAdminId);
+
+		const users = await this.usersRepository.getUsersByMolAdminIds(molAdminIds);
+		const usersByMolAdminId = groupByKeyLastValue(users, (u) => u.adminUser.molAdminId);
+		for (const entry of entries) {
+			const molAdminId = entry._serviceProviderGroupMap?.molAdminId;
+			entry.linkedUser = molAdminId ? usersByMolAdminId.get(molAdminId) || null : null;
+		}
 	}
 
 	public async getServiceProviders(
@@ -95,6 +112,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		return repository
 			.createQueryBuilder('sp')
 			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
+			.leftJoinAndSelect('sp._serviceProviderGroupMap', 'sp_groupmap')
 			.leftJoinAndSelect('sp._service', 'service')
 			.leftJoinAndSelect('sp._calendar', 'calendar');
 	}
