@@ -8,7 +8,7 @@
 		"test": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
 		"atest": "npm run fixLF && node --expose-gc ./node_modules/jest/bin/jest --runInBand",
 		"test:cov": "npm run fixLF && node --expose-gc ./node_modules/jest/bin/jest --runInBand --collect-coverage",
-		"test:func": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-functional.sh",
+		"test:functional": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-functional.sh",
 		"test:func-local": "npm run fixLF && FUNCTIONAL_TEST_BASE_URL_LOCAL='http://localhost:3999/bookingsg/api/v1' npm run test:func local",
 		"build": "npm run fixLF && ./scripts/build.sh",
 		"build:skip-migrations": "npm run fixLF && ./scripts/build.sh production skipMigrations",
