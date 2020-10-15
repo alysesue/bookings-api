@@ -102,8 +102,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 
 			yield new TimeslotWithCapacity(
 				timeslotTemplate._startTime.useTimeOfDay(range.dayOfWeek),
-				timeslotTemplate._endTime.useTimeOfDay(range.dayOfWeek),
-				timeslotTemplate._capacity
+				timeslotTemplate._endTime.useTimeOfDay(range.dayOfWeek)
 			);
 		}
 	}

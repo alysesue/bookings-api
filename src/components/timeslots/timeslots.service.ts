@@ -32,7 +32,7 @@ export class TimeslotsService {
 		const aggregator = new TimeslotAggregator<Booking>();
 
 		for (const booking of bookings) {
-			const timeslotForBooking = new TimeslotWithCapacity(booking.startDateTime, booking.endDateTime, 0);
+			const timeslotForBooking = new TimeslotWithCapacity(booking.startDateTime, booking.endDateTime);
 			aggregator.aggregate(booking, [timeslotForBooking]);
 		}
 
@@ -215,6 +215,7 @@ export class TimeslotsService {
 				element.setBookedServiceProviders(acceptedBookingsForTimeslot);
 			}
 		}
+
 	}
 
 	private async getAggregatedTimeslotEntries(
@@ -234,8 +235,6 @@ export class TimeslotsService {
 			includeTimeslotsSchedule: true,
 			skipAuthorisation: true, // loads all SPs regardless of user role
 		});
-
-		//		console.log('timeslotItems', serviceProviders[0]._timeslotsSchedule.timeslotItems)
 
 		const validServiceTimeslots = Array.from(
 			service.timeslotsSchedule?.generateValidTimeslots({
