@@ -54,7 +54,6 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 
 		const query = await this.createSelectQuery([serviceCondition, idsCondition], { serviceId, ids }, options);
 		const entries = await query.getMany();
-
 		return await this.processIncludes(entries, options);
 	}
 
