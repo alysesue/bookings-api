@@ -185,7 +185,7 @@ describe('Service action auth tests', () => {
 			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
 			serviceProvider,
 		);
-		const authVisitorCreate = new ServicesActionAuthVisitor(service, CrudAction.Delete);
+		const authVisitorCreate = new ServicesActionAuthVisitor(service, CrudAction.Create);
 		authVisitorCreate.visitServiceProvider(userGroup);
 		const authVisitorUpdate = new ServicesActionAuthVisitor(service, CrudAction.Update);
 		authVisitorCreate.visitServiceProvider(userGroup);
@@ -203,7 +203,7 @@ describe('Service action auth tests', () => {
 		service.id = 1;
 
 		const userGroup = new CitizenAuthGroup(User.createSingPassUser('', ''));
-		const authVisitorCreate = new ServicesActionAuthVisitor(service, CrudAction.Delete);
+		const authVisitorCreate = new ServicesActionAuthVisitor(service, CrudAction.Create);
 		authVisitorCreate.visitCitizen(userGroup);
 		const authVisitorUpdate = new ServicesActionAuthVisitor(service, CrudAction.Update);
 		authVisitorCreate.visitCitizen(userGroup);
