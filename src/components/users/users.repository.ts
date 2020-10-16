@@ -39,7 +39,7 @@ export class UsersRepository extends RepositoryBase<User> {
 		const repository = await this.getRepository();
 		const query = repository
 			.createQueryBuilder('u')
-			.innerJoinAndSelect('u._adminUser', 'admuser', 'admuser."_molAdminId" =  IN (:...molAdminIds)', {
+			.innerJoinAndSelect('u._adminUser', 'admuser', 'admuser."_molAdminId" IN (:...molAdminIds)', {
 				molAdminIds,
 			});
 

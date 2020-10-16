@@ -1,4 +1,12 @@
-import { Booking, BookingChangeLog, BookingStatus, ChangeLogAction, Service, User } from '../../../models';
+import {
+	Booking,
+	BookingChangeLog,
+	BookingStatus,
+	ChangeLogAction,
+	Service,
+	ServiceProvider,
+	User,
+} from '../../../models';
 import { Container } from 'typescript-ioc';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AsyncFunction, TransactionManager } from '../../../core/transactionManager';
@@ -20,12 +28,14 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
+// tslint:disable-next-line: no-big-function
 describe('BookingChangeLogs service', () => {
 	const adminMock = User.createAdminUser({
 		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
 		userName: 'UserName',
 		email: 'test@email.com',
 		name: 'Name',
+		agencyUserId: 'ABC12',
 	});
 
 	beforeEach(() => {
@@ -45,8 +55,8 @@ describe('BookingChangeLogs service', () => {
 		service.name = 'service';
 		const booking = new BookingBuilder()
 			.withServiceId(1)
-			.withStartDateTime(new Date('2020-10-01T01:00:00'))
-			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 			.build();
 		booking.service = service;
 
@@ -64,7 +74,109 @@ describe('BookingChangeLogs service', () => {
 		expect(TransactionManagerMock.runInTransaction).toBeCalled();
 		expect(getBooking).toBeCalled();
 		expect(action).toBeCalled();
-		expect(BookingChangeLogsRepositoryMock.save).toBeCalled();
+		expect(BookingChangeLogsRepositoryMock.save).toBeCalledTimes(1);
+
+		const changeLogParam = BookingChangeLogsRepositoryMock.save.mock.calls[0][0] as BookingChangeLog;
+		expect(changeLogParam.previousState).toEqual({
+			startDateTime: new Date('2020-10-01T01:00:00Z'),
+			endDateTime: new Date('2020-10-01T02:00:00Z'),
+			citizenEmail: undefined,
+			citizenName: undefined,
+			citizenPhone: undefined,
+			citizenUinFin: undefined,
+			description: undefined,
+			id: undefined,
+			location: undefined,
+			schemaVersion: 1,
+			serviceId: 1,
+			serviceName: 'service',
+			status: 1,
+		});
+		expect(changeLogParam.newState).toEqual({
+			startDateTime: new Date('2020-10-01T01:00:00Z'),
+			endDateTime: new Date('2020-10-01T02:00:00Z'),
+			citizenEmail: undefined,
+			citizenName: undefined,
+			citizenPhone: undefined,
+			citizenUinFin: 'ABCD',
+			description: undefined,
+			id: undefined,
+			location: undefined,
+			schemaVersion: 1,
+			serviceId: 1,
+			serviceName: 'service',
+			status: 1,
+		});
+	});
+
+	it('should execute and save log with service provider', async () => {
+		const service = new Service();
+		service.id = 1;
+		service.name = 'service';
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
+			.build();
+		booking.service = service;
+
+		const serviceProvider = ServiceProvider.create('J', 1, 'sp@email.com', '010000000');
+		serviceProvider.id = 1;
+		serviceProvider.linkedUser = adminMock;
+
+		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));
+		const action = jest.fn(
+			(_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
+				_booking.serviceProvider = serviceProvider;
+				_booking.serviceProviderId = serviceProvider.id;
+				return Promise.resolve([ChangeLogAction.Update, _booking]);
+			},
+		);
+
+		const svc = Container.get(BookingChangeLogsService);
+		await svc.executeAndLogAction(1, getBooking, action);
+
+		expect(TransactionManagerMock.runInTransaction).toBeCalled();
+		expect(getBooking).toBeCalled();
+		expect(action).toBeCalled();
+		expect(BookingChangeLogsRepositoryMock.save).toBeCalledTimes(1);
+
+		const changeLogParam = BookingChangeLogsRepositoryMock.save.mock.calls[0][0] as BookingChangeLog;
+		expect(changeLogParam.previousState).toEqual({
+			startDateTime: new Date('2020-10-01T01:00:00Z'),
+			endDateTime: new Date('2020-10-01T02:00:00Z'),
+			citizenEmail: undefined,
+			citizenName: undefined,
+			citizenPhone: undefined,
+			citizenUinFin: undefined,
+			description: undefined,
+			id: undefined,
+			location: undefined,
+			schemaVersion: 1,
+			serviceId: 1,
+			serviceName: 'service',
+			status: 1,
+		});
+		expect(changeLogParam.newState).toEqual({
+			startDateTime: new Date('2020-10-01T01:00:00Z'),
+			endDateTime: new Date('2020-10-01T02:00:00Z'),
+			citizenEmail: undefined,
+			citizenName: undefined,
+			citizenPhone: undefined,
+			citizenUinFin: undefined,
+			description: undefined,
+			id: undefined,
+			location: undefined,
+			schemaVersion: 1,
+			serviceId: 1,
+			serviceName: 'service',
+			status: 1,
+			serviceProviderAgencyUserId: 'ABC12',
+			serviceProviderEmail: 'sp@email.com',
+			serviceProviderId: 1,
+			serviceProviderName: 'J',
+			serviceProviderPhone: '010000000',
+		});
 	});
 
 	it('should throw when service is not loaded', async () => {

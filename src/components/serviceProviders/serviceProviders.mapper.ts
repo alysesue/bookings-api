@@ -5,6 +5,7 @@ import { ServiceProviderResponseModel, ServiceProviderSummaryModel } from './ser
 import { mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
 import { BookingResponse } from '../bookings/bookings.apicontract';
 import { BookingsMapper } from '../bookings/bookings.mapper';
+import { mapToResponse as mapScheduleFormResponse } from '../scheduleForms/scheduleForms.mapper';
 
 @InRequestScope
 export class ServiceProvidersMapper {
@@ -14,12 +15,14 @@ export class ServiceProvidersMapper {
 	public mapDataModel(spData: ServiceProvider): ServiceProviderResponseModel {
 		const mappedCalendar = this.calendarsMapper.mapDataModel(spData.calendar);
 		const mappedTimeslotSchedule = mapToTimeslotsScheduleResponse(spData.timeslotsSchedule);
+		const mappedScheduleForm = mapScheduleFormResponse(spData.scheduleForm);
 		const response = new ServiceProviderResponseModel(
 			spData.id,
 			spData.name,
 			mappedCalendar,
 			spData.serviceId,
 			mappedTimeslotSchedule,
+			mappedScheduleForm,
 			spData.email,
 			spData.phone,
 		);
