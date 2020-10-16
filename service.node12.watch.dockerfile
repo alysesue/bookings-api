@@ -37,9 +37,9 @@ COPY package.json ./
 COPY package-lock.json ./
 
 # Install dependencies
-RUN npm install && \
-    npm install -g forever  && \
-    npm install -g npm-watch
+RUN npm install
+RUN npm install -g forever
+RUN npm install -g npm-watch
 
 COPY ./ .
 
