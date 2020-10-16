@@ -17,6 +17,7 @@ import { ServiceProvidersRepository } from '../../serviceProviders/serviceProvid
 import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { BookingBuilder } from '../../../models/entities/booking';
+import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -27,10 +28,10 @@ afterAll(() => {
 describe('Timeslots Service', () => {
 	const date = new Date(2020, 4, 27);
 	const endDate = DateHelper.setHours(date, 11, 59);
-	const timeslot = new Timeslot(DateHelper.setHours(date, 15, 0), DateHelper.setHours(date, 16, 0));
-	const timeslot2 = new Timeslot(DateHelper.setHours(date, 16, 0), DateHelper.setHours(date, 17, 0));
-	const timeslot3 = new Timeslot(DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
-	const timeslot4 = new Timeslot(DateHelper.setHours(date, 18, 30), DateHelper.setHours(date, 19, 30));
+	const timeslot = new TimeslotWithCapacity(DateHelper.setHours(date, 15, 0), DateHelper.setHours(date, 16, 0));
+	const timeslot2 = new TimeslotWithCapacity(DateHelper.setHours(date, 16, 0), DateHelper.setHours(date, 17, 0));
+	const timeslot3 = new TimeslotWithCapacity(DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
+	const timeslot4 = new TimeslotWithCapacity(DateHelper.setHours(date, 18, 30), DateHelper.setHours(date, 19, 30));
 
 	const TimeslotsScheduleMock = {
 		_id: 1,

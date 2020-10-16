@@ -8,7 +8,7 @@ import { TimeslotWithCapacity } from '../timeslotWithCapacity';
 
 @Entity()
 export class TimeslotsSchedule implements ITimeslotsSchedule {
-	constructor() {}
+	constructor() { }
 
 	@PrimaryGeneratedColumn()
 	public _id: number;
@@ -102,6 +102,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 			yield new TimeslotWithCapacity(
 				timeslotTemplate._startTime.useTimeOfDay(range.dayOfWeek),
 				timeslotTemplate._endTime.useTimeOfDay(range.dayOfWeek),
+				timeslotTemplate._capacity
 			);
 		}
 	}

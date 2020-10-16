@@ -5,7 +5,8 @@ export class TimeslotWithCapacity extends Timeslot {
 	private _capacity: number;
 	public getCapacity = () => this._capacity;
 
-	constructor(startTime: Date, endTime: Date) {
+	constructor(startTime: Date, endTime: Date, capacity?: number) {
 		super(startTime, endTime);
+		this._capacity = capacity || 1;
 	}
 }

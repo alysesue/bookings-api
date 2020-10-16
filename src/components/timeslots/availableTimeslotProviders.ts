@@ -44,19 +44,9 @@ export class AvailableTimeslotProviders {
 	}
 
 	public get isValid(): boolean {
-		// let sumOfAvailableSp = 0;
-		// this._availableServiceProviders.forEach(capacity => sumOfAvailableSp += capacity);
-		// return (
-		// 	sumOfAvailableSp +
-		// 	this._bookedServiceProviders.size +
-		// 	this._assignedPendingServiceProviders.size
-		// ) > 0;
-
 		let sumOfAvailability = 0;
-		this._serviceProviderTimeslots.forEach(item => {
-			if (!item.isUnavailable || !item.isOverlapped) {
-				sumOfAvailability = sumOfAvailability + (item.availabilityCount - item.acceptedBookings.length - item.pendingBookings.length);
-			}
+		this._serviceProviderTimeslots?.forEach(item => {
+			sumOfAvailability = sumOfAvailability + (item.availabilityCount - (item.acceptedBookings ? item.acceptedBookings.length : 0) - (item.pendingBookings ? item.pendingBookings.length : 0));
 		})
 
 		if (sumOfAvailability > 0) return true;
@@ -179,13 +169,13 @@ export class AvailableTimeslotProviders {
 	// 	this._unlinkedPendingBookingsCount = newCapacity - newAvailabilityCount;
 	// }
 
-	private filterMap<K, V>(data: Map<K, V>, predicate: ([K, V]) => boolean) {
-		for (const item of data) {
-			const [key] = item
-			if (!predicate(item)) {
-				data.delete(key);
-			}
-		}
+	// private filterMap<K, V>(data: Map<K, V>, predicate: ([K, V]) => boolean) {
+	// 	for (const item of data) {
+	// 		const [key] = item
+	// 		if (!predicate(item)) {
+	// 			data.delete(key);
+	// 		}
+	// 	}
 
-	}
+	// }
 }
