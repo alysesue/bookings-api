@@ -24,6 +24,7 @@ export class ServiceProviderResponseModel {
 	public scheduleForm?: ScheduleFormResponse;
 	public email?: string;
 	public phone?: string;
+	public agencyUserId?: string;
 
 	// tslint:disable-next-line
 	constructor(

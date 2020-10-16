@@ -47,6 +47,7 @@ export class BookingChangeLogsService {
 				throw new Error('Booking.serviceProvider not loaded in memory');
 			}
 			jsonObj.serviceProviderId = booking.serviceProviderId;
+			jsonObj.serviceProviderAgencyUserId = serviceProvider.agencyUserId;
 			jsonObj.serviceProviderName = serviceProvider.name;
 			jsonObj.serviceProviderEmail = serviceProvider.email;
 			jsonObj.serviceProviderPhone = serviceProvider.phone;

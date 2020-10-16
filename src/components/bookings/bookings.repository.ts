@@ -5,14 +5,33 @@ import { RepositoryBase } from '../../core/repository';
 import { ConcurrencyError } from '../../errors/ConcurrencyError';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { BookingQueryAuthVisitor, BookingQueryVisitorFactory } from './bookings.auth';
+import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
+import { groupByKeyLastValue } from '../../tools/collections';
 
 @InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {
 	@Inject
 	private userContext: UserContext;
+	@Inject
+	private serviceProvidersRepostiory: ServiceProvidersRepository;
 
 	constructor() {
 		super(Booking);
+	}
+
+	private async includeServiceProviders(entries: Booking[]): Promise<void> {
+		const entriesWithSp = entries.filter((e) => !!e.serviceProviderId);
+		const serviceProviderIds = entriesWithSp.map((e) => e.serviceProviderId);
+
+		const serviceProviders = await this.serviceProvidersRepostiory.getServiceProviders({
+			ids: serviceProviderIds,
+			skipAuthorisation: true,
+		});
+
+		const providersById = groupByKeyLastValue(serviceProviders, (sp) => sp.id);
+		for (const entry of entries) {
+			entry.serviceProvider = entry.serviceProviderId ? providersById.get(entry.serviceProviderId) || null : null;
+		}
 	}
 
 	public async getBooking(bookingId: number): Promise<Booking> {
@@ -33,10 +52,13 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 					.join(' AND '),
 				{ ...userParams, id: bookingId },
 			)
-			.leftJoinAndSelect('booking._serviceProvider', 'sp_relation')
 			.leftJoinAndSelect('booking._service', 'service_relation');
 
-		return await query.getOne();
+		const entry = await query.getOne();
+		if (entry) {
+			await this.includeServiceProviders([entry]);
+		}
+		return entry;
 	}
 
 	public async insert(booking: Booking): Promise<InsertResult> {
@@ -119,11 +141,12 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 					citizenUinFins: request.citizenUinFins,
 				},
 			)
-			.leftJoinAndSelect('booking._serviceProvider', 'sp_relation')
 			.leftJoinAndSelect('booking._service', 'service_relation')
 			.orderBy('booking._id', 'DESC');
 
-		return await query.getMany();
+		const entries = await query.getMany();
+		await this.includeServiceProviders(entries);
+		return entries;
 	}
 }
 

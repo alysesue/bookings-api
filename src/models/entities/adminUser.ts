@@ -17,6 +17,10 @@ export class AdminUser {
 	private _molAdminId: string;
 
 	@Column({ type: 'varchar', length: 100, nullable: true })
+	@Index({ unique: true })
+	private _agencyUserId: string;
+
+	@Column({ type: 'varchar', length: 100, nullable: true })
 	private _userName: string;
 
 	@Column({ type: 'varchar', length: 100, nullable: false })
@@ -39,6 +43,14 @@ export class AdminUser {
 
 	public set molAdminId(molAdminId: string) {
 		this._molAdminId = molAdminId;
+	}
+
+	public get agencyUserId() {
+		return this._agencyUserId;
+	}
+
+	public set agencyUserId(value: string) {
+		this._agencyUserId = value;
 	}
 
 	public get userName(): string {
@@ -70,17 +82,20 @@ export class AdminUser {
 		userName,
 		email,
 		name,
+		agencyUserId,
 	}: {
 		molAdminId: string;
 		userName: string;
 		email: string;
 		name: string;
+		agencyUserId?: string;
 	}) {
 		const instance = new AdminUser();
 		instance.molAdminId = molAdminId;
 		instance.userName = userName;
 		instance.email = email;
 		instance.name = name;
+		instance.agencyUserId = agencyUserId;
 		return instance;
 	}
 }

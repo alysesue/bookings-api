@@ -2,13 +2,14 @@ import { ServiceProvidersRepository } from '../serviceProviders.repository';
 import { Container } from 'typescript-ioc';
 import { ScheduleFormsRepository } from '../../scheduleForms/scheduleForms.repository';
 import { IEntityWithScheduleForm } from '../../../models/interfaces';
-import { Organisation, ServiceProvider, TimeslotsSchedule, User } from '../../../models';
+import { Organisation, ServiceProvider, ServiceProviderGroupMap, TimeslotsSchedule, User } from '../../../models';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TransactionManager } from '../../../core/transactionManager';
 import { ServiceProvidersQueryAuthVisitor } from '../serviceProviders.auth';
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { UsersRepository } from '../../../components/users/users.repository';
 
 jest.mock('../serviceProviders.auth');
 
@@ -22,6 +23,7 @@ beforeAll(() => {
 	Container.bind(UserContext).to(UserContextMock);
 	Container.bind(ScheduleFormsRepository).to(ScheduleFormsRepositoryMock);
 	Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
+	Container.bind(UsersRepository).to(UsersRepositoryMock);
 });
 
 describe('Service Provider repository', () => {
@@ -30,6 +32,7 @@ describe('Service Provider repository', () => {
 		userName: 'UserName',
 		email: 'test@email.com',
 		name: 'Name',
+		agencyUserId: 'ABC12',
 	});
 	const organisation = new Organisation();
 	organisation.id = 1;
@@ -69,6 +72,8 @@ describe('Service Provider repository', () => {
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new OrganisationAdminAuthGroup(userMock, [organisation])]),
 		);
+
+		UsersRepositoryMock.getUsersByMolAdminIds.mockImplementation(() => Promise.resolve([]));
 	});
 
 	it('should get list of SP', async () => {
@@ -203,6 +208,24 @@ describe('Service Provider repository', () => {
 		await spRepository.save(spInput);
 		expect(TransactionManagerMock.save.mock.calls[0][0]).toStrictEqual(spInput);
 	});
+
+	it('should get linked user', async () => {
+		const serviceProvider = ServiceProvider.create('J', 1);
+		serviceProvider.id = 1;
+		serviceProvider._serviceProviderGroupMap = new ServiceProviderGroupMap();
+		serviceProvider._serviceProviderGroupMap.molAdminId = userMock.adminUser.molAdminId;
+		serviceProvider._serviceProviderGroupMap.serviceProviderId = serviceProvider.id;
+
+		UsersRepositoryMock.getUsersByMolAdminIds.mockImplementation(() => Promise.resolve([userMock]));
+		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(serviceProvider));
+
+		const spRepository = Container.get(ServiceProvidersRepository);
+		const result = await spRepository.getServiceProvider({ id: 1 });
+
+		expect(result).toBeDefined();
+		expect(result.linkedUser).toBeDefined();
+		expect(result.agencyUserId).toBe('ABC12');
+	});
 });
 
 class TransactionManagerMock extends TransactionManager {
@@ -260,5 +283,13 @@ class UserContextMock extends UserContext {
 
 	public async getAuthGroups(...params): Promise<any> {
 		return await UserContextMock.getAuthGroups(...params);
+	}
+}
+
+class UsersRepositoryMock extends UsersRepository {
+	public static getUsersByMolAdminIds = jest.fn<Promise<User[]>, any>();
+
+	public async getUsersByMolAdminIds(...params): Promise<any> {
+		return await UsersRepositoryMock.getUsersByMolAdminIds(...params);
 	}
 }

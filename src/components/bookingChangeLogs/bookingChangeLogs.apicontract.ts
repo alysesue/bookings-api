@@ -21,6 +21,7 @@ export type BookingStateResponse = {
 	serviceId?: number;
 	serviceName?: string;
 	serviceProviderId?: number;
+	serviceProviderAgencyUserId?: string;
 	serviceProviderName?: string;
 	serviceProviderEmail?: string;
 	serviceProviderPhone?: string;
