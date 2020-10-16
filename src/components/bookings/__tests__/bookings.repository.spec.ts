@@ -1,15 +1,17 @@
 import { BookingSearchQuery, BookingsRepository } from '../bookings.repository';
-import { Booking, BookingStatus, User } from '../../../models';
+import { Booking, BookingStatus, ServiceProvider, User } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { InsertResult } from 'typeorm';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { TransactionManager } from '../../../core/transactionManager';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { AuthGroup, CitizenAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { ServiceProvidersRepository } from '../../../components/serviceProviders/serviceProviders.repository';
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
 	Container.bind(UserContext).to(UserContextMock);
+	Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 });
 
 afterAll(() => {
@@ -27,6 +29,8 @@ describe('Bookings repository', () => {
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new CitizenAuthGroup(singpassUserMock)]),
 		);
+
+		ServiceProvidersRepositoryMock.getServiceProviders.mockImplementation(() => Promise.resolve([]));
 	});
 
 	it('should search bookings with date range and access type', async () => {
@@ -53,7 +57,7 @@ describe('Bookings repository', () => {
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
-		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(2);
+		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(1);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
 		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
 	});
@@ -82,7 +86,7 @@ describe('Bookings repository', () => {
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
-		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(2);
+		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(1);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
 		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
 	});
@@ -111,7 +115,7 @@ describe('Bookings repository', () => {
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
-		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(2);
+		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(1);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
 		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
 	});
@@ -169,6 +173,33 @@ describe('Bookings repository', () => {
 		const result = await bookingsRepository.getBooking(1);
 		expect(result).toStrictEqual(booking);
 	});
+
+	it('should get booking with service provider', async () => {
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		booking.id = 1;
+		booking.serviceProviderId = 2;
+
+		const serviceProvider = ServiceProvider.create('A', 1);
+		serviceProvider.id = 2;
+
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve(booking)),
+		};
+
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		ServiceProvidersRepositoryMock.getServiceProviders.mockImplementation(() => Promise.resolve([serviceProvider]));
+
+		const bookingsRepository = Container.get(BookingsRepository);
+		const result = await bookingsRepository.getBooking(1);
+		expect(result).toStrictEqual(booking);
+		expect(result.serviceProvider).toStrictEqual(serviceProvider);
+	});
 });
 
 class TransactionManagerMock extends TransactionManager {
@@ -207,5 +238,12 @@ class UserContextMock extends UserContext {
 
 	public async getAuthGroups(...params): Promise<any> {
 		return await UserContextMock.getAuthGroups(...params);
+	}
+}
+
+class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
+	public static getServiceProviders = jest.fn<Promise<ServiceProvider[]>, any>();
+	public async getServiceProviders(...params): Promise<any> {
+		return await ServiceProvidersRepositoryMock.getServiceProviders(...params);
 	}
 }
