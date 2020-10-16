@@ -15,6 +15,10 @@ export class AvailableTimeslotProviders {
 		this._unlinkedPendingBookingsCount = 0;
 	}
 
+	public get serviceProviderTimeslots(): Map<number, ServiceProviderTimeslot> {
+		return this._serviceProviderTimeslots;
+	}
+
 	// public get bookedServiceProviders(): Map<ServiceProvider, Booking[]> {
 	// 	return this._bookedServiceProviders;
 	// }
@@ -31,30 +35,38 @@ export class AvailableTimeslotProviders {
 	// 	return this._unlinkedPendingBookingsCount;
 	// }
 
-	// public get availabilityCount(): number {
-	// 	let sumOfAvailability = 0;
-	// 	this._serviceProviderTimeslots.forEach(item => {
-	// 		sumOfAvailability += item.getBookings().
-	// 	})
-	// 	this._availableServiceProviders.forEach(capacity => sumOfAvailableSp += capacity);
-	// 	return Math.max(sumOfAvailableSp - this._unlinkedPendingBookingsCount, 0);
-	// }
+	public get availabilityCount(): number {
+		let sumOfAvailability = 0;
+		this._serviceProviderTimeslots.forEach(item => {
+			sumOfAvailability += item.availabilityCount;
+		})
+		return Math.max(sumOfAvailability - this._unlinkedPendingBookingsCount, 0);
+	}
 
-	// public get totalCount(): number {
-	// 	let sumOfAvailableSp = 0;
-	// 	this._availableServiceProviders.forEach(capacity => sumOfAvailableSp += capacity);
-	// 	return (
-	// 		sumOfAvailableSp +
-	// 		this._bookedServiceProviders.size +
-	// 		this._assignedPendingServiceProviders.size
-	// 	);
-	// }
+	public get isValid(): boolean {
+		// let sumOfAvailableSp = 0;
+		// this._availableServiceProviders.forEach(capacity => sumOfAvailableSp += capacity);
+		// return (
+		// 	sumOfAvailableSp +
+		// 	this._bookedServiceProviders.size +
+		// 	this._assignedPendingServiceProviders.size
+		// ) > 0;
+
+		let sumOfAvailability = 0;
+		this._serviceProviderTimeslots.forEach(item => {
+			if (!item.isUnavailable || !item.isOverlapped) {
+				sumOfAvailability = sumOfAvailability + (item.availabilityCount - item.acceptedBookings.length - item.pendingBookings.length);
+			}
+		})
+
+		if (sumOfAvailability > 0) return true;
+		return false;
+	}
 
 	public static empty(startTime: Date, endTime: Date): AvailableTimeslotProviders {
 		const instance = new AvailableTimeslotProviders();
 		instance.startTime = startTime;
 		instance.endTime = endTime;
-
 		return instance;
 	}
 
@@ -64,7 +76,6 @@ export class AvailableTimeslotProviders {
 			entry.getTimeslot().getEndTime(),
 		);
 		instance.setRelatedServiceProviders(entry.getGroups());
-
 		return instance;
 	}
 
@@ -100,13 +111,11 @@ export class AvailableTimeslotProviders {
 			const [spItem, timeslotCapacity] = item;
 			const spTimeslotItem = new ServiceProviderTimeslot(spItem, timeslotCapacity.getCapacity());
 			this._serviceProviderTimeslots.set(spItem.id, spTimeslotItem);
-
 		}
 	}
 
 	public setBookedServiceProviders(bookings: Booking[]) {
 		const bookedProviderIds = groupByKey(bookings, (b) => b.serviceProviderId);
-
 		for (const item of bookedProviderIds) {
 			const [spId, bookings] = item;
 			const spTimeslotItem = this._serviceProviderTimeslots.get(spId);

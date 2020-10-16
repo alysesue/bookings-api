@@ -21,6 +21,7 @@ import {
 } from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -50,6 +51,7 @@ describe('Booking Integration tests', () => {
 		const provider = ServiceProvider.create('Provider', 2);
 		provider.id = 11;
 		provider.calendar = calendar;
+		const timeslotWithCapacity = new TimeslotWithCapacity(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 
 		const adminMock = User.createAdminUser({
 			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
@@ -68,7 +70,7 @@ describe('Booking Integration tests', () => {
 		Container.bind(ServicesService).to(ServicesServiceMock);
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = provider;
-		TimeslotsServiceMock.availableProvidersForTimeslot = [provider];
+		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 
 		const bookingMock = new BookingBuilder()
 			.withServiceId(2)
@@ -144,7 +146,7 @@ const GoogleApiMock = () => {
 };
 
 class TimeslotsServiceMock extends TimeslotsService {
-	public static availableProvidersForTimeslot: ServiceProvider[] = [];
+	public static availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 
 	public async getAvailableProvidersForTimeslot(
 		startDateTime: Date,
@@ -172,7 +174,7 @@ class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
-	public init() {}
+	public init() { }
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(...params);
 	}
@@ -193,7 +195,7 @@ class BookingChangeLogsServiceMock extends BookingChangeLogsService {
 class ServicesServiceMock extends ServicesService {
 	public static getService = jest.fn();
 
-	public init() {}
+	public init() { }
 	public async getService(...params): Promise<any> {
 		return await ServicesServiceMock.getService(params);
 	}

@@ -1,15 +1,14 @@
-import { Entity, OneToMany, PrimaryGeneratedColumn, OneToOne } from 'typeorm';
+import { Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TimeslotItem } from './timeslotItem';
 import { IService, IServiceProvider, ITimeslotsSchedule } from '../interfaces';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { groupByKey } from '../../tools/collections';
 import { TimeOfDay } from '../timeOfDay';
-import { Timeslot } from '../timeslot';
 import { TimeslotWithCapacity } from '../timeslotWithCapacity';
 
 @Entity()
 export class TimeslotsSchedule implements ITimeslotsSchedule {
-	constructor() { }
+	constructor() {}
 
 	@PrimaryGeneratedColumn()
 	public _id: number;
@@ -102,7 +101,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 
 			yield new TimeslotWithCapacity(
 				timeslotTemplate._startTime.useTimeOfDay(range.dayOfWeek),
-				timeslotTemplate._endTime.useTimeOfDay(range.dayOfWeek)
+				timeslotTemplate._endTime.useTimeOfDay(range.dayOfWeek),
 			);
 		}
 	}

@@ -16,7 +16,7 @@ export class TimeslotEntryResponse {
 	/**
 	 * .Availability of a single timeslot.
 	 */
-	public timeslotAvailability: ServiceProviderTimeslot;
+	public timeslotAvailability: ServiceProviderTimeslot[];
 	// /**
 	//  * A list of booked service providers (accepted) in this timeslot.
 	//  */

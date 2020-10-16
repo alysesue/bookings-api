@@ -110,7 +110,6 @@ export class TimeslotsService {
 	): Promise<AvailableTimeslotProviders[]> {
 		let aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime, serviceId);
 
-		console.log('aggregatedEntries', aggregatedEntries)
 		const bookings = await this.bookingsRepository.search({
 			from: startDateTime,
 			to: endDateTime,
@@ -141,37 +140,7 @@ export class TimeslotsService {
 		this.setBookedProviders(mappedEntries, acceptedBookings);
 		TimeslotsService.setPendingTimeslots(mappedEntries, pendingBookings);
 
-		mappedEntries = await this.filterVisibleServiceProviders({
-			entries: mappedEntries,
-			serviceId,
-			serviceProviderId,
-		});
-
-		return mappedEntries;
-	}
-
-	private async filterVisibleServiceProviders({
-		entries,
-		serviceId,
-		serviceProviderId,
-	}: {
-		entries: AvailableTimeslotProviders[];
-		serviceId: number;
-		serviceProviderId?: number;
-	}) {
-		const visibleServiceProviderIds = (await this.serviceProvidersRepo.getServiceProviders({ serviceId })).map(
-			(sp) => sp.id,
-		);
-
-		// for (const entry of entries) {
-		// 	if (serviceProviderId) {
-		// 		entry.filterServiceProviders([serviceProviderId]);
-		// 	}
-
-		// 	entry.filterServiceProviders(visibleServiceProviderIds);
-		// }
-
-		return entries.filter((e) => e.totalCount > 0);
+		return mappedEntries.filter(entry => entry.isValid);
 	}
 
 	private async filterUnavailabilities(
@@ -195,7 +164,7 @@ export class TimeslotsService {
 			}
 		}
 
-		return entries.filter((e) => e.totalCount > 0);
+		return entries.filter((e) => e.isValid);
 	}
 
 	private setBookedProviders(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {

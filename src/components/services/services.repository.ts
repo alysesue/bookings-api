@@ -53,7 +53,7 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		const entry = await query.getOne();
 
 		entry.timeslotsSchedule = await this.timeslotsScheduleRepository.getTimeslotsScheduleById(
-			entry?.timeslotsScheduleId
+			entry?.timeslotsScheduleId,
 		);
 		return entry;
 	}

@@ -6,6 +6,7 @@ import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import { ServiceProvidersMapper } from '../serviceProviders/serviceProviders.mapper';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
+import { ServiceProviderTimeslot } from '../../models/serviceProviderTimeslot';
 
 @Route('v1/timeslots')
 @Tags('Timeslots')
@@ -96,15 +97,20 @@ export class TimeslotsController extends Controller {
 		const response = new TimeslotEntryResponse();
 		response.startTime = entry.startTime;
 		response.endTime = entry.endTime;
-		response.availabilityCount = entry.availabilityCount;
-		response.pendingBookingsCount = entry.unlinkedPendingBookingsCount;
-		response.bookedServiceProviders = this.serviceProviderMapper.mapBookedServiceProviderEntries(
-			entry.bookedServiceProviders,
-		);
-		response.availableServiceProviders = this.serviceProviderMapper.mapSummaryDataModels(
-			entry.availableServiceProviders,
-		);
-		response.totalCount = entry.totalCount;
+		response.timeslotAvailability = Array.from(entry.serviceProviderTimeslots.values());
+
+		//		response.timeslotAvailability = entry.
+
+
+		// response.availabilityCount = entry.availabilityCount;
+		// response.pendingBookingsCount = entry.unlinkedPendingBookingsCount;
+		// response.bookedServiceProviders = this.serviceProviderMapper.mapBookedServiceProviderEntries(
+		// 	entry.bookedServiceProviders,
+		// );
+		// response.availableServiceProviders = this.serviceProviderMapper.mapSummaryDataModels(
+		// 	entry.availableServiceProviders,
+		// );
+		// response.totalCount = entry.totalCount;
 
 		return response;
 	}

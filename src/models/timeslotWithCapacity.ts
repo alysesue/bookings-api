@@ -1,4 +1,4 @@
-import { Timeslot, Booking, ServiceProvider } from ".";
+import { Timeslot } from './timeslot';
 
 /* this class is not a DB entity for now */
 export class TimeslotWithCapacity extends Timeslot {

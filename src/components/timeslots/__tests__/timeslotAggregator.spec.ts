@@ -1,6 +1,6 @@
-import { Timeslot } from '../../../models';
 import { TimeslotAggregator } from '../timeslotAggregator';
 import { DateHelper } from '../../../infrastructure/dateHelper';
+import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -11,20 +11,20 @@ describe('Timeslot aggregator', () => {
 	it('should aggregate timeslots in order', () => {
 		const date = new Date(Date.parse('2020-01-01'));
 		const group1 = [
-			new Timeslot(DateHelper.setHours(date, 8, 0), DateHelper.setHours(date, 9, 0)),
-			new Timeslot(DateHelper.setHours(date, 10, 0), DateHelper.setHours(date, 11, 0)),
+			new TimeslotWithCapacity(DateHelper.setHours(date, 8, 0), DateHelper.setHours(date, 9, 0)),
+			new TimeslotWithCapacity(DateHelper.setHours(date, 10, 0), DateHelper.setHours(date, 11, 0)),
 		];
 
 		const group2 = [
-			new Timeslot(DateHelper.setHours(date, 9, 0), DateHelper.setHours(date, 10, 0)),
-			new Timeslot(DateHelper.setHours(date, 10, 0), DateHelper.setHours(date, 11, 0)),
-			new Timeslot(DateHelper.setHours(date, 8, 0), DateHelper.setHours(date, 9, 0)),
+			new TimeslotWithCapacity(DateHelper.setHours(date, 9, 0), DateHelper.setHours(date, 10, 0)),
+			new TimeslotWithCapacity(DateHelper.setHours(date, 10, 0), DateHelper.setHours(date, 11, 0)),
+			new TimeslotWithCapacity(DateHelper.setHours(date, 8, 0), DateHelper.setHours(date, 9, 0)),
 		];
 
 		const group3 = [
-			new Timeslot(DateHelper.setHours(date, 10, 0), DateHelper.setHours(date, 11, 0)),
-			new Timeslot(DateHelper.setHours(date, 8, 0), DateHelper.setHours(date, 8, 30)),
-			new Timeslot(DateHelper.setHours(date, 8, 30), DateHelper.setHours(date, 9, 30)),
+			new TimeslotWithCapacity(DateHelper.setHours(date, 10, 0), DateHelper.setHours(date, 11, 0)),
+			new TimeslotWithCapacity(DateHelper.setHours(date, 8, 0), DateHelper.setHours(date, 8, 30)),
+			new TimeslotWithCapacity(DateHelper.setHours(date, 8, 30), DateHelper.setHours(date, 9, 30)),
 		];
 
 		const aggregator = new TimeslotAggregator<string>();

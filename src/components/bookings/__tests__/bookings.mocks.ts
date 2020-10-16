@@ -11,6 +11,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { BookingChangeLogsService } from '../../bookingChangeLogs/bookingChangeLogs.service';
 import { ServicesService } from '../../services/services.service';
 import { AuthGroup } from '../../../infrastructure/auth/authGroup';
+import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 
 export class BookingRepositoryMock extends BookingsRepository {
 	public static booking: Booking;
@@ -48,7 +49,7 @@ export class CalendarsServiceMock extends CalendarsService {
 }
 
 export class TimeslotsServiceMock extends TimeslotsService {
-	public static availableProvidersForTimeslot: ServiceProvider[] = [];
+	public static availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 	public static acceptedBookings: Booking[] = [];
 
 	public async getAvailableProvidersForTimeslot(
@@ -85,7 +86,7 @@ export class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
-	public init() {}
+	public init() { }
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(...params);
 	}
@@ -107,7 +108,7 @@ export class BookingChangeLogsServiceMock extends BookingChangeLogsService {
 export class ServicesServiceMock extends ServicesService {
 	public static getService = jest.fn();
 
-	public init() {}
+	public init() { }
 
 	public async getService(...params): Promise<any> {
 		return await ServicesServiceMock.getService(params);

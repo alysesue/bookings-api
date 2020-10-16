@@ -177,8 +177,8 @@ describe('Timeslots Service', () => {
 		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 		expect(ProviderScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 
-		expect(result.bookedServiceProviders.size).toBe(1);
-		expect(result.availableServiceProviders).toHaveLength(1);
+		expect(result.serviceProviderTimeslots.size).toBe(1);
+		expect(result.availabilityCount).toHaveLength(1);
 	});
 
 	it('should map accepted out-of-slot booking to timeslot response', async () => {
