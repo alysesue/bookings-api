@@ -19,27 +19,11 @@ export class AvailableTimeslotProviders {
 		return this._serviceProviderTimeslots;
 	}
 
-	// public get bookedServiceProviders(): Map<ServiceProvider, Booking[]> {
-	// 	return this._bookedServiceProviders;
-	// }
-
-	// public get availableServiceProviders(): Map<ServiceProvider, number> {
-	// 	return this._availableServiceProviders;
-	// }
-
-	// public set availableServiceProviders(availableServiceProviders: Map<ServiceProvider, number>) {
-	// 	this._availableServiceProviders = availableServiceProviders;
-	// }
-
-	// public get unlinkedPendingBookingsCount(): number {
-	// 	return this._unlinkedPendingBookingsCount;
-	// }
-
 	public get availabilityCount(): number {
 		let sumOfAvailability = 0;
-		this._serviceProviderTimeslots.forEach(item => {
+		this._serviceProviderTimeslots.forEach((item) => {
 			sumOfAvailability += item.availabilityCount;
-		})
+		});
 		return Math.max(sumOfAvailability - this._unlinkedPendingBookingsCount, 0);
 	}
 
@@ -75,21 +59,11 @@ export class AvailableTimeslotProviders {
 
 		const bookings = Array.from(entry.getGroups().keys());
 		bookings
-			.filter(booking => booking.serviceProvider)
+			.filter((booking) => booking.serviceProvider)
 			.forEach((booking) => {
 				const spTimeslotItem = new ServiceProviderTimeslot(booking.serviceProvider, 1);
 				instance._serviceProviderTimeslots.set(booking.serviceProviderId, spTimeslotItem);
-			})
-		// const serviceProviders: [ServiceProvider, number][] = bookings.
-		// 	filter((booking) => booking.serviceProvider)
-		// 	.map((booking) => [booking.serviceProvider, 0]);
-		// instance._relatedServiceProviders = new Map<ServiceProvider, number>(serviceProviders);
-
-		// for (const serviceProvider of serviceProviders) {
-		// 	const [sp] = serviceProviders;
-
-		// }
-		// instance.setRelatedServiceProviders()
+			});
 		return instance;
 	}
 
@@ -109,13 +83,12 @@ export class AvailableTimeslotProviders {
 			const spTimeslotItem = this._serviceProviderTimeslots.get(spId);
 			if (spTimeslotItem) {
 				spTimeslotItem.acceptedBookings = bookings;
-				//				this._serviceProviderTimeslots.set(spId, spTimeslotItem);
 			}
 		}
 	}
 
 	public setOverlappingServiceProviders(providerIds: number[]) {
-		providerIds.forEach(id => {
+		providerIds.forEach((id) => {
 			const spTimeslotItem = this._serviceProviderTimeslots.get(id);
 			if (spTimeslotItem) spTimeslotItem.isOverlapped = true;
 		});
@@ -125,12 +98,12 @@ export class AvailableTimeslotProviders {
 		if (unavailability.allServiceProviders) {
 			this._serviceProviderTimeslots.forEach((spTimeslot) => {
 				spTimeslot.isUnavailable = true;
-			})
+			});
 		} else {
 			unavailability.serviceProviders.forEach((unavailableSp) => {
 				const spTimeslotItem = this._serviceProviderTimeslots.get(unavailableSp.id);
 				if (spTimeslotItem) spTimeslotItem.isUnavailable = true;
-			})
+			});
 		}
 	}
 
@@ -147,36 +120,4 @@ export class AvailableTimeslotProviders {
 		}
 	}
 
-	// public filterServiceProviders(providerIds: number[]) {
-	// 	const providerIdsCollection = new Set<number>(providerIds);
-
-	// 	// availabilityBefore: Does timeslot entry contain less pending bookings then available providers?
-	// 	const availabilityCountBefore = this.availabilityCount;
-
-	// 	this.filterMap(this._relatedServiceProviders, ([sp]) => (providerIdsCollection.has(sp.id)))
-
-	// 	this._bookedServiceProviders = new Map(
-	// 		Array.from(this._bookedServiceProviders.entries()).filter(([sp]) => providerIdsCollection.has(sp.id)),
-	// 	);
-	// 	this._assignedPendingServiceProviders = new Map(
-	// 		Array.from(this._assignedPendingServiceProviders.entries()).filter(([sp]) =>
-	// 			providerIdsCollection.has(sp.id),
-	// 		),
-	// 	);
-	// 	this.filterMap(this._availableServiceProviders, ([sp]) => (providerIdsCollection.has(sp.id)))
-	// 	const newCapacity = this._availableServiceProviders.length;
-
-	// 	const newAvailabilityCount = Math.min(newCapacity, availabilityCountBefore);
-	// 	this._unlinkedPendingBookingsCount = newCapacity - newAvailabilityCount;
-	// }
-
-	// private filterMap<K, V>(data: Map<K, V>, predicate: ([K, V]) => boolean) {
-	// 	for (const item of data) {
-	// 		const [key] = item
-	// 		if (!predicate(item)) {
-	// 			data.delete(key);
-	// 		}
-	// 	}
-
-	// }
 }

@@ -140,7 +140,9 @@ export class TimeslotsService {
 		this.setBookedProviders(mappedEntries, acceptedBookings);
 		TimeslotsService.setPendingTimeslots(mappedEntries, pendingBookings);
 
-		mappedEntries = mappedEntries.filter(entry => entry.isValid).sort(TimeslotsService.sortAvailableTimeslotProviders);
+		mappedEntries = mappedEntries
+			.filter((entry) => entry.isValid)
+			.sort(TimeslotsService.sortAvailableTimeslotProviders);
 		return mappedEntries;
 	}
 
@@ -190,7 +192,6 @@ export class TimeslotsService {
 				element.setBookedServiceProviders(acceptedBookingsForTimeslot);
 			}
 		}
-
 	}
 
 	private async getAggregatedTimeslotEntries(
@@ -221,9 +222,9 @@ export class TimeslotsService {
 		for (const provider of serviceProviders) {
 			const serviceProviderTimeslots = provider.timeslotsSchedule
 				? provider.timeslotsSchedule.generateValidTimeslots({
-					startDatetime: minStartTime,
-					endDatetime: maxEndTime,
-				})
+						startDatetime: minStartTime,
+						endDatetime: maxEndTime,
+				  })
 				: validServiceTimeslots;
 
 			aggregator.aggregate(provider, serviceProviderTimeslots);

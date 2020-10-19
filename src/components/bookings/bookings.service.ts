@@ -203,7 +203,9 @@ export class BookingsService {
 			booking.endDateTime,
 			booking.serviceId,
 		);
-		const isProviderAvailable = Array.from(timeslotEntry.serviceProviderTimeslots.keys()).some(item => item === acceptRequest.serviceProviderId);
+		const isProviderAvailable = Array.from(timeslotEntry.serviceProviderTimeslots.keys()).some(
+			(item) => item === acceptRequest.serviceProviderId,
+		);
 		if (!isProviderAvailable) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Service provider '${acceptRequest.serviceProviderId}' is not available for this booking.`,

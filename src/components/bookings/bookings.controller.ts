@@ -206,7 +206,11 @@ export class BookingsController extends Controller {
 			booking.serviceId,
 		);
 
-		return Array.from(timeslotEntry.serviceProviderTimeslots.values()).map(i => i.serviceProvider).map(BookingsMapper.mapProvider) || [];
+		return (
+			Array.from(timeslotEntry.serviceProviderTimeslots.values())
+				.map((i) => i.serviceProvider)
+				.map(BookingsMapper.mapProvider) || []
+		);
 	}
 
 	/**

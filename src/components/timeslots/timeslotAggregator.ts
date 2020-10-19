@@ -69,12 +69,13 @@ export class AggregatedEntry<TGroup> {
 		if (!this._groups.has(group)) {
 			this._groups.set(group, timeslotDetail);
 		}
-
 	}
 
 	public findGroup(predicate: (group: TGroup) => boolean): [TGroup, TimeslotWithCapacity] {
 		for (const value of this._groups) {
-			if (predicate(value[0])) { return value };
+			if (predicate(value[0])) {
+				return value;
+			}
 		}
 		return undefined;
 	}

@@ -91,7 +91,7 @@ export class ServiceProvidersService {
 			for (const item of timeslot.serviceProviderTimeslots) {
 				const [, spTimeslotItem] = item;
 				if (spTimeslotItem.availabilityCount > 0) {
-					availableServiceProviders.add(spTimeslotItem.serviceProvider)
+					availableServiceProviders.add(spTimeslotItem.serviceProvider);
 				}
 			}
 		});

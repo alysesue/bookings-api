@@ -5,7 +5,6 @@ import {
 	Calendar,
 	Service,
 	ServiceProvider,
-	Timeslot,
 	TimeslotsSchedule,
 	Unavailability,
 } from '../../../models';
