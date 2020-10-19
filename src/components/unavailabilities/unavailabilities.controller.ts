@@ -5,6 +5,7 @@ import { UnavailabilityRequest, UnavailabilityResponse } from './unavailabilitie
 import { Unavailability } from '../../models';
 import { ServiceProvidersMapper } from '../serviceProviders/serviceProviders.mapper';
 import { MOLAuth } from 'mol-lib-common';
+import { ApiData, ApiDataFactory } from '../../apicontract';
 
 @Route('v1/unavailabilities')
 @Tags('Unavailabilities')
@@ -37,11 +38,11 @@ export class UnavailabilitiesController extends Controller {
 	public async addUnavailability(
 		@Body() request: UnavailabilityRequest,
 		@Header('x-api-service') serviceId: number,
-	): Promise<UnavailabilityResponse> {
+	): Promise<ApiData<UnavailabilityResponse>> {
 		request.serviceId = serviceId;
 		const saved = await this.unavailabilitiesService.create(request);
 		this.setStatus(201);
-		return this.mapToResponse(saved);
+		return ApiDataFactory.create(this.mapToResponse(saved));
 	}
 
 	@Get('')
@@ -53,13 +54,13 @@ export class UnavailabilitiesController extends Controller {
 		@Query() fromDate: Date,
 		@Query() toDate: Date,
 		@Query() serviceProviderId?: number,
-	): Promise<UnavailabilityResponse[]> {
+	): Promise<ApiData<UnavailabilityResponse[]>> {
 		const entries = await this.unavailabilitiesService.search({
 			from: fromDate,
 			to: toDate,
 			serviceId,
 			serviceProviderId,
 		});
-		return entries.map((e) => this.mapToResponse(e));
+		return ApiDataFactory.create(entries.map((e) => this.mapToResponse(e)));
 	}
 }

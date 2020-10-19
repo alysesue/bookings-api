@@ -26,6 +26,7 @@ import {
 import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
+import { ApiData, ApiDataFactory } from '../../apicontract';
 
 @Route('v1/services')
 @Tags('Services')
@@ -48,8 +49,10 @@ export class ServicesController extends Controller {
 	@SuccessResponse(201, 'Created')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async createService(@Body() request: ServiceRequest): Promise<ServiceResponse> {
-		return ServicesController.mapToServiceResponse(await this.servicesService.createService(request));
+	public async createService(@Body() request: ServiceRequest): Promise<ApiData<ServiceResponse>> {
+		return ApiDataFactory.create(
+			ServicesController.mapToServiceResponse(await this.servicesService.createService(request)),
+		);
 	}
 
 	/**
@@ -61,9 +64,12 @@ export class ServicesController extends Controller {
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async updateService(serviceId: number, @Body() serviceRequest: ServiceRequest): Promise<ServiceResponse> {
+	public async updateService(
+		serviceId: number,
+		@Body() serviceRequest: ServiceRequest,
+	): Promise<ApiData<ServiceResponse>> {
 		const service = await this.servicesService.updateService(serviceId, serviceRequest);
-		return ServicesController.mapToServiceResponse(service);
+		return ApiDataFactory.create(ServicesController.mapToServiceResponse(service));
 	}
 	/**
 	 * Retrieves all services.
@@ -76,9 +82,9 @@ export class ServicesController extends Controller {
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
-	public async getServices(): Promise<ServiceResponse[]> {
+	public async getServices(): Promise<ApiData<ServiceResponse[]>> {
 		const services = await this.servicesService.getServices();
-		return services.map(ServicesController.mapToServiceResponse);
+		return ApiDataFactory.create(services.map(ServicesController.mapToServiceResponse));
 	}
 
 	@Deprecated()
@@ -89,8 +95,10 @@ export class ServicesController extends Controller {
 	public async setServiceScheduleForm(
 		@Path() id: number,
 		@Body() request: SetScheduleFormRequest,
-	): Promise<ScheduleFormResponse> {
-		return mapSScheduleFormResponseToResponse(await this.servicesService.setServiceScheduleForm(id, request));
+	): Promise<ApiData<ScheduleFormResponse>> {
+		return ApiDataFactory.create(
+			mapSScheduleFormResponseToResponse(await this.servicesService.setServiceScheduleForm(id, request)),
+		);
 	}
 
 	@Deprecated()
@@ -98,8 +106,10 @@ export class ServicesController extends Controller {
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async getServiceScheduleForm(@Path() id: number): Promise<ScheduleFormResponse> {
-		return mapSScheduleFormResponseToResponse(await this.servicesService.getServiceScheduleForm(id));
+	public async getServiceScheduleForm(@Path() id: number): Promise<ApiData<ScheduleFormResponse>> {
+		return ApiDataFactory.create(
+			mapSScheduleFormResponseToResponse(await this.servicesService.getServiceScheduleForm(id)),
+		);
 	}
 
 	/**
@@ -114,9 +124,9 @@ export class ServicesController extends Controller {
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
-	public async getService(serviceId: number): Promise<ServiceResponse> {
+	public async getService(serviceId: number): Promise<ApiData<ServiceResponse>> {
 		const service = await this.servicesService.getService(serviceId);
-		return ServicesController.mapToServiceResponse(service);
+		return ApiDataFactory.create(ServicesController.mapToServiceResponse(service));
 	}
 
 	/**
@@ -127,9 +137,9 @@ export class ServicesController extends Controller {
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async getTimeslotsScheduleByServiceId(serviceId: number): Promise<TimeslotsScheduleResponse> {
+	public async getTimeslotsScheduleByServiceId(serviceId: number): Promise<ApiData<TimeslotsScheduleResponse>> {
 		const data = await this.servicesService.getServiceTimeslotsSchedule(serviceId);
-		return mapToTimeslotsScheduleResponse(data);
+		return ApiDataFactory.create(mapToTimeslotsScheduleResponse(data));
 	}
 
 	/**
@@ -144,10 +154,10 @@ export class ServicesController extends Controller {
 	public async createTimeslotItem(
 		@Path() serviceId: number,
 		@Body() request: TimeslotItemRequest,
-	): Promise<TimeslotItemResponse> {
+	): Promise<ApiData<TimeslotItemResponse>> {
 		const data = await this.servicesService.addTimeslotItem(serviceId, request);
 		this.setStatus(201);
-		return mapToTimeslotItemResponse(data);
+		return ApiDataFactory.create(mapToTimeslotItemResponse(data));
 	}
 
 	/**
@@ -164,9 +174,9 @@ export class ServicesController extends Controller {
 		@Path() serviceId: number,
 		@Path() timeslotId: number,
 		@Body() request: TimeslotItemRequest,
-	): Promise<TimeslotItemResponse> {
+	): Promise<ApiData<TimeslotItemResponse>> {
 		const data = await this.servicesService.updateTimeslotItem({ serviceId, timeslotId, request });
-		return mapToTimeslotItemResponse(data);
+		return ApiDataFactory.create(mapToTimeslotItemResponse(data));
 	}
 
 	/**
@@ -178,7 +188,7 @@ export class ServicesController extends Controller {
 	@SuccessResponse(204, 'Deleted')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async deleteTimeslotItem(@Path() serviceId: number, @Path() timeslotId: number) {
+	public async deleteTimeslotItem(@Path() serviceId: number, @Path() timeslotId: number): Promise<void> {
 		await this.servicesService.deleteTimeslotsScheduleItem(timeslotId);
 	}
 }
