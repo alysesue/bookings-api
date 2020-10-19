@@ -5,7 +5,6 @@ import { BookingsService } from '../bookings.service';
 import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingSearchRequest } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
-import { getRequestHeaders } from '../../../infrastructure/requestHelper';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { BookingBuilder } from '../../../models/entities/booking';
@@ -14,10 +13,6 @@ afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
-
-jest.mock('../../../infrastructure/requestHelper', () => ({
-	getRequestHeaders: jest.fn(),
-}));
 
 jest.mock('mol-lib-common', () => {
 	const actual = jest.requireActual('mol-lib-common');
@@ -126,7 +121,6 @@ describe('Bookings.Controller', () => {
 		};
 
 		(controller as any).context = { headers };
-		(getRequestHeaders as jest.Mock).mockReturnValue({ get: () => headers });
 
 		const result = await controller.postBooking(new BookingRequest(), 1);
 

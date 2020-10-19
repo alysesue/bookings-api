@@ -10,10 +10,6 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
-jest.mock('../../../infrastructure/requestHelper', () => ({
-	getRequestHeaders: jest.fn(),
-}));
-
 jest.mock('mol-lib-common', () => {
 	const actual = jest.requireActual('mol-lib-common');
 	const mock = (config: any) => {
