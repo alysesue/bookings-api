@@ -140,7 +140,13 @@ export class TimeslotsService {
 		this.setBookedProviders(mappedEntries, acceptedBookings);
 		TimeslotsService.setPendingTimeslots(mappedEntries, pendingBookings);
 
-		return mappedEntries.filter(entry => entry.isValid);
+		mappedEntries = mappedEntries.filter(entry => entry.isValid).sort(TimeslotsService.sortAvailableTimeslotProviders);
+		return mappedEntries;
+	}
+
+	private static sortAvailableTimeslotProviders(a: AvailableTimeslotProviders, b: AvailableTimeslotProviders) {
+		const checkStartTime = a.startTime.getTime() - b.startTime.getTime();
+		return checkStartTime === 0 ? a.endTime.getTime() - b.endTime.getTime() : checkStartTime;
 	}
 
 	private async filterUnavailabilities(

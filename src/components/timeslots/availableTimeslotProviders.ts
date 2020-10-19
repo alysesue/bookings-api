@@ -44,12 +44,10 @@ export class AvailableTimeslotProviders {
 	}
 
 	public get isValid(): boolean {
-		let sumOfAvailability = 0;
-		this._serviceProviderTimeslots?.forEach(item => {
-			sumOfAvailability = sumOfAvailability + (item.availabilityCount - (item.acceptedBookings ? item.acceptedBookings.length : 0) - (item.pendingBookings ? item.pendingBookings.length : 0));
-		})
-
-		if (sumOfAvailability > 0) return true;
+		for (const item of this._serviceProviderTimeslots) {
+			const [, timeslotSp] = item;
+			if (timeslotSp.isValid) return true;
+		}
 		return false;
 	}
 
@@ -79,7 +77,7 @@ export class AvailableTimeslotProviders {
 		bookings
 			.filter(booking => booking.serviceProvider)
 			.forEach((booking) => {
-				const spTimeslotItem = new ServiceProviderTimeslot(booking.serviceProvider, 0);
+				const spTimeslotItem = new ServiceProviderTimeslot(booking.serviceProvider, 1);
 				instance._serviceProviderTimeslots.set(booking.serviceProviderId, spTimeslotItem);
 			})
 		// const serviceProviders: [ServiceProvider, number][] = bookings.
@@ -109,7 +107,10 @@ export class AvailableTimeslotProviders {
 		for (const item of bookedProviderIds) {
 			const [spId, bookings] = item;
 			const spTimeslotItem = this._serviceProviderTimeslots.get(spId);
-			if (spTimeslotItem) spTimeslotItem.acceptedBookings = bookings;
+			if (spTimeslotItem) {
+				spTimeslotItem.acceptedBookings = bookings;
+				//				this._serviceProviderTimeslots.set(spId, spTimeslotItem);
+			}
 		}
 	}
 

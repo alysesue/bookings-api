@@ -178,8 +178,8 @@ describe('Timeslots Service', () => {
 		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 		expect(ProviderScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 
-		expect(result.serviceProviderTimeslots.size).toBe(1);
-		expect(result.availabilityCount).toHaveLength(1);
+		//expect(result.bookedServiceProviders.size).toBe(1);
+		expect(result.availabilityCount).toBe(0);
 	});
 
 	it('should map accepted out-of-slot booking to timeslot response', async () => {
@@ -206,7 +206,7 @@ describe('Timeslots Service', () => {
 	it('should merge bookings with same time range', async () => {
 		const service = Container.get(TimeslotsService);
 
-		const setBookedServiceProviders = (AvailableTimeslotProviders.prototype.setBookedServiceProviders = jest.fn());
+		// const setBookedServiceProviders = (AvailableTimeslotProviders.prototype.setBookedServiceProviders = jest.fn());
 
 		const serviceProvider1 = ServiceProvider.create('Juku', 1);
 		const serviceProvider2 = ServiceProvider.create('Andi', 1);
@@ -218,12 +218,22 @@ describe('Timeslots Service', () => {
 
 		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([testBooking1, testBooking2]));
 
-		await service.getAggregatedTimeslots(new Date(), new Date(), 1, true);
+		const res = await service.getAggregatedTimeslots(date, endDate, 1, true);
 
-		expect(setBookedServiceProviders).toHaveBeenCalledWith([testBooking1, testBooking2]);
+		// expect(setBookedServiceProviders).toHaveBeenCalledWith([testBooking1, testBooking2]);
+		expect(res.length).toBe(4);
+
+		expect(res[0].startTime.getHours()).toBe(8);
+		expect(res[0].endTime.getHours()).toBe(11);
+		expect(res[1].startTime.getHours()).toBe(15);
+		expect(res[1].endTime.getHours()).toBe(16);
+		expect(res[2].startTime.getHours()).toBe(16);
+		expect(res[2].endTime.getHours()).toBe(17);
+		expect(res[3].startTime.getHours()).toBe(18);
+		expect(res[3].endTime.getHours()).toBe(19);
 	});
 
-	it('should filter out bookings not related to a authorised role', async () => {
+	it('should filter out bookings not related to an authorised role', async () => {
 		TimeslotsScheduleMock.generateValidTimeslots.mockReturnValue([]);
 
 		const visibleServiceProvider = ServiceProvider.create('Justus', 1, 'email@aa.ee', '55669883');
@@ -235,15 +245,17 @@ describe('Timeslots Service', () => {
 		const testBookings = [
 			new BookingBuilder()
 				.withServiceId(1)
-				.withStartDateTime(new Date('2020-02-02T11:00'))
-				.withEndDateTime(new Date('2020-02-02T12:00'))
+				.withStartDateTime(DateHelper.setHours(date, 17, 0))
+				.withEndDateTime(DateHelper.setHours(date, 18, 0))
 				.withServiceProviderId(1)
+				.withAutoAccept(true)
 				.build(),
 			new BookingBuilder()
 				.withServiceId(1)
-				.withStartDateTime(new Date('2020-02-02T11:00'))
-				.withEndDateTime(new Date('2020-02-02T12:00'))
+				.withStartDateTime(DateHelper.setHours(date, 17, 0))
+				.withEndDateTime(DateHelper.setHours(date, 18, 0))
 				.withServiceProviderId(2)
+				.withAutoAccept(true)
 				.build(),
 		];
 
@@ -255,19 +267,22 @@ describe('Timeslots Service', () => {
 		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue([visibleServiceProvider]);
 
 		const service = Container.get(TimeslotsService);
-		const result = await service.getAggregatedTimeslots(new Date(), new Date(), 1, true);
+		const result = await service.getAggregatedTimeslots(date, endDate, 1, true);
 
 		expect(result).toHaveLength(1);
 	});
 });
 
 const getOutOfSlotBooking = (serviceProvider: ServiceProvider): Booking => {
+	const date = new Date(2020, 4, 27, 8, 0, 0);
+	const endDate = DateHelper.setHours(date, 11, 0);
+
 	const booking = new BookingBuilder()
 		.withServiceId(1)
-		.withStartDateTime(new Date('2020-08-08T06:00Z'))
-		.withEndDateTime(new Date('2020-08-08T09:00Z'))
+		.withStartDateTime(date)
+		.withEndDateTime(endDate)
 		.withServiceProviderId(serviceProvider.id)
-		.withAutoAccept(serviceProvider.autoAcceptBookings)
+		.withAutoAccept(true)
 		.withRefId('ref')
 		.build();
 

@@ -7,13 +7,20 @@ export class ServiceProviderTimeslot {
 	private readonly _capacity: number;
 	private _isOverlapped: boolean;
 	private _isUnavailable: boolean;
+	private _isValid: boolean;
 
 	public get serviceProvider(): ServiceProvider {
 		return this._serviceProvider;
 	}
 
+	public get acceptedBookings() {
+		return this._acceptedBookings;
+	}
 	public set acceptedBookings(value: Booking[]) {
 		this._acceptedBookings = value;
+	}
+	public get pendingBookings() {
+		return this._pendingBookings;
 	}
 	public set pendingBookings(value: Booking[]) {
 		this._pendingBookings = value;
@@ -34,12 +41,14 @@ export class ServiceProviderTimeslot {
 		this._isUnavailable = false;
 	}
 
-	public get availabilityCount() {
+	public get availabilityCount(): number {
 		if (this.isOverlapped || this.isUnavailable) return 0;
 		return Math.max(this._capacity - this._acceptedBookings.length - this._pendingBookings.length, 0);
 	}
 
-	// pubic get isValid (){
-	// 	return void;
-	// }
+	public get isValid(): boolean {
+		if (this._acceptedBookings.length > 0) return true;
+		if (!this._isOverlapped && !this._isUnavailable) return true;
+		return false;
+	}
 }
