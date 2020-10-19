@@ -108,7 +108,7 @@ export class BookingsService {
 	public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
-		const saveAction = (_booking) => this.saveInternal(bookingRequest, serviceId);
+		const saveAction = () => this.saveInternal(bookingRequest, serviceId);
 		return await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
 	}
 

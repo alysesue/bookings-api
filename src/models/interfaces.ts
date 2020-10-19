@@ -1,5 +1,4 @@
 import { TimeOfDay } from './timeOfDay';
-import { Service } from 'mol-lib-api-contract';
 
 export interface IScheduleForm {
 	slotsDurationInMin: number;
