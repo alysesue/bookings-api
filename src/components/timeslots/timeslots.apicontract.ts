@@ -5,6 +5,7 @@ export class AvailabilityEntryResponse {
 	public endTime: Date;
 	/**
 	 * The remaining number of available bookings that can be made in this timeslot.
+	 * @isInt
 	 */
 	public availabilityCount: number;
 }
@@ -22,14 +23,17 @@ export class TimeslotEntryResponse {
 	public availableServiceProviders: ServiceProviderSummaryModel[];
 	/**
 	 * The number of pending bookings in this timeslot.
+	 * @isInt
 	 */
 	public pendingBookingsCount: number;
 	/**
 	 * The remaining number of available bookings that can be made in this timeslot. This value may be less than the count of available service providers due to pending bookings.
+	 * @isInt
 	 */
 	public availabilityCount: number;
 	/**
 	 * The original availability for this timeslot prior to any bookings.
+	 * @isInt
 	 */
 	public totalCount: number;
 }
