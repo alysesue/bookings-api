@@ -32,8 +32,8 @@ export class UnavailabilitiesController extends Controller {
 	@Post('')
 	@Security('service')
 	@SuccessResponse(201, 'Created')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async addUnavailability(
 		@Body() request: UnavailabilityRequest,
 		@Header('x-api-service') serviceId: number,
@@ -46,8 +46,8 @@ export class UnavailabilitiesController extends Controller {
 
 	@Get('')
 	@Security('service')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getUnavailabilities(
 		@Header('x-api-service') serviceId: number,
 		@Query() fromDate: Date,

@@ -33,6 +33,19 @@ export class UsersRepository extends RepositoryBase<User> {
 		return await query.getOne();
 	}
 
+	public async getUsersByMolAdminIds(molAdminIds: string[]): Promise<User[]> {
+		if (!molAdminIds || molAdminIds.length === 0) return [];
+
+		const repository = await this.getRepository();
+		const query = repository
+			.createQueryBuilder('u')
+			.innerJoinAndSelect('u._adminUser', 'admuser', 'admuser."_molAdminId" IN (:...molAdminIds)', {
+				molAdminIds,
+			});
+
+		return await query.getMany();
+	}
+
 	public async getUserByAgencyAppId(agencyAppId?: string): Promise<User> {
 		if (!agencyAppId) return null;
 

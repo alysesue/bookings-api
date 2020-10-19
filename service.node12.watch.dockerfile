@@ -33,12 +33,15 @@ RUN cd /usr/bin && ln -s /usr/bin/python2.7 /usr/bin/python
 
 # Copy files needed for the service to run
 WORKDIR /service
-COPY ./ .
+COPY package.json ./
+COPY package-lock.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 RUN npm install -g forever
 RUN npm install -g npm-watch
+
+COPY ./ .
 
 # Note: node_modules may get overriden if you mount a volume, so a reinstall might be required
 CMD bash -c "npm-watch"

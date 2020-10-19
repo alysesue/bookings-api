@@ -1,4 +1,4 @@
-import { Calendar, Organisation, Service, ServiceProvider, TimeslotsSchedule, User } from '../../../models';
+import { Organisation, Service, ServiceProvider, TimeslotsSchedule, User } from '../../../models';
 import { TimeslotItemsActionAuthVisitor } from '../timeslotItems.auth';
 import {
 	CitizenAuthGroup,

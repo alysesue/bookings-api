@@ -63,8 +63,8 @@ export class BookingsController extends Controller {
 	@Post('admin')
 	@SuccessResponse(201, 'Created')
 	@Security('service')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async postBookingOutOfSlot(
 		@Body() bookingRequest: BookingRequest,
 		@Header('x-api-service') serviceId: number,
@@ -99,8 +99,8 @@ export class BookingsController extends Controller {
 	 */
 	@Post('{bookingId}/accept')
 	@SuccessResponse(204, 'Accepted')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async acceptBooking(@Path() bookingId: number, @Body() acceptRequest: BookingAcceptRequest): Promise<any> {
 		await this.bookingsService.acceptBooking(bookingId, acceptRequest);
 	}
@@ -113,9 +113,10 @@ export class BookingsController extends Controller {
 	@SuccessResponse(204, 'Cancelled')
 	@MOLAuth({
 		admin: {},
+		agency: {},
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
-	@Response(401, 'Valid authentication types: [admin,user]')
+	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async cancelBooking(@Path() bookingId: number): Promise<any> {
 		await this.bookingsService.cancelBooking(bookingId);
 	}
@@ -130,8 +131,8 @@ export class BookingsController extends Controller {
 	@Put('{bookingId}')
 	@SuccessResponse(201, 'Updated')
 	@Security('service')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async updateBooking(
 		@Path() bookingId: number,
 		@Body() bookingRequest: BookingRequest,
@@ -155,9 +156,10 @@ export class BookingsController extends Controller {
 	@Security('optional-service')
 	@MOLAuth({
 		admin: {},
+		agency: {},
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
-	@Response(401, 'Valid authentication types: [admin,user]')
+	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getBookings(
 		@Query() from: Date,
 		@Query() to: Date,
@@ -178,9 +180,10 @@ export class BookingsController extends Controller {
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({
 		admin: {},
+		agency: {},
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
-	@Response(401, 'Valid authentication types: [admin,user]')
+	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getBooking(@Path() bookingId: number): Promise<any> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 		return BookingsMapper.mapDataModel(booking);
@@ -194,9 +197,10 @@ export class BookingsController extends Controller {
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({
 		admin: {},
+		agency: {},
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
-	@Response(401, 'Valid authentication types: [admin,user]')
+	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getBookingProviders(@Path() bookingId: number): Promise<any> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 
@@ -221,8 +225,9 @@ export class BookingsController extends Controller {
 	@SuccessResponse(200, 'Rejected')
 	@MOLAuth({
 		admin: {},
+		agency: {},
 	})
-	@Response(401, 'Valid authentication types: [admin]')
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async rejectBooking(@Path() bookingId: number): Promise<any> {
 		await this.bookingsService.rejectBooking(bookingId);
 	}

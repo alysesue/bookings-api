@@ -46,8 +46,8 @@ export class ServicesController extends Controller {
 	 */
 	@Post()
 	@SuccessResponse(201, 'Created')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async createService(@Body() request: ServiceRequest): Promise<ServiceResponse> {
 		return ServicesController.mapToServiceResponse(await this.servicesService.createService(request));
 	}
@@ -59,8 +59,8 @@ export class ServicesController extends Controller {
 	 */
 	@Put('{serviceId}')
 	@SuccessResponse(200, 'Ok')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async updateService(serviceId: number, @Body() serviceRequest: ServiceRequest): Promise<ServiceResponse> {
 		const service = await this.servicesService.updateService(serviceId, serviceRequest);
 		return ServicesController.mapToServiceResponse(service);
@@ -72,9 +72,10 @@ export class ServicesController extends Controller {
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({
 		admin: {},
+		agency: {},
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
-	@Response(401, 'Valid authentication types: [admin,user]')
+	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getServices(): Promise<ServiceResponse[]> {
 		const services = await this.servicesService.getServices();
 		return services.map(ServicesController.mapToServiceResponse);
@@ -83,8 +84,8 @@ export class ServicesController extends Controller {
 	@Deprecated()
 	@Put('{id}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async setServiceScheduleForm(
 		@Path() id: number,
 		@Body() request: SetScheduleFormRequest,
@@ -95,8 +96,8 @@ export class ServicesController extends Controller {
 	@Deprecated()
 	@Get('{id}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getServiceScheduleForm(@Path() id: number): Promise<ScheduleFormResponse> {
 		return mapSScheduleFormResponseToResponse(await this.servicesService.getServiceScheduleForm(id));
 	}
@@ -109,9 +110,10 @@ export class ServicesController extends Controller {
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({
 		admin: {},
+		agency: {},
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
-	@Response(401, 'Valid authentication types: [admin,user]')
+	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getService(serviceId: number): Promise<ServiceResponse> {
 		const service = await this.servicesService.getService(serviceId);
 		return ServicesController.mapToServiceResponse(service);
@@ -123,8 +125,8 @@ export class ServicesController extends Controller {
 	 */
 	@Get('{serviceId}/timeslotSchedule')
 	@SuccessResponse(200, 'Ok')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getTimeslotsScheduleByServiceId(serviceId: number): Promise<TimeslotsScheduleResponse> {
 		const data = await this.servicesService.getServiceTimeslotsSchedule(serviceId);
 		return mapToTimeslotsScheduleResponse(data);
@@ -137,8 +139,8 @@ export class ServicesController extends Controller {
 	 */
 	@Post('{serviceId}/timeslotSchedule/timeslots')
 	@SuccessResponse(201, 'Created')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async createTimeslotItem(
 		@Path() serviceId: number,
 		@Body() request: TimeslotItemRequest,
@@ -156,8 +158,8 @@ export class ServicesController extends Controller {
 	 */
 	@Put('{serviceId}/timeslotSchedule/timeslots/{timeslotId}')
 	@SuccessResponse(200, 'Ok')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async updateTimeslotItem(
 		@Path() serviceId: number,
 		@Path() timeslotId: number,
@@ -174,8 +176,8 @@ export class ServicesController extends Controller {
 	 */
 	@Delete('{serviceId}/timeslotSchedule/timeslots/{timeslotId}')
 	@SuccessResponse(204, 'Deleted')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async deleteTimeslotItem(@Path() serviceId: number, @Path() timeslotId: number) {
 		await this.servicesService.deleteTimeslotsScheduleItem(timeslotId);
 	}

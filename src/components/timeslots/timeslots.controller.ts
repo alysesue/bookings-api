@@ -30,9 +30,10 @@ export class TimeslotsController extends Controller {
 	@Security('service')
 	@MOLAuth({
 		admin: {},
+		agency: {},
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
-	@Response(401, 'Valid authentication types: [admin,user]')
+	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getAvailability(
 		@Query() startDate: Date,
 		@Query() endDate: Date,
@@ -62,8 +63,8 @@ export class TimeslotsController extends Controller {
 	 */
 	@Get('')
 	@Security('service')
-	@MOLAuth({ admin: {} })
-	@Response(401, 'Valid authentication types: [admin]')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getTimeslots(
 		@Query() startDate: Date,
 		@Query() endDate: Date,

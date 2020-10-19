@@ -108,7 +108,7 @@ export class BookingsService {
 	public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
-		const saveAction = (_booking) => this.saveInternal(bookingRequest, serviceId);
+		const saveAction = () => this.saveInternal(bookingRequest, serviceId);
 		return await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
 	}
 
@@ -198,18 +198,22 @@ export class BookingsService {
 				`Service provider '${acceptRequest.serviceProviderId}' not found`,
 			);
 		}
-		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(
-			booking.startDateTime,
-			booking.endDateTime,
-			booking.serviceId,
-		);
-		const isProviderAvailable = Array.from(timeslotEntry.serviceProviderTimeslots.keys()).some(
-			(item) => item === acceptRequest.serviceProviderId,
-		);
-		if (!isProviderAvailable) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				`Service provider '${acceptRequest.serviceProviderId}' is not available for this booking.`,
+
+		if (booking.serviceProviderId !== acceptRequest.serviceProviderId) {
+			const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(
+				booking.startDateTime,
+				booking.endDateTime,
+				booking.serviceId,
 			);
+			const isProviderAvailable = Array.from(timeslotEntry.serviceProviderTimeslots.keys()).some(
+				(item) => item === acceptRequest.serviceProviderId,
+			);
+
+			if (!isProviderAvailable) {
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+					`Service provider '${acceptRequest.serviceProviderId}' is not available for this booking.`,
+				);
+			}
 		}
 
 		const eventICalId = await this.calendarsService.createCalendarEvent(booking, provider.calendar);

@@ -245,6 +245,32 @@ describe('Bookings.Service', () => {
 		expect(result.eventICalId).toBe('event-id');
 	});
 
+	it('should accept booking with pre selected service provider', async () => {
+		const bookingService = Container.get(BookingsService);
+		CalendarsServiceMock.eventId = 'event-id';
+		BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		BookingRepositoryMock.booking.serviceProviderId = 1;
+
+		TimeslotsServiceMock.availableProvidersForTimeslot = [];
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
+
+		const acceptRequest = new BookingAcceptRequest();
+		acceptRequest.serviceProviderId = 1;
+		const result = await bookingService.acceptBooking(1, acceptRequest);
+
+		expect(result.status).toBe(BookingStatus.Accepted);
+		expect(result.eventICalId).toBe('event-id');
+	});
+
 	it('should cancel booking', async () => {
 		const startDate = new Date();
 		startDate.setDate(new Date().getDate() + 1);

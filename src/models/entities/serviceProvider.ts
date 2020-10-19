@@ -6,6 +6,7 @@ import { ScheduleForm } from './scheduleForm';
 import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
+import { User } from './user';
 
 const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
 
@@ -182,4 +183,19 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 
 	@Column({ type: 'boolean', default: DEFAULT_AUTO_ACCEPT_BOOKINGS })
 	private _autoAcceptBookings: boolean;
+
+	// This is a logical relationship, no foreign key in DB.
+	private _linkedUser: User;
+
+	public get linkedUser(): User {
+		return this._linkedUser;
+	}
+
+	public set linkedUser(value: User) {
+		this._linkedUser = value;
+	}
+
+	public get agencyUserId(): string {
+		return this._linkedUser?.adminUser?.agencyUserId;
+	}
 }
