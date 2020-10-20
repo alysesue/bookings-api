@@ -27,6 +27,11 @@ export class ScheduleFormsController extends Controller {
 		return ApiDataFactory.create(await this.scheduleFormService.getScheduleForms());
 	}
 
+	/**
+	 * Updates a schedule form.
+	 * @param @isInt id The schedule form id.
+	 * @param timeslot The schedule form request
+	 */
 	@Put('{id}')
 	@SuccessResponse(200, 'Updated')
 	@MOLAuth({ admin: {}, agency: {} })
@@ -38,6 +43,10 @@ export class ScheduleFormsController extends Controller {
 		return ApiDataFactory.create(await this.scheduleFormService.updateScheduleForm(id, timeslot));
 	}
 
+	/**
+	 * Deletes a schedule form.
+	 * @param @isInt id The schedule form id.
+	 */
 	@Delete('{id}')
 	@SuccessResponse(204, 'Deleted')
 	@MOLAuth({ admin: {}, agency: {} })

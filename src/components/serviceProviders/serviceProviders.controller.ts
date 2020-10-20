@@ -63,7 +63,7 @@ export class ServiceProvidersController extends Controller {
 	/**
 	 * Creates multiple service providers (json format).
 	 * @param spRequest
-	 * @param serviceId The service id.
+	 * @param @isInt serviceId The service id.
 	 */
 	@Post('')
 	@Security('service')
@@ -80,7 +80,7 @@ export class ServiceProvidersController extends Controller {
 	/**
 	 * Creates multiple service providers (CSV format). The csv content must contain a single header called name.
 	 * @param spRequest
-	 * @param serviceId The service id.
+	 * @param @isInt serviceId The service id.
 	 */
 	@Post('/csv')
 	@Security('service')
@@ -97,7 +97,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Retrieves service providers.
-	 * @param serviceId (Optional) Filters by a service (id).
+	 * @param @isInt serviceId (Optional) Filters by a service (id).
 	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
 	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
 	 */
@@ -118,6 +118,12 @@ export class ServiceProvidersController extends Controller {
 		return ApiDataFactory.create(this.mapper.mapDataModels(dataModels));
 	}
 
+	/**
+	 * Retrieves available service providers in the specified datetime range.
+	 * @param from The lower bound limit for service providers' availability.
+	 * @param to The upper bound limit for service providers' availability.
+	 * @param @isInt serviceId The service id.
+	 */
 	@Get('available')
 	@Security('service')
 	@MOLAuth({ admin: {}, agency: {} })
@@ -133,7 +139,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Retrieves a single service provider.
-	 * @param spId The service provider id.
+	 * @param @isInt spId The service provider id.
 	 */
 	@Get('{spId}')
 	@MOLAuth({
@@ -149,7 +155,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Updates a single service provider.
-	 * @param spId The service provider id.
+	 * @param @isInt spId The service provider id.
 	 * @param spRequest
 	 */
 	@Put('{spId}')
@@ -186,7 +192,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Retrieves all weekly recurring timeslots for a service provider.
-	 * @param spId The service provider id.
+	 * @param @isInt spId The service provider id.
 	 */
 	@Get('{spId}/timeslotSchedule')
 	@SuccessResponse(200, 'Ok')
@@ -201,7 +207,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Creates a new weekly recurring timeslot for a service provider.
-	 * @param spId The service provider id.
+	 * @param @isInt spId The service provider id.
 	 * @param request
 	 */
 	@Post('{spId}/timeslotSchedule/timeslots')
@@ -219,8 +225,8 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Updates a weekly recurring timeslot for a service provider. Existing bookings are not affected.
-	 * @param spId The service provider id.
-	 * @param timeslotId The weekly timeslot id.
+	 * @param @isInt spId The service provider id.
+	 * @param @isInt timeslotId The weekly timeslot id.
 	 * @param request
 	 */
 	@Put('{spId}/timeslotSchedule/timeslots/{timeslotId}')
@@ -238,8 +244,8 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Deletes a weekly recurring timeslot for a service provider. Existing bookings are not affected.
-	 * @param spId The service provider id.
-	 * @param timeslotId The weekly timeslot id.
+	 * @param @isInt spId The service provider id.
+	 * @param @isInt timeslotId The weekly timeslot id.
 	 */
 	@Delete('{spId}/timeslotSchedule/timeslots/{timeslotId}')
 	@SuccessResponse(204, 'No Content')

@@ -28,7 +28,7 @@ export class UnavailabilitiesController extends Controller {
 	/**
 	 * Creates an unavailable (blocked) timeslot for a service or, optionally, for specific service providers.
 	 * @param request
-	 * @param serviceId The service id.
+	 * @param @isInt serviceId The service id.
 	 */
 	@Post('')
 	@Security('service')
@@ -45,6 +45,13 @@ export class UnavailabilitiesController extends Controller {
 		return ApiDataFactory.create(this.mapToResponse(saved));
 	}
 
+	/**
+	 * Retrieves unavailabilities
+	 * @param @isInt serviceId The service id.
+	 * @param fromDate The lower bound datetime limit (inclusive) for unavailability's end time.
+	 * @param toDate The upper bound datetime limit (inclusive) for unavailability's start time.
+	 * @param @isInt serviceProviderId (Optional) Filters unavailabilities for a specific service provider.
+	 */
 	@Get('')
 	@Security('service')
 	@MOLAuth({ admin: {}, agency: {} })
