@@ -27,7 +27,6 @@ export class TimeslotItemsService {
 		if (!timeslotSchedule._service && !timeslotSchedule._serviceProvider) {
 			timeslotScheduleData = await this.timeslotsScheduleRepository.getTimeslotsScheduleById(
 				timeslotSchedule._id,
-				{ retrieveService: true, retrieveServiceProvider: true },
 			);
 			if (timeslotScheduleData._serviceProvider && !timeslotScheduleData._serviceProvider.service) {
 				timeslotScheduleData._serviceProvider.service = await this.servicesRepository.getService(
