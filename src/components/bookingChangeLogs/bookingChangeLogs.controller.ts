@@ -5,6 +5,7 @@ import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/commo
 import { BookingChangeLogResponse } from './bookingChangeLogs.apicontract';
 import { BookingChangeLogsService } from './bookingChangeLogs.service';
 import { BookingChangeLogsMapper } from './bookingChangeLogs.mapper';
+import { ApiData, ApiDataFactory } from '../../apicontract';
 
 @Route('v1/bookinglogs')
 @Tags('BookingLogs')
@@ -33,8 +34,8 @@ export class BookingChangeLogsController extends Controller {
 		@Query() changedUntil: Date,
 		@Query() bookingIds?: number[],
 		@Header('x-api-service') serviceId?: number,
-	): Promise<BookingChangeLogResponse[]> {
+	): Promise<ApiData<BookingChangeLogResponse[]>> {
 		const logs = await this.changeLogsService.getLogs({ changedSince, changedUntil, serviceId, bookingIds });
-		return BookingChangeLogsMapper.mapDataModels(logs);
+		return ApiDataFactory.create(BookingChangeLogsMapper.mapDataModels(logs));
 	}
 }

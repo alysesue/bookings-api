@@ -45,7 +45,7 @@ describe('users controller', () => {
 		};
 
 		const profile = await controller.getProfile();
-		expect(profile).toEqual({
+		expect(profile.data).toEqual({
 			groups: [{ authGroupType: 'citizen' }],
 			user: {
 				singpass: { uinfin: 'ABC1234' },
@@ -84,7 +84,7 @@ describe('users controller', () => {
 		};
 
 		const profile = await controller.getProfile();
-		expect(profile).toEqual({
+		expect(profile.data).toEqual({
 			groups: [{ authGroupType: 'service-admin', services: [{ id: 1, name: 'service1' }] }],
 			user: { admin: { email: 'test@email.com' }, userType: 'admin' },
 		} as UserProfileResponse);
@@ -121,7 +121,7 @@ describe('users controller', () => {
 		};
 
 		const profile = await controller.getProfile();
-		expect(profile).toEqual({
+		expect(profile.data).toEqual({
 			groups: [{ authGroupType: 'service-admin', services: [{ id: 1, name: 'service1' }] }],
 			user: { admin: { email: 'test@email.com', agencyUserId: 'ABC123' }, userType: 'admin' },
 		} as UserProfileResponse);
@@ -150,7 +150,7 @@ describe('users controller', () => {
 		};
 
 		const profile = await controller.getProfile();
-		expect(profile).toEqual({
+		expect(profile.data).toEqual({
 			groups: [{ authGroupType: 'organisation-admin', organisations: [{ id: 2, name: 'agency1' }] }],
 			user: { agency: { appId: 'agency-first-app', name: 'agency1' }, userType: 'agency' },
 		} as UserProfileResponse);

@@ -14,12 +14,19 @@ import {
 	SuccessResponse,
 	Tags,
 } from 'tsoa';
-import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingSearchRequest } from './bookings.apicontract';
+import {
+	BookingAcceptRequest,
+	BookingProviderResponse,
+	BookingRequest,
+	BookingResponse,
+	BookingSearchRequest,
+} from './bookings.apicontract';
 import { BookingsService } from './bookings.service';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { BookingsMapper } from './bookings.mapper';
+import { ApiData, ApiDataFactory } from '../../apicontract';
 
 @Route('v1/bookings')
 @Tags('Bookings')
@@ -46,11 +53,11 @@ export class BookingsController extends Controller {
 	public async postBooking(
 		@Body() bookingRequest: BookingRequest,
 		@Header('x-api-service') serviceId: number,
-	): Promise<any> {
+	): Promise<ApiData<BookingResponse>> {
 		bookingRequest.outOfSlotBooking = false;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
-		return BookingsMapper.mapDataModel(booking);
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
 	}
 
 	/**
@@ -68,11 +75,11 @@ export class BookingsController extends Controller {
 	public async postBookingOutOfSlot(
 		@Body() bookingRequest: BookingRequest,
 		@Header('x-api-service') serviceId: number,
-	): Promise<any> {
+	): Promise<ApiData<BookingResponse>> {
 		bookingRequest.outOfSlotBooking = true;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
-		return BookingsMapper.mapDataModel(booking);
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
 	}
 
 	/**
@@ -87,9 +94,9 @@ export class BookingsController extends Controller {
 	public async reschedule(
 		@Path() bookingId: number,
 		@Body() rescheduleRequest: BookingRequest,
-	): Promise<BookingResponse> {
+	): Promise<ApiData<BookingResponse>> {
 		const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest, false);
-		return BookingsMapper.mapDataModel(rescheduledBooking);
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(rescheduledBooking));
 	}
 
 	/**
@@ -101,7 +108,7 @@ export class BookingsController extends Controller {
 	@SuccessResponse(204, 'Accepted')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async acceptBooking(@Path() bookingId: number, @Body() acceptRequest: BookingAcceptRequest): Promise<any> {
+	public async acceptBooking(@Path() bookingId: number, @Body() acceptRequest: BookingAcceptRequest): Promise<void> {
 		await this.bookingsService.acceptBooking(bookingId, acceptRequest);
 	}
 
@@ -117,7 +124,7 @@ export class BookingsController extends Controller {
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
-	public async cancelBooking(@Path() bookingId: number): Promise<any> {
+	public async cancelBooking(@Path() bookingId: number): Promise<void> {
 		await this.bookingsService.cancelBooking(bookingId);
 	}
 
@@ -137,10 +144,10 @@ export class BookingsController extends Controller {
 		@Path() bookingId: number,
 		@Body() bookingRequest: BookingRequest,
 		@Header('x-api-service') serviceId: number,
-	): Promise<any> {
+	): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.update(bookingId, bookingRequest, serviceId, true);
 		this.setStatus(201);
-		return BookingsMapper.mapDataModel(booking);
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
 	}
 
 	/**
@@ -166,10 +173,10 @@ export class BookingsController extends Controller {
 		@Query() status?: number[],
 		@Query() citizenUinFins?: string[],
 		@Header('x-api-service') serviceId?: number,
-	): Promise<BookingResponse[]> {
+	): Promise<ApiData<BookingResponse[]>> {
 		const searchQuery = new BookingSearchRequest(from, to, status, serviceId, citizenUinFins);
 		const bookings = await this.bookingsService.searchBookings(searchQuery);
-		return BookingsMapper.mapDataModels(bookings);
+		return ApiDataFactory.create(BookingsMapper.mapDataModels(bookings));
 	}
 
 	/**
@@ -184,9 +191,9 @@ export class BookingsController extends Controller {
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
-	public async getBooking(@Path() bookingId: number): Promise<any> {
+	public async getBooking(@Path() bookingId: number): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.getBooking(bookingId);
-		return BookingsMapper.mapDataModel(booking);
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
 	}
 
 	/**
@@ -201,7 +208,7 @@ export class BookingsController extends Controller {
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
-	public async getBookingProviders(@Path() bookingId: number): Promise<any> {
+	public async getBookingProviders(@Path() bookingId: number): Promise<ApiData<BookingProviderResponse[]>> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 
 		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(
@@ -209,7 +216,7 @@ export class BookingsController extends Controller {
 			booking.endDateTime,
 			booking.serviceId,
 		);
-		return timeslotEntry.availableServiceProviders.map(BookingsMapper.mapProvider) || [];
+		return ApiDataFactory.create(timeslotEntry.availableServiceProviders.map(BookingsMapper.mapProvider) || []);
 	}
 
 	/**
@@ -223,7 +230,7 @@ export class BookingsController extends Controller {
 		agency: {},
 	})
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async rejectBooking(@Path() bookingId: number): Promise<any> {
+	public async rejectBooking(@Path() bookingId: number): Promise<void> {
 		await this.bookingsService.rejectBooking(bookingId);
 	}
 }

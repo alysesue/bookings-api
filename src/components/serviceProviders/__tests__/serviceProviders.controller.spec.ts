@@ -54,7 +54,7 @@ describe('ServiceProviders.Controller', () => {
 		ServiceProvidersMock.getServiceProviders.mockReturnValue([sp1, sp2]);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders();
-		expect(result.length).toBe(2);
+		expect(result.data.length).toBe(2);
 	});
 
 	it('should get service providers with timeslots', async () => {
@@ -71,8 +71,8 @@ describe('ServiceProviders.Controller', () => {
 
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders(undefined, true);
-		expect(result.length).toBe(1);
-		expect(result[0].timeslotsSchedule.timeslots[0].weekDay).toBe(timeslotItem._weekDay);
+		expect(result.data.length).toBe(1);
+		expect(result.data[0].timeslotsSchedule.timeslots[0].weekDay).toBe(timeslotItem._weekDay);
 	});
 
 	it('should get a service provider', async () => {
@@ -81,7 +81,7 @@ describe('ServiceProviders.Controller', () => {
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProvider(1);
 
-		expect(result.name).toEqual('Monica');
+		expect(result.data.name).toEqual('Monica');
 	});
 
 	it('should save multiple service providers', async () => {
@@ -135,7 +135,7 @@ describe('ServiceProviders.Controller', () => {
 			email: 'test@gmail.com',
 		});
 		expect(ServiceProvidersMock.updateServiceProvider).toBeCalled();
-		expect(result.email).toBe('test@gmail.com');
+		expect(result.data.email).toBe('test@gmail.com');
 	});
 
 	it('should get provider scheduleForm', async () => {
@@ -152,8 +152,8 @@ describe('ServiceProviders.Controller', () => {
 		mockResult.timeslotItems = [mockItem];
 		ServiceProvidersMock.getTimeslotItemsByServiceProviderId.mockReturnValue(mockResult);
 		const response = await Container.get(ServiceProvidersController).getTimeslotsScheduleByServiceProviderId(1);
-		expect(response.timeslots.length).toEqual(1);
-		expect(response.timeslots[0].id).toEqual(mockItemId);
+		expect(response.data.timeslots.length).toEqual(1);
+		expect(response.data.timeslots[0].id).toEqual(mockItemId);
 	});
 
 	it('should set provider schedule timeslots', async () => {
@@ -161,14 +161,14 @@ describe('ServiceProviders.Controller', () => {
 
 		const response = await Container.get(ServiceProvidersController).createTimeslotItem(1, request);
 		expect(response).toBeDefined();
-		expect(response.startTime).toEqual('08:00');
+		expect(response.data.startTime).toEqual('08:00');
 	});
 
 	it('should update provider schedule timeslots', async () => {
 		ServiceProvidersMock.updateTimeslotItemForServiceProvider.mockReturnValue(mockItem);
 		const response = await Container.get(ServiceProvidersController).updateTimeslotItem(1, 1, request);
 		expect(ServiceProvidersMock.updateTimeslotItemForServiceProvider).toBeCalled();
-		expect(response.startTime).toEqual('08:00');
+		expect(response.data.startTime).toEqual('08:00');
 	});
 
 	it('should call deleteTimeslotForServiceProvider', async () => {

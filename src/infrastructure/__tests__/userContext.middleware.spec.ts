@@ -25,7 +25,7 @@ function buildSampleKoaContext(path: string): Koa.Context {
 	} as Koa.Context;
 }
 
-describe('user Context tests', () => {
+describe('user Context middleware tests', () => {
 	it('should get current user', async () => {
 		const containerMiddleware = new ContainerContextMiddleware().build();
 		const userContextMiddleware = new UserContextMiddleware().build();
