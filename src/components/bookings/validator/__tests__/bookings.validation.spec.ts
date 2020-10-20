@@ -104,7 +104,10 @@ describe('Booking validation tests', () => {
 			.build();
 
 		BookingRepositoryMock.searchBookingsMock = [];
-		const timeslotWithCapacity = new TimeslotWithCapacity(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const timeslotWithCapacity = new TimeslotWithCapacity(
+			new Date('2020-10-01T01:00:00'),
+			new Date('2020-10-01T02:00:00'),
+		);
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
@@ -119,7 +122,10 @@ describe('Booking validation tests', () => {
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.build();
 
-		const timeslotWithCapacity = new TimeslotWithCapacity(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const timeslotWithCapacity = new TimeslotWithCapacity(
+			new Date('2020-10-01T01:00:00'),
+			new Date('2020-10-01T02:00:00'),
+		);
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
@@ -194,7 +200,10 @@ describe('Booking validation tests', () => {
 			.build();
 
 		BookingRepositoryMock.searchBookingsMock = [];
-		const timeslotWithCapacity = new TimeslotWithCapacity(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const timeslotWithCapacity = new TimeslotWithCapacity(
+			new Date('2020-10-01T01:00:00'),
+			new Date('2020-10-01T02:00:00'),
+		);
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(null));

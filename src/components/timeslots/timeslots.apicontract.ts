@@ -1,4 +1,4 @@
-import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
+import { ServiceProviderResponseModel, ServiceProviderWithBookingsModel } from '../serviceProviders/serviceProviders.apicontract';
 import { ServiceProviderTimeslot } from '../../models/serviceProviderTimeslot';
 
 export class AvailabilityEntryResponse {
@@ -10,21 +10,28 @@ export class AvailabilityEntryResponse {
 	public availabilityCount: number;
 }
 
+export class ServiceProviderTimeslotResponse {
+	public isValid: boolean;
+	public capacity: number;
+	public booked: number;
+	public serviceProvider: ServiceProviderWithBookingsModel;
+}
+
 export class TimeslotEntryResponse {
 	public startTime: Date;
 	public endTime: Date;
 	/**
 	 * The detail of service Providers information at this specific time
 	 */
-	public serviceProviderTimeslot: ServiceProviderTimeslot[];
+	public serviceProviderTimeslot: ServiceProviderTimeslotResponse[];
 	/**
 	 * The total number of the booked slot (both assigned and not assigned yet to Service Provider)
 	 */
-	public bookedSlot: number;
+	public totalBookedSlot: number;
 	/**
 	 * Total capacity for this specific time.
 	 */
-	public capacity: number;
+	public totalCapacity: number;
 
 	// /**
 	//  * A list of booked service providers (accepted) in this timeslot.

@@ -9,10 +9,12 @@ export class ServiceProviderTimeslot {
 	private _isUnavailable: boolean;
 	private _isValid: boolean;
 
+	public get capacity(): number {
+		return this.capacity;
+	}
 	public get serviceProvider(): ServiceProvider {
 		return this._serviceProvider;
 	}
-
 	public get acceptedBookings() {
 		return this._acceptedBookings;
 	}

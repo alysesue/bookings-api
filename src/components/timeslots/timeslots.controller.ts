@@ -1,12 +1,14 @@
 import { Inject } from 'typescript-ioc';
 import { Controller, Get, Header, Query, Response, Route, Security, Tags } from 'tsoa';
-import { AvailabilityEntryResponse, TimeslotEntryResponse } from './timeslots.apicontract';
+import { AvailabilityEntryResponse, TimeslotEntryResponse, ServiceProviderTimeslotResponse } from './timeslots.apicontract';
 import { TimeslotsService } from './timeslots.service';
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import { ServiceProvidersMapper } from '../serviceProviders/serviceProviders.mapper';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { ServiceProviderTimeslot } from '../../models/serviceProviderTimeslot';
+import { ServiceProviderResponseModel, ServiceProviderWithBookingsModel } from '../serviceProviders/serviceProviders.apicontract';
+import { BookingsMapper } from '../bookings/bookings.mapper';
 
 @Route('v1/timeslots')
 @Tags('Timeslots')
@@ -95,23 +97,35 @@ export class TimeslotsController extends Controller {
 	}
 
 	private mapTimeslotEntry(entry: AvailableTimeslotProviders): TimeslotEntryResponse {
+		const [timeslots, totalCapacity, totalBooked] = this.mapServiceProviderTimeslot(Array.from(entry.serviceProviderTimeslots.values()));
 		const response = new TimeslotEntryResponse();
 		response.startTime = entry.startTime;
 		response.endTime = entry.endTime;
-		response.timeslotAvailability = Array.from(entry.serviceProviderTimeslots.values());
-
-		// 		response.timeslotAvailability = entry.
-
-		// response.availabilityCount = entry.availabilityCount;
-		// response.pendingBookingsCount = entry.unlinkedPendingBookingsCount;
-		// response.bookedServiceProviders = this.serviceProviderMapper.mapBookedServiceProviderEntries(
-		// 	entry.bookedServiceProviders,
-		// );
-		// response.availableServiceProviders = this.serviceProviderMapper.mapSummaryDataModels(
-		// 	entry.availableServiceProviders,
-		// );
-		// response.totalCount = entry.totalCount;
-
+		response.serviceProviderTimeslot = timeslots;
+		response.totalBookedSlot = totalBooked;
+		response.totalCapacity = totalCapacity;
 		return response;
+	}
+
+	private mapServiceProviderTimeslot(entry: ServiceProviderTimeslot[]): [ServiceProviderTimeslotResponse[], number, number] {
+		let totalCapacity = 0;
+		let totalBooked = 0;
+		const res = entry.map(i => {
+			const item = new ServiceProviderTimeslotResponse();
+			item.isValid = i.isValid;
+			item.capacity = i.capacity;
+			item.serviceProvider = new ServiceProviderWithBookingsModel(
+				i.serviceProvider.id,
+				i.serviceProvider.name,
+				i.acceptedBookings.map(BookingsMapper.mapDataModel),
+				i.pendingBookings.map(BookingsMapper.mapDataModel),
+			)
+			item.booked = i.acceptedBookings.length + i.pendingBookings.length;
+			totalCapacity += i.capacity;
+			totalBooked += item.booked;
+			return item;
+		});
+
+		return [res, totalCapacity, totalBooked];
 	}
 }

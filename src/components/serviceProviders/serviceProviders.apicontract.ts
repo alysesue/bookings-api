@@ -67,3 +67,16 @@ export class ServiceProviderSummaryModel {
 		this.bookings = bookings;
 	}
 }
+export class ServiceProviderWithBookingsModel {
+	public id: number;
+	public name: string;
+	public acceptedBookings?: BookingResponse[];
+	public pendingBookings?: BookingResponse[];
+
+	constructor(id: number, name: string, acceptedBookings?: BookingResponse[], pendingBookings?: BookingResponse[]) {
+		this.id = id;
+		this.name = name;
+		this.acceptedBookings = acceptedBookings;
+		this.pendingBookings = pendingBookings;
+	}
+}
