@@ -100,6 +100,7 @@ export class UsersService {
 		userName: string;
 		email: string;
 		name: string;
+		agencyUserId?: string;
 	}): Promise<User> {
 		if (!data.molAdminId || !data.email) {
 			return null;

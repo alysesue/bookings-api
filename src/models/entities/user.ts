@@ -70,7 +70,13 @@ export class User implements IUser {
 		return instance;
 	}
 
-	public static createAdminUser(data: { molAdminId: string; userName: string; email: string; name: string }): User {
+	public static createAdminUser(data: {
+		molAdminId: string;
+		userName: string;
+		email: string;
+		name: string;
+		agencyUserId?: string;
+	}): User {
 		const instance = new User();
 		instance.adminUser = AdminUser.create(data);
 		return instance;

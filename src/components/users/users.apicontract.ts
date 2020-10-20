@@ -19,6 +19,7 @@ export class SingPassUserContract {
 
 export class AdminUserContract {
 	public email: string;
+	public agencyUserId: string;
 }
 
 export class AgencyUserContract {

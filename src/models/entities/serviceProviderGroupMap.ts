@@ -10,7 +10,7 @@ export class ServiceProviderGroupMap {
 		this._serviceProviderId = value;
 	}
 
-	public get organisationId() {
+	public get serviceProviderId() {
 		return this._serviceProviderId;
 	}
 

@@ -35,6 +35,7 @@ describe('BookingChangeLogs controller', () => {
 		userName: 'UserName',
 		email: 'test@email.com',
 		name: 'Name',
+		agencyUserId: 'ABC123',
 	});
 
 	const booking = new BookingBuilder()

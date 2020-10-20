@@ -8,8 +8,9 @@
 		"test": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
 		"atest": "npm run fixLF && node --expose-gc ./node_modules/jest/bin/jest --runInBand",
 		"test:cov": "npm run fixLF && node --expose-gc ./node_modules/jest/bin/jest --runInBand --collect-coverage",
-		"test:func": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-functional.sh",
-		"test:func-local": "npm run fixLF && FUNCTIONAL_TEST_BASE_URL_LOCAL='http://localhost:3999/bookingsg/api/v1' npm run test:func local",
+		"test:functional": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test.sh",
+		"test:func-local": "npm run fixLF && FUNCTIONAL_TEST_BASE_URL_LOCAL='http://localhost:3999/bookingsg/api/v1' npm run test:functional local",
+		"test:postman": "newman run https://www.getpostman.com/collections/963b838b7055ca75783d -e './__tests__/postman/BookingSG - local.postman_environment.json'",
 		"build": "npm run fixLF && ./scripts/build.sh",
 		"build:skip-migrations": "npm run fixLF && ./scripts/build.sh production skipMigrations",
 		"swagger": "./node_modules/.bin/tsoa spec",
@@ -32,7 +33,7 @@
 	"husky": {
 		"hooks": {
 			"pre-commit": "npm run lint --",
-			"pre-push": "npm run build:skip-migrations && npm run atest && npm run swagger"
+			"pre-push": "npm run build:skip-migrations && npm run test:cov && npm run swagger"
 		}
 	},
 	"lint-staged": {
@@ -99,6 +100,7 @@
 		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:~6.2.7",
 		"mol-lib-common": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-common.git#semver:~4.1.17",
 		"moment": "^2.25.3",
+		"newman": "^5.2.0",
 		"node-forge": "^0.10.0",
 		"pg": "^8.2.1",
 		"prettier": "^2.1.1",

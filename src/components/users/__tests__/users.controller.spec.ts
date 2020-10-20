@@ -90,6 +90,43 @@ describe('users controller', () => {
 		} as UserProfileResponse);
 	});
 
+	it('should get admin profile with agencyUserId', async () => {
+		const headers = {};
+		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.ADMIN;
+		headers[MOLSecurityHeaderKeys.ADMIN_ID] = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
+		headers[MOLSecurityHeaderKeys.ADMIN_USERNAME] = 'UserName';
+		headers[MOLSecurityHeaderKeys.ADMIN_EMAIL] = 'test@email.com';
+		headers[MOLSecurityHeaderKeys.ADMIN_NAME] = 'Name';
+
+		const userMock = User.createAdminUser({
+			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+			userName: 'UserName',
+			email: 'test@email.com',
+			name: 'Name',
+			agencyUserId: 'ABC123',
+		});
+		const service = new Service();
+		service.id = 1;
+		service.name = 'service1';
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(userMock, [service])]),
+		);
+
+		const controller = Container.get(UsersController);
+		(controller as any).context = {
+			headers,
+			request: { headers },
+		};
+
+		const profile = await controller.getProfile();
+		expect(profile).toEqual({
+			groups: [{ authGroupType: 'service-admin', services: [{ id: 1, name: 'service1' }] }],
+			user: { admin: { email: 'test@email.com', agencyUserId: 'ABC123' }, userType: 'admin' },
+		} as UserProfileResponse);
+	});
+
 	it('should get agency profile', async () => {
 		const headers = {};
 		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.AGENCY;

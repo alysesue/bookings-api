@@ -38,6 +38,7 @@ export class UserProfileMapper {
 			instance.userType = UserTypeContract.admin;
 			instance.admin = new AdminUserContract();
 			instance.admin.email = user.adminUser.email;
+			instance.admin.agencyUserId = user.adminUser.agencyUserId;
 		} else if (user.isAgency()) {
 			instance.userType = UserTypeContract.agency;
 			instance.agency = new AgencyUserContract();

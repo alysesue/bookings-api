@@ -10,6 +10,12 @@ After installing git-crypt, go to the root of this repository and run `git crypt
 
 > If you have cloned the `mol-credentials` repository on the same directory level, the command would be `git-crypt unlock ../mol-credentials/git-crypt/mol-nonprod-gc-key`
 
+> Bookingsg specific prod git-crypt key is found in `/mol/MOL_PROD_BOOKINGSG_GC_KEY` variable in parameter store. (it is in base 64 format - `mol-prod-bookingsg-gc-key`)
+Get the key and convert it back from base 64
+`/path/to/git-crypt-base-64-string-file | python -m base64 -d > keyfile`
+and use git-crypt unlock to unlock prod.env file.
+`git-crypt unlock path/to/prod/keyfile`
+
 ### Ensuring new parameter files are encrypted
 If you have added a new file into the `secrets` folder, please run `git-crypt status -f && git-crypt status` and ensure that all the files in the secrets folder are encrypted.
 

@@ -6,12 +6,13 @@ import { ScheduleForm } from './scheduleForm';
 import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
+import { User } from './user';
 
 const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
 
 @Entity()
 export class ServiceProvider implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
-	private constructor() {}
+	constructor() {}
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
@@ -170,7 +171,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		cascade: true,
 	})
 	@JoinColumn({ name: '_timeslotsScheduleId' })
-	public _timeslotsSchedule: TimeslotsSchedule;
+	private _timeslotsSchedule: TimeslotsSchedule;
 
 	public set timeslotsSchedule(value: TimeslotsSchedule) {
 		this._timeslotsSchedule = value;
@@ -182,4 +183,19 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 
 	@Column({ type: 'boolean', default: DEFAULT_AUTO_ACCEPT_BOOKINGS })
 	private _autoAcceptBookings: boolean;
+
+	// This is a logical relationship, no foreign key in DB.
+	private _linkedUser: User;
+
+	public get linkedUser(): User {
+		return this._linkedUser;
+	}
+
+	public set linkedUser(value: User) {
+		this._linkedUser = value;
+	}
+
+	public get agencyUserId(): string {
+		return this._linkedUser?.adminUser?.agencyUserId;
+	}
 }

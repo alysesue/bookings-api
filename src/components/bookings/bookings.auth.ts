@@ -117,6 +117,6 @@ export class BookingQueryVisitorFactory {
 		if (byPassAuth) {
 			return new BookingQueryNoAuthVisitor('booking', 'service_relation');
 		}
-		return new BookingQueryNoAuthVisitor('booking', 'service_relation');
+		return new BookingQueryAuthVisitor('booking', 'service_relation');
 	}
 }
