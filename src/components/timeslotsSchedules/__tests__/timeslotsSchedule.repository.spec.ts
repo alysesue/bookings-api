@@ -3,8 +3,16 @@ import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedule.repository';
 import { IEntityWithTimeslotsSchedule, ITimeslotsSchedule } from '../../../models/interfaces';
 import { TransactionManager } from '../../../core/transactionManager';
-import { UserContext } from "../../../infrastructure/auth/userContext";
-import { UserContextMock } from "../../bookings/__tests__/bookings.mocks";
+import { UserContext } from '../../../infrastructure/auth/userContext';
+import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
+import { TimeslotItemsAuthQueryVisitor } from '../../timeslotItems/timeslotItems.auth';
+import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
+
+jest.mock('../../timeslotItems/timeslotItems.auth');
+
+const QueryAuthVisitorMock = {
+	createUserVisibilityCondition: jest.fn<Promise<UserConditionParams>, any>(),
+};
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -17,51 +25,69 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-	jest.clearAllMocks();
+	jest.resetAllMocks();
+
+	(TimeslotItemsAuthQueryVisitor as jest.Mock).mockImplementation(() => QueryAuthVisitorMock);
+	QueryAuthVisitorMock.createUserVisibilityCondition.mockImplementation(() =>
+		Promise.resolve({ userCondition: '', userParams: {} }),
+	);
 });
 
 describe('TimeslotsSchedule repository', () => {
-	// FIXME:
-	it.skip('should get timeslotsSchedule', async () => {
-		const repository = Container.get(TimeslotsScheduleRepository);
+	it('should get timeslotsSchedule', async () => {
 		UserContextMock.getAuthGroups.mockReturnValue(Promise.resolve([]));
+		const queryBuilderMock = {
+			leftJoinAndMapMany: jest.fn(() => queryBuilderMock),
+			leftJoinAndMapOne: jest.fn(() => queryBuilderMock),
+			where: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve(timeslotsScheduleMock)),
+		};
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const repository = Container.get(TimeslotsScheduleRepository);
 		const result = await repository.getTimeslotsScheduleById(1);
-		expect(result).not.toBe(undefined);
-		expect(GetRepositoryMock).toBeCalled();
+
+		expect(result).toStrictEqual(timeslotsScheduleMock);
 	});
 
 	it('should create timeslotsSchedule', async () => {
-		const repository = Container.get(TimeslotsScheduleRepository);
+		TransactionManagerMock.save.mockReturnValue(Promise.resolve(timeslotsScheduleMock));
 		const data = new TimeslotsSchedule();
+
+		const repository = Container.get(TimeslotsScheduleRepository);
 		const result = await repository.createTimeslotsSchedule(data);
-		expect(result).not.toBe(undefined);
-		expect(GetRepositoryMock).toBeCalled();
-		expect(InnerRepositoryMock.save).toBeCalledTimes(1);
+
+		expect(TransactionManagerMock.save).toBeCalledTimes(1);
+		expect(result).toBe(timeslotsScheduleMock);
 	});
 
 	it('should return null when id is falsy', async () => {
 		const repository = Container.get(TimeslotsScheduleRepository);
+
 		expect(await repository.getTimeslotsScheduleById(null)).toBe(null);
 		expect(await repository.getTimeslotsScheduleById(undefined)).toBe(null);
 		expect(await repository.getTimeslotsScheduleById(0)).toBe(null);
 	});
 
 	it('should populate TimeslotsSchedules in entities (IEntityWithTimeslotsSchedule)', async () => {
+		TransactionManagerMock.find.mockReturnValue(Promise.resolve([timeslotsScheduleMock]));
 		const repository = Container.get(TimeslotsScheduleRepository);
 		const entity1 = new SampleEntity();
 		entity1.timeslotsScheduleId = 2;
 		const entity2 = new SampleEntity();
 
 		await repository.populateTimeslotsSchedules([entity1, entity2]);
-		expect(InnerRepositoryMock.find).toHaveBeenCalled();
+
+		expect(TransactionManagerMock.find).toHaveBeenCalled();
 		expect(entity1.timeslotsSchedule).toBeDefined();
 		expect(entity2.timeslotsSchedule).not.toBeDefined();
 	});
 
 	it('should not call DB when array is empty', async () => {
+		TransactionManagerMock.find.mockReturnValue(Promise.resolve(timeslotsScheduleMock));
 		const repository = Container.get(TimeslotsScheduleRepository);
 		await repository.getTimeslotsSchedules([]);
-		expect(InnerRepositoryMock.find).not.toHaveBeenCalled();
+		expect(TransactionManagerMock.find).not.toHaveBeenCalled();
 	});
 });
 
@@ -81,24 +107,20 @@ timeslotsScheduleMock.timeslotItems = [
 	),
 ];
 
-const InnerRepositoryMock = {
-	find: jest.fn().mockImplementation(() => {
-		return Promise.resolve([timeslotsScheduleMock]);
-	}),
-	findOne: jest.fn().mockImplementation(() => {
-		return Promise.resolve(timeslotsScheduleMock);
-	}),
-	save: jest.fn().mockImplementation(() => {
-		return Promise.resolve(timeslotsScheduleMock);
-	}),
-	createQueryBuilder: jest.fn()
-};
-
-const GetRepositoryMock = jest.fn().mockImplementation(() => InnerRepositoryMock);
 class TransactionManagerMock extends TransactionManager {
+	public static createQueryBuilder = jest.fn();
+	public static find = jest.fn();
+	public static findOne = jest.fn();
+	public static save = jest.fn();
+
 	public async getEntityManager(): Promise<any> {
 		const entityManager = {
-			getRepository: GetRepositoryMock,
+			getRepository: () => ({
+				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
+				find: TransactionManagerMock.find,
+				findOne: TransactionManagerMock.findOne,
+				save: TransactionManagerMock.save,
+			}),
 		};
 		return Promise.resolve(entityManager);
 	}

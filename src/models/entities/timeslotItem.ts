@@ -6,7 +6,7 @@ import * as timeSpan from '../../tools/timeSpan';
 
 @Entity()
 export class TimeslotItem implements ITimeSpan {
-	constructor() { }
+	constructor() {}
 
 	@PrimaryGeneratedColumn()
 	public _id: number;
@@ -36,7 +36,6 @@ export class TimeslotItem implements ITimeSpan {
 
 	@Column({ nullable: false, default: 1 })
 	public _capacity: number;
-
 
 	public static create(
 		timeslotScheduleId: number,
