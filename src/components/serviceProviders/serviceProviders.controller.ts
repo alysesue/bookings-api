@@ -34,6 +34,7 @@ import {
 import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
+import { ApiData, ApiDataFactory } from '../../apicontract';
 
 @InRequestScope
 @Route('v1/service-providers')
@@ -72,7 +73,7 @@ export class ServiceProvidersController extends Controller {
 	public async addServiceProviders(
 		@Body() spRequest: ServiceProviderListRequest,
 		@Header('x-api-service') serviceId: number,
-	) {
+	): Promise<void> {
 		await this.serviceProvidersService.saveServiceProviders(spRequest.serviceProviders, serviceId);
 	}
 
@@ -86,7 +87,10 @@ export class ServiceProvidersController extends Controller {
 	@SuccessResponse(204, 'Created')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async addServiceProvidersText(@Body() spRequest: string, @Header('x-api-service') serviceId: number) {
+	public async addServiceProvidersText(
+		@Body() spRequest: string,
+		@Header('x-api-service') serviceId: number,
+	): Promise<void> {
 		const request = ServiceProvidersController.parseCsvModelToServiceProviders(parseCsv(spRequest));
 		await this.serviceProvidersService.saveServiceProviders(request, serviceId);
 	}
@@ -105,13 +109,13 @@ export class ServiceProvidersController extends Controller {
 		@Header('x-api-service') serviceId?: number,
 		@Query() includeTimeslotsSchedule = false,
 		@Query() includeScheduleForm = false,
-	): Promise<ServiceProviderResponseModel[]> {
+	): Promise<ApiData<ServiceProviderResponseModel[]>> {
 		const dataModels = await this.serviceProvidersService.getServiceProviders(
 			serviceId,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
 		);
-		return this.mapper.mapDataModels(dataModels);
+		return ApiDataFactory.create(this.mapper.mapDataModels(dataModels));
 	}
 
 	@Get('available')
@@ -122,9 +126,9 @@ export class ServiceProvidersController extends Controller {
 		@Query() from: Date,
 		@Query() to: Date,
 		@Header('x-api-service') serviceId: number,
-	): Promise<ServiceProviderResponseModel[]> {
+	): Promise<ApiData<ServiceProviderResponseModel[]>> {
 		const dataModels = await this.serviceProvidersService.getAvailableServiceProviders(from, to, serviceId);
-		return this.mapper.mapDataModels(dataModels);
+		return ApiDataFactory.create(this.mapper.mapDataModels(dataModels));
 	}
 
 	/**
@@ -138,9 +142,9 @@ export class ServiceProvidersController extends Controller {
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
-	public async getServiceProvider(@Path() spId: number): Promise<ServiceProviderResponseModel> {
+	public async getServiceProvider(@Path() spId: number): Promise<ApiData<ServiceProviderResponseModel>> {
 		const dataModel = await this.serviceProvidersService.getServiceProvider(spId, true, true);
-		return this.mapper.mapDataModel(dataModel);
+		return ApiDataFactory.create(this.mapper.mapDataModel(dataModel));
 	}
 
 	/**
@@ -152,9 +156,9 @@ export class ServiceProvidersController extends Controller {
 	public async updateServiceProvider(
 		@Path() spId: number,
 		@Body() spRequest: ServiceProviderModel,
-	): Promise<ServiceProviderResponseModel> {
+	): Promise<ApiData<ServiceProviderResponseModel>> {
 		const result = await this.serviceProvidersService.updateSp(spRequest, spId);
-		return this.mapper.mapDataModel(result);
+		return ApiDataFactory.create(this.mapper.mapDataModel(result));
 	}
 
 	@Put('{spId}/scheduleForm')
@@ -164,16 +168,20 @@ export class ServiceProvidersController extends Controller {
 	public async setServiceScheduleForm(
 		@Path() spId: number,
 		@Body() request: SetProviderScheduleFormRequest,
-	): Promise<ScheduleFormResponse> {
-		return mapScheduleToResponse(await this.serviceProvidersService.setProviderScheduleForm(spId, request));
+	): Promise<ApiData<ScheduleFormResponse>> {
+		return ApiDataFactory.create(
+			mapScheduleToResponse(await this.serviceProvidersService.setProviderScheduleForm(spId, request)),
+		);
 	}
 
 	@Get('{spId}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async getServiceScheduleForm(@Path() spId: number): Promise<ScheduleFormResponse> {
-		return mapScheduleToResponse(await this.serviceProvidersService.getProviderScheduleForm(spId));
+	public async getServiceScheduleForm(@Path() spId: number): Promise<ApiData<ScheduleFormResponse>> {
+		return ApiDataFactory.create(
+			mapScheduleToResponse(await this.serviceProvidersService.getProviderScheduleForm(spId)),
+		);
 	}
 
 	/**
@@ -184,9 +192,11 @@ export class ServiceProvidersController extends Controller {
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async getTimeslotsScheduleByServiceProviderId(@Path() spId: number): Promise<TimeslotsScheduleResponse> {
+	public async getTimeslotsScheduleByServiceProviderId(
+		@Path() spId: number,
+	): Promise<ApiData<TimeslotsScheduleResponse>> {
 		const data = await this.serviceProvidersService.getTimeslotItems(spId);
-		return mapToTimeslotsScheduleResponse(data);
+		return ApiDataFactory.create(mapToTimeslotsScheduleResponse(data));
 	}
 
 	/**
@@ -201,10 +211,10 @@ export class ServiceProvidersController extends Controller {
 	public async createTimeslotItem(
 		@Path() spId: number,
 		@Body() request: TimeslotItemRequest,
-	): Promise<TimeslotItemResponse> {
+	): Promise<ApiData<TimeslotItemResponse>> {
 		const data = await this.serviceProvidersService.addTimeslotItem(spId, request);
 		this.setStatus(201);
-		return mapToTimeslotItemResponse(data);
+		return ApiDataFactory.create(mapToTimeslotItemResponse(data));
 	}
 
 	/**
@@ -221,9 +231,9 @@ export class ServiceProvidersController extends Controller {
 		@Path() spId: number,
 		@Path() timeslotId: number,
 		@Body() request: TimeslotItemRequest,
-	): Promise<TimeslotItemResponse> {
+	): Promise<ApiData<TimeslotItemResponse>> {
 		const data = await this.serviceProvidersService.updateTimeslotItem(spId, timeslotId, request);
-		return mapToTimeslotItemResponse(data);
+		return ApiDataFactory.create(mapToTimeslotItemResponse(data));
 	}
 
 	/**
@@ -235,7 +245,7 @@ export class ServiceProvidersController extends Controller {
 	@SuccessResponse(204, 'No Content')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async deleteTimeslotItem(@Path() spId: number, @Path() timeslotId: number) {
+	public async deleteTimeslotItem(@Path() spId: number, @Path() timeslotId: number): Promise<void> {
 		await this.serviceProvidersService.deleteTimeslotItem(spId, timeslotId);
 	}
 }

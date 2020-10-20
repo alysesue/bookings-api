@@ -16,9 +16,15 @@ export class ServiceProviderModel {
 }
 
 export class ServiceProviderResponseModel {
+	/**
+	 * @isInt
+	 */
 	public id: number;
 	public name: string;
 	public calendar: CalendarModel;
+	/**
+	 * @isInt
+	 */
 	public serviceId: number;
 	public timeslotsSchedule?: TimeslotsScheduleResponse;
 	public scheduleForm?: ScheduleFormResponse;
@@ -53,10 +59,16 @@ export class ServiceProviderListRequest {
 }
 
 export class SetProviderScheduleFormRequest {
+	/**
+	 * @isInt
+	 */
 	public scheduleFormId?: number;
 }
 
 export class ServiceProviderSummaryModel {
+	/**
+	 * @isInt
+	 */
 	public id: number;
 	public name: string;
 	public bookings?: BookingResponse[];

@@ -6,6 +6,7 @@ export class AvailabilityEntryResponse {
 	public endTime: Date;
 	/**
 	 * The remaining number of available bookings that can be made in this timeslot.
+	 * @isInt
 	 */
 	public availabilityCount: number;
 }
@@ -26,10 +27,12 @@ export class TimeslotEntryResponse {
 	public serviceProviderTimeslot: ServiceProviderTimeslotResponse[];
 	/**
 	 * The total number of the booked slot (both assigned and not assigned yet to Service Provider)
+	 * * @isInt
 	 */
 	public totalBookedSlot: number;
 	/**
 	 * Total capacity for this specific time.
+	 * @isInt
 	 */
 	public totalCapacity: number;
 
@@ -53,8 +56,4 @@ export class TimeslotEntryResponse {
 	//  * The original availability for this timeslot prior to any bookings.
 	//  */
 	// public totalCount: number;
-}
-
-class TimeslotProviders {
-	public serviceProviderTimeslot: ServiceProviderTimeslot;
 }

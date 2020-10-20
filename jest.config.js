@@ -14,6 +14,7 @@ const config = {
 		'!**/swagger.middleware.ts',
 		'!**/transactionManager.ts',
 		'!**/connectionOptions.ts',
+		'!**/server.ts'
 	],
 	coverageThreshold: {
 		global: {

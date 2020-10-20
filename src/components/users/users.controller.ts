@@ -5,6 +5,7 @@ import { Inject } from 'typescript-ioc';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { UserProfileResponse } from './users.apicontract';
 import { UserProfileMapper } from './users.mapper';
+import { ApiData, ApiDataFactory } from '../../apicontract';
 
 @Route('v1/users')
 @Tags('Users')
@@ -23,9 +24,9 @@ export class UsersController extends Controller {
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
-	public async getProfile(): Promise<UserProfileResponse> {
+	public async getProfile(): Promise<ApiData<UserProfileResponse>> {
 		const user = await this._userContext.getCurrentUser();
 		const groups = await this._userContext.getAuthGroups();
-		return UserProfileMapper.mapToResponse({ user, groups });
+		return ApiDataFactory.create(UserProfileMapper.mapToResponse({ user, groups }));
 	}
 }

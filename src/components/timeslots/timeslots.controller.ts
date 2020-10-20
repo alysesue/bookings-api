@@ -7,8 +7,9 @@ import { ServiceProvidersMapper } from '../serviceProviders/serviceProviders.map
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { ServiceProviderTimeslot } from '../../models/serviceProviderTimeslot';
-import { ServiceProviderResponseModel, ServiceProviderWithBookingsModel } from '../serviceProviders/serviceProviders.apicontract';
+import { ServiceProviderWithBookingsModel } from '../serviceProviders/serviceProviders.apicontract';
 import { BookingsMapper } from '../bookings/bookings.mapper';
+import { ApiData, ApiDataFactory } from '../../apicontract';
 
 @Route('v1/timeslots')
 @Tags('Timeslots')
@@ -41,7 +42,7 @@ export class TimeslotsController extends Controller {
 		@Query() endDate: Date,
 		@Header('x-api-service') serviceId: number,
 		@Query() serviceProviderId?: number,
-	): Promise<AvailabilityEntryResponse[]> {
+	): Promise<ApiData<AvailabilityEntryResponse[]>> {
 		let availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
@@ -50,7 +51,7 @@ export class TimeslotsController extends Controller {
 			serviceProviderId,
 		);
 		availableTimeslots = availableTimeslots.filter((e) => e.availabilityCount > 0);
-		return TimeslotsController.mapAvailabilityToResponse(availableTimeslots);
+		return ApiDataFactory.create(TimeslotsController.mapAvailabilityToResponse(availableTimeslots));
 	}
 
 	/**
@@ -73,7 +74,7 @@ export class TimeslotsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 		@Query() includeBookings: boolean = false,
 		@Query() serviceProviderId?: number,
-	): Promise<TimeslotEntryResponse[]> {
+	): Promise<ApiData<TimeslotEntryResponse[]>> {
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
@@ -81,7 +82,7 @@ export class TimeslotsController extends Controller {
 			includeBookings,
 			serviceProviderId,
 		);
-		return timeslots?.map((t) => this.mapTimeslotEntry(t));
+		return ApiDataFactory.create(timeslots?.map((t) => this.mapTimeslotEntry(t)));
 	}
 
 	private static mapAvailabilityToResponse(entries: AvailableTimeslotProviders[]): AvailabilityEntryResponse[] {

@@ -41,16 +41,25 @@ export class AuthGroupResponse {
 }
 
 export class OrganisationAdminGroupContract {
+	/**
+	 * @isInt
+	 */
 	public id: number;
 	public name: string;
 }
 
 export class ServiceAdminGroupContract {
+	/**
+	 * @isInt
+	 */
 	public id: number;
 	public name: string;
 }
 
 export class ServiceProviderContract {
+	/**
+	 * @isInt
+	 */
 	public id: number;
 	public name: string;
 }

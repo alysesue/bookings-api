@@ -3,6 +3,7 @@ import { ScheduleFormRequest, ScheduleFormResponse } from './scheduleForms.apico
 import { Inject } from 'typescript-ioc';
 import { ScheduleFormsService } from './scheduleForms.service';
 import { MOLAuth } from 'mol-lib-common';
+import { ApiData, ApiDataFactory } from '../../apicontract';
 
 @Route('v1/scheduleForms')
 @Tags('ScheduleForms')
@@ -14,16 +15,16 @@ export class ScheduleFormsController extends Controller {
 	@SuccessResponse(201, 'Created')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async createScheduleForm(@Body() timeslot: ScheduleFormRequest): Promise<ScheduleFormResponse> {
+	public async createScheduleForm(@Body() timeslot: ScheduleFormRequest): Promise<ApiData<ScheduleFormResponse>> {
 		this.setStatus(201);
-		return await this.scheduleFormService.createScheduleForm(timeslot);
+		return ApiDataFactory.create(await this.scheduleFormService.createScheduleForm(timeslot));
 	}
 
 	@Get('')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async getScheduleForms(): Promise<ScheduleFormResponse[]> {
-		return await this.scheduleFormService.getScheduleForms();
+	public async getScheduleForms(): Promise<ApiData<ScheduleFormResponse[]>> {
+		return ApiDataFactory.create(await this.scheduleFormService.getScheduleForms());
 	}
 
 	@Put('{id}')
@@ -33,15 +34,15 @@ export class ScheduleFormsController extends Controller {
 	public async updateScheduleForm(
 		@Path() id: number,
 		@Body() timeslot: ScheduleFormRequest,
-	): Promise<ScheduleFormResponse> {
-		return await this.scheduleFormService.updateScheduleForm(id, timeslot);
+	): Promise<ApiData<ScheduleFormResponse>> {
+		return ApiDataFactory.create(await this.scheduleFormService.updateScheduleForm(id, timeslot));
 	}
 
 	@Delete('{id}')
-	@SuccessResponse(200, 'Deleted')
+	@SuccessResponse(204, 'Deleted')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async deleteScheduleForm(@Path() id: number): Promise<any> {
-		return await this.scheduleFormService.deleteScheduleForm(id);
+	public async deleteScheduleForm(@Path() id: number): Promise<void> {
+		await this.scheduleFormService.deleteScheduleForm(id);
 	}
 }

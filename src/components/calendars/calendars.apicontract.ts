@@ -24,6 +24,9 @@ export class ServiceProviderResponse {
 }
 
 export class CalendarScheduleResponse {
+	/**
+	 * @isInt
+	 */
 	public id: number;
 
 	constructor(template: ScheduleForm) {

@@ -1,12 +1,18 @@
 import { BookingStatus, ServiceProvider } from '../../models';
 
 export class BookingAcceptRequest {
+	/**
+	 * @isInt
+	 */
 	public serviceProviderId: number;
 }
 
 export class BookingRequest {
 	public startDateTime: Date;
 	public endDateTime: Date;
+	/**
+	 * @isInt
+	 */
 	public serviceProviderId?: number;
 	/**
 	 * @ignore
@@ -31,12 +37,24 @@ export interface RescheduleBookingRequest extends BookingRequest {
 }
 
 export type BookingResponse = {
+	/**
+	 * @isInt
+	 */
 	id: number;
+	/**
+	 * @isInt
+	 */
 	status: number;
 	startDateTime: Date;
 	endDateTime: Date;
+	/**
+	 * @isInt
+	 */
 	serviceId: number;
 	serviceName: string;
+	/**
+	 * @isInt
+	 */
 	serviceProviderId?: number;
 	serviceProviderName?: string;
 	serviceProviderEmail?: string;
@@ -54,7 +72,13 @@ export class BookingSearchRequest {
 	public from: Date;
 	public to: Date;
 	public statuses?: BookingStatus[];
+	/**
+	 * @isInt
+	 */
 	public serviceId?: number;
+	/**
+	 * @isInt
+	 */
 	public serviceProviderId?: number;
 	public citizenUinFins?: string[];
 
@@ -76,6 +100,9 @@ export class BookingSearchRequest {
 }
 
 export class BookingProviderResponse {
+	/**
+	 * @isInt
+	 */
 	public id: number;
 	public name: string;
 }

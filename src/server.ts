@@ -20,6 +20,28 @@ import * as cors from '@koa/cors';
 import { useSwagger } from './infrastructure/swagger.middleware';
 import { ContainerContextMiddleware } from './infrastructure/containerContext.middleware';
 import { UserContextMiddleware } from './infrastructure/userContext.middleware';
+import { ApiData } from './apicontract';
+
+class ApiDataResponseHandler {
+	private _middleware: Koa.Middleware;
+	constructor(middleware: Koa.Middleware) {
+		this._middleware = middleware;
+	}
+
+	public build(): Koa.Middleware {
+		const emptyNext: Koa.Next = () => Promise.resolve();
+		const emptyMiddleware: Koa.Middleware = () => {};
+		const koaResponseMiddleware = new KoaResponseHandler(emptyMiddleware).build();
+
+		return async (ctx: Koa.Context, next: Koa.Next): Promise<any> => {
+			await this._middleware(ctx, next);
+
+			if (!(ctx.body instanceof ApiData)) {
+				await koaResponseMiddleware(ctx, emptyNext);
+			}
+		};
+	}
+}
 
 export async function startServer(): Promise<Server> {
 	const config = getConfig();
@@ -30,7 +52,7 @@ export async function startServer(): Promise<Server> {
 	const router: KoaRouter = new KoaRouter({ prefix: `${basePath}/api` });
 	RegisterRoutes(router);
 	// @ts-ignore
-	const HandledRoutes = new KoaResponseHandler(router.routes());
+	const HandledRoutes = new ApiDataResponseHandler(router.routes());
 	const proxyHandler = Container.get(CalDavProxyHandler);
 
 	const koaServer = new Koa()
