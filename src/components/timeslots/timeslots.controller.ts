@@ -100,8 +100,7 @@ export class TimeslotsController extends Controller {
 		response.endTime = entry.endTime;
 		response.timeslotAvailability = Array.from(entry.serviceProviderTimeslots.values());
 
-		//		response.timeslotAvailability = entry.
-
+		// 		response.timeslotAvailability = entry.
 
 		// response.availabilityCount = entry.availabilityCount;
 		// response.pendingBookingsCount = entry.unlinkedPendingBookingsCount;

@@ -19,6 +19,7 @@ import {
 	UnavailabilitiesServiceMock,
 	UserContextMock,
 } from '../../__tests__/bookings.mocks';
+import { TimeslotWithCapacity } from '../../../../models/timeslotWithCapacity';
 
 // tslint:disable-next-line:no-big-function
 describe('Booking validation tests', () => {
@@ -97,14 +98,14 @@ describe('Booking validation tests', () => {
 	});
 
 	it('should validate end date time', async () => {
-		const start = new Date();
 		const booking = new BookingBuilder()
-			.withStartDateTime(start)
-			.withEndDateTime(DateHelper.addMinutes(start, -30))
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.build();
 
 		BookingRepositoryMock.searchBookingsMock = [];
-		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+		const timeslotWithCapacity = new TimeslotWithCapacity(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		await expect(
@@ -113,13 +114,13 @@ describe('Booking validation tests', () => {
 	});
 
 	it('should throw on validation error', async () => {
-		const start = new Date();
 		const booking = new BookingBuilder()
-			.withStartDateTime(start)
-			.withEndDateTime(DateHelper.addMinutes(start, 30))
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.build();
 
-		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+		const timeslotWithCapacity = new TimeslotWithCapacity(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		const asyncTest = async () =>
@@ -143,7 +144,7 @@ describe('Booking validation tests', () => {
 				.withEndDateTime(new Date('2020-10-01T02:00:00'))
 				.build(),
 		];
-		TimeslotsServiceMock.availableProvidersForTimeslot = [];
+		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		await expect(
@@ -172,7 +173,7 @@ describe('Booking validation tests', () => {
 				.withEndDateTime(new Date('2020-10-01T02:00:00'))
 				.build(),
 		];
-		TimeslotsServiceMock.availableProvidersForTimeslot = [];
+		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
@@ -186,15 +187,16 @@ describe('Booking validation tests', () => {
 	});
 
 	it('should validate no citizenUinFin', async () => {
-		const start = new Date();
 		const booking = new BookingBuilder()
-			.withStartDateTime(start)
-			.withEndDateTime(DateHelper.addMinutes(start, 45))
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.withServiceProviderId(5)
 			.build();
 
 		BookingRepositoryMock.searchBookingsMock = [];
-		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
+		const timeslotWithCapacity = new TimeslotWithCapacity(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
+
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(null));
 
 		await expect(
@@ -219,7 +221,8 @@ describe('Booking validation tests', () => {
 				.withEndDateTime(new Date('2020-10-01T02:00:00'))
 				.build(),
 		];
-		TimeslotsServiceMock.availableProvidersForTimeslot = [];
+		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
+
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		await expect(

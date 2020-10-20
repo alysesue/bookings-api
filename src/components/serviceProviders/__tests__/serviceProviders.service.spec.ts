@@ -26,6 +26,8 @@ import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotPro
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
 import { ServiceAdminAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
+import { ServiceProviderTimeslot } from '../../../models/serviceProviderTimeslot';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -282,19 +284,20 @@ describe('ServiceProviders.Service', () => {
 	});
 
 	it('should return only available service providers', async () => {
-		const timeslot: AvailableTimeslotProviders = {} as AvailableTimeslotProviders;
+		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
+			const entry = new AvailableTimeslotProviders();
+			entry.startTime = new Date(2020, 8, 26, 8, 0);
+			entry.endTime = new Date(2020, 8, 26, 8, 30);
 
-		timeslot.availableServiceProviders = [
-			({
-				_id: 1,
-				_name: 'Test',
-			} as unknown) as ServiceProvider,
-			({
-				_id: 2,
-				_name: 'Test2',
-			} as unknown) as ServiceProvider,
-		];
-		TimeslotsServiceMock.timeslotProviders = [timeslot];
+			const serviceProvider1 = ServiceProvider.create('Juku', 1);
+			const serviceProvider2 = ServiceProvider.create('Andi', 1);
+			const sptimeslot1 = new ServiceProviderTimeslot(serviceProvider1, 1);
+			const sptimeslot2 = new ServiceProviderTimeslot(serviceProvider2, 1);
+			entry.serviceProviderTimeslots.set(1, sptimeslot1);
+			entry.serviceProviderTimeslots.set(2, sptimeslot2);
+
+			return Promise.resolve([entry]);
+		});
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		const availableServiceProviders = await serviceProvidersService.getAvailableServiceProviders(
@@ -345,16 +348,10 @@ class SchedulesServiceMock extends ScheduleFormsService {
 }
 
 class TimeslotsServiceMock extends TimeslotsService {
-	public static timeslotProviders: AvailableTimeslotProviders[];
+	public static getAggregatedTimeslots = jest.fn();
 
-	public async getAggregatedTimeslots(
-		startDateTime: Date,
-		endDateTime: Date,
-		serviceId: number,
-		includeBookings: boolean = false,
-		serviceProviderId?: number,
-	): Promise<AvailableTimeslotProviders[]> {
-		return Promise.resolve(TimeslotsServiceMock.timeslotProviders);
+	public async getAggregatedTimeslots(...params): Promise<AvailableTimeslotProviders[]> {
+		return Promise.resolve(TimeslotsServiceMock.getAggregatedTimeslots(...params));
 	}
 }
 

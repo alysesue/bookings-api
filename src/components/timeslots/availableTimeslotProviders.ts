@@ -119,5 +119,4 @@ export class AvailableTimeslotProviders {
 			if (spTimeslotItem) spTimeslotItem.pendingBookings = pendingBookings;
 		}
 	}
-
 }

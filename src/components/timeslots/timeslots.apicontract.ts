@@ -14,9 +14,18 @@ export class TimeslotEntryResponse {
 	public startTime: Date;
 	public endTime: Date;
 	/**
-	 * .Availability of a single timeslot.
+	 * The detail of service Providers information at this specific time
 	 */
-	public timeslotAvailability: ServiceProviderTimeslot[];
+	public serviceProviderTimeslot: ServiceProviderTimeslot[];
+	/**
+	 * The total number of the booked slot (both assigned and not assigned yet to Service Provider)
+	 */
+	public bookedSlot: number;
+	/**
+	 * Total capacity for this specific time.
+	 */
+	public capacity: number;
+
 	// /**
 	//  * A list of booked service providers (accepted) in this timeslot.
 	//  */
@@ -37,4 +46,8 @@ export class TimeslotEntryResponse {
 	//  * The original availability for this timeslot prior to any bookings.
 	//  */
 	// public totalCount: number;
+}
+
+class TimeslotProviders {
+	public serviceProviderTimeslot: ServiceProviderTimeslot;
 }

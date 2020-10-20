@@ -51,7 +51,10 @@ describe('Booking Integration tests', () => {
 		const provider = ServiceProvider.create('Provider', 2);
 		provider.id = 11;
 		provider.calendar = calendar;
-		const timeslotWithCapacity = new TimeslotWithCapacity(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const timeslotWithCapacity = new TimeslotWithCapacity(
+			new Date('2020-10-01T01:00:00'),
+			new Date('2020-10-01T02:00:00'),
+		);
 
 		const adminMock = User.createAdminUser({
 			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
@@ -71,7 +74,7 @@ describe('Booking Integration tests', () => {
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = provider;
 		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
-
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(provider, timeslotWithCapacity);
 		const bookingMock = new BookingBuilder()
 			.withServiceId(2)
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
@@ -174,7 +177,7 @@ class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
-	public init() { }
+	public init() {}
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(...params);
 	}
@@ -195,7 +198,7 @@ class BookingChangeLogsServiceMock extends BookingChangeLogsService {
 class ServicesServiceMock extends ServicesService {
 	public static getService = jest.fn();
 
-	public init() { }
+	public init() {}
 	public async getService(...params): Promise<any> {
 		return await ServicesServiceMock.getService(params);
 	}
