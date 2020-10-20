@@ -2,20 +2,36 @@ import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { DeleteResult } from 'typeorm';
 import { ScheduleFormsRepository } from './scheduleForms.repository';
-import { ScheduleForm } from '../../models';
+import { ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { ScheduleFormRequest, ScheduleFormResponse } from './scheduleForms.apicontract';
 import { mapToEntity, mapToResponse } from './scheduleForms.mapper';
 import { getErrorResult, isErrorResult } from '../../errors';
+import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
+import { intersects } from '../../tools/timeSpan';
 
 @InRequestScope
 export class ScheduleFormsService {
 	@Inject
 	private scheduleFormsRepository: ScheduleFormsRepository;
 
+	@Inject
+	private serviceProvidersRepository: ServiceProvidersRepository;
+
 	public async createScheduleForm(template: ScheduleFormRequest): Promise<ScheduleFormResponse> {
 		const newSchedule = this.mapToEntityAndValidate(template, new ScheduleForm());
+		await this.generateTimeslots(template.serviceProviderId, newSchedule);
 		const templateSet = await this.scheduleFormsRepository.saveScheduleForm(newSchedule);
 		return mapToResponse(templateSet);
+	}
+
+	private async generateTimeslots(serviceProviderId: number, scheduleForm: ScheduleForm) {
+		const serviceProvider = await this.serviceProvidersRepository.getServiceProvider({ id: serviceProviderId });
+		serviceProvider.timeslotsSchedule = TimeslotsSchedule.create(undefined, serviceProvider);
+		serviceProvider.timeslotsSchedule.timeslotItems = TimeslotItem.generateTimeslotsItems(
+			scheduleForm,
+			serviceProvider.timeslotsScheduleId,
+		);
+		await this.serviceProvidersRepository.save(serviceProvider);
 	}
 
 	public async updateScheduleForm(id: number, template: ScheduleFormRequest): Promise<ScheduleFormResponse> {

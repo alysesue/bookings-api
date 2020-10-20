@@ -3,6 +3,7 @@ export class ScheduleFormRequest {
 	 * @maxLength 100
 	 */
 	public name: string;
+	public serviceProviderId?: number;
 
 	/**
 	 * @isInt
