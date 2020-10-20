@@ -43,6 +43,7 @@ export class TimeslotItemRequest {
 	public endTime: string;
 	/**
 	 * The number of capacity for this timeslot
+	 * @isInt
 	 */
 	public capacity: number = 1;
 }

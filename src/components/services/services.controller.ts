@@ -57,7 +57,7 @@ export class ServicesController extends Controller {
 
 	/**
 	 * Update a single service.
-	 * @param serviceId The service id.
+	 * @param @isInt serviceId The service id.
 	 * @param serviceRequest
 	 */
 	@Put('{serviceId}')
@@ -114,7 +114,7 @@ export class ServicesController extends Controller {
 
 	/**
 	 * Retrieves a single service.
-	 * @param serviceId The service id.
+	 * @param @isInt serviceId The service id.
 	 */
 	@Get('{serviceId}')
 	@SuccessResponse(200, 'Ok')
@@ -131,7 +131,7 @@ export class ServicesController extends Controller {
 
 	/**
 	 * Retrieves all weekly recurring timeslots for a service.
-	 * @param serviceId The service id.
+	 * @param @isInt serviceId The service id.
 	 */
 	@Get('{serviceId}/timeslotSchedule')
 	@SuccessResponse(200, 'Ok')
@@ -144,7 +144,7 @@ export class ServicesController extends Controller {
 
 	/**
 	 * Creates a new weekly recurring timeslot for a service.
-	 * @param serviceId The service id.
+	 * @param @isInt serviceId The service id.
 	 * @param request
 	 */
 	@Post('{serviceId}/timeslotSchedule/timeslots')
@@ -162,8 +162,8 @@ export class ServicesController extends Controller {
 
 	/**
 	 * Updates a weekly recurring timeslot. Existing bookings are not affected.
-	 * @param serviceId The service id.
-	 * @param timeslotId The weekly timeslot id.
+	 * @param @isInt serviceId The service id.
+	 * @param @isInt timeslotId The weekly timeslot id.
 	 * @param request
 	 */
 	@Put('{serviceId}/timeslotSchedule/timeslots/{timeslotId}')
@@ -181,8 +181,8 @@ export class ServicesController extends Controller {
 
 	/**
 	 * Deletes a weekly recurring timeslot. Existing bookings are not affected.
-	 * @param serviceId The service id.
-	 * @param timeslotId The weekly timeslot id.
+	 * @param @isInt serviceId The service id.
+	 * @param @isInt timeslotId The weekly timeslot id.
 	 */
 	@Delete('{serviceId}/timeslotSchedule/timeslots/{timeslotId}')
 	@SuccessResponse(204, 'Deleted')

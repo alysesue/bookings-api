@@ -17,8 +17,8 @@ export class BookingChangeLogsController extends Controller {
 	 * Retrieves all booking logs in the specified datetime range [changedSince, changedUntil).
 	 * @param changedSince The lower bound datetime limit (inclusive) for logs' timestamp.
 	 * @param changedUntil The upper bound datetime limit (exclusive) for logs' timestamp.
-	 * @param bookingIds (Optional) filters by a list of booking ids.
-	 * @param serviceId (Optional) filters by a service (id).
+	 * @param @isInt bookingIds (Optional) filters by a list of booking ids.
+	 * @param @isInt serviceId (Optional) filters by a service (id).
 	 */
 	@Get('')
 	@SuccessResponse(200, 'Ok')

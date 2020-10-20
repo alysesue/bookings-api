@@ -43,7 +43,7 @@ export class BookingsController extends Controller {
 	 * If serviceProviderId is specified, the booking status will be Accepted (2),
 	 * otherwise the status will be Pending (1) and will require approval by an admin.
 	 * @param bookingRequest
-	 * @param serviceId The service (id) to be booked.
+	 * @param @isInt serviceId The service (id) to be booked.
 	 */
 	@Post()
 	@SuccessResponse(201, 'Created')
@@ -65,7 +65,7 @@ export class BookingsController extends Controller {
 	 * If serviceProviderId is specified, the booking status will be Accepted (2),
 	 * otherwise the status will be Pending (1) and will require approval by an admin.
 	 * @param bookingRequest
-	 * @param serviceId The service (id) to be booked.
+	 * @param @isInt serviceId The service (id) to be booked.
 	 */
 	@Post('admin')
 	@SuccessResponse(201, 'Created')
@@ -84,7 +84,7 @@ export class BookingsController extends Controller {
 
 	/**
 	 * Approves a booking and allocates a service provider to it. The booking must have Pending (1) status and the service provider (serviceProviderId) must be available for this booking timeslot otherwise the request will fail.
-	 * @param bookingId The booking id.
+	 * @param @isInt bookingId The booking id.
 	 * @param rescheduleRequest A new booking request for reschedule
 	 */
 	@Post('{bookingId}/reschedule')
@@ -101,7 +101,7 @@ export class BookingsController extends Controller {
 
 	/**
 	 * Approves a booking and allocates a service provider to it. The booking must have Pending (1) status and the service provider (serviceProviderId) must be available for this booking timeslot otherwise the request will fail.
-	 * @param bookingId The booking id.
+	 * @param @isInt bookingId The booking id.
 	 * @param acceptRequest
 	 */
 	@Post('{bookingId}/accept')
@@ -114,7 +114,7 @@ export class BookingsController extends Controller {
 
 	/**
 	 * Cancels a booking. Only future bookings that have Pending (1) or Accepted (2) status can be cancelled.
-	 * @param bookingId The booking id.
+	 * @param @isInt bookingId The booking id.
 	 */
 	@Post('{bookingId}/cancel')
 	@SuccessResponse(204, 'Cancelled')
@@ -131,9 +131,9 @@ export class BookingsController extends Controller {
 	/**
 	 * Updates an existing booking.
 	 * It will delete the exisitng booking and re-create a new booking based on request data.
-	 * @param bookingId The booking id.
+	 * @param @isInt bookingId The booking id.
 	 * @param bookingRequest
-	 * @param serviceId The service (id) to be booked.
+	 * @param @isInt serviceId The service (id) to be booked.
 	 */
 	@Put('{bookingId}')
 	@SuccessResponse(201, 'Updated')
@@ -154,9 +154,9 @@ export class BookingsController extends Controller {
 	 * Retrieves all bookings that intercept the datetime range provided [from, to].
 	 * @param from The lower bound datetime limit (inclusive) for booking's end time.
 	 * @param to  The upper bound datetime limit (inclusive) for booking's start time.
-	 * @param status (Optional) filters by a list of status: Pending (1), Accepted (2), Cancelled (3).
+	 * @param @isInt status (Optional) filters by a list of status: Pending (1), Accepted (2), Cancelled (3).
 	 * @param citizenUinFins (Optional) filters by a list of citizen ids
-	 * @param serviceId (Optional) filters by a service (id).
+	 * @param @isInt serviceId (Optional) filters by a service (id).
 	 */
 	@Get('')
 	@SuccessResponse(200, 'Ok')
@@ -181,7 +181,7 @@ export class BookingsController extends Controller {
 
 	/**
 	 * Retrieves a single booking.
-	 * @param bookingId The booking id.
+	 * @param @isInt bookingId The booking id.
 	 */
 	@Get('{bookingId}')
 	@SuccessResponse(200, 'Ok')
@@ -198,7 +198,7 @@ export class BookingsController extends Controller {
 
 	/**
 	 * Retrieves a list of available service providers for this booking timeslot.
-	 * @param bookingId The booking id.
+	 * @param @isInt bookingId The booking id.
 	 */
 	@Get('{bookingId}/providers')
 	@SuccessResponse(200, 'Ok')
@@ -221,7 +221,7 @@ export class BookingsController extends Controller {
 
 	/**
 	 * Reject a booking request. Only Pending (1) bookings that can be rejected.
-	 * @param bookingId The booking id.
+	 * @param @isInt bookingId The booking id.
 	 */
 	@Post('{bookingId}/reject')
 	@SuccessResponse(200, 'Rejected')
