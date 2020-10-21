@@ -1,6 +1,10 @@
 import { Inject } from 'typescript-ioc';
 import { Controller, Get, Header, Query, Response, Route, Security, Tags } from 'tsoa';
-import { AvailabilityEntryResponse, TimeslotEntryResponse, ServiceProviderTimeslotResponse } from './timeslots.apicontract';
+import {
+	AvailabilityEntryResponse,
+	ServiceProviderTimeslotResponse,
+	TimeslotEntryResponse,
+} from './timeslots.apicontract';
 import { TimeslotsService } from './timeslots.service';
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import { ServiceProvidersMapper } from '../serviceProviders/serviceProviders.mapper';
@@ -98,7 +102,9 @@ export class TimeslotsController extends Controller {
 	}
 
 	private mapTimeslotEntry(entry: AvailableTimeslotProviders): TimeslotEntryResponse {
-		const [timeslots, totalCapacity, totalBooked] = this.mapServiceProviderTimeslot(Array.from(entry.serviceProviderTimeslots.values()));
+		const [timeslots, totalCapacity, totalBooked] = this.mapServiceProviderTimeslot(
+			Array.from(entry.serviceProviderTimeslots.values()),
+		);
 		const response = new TimeslotEntryResponse();
 		response.startTime = entry.startTime;
 		response.endTime = entry.endTime;
@@ -108,10 +114,12 @@ export class TimeslotsController extends Controller {
 		return response;
 	}
 
-	private mapServiceProviderTimeslot(entry: ServiceProviderTimeslot[]): [ServiceProviderTimeslotResponse[], number, number] {
+	private mapServiceProviderTimeslot(
+		entry: ServiceProviderTimeslot[],
+	): [ServiceProviderTimeslotResponse[], number, number] {
 		let totalCapacity = 0;
 		let totalBooked = 0;
-		const res = entry.map(i => {
+		const res = entry.map((i) => {
 			const item = new ServiceProviderTimeslotResponse();
 			item.isValid = i.isValid;
 			item.capacity = i.capacity;
@@ -120,9 +128,9 @@ export class TimeslotsController extends Controller {
 				i.serviceProvider.name,
 				i.acceptedBookings.map(BookingsMapper.mapDataModel),
 				i.pendingBookings.map(BookingsMapper.mapDataModel),
-			)
+			);
 			item.booked = i.acceptedBookings.length + i.pendingBookings.length;
-			totalCapacity += i.capacity;
+			totalCapacity += item.capacity;
 			totalBooked += item.booked;
 			return item;
 		});

@@ -79,10 +79,10 @@ export class AvailableTimeslotProviders {
 	public setBookedServiceProviders(bookings: Booking[]) {
 		const bookedProviderIds = groupByKey(bookings, (b) => b.serviceProviderId);
 		for (const item of bookedProviderIds) {
-			const [spId, bookings] = item;
+			const [spId, spBookings] = item;
 			const spTimeslotItem = this._serviceProviderTimeslots.get(spId);
 			if (spTimeslotItem) {
-				spTimeslotItem.acceptedBookings = bookings;
+				spTimeslotItem.acceptedBookings = spBookings;
 			}
 		}
 	}

@@ -10,7 +10,7 @@ export class ServiceProviderTimeslot {
 	private _isValid: boolean;
 
 	public get capacity(): number {
-		return this.capacity;
+		return this._capacity;
 	}
 	public get serviceProvider(): ServiceProvider {
 		return this._serviceProvider;

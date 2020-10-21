@@ -217,9 +217,11 @@ export class BookingsController extends Controller {
 			booking.serviceId,
 		);
 
-		return ApiDataFactory.create(Array.from(timeslotEntry.serviceProviderTimeslots.values())
-			.map((i) => i.serviceProvider)
-			.map(BookingsMapper.mapProvider) || []);
+		return ApiDataFactory.create(
+			Array.from(timeslotEntry.serviceProviderTimeslots.values())
+				.map((i) => i.serviceProvider)
+				.map(BookingsMapper.mapProvider) || [],
+		);
 	}
 
 	/**

@@ -151,7 +151,6 @@ describe('Timeslots Service', () => {
 		);
 	});
 
-
 	it('should aggregate results', async () => {
 		const service = Container.get(TimeslotsService);
 		const result = await service.getAggregatedTimeslots(date, endDate, 1);
@@ -194,7 +193,7 @@ describe('Timeslots Service', () => {
 		const testBooking1 = getOutOfSlotBooking(serviceProvider1);
 		const testBooking2 = getOutOfSlotBooking(serviceProvider2);
 
-		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([]))
+		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([]));
 		BookingsRepositoryMock.search.mockImplementation(() => Promise.resolve([testBooking1, testBooking2]));
 
 		const res = await service.getAggregatedTimeslots(date, endDate, 1, true);
@@ -268,8 +267,6 @@ describe('Timeslots Service', () => {
 		expect(timeslots.length).toBe(1);
 		expect(setBookedServiceProviders).toHaveBeenCalled();
 	});
-
-
 });
 
 const getOutOfSlotBooking = (serviceProvider: ServiceProvider): Booking => {

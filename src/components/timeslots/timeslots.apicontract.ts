@@ -1,4 +1,7 @@
-import { ServiceProviderResponseModel, ServiceProviderWithBookingsModel } from '../serviceProviders/serviceProviders.apicontract';
+import {
+	ServiceProviderResponseModel,
+	ServiceProviderWithBookingsModel,
+} from '../serviceProviders/serviceProviders.apicontract';
 import { ServiceProviderTimeslot } from '../../models/serviceProviderTimeslot';
 
 export class AvailabilityEntryResponse {
