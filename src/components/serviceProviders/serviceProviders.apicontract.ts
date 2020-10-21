@@ -82,13 +82,9 @@ export class ServiceProviderSummaryModel {
 export class ServiceProviderWithBookingsModel {
 	public id: number;
 	public name: string;
-	public acceptedBookings?: BookingResponse[];
-	public pendingBookings?: BookingResponse[];
 
-	constructor(id: number, name: string, acceptedBookings?: BookingResponse[], pendingBookings?: BookingResponse[]) {
+	constructor(id: number, name: string) {
 		this.id = id;
 		this.name = name;
-		this.acceptedBookings = acceptedBookings;
-		this.pendingBookings = pendingBookings;
 	}
 }

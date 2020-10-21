@@ -109,7 +109,7 @@ export class TimeslotsController extends Controller {
 		response.startTime = entry.startTime;
 		response.endTime = entry.endTime;
 		response.serviceProviderTimeslot = timeslots;
-		response.totalBookedSlot = totalBooked;
+		response.totalBookingCount = totalBooked;
 		response.totalCapacity = totalCapacity;
 		return response;
 	}
@@ -121,17 +121,16 @@ export class TimeslotsController extends Controller {
 		let totalBooked = 0;
 		const res = entry.map((i) => {
 			const item = new ServiceProviderTimeslotResponse();
-			item.isValid = i.isValid;
 			item.capacity = i.capacity;
 			item.serviceProvider = new ServiceProviderWithBookingsModel(
 				i.serviceProvider.id,
-				i.serviceProvider.name,
-				i.acceptedBookings.map(BookingsMapper.mapDataModel),
-				i.pendingBookings.map(BookingsMapper.mapDataModel),
+				i.serviceProvider.name
 			);
-			item.booked = i.acceptedBookings.length + i.pendingBookings.length;
+			item.bookingCount = i.acceptedBookings.length + i.pendingBookings.length;
+			item.acceptedBookings = i.acceptedBookings.map(BookingsMapper.mapDataModel);
+			item.pendingBookings = i.pendingBookings.map(BookingsMapper.mapDataModel);
 			totalCapacity += item.capacity;
-			totalBooked += item.booked;
+			totalBooked += item.bookingCount;
 			return item;
 		});
 

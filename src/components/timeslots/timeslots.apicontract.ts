@@ -1,11 +1,16 @@
 import {
-	ServiceProviderResponseModel,
 	ServiceProviderWithBookingsModel,
 } from '../serviceProviders/serviceProviders.apicontract';
-import { ServiceProviderTimeslot } from '../../models/serviceProviderTimeslot';
+import { BookingResponse } from '../bookings/bookings.apicontract';
 
 export class AvailabilityEntryResponse {
+	/**
+	 * Start time of this timeslot
+	 */
 	public startTime: Date;
+	/**
+	 * End time of this timeslot
+	 */
 	public endTime: Date;
 	/**
 	 * The remaining number of available bookings that can be made in this timeslot.
@@ -15,14 +20,38 @@ export class AvailabilityEntryResponse {
 }
 
 export class ServiceProviderTimeslotResponse {
-	public isValid: boolean;
+	/**
+	 * The number of capacity for this specific time.
+	 * @isInt
+	 */
 	public capacity: number;
-	public booked: number;
+	/**
+	 * The number of bookings in this timeslot.
+	 * @isInt
+	 */
+	public bookingCount: number;
+	/**
+	 * The detail of the service provider
+	 */
 	public serviceProvider: ServiceProviderWithBookingsModel;
+	/**
+	 * The bookings that has been accepted by this service provider
+	 */
+	public acceptedBookings?: BookingResponse[];
+	/**
+	 * The pending bookings that has been assigned to this service provider
+	 */
+	public pendingBookings?: BookingResponse[];
 }
 
 export class TimeslotEntryResponse {
+	/**
+	 * Start time of this timeslot
+	 */
 	public startTime: Date;
+	/**
+	 * End time of this timeslot
+	 */
 	public endTime: Date;
 	/**
 	 * The detail of service Providers information at this specific time
@@ -30,33 +59,14 @@ export class TimeslotEntryResponse {
 	public serviceProviderTimeslot: ServiceProviderTimeslotResponse[];
 	/**
 	 * The total number of the booked slot (both assigned and not assigned yet to Service Provider)
-	 * * @isInt
+	 * @isInt
 	 */
-	public totalBookedSlot: number;
+	public totalBookingCount: number;
 	/**
 	 * Total capacity for this specific time.
 	 * @isInt
 	 */
 	public totalCapacity: number;
 
-	// /**
-	//  * A list of booked service providers (accepted) in this timeslot.
-	//  */
-	// public bookedServiceProviders: ServiceProviderSummaryModel[];
-	// /**
-	//  * A list of available service providers for this timeslot.
-	//  */
-	// public availableServiceProviders: ServiceProviderSummaryModel[];
-	// /**
-	//  * The number of pending bookings in this timeslot.
-	//  */
-	// public pendingBookingsCount: number;
-	// /**
-	//  * The remaining number of available bookings that can be made in this timeslot. This value may be less than the count of available service providers due to pending bookings.
-	//  */
-	// public availabilityCount: number;
-	// /**
-	//  * The original availability for this timeslot prior to any bookings.
-	//  */
-	// public totalCount: number;
+
 }
