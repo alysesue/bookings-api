@@ -1,13 +1,20 @@
 import { Booking, ServiceProvider } from '.';
 
-export class ServiceProviderTimeslot {
+export type TimeslotServiceProviderResult {
+	serviceProvider: ServiceProvider;
+	capacity: number;
+	acceptedBookings: Booking[];
+	pendingBookings: Booking[];
+	availabilityCount: number;
+}
+
+export class TimeslotServiceProvider {
 	private readonly _serviceProvider: ServiceProvider;
 	private _acceptedBookings: Booking[];
 	private _pendingBookings: Booking[];
 	private readonly _capacity: number;
 	private _isOverlapped: boolean;
 	private _isUnavailable: boolean;
-	private _isValid: boolean;
 
 	public get capacity(): number {
 		return this._capacity;
@@ -43,12 +50,20 @@ export class ServiceProviderTimeslot {
 		this._isUnavailable = false;
 	}
 
-	public get availabilityCount(): number {
-		if (this.isOverlapped || this.isUnavailable) return 0;
-		return Math.max(this._capacity - this._acceptedBookings.length - this._pendingBookings.length, 0);
+	public getAvailabilityCount(maxAvailability?: number): number {
+		if (this.isOverlapped || this.isUnavailable) {
+			return 0;
+		}
+
+		let value = Math.max(this._capacity - this._acceptedBookings.length - this._pendingBookings.length, 0);
+		if (maxAvailability) {
+			value = Math.min(value, maxAvailability);
+		}
+
+		return value;
 	}
 
-	public get isValid(): boolean {
+	public isValid(): boolean {
 		if (this._acceptedBookings.length > 0) return true;
 		if (!this._isOverlapped && !this._isUnavailable) return true;
 		return false;

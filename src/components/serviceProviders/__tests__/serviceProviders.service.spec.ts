@@ -27,7 +27,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
 import { ServiceAdminAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
-import { ServiceProviderTimeslot } from '../../../models/serviceProviderTimeslot';
+import { TimeslotServiceProvider } from '../../../models/timeslotServiceProvider';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -291,10 +291,10 @@ describe('ServiceProviders.Service', () => {
 
 			const serviceProvider1 = ServiceProvider.create('Juku', 1);
 			const serviceProvider2 = ServiceProvider.create('Andi', 1);
-			const sptimeslot1 = new ServiceProviderTimeslot(serviceProvider1, 1);
-			const sptimeslot2 = new ServiceProviderTimeslot(serviceProvider2, 1);
-			entry.serviceProviderTimeslots.set(1, sptimeslot1);
-			entry.serviceProviderTimeslots.set(2, sptimeslot2);
+			const sptimeslot1 = new TimeslotServiceProvider(serviceProvider1, 1);
+			const sptimeslot2 = new TimeslotServiceProvider(serviceProvider2, 1);
+			entry.timeslotServiceProviders.set(1, sptimeslot1);
+			entry.timeslotServiceProviders.set(2, sptimeslot2);
 
 			return Promise.resolve([entry]);
 		});

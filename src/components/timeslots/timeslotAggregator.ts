@@ -1,6 +1,6 @@
 import { Timeslot } from '../../models';
 import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
-import { ServiceProviderTimeslot } from '../../models/serviceProviderTimeslot';
+import { TimeslotServiceProvider } from '../../models/timeslotServiceProvider';
 
 export class TimeslotAggregator<TGroup> {
 	private _map: any;

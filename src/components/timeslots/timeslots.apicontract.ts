@@ -1,6 +1,4 @@
-import {
-	ServiceProviderWithBookingsModel,
-} from '../serviceProviders/serviceProviders.apicontract';
+import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
 import { BookingResponse } from '../bookings/bookings.apicontract';
 
 export class AvailabilityEntryResponse {
@@ -19,29 +17,34 @@ export class AvailabilityEntryResponse {
 	public availabilityCount: number;
 }
 
-export class ServiceProviderTimeslotResponse {
+export class TimeslotServiceProviderResponse {
 	/**
-	 * The number of capacity for this specific time.
+	 * The capacity value for this specific timeslot and service provider
 	 * @isInt
 	 */
 	public capacity: number;
 	/**
-	 * The number of bookings in this timeslot.
+	 * The number of bookings in this timeslot assigned to the service provider
 	 * @isInt
 	 */
-	public bookingCount: number;
+	public assignedBookingCount: number;
+	/**
+	 * The number of available slots for the service provider in this timeslot
+	 * @isInt
+	 */
+	public availabilityCount: number;
 	/**
 	 * The detail of the service provider
 	 */
-	public serviceProvider: ServiceProviderWithBookingsModel;
+	public serviceProvider: ServiceProviderSummaryModel;
 	/**
-	 * The bookings that has been accepted by this service provider
+	 * All accepted bookings assigned to this service provider
 	 */
-	public acceptedBookings?: BookingResponse[];
+	public acceptedBookings: BookingResponse[];
 	/**
-	 * The pending bookings that has been assigned to this service provider
+	 * All pending bookings assigned to this service provider
 	 */
-	public pendingBookings?: BookingResponse[];
+	public pendingBookings: BookingResponse[];
 }
 
 export class TimeslotEntryResponse {
@@ -54,19 +57,27 @@ export class TimeslotEntryResponse {
 	 */
 	public endTime: Date;
 	/**
-	 * The detail of service Providers information at this specific time
+	 * The detail of service Providers information at this specific timeslot
 	 */
-	public serviceProviderTimeslot: ServiceProviderTimeslotResponse[];
+	public timeslotServiceProviders: TimeslotServiceProviderResponse[];
 	/**
-	 * The total number of the booked slot (both assigned and not assigned yet to Service Provider)
+	 * The total number of bookings assigned to a service provider
 	 * @isInt
 	 */
-	public totalBookingCount: number;
+	public totalAssignedBookingCount: number;
+	/**
+	 * The total number of bookings not assigned to a service provider
+	 * @isInt
+	 */
+	public totalUnassignedBookingCount: number;
+	/**
+	 * Total number of available slots for this specific time.
+	 * @isInt
+	 */
+	public totalAvailabilityCount: number;
 	/**
 	 * Total capacity for this specific time.
 	 * @isInt
 	 */
 	public totalCapacity: number;
-
-
 }

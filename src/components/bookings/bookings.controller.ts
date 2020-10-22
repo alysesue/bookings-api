@@ -218,7 +218,7 @@ export class BookingsController extends Controller {
 		);
 
 		return ApiDataFactory.create(
-			Array.from(timeslotEntry.serviceProviderTimeslots.values())
+			Array.from(timeslotEntry.timeslotServiceProviders.values())
 				.map((i) => i.serviceProvider)
 				.map(BookingsMapper.mapProvider) || [],
 		);

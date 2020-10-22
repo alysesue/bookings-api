@@ -1,36 +1,53 @@
 import { AggregatedEntry } from './timeslotAggregator';
 import { Booking, ServiceProvider, Unavailability } from '../../models';
 import { groupByKey } from '../../tools/collections';
-import { ServiceProviderTimeslot } from '../../models/serviceProviderTimeslot';
+import { TimeslotServiceProvider, TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
 import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
 
 export class AvailableTimeslotProviders {
 	public startTime: Date;
 	public endTime: Date;
-	private _serviceProviderTimeslots: Map<number, ServiceProviderTimeslot>;
-	private _unlinkedPendingBookingsCount: number;
+	private _isServiceProviderVisible: (spId: number) => boolean;
+	private _timeslotServiceProviders: Map<number, TimeslotServiceProvider>;
+	private _unassignedPendingBookingCount: number;
 
 	constructor() {
-		this._serviceProviderTimeslots = new Map<number, ServiceProviderTimeslot>();
-		this._unlinkedPendingBookingsCount = 0;
+		this._timeslotServiceProviders = new Map<number, TimeslotServiceProvider>();
+		this._unassignedPendingBookingCount = 0;
+		this._isServiceProviderVisible = () => true;
 	}
 
-	public get serviceProviderTimeslots(): Map<number, ServiceProviderTimeslot> {
-		return this._serviceProviderTimeslots;
+	public get unassignedPendingBookingCount(): number {
+		return this._unassignedPendingBookingCount;
 	}
 
-	public get availabilityCount(): number {
+	public *getTimeslotServiceProviders(): Iterable<TimeslotServiceProviderResult> {
+		const totalAvailability = this.getAvailabilityCount();
+
+		for (const [spId, timeslotServiceProvider] of this._timeslotServiceProviders) {
+			if (timeslotServiceProvider.isValid() && this._isServiceProviderVisible(spId)) {
+				yield {
+					serviceProvider: timeslotServiceProvider.serviceProvider,
+					capacity: timeslotServiceProvider.capacity,
+					acceptedBookings: timeslotServiceProvider.acceptedBookings,
+					pendingBookings: timeslotServiceProvider.pendingBookings,
+					availabilityCount: timeslotServiceProvider.getAvailabilityCount(totalAvailability),
+				};
+			}
+		}
+	}
+
+	public getAvailabilityCount(): number {
 		let sumOfAvailability = 0;
-		this._serviceProviderTimeslots.forEach((item) => {
-			sumOfAvailability += item.availabilityCount;
+		this._timeslotServiceProviders.forEach((item) => {
+			sumOfAvailability += item.getAvailabilityCount();
 		});
-		return Math.max(sumOfAvailability - this._unlinkedPendingBookingsCount, 0);
+		return Math.max(sumOfAvailability - this._unassignedPendingBookingCount, 0);
 	}
 
-	public get isValid(): boolean {
-		for (const item of this._serviceProviderTimeslots) {
-			const [, timeslotSp] = item;
-			if (timeslotSp.isValid) return true;
+	public isValid(): boolean {
+		for (const timeslotSp of this.getTimeslotServiceProviders()) {
+			return true;
 		}
 		return false;
 	}
@@ -61,18 +78,18 @@ export class AvailableTimeslotProviders {
 		bookings
 			.filter((booking) => booking.serviceProvider)
 			.forEach((booking) => {
-				const spTimeslotItem = new ServiceProviderTimeslot(booking.serviceProvider, 1);
-				instance._serviceProviderTimeslots.set(booking.serviceProviderId, spTimeslotItem);
+				const spTimeslotItem = new TimeslotServiceProvider(booking.serviceProvider, 0);
+				instance._timeslotServiceProviders.set(booking.serviceProviderId, spTimeslotItem);
 			});
 		return instance;
 	}
 
 	public setRelatedServiceProviders(providers: Map<ServiceProvider, TimeslotWithCapacity>) {
-		this._serviceProviderTimeslots = new Map<number, ServiceProviderTimeslot>();
+		this._timeslotServiceProviders = new Map<number, TimeslotServiceProvider>();
 		for (const item of providers) {
 			const [spItem, timeslotCapacity] = item;
-			const spTimeslotItem = new ServiceProviderTimeslot(spItem, timeslotCapacity.getCapacity());
-			this._serviceProviderTimeslots.set(spItem.id, spTimeslotItem);
+			const spTimeslotItem = new TimeslotServiceProvider(spItem, timeslotCapacity.getCapacity());
+			this._timeslotServiceProviders.set(spItem.id, spTimeslotItem);
 		}
 	}
 
@@ -80,7 +97,7 @@ export class AvailableTimeslotProviders {
 		const bookedProviderIds = groupByKey(bookings, (b) => b.serviceProviderId);
 		for (const item of bookedProviderIds) {
 			const [spId, spBookings] = item;
-			const spTimeslotItem = this._serviceProviderTimeslots.get(spId);
+			const spTimeslotItem = this._timeslotServiceProviders.get(spId);
 			if (spTimeslotItem) {
 				spTimeslotItem.acceptedBookings = spBookings;
 			}
@@ -89,19 +106,19 @@ export class AvailableTimeslotProviders {
 
 	public setOverlappingServiceProviders(providerIds: number[]) {
 		providerIds.forEach((id) => {
-			const spTimeslotItem = this._serviceProviderTimeslots.get(id);
+			const spTimeslotItem = this._timeslotServiceProviders.get(id);
 			if (spTimeslotItem) spTimeslotItem.isOverlapped = true;
 		});
 	}
 
 	public setUnavailability(unavailability: Unavailability) {
 		if (unavailability.allServiceProviders) {
-			this._serviceProviderTimeslots.forEach((spTimeslot) => {
+			this._timeslotServiceProviders.forEach((spTimeslot) => {
 				spTimeslot.isUnavailable = true;
 			});
 		} else {
 			unavailability.serviceProviders.forEach((unavailableSp) => {
-				const spTimeslotItem = this._serviceProviderTimeslots.get(unavailableSp.id);
+				const spTimeslotItem = this._timeslotServiceProviders.get(unavailableSp.id);
 				if (spTimeslotItem) spTimeslotItem.isUnavailable = true;
 			});
 		}
@@ -111,11 +128,11 @@ export class AvailableTimeslotProviders {
 		const assignedPendingBookings = bookings.filter((b) => b.serviceProviderId);
 		const spWithPendingBooking = groupByKey(assignedPendingBookings, (b) => b.serviceProviderId);
 
-		this._unlinkedPendingBookingsCount = bookings.length - assignedPendingBookings.length;
+		this._unassignedPendingBookingCount = bookings.length - assignedPendingBookings.length;
 
 		for (const item of spWithPendingBooking) {
 			const [spid, pendingBookings] = item;
-			const spTimeslotItem = this._serviceProviderTimeslots.get(spid);
+			const spTimeslotItem = this._timeslotServiceProviders.get(spid);
 			if (spTimeslotItem) spTimeslotItem.pendingBookings = pendingBookings;
 		}
 	}
