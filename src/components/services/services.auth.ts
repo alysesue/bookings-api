@@ -27,10 +27,6 @@ export class ServicesActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 		if (!service.organisationId) {
 			throw new Error('ServicesActionAuthVisitor - Organisation ID cannot be null or undefined');
 		}
-
-		if (!service.id) {
-			throw new Error('ServicesActionAuthVisitor - Service ID cannot be null or undefined');
-		}
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
