@@ -59,6 +59,7 @@ export type BookingResponse = {
 	serviceProviderName?: string;
 	serviceProviderEmail?: string;
 	serviceProviderPhone?: string;
+	serviceProviderAgencyUserId?: string;
 	citizenUinFin?: string;
 	citizenName?: string;
 	citizenEmail?: string;

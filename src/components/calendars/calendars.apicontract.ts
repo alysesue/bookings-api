@@ -5,7 +5,6 @@ export class CalendarModel {
 	public externalCalendarUrl: string;
 	public caldavUserUrl: string;
 	public caldavEventsUrl: string;
-	public serviceProviderName: string;
 }
 
 export class CalendarUserModel {
