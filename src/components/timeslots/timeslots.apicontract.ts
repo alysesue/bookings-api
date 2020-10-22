@@ -1,5 +1,5 @@
 import {
-	ServiceProviderWithBookingsModel,
+	ServiceProviderSummaryModel,
 } from '../serviceProviders/serviceProviders.apicontract';
 import { BookingResponse } from '../bookings/bookings.apicontract';
 
@@ -33,7 +33,7 @@ export class ServiceProviderTimeslotResponse {
 	/**
 	 * The detail of the service provider
 	 */
-	public serviceProvider: ServiceProviderWithBookingsModel;
+	public serviceProvider: ServiceProviderSummaryModel;
 	/**
 	 * The bookings that has been accepted by this service provider
 	 */

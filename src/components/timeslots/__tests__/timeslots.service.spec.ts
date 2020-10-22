@@ -155,6 +155,8 @@ describe('Timeslots Service', () => {
 		const service = Container.get(TimeslotsService);
 		const result = await service.getAggregatedTimeslots(date, endDate, 1);
 		expect(result.length).toBe(3);
+		expect(result[0].isValid).toBe(true);
+		expect(result[0].availabilityCount).toBe(1);
 
 		expect(ServicesRepositoryMock.getServiceWithTimeslotsSchedule).toBeCalled();
 		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
@@ -169,17 +171,16 @@ describe('Timeslots Service', () => {
 		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 	});
 
-	it('should get available providers', async () => {
+	it('should get accepted booking from service provider', async () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 17, 0);
 		const endDateTime = DateHelper.setHours(date, 18, 0);
-		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1);
-
-		expect(ServicesRepositoryMock.getServiceWithTimeslotsSchedule).toBeCalled();
-		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
-		expect(ProviderScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
+		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, 100);
+		const spTimeslot = Array.from(result.serviceProviderTimeslots.values());
 
 		expect(result.availabilityCount).toBe(0);
+		expect(spTimeslot[0].acceptedBookings.length).toBe(1);
+
 	});
 
 	it('should merge bookings with same time range', async () => {
