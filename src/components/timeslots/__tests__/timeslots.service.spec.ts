@@ -123,8 +123,8 @@ describe('Timeslots Service', () => {
 		});
 	});
 
-	jest.resetAllMocks();
 	beforeEach(() => {
+		jest.resetAllMocks();
 		jest.clearAllMocks();
 
 		BookingsRepositoryMock.search.mockImplementation(() => {
