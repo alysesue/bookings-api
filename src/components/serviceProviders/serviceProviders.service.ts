@@ -181,9 +181,6 @@ export class ServiceProvidersService {
 
 	public async getTimeslotItems(id: number): Promise<TimeslotsSchedule> {
 		const serviceProvider = await this.getServiceProvider(id, false, true);
-		if (!serviceProvider) {
-			throw new MOLErrorV2(ErrorCodeV2.fromCode('No such service provider'));
-		}
 		if (!serviceProvider.timeslotsSchedule) {
 			return await this.servicesService.getServiceTimeslotsSchedule(serviceProvider.serviceId);
 		}

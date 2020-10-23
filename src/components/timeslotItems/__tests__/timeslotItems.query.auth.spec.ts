@@ -39,7 +39,7 @@ describe('Timeslot items query auth tests', () => {
 			'service provider alias',
 		).createUserVisibilityCondition([userGroup]);
 
-		expect(visitor.userCondition).toStrictEqual('(s._organisationId IN (:...orgIds))');
+		expect(visitor.userCondition).toStrictEqual('(service alias._organisationId IN (:...orgIds))');
 		expect(visitor.userParams).toStrictEqual({ orgIds: [1] });
 	});
 
@@ -51,7 +51,7 @@ describe('Timeslot items query auth tests', () => {
 			'service provider alias',
 		).createUserVisibilityCondition([userGroup]);
 
-		expect(visitor.userCondition).toStrictEqual('(s._id IN (:...serviceIds))');
+		expect(visitor.userCondition).toStrictEqual('(service provider alias._id IN (:...serviceIds))');
 		expect(visitor.userParams).toStrictEqual({ serviceIds: [2] });
 	});
 
@@ -63,7 +63,9 @@ describe('Timeslot items query auth tests', () => {
 			'service provider alias',
 		).createUserVisibilityCondition([userGroup]);
 
-		expect(visitor.userCondition).toStrictEqual('(s._id = :serviceId OR sp._id = :serviceProviderId)');
+		expect(visitor.userCondition).toStrictEqual(
+			'(service alias._id = :serviceId OR service provider alias._id = :serviceProviderId)',
+		);
 		expect(visitor.userParams).toStrictEqual({
 			serviceId: 1,
 			serviceProviderId: 10,
@@ -81,7 +83,7 @@ describe('Timeslot items query auth tests', () => {
 		).createUserVisibilityCondition(userGroup);
 
 		expect(visitor.userCondition).toStrictEqual(
-			'((s._id IN (:...serviceIds)) OR (s._id = :serviceId OR sp._id = :serviceProviderId))',
+			'((service provider alias._id IN (:...serviceIds)) OR (service alias._id = :serviceId OR service provider alias._id = :serviceProviderId))',
 		);
 		expect(visitor.userParams).toStrictEqual({
 			serviceId: 1,

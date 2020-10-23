@@ -2,7 +2,6 @@ import { Booking, ServiceProvider } from '../../models/entities';
 import { BookingProviderResponse, BookingResponse } from './bookings.apicontract';
 
 export class BookingsMapper {
-	private constructor() {}
 	public static mapDataModels(bookings: Booking[]): BookingResponse[] {
 		return bookings?.map(this.mapDataModel);
 	}

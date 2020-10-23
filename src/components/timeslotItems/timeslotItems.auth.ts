@@ -26,19 +26,22 @@ export class TimeslotItemsAuthQueryVisitor extends QueryAuthGroupVisitor {
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		const orgIds = _userGroup.authorisedOrganisations.map((org) => org.id);
-		this.addAuthCondition('s._organisationId IN (:...orgIds)', { orgIds });
+		this.addAuthCondition(`${this.serviceAlias}._organisationId IN (:...orgIds)`, { orgIds });
 	}
 
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		const serviceIds = _userGroup.authorisedServices.map((s) => s.id);
-		this.addAuthCondition('s._id IN (:...serviceIds)', { serviceIds });
+		this.addAuthCondition(`${this.serviceProviderAlias}._id IN (:...serviceIds)`, { serviceIds });
 	}
 
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
 		const serviceProviderId = _userGroup.authorisedServiceProvider.id;
 		const serviceId = _userGroup.authorisedServiceProvider.serviceId;
 
-		this.addAuthCondition('s._id = :serviceId OR sp._id = :serviceProviderId', { serviceId, serviceProviderId });
+		this.addAuthCondition(
+			`${this.serviceAlias}._id = :serviceId OR ${this.serviceProviderAlias}._id = :serviceProviderId`,
+			{ serviceId, serviceProviderId },
+		);
 	}
 }
 
