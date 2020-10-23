@@ -44,6 +44,11 @@ describe('TimeslotItems repository', () => {
 		await repository.deleteTimeslotItem(1);
 		expect(InnerRepositoryMock.delete).toBeCalledTimes(1);
 	});
+	it('should get timeslot', async () => {
+		const repository = Container.get(TimeslotItemsRepository);
+		await repository.getTimeslotItem(1);
+		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
+	});
 });
 
 const timeslotItemMock = TimeslotItem.create(
@@ -59,6 +64,9 @@ export const InnerRepositoryMock = {
 	}),
 	find: jest.fn().mockImplementation(() => {
 		return Promise.resolve([timeslotItemMock]);
+	}),
+	findOne: jest.fn().mockImplementation(() => {
+		return Promise.resolve(timeslotItemMock);
 	}),
 	delete: jest.fn().mockImplementationOnce((...id) => {
 		return Promise.resolve([timeslotItemMock]);
