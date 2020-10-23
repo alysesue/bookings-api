@@ -26,7 +26,7 @@ describe('Tests endpoint and populate data', () => {
 		expect(JSON.parse(response.body).data[0].name).toEqual(SERVICE_NAME);
 	});
 
-	it('should update name of the fist service', async () => {
+	it("should update first service's name", async () => {
 		const response = await AdminRequestEndpointSG.create().get('/services');
 		expect(response.statusCode).toEqual(200);
 		const idService = JSON.parse(response.body).data[0].id;
