@@ -123,8 +123,8 @@ describe('Timeslots Service', () => {
 		});
 	});
 
+	jest.resetAllMocks();
 	beforeEach(() => {
-		jest.resetAllMocks();
 		jest.clearAllMocks();
 
 		BookingsRepositoryMock.search.mockImplementation(() => {
@@ -169,41 +169,13 @@ describe('Timeslots Service', () => {
 		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 	});
 
-
-	it('should get accepted booking from service provider', async () => {
+	it('should get available service providers', async () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 17, 0);
 		const endDateTime = DateHelper.setHours(date, 18, 0);
-		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, 100);
-		const spTimeslot = Array.from(result.serviceProviderTimeslots.values());
+		const spTimeslot = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, 100);
 
-		expect(result.length).toBe(0);
-		expect(spTimeslot[0].acceptedBookings.length).toBe(1);
-		expect(spTimeslot[0].isValid).toBe(true);
-	});
-
-	it('should get pending booking from service provider', async () => {
-		const service = Container.get(TimeslotsService);
-		const startDateTime = DateHelper.setHours(date, 17, 0);
-		const endDateTime = DateHelper.setHours(date, 18, 0);
-
-		const testBookings = [
-			new BookingBuilder()
-				.withServiceId(1)
-				.withStartDateTime(DateHelper.setHours(date, 17, 0))
-				.withEndDateTime(DateHelper.setHours(date, 18, 0))
-				.withServiceProviderId(101)
-				.build()
-		];
-
-		testBookings[0].serviceProvider = ServiceProviderMock2;
-		testBookings[0].status = BookingStatus.PendingApproval;
-		BookingsRepositoryMock.search.mockReturnValue(testBookings);
-		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, 101);
-		const spTimeslot = Array.from(result.serviceProviderTimeslots.values());
-
-		expect(result.availabilityCount).toBe(1);
-		expect(spTimeslot[1].pendingBookings.length).toBe(1);
+		expect(spTimeslot.length).toBe(0);
 	});
 
 	it('should merge bookings with same time range', async () => {

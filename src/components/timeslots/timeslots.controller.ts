@@ -1,9 +1,6 @@
 import { Inject } from 'typescript-ioc';
 import { Controller, Get, Header, Query, Response, Route, Security, Tags } from 'tsoa';
-import {
-	AvailabilityEntryResponse,
-	TimeslotEntryResponse,
-} from './timeslots.apicontract';
+import { AvailabilityEntryResponse, TimeslotEntryResponse } from './timeslots.apicontract';
 import { TimeslotsService } from './timeslots.service';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
@@ -39,15 +36,16 @@ export class TimeslotsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 		@Query() serviceProviderId?: number,
 	): Promise<ApiData<AvailabilityEntryResponse[]>> {
-		let availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(
+		const availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
 			serviceId,
 			false,
 			serviceProviderId,
 		);
-		availableTimeslots = availableTimeslots.filter((e) => e.availabilityCount > 0);
-		return ApiDataFactory.create(TimeslotsMapper.mapAvailabilityToResponse(availableTimeslots));
+		let result = TimeslotsMapper.mapAvailabilityToResponse(availableTimeslots);
+		result = result.filter((e) => e.availabilityCount > 0);
+		return ApiDataFactory.create(result);
 	}
 
 	/**

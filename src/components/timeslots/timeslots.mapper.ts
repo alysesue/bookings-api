@@ -21,10 +21,12 @@ export class TimeslotsMapper {
 		return response;
 	}
 
-	public mapTimeslotEntry(entry: AvailableTimeslotProviders): TimeslotEntryResponse {
-		const [timeslotServiceProviders, totalCapacity, totalAssignedBookings] = this.mapTimeslotServiceProviders(
-			Array.from(entry.getTimeslotServiceProviders()),
-		);
+	public static mapTimeslotEntry(entry: AvailableTimeslotProviders): TimeslotEntryResponse {
+		const [
+			timeslotServiceProviders,
+			totalCapacity,
+			totalAssignedBookings,
+		] = TimeslotsMapper.mapTimeslotServiceProviders(Array.from(entry.getTimeslotServiceProviders()));
 		const response = new TimeslotEntryResponse();
 		response.startTime = entry.startTime;
 		response.endTime = entry.endTime;
@@ -36,7 +38,7 @@ export class TimeslotsMapper {
 		return response;
 	}
 
-	private mapTimeslotServiceProviders(
+	public static mapTimeslotServiceProviders(
 		entries: TimeslotServiceProviderResult[],
 	): [TimeslotServiceProviderResponse[], number, number] {
 		let totalCapacity = 0;
@@ -51,7 +53,7 @@ export class TimeslotsMapper {
 		return [res, totalCapacity, totalAssignedBookings];
 	}
 
-	private mapServiceProviderTimeslot(entry: TimeslotServiceProviderResult): TimeslotServiceProviderResponse {
+	private static mapServiceProviderTimeslot(entry: TimeslotServiceProviderResult): TimeslotServiceProviderResponse {
 		const item = new TimeslotServiceProviderResponse();
 		item.capacity = entry.capacity;
 		item.serviceProvider = new ServiceProviderSummaryModel(entry.serviceProvider.id, entry.serviceProvider.name);

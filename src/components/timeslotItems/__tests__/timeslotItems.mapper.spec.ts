@@ -1,4 +1,4 @@
-import { mapToTimeslotsScheduleResponse, mapToTimeslotItemResponse } from '../timeslotItems.mapper';
+import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from '../timeslotItems.mapper';
 import { Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
 
 describe('TimeslotsSchedule template services ', () => {
@@ -32,6 +32,6 @@ describe('TimeslotsSchedule template services ', () => {
 
 	it('should map to timeslot item response', () => {
 		const res = mapToTimeslotItemResponse(null);
-		expect(res).toBeNull()
-	})
+		expect(res).toBeNull();
+	});
 });
