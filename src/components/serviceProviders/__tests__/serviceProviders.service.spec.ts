@@ -26,6 +26,7 @@ import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotPro
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
 import { ServiceAdminAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 
 afterAll(() => {
 	jest.resetAllMocks();
