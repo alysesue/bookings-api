@@ -2,11 +2,13 @@ import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { DeleteResult } from 'typeorm';
 import { ScheduleFormsRepository } from './scheduleForms.repository';
-import { ScheduleForm, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { ScheduleForm, ServiceProvider, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { ScheduleFormRequest, ScheduleFormResponse } from './scheduleForms.apicontract';
 import { mapToEntity, mapToResponse } from './scheduleForms.mapper';
 import { getErrorResult, isErrorResult } from '../../errors';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { ScheduleFormsActionAuthVisitor } from './scheduleForms.auth';
 
 @InRequestScope
 export class ScheduleFormsService {
@@ -16,15 +18,30 @@ export class ScheduleFormsService {
 	@Inject
 	private serviceProvidersRepository: ServiceProvidersRepository;
 
+	@Inject
+	private userContext: UserContext;
+
+	private async verifyActionPermission(serviceProvider: ServiceProvider, scheduleForm: ScheduleForm): Promise<void> {
+		const authGroups = await this.userContext.getAuthGroups();
+		if (!new ScheduleFormsActionAuthVisitor(serviceProvider, scheduleForm).hasPermission(authGroups)) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
+				`User cannot perform this scheduleForm action for this service.`,
+			);
+		}
+	}
+
 	public async createScheduleForm(template: ScheduleFormRequest): Promise<ScheduleFormResponse> {
 		const newSchedule = this.mapToEntityAndValidate(template, new ScheduleForm());
-		await this.generateTimeslots(template.serviceProviderId, newSchedule);
+		const serviceProvider = await this.serviceProvidersRepository.getServiceProvider({
+			id: template.serviceProviderId,
+		});
+		await this.verifyActionPermission(serviceProvider, newSchedule);
+		await this.generateTimeslots(serviceProvider, newSchedule);
 		const templateSet = await this.scheduleFormsRepository.saveScheduleForm(newSchedule);
 		return mapToResponse(templateSet);
 	}
 
-	private async generateTimeslots(serviceProviderId: number, scheduleForm: ScheduleForm) {
-		const serviceProvider = await this.serviceProvidersRepository.getServiceProvider({ id: serviceProviderId });
+	private async generateTimeslots(serviceProvider: ServiceProvider, scheduleForm: ScheduleForm) {
 		serviceProvider.timeslotsSchedule = TimeslotsSchedule.create(undefined, serviceProvider);
 		serviceProvider.timeslotsSchedule.timeslotItems = TimeslotItem.generateTimeslotsItems(
 			scheduleForm,
