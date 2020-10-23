@@ -200,13 +200,11 @@ export class BookingsService {
 		}
 
 		if (booking.serviceProviderId !== acceptRequest.serviceProviderId) {
-			const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(
+			const isProviderAvailable = await this.timeslotsService.isProviderAvailableForTimeslot(
 				booking.startDateTime,
 				booking.endDateTime,
 				booking.serviceId,
-			);
-			const isProviderAvailable = Array.from(timeslotEntry.getTimeslotServiceProviders()).some(
-				(item) => item.serviceProvider.id === acceptRequest.serviceProviderId,
+				booking.serviceProviderId,
 			);
 
 			if (!isProviderAvailable) {

@@ -179,7 +179,7 @@ describe('Timeslots Service', () => {
 		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 		expect(ProviderScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 
-		expect(result.availabilityCount).toBe(0);
+		expect(result.length).toBe(0);
 	});
 
 	it('should merge bookings with same time range', async () => {

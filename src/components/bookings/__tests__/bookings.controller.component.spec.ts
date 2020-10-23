@@ -22,6 +22,7 @@ import {
 import { BookingBuilder } from '../../../models/entities/booking';
 import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
+import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -37,6 +38,10 @@ jest.mock('mol-lib-common', () => {
 		...actual,
 		MOLAuth: mock,
 	};
+});
+
+beforeEach(() => {
+	TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 });
 
 describe('Booking Integration tests', () => {
@@ -75,6 +80,8 @@ describe('Booking Integration tests', () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = provider;
 		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(provider, timeslotWithCapacity);
+		TimeslotsServiceMock.isProviderAvailableForTimeslot.mockReturnValue(Promise.resolve(true));
+
 		const bookingMock = new BookingBuilder()
 			.withServiceId(2)
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
@@ -150,18 +157,23 @@ const GoogleApiMock = () => {
 
 class TimeslotsServiceMock extends TimeslotsService {
 	public static availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
+	public static isProviderAvailableForTimeslot = jest.fn<Promise<boolean>, any>();
 
 	public async getAvailableProvidersForTimeslot(
 		startDateTime: Date,
 		endDateTime: Date,
 		serviceId: number,
-	): Promise<AvailableTimeslotProviders> {
+	): Promise<TimeslotServiceProviderResult[]> {
 		const timeslotEntry = new AvailableTimeslotProviders();
 		timeslotEntry.startTime = startDateTime;
 		timeslotEntry.endTime = startDateTime;
 		timeslotEntry.setRelatedServiceProviders(TimeslotsServiceMock.availableProvidersForTimeslot);
 
-		return timeslotEntry;
+		return Array.from(timeslotEntry.getTimeslotServiceProviders());
+	}
+
+	public async isProviderAvailableForTimeslot(...params): Promise<any> {
+		return await TimeslotsServiceMock.isProviderAvailableForTimeslot(...params);
 	}
 }
 

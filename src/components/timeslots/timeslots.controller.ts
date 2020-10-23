@@ -11,7 +11,6 @@ import { ServiceProvidersMapper } from '../serviceProviders/serviceProviders.map
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
-import { ServiceProviderWithBookingsModel } from '../serviceProviders/serviceProviders.apicontract';
 import { BookingsMapper } from '../bookings/bookings.mapper';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 
@@ -136,10 +135,7 @@ export class TimeslotsController extends Controller {
 	private mapServiceProviderTimeslot(entry: TimeslotServiceProviderResult): TimeslotServiceProviderResponse {
 		const item = new TimeslotServiceProviderResponse();
 		item.capacity = entry.capacity;
-		item.serviceProvider = new ServiceProviderWithBookingsModel(
-			entry.serviceProvider.id,
-			entry.serviceProvider.name,
-		);
+		item.serviceProvider = this.serviceProviderMapper.mapSummaryDataModel(entry.serviceProvider);
 		item.assignedBookingCount = entry.acceptedBookings.length + entry.pendingBookings.length;
 		item.availabilityCount = entry.availabilityCount;
 		item.acceptedBookings = entry.acceptedBookings.map(BookingsMapper.mapDataModel);

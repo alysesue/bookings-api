@@ -211,17 +211,13 @@ export class BookingsController extends Controller {
 	public async getBookingProviders(@Path() bookingId: number): Promise<ApiData<BookingProviderResponse[]>> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 
-		const timeslotEntry = await this.timeslotService.getAvailableProvidersForTimeslot(
+		const providers = await this.timeslotService.getAvailableProvidersForTimeslot(
 			booking.startDateTime,
 			booking.endDateTime,
 			booking.serviceId,
 		);
 
-		return ApiDataFactory.create(
-			Array.from(timeslotEntry.timeslotServiceProviders.values())
-				.map((i) => i.serviceProvider)
-				.map(BookingsMapper.mapProvider) || [],
-		);
+		return ApiDataFactory.create(providers.map((e) => BookingsMapper.mapProvider(e.serviceProvider)));
 	}
 
 	/**

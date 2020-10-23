@@ -9,6 +9,7 @@ import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
 import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
+import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
 
 @Scoped(Scope.Request)
 export class TimeslotsService {
@@ -68,12 +69,29 @@ export class TimeslotsService {
 		});
 	}
 
+	public async isProviderAvailableForTimeslot(
+		startDateTime: Date,
+		endDateTime: Date,
+		serviceId: number,
+		serviceProviderId: number,
+	): Promise<boolean> {
+		const providers = await this.getAvailableProvidersForTimeslot(
+			startDateTime,
+			endDateTime,
+			serviceId,
+			serviceProviderId,
+		);
+
+		const isProviderAvailable = providers.some((item) => item.serviceProvider.id === serviceProviderId);
+		return isProviderAvailable;
+	}
+
 	public async getAvailableProvidersForTimeslot(
 		startDateTime: Date,
 		endDateTime: Date,
 		serviceId: number,
 		serviceProviderId?: number,
-	): Promise<AvailableTimeslotProviders> {
+	): Promise<TimeslotServiceProviderResult[]> {
 		const aggregatedEntries = await this.getAggregatedTimeslots(
 			startDateTime,
 			endDateTime,
@@ -85,8 +103,13 @@ export class TimeslotsService {
 		const timeslotEntry = aggregatedEntries.find(
 			(e) => DateHelper.equals(e.startTime, startDateTime) && DateHelper.equals(e.endTime, endDateTime),
 		);
-
-		return timeslotEntry || AvailableTimeslotProviders.empty(startDateTime, endDateTime);
+		let availableProviders = Array.from(timeslotEntry?.getTimeslotServiceProviders() || []).filter(
+			(e) => e.availabilityCount > 0,
+		);
+		if (serviceProviderId) {
+			availableProviders = availableProviders.filter((e) => e.serviceProvider.id === serviceProviderId);
+		}
+		return availableProviders;
 	}
 
 	private static setPendingTimeslots(entries: AvailableTimeslotProviders[], pendingBookings: Booking[]): void {
@@ -141,7 +164,7 @@ export class TimeslotsService {
 		TimeslotsService.setPendingTimeslots(mappedEntries, pendingBookings);
 
 		mappedEntries = mappedEntries
-			.filter((entry) => entry.isValid)
+			.filter((entry) => entry.isValid())
 			.sort(TimeslotsService.sortAvailableTimeslotProviders);
 		return mappedEntries;
 	}
@@ -172,7 +195,7 @@ export class TimeslotsService {
 			}
 		}
 
-		return entries.filter((e) => e.isValid);
+		return entries.filter((e) => e.isValid());
 	}
 
 	private setBookedProviders(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {

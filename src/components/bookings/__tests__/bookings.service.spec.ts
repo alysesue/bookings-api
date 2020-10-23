@@ -138,6 +138,8 @@ describe('Bookings.Service', () => {
 
 		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(service));
 		BookingChangeLogsServiceMock.action = 0;
+		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
+		TimeslotsServiceMock.acceptedBookings = [];
 	});
 
 	afterAll(() => {
@@ -246,7 +248,9 @@ describe('Bookings.Service', () => {
 		const timeslotWithCapacity = new TimeslotWithCapacity(
 			new Date('2020-10-01T01:00:00'),
 			new Date('2020-10-01T02:00:00'),
+			1,
 		);
+		TimeslotsServiceMock.isProviderAvailableForTimeslot.mockReturnValue(Promise.resolve(true));
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 

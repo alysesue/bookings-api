@@ -1,12 +1,12 @@
 import { Booking, ServiceProvider } from '.';
 
-export type TimeslotServiceProviderResult {
+export type TimeslotServiceProviderResult = {
 	serviceProvider: ServiceProvider;
 	capacity: number;
 	acceptedBookings: Booking[];
 	pendingBookings: Booking[];
 	availabilityCount: number;
-}
+};
 
 export class TimeslotServiceProvider {
 	private readonly _serviceProvider: ServiceProvider;
@@ -56,7 +56,7 @@ export class TimeslotServiceProvider {
 		}
 
 		let value = Math.max(this._capacity - this._acceptedBookings.length - this._pendingBookings.length, 0);
-		if (maxAvailability) {
+		if (maxAvailability !== undefined && maxAvailability !== null) {
 			value = Math.min(value, maxAvailability);
 		}
 

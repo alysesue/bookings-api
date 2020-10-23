@@ -27,7 +27,6 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
 import { ServiceAdminAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
-import { TimeslotServiceProvider } from '../../../models/timeslotServiceProvider';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -290,11 +289,15 @@ describe('ServiceProviders.Service', () => {
 			entry.endTime = new Date(2020, 8, 26, 8, 30);
 
 			const serviceProvider1 = ServiceProvider.create('Juku', 1);
+			serviceProvider1.id = 1;
 			const serviceProvider2 = ServiceProvider.create('Andi', 1);
-			const sptimeslot1 = new TimeslotServiceProvider(serviceProvider1, 1);
-			const sptimeslot2 = new TimeslotServiceProvider(serviceProvider2, 1);
-			entry.timeslotServiceProviders.set(1, sptimeslot1);
-			entry.timeslotServiceProviders.set(2, sptimeslot2);
+			serviceProvider2.id = 2;
+
+			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
+			map.set(serviceProvider1, new TimeslotWithCapacity(entry.startTime, entry.endTime, 1));
+			map.set(serviceProvider2, new TimeslotWithCapacity(entry.startTime, entry.endTime, 1));
+
+			entry.setRelatedServiceProviders(map);
 
 			return Promise.resolve([entry]);
 		});
