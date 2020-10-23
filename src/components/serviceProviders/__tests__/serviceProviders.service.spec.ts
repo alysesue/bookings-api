@@ -26,7 +26,6 @@ import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotPro
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
 import { ServiceAdminAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
-import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -255,7 +254,7 @@ describe('ServiceProviders.Service', () => {
 		expect(TimeslotItemsServiceMock.mapAndSaveTimeslotItem).toBeCalledTimes(1);
 	});
 
-	it('should copy timeslots schedule item for service to  service provider and update', async () => {
+	it('should copy timeslots schedule item for service to service provider and update', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ServicesServiceMock.getServiceTimeslotsSchedule = serviceMockWithTemplate.timeslotsSchedule;
 

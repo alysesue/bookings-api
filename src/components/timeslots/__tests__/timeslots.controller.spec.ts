@@ -65,4 +65,6 @@ describe('Timeslots Controller', () => {
 		expect(result.data.length).toBe(1);
 		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalled();
 	});
+
+
 });

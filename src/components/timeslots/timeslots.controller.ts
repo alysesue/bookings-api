@@ -3,25 +3,18 @@ import { Controller, Get, Header, Query, Response, Route, Security, Tags } from 
 import {
 	AvailabilityEntryResponse,
 	TimeslotEntryResponse,
-	TimeslotServiceProviderResponse,
 } from './timeslots.apicontract';
 import { TimeslotsService } from './timeslots.service';
-import { AvailableTimeslotProviders } from './availableTimeslotProviders';
-import { ServiceProvidersMapper } from '../serviceProviders/serviceProviders.mapper';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
-import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
-import { BookingsMapper } from '../bookings/bookings.mapper';
 import { ApiData, ApiDataFactory } from '../../apicontract';
+import { TimeslotsMapper } from './timeslots.mapper';
 
 @Route('v1/timeslots')
 @Tags('Timeslots')
 export class TimeslotsController extends Controller {
 	@Inject
 	private timeslotsService: TimeslotsService;
-
-	@Inject
-	private serviceProviderMapper: ServiceProvidersMapper;
 
 	/**
 	 * Retrieves available timeslots for a service in a defined datetime range [startDate, endDate].
@@ -46,17 +39,15 @@ export class TimeslotsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 		@Query() serviceProviderId?: number,
 	): Promise<ApiData<AvailabilityEntryResponse[]>> {
-		const availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(
+		let availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
 			serviceId,
 			false,
 			serviceProviderId,
 		);
-		let result = TimeslotsController.mapAvailabilityToResponse(availableTimeslots);
-		result = result.filter((e) => e.availabilityCount > 0);
-
-		return ApiDataFactory.create(result);
+		availableTimeslots = availableTimeslots.filter((e) => e.availabilityCount > 0);
+		return ApiDataFactory.create(TimeslotsMapper.mapAvailabilityToResponse(availableTimeslots));
 	}
 
 	/**
@@ -87,59 +78,6 @@ export class TimeslotsController extends Controller {
 			includeBookings,
 			serviceProviderId,
 		);
-		return ApiDataFactory.create(timeslots?.map((t) => this.mapTimeslotEntry(t)));
-	}
-
-	private static mapAvailabilityToResponse(entries: AvailableTimeslotProviders[]): AvailabilityEntryResponse[] {
-		return entries.map((e) => this.mapAvailabilityEntry(e));
-	}
-
-	private static mapAvailabilityEntry(entry: AvailableTimeslotProviders): AvailabilityEntryResponse {
-		const response = new AvailabilityEntryResponse();
-		response.startTime = entry.startTime;
-		response.endTime = entry.endTime;
-		response.availabilityCount = entry.getAvailabilityCount();
-		return response;
-	}
-
-	private mapTimeslotEntry(entry: AvailableTimeslotProviders): TimeslotEntryResponse {
-		const [timeslotServiceProviders, totalCapacity, totalAssignedBookings] = this.mapTimeslotServiceProviders(
-			Array.from(entry.getTimeslotServiceProviders()),
-		);
-		const response = new TimeslotEntryResponse();
-		response.startTime = entry.startTime;
-		response.endTime = entry.endTime;
-		response.timeslotServiceProviders = timeslotServiceProviders;
-		response.totalAssignedBookingCount = totalAssignedBookings;
-		response.totalUnassignedBookingCount = entry.unassignedPendingBookingCount;
-		response.totalAvailabilityCount = entry.getAvailabilityCount();
-		response.totalCapacity = totalCapacity;
-		return response;
-	}
-
-	private mapTimeslotServiceProviders(
-		entries: TimeslotServiceProviderResult[],
-	): [TimeslotServiceProviderResponse[], number, number] {
-		let totalCapacity = 0;
-		let totalAssignedBookings = 0;
-		const res = entries.map((entry) => {
-			const item = this.mapServiceProviderTimeslot(entry);
-			totalCapacity += item.capacity;
-			totalAssignedBookings += item.assignedBookingCount;
-			return item;
-		});
-
-		return [res, totalCapacity, totalAssignedBookings];
-	}
-
-	private mapServiceProviderTimeslot(entry: TimeslotServiceProviderResult): TimeslotServiceProviderResponse {
-		const item = new TimeslotServiceProviderResponse();
-		item.capacity = entry.capacity;
-		item.serviceProvider = this.serviceProviderMapper.mapSummaryDataModel(entry.serviceProvider);
-		item.assignedBookingCount = entry.acceptedBookings.length + entry.pendingBookings.length;
-		item.availabilityCount = entry.availabilityCount;
-		item.acceptedBookings = entry.acceptedBookings.map(BookingsMapper.mapDataModel);
-		item.pendingBookings = entry.pendingBookings.map(BookingsMapper.mapDataModel);
-		return item;
+		return ApiDataFactory.create(timeslots?.map((t) => TimeslotsMapper.mapTimeslotEntry(t)));
 	}
 }
