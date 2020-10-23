@@ -17,6 +17,7 @@ import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
+import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -99,10 +100,10 @@ describe('Timeslots Service', () => {
 	unavailability1.end = DateHelper.setHours(date, 23, 0);
 
 	const unavailability2 = new Unavailability();
-	unavailability1.allServiceProviders = false;
-	unavailability1.serviceProviders = [ServiceProviderMock];
-	unavailability1.start = DateHelper.setHours(date, 19, 0);
-	unavailability1.end = DateHelper.setHours(date, 20, 0);
+	unavailability2.allServiceProviders = false;
+	unavailability2.serviceProviders = [ServiceProviderMock];
+	unavailability2.start = DateHelper.setHours(date, 19, 0);
+	unavailability2.end = DateHelper.setHours(date, 20, 0);
 
 	const UnavailabilitiesServiceMock = {
 		search: jest.fn(),
@@ -169,14 +170,41 @@ describe('Timeslots Service', () => {
 		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
 	});
 
-	it('should get available service providers', async () => {
+	it('should return empty aggregation entry', async () => {
+		const service = Container.get(TimeslotsService);
+		ServicesRepositoryMock.getServiceWithTimeslotsSchedule.mockImplementation(() => Promise.resolve(null));
+
+		const result = await service.getAggregatedTimeslots(date, endDate, 2);
+		expect(result.length).toBe(0);
+	});
+
+	it('should get no available service providers at this timeslot', async () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 17, 0);
 		const endDateTime = DateHelper.setHours(date, 18, 0);
-		const spTimeslot = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, 100);
-
-		expect(spTimeslot.length).toBe(0);
+		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, 100);
+		expect(result.length).toBe(0);
 	});
+
+	it('should get available service providers at this timeslot', async () => {
+		const service = Container.get(TimeslotsService);
+		const startDateTime = DateHelper.setHours(date, 16, 0);
+		const endDateTime = DateHelper.setHours(date, 17, 0);
+		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1);
+		expect(result.length).toBe(1);
+		expect(result[0].availabilityCount).toBe(1);
+	});
+
+	it('should return if service provider is available at this timeslot', async () => {
+		const service = Container.get(TimeslotsService);
+		const startDateTime = DateHelper.setHours(date, 17, 0);
+		const endDateTime = DateHelper.setHours(date, 18, 0);
+		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100);
+		expect(result1).toBe(false);
+		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101);
+		expect(result2).toBe(false);
+	});
+
 
 	it('should merge bookings with same time range', async () => {
 		const service = Container.get(TimeslotsService);
@@ -257,6 +285,8 @@ describe('Timeslots Service', () => {
 		const timeslots = await service.getAggregatedTimeslots(new Date(), new Date(), 1, true);
 
 		expect(timeslots.length).toBe(1);
+		const spTimeslot = Array.from(timeslots[0].getTimeslotServiceProviders());
+		expect(spTimeslot[0].acceptedBookings.length).toBe(1);
 		expect(setBookedServiceProviders).toHaveBeenCalled();
 	});
 });
