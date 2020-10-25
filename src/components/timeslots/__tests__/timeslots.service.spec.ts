@@ -17,7 +17,6 @@ import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
-import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -195,7 +194,15 @@ describe('Timeslots Service', () => {
 		expect(result[0].availabilityCount).toBe(1);
 	});
 
-	it('should return if service provider is available at this timeslot', async () => {
+	it('should return TRUE if service provider is available at this timeslot', async () => {
+		const service = Container.get(TimeslotsService);
+		const startDateTime = DateHelper.setHours(date, 16, 0);
+		const endDateTime = DateHelper.setHours(date, 17, 0);
+		const result = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100);
+		expect(result).toBe(true);
+	});
+
+	it('should return FALSE if service provider is unavailable at this timeslot', async () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 17, 0);
 		const endDateTime = DateHelper.setHours(date, 18, 0);
@@ -205,16 +212,11 @@ describe('Timeslots Service', () => {
 		expect(result2).toBe(false);
 	});
 
-
 	it('should merge bookings with same time range', async () => {
 		const service = Container.get(TimeslotsService);
-		const serviceProvider1 = ServiceProvider.create('Juku', 1);
-		const serviceProvider2 = ServiceProvider.create('Andi', 1);
-		serviceProvider1.id = 1;
-		serviceProvider2.id = 2;
 
-		const testBooking1 = getOutOfSlotBooking(serviceProvider1);
-		const testBooking2 = getOutOfSlotBooking(serviceProvider2);
+		const testBooking1 = getOutOfSlotBooking(ServiceProviderMock);
+		const testBooking2 = getOutOfSlotBooking(ServiceProviderMock2);
 		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([]));
 		BookingsRepositoryMock.search.mockImplementation(() => Promise.resolve([testBooking1, testBooking2]));
 
@@ -234,10 +236,6 @@ describe('Timeslots Service', () => {
 
 	it('should filter out bookings not related to an authorised role', async () => {
 		TimeslotsScheduleMock.generateValidTimeslots.mockReturnValue([]);
-		const visibleServiceProvider = ServiceProvider.create('Justus', 1, 'email@aa.ee', '55669883');
-		visibleServiceProvider.id = 2;
-		const nonVisibleServiceProvider = ServiceProvider.create('JAMAICA', 1, 'email1@aa.ee', '55669883');
-		nonVisibleServiceProvider.id = 1;
 
 		const testBookings = [
 			new BookingBuilder()
@@ -256,18 +254,21 @@ describe('Timeslots Service', () => {
 				.build(),
 		];
 
-		testBookings[0].serviceProvider = nonVisibleServiceProvider;
-		testBookings[1].serviceProvider = visibleServiceProvider;
+		testBookings[0].serviceProvider = ServiceProviderMock;
+		testBookings[1].serviceProvider = ServiceProviderMock2;
 
 		BookingsRepositoryMock.search.mockReturnValue(testBookings);
 
-		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue([visibleServiceProvider]);
+		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue([ServiceProviderMock2]);
 
 		const service = Container.get(TimeslotsService);
-		const result = await service.getAggregatedTimeslots(date, endDate, 1, true);
+		const timeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
+		expect(timeslots).toHaveLength(1);
 
-		expect(result).toHaveLength(1);
+		const timeslotSPs = Array.from(timeslots[0].getTimeslotServiceProviders());
+		expect(timeslotSPs).toHaveLength(1);
 	});
+
 	it('should map accepted out-of-slot booking to timeslot response', async () => {
 		const service = Container.get(TimeslotsService);
 

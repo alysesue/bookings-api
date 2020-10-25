@@ -15,6 +15,7 @@ export class TimeslotServiceProvider {
 	private readonly _capacity: number;
 	private _isOverlapped: boolean;
 	private _isUnavailable: boolean;
+	private _isVisibleByUser: boolean;
 
 	public get capacity(): number {
 		return this._capacity;
@@ -41,6 +42,14 @@ export class TimeslotServiceProvider {
 		this._isUnavailable = value;
 	}
 
+	public set isVisibleByUser(value: boolean) {
+		this._isVisibleByUser = value;
+	}
+
+	public get isVisibleByUser(): boolean {
+		return this._isVisibleByUser;
+	}
+
 	constructor(serviceProvider: ServiceProvider, capacity: number) {
 		this._serviceProvider = serviceProvider;
 		this._capacity = capacity;
@@ -48,6 +57,7 @@ export class TimeslotServiceProvider {
 		this._pendingBookings = [];
 		this._isOverlapped = false;
 		this._isUnavailable = false;
+		this._isVisibleByUser = true;
 	}
 
 	public getAvailabilityCount(maxAvailability?: number): number {

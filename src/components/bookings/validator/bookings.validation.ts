@@ -7,7 +7,6 @@ import { BookingSearchQuery, BookingsRepository } from '../bookings.repository';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { isEmail, isSGUinfin } from 'mol-lib-api-contract/utils';
-import { isatty } from 'tty';
 
 export interface IValidator {
 	validate(booking: Booking);

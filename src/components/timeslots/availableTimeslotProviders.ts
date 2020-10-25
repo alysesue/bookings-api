@@ -7,14 +7,12 @@ import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
 export class AvailableTimeslotProviders {
 	public startTime: Date;
 	public endTime: Date;
-	private _isServiceProviderVisible: (spId: number) => boolean;
 	private _timeslotServiceProviders: Map<number, TimeslotServiceProvider>;
 	private _unassignedPendingBookingCount: number;
 
 	constructor() {
 		this._timeslotServiceProviders = new Map<number, TimeslotServiceProvider>();
 		this._unassignedPendingBookingCount = 0;
-		this._isServiceProviderVisible = () => true;
 	}
 
 	public get unassignedPendingBookingCount(): number {
@@ -24,8 +22,8 @@ export class AvailableTimeslotProviders {
 	public *getTimeslotServiceProviders(): Iterable<TimeslotServiceProviderResult> {
 		const totalAvailability = this.getAvailabilityCount();
 
-		for (const [spId, timeslotServiceProvider] of this._timeslotServiceProviders) {
-			if (timeslotServiceProvider.isValid() && this._isServiceProviderVisible(spId)) {
+		for (const timeslotServiceProvider of this._timeslotServiceProviders.values()) {
+			if (timeslotServiceProvider.isVisibleByUser && timeslotServiceProvider.isValid()) {
 				yield {
 					serviceProvider: timeslotServiceProvider.serviceProvider,
 					capacity: timeslotServiceProvider.capacity,
@@ -134,6 +132,15 @@ export class AvailableTimeslotProviders {
 			const [spid, pendingBookings] = item;
 			const spTimeslotItem = this._timeslotServiceProviders.get(spid);
 			if (spTimeslotItem) spTimeslotItem.pendingBookings = pendingBookings;
+		}
+	}
+
+	public setVisibleServiceProviders(providerIds: number[]): void {
+		this._timeslotServiceProviders.forEach((item) => (item.isVisibleByUser = false));
+
+		for (const spId of providerIds) {
+			const spTimeslotItem = this._timeslotServiceProviders.get(spId);
+			if (spTimeslotItem) spTimeslotItem.isVisibleByUser = true;
 		}
 	}
 }

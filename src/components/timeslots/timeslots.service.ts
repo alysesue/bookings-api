@@ -162,11 +162,33 @@ export class TimeslotsService {
 
 		this.setBookedProviders(mappedEntries, acceptedBookings);
 		TimeslotsService.setPendingTimeslots(mappedEntries, pendingBookings);
+		await this.filterVisibleServiceProviders({ entries: mappedEntries, serviceId, serviceProviderId });
 
 		mappedEntries = mappedEntries
 			.filter((entry) => entry.isValid())
 			.sort(TimeslotsService.sortAvailableTimeslotProviders);
 		return mappedEntries;
+	}
+
+	private async filterVisibleServiceProviders({
+		entries,
+		serviceId,
+		serviceProviderId,
+	}: {
+		entries: AvailableTimeslotProviders[];
+		serviceId: number;
+		serviceProviderId?: number;
+	}): Promise<void> {
+		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({ serviceId });
+		let visibleServiceProviderIds = serviceProviders.map((sp) => sp.id);
+
+		if (serviceProviderId) {
+			visibleServiceProviderIds = visibleServiceProviderIds.filter((id) => id === serviceProviderId);
+		}
+
+		for (const entry of entries) {
+			entry.setVisibleServiceProviders(visibleServiceProviderIds);
+		}
 	}
 
 	private static sortAvailableTimeslotProviders(a: AvailableTimeslotProviders, b: AvailableTimeslotProviders) {
@@ -245,9 +267,9 @@ export class TimeslotsService {
 		for (const provider of serviceProviders) {
 			const timeslotServiceProviders = provider.timeslotsSchedule
 				? provider.timeslotsSchedule.generateValidTimeslots({
-					startDatetime: minStartTime,
-					endDatetime: maxEndTime,
-				})
+						startDatetime: minStartTime,
+						endDatetime: maxEndTime,
+				  })
 				: validServiceTimeslots;
 
 			aggregator.aggregate(provider, timeslotServiceProviders);
