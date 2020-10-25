@@ -5,7 +5,7 @@ export abstract class ContainerContext {
 	public abstract resolve<T>(source: Function & { prototype: T }): T;
 }
 
-class ContainerContextHolder implements ContainerContext {
+export class ContainerContextHolder implements ContainerContext {
 	@Inject
 	private _containerBuildContext: BuildContext;
 	private constructor() {}

@@ -34,7 +34,7 @@ describe('Services controller tests', () => {
 		const request = new ServiceRequest();
 		const result = await controller.createService(request);
 
-		expect(result.name).toBe('John');
+		expect(result.data.name).toBe('John');
 	});
 
 	it('should update a service', async () => {
@@ -44,14 +44,14 @@ describe('Services controller tests', () => {
 		const request = new ServiceRequest();
 		const result = await controller.updateService(1, request);
 
-		expect(result.name).toBe('John');
+		expect(result.data.name).toBe('John');
 	});
 
 	it('should get all services', async () => {
 		ServicesServiceMock.getServices.mockReturnValue([{ name: 'John' }, { name: 'Mary' }]);
 
 		const response = await Container.get(ServicesController).getServices();
-		expect(response).toHaveLength(2);
+		expect(response.data).toHaveLength(2);
 	});
 
 	it('should set service ScheduleForm', async () => {
@@ -74,7 +74,7 @@ describe('Services controller tests', () => {
 	it('should get a service', async () => {
 		ServicesServiceMock.getService.mockReturnValue({ name: 'John' });
 		const response = await Container.get(ServicesController).getService(1);
-		expect(response.name).toEqual('John');
+		expect(response.data.name).toEqual('John');
 	});
 
 	it('should get a timeslotsSchedule', async () => {
@@ -93,8 +93,8 @@ describe('Services controller tests', () => {
 		mockResult.timeslotItems = [mockItem];
 		ServicesServiceMock.getServiceTimeslotsSchedule.mockReturnValue(mockResult);
 		const response = await Container.get(ServicesController).getTimeslotsScheduleByServiceId(1);
-		expect(response.timeslots.length).toEqual(1);
-		expect(response.timeslots[0].id).toEqual(mockItemId);
+		expect(response.data.timeslots.length).toEqual(1);
+		expect(response.data.timeslots[0].id).toEqual(mockItemId);
 	});
 
 	it('should create a timeslot item', async () => {
@@ -115,7 +115,7 @@ describe('Services controller tests', () => {
 		request.endTime = '09:00';
 		const response = await Container.get(ServicesController).createTimeslotItem(1, request);
 		expect(response).toBeDefined();
-		expect(response.startTime).toEqual('08:00');
+		expect(response.data.startTime).toEqual('08:00');
 	});
 
 	it('should update a timeslot item', async () => {

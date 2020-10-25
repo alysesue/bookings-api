@@ -2,10 +2,9 @@ import { Container } from 'typescript-ioc';
 import { Booking, BookingStatus } from '../../../models';
 import { BookingsController } from '../bookings.controller';
 import { BookingsService } from '../bookings.service';
-import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingSearchRequest } from '../bookings.apicontract';
+import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
-import { getRequestHeaders } from '../../../infrastructure/requestHelper';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { BookingBuilder } from '../../../models/entities/booking';
@@ -14,10 +13,6 @@ afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
-
-jest.mock('../../../infrastructure/requestHelper', () => ({
-	getRequestHeaders: jest.fn(),
-}));
 
 jest.mock('mol-lib-common', () => {
 	const actual = jest.requireActual('mol-lib-common');
@@ -76,7 +71,7 @@ describe('Bookings.Controller', () => {
 		const res = await controller.updateBooking(bookingId, new BookingRequest(), 1);
 
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
-		expect((res as Booking).startDateTime.toISOString()).toEqual('2020-10-01T15:00:00.000Z');
+		expect(res.data.startDateTime.toISOString()).toEqual('2020-10-01T15:00:00.000Z');
 	});
 
 	it('should search bookings', async () => {
@@ -88,7 +83,7 @@ describe('Bookings.Controller', () => {
 
 		const result = await controller.getBookings(from, to, [1], citizenUinFins, 1);
 
-		expect(result).toHaveLength(1);
+		expect(result.data).toHaveLength(1);
 	});
 
 	it('should return one booking', async () => {
@@ -102,9 +97,9 @@ describe('Bookings.Controller', () => {
 
 		const result = await controller.getBooking(1);
 
-		expect(result.startDateTime).toBe(startTime);
-		expect(result.endDateTime).toBe(endTime);
-		expect(result.status).toBe(BookingStatus.PendingApproval);
+		expect(result.data.startDateTime).toBe(startTime);
+		expect(result.data.endDateTime).toBe(endTime);
+		expect(result.data.status).toBe(BookingStatus.PendingApproval);
 	});
 
 	it('should get booking providers', async () => {
@@ -126,11 +121,10 @@ describe('Bookings.Controller', () => {
 		};
 
 		(controller as any).context = { headers };
-		(getRequestHeaders as jest.Mock).mockReturnValue({ get: () => headers });
 
 		const result = await controller.postBooking(new BookingRequest(), 1);
 
-		expect(result as BookingResponse);
+		expect(result).toBeDefined();
 	});
 
 	it('should post out of timeslot booking', async () => {
@@ -139,7 +133,7 @@ describe('Bookings.Controller', () => {
 
 		const result = await controller.postBookingOutOfSlot(new BookingRequest(), 1);
 
-		expect(result as BookingResponse);
+		expect(result).toBeDefined();
 	});
 
 	it('should reject booking', async () => {

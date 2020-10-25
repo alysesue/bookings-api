@@ -5,6 +5,7 @@ import { UnavailabilityRequest, UnavailabilityResponse } from './unavailabilitie
 import { Unavailability } from '../../models';
 import { ServiceProvidersMapper } from '../serviceProviders/serviceProviders.mapper';
 import { MOLAuth } from 'mol-lib-common';
+import { ApiData, ApiDataFactory } from '../../apicontract';
 
 @Route('v1/unavailabilities')
 @Tags('Unavailabilities')
@@ -27,7 +28,7 @@ export class UnavailabilitiesController extends Controller {
 	/**
 	 * Creates an unavailable (blocked) timeslot for a service or, optionally, for specific service providers.
 	 * @param request
-	 * @param serviceId The service id.
+	 * @param @isInt serviceId The service id.
 	 */
 	@Post('')
 	@Security('service')
@@ -37,13 +38,20 @@ export class UnavailabilitiesController extends Controller {
 	public async addUnavailability(
 		@Body() request: UnavailabilityRequest,
 		@Header('x-api-service') serviceId: number,
-	): Promise<UnavailabilityResponse> {
+	): Promise<ApiData<UnavailabilityResponse>> {
 		request.serviceId = serviceId;
 		const saved = await this.unavailabilitiesService.create(request);
 		this.setStatus(201);
-		return this.mapToResponse(saved);
+		return ApiDataFactory.create(this.mapToResponse(saved));
 	}
 
+	/**
+	 * Retrieves unavailabilities
+	 * @param @isInt serviceId The service id.
+	 * @param fromDate The lower bound datetime limit (inclusive) for unavailability's end time.
+	 * @param toDate The upper bound datetime limit (inclusive) for unavailability's start time.
+	 * @param @isInt serviceProviderId (Optional) Filters unavailabilities for a specific service provider.
+	 */
 	@Get('')
 	@Security('service')
 	@MOLAuth({ admin: {}, agency: {} })
@@ -53,13 +61,13 @@ export class UnavailabilitiesController extends Controller {
 		@Query() fromDate: Date,
 		@Query() toDate: Date,
 		@Query() serviceProviderId?: number,
-	): Promise<UnavailabilityResponse[]> {
+	): Promise<ApiData<UnavailabilityResponse[]>> {
 		const entries = await this.unavailabilitiesService.search({
 			from: fromDate,
 			to: toDate,
 			serviceId,
 			serviceProviderId,
 		});
-		return entries.map((e) => this.mapToResponse(e));
+		return ApiDataFactory.create(entries.map((e) => this.mapToResponse(e)));
 	}
 }

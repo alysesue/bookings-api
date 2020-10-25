@@ -5,6 +5,7 @@ import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/commo
 import { BookingChangeLogResponse } from './bookingChangeLogs.apicontract';
 import { BookingChangeLogsService } from './bookingChangeLogs.service';
 import { BookingChangeLogsMapper } from './bookingChangeLogs.mapper';
+import { ApiData, ApiDataFactory } from '../../apicontract';
 
 @Route('v1/bookinglogs')
 @Tags('BookingLogs')
@@ -16,8 +17,8 @@ export class BookingChangeLogsController extends Controller {
 	 * Retrieves all booking logs in the specified datetime range [changedSince, changedUntil).
 	 * @param changedSince The lower bound datetime limit (inclusive) for logs' timestamp.
 	 * @param changedUntil The upper bound datetime limit (exclusive) for logs' timestamp.
-	 * @param bookingIds (Optional) filters by a list of booking ids.
-	 * @param serviceId (Optional) filters by a service (id).
+	 * @param @isInt bookingIds (Optional) filters by a list of booking ids.
+	 * @param @isInt serviceId (Optional) filters by a service (id).
 	 */
 	@Get('')
 	@SuccessResponse(200, 'Ok')
@@ -33,8 +34,8 @@ export class BookingChangeLogsController extends Controller {
 		@Query() changedUntil: Date,
 		@Query() bookingIds?: number[],
 		@Header('x-api-service') serviceId?: number,
-	): Promise<BookingChangeLogResponse[]> {
+	): Promise<ApiData<BookingChangeLogResponse[]>> {
 		const logs = await this.changeLogsService.getLogs({ changedSince, changedUntil, serviceId, bookingIds });
-		return BookingChangeLogsMapper.mapDataModels(logs);
+		return ApiDataFactory.create(BookingChangeLogsMapper.mapDataModels(logs));
 	}
 }

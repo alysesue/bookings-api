@@ -3,6 +3,9 @@ export class ScheduleFormRequest {
 	 * @maxLength 100
 	 */
 	public name: string;
+	/**
+	 * @isInt
+	 */
 	public serviceProviderId?: number;
 
 	/**
@@ -26,6 +29,9 @@ export class WeekDayBreakContract {
 }
 
 export class WeekDayScheduleContract {
+	/**
+	 * @isInt
+	 */
 	public weekday: number;
 	public hasScheduleForm: boolean;
 	/**
@@ -40,8 +46,14 @@ export class WeekDayScheduleContract {
 }
 
 export class ScheduleFormResponse {
+	/**
+	 * @isInt
+	 */
 	public id: number;
 	public name: string;
+	/**
+	 * @isInt
+	 */
 	public slotsDurationInMin: number;
 	public weekdaySchedules: WeekDayScheduleContract[];
 }

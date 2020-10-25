@@ -6,6 +6,7 @@ import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import { ServiceProvidersMapper } from '../serviceProviders/serviceProviders.mapper';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
+import { ApiData, ApiDataFactory } from '../../apicontract';
 
 @Route('v1/timeslots')
 @Tags('Timeslots')
@@ -22,8 +23,8 @@ export class TimeslotsController extends Controller {
 	 * Pending and accepted bookings count towards availability quota.
 	 * @param startDate The lower bound limit for timeslots' startDate.
 	 * @param endDate The upper bound limit for timeslots' endDate.
-	 * @param serviceId The available service to be queried.
-	 * @param serviceProviderId (Optional) Filters timeslots for a specific service provider.
+	 * @param @isInt serviceId The available service to be queried.
+	 * @param @isInt serviceProviderId (Optional) Filters timeslots for a specific service provider.
 	 */
 	@Get('availability')
 	@Security('service')
@@ -38,7 +39,7 @@ export class TimeslotsController extends Controller {
 		@Query() endDate: Date,
 		@Header('x-api-service') serviceId: number,
 		@Query() serviceProviderId?: number,
-	): Promise<AvailabilityEntryResponse[]> {
+	): Promise<ApiData<AvailabilityEntryResponse[]>> {
 		let availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
@@ -47,7 +48,7 @@ export class TimeslotsController extends Controller {
 			serviceProviderId,
 		);
 		availableTimeslots = availableTimeslots.filter((e) => e.availabilityCount > 0);
-		return TimeslotsController.mapAvailabilityToResponse(availableTimeslots);
+		return ApiDataFactory.create(TimeslotsController.mapAvailabilityToResponse(availableTimeslots));
 	}
 
 	/**
@@ -56,8 +57,8 @@ export class TimeslotsController extends Controller {
 	 * Pending and accepted bookings count towards availability quota.
 	 * @param startDate The lower bound limit for timeslots' startDate.
 	 * @param endDate The upper bound limit for timeslots' endDate.
-	 * @param serviceId The available service to be queried.
-	 * @param serviceProviderId (Optional) Filters timeslots for a specific service provider.
+	 * @param @isInt serviceId The available service to be queried.
+	 * @param @isInt serviceProviderId (Optional) Filters timeslots for a specific service provider.
 	 * @param includeBookings (Optional)
 	 */
 	@Get('')
@@ -70,7 +71,7 @@ export class TimeslotsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 		@Query() includeBookings: boolean = false,
 		@Query() serviceProviderId?: number,
-	): Promise<TimeslotEntryResponse[]> {
+	): Promise<ApiData<TimeslotEntryResponse[]>> {
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
@@ -78,7 +79,7 @@ export class TimeslotsController extends Controller {
 			includeBookings,
 			serviceProviderId,
 		);
-		return timeslots?.map((t) => this.mapTimeslotEntry(t));
+		return ApiDataFactory.create(timeslots?.map((t) => this.mapTimeslotEntry(t)));
 	}
 
 	private static mapAvailabilityToResponse(entries: AvailableTimeslotProviders[]): AvailabilityEntryResponse[] {

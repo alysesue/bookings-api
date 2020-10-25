@@ -1,6 +1,9 @@
 import { UserTypeResponse } from '../users/users.apicontract';
 
 export class BookingChangeLogResponse {
+	/**
+	 * @isInt
+	 */
 	public bookingId: number;
 	public changeLogs: ChangeLogEntryResponse[];
 }
@@ -14,12 +17,24 @@ export class ChangeLogEntryResponse {
 }
 
 export type BookingStateResponse = {
+	/**
+	 * @isInt
+	 */
 	id?: number;
+	/**
+	 * @isInt
+	 */
 	status?: number;
 	startDateTime?: Date;
 	endDateTime?: Date;
+	/**
+	 * @isInt
+	 */
 	serviceId?: number;
 	serviceName?: string;
+	/**
+	 * @isInt
+	 */
 	serviceProviderId?: number;
 	serviceProviderAgencyUserId?: string;
 	serviceProviderName?: string;

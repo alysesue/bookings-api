@@ -8,7 +8,7 @@ import {
 import { ServicesActionAuthVisitor } from '../services.auth';
 import { CrudAction } from '../../../enums/crudAction';
 
-// tslint:disable-next-line:no-big-function
+// tslint:disable-next-line: no-big-function
 describe('Service action auth tests', () => {
 	it('should create a service by organisation admin', () => {
 		const organisation = new Organisation();

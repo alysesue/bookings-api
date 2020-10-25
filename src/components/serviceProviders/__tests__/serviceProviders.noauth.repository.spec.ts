@@ -12,19 +12,19 @@ beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
 });
 
-describe('Service Provider repository', () => {
+describe('Service Provider No Auth repository', () => {
 	const queryBuilderMock: {
 		where: jest.Mock;
 		leftJoin: jest.Mock;
-		innerJoin: jest.Mock;
 		leftJoinAndSelect: jest.Mock;
+		innerJoin: jest.Mock;
 		getMany: jest.Mock<Promise<ServiceProvider[]>, any>;
 		getOne: jest.Mock<Promise<ServiceProvider>, any>;
 	} = {
 		where: jest.fn(),
 		leftJoin: jest.fn(),
-		innerJoin: jest.fn(),
 		leftJoinAndSelect: jest.fn(),
+		innerJoin: jest.fn(),
 		getMany: jest.fn<Promise<ServiceProvider[]>, any>(),
 		getOne: jest.fn<Promise<ServiceProvider>, any>(),
 	};
@@ -33,20 +33,32 @@ describe('Service Provider repository', () => {
 		jest.resetAllMocks();
 
 		queryBuilderMock.where.mockImplementation(() => queryBuilderMock);
-		queryBuilderMock.innerJoin.mockImplementation(() => queryBuilderMock);
+		queryBuilderMock.leftJoin.mockImplementation(() => queryBuilderMock);
 		queryBuilderMock.leftJoinAndSelect.mockImplementation(() => queryBuilderMock);
+		queryBuilderMock.innerJoin.mockImplementation(() => queryBuilderMock);
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 	});
 
-	it('should get list of SP', async () => {
-		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([]));
+	it('should get service provider by molAdminId', async () => {
+		const serviceProvider = ServiceProvider.create('a', 1);
+		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(serviceProvider));
 
-		const spRepositoryNoAuth = Container.get(ServiceProvidersRepositoryNoAuth);
+		const spRepository = Container.get(ServiceProvidersRepositoryNoAuth);
 
-		await spRepositoryNoAuth.getServiceProviderByMolAdminId({ molAdminId: '1' });
+		const result = await spRepository.getServiceProviderByMolAdminId({
+			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+		});
 		expect(TransactionManagerMock.createQueryBuilder).toBeCalled();
 		expect(queryBuilderMock.getOne).toBeCalled();
+		expect(result).toBeDefined();
+	});
+
+	it('should get return null service provider', async () => {
+		const spRepository = Container.get(ServiceProvidersRepositoryNoAuth);
+
+		const result = await spRepository.getServiceProviderByMolAdminId({ molAdminId: null });
+		expect(result).toBeNull();
 	});
 });
 

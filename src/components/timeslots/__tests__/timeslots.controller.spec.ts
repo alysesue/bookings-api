@@ -46,7 +46,7 @@ describe('Timeslots Controller', () => {
 
 		expect(result).toBeDefined();
 		// zero availabilityCount not returned
-		expect(result.length).toBe(0);
+		expect(result.data.length).toBe(0);
 		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalled();
 	});
 
@@ -62,7 +62,7 @@ describe('Timeslots Controller', () => {
 		const result = await controller.getTimeslots(new Date(), new Date(), 1, false, 100);
 
 		expect(result).toBeDefined();
-		expect(result.length).toBe(1);
+		expect(result.data.length).toBe(1);
 		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalled();
 	});
 });
