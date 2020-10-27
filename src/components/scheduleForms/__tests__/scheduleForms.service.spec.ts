@@ -2,13 +2,16 @@ import { ScheduleFormsService } from '../scheduleForms.service';
 import { ScheduleFormRequest, WeekDayBreakContract, WeekDayScheduleContract } from '../scheduleForms.apicontract';
 import { ScheduleFormsRepository } from '../scheduleForms.repository';
 import { Container } from 'typescript-ioc';
-import { ScheduleForm, ServiceProvider, TimeslotsSchedule } from '../../../models';
+import { ScheduleForm, Service, ServiceProvider, TimeslotsSchedule, User } from '../../../models';
 import { mapToEntity } from '../scheduleForms.mapper';
 import { Weekday } from '../../../enums/weekday';
 import { MOLErrorV2 } from 'mol-lib-api-contract';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.repository';
+import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
+import { ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { UserContext } from '../../../infrastructure/auth/userContext';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -46,12 +49,20 @@ const MockScheduleFormsRepository = jest.fn().mockImplementation(() => ({
 	deleteScheduleForm,
 }));
 
+const serviceMockWithTemplate = new Service();
+const adminMock = User.createAdminUser({
+	molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+	userName: 'UserName',
+	email: 'test@email.com',
+	name: 'Name',
+});
 // tslint:disable-next-line
 describe('Schedules form template services ', () => {
 	let scheduleFormsService: ScheduleFormsService;
 	beforeAll(() => {
 		Container.bind(ScheduleFormsRepository).to(MockScheduleFormsRepository);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
+		Container.bind(UserContext).to(UserContextMock);
 		scheduleFormsService = Container.get(ScheduleFormsService);
 	});
 	beforeEach(() => {
@@ -172,6 +183,10 @@ describe('Schedules form template services ', () => {
 	});
 
 	it('should call delete repository', async () => {
+		UserContextMock.getAuthGroups.mockReturnValue(
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
+		);
+
 		await scheduleFormsService.deleteScheduleForm(3);
 		expect(deleteScheduleForm).toBeCalled();
 	});

@@ -55,8 +55,9 @@ export class OrganisationAdminAuthGroup extends AuthGroup {
 		return this._authorisedOrganisations;
 	}
 
-	public hasOrganisationId(organisationId: number) {
-		return this._authorisedOrganisations.findIndex((org) => org.id === organisationId) >= 0;
+	public hasOrganisationId(organisationId: number): boolean {
+		if (organisationId) return this._authorisedOrganisations.some((org) => org.id === organisationId);
+		return false;
 	}
 
 	public acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void> {

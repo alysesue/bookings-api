@@ -9,6 +9,7 @@ import { getErrorResult, isErrorResult } from '../../errors';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ScheduleFormsActionAuthVisitor } from './scheduleForms.auth';
+import { CrudAction } from '../../enums/crudAction';
 
 @InRequestScope
 export class ScheduleFormsService {
@@ -21,9 +22,9 @@ export class ScheduleFormsService {
 	@Inject
 	private userContext: UserContext;
 
-	private async verifyActionPermission(serviceProvider: ServiceProvider, scheduleForm: ScheduleForm): Promise<void> {
+	private async verifyActionPermission(serviceProvider: ServiceProvider, action: CrudAction): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
-		if (!new ScheduleFormsActionAuthVisitor(serviceProvider, scheduleForm).hasPermission(authGroups)) {
+		if (!new ScheduleFormsActionAuthVisitor(serviceProvider, action).hasPermission(authGroups)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
 				`User cannot perform this scheduleForm action for this service.`,
 			);
@@ -35,7 +36,7 @@ export class ScheduleFormsService {
 		const serviceProvider = await this.serviceProvidersRepository.getServiceProvider({
 			id: template.serviceProviderId,
 		});
-		await this.verifyActionPermission(serviceProvider, newSchedule);
+		await this.verifyActionPermission(serviceProvider, CrudAction.Create);
 		await this.generateTimeslots(serviceProvider, newSchedule);
 		const templateSet = await this.scheduleFormsRepository.saveScheduleForm(newSchedule);
 		return mapToResponse(templateSet);
@@ -56,7 +57,10 @@ export class ScheduleFormsService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('ScheduleFormsRepository form not found.');
 		}
 		let schedule = this.mapToEntityAndValidate(template, existingSchedule);
-
+		const serviceProvider = await this.serviceProvidersRepository.getServiceProvider({
+			id: template.serviceProviderId,
+		});
+		await this.verifyActionPermission(serviceProvider, CrudAction.Update);
 		schedule = await this.scheduleFormsRepository.saveScheduleForm(schedule);
 		return mapToResponse(schedule);
 	}
@@ -71,6 +75,7 @@ export class ScheduleFormsService {
 	}
 
 	public async deleteScheduleForm(id: number): Promise<DeleteResult> {
+		await this.verifyActionPermission(undefined, CrudAction.Delete);
 		return await this.scheduleFormsRepository.deleteScheduleForm(id);
 	}
 

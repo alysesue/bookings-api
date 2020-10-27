@@ -1,54 +1,71 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { ScheduleForm } from '../../models';
-import { DeleteResult, FindManyOptions, In } from 'typeorm';
+import { ScheduleForm, ServiceProvider } from '../../models';
+import { DeleteResult, FindManyOptions, In, SelectQueryBuilder } from 'typeorm';
 import { groupByKey } from '../../tools/collections';
 import { WeekDayBreakRepository } from './weekdaybreak.repository';
 import { RepositoryBase } from '../../core/repository';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { IEntityWithScheduleForm } from '../../models/interfaces';
+import { BookingQueryAuthVisitor } from '../bookings/bookings.auth';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { ScheduleFormsQueryAuthVisitor } from './scheduleForms.auth';
 
 @InRequestScope
 export class ScheduleFormsRepository extends RepositoryBase<ScheduleForm> {
 	@Inject
 	private weekDayBreakRepo: WeekDayBreakRepository;
+	@Inject
+	private userContext: UserContext;
 
 	constructor() {
 		super(ScheduleForm);
 	}
 
+	private async querySelectScheduleForm(ids: number[]): Promise<SelectQueryBuilder<ScheduleForm>> {
+		const idCondition = ids ? '"scheduleForm"."id" IN (:...ids)' : ' TRUE ';
+		const authGroups = await this.userContext.getAuthGroups();
+		const { userCondition, userParams } = await new ScheduleFormsQueryAuthVisitor(
+			'service',
+			'serviceProvider',
+		).createUserVisibilityCondition(authGroups);
+
+		const repository = await this.getRepository();
+		return repository
+			.createQueryBuilder('scheduleForm')
+			.where(
+				[userCondition, idCondition]
+					.filter((c) => c)
+					.map((c) => `(${c})`)
+					.join(' AND '),
+				{
+					...userParams,
+					ids,
+				},
+			)
+			.leftJoinAndSelect('scheduleForm.weekdaySchedules', 'weekdaySchedules')
+			.leftJoinAndSelect(
+				ServiceProvider,
+				'serviceProvider',
+				'serviceProvider._scheduleFormId="scheduleForm"."id"',
+			);
+	}
+
 	public async getScheduleFormById(id: number): Promise<ScheduleForm> {
-		const scheduleForm = await (await this.getRepository()).findOne(id, {
-			relations: ['weekdaySchedules'],
-		});
-		return this.populateSingleEntryBreaks(scheduleForm);
-	}
-
-	public async getScheduleForms(ids?: number[]): Promise<ScheduleForm[]> {
-		const options: FindManyOptions<ScheduleForm> = { relations: ['weekdaySchedules'] };
-		if (ids) {
-			options.where = { id: In(ids) };
-		}
-
-		const schedules = await (await this.getRepository()).find(options);
-		return this.populateBreaks(schedules);
-	}
-
-	public async getScheduleFormByName(name: string): Promise<ScheduleForm> {
-		const scheduleForm = await (await this.getRepository()).findOne({
-			where: { name },
-			relations: ['weekdaySchedules'],
-		});
-		return this.populateSingleEntryBreaks(scheduleForm);
-	}
-
-	private async populateSingleEntryBreaks(scheduleForm: ScheduleForm): Promise<ScheduleForm> {
-		if (!scheduleForm) {
-			return null;
-		}
+		const query = await this.querySelectScheduleForm([id]);
+		const scheduleForm = await query.getOne();
 		return (await this.populateBreaks([scheduleForm]))[0];
 	}
 
+	public async getScheduleForms(ids?: number[]): Promise<ScheduleForm[]> {
+		const query = await this.querySelectScheduleForm(ids);
+		const schedules = await query.getMany();
+		return this.populateBreaks(schedules);
+	}
+
 	private async populateBreaks(schedules: ScheduleForm[]): Promise<ScheduleForm[]> {
+		if (!schedules.length) {
+			return null;
+		}
 		const scheduleIds = schedules.map((s) => s.id);
 		const breaks = await this.weekDayBreakRepo.getBreaksForSchedules(scheduleIds);
 		const breaksPerSchedule = groupByKey(breaks, (e) => e.getScheduleId());

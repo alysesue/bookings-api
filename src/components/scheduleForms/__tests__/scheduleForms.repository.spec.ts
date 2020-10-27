@@ -47,14 +47,6 @@ describe('ScheduleForm repository', () => {
 		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
 	});
 
-	it('should get schedules form with name', async () => {
-		const repository = Container.get(ScheduleFormsRepository);
-		const result = await repository.getScheduleFormByName('test');
-		expect(result).not.toBe(undefined);
-
-		expect(GetRepositoryMock).toBeCalled();
-		expect(InnerRepositoryMock.findOne).toBeCalledTimes(1);
-	});
 
 	it('should add schedules form', async () => {
 		const scheduleForm = new ScheduleForm();

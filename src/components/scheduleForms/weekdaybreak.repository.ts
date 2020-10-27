@@ -10,11 +10,11 @@ export class WeekDayBreakRepository extends RepositoryBase<WeekDayBreak> {
 	}
 
 	public async getBreaksForSchedules(scheduleFormIds: number[]): Promise<WeekDayBreak[]> {
-		return (await this.getRepository()).find({
-			where: {
-				scheduleFormId: In(scheduleFormIds),
-			},
-		});
+		if (scheduleFormIds.length)
+			return (await this.getRepository()).find({
+				where: { scheduleFormId: In(scheduleFormIds) },
+			});
+		return [];
 	}
 
 	public async deleteBreaksForSchedule(scheduleFormId: number): Promise<DeleteResult> {
