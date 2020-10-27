@@ -1,0 +1,80 @@
+import {
+	CitizenAuthGroup,
+	OrganisationAdminAuthGroup,
+	ServiceAdminAuthGroup,
+	ServiceProviderAuthGroup,
+} from '../../../infrastructure/auth/authGroup';
+import { Organisation, Service, ServiceProvider, User } from '../../../models';
+import { BookingChangeLogQueryVisitorFactory, BookingChangeLogsQueryAuthVisitor } from '../bookingChangeLogs.auth';
+
+const adminMock = User.createAdminUser({
+	molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+	userName: 'UserName',
+	email: 'test@email.com',
+	name: 'Name',
+});
+
+const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+
+const organisation = new Organisation();
+organisation.id = 1;
+
+const service = new Service();
+service.id = 2;
+
+const serviceProvider = new ServiceProvider();
+serviceProvider.id = 10;
+
+describe('BookingChangeLogs query auth tests', () => {
+	it('should not allow citizen to view booking change logs', async () => {
+		const citizens = [new CitizenAuthGroup(singpassMock)];
+		const visitor = await new BookingChangeLogsQueryAuthVisitor('a').createUserVisibilityCondition(citizens);
+
+		expect(visitor.userCondition).toStrictEqual('FALSE');
+		expect(visitor.userParams).toStrictEqual({});
+	});
+
+	it('should filter booking change logs by organisation id', async () => {
+		const orgAdmins = [new OrganisationAdminAuthGroup(adminMock, [organisation])];
+		const visitor = await new BookingChangeLogsQueryAuthVisitor('a').createUserVisibilityCondition(orgAdmins);
+
+		expect(visitor.userCondition).toStrictEqual('(a."_organisationId" IN (:...authorisedOrganisationIds))');
+		expect(visitor.userParams).toStrictEqual({ authorisedOrganisationIds: [1] });
+	});
+
+	it('should filter booking change logs by service id', async () => {
+		const serviceAdmins = [new ServiceAdminAuthGroup(adminMock, [service])];
+		const visitor = await new BookingChangeLogsQueryAuthVisitor('a').createUserVisibilityCondition(serviceAdmins);
+
+		expect(visitor.userCondition).toStrictEqual('(a."_serviceId" IN (:...authorisedServiceIds))');
+		expect(visitor.userParams).toStrictEqual({ authorisedServiceIds: [2] });
+	});
+
+	it('should filter booking change logs by service provider id', async () => {
+		const serviceProviders = [new ServiceProviderAuthGroup(adminMock, serviceProvider)];
+		const visitor = await new BookingChangeLogsQueryAuthVisitor('a').createUserVisibilityCondition(
+			serviceProviders,
+		);
+
+		expect(visitor.userCondition).toStrictEqual('(a."serviceProviderId" = :authorisedServiceProviderIds)');
+		expect(visitor.userParams).toStrictEqual({ authorisedServiceProviderIds: 10 });
+	});
+
+	it('should return FALSE query when user has no groups', async () => {
+		const result = await new BookingChangeLogsQueryAuthVisitor('a').createUserVisibilityCondition([]);
+
+		expect(result.userCondition).toStrictEqual('FALSE');
+		expect(result.userParams).toStrictEqual({});
+	});
+});
+
+describe('Booking change logs query no auth tests', () => {
+	it('should allow querying of all booking change logs', async () => {
+		const groups = [new CitizenAuthGroup(singpassMock)];
+		const result = await BookingChangeLogQueryVisitorFactory.getBookingChangeLogQueryVisitor(
+			true,
+		).createUserVisibilityCondition(groups);
+
+		expect(result.userCondition).toStrictEqual('');
+	});
+});

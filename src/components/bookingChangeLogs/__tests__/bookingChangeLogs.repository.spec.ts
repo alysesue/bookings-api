@@ -1,10 +1,10 @@
-import { Booking, BookingChangeLog, ChangeLogAction, User } from '../../../models';
+import { Booking, BookingChangeLog, ChangeLogAction, Organisation, User } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { TransactionManager } from '../../../core/transactionManager';
 import { BookingChangeLogsRepository } from '../bookingChangeLogs.repository';
 import { SelectQueryBuilder } from 'typeorm';
-import { AuthGroup, CitizenAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { AuthGroup, CitizenAuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
@@ -18,6 +18,17 @@ afterAll(() => {
 
 describe('BookingChangeLogs repository', () => {
 	const singpassUserMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+
+	const adminUserMock = User.createAdminUser({
+		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+		agencyUserId: 'ABC1234',
+		email: 'john@email.com',
+		userName: 'JohnAdmin',
+		name: 'John',
+	});
+
+	const organisation = new Organisation();
+	organisation.id = 1;
 
 	beforeEach(() => {
 		jest.resetAllMocks();
@@ -53,12 +64,53 @@ describe('BookingChangeLogs repository', () => {
 			getMany: jest.fn(() => Promise.resolve([])),
 		} as unknown) as SelectQueryBuilder<BookingChangeLog>;
 
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new OrganisationAdminAuthGroup(adminUserMock, [organisation])]),
+		);
+
 		const changedSince = new Date(Date.UTC(2020, 0, 1, 14, 0));
 		const changedUntil = new Date(Date.UTC(2020, 0, 31, 14, 0));
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const repository = Container.get(BookingChangeLogsRepository);
-		const results = await repository.getLogs({ changedSince, changedUntil, bookingIds: [2, 3], serviceId: 1 });
+		const results = await repository.getLogs({
+			changedSince,
+			changedUntil,
+			bookingIds: [2, 3],
+			serviceId: 1,
+			byPassAuth: false,
+		});
+
+		const whereParam =
+			'((bookingChangeLog."_organisationId" IN (:...authorisedOrganisationIds))) AND (changelog."_serviceId" = :serviceId) AND (changelog."_timestamp" >= :changedSince AND changelog."_timestamp" < :changedUntil) AND (changelog."_bookingId" IN (:...bookingIds))';
+		expect((queryBuilderMock.where as jest.Mock).mock.calls[0][0]).toBe(whereParam);
+		expect(queryBuilderMock.getMany).toHaveBeenCalled();
+		expect(results).toBeDefined();
+	});
+
+	it('should not retrieve logs', async () => {
+		const queryBuilderMock = ({
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			getMany: jest.fn(() => Promise.resolve([])),
+		} as unknown) as SelectQueryBuilder<BookingChangeLog>;
+
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new CitizenAuthGroup(singpassUserMock)]),
+		);
+
+		const changedSince = new Date(Date.UTC(2020, 0, 1, 14, 0));
+		const changedUntil = new Date(Date.UTC(2020, 0, 31, 14, 0));
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const repository = Container.get(BookingChangeLogsRepository);
+		const results = await repository.getLogs({
+			changedSince,
+			changedUntil,
+			bookingIds: [2, 3],
+			serviceId: 1,
+			byPassAuth: true,
+		});
 
 		const whereParam =
 			'(changelog."_serviceId" = :serviceId) AND (changelog."_timestamp" >= :changedSince AND changelog."_timestamp" < :changedUntil) AND (changelog."_bookingId" IN (:...bookingIds))';

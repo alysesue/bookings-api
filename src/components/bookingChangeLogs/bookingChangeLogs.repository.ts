@@ -3,7 +3,7 @@ import { BookingChangeLog } from '../../models';
 import { RepositoryBase } from '../../core/repository';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { groupByKey } from '../../tools/collections';
-import {BookingChangeLogsQueryAuth} from "./bookingChangeLogs.auth";
+import { BookingChangeLogQueryVisitorFactory } from './bookingChangeLogs.auth';
 
 @InRequestScope
 export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog> {
@@ -21,7 +21,10 @@ export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog
 
 	public async getLogs(options: ChangeLogSearchQuery): Promise<Map<number, BookingChangeLog[]>> {
 		const authGroups = await this.userContext.getAuthGroups();
-		const {userCondition, userParams} = await new BookingChangeLogsQueryAuth('changelog').createUserVisibilityCondition(authGroups);
+		const { userCondition, userParams } = await BookingChangeLogQueryVisitorFactory.getBookingChangeLogQueryVisitor(
+			options.byPassAuth,
+		).createUserVisibilityCondition(authGroups);
+
 		const { changedSince, changedUntil, serviceId, bookingIds } = options;
 
 		const serviceCondition = serviceId ? 'changelog."_serviceId" = :serviceId' : '';
@@ -32,11 +35,11 @@ export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog
 		const query = repository
 			.createQueryBuilder('changelog')
 			.where(
-				[serviceCondition, dateCondition, bookingIdsCondition, userCondition]
+				[userCondition, serviceCondition, dateCondition, bookingIdsCondition]
 					.filter((c) => c)
 					.map((c) => `(${c})`)
 					.join(' AND '),
-				{ changedSince, changedUntil, serviceId, bookingIds, userParams },
+				{ ...userParams, changedSince, changedUntil, serviceId, bookingIds },
 			)
 			.leftJoinAndSelect('changelog._user', 'loguser')
 			.leftJoinAndSelect('loguser._singPassUser', 'singpass')
@@ -54,4 +57,5 @@ export type ChangeLogSearchQuery = {
 	changedUntil: Date;
 	serviceId?: number;
 	bookingIds: number[];
+	byPassAuth?: boolean;
 };
