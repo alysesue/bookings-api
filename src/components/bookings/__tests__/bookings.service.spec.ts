@@ -37,11 +37,13 @@ import {
 	BookingRepositoryMock,
 	CalendarsServiceMock,
 	ServiceProvidersRepositoryMock,
+	ServiceProvidersServiceMock,
 	ServicesServiceMock,
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
 	UserContextMock,
 } from './bookings.mocks';
+import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -111,8 +113,9 @@ describe('Bookings.Service', () => {
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
 		Container.bind(CalendarsService).to(CalendarsServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
-		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 		Container.bind(UnavailabilitiesService).to(UnavailabilitiesServiceMock);
+		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
+		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
 		Container.bind(UserContext).to(UserContextMock);
 		Container.bind(BookingsValidatorFactory).to(BookingValidatorFactoryMock);
 		Container.bind(BookingChangeLogsService).to(BookingChangeLogsServiceMock);
@@ -159,6 +162,80 @@ describe('Bookings.Service', () => {
 		expect(booking.status).toBe(BookingStatus.PendingApproval);
 	});
 
+	it('should auto accept booking for citizen (when sp flag = true)', async () => {
+		const customProvider = ServiceProvider.create('provider', 1);
+		customProvider.id = 200;
+		customProvider.autoAcceptBookings = true;
+
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 200;
+		BookingRepositoryMock.searchBookingsMock = [];
+		TimeslotsServiceMock.availableProvidersForTimeslot = [customProvider];
+		ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(customProvider));
+		ServiceProvidersRepositoryMock.getServiceProviderMock = customProvider;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
+
+		await Container.get(BookingsService).save(bookingRequest, 1);
+
+		const booking = BookingRepositoryMock.booking;
+		expect(booking).not.toBe(undefined);
+		expect(booking.status).toBe(BookingStatus.Accepted);
+	});
+
+	it('should not auto accept booking for citizen (when sp flag = false)', async () => {
+		const customProvider = ServiceProvider.create('provider', 1);
+		customProvider.id = 200;
+		customProvider.autoAcceptBookings = false;
+
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 200;
+		BookingRepositoryMock.searchBookingsMock = [];
+		TimeslotsServiceMock.availableProvidersForTimeslot = [customProvider];
+		ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(customProvider));
+		ServiceProvidersRepositoryMock.getServiceProviderMock = customProvider;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
+
+		await Container.get(BookingsService).save(bookingRequest, 1);
+
+		const booking = BookingRepositoryMock.booking;
+		expect(booking).not.toBe(undefined);
+		expect(booking.status).toBe(BookingStatus.PendingApproval);
+	});
+
+	it('should always auto accept booking for admins (even when sp flag = false)', async () => {
+		const customProvider = ServiceProvider.create('provider', 1);
+		customProvider.id = 200;
+		customProvider.autoAcceptBookings = false;
+
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 200;
+		BookingRepositoryMock.searchBookingsMock = [];
+		TimeslotsServiceMock.availableProvidersForTimeslot = [customProvider];
+		ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(customProvider));
+		ServiceProvidersRepositoryMock.getServiceProviderMock = customProvider;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceProviderAuthGroup(adminMock, customProvider)]),
+		);
+
+		await Container.get(BookingsService).save(bookingRequest, 1);
+
+		const booking = BookingRepositoryMock.booking;
+		expect(booking).not.toBe(undefined);
+		expect(booking.status).toBe(BookingStatus.Accepted);
+	});
+
 	it('should save direct booking', async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
@@ -167,6 +244,7 @@ describe('Bookings.Service', () => {
 		BookingRepositoryMock.searchBookingsMock = [];
 		TimeslotsServiceMock.availableProvidersForTimeslot = [serviceProvider];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(serviceProvider));
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
 
@@ -187,6 +265,7 @@ describe('Bookings.Service', () => {
 		bookingRequest.citizenUinFin = 'NRIC1234';
 		BookingRepositoryMock.searchBookingsMock = [];
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(serviceProvider));
 		TimeslotsServiceMock.acceptedBookings = [bookingMock];
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));

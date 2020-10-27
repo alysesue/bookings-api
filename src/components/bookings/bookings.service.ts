@@ -50,6 +50,18 @@ export class BookingsService {
 		return bookingRequest.citizenUinFin;
 	}
 
+	public static shouldAutoAccept(currentUser: User, serviceProvider?: ServiceProvider): boolean {
+		if (!serviceProvider) {
+			return false;
+		}
+
+		if (currentUser.isCitizen()) {
+			return serviceProvider.autoAcceptBookings;
+		}
+
+		return true;
+	}
+
 	public async cancelBooking(bookingId: number): Promise<Booking> {
 		return await this.changeLogsService.executeAndLogAction(
 			bookingId,
@@ -275,7 +287,7 @@ export class BookingsService {
 			.withCitizenName(bookingRequest.citizenName)
 			.withCitizenPhone(bookingRequest.citizenPhone)
 			.withCitizenEmail(bookingRequest.citizenEmail)
-			.withAutoAccept(serviceProvider?.autoAcceptBookings)
+			.withAutoAccept(BookingsService.shouldAutoAccept(currentUser, serviceProvider))
 			.build();
 
 		booking.serviceProvider = serviceProvider;

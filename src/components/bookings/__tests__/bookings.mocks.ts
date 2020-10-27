@@ -11,6 +11,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { BookingChangeLogsService } from '../../bookingChangeLogs/bookingChangeLogs.service';
 import { ServicesService } from '../../services/services.service';
 import { AuthGroup } from '../../../infrastructure/auth/authGroup';
+import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 
 export class BookingRepositoryMock extends BookingsRepository {
 	public static booking: Booking;
@@ -70,6 +71,14 @@ export class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 
 	public async getServiceProvider(): Promise<ServiceProvider> {
 		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
+	}
+}
+
+export class ServiceProvidersServiceMock extends ServiceProvidersService {
+	public static getServiceProvider = jest.fn<Promise<ServiceProvider>, any>();
+
+	public async getServiceProvider(...params): Promise<any> {
+		return await ServiceProvidersServiceMock.getServiceProvider(...params);
 	}
 }
 
