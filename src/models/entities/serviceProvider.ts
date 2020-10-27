@@ -31,6 +31,10 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		return this._autoAcceptBookings;
 	}
 
+	public set autoAcceptBookings(value: boolean) {
+		this._autoAcceptBookings = value;
+	}
+
 	public get createdAt(): Date {
 		return this._createdAt;
 	}

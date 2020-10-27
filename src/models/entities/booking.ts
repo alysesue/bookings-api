@@ -84,8 +84,8 @@ export class BookingBuilder {
 		return this;
 	}
 
-	public withAutoAccept(autoAccept = false): BookingBuilder {
-		this.autoAccept = autoAccept;
+	public withAutoAccept(autoAccept: boolean): BookingBuilder {
+		this.autoAccept = !!autoAccept;
 		return this;
 	}
 
