@@ -92,8 +92,6 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 	private unAvailabilitiesService: UnavailabilitiesService;
 
 	public async validateAvailability(booking: Booking) {
-		await this.validateOverlapping(booking);
-
 		if (
 			booking.serviceProviderId &&
 			(await this.unAvailabilitiesService.isUnavailable({
@@ -160,6 +158,7 @@ class SlotBookingsValidator extends BookingsValidator {
 				booking.startDateTime,
 				booking.endDateTime,
 				booking.serviceId,
+				true
 			);
 
 			if (providers.length === 0) {

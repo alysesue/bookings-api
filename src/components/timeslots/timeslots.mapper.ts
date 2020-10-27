@@ -17,7 +17,7 @@ export class TimeslotsMapper {
 		const response = new AvailabilityEntryResponse();
 		response.startTime = entry.startTime;
 		response.endTime = entry.endTime;
-		response.availabilityCount = entry.getAvailabilityCount();
+		response.availabilityCount = entry.getAvailabilityCount(true);
 		return response;
 	}
 
@@ -26,14 +26,14 @@ export class TimeslotsMapper {
 			timeslotServiceProviders,
 			totalCapacity,
 			totalAssignedBookings,
-		] = TimeslotsMapper.mapTimeslotServiceProviders(Array.from(entry.getTimeslotServiceProviders()));
+		] = TimeslotsMapper.mapTimeslotServiceProviders(Array.from(entry.getTimeslotServiceProviders(true)));
 		const response = new TimeslotEntryResponse();
 		response.startTime = entry.startTime;
 		response.endTime = entry.endTime;
 		response.timeslotServiceProviders = timeslotServiceProviders;
 		response.totalAssignedBookingCount = totalAssignedBookings;
 		response.totalUnassignedBookingCount = entry.unassignedPendingBookingCount;
-		response.totalAvailabilityCount = entry.getAvailabilityCount();
+		response.totalAvailabilityCount = entry.getAvailabilityCount(true);
 		response.totalCapacity = totalCapacity;
 		return response;
 	}

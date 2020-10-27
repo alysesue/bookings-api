@@ -19,9 +19,8 @@ export class AvailableTimeslotProviders {
 		return this._unassignedPendingBookingCount;
 	}
 
-	public *getTimeslotServiceProviders(): Iterable<TimeslotServiceProviderResult> {
-		const totalAvailability = this.getAvailabilityCount();
-
+	public *getTimeslotServiceProviders(countUnassigned: boolean): Iterable<TimeslotServiceProviderResult> {
+		const totalAvailability = this.getAvailabilityCount(countUnassigned);
 		for (const timeslotServiceProvider of this._timeslotServiceProviders.values()) {
 			if (timeslotServiceProvider.isVisibleByUser && timeslotServiceProvider.isValid()) {
 				yield {
@@ -35,16 +34,17 @@ export class AvailableTimeslotProviders {
 		}
 	}
 
-	public getAvailabilityCount(): number {
+	public getAvailabilityCount(countUnassigned: boolean): number {
 		let sumOfAvailability = 0;
 		this._timeslotServiceProviders.forEach((item) => {
 			sumOfAvailability += item.getAvailabilityCount();
 		});
-		return Math.max(sumOfAvailability - this._unassignedPendingBookingCount, 0);
+		if (countUnassigned) return Math.max(sumOfAvailability - this._unassignedPendingBookingCount, 0);
+		return Math.max(sumOfAvailability, 0);
 	}
 
 	public isValid(): boolean {
-		for (const timeslotSp of this.getTimeslotServiceProviders()) {
+		for (const timeslotSp of this.getTimeslotServiceProviders(true)) {
 			return true;
 		}
 		return false;

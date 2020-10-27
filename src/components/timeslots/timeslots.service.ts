@@ -79,9 +79,9 @@ export class TimeslotsService {
 			startDateTime,
 			endDateTime,
 			serviceId,
+			false,
 			serviceProviderId,
 		);
-
 		const isProviderAvailable = providers.some((item) => item.serviceProvider.id === serviceProviderId);
 		return isProviderAvailable;
 	}
@@ -90,6 +90,7 @@ export class TimeslotsService {
 		startDateTime: Date,
 		endDateTime: Date,
 		serviceId: number,
+		countUnassigned: boolean,
 		serviceProviderId?: number,
 	): Promise<TimeslotServiceProviderResult[]> {
 		const aggregatedEntries = await this.getAggregatedTimeslots(
@@ -103,7 +104,7 @@ export class TimeslotsService {
 		const timeslotEntry = aggregatedEntries.find(
 			(e) => DateHelper.equals(e.startTime, startDateTime) && DateHelper.equals(e.endTime, endDateTime),
 		);
-		let availableProviders = Array.from(timeslotEntry?.getTimeslotServiceProviders() || []).filter(
+		let availableProviders = Array.from(timeslotEntry?.getTimeslotServiceProviders(countUnassigned) || []).filter(
 			(e) => e.availabilityCount > 0,
 		);
 		if (serviceProviderId) {
@@ -224,12 +225,12 @@ export class TimeslotsService {
 		const acceptedBookingsLookup = groupByKey(acceptedBookings, TimeslotsService.bookingKeySelector);
 
 		for (const element of entries) {
-			const result = acceptedBookings
-				.filter((booking) => {
-					return booking.bookingIntersects({ start: element.startTime, end: element.endTime });
-				})
-				.map((booking) => booking.serviceProviderId);
-			element.setOverlappingServiceProviders(result);
+			// const result = acceptedBookings
+			// 	.filter((booking) => {
+			// 		return booking.bookingIntersects({ start: element.startTime, end: element.endTime });
+			// 	})
+			// 	.map((booking) => booking.serviceProviderId);
+			// element.setOverlappingServiceProviders(result);
 
 			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
 			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
@@ -267,9 +268,9 @@ export class TimeslotsService {
 		for (const provider of serviceProviders) {
 			const timeslotServiceProviders = provider.timeslotsSchedule
 				? provider.timeslotsSchedule.generateValidTimeslots({
-						startDatetime: minStartTime,
-						endDatetime: maxEndTime,
-				  })
+					startDatetime: minStartTime,
+					endDatetime: maxEndTime,
+				})
 				: validServiceTimeslots;
 
 			aggregator.aggregate(provider, timeslotServiceProviders);

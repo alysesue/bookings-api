@@ -65,7 +65,7 @@ export class TimeslotsServiceMock extends TimeslotsService {
 		timeslotEntry.endTime = startDateTime;
 		timeslotEntry.setRelatedServiceProviders(TimeslotsServiceMock.availableProvidersForTimeslot);
 
-		return Array.from(timeslotEntry.getTimeslotServiceProviders());
+		return Array.from(timeslotEntry.getTimeslotServiceProviders(true));
 	}
 
 	public async isProviderAvailableForTimeslot(...params): Promise<any> {
@@ -101,7 +101,7 @@ export class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
-	public init() {}
+	public init() { }
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(...params);
 	}
@@ -123,7 +123,7 @@ export class BookingChangeLogsServiceMock extends BookingChangeLogsService {
 export class ServicesServiceMock extends ServicesService {
 	public static getService = jest.fn();
 
-	public init() {}
+	public init() { }
 
 	public async getService(...params): Promise<any> {
 		return await ServicesServiceMock.getService(params);

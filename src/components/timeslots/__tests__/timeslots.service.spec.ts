@@ -181,7 +181,7 @@ describe('Timeslots Service', () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 17, 0);
 		const endDateTime = DateHelper.setHours(date, 18, 0);
-		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, 100);
+		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, true, 100);
 		expect(result.length).toBe(0);
 	});
 
@@ -189,7 +189,7 @@ describe('Timeslots Service', () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 16, 0);
 		const endDateTime = DateHelper.setHours(date, 17, 0);
-		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1);
+		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, true);
 		expect(result.length).toBe(1);
 		expect(result[0].availabilityCount).toBe(1);
 	});
@@ -202,14 +202,14 @@ describe('Timeslots Service', () => {
 		expect(result).toBe(true);
 	});
 
-	it('should return FALSE if service provider is unavailable at this timeslot', async () => {
+	it('should return service provider availability at this timeslot', async () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 17, 0);
 		const endDateTime = DateHelper.setHours(date, 18, 0);
 		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100);
 		expect(result1).toBe(false);
 		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101);
-		expect(result2).toBe(false);
+		expect(result2).toBe(true);
 	});
 
 	it('should merge bookings with same time range', async () => {
@@ -265,7 +265,7 @@ describe('Timeslots Service', () => {
 		const timeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
 		expect(timeslots).toHaveLength(1);
 
-		const timeslotSPs = Array.from(timeslots[0].getTimeslotServiceProviders());
+		const timeslotSPs = Array.from(timeslots[0].getTimeslotServiceProviders(true));
 		expect(timeslotSPs).toHaveLength(1);
 	});
 
@@ -286,7 +286,7 @@ describe('Timeslots Service', () => {
 		const timeslots = await service.getAggregatedTimeslots(new Date(), new Date(), 1, true);
 
 		expect(timeslots.length).toBe(1);
-		const spTimeslot = Array.from(timeslots[0].getTimeslotServiceProviders());
+		const spTimeslot = Array.from(timeslots[0].getTimeslotServiceProviders(true));
 		expect(spTimeslot[0].acceptedBookings.length).toBe(1);
 		expect(setBookedServiceProviders).toHaveBeenCalled();
 	});
