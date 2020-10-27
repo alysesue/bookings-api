@@ -1,5 +1,5 @@
-import { AdminRequestEndpointSG } from '../utils/RequestEndpointSG';
-import { PgClient } from '../utils/PgClient';
+import { AdminRequestEndpointSG } from '../utils/requestEndpointSG';
+import { PgClient } from '../utils/pgClient';
 
 describe('Tests endpoint and populate data', () => {
 	const SERVICE_NAME = 'Service';
