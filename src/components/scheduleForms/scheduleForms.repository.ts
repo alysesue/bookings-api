@@ -43,11 +43,7 @@ export class ScheduleFormsRepository extends RepositoryBase<ScheduleForm> {
 				},
 			)
 			.leftJoinAndSelect('scheduleForm.weekdaySchedules', 'weekdaySchedules')
-			.leftJoinAndSelect(
-				ServiceProvider,
-				'serviceProvider',
-				'serviceProvider._scheduleFormId="scheduleForm"."id"',
-			);
+			.leftJoinAndSelect('scheduleForm._scheduleForm', 'serviceProvider');
 	}
 
 	public async getScheduleFormById(id: number): Promise<ScheduleForm> {
