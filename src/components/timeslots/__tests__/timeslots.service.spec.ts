@@ -290,6 +290,32 @@ describe('Timeslots Service', () => {
 		expect(spTimeslot[0].acceptedBookings.length).toBe(1);
 		expect(setBookedServiceProviders).toHaveBeenCalled();
 	});
+
+	it('should test when there is a pending booking', async () => {
+		const service = Container.get(TimeslotsService);
+		const startDateTime = DateHelper.setHours(date, 17, 0);
+		const endDateTime = DateHelper.setHours(date, 18, 0);
+		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, true);
+		expect(result.length).toBe(2);
+		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100);
+		expect(result1).toBe(true);
+		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101);
+		expect(result2).toBe(true);
+	});
+
+
+	it('should get no available service providers because all sp are unavailable', async () => {
+		const service = Container.get(TimeslotsService);
+		const startDateTime = DateHelper.setHours(date, 22, 0);
+		const endDateTime = DateHelper.setHours(date, 23, 0);
+		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, true);
+		expect(result.length).toBe(0);
+		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100);
+		expect(result1).toBe(false);
+		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101);
+		expect(result2).toBe(false);
+	});
+
 });
 
 const getOutOfSlotBooking = (serviceProvider: ServiceProvider): Booking => {
