@@ -7,7 +7,7 @@ export class PgClient {
 			user: process.env['BOOKINGSG_DB_USERNAME'],
 			host: 'localhost',
 			database: process.env['BOOKINGSG_DB_INSTANCE'],
-			password: process.env['DB_PASSWORD_BOOKINGSG_API_APP'],
+			password: process.env['DB_PASSWORD_BOOKINGSG_API_APP'] || process.env['DB_PASSWORD_BOOKINGSG_APP'],
 			port: process.env['BOOKINGSG_DB_PORT'],
 		});
 	}
