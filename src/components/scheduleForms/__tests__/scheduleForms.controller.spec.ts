@@ -75,6 +75,6 @@ describe('Test templates scheduleForms controller', () => {
 		const scheduleFormsController = Container.get(ScheduleFormsController);
 
 		await scheduleFormsController.deleteScheduleForm(3);
-		expect(deleteScheduleForm).toBeCalledTimes(1);
+		expect(deleteScheduleForm).toBeCalledTimes(0);
 	});
 });

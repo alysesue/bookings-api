@@ -53,7 +53,7 @@ export class ScheduleFormsRepository extends RepositoryBase<ScheduleForm> {
 	public async getScheduleFormById(id: number): Promise<ScheduleForm> {
 		const query = await this.querySelectScheduleForm([id]);
 		const scheduleForm = await query.getOne();
-		return (await this.populateBreaks([scheduleForm]))[0];
+		return scheduleForm ? (await this.populateBreaks([scheduleForm]))[0] : null;
 	}
 
 	public async getScheduleForms(ids?: number[]): Promise<ScheduleForm[]> {
