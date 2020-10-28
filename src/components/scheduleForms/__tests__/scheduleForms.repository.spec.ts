@@ -34,6 +34,10 @@ const adminMock = User.createAdminUser({
 });
 describe('ScheduleForm repository', () => {
 	it('should get schedules form', async () => {
+		const scheduleForm = new ScheduleForm();
+		scheduleForm.id = 2;
+		scheduleForm.initWeekdaySchedules();
+
 		UserContextMock.getAuthGroups.mockReturnValue(
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
 		);
@@ -41,7 +45,7 @@ describe('ScheduleForm repository', () => {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			orderBy: jest.fn(() => queryBuilderMock),
-			getMany: jest.fn(() => Promise.resolve([])),
+			getMany: jest.fn(() => Promise.resolve([scheduleForm])),
 		};
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
@@ -90,13 +94,14 @@ describe('ScheduleForm repository', () => {
 		const result = await repository.getScheduleFormById(NullScheduleId);
 		expect(result).toBe(null);
 
-		expect(TransactionManagerMock.getOne).toBeCalledTimes(1);
+		expect(queryBuilderMock.getOne).toBeCalledTimes(1);
 	});
 
 	it('should add schedules form', async () => {
 		const scheduleForm = new ScheduleForm();
 		scheduleForm.id = 2;
 		scheduleForm.initWeekdaySchedules();
+		TransactionManagerMock.save.mockImplementation(() => scheduleForm);
 
 		const repository = Container.get(ScheduleFormsRepository);
 		const result = await repository.saveScheduleForm(scheduleForm);
@@ -106,6 +111,7 @@ describe('ScheduleForm repository', () => {
 	});
 
 	it('should remove schedules form', async () => {
+		TransactionManagerMock.delete.mockImplementation(() => 1);
 		const repository = Container.get(ScheduleFormsRepository);
 		const result = await repository.deleteScheduleForm(34848);
 		expect(result).not.toBe(undefined);

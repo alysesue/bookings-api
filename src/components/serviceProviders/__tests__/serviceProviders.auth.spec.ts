@@ -81,7 +81,7 @@ describe('Service providers Auth', () => {
 		expect(authVisitor.hasPermission([serviceAdminAuthGroup])).toBe(true);
 	});
 
-	it('should not be able to update a serviceprovider not belonging to authorised services for org admin', () => {
+	it('should not be able to update a service provider not belonging to authorised services for org admin', () => {
 		const organisation = new Organisation();
 		organisation.id = 1;
 		const userGroup = new OrganisationAdminAuthGroup(

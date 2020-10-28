@@ -18,7 +18,7 @@ export class ScheduleFormsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 	constructor(serviceProvider: ServiceProvider, action: CrudAction) {
 		super();
 		if (!serviceProvider) {
-			throw new Error('ScheduleFormsActionAuthVisitor - ScheduleForm cannot be null.');
+			throw new Error('ScheduleFormsActionAuthVisitor - Service Provider cannot be null.');
 		}
 		if (serviceProvider && !serviceProvider.service) {
 			throw new Error('ScheduleFormsActionAuthVisitor - Service is not loaded in Service Provider.');
@@ -101,7 +101,6 @@ export class ScheduleFormsQueryAuthVisitor extends QueryAuthGroupVisitor {
 
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
 		const serviceProviderId = _userGroup.authorisedServiceProvider.id;
-
 		this.addAuthCondition(`${this._serviceProviderAlias}._id = :serviceProviderId`, { serviceProviderId });
 	}
 }
