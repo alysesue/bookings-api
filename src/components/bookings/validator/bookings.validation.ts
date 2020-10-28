@@ -158,7 +158,7 @@ class SlotBookingsValidator extends BookingsValidator {
 				booking.startDateTime,
 				booking.endDateTime,
 				booking.serviceId,
-				true
+				true,
 			);
 
 			if (providers.length === 0) {
