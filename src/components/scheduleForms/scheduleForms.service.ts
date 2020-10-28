@@ -75,7 +75,6 @@ export class ScheduleFormsService {
 	}
 
 	public async deleteScheduleForm(id: number): Promise<DeleteResult> {
-		await this.verifyActionPermission(undefined, CrudAction.Delete);
 		return await this.scheduleFormsRepository.deleteScheduleForm(id);
 	}
 

@@ -50,6 +50,7 @@ const MockScheduleFormsRepository = jest.fn().mockImplementation(() => ({
 }));
 
 const serviceMockWithTemplate = new Service();
+serviceMockWithTemplate.id = 2;
 const adminMock = User.createAdminUser({
 	molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
 	userName: 'UserName',
@@ -162,7 +163,11 @@ describe('Schedules form template services ', () => {
 	});
 
 	it('should create new Schedule ', async () => {
+		UserContextMock.getAuthGroups.mockReturnValue(
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
+		);
 		const sp = ServiceProvider.create('sp', 2);
+		sp.service = serviceMockWithTemplate;
 		sp.id = 1;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
 		await scheduleFormsService.createScheduleForm(scheduleFormRequestCommon);
@@ -170,6 +175,14 @@ describe('Schedules form template services ', () => {
 	});
 
 	it('should update the template', async () => {
+		UserContextMock.getAuthGroups.mockReturnValue(
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
+		);
+		const sp = ServiceProvider.create('sp', 2);
+		sp.service = serviceMockWithTemplate;
+		sp.id = 1;
+		ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
+
 		const template = await scheduleFormsService.updateScheduleForm(1, scheduleFormRequestCommon);
 
 		expect(saveScheduleForm).toBeCalled();
@@ -183,18 +196,19 @@ describe('Schedules form template services ', () => {
 	});
 
 	it('should call delete repository', async () => {
-		UserContextMock.getAuthGroups.mockReturnValue(
-			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
-		);
-
 		await scheduleFormsService.deleteScheduleForm(3);
 		expect(deleteScheduleForm).toBeCalled();
 	});
 
 	it('should generate timeslots', async () => {
+		UserContextMock.getAuthGroups.mockReturnValue(
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
+		);
 		const sp = ServiceProvider.create('sp', 2);
+		sp.service = serviceMockWithTemplate;
 		sp.id = 1;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
+
 		await scheduleFormsService.createScheduleForm(scheduleFormRequestCommon);
 		const serviceProviderRes = ServiceProvidersRepositoryMock.save.mock.calls[0][0];
 		expect(serviceProviderRes._timeslotsSchedule.timeslotItems.length).toBe(3);
