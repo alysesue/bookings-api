@@ -6,7 +6,6 @@ import { WeekDayBreakRepository } from './weekdaybreak.repository';
 import { RepositoryBase } from '../../core/repository';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { IEntityWithScheduleForm } from '../../models/interfaces';
-import { BookingQueryAuthVisitor } from '../bookings/bookings.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ScheduleFormsQueryAuthVisitor } from './scheduleForms.auth';
 
@@ -43,7 +42,12 @@ export class ScheduleFormsRepository extends RepositoryBase<ScheduleForm> {
 				},
 			)
 			.leftJoinAndSelect('scheduleForm.weekdaySchedules', 'weekdaySchedules')
-			.leftJoinAndSelect('scheduleForm._scheduleForm', 'serviceProvider');
+			.leftJoinAndSelect(
+				ServiceProvider,
+				'serviceProvider',
+				'serviceProvider._scheduleFormId="scheduleForm"."id"',
+			)
+			.leftJoinAndSelect('serviceProvider._service', 'service');
 	}
 
 	public async getScheduleFormById(id: number): Promise<ScheduleForm> {

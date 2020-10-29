@@ -38,8 +38,10 @@ export class ScheduleFormsService {
 		});
 		await this.verifyActionPermission(serviceProvider, CrudAction.Create);
 		await this.generateTimeslots(serviceProvider, newSchedule);
-		const templateSet = await this.scheduleFormsRepository.saveScheduleForm(newSchedule);
-		return mapToResponse(templateSet);
+		const scheduleForm = await this.scheduleFormsRepository.saveScheduleForm(newSchedule);
+		serviceProvider.scheduleForm = scheduleForm;
+		await this.serviceProvidersRepository.save(serviceProvider);
+		return mapToResponse(scheduleForm);
 	}
 
 	private async generateTimeslots(serviceProvider: ServiceProvider, scheduleForm: ScheduleForm) {
@@ -48,7 +50,6 @@ export class ScheduleFormsService {
 			scheduleForm,
 			serviceProvider.timeslotsScheduleId,
 		);
-		await this.serviceProvidersRepository.save(serviceProvider);
 	}
 
 	public async updateScheduleForm(id: number, template: ScheduleFormRequest): Promise<ScheduleFormResponse> {
