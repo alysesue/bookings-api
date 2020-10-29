@@ -12,6 +12,8 @@ import { BookingChangeLogsService } from '../../bookingChangeLogs/bookingChangeL
 import { ServicesService } from '../../services/services.service';
 import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
+import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
+import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 
 export class BookingRepositoryMock extends BookingsRepository {
 	public static booking: Booking;
@@ -49,20 +51,25 @@ export class CalendarsServiceMock extends CalendarsService {
 }
 
 export class TimeslotsServiceMock extends TimeslotsService {
-	public static availableProvidersForTimeslot: ServiceProvider[] = [];
+	public static availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 	public static acceptedBookings: Booking[] = [];
+	public static isProviderAvailableForTimeslot = jest.fn<Promise<boolean>, any>();
 
 	public async getAvailableProvidersForTimeslot(
 		startDateTime: Date,
 		endDateTime: Date,
 		serviceId: number,
-	): Promise<AvailableTimeslotProviders> {
+	): Promise<TimeslotServiceProviderResult[]> {
 		const timeslotEntry = new AvailableTimeslotProviders();
 		timeslotEntry.startTime = startDateTime;
 		timeslotEntry.endTime = startDateTime;
 		timeslotEntry.setRelatedServiceProviders(TimeslotsServiceMock.availableProvidersForTimeslot);
 
-		return timeslotEntry;
+		return Array.from(timeslotEntry.getTimeslotServiceProviders());
+	}
+
+	public async isProviderAvailableForTimeslot(...params): Promise<any> {
+		return await TimeslotsServiceMock.isProviderAvailableForTimeslot(...params);
 	}
 }
 

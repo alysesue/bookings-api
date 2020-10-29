@@ -2,20 +2,16 @@ import { Inject } from 'typescript-ioc';
 import { Controller, Get, Header, Query, Response, Route, Security, Tags } from 'tsoa';
 import { AvailabilityEntryResponse, TimeslotEntryResponse } from './timeslots.apicontract';
 import { TimeslotsService } from './timeslots.service';
-import { AvailableTimeslotProviders } from './availableTimeslotProviders';
-import { ServiceProvidersMapper } from '../serviceProviders/serviceProviders.mapper';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { ApiData, ApiDataFactory } from '../../apicontract';
+import { TimeslotsMapper } from './timeslots.mapper';
 
 @Route('v1/timeslots')
 @Tags('Timeslots')
 export class TimeslotsController extends Controller {
 	@Inject
 	private timeslotsService: TimeslotsService;
-
-	@Inject
-	private serviceProviderMapper: ServiceProvidersMapper;
 
 	/**
 	 * Retrieves available timeslots for a service in a defined datetime range [startDate, endDate].
@@ -40,15 +36,16 @@ export class TimeslotsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 		@Query() serviceProviderId?: number,
 	): Promise<ApiData<AvailabilityEntryResponse[]>> {
-		let availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(
+		const availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
 			serviceId,
 			false,
 			serviceProviderId,
 		);
-		availableTimeslots = availableTimeslots.filter((e) => e.availabilityCount > 0);
-		return ApiDataFactory.create(TimeslotsController.mapAvailabilityToResponse(availableTimeslots));
+		let result = TimeslotsMapper.mapAvailabilityToResponse(availableTimeslots);
+		result = result.filter((e) => e.availabilityCount > 0);
+		return ApiDataFactory.create(result);
 	}
 
 	/**
@@ -79,35 +76,6 @@ export class TimeslotsController extends Controller {
 			includeBookings,
 			serviceProviderId,
 		);
-		return ApiDataFactory.create(timeslots?.map((t) => this.mapTimeslotEntry(t)));
-	}
-
-	private static mapAvailabilityToResponse(entries: AvailableTimeslotProviders[]): AvailabilityEntryResponse[] {
-		return entries.map((e) => this.mapAvailabilityEntry(e));
-	}
-
-	private static mapAvailabilityEntry(entry: AvailableTimeslotProviders): AvailabilityEntryResponse {
-		const response = new AvailabilityEntryResponse();
-		response.startTime = entry.startTime;
-		response.endTime = entry.endTime;
-		response.availabilityCount = entry.availabilityCount;
-		return response;
-	}
-
-	private mapTimeslotEntry(entry: AvailableTimeslotProviders): TimeslotEntryResponse {
-		const response = new TimeslotEntryResponse();
-		response.startTime = entry.startTime;
-		response.endTime = entry.endTime;
-		response.availabilityCount = entry.availabilityCount;
-		response.pendingBookingsCount = entry.unlinkedPendingBookingsCount;
-		response.bookedServiceProviders = this.serviceProviderMapper.mapBookedServiceProviderEntries(
-			entry.bookedServiceProviders,
-		);
-		response.availableServiceProviders = this.serviceProviderMapper.mapSummaryDataModels(
-			entry.availableServiceProviders,
-		);
-		response.totalCount = entry.totalCount;
-
-		return response;
+		return ApiDataFactory.create(timeslots?.map((t) => TimeslotsMapper.mapTimeslotEntry(t)));
 	}
 }

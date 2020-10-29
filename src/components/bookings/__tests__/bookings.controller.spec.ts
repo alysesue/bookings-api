@@ -8,6 +8,7 @@ import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotPro
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { BookingBuilder } from '../../../models/entities/booking';
+import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -148,9 +149,7 @@ describe('Bookings.Controller', () => {
 });
 
 const TimeslotsServiceMock = {
-	getAvailableProvidersForTimeslot: jest.fn(() =>
-		Promise.resolve(AvailableTimeslotProviders.empty(new Date(), new Date())),
-	),
+	getAvailableProvidersForTimeslot: jest.fn<Promise<TimeslotServiceProviderResult[]>, any>(() => Promise.resolve([])),
 };
 
 class BookingsServiceMock extends BookingsService {

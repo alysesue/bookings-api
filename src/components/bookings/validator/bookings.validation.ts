@@ -142,18 +142,31 @@ class SlotBookingsValidator extends BookingsValidator {
 	private timeslotsService: TimeslotsService;
 
 	public async validateAvailability(booking: Booking) {
-		const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(
-			booking.startDateTime,
-			booking.endDateTime,
-			booking.serviceId,
-			booking.serviceProviderId,
-		);
+		if (booking.serviceProviderId) {
+			const isProviderAvailable = await this.timeslotsService.isProviderAvailableForTimeslot(
+				booking.startDateTime,
+				booking.endDateTime,
+				booking.serviceId,
+				booking.serviceProviderId,
+			);
 
-		if (timeslotEntry.availabilityCount < 1) {
-			const errorMessage = booking.serviceProviderId
-				? BookingsValidator.ServiceProviderNotAvailable
-				: BookingsValidator.ServiceProvidersNotAvailable;
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(errorMessage);
+			if (!isProviderAvailable) {
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+					BookingsValidator.ServiceProviderNotAvailable,
+				);
+			}
+		} else {
+			const providers = await this.timeslotsService.getAvailableProvidersForTimeslot(
+				booking.startDateTime,
+				booking.endDateTime,
+				booking.serviceId,
+			);
+
+			if (providers.length === 0) {
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+					BookingsValidator.ServiceProvidersNotAvailable,
+				);
+			}
 		}
 	}
 }

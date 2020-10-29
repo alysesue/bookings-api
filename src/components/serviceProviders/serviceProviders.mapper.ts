@@ -3,8 +3,6 @@ import { Booking, ServiceProvider } from '../../models';
 import { CalendarsMapper } from '../calendars/calendars.mapper';
 import { ServiceProviderResponseModel, ServiceProviderSummaryModel } from './serviceProviders.apicontract';
 import { mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
-import { BookingResponse } from '../bookings/bookings.apicontract';
-import { BookingsMapper } from '../bookings/bookings.mapper';
 import { mapToResponse as mapScheduleFormResponse } from '../scheduleForms/scheduleForms.mapper';
 
 @InRequestScope
@@ -35,20 +33,11 @@ export class ServiceProvidersMapper {
 		return spList?.map((e) => this.mapDataModel(e));
 	}
 
-	public mapSummaryDataModel(entry: ServiceProvider, bookings?: BookingResponse[]): ServiceProviderSummaryModel {
-		return new ServiceProviderSummaryModel(entry.id, entry.name, bookings);
+	public mapSummaryDataModel(entry: ServiceProvider): ServiceProviderSummaryModel {
+		return new ServiceProviderSummaryModel(entry.id, entry.name);
 	}
 
 	public mapSummaryDataModels(entries: ServiceProvider[]): ServiceProviderSummaryModel[] {
 		return entries?.map((e) => this.mapSummaryDataModel(e));
-	}
-
-	public mapBookedServiceProviderEntries(entries: Map<ServiceProvider, Booking[]>): ServiceProviderSummaryModel[] {
-		const result: ServiceProviderSummaryModel[] = [];
-
-		entries?.forEach((bookings, serviceProvider) => {
-			result.push(this.mapSummaryDataModel(serviceProvider, BookingsMapper.mapDataModels(bookings)));
-		});
-		return result;
 	}
 }

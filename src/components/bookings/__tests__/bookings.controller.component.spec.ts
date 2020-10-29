@@ -21,6 +21,8 @@ import {
 } from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
+import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -38,6 +40,10 @@ jest.mock('mol-lib-common', () => {
 	};
 });
 
+beforeEach(() => {
+	TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
+});
+
 describe('Booking Integration tests', () => {
 	it('should accept booking', async () => {
 		const calendar = new Calendar();
@@ -50,6 +56,10 @@ describe('Booking Integration tests', () => {
 		const provider = ServiceProvider.create('Provider', 2);
 		provider.id = 11;
 		provider.calendar = calendar;
+		const timeslotWithCapacity = new TimeslotWithCapacity(
+			new Date('2020-10-01T01:00:00'),
+			new Date('2020-10-01T02:00:00'),
+		);
 
 		const adminMock = User.createAdminUser({
 			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
@@ -68,7 +78,9 @@ describe('Booking Integration tests', () => {
 		Container.bind(ServicesService).to(ServicesServiceMock);
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = provider;
-		TimeslotsServiceMock.availableProvidersForTimeslot = [provider];
+		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(provider, timeslotWithCapacity);
+		TimeslotsServiceMock.isProviderAvailableForTimeslot.mockReturnValue(Promise.resolve(true));
 
 		const bookingMock = new BookingBuilder()
 			.withServiceId(2)
@@ -144,19 +156,24 @@ const GoogleApiMock = () => {
 };
 
 class TimeslotsServiceMock extends TimeslotsService {
-	public static availableProvidersForTimeslot: ServiceProvider[] = [];
+	public static availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
+	public static isProviderAvailableForTimeslot = jest.fn<Promise<boolean>, any>();
 
 	public async getAvailableProvidersForTimeslot(
 		startDateTime: Date,
 		endDateTime: Date,
 		serviceId: number,
-	): Promise<AvailableTimeslotProviders> {
+	): Promise<TimeslotServiceProviderResult[]> {
 		const timeslotEntry = new AvailableTimeslotProviders();
 		timeslotEntry.startTime = startDateTime;
 		timeslotEntry.endTime = startDateTime;
 		timeslotEntry.setRelatedServiceProviders(TimeslotsServiceMock.availableProvidersForTimeslot);
 
-		return timeslotEntry;
+		return Array.from(timeslotEntry.getTimeslotServiceProviders());
+	}
+
+	public async isProviderAvailableForTimeslot(...params): Promise<any> {
+		return await TimeslotsServiceMock.isProviderAvailableForTimeslot(...params);
 	}
 }
 
