@@ -50,6 +50,18 @@ export class BookingsService {
 		return bookingRequest.citizenUinFin;
 	}
 
+	public static shouldAutoAccept(currentUser: User, serviceProvider?: ServiceProvider): boolean {
+		if (!serviceProvider) {
+			return false;
+		}
+
+		if (currentUser.isCitizen()) {
+			return serviceProvider.autoAcceptBookings;
+		}
+
+		return true;
+	}
+
 	public async cancelBooking(bookingId: number): Promise<Booking> {
 		return await this.changeLogsService.executeAndLogAction(
 			bookingId,
@@ -200,14 +212,13 @@ export class BookingsService {
 		}
 
 		if (booking.serviceProviderId !== acceptRequest.serviceProviderId) {
-			const timeslotEntry = await this.timeslotsService.getAvailableProvidersForTimeslot(
+			const isProviderAvailable = await this.timeslotsService.isProviderAvailableForTimeslot(
 				booking.startDateTime,
 				booking.endDateTime,
 				booking.serviceId,
+				booking.serviceProviderId,
 			);
-			const isProviderAvailable =
-				timeslotEntry.availableServiceProviders.filter((e) => e.id === acceptRequest.serviceProviderId).length >
-				0;
+
 			if (!isProviderAvailable) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 					`Service provider '${acceptRequest.serviceProviderId}' is not available for this booking.`,
@@ -275,7 +286,7 @@ export class BookingsService {
 			.withCitizenName(bookingRequest.citizenName)
 			.withCitizenPhone(bookingRequest.citizenPhone)
 			.withCitizenEmail(bookingRequest.citizenEmail)
-			.withAutoAccept(serviceProvider?.autoAcceptBookings)
+			.withAutoAccept(BookingsService.shouldAutoAccept(currentUser, serviceProvider))
 			.build();
 
 		booking.serviceProvider = serviceProvider;

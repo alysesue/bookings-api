@@ -8,6 +8,8 @@ import { ServicesRepository } from '../services/services.repository';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
+import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
+import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
 
 @Scoped(Scope.Request)
 export class TimeslotsService {
@@ -31,7 +33,7 @@ export class TimeslotsService {
 		const aggregator = new TimeslotAggregator<Booking>();
 
 		for (const booking of bookings) {
-			const timeslotForBooking = new Timeslot(booking.startDateTime, booking.endDateTime);
+			const timeslotForBooking = new TimeslotWithCapacity(booking.startDateTime, booking.endDateTime);
 			aggregator.aggregate(booking, [timeslotForBooking]);
 		}
 
@@ -67,12 +69,29 @@ export class TimeslotsService {
 		});
 	}
 
+	public async isProviderAvailableForTimeslot(
+		startDateTime: Date,
+		endDateTime: Date,
+		serviceId: number,
+		serviceProviderId: number,
+	): Promise<boolean> {
+		const providers = await this.getAvailableProvidersForTimeslot(
+			startDateTime,
+			endDateTime,
+			serviceId,
+			serviceProviderId,
+		);
+
+		const isProviderAvailable = providers.some((item) => item.serviceProvider.id === serviceProviderId);
+		return isProviderAvailable;
+	}
+
 	public async getAvailableProvidersForTimeslot(
 		startDateTime: Date,
 		endDateTime: Date,
 		serviceId: number,
 		serviceProviderId?: number,
-	): Promise<AvailableTimeslotProviders> {
+	): Promise<TimeslotServiceProviderResult[]> {
 		const aggregatedEntries = await this.getAggregatedTimeslots(
 			startDateTime,
 			endDateTime,
@@ -84,8 +103,13 @@ export class TimeslotsService {
 		const timeslotEntry = aggregatedEntries.find(
 			(e) => DateHelper.equals(e.startTime, startDateTime) && DateHelper.equals(e.endTime, endDateTime),
 		);
-
-		return timeslotEntry || AvailableTimeslotProviders.empty(startDateTime, endDateTime);
+		let availableProviders = Array.from(timeslotEntry?.getTimeslotServiceProviders() || []).filter(
+			(e) => e.availabilityCount > 0,
+		);
+		if (serviceProviderId) {
+			availableProviders = availableProviders.filter((e) => e.serviceProvider.id === serviceProviderId);
+		}
+		return availableProviders;
 	}
 
 	private static setPendingTimeslots(entries: AvailableTimeslotProviders[], pendingBookings: Booking[]): void {
@@ -138,13 +162,11 @@ export class TimeslotsService {
 
 		this.setBookedProviders(mappedEntries, acceptedBookings);
 		TimeslotsService.setPendingTimeslots(mappedEntries, pendingBookings);
+		await this.filterVisibleServiceProviders({ entries: mappedEntries, serviceId, serviceProviderId });
 
-		mappedEntries = await this.filterVisibleServiceProviders({
-			entries: mappedEntries,
-			serviceId,
-			serviceProviderId,
-		});
-
+		mappedEntries = mappedEntries
+			.filter((entry) => entry.isValid())
+			.sort(TimeslotsService.sortAvailableTimeslotProviders);
 		return mappedEntries;
 	}
 
@@ -156,20 +178,22 @@ export class TimeslotsService {
 		entries: AvailableTimeslotProviders[];
 		serviceId: number;
 		serviceProviderId?: number;
-	}) {
-		const visibleServiceProviderIds = (await this.serviceProvidersRepo.getServiceProviders({ serviceId })).map(
-			(sp) => sp.id,
-		);
+	}): Promise<void> {
+		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({ serviceId });
+		let visibleServiceProviderIds = serviceProviders.map((sp) => sp.id);
 
-		for (const entry of entries) {
-			if (serviceProviderId) {
-				entry.filterServiceProviders([serviceProviderId]);
-			}
-
-			entry.filterServiceProviders(visibleServiceProviderIds);
+		if (serviceProviderId) {
+			visibleServiceProviderIds = visibleServiceProviderIds.filter((id) => id === serviceProviderId);
 		}
 
-		return entries.filter((e) => e.totalCount > 0);
+		for (const entry of entries) {
+			entry.setVisibleServiceProviders(visibleServiceProviderIds);
+		}
+	}
+
+	private static sortAvailableTimeslotProviders(a: AvailableTimeslotProviders, b: AvailableTimeslotProviders) {
+		const checkStartTime = a.startTime.getTime() - b.startTime.getTime();
+		return checkStartTime === 0 ? a.endTime.getTime() - b.endTime.getTime() : checkStartTime;
 	}
 
 	private async filterUnavailabilities(
@@ -193,7 +217,7 @@ export class TimeslotsService {
 			}
 		}
 
-		return entries.filter((e) => e.totalCount > 0);
+		return entries.filter((e) => e.isValid());
 	}
 
 	private setBookedProviders(entries: AvailableTimeslotProviders[], acceptedBookings: Booking[]): void {
@@ -241,14 +265,14 @@ export class TimeslotsService {
 		);
 
 		for (const provider of serviceProviders) {
-			const serviceProviderTimeslots = provider.timeslotsSchedule
+			const timeslotServiceProviders = provider.timeslotsSchedule
 				? provider.timeslotsSchedule.generateValidTimeslots({
 						startDatetime: minStartTime,
 						endDatetime: maxEndTime,
 				  })
 				: validServiceTimeslots;
 
-			aggregator.aggregate(provider, serviceProviderTimeslots);
+			aggregator.aggregate(provider, timeslotServiceProviders);
 		}
 
 		const entries = aggregator.getEntries();

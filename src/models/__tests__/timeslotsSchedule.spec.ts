@@ -61,7 +61,7 @@ describe('[Timeslots schedule] template', () => {
 		expect(list.length).toBe(2);
 	});
 
-	it('[Timeslots schedule] should generate fist timeslot only when the template starts', () => {
+	it('[Timeslots schedule] should generate first timeslot only when the template starts', () => {
 		const generate = template.generateValidTimeslots({
 			startDatetime: DateHelper.setHours(date, 6, 0),
 			endDatetime: DateHelper.setHours(date, 10, 0),
