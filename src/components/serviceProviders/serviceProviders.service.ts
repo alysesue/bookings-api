@@ -87,8 +87,8 @@ export class ServiceProvidersService {
 
 		const availableServiceProviders = new Set<ServiceProvider>();
 
-		timeslots.forEach((timeslot) => {
-			for (const spTimeslotItem of timeslot.getTimeslotServiceProviders(true)) {
+		timeslots.forEach(async (timeslot) => {
+			for (const spTimeslotItem of await timeslot.getTimeslotServiceProviders(true)) {
 				if (spTimeslotItem.availabilityCount > 0) {
 					availableServiceProviders.add(spTimeslotItem.serviceProvider);
 				}
