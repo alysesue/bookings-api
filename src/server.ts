@@ -78,10 +78,10 @@ export async function startServer(): Promise<Server> {
 		.use(new KoaLoggerContext().build())
 		.use(new KoaMultipartCleaner().build())
 		.use(HealthCheckMiddleware.build())
+		.use(router.allowedMethods())
 		.use(new ContainerContextMiddleware().build())
 		.use(new UserContextMiddleware().build())
-		.use(HandledRoutes.build())
-		.use(router.allowedMethods());
+		.use(HandledRoutes.build());
 
 	const dbConnection = Container.get(DbConnection);
 
