@@ -260,7 +260,7 @@ export class ServiceProvidersService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Timeslot item not found');
 		}
 
-		await this.timeslotItemsService.deleteTimeslot(timeslotId);
+		await this.timeslotItemsService.deleteTimeslot({ id: timeslotId });
 	}
 
 	private delay(ms) {
