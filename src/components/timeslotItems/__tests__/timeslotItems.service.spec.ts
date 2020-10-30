@@ -259,7 +259,7 @@ describe('TimeslotsItem services ', () => {
 			Promise.resolve(timeslotsScheduleMock),
 		);
 		const timeslotItemsService = Container.get(TimeslotItemsService);
-		await timeslotItemsService.deleteTimeslot(1);
+		await timeslotItemsService.deleteTimeslot({ id: 1 });
 		expect(deleteTimeslotItem).toBeCalledTimes(1);
 		expect(visitorObj.hasPermission).toBeCalled();
 	});

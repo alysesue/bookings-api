@@ -12,6 +12,7 @@ import { Weekday } from '../../../enums/weekday';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { ServicesActionAuthVisitor } from '../services.auth';
+import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.repository';
 
 jest.mock('../services.auth');
 
@@ -309,8 +310,8 @@ class TimeslotItemsServiceMock extends TimeslotItemsService {
 		return await TimeslotItemsServiceMock.createTimeslotItem(timeslotsSchedule, request);
 	}
 
-	public async deleteTimeslot(timeslotId: number): Promise<DeleteResult> {
-		return await TimeslotItemsServiceMock.deleteTimeslot(timeslotId);
+	public async deleteTimeslot(request: TimeslotItemsSearchRequest): Promise<DeleteResult> {
+		return await TimeslotItemsServiceMock.deleteTimeslot({ id: request.id });
 	}
 
 	public async updateTimeslotItem(

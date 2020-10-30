@@ -27,6 +27,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
 import { ServiceAdminAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
+import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.repository';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -384,8 +385,8 @@ class TimeslotItemsServiceMock extends TimeslotItemsService {
 		return await TimeslotItemsServiceMock.mapAndSaveTimeslotItem(timeslotsSchedule, request, entity);
 	}
 
-	public async deleteTimeslot(timeslotId: number): Promise<DeleteResult> {
-		return await TimeslotItemsServiceMock.deleteTimeslot(timeslotId);
+	public async deleteTimeslot(request: TimeslotItemsSearchRequest): Promise<DeleteResult> {
+		return await TimeslotItemsServiceMock.deleteTimeslot({ id: request.id });
 	}
 	public async createTimeslotItem(...params): Promise<any> {
 		return await TimeslotItemsServiceMock.createTimeslotItem(...params);
@@ -396,10 +397,9 @@ class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
 	public static getTimeslotsScheduleByIdMock = jest.fn();
 	public static createTimeslotsScheduleMock: TimeslotsSchedule;
 
-	public async getTimeslotsScheduleById(id: number): Promise<TimeslotsSchedule> {
-		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock(id);
+	public async getTimeslotsScheduleById(request: TimeslotItemsSearchRequest): Promise<TimeslotsSchedule> {
+		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock({ id: request.id });
 	}
-
 	public async createTimeslotsSchedule(data: TimeslotsSchedule): Promise<TimeslotsSchedule> {
 		return Promise.resolve(TimeslotsScheduleRepositoryMock.createTimeslotsScheduleMock);
 	}

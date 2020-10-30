@@ -8,6 +8,7 @@ import { Weekday } from '../../../enums/weekday';
 import { MOLErrorV2 } from 'mol-lib-api-contract';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
+import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.repository';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -209,8 +210,8 @@ class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
 	public static getTimeslotsScheduleByIdMock = jest.fn();
 	public static createTimeslotsScheduleMock: TimeslotsSchedule;
 
-	public async getTimeslotsScheduleById(id: number): Promise<TimeslotsSchedule> {
-		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock(id);
+	public async getTimeslotsScheduleById(request: TimeslotItemsSearchRequest): Promise<TimeslotsSchedule> {
+		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock({ id: request.id });
 	}
 
 	public async createTimeslotsSchedule(data: TimeslotsSchedule): Promise<TimeslotsSchedule> {

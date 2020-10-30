@@ -4,7 +4,6 @@ import { BookingsController } from '../bookings.controller';
 import { BookingsService } from '../bookings.service';
 import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
-import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { BookingBuilder } from '../../../models/entities/booking';
