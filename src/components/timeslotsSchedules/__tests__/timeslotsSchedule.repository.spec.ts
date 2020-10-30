@@ -5,7 +5,7 @@ import { IEntityWithTimeslotsSchedule, ITimeslotsSchedule } from '../../../model
 import { TransactionManager } from '../../../core/transactionManager';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
-import { TimeslotItemsAuthQueryVisitor } from '../../timeslotItems/timeslotItems.auth';
+import { TimeslotItemsQueryAuthVisitor } from '../../timeslotItems/timeslotItems.auth';
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
 
 jest.mock('../../timeslotItems/timeslotItems.auth');
@@ -27,7 +27,7 @@ beforeAll(() => {
 beforeEach(() => {
 	jest.resetAllMocks();
 
-	(TimeslotItemsAuthQueryVisitor as jest.Mock).mockImplementation(() => QueryAuthVisitorMock);
+	(TimeslotItemsQueryAuthVisitor as jest.Mock).mockImplementation(() => QueryAuthVisitorMock);
 	QueryAuthVisitorMock.createUserVisibilityCondition.mockImplementation(() =>
 		Promise.resolve({ userCondition: '', userParams: {} }),
 	);
@@ -37,15 +37,14 @@ describe('TimeslotsSchedule repository', () => {
 	it('should get timeslotsSchedule', async () => {
 		UserContextMock.getAuthGroups.mockReturnValue(Promise.resolve([]));
 		const queryBuilderMock = {
-			leftJoinAndMapMany: jest.fn(() => queryBuilderMock),
-			leftJoinAndMapOne: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			where: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve(timeslotsScheduleMock)),
 		};
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const repository = Container.get(TimeslotsScheduleRepository);
-		const result = await repository.getTimeslotsScheduleById(1);
+		const result = await repository.getTimeslotsScheduleById({ id: 1 });
 
 		expect(result).toStrictEqual(timeslotsScheduleMock);
 	});
@@ -64,9 +63,9 @@ describe('TimeslotsSchedule repository', () => {
 	it('should return null when id is falsy', async () => {
 		const repository = Container.get(TimeslotsScheduleRepository);
 
-		expect(await repository.getTimeslotsScheduleById(null)).toBe(null);
-		expect(await repository.getTimeslotsScheduleById(undefined)).toBe(null);
-		expect(await repository.getTimeslotsScheduleById(0)).toBe(null);
+		expect(await repository.getTimeslotsScheduleById({ id: 0 })).toBe(null);
+		expect(await repository.getTimeslotsScheduleById({ id: null })).toBe(null);
+		expect(await repository.getTimeslotsScheduleById({ id: undefined })).toBe(null);
 	});
 
 	it('should populate TimeslotsSchedules in entities (IEntityWithTimeslotsSchedule)', async () => {

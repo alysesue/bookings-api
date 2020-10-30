@@ -1,4 +1,3 @@
-import * as Koa from 'koa';
 import { ContainerContextHolder } from '../../containerContext.middleware';
 import { Container } from 'typescript-ioc';
 import { UsersService } from '../../../components/users/users.service';

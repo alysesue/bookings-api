@@ -5,7 +5,8 @@ import { FindManyOptions, In } from 'typeorm';
 import { IEntityWithTimeslotsSchedule } from '../../models/interfaces';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { TimeslotItemsAuthQueryVisitor } from '../timeslotItems/timeslotItems.auth';
+import { TimeslotItemsQueryAuthVisitor } from '../timeslotItems/timeslotItems.auth';
+import { TimeslotItemsSearchRequest } from '../timeslotItems/timeslotItems.repository';
 
 @InRequestScope
 export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedule> {
@@ -21,30 +22,34 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 		return await repository.save(data);
 	}
 
-	public async getTimeslotsScheduleById(id: number): Promise<TimeslotsSchedule> {
-		if (!id) return null;
+	public async getTimeslotsScheduleById(request: TimeslotItemsSearchRequest): Promise<TimeslotsSchedule> {
+		if (!request.id) return null;
 		const repository = await this.getRepository();
+		const authGroups = await this._userContext.getAuthGroups();
 
-		const { userCondition, userParams } = await new TimeslotItemsAuthQueryVisitor(
-			's',
-			'sp',
-		).createUserVisibilityCondition(await this._userContext.getAuthGroups());
+		const { userCondition, userParams } = request.byPassAuth
+			? { userCondition: '', userParams: {} }
+			: await new TimeslotItemsQueryAuthVisitor(
+					'service',
+					'serviceProvider',
+					'SPservice',
+			  ).createUserVisibilityCondition(authGroups);
 
-		const queryBuilder = repository
-			.createQueryBuilder('ts')
-			.leftJoinAndMapMany('ts.timeslotItems', 'timeslot_item', 'items', 'items._timeslotsScheduleId = ts._id')
-			.leftJoinAndMapOne('ts._service', 'service', 's', 's._timeslotsScheduleId = ts._id')
-			.leftJoinAndMapOne('ts._serviceProvider', 'service_provider', 'sp', 'sp._timeslotsScheduleId = ts._id');
-
-		return await queryBuilder
+		const query = repository
+			.createQueryBuilder('timeslotsSchedule')
 			.where(
-				['ts._id = :id', userCondition]
+				['timeslotsSchedule._id = :id', userCondition]
 					.filter((c) => c)
 					.map((c) => `(${c})`)
 					.join(' AND '),
-				{ id, ...userParams },
+				{ ...userParams, id: request.id },
 			)
-			.getOne();
+			.leftJoinAndSelect('timeslotsSchedule.timeslotItems', 'timeslotItems')
+			.leftJoinAndSelect('timeslotsSchedule._service', 'service')
+			.leftJoinAndSelect('timeslotsSchedule._serviceProvider', 'serviceProvider')
+			.leftJoinAndSelect('serviceProvider._service', 'SPservice');
+
+		return await query.getOne();
 	}
 
 	public async getTimeslotsSchedules(ids: number[]): Promise<TimeslotsSchedule[]> {

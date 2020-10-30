@@ -8,6 +8,6 @@ export class TimeslotsScheduleService {
 	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
 
 	public async getTimeslotsScheduleById(id: number): Promise<TimeslotsSchedule> {
-		return this.timeslotsScheduleRepository.getTimeslotsScheduleById(id);
+		return this.timeslotsScheduleRepository.getTimeslotsScheduleById({ id });
 	}
 }

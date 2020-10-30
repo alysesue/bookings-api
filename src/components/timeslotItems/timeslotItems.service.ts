@@ -3,7 +3,7 @@ import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSche
 import { mapTimeslotItemToEntity } from './timeslotItems.mapper';
 import { TimeslotItemRequest } from './timeslotItems.apicontract';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { TimeslotItemsRepository } from './timeslotItems.repository';
+import { TimeslotItemsRepository, TimeslotItemsSearchRequest } from './timeslotItems.repository';
 import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { DeleteResult } from 'typeorm';
 import { TimeslotItemsActionAuthVisitor } from './timeslotItems.auth';
@@ -25,9 +25,9 @@ export class TimeslotItemsService {
 		const authGroups = await this.userContext.getAuthGroups();
 		let timeslotScheduleData = timeslotSchedule;
 		if (!timeslotSchedule._service && !timeslotSchedule._serviceProvider) {
-			timeslotScheduleData = await this.timeslotsScheduleRepository.getTimeslotsScheduleById(
-				timeslotSchedule._id,
-			);
+			timeslotScheduleData = await this.timeslotsScheduleRepository.getTimeslotsScheduleById({
+				id: timeslotSchedule._id,
+			});
 			if (timeslotScheduleData._serviceProvider && !timeslotScheduleData._serviceProvider.service) {
 				timeslotScheduleData._serviceProvider.service = await this.servicesRepository.getService(
 					timeslotScheduleData._serviceProvider.serviceId,
@@ -98,15 +98,17 @@ export class TimeslotItemsService {
 		return this.mapAndSaveTimeslotItem(timeslotsSchedule, request, new TimeslotItem());
 	}
 
-	public async deleteTimeslot(timeslotId: number): Promise<DeleteResult> {
-		const timeslotSchedule = await this.getTimeslotsScheduleByTimeslotItemId(timeslotId);
+	public async deleteTimeslot(request: TimeslotItemsSearchRequest): Promise<DeleteResult> {
+		const timeslotSchedule = await this.getTimeslotsScheduleByTimeslotItemId(request);
 		await this.verifyActionPermission(timeslotSchedule);
 
-		return await this.timeslotItemsRepository.deleteTimeslotItem(timeslotId);
+		return await this.timeslotItemsRepository.deleteTimeslotItem(request.id);
 	}
 
-	private async getTimeslotsScheduleByTimeslotItemId(id: number): Promise<TimeslotsSchedule> {
-		const timeslotItem = await this.timeslotItemsRepository.getTimeslotItem(id);
-		return this.timeslotsScheduleRepository.getTimeslotsScheduleById(timeslotItem._timeslotsScheduleId);
+	private async getTimeslotsScheduleByTimeslotItemId(
+		request: TimeslotItemsSearchRequest,
+	): Promise<TimeslotsSchedule> {
+		const timeslotItem = await this.timeslotItemsRepository.getTimeslotItem(request);
+		return this.timeslotsScheduleRepository.getTimeslotsScheduleById({ id: timeslotItem._timeslotsScheduleId });
 	}
 }

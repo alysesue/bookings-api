@@ -11,27 +11,35 @@ import {
 	QueryAuthGroupVisitor,
 } from '../../infrastructure/auth/queryAuthGroupVisitor';
 
-export class TimeslotItemsAuthQueryVisitor extends QueryAuthGroupVisitor {
+export class TimeslotItemsQueryAuthVisitor extends QueryAuthGroupVisitor {
 	private readonly serviceAlias: string;
 	private readonly serviceProviderAlias: string;
+	private readonly serviceProviderServiceAlias: string;
 
-	constructor(serviceAlias: string, serviceProviderAlias: string) {
+	constructor(serviceAlias: string, serviceProviderAlias: string, serviceProviderServiceAlias: string) {
 		super();
 
 		this.serviceAlias = serviceAlias;
 		this.serviceProviderAlias = serviceProviderAlias;
+		this.serviceProviderServiceAlias = serviceProviderServiceAlias;
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		const orgIds = _userGroup.authorisedOrganisations.map((org) => org.id);
-		this.addAuthCondition(`${this.serviceAlias}._organisationId IN (:...orgIds)`, { orgIds });
+		this.addAuthCondition(
+			`${this.serviceAlias}._organisationId IN (:...orgIds) OR ${this.serviceProviderServiceAlias}._organisationId IN (:...orgIds)`,
+			{ orgIds },
+		);
 	}
 
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		const serviceIds = _userGroup.authorisedServices.map((s) => s.id);
-		this.addAuthCondition(`${this.serviceProviderAlias}._id IN (:...serviceIds)`, { serviceIds });
+		this.addAuthCondition(
+			`${this.serviceProviderAlias}._id IN (:...serviceIds) OR ${this.serviceProviderServiceAlias}._id IN (:...serviceIds)`,
+			{ serviceIds },
+		);
 	}
 
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {

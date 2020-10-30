@@ -1,9 +1,9 @@
 import { DeleteResult } from 'typeorm';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { RepositoryBase } from '../../core/repository';
-import { Service, ServiceProvider, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { TimeslotItem } from '../../models';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { TimeslotItemsAuthQueryVisitor } from './timeslotItems.auth';
+import { TimeslotItemsQueryAuthVisitor } from './timeslotItems.auth';
 
 @InRequestScope
 export class TimeslotItemsRepository extends RepositoryBase<TimeslotItem> {
@@ -31,14 +31,18 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotItem> {
 		return await repository.delete(id);
 	}
 
-	public async getTimeslotItem(id: number): Promise<TimeslotItem> {
-		if (!id) return null;
+	public async getTimeslotItem(request: TimeslotItemsSearchRequest): Promise<TimeslotItem> {
+		if (!request.id) return null;
 		const repository = await this.getRepository();
 		const idCondition = 'timeslotItem."_id" = :id';
-		const userCondition = new TimeslotItemsAuthQueryVisitor(
-			'service',
-			'serviceProvider',
-		).createUserVisibilityCondition(await this.userContext.getAuthGroups());
+		const authGroups = await this.userContext.getAuthGroups();
+		const { userCondition, userParams } = request.byPassAuth
+			? { userCondition: '', userParams: {} }
+			: await new TimeslotItemsQueryAuthVisitor(
+					'service',
+					'serviceProvider',
+					'SPservice',
+			  ).createUserVisibilityCondition(authGroups);
 
 		const query = repository
 			.createQueryBuilder('timeslotItem')
@@ -47,19 +51,17 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotItem> {
 					.filter((c) => c)
 					.map((c) => `(${c})`)
 					.join(' AND '),
-				{ id },
+				{ ...userParams, id: request.id },
 			)
-			.leftJoinAndSelect(
-				TimeslotsSchedule,
-				'timeslotsSchedule',
-				'timeslotsSchedule.id = timeslotItem._timeslotsScheduleId',
-			)
-			.leftJoinAndSelect(
-				ServiceProvider,
-				'serviceProvider',
-				'serviceProvider._timeslotsScheduleId=timeslotsSchedule._id',
-			)
-			.leftJoinAndSelect(Service, 'service', 'service._timeslotsScheduleId = timeslotsSchedule._id');
+			.leftJoinAndSelect('timeslotItem._timeslotsSchedule', 'timeslotsSchedule')
+			.leftJoinAndSelect('timeslotsSchedule._serviceProvider', 'serviceProvider')
+			.leftJoinAndSelect('timeslotsSchedule._service', 'service')
+			.leftJoinAndSelect('serviceProvider._service', 'SPservice');
 		return await query.getOne();
 	}
 }
+
+export type TimeslotItemsSearchRequest = {
+	id: number;
+	byPassAuth?: boolean;
+};
