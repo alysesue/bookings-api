@@ -1,10 +1,11 @@
-import { OrganisationsRepository } from '../organisations.repository';
+import { OrganisationsNoauthRepository } from '../organisations.noauth.repository';
 import { Container } from 'typescript-ioc';
 import { AsyncFunction, TransactionManager } from '../../../core/transactionManager';
 import { Organisation } from '../../../models/entities/organisation';
-import { OrganisationInfo, OrganisationsService } from '../organisations.service';
+import { OrganisationsService } from '../organisations.service';
 import { OrganisationAdminGroupMap } from '../../../models/entities/organisationAdminGroupMap';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
+
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
@@ -21,7 +22,7 @@ describe('Organisations service', () => {
 	});
 
 	beforeAll(() => {
-		Container.bind(OrganisationsRepository).to(OrganisationsRepositoryMock);
+		Container.bind(OrganisationsNoauthRepository).to(OrganisationsRepositoryMock);
 		Container.bind(TransactionManager).to(TransactionManagerMock);
 	});
 
@@ -61,7 +62,7 @@ describe('Organisations service', () => {
 	});
 });
 
-class OrganisationsRepositoryMock extends OrganisationsRepository {
+class OrganisationsRepositoryMock extends OrganisationsNoauthRepository {
 	public static getOrganisationsForUserGroups = jest.fn();
 	public static sort = jest.fn();
 	public static save = jest.fn<Promise<Organisation>, any>();

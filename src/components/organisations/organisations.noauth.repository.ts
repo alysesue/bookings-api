@@ -3,7 +3,7 @@ import { Organisation } from '../../models';
 import { RepositoryBase } from '../../core/repository';
 
 @InRequestScope
-export class OrganisationsRepository extends RepositoryBase<Organisation> {
+export class OrganisationsNoauthRepository extends RepositoryBase<Organisation> {
 	constructor() {
 		super(Organisation);
 	}
