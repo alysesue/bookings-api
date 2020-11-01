@@ -1,26 +1,28 @@
 import { QueryAuthGroupVisitor } from '../../infrastructure/auth/queryAuthGroupVisitor';
 import {
-	AuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
-import { UserConditionParams } from '../../infrastructure/auth/authConditionCollection';
 
 export class BookingChangeLogsQueryAuthVisitor extends QueryAuthGroupVisitor {
 	private readonly _alias: string;
+	private readonly _serviceAlias: string;
+	private readonly _bookingAlias: string;
 
-	constructor(alias: string) {
+	constructor(alias: string, serviceAlias: string, bookingAlias: string) {
 		super();
 		this._alias = alias;
+		this._serviceAlias = serviceAlias;
+		this._bookingAlias = bookingAlias;
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		const authorisedOrganisationIds = _userGroup.authorisedOrganisations.map((org) => org.id);
-		this.addAuthCondition(`${this._alias}."_organisationId" IN (:...authorisedOrganisationIds)`, {
+		this.addAuthCondition(`${this._serviceAlias}."_organisationId" IN (:...authorisedOrganisationIds)`, {
 			authorisedOrganisationIds,
 		});
 	}
@@ -33,25 +35,9 @@ export class BookingChangeLogsQueryAuthVisitor extends QueryAuthGroupVisitor {
 	}
 
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
-		const authorisedServiceProviderIds = _userGroup.authorisedServiceProvider.id;
-		this.addAuthCondition(`${this._alias}."serviceProviderId" = :authorisedServiceProviderIds`, {
-			authorisedServiceProviderIds,
+		const authorisedServiceProviderId = _userGroup.authorisedServiceProvider.id;
+		this.addAuthCondition(`${this._bookingAlias}."_serviceProviderId" = :authorisedServiceProviderId`, {
+			authorisedServiceProviderId,
 		});
-	}
-}
-
-class BookingChangeLogsQueryNoAuthVisitor extends BookingChangeLogsQueryAuthVisitor {
-	public async createUserVisibilityCondition(authGroups: AuthGroup[]): Promise<UserConditionParams> {
-		this.addAsTrue();
-		return this.getVisibilityCondition();
-	}
-}
-
-export class BookingChangeLogQueryVisitorFactory {
-	public static getBookingChangeLogQueryVisitor(byPassAuth: boolean): BookingChangeLogsQueryAuthVisitor {
-		if (byPassAuth) {
-			return new BookingChangeLogsQueryNoAuthVisitor('bookingChangeLog');
-		}
-		return new BookingChangeLogsQueryAuthVisitor('bookingChangeLog');
 	}
 }

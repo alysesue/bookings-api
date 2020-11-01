@@ -82,7 +82,7 @@ describe('BookingChangeLogs repository', () => {
 		});
 
 		const whereParam =
-			'((bookingChangeLog."_organisationId" IN (:...authorisedOrganisationIds))) AND (changelog."_serviceId" = :serviceId) AND (changelog."_timestamp" >= :changedSince AND changelog."_timestamp" < :changedUntil) AND (changelog."_bookingId" IN (:...bookingIds))';
+			'((service."_organisationId" IN (:...authorisedOrganisationIds))) AND (changelog."_serviceId" = :serviceId) AND (changelog."_timestamp" >= :changedSince AND changelog."_timestamp" < :changedUntil) AND (changelog."_bookingId" IN (:...bookingIds))';
 		expect((queryBuilderMock.where as jest.Mock).mock.calls[0][0]).toBe(whereParam);
 		expect(queryBuilderMock.getMany).toHaveBeenCalled();
 		expect(results).toBeDefined();

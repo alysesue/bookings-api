@@ -3,7 +3,7 @@ import { BookingChangeLog } from '../../models';
 import { RepositoryBase } from '../../core/repository';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { groupByKey } from '../../tools/collections';
-import { BookingChangeLogQueryVisitorFactory } from './bookingChangeLogs.auth';
+import { BookingChangeLogsQueryAuthVisitor } from './bookingChangeLogs.auth';
 
 @InRequestScope
 export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog> {
@@ -21,9 +21,13 @@ export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog
 
 	public async getLogs(options: ChangeLogSearchQuery): Promise<Map<number, BookingChangeLog[]>> {
 		const authGroups = await this.userContext.getAuthGroups();
-		const { userCondition, userParams } = await BookingChangeLogQueryVisitorFactory.getBookingChangeLogQueryVisitor(
-			options.byPassAuth,
-		).createUserVisibilityCondition(authGroups);
+		const { userCondition, userParams } = options.byPassAuth
+			? { userCondition: '', userParams: {} }
+			: await new BookingChangeLogsQueryAuthVisitor(
+					'changelog',
+					'service',
+					'booking',
+			  ).createUserVisibilityCondition(authGroups);
 
 		const { changedSince, changedUntil, serviceId, bookingIds } = options;
 
@@ -44,7 +48,9 @@ export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog
 			.leftJoinAndSelect('changelog._user', 'loguser')
 			.leftJoinAndSelect('loguser._singPassUser', 'singpass')
 			.leftJoinAndSelect('loguser._adminUser', 'admin')
-			.leftJoinAndSelect('loguser._agencyUser', 'agency');
+			.leftJoinAndSelect('loguser._agencyUser', 'agency')
+			.leftJoinAndSelect('changelog._serviceId', 'service')
+			.leftJoinAndSelect('changelog._bookingId', 'booking');
 
 		const entries = await query.getMany();
 
