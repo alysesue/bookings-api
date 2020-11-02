@@ -303,7 +303,6 @@ describe('Timeslots Service', () => {
 		expect(result2).toBe(true);
 	});
 
-
 	it('should get no available service providers because all sp are unavailable', async () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 22, 0);
@@ -315,7 +314,6 @@ describe('Timeslots Service', () => {
 		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101, true);
 		expect(result2).toBe(false);
 	});
-
 });
 
 const getOutOfSlotBooking = (serviceProvider: ServiceProvider): Booking => {
