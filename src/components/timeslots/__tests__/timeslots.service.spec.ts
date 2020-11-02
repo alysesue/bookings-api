@@ -198,7 +198,7 @@ describe('Timeslots Service', () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 16, 0);
 		const endDateTime = DateHelper.setHours(date, 17, 0);
-		const result = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100);
+		const result = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100, true);
 		expect(result).toBe(true);
 	});
 
@@ -206,9 +206,9 @@ describe('Timeslots Service', () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 17, 0);
 		const endDateTime = DateHelper.setHours(date, 18, 0);
-		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100);
+		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100, true);
 		expect(result1).toBe(false);
-		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101);
+		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101, true);
 		expect(result2).toBe(true);
 	});
 
@@ -265,7 +265,7 @@ describe('Timeslots Service', () => {
 		const timeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
 		expect(timeslots).toHaveLength(1);
 
-		const timeslotSPs = Array.from(timeslots[0].getTimeslotServiceProviders(true));
+		const timeslotSPs = Array.from(timeslots[0].getTimeslotServiceProviders());
 		expect(timeslotSPs).toHaveLength(1);
 	});
 
@@ -286,7 +286,7 @@ describe('Timeslots Service', () => {
 		const timeslots = await service.getAggregatedTimeslots(new Date(), new Date(), 1, true);
 
 		expect(timeslots.length).toBe(1);
-		const spTimeslot = Array.from(timeslots[0].getTimeslotServiceProviders(true));
+		const spTimeslot = Array.from(timeslots[0].getTimeslotServiceProviders());
 		expect(spTimeslot[0].acceptedBookings.length).toBe(1);
 		expect(setBookedServiceProviders).toHaveBeenCalled();
 	});
@@ -297,9 +297,9 @@ describe('Timeslots Service', () => {
 		const endDateTime = DateHelper.setHours(date, 18, 0);
 		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, true);
 		expect(result.length).toBe(2);
-		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100);
+		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100, true);
 		expect(result1).toBe(true);
-		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101);
+		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101, true);
 		expect(result2).toBe(true);
 	});
 
@@ -310,9 +310,9 @@ describe('Timeslots Service', () => {
 		const endDateTime = DateHelper.setHours(date, 23, 0);
 		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, true);
 		expect(result.length).toBe(0);
-		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100);
+		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100, true);
 		expect(result1).toBe(false);
-		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101);
+		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101, true);
 		expect(result2).toBe(false);
 	});
 

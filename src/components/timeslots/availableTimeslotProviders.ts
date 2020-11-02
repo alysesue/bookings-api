@@ -19,8 +19,8 @@ export class AvailableTimeslotProviders {
 		return this._unassignedPendingBookingCount;
 	}
 
-	public *getTimeslotServiceProviders(countUnassigned: boolean): Iterable<TimeslotServiceProviderResult> {
-		const totalAvailability = this.getInternalAvailabilityCount(countUnassigned);
+	public *getTimeslotServiceProviders(skipUnassigned?: boolean): Iterable<TimeslotServiceProviderResult> {
+		const totalAvailability = this.getInternalAvailabilityCount(skipUnassigned);
 
 		for (const timeslotServiceProvider of this._timeslotServiceProviders.values()) {
 			if (timeslotServiceProvider.isVisibleByUser && timeslotServiceProvider.isValid()) {
@@ -35,26 +35,26 @@ export class AvailableTimeslotProviders {
 		}
 	}
 
-	private getInternalAvailabilityCount(countUnassigned: boolean): number {
+	private getInternalAvailabilityCount(skipUnassigned?: boolean): number {
 		let sumOfAvailability = 0;
 		this._timeslotServiceProviders.forEach((item) => {
 			sumOfAvailability += item.getAvailabilityCount();
 		});
-		if (countUnassigned) return Math.max(sumOfAvailability - this._unassignedPendingBookingCount, 0);
-		return Math.max(sumOfAvailability, 0);
+		if (skipUnassigned === true) return Math.max(sumOfAvailability, 0);
+		return Math.max(sumOfAvailability - this._unassignedPendingBookingCount, 0);
 	}
 
-	public getAvailabilityCount(countUnassigned: boolean): number {
-		const totalAvailability = this.getInternalAvailabilityCount(countUnassigned);
+	public getAvailabilityCount(skipUnassigned: boolean): number {
+		const totalAvailability = this.getInternalAvailabilityCount(skipUnassigned);
 		let sumAvailabilityVisible = 0;
-		for (const timeslotSp of this.getTimeslotServiceProviders(countUnassigned)) {
+		for (const timeslotSp of this.getTimeslotServiceProviders(skipUnassigned)) {
 			sumAvailabilityVisible += timeslotSp.availabilityCount;
 		}
 		return Math.min(totalAvailability, sumAvailabilityVisible);
 	}
 
 	public isValid(): boolean {
-		for (const timeslotSp of this.getTimeslotServiceProviders(true)) {
+		for (const timeslotSp of this.getTimeslotServiceProviders()) {
 			return true;
 		}
 		return false;

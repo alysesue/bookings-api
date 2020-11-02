@@ -216,7 +216,8 @@ export class BookingsService {
 				booking.startDateTime,
 				booking.endDateTime,
 				booking.serviceId,
-				provider.id,
+				acceptRequest.serviceProviderId,
+				true
 			);
 
 			if (!isProviderAvailable) {

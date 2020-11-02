@@ -26,7 +26,7 @@ export class TimeslotsMapper {
 			timeslotServiceProviders,
 			totalCapacity,
 			totalAssignedBookings,
-		] = TimeslotsMapper.mapTimeslotServiceProviders(Array.from(entry.getTimeslotServiceProviders(true)));
+		] = TimeslotsMapper.mapTimeslotServiceProviders(Array.from(entry.getTimeslotServiceProviders()));
 		const response = new TimeslotEntryResponse();
 		response.startTime = entry.startTime;
 		response.endTime = entry.endTime;

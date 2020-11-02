@@ -74,12 +74,13 @@ export class TimeslotsService {
 		endDateTime: Date,
 		serviceId: number,
 		serviceProviderId: number,
+		skipUnassigned: boolean,
 	): Promise<boolean> {
 		const providers = await this.getAvailableProvidersForTimeslot(
 			startDateTime,
 			endDateTime,
 			serviceId,
-			false,
+			skipUnassigned,
 			serviceProviderId,
 		);
 		const isProviderAvailable = providers.some((item) => item.serviceProvider.id === serviceProviderId);
@@ -90,7 +91,7 @@ export class TimeslotsService {
 		startDateTime: Date,
 		endDateTime: Date,
 		serviceId: number,
-		countUnassigned: boolean,
+		skipUnassigned: boolean,
 		serviceProviderId?: number,
 	): Promise<TimeslotServiceProviderResult[]> {
 		const aggregatedEntries = await this.getAggregatedTimeslots(
@@ -104,7 +105,7 @@ export class TimeslotsService {
 		const timeslotEntry = aggregatedEntries.find(
 			(e) => DateHelper.equals(e.startTime, startDateTime) && DateHelper.equals(e.endTime, endDateTime),
 		);
-		let availableProviders = Array.from(timeslotEntry?.getTimeslotServiceProviders(countUnassigned) || []).filter(
+		let availableProviders = Array.from(timeslotEntry?.getTimeslotServiceProviders(skipUnassigned) || []).filter(
 			(e) => e.availabilityCount > 0,
 		);
 		if (serviceProviderId) {

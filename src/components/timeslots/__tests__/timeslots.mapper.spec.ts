@@ -46,7 +46,7 @@ describe('Timeslots Mapper', () => {
 		map.set(serviceProvider2, new TimeslotWithCapacity(entry.startTime, entry.endTime, 5));
 		entry.setRelatedServiceProviders(map);
 
-		const timeslotServiceProviders = Array.from(entry.getTimeslotServiceProviders(true));
+		const timeslotServiceProviders = Array.from(entry.getTimeslotServiceProviders());
 		const res = TimeslotsMapper.mapTimeslotServiceProviders(timeslotServiceProviders);
 		const [spResponse, totalCapacity, totalBooked] = res;
 		expect(spResponse.length).toBe(2);

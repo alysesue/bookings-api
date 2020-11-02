@@ -90,8 +90,15 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 	private bookingsRepository: BookingsRepository;
 	@Inject
 	private unAvailabilitiesService: UnavailabilitiesService;
+	@Inject
+	private timeslotsService: TimeslotsService;
 
 	public async validateAvailability(booking: Booking) {
+		const existingTimeslot = await this.timeslotsService.getAggregatedTimeslots(booking.startDateTime, booking.endDateTime, booking.serviceId, true, booking.serviceProviderId);
+
+		if (!existingTimeslot.some(i => DateHelper.equals(i.startTime, booking.startDateTime) && DateHelper.equals(i.endTime, booking.endDateTime)))
+			await this.validateOverlapping(booking);
+
 		if (
 			booking.serviceProviderId &&
 			(await this.unAvailabilitiesService.isUnavailable({
@@ -146,6 +153,7 @@ class SlotBookingsValidator extends BookingsValidator {
 				booking.endDateTime,
 				booking.serviceId,
 				booking.serviceProviderId,
+				false,
 			);
 
 			if (!isProviderAvailable) {
@@ -158,7 +166,7 @@ class SlotBookingsValidator extends BookingsValidator {
 				booking.startDateTime,
 				booking.endDateTime,
 				booking.serviceId,
-				true,
+				false,
 			);
 
 			if (providers.length === 0) {
