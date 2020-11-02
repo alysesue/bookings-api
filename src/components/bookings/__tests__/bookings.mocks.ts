@@ -54,6 +54,11 @@ export class TimeslotsServiceMock extends TimeslotsService {
 	public static availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 	public static acceptedBookings: Booking[] = [];
 	public static isProviderAvailableForTimeslot = jest.fn<Promise<boolean>, any>();
+	public static getAggregatedTimeslots = jest.fn();
+
+	public async getAggregatedTimeslots(...params): Promise<AvailableTimeslotProviders[]> {
+		return Promise.resolve(TimeslotsServiceMock.getAggregatedTimeslots(...params));
+	}
 
 	public async getAvailableProvidersForTimeslot(
 		startDateTime: Date,
@@ -65,7 +70,7 @@ export class TimeslotsServiceMock extends TimeslotsService {
 		timeslotEntry.endTime = startDateTime;
 		timeslotEntry.setRelatedServiceProviders(TimeslotsServiceMock.availableProvidersForTimeslot);
 
-		return Array.from(timeslotEntry.getTimeslotServiceProviders());
+		return Array.from(timeslotEntry.getTimeslotServiceProviders(true));
 	}
 
 	public async isProviderAvailableForTimeslot(...params): Promise<any> {

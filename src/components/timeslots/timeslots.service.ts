@@ -74,14 +74,15 @@ export class TimeslotsService {
 		endDateTime: Date,
 		serviceId: number,
 		serviceProviderId: number,
+		skipUnassigned: boolean,
 	): Promise<boolean> {
 		const providers = await this.getAvailableProvidersForTimeslot(
 			startDateTime,
 			endDateTime,
 			serviceId,
+			skipUnassigned,
 			serviceProviderId,
 		);
-
 		const isProviderAvailable = providers.some((item) => item.serviceProvider.id === serviceProviderId);
 		return isProviderAvailable;
 	}
@@ -90,6 +91,7 @@ export class TimeslotsService {
 		startDateTime: Date,
 		endDateTime: Date,
 		serviceId: number,
+		skipUnassigned: boolean,
 		serviceProviderId?: number,
 	): Promise<TimeslotServiceProviderResult[]> {
 		const aggregatedEntries = await this.getAggregatedTimeslots(
@@ -103,7 +105,7 @@ export class TimeslotsService {
 		const timeslotEntry = aggregatedEntries.find(
 			(e) => DateHelper.equals(e.startTime, startDateTime) && DateHelper.equals(e.endTime, endDateTime),
 		);
-		let availableProviders = Array.from(timeslotEntry?.getTimeslotServiceProviders() || []).filter(
+		let availableProviders = Array.from(timeslotEntry?.getTimeslotServiceProviders(skipUnassigned) || []).filter(
 			(e) => e.availabilityCount > 0,
 		);
 		if (serviceProviderId) {
@@ -224,13 +226,6 @@ export class TimeslotsService {
 		const acceptedBookingsLookup = groupByKey(acceptedBookings, TimeslotsService.bookingKeySelector);
 
 		for (const element of entries) {
-			const result = acceptedBookings
-				.filter((booking) => {
-					return booking.bookingIntersects({ start: element.startTime, end: element.endTime });
-				})
-				.map((booking) => booking.serviceProviderId);
-			element.setOverlappingServiceProviders(result);
-
 			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
 			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
 			if (acceptedBookingsForTimeslot) {

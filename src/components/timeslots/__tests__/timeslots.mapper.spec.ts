@@ -1,10 +1,7 @@
-import { TimeslotServiceProvider } from '../../../models/timeslotServiceProvider';
 import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
-import { ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
+import { ServiceProvider } from '../../../models';
 import { TimeslotsMapper } from '../timeslots.mapper';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
-import { DateHelper } from '../../../infrastructure/dateHelper';
-import { Service } from 'mol-lib-api-contract';
 
 afterAll(() => {
 	jest.resetAllMocks();

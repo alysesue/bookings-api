@@ -215,6 +215,7 @@ export class BookingsController extends Controller {
 			booking.startDateTime,
 			booking.endDateTime,
 			booking.serviceId,
+			true,
 		);
 
 		return ApiDataFactory.create(providers.map((e) => BookingsMapper.mapProvider(e.serviceProvider)));

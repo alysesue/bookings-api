@@ -169,7 +169,7 @@ class TimeslotsServiceMock extends TimeslotsService {
 		timeslotEntry.endTime = startDateTime;
 		timeslotEntry.setRelatedServiceProviders(TimeslotsServiceMock.availableProvidersForTimeslot);
 
-		return Array.from(timeslotEntry.getTimeslotServiceProviders());
+		return Array.from(timeslotEntry.getTimeslotServiceProviders(true));
 	}
 
 	public async isProviderAvailableForTimeslot(...params): Promise<any> {

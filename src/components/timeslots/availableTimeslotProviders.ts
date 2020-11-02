@@ -19,8 +19,8 @@ export class AvailableTimeslotProviders {
 		return this._unassignedPendingBookingCount;
 	}
 
-	public *getTimeslotServiceProviders(): Iterable<TimeslotServiceProviderResult> {
-		const totalAvailability = this.getInternalAvailabilityCount();
+	public *getTimeslotServiceProviders(skipUnassigned: boolean = false): Iterable<TimeslotServiceProviderResult> {
+		const totalAvailability = this.getInternalAvailabilityCount(skipUnassigned);
 
 		for (const timeslotServiceProvider of this._timeslotServiceProviders.values()) {
 			if (timeslotServiceProvider.isVisibleByUser && timeslotServiceProvider.isValid()) {
@@ -35,18 +35,19 @@ export class AvailableTimeslotProviders {
 		}
 	}
 
-	private getInternalAvailabilityCount(): number {
+	private getInternalAvailabilityCount(skipUnassigned: boolean = false): number {
 		let sumOfAvailability = 0;
 		this._timeslotServiceProviders.forEach((item) => {
 			sumOfAvailability += item.getAvailabilityCount();
 		});
+		if (skipUnassigned === true) return Math.max(sumOfAvailability, 0);
 		return Math.max(sumOfAvailability - this._unassignedPendingBookingCount, 0);
 	}
 
-	public getAvailabilityCount(): number {
-		const totalAvailability = this.getInternalAvailabilityCount();
+	public getAvailabilityCount(skipUnassigned: boolean): number {
+		const totalAvailability = this.getInternalAvailabilityCount(skipUnassigned);
 		let sumAvailabilityVisible = 0;
-		for (const timeslotSp of this.getTimeslotServiceProviders()) {
+		for (const timeslotSp of this.getTimeslotServiceProviders(skipUnassigned)) {
 			sumAvailabilityVisible += timeslotSp.availabilityCount;
 		}
 		return Math.min(totalAvailability, sumAvailabilityVisible);
