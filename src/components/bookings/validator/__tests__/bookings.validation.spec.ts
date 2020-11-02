@@ -251,4 +251,47 @@ describe('Booking validation tests', () => {
 			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
 		).rejects.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Citizen email not valid'));
 	});
+
+	it('should not allow booking on top of existing booking', async () => {
+		const start = new Date(2020, 8, 26, 8, 0);
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withServiceProviderId(1)
+			.withRefId('RFM186')
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.build();
+
+		BookingRepositoryMock.searchBookingsMock = [
+			new BookingBuilder()
+				.withServiceId(1)
+				.withStartDateTime(new Date(2020, 8, 26, 8, 15))
+				.withEndDateTime(new Date(2020, 8, 26, 8, 45))
+				.build(),
+		];
+		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
+			const entry = new AvailableTimeslotProviders();
+			entry.startTime = new Date(2020, 8, 26, 8, 0);
+			entry.endTime = new Date(2020, 8, 26, 8, 45);
+
+			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
+			map.set(serviceProvider, new TimeslotWithCapacity(entry.startTime, entry.endTime, 1));
+
+			entry.setRelatedServiceProviders(map);
+
+			return Promise.resolve([entry]);
+		});
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+
+		const test = async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
+		await expect(test).rejects.toStrictEqual(
+			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Booking request not valid as it overlaps another accepted booking`,
+			),
+		);
+	});
 });
