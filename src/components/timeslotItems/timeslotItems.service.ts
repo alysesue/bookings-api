@@ -3,7 +3,7 @@ import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSche
 import { mapTimeslotItemToEntity } from './timeslotItems.mapper';
 import { TimeslotItemRequest } from './timeslotItems.apicontract';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { TimeslotItemsRepository, TimeslotItemsSearchRequest } from './timeslotItems.repository';
+import { TimeslotItemsRepository } from './timeslotItems.repository';
 import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { DeleteResult } from 'typeorm';
 import { TimeslotItemsActionAuthVisitor } from './timeslotItems.auth';
@@ -98,16 +98,17 @@ export class TimeslotItemsService {
 		return this.mapAndSaveTimeslotItem(timeslotsSchedule, request, new TimeslotItem());
 	}
 
-	public async deleteTimeslot(request: TimeslotItemsSearchRequest): Promise<DeleteResult> {
+	public async deleteTimeslot(request: { id: number; byPassAuth?: boolean }): Promise<DeleteResult> {
 		const timeslotSchedule = await this.getTimeslotsScheduleByTimeslotItemId(request);
 		await this.verifyActionPermission(timeslotSchedule);
 
 		return await this.timeslotItemsRepository.deleteTimeslotItem(request.id);
 	}
 
-	private async getTimeslotsScheduleByTimeslotItemId(
-		request: TimeslotItemsSearchRequest,
-	): Promise<TimeslotsSchedule> {
+	private async getTimeslotsScheduleByTimeslotItemId(request: {
+		id: number;
+		byPassAuth?: boolean;
+	}): Promise<TimeslotsSchedule> {
 		const timeslotItem = await this.timeslotItemsRepository.getTimeslotItem(request);
 		return this.timeslotsScheduleRepository.getTimeslotsScheduleById({ id: timeslotItem._timeslotsScheduleId });
 	}

@@ -85,7 +85,7 @@ describe('TimeslotItems repository', () => {
 	it('should get timeslot item', async () => {
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
-			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			leftJoin: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve(timeslotItemMock)),
 		};
 

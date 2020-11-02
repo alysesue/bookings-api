@@ -32,11 +32,12 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotItem> {
 	}
 
 	public async getTimeslotItem(request: TimeslotItemsSearchRequest): Promise<TimeslotItem> {
-		if (!request.id) return null;
+		const { id, byPassAuth } = request;
+		if (!id) return null;
 		const repository = await this.getRepository();
 		const idCondition = 'timeslotItem."_id" = :id';
 		const authGroups = await this.userContext.getAuthGroups();
-		const { userCondition, userParams } = request.byPassAuth
+		const { userCondition, userParams } = byPassAuth
 			? { userCondition: '', userParams: {} }
 			: await new TimeslotItemsQueryAuthVisitor(
 					'service',
@@ -53,10 +54,10 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotItem> {
 					.join(' AND '),
 				{ ...userParams, id: request.id },
 			)
-			.leftJoinAndSelect('timeslotItem._timeslotsSchedule', 'timeslotsSchedule')
-			.leftJoinAndSelect('timeslotsSchedule._serviceProvider', 'serviceProvider')
-			.leftJoinAndSelect('timeslotsSchedule._service', 'service')
-			.leftJoinAndSelect('serviceProvider._service', 'SPservice');
+			.leftJoin('timeslotItem._timeslotsSchedule', 'timeslotsSchedule')
+			.leftJoin('timeslotsSchedule._serviceProvider', 'serviceProvider')
+			.leftJoin('timeslotsSchedule._service', 'service')
+			.leftJoin('serviceProvider._service', 'SPservice');
 		return await query.getOne();
 	}
 }
