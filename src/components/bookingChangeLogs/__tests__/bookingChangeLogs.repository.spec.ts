@@ -5,6 +5,27 @@ import { TransactionManager } from '../../../core/transactionManager';
 import { BookingChangeLogsRepository } from '../bookingChangeLogs.repository';
 import { SelectQueryBuilder } from 'typeorm';
 import { AuthGroup, CitizenAuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { BookingChangeLogsQueryAuthVisitor } from '../bookingChangeLogs.auth';
+import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
+
+jest.mock('../bookingChangeLogs.auth');
+
+const singpassUserMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+
+const adminUserMock = User.createAdminUser({
+	molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+	agencyUserId: 'ABC1234',
+	email: 'john@email.com',
+	userName: 'JohnAdmin',
+	name: 'John',
+});
+
+const organisation = new Organisation();
+organisation.id = 1;
+
+const QueryAuthVisitorMock = {
+	createUserVisibilityCondition: jest.fn<Promise<UserConditionParams>, any>(),
+};
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
@@ -16,29 +37,19 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
+beforeEach(() => {
+	jest.resetAllMocks();
+
+	(BookingChangeLogsQueryAuthVisitor as jest.Mock).mockImplementation(() => QueryAuthVisitorMock);
+	QueryAuthVisitorMock.createUserVisibilityCondition.mockImplementation(() =>
+		Promise.resolve({ userCondition: '', userParams: {} }),
+	);
+
+	UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
+	UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassUserMock)]));
+});
+
 describe('BookingChangeLogs repository', () => {
-	const singpassUserMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
-
-	const adminUserMock = User.createAdminUser({
-		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
-		agencyUserId: 'ABC1234',
-		email: 'john@email.com',
-		userName: 'JohnAdmin',
-		name: 'John',
-	});
-
-	const organisation = new Organisation();
-	organisation.id = 1;
-
-	beforeEach(() => {
-		jest.resetAllMocks();
-
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
-		UserContextMock.getAuthGroups.mockImplementation(() =>
-			Promise.resolve([new CitizenAuthGroup(singpassUserMock)]),
-		);
-	});
-
 	it('should saveLog', async () => {
 		const repo = Container.get(BookingChangeLogsRepository);
 
@@ -82,7 +93,7 @@ describe('BookingChangeLogs repository', () => {
 		});
 
 		const whereParam =
-			'((service."_organisationId" IN (:...authorisedOrganisationIds))) AND (changelog."_serviceId" = :serviceId) AND (changelog."_timestamp" >= :changedSince AND changelog."_timestamp" < :changedUntil) AND (changelog."_bookingId" IN (:...bookingIds))';
+			'(changelog."_serviceId" = :serviceId) AND (changelog."_timestamp" >= :changedSince AND changelog."_timestamp" < :changedUntil) AND (changelog."_bookingId" IN (:...bookingIds))';
 		expect((queryBuilderMock.where as jest.Mock).mock.calls[0][0]).toBe(whereParam);
 		expect(queryBuilderMock.getMany).toHaveBeenCalled();
 		expect(results).toBeDefined();
