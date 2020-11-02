@@ -1,10 +1,14 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Booking, Calendar } from '../../models';
+import { Booking } from '../../models';
 import { CalendarsRepository } from './calendars.repository';
 import { GoogleCalendarService } from '../../googleapi/google.calendar.service';
 import { CalendarUserModel } from './calendars.apicontract';
 import { isEmptyArray } from '../../tools/arrays';
+import { Calendar } from '../../models/entities/calendar';
 
+/**
+ * @deprecated The class should not be used, it has been created at the start of the project to link booking with google calendar (with caldav protocole). We dont use it anymore
+ */
 @InRequestScope
 export class CalendarsService {
 	@Inject

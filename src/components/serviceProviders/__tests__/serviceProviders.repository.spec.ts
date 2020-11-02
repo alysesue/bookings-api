@@ -9,7 +9,7 @@ import { ServiceProvidersQueryAuthVisitor } from '../serviceProviders.auth';
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
-import { UsersRepository } from '../../../components/users/users.repository';
+import { UsersRepository } from '../../users/users.repository';
 
 jest.mock('../serviceProviders.auth');
 

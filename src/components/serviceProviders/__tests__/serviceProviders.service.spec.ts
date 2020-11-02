@@ -4,7 +4,6 @@ import { DeleteResult } from 'typeorm';
 import { ServiceProvidersService } from '../serviceProviders.service';
 import { ServiceProvidersRepository } from '../serviceProviders.repository';
 import {
-	Calendar,
 	ScheduleForm,
 	Service,
 	ServiceProvider,
@@ -14,7 +13,6 @@ import {
 	User,
 } from '../../../models';
 import { ServiceProviderModel, SetProviderScheduleFormRequest } from '../serviceProviders.apicontract';
-import { CalendarsService } from '../../calendars/calendars.service';
 import { ScheduleFormsService } from '../../scheduleForms/scheduleForms.service';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TimeslotItemsService } from '../../timeslotItems/timeslotItems.service';
@@ -52,11 +50,6 @@ describe('ServiceProviders.Service', () => {
 	const serviceMockWithTemplate = new Service();
 	const request = new TimeslotItemRequest();
 
-	const calendar = new Calendar();
-	calendar.id = 1;
-	calendar.uuid = '123';
-	calendar.googleCalendarId = 'google-id-1';
-
 	const serviceProvider = ServiceProvider.create('Peter', 1, 'test@email.com', '0000');
 	serviceProvider.id = 1;
 	const adminMock = User.createAdminUser({
@@ -72,7 +65,6 @@ describe('ServiceProviders.Service', () => {
 		Container.bind(TimeslotItemsService).to(TimeslotItemsServiceMock);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 		Container.bind(ServicesService).to(ServicesServiceMock);
-		Container.bind(CalendarsService).to(CalendarsServiceMock);
 		Container.bind(ScheduleFormsService).to(SchedulesServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 		Container.bind(UserContext).to(UserContextMock);
@@ -124,7 +116,6 @@ describe('ServiceProviders.Service', () => {
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
 		);
-		CalendarsServiceMock.createCalendar = new Calendar();
 		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
 		await Container.get(ServiceProvidersService).saveServiceProviders([serviceProviderMock], 1);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
@@ -141,11 +132,11 @@ describe('ServiceProviders.Service', () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderData;
 		ScheduleFormsServiceObj.getScheduleForm.mockImplementation(() => Promise.resolve(new ScheduleForm()));
 
-		const providerSchedulerequest = new SetProviderScheduleFormRequest();
-		providerSchedulerequest.scheduleFormId = 2;
+		const providerScheduleRequest = new SetProviderScheduleFormRequest();
+		providerScheduleRequest.scheduleFormId = 2;
 		const schedule = await Container.get(ServiceProvidersService).setProviderScheduleForm(
 			1,
-			providerSchedulerequest,
+			providerScheduleRequest,
 		);
 
 		expect(schedule).toBeDefined();
@@ -330,14 +321,6 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 
 	public async save(listRequest: ServiceProviderModel): Promise<ServiceProvider> {
 		return await ServiceProvidersRepositoryMock.save();
-	}
-}
-
-class CalendarsServiceMock extends CalendarsService {
-	public static createCalendar: Calendar;
-
-	public async createCalendar(): Promise<Calendar> {
-		return Promise.resolve(CalendarsServiceMock.createCalendar);
 	}
 }
 

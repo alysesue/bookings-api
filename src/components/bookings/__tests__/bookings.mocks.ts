@@ -1,6 +1,5 @@
 import { BookingsRepository } from '../bookings.repository';
-import { CalendarsService } from '../../calendars/calendars.service';
-import { Booking, Calendar, ChangeLogAction, ServiceProvider, User } from '../../../models';
+import { Booking, ChangeLogAction, ServiceProvider, User } from '../../../models';
 import { InsertResult } from 'typeorm';
 import { BookingSearchRequest } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
@@ -17,7 +16,6 @@ import { TimeslotServiceProviderResult } from '../../../models/timeslotServicePr
 
 export class BookingRepositoryMock extends BookingsRepository {
 	public static booking: Booking;
-	public static getBookingsMock: Booking[];
 	public static searchBookingsMock: Booking[];
 	public static saveMock: Promise<InsertResult>;
 
@@ -39,14 +37,6 @@ export class BookingRepositoryMock extends BookingsRepository {
 
 	public async search(searchRequest: BookingSearchRequest): Promise<Booking[]> {
 		return Promise.resolve(BookingRepositoryMock.searchBookingsMock);
-	}
-}
-
-export class CalendarsServiceMock extends CalendarsService {
-	public static eventId: string;
-
-	public async createCalendarEvent(booking: Booking, calendar: Calendar): Promise<string> {
-		return Promise.resolve(CalendarsServiceMock.eventId);
 	}
 }
 

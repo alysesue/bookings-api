@@ -2,7 +2,6 @@ import { Container } from 'typescript-ioc';
 import {
 	Booking,
 	BookingStatus,
-	Calendar,
 	Service,
 	ServiceProvider,
 	TimeslotsSchedule,
@@ -43,9 +42,6 @@ describe('Timeslots Service', () => {
 		generateValidTimeslots: jest.fn(),
 	};
 
-	const CalendarMock = new Calendar();
-	CalendarMock.id = 1;
-
 	const ServiceMock = new Service();
 	ServiceMock.id = 1;
 	ServiceMock.timeslotsSchedule = (TimeslotsScheduleMock as unknown) as TimeslotsSchedule;
@@ -53,11 +49,9 @@ describe('Timeslots Service', () => {
 
 	const ServiceProviderMock = ServiceProvider.create('Provider', ServiceMock.id);
 	ServiceProviderMock.id = 100;
-	ServiceProviderMock.calendar = CalendarMock;
 
 	const ServiceProviderMock2 = ServiceProvider.create('Provider with schedule', ServiceMock.id);
 	ServiceProviderMock2.id = 101;
-	ServiceProviderMock2.calendar = CalendarMock;
 	ServiceProviderMock2.timeslotsSchedule = (ProviderScheduleMock as unknown) as TimeslotsSchedule;
 	ServiceProviderMock2.timeslotsScheduleId = ProviderScheduleMock._id;
 
@@ -75,7 +69,6 @@ describe('Timeslots Service', () => {
 		.build();
 
 	BookingMock.status = BookingStatus.Accepted;
-	BookingMock.eventICalId = 'eventICalId';
 	BookingMock.serviceProvider = ServiceProviderMock;
 	BookingMock.serviceProviderId = ServiceProviderMock.id;
 

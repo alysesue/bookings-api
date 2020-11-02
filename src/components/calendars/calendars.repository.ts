@@ -1,6 +1,6 @@
 import { InRequestScope } from 'typescript-ioc';
-import { Calendar } from '../../models';
 import { RepositoryBase } from '../../core/repository';
+import { Calendar } from '../../models/entities/calendar';
 
 @InRequestScope
 export class CalendarsRepository extends RepositoryBase<Calendar> {

@@ -2,7 +2,6 @@ import { Booking } from './booking';
 import { ScheduleForm } from './scheduleForm';
 import { WeekDaySchedule } from './weekDaySchedule';
 import { WeekDayBreak } from './weekDayBreak';
-import { Calendar } from './calendar';
 import { Service } from './service';
 import { ServiceProvider } from './serviceProvider';
 import { TimeslotsSchedule } from './timeslotsSchedule';
@@ -19,7 +18,6 @@ export {
 	ServiceAdminGroupMap,
 	WeekDayBreak,
 	WeekDaySchedule,
-	Calendar,
 	ServiceProvider,
 	TimeslotsSchedule,
 	TimeslotItem,

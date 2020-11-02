@@ -3,9 +3,7 @@ import * as authModule from 'google-auth-library';
 import { GoogleApi } from '../google.api';
 
 jest.mock('../../config/app-config', () => {
-	const configMock = {
-		serviceAccount: '{}',
-	};
+	const configMock = {};
 
 	return {
 		getConfig: () => configMock,

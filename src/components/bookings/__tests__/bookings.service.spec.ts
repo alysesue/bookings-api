@@ -1,12 +1,10 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { BookingsService } from '../index';
 import { BookingsRepository } from '../bookings.repository';
-import { CalendarsService } from '../../calendars/calendars.service';
 import { Container } from 'typescript-ioc';
 import {
 	Booking,
 	BookingStatus,
-	Calendar,
 	ChangeLogAction,
 	Service,
 	ServiceProvider,
@@ -35,7 +33,6 @@ import {
 import {
 	BookingChangeLogsServiceMock,
 	BookingRepositoryMock,
-	CalendarsServiceMock,
 	ServiceProvidersRepositoryMock,
 	ServiceProvidersServiceMock,
 	ServicesServiceMock,
@@ -68,13 +65,8 @@ function getBookingRequest() {
 describe('Bookings.Service', () => {
 	const service = new Service();
 	service.id = 1;
-	const calendar = new Calendar();
-	calendar.id = 1;
-	calendar.uuid = '123';
-	calendar.googleCalendarId = 'google-id-1';
 	const serviceProvider = ServiceProvider.create('provider', 1);
 	serviceProvider.id = 1;
-	serviceProvider.calendar = calendar;
 
 	const timeslotSchedule = new TimeslotsSchedule();
 	timeslotSchedule._id = 1;
@@ -112,7 +104,6 @@ describe('Bookings.Service', () => {
 	beforeAll(() => {
 		snapshot = Container.snapshot();
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
-		Container.bind(CalendarsService).to(CalendarsServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 		Container.bind(UnavailabilitiesService).to(UnavailabilitiesServiceMock);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
@@ -312,7 +303,6 @@ describe('Bookings.Service', () => {
 
 	it('should accept booking', async () => {
 		const bookingService = Container.get(BookingsService);
-		CalendarsServiceMock.eventId = 'event-id';
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(1)
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
@@ -337,12 +327,10 @@ describe('Bookings.Service', () => {
 		const result = await bookingService.acceptBooking(1, acceptRequest);
 
 		expect(result.status).toBe(BookingStatus.Accepted);
-		expect(result.eventICalId).toBe('event-id');
 	});
 
 	it('should accept booking with pre selected service provider', async () => {
 		const bookingService = Container.get(BookingsService);
-		CalendarsServiceMock.eventId = 'event-id';
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(1)
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
@@ -363,7 +351,6 @@ describe('Bookings.Service', () => {
 		const result = await bookingService.acceptBooking(1, acceptRequest);
 
 		expect(result.status).toBe(BookingStatus.Accepted);
-		expect(result.eventICalId).toBe('event-id');
 	});
 
 	it('should cancel booking', async () => {

@@ -1,4 +1,4 @@
-import { Calendar, Organisation, Service, ServiceProvider, User } from '../../../models';
+import { Organisation, Service, ServiceProvider, User } from '../../../models';
 import { ServicesQueryAuthVisitor } from '../services.auth';
 import {
 	CitizenAuthGroup,
@@ -69,7 +69,6 @@ describe('Services query auth', () => {
 	it(`should filter by service related to service provider`, async () => {
 		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
 		serviceProvider.id = 5;
-		serviceProvider.calendar = new Calendar();
 		const groups = [new ServiceProviderAuthGroup(adminMock, serviceProvider)];
 		const result = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(groups);
 
@@ -82,7 +81,6 @@ describe('Services query auth', () => {
 	it(`should combine user groups' permission (union)`, async () => {
 		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
 		serviceProvider.id = 5;
-		serviceProvider.calendar = new Calendar();
 		const groups = [
 			new OrganisationAdminAuthGroup(adminMock, [organisation]),
 			new ServiceAdminAuthGroup(adminMock, [service]),

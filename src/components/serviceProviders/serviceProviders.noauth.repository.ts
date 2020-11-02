@@ -17,8 +17,7 @@ export class ServiceProvidersRepositoryNoAuth extends RepositoryBase<ServiceProv
 		// *** Don't filter by user permission here, as this is used by UserContext class
 		const query = repository
 			.createQueryBuilder('sp')
-			.innerJoin('sp._serviceProviderGroupMap', 'spgroup', 'spgroup."_molAdminId" = :molAdminId', { molAdminId })
-			.leftJoinAndSelect('sp._calendar', 'calendar');
+			.innerJoin('sp._serviceProviderGroupMap', 'spgroup', 'spgroup."_molAdminId" = :molAdminId', { molAdminId });
 
 		return await query.getOne();
 	}

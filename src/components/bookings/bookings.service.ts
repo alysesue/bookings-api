@@ -9,7 +9,6 @@ import {
 	RescheduleBookingRequest,
 } from './bookings.apicontract';
 import { TimeslotsService } from '../timeslots/timeslots.service';
-import { CalendarsService } from '../calendars/calendars.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
 import { BookingBuilder } from '../../models/entities/booking';
@@ -26,8 +25,6 @@ export class BookingsService {
 	public unavailabilitiesService: UnavailabilitiesService;
 	@Inject
 	private bookingsRepository: BookingsRepository;
-	@Inject
-	private calendarsService: CalendarsService;
 	@Inject
 	private timeslotsService: TimeslotsService;
 	@Inject
@@ -140,7 +137,6 @@ export class BookingsService {
 			);
 		}
 
-		const eventCalId = booking.eventICalId;
 		if (booking.status === BookingStatus.Accepted) {
 			const provider = await this.serviceProviderRepo.getServiceProvider({ id: booking.serviceProviderId });
 			if (!provider) {
@@ -148,7 +144,6 @@ export class BookingsService {
 					`Service provider '${booking.serviceProviderId}' not found`,
 				);
 			}
-			await this.calendarsService.deleteCalendarEvent(provider.calendar, eventCalId);
 		}
 		booking.status = BookingStatus.Cancelled;
 
@@ -186,11 +181,6 @@ export class BookingsService {
 			serviceProvider: null,
 		} as RescheduleBookingRequest;
 
-		if (booking.status === BookingStatus.Accepted && booking.serviceProvider?.calendar) {
-			await this.calendarsService.deleteCalendarEvent(booking.serviceProvider.calendar, booking.eventICalId);
-			request.eventICalId = null;
-		}
-
 		return await this.updateInternal(booking, request, isAdmin);
 	}
 
@@ -227,11 +217,8 @@ export class BookingsService {
 			}
 		}
 
-		const eventICalId = await this.calendarsService.createCalendarEvent(booking, provider.calendar);
-
 		booking.status = BookingStatus.Accepted;
 		booking.serviceProvider = provider;
-		booking.eventICalId = eventICalId;
 
 		await this.loadBookingDependencies(booking);
 		await this.verifyActionPermission(booking, ChangeLogAction.Accept);
@@ -293,18 +280,10 @@ export class BookingsService {
 		booking.serviceProvider = serviceProvider;
 		await this.loadBookingDependencies(booking);
 		await this.bookingsValidatorFactory.getValidator(bookingRequest.outOfSlotBooking).validate(booking);
-		booking.eventICalId = await this.getEventICalId(booking);
 
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
 		await this.bookingsRepository.insert(booking);
 
 		return [ChangeLogAction.Create, booking];
-	}
-
-	private async getEventICalId(booking: Booking) {
-		if (booking.serviceProvider) {
-			return await this.calendarsService.createCalendarEvent(booking, booking.serviceProvider.calendar);
-		}
-		return null;
 	}
 }

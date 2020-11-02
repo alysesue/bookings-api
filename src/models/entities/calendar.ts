@@ -1,6 +1,9 @@
 import { Column, Entity, Generated, Index, PrimaryGeneratedColumn } from 'typeorm';
 import { basePath } from '../../config/app-config';
 
+/**
+ * @deprecated The class should not be used, it has been created at the start of the project to link booking with google calendar (with caldav protocole). We dont use it anymore
+ */
 @Entity()
 export class Calendar {
 	@PrimaryGeneratedColumn()

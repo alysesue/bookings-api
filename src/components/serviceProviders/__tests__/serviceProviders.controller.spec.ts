@@ -1,9 +1,8 @@
 import { Container } from 'typescript-ioc';
-import { Calendar, ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
+import { ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
 import { ServiceProvidersController } from '../serviceProviders.controller';
 import { ServiceProvidersService } from '../serviceProviders.service';
 import { ServiceProviderModel, SetProviderScheduleFormRequest } from '../serviceProviders.apicontract';
-import { CalendarsService } from '../../calendars/calendars.service';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 
 afterAll(() => {
@@ -13,7 +12,7 @@ afterAll(() => {
 
 jest.mock('mol-lib-common', () => {
 	const actual = jest.requireActual('mol-lib-common');
-	const mock = (config: any) => {
+	const mock = () => {
 		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
 	};
 	return {
@@ -26,11 +25,8 @@ describe('ServiceProviders.Controller', () => {
 	const sp1 = ServiceProvider.create('Monica', 1);
 	const sp2 = ServiceProvider.create('Timmy', 1);
 
-	sp1.calendar = new Calendar();
-	sp2.calendar = new Calendar();
 	beforeAll(() => {
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
-		Container.bind(CalendarsService).to(CalendarsServiceMock);
 	});
 	const mockItem = new TimeslotItem();
 	const request = new TimeslotItemRequest();
@@ -229,15 +225,5 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 
 	public async deleteTimeslotItem(serviceProviderId: number, timeslotsScheduleId: number): Promise<void> {
 		return ServiceProvidersMock.deleteTimeslotForServiceProvider(serviceProviderId, timeslotsScheduleId);
-	}
-}
-
-const CalendarsSvcMock = {
-	createCalendar: jest.fn(),
-};
-
-class CalendarsServiceMock extends CalendarsService {
-	public async createCalendar(): Promise<Calendar> {
-		return CalendarsSvcMock.createCalendar();
 	}
 }

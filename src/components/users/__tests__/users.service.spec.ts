@@ -1,6 +1,5 @@
 import { Container } from 'typescript-ioc';
 import {
-	Calendar,
 	Organisation,
 	Service,
 	ServiceAdminGroupMap,
@@ -12,7 +11,7 @@ import { UsersRepository } from '../users.repository';
 import { UsersService } from '../users.service';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
-import { OrganisationsService } from '../../../components/organisations/organisations.service';
+import { OrganisationsService } from '../../organisations/organisations.service';
 import {
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
@@ -20,7 +19,7 @@ import {
 } from '../../../infrastructure/auth/authGroup';
 import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 import { ServicesRepositoryNoAuth } from '../../services/services.noauth.repository';
-import { ServiceProvidersRepositoryNoAuth } from '../../../components/serviceProviders/serviceProviders.noauth.repository';
+import { ServiceProvidersRepositoryNoAuth } from '../../serviceProviders/serviceProviders.noauth.repository';
 
 beforeAll(() => {
 	Container.bind(UsersRepository).to(UserRepositoryMock);
@@ -241,7 +240,6 @@ describe('Users Service', () => {
 		const serviceProvider = ServiceProvider.create('Peter', 1, 'test@email.com', '0000');
 		serviceProvider._serviceProviderGroupMap = new ServiceProviderGroupMap();
 		serviceProvider._serviceProviderGroupMap.molAdminId = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
-		serviceProvider.calendar = new Calendar();
 
 		ServiceProvidersRepositoryNoAuthMock.getServiceProviderByMolAdminId.mockImplementation(() =>
 			Promise.resolve(serviceProvider),

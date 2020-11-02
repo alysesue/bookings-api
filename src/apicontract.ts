@@ -1,11 +1,3 @@
-export class ErrorResponse {
-	public message: string;
-
-	constructor(message: string) {
-		this.message = message;
-	}
-}
-
 export class ApiData<T> {
 	public data: T;
 	constructor(typedData: T) {

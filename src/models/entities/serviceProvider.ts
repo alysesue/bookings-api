@@ -1,6 +1,4 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Calendar } from './calendar';
-import { ServiceProviderStatus } from '../serviceProviderStatus';
 import { Service } from './service';
 import { ScheduleForm } from './scheduleForm';
 import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
@@ -46,17 +44,6 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 	@Column()
 	private _createdAt: Date;
 
-	@Column()
-	private _status: ServiceProviderStatus;
-
-	public get status(): ServiceProviderStatus {
-		return this._status;
-	}
-
-	public set status(value: ServiceProviderStatus) {
-		this._status = value;
-	}
-
 	@Column({ nullable: false })
 	@Index()
 	private _serviceId: number;
@@ -96,7 +83,6 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		instance._serviceId = serviceId;
 		instance._name = name;
 		instance._createdAt = new Date();
-		instance._status = ServiceProviderStatus.Valid;
 		instance._email = email;
 		instance._phone = phone;
 		instance._autoAcceptBookings = DEFAULT_AUTO_ACCEPT_BOOKINGS;
@@ -123,18 +109,6 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 
 	public set phone(value: string) {
 		this._phone = value;
-	}
-
-	@OneToOne('Calendar')
-	@JoinColumn()
-	public _calendar: Calendar;
-
-	public get calendar(): Calendar {
-		return this._calendar;
-	}
-
-	public set calendar(calendar: Calendar) {
-		this._calendar = calendar;
 	}
 
 	@ManyToOne('ScheduleForm', { nullable: true })

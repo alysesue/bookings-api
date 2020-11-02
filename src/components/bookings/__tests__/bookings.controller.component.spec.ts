@@ -1,13 +1,7 @@
 import { Container } from 'typescript-ioc';
 import { BookingsController } from '../index';
 import { BookingsRepository } from '../bookings.repository';
-import { Booking, BookingStatus, Calendar, Service, ServiceProvider, User } from '../../../models';
-import { CalendarsRepository } from '../../calendars/calendars.repository';
-import { GoogleApi } from '../../../googleapi/google.api';
-// @ts-ignore
-import * as insertEventResponse from './createEventResponse.json';
-// @ts-ignore
-import * as freebusyResponse from './freebusyResponse.json';
+import { Booking, BookingStatus, Service, ServiceProvider, User } from '../../../models';
 import { BookingAcceptRequest } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
@@ -18,7 +12,7 @@ import {
 	BookingActionFunction,
 	BookingChangeLogsService,
 	GetBookingFunction,
-} from '../../../components/bookingChangeLogs/bookingChangeLogs.service';
+} from '../../bookingChangeLogs/bookingChangeLogs.service';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
@@ -31,7 +25,7 @@ afterAll(() => {
 
 jest.mock('mol-lib-common', () => {
 	const actual = jest.requireActual('mol-lib-common');
-	const mock = (config: any) => {
+	const mock = () => {
 		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
 	};
 	return {
@@ -46,16 +40,10 @@ beforeEach(() => {
 
 describe('Booking Integration tests', () => {
 	it('should accept booking', async () => {
-		const calendar = new Calendar();
-		calendar.id = 1;
-		calendar.uuid = '123';
-		calendar.googleCalendarId = 'google-id-1';
-
 		const service = new Service();
 		service.id = 2;
 		const provider = ServiceProvider.create('Provider', 2);
 		provider.id = 11;
-		provider.calendar = calendar;
 		const timeslotWithCapacity = new TimeslotWithCapacity(
 			new Date('2020-10-01T01:00:00'),
 			new Date('2020-10-01T02:00:00'),
@@ -69,9 +57,7 @@ describe('Booking Integration tests', () => {
 		});
 
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
-		Container.bind(CalendarsRepository).to(CalendarsRepositoryMock());
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
-		Container.bind(GoogleApi).to(GoogleApiMock());
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
 		Container.bind(BookingChangeLogsService).to(BookingChangeLogsServiceMock);
@@ -116,7 +102,6 @@ describe('Booking Integration tests', () => {
 		const booking = BookingRepositoryMock.update.mock.calls[0][0] as Booking;
 
 		expect(booking.status).toBe(BookingStatus.Accepted);
-		expect(booking.eventICalId).toBe('s1ov9v4ic15vcs30dtfgeoclg8@google.com');
 	});
 });
 
@@ -132,28 +117,6 @@ class BookingRepositoryMock extends BookingsRepository {
 		return await BookingRepositoryMock.update(...params);
 	}
 }
-
-const CalendarsRepositoryMock = () => {
-	const calendar = new Calendar();
-	calendar.googleCalendarId = 'google-id-1';
-	return jest.fn().mockImplementation(() => ({
-		getCalendarByUUID: jest.fn().mockReturnValue(calendar),
-	}));
-};
-
-const GoogleApiMock = () => {
-	return jest.fn().mockImplementation(() => ({
-		getCalendarApi: jest.fn().mockReturnValue({
-			freebusy: {
-				query: jest.fn().mockReturnValue(freebusyResponse),
-			},
-			events: {
-				insert: jest.fn().mockReturnValue(insertEventResponse),
-			},
-			calendars: jest.fn(),
-		}),
-	}));
-};
 
 class TimeslotsServiceMock extends TimeslotsService {
 	public static availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
