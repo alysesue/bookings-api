@@ -110,6 +110,66 @@ describe('Booking validation tests', () => {
 		);
 	});
 
+
+	it('should validate citizen name', async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenEmail('email@gmail.com')
+			.build();
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
+		).rejects.toStrictEqual(
+			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				'Citizen name not provided',
+			),
+		);
+	});
+
+	it('should validate citizen email', async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.build();
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
+		).rejects.toStrictEqual(
+			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				'Citizen email not provided',
+			),
+		);
+	});
+
+
+	it('should validate citizen email', async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmailcom')
+			.build();
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
+		).rejects.toStrictEqual(
+			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				'Citizen email not valid',
+			),
+		);
+	});
+
 	it('should validate end date time', async () => {
 		const booking = new BookingBuilder()
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
