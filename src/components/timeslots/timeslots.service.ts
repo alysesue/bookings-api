@@ -262,9 +262,9 @@ export class TimeslotsService {
 		for (const provider of serviceProviders) {
 			const timeslotServiceProviders = provider.timeslotsSchedule
 				? provider.timeslotsSchedule.generateValidTimeslots({
-					startDatetime: minStartTime,
-					endDatetime: maxEndTime,
-				})
+						startDatetime: minStartTime,
+						endDatetime: maxEndTime,
+				  })
 				: validServiceTimeslots;
 
 			aggregator.aggregate(provider, timeslotServiceProviders);

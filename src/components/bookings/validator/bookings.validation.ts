@@ -94,9 +94,21 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 	private timeslotsService: TimeslotsService;
 
 	public async validateAvailability(booking: Booking) {
-		const existingTimeslot = await this.timeslotsService.getAggregatedTimeslots(booking.startDateTime, booking.endDateTime, booking.serviceId, true, booking.serviceProviderId);
+		const existingTimeslot = await this.timeslotsService.getAggregatedTimeslots(
+			booking.startDateTime,
+			booking.endDateTime,
+			booking.serviceId,
+			true,
+			booking.serviceProviderId,
+		);
 
-		if (!existingTimeslot.some(i => DateHelper.equals(i.startTime, booking.startDateTime) && DateHelper.equals(i.endTime, booking.endDateTime)))
+		if (
+			!existingTimeslot.some(
+				(i) =>
+					DateHelper.equals(i.startTime, booking.startDateTime) &&
+					DateHelper.equals(i.endTime, booking.endDateTime),
+			)
+		)
 			await this.validateOverlapping(booking);
 
 		if (
