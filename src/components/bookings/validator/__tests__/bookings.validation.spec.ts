@@ -20,6 +20,7 @@ import {
 	UserContextMock,
 } from '../../__tests__/bookings.mocks';
 import { TimeslotWithCapacity } from '../../../../models/timeslotWithCapacity';
+import { AvailableTimeslotProviders } from '../../../../components/timeslots/availableTimeslotProviders';
 
 // tslint:disable-next-line:no-big-function
 describe('Booking validation tests', () => {
@@ -72,7 +73,7 @@ describe('Booking validation tests', () => {
 	});
 
 	it('should not allow booking out of timeslots due to unavailability', async () => {
-		const start = new Date();
+		const start = new Date(2020, 8, 26, 8, 0);
 		const booking = new BookingBuilder()
 			.withStartDateTime(start)
 			.withEndDateTime(DateHelper.addMinutes(start, 45))
@@ -82,6 +83,18 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
+		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
+			const entry = new AvailableTimeslotProviders();
+			entry.startTime = new Date(2020, 8, 26, 8, 0);
+			entry.endTime = new Date(2020, 8, 26, 8, 45);
+
+			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
+			map.set(serviceProvider, new TimeslotWithCapacity(entry.startTime, entry.endTime, 1));
+
+			entry.setRelatedServiceProviders(map);
+
+			return Promise.resolve([entry]);
+		});
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		BookingRepositoryMock.searchBookingsMock = [];
