@@ -2,14 +2,14 @@ import { logger } from 'mol-lib-common';
 import { TransactionManager } from '../../core/transactionManager';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Organisation, OrganisationAdminGroupMap } from '../../models';
-import { OrganisationsRepository } from './organisations.repository';
+import { OrganisationsNoauthRepository } from './organisations.noauth.repository';
 
 @InRequestScope
 export class OrganisationsService {
 	@Inject
 	private transactionManager: TransactionManager;
 	@Inject
-	private organisationsRepository: OrganisationsRepository;
+	private organisationsRepository: OrganisationsNoauthRepository;
 
 	private getFirstOrNull<T>(data: T[]): T {
 		if (data && data.length > 0) {

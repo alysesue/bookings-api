@@ -1,6 +1,3 @@
-import { basePath } from '../../../config/app-config';
-import * as Koa from 'koa';
-import { UserContextMiddleware } from '../../userContext.middleware';
 import { ContainerContextHolder } from '../../containerContext.middleware';
 import { Container } from 'typescript-ioc';
 import { UsersService } from '../../../components/users/users.service';
@@ -17,15 +14,6 @@ beforeAll(() => {
 afterEach(() => {
 	jest.resetAllMocks();
 });
-
-function buildSampleKoaContext(path: string): Koa.Context {
-	const headers = { myHeader: 'value' };
-	return {
-		path,
-		headers,
-		request: { host: 'localhost', protocol: 'http', headers },
-	} as Koa.Context;
-}
 
 describe('User Context tests', () => {
 	it('should get null user', async () => {

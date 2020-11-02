@@ -1,4 +1,4 @@
-import { OrganisationsRepository } from '../organisations.repository';
+import { OrganisationsNoauthRepository } from '../organisations.noauth.repository';
 import { Container } from 'typescript-ioc';
 import { TransactionManager } from '../../../core/transactionManager';
 import { Organisation } from '../../../models/entities/organisation';
@@ -29,7 +29,7 @@ describe('Organisations repository', () => {
 		};
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
-		const repository = Container.get(OrganisationsRepository);
+		const repository = Container.get(OrganisationsNoauthRepository);
 		const result = await repository.getOrganisationsForUserGroups(['Organisation1']);
 		expect(result).toEqual([organisationMock]);
 	});
@@ -42,7 +42,7 @@ describe('Organisations repository', () => {
 		};
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
-		const repository = Container.get(OrganisationsRepository);
+		const repository = Container.get(OrganisationsNoauthRepository);
 		const result = await repository.getOrganisationsForUserGroups([]);
 		expect(result).toEqual([]);
 	});
@@ -53,7 +53,7 @@ describe('Organisations repository', () => {
 		data.name = 'Organisation1';
 
 		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(data));
-		const repository = Container.get(OrganisationsRepository);
+		const repository = Container.get(OrganisationsNoauthRepository);
 		await repository.save(data);
 		expect(TransactionManagerMock.save.mock.calls[0][0]).toStrictEqual(data);
 	});

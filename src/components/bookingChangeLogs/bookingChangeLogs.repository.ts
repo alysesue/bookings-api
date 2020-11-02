@@ -3,6 +3,7 @@ import { BookingChangeLog } from '../../models';
 import { RepositoryBase } from '../../core/repository';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { groupByKey } from '../../tools/collections';
+import { BookingChangeLogsQueryAuthVisitor } from './bookingChangeLogs.auth';
 
 @InRequestScope
 export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog> {
@@ -19,6 +20,15 @@ export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog
 	}
 
 	public async getLogs(options: ChangeLogSearchQuery): Promise<Map<number, BookingChangeLog[]>> {
+		const authGroups = await this.userContext.getAuthGroups();
+		const { userCondition, userParams } = options.byPassAuth
+			? { userCondition: '', userParams: {} }
+			: await new BookingChangeLogsQueryAuthVisitor(
+					'changelog',
+					'service',
+					'booking',
+			  ).createUserVisibilityCondition(authGroups);
+
 		const { changedSince, changedUntil, serviceId, bookingIds } = options;
 
 		const serviceCondition = serviceId ? 'changelog."_serviceId" = :serviceId' : '';
@@ -29,16 +39,18 @@ export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog
 		const query = repository
 			.createQueryBuilder('changelog')
 			.where(
-				[serviceCondition, dateCondition, bookingIdsCondition]
+				[userCondition, serviceCondition, dateCondition, bookingIdsCondition]
 					.filter((c) => c)
 					.map((c) => `(${c})`)
 					.join(' AND '),
-				{ changedSince, changedUntil, serviceId, bookingIds },
+				{ ...userParams, changedSince, changedUntil, serviceId, bookingIds },
 			)
 			.leftJoinAndSelect('changelog._user', 'loguser')
 			.leftJoinAndSelect('loguser._singPassUser', 'singpass')
 			.leftJoinAndSelect('loguser._adminUser', 'admin')
-			.leftJoinAndSelect('loguser._agencyUser', 'agency');
+			.leftJoinAndSelect('loguser._agencyUser', 'agency')
+			.leftJoinAndSelect('changelog._service', 'service')
+			.leftJoinAndSelect('changelog._booking', 'booking');
 
 		const entries = await query.getMany();
 
@@ -51,4 +63,5 @@ export type ChangeLogSearchQuery = {
 	changedUntil: Date;
 	serviceId?: number;
 	bookingIds: number[];
+	byPassAuth?: boolean;
 };

@@ -1,11 +1,6 @@
 import { TimeOfDay, TimeslotItem } from '../index';
 import { Weekday } from '../../enums/weekday';
-import {
-	WeekDayBreakContract,
-	WeekDayScheduleContract,
-} from '../../components/scheduleForms/scheduleForms.apicontract';
-import { ScheduleForm, ServiceProvider, WeekDayBreak, WeekDaySchedule } from '../entities';
-import { IScheduleForm } from '../interfaces';
+import { ScheduleForm, WeekDayBreak, WeekDaySchedule } from '../entities';
 
 describe('Should test timeslots items', () => {
 	const scheduleFormRequestComplex = new ScheduleForm();
