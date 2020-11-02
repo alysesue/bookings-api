@@ -86,6 +86,10 @@ export class BookingChangeLog {
 		this._newState = { schemaVersion: 1, ...value };
 	}
 
+	public get serviceId(): number {
+		return this._serviceId;
+	}
+
 	constructor() {}
 
 	public static create({

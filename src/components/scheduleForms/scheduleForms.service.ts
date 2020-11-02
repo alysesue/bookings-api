@@ -2,12 +2,11 @@ import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { DeleteResult } from 'typeorm';
 import { ScheduleFormsRepository } from './scheduleForms.repository';
-import { ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { ScheduleForm, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { ScheduleFormRequest, ScheduleFormResponse } from './scheduleForms.apicontract';
 import { mapToEntity, mapToResponse } from './scheduleForms.mapper';
 import { getErrorResult, isErrorResult } from '../../errors';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
-import { intersects } from '../../tools/timeSpan';
 
 @InRequestScope
 export class ScheduleFormsService {
