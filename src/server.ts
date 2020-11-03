@@ -20,6 +20,7 @@ import { useSwagger } from './infrastructure/swagger.middleware';
 import { ContainerContextMiddleware } from './infrastructure/containerContext.middleware';
 import { UserContextMiddleware } from './infrastructure/userContext.middleware';
 import { ApiData } from './apicontract';
+import { BusinessErrorMiddleware } from './infrastructure/businessError.middleware';
 
 class ApiDataResponseHandler {
 	private _middleware: Koa.Middleware;
@@ -71,6 +72,7 @@ export async function startServer(): Promise<Server> {
 		.use(noCache({ global: true }))
 		.use(await useSwagger())
 		.use(new KoaErrorHandler().build())
+		.use(new BusinessErrorMiddleware().build())
 		.use(new KoaLoggerContext().build())
 		.use(new KoaMultipartCleaner().build())
 		.use(HealthCheckMiddleware.build())

@@ -8,7 +8,7 @@ import { ServiceProvidersRepository } from '../../../serviceProviders/servicePro
 import { UnavailabilitiesService } from '../../../unavailabilities/unavailabilities.service';
 import { UserContext } from '../../../../infrastructure/auth/userContext';
 import { BookingBuilder } from '../../../../models/entities/booking';
-import { User } from '../../../../models';
+import { BusinessValidation, User } from '../../../../models';
 import { BookingsValidatorFactory } from '../bookings.validation';
 import {
 	BookingRepositoryMock,
@@ -19,6 +19,7 @@ import {
 } from '../../__tests__/bookings.mocks';
 import { TimeslotWithCapacity } from '../../../../models/timeslotWithCapacity';
 import { AvailableTimeslotProviders } from '../../../../components/timeslots/availableTimeslotProviders';
+import { BusinessError } from '../../../../errors/businessError';
 
 // tslint:disable-next-line:no-big-function
 describe('Booking validation tests', () => {
@@ -50,6 +51,8 @@ describe('Booking validation tests', () => {
 
 	beforeEach(() => {
 		jest.resetAllMocks();
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = undefined;
 	});
 
 	it('should return regular booking validator', () => {
@@ -95,10 +98,8 @@ describe('Booking validation tests', () => {
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 
 		const test = async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
-		await expect(test).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				`The service provider is not available in the selected time range`,
-			),
+		await expect(test).rejects.toMatchInlineSnapshot(
+			'[BusinessError: [10001] The service provider is not available in the selected time range]',
 		);
 	});
 
@@ -109,30 +110,88 @@ describe('Booking validation tests', () => {
 			.withEndDateTime(DateHelper.addMinutes(start, 60))
 			.withCitizenUinFin('G3382058K')
 			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
 			.build();
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
-		).rejects.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Citizen name not provided'));
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10006] Citizen name not provided]');
 	});
 
-	it('should validate citizen email', async () => {
+	it('should concatenate validations', async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withServiceProviderId(1)
+			.build();
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
+		).rejects.toMatchInlineSnapshot(
+			'[BusinessError: [10005] Citizen Uin/Fin not found, [10006] Citizen name not provided, [10007] Citizen email not provided]',
+		);
+	});
+
+	it('should validate service provider (required) for out of slot booking', async () => {
 		const start = new Date();
 		const booking = new BookingBuilder()
 			.withStartDateTime(start)
 			.withEndDateTime(DateHelper.addMinutes(start, 60))
 			.withCitizenUinFin('G3382058K')
 			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
 			.build();
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
-		).rejects.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Citizen email not provided'));
+		).rejects.toMatchInlineSnapshot(
+			'[BusinessError: [10010] Service provider is required for out of slot bookings]',
+		);
 	});
 
-	it('should validate citizen email', async () => {
+	it('should validate service provider (not found) for out of slot booking', async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(5)
+			.build();
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
+		).rejects.toMatchInlineSnapshot(`[BusinessError: [10009] Service provider '5' not found]`);
+	});
+
+	it('should validate citizen email (required)', async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withServiceProviderId(1)
+			.build();
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10007] Citizen email not provided]');
+	});
+
+	it('should validate invalid citizen email', async () => {
 		const start = new Date();
 		const booking = new BookingBuilder()
 			.withStartDateTime(start)
@@ -140,12 +199,14 @@ describe('Booking validation tests', () => {
 			.withCitizenUinFin('G3382058K')
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmailcom')
+			.withServiceProviderId(1)
 			.build();
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
-		).rejects.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Citizen email not valid'));
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10008] Citizen email not valid]');
 	});
 
 	it('should validate end date time', async () => {
@@ -165,29 +226,6 @@ describe('Booking validation tests', () => {
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
 		).rejects.toThrowError();
-	});
-
-	it('should validate end date time', async () => {
-		const booking = new BookingBuilder()
-			.withStartDateTime(new Date('2020-10-01T03:00:00'))
-			.withEndDateTime(new Date('2020-10-01T02:00:00'))
-			.build();
-
-		BookingRepositoryMock.searchBookingsMock = [];
-		const timeslotWithCapacity = new TimeslotWithCapacity(
-			new Date('2020-10-01T01:00:00'),
-			new Date('2020-10-01T02:00:00'),
-		);
-		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
-
-		await expect(
-			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
-		).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				'End time for booking must be greater than start time',
-			),
-		);
 	});
 
 	it('should throw on validation error', async () => {
@@ -229,33 +267,8 @@ describe('Booking validation tests', () => {
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
-		).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				'No available service providers in the selected time range',
-			),
-		);
-	});
-	it('should validate service provider availability', async () => {
-		const start = new Date();
-		const booking = new BookingBuilder()
-			.withStartDateTime(start)
-			.withEndDateTime(DateHelper.addMinutes(start, 60))
-			.withCitizenUinFin('G3382058K')
-			.withCitizenName('Andy')
-			.withCitizenEmail('email@gmail.com')
-			.withServiceProviderId(1)
-			.build();
-		BookingRepositoryMock.searchBookingsMock = [];
-		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
-		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
-
-		await expect(
-			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
-		).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				'The service provider is not available in the selected time range',
-			),
+		).rejects.toMatchInlineSnapshot(
+			'[BusinessError: [10002] No available service providers in the selected time range]',
 		);
 	});
 
@@ -267,6 +280,7 @@ describe('Booking validation tests', () => {
 			.withCitizenUinFin('G3382058K')
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
 			.build();
 
 		BookingRepositoryMock.searchBookingsMock = [
@@ -282,10 +296,8 @@ describe('Booking validation tests', () => {
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
-		).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				'No available service providers in the selected time range',
-			),
+		).rejects.toMatchInlineSnapshot(
+			'[BusinessError: [10001] The service provider is not available in the selected time range]',
 		);
 	});
 
@@ -293,7 +305,9 @@ describe('Booking validation tests', () => {
 		const booking = new BookingBuilder()
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
-			.withServiceProviderId(5)
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
 			.build();
 
 		BookingRepositoryMock.searchBookingsMock = [];
@@ -301,39 +315,14 @@ describe('Booking validation tests', () => {
 			new Date('2020-10-01T01:00:00'),
 			new Date('2020-10-01T02:00:00'),
 		);
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(null));
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
-		).rejects.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Citizen Uin/Fin not found'));
-	});
-
-	it('should validate email', async () => {
-		const start = new Date();
-		const booking = new BookingBuilder()
-			.withStartDateTime(start)
-			.withEndDateTime(DateHelper.addMinutes(start, 60))
-			.withCitizenUinFin('G3382058K')
-			.withCitizenName('Andy')
-			.withCitizenEmail('invalidemail.com')
-			.build();
-
-		BookingRepositoryMock.searchBookingsMock = [
-			new BookingBuilder()
-				.withServiceId(1)
-				.withStartDateTime(new Date('2020-10-01T01:00:00'))
-				.withEndDateTime(new Date('2020-10-01T02:00:00'))
-				.build(),
-		];
-		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
-
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
-
-		await expect(
-			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
-		).rejects.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Citizen email not valid'));
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10005] Citizen Uin/Fin not found]');
 	});
 
 	it('should not allow booking on top of existing booking', async () => {
@@ -372,10 +361,8 @@ describe('Booking validation tests', () => {
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 
 		const test = async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
-		await expect(test).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				`Booking request not valid as it overlaps another accepted booking`,
-			),
+		await expect(test).rejects.toMatchInlineSnapshot(
+			'[BusinessError: [10003] Booking request not valid as it overlaps another accepted booking]',
 		);
 	});
 });

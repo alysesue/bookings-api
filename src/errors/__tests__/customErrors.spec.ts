@@ -1,5 +1,5 @@
-import { ConcurrencyError } from '../ConcurrencyError';
-import { ParseTimeError } from '../ParseTimeError';
+import { ConcurrencyError } from '../concurrencyError';
+import { ParseTimeError } from '../parseTimeError';
 
 describe('custom errors tests', () => {
 	it('should create concurrency error', () => {

@@ -13,7 +13,7 @@ import { AsyncFunction, TransactionManager } from '../../../core/transactionMana
 import { BookingChangeLogsService } from '../bookingChangeLogs.service';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { BookingChangeLogsRepository } from '../bookingChangeLogs.repository';
-import { ConcurrencyError } from '../../../errors/ConcurrencyError';
+import { ConcurrencyError } from '../../../errors/concurrencyError';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 
