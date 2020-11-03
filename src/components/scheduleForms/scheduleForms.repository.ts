@@ -24,7 +24,7 @@ export class ScheduleFormsRepository extends RepositoryBase<ScheduleForm> {
 		const idCondition = ids ? '"scheduleForm"."id" IN (:...ids)' : ' TRUE ';
 		const authGroups = await this.userContext.getAuthGroups();
 		const { userCondition, userParams } = await new ScheduleFormsQueryAuthVisitor(
-			'service',
+			'SPService',
 			'serviceProvider',
 		).createUserVisibilityCondition(authGroups);
 
