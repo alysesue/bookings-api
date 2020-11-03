@@ -4,6 +4,9 @@ import { Singleton } from 'typescript-ioc';
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 
+/**
+ * @deprecated The class should not be used, it has been created at the start of the project to link booking with google calendar (with caldav protocole). We dont use it anymore
+ */
 @Singleton
 export class GoogleApi {
 	private _authToken: any = null;

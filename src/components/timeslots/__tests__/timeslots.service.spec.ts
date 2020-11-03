@@ -1,12 +1,5 @@
 import { Container } from 'typescript-ioc';
-import {
-	Booking,
-	BookingStatus,
-	Service,
-	ServiceProvider,
-	TimeslotsSchedule,
-	Unavailability,
-} from '../../../models';
+import { Booking, BookingStatus, Service, ServiceProvider, TimeslotsSchedule, Unavailability } from '../../../models';
 import { TimeslotsService } from '../timeslots.service';
 import { BookingsRepository } from '../../bookings/bookings.repository';
 import { DateHelper } from '../../../infrastructure/dateHelper';
