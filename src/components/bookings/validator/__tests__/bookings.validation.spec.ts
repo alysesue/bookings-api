@@ -110,7 +110,6 @@ describe('Booking validation tests', () => {
 		);
 	});
 
-
 	it('should validate citizen name', async () => {
 		const start = new Date();
 		const booking = new BookingBuilder()
@@ -123,11 +122,7 @@ describe('Booking validation tests', () => {
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
-		).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				'Citizen name not provided',
-			),
-		);
+		).rejects.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Citizen name not provided'));
 	});
 
 	it('should validate citizen email', async () => {
@@ -142,13 +137,8 @@ describe('Booking validation tests', () => {
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
-		).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				'Citizen email not provided',
-			),
-		);
+		).rejects.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Citizen email not provided'));
 	});
-
 
 	it('should validate citizen email', async () => {
 		const start = new Date();
@@ -163,11 +153,7 @@ describe('Booking validation tests', () => {
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
-		).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				'Citizen email not valid',
-			),
-		);
+		).rejects.toStrictEqual(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Citizen email not valid'));
 	});
 
 	it('should validate end date time', async () => {
@@ -280,8 +266,6 @@ describe('Booking validation tests', () => {
 			),
 		);
 	});
-
-
 
 	it('should validate availability for direct booking', async () => {
 		const start = new Date();
