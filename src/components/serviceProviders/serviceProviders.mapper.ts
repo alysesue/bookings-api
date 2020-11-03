@@ -1,5 +1,5 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Booking, ServiceProvider } from '../../models';
+import { ServiceProvider } from '../../models';
 import { CalendarsMapper } from '../calendars/calendars.mapper';
 import { ServiceProviderResponseModel, ServiceProviderSummaryModel } from './serviceProviders.apicontract';
 import { mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';

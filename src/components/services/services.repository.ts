@@ -52,9 +52,9 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		const query = await this.getServiceQueryById(id);
 		const entry = await query.getOne();
 
-		entry.timeslotsSchedule = await this.timeslotsScheduleRepository.getTimeslotsScheduleById(
-			entry?.timeslotsScheduleId,
-		);
+		entry.timeslotsSchedule = await this.timeslotsScheduleRepository.getTimeslotsScheduleById({
+			id: entry?.timeslotsScheduleId,
+		});
 		return entry;
 	}
 

@@ -25,10 +25,9 @@ export class TimeslotItemsService {
 		const authGroups = await this.userContext.getAuthGroups();
 		let timeslotScheduleData = timeslotSchedule;
 		if (!timeslotSchedule._service && !timeslotSchedule._serviceProvider) {
-			timeslotScheduleData = await this.timeslotsScheduleRepository.getTimeslotsScheduleById(
-				timeslotSchedule._id,
-				{ retrieveService: true, retrieveServiceProvider: true },
-			);
+			timeslotScheduleData = await this.timeslotsScheduleRepository.getTimeslotsScheduleById({
+				id: timeslotSchedule._id,
+			});
 			if (timeslotScheduleData._serviceProvider && !timeslotScheduleData._serviceProvider.service) {
 				timeslotScheduleData._serviceProvider.service = await this.servicesRepository.getService(
 					timeslotScheduleData._serviceProvider.serviceId,
@@ -99,15 +98,18 @@ export class TimeslotItemsService {
 		return this.mapAndSaveTimeslotItem(timeslotsSchedule, request, new TimeslotItem());
 	}
 
-	public async deleteTimeslot(timeslotId: number): Promise<DeleteResult> {
-		const timeslotSchedule = await this.getTimeslotsScheduleByTimeslotItemId(timeslotId);
+	public async deleteTimeslot(request: { id: number; byPassAuth?: boolean }): Promise<DeleteResult> {
+		const timeslotSchedule = await this.getTimeslotsScheduleByTimeslotItemId(request);
 		await this.verifyActionPermission(timeslotSchedule);
 
-		return await this.timeslotItemsRepository.deleteTimeslotItem(timeslotId);
+		return await this.timeslotItemsRepository.deleteTimeslotItem(request.id);
 	}
 
-	private async getTimeslotsScheduleByTimeslotItemId(id: number): Promise<TimeslotsSchedule> {
-		const timeslotItem = await this.timeslotItemsRepository.getTimeslotItem(id);
-		return this.timeslotsScheduleRepository.getTimeslotsScheduleById(timeslotItem._timeslotsScheduleId);
+	private async getTimeslotsScheduleByTimeslotItemId(request: {
+		id: number;
+		byPassAuth?: boolean;
+	}): Promise<TimeslotsSchedule> {
+		const timeslotItem = await this.timeslotItemsRepository.getTimeslotItem(request);
+		return this.timeslotsScheduleRepository.getTimeslotsScheduleById({ id: timeslotItem._timeslotsScheduleId });
 	}
 }

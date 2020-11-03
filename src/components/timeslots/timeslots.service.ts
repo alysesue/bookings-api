@@ -1,6 +1,6 @@
 import { Inject, Scope, Scoped } from 'typescript-ioc';
 import { AggregatedEntry, TimeslotAggregator } from './timeslotAggregator';
-import { Booking, BookingStatus, ServiceProvider, Timeslot } from '../../models';
+import { Booking, BookingStatus, ServiceProvider } from '../../models';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { BookingsRepository } from '../bookings/bookings.repository';
 import { groupByKey } from '../../tools/collections';

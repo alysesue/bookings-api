@@ -121,7 +121,7 @@ export class ServicesService {
 	}
 
 	public async deleteTimeslotsScheduleItem(timeslotId: number) {
-		await this.timeslotItemsService.deleteTimeslot(timeslotId);
+		await this.timeslotItemsService.deleteTimeslot({ id: timeslotId });
 	}
 
 	public async updateTimeslotItem({

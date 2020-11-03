@@ -6,4 +6,5 @@ module.exports = {
 	tabWidth: 4,
 	indent: [true, 'tabs'],
 	useTabs: true,
+	endOfLine:'auto',
 };
