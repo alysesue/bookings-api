@@ -88,9 +88,11 @@ export class ServicesService {
 			scheduleForm = await this.scheduleFormsService.getScheduleForm(service.scheduleFormId);
 		}
 
-		if (!scheduleForm) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service scheduleForm not found');
-		}
+		// Not checking the service's schedule for now
+		// TODO : reactivate this when using service's schedule
+		// if (!scheduleForm) {
+		// 	throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service scheduleForm not found');
+		// }
 
 		return scheduleForm;
 	}

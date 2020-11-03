@@ -174,9 +174,9 @@ export class ServiceProvidersService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service Provider not found');
 		}
 
-		if (!serviceProvider.scheduleForm) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service schedule form not found');
-		}
+		// if (!serviceProvider.scheduleForm) {
+		// 	throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service schedule form not found');
+		// }
 
 		return serviceProvider.scheduleForm;
 	}
