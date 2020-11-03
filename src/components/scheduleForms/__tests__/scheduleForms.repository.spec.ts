@@ -1,55 +1,84 @@
 import { ScheduleFormsRepository } from '../scheduleForms.repository';
 import { WeekDayBreakRepository } from '../weekdaybreak.repository';
 import { Container } from 'typescript-ioc';
-import { ScheduleForm, Service, User } from '../../../models';
+import { Organisation, ScheduleForm, User } from '../../../models';
 import { TransactionManager } from '../../../core/transactionManager';
 import { UserContext } from '../../../infrastructure/auth/userContext';
-import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
-import { ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
+import { UsersRepository } from '../../users/users.repository';
+import { ScheduleFormsQueryAuthVisitor } from '../scheduleForms.auth';
 
-afterAll(() => {
-	jest.resetAllMocks();
-	if (global.gc) global.gc();
-});
+jest.mock('../scheduleForms.auth');
 
-beforeAll(() => {
-	Container.bind(TransactionManager).to(TransactionManagerMock);
-	Container.bind(WeekDayBreakRepository).to(jest.fn(() => WeekDayBreakRepositoryMock));
-	Container.bind(UserContext).to(UserContextMock);
-});
-
-beforeEach(() => {
-	jest.clearAllMocks();
-});
-
-const NullScheduleId = 55;
-
-const serviceMockWithTemplate = new Service();
-serviceMockWithTemplate.id = 1;
-const adminMock = User.createAdminUser({
-	molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
-	userName: 'UserName',
-	email: 'test@email.com',
-	name: 'Name',
-});
 describe('ScheduleForm repository', () => {
-	it('should get schedules form', async () => {
-		const scheduleForm = new ScheduleForm();
-		scheduleForm.id = 2;
-		scheduleForm.initWeekdaySchedules();
+	const userMock = User.createAdminUser({
+		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+		userName: 'UserName',
+		email: 'test@email.com',
+		name: 'Name',
+		agencyUserId: 'ABC12',
+	});
+	const organisation = new Organisation();
+	organisation.id = 1;
+	const queryBuilderMock: {
+		where: jest.Mock;
+		leftJoin: jest.Mock;
+		leftJoinAndSelect: jest.Mock;
+		getMany: jest.Mock<Promise<ScheduleForm[]>, any>;
+		getOne: jest.Mock<Promise<ScheduleForm>, any>;
+	} = {
+		where: jest.fn(),
+		leftJoin: jest.fn(),
+		leftJoinAndSelect: jest.fn(),
+		getMany: jest.fn<Promise<ScheduleForm[]>, any>(),
+		getOne: jest.fn<Promise<ScheduleForm>, any>(),
+	};
 
-		UserContextMock.getAuthGroups.mockReturnValue(
-			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
-		);
-		const queryBuilderMock = {
-			where: jest.fn(() => queryBuilderMock),
-			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
-			orderBy: jest.fn(() => queryBuilderMock),
-			getMany: jest.fn(() => Promise.resolve([scheduleForm])),
-		};
+	const scheduleForm = new ScheduleForm();
+	scheduleForm.initWeekdaySchedules();
+	scheduleForm.id = 2;
+
+	const QueryAuthVisitorMock = {
+		createUserVisibilityCondition: jest.fn<Promise<UserConditionParams>, any>(),
+	};
+
+	afterAll(() => {
+		jest.resetAllMocks();
+		if (global.gc) global.gc();
+	});
+
+	beforeAll(() => {
+		Container.bind(TransactionManager).to(TransactionManagerMock);
+		Container.bind(WeekDayBreakRepository).to(WeekDayBreakRepositoryMock);
+		Container.bind(UserContext).to(UserContextMock);
+		Container.bind(UsersRepository).to(UsersRepositoryMock);
+	});
+
+	beforeEach(() => {
+		jest.resetAllMocks();
+
+		queryBuilderMock.where.mockImplementation(() => queryBuilderMock);
+		queryBuilderMock.leftJoin.mockImplementation(() => queryBuilderMock);
+		queryBuilderMock.leftJoinAndSelect.mockImplementation(() => queryBuilderMock);
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
+		(ScheduleFormsQueryAuthVisitor as jest.Mock).mockImplementation(() => QueryAuthVisitorMock);
+		QueryAuthVisitorMock.createUserVisibilityCondition.mockImplementation(() =>
+			Promise.resolve({ userCondition: '', userParams: {} }),
+		);
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new OrganisationAdminAuthGroup(userMock, [organisation])]),
+		);
+
+		UsersRepositoryMock.getUsersByMolAdminIds.mockImplementation(() => Promise.resolve([]));
+	});
+
+	it('should get schedules form', async () => {
+		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([]));
 		const repository = Container.get(ScheduleFormsRepository);
 		const result = await repository.getScheduleForms();
 		expect(result).not.toBe(undefined);
@@ -58,18 +87,7 @@ describe('ScheduleForm repository', () => {
 	});
 
 	it('should get schedules form with id', async () => {
-		UserContextMock.getAuthGroups.mockReturnValue(
-			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
-		);
-		const queryBuilderMock = {
-			where: jest.fn(() => queryBuilderMock),
-			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
-			orderBy: jest.fn(() => queryBuilderMock),
-			getOne: jest.fn(() => Promise.resolve(null)),
-		};
-
-		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
-
+		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(scheduleForm));
 		const repository = Container.get(ScheduleFormsRepository);
 		const result = await repository.getScheduleFormById(1);
 		expect(result).not.toBe(undefined);
@@ -79,30 +97,15 @@ describe('ScheduleForm repository', () => {
 
 	it('should return null when schedule form not found', async () => {
 		const repository = Container.get(ScheduleFormsRepository);
-		UserContextMock.getAuthGroups.mockReturnValue(
-			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
-		);
-		const queryBuilderMock = {
-			where: jest.fn(() => queryBuilderMock),
-			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
-			orderBy: jest.fn(() => queryBuilderMock),
-			getOne: jest.fn(() => Promise.resolve(null)),
-		};
 
-		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
-
-		const result = await repository.getScheduleFormById(NullScheduleId);
+		const result = await repository.getScheduleFormById(1);
 		expect(result).toBe(null);
 
 		expect(queryBuilderMock.getOne).toBeCalledTimes(1);
 	});
 
 	it('should add schedules form', async () => {
-		const scheduleForm = new ScheduleForm();
-		scheduleForm.id = 2;
-		scheduleForm.initWeekdaySchedules();
 		TransactionManagerMock.save.mockImplementation(() => scheduleForm);
-
 		const repository = Container.get(ScheduleFormsRepository);
 		const result = await repository.saveScheduleForm(scheduleForm);
 		expect(result).not.toBe(undefined);
@@ -120,11 +123,11 @@ describe('ScheduleForm repository', () => {
 	});
 });
 
-const WeekDayBreakRepositoryMock = {
-	getBreaksForSchedules: jest.fn(() => Promise.resolve([])),
-	deleteBreaksForSchedule: jest.fn(() => Promise.resolve({})),
-	save: jest.fn(() => Promise.resolve([])),
-};
+class WeekDayBreakRepositoryMock extends WeekDayBreakRepository {
+	public getBreaksForSchedules = jest.fn(() => Promise.resolve([]));
+	public deleteBreaksForSchedule = jest.fn((id: number) => Promise.resolve({}) as any);
+	public save = jest.fn(() => Promise.resolve([]));
+}
 
 const scheduleFormMock = new ScheduleForm();
 scheduleFormMock.id = 1;
@@ -159,5 +162,27 @@ class TransactionManagerMock extends TransactionManager {
 			}),
 		};
 		return Promise.resolve(entityManager);
+	}
+}
+
+class UserContextMock extends UserContext {
+	public static getCurrentUser = jest.fn<Promise<User>, any>();
+	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
+
+	public init() {}
+	public async getCurrentUser(...params): Promise<any> {
+		return await UserContextMock.getCurrentUser(...params);
+	}
+
+	public async getAuthGroups(...params): Promise<any> {
+		return await UserContextMock.getAuthGroups(...params);
+	}
+}
+
+class UsersRepositoryMock extends UsersRepository {
+	public static getUsersByMolAdminIds = jest.fn<Promise<User[]>, any>();
+
+	public async getUsersByMolAdminIds(...params): Promise<any> {
+		return await UsersRepositoryMock.getUsersByMolAdminIds(...params);
 	}
 }

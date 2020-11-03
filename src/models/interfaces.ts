@@ -11,6 +11,12 @@ export interface IEntityWithScheduleForm {
 
 export interface ITimeslotsSchedule {}
 
+export interface ITimeslotItem {
+	_id: number;
+	_startTime: TimeOfDay;
+	_endTime: TimeOfDay;
+}
+
 export interface IEntityWithTimeslotsSchedule {
 	timeslotsScheduleId: number;
 	timeslotsSchedule: ITimeslotsSchedule;

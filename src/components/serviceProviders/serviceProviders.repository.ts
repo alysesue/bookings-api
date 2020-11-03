@@ -75,20 +75,18 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	}
 
 	public async getServiceProvider(options: {
-		id?: number;
+		id: number;
 		includeScheduleForm?: boolean;
 		includeTimeslotsSchedule?: boolean;
 		skipAuthorisation?: boolean;
-		idScheduleForm?: number;
 	}): Promise<ServiceProvider> {
-		const { id, idScheduleForm } = options;
+		const { id } = options;
 		if (!id) {
 			return null;
 		}
 
 		const idCondition = id ? 'sp._id = :id' : '';
-		const idScheduleFormCondition = idScheduleForm ? 'sp._scheduleFormId = :idScheduleForm ' : '';
-		const query = await this.createSelectQuery([idCondition, idScheduleFormCondition], { id }, options);
+		const query = await this.createSelectQuery([idCondition], { id }, options);
 		const entry = await query.getOne();
 
 		if (!entry) {

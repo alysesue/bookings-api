@@ -26,19 +26,15 @@ describe('ScheduleForm Auth', () => {
 		);
 
 		let authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Create);
-		authVisitor.visitServiceProvider(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBeTruthy();
 
 		authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Read);
-		authVisitor.visitServiceProvider(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBeTruthy();
 
 		authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Update);
-		authVisitor.visitServiceProvider(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBeTruthy();
 
 		authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Delete);
-		authVisitor.visitServiceProvider(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBeFalsy();
 	});
 
@@ -53,19 +49,15 @@ describe('ScheduleForm Auth', () => {
 		serviceProvider.service = service;
 
 		let authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Create);
-		authVisitor.visitServiceAdmin(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 
 		authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Update);
-		authVisitor.visitServiceAdmin(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 
 		authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Read);
-		authVisitor.visitServiceAdmin(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 
 		authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Delete);
-		authVisitor.visitServiceAdmin(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
 
@@ -81,19 +73,15 @@ describe('ScheduleForm Auth', () => {
 		serviceProvider.service.organisationId = 1;
 
 		let authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Create);
-		authVisitor.visitOrganisationAdmin(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 
 		authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Update);
-		authVisitor.visitOrganisationAdmin(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 
 		authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Read);
-		authVisitor.visitOrganisationAdmin(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 
 		authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Delete);
-		authVisitor.visitOrganisationAdmin(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
 
@@ -103,19 +91,15 @@ describe('ScheduleForm Auth', () => {
 		serviceProvider.service = new Service();
 
 		let authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Create);
-		authVisitor.visitCitizen(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 
 		authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Update);
-		authVisitor.visitCitizen(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 
 		authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Read);
-		authVisitor.visitCitizen(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 
 		authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Delete);
-		authVisitor.visitCitizen(userGroup);
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
 
@@ -134,7 +118,6 @@ describe('ScheduleForm Auth', () => {
 		const serviceProvider = ServiceProvider.create('new sp', serviceForServiceProvider.id);
 		serviceProvider.service = serviceForServiceProvider;
 		const authVisitor = new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Update);
-		authVisitor.visitOrganisationAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
@@ -150,7 +133,6 @@ describe('ScheduleForm Auth', () => {
 		const serviceProvider = ServiceProvider.create('new sp', 1);
 		serviceProvider.service = new Service();
 		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProvider, CrudAction.Update);
-		authVisitor.visitServiceAdmin(serviceAdminAuthGroup);
 
 		expect(authVisitor.hasPermission([serviceAdminAuthGroup])).toBe(false);
 	});
@@ -218,6 +200,6 @@ describe('ScheduleForm Auth', () => {
 			'serviceProvider',
 		).createUserVisibilityCondition([userGroup]);
 
-		expect(userCondition).toBe('(FALSE)');
+		expect(userCondition).toBe('FALSE');
 	});
 });

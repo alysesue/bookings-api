@@ -85,9 +85,7 @@ export class ScheduleFormsQueryAuthVisitor extends QueryAuthGroupVisitor {
 		this._serviceProviderAlias = serviceProviderAlias;
 	}
 
-	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
-		this.addAuthCondition('FALSE', {});
-	}
+	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		const orgIds = _userGroup.authorisedOrganisations.map((org) => org.id);
