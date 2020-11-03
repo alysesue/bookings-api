@@ -35,7 +35,7 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotItem> {
 		const { id, byPassAuth } = request;
 		if (!id) return null;
 		const repository = await this.getRepository();
-		const idCondition = 'timeslotItem."_id" = :id';
+		const idCondition = '"timeslotItem"."_id" = :id';
 		const authGroups = await this.userContext.getAuthGroups();
 		const { userCondition, userParams } = byPassAuth
 			? { userCondition: '', userParams: {} }
