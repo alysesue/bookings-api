@@ -189,6 +189,29 @@ describe('Booking validation tests', () => {
 		).rejects.toThrowError();
 	});
 
+	it('should validate end date time', async () => {
+		const booking = new BookingBuilder()
+			.withStartDateTime(new Date('2020-10-01T03:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+
+		BookingRepositoryMock.searchBookingsMock = [];
+		const timeslotWithCapacity = new TimeslotWithCapacity(
+			new Date('2020-10-01T01:00:00'),
+			new Date('2020-10-01T02:00:00'),
+		);
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
+		).rejects.toStrictEqual(
+			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				'End time for booking must be greater than start time',
+			),
+		);
+	});
+
 	it('should throw on validation error', async () => {
 		const booking = new BookingBuilder()
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
@@ -234,6 +257,31 @@ describe('Booking validation tests', () => {
 			),
 		);
 	});
+	it('should validate service provider availability', async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.build();
+		BookingRepositoryMock.searchBookingsMock = [];
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
+		).rejects.toStrictEqual(
+			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				'The service provider is not available in the selected time range',
+			),
+		);
+	});
+
+
 
 	it('should validate availability for direct booking', async () => {
 		const start = new Date();
