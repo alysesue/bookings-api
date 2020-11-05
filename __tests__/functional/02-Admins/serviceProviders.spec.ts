@@ -11,16 +11,22 @@ describe('Tests endpoint and populate data', () => {
 
 	beforeAll(async () => {
 		await pgClient.cleanAllTables();
-		serviceId = await populateService({});
 	});
 
 	afterAll(async () => {
-		await pgClient.cleanAllTables();
 		await pgClient.close();
 	});
-	// TODO: remove google calendar because quickly bloque creation service Provider
-	xit('Post serviceProvider', async () => {
-		const response = await AdminRequestEndpointSG.create({ serviceId: serviceId! }).post('/service-providers', {
+
+	beforeEach(async () => {
+		serviceId = await populateService({});
+	});
+
+	afterEach(async () => {
+		await pgClient.cleanAllTables();
+	});
+
+	it('Post & Get serviceProvider', async () => {
+		const portResponse = await AdminRequestEndpointSG.create({ serviceId: serviceId! }).post('/service-providers', {
 			body: {
 				serviceProviders: [
 					{
@@ -31,15 +37,12 @@ describe('Tests endpoint and populate data', () => {
 				],
 			},
 		});
+		expect(portResponse.statusCode).toEqual(204);
 
-		expect(response.statusCode).toEqual(204);
-	});
-
-	xit('Get serviceProvider', async () => {
-		const response = await AdminRequestEndpointSG.create({ serviceId: serviceId! }).get('/service-providers');
-		expect(response.statusCode).toEqual(200);
-		expect(JSON.parse(response.body).data[0].name).toEqual(SP_NAME);
-		expect(JSON.parse(response.body).data[0].email).toEqual(SP_EMAIL);
-		expect(JSON.parse(response.body).data[0].phone).toEqual(SP_PHONE);
+		const getResponse = await AdminRequestEndpointSG.create({ serviceId: serviceId! }).get('/service-providers');
+		expect(getResponse.statusCode).toEqual(200);
+		expect(JSON.parse(getResponse.body).data[0].name).toEqual(SP_NAME);
+		expect(JSON.parse(getResponse.body).data[0].email).toEqual(SP_EMAIL);
+		expect(JSON.parse(getResponse.body).data[0].phone).toEqual(SP_PHONE);
 	});
 });

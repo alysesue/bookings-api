@@ -1,5 +1,6 @@
 import { AdminRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { PgClient } from '../../utils/pgClient';
+import { populateService } from '../../Populate/basic';
 
 describe('Tests endpoint and populate data', () => {
 	const SERVICE_NAME = 'Service';
@@ -9,28 +10,28 @@ describe('Tests endpoint and populate data', () => {
 	beforeAll(async () => {
 		await pgClient.cleanAllTables();
 	});
-
 	afterAll(async () => {
-		await pgClient.cleanAllTables();
 		await pgClient.close();
+	});
+
+	afterEach(async () => {
+		await pgClient.cleanAllTables();
 	});
 
 	it('Post service', async () => {
 		const response = await AdminRequestEndpointSG.create({}).post('/services', { body: { name: SERVICE_NAME } });
-
 		expect(response.statusCode).toEqual(200);
 	});
 
 	it('Get service', async () => {
+		await populateService({ nameService: SERVICE_NAME });
 		const response = await AdminRequestEndpointSG.create({}).get('/services');
 		expect(response.statusCode).toEqual(200);
 		expect(JSON.parse(response.body).data[0].name).toEqual(SERVICE_NAME);
 	});
 
 	it("should update first service's name", async () => {
-		const response = await AdminRequestEndpointSG.create({}).get('/services');
-		expect(response.statusCode).toEqual(200);
-		const idService = JSON.parse(response.body).data[0].id;
+		const idService = await populateService({ nameService: SERVICE_NAME });
 
 		const response2 = await AdminRequestEndpointSG.create({}).put(`/services/${idService}`, {
 			body: { name: SERVICE_NAME_UPDATED },

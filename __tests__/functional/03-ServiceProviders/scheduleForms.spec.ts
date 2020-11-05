@@ -20,7 +20,7 @@ describe('Tests endpoint and populate data', () => {
 		await pgClient.close();
 	});
 
-	xit('Post scheduleForm', async () => {
+	it('Post scheduleForm', async () => {
 		const scheduleForm = {
 			name: SP_NAME,
 			serviceProviderId: serviceProviderId!,
