@@ -40,6 +40,7 @@ export class AdminRequestEndpointSG extends RequestEndpointSG {
 		const headers = {
 			'mol-admin-email': `${nameService}@palo-it.com`,
 			'mol-admin-groups': `bookingsg:org-admin:${organisation}`,
+			// TODO: generate uuid
 			'mol-admin-id': `f9b327e70bbcf42494ccb28b2d98e00e`,
 			'mol-admin-name': `${nameService} The Admin`,
 			'mol-admin-username': `${nameService}User`,
