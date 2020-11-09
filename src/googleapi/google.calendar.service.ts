@@ -4,6 +4,9 @@ import { CalendarUserModel } from '../components/calendars/calendars.apicontract
 import { GoogleApi } from './google.api';
 import { CalendarTimezone } from '../const';
 
+/**
+ * @deprecated The class should not be used, it has been created at the start of the project to link booking with google calendar (with caldav protocole). We dont use it anymore
+ */
 @InRequestScope
 export class GoogleCalendarService {
 	@Inject

@@ -111,9 +111,6 @@ export class Booking {
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
-	@Column({ type: 'varchar', length: 300, nullable: true })
-	private _eventICalId: string;
-
 	@Column()
 	private _status: BookingStatus;
 
@@ -216,14 +213,6 @@ export class Booking {
 
 	public set service(value: Service) {
 		this._service = value;
-	}
-
-	public get eventICalId(): string {
-		return this._eventICalId;
-	}
-
-	public set eventICalId(value: string) {
-		this._eventICalId = value;
 	}
 
 	public get status(): BookingStatus {

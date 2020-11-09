@@ -32,7 +32,6 @@ export class BookingRequest {
 
 export interface RescheduleBookingRequest extends BookingRequest {
 	status: BookingStatus;
-	eventICalId: string;
 	serviceProvider: ServiceProvider;
 }
 

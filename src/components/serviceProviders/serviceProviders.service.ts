@@ -5,7 +5,6 @@ import { cloneDeep } from 'lodash';
 import { ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
 import { ServiceProviderModel, SetProviderScheduleFormRequest } from './serviceProviders.apicontract';
-import { CalendarsService } from '../calendars/calendars.service';
 import { API_TIMEOUT_PERIOD } from '../../const';
 import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
@@ -20,9 +19,6 @@ import { CrudAction } from '../../enums/crudAction';
 export class ServiceProvidersService {
 	@Inject
 	public serviceProvidersRepository: ServiceProvidersRepository;
-
-	@Inject
-	public calendarsService: CalendarsService;
 
 	@Inject
 	private schedulesService: ScheduleFormsService;
@@ -115,12 +111,9 @@ export class ServiceProvidersService {
 
 	public async saveServiceProviders(listRequest: ServiceProviderModel[], serviceId: number) {
 		await ServiceProvidersService.validateServiceProviders(listRequest);
+		// tslint:disable-next-line:prefer-for-of
 		for (let i = 0; i < listRequest.length; i++) {
 			await this.saveSp(listRequest[i], serviceId);
-
-			if (i > 0) {
-				await this.delay(API_TIMEOUT_PERIOD);
-			}
 		}
 	}
 
@@ -129,7 +122,6 @@ export class ServiceProvidersService {
 		serviceProvider.service = await this.servicesService.getService(serviceId);
 		await this.verifyActionPermission(serviceProvider, CrudAction.Create);
 
-		serviceProvider.calendar = await this.calendarsService.createCalendar();
 		return await this.serviceProvidersRepository.save(serviceProvider);
 	}
 

@@ -6,7 +6,6 @@ export function mockConfig() {
 				version: '0.1',
 				port: 3000,
 				env: 'production',
-				serviceAccount: '{}',
 				database: {
 					host: 'host',
 					port: '1111',

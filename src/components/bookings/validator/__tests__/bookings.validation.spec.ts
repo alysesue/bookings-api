@@ -2,8 +2,7 @@ import { DateHelper } from '../../../../infrastructure/dateHelper';
 import { Container } from 'typescript-ioc';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { BookingsRepository } from '../../bookings.repository';
-import { Calendar, ServiceProvider } from '../../../../models/entities';
-import { CalendarsService } from '../../../calendars/calendars.service';
+import { ServiceProvider } from '../../../../models/entities';
 import { TimeslotsService } from '../../../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../../../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../../../unavailabilities/unavailabilities.service';
@@ -13,7 +12,6 @@ import { User } from '../../../../models';
 import { BookingsValidatorFactory } from '../bookings.validation';
 import {
 	BookingRepositoryMock,
-	CalendarsServiceMock,
 	ServiceProvidersRepositoryMock,
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
@@ -24,13 +22,8 @@ import { AvailableTimeslotProviders } from '../../../../components/timeslots/ava
 
 // tslint:disable-next-line:no-big-function
 describe('Booking validation tests', () => {
-	const calendar = new Calendar();
-	calendar.id = 1;
-	calendar.uuid = '123';
-	calendar.googleCalendarId = 'google-id-1';
 	const serviceProvider = ServiceProvider.create('provider', 1);
 	serviceProvider.id = 1;
-	serviceProvider.calendar = calendar;
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 
 	const bookingMock = new BookingBuilder()
@@ -49,7 +42,6 @@ describe('Booking validation tests', () => {
 
 	beforeAll(() => {
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
-		Container.bind(CalendarsService).to(CalendarsServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 		Container.bind(UnavailabilitiesService).to(UnavailabilitiesServiceMock);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);

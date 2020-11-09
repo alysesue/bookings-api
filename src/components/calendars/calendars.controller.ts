@@ -1,9 +1,12 @@
+/**
+ * @deprecated The class should not be used, it has been created at the start of the project to link booking with google calendar (with caldav protocole). We dont use it anymore
+ */
 import { Inject } from 'typescript-ioc';
-import { CalendarUserModel } from './calendars.apicontract';
-import { CalendarsService } from './calendars.service';
 import { Body, Controller, Path, Post, Response, Route, Tags } from 'tsoa';
-import { MOLAuth } from 'mol-lib-common';
+import { CalendarUserModel } from './calendars.apicontract';
 import { ApiData, ApiDataFactory } from '../../apicontract';
+import { CalendarsService } from './calendars.service';
+import { MOLAuth } from 'mol-lib-common';
 
 @Route('v1/calendars')
 @Tags('Calendars')

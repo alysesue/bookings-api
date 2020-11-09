@@ -1,7 +1,6 @@
 // STUB
 import './components/bookingChangeLogs/bookingChangeLogs.controller';
 import './components/bookings/bookings.controller';
-import './components/calendars/calendars.controller';
 import './components/scheduleForms/scheduleForms.controller';
 import './infrastructure/infrastructure.controller';
 import './components/timeslots/timeslots.controller';

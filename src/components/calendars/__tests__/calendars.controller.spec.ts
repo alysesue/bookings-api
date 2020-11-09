@@ -1,7 +1,7 @@
-import { CalendarsController } from '../calendars.controller';
 import { Container } from 'typescript-ioc';
 import { CalendarsService } from '../calendars.service';
 import { CalendarUserModel } from '../calendars.apicontract';
+import { CalendarsController } from '../calendars.controller';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -10,7 +10,7 @@ afterAll(() => {
 
 jest.mock('mol-lib-common', () => {
 	const actual = jest.requireActual('mol-lib-common');
-	const mock = (config: any) => {
+	const mock = () => {
 		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
 	};
 	return {

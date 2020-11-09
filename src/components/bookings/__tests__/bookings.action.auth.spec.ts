@@ -1,5 +1,5 @@
 import { BookingBuilder } from '../../../models/entities/booking';
-import { Calendar, ChangeLogAction, Organisation, Service, ServiceProvider, User } from '../../../models';
+import { ChangeLogAction, Organisation, Service, ServiceProvider, User } from '../../../models';
 import { BookingActionAuthVisitor } from '../bookings.auth';
 import {
 	CitizenAuthGroup,
@@ -177,7 +177,6 @@ describe('Bookings action auth', () => {
 	it('should validate service provider action permission', async () => {
 		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
 		serviceProvider.id = 10;
-		serviceProvider.calendar = new Calendar();
 		const booking = new BookingBuilder()
 			.withServiceId(service.id)
 			.withServiceProviderId(serviceProvider.id)
@@ -201,7 +200,6 @@ describe('Bookings action auth', () => {
 	it('should reject service provider permission for a different service provider', async () => {
 		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
 		serviceProvider.id = 10;
-		serviceProvider.calendar = new Calendar();
 		const booking = new BookingBuilder()
 			.withServiceId(service.id)
 			.withServiceProviderId(serviceProvider.id)
@@ -214,7 +212,6 @@ describe('Bookings action auth', () => {
 
 		const serviceProviderB = ServiceProvider.create('Jhon', service.id, 'test@email.com', '0000');
 		serviceProviderB.id = 11;
-		serviceProviderB.calendar = new Calendar();
 
 		const groups = [new ServiceProviderAuthGroup(adminMock, serviceProviderB)];
 
@@ -229,7 +226,6 @@ describe('Bookings action auth', () => {
 	it('should validate multiple groups', async () => {
 		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
 		serviceProvider.id = 10;
-		serviceProvider.calendar = new Calendar();
 		const booking = new BookingBuilder()
 			.withServiceId(service.id)
 			.withServiceProviderId(serviceProvider.id)
@@ -242,7 +238,6 @@ describe('Bookings action auth', () => {
 
 		const serviceProviderB = ServiceProvider.create('Jhon', service.id, 'test@email.com', '0000');
 		serviceProviderB.id = 11;
-		serviceProviderB.calendar = new Calendar();
 
 		const groups = [
 			new ServiceProviderAuthGroup(adminMock, serviceProviderB),

@@ -15,7 +15,6 @@ import { HealthCheckMiddleware } from './health/HealthCheckMiddleware';
 import { RegisterRoutes } from './routes';
 import { DbConnection } from './core/db.connection';
 import { Container } from 'typescript-ioc';
-import { CalDavProxyHandler } from './infrastructure/caldavproxy.handler';
 import * as cors from '@koa/cors';
 import { useSwagger } from './infrastructure/swagger.middleware';
 import { ContainerContextMiddleware } from './infrastructure/containerContext.middleware';
@@ -53,10 +52,7 @@ export async function startServer(): Promise<Server> {
 	RegisterRoutes(router);
 	// @ts-ignore
 	const HandledRoutes = new ApiDataResponseHandler(router.routes());
-	const proxyHandler = Container.get(CalDavProxyHandler);
-
 	const koaServer = new Koa()
-		.use(proxyHandler.build())
 		.use(
 			compress({
 				filter: () => true,

@@ -4,7 +4,6 @@ import { BookingStatus } from './bookingStatus';
 import { ScheduleForm } from './entities/scheduleForm';
 import { WeekDaySchedule } from './entities/weekDaySchedule';
 import { WeekDayBreak } from './entities/weekDayBreak';
-import { Calendar } from './entities/calendar';
 import { Service } from './entities/service';
 import { TimeOfDay } from './timeOfDay';
 import { ServiceProvider } from './entities/serviceProvider';
@@ -23,6 +22,7 @@ import { ChangeLogAction } from './changeLogAction';
 import { Organisation } from './entities/organisation';
 import { OrganisationAdminGroupMap } from './entities/organisationAdminGroupMap';
 import { AgencyUser } from './entities/agencyUser';
+import { Calendar } from './entities/calendar';
 
 export {
 	Booking,
@@ -31,6 +31,7 @@ export {
 	ChangeLogAction,
 	BusinessValidation,
 	BookingStatus,
+	Calendar,
 	User,
 	SingPassUser,
 	AdminUser,
@@ -40,7 +41,6 @@ export {
 	ServiceAdminGroupMap,
 	WeekDayBreak,
 	WeekDaySchedule,
-	Calendar,
 	TimeOfDay,
 	Timeslot,
 	ServiceProvider,
