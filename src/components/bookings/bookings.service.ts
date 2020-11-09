@@ -235,7 +235,8 @@ export class BookingsService {
 		const updatedBooking = previousBooking.clone();
 		Object.assign(updatedBooking, bookingRequest);
 
-		await this.bookingsValidatorFactory.getValidator(isAdmin).validate(updatedBooking);
+		const validator = this.bookingsValidatorFactory.getValidator(isAdmin);
+		await validator.validate(updatedBooking);
 
 		const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
 		await this.loadBookingDependencies(updatedBooking);
@@ -279,7 +280,8 @@ export class BookingsService {
 
 		booking.serviceProvider = serviceProvider;
 		await this.loadBookingDependencies(booking);
-		await this.bookingsValidatorFactory.getValidator(bookingRequest.outOfSlotBooking).validate(booking);
+		const validator = this.bookingsValidatorFactory.getValidator(bookingRequest.outOfSlotBooking);
+		await validator.validate(booking);
 
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
 		await this.bookingsRepository.insert(booking);

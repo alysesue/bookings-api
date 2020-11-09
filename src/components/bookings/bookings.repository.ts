@@ -2,7 +2,7 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { InsertResult } from 'typeorm';
 import { Booking, BookingStatus } from '../../models';
 import { RepositoryBase } from '../../core/repository';
-import { ConcurrencyError } from '../../errors/ConcurrencyError';
+import { ConcurrencyError } from '../../errors/concurrencyError';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { BookingQueryAuthVisitor, BookingQueryVisitorFactory } from './bookings.auth';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';

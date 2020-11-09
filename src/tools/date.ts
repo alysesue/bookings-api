@@ -1,5 +1,5 @@
 import * as moment from 'moment';
-import { ParseTimeError } from '../errors/ParseTimeError';
+import { ParseTimeError } from '../errors/parseTimeError';
 
 const TIME_FORMATS = ['HH:mm', 'H:mm', 'HH:m', 'H:m', 'HH:mm:ss'];
 
