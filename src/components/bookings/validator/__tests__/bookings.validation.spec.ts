@@ -1,6 +1,5 @@
 import { DateHelper } from '../../../../infrastructure/dateHelper';
 import { Container } from 'typescript-ioc';
-import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { BookingsRepository } from '../../bookings.repository';
 import { ServiceProvider } from '../../../../models/entities';
 import { TimeslotsService } from '../../../timeslots/timeslots.service';
@@ -8,7 +7,7 @@ import { ServiceProvidersRepository } from '../../../serviceProviders/servicePro
 import { UnavailabilitiesService } from '../../../unavailabilities/unavailabilities.service';
 import { UserContext } from '../../../../infrastructure/auth/userContext';
 import { BookingBuilder } from '../../../../models/entities/booking';
-import { BusinessValidation, User } from '../../../../models';
+import { User } from '../../../../models';
 import { BookingsValidatorFactory } from '../bookings.validation';
 import {
 	BookingRepositoryMock,
@@ -19,7 +18,6 @@ import {
 } from '../../__tests__/bookings.mocks';
 import { TimeslotWithCapacity } from '../../../../models/timeslotWithCapacity';
 import { AvailableTimeslotProviders } from '../../../../components/timeslots/availableTimeslotProviders';
-import { BusinessError } from '../../../../errors/businessError';
 
 // tslint:disable-next-line:no-big-function
 describe('Booking validation tests', () => {
@@ -364,5 +362,48 @@ describe('Booking validation tests', () => {
 		await expect(test).rejects.toMatchInlineSnapshot(
 			'[BusinessError: [10003] Booking request not valid as it overlaps another accepted booking]',
 		);
+	});
+
+	it('should allow updating booking to out of slot', async () => {
+		const booking = new BookingBuilder()
+			.withStartDateTime(new Date(2020, 8, 26, 8, 15))
+			.withEndDateTime(new Date(2020, 8, 26, 8, 45))
+			.withServiceProviderId(1)
+			.withRefId('RFM186')
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.build();
+		booking.id = 5;
+
+		const searchBooking = new BookingBuilder()
+			.withStartDateTime(new Date(2020, 8, 26, 7, 15))
+			.withEndDateTime(new Date(2020, 8, 26, 7, 45))
+			.withServiceProviderId(1)
+			.withRefId('RFM186')
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.build();
+		searchBooking.id = 5;
+
+		BookingRepositoryMock.searchBookingsMock = [searchBooking];
+		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
+			const entry = new AvailableTimeslotProviders();
+			entry.startTime = new Date(2020, 8, 26, 7, 15);
+			entry.endTime = new Date(2020, 8, 26, 7, 45);
+
+			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
+			map.set(serviceProvider, new TimeslotWithCapacity(entry.startTime, entry.endTime, 1));
+
+			entry.setRelatedServiceProviders(map);
+
+			return Promise.resolve([entry]);
+		});
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+
+		await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
 	});
 });

@@ -115,7 +115,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 				DateHelper.equals(i.startTime, booking.startDateTime) &&
 				DateHelper.equals(i.endTime, booking.endDateTime),
 		);
-		if (!timeslotOrBoookingExists && this.overlapsOtherAccepted(booking)) {
+		if (!timeslotOrBoookingExists && (await this.overlapsOtherAccepted(booking))) {
 			yield BookingBusinessValidations.OverlapsAcceptedBooking;
 			return; // stops iterable (method scoped)
 		}
