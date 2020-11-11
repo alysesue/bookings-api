@@ -9,16 +9,17 @@ export class ServiceProvidersMapper {
 	public mapDataModel(spData: ServiceProvider): ServiceProviderResponseModel {
 		const mappedTimeslotSchedule = mapToTimeslotsScheduleResponse(spData.timeslotsSchedule);
 		const mappedScheduleForm = mapScheduleFormResponse(spData.scheduleForm);
-		const response = new ServiceProviderResponseModel(
-			spData.id,
-			spData.name,
-			spData.serviceId,
-			mappedTimeslotSchedule,
-			mappedScheduleForm,
-			spData.email,
-			spData.phone,
-		);
+
+		const response = new ServiceProviderResponseModel();
+		response.id = spData.id;
+		response.name = spData.name;
+		response.serviceId = spData.serviceId;
+		response.email = spData.email;
+		response.phone = spData.phone;
+		response.scheduleFormConfirmed = spData.scheduleFormConfirmed;
 		response.agencyUserId = spData.agencyUserId;
+		response.timeslotsSchedule = mappedTimeslotSchedule;
+		response.scheduleForm = mappedScheduleForm;
 
 		return response;
 	}

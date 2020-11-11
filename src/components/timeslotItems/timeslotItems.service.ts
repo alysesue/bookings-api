@@ -29,9 +29,9 @@ export class TimeslotItemsService {
 				id: timeslotSchedule._id,
 			});
 			if (timeslotScheduleData._serviceProvider && !timeslotScheduleData._serviceProvider.service) {
-				timeslotScheduleData._serviceProvider.service = await this.servicesRepository.getService(
-					timeslotScheduleData._serviceProvider.serviceId,
-				);
+				timeslotScheduleData._serviceProvider.service = await this.servicesRepository.getService({
+					id: timeslotScheduleData._serviceProvider.serviceId,
+				});
 			}
 		}
 		const hasPermission = new TimeslotItemsActionAuthVisitor(timeslotScheduleData).hasPermission(authGroups);

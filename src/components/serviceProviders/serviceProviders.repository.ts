@@ -60,18 +60,46 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		options: {
 			ids?: number[];
 			serviceId?: number;
+			scheduleFormId?: number;
 			includeScheduleForm?: boolean;
 			includeTimeslotsSchedule?: boolean;
 			skipAuthorisation?: boolean;
 		} = {},
 	): Promise<ServiceProvider[]> {
-		const { serviceId, ids } = options;
+		const { serviceId, ids, scheduleFormId } = options;
 		const serviceCondition = serviceId ? 'sp."_serviceId" = :serviceId ' : '';
 		const idsCondition = ids && ids.length > 0 ? 'sp._id IN (:...ids)' : '';
+		const scheduleFormIdCondition = scheduleFormId ? 'sp._scheduleFormId = :scheduleFormId' : '';
 
-		const query = await this.createSelectQuery([serviceCondition, idsCondition], { serviceId, ids }, options);
+		const query = await this.createSelectQuery(
+			[serviceCondition, idsCondition, scheduleFormIdCondition],
+			{ serviceId, ids, scheduleFormId },
+			options,
+		);
 		const entries = await query.getMany();
 		return await this.processIncludes(entries, options);
+	}
+
+	public async getByScheduleFormId(options: {
+		scheduleFormId?: number;
+		includeScheduleForm?: boolean;
+		includeTimeslotsSchedule?: boolean;
+		skipAuthorisation?: boolean;
+	}): Promise<ServiceProvider> {
+		const { scheduleFormId } = options;
+		if (!scheduleFormId) {
+			return null;
+		}
+
+		const scheduleFormIdCondition = scheduleFormId ? 'sp._scheduleFormId = :scheduleFormId' : '';
+
+		const query = await this.createSelectQuery([scheduleFormIdCondition], { scheduleFormId }, options);
+		const entry = await query.getOne();
+
+		if (!entry) {
+			return entry;
+		}
+		return (await this.processIncludes([entry], options))[0];
 	}
 
 	public async getServiceProvider(options: {

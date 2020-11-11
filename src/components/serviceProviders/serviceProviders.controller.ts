@@ -3,7 +3,6 @@ import {
 	ServiceProviderListRequest,
 	ServiceProviderModel,
 	ServiceProviderResponseModel,
-	SetProviderScheduleFormRequest,
 } from './serviceProviders.apicontract';
 import { ServiceProvidersService } from './serviceProviders.service';
 import {
@@ -24,7 +23,7 @@ import {
 } from 'tsoa';
 import { parseCsv } from '../../utils';
 import { mapToResponse as mapScheduleToResponse } from '../scheduleForms/scheduleForms.mapper';
-import { ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
+import { ScheduleFormRequest, ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
 import { ServiceProvidersMapper } from './serviceProviders.mapper';
 import {
 	TimeslotItemRequest,
@@ -173,7 +172,7 @@ export class ServiceProvidersController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async setServiceScheduleForm(
 		@Path() spId: number,
-		@Body() request: SetProviderScheduleFormRequest,
+		@Body() request: ScheduleFormRequest,
 	): Promise<ApiData<ScheduleFormResponse>> {
 		return ApiDataFactory.create(
 			mapScheduleToResponse(await this.serviceProvidersService.setProviderScheduleForm(spId, request)),

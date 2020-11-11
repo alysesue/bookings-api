@@ -14,9 +14,6 @@ export class ScheduleForm implements IScheduleForm {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
-	@Column({ type: 'varchar', length: 100 })
-	public name: string;
-
 	@Column({ type: 'int' })
 	public slotsDurationInMin: number;
 
@@ -29,8 +26,12 @@ export class ScheduleForm implements IScheduleForm {
 	@OneToOne('Service', '_scheduleForm', { nullable: true })
 	public service: IService;
 
-	public _scheduleForm: ScheduleForm;
 	constructor() {}
+
+	public reset(): void {
+		this.slotsDurationInMin = 0;
+		this.weekdaySchedules = [];
+	}
 
 	public initWeekdaySchedules(): void {
 		if (!this.weekdaySchedules || this.weekdaySchedules.length === 0) {

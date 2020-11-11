@@ -1,14 +1,5 @@
 export class ScheduleFormRequest {
 	/**
-	 * @maxLength 100
-	 */
-	public name: string;
-	/**
-	 * @isInt
-	 */
-	public serviceProviderId?: number;
-
-	/**
 	 * @isInt
 	 * @minimum 1
 	 * @maximum 480
@@ -50,7 +41,6 @@ export class ScheduleFormResponse {
 	 * @isInt
 	 */
 	public id: number;
-	public name: string;
 	/**
 	 * @isInt
 	 */
