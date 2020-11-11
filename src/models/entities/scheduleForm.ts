@@ -29,7 +29,6 @@ export class ScheduleForm implements IScheduleForm {
 	@OneToOne('Service', '_scheduleForm', { nullable: true })
 	public service: IService;
 
-	public _scheduleForm: ScheduleForm;
 	constructor() {}
 
 	public initWeekdaySchedules(): void {

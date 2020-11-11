@@ -53,7 +53,6 @@ export class ScheduleFormsController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	@Hidden()
 	public async deleteScheduleForm(@Path() id: number): Promise<void> {
-		// tslint:disable-next-line:no-commented-code
-		// await this.scheduleFormService.deleteScheduleForm(id);
+		await this.scheduleFormService.deleteScheduleForm(id);
 	}
 }
