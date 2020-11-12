@@ -60,6 +60,17 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotItem> {
 			.leftJoin('serviceProvider._service', 'SPservice');
 		return await query.getOne();
 	}
+
+	public async deleteTimeslotsForSchedule(scheduleId: number): Promise<DeleteResult> {
+		const repository = await this.getRepository();
+		const query = repository
+			.createQueryBuilder()
+			.delete()
+			.from(TimeslotItem)
+			.where('_timeslotsScheduleId = :scheduleId', { scheduleId });
+
+		return query.execute();
+	}
 }
 
 export type TimeslotItemsSearchRequest = {

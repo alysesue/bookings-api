@@ -1,5 +1,5 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { ScheduleForm, ServiceProvider } from '../../models';
+import { ScheduleForm, ServiceProvider, WeekDaySchedule } from '../../models';
 import { DeleteResult, FindManyOptions, In, SelectQueryBuilder } from 'typeorm';
 import { groupByKey } from '../../tools/collections';
 import { WeekDayBreakRepository } from './weekdaybreak.repository';
@@ -88,8 +88,16 @@ export class ScheduleFormsRepository extends RepositoryBase<ScheduleForm> {
 	}
 
 	public async deleteScheduleForm(scheduleFormId: number): Promise<DeleteResult> {
+		const repository = await this.getRepository();
+		await repository
+			.createQueryBuilder()
+			.delete()
+			.from(WeekDaySchedule)
+			.where('scheduleFormId = :scheduleFormId', { scheduleFormId })
+			.execute();
+
 		await this.weekDayBreakRepo.deleteBreaksForSchedule(scheduleFormId);
-		return (await this.getRepository()).delete(scheduleFormId);
+		return repository.delete(scheduleFormId);
 	}
 
 	public async populateScheduleForms<T extends IEntityWithScheduleForm>(entries: T[]): Promise<T[]> {

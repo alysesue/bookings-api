@@ -28,11 +28,6 @@ export class ScheduleForm implements IScheduleForm {
 
 	constructor() {}
 
-	public reset(): void {
-		this.slotsDurationInMin = 0;
-		this.weekdaySchedules = [];
-	}
-
 	public initWeekdaySchedules(): void {
 		if (!this.weekdaySchedules || this.weekdaySchedules.length === 0) {
 			this.weekdaySchedules = WeekdayList.map((day) => WeekDaySchedule.create(day, this));

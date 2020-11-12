@@ -140,11 +140,14 @@ export class ServiceProvidersService {
 
 	public async setProviderScheduleForm(id: number, model: ScheduleFormRequest): Promise<ScheduleForm> {
 		const serviceProvider = await this.getServiceProvider(id, true, true);
-		await this.schedulesService.updateScheduleFormInEntity(model, serviceProvider);
-		serviceProvider.scheduleFormConfirmed = true;
-
 		await this.verifyActionPermission(serviceProvider, CrudAction.Update);
-		await this.serviceProvidersRepository.save(serviceProvider);
+
+		const saveSpFunction = async (sp: ServiceProvider) => {
+			sp.scheduleFormConfirmed = true;
+			return await this.serviceProvidersRepository.save(sp);
+		};
+
+		await this.schedulesService.updateScheduleFormInEntity(model, serviceProvider, saveSpFunction);
 
 		return serviceProvider.scheduleForm;
 	}
