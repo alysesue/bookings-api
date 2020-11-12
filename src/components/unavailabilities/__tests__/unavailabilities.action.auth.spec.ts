@@ -16,7 +16,6 @@ afterEach(() => {
 	jest.resetAllMocks();
 	jest.clearAllMocks();
 });
-// tslint:disable-next-line: no-big-function
 describe('Unavailabilities action auth', () => {
 	const organisation = new Organisation();
 	organisation.id = 1;
