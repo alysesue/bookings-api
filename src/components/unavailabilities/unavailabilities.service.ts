@@ -4,6 +4,8 @@ import { UnavailabilityRequest } from './unavailabilities.apicontract';
 import { Unavailability } from '../../models';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { UnavailabilitiesActionAuthVisitor } from './unavailabilities.auth';
 
 @InRequestScope
 export class UnavailabilitiesService {
@@ -11,9 +13,21 @@ export class UnavailabilitiesService {
 	private unavailabilitiesRepository: UnavailabilitiesRepository;
 	@Inject
 	private serviceProvidersRepository: ServiceProvidersRepository;
+	@Inject
+	private userContext: UserContext;
+
+	private async verifyActionPermission(unavailability: Unavailability): Promise<void> {
+		const authGroups = await this.userContext.getAuthGroups();
+		if (!new UnavailabilitiesActionAuthVisitor(unavailability).hasPermission(authGroups)) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
+				`User cannot perform this action for this unavailability.`,
+			);
+		}
+	}
 
 	public async create(request: UnavailabilityRequest): Promise<Unavailability> {
 		const entity = await this.mapToEntity(request, Unavailability.create());
+		await this.verifyActionPermission(entity);
 		return await this.unavailabilitiesRepository.save(entity);
 	}
 
