@@ -1,10 +1,10 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Service } from './service';
-import { ScheduleForm } from './scheduleForm';
 import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
-import { TimeslotsSchedule } from './timeslotsSchedule';
 import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
 import { User } from './user';
+import { ScheduleForm } from './scheduleForm';
+import { TimeslotsSchedule } from './timeslotsSchedule';
 
 const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
 
@@ -145,7 +145,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		return this._timeslotsScheduleId;
 	}
 
-	@OneToOne((type) => TimeslotsSchedule, (e) => e._serviceProvider, {
+	@OneToOne('TimeslotsSchedule', '_serviceProvider', {
 		cascade: true,
 	})
 	@JoinColumn({ name: '_timeslotsScheduleId' })

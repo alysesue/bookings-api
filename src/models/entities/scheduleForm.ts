@@ -1,11 +1,11 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Timeslot } from '../timeslot';
 import { TimeOfDay } from '../timeOfDay';
 import { groupByKey, groupByKeyLastValue } from '../../tools/collections';
 import { BusinessValidation } from '../businessValidation';
 import { WeekdayList } from '../../enums/weekday';
-import { IScheduleForm } from '../interfaces';
+import { IScheduleForm, IService, IServiceProvider } from '../interfaces';
 import { WeekDayBreak } from './weekDayBreak';
 import { WeekDaySchedule } from './weekDaySchedule';
 
@@ -22,6 +22,12 @@ export class ScheduleForm implements IScheduleForm {
 
 	@OneToMany((type) => WeekDaySchedule, (weekdaySchedule) => weekdaySchedule.scheduleForm, { cascade: true })
 	public weekdaySchedules: WeekDaySchedule[];
+
+	@OneToOne('ServiceProvider', '_scheduleForm', { nullable: true })
+	public serviceProvider: IServiceProvider;
+
+	@OneToOne('Service', '_scheduleForm', { nullable: true })
+	public service: IService;
 
 	constructor() {}
 

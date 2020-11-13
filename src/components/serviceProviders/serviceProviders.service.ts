@@ -151,7 +151,9 @@ export class ServiceProvidersService {
 		if (model.scheduleFormId) {
 			schedule = await this.schedulesService.getScheduleForm(model.scheduleFormId);
 			if (!schedule) {
-				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('ScheduleForm not found');
+				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(
+					`ScheduleForm not found with id: ${model.scheduleFormId}`,
+				);
 			}
 		}
 

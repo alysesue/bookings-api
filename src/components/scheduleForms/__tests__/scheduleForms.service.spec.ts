@@ -2,13 +2,19 @@ import { ScheduleFormsService } from '../scheduleForms.service';
 import { ScheduleFormRequest, WeekDayBreakContract, WeekDayScheduleContract } from '../scheduleForms.apicontract';
 import { ScheduleFormsRepository } from '../scheduleForms.repository';
 import { Container } from 'typescript-ioc';
-import { ScheduleForm, ServiceProvider, TimeslotsSchedule } from '../../../models';
+import { Organisation, ScheduleForm, Service, ServiceProvider, TimeslotsSchedule, User } from '../../../models';
 import { mapToEntity } from '../scheduleForms.mapper';
 import { Weekday } from '../../../enums/weekday';
 import { MOLErrorV2 } from 'mol-lib-api-contract';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.repository';
+import { ScheduleFormsActionAuthVisitor } from '../scheduleForms.auth';
+import { UserContext } from '../../../infrastructure/auth/userContext';
+import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
+import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+
+jest.mock('../scheduleForms.auth');
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -32,7 +38,6 @@ const scheduleFormRequestCommon = {
 
 const scheduleCommon = new ScheduleForm();
 mapToEntity(scheduleFormRequestCommon, scheduleCommon);
-
 const getScheduleForms = jest.fn().mockImplementation(() => Promise.resolve([scheduleCommon]));
 const getScheduleFormById = jest.fn().mockImplementation(() => Promise.resolve(scheduleCommon));
 const getScheduleFormByName = jest.fn().mockImplementation(() => Promise.resolve(scheduleCommon));
@@ -46,16 +51,40 @@ const MockScheduleFormsRepository = jest.fn().mockImplementation(() => ({
 	deleteScheduleForm,
 }));
 
+const visitorObject = {
+	hasPermission: jest.fn(),
+};
+
+const serviceMockWithTemplate = new Service();
+serviceMockWithTemplate.id = 2;
+
+const userMock = User.createAdminUser({
+	molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+	userName: 'UserName',
+	email: 'test@email.com',
+	name: 'Name',
+});
+
+const organisation = new Organisation();
+organisation.id = 1;
+
 // tslint:disable-next-line
 describe('Schedules form template services ', () => {
 	let scheduleFormsService: ScheduleFormsService;
 	beforeAll(() => {
 		Container.bind(ScheduleFormsRepository).to(MockScheduleFormsRepository);
+		Container.bind(UserContext).to(UserContextMock);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 		scheduleFormsService = Container.get(ScheduleFormsService);
 	});
 	beforeEach(() => {
 		jest.clearAllMocks();
+		visitorObject.hasPermission.mockReturnValue(true);
+		(ScheduleFormsActionAuthVisitor as jest.Mock).mockImplementation(() => visitorObject);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new OrganisationAdminAuthGroup(userMock, [organisation])]),
+		);
 	});
 
 	it('should throw error because open and close times have wrong format', async () => {
@@ -152,6 +181,7 @@ describe('Schedules form template services ', () => {
 
 	it('should create new Schedule ', async () => {
 		const sp = ServiceProvider.create('sp', 2);
+		sp.service = serviceMockWithTemplate;
 		sp.id = 1;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
 		await scheduleFormsService.createScheduleForm(scheduleFormRequestCommon);
@@ -159,6 +189,11 @@ describe('Schedules form template services ', () => {
 	});
 
 	it('should update the template', async () => {
+		const sp = ServiceProvider.create('sp', 2);
+		sp.service = serviceMockWithTemplate;
+		sp.id = 1;
+		ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
+
 		const template = await scheduleFormsService.updateScheduleForm(1, scheduleFormRequestCommon);
 
 		expect(saveScheduleForm).toBeCalled();
@@ -178,8 +213,10 @@ describe('Schedules form template services ', () => {
 
 	it('should generate timeslots', async () => {
 		const sp = ServiceProvider.create('sp', 2);
+		sp.service = serviceMockWithTemplate;
 		sp.id = 1;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
+
 		await scheduleFormsService.createScheduleForm(scheduleFormRequestCommon);
 		const serviceProviderRes = ServiceProvidersRepositoryMock.save.mock.calls[0][0];
 		expect(serviceProviderRes._timeslotsSchedule.timeslotItems.length).toBe(3);

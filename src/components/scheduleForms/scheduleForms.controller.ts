@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Path, Post, Put, Response, Route, SuccessResponse, Tags } from 'tsoa';
+import { Body, Controller, Delete, Get, Hidden, Path, Post, Put, Response, Route, SuccessResponse, Tags } from 'tsoa';
 import { ScheduleFormRequest, ScheduleFormResponse } from './scheduleForms.apicontract';
 import { Inject } from 'typescript-ioc';
 import { ScheduleFormsService } from './scheduleForms.service';
@@ -51,6 +51,7 @@ export class ScheduleFormsController extends Controller {
 	@SuccessResponse(204, 'Deleted')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
+	@Hidden()
 	public async deleteScheduleForm(@Path() id: number): Promise<void> {
 		await this.scheduleFormService.deleteScheduleForm(id);
 	}
