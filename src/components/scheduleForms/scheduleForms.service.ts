@@ -69,6 +69,8 @@ export class ScheduleFormsService {
 		timeslotsSchedule.timeslotItems = TimeslotItem.generateTimeslotsItems(scheduleForm, entity.timeslotsScheduleId);
 		entity.timeslotsSchedule = timeslotsSchedule;
 
+		// saveScheduleForm also saves breaks
+		await this.scheduleFormsRepository.saveScheduleForm(scheduleForm);
 		const saved = await saveEntity(entity);
 
 		if (oldScheduleFormId) {
