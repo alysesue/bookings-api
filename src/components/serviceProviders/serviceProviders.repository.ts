@@ -113,7 +113,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			return null;
 		}
 
-		const idCondition = id ? 'sp._id = :id' : '';
+		const idCondition = 'sp._id = :id';
 		const query = await this.createSelectQuery([idCondition], { id }, options);
 		const entry = await query.getOne();
 

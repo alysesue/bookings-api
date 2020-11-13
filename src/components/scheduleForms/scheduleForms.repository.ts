@@ -1,13 +1,13 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { ScheduleForm, ServiceProvider, WeekDaySchedule } from '../../models';
-import { DeleteResult, FindManyOptions, In, SelectQueryBuilder } from 'typeorm';
-import { groupByKey } from '../../tools/collections';
+import { ScheduleForm, WeekDaySchedule } from '../../models';
+import { DeleteResult, SelectQueryBuilder } from 'typeorm';
+import { groupByKey, groupByKeyLastValue } from '../../tools/collections';
 import { WeekDayBreakRepository } from './weekdaybreak.repository';
 import { RepositoryBase } from '../../core/repository';
-import { groupByKeyLastValue } from '../../tools/collections';
 import { IEntityWithScheduleForm } from '../../models/interfaces';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ScheduleFormsQueryAuthVisitor } from './scheduleForms.auth';
+import { andWhere } from '../../tools/queryConditions';
 
 @InRequestScope
 export class ScheduleFormsRepository extends RepositoryBase<ScheduleForm> {
@@ -31,16 +31,10 @@ export class ScheduleFormsRepository extends RepositoryBase<ScheduleForm> {
 		const repository = await this.getRepository();
 		return repository
 			.createQueryBuilder('scheduleForm')
-			.where(
-				[userCondition, idCondition]
-					.filter((c) => c)
-					.map((c) => `(${c})`)
-					.join(' AND '),
-				{
-					...userParams,
-					ids,
-				},
-			)
+			.where(andWhere([userCondition, idCondition]), {
+				...userParams,
+				ids,
+			})
 			.leftJoinAndSelect('scheduleForm.weekdaySchedules', 'weekdaySchedules')
 			.leftJoinAndSelect('scheduleForm.serviceProvider', 'serviceProvider')
 			.leftJoinAndSelect('serviceProvider._service', 'SPService');
