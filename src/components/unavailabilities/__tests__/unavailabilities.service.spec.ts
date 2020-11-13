@@ -2,9 +2,15 @@ import { Container } from 'typescript-ioc';
 import { UnavailabilitiesRepository } from '../unavailabilities.repository';
 import { UnavailabilitiesService } from '../unavailabilities.service';
 import { UnavailabilityRequest } from '../unavailabilities.apicontract';
-import { ServiceProvider, Unavailability } from '../../../models';
+import { Service, ServiceProvider, Unavailability, User } from '../../../models';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
+import { UserContext } from '../../../infrastructure/auth/userContext';
+import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { UnavailabilitiesActionAuthVisitor } from '../unavailabilities.auth';
+import { ServicesRepository } from '../../../components/services/services.repository';
+
+jest.mock('../unavailabilities.auth');
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -12,9 +18,35 @@ afterAll(() => {
 });
 
 describe('Unavailabilities service tests', () => {
+	const service = new Service();
+	service.id = 1;
+
+	const adminMock = User.createAdminUser({
+		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+		userName: 'UserName',
+		email: 'test@email.com',
+		name: 'Name',
+	});
+	const visitorObj = {
+		hasPermission: jest.fn(),
+	};
+
+	beforeEach(() => {
+		visitorObj.hasPermission.mockReturnValue(true);
+
+		(UnavailabilitiesActionAuthVisitor as jest.Mock).mockImplementation(() => {
+			return visitorObj;
+		});
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
+	});
+
 	beforeAll(() => {
 		Container.bind(UnavailabilitiesRepository).to(UnavailabilitiesRepositoryMock);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
+		Container.bind(ServicesRepository).to(ServicesRepositoryMock);
+		Container.bind(UserContext).to(UserContextMock);
 	});
 
 	afterEach(() => {
@@ -50,7 +82,7 @@ describe('Unavailabilities service tests', () => {
 		UnavailabilitiesRepositoryMock.save.mockReturnValue(Promise.resolve(entity));
 
 		const request = new UnavailabilityRequest();
-		request.serviceId = 1;
+		request.serviceId = service.id;
 		request.startTime = new Date('2020-01-01');
 		request.endTime = new Date('2020-01-02');
 		request.allServiceProviders = true;
@@ -71,8 +103,8 @@ describe('Unavailabilities service tests', () => {
 		request.endTime = new Date('2020-01-01');
 		request.allServiceProviders = true;
 
-		const service = Container.get(UnavailabilitiesService);
-		const test = async () => await service.create(request);
+		const serviceData = Container.get(UnavailabilitiesService);
+		const test = async () => await serviceData.create(request);
 		await expect(test).rejects.toStrictEqual(
 			new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				'Unavailability start time must be less than end time.',
@@ -92,8 +124,8 @@ describe('Unavailabilities service tests', () => {
 		request.allServiceProviders = false;
 		request.serviceProviderIds = [];
 
-		const service = Container.get(UnavailabilitiesService);
-		const test = async () => await service.create(request);
+		const serviceData = Container.get(UnavailabilitiesService);
+		const test = async () => await serviceData.create(request);
 		const expectError = new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 			'Unavailability must be applied to at least one service provider (or all).',
 		);
@@ -117,8 +149,8 @@ describe('Unavailabilities service tests', () => {
 		request.allServiceProviders = false;
 		request.serviceProviderIds = [5, 4, 3, 2];
 
-		const service = Container.get(UnavailabilitiesService);
-		const test = async () => await service.create(request);
+		const serviceData = Container.get(UnavailabilitiesService);
+		const test = async () => await serviceData.create(request);
 		const expectError = new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 			'Invalid service provider id(s): 4, 3',
 		);
@@ -174,5 +206,22 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 
 	public async getServiceProviders(...params): Promise<any> {
 		return await ServiceProvidersRepositoryMock.getServiceProviders(...params);
+	}
+}
+class ServicesRepositoryMock extends ServicesRepository {
+	public static getService = jest.fn();
+
+	public async getService(...params): Promise<any> {
+		return await ServicesRepositoryMock.getService(...params);
+	}
+}
+
+export class UserContextMock extends UserContext {
+	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
+
+	public init() {}
+
+	public async getAuthGroups(...params): Promise<any> {
+		return await UserContextMock.getAuthGroups(...params);
 	}
 }

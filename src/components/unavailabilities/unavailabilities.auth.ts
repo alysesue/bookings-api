@@ -1,13 +1,14 @@
-import { Booking, ChangeLogAction } from '../../models';
+import { Unavailability } from '../../models';
 import {
-	AuthGroup,
 	CitizenAuthGroup,
-	IAuthGroupVisitor,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
-import { QueryAuthGroupVisitor } from '../../infrastructure/auth/queryAuthGroupVisitor';
+import {
+	PermissionAwareAuthGroupVisitor,
+	QueryAuthGroupVisitor,
+} from '../../infrastructure/auth/queryAuthGroupVisitor';
 
 export class UnavailabilitiesQueryAuthVisitor extends QueryAuthGroupVisitor {
 	private _alias: string;
@@ -46,5 +47,39 @@ export class UnavailabilitiesQueryAuthVisitor extends QueryAuthGroupVisitor {
 				authorisedServiceProviderId,
 			},
 		);
+	}
+}
+
+export class UnavailabilitiesActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
+	private readonly unavailability: Unavailability;
+	constructor(unavailability: Unavailability) {
+		super();
+		this.unavailability = unavailability;
+		if (!this.unavailability) {
+			throw new Error('UnavailabilitiesActionAuthVisitor - unavailability cannot be null');
+		}
+		if (!this.unavailability.service) {
+			throw new Error('UnavailabilitiesActionAuthVisitor - service cannot be null');
+		}
+	}
+
+	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
+
+	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
+		if (_userGroup.hasOrganisationId(this.unavailability.service.organisationId)) {
+			this.markWithPermission();
+		}
+	}
+
+	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
+		if (_userGroup.hasServiceId(this.unavailability.serviceId)) {
+			this.markWithPermission();
+		}
+	}
+	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
+		// tslint:disable-next-line: tsr-detect-possible-timing-attacks
+		if (this.unavailability.serviceProviders.some((sp) => sp.id === _userGroup.authorisedServiceProvider.id)) {
+			this.markWithPermission();
+		}
 	}
 }

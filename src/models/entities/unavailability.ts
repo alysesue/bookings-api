@@ -42,6 +42,13 @@ export class Unavailability implements IUnavailability {
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
+	public get service(): Service {
+		return this._service;
+	}
+	public set service(value: Service) {
+		this._service = value;
+	}
+
 	@Column()
 	@Index()
 	private _start: Date;
