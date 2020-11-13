@@ -8,6 +8,7 @@ import { ServiceProvidersRepository } from '../../serviceProviders/serviceProvid
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { UnavailabilitiesActionAuthVisitor } from '../unavailabilities.auth';
+import { ServicesRepository } from '../../../components/services/services.repository';
 
 jest.mock('../unavailabilities.auth');
 
@@ -44,6 +45,7 @@ describe('Unavailabilities service tests', () => {
 	beforeAll(() => {
 		Container.bind(UnavailabilitiesRepository).to(UnavailabilitiesRepositoryMock);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
+		Container.bind(ServicesRepository).to(ServicesRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
 	});
 
@@ -204,6 +206,13 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 
 	public async getServiceProviders(...params): Promise<any> {
 		return await ServiceProvidersRepositoryMock.getServiceProviders(...params);
+	}
+}
+class ServicesRepositoryMock extends ServicesRepository {
+	public static getService = jest.fn();
+
+	public async getService(...params): Promise<any> {
+		return await ServicesRepositoryMock.getService(...params);
 	}
 }
 

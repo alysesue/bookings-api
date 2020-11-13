@@ -6,6 +6,7 @@ import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { UnavailabilitiesActionAuthVisitor } from './unavailabilities.auth';
+import { ServicesRepository } from '../services/services.repository';
 
 @InRequestScope
 export class UnavailabilitiesService {
@@ -13,6 +14,8 @@ export class UnavailabilitiesService {
 	private unavailabilitiesRepository: UnavailabilitiesRepository;
 	@Inject
 	private serviceProvidersRepository: ServiceProvidersRepository;
+	@Inject
+	private servicesRepository: ServicesRepository;
 	@Inject
 	private userContext: UserContext;
 
@@ -43,6 +46,7 @@ export class UnavailabilitiesService {
 
 		if (!entity.id) {
 			entity.serviceId = request.serviceId;
+			entity.service = await this.servicesRepository.getService(entity.serviceId);
 		}
 
 		if (request.allServiceProviders) {
