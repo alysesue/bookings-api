@@ -234,8 +234,9 @@ export class BookingsService {
 	): Promise<[ChangeLogAction, Booking]> {
 		const updatedBooking = previousBooking.clone();
 		Object.assign(updatedBooking, bookingRequest);
-		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({ id: updatedBooking.serviceProviderId });
-
+		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
+			id: updatedBooking.serviceProviderId,
+		});
 
 		const validator = this.bookingsValidatorFactory.getValidator(isAdmin);
 		await validator.validate(updatedBooking);
