@@ -24,7 +24,6 @@ function createDayOfWeekTemplate(
 
 describe('Timeslots template', () => {
 	const template = new ScheduleForm();
-	template.name = 'test';
 	template.slotsDurationInMin = 60;
 	const wednesday = createDayOfWeekTemplate(Weekday.Wednesday, '09:30', '17:30', template);
 	wednesday.breaks = [
