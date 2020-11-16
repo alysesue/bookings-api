@@ -81,7 +81,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	}
 
 	public async getByScheduleFormId(options: {
-		scheduleFormId?: number;
+		scheduleFormId: number;
 		includeScheduleForm?: boolean;
 		includeTimeslotsSchedule?: boolean;
 		skipAuthorisation?: boolean;
