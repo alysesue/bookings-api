@@ -12,19 +12,27 @@ import { ServiceProvidersActionAuthVisitor } from '../../serviceProviders/servic
 // tslint:disable-next-line:no-big-function
 describe('Query scheduleForm Auth', () => {
 	it('should test query condition for serviceProvider', async () => {
-		const serviceProvider = ServiceProvider.create('provider', 1);
+		const serviceProvider = ServiceProvider.create('provider', 2);
+		serviceProvider.id = 1;
 		serviceProvider.service = new Service();
+		serviceProvider.service.id = 2;
 		const userGroup = new ServiceProviderAuthGroup(
 			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
 			serviceProvider,
 		);
 
-		const { userCondition } = await new ScheduleFormsQueryAuthVisitor(
+		const { userCondition, userParams } = await new ScheduleFormsQueryAuthVisitor(
 			'service',
 			'serviceProvider',
 		).createUserVisibilityCondition([userGroup]);
 
-		expect(userCondition).toBe('(serviceProvider._id = :serviceProviderId)');
+		expect(userCondition).toStrictEqual(
+			'(serviceProvider._id = :authorisedSpId OR service._id = :authorisedSpServiceId)',
+		);
+		expect(userParams).toStrictEqual({
+			authorisedSpId: 1,
+			authorisedSpServiceId: 2,
+		});
 	});
 
 	it('should test query condition for service admin', async () => {
@@ -37,12 +45,13 @@ describe('Query scheduleForm Auth', () => {
 		const serviceProvider = ServiceProvider.create('new sp', 1);
 		serviceProvider.service = service;
 
-		const { userCondition } = await new ScheduleFormsQueryAuthVisitor(
+		const { userCondition, userParams } = await new ScheduleFormsQueryAuthVisitor(
 			'service',
 			'serviceProvider',
 		).createUserVisibilityCondition([userGroup]);
 
-		expect(userCondition).toBe('(service._id IN (:...serviceIds))');
+		expect(userCondition).toBe('(service._id IN (:...authorisedServiceIds))');
+		expect(userParams).toStrictEqual({ authorisedServiceIds: [1] });
 	});
 
 	it('should test query condition for org admin', async () => {
@@ -56,24 +65,26 @@ describe('Query scheduleForm Auth', () => {
 		serviceProvider.service = new Service();
 		serviceProvider.service.organisationId = 1;
 
-		const { userCondition } = await new ScheduleFormsQueryAuthVisitor(
+		const { userCondition, userParams } = await new ScheduleFormsQueryAuthVisitor(
 			'service',
 			'serviceProvider',
 		).createUserVisibilityCondition([userGroup]);
 
-		expect(userCondition).toBe('(service._organisationId IN (:...orgIds))');
+		expect(userCondition).toBe('(service._organisationId IN (:...authorisedOrgIds))');
+		expect(userParams).toStrictEqual({ authorisedOrgIds: [1] });
 	});
 
-	it('should  test query condition entity citizen', async () => {
+	it('should test query condition entity citizen', async () => {
 		const userGroup = new CitizenAuthGroup(User.createSingPassUser('23', '23'));
 		const serviceProvider = ServiceProvider.create('new sp', 1);
 		serviceProvider.service = new Service();
 
-		const { userCondition } = await new ScheduleFormsQueryAuthVisitor(
+		const { userCondition, userParams } = await new ScheduleFormsQueryAuthVisitor(
 			'service',
 			'serviceProvider',
 		).createUserVisibilityCondition([userGroup]);
 
 		expect(userCondition).toBe('FALSE');
+		expect(userParams).toStrictEqual({});
 	});
 });

@@ -56,7 +56,7 @@ describe('Services repository', () => {
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const repository = Container.get(ServicesRepository);
-		const result = await repository.getService(1);
+		const result = await repository.getService({ id: 1 });
 		expect(queryBuilderMock.getOne as jest.Mock).toBeCalled();
 		expect(result).toStrictEqual(data);
 	});
@@ -67,7 +67,11 @@ describe('Services repository', () => {
 
 		const scheduleForm = new ScheduleForm();
 		scheduleForm.id = 11;
-		ScheduleFormsRepositoryMock.getScheduleFormsMock.mockImplementation(() => Promise.resolve([scheduleForm]));
+		ScheduleFormsRepositoryMock.populateSingleEntryScheduleForm.mockImplementation((e: Service) => {
+			e.scheduleForm = scheduleForm;
+			return Promise.resolve(e);
+		});
+
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
@@ -87,9 +91,11 @@ describe('Services repository', () => {
 
 		const timeslotsSchedule = new TimeslotsSchedule();
 		timeslotsSchedule._id = 2;
-		TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock.mockImplementation(() =>
-			Promise.resolve(timeslotsSchedule),
-		);
+		TimeslotsScheduleRepositoryMock.populateTimeslotsSchedules.mockImplementation(() => {
+			data.timeslotsSchedule = timeslotsSchedule;
+			return Promise.resolve([data]);
+		});
+
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
@@ -170,17 +176,27 @@ class TransactionManagerMock extends TransactionManager {
 
 class ScheduleFormsRepositoryMock extends ScheduleFormsRepository {
 	public static getScheduleFormsMock = jest.fn();
+	public static populateSingleEntryScheduleForm = jest.fn();
 
 	public async getScheduleForms(...params): Promise<ScheduleForm[]> {
 		return await ScheduleFormsRepositoryMock.getScheduleFormsMock(...params);
+	}
+
+	public async populateSingleEntryScheduleForm(...params): Promise<any> {
+		return await ScheduleFormsRepositoryMock.populateSingleEntryScheduleForm(...params);
 	}
 }
 
 class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
 	public static getTimeslotsScheduleByIdMock = jest.fn();
+	public static populateTimeslotsSchedules = jest.fn();
 
 	public async getTimeslotsScheduleById(...params): Promise<TimeslotsSchedule> {
 		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock(...params);
+	}
+
+	public async populateTimeslotsSchedules(...params): Promise<any> {
+		return await TimeslotsScheduleRepositoryMock.populateTimeslotsSchedules(...params);
 	}
 }
 

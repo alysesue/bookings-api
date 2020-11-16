@@ -12,7 +12,6 @@ import { ScheduleFormsRepository } from './scheduleForms.repository';
 import { TransactionManager } from '../../core/transactionManager';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
-import { TimeslotItemsRepository } from '../timeslotItems/timeslotItems.repository';
 
 const FormIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
