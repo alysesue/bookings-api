@@ -7,6 +7,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
 import { TimeslotItemsQueryAuthVisitor } from '../../timeslotItems/timeslotItems.auth';
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
+import { TimeslotItemsRepository } from '../../timeslotItems/timeslotItems.repository';
 
 jest.mock('../../timeslotItems/timeslotItems.auth');
 
@@ -22,6 +23,7 @@ afterAll(() => {
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
 	Container.bind(UserContext).to(UserContextMock);
+	Container.bind(TimeslotItemsRepository).to(TimeslotItemsRepositoryMock);
 });
 
 beforeEach(() => {
@@ -88,6 +90,16 @@ describe('TimeslotsSchedule repository', () => {
 		await repository.getTimeslotsSchedules([]);
 		expect(TransactionManagerMock.find).not.toHaveBeenCalled();
 	});
+
+	it('should should delete timeslot schedule', async () => {
+		TransactionManagerMock.delete.mockImplementation(() => Promise.resolve());
+
+		const repository = Container.get(TimeslotsScheduleRepository);
+		await repository.deleteTimeslotsSchedule(1);
+
+		expect(TimeslotItemsRepositoryMock.deleteTimeslotsForSchedule).toBeCalled();
+		expect(TransactionManagerMock.delete).toBeCalled();
+	});
 });
 
 class SampleEntity implements IEntityWithTimeslotsSchedule {
@@ -111,6 +123,7 @@ class TransactionManagerMock extends TransactionManager {
 	public static find = jest.fn();
 	public static findOne = jest.fn();
 	public static save = jest.fn();
+	public static delete = jest.fn();
 
 	public async getEntityManager(): Promise<any> {
 		const entityManager = {
@@ -119,8 +132,17 @@ class TransactionManagerMock extends TransactionManager {
 				find: TransactionManagerMock.find,
 				findOne: TransactionManagerMock.findOne,
 				save: TransactionManagerMock.save,
+				delete: TransactionManagerMock.delete,
 			}),
 		};
 		return Promise.resolve(entityManager);
+	}
+}
+
+class TimeslotItemsRepositoryMock extends TimeslotItemsRepository {
+	public static deleteTimeslotsForSchedule = jest.fn();
+
+	public async deleteTimeslotsForSchedule(...params): Promise<any> {
+		return await TimeslotItemsRepositoryMock.deleteTimeslotsForSchedule(...params);
 	}
 }

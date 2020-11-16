@@ -97,6 +97,25 @@ describe('TimeslotItems repository', () => {
 
 		expect(timeslot).toStrictEqual(timeslotItemMock);
 	});
+
+	it('should delete timeslots for Schedule', async () => {
+		const queryBuilderMock = {
+			delete: jest.fn(() => queryBuilderMock),
+			from: jest.fn(() => queryBuilderMock),
+			where: jest.fn(() => queryBuilderMock),
+			execute: jest.fn(() => Promise.resolve()),
+		};
+
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const repository = Container.get(TimeslotItemsRepository);
+		await repository.deleteTimeslotsForSchedule(2);
+
+		expect(TransactionManagerMock.createQueryBuilder).toBeCalledTimes(1);
+		expect(queryBuilderMock.delete).toBeCalledTimes(1);
+		expect(queryBuilderMock.where).toHaveBeenCalledWith('_timeslotsScheduleId = :scheduleId', { scheduleId: 2 });
+		expect(queryBuilderMock.execute).toBeCalledTimes(1);
+	});
 });
 
 class TransactionManagerMock extends TransactionManager {
