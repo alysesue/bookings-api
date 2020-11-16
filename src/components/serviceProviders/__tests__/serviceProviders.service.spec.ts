@@ -12,7 +12,7 @@ import {
 	TimeslotsSchedule,
 	User,
 } from '../../../models';
-import { ServiceProviderModel, SetProviderScheduleFormRequest } from '../serviceProviders.apicontract';
+import { ServiceProviderModel } from '../serviceProviders.apicontract';
 import { ScheduleFormsService } from '../../scheduleForms/scheduleForms.service';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TimeslotItemsService } from '../../timeslotItems/timeslotItems.service';
@@ -26,6 +26,7 @@ import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
 import { ServiceAdminAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.repository';
+import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -65,7 +66,7 @@ describe('ServiceProviders.Service', () => {
 		Container.bind(TimeslotItemsService).to(TimeslotItemsServiceMock);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 		Container.bind(ServicesService).to(ServicesServiceMock);
-		Container.bind(ScheduleFormsService).to(SchedulesServiceMock);
+		Container.bind(ScheduleFormsService).to(ScheduleFormsServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 		Container.bind(UserContext).to(UserContextMock);
 	});
@@ -130,17 +131,15 @@ describe('ServiceProviders.Service', () => {
 		const serviceProviderData = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
 		serviceProviderData.service = service;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderData;
-		ScheduleFormsServiceObj.getScheduleForm.mockImplementation(() => Promise.resolve(new ScheduleForm()));
+		ScheduleFormsServiceMock.updateScheduleFormInEntity.mockImplementation(() => {
+			serviceProviderData.scheduleForm = new ScheduleForm();
+			return Promise.resolve(serviceProviderData);
+		});
 
-		const providerScheduleRequest = new SetProviderScheduleFormRequest();
-		providerScheduleRequest.scheduleFormId = 2;
-		const schedule = await Container.get(ServiceProvidersService).setProviderScheduleForm(
-			1,
-			providerScheduleRequest,
-		);
+		const providerScheduleRequest = new ScheduleFormRequest();
+		await Container.get(ServiceProvidersService).setProviderScheduleForm(1, providerScheduleRequest);
 
-		expect(schedule).toBeDefined();
-		expect(serviceProviderData.scheduleForm).toBe(schedule);
+		expect(ScheduleFormsServiceMock.updateScheduleFormInEntity).toBeCalled();
 	});
 
 	it('should update a service provider', async () => {
@@ -154,29 +153,6 @@ describe('ServiceProviders.Service', () => {
 		);
 		await Container.get(ServiceProvidersService).updateSp(serviceProviderMock, 1);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
-	});
-
-	it('should set provider schedule to null', async () => {
-		const service = new Service();
-		service.id = 1;
-		UserContextMock.getAuthGroups.mockReturnValue(
-			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
-		);
-		serviceProviderMock.serviceId = 1;
-		serviceProviderMock.service = service;
-		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
-		ScheduleFormsServiceObj.getScheduleForm.mockImplementation(() => Promise.resolve());
-
-		const providerScheduleRequest = new SetProviderScheduleFormRequest();
-		providerScheduleRequest.scheduleFormId = null;
-		const scheduleForm = await Container.get(ServiceProvidersService).setProviderScheduleForm(
-			1,
-			providerScheduleRequest,
-		);
-
-		expect(scheduleForm).toBe(null);
-		expect(serviceProviderMock.scheduleForm).toBe(null);
-		expect(ScheduleFormsServiceObj.getScheduleForm).not.toBeCalled();
 	});
 
 	it('should get provider schedule', async () => {
@@ -324,13 +300,11 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	}
 }
 
-const ScheduleFormsServiceObj = {
-	getScheduleForm: jest.fn(),
-};
+class ScheduleFormsServiceMock extends ScheduleFormsService {
+	public static updateScheduleFormInEntity = jest.fn();
 
-class SchedulesServiceMock extends ScheduleFormsService {
-	public async getScheduleForm(id: number): Promise<ScheduleForm> {
-		return ScheduleFormsServiceObj.getScheduleForm(id);
+	public async updateScheduleFormInEntity(...params): Promise<any> {
+		return await ScheduleFormsServiceMock.updateScheduleFormInEntity(...params);
 	}
 }
 
@@ -338,7 +312,7 @@ class TimeslotsServiceMock extends TimeslotsService {
 	public static getAggregatedTimeslots = jest.fn();
 
 	public async getAggregatedTimeslots(...params): Promise<AvailableTimeslotProviders[]> {
-		return Promise.resolve(TimeslotsServiceMock.getAggregatedTimeslots(...params));
+		return await TimeslotsServiceMock.getAggregatedTimeslots(...params);
 	}
 }
 

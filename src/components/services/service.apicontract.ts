@@ -13,10 +13,3 @@ export class ServiceRequest {
 	 */
 	public organisationId?: number;
 }
-
-export class SetScheduleFormRequest {
-	/**
-	 * @isInt
-	 */
-	public scheduleFormId?: number;
-}

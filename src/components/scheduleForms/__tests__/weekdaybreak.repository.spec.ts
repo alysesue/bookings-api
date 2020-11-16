@@ -19,7 +19,7 @@ beforeEach(() => {
 	jest.clearAllMocks();
 });
 
-describe('ScheduleForm repository', () => {
+describe('WeekDayBreak repository', () => {
 	it('should get breaks for schedule', async () => {
 		const service = Container.get(WeekDayBreakRepository);
 		const result = await service.getBreaksForSchedules([1, 2, 3]);

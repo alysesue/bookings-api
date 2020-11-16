@@ -20,6 +20,24 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		super(Service);
 	}
 
+	private async processIncludes(
+		entries: Service[],
+		options: {
+			includeScheduleForm?: boolean;
+			includeTimeslotsSchedule?: boolean;
+		},
+	): Promise<Service[]> {
+		if (options.includeScheduleForm) {
+			await this.scheduleFormRepository.populateScheduleForms(entries);
+		}
+
+		if (options.includeTimeslotsSchedule) {
+			await this.timeslotsScheduleRepository.populateTimeslotsSchedules(entries);
+		}
+
+		return entries;
+	}
+
 	public async save(service: Service): Promise<Service> {
 		return (await this.getRepository()).save(service);
 	}
@@ -49,13 +67,10 @@ export class ServicesRepository extends RepositoryBase<Service> {
 	}
 
 	public async getServiceWithTimeslotsSchedule(id: number): Promise<Service> {
-		const query = await this.getServiceQueryById(id);
-		const entry = await query.getOne();
-
-		entry.timeslotsSchedule = await this.timeslotsScheduleRepository.getTimeslotsScheduleById({
-			id: entry?.timeslotsScheduleId,
+		return this.getService({
+			id,
+			includeTimeslotsSchedule: true,
 		});
-		return entry;
 	}
 
 	public async getAll(): Promise<Service[]> {
@@ -70,8 +85,18 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		return await query.getMany();
 	}
 
-	public async getService(id: number): Promise<Service> {
+	public async getService(options: {
+		id: number;
+		includeScheduleForm?: boolean;
+		includeTimeslotsSchedule?: boolean;
+	}): Promise<Service> {
+		const { id } = options;
 		const query = await this.getServiceQueryById(id);
-		return await query.getOne();
+		const entry = await query.getOne();
+
+		if (!entry) {
+			return entry;
+		}
+		return (await this.processIncludes([entry], options))[0];
 	}
 }

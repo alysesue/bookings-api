@@ -12,7 +12,6 @@ export const mapToEntity = (
 	contract: ScheduleFormRequest,
 	entity: ScheduleForm,
 ): OptionalResult<ScheduleForm, string[]> => {
-	entity.name = contract.name;
 	entity.slotsDurationInMin = contract.slotsDurationInMin;
 	const errors: string[] = [];
 
@@ -102,7 +101,6 @@ export const mapToResponse = (template: ScheduleForm): ScheduleFormResponse => {
 
 	const response = new ScheduleFormResponse();
 	response.id = template.id;
-	response.name = template.name;
 	response.slotsDurationInMin = template.slotsDurationInMin;
 	response.weekdaySchedules = template.weekdaySchedules?.map((w) => mapDayScheduleToResponse(w)) || [];
 

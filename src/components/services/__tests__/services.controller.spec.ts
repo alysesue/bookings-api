@@ -1,10 +1,11 @@
 import { Container } from 'typescript-ioc';
 import { ServicesController } from '../services.controller';
-import { ServiceRequest, SetScheduleFormRequest } from '../service.apicontract';
+import { ServiceRequest } from '../service.apicontract';
 import { ServicesService } from '../services.service';
 import { ScheduleForm, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 import { Weekday } from '../../../enums/weekday';
+import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -56,8 +57,7 @@ describe('Services controller tests', () => {
 
 	it('should set service ScheduleForm', async () => {
 		ServicesServiceMock.setServiceScheduleForm.mockReturnValue(Promise.resolve(new ScheduleForm()));
-		const request = new SetScheduleFormRequest();
-		request.scheduleFormId = 2;
+		const request = new ScheduleFormRequest();
 
 		await Container.get(ServicesController).setServiceScheduleForm(1, request);
 
@@ -165,7 +165,7 @@ class ServicesServiceMockClass extends ServicesService {
 		return ServicesServiceMock.getServices();
 	}
 
-	public async setServiceScheduleForm(id: number, model: SetScheduleFormRequest): Promise<ScheduleForm> {
+	public async setServiceScheduleForm(id: number, model: ScheduleFormRequest): Promise<ScheduleForm> {
 		return ServicesServiceMock.setServiceScheduleForm(id, model);
 	}
 

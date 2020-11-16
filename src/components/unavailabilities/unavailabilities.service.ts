@@ -46,7 +46,7 @@ export class UnavailabilitiesService {
 
 		if (!entity.id) {
 			entity.serviceId = request.serviceId;
-			entity.service = await this.servicesRepository.getService(entity.serviceId);
+			entity.service = await this.servicesRepository.getService({ id: entity.serviceId });
 		}
 
 		if (request.allServiceProviders) {

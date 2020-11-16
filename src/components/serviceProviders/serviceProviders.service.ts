@@ -4,8 +4,7 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { cloneDeep } from 'lodash';
 import { ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
-import { ServiceProviderModel, SetProviderScheduleFormRequest } from './serviceProviders.apicontract';
-import { API_TIMEOUT_PERIOD } from '../../const';
+import { ServiceProviderModel } from './serviceProviders.apicontract';
 import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
 import { ServicesService } from '../services/services.service';
@@ -14,6 +13,7 @@ import { TimeslotsService } from '../timeslots/timeslots.service';
 import { ServiceProvidersActionAuthVisitor } from './serviceProviders.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { CrudAction } from '../../enums/crudAction';
+import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract';
 
 @InRequestScope
 export class ServiceProvidersService {
@@ -138,28 +138,18 @@ export class ServiceProvidersService {
 		return await this.serviceProvidersRepository.save(serviceProvider);
 	}
 
-	public async setProviderScheduleForm(id: number, model: SetProviderScheduleFormRequest): Promise<ScheduleForm> {
-		const serviceProvider = await this.getServiceProvider(id, true, false);
-
-		if (!serviceProvider) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service Provider not found');
-		}
-
+	public async setProviderScheduleForm(id: number, model: ScheduleFormRequest): Promise<ScheduleForm> {
+		const serviceProvider = await this.getServiceProvider(id, true, true);
 		await this.verifyActionPermission(serviceProvider, CrudAction.Update);
 
-		let schedule: ScheduleForm = null;
-		if (model.scheduleFormId) {
-			schedule = await this.schedulesService.getScheduleForm(model.scheduleFormId);
-			if (!schedule) {
-				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(
-					`ScheduleForm not found with id: ${model.scheduleFormId}`,
-				);
-			}
-		}
+		const saveSpFunction = async (sp: ServiceProvider) => {
+			sp.scheduleFormConfirmed = true;
+			return await this.serviceProvidersRepository.save(sp);
+		};
 
-		serviceProvider.scheduleForm = schedule;
-		await this.serviceProvidersRepository.save(serviceProvider);
-		return schedule;
+		await this.schedulesService.updateScheduleFormInEntity(model, serviceProvider, saveSpFunction);
+
+		return serviceProvider.scheduleForm;
 	}
 
 	public async getProviderScheduleForm(id: number): Promise<ScheduleForm> {

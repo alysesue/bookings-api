@@ -2,17 +2,16 @@ import { ScheduleFormsService } from '../scheduleForms.service';
 import { ScheduleFormRequest, WeekDayBreakContract, WeekDayScheduleContract } from '../scheduleForms.apicontract';
 import { ScheduleFormsRepository } from '../scheduleForms.repository';
 import { Container } from 'typescript-ioc';
-import { Organisation, ScheduleForm, Service, ServiceProvider, TimeslotsSchedule, User } from '../../../models';
-import { mapToEntity } from '../scheduleForms.mapper';
+import { Organisation, Service, ServiceProvider, User } from '../../../models';
 import { Weekday } from '../../../enums/weekday';
 import { MOLErrorV2 } from 'mol-lib-api-contract';
-import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
-import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.repository';
 import { ScheduleFormsActionAuthVisitor } from '../scheduleForms.auth';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
 import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { AsyncFunction, TransactionManager } from '../../../core/transactionManager';
+import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 
 jest.mock('../scheduleForms.auth');
 
@@ -20,36 +19,6 @@ afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
-
-const scheduleFormRequestCommon = {
-	serviceProviderId: 1,
-	name: 'schedule',
-	slotsDurationInMin: 60,
-	weekdaySchedules: [
-		{
-			weekday: Weekday.Monday,
-			hasScheduleForm: true,
-			openTime: '08:30',
-			closeTime: '12:30',
-			breaks: [{ startTime: '11:00', endTime: '11:30' } as WeekDayBreakContract],
-		} as WeekDayScheduleContract,
-	],
-} as ScheduleFormRequest;
-
-const scheduleCommon = new ScheduleForm();
-mapToEntity(scheduleFormRequestCommon, scheduleCommon);
-const getScheduleForms = jest.fn().mockImplementation(() => Promise.resolve([scheduleCommon]));
-const getScheduleFormById = jest.fn().mockImplementation(() => Promise.resolve(scheduleCommon));
-const getScheduleFormByName = jest.fn().mockImplementation(() => Promise.resolve(scheduleCommon));
-const saveScheduleForm = jest.fn().mockImplementation(() => Promise.resolve(scheduleCommon));
-const deleteScheduleForm = jest.fn().mockImplementation(() => Promise.resolve(undefined));
-const MockScheduleFormsRepository = jest.fn().mockImplementation(() => ({
-	getScheduleForms,
-	saveScheduleForm,
-	getScheduleFormById,
-	getScheduleFormByName,
-	deleteScheduleForm,
-}));
 
 const visitorObject = {
 	hasPermission: jest.fn(),
@@ -68,28 +37,34 @@ const userMock = User.createAdminUser({
 const organisation = new Organisation();
 organisation.id = 1;
 
-// tslint:disable-next-line
+// tslint:disable-next-line: no-big-function
 describe('Schedules form template services ', () => {
-	let scheduleFormsService: ScheduleFormsService;
 	beforeAll(() => {
-		Container.bind(ScheduleFormsRepository).to(MockScheduleFormsRepository);
 		Container.bind(UserContext).to(UserContextMock);
-		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
-		scheduleFormsService = Container.get(ScheduleFormsService);
+		Container.bind(ScheduleFormsRepository).to(ScheduleFormsRepositoryMock);
+		Container.bind(TimeslotsScheduleRepository).to(TimeslotsScheduleRepositoryMock);
+		Container.bind(TransactionManager).to(TransactionManagerMock);
 	});
+
 	beforeEach(() => {
 		jest.clearAllMocks();
+
 		visitorObject.hasPermission.mockReturnValue(true);
 		(ScheduleFormsActionAuthVisitor as jest.Mock).mockImplementation(() => visitorObject);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new OrganisationAdminAuthGroup(userMock, [organisation])]),
 		);
+		TransactionManagerMock.runInTransaction.mockImplementation(
+			async <T extends unknown>(_isolationLevel: IsolationLevel, asyncFunction: AsyncFunction<T>): Promise<T> =>
+				await asyncFunction(),
+		);
 	});
 
 	it('should throw error because open and close times have wrong format', async () => {
+		const entity = ServiceProvider.create('Jhon', 1);
+		const saveEntity = jest.fn<Promise<typeof entity>, any>((e) => Promise.resolve(e));
 		const scheduleFormsRequest: ScheduleFormRequest = {
-			name: 'schedule',
 			slotsDurationInMin: 5,
 			weekdaySchedules: [
 				{
@@ -102,17 +77,19 @@ describe('Schedules form template services ', () => {
 		} as ScheduleFormRequest;
 
 		try {
-			await scheduleFormsService.createScheduleForm(scheduleFormsRequest);
+			const scheduleFormsService = Container.get(ScheduleFormsService);
+			await scheduleFormsService.updateScheduleFormInEntity(scheduleFormsRequest, entity, saveEntity);
 		} catch (e) {
 			expect(e.message).toBe('Invalid request parameters.');
 			expect((e as MOLErrorV2).responseData).toMatchSnapshot();
 		}
-		expect(saveScheduleForm).toBeCalledTimes(0);
+		expect(ScheduleFormsRepositoryMock.saveScheduleForm).toBeCalledTimes(0);
 	});
 
 	it('should throw error because close time have wrong format', async () => {
+		const entity = ServiceProvider.create('Jhon', 1);
+		const saveEntity = jest.fn<Promise<typeof entity>, any>((e) => Promise.resolve(e));
 		const scheduleFormsRequest: ScheduleFormRequest = {
-			name: 'schedule',
 			slotsDurationInMin: 5,
 			weekdaySchedules: [
 				{
@@ -125,17 +102,19 @@ describe('Schedules form template services ', () => {
 		} as ScheduleFormRequest;
 
 		try {
-			await scheduleFormsService.createScheduleForm(scheduleFormsRequest);
+			const scheduleFormsService = Container.get(ScheduleFormsService);
+			await scheduleFormsService.updateScheduleFormInEntity(scheduleFormsRequest, entity, saveEntity);
 		} catch (e) {
 			expect(e.message).toBe('Invalid request parameters.');
 			expect((e as MOLErrorV2).responseData).toMatchSnapshot();
 		}
-		expect(saveScheduleForm).toBeCalledTimes(0);
+		expect(ScheduleFormsRepositoryMock.saveScheduleForm).toBeCalledTimes(0);
 	});
 
 	it('should throw error because openTime > closeTime', async () => {
+		const entity = ServiceProvider.create('Jhon', 1);
+		const saveEntity = jest.fn<Promise<typeof entity>, any>((e) => Promise.resolve(e));
 		const scheduleFormsRequest: ScheduleFormRequest = {
-			name: 'schedule',
 			slotsDurationInMin: 5,
 			weekdaySchedules: [
 				{
@@ -148,17 +127,19 @@ describe('Schedules form template services ', () => {
 		} as ScheduleFormRequest;
 
 		try {
-			await scheduleFormsService.createScheduleForm(scheduleFormsRequest);
+			const scheduleFormsService = Container.get(ScheduleFormsService);
+			await scheduleFormsService.updateScheduleFormInEntity(scheduleFormsRequest, entity, saveEntity);
 		} catch (e) {
 			expect(e.message).toBe('Invalid request parameters.');
 			expect((e as MOLErrorV2).responseData).toMatchSnapshot();
 		}
-		expect(saveScheduleForm).toBeCalledTimes(0);
+		expect(ScheduleFormsRepositoryMock.saveScheduleForm).toBeCalledTimes(0);
 	});
 
 	it('should throw error because slotsDurationInMin < (closeTime - openTime)', async () => {
+		const entity = ServiceProvider.create('Jhon', 1);
+		const saveEntity = jest.fn<Promise<typeof entity>, any>((e) => Promise.resolve(e));
 		const scheduleFormsRequest: ScheduleFormRequest = {
-			name: 'schedule',
 			slotsDurationInMin: 65,
 			weekdaySchedules: [
 				{
@@ -171,87 +152,141 @@ describe('Schedules form template services ', () => {
 		} as ScheduleFormRequest;
 
 		try {
-			await scheduleFormsService.createScheduleForm(scheduleFormsRequest);
+			const scheduleFormsService = Container.get(ScheduleFormsService);
+			await scheduleFormsService.updateScheduleFormInEntity(scheduleFormsRequest, entity, saveEntity);
 		} catch (e) {
 			expect(e.message).toBe('Invalid request parameters.');
 			expect((e as MOLErrorV2).responseData).toMatchSnapshot();
 		}
-		expect(saveScheduleForm).toBeCalledTimes(0);
-	});
-
-	it('should create new Schedule ', async () => {
-		const sp = ServiceProvider.create('sp', 2);
-		sp.service = serviceMockWithTemplate;
-		sp.id = 1;
-		ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
-		await scheduleFormsService.createScheduleForm(scheduleFormRequestCommon);
-		expect(saveScheduleForm).toBeCalledTimes(1);
-	});
-
-	it('should update the template', async () => {
-		const sp = ServiceProvider.create('sp', 2);
-		sp.service = serviceMockWithTemplate;
-		sp.id = 1;
-		ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
-
-		const template = await scheduleFormsService.updateScheduleForm(1, scheduleFormRequestCommon);
-
-		expect(saveScheduleForm).toBeCalled();
-		expect(getScheduleFormById).toBeCalled();
-		expect(template.name).toStrictEqual(scheduleFormRequestCommon.name);
-	});
-
-	it('should get scheduleForms', async () => {
-		await scheduleFormsService.getScheduleForms();
-		expect(getScheduleForms).toBeCalled();
-	});
-
-	it('should call delete repository', async () => {
-		await scheduleFormsService.deleteScheduleForm(3);
-		expect(deleteScheduleForm).toBeCalled();
+		expect(ScheduleFormsRepositoryMock.saveScheduleForm).toBeCalledTimes(0);
+		expect(saveEntity).toBeCalledTimes(0);
 	});
 
 	it('should generate timeslots', async () => {
-		const sp = ServiceProvider.create('sp', 2);
-		sp.service = serviceMockWithTemplate;
-		sp.id = 1;
-		ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
+		const entity = ServiceProvider.create('Jhon', 2);
+		entity.id = 1;
+		entity.service = new Service();
+		entity.service.id = 2;
+		const saveEntity = jest.fn<Promise<typeof entity>, any>((e) => Promise.resolve(e));
+		const scheduleFormsRequest: ScheduleFormRequest = {
+			slotsDurationInMin: 60,
+			weekdaySchedules: [
+				{
+					weekday: Weekday.Monday,
+					hasScheduleForm: true,
+					openTime: '08:30',
+					closeTime: '12:30',
+					breaks: [{ startTime: '11:00', endTime: '11:30' } as WeekDayBreakContract],
+				} as WeekDayScheduleContract,
+			],
+		} as ScheduleFormRequest;
 
-		await scheduleFormsService.createScheduleForm(scheduleFormRequestCommon);
-		const serviceProviderRes = ServiceProvidersRepositoryMock.save.mock.calls[0][0];
-		expect(serviceProviderRes._timeslotsSchedule.timeslotItems.length).toBe(3);
-		expect(serviceProviderRes._timeslotsSchedule.timeslotItems[0]._startTime.toString()).toBe('08:30');
-		expect(serviceProviderRes._timeslotsSchedule.timeslotItems[0]._endTime.toString()).toBe('09:30');
-		expect(serviceProviderRes._timeslotsSchedule.timeslotItems[1]._startTime.toString()).toBe('09:30');
-		expect(serviceProviderRes._timeslotsSchedule.timeslotItems[1]._endTime.toString()).toBe('10:30');
-		expect(serviceProviderRes._timeslotsSchedule.timeslotItems[2]._startTime.toString()).toBe('11:30');
-		expect(serviceProviderRes._timeslotsSchedule.timeslotItems[2]._endTime.toString()).toBe('12:30');
+		ScheduleFormsRepositoryMock.saveScheduleForm.mockImplementation((e) => Promise.resolve(e));
+
+		const scheduleFormsService = Container.get(ScheduleFormsService);
+		await scheduleFormsService.updateScheduleFormInEntity(scheduleFormsRequest, entity, saveEntity);
+
+		expect(ScheduleFormsRepositoryMock.saveScheduleForm).toBeCalledTimes(1);
+		expect(saveEntity).toBeCalledTimes(1);
+
+		const timeslotSchedule = entity.timeslotsSchedule;
+		expect(timeslotSchedule).toBeDefined();
+		expect(timeslotSchedule.timeslotItems[0]._startTime.toString()).toBe('08:30');
+		expect(timeslotSchedule.timeslotItems[0]._endTime.toString()).toBe('09:30');
+		expect(timeslotSchedule.timeslotItems[1]._startTime.toString()).toBe('09:30');
+		expect(timeslotSchedule.timeslotItems[1]._endTime.toString()).toBe('10:30');
+		expect(timeslotSchedule.timeslotItems[2]._startTime.toString()).toBe('11:30');
+		expect(timeslotSchedule.timeslotItems[2]._endTime.toString()).toBe('12:30');
+	});
+
+	it('should delete old schedule form', async () => {
+		const entity = ServiceProvider.create('Jhon', 2);
+		entity.id = 1;
+		entity.service = new Service();
+		entity.service.id = 2;
+		entity.scheduleFormId = 5;
+		const saveEntity = jest.fn<Promise<typeof entity>, any>((e) => Promise.resolve(e));
+		const scheduleFormsRequest: ScheduleFormRequest = {
+			slotsDurationInMin: 60,
+			weekdaySchedules: [
+				{
+					weekday: Weekday.Monday,
+					hasScheduleForm: true,
+					openTime: '08:30',
+					closeTime: '12:30',
+					breaks: [],
+				} as WeekDayScheduleContract,
+			],
+		} as ScheduleFormRequest;
+
+		ScheduleFormsRepositoryMock.saveScheduleForm.mockImplementation((e) => Promise.resolve(e));
+		ScheduleFormsRepositoryMock.deleteScheduleForm.mockImplementation(() => Promise.resolve());
+
+		const scheduleFormsService = Container.get(ScheduleFormsService);
+		await scheduleFormsService.updateScheduleFormInEntity(scheduleFormsRequest, entity, saveEntity);
+
+		expect(ScheduleFormsRepositoryMock.saveScheduleForm).toBeCalledTimes(1);
+		expect(saveEntity).toBeCalledTimes(1);
+		expect(ScheduleFormsRepositoryMock.deleteScheduleForm).toBeCalledWith(5);
+	});
+
+	it('should delete old timeslot schedule', async () => {
+		const entity = ServiceProvider.create('Jhon', 2);
+		entity.id = 1;
+		entity.service = new Service();
+		entity.service.id = 2;
+		entity.timeslotsScheduleId = 6;
+		const saveEntity = jest.fn<Promise<typeof entity>, any>((e) => Promise.resolve(e));
+		const scheduleFormsRequest: ScheduleFormRequest = {
+			slotsDurationInMin: 60,
+			weekdaySchedules: [
+				{
+					weekday: Weekday.Monday,
+					hasScheduleForm: true,
+					openTime: '08:30',
+					closeTime: '12:30',
+					breaks: [],
+				} as WeekDayScheduleContract,
+			],
+		} as ScheduleFormRequest;
+
+		ScheduleFormsRepositoryMock.saveScheduleForm.mockImplementation((e) => Promise.resolve(e));
+		TimeslotsScheduleRepositoryMock.deleteTimeslotsSchedule.mockImplementation(() => Promise.resolve());
+
+		const scheduleFormsService = Container.get(ScheduleFormsService);
+		await scheduleFormsService.updateScheduleFormInEntity(scheduleFormsRequest, entity, saveEntity);
+
+		expect(ScheduleFormsRepositoryMock.saveScheduleForm).toBeCalledTimes(1);
+		expect(saveEntity).toBeCalledTimes(1);
+		expect(TimeslotsScheduleRepositoryMock.deleteTimeslotsSchedule).toBeCalledWith(6);
 	});
 });
 
-class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
-	public static sp: ServiceProvider;
-	public static getServiceProviderMock: ServiceProvider;
-	public static save = jest.fn();
+class ScheduleFormsRepositoryMock extends ScheduleFormsRepository {
+	public static saveScheduleForm = jest.fn();
+	public static deleteScheduleForm = jest.fn();
 
-	public async getServiceProvider(...params): Promise<ServiceProvider> {
-		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
+	public async saveScheduleForm(...params): Promise<any> {
+		return await ScheduleFormsRepositoryMock.saveScheduleForm(...params);
 	}
 
-	public async save(sp: ServiceProvider): Promise<ServiceProvider> {
-		return await ServiceProvidersRepositoryMock.save(sp);
+	public async deleteScheduleForm(...params): Promise<any> {
+		return await ScheduleFormsRepositoryMock.deleteScheduleForm(...params);
 	}
 }
 
 class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
-	public static getTimeslotsScheduleByIdMock = jest.fn();
-	public static createTimeslotsScheduleMock: TimeslotsSchedule;
+	public static deleteTimeslotsSchedule = jest.fn();
 
-	public async getTimeslotsScheduleById(request: TimeslotItemsSearchRequest): Promise<TimeslotsSchedule> {
-		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock({ id: request.id });
+	public async deleteTimeslotsSchedule(...params): Promise<any> {
+		return await TimeslotsScheduleRepositoryMock.deleteTimeslotsSchedule(...params);
 	}
+}
 
-	public async createTimeslotsSchedule(data: TimeslotsSchedule): Promise<TimeslotsSchedule> {
-		return Promise.resolve(TimeslotsScheduleRepositoryMock.createTimeslotsScheduleMock);
+class TransactionManagerMock extends TransactionManager {
+	public static runInTransaction = jest.fn();
+
+	public async runInTransaction(...params): Promise<any> {
+		await TransactionManagerMock.runInTransaction(...params);
 	}
 }

@@ -1,8 +1,9 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IScheduleForm, IService } from '../interfaces';
+import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
 import { Organisation } from './organisation';
+import { ScheduleForm } from './scheduleForm';
 
 @Entity()
 @Index(['_organisationId', '_name'], { unique: true })
@@ -56,15 +57,15 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._name;
 	}
 
-	@OneToOne('ScheduleForm', { nullable: true })
+	@OneToOne('ScheduleForm', { nullable: true, cascade: true })
 	@JoinColumn({ name: '_scheduleFormId' })
-	public _scheduleForm: IScheduleForm;
+	public _scheduleForm: ScheduleForm;
 
-	public set scheduleForm(schedule: IScheduleForm) {
+	public set scheduleForm(schedule: ScheduleForm) {
 		this._scheduleForm = schedule;
 	}
 
-	public get scheduleForm(): IScheduleForm {
+	public get scheduleForm(): ScheduleForm {
 		return this._scheduleForm;
 	}
 

@@ -4,7 +4,6 @@ import { ScheduleForm, WeekDayBreak, WeekDaySchedule } from '../entities';
 
 describe('Should test timeslots items', () => {
 	const scheduleFormRequestComplex = new ScheduleForm();
-	scheduleFormRequestComplex.name = 'schedule';
 	scheduleFormRequestComplex.slotsDurationInMin = 10;
 	const weekdaySchedule = WeekDaySchedule.create(Weekday.Monday, scheduleFormRequestComplex);
 	weekdaySchedule.hasScheduleForm = true;

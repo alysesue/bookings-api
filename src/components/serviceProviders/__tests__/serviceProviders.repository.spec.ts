@@ -26,6 +26,7 @@ beforeAll(() => {
 	Container.bind(UsersRepository).to(UsersRepositoryMock);
 });
 
+// tslint:disable-next-line: no-big-function
 describe('Service Provider repository', () => {
 	const userMock = User.createAdminUser({
 		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
@@ -86,6 +87,20 @@ describe('Service Provider repository', () => {
 		expect(queryBuilderMock.getMany).toBeCalled();
 		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
 		expect(result).toBeDefined();
+	});
+
+	it('should get SP by schedule form id', async () => {
+		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(null));
+
+		const spRepository = Container.get(ServiceProvidersRepository);
+
+		const result = await spRepository.getByScheduleFormId({ scheduleFormId: 2 });
+		expect(result).toBeNull();
+
+		expect(TransactionManagerMock.createQueryBuilder).toBeCalled();
+		expect(queryBuilderMock.where).toBeCalledWith('(sp._scheduleFormId = :scheduleFormId)', { scheduleFormId: 2 });
+		expect(queryBuilderMock.getOne).toBeCalled();
+		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
 	});
 
 	it('should skip authorisation check', async () => {
