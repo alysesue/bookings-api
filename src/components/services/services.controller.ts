@@ -13,11 +13,11 @@ import {
 	SuccessResponse,
 	Tags,
 } from 'tsoa';
-import { ServiceRequest, ServiceResponse, SetScheduleFormRequest } from './service.apicontract';
+import { ServiceRequest, ServiceResponse } from './service.apicontract';
 import { ServicesService } from './services.service';
 import { Service } from '../../models';
 import { mapToResponse as mapSScheduleFormResponseToResponse } from '../scheduleForms/scheduleForms.mapper';
-import { ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
+import { ScheduleFormRequest, ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
 import {
 	TimeslotItemRequest,
 	TimeslotItemResponse,
@@ -87,21 +87,19 @@ export class ServicesController extends Controller {
 		return ApiDataFactory.create(services.map(ServicesController.mapToServiceResponse));
 	}
 
-	@Deprecated()
 	@Put('{id}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async setServiceScheduleForm(
 		@Path() id: number,
-		@Body() request: SetScheduleFormRequest,
+		@Body() request: ScheduleFormRequest,
 	): Promise<ApiData<ScheduleFormResponse>> {
 		return ApiDataFactory.create(
 			mapSScheduleFormResponseToResponse(await this.servicesService.setServiceScheduleForm(id, request)),
 		);
 	}
 
-	@Deprecated()
 	@Get('{id}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })

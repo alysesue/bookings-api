@@ -1,24 +1,28 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { DeleteResult } from 'typeorm';
-import { ScheduleFormsRepository } from './scheduleForms.repository';
-import { ScheduleForm, ServiceProvider, TimeslotItem, TimeslotsSchedule } from '../../models';
-import { ScheduleFormRequest, ScheduleFormResponse } from './scheduleForms.apicontract';
-import { mapToEntity, mapToResponse } from './scheduleForms.mapper';
+import { ScheduleForm, Service, ServiceProvider, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { ScheduleFormRequest } from './scheduleForms.apicontract';
+import { mapToEntity } from './scheduleForms.mapper';
 import { getErrorResult, isErrorResult } from '../../errors';
-import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ScheduleFormsActionAuthVisitor } from './scheduleForms.auth';
 import { CrudAction } from '../../enums/crudAction';
+import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule } from '../../models/interfaces';
+import { ScheduleFormsRepository } from './scheduleForms.repository';
+import { TransactionManager } from '../../core/transactionManager';
+import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
+import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
+
+const FormIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
 @InRequestScope
 export class ScheduleFormsService {
 	@Inject
 	private scheduleFormsRepository: ScheduleFormsRepository;
-
 	@Inject
-	private serviceProvidersRepository: ServiceProvidersRepository;
-
+	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
+	@Inject
+	private transactionManager: TransactionManager;
 	@Inject
 	private userContext: UserContext;
 
@@ -31,52 +35,51 @@ export class ScheduleFormsService {
 		}
 	}
 
-	public async createScheduleForm(template: ScheduleFormRequest): Promise<ScheduleFormResponse> {
-		const newSchedule = this.mapToEntityAndValidate(template, new ScheduleForm());
-		const serviceProvider = await this.serviceProvidersRepository.getServiceProvider({
-			id: template.serviceProviderId,
-		});
-		await this.verifyActionPermission(serviceProvider, CrudAction.Create);
-		await this.generateTimeslots(serviceProvider, newSchedule);
-		const scheduleForm = await this.scheduleFormsRepository.saveScheduleForm(newSchedule);
-		serviceProvider.scheduleForm = scheduleForm;
-		await this.serviceProvidersRepository.save(serviceProvider);
-		return mapToResponse(scheduleForm);
-	}
-
-	private async generateTimeslots(serviceProvider: ServiceProvider, scheduleForm: ScheduleForm) {
-		serviceProvider.timeslotsSchedule = TimeslotsSchedule.create(undefined, serviceProvider);
-		serviceProvider.timeslotsSchedule.timeslotItems = TimeslotItem.generateTimeslotsItems(
-			scheduleForm,
-			serviceProvider.timeslotsScheduleId,
+	public async updateScheduleFormInEntity<T extends IEntityWithScheduleForm & IEntityWithTimeslotsSchedule>(
+		template: ScheduleFormRequest,
+		entity: T,
+		saveEntity: (entity: T) => Promise<T>,
+	): Promise<T> {
+		return this.transactionManager.runInTransaction(FormIsolationLevel, () =>
+			this.updateScheduleFormTransactional(template, entity, saveEntity),
 		);
 	}
 
-	public async updateScheduleForm(id: number, template: ScheduleFormRequest): Promise<ScheduleFormResponse> {
-		const existingSchedule = await this.scheduleFormsRepository.getScheduleFormById(id);
-		if (!existingSchedule) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('ScheduleFormsRepository form not found.');
+	private async updateScheduleFormTransactional<T extends IEntityWithScheduleForm & IEntityWithTimeslotsSchedule>(
+		template: ScheduleFormRequest,
+		entity: T,
+		saveEntity: (entity: T) => Promise<T>,
+	): Promise<T> {
+		if (entity instanceof ServiceProvider) {
+			await this.verifyActionPermission(entity, CrudAction.Update);
 		}
-		let schedule = this.mapToEntityAndValidate(template, existingSchedule);
-		const serviceProvider = await this.serviceProvidersRepository.getServiceProvider({
-			id: template.serviceProviderId,
-		});
-		await this.verifyActionPermission(serviceProvider, CrudAction.Update);
-		schedule = await this.scheduleFormsRepository.saveScheduleForm(schedule);
-		return mapToResponse(schedule);
-	}
+		const oldScheduleFormId = entity.scheduleFormId;
+		const oldTimeslotsScheduleId = entity.timeslotsScheduleId;
 
-	public async getScheduleForms(): Promise<ScheduleFormResponse[]> {
-		const schedules = await this.scheduleFormsRepository.getScheduleForms();
-		return schedules.map((s) => mapToResponse(s));
-	}
+		const scheduleForm = new ScheduleForm();
+		this.mapToEntityAndValidate(template, scheduleForm);
+		entity.scheduleForm = scheduleForm;
 
-	public async getScheduleForm(id: number): Promise<ScheduleForm> {
-		return await this.scheduleFormsRepository.getScheduleFormById(id);
-	}
+		const timeslotsSchedule = TimeslotsSchedule.create(
+			entity instanceof Service ? entity : undefined,
+			entity instanceof ServiceProvider ? entity : undefined,
+		);
 
-	public async deleteScheduleForm(id: number): Promise<DeleteResult> {
-		return await this.scheduleFormsRepository.deleteScheduleForm(id);
+		timeslotsSchedule.timeslotItems = TimeslotItem.generateTimeslotsItems(scheduleForm, entity.timeslotsScheduleId);
+		entity.timeslotsSchedule = timeslotsSchedule;
+
+		// saveScheduleForm also saves breaks
+		await this.scheduleFormsRepository.saveScheduleForm(scheduleForm);
+		const saved = await saveEntity(entity);
+
+		if (oldScheduleFormId) {
+			await this.scheduleFormsRepository.deleteScheduleForm(oldScheduleFormId);
+		}
+		if (oldTimeslotsScheduleId) {
+			await this.timeslotsScheduleRepository.deleteTimeslotsSchedule(oldTimeslotsScheduleId);
+		}
+
+		return saved;
 	}
 
 	private mapToEntityAndValidate(template: ScheduleFormRequest, schedule: ScheduleForm) {

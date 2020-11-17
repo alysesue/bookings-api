@@ -28,36 +28,11 @@ export class ServiceProviderResponseModel {
 	public email?: string;
 	public phone?: string;
 	public agencyUserId?: string;
-
-	// tslint:disable-next-line
-	constructor(
-		id: number,
-		name: string,
-		serviceId: number,
-		timeslotsSchedule?: TimeslotsScheduleResponse,
-		scheduleForm?: ScheduleFormResponse,
-		email?: string,
-		phone?: string,
-	) {
-		this.id = id;
-		this.name = name;
-		this.serviceId = serviceId;
-		this.timeslotsSchedule = timeslotsSchedule;
-		this.scheduleForm = scheduleForm;
-		this.email = email;
-		this.phone = phone;
-	}
+	public scheduleFormConfirmed: boolean;
 }
 
 export class ServiceProviderListRequest {
 	public serviceProviders: ServiceProviderModel[];
-}
-
-export class SetProviderScheduleFormRequest {
-	/**
-	 * @isInt
-	 */
-	public scheduleFormId?: number;
 }
 
 export class ServiceProviderSummaryModel {

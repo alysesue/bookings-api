@@ -1,15 +1,17 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { RepositoryBase } from '../../core/repository';
 import { TimeslotsSchedule } from '../../models';
-import { FindManyOptions, In } from 'typeorm';
+import { DeleteResult, FindManyOptions, In } from 'typeorm';
 import { IEntityWithTimeslotsSchedule } from '../../models/interfaces';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { TimeslotItemsQueryAuthVisitor } from '../timeslotItems/timeslotItems.auth';
-import { TimeslotItemsSearchRequest } from '../timeslotItems/timeslotItems.repository';
+import { TimeslotItemsRepository, TimeslotItemsSearchRequest } from '../timeslotItems/timeslotItems.repository';
 
 @InRequestScope
 export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedule> {
+	@Inject
+	private timeslotItemsRepository: TimeslotItemsRepository;
 	@Inject
 	private _userContext: UserContext;
 
@@ -70,5 +72,10 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 			entry.timeslotsSchedule = schedulesById.get(entry.timeslotsScheduleId);
 		}
 		return entries;
+	}
+
+	public async deleteTimeslotsSchedule(scheduleId: number): Promise<DeleteResult> {
+		await this.timeslotItemsRepository.deleteTimeslotsForSchedule(scheduleId);
+		return (await this.getRepository()).delete(scheduleId);
 	}
 }

@@ -77,28 +77,34 @@ export class ScheduleFormsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 }
 export class ScheduleFormsQueryAuthVisitor extends QueryAuthGroupVisitor {
 	private readonly _serviceProviderAlias: string;
-	private readonly _serviceAlias: string;
+	private readonly _spServiceAlias: string;
 
-	constructor(serviceAlias: string, serviceProviderAlias: string) {
+	constructor(spServiceAlias: string, serviceProviderAlias: string) {
 		super();
-		this._serviceAlias = serviceAlias;
+		this._spServiceAlias = spServiceAlias;
 		this._serviceProviderAlias = serviceProviderAlias;
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
-		const orgIds = _userGroup.authorisedOrganisations.map((org) => org.id);
-		this.addAuthCondition(`${this._serviceAlias}._organisationId IN (:...orgIds)`, { orgIds });
+		const authorisedOrgIds = _userGroup.authorisedOrganisations.map((org) => org.id);
+		this.addAuthCondition(`${this._spServiceAlias}._organisationId IN (:...authorisedOrgIds)`, {
+			authorisedOrgIds,
+		});
 	}
 
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
-		const serviceIds = _userGroup.authorisedServices.map((s) => s.id);
-		this.addAuthCondition(`${this._serviceAlias}._id IN (:...serviceIds)`, { serviceIds });
+		const authorisedServiceIds = _userGroup.authorisedServices.map((s) => s.id);
+		this.addAuthCondition(`${this._spServiceAlias}._id IN (:...authorisedServiceIds)`, { authorisedServiceIds });
 	}
 
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
-		const serviceProviderId = _userGroup.authorisedServiceProvider.id;
-		this.addAuthCondition(`${this._serviceProviderAlias}._id = :serviceProviderId`, { serviceProviderId });
+		const authorisedSpId = _userGroup.authorisedServiceProvider.id;
+		const authorisedSpServiceId = _userGroup.authorisedServiceProvider.serviceId;
+		this.addAuthCondition(
+			`${this._serviceProviderAlias}._id = :authorisedSpId OR ${this._spServiceAlias}._id = :authorisedSpServiceId`,
+			{ authorisedSpId, authorisedSpServiceId },
+		);
 	}
 }

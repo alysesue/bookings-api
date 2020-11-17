@@ -22,12 +22,18 @@ describe('ScheduleForm repository', () => {
 	const organisation = new Organisation();
 	organisation.id = 1;
 	const queryBuilderMock: {
+		delete: jest.Mock;
+		from: jest.Mock;
 		where: jest.Mock;
+		execute: jest.Mock;
 		leftJoin: jest.Mock;
 		leftJoinAndSelect: jest.Mock;
 		getMany: jest.Mock<Promise<ScheduleForm[]>, any>;
 		getOne: jest.Mock<Promise<ScheduleForm>, any>;
 	} = {
+		delete: jest.fn(),
+		from: jest.fn(),
+		execute: jest.fn(),
 		where: jest.fn(),
 		leftJoin: jest.fn(),
 		leftJoinAndSelect: jest.fn(),
@@ -58,6 +64,8 @@ describe('ScheduleForm repository', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
 
+		queryBuilderMock.delete.mockImplementation(() => queryBuilderMock);
+		queryBuilderMock.from.mockImplementation(() => queryBuilderMock);
 		queryBuilderMock.where.mockImplementation(() => queryBuilderMock);
 		queryBuilderMock.leftJoin.mockImplementation(() => queryBuilderMock);
 		queryBuilderMock.leftJoinAndSelect.mockImplementation(() => queryBuilderMock);
@@ -106,6 +114,8 @@ describe('ScheduleForm repository', () => {
 
 	it('should add schedules form', async () => {
 		TransactionManagerMock.save.mockImplementation(() => scheduleForm);
+		WeekDayBreakRepositoryMock.save.mockImplementation(() => Promise.resolve([]));
+
 		const repository = Container.get(ScheduleFormsRepository);
 		const result = await repository.saveScheduleForm(scheduleForm);
 		expect(result).not.toBe(undefined);
@@ -115,23 +125,39 @@ describe('ScheduleForm repository', () => {
 
 	it('should remove schedules form', async () => {
 		TransactionManagerMock.delete.mockImplementation(() => 1);
+		WeekDayBreakRepositoryMock.deleteBreaksForSchedule.mockImplementation(() => Promise.resolve());
+		queryBuilderMock.execute.mockImplementation(() => Promise.resolve());
+
 		const repository = Container.get(ScheduleFormsRepository);
 		const result = await repository.deleteScheduleForm(34848);
 		expect(result).not.toBe(undefined);
 
+		expect(WeekDayBreakRepositoryMock.deleteBreaksForSchedule).toBeCalled();
+		expect(queryBuilderMock.execute).toBeCalled();
 		expect(TransactionManagerMock.delete).toBeCalledTimes(1);
 	});
 });
 
 class WeekDayBreakRepositoryMock extends WeekDayBreakRepository {
-	public getBreaksForSchedules = jest.fn(() => Promise.resolve([]));
-	public deleteBreaksForSchedule = jest.fn((id: number) => Promise.resolve({}) as any);
-	public save = jest.fn(() => Promise.resolve([]));
+	public static getBreaksForSchedules = jest.fn();
+	public static deleteBreaksForSchedule = jest.fn();
+	public static save = jest.fn();
+
+	public async getBreaksForSchedules(...params): Promise<any> {
+		return await WeekDayBreakRepositoryMock.getBreaksForSchedules(...params);
+	}
+
+	public async deleteBreaksForSchedule(...params): Promise<any> {
+		return await WeekDayBreakRepositoryMock.deleteBreaksForSchedule(...params);
+	}
+
+	public async save(...params): Promise<any> {
+		return await WeekDayBreakRepositoryMock.save(...params);
+	}
 }
 
 const scheduleFormMock = new ScheduleForm();
 scheduleFormMock.id = 1;
-scheduleFormMock.name = 'test';
 scheduleFormMock.initWeekdaySchedules();
 
 class TransactionManagerMock extends TransactionManager {

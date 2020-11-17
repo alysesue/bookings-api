@@ -7,6 +7,7 @@ import { ScheduleForm } from './scheduleForm';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 
 const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
+const DEFAULT_SCHEFULE_FORM_CONFIRMED = false;
 
 @Entity()
 export class ServiceProvider implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
@@ -78,6 +79,17 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._name = value;
 	}
 
+	@Column({ type: 'boolean', nullable: false, default: DEFAULT_SCHEFULE_FORM_CONFIRMED })
+	private _scheduleFormConfirmed: boolean;
+
+	public get scheduleFormConfirmed(): boolean {
+		return this._scheduleFormConfirmed;
+	}
+
+	public set scheduleFormConfirmed(value: boolean) {
+		this._scheduleFormConfirmed = value;
+	}
+
 	public static create(name: string, serviceId: number, email?: string, phone?: string) {
 		const instance = new ServiceProvider();
 		instance._serviceId = serviceId;
@@ -86,6 +98,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		instance._email = email;
 		instance._phone = phone;
 		instance._autoAcceptBookings = DEFAULT_AUTO_ACCEPT_BOOKINGS;
+		instance._scheduleFormConfirmed = DEFAULT_SCHEFULE_FORM_CONFIRMED;
 		return instance;
 	}
 
@@ -111,7 +124,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._phone = value;
 	}
 
-	@ManyToOne('ScheduleForm', { nullable: true })
+	@OneToOne('ScheduleForm', { nullable: true, cascade: true })
 	@JoinColumn({ name: '_scheduleFormId' })
 	public _scheduleForm: ScheduleForm;
 

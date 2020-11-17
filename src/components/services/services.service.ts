@@ -2,7 +2,7 @@ import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Organisation, ScheduleForm, Service, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { ServicesRepository } from './services.repository';
-import { ServiceRequest, SetScheduleFormRequest } from './service.apicontract';
+import { ServiceRequest } from './service.apicontract';
 import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
 import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
@@ -11,6 +11,7 @@ import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServicesActionAuthVisitor } from './services.auth';
 import { CrudAction } from '../../enums/crudAction';
 import { OrganisationAdminAuthGroup } from '../../infrastructure/auth/authGroup';
+import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract';
 
 @InRequestScope
 export class ServicesService {
@@ -46,7 +47,7 @@ export class ServicesService {
 
 	public async updateService(id: number, request: ServiceRequest): Promise<Service> {
 		try {
-			const service = await this.servicesRepository.getService(id);
+			const service = await this.servicesRepository.getService({ id });
 			if (!service) throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 			service.name = request.name;
 			await this.verifyActionPermission(service, CrudAction.Update);
@@ -58,49 +59,45 @@ export class ServicesService {
 		}
 	}
 
-	public async setServiceScheduleForm(id: number, model: SetScheduleFormRequest): Promise<ScheduleForm> {
-		const service = await this.servicesRepository.getService(id);
-		if (!service) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
-		}
+	public async setServiceScheduleForm(id: number, model: ScheduleFormRequest): Promise<ScheduleForm> {
+		const service = await this.getService(id);
 
-		let scheduleForm: ScheduleForm = null;
-		if (model.scheduleFormId) {
-			scheduleForm = await this.scheduleFormsService.getScheduleForm(model.scheduleFormId);
-			if (!scheduleForm) {
-				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('ScheduleForm not found');
-			}
-		}
+		const saveEntity = async (e: Service) => {
+			return await this.servicesRepository.save(e);
+		};
 
-		service.scheduleForm = scheduleForm;
-		await this.servicesRepository.save(service);
-		return scheduleForm;
+		await this.verifyActionPermission(service, CrudAction.Update);
+		await this.scheduleFormsService.updateScheduleFormInEntity(model, service, saveEntity);
+
+		return service.scheduleForm;
 	}
 
 	public async getServiceScheduleForm(id: number): Promise<ScheduleForm> {
-		const service = await this.servicesRepository.getService(id);
+		const service = await this.servicesRepository.getService({
+			id,
+			includeScheduleForm: true,
+		});
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
 
-		let scheduleForm: ScheduleForm = null;
-		if (service.scheduleFormId) {
-			scheduleForm = await this.scheduleFormsService.getScheduleForm(service.scheduleFormId);
-		}
-
-		if (!scheduleForm) {
+		if (!service.scheduleForm) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service scheduleForm not found');
 		}
 
-		return scheduleForm;
+		return service.scheduleForm;
 	}
 
 	public async getServices(): Promise<Service[]> {
 		return await this.servicesRepository.getAll();
 	}
 
-	public async getService(id: number): Promise<Service> {
-		const service = await this.servicesRepository.getService(id);
+	public async getService(
+		id: number,
+		includeScheduleForm = false,
+		includeTimeslotsSchedule = false,
+	): Promise<Service> {
+		const service = await this.servicesRepository.getService({ id, includeScheduleForm, includeTimeslotsSchedule });
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
@@ -108,16 +105,16 @@ export class ServicesService {
 	}
 
 	public async getServiceTimeslotsSchedule(id: number): Promise<TimeslotsSchedule> {
-		const service = await this.getService(id);
-		return await this.timeslotsScheduleService.getTimeslotsScheduleById(service.timeslotsScheduleId);
+		const service = await this.getService(id, false, true);
+		return service.timeslotsSchedule;
 	}
 
 	public async addTimeslotItem(serviceId: number, request: TimeslotItemRequest): Promise<TimeslotItem> {
-		let timeslotsSchedule = await this.getServiceTimeslotsSchedule(serviceId);
-		if (!timeslotsSchedule) {
-			timeslotsSchedule = await this.createTimeslotsSchedule(serviceId);
+		const service = await this.getService(serviceId, false, true);
+		if (!service.timeslotsSchedule) {
+			await this.createTimeslotsSchedule(service);
 		}
-		return this.timeslotItemsService.createTimeslotItem(timeslotsSchedule, request);
+		return this.timeslotItemsService.createTimeslotItem(service.timeslotsSchedule, request);
 	}
 
 	public async deleteTimeslotsScheduleItem(timeslotId: number) {
@@ -137,11 +134,7 @@ export class ServicesService {
 		return this.timeslotItemsService.updateTimeslotItem(timeslotsSchedule, timeslotId, request);
 	}
 
-	private async createTimeslotsSchedule(serviceId: number): Promise<TimeslotsSchedule> {
-		const service = await this.servicesRepository.getService(serviceId);
-		if (!service) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
-		}
+	private async createTimeslotsSchedule(service: Service): Promise<TimeslotsSchedule> {
 		service.timeslotsSchedule = TimeslotsSchedule.create(service, undefined);
 		await this.servicesRepository.save(service);
 		return service.timeslotsSchedule;

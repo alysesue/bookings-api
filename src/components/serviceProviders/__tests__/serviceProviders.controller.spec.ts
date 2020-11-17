@@ -2,8 +2,9 @@ import { Container } from 'typescript-ioc';
 import { ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
 import { ServiceProvidersController } from '../serviceProviders.controller';
 import { ServiceProvidersService } from '../serviceProviders.service';
-import { ServiceProviderModel, SetProviderScheduleFormRequest } from '../serviceProviders.apicontract';
+import { ServiceProviderModel } from '../serviceProviders.apicontract';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
+import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -117,8 +118,7 @@ describe('ServiceProviders.Controller', () => {
 
 	it('should set provider scheduleForm', async () => {
 		ServiceProvidersMock.setProviderScheduleForm.mockReturnValue(Promise.resolve(new ScheduleForm()));
-		const providerScheduleFormRequest = new SetProviderScheduleFormRequest();
-		providerScheduleFormRequest.scheduleFormId = 2;
+		const providerScheduleFormRequest = new ScheduleFormRequest();
 		await Container.get(ServiceProvidersController).setServiceScheduleForm(1, providerScheduleFormRequest);
 		expect(ServiceProvidersMock.setProviderScheduleForm).toBeCalled();
 	});

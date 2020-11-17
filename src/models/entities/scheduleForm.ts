@@ -14,9 +14,6 @@ export class ScheduleForm implements IScheduleForm {
 	@PrimaryGeneratedColumn()
 	public id: number;
 
-	@Column({ type: 'varchar', length: 100 })
-	public name: string;
-
 	@Column({ type: 'int' })
 	public slotsDurationInMin: number;
 
