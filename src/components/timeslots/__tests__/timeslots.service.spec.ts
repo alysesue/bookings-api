@@ -257,6 +257,11 @@ describe('Timeslots Service', () => {
 
 	it('should map accepted out-of-slot booking to timeslot response', async () => {
 		const service = Container.get(TimeslotsService);
+		const ServiceProviderMock3 = ServiceProvider.create('New Sp', ServiceMock.id);
+		ServiceProviderMock3.id = 105;
+		ServiceProvidersRepositoryMock.getServiceProviders.mockImplementation(() =>
+			Promise.resolve([ServiceProviderMock, ServiceProviderMock2, ServiceProviderMock3]),
+		);
 
 		const originalSetBookedServiceProviders = AvailableTimeslotProviders.prototype.setBookedServiceProviders;
 		const setBookedServiceProviders = (AvailableTimeslotProviders.prototype.setBookedServiceProviders = jest.fn(
@@ -264,16 +269,27 @@ describe('Timeslots Service', () => {
 		));
 
 		TimeslotsScheduleMock.generateValidTimeslots.mockImplementation(() => []);
-		ProviderScheduleMock.generateValidTimeslots.mockImplementation(() => []);
 		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([]));
 
-		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([getOutOfSlotBooking(ServiceProviderMock)]));
 
-		const timeslots = await service.getAggregatedTimeslots(new Date(), new Date(), 1, true);
+		const bookingStartTime = DateHelper.setHours(date, 17, 0);
+		const bookingEndDate = DateHelper.setHours(date, 18, 0);
+		const bookingOos = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(bookingStartTime)
+			.withEndDateTime(bookingEndDate)
+			.withServiceProviderId(ServiceProviderMock3.id)
+			.withAutoAccept(true)
+			.withRefId('ref')
+			.build();
+		bookingOos.serviceProvider = ServiceProviderMock3;
+		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([bookingOos]));
 
+		const timeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
 		expect(timeslots.length).toBe(1);
 		const spTimeslot = Array.from(timeslots[0].getTimeslotServiceProviders());
-		expect(spTimeslot[0].acceptedBookings.length).toBe(1);
+		expect(spTimeslot[1].acceptedBookings.length).toBe(1);
+		expect(spTimeslot[1].serviceProvider).toBe(ServiceProviderMock3);
 		expect(setBookedServiceProviders).toHaveBeenCalled();
 	});
 

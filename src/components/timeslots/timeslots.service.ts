@@ -231,7 +231,6 @@ export class TimeslotsService {
 			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
 			if (acceptedBookingsForTimeslot) {
 				element.setBookedServiceProviders(acceptedBookingsForTimeslot);
-
 			}
 		}
 	}
@@ -264,9 +263,9 @@ export class TimeslotsService {
 		for (const provider of serviceProviders) {
 			const timeslotServiceProviders = provider.timeslotsSchedule
 				? provider.timeslotsSchedule.generateValidTimeslots({
-					startDatetime: minStartTime,
-					endDatetime: maxEndTime,
-				})
+						startDatetime: minStartTime,
+						endDatetime: maxEndTime,
+				  })
 				: validServiceTimeslots;
 
 			aggregator.aggregate(provider, timeslotServiceProviders);
