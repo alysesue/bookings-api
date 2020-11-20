@@ -60,20 +60,22 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		options: {
 			ids?: number[];
 			serviceId?: number;
+			organisationId?: number;
 			scheduleFormId?: number;
 			includeScheduleForm?: boolean;
 			includeTimeslotsSchedule?: boolean;
 			skipAuthorisation?: boolean;
 		} = {},
 	): Promise<ServiceProvider[]> {
-		const { serviceId, ids, scheduleFormId } = options;
+		const { serviceId, ids, scheduleFormId, organisationId } = options;
 		const serviceCondition = serviceId ? 'sp."_serviceId" = :serviceId ' : '';
 		const idsCondition = ids && ids.length > 0 ? 'sp._id IN (:...ids)' : '';
 		const scheduleFormIdCondition = scheduleFormId ? 'sp._scheduleFormId = :scheduleFormId' : '';
+		const organisationIdCondition = organisationId ? 'service._organisationId = :organisationId' : '';
 
 		const query = await this.createSelectQuery(
-			[serviceCondition, idsCondition, scheduleFormIdCondition],
-			{ serviceId, ids, scheduleFormId },
+			[serviceCondition, idsCondition, scheduleFormIdCondition, organisationIdCondition],
+			{ serviceId, ids, scheduleFormId, organisationId },
 			options,
 		);
 		const entries = await query.getMany();
