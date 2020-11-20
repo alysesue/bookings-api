@@ -31,12 +31,15 @@ export class TimeslotsService {
 
 	private static getAggregatedTimeslotsFromBookings(bookings: Booking[]) {
 		const aggregator = new TimeslotAggregator<Booking>();
+
 		for (const booking of bookings) {
 			const timeslotForBooking = new TimeslotWithCapacity(booking.startDateTime, booking.endDateTime);
 			aggregator.aggregate(booking, [timeslotForBooking]);
 		}
+
 		const entries = aggregator.getEntries();
 		aggregator.clear();
+
 		return entries;
 	}
 
@@ -50,8 +53,20 @@ export class TimeslotsService {
 		mappedEntries: AvailableTimeslotProviders[],
 		timeslotEntriesFromBookings: AggregatedEntry<Booking>[],
 	): void {
+		const entriesLookup = mappedEntries.reduce(
+			(set, entry) => set.add(TimeslotsService.timeslotKeySelector(entry.startTime, entry.endTime)),
+			new Set<string>(),
+		);
+
 		timeslotEntriesFromBookings.forEach((entry) => {
-			mappedEntries.push(AvailableTimeslotProviders.createFromBooking(entry));
+			const entryKey = TimeslotsService.timeslotKeySelector(
+				entry.getTimeslot().getStartTime(),
+				entry.getTimeslot().getEndTime(),
+			);
+
+			if (!entriesLookup.has(entryKey)) {
+				mappedEntries.push(AvailableTimeslotProviders.createFromBooking(entry));
+			}
 		});
 	}
 
@@ -216,6 +231,7 @@ export class TimeslotsService {
 			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
 			if (acceptedBookingsForTimeslot) {
 				element.setBookedServiceProviders(acceptedBookingsForTimeslot);
+
 			}
 		}
 	}

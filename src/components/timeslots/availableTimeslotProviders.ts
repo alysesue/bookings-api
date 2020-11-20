@@ -107,6 +107,10 @@ export class AvailableTimeslotProviders {
 			const spTimeslotItem = this._timeslotServiceProviders.get(spId);
 			if (spTimeslotItem) {
 				spTimeslotItem.acceptedBookings = spBookings;
+			} else {
+				const newTimeslotItem = new TimeslotServiceProvider(spBookings[0].serviceProvider, 0);
+				newTimeslotItem.acceptedBookings = spBookings;
+				this._timeslotServiceProviders.set(spId, newTimeslotItem);
 			}
 		}
 	}
