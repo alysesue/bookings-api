@@ -16,6 +16,33 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
+const BookingsRepositoryMock = {
+	search: jest.fn(),
+};
+
+const ServicesRepositoryMock = {
+	getServiceWithTimeslotsSchedule: jest.fn(),
+};
+
+const ServiceProvidersRepositoryMock = {
+	getServiceProviders: jest.fn(),
+};
+
+const TimeslotsScheduleMock = {
+	_id: 1,
+	generateValidTimeslots: jest.fn(),
+};
+
+const ProviderScheduleMock = {
+	_id: 2,
+	generateValidTimeslots: jest.fn(),
+};
+
+const UnavailabilitiesServiceMock = {
+	search: jest.fn(),
+};
+
+
 // tslint:disable-next-line:no-big-function
 describe('Timeslots Service', () => {
 	const date = new Date(2020, 4, 27);
@@ -25,15 +52,6 @@ describe('Timeslots Service', () => {
 	const timeslot3 = new TimeslotWithCapacity(DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
 	const timeslot4 = new TimeslotWithCapacity(DateHelper.setHours(date, 18, 30), DateHelper.setHours(date, 19, 30));
 
-	const TimeslotsScheduleMock = {
-		_id: 1,
-		generateValidTimeslots: jest.fn(),
-	};
-
-	const ProviderScheduleMock = {
-		_id: 2,
-		generateValidTimeslots: jest.fn(),
-	};
 
 	const ServiceMock = new Service();
 	ServiceMock.id = 1;
@@ -67,17 +85,6 @@ describe('Timeslots Service', () => {
 
 	pendingBookingMock.status = BookingStatus.PendingApproval;
 
-	const BookingsRepositoryMock = {
-		search: jest.fn(),
-	};
-
-	const ServicesRepositoryMock = {
-		getServiceWithTimeslotsSchedule: jest.fn(),
-	};
-
-	const ServiceProvidersRepositoryMock = {
-		getServiceProviders: jest.fn(),
-	};
 
 	const unavailability1 = new Unavailability();
 	unavailability1.allServiceProviders = true;
@@ -90,9 +97,6 @@ describe('Timeslots Service', () => {
 	unavailability2.start = DateHelper.setHours(date, 19, 0);
 	unavailability2.end = DateHelper.setHours(date, 20, 0);
 
-	const UnavailabilitiesServiceMock = {
-		search: jest.fn(),
-	};
 
 	beforeAll(() => {
 		Container.bind(BookingsRepository).factory(() => {
@@ -110,8 +114,6 @@ describe('Timeslots Service', () => {
 	});
 
 	beforeEach(() => {
-		jest.resetAllMocks();
-		jest.clearAllMocks();
 
 		BookingsRepositoryMock.search.mockImplementation(() => {
 			return Promise.resolve([pendingBookingMock, BookingMock]);
@@ -137,6 +139,13 @@ describe('Timeslots Service', () => {
 		);
 	});
 
+	afterEach(() => {
+		jest.resetAllMocks();
+		jest.clearAllMocks();
+
+	});
+
+
 	it('should aggregate results', async () => {
 		const service = Container.get(TimeslotsService);
 		const result = await service.getAggregatedTimeslots(date, endDate, 1);
@@ -153,6 +162,20 @@ describe('Timeslots Service', () => {
 
 		expect(ServicesRepositoryMock.getServiceWithTimeslotsSchedule).toBeCalled();
 		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
+	});
+
+	it('should test when there is a pending booking', async () => {
+		const service = Container.get(TimeslotsService);
+
+		const startDateTime = DateHelper.setHours(date, 17, 0);
+		const endDateTime = DateHelper.setHours(date, 18, 0);
+
+		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, true);
+		expect(result.length).toBe(1);
+		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100, true);
+		expect(result1).toBe(false);
+		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101, true);
+		expect(result2).toBe(true);
 	});
 
 	it('should return empty aggregation entry', async () => {
@@ -255,38 +278,46 @@ describe('Timeslots Service', () => {
 		expect(timeslotSPs).toHaveLength(1);
 	});
 
-	it('should map accepted out-of-slot booking to timeslot response', async () => {
+
+	it('should get no available service providers because all sp are unavailable', async () => {
 		const service = Container.get(TimeslotsService);
-
-		const originalSetBookedServiceProviders = AvailableTimeslotProviders.prototype.setBookedServiceProviders;
-		const setBookedServiceProviders = (AvailableTimeslotProviders.prototype.setBookedServiceProviders = jest.fn(
-			originalSetBookedServiceProviders,
-		));
-
-		TimeslotsScheduleMock.generateValidTimeslots.mockImplementation(() => []);
-		ProviderScheduleMock.generateValidTimeslots.mockImplementation(() => []);
-		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([]));
-
-		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([getOutOfSlotBooking(ServiceProviderMock)]));
-
-		const timeslots = await service.getAggregatedTimeslots(new Date(), new Date(), 1, true);
-
-		expect(timeslots.length).toBe(1);
-		const spTimeslot = Array.from(timeslots[0].getTimeslotServiceProviders());
-		expect(spTimeslot[0].acceptedBookings.length).toBe(1);
-		expect(setBookedServiceProviders).toHaveBeenCalled();
+		const startDateTime = DateHelper.setHours(date, 22, 0);
+		const endDateTime = DateHelper.setHours(date, 23, 0);
+		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, true);
+		expect(result.length).toBe(0);
+		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100, true);
+		expect(result1).toBe(false);
+		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101, true);
+		expect(result2).toBe(false);
 	});
 
-	it('should test when there is a pending booking', async () => {
+	it('should not return the overlapped timeslot', async () => {
 		const service = Container.get(TimeslotsService);
-		const startDateTime = DateHelper.setHours(date, 17, 0);
-		const endDateTime = DateHelper.setHours(date, 18, 0);
-		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, true);
-		expect(result.length).toBe(2);
-		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100, true);
-		expect(result1).toBe(true);
-		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101, true);
-		expect(result2).toBe(true);
+		ServiceProvidersRepositoryMock.getServiceProviders.mockImplementation(() =>
+			Promise.resolve([ServiceProviderMock, ServiceProviderMock2]),
+		);
+		const timeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
+		expect(timeslots.length).toBe(3);
+
+		const bookingStartTime = DateHelper.setHours(date, 15, 0);
+		const bookingEndDate = DateHelper.setHours(date, 16, 30);
+		const bookingOos = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(bookingStartTime)
+			.withEndDateTime(bookingEndDate)
+			.withServiceProviderId(ServiceProviderMock.id)
+			.withAutoAccept(true)
+			.withRefId('ref')
+			.build();
+		bookingOos.serviceProvider = ServiceProviderMock;
+		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([bookingOos]));
+
+		const newTimeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
+		expect(newTimeslots.length).toBe(2);
+
+		const timeslotSps = Array.from(newTimeslots[0].getTimeslotServiceProviders());
+		expect(timeslotSps[0].serviceProvider).toBe(ServiceProviderMock);
+		expect(timeslotSps[0].acceptedBookings[0]).toBe(bookingOos);
 	});
 
 	it('should get no available service providers because all sp are unavailable', async () => {
@@ -299,6 +330,84 @@ describe('Timeslots Service', () => {
 		expect(result1).toBe(false);
 		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101, true);
 		expect(result2).toBe(false);
+	});
+});
+
+describe('Timeslots Service Out Of Slot', () => {
+	const date = new Date(2020, 4, 27);
+	const endDate = DateHelper.setHours(date, 11, 59);
+
+	const ServiceMock = new Service();
+	ServiceMock.id = 1;
+	ServiceMock.timeslotsSchedule = (TimeslotsScheduleMock as unknown) as TimeslotsSchedule;
+	ServiceMock.timeslotsScheduleId = TimeslotsScheduleMock._id;
+
+	const ServiceProviderMock = ServiceProvider.create('Provider', ServiceMock.id);
+	ServiceProviderMock.id = 100;
+
+	const ServiceProviderMock2 = ServiceProvider.create('Provider with schedule', ServiceMock.id);
+	ServiceProviderMock2.id = 101;
+	ServiceProviderMock2.timeslotsSchedule = (ProviderScheduleMock as unknown) as TimeslotsSchedule;
+	ServiceProviderMock2.timeslotsScheduleId = ProviderScheduleMock._id;
+
+	beforeAll(() => {
+		Container.bind(BookingsRepository).factory(() => {
+			return BookingsRepositoryMock;
+		});
+		Container.bind(ServicesRepository).factory(() => {
+			return ServicesRepositoryMock;
+		});
+		Container.bind(ServiceProvidersRepository).factory(() => {
+			return ServiceProvidersRepositoryMock;
+		});
+		Container.bind(UnavailabilitiesService).factory(() => {
+			return UnavailabilitiesServiceMock;
+		});
+
+	});
+
+	beforeEach(() => {
+		jest.resetAllMocks();
+		jest.clearAllMocks();
+	});
+	it('should map accepted out-of-slot booking to timeslot response', async () => {
+		const service = Container.get(TimeslotsService);
+		const ServiceProviderMock3 = ServiceProvider.create('New Sp', ServiceMock.id);
+		ServiceProviderMock3.id = 105;
+		ServiceProvidersRepositoryMock.getServiceProviders.mockImplementation(() =>
+			Promise.resolve([ServiceProviderMock, ServiceProviderMock2, ServiceProviderMock3]),
+		);
+
+		const originalSetBookedServiceProviders = AvailableTimeslotProviders.prototype.setBookedServiceProviders;
+		const setBookedServiceProviders = (AvailableTimeslotProviders.prototype.setBookedServiceProviders = jest.fn(
+			originalSetBookedServiceProviders,
+		));
+
+		TimeslotsScheduleMock.generateValidTimeslots.mockImplementation(() => []);
+		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([]));
+		UnavailabilitiesServiceMock.search.mockImplementation(() =>
+			Promise.resolve([]),
+		);
+
+		const bookingStartTime = DateHelper.setHours(date, 17, 0);
+		const bookingEndDate = DateHelper.setHours(date, 18, 0);
+		const bookingOos = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(bookingStartTime)
+			.withEndDateTime(bookingEndDate)
+			.withServiceProviderId(ServiceProviderMock3.id)
+			.withAutoAccept(true)
+			.withRefId('ref')
+			.build();
+		bookingOos.serviceProvider = ServiceProviderMock3;
+		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([bookingOos]));
+
+		const timeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
+		expect(timeslots.length).toBe(1);
+		const spTimeslot = Array.from(timeslots[0].getTimeslotServiceProviders());
+		expect(spTimeslot[0].acceptedBookings.length).toBe(1);
+		expect(spTimeslot[0].serviceProvider).toBe(ServiceProviderMock3);
+		expect(setBookedServiceProviders).toHaveBeenCalled();
 	});
 });
 
