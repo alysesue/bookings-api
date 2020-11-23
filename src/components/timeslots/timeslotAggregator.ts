@@ -1,31 +1,36 @@
 import { Timeslot } from '../../models';
 import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
 
+const BigIntShift = BigInt(48);
+export const generateTimeslotKey = (startTime: Date, endTime: Date): TimeslotKey => {
+	// tslint:disable-next-line: no-bitwise
+	let value = BigInt(startTime.getTime()) << BigIntShift;
+	value = value + BigInt(endTime.getTime());
+	return value;
+};
+
+export type TimeslotKey = bigint & BigInt;
+
+export const compareEntryFn = <TGroup>(a: AggregatedEntry<TGroup>, b: AggregatedEntry<TGroup>): number => {
+	const diffStart = a.getTimeslot().getStartTime().getTime() - b.getTimeslot().getStartTime().getTime();
+	if (diffStart !== 0) return diffStart;
+
+	return a.getTimeslot().getEndTime().getTime() - b.getTimeslot().getEndTime().getTime();
+};
+
 export class TimeslotAggregator<TGroup> {
-	private _map: any;
+	private _map: Map<TimeslotKey, AggregatedEntry<TGroup>>;
 
 	constructor() {
-		this._map = {};
-	}
-
-	public clear(): void {
-		delete this._map;
-		this._map = {};
-	}
-
-	private compressNumber(n: number): string {
-		return n.toString(36);
+		this._map = new Map<TimeslotKey, AggregatedEntry<TGroup>>();
 	}
 
 	private getOrAddEntry(timeslot: Timeslot): AggregatedEntry<TGroup> {
-		const startKey = this.compressNumber(timeslot.getStartTime().getTime());
-		const endKey = this.compressNumber(timeslot.getEndTime().getTime());
-		const key = `${startKey}|${endKey}`;
-
-		let entry = this._map[key];
+		const key = generateTimeslotKey(timeslot.getStartTime(), timeslot.getEndTime());
+		let entry = this._map.get(key);
 		if (!entry) {
 			entry = new AggregatedEntry(timeslot);
-			this._map[key] = entry;
+			this._map.set(key, entry);
 		}
 
 		return entry;
@@ -38,17 +43,8 @@ export class TimeslotAggregator<TGroup> {
 		}
 	}
 
-	private compareEntryFn(a: AggregatedEntry<TGroup>, b: AggregatedEntry<TGroup>): number {
-		const diffStart = a.getTimeslot().getStartTime().getTime() - b.getTimeslot().getStartTime().getTime();
-		if (diffStart !== 0) return diffStart;
-
-		return a.getTimeslot().getEndTime().getTime() - b.getTimeslot().getEndTime().getTime();
-	}
-
-	public getEntries(): AggregatedEntry<TGroup>[] {
-		const entries = Object.values<AggregatedEntry<TGroup>>(this._map);
-		entries.sort(this.compareEntryFn);
-		return entries;
+	public getEntries(): Map<TimeslotKey, AggregatedEntry<TGroup>> {
+		return this._map;
 	}
 }
 
@@ -57,7 +53,7 @@ export class AggregatedEntry<TGroup> {
 	private _groups: Map<TGroup, TimeslotWithCapacity>;
 
 	public getTimeslot = () => this._timeslot;
-	public getGroups = () => new Map<TGroup, TimeslotWithCapacity>(this._groups);
+	public getGroups = (): ReadonlyMap<TGroup, TimeslotWithCapacity> => this._groups;
 
 	constructor(timeslot: Timeslot) {
 		this._timeslot = timeslot;
@@ -68,6 +64,15 @@ export class AggregatedEntry<TGroup> {
 		if (!this._groups.has(group)) {
 			this._groups.set(group, timeslotDetail);
 		}
+	}
+
+	public hasGroup(predicate: (group: TGroup) => boolean): boolean {
+		for (const group of this._groups.keys()) {
+			if (predicate(group)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public findGroup(predicate: (group: TGroup) => boolean): [TGroup, TimeslotWithCapacity] {

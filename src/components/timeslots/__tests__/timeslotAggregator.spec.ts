@@ -1,4 +1,4 @@
-import { TimeslotAggregator } from '../timeslotAggregator';
+import { compareEntryFn, generateTimeslotKey, TimeslotAggregator } from '../timeslotAggregator';
 import { DateHelper } from '../../../infrastructure/dateHelper';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 
@@ -8,6 +8,12 @@ afterAll(() => {
 });
 
 describe('Timeslot aggregator', () => {
+	it('should generate timeslots key', () => {
+		const key = generateTimeslotKey(new Date(2), new Date(3));
+		const expected = BigInt(2) * BigInt(Math.pow(2, 48)) + BigInt(3);
+		expect(key).toBe(expected);
+	});
+
 	it('should aggregate timeslots in order', () => {
 		const date = new Date(Date.parse('2020-01-01'));
 		const group1 = [
@@ -32,8 +38,8 @@ describe('Timeslot aggregator', () => {
 		aggregator.aggregate('B', group2);
 		aggregator.aggregate('C', group3);
 
-		const entries = aggregator.getEntries();
-		aggregator.clear();
+		const entries = Array.from(aggregator.getEntries().values());
+		entries.sort(compareEntryFn);
 
 		expect(entries.length).toBe(5);
 		expect(DateHelper.getTimeString(entries[0].getTimeslot().getStartTime())).toBe('08:00');

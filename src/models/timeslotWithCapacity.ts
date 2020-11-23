@@ -7,6 +7,10 @@ export class TimeslotWithCapacity extends Timeslot {
 
 	constructor(startTime: Date, endTime: Date, capacity?: number) {
 		super(startTime, endTime);
-		this._capacity = capacity || 1;
+		if (capacity === null || capacity === undefined) {
+			this._capacity = 1;
+		} else {
+			this._capacity = capacity;
+		}
 	}
 }
