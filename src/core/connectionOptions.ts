@@ -29,8 +29,6 @@ export function getConnectionOptions(): PostgresConnectionOptions {
 		logging.push('query');
 	}
 
-	console.log(`Is dev: ${config.isDev}`);
-
 	return {
 		database: config.database.instance,
 		entities: [

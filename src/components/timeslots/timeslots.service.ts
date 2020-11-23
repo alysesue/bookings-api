@@ -247,6 +247,13 @@ export class TimeslotsService {
 		const acceptedBookingsLookup = groupByKey(acceptedBookings, TimeslotsService.bookingKeySelector);
 
 		for (const element of entries.values()) {
+			const result = acceptedBookings
+				.filter((booking) => {
+					return booking.bookingIntersects({ start: element.startTime, end: element.endTime });
+				})
+				.map((booking) => booking.serviceProviderId);
+			element.setOverlappingServiceProviders(result);
+
 			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
 			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
 			if (acceptedBookingsForTimeslot) {
