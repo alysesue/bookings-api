@@ -42,14 +42,18 @@ const UnavailabilitiesServiceMock = {
 	search: jest.fn(),
 };
 
+const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
+	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
+};
+
 // tslint:disable-next-line:no-big-function
 describe('Timeslots Service', () => {
 	const date = new Date(2020, 4, 27);
 	const endDate = DateHelper.setHours(date, 11, 59);
-	const timeslot = new TimeslotWithCapacity(DateHelper.setHours(date, 15, 0), DateHelper.setHours(date, 16, 0));
-	const timeslot2 = new TimeslotWithCapacity(DateHelper.setHours(date, 16, 0), DateHelper.setHours(date, 17, 0));
-	const timeslot3 = new TimeslotWithCapacity(DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
-	const timeslot4 = new TimeslotWithCapacity(DateHelper.setHours(date, 18, 30), DateHelper.setHours(date, 19, 30));
+	const timeslot = createTimeslot(DateHelper.setHours(date, 15, 0), DateHelper.setHours(date, 16, 0));
+	const timeslot2 = createTimeslot(DateHelper.setHours(date, 16, 0), DateHelper.setHours(date, 17, 0));
+	const timeslot3 = createTimeslot(DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
+	const timeslot4 = createTimeslot(DateHelper.setHours(date, 18, 30), DateHelper.setHours(date, 19, 30));
 
 	const ServiceMock = new Service();
 	ServiceMock.id = 1;

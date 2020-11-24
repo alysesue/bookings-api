@@ -67,10 +67,7 @@ export class AvailableTimeslotProviders {
 	}
 
 	public static create(entry: AggregatedEntry<ServiceProvider>): AvailableTimeslotProviders {
-		const instance = AvailableTimeslotProviders.empty(
-			entry.getTimeslot().getStartTime(),
-			entry.getTimeslot().getEndTime(),
-		);
+		const instance = AvailableTimeslotProviders.empty(entry.getTimeslot().startTime, entry.getTimeslot().endTime);
 		instance.setRelatedServiceProviders(entry.getGroups());
 		return instance;
 	}
@@ -79,7 +76,7 @@ export class AvailableTimeslotProviders {
 		this._timeslotServiceProviders = new Map<number, TimeslotServiceProvider>();
 		for (const item of providers) {
 			const [spItem, timeslotCapacity] = item;
-			const spTimeslotItem = new TimeslotServiceProvider(spItem, timeslotCapacity.getCapacity());
+			const spTimeslotItem = new TimeslotServiceProvider(spItem, timeslotCapacity.capacity);
 			this._timeslotServiceProviders.set(spItem.id, spTimeslotItem);
 		}
 	}
