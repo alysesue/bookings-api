@@ -122,6 +122,16 @@ describe('ServiceProviders.Service', () => {
 		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
 	});
 
+	it('Set scheduleFrom for serviceProviders', async () => {
+		ServiceProvidersRepositoryMock.getServiceProvidersMock = [serviceProviderMock];
+		ScheduleFormsServiceMock.updateScheduleFormInEntity.mockImplementation(() => {
+			serviceProviderMock.scheduleForm = new ScheduleForm();
+			return Promise.resolve(serviceProviderMock);
+		});
+		await Container.get(ServiceProvidersService).setProvidersScheduleForm(1, {} as ScheduleFormRequest);
+		expect(ScheduleFormsServiceMock.updateScheduleFormInEntity).toBeCalled();
+	});
+
 	it('should set provider schedule', async () => {
 		UserContextMock.getAuthGroups.mockReturnValue(
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
