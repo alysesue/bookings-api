@@ -18,18 +18,32 @@ export const compareEntryFn = <TGroup>(a: AggregatedEntry<TGroup>, b: Aggregated
 	return a.getTimeslot().getEndTime().getTime() - b.getTimeslot().getEndTime().getTime();
 };
 
-export class TimeslotAggregator<TGroup> {
-	private _map: Map<TimeslotKey, AggregatedEntry<TGroup>>;
+export declare type EntryConstructorType<T> = (new (timeslot: Timeslot) => T) & Function;
 
-	constructor() {
-		this._map = new Map<TimeslotKey, AggregatedEntry<TGroup>>();
+export class TimeslotAggregator<TGroup, TEntry extends IAggregatedEntry<TGroup>> {
+	private _map: Map<TimeslotKey, TEntry>;
+	private _constructor: EntryConstructorType<TEntry>;
+
+	private constructor(constructor: EntryConstructorType<TEntry>) {
+		this._map = new Map<TimeslotKey, TEntry>();
+		this._constructor = constructor;
 	}
 
-	private getOrAddEntry(timeslot: Timeslot): AggregatedEntry<TGroup> {
+	public static create<TGroup>(): TimeslotAggregator<TGroup, AggregatedEntry<TGroup>> {
+		return new TimeslotAggregator<TGroup, AggregatedEntry<TGroup>>(AggregatedEntry);
+	}
+
+	public static createCustom<TGroup, TEntry extends IAggregatedEntry<TGroup>>(
+		constructor: EntryConstructorType<TEntry>,
+	) {
+		return new TimeslotAggregator<TGroup, TEntry>(constructor);
+	}
+
+	private getOrAddEntry(timeslot: Timeslot): TEntry {
 		const key = generateTimeslotKey(timeslot.getStartTime(), timeslot.getEndTime());
 		let entry = this._map.get(key);
 		if (!entry) {
-			entry = new AggregatedEntry(timeslot);
+			entry = new this._constructor(timeslot);
 			this._map.set(key, entry);
 		}
 
@@ -43,12 +57,18 @@ export class TimeslotAggregator<TGroup> {
 		}
 	}
 
-	public getEntries(): Map<TimeslotKey, AggregatedEntry<TGroup>> {
+	public getEntries(): Map<TimeslotKey, TEntry> {
 		return this._map;
 	}
 }
 
-export class AggregatedEntry<TGroup> {
+export interface IAggregatedEntry<TGroup> {
+	getTimeslot(): Timeslot;
+	getGroups(): ReadonlyMap<TGroup, TimeslotWithCapacity>;
+	addGroup(group: TGroup, timeslotDetail: TimeslotWithCapacity): void;
+}
+
+export class AggregatedEntry<TGroup> implements IAggregatedEntry<TGroup> {
 	private _timeslot: Timeslot;
 	private _groups: Map<TGroup, TimeslotWithCapacity>;
 
@@ -65,22 +85,24 @@ export class AggregatedEntry<TGroup> {
 			this._groups.set(group, timeslotDetail);
 		}
 	}
+}
 
-	public hasGroup(predicate: (group: TGroup) => boolean): boolean {
-		for (const group of this._groups.keys()) {
-			if (predicate(group)) {
-				return true;
-			}
-		}
-		return false;
+export class AggregatedEntryId<TGroup extends { id: number }> extends AggregatedEntry<TGroup> {
+	private _ids: Set<number>;
+
+	constructor(timeslot: Timeslot) {
+		super(timeslot);
+		this._ids = new Set<number>();
 	}
 
-	public findGroup(predicate: (group: TGroup) => boolean): [TGroup, TimeslotWithCapacity] {
-		for (const value of this._groups) {
-			if (predicate(value[0])) {
-				return value;
-			}
+	public addGroup(group: TGroup, timeslotDetail: TimeslotWithCapacity): void {
+		if (!this._ids.has(group.id)) {
+			this._ids.add(group.id);
+			super.addGroup(group, timeslotDetail);
 		}
-		return undefined;
+	}
+
+	public hasGroupId(id: number) {
+		return this._ids.has(id);
 	}
 }

@@ -1,6 +1,6 @@
 import { Inject, Scope, Scoped } from 'typescript-ioc';
-import { AggregatedEntry, generateTimeslotKey, TimeslotAggregator, TimeslotKey } from './timeslotAggregator';
-import { Booking, BookingStatus, ServiceProvider } from '../../models';
+import { AggregatedEntryId, generateTimeslotKey, TimeslotAggregator, TimeslotKey } from './timeslotAggregator';
+import { Booking, BookingStatus, ServiceProvider, Timeslot } from '../../models';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { BookingsRepository } from '../bookings/bookings.repository';
 import { groupByKey } from '../../tools/collections';
@@ -30,10 +30,10 @@ export class TimeslotsService {
 		generateTimeslotKey(booking.startDateTime, booking.endDateTime);
 
 	private static getAggregatedTimeslotsFromBookings(bookings: Booking[]) {
-		const aggregator = new TimeslotAggregator<Booking>();
+		const aggregator = TimeslotAggregator.createCustom<Booking, AggregatedEntryId<Booking>>(AggregatedEntryId);
 
 		for (const booking of bookings) {
-			const timeslotForBooking = new TimeslotWithCapacity(booking.startDateTime, booking.endDateTime);
+			const timeslotForBooking = new TimeslotWithCapacity(booking.startDateTime, booking.endDateTime, 0);
 			aggregator.aggregate(booking, [timeslotForBooking]);
 		}
 
@@ -42,7 +42,7 @@ export class TimeslotsService {
 	}
 
 	private static mapServiceProviderAggregatedEntriesToTimeslots(
-		entries: Map<TimeslotKey, AggregatedEntry<ServiceProvider>>,
+		entries: Map<TimeslotKey, AggregatedEntryId<ServiceProvider>>,
 	): Map<TimeslotKey, AvailableTimeslotProviders> {
 		const result = new Map<TimeslotKey, AvailableTimeslotProviders>();
 		for (const [key, entry] of entries) {
@@ -54,29 +54,22 @@ export class TimeslotsService {
 	}
 
 	private static mergeAggregatedBookingEntriesToTimeslots(
-		aggregatedEntries: Map<TimeslotKey, AggregatedEntry<ServiceProvider>>,
-		timeslotEntriesFromBookings: Map<TimeslotKey, AggregatedEntry<Booking>>,
+		aggregatedEntries: Map<TimeslotKey, AggregatedEntryId<ServiceProvider>>,
+		timeslotEntriesFromBookings: Map<TimeslotKey, AggregatedEntryId<Booking>>,
 	): void {
 		for (const [timeslotKey, aggregatedBookings] of timeslotEntriesFromBookings) {
 			let aggregatedEntry = aggregatedEntries.get(timeslotKey);
 			const timeslot = aggregatedBookings.getTimeslot();
 
 			if (!aggregatedEntry) {
-				aggregatedEntry = new AggregatedEntry<ServiceProvider>(timeslot);
+				aggregatedEntry = new AggregatedEntryId<ServiceProvider>(timeslot);
 				aggregatedEntries.set(timeslotKey, aggregatedEntry);
 			}
 
-			const newProviders = new Map<number, ServiceProvider>();
-			for (const booking of aggregatedBookings.getGroups().keys()) {
-				newProviders.set(booking.serviceProviderId, booking.serviceProvider);
-			}
-			for (const provider of aggregatedEntry.getGroups().keys()) {
-				newProviders.delete(provider.id);
-			}
-
-			const timeslotWithCapacity = new TimeslotWithCapacity(timeslot.getStartTime(), timeslot.getEndTime(), 0);
-			for (const newProvider of newProviders.values()) {
-				aggregatedEntry.addGroup(newProvider, timeslotWithCapacity);
+			for (const [booking, timeslotWithCapacity] of aggregatedBookings.getGroups()) {
+				if (!aggregatedEntry.hasGroupId(booking.serviceProvider.id)) {
+					aggregatedEntry.addGroup(booking.serviceProvider, timeslotWithCapacity);
+				}
 			}
 		}
 	}
@@ -170,7 +163,7 @@ export class TimeslotsService {
 
 		if (serviceProviderId) {
 			for (const [key, value] of aggregatedEntries) {
-				if (!value.hasGroup((sp) => sp.id === serviceProviderId)) {
+				if (!value.hasGroupId(serviceProviderId)) {
 					aggregatedEntries.delete(key);
 				}
 			}
@@ -266,8 +259,10 @@ export class TimeslotsService {
 		minStartTime: Date,
 		maxEndTime: Date,
 		serviceId: number,
-	): Promise<Map<TimeslotKey, AggregatedEntry<ServiceProvider>>> {
-		const aggregator = new TimeslotAggregator<ServiceProvider>();
+	): Promise<Map<TimeslotKey, AggregatedEntryId<ServiceProvider>>> {
+		const aggregator = TimeslotAggregator.createCustom<ServiceProvider, AggregatedEntryId<ServiceProvider>>(
+			AggregatedEntryId,
+		);
 
 		const service = await this.servicesRepository.getServiceWithTimeslotsSchedule(serviceId);
 		if (!service) {
