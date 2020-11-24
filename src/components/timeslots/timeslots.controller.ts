@@ -13,18 +13,6 @@ export class TimeslotsController extends Controller {
 	@Inject
 	private timeslotsService: TimeslotsService;
 
-	// @Get('blocking')
-	// @MOLAuth({
-	// 	admin: {},
-	// })
-	// public async blocking(): Promise<void> {
-	// 	let i = 0;
-	// 	while (true) {
-	// 		i++;
-	// 		await nextImmediateTick();
-	// 	}
-	// }
-
 	/**
 	 * Retrieves available timeslots for a service in a defined datetime range [startDate, endDate].
 	 * Availability count returned will be at least 1.
