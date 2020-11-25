@@ -38,16 +38,17 @@ beforeEach(() => {
 	TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 });
 
+const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
+	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
+};
+
 describe('Booking Integration tests', () => {
 	it('should accept booking', async () => {
 		const service = new Service();
 		service.id = 2;
 		const provider = ServiceProvider.create('Provider', 2);
 		provider.id = 11;
-		const timeslotWithCapacity = new TimeslotWithCapacity(
-			new Date('2020-10-01T01:00:00'),
-			new Date('2020-10-01T02:00:00'),
-		);
+		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 
 		const adminMock = User.createAdminUser({
 			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
