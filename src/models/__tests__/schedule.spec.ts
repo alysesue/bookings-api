@@ -47,8 +47,8 @@ describe('Timeslots template', () => {
 		const list = Array.from(generate);
 
 		expect(list.length).toBe(1);
-		expect(DateHelper.getTimeString(list[0].getStartTime())).toBe('08:30');
-		expect(DateHelper.getTimeString(list[0].getEndTime())).toBe('09:30');
+		expect(DateHelper.getTimeString(list[0].startTime)).toBe('08:30');
+		expect(DateHelper.getTimeString(list[0].endTime)).toBe('09:30');
 	});
 
 	it('should generate multiple timeslots', () => {
@@ -71,8 +71,8 @@ describe('Timeslots template', () => {
 		const list = Array.from(generate);
 
 		expect(list.length).toBe(1);
-		expect(DateHelper.getTimeString(list[0].getStartTime())).toBe('08:30');
-		expect(DateHelper.getTimeString(list[0].getEndTime())).toBe('09:30');
+		expect(DateHelper.getTimeString(list[0].startTime)).toBe('08:30');
+		expect(DateHelper.getTimeString(list[0].endTime)).toBe('09:30');
 	});
 
 	it('should discard last timeslot when it doesnt fit the window', () => {
@@ -84,8 +84,8 @@ describe('Timeslots template', () => {
 		const list = Array.from(generate);
 
 		expect(list.length).toBe(1);
-		expect(DateHelper.getTimeString(list[0].getStartTime())).toBe('13:30');
-		expect(DateHelper.getTimeString(list[0].getEndTime())).toBe('14:30');
+		expect(DateHelper.getTimeString(list[0].startTime)).toBe('13:30');
+		expect(DateHelper.getTimeString(list[0].endTime)).toBe('14:30');
 	});
 
 	it('should generate timeslots over the next day', () => {
@@ -99,11 +99,11 @@ describe('Timeslots template', () => {
 		const list = Array.from(generate);
 		expect(list.length).toBe(2);
 
-		expect(list[0].getStartTime().getDate()).toBe(date.getDate());
-		expect(DateHelper.getTimeString(list[0].getStartTime())).toBe('13:30');
+		expect(list[0].startTime.getDate()).toBe(date.getDate());
+		expect(DateHelper.getTimeString(list[0].startTime)).toBe('13:30');
 
-		expect(list[1].getStartTime().getDate()).toBe(nextDay.getDate());
-		expect(DateHelper.getTimeString(list[1].getStartTime())).toBe('09:30');
+		expect(list[1].startTime.getDate()).toBe(nextDay.getDate());
+		expect(DateHelper.getTimeString(list[1].startTime)).toBe('09:30');
 	});
 
 	it('should generate timeslots over multiple days', () => {
@@ -117,11 +117,11 @@ describe('Timeslots template', () => {
 		const list = Array.from(generate);
 		expect(list.length).toBe(8); // Thursday is not a work day
 
-		expect(list[0].getStartTime().getDate()).toBe(date.getDate());
-		expect(DateHelper.getTimeString(list[0].getStartTime())).toBe('12:30');
+		expect(list[0].startTime.getDate()).toBe(date.getDate());
+		expect(DateHelper.getTimeString(list[0].startTime)).toBe('12:30');
 
 		for (const element of list) {
-			const hours = element.getStartTime().getHours();
+			const hours = element.startTime.getHours();
 			expect(hours).toBeGreaterThanOrEqual(8);
 			expect(hours).toBeLessThanOrEqual(14);
 		}
