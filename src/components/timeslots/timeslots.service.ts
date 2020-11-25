@@ -16,6 +16,7 @@ import { nextImmediateTick } from '../../infrastructure/immediateHelper';
 
 export class AvailableTimeslotProcessor extends MapProcessor<TimeslotKey, AvailableTimeslotProviders> {}
 
+const MaxLoopIterationCount = 1000;
 @Scoped(Scope.Request)
 export class TimeslotsService {
 	@Inject
@@ -61,7 +62,7 @@ export class TimeslotsService {
 		for (const [key, entry] of entries) {
 			const mapped = AvailableTimeslotProviders.create(entry);
 			result.set(key, mapped);
-			if (counter++ > 1000) {
+			if (counter++ > MaxLoopIterationCount) {
 				counter = 0;
 				await nextImmediateTick();
 			}

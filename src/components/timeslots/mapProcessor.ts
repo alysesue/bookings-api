@@ -2,6 +2,7 @@ import { nextImmediateTick } from '../../infrastructure/immediateHelper';
 
 export type ProcessorAction<K, V> = (kvp: [K, V]) => void;
 
+const MaxLoopIterationCount = 1000;
 export class MapProcessor<K, V> {
 	private readonly _actions: ProcessorAction<K, V>[];
 
@@ -18,7 +19,7 @@ export class MapProcessor<K, V> {
 				// tslint:disable-next-line: tsr-detect-unsafe-properties-access
 				actions[i](kvp);
 			}
-			if (counter++ > 1000) {
+			if (counter++ > MaxLoopIterationCount) {
 				counter = 0;
 				await nextImmediateTick();
 			}

@@ -400,6 +400,7 @@ describe('Timeslots Service Out Of Slot', () => {
 		const spTimeslot = Array.from(timeslots[0].getTimeslotServiceProviders());
 		expect(spTimeslot[0].acceptedBookings.length).toBe(1);
 		expect(spTimeslot[0].serviceProvider).toBe(ServiceProviderMock3);
+		expect(spTimeslot[0].capacity).toBe(0);
 		expect(setBookedServiceProviders).toHaveBeenCalled();
 	});
 });

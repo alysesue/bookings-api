@@ -21,6 +21,7 @@ export const compareEntryFn = <TGroup>(a: AggregatedEntry<TGroup>, b: Aggregated
 
 export declare type EntryConstructorType<T> = (new (timeslot: Timeslot) => T) & Function;
 
+const MaxLoopIterationCount = 1000;
 export class TimeslotAggregator<TGroup, TEntry extends IAggregatedEntry<TGroup>> {
 	private _map: Map<TimeslotKey, TEntry>;
 	private _constructor: EntryConstructorType<TEntry>;
@@ -56,7 +57,7 @@ export class TimeslotAggregator<TGroup, TEntry extends IAggregatedEntry<TGroup>>
 		for (const timeslot of generator) {
 			const entry = this.getOrAddEntry(timeslot);
 			entry.addGroup(group, timeslot);
-			if (counter++ > 1000) {
+			if (counter++ > MaxLoopIterationCount) {
 				counter = 0;
 				await nextImmediateTick();
 			}
