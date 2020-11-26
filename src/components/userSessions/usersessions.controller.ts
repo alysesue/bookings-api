@@ -24,9 +24,8 @@ export class UserSessionsController extends Controller {
 	private userSessionsService: UserSessionsService;
 
 	@Post('anonymous')
-	@SuccessResponse(201, 'Verified')
 	public async verifyCaptcha(@Body() verifyRequest: VerifyUserRequest): Promise<ApiData<VerifyUserResponse>> {
 		const res = await this.userSessionsService.verify(verifyRequest);
-		return ApiDataFactory.create<VerifyUserResponse>(UserSessionsMapper.mapToResponse(res));
+		return ApiDataFactory.create(UserSessionsMapper.mapToResponse(res));
 	}
 }
