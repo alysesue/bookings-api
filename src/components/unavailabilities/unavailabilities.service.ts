@@ -7,6 +7,7 @@ import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { UnavailabilitiesActionAuthVisitor } from './unavailabilities.auth';
 import { ServicesRepository } from '../services/services.repository';
+import { DeleteResult } from 'typeorm';
 
 @InRequestScope
 export class UnavailabilitiesService {
@@ -96,5 +97,9 @@ export class UnavailabilitiesService {
 	}): Promise<boolean> {
 		const count = await this.unavailabilitiesRepository.searchCount(params);
 		return count > 0;
+	}
+
+	public async deleteUnavailability(id: number): Promise<DeleteResult> {
+		return await this.unavailabilitiesRepository.delete(id);
 	}
 }
