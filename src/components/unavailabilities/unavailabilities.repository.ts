@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { RepositoryBase } from '../../core/repository';
 import { Unavailability } from '../../models';
-import { SelectQueryBuilder } from 'typeorm';
+import { DeleteResult, SelectQueryBuilder } from 'typeorm';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
 import { UnavailabilitiesQueryAuthVisitor } from './unavailabilities.auth';
@@ -119,5 +119,17 @@ export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {
 	}): Promise<number> {
 		const query = await this.createSearchQuery(options);
 		return await query.getCount();
+	}
+
+	public async delete(unavailabilityId: number): Promise<DeleteResult> {
+		const repository = await this.getRepository();
+		await repository
+			.createQueryBuilder()
+			.delete()
+			.from(Unavailability)
+			.where('_id = :_id', { unavailabilityId })
+			.execute();
+
+		return repository.delete(unavailabilityId);
 	}
 }
