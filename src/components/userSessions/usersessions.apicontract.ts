@@ -11,11 +11,6 @@ export class VerifyUserRequest {
 }
 export class VerifyUserResponse {
 	public success: boolean;
-
-	constructor(
-		googleApiResponse: GoogleVerifyApiResponse) {
-		this.success = googleApiResponse.success;
-	}
 }
 
 export class GoogleVerifyApiResponse {

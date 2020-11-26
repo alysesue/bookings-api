@@ -14,6 +14,7 @@ import { VerifyUserRequest, VerifyUserResponse } from './usersessions.apicontrac
 import { Inject } from 'typescript-ioc';
 import { UserSessionsService } from './usersessions.service';
 import { ApiData, ApiDataFactory } from '../../apicontract';
+import { UserSessionsMapper } from './usersessions.mapper';
 
 
 @Route('v1/usersessions')
@@ -23,7 +24,9 @@ export class UserSessionsController extends Controller {
 	private userSessionsService: UserSessionsService;
 
 	@Post('anonymous')
+	@SuccessResponse(201, 'Verified')
 	public async verifyCaptcha(@Body() verifyRequest: VerifyUserRequest): Promise<ApiData<VerifyUserResponse>> {
-		return ApiDataFactory.create(new VerifyUserResponse(await this.userSessionsService.verify(verifyRequest)));
+		const res = await this.userSessionsService.verify(verifyRequest);
+		return ApiDataFactory.create<VerifyUserResponse>(UserSessionsMapper.mapToResponse(res));
 	}
 }

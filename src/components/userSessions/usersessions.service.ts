@@ -8,7 +8,6 @@ export class UserSessionsService {
 	public async verify(request: VerifyUserRequest): Promise<GoogleVerifyApiResponse> {
 		const secretKey = ConfigUtils.getValueFromEnv('RECAPTCHA_SECRET_KEY')
 		const res = await post(`https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${request.token}`);
-		console.log('res', res);
 		return res;
 	}
 }
