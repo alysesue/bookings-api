@@ -33,6 +33,9 @@ export class ServiceProvidersService {
 	private timeslotsService: TimeslotsService;
 
 	@Inject
+	private scheduleFormsService: ScheduleFormsService;
+
+	@Inject
 	private userContext: UserContext;
 
 	private static async validateServiceProvider(sp: ServiceProviderModel): Promise<string[]> {
@@ -136,6 +139,28 @@ export class ServiceProvidersService {
 		serviceProvider.phone = request.phone;
 		serviceProvider.name = request.name;
 		return await this.serviceProvidersRepository.save(serviceProvider);
+	}
+
+	public async setProvidersScheduleForm(orgaId: number, request: ScheduleFormRequest): Promise<ServiceProvider[]> {
+		const serviceProviders = await this.serviceProvidersRepository.getServiceProviders({ organisationId: orgaId });
+		const serviceProvidersRes = [];
+		for await (const serviceProvider of this.putProviderScheduleForm(serviceProviders, request)) {
+			serviceProvidersRes.push(serviceProvider);
+		}
+		return serviceProvidersRes;
+	}
+
+	private async *putProviderScheduleForm(
+		sps: ServiceProvider[],
+		request: ScheduleFormRequest,
+	): AsyncIterable<ServiceProvider> {
+		const saveSpFunction = async (sp: ServiceProvider) => {
+			sp.scheduleFormConfirmed = false;
+			return await this.serviceProvidersRepository.save(sp);
+		};
+		for (const sp of sps) {
+			yield await this.scheduleFormsService.updateScheduleFormInEntity(request, sp, saveSpFunction);
+		}
 	}
 
 	public async setProviderScheduleForm(id: number, model: ScheduleFormRequest): Promise<ScheduleForm> {
