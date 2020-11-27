@@ -7,7 +7,7 @@
 		"lint-fix": "NODE_OPTIONS='--max-old-space-size=4096' tslint --fix  -p ./tsconfig.json -c ./tslint.json './src/**/*.ts'",
 		"test": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
 		"atest": "npm run fixLF && node --expose-gc ./node_modules/jest/bin/jest --runInBand",
-		"test:cov": "npm run fixLF && node --expose-gc ./node_modules/jest/bin/jest --runInBand --collect-coverage",
+		"test:cov": "npm run fixLF && node --expose-gc ./node_modules/jest/bin/jest --maxWorkers=2 --collect-coverage",
 		"test:functional": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test.sh  --runInBand --config __tests__/jest.config.functional.js",
 		"test:f": "npm run fixLF && cp ./params/secrets/local.env ./.env && npm run test:functional",
 		"build": "npm run fixLF && ./scripts/build.sh",
