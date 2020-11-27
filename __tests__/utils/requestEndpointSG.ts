@@ -57,3 +57,38 @@ export class AdminRequestEndpointSG extends RequestEndpointSG {
 		});
 	}
 }
+
+export class CitizenRequestEndpointSG extends RequestEndpointSG {
+	private CITIZEN_HEADERS = {
+		'mol-token-bypass': 'true',
+		'mol-user-id': 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+		'mol-user-uinfin': 'G3382058K',
+		'mol-user-auth-level': '2',
+		'mol-auth-type': 'USER',
+	};
+
+	public static create = ({
+		serviceId,
+	}: {
+		serviceId?: string;
+	}): CitizenRequestEndpointSG => {
+		const apiService = serviceId ? { 'x-api-service': serviceId } : {};
+		const headers = {
+			'mol-token-bypass': 'true',
+			'mol-user-id': 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+			'mol-user-uinfin': 'G3382058K',
+			'mol-user-auth-level': '2',
+			'mol-auth-type': 'USER',
+			...apiService,
+		};
+		return new CitizenRequestEndpointSG(headers);
+	};
+
+	private constructor(headers: { [e: string]: string }) {
+		super();
+		this.setHeaders({
+			...this.CITIZEN_HEADERS,
+			...headers,
+		});
+	}
+}
