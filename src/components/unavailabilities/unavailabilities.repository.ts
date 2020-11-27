@@ -126,8 +126,8 @@ export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {
 		await repository
 			.createQueryBuilder()
 			.delete()
-			.from(Unavailability)
-			.where('_id = :_id', { unavailabilityId })
+			.from('public.unavailable_service_provider')
+			.where('unavailability_id = :unavailabilityId', { unavailabilityId })
 			.execute();
 
 		return repository.delete(unavailabilityId);
