@@ -227,7 +227,7 @@ export class BookingsService {
 		return [ChangeLogAction.Accept, booking];
 	}
 
-	private async updateInternal(
+	public async updateInternal(
 		previousBooking: Booking,
 		bookingRequest: BookingRequest,
 		isAdmin: boolean,
