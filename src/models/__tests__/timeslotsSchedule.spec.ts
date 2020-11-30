@@ -46,8 +46,17 @@ describe('[Timeslots schedule] template', () => {
 		const list = Array.from(generate);
 
 		expect(list.length).toBe(1);
-		expect(DateHelper.getTimeString(list[0].startTime)).toBe('08:30');
-		expect(DateHelper.getTimeString(list[0].endTime)).toBe('09:30');
+	});
+
+	it('[Timeslots schedule] should generate monthly timeslots', () => {
+		const generate = template.generateValidTimeslots({
+			startDatetime: new Date('2020-10-31T16:00:00.000Z'),
+			endDatetime: new Date('2020-11-30T15:59:59.999Z'),
+		});
+
+		const list = Array.from(generate);
+
+		expect(list.length).toBe(83);
 	});
 
 	it('[Timeslots schedule] should generate multiple timeslots', () => {
