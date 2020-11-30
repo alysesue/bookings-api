@@ -1,6 +1,6 @@
 import { Inject, Scope, Scoped } from 'typescript-ioc';
 import { AggregatedEntryId, generateTimeslotKey, TimeslotAggregator, TimeslotKey } from './timeslotAggregator';
-import { Booking, BookingStatus, ServiceProvider } from '../../models';
+import { Booking, BookingStatus, ServiceProvider, Timeslot } from '../../models';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { BookingsRepository } from '../bookings/bookings.repository';
 import { groupByKey } from '../../tools/collections';
@@ -35,25 +35,6 @@ export class TimeslotsService {
 	private static bookingKeySelector = (booking: Booking): TimeslotKey =>
 		generateTimeslotKey(booking.startDateTime, booking.endDateTime);
 
-	private static async getAggregatedTimeslotsFromBookings(
-		bookings: Booking[],
-	): Promise<Map<TimeslotKey, AggregatedEntryId<Booking>>> {
-		const aggregator = TimeslotAggregator.createCustom<Booking, AggregatedEntryId<Booking>>(AggregatedEntryId);
-
-		for (const booking of bookings) {
-			const timeslotForBooking = {
-				startTime: booking.startDateTime,
-				endTime: booking.endDateTime,
-				capacity: 0,
-			} as TimeslotWithCapacity;
-
-			await aggregator.aggregate(booking, [timeslotForBooking]);
-		}
-
-		const entries = aggregator.getEntries();
-		return entries;
-	}
-
 	private static async mapServiceProviderAggregatedEntriesToTimeslots(
 		entries: Map<TimeslotKey, AggregatedEntryId<ServiceProvider>>,
 	): Promise<Map<TimeslotKey, AvailableTimeslotProviders>> {
@@ -71,23 +52,36 @@ export class TimeslotsService {
 		return result;
 	}
 
-	private static mergeAggregatedBookingEntriesToTimeslots(
+	private static mergeAcceptedBookingsToTimeslots(
 		aggregatedEntries: Map<TimeslotKey, AggregatedEntryId<ServiceProvider>>,
-		timeslotEntriesFromBookings: Map<TimeslotKey, AggregatedEntryId<Booking>>,
+		acceptedBookings: Booking[],
 	): void {
-		for (const [timeslotKey, aggregatedBookings] of timeslotEntriesFromBookings) {
+		for (const booking of acceptedBookings) {
+			if (!booking.serviceProvider) {
+				continue;
+			}
+
+			const timeslotKey = TimeslotsService.bookingKeySelector(booking);
 			let aggregatedEntry = aggregatedEntries.get(timeslotKey);
-			const timeslot = aggregatedBookings.getTimeslot();
 
 			if (!aggregatedEntry) {
+				const timeslot = {
+					startTime: booking.startDateTime,
+					endTime: booking.endDateTime,
+				} as Timeslot;
+
 				aggregatedEntry = new AggregatedEntryId<ServiceProvider>(timeslot);
 				aggregatedEntries.set(timeslotKey, aggregatedEntry);
 			}
 
-			for (const [booking, timeslotWithCapacity] of aggregatedBookings.getGroups()) {
-				if (!aggregatedEntry.hasGroupId(booking.serviceProvider.id)) {
-					aggregatedEntry.addGroup(booking.serviceProvider, timeslotWithCapacity);
-				}
+			if (!aggregatedEntry.hasGroupId(booking.serviceProvider.id)) {
+				const timeslotForBooking = {
+					startTime: booking.startDateTime,
+					endTime: booking.endDateTime,
+					capacity: 0,
+				} as TimeslotWithCapacity;
+
+				aggregatedEntry.addGroup(booking.serviceProvider, timeslotForBooking);
 			}
 		}
 	}
@@ -172,10 +166,7 @@ export class TimeslotsService {
 		const pendingBookings = bookings.filter((booking) => booking.status === BookingStatus.PendingApproval);
 
 		if (includeBookings) {
-			TimeslotsService.mergeAggregatedBookingEntriesToTimeslots(
-				aggregatedEntries,
-				await TimeslotsService.getAggregatedTimeslotsFromBookings(acceptedBookings),
-			);
+			TimeslotsService.mergeAcceptedBookingsToTimeslots(aggregatedEntries, acceptedBookings);
 		}
 
 		if (serviceProviderId) {

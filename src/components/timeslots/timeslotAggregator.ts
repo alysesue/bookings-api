@@ -1,14 +1,11 @@
+// tslint:disable: no-bitwise
 import { nextImmediateTick } from '../../infrastructure/immediateHelper';
 import { Timeslot } from '../../models';
 import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
 
 const BigIntShift = BigInt(48);
-export const generateTimeslotKey = (startTime: Date, endTime: Date): TimeslotKey => {
-	// tslint:disable-next-line: no-bitwise
-	let value = BigInt(startTime.getTime()) << BigIntShift;
-	value = value + BigInt(endTime.getTime());
-	return value;
-};
+export const generateTimeslotKey = (startTime: Date, endTime: Date): TimeslotKey =>
+	(BigInt(startTime.getTime()) << BigIntShift) | BigInt(endTime.getTime());
 
 export type TimeslotKey = bigint & BigInt;
 
