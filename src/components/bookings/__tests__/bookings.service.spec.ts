@@ -471,6 +471,31 @@ describe('Bookings.Service', () => {
 		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Update);
 	});
 
+
+	it('should call log with update action when updating service provider', async () => {
+		const bookingService = Container.get(BookingsService);
+		const bookingRequest = getBookingRequest();
+
+		BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(service.id)
+			.withCitizenEmail(bookingRequest.citizenEmail)
+			.withStartDateTime(bookingRequest.startDateTime)
+			.withEndDateTime(bookingRequest.endDateTime)
+			.withServiceProviderId(1)
+			.build();
+
+		bookingRequest.serviceProviderId = 123;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
+
+		await bookingService.update(1, bookingRequest, 2, true);
+
+		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Update);
+	});
+
 	it('should reject booking', async () => {
 		const bookingService = Container.get(BookingsService);
 		BookingRepositoryMock.booking = new BookingBuilder()
