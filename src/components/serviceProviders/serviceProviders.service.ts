@@ -4,16 +4,21 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { cloneDeep } from 'lodash';
 import { ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
-import { ServiceProviderModel } from './serviceProviders.apicontract';
+import { ServiceProviderModel, ServiceProviderOnboard } from './serviceProviders.apicontract';
 import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
 import { ServicesService } from '../services/services.service';
 import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
 import { TimeslotsService } from '../timeslots/timeslots.service';
-import { ServiceProvidersActionAuthVisitor } from './serviceProviders.auth';
+import {
+	CustomServiceProviderAction,
+	ServiceProvidersAction,
+	ServiceProvidersActionAuthVisitor,
+} from './serviceProviders.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { CrudAction } from '../../enums/crudAction';
 import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract';
+import { ServiceProvidersMapper } from './serviceProviders.mapper';
 
 @InRequestScope
 export class ServiceProvidersService {
@@ -30,6 +35,9 @@ export class ServiceProvidersService {
 	private servicesService: ServicesService;
 
 	@Inject
+	private mapper: ServiceProvidersMapper;
+
+	@Inject
 	private timeslotsService: TimeslotsService;
 
 	@Inject
@@ -38,6 +46,9 @@ export class ServiceProvidersService {
 	@Inject
 	private userContext: UserContext;
 
+	/**
+	 * @deprecated use onboard atm
+	 */
 	private static async validateServiceProvider(sp: ServiceProviderModel): Promise<string[]> {
 		const errors: string[] = [];
 		if (sp.phone && !(await isSGPhoneNumber(sp.phone)).pass)
@@ -47,6 +58,9 @@ export class ServiceProvidersService {
 		return errors;
 	}
 
+	/**
+	 * @deprecated use onboard atm
+	 */
 	private static async validateServiceProviders(sps: ServiceProviderModel[]) {
 		const errorsPromises = sps.map((e) => ServiceProvidersService.validateServiceProvider(e));
 		await Promise.all(errorsPromises).then((errors) => {
@@ -112,15 +126,48 @@ export class ServiceProvidersService {
 		return sp;
 	}
 
+	private async mapAndValidateServiceProvidersOnboard(serviceProvidersOnboards: ServiceProviderOnboard[]) {
+		const services = await this.servicesService.getServices();
+		const serviceProviders = serviceProvidersOnboards.map((sp) => this.mapper.mapToEntity(sp, services));
+		const allBusinessValidation = [];
+		await Promise.all(
+			serviceProviders.map(async (sp) => {
+				for await (const businessValidation of sp.asyncValidate()) {
+					allBusinessValidation.push(businessValidation);
+				}
+			}),
+		);
+		if (allBusinessValidation.length > 0) {
+			const response = allBusinessValidation.map((val) => val.message);
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setResponseData(response);
+		}
+		return serviceProviders;
+	}
+
+	public async onboardServiceProvidersCSV(spRequest: ServiceProviderOnboard[]): Promise<ServiceProvider[]> {
+		const sps = await this.mapAndValidateServiceProvidersOnboard(spRequest);
+		await Promise.all(
+			sps.map(async (sp) => await this.verifyActionPermission(sp, CustomServiceProviderAction.Onboard)),
+		);
+		await Promise.all(sps.map(async (sp) => await this.serviceProvidersRepository.save(sp)));
+		return sps;
+	}
+
+	/**
+	 * @deprecated use onboard atm
+	 */
 	public async saveServiceProviders(listRequest: ServiceProviderModel[], serviceId: number) {
 		await ServiceProvidersService.validateServiceProviders(listRequest);
 		// tslint:disable-next-line:prefer-for-of
 		for (let i = 0; i < listRequest.length; i++) {
-			await this.saveSp(listRequest[i], serviceId);
+			await this.saveServiceProvider(listRequest[i], serviceId);
 		}
 	}
 
-	public async saveSp(item: ServiceProviderModel, serviceId: number) {
+	/**
+	 * @deprecated use onboard atm
+	 */
+	public async saveServiceProvider(item: ServiceProviderModel, serviceId: number) {
 		const serviceProvider = ServiceProvider.create(item.name, serviceId, item.email, item.phone);
 		serviceProvider.service = await this.servicesService.getService(serviceId);
 		await this.verifyActionPermission(serviceProvider, CrudAction.Create);
@@ -291,11 +338,14 @@ export class ServiceProvidersService {
 		return await this.serviceProvidersRepository.save(serviceProvider);
 	}
 
-	private async verifyActionPermission(serviceProvider: ServiceProvider, action: CrudAction): Promise<void> {
+	private async verifyActionPermission(
+		serviceProvider: ServiceProvider,
+		action: ServiceProvidersAction,
+	): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
 		if (!new ServiceProvidersActionAuthVisitor(serviceProvider, action).hasPermission(authGroups)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
-				`User cannot perform this service-provider action (${action}) for this service.`,
+				`User cannot perform this service-provider action (${action}) for this service. Service provider: ${serviceProvider.name}`,
 			);
 		}
 	}

@@ -13,6 +13,16 @@ export class ServiceProviderModel {
 	}
 }
 
+export class ServiceProviderOnboard extends ServiceProviderModel {
+	public serviceName: string;
+	public agencyUserId?: string;
+	public autoAcceptBookings?: boolean;
+
+	constructor(name: string, email?: string, phone?: string) {
+		super(name, email, phone);
+	}
+}
+
 export class ServiceProviderResponseModel {
 	/**
 	 * @isInt

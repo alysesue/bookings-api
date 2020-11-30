@@ -1,6 +1,10 @@
 import { InRequestScope } from 'typescript-ioc';
-import { ServiceProvider } from '../../models';
-import { ServiceProviderResponseModel, ServiceProviderSummaryModel } from './serviceProviders.apicontract';
+import { Service, ServiceProvider } from '../../models';
+import {
+	ServiceProviderOnboard,
+	ServiceProviderResponseModel,
+	ServiceProviderSummaryModel,
+} from './serviceProviders.apicontract';
 import { mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
 import { mapToResponse as mapScheduleFormResponse } from '../scheduleForms/scheduleForms.mapper';
 
@@ -34,5 +38,20 @@ export class ServiceProvidersMapper {
 
 	public mapSummaryDataModels(entries: ServiceProvider[]): ServiceProviderSummaryModel[] {
 		return entries?.map((e) => this.mapSummaryDataModel(e));
+	}
+
+	public mapToEntity(sp: ServiceProviderOnboard, services: Service[]): ServiceProvider {
+		const getService = (name?: string) => services.find((s) => s.name === name);
+		const service = getService(sp?.serviceName);
+		const spCreated = ServiceProvider.create(
+			sp.name,
+			service?.id,
+			sp.email,
+			sp.phone,
+			sp.agencyUserId,
+			sp.autoAcceptBookings,
+		);
+		spCreated.service = service;
+		return spCreated;
 	}
 }

@@ -13,7 +13,7 @@ import {
 	TimeslotsSchedule,
 	User,
 } from '../../../models';
-import { ServiceProviderModel } from '../serviceProviders.apicontract';
+import { ServiceProviderModel, ServiceProviderOnboard } from '../serviceProviders.apicontract';
 import { ScheduleFormsService } from '../../scheduleForms/scheduleForms.service';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TimeslotItemsService } from '../../timeslotItems/timeslotItems.service';
@@ -130,6 +130,36 @@ describe('ServiceProviders.Service', () => {
 			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider with id 1 not found'),
 		);
 	});
+
+	it('should onboard a list of service providers', async () => {
+		const spOnboard = {
+			name: 'aa',
+			serviceName: 'name',
+			agencyUserId: 'asd',
+			autoAcceptBookings: false,
+		} as ServiceProviderOnboard;
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
+		);
+		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
+		const res = await Container.get(ServiceProvidersService).onboardServiceProvidersCSV([spOnboard]);
+		expect(ServicesServiceMock.getServicesCalled).toBeCalled();
+		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
+		expect(res.length).toBe(1);
+	});
+
+	it('should throw when onboard contain error', async () => {
+		const spOnboard = new ServiceProviderOnboard('aa', 'bb', 'cc');
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
+		);
+		try {
+			await Container.get(ServiceProvidersService).onboardServiceProvidersCSV([spOnboard]);
+		} catch (e) {
+			expect(e.code).toBe('SYS_INVALID_PARAM');
+		}
+	});
+
 	it('should save a service provider', async () => {
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new OrganisationAdminAuthGroup(adminMock, [organisation])]),
@@ -359,8 +389,15 @@ class TimeslotsServiceMock extends TimeslotsService {
 class ServicesServiceMock extends ServicesService {
 	public static getServiceTimeslotsSchedule: TimeslotsSchedule;
 	public static serviceMock: Service = new Service();
+	public static getServicesCalled = jest.fn();
 	public async getServiceTimeslotsSchedule(): Promise<TimeslotsSchedule> {
 		return Promise.resolve(ServicesServiceMock.getServiceTimeslotsSchedule);
+	}
+	public async getServices(): Promise<Service[]> {
+		ServicesServiceMock.serviceMock.name = 'name';
+		ServicesServiceMock.serviceMock.id = 1;
+		ServicesServiceMock.getServicesCalled();
+		return Promise.resolve([ServicesServiceMock.serviceMock]);
 	}
 
 	public async getService(id: number): Promise<Service> {

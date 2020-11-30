@@ -5,13 +5,18 @@ class RequestEndpointSG extends RequestEndpoint {
 
 	constructor() {
 		super();
-		this.setBaseUrl(this.BASE_URL).setHeader('Content-Type', 'application/json');
+		this.setBaseUrl(this.BASE_URL);
 	}
 
 	public setHeaders = (headerObject: { [e: string]: string }) => {
 		Object.keys(headerObject).forEach((key) => {
 			this.setHeader(key, headerObject[key]);
 		});
+		return this;
+	};
+
+	public createTextRequest = () => {
+		this.setJson(false).setHeader('Content-Type', 'text/plain');
 		return this;
 	};
 }

@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { parseCsv } from '../index';
+import { parseCsv } from '../csvParser';
 
 describe('Utils', () => {
 	it('should parse CSV', () => {

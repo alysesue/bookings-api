@@ -2,7 +2,7 @@ import { Container } from 'typescript-ioc';
 import { ScheduleForm, Service, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
 import { ServiceProvidersController } from '../serviceProviders.controller';
 import { ServiceProvidersService } from '../serviceProviders.service';
-import { ServiceProviderModel } from '../serviceProviders.apicontract';
+import { ServiceProviderModel, ServiceProviderOnboard } from '../serviceProviders.apicontract';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
 import { ServicesService } from '../../services/services.service';
@@ -191,6 +191,20 @@ describe('ServiceProviders.Controller', () => {
 		expect(listRequest.length).toBe(3);
 	});
 
+	it('should onboard multiple service providers as text', async () => {
+		ServiceProvidersMock.onboardServiceProvidersCSV.mockReturnValue([
+			ServiceProvider.create('Monica', 1),
+			ServiceProvider.create('Timmy', 1),
+		]);
+		const controller = Container.get(ServiceProvidersController);
+
+		await controller.onboardServiceProviders('name\nJohn\nMary\nJuliet\n');
+
+		const listRequest = ServiceProvidersMock.onboardServiceProvidersCSV.mock.calls[0][0] as ServiceProvider[];
+
+		expect(listRequest.length).toBe(3);
+	});
+
 	it('should set provider scheduleForm', async () => {
 		ServiceProvidersSvcMock.setProviderScheduleForm.mockReturnValue(Promise.resolve(new ScheduleForm()));
 		const providerScheduleFormRequest = new ScheduleFormRequest();
@@ -238,6 +252,7 @@ const ServiceProvidersSvcMock = {
 	getServiceProviders: jest.fn(),
 	getAvailableServiceProviders: jest.fn(),
 	updateServiceProvider: jest.fn(),
+	onboardServiceProvidersCSV: jest.fn(),
 	save: jest.fn(),
 	setProviderScheduleForm: jest.fn(),
 	getProviderScheduleForm: jest.fn(),
@@ -250,6 +265,9 @@ const ServiceProvidersSvcMock = {
 class ServiceProvidersServiceMock extends ServiceProvidersService {
 	public async getServiceProvider(spId: number): Promise<ServiceProvider> {
 		return ServiceProvidersSvcMock.getServiceProvider();
+	}
+	public async onboardServiceProvidersCSV(spRequest: ServiceProviderOnboard[]): Promise<ServiceProvider[]> {
+		return ServiceProvidersMock.onboardServiceProvidersCSV(spRequest);
 	}
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
 		return ServiceProvidersSvcMock.getServiceProviders();

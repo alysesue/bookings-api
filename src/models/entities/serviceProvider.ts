@@ -5,6 +5,8 @@ import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
 import { User } from './user';
 import { ScheduleForm } from './scheduleForm';
 import { TimeslotsSchedule } from './timeslotsSchedule';
+import { isEmail, isSGPhoneNumber } from 'mol-lib-api-contract/utils';
+import { BusinessValidation } from '../businessValidation';
 
 const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
 const DEFAULT_SCHEFULE_FORM_CONFIRMED = false;
@@ -23,7 +25,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._id = id;
 	}
 
-	@OneToOne((type) => ServiceProviderGroupMap, (e) => e._serviceProvider, { nullable: true })
+	@OneToOne(() => ServiceProviderGroupMap, (e) => e._serviceProvider, { nullable: true })
 	public _serviceProviderGroupMap: ServiceProviderGroupMap;
 
 	public get autoAcceptBookings(): boolean {
@@ -57,7 +59,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._serviceId = value;
 	}
 
-	@ManyToOne((type) => Service)
+	@ManyToOne(() => Service)
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
@@ -90,14 +92,21 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._scheduleFormConfirmed = value;
 	}
 
-	public static create(name: string, serviceId: number, email?: string, phone?: string) {
+	public static create(
+		name: string,
+		serviceId: number,
+		email?: string,
+		phone?: string,
+		agencyUserId?: string,
+		autoAcceptBookings = DEFAULT_AUTO_ACCEPT_BOOKINGS,
+	) {
 		const instance = new ServiceProvider();
 		instance._serviceId = serviceId;
 		instance._name = name;
 		instance._createdAt = new Date();
 		instance._email = email;
 		instance._phone = phone;
-		instance._autoAcceptBookings = DEFAULT_AUTO_ACCEPT_BOOKINGS;
+		instance._autoAcceptBookings = autoAcceptBookings;
 		instance._scheduleFormConfirmed = DEFAULT_SCHEFULE_FORM_CONFIRMED;
 		return instance;
 	}
@@ -188,5 +197,13 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 
 	public get agencyUserId(): string {
 		return this._linkedUser?.adminUser?.agencyUserId;
+	}
+
+	public async *asyncValidate(): AsyncIterable<BusinessValidation> {
+		if (!this.serviceId) yield new BusinessValidation(`For service provider: ${this.name}. Service not found`);
+		if (this.phone && !(await isSGPhoneNumber(this.phone)).pass)
+			yield new BusinessValidation(`For service provider: ${this.name}. Phone number is invalid: ${this.phone}.`);
+		if (this.email && !(await isEmail(this.email)).pass)
+			yield new BusinessValidation(`For service provider: ${this.name}. Email is invalid: ${this.email}.`);
 	}
 }
