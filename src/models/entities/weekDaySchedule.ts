@@ -91,7 +91,7 @@ export class WeekDaySchedule {
 
 		while (currentEndTime <= maxLastBlockEndTime) {
 			if (!this.intersectsAnyBreak(startTime, currentEndTime)) {
-				yield new Timeslot(startTime, currentEndTime);
+				yield { startTime, endTime: currentEndTime } as Timeslot;
 			}
 
 			startTime = currentEndTime;

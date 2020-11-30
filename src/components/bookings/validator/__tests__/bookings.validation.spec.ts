@@ -19,6 +19,10 @@ import {
 import { TimeslotWithCapacity } from '../../../../models/timeslotWithCapacity';
 import { AvailableTimeslotProviders } from '../../../../components/timeslots/availableTimeslotProviders';
 
+const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
+	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
+};
+
 // tslint:disable-next-line:no-big-function
 describe('Booking validation tests', () => {
 	const serviceProvider = ServiceProvider.create('provider', 1);
@@ -82,7 +86,7 @@ describe('Booking validation tests', () => {
 			entry.endTime = new Date(2020, 8, 26, 8, 45);
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider, new TimeslotWithCapacity(entry.startTime, entry.endTime, 1));
+			map.set(serviceProvider, createTimeslot(entry.startTime, entry.endTime, 1));
 
 			entry.setRelatedServiceProviders(map);
 
@@ -214,10 +218,7 @@ describe('Booking validation tests', () => {
 			.build();
 
 		BookingRepositoryMock.searchBookingsMock = [];
-		const timeslotWithCapacity = new TimeslotWithCapacity(
-			new Date('2020-10-01T01:00:00'),
-			new Date('2020-10-01T02:00:00'),
-		);
+		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
@@ -232,10 +233,7 @@ describe('Booking validation tests', () => {
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.build();
 
-		const timeslotWithCapacity = new TimeslotWithCapacity(
-			new Date('2020-10-01T01:00:00'),
-			new Date('2020-10-01T02:00:00'),
-		);
+		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
@@ -309,10 +307,7 @@ describe('Booking validation tests', () => {
 			.build();
 
 		BookingRepositoryMock.searchBookingsMock = [];
-		const timeslotWithCapacity = new TimeslotWithCapacity(
-			new Date('2020-10-01T01:00:00'),
-			new Date('2020-10-01T02:00:00'),
-		);
+		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 
@@ -348,7 +343,7 @@ describe('Booking validation tests', () => {
 			entry.endTime = new Date(2020, 8, 26, 8, 45);
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider, new TimeslotWithCapacity(entry.startTime, entry.endTime, 1));
+			map.set(serviceProvider, createTimeslot(entry.startTime, entry.endTime, 1));
 
 			entry.setRelatedServiceProviders(map);
 
@@ -394,7 +389,7 @@ describe('Booking validation tests', () => {
 			entry.endTime = new Date(2020, 8, 26, 7, 45);
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider, new TimeslotWithCapacity(entry.startTime, entry.endTime, 1));
+			map.set(serviceProvider, createTimeslot(entry.startTime, entry.endTime, 1));
 
 			entry.setRelatedServiceProviders(map);
 
