@@ -42,7 +42,6 @@ const UnavailabilitiesServiceMock = {
 	search: jest.fn(),
 };
 
-
 // tslint:disable-next-line:no-big-function
 describe('Timeslots Service', () => {
 	const date = new Date(2020, 4, 27);
