@@ -52,7 +52,7 @@ export class AvailableTimeslotProviders {
 		return Math.min(totalAvailability, sumAvailabilityVisible);
 	}
 
-	public isValid(): boolean {
+	public isValidAndVisible(): boolean {
 		for (const timeslotSp of this.getTimeslotServiceProviders()) {
 			return true;
 		}
@@ -67,35 +67,16 @@ export class AvailableTimeslotProviders {
 	}
 
 	public static create(entry: AggregatedEntry<ServiceProvider>): AvailableTimeslotProviders {
-		const instance = AvailableTimeslotProviders.empty(
-			entry.getTimeslot().getStartTime(),
-			entry.getTimeslot().getEndTime(),
-		);
+		const instance = AvailableTimeslotProviders.empty(entry.getTimeslot().startTime, entry.getTimeslot().endTime);
 		instance.setRelatedServiceProviders(entry.getGroups());
 		return instance;
 	}
 
-	public static createFromBooking(entry: AggregatedEntry<Booking>): AvailableTimeslotProviders {
-		const instance = AvailableTimeslotProviders.empty(
-			entry.getTimeslot().getStartTime(),
-			entry.getTimeslot().getEndTime(),
-		);
-
-		const bookings = Array.from(entry.getGroups().keys());
-		bookings
-			.filter((booking) => booking.serviceProvider)
-			.forEach((booking) => {
-				const spTimeslotItem = new TimeslotServiceProvider(booking.serviceProvider, 0);
-				instance._timeslotServiceProviders.set(booking.serviceProviderId, spTimeslotItem);
-			});
-		return instance;
-	}
-
-	public setRelatedServiceProviders(providers: Map<ServiceProvider, TimeslotWithCapacity>) {
+	public setRelatedServiceProviders(providers: ReadonlyMap<ServiceProvider, TimeslotWithCapacity>) {
 		this._timeslotServiceProviders = new Map<number, TimeslotServiceProvider>();
 		for (const item of providers) {
 			const [spItem, timeslotCapacity] = item;
-			const spTimeslotItem = new TimeslotServiceProvider(spItem, timeslotCapacity.getCapacity());
+			const spTimeslotItem = new TimeslotServiceProvider(spItem, timeslotCapacity.capacity);
 			this._timeslotServiceProviders.set(spItem.id, spTimeslotItem);
 		}
 	}

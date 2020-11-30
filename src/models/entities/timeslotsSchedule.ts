@@ -70,8 +70,8 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 		const firstDayStartTime = TimeOfDay.fromDate(range.startDatetime);
 		const lastDayEndTime = TimeOfDay.fromDate(range.endDatetime);
 
+		const date = initialDate;
 		for (let day = 0; day < daysCount; day++) {
-			const date = DateHelper.addDays(initialDate, day);
 			const weekdayTimeslots: TimeslotItem[] = validWeekDays.get(date.getDay());
 
 			if (!weekdayTimeslots || weekdayTimeslots.length === 0) {
@@ -84,9 +84,8 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 				endTimeOfDay: day === daysCount - 1 ? lastDayEndTime : null,
 			};
 
-			for (const timeslot of this.generateWeekdayValidTimeslots(weekdayTimeslots, weekDayRange)) {
-				yield timeslot;
-			}
+			yield* this.generateWeekdayValidTimeslots(weekdayTimeslots, weekDayRange);
+			date.setDate(date.getDate() + 1);
 		}
 	}
 
@@ -99,11 +98,11 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 				continue;
 			if (range.endTimeOfDay && TimeOfDay.compare(timeslotTemplate._endTime, range.endTimeOfDay) > 0) continue;
 
-			yield new TimeslotWithCapacity(
-				timeslotTemplate._startTime.useTimeOfDay(range.dayOfWeek),
-				timeslotTemplate._endTime.useTimeOfDay(range.dayOfWeek),
-				timeslotTemplate._capacity,
-			);
+			yield {
+				startTime: timeslotTemplate._startTime.useTimeOfDay(range.dayOfWeek),
+				endTime: timeslotTemplate._endTime.useTimeOfDay(range.dayOfWeek),
+				capacity: timeslotTemplate._capacity,
+			} as TimeslotWithCapacity;
 		}
 	}
 }

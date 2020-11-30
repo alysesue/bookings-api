@@ -75,7 +75,7 @@ export class TimeslotServiceProvider {
 
 	public isValid(): boolean {
 		if (this._acceptedBookings.length > 0) return true;
-		if (!this._isOverlapped && !this._isUnavailable) return true;
-		return false;
+		if (this._isOverlapped || this._isUnavailable) return false;
+		return this._capacity > 0;
 	}
 }
