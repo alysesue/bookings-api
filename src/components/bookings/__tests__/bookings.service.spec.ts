@@ -471,7 +471,6 @@ describe('Bookings.Service', () => {
 		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Update);
 	});
 
-
 	it('should call log with update action when updating service provider', async () => {
 		const bookingService = Container.get(BookingsService);
 		const bookingRequest = getBookingRequest();
