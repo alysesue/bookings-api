@@ -318,8 +318,6 @@ export class Booking {
 	public getUpdateChangeType(previousBooking?: Booking): ChangeLogAction {
 		if (this.startDateTime !== previousBooking.startDateTime || this.endDateTime !== previousBooking.endDateTime) {
 			return ChangeLogAction.Reschedule;
-		} else if (this.serviceProviderId !== previousBooking.serviceProviderId) {
-			return ChangeLogAction.Reschedule;
 		} else {
 			return ChangeLogAction.Update;
 		}
