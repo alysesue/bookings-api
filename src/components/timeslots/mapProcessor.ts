@@ -26,6 +26,12 @@ export class MapProcessor<K, V> {
 		}
 	}
 
+	private static *flatten<T>(collection: T[][]): Iterable<T> {
+		for (const actions of collection) {
+			yield* actions;
+		}
+	}
+
 	public static combine<K, V>(...processors: MapProcessor<K, V>[]): MapProcessor<K, V> {
 		if (processors.length === 0) {
 			throw new Error('Cannot combine empty list of map processors.');
@@ -34,7 +40,7 @@ export class MapProcessor<K, V> {
 			return processors[0];
 		}
 
-		const actions = processors.map((p) => p._actions).flat();
+		const actions = Array.from(MapProcessor.flatten(processors.map((p) => p._actions)));
 		return new MapProcessor<K, V>(...actions);
 	}
 }
