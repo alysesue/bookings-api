@@ -274,10 +274,6 @@ export class ServiceProvidersService {
 		await this.timeslotItemsService.deleteTimeslot({ id: timeslotId });
 	}
 
-	private delay(ms) {
-		return new Promise((resolve) => setTimeout(resolve, ms));
-	}
-
 	private async copyAndSaveTimeslotsScheduleInServiceProvider(
 		serviceProvider: ServiceProvider,
 		timeslotItems: TimeslotItem[],

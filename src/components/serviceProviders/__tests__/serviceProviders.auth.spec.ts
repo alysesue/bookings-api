@@ -23,7 +23,7 @@ describe('Service providers Auth', () => {
 		expect(authVisitor.hasPermission([userGroup])).toBeFalsy();
 	});
 
-	it('should be able to create a serviceProvider for service admin', () => {
+	it('should not be able to create a serviceProvider for service admin', () => {
 		const service = new Service();
 		const userGroup = new ServiceAdminAuthGroup(
 			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
@@ -34,7 +34,7 @@ describe('Service providers Auth', () => {
 		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProvider, CrudAction.Create);
 		authVisitor.visitServiceAdmin(userGroup);
 
-		expect(authVisitor.hasPermission([userGroup])).toBe(true);
+		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
 
 	it('should be able to create a serviceProvider for org admin', () => {
@@ -65,7 +65,7 @@ describe('Service providers Auth', () => {
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 	});
 
-	it('should update service provider for service admin', () => {
+	it('should not update service provider for service admin', () => {
 		const service = new Service();
 		service.id = 1;
 		const serviceAdminAuthGroup = new ServiceAdminAuthGroup(
@@ -78,7 +78,7 @@ describe('Service providers Auth', () => {
 		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProviderToUpdate, CrudAction.Update);
 		authVisitor.visitServiceAdmin(serviceAdminAuthGroup);
 
-		expect(authVisitor.hasPermission([serviceAdminAuthGroup])).toBe(true);
+		expect(authVisitor.hasPermission([serviceAdminAuthGroup])).toBe(false);
 	});
 
 	it('should not be able to update a service provider not belonging to authorised services for org admin', () => {
