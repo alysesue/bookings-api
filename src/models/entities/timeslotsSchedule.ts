@@ -70,8 +70,8 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 		const firstDayStartTime = TimeOfDay.fromDate(range.startDatetime);
 		const lastDayEndTime = TimeOfDay.fromDate(range.endDatetime);
 
-		const date = initialDate;
 		for (let day = 0; day < daysCount; day++) {
+			const date = DateHelper.addDays(initialDate, day);
 			const weekdayTimeslots: TimeslotItem[] = validWeekDays.get(date.getDay());
 
 			if (!weekdayTimeslots || weekdayTimeslots.length === 0) {
@@ -85,7 +85,6 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 			};
 
 			yield* this.generateWeekdayValidTimeslots(weekdayTimeslots, weekDayRange);
-			date.setDate(date.getDate() + 1);
 		}
 	}
 

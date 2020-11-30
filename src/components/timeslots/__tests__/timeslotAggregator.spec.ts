@@ -13,8 +13,8 @@ const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
 
 describe('Timeslot aggregator', () => {
 	it('should generate timeslots key', () => {
-		const key = generateTimeslotKey(new Date(2), new Date(3));
-		const expected = BigInt(2) * BigInt(Math.pow(2, 48)) + BigInt(3);
+		const key = generateTimeslotKey(new Date(2000000000000), new Date(3000000000000));
+		const expected = BigInt(2000000000000) * BigInt(Math.pow(2, 48)) + BigInt(3000000000000);
 		expect(key).toBe(expected);
 	});
 
