@@ -1,11 +1,12 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { RepositoryBase } from '../../core/repository';
 import { Unavailability } from '../../models';
-import { DeleteResult, SelectQueryBuilder } from 'typeorm';
+import { SelectQueryBuilder } from 'typeorm';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
 import { UnavailabilitiesQueryAuthVisitor } from './unavailabilities.auth';
 import { andWhere } from '../../tools/queryConditions';
+import { DefaultIsolationLevel, TransactionManager } from '../../core/transactionManager';
 
 @InRequestScope
 export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {
@@ -121,15 +122,46 @@ export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {
 		return await query.getCount();
 	}
 
-	public async delete(unavailabilityId: number): Promise<DeleteResult> {
-		const repository = await this.getRepository();
-		await repository
-			.createQueryBuilder()
-			.delete()
-			.from('public.unavailable_service_provider')
-			.where('unavailability_id = :unavailabilityId', { unavailabilityId })
-			.execute();
+	public async get(options: { id: number; skipAuthorisation?: boolean }): Promise<Unavailability> {
+		const { id } = options;
+		if (!id) {
+			return null;
+		}
+		const idCondition = 'u."_id" = :id';
+		const spRelationFilter = await this.getServiceProviderRelationFilter(options);
+		const query = await this.createSelectQuery([idCondition], { id }, options);
 
-		return repository.delete(unavailabilityId);
+		const entry = await query
+			.leftJoinAndSelect(
+				'u._serviceProviders',
+				'sp_relation',
+				spRelationFilter.condition,
+				spRelationFilter.params,
+			)
+			.getOne();
+		return entry;
+	}
+
+	public async delete(unavailability: Unavailability): Promise<void> {
+		await this.transactionManager.runInTransaction(DefaultIsolationLevel, async () => {
+			const serviceProviderIds = unavailability.serviceProviders.map((sp) => sp.id);
+			const repository = await this.getRepository();
+			const deleteProvidersRelationQuery = await repository
+				.createQueryBuilder()
+				.delete()
+				.from('public.unavailable_service_provider', 'sp_relation')
+				.where(`sp_relation.'serviceProvider_id' IN (:...serviceProviderIds)`, { serviceProviderIds });
+
+			const deleteUnavailabilityQuery = await repository
+				.createQueryBuilder('u')
+				.delete()
+				.where(
+					`u._id = :id AND NOT EXISTS(SELECT 1 FROM public.unavailable_service_provider sp_relation WHERE sp_relation.unavailability_id = :id)`,
+					{ id: unavailability.id },
+				);
+
+			await deleteProvidersRelationQuery.execute();
+			await deleteUnavailabilityQuery.execute();
+		});
 	}
 }

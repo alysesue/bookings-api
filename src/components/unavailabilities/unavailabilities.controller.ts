@@ -94,7 +94,7 @@ export class UnavailabilitiesController extends Controller {
 	@SuccessResponse(204, 'Deleted')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async deleteUnavailability(@Header('x-api-service') serviceId: number, @Path() id: number): Promise<void> {
+	public async deleteUnavailability(@Path() id: number): Promise<void> {
 		await this.unavailabilitiesService.deleteUnavailability(id);
 	}
 }

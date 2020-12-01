@@ -3,6 +3,8 @@ import { EntityManager } from 'typeorm';
 import { DbConnection } from './db.connection';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 
+export const DefaultIsolationLevel: IsolationLevel = 'READ COMMITTED';
+
 export type AsyncFunction<T> = () => Promise<T>;
 
 @InRequestScope
