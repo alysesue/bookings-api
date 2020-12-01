@@ -1,6 +1,7 @@
 import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
 
 export class UnavailabilityResponse {
+	public id: number;
 	public startTime: Date;
 	public endTime: Date;
 	public allServiceProviders: boolean;

@@ -4,7 +4,7 @@ import { TransactionManager } from './transactionManager';
 
 export abstract class RepositoryBase<T> {
 	@Inject
-	private transactionManager: TransactionManager;
+	protected transactionManager: TransactionManager;
 	private readonly modelType: ObjectType<T>;
 
 	constructor(modelType: ObjectType<T>) {

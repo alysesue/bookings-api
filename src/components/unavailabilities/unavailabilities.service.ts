@@ -7,7 +7,7 @@ import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { UnavailabilitiesActionAuthVisitor } from './unavailabilities.auth';
 import { ServicesRepository } from '../services/services.repository';
-import { DeleteResult } from 'typeorm';
+import { CrudAction } from '../../enums/crudAction';
 
 @InRequestScope
 export class UnavailabilitiesService {
@@ -20,9 +20,9 @@ export class UnavailabilitiesService {
 	@Inject
 	private userContext: UserContext;
 
-	private async verifyActionPermission(unavailability: Unavailability): Promise<void> {
+	private async verifyActionPermission(unavailability: Unavailability, action: CrudAction): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
-		if (!new UnavailabilitiesActionAuthVisitor(unavailability).hasPermission(authGroups)) {
+		if (!new UnavailabilitiesActionAuthVisitor(unavailability, action).hasPermission(authGroups)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
 				`User cannot perform this action for this unavailability.`,
 			);
@@ -31,7 +31,7 @@ export class UnavailabilitiesService {
 
 	public async create(request: UnavailabilityRequest): Promise<Unavailability> {
 		const entity = await this.mapToEntity(request, Unavailability.create());
-		await this.verifyActionPermission(entity);
+		await this.verifyActionPermission(entity, CrudAction.Create);
 		return await this.unavailabilitiesRepository.save(entity);
 	}
 
@@ -83,7 +83,7 @@ export class UnavailabilitiesService {
 		to: Date;
 		serviceId: number;
 		serviceProviderId?: number;
-		skipAuthorisation?: boolean;
+		// skipAuthorisation?: boolean;
 	}): Promise<Unavailability[]> {
 		return await this.unavailabilitiesRepository.search(options);
 	}
@@ -93,13 +93,19 @@ export class UnavailabilitiesService {
 		to: Date;
 		serviceId: number;
 		serviceProviderId: number;
-		skipAuthorisation?: boolean;
+		// skipAuthorisation?: boolean;
 	}): Promise<boolean> {
 		const count = await this.unavailabilitiesRepository.searchCount(params);
 		return count > 0;
 	}
 
-	public async deleteUnavailability(id: number): Promise<DeleteResult> {
-		return await this.unavailabilitiesRepository.delete(id);
+	public async deleteUnavailability(id: number): Promise<void> {
+		const entity = await this.unavailabilitiesRepository.get({ id });
+		if (!entity) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Unavailability entry not found.`);
+		}
+
+		await this.verifyActionPermission(entity, CrudAction.Delete);
+		await this.unavailabilitiesRepository.delete(entity);
 	}
 }
