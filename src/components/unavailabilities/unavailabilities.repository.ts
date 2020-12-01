@@ -38,7 +38,7 @@ export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {
 		const query = repository
 			.createQueryBuilder('u')
 			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
-			.leftJoin('u._service', 'service');
+			.leftJoinAndSelect('u._service', 'service');
 
 		return query;
 	}
@@ -144,24 +144,29 @@ export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {
 
 	public async delete(unavailability: Unavailability): Promise<void> {
 		await this.transactionManager.runInTransaction(DefaultIsolationLevel, async () => {
+			const { id } = unavailability;
 			const serviceProviderIds = unavailability.serviceProviders.map((sp) => sp.id);
 			const repository = await this.getRepository();
-			const deleteProvidersRelationQuery = await repository
+			if (serviceProviderIds.length > 0) {
+				await repository
+					.createQueryBuilder()
+					.delete()
+					.from('public.unavailable_service_provider')
+					.where('unavailability_id = :id AND "serviceProvider_id" IN (:...serviceProviderIds)', {
+						id,
+						serviceProviderIds,
+					})
+					.execute();
+			}
+
+			await repository
 				.createQueryBuilder()
 				.delete()
-				.from('public.unavailable_service_provider', 'sp_relation')
-				.where(`sp_relation.'serviceProvider_id' IN (:...serviceProviderIds)`, { serviceProviderIds });
-
-			const deleteUnavailabilityQuery = await repository
-				.createQueryBuilder('u')
-				.delete()
 				.where(
-					`u._id = :id AND NOT EXISTS(SELECT 1 FROM public.unavailable_service_provider sp_relation WHERE sp_relation.unavailability_id = :id)`,
-					{ id: unavailability.id },
-				);
-
-			await deleteProvidersRelationQuery.execute();
-			await deleteUnavailabilityQuery.execute();
+					`_id = :id AND NOT EXISTS(SELECT 1 FROM public.unavailable_service_provider sp_relation WHERE sp_relation.unavailability_id = :id)`,
+					{ id },
+				)
+				.execute();
 		});
 	}
 }
