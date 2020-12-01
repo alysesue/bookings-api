@@ -27,15 +27,19 @@ import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { BookingsMapper } from './bookings.mapper';
 import { ApiData, ApiDataFactory } from '../../apicontract';
+import { VerifyUserRequest } from '../userSessions/usersessions.apicontract';
+import { UserSessionsService } from '../userSessions/usersessions.service';
 
 @Route('v1/bookings')
 @Tags('Bookings')
 export class BookingsController extends Controller {
 	@Inject
 	private bookingsService: BookingsService;
-
 	@Inject
 	private timeslotService: TimeslotsService;
+	@Inject
+	private userSessionsService: UserSessionsService;
+
 
 	/**
 	 * Creates a new booking.
@@ -55,9 +59,14 @@ export class BookingsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<BookingResponse>> {
 		bookingRequest.outOfSlotBooking = false;
-		const booking = await this.bookingsService.save(bookingRequest, serviceId);
-		this.setStatus(201);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
+
+		const res = await this.userSessionsService.verify(new VerifyUserRequest(bookingRequest.token, bookingRequest.citizenUinFin));
+		if (res.success) {
+			const booking = await this.bookingsService.save(bookingRequest, serviceId);
+			this.setStatus(201);
+			return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
+		}
+		this.setStatus(401);
 	}
 
 	/**
