@@ -83,7 +83,7 @@ export class UnavailabilitiesService {
 		to: Date;
 		serviceId: number;
 		serviceProviderId?: number;
-		// skipAuthorisation?: boolean;
+		skipAuthorisation?: boolean;
 	}): Promise<Unavailability[]> {
 		return await this.unavailabilitiesRepository.search(options);
 	}
@@ -93,7 +93,7 @@ export class UnavailabilitiesService {
 		to: Date;
 		serviceId: number;
 		serviceProviderId: number;
-		// skipAuthorisation?: boolean;
+		skipAuthorisation?: boolean;
 	}): Promise<boolean> {
 		const count = await this.unavailabilitiesRepository.searchCount(params);
 		return count > 0;
