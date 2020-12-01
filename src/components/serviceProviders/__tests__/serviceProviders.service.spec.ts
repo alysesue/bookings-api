@@ -33,6 +33,10 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
+const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
+	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
+};
+
 // tslint:disable-next-line:no-big-function
 describe('ServiceProviders.Service', () => {
 	const serviceProviderMock = ServiceProvider.create('Name', 0);
@@ -120,6 +124,16 @@ describe('ServiceProviders.Service', () => {
 		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
 		await Container.get(ServiceProvidersService).saveServiceProviders([serviceProviderMock], 1);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
+	});
+
+	it('Set scheduleFrom for serviceProviders', async () => {
+		ServiceProvidersRepositoryMock.getServiceProvidersMock = [serviceProviderMock];
+		ScheduleFormsServiceMock.updateScheduleFormInEntity.mockImplementation(() => {
+			serviceProviderMock.scheduleForm = new ScheduleForm();
+			return Promise.resolve(serviceProviderMock);
+		});
+		await Container.get(ServiceProvidersService).setProvidersScheduleForm(1, {} as ScheduleFormRequest);
+		expect(ScheduleFormsServiceMock.updateScheduleFormInEntity).toBeCalled();
 	});
 
 	it('should set provider schedule', async () => {
@@ -262,8 +276,8 @@ describe('ServiceProviders.Service', () => {
 			serviceProvider2.id = 2;
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider1, new TimeslotWithCapacity(entry.startTime, entry.endTime, 1));
-			map.set(serviceProvider2, new TimeslotWithCapacity(entry.startTime, entry.endTime, 1));
+			map.set(serviceProvider1, createTimeslot(entry.startTime, entry.endTime, 1));
+			map.set(serviceProvider2, createTimeslot(entry.startTime, entry.endTime, 1));
 
 			entry.setRelatedServiceProviders(map);
 

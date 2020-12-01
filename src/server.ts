@@ -21,6 +21,7 @@ import { ContainerContextMiddleware } from './infrastructure/containerContext.mi
 import { UserContextMiddleware } from './infrastructure/userContext.middleware';
 import { ApiData } from './apicontract';
 import { BusinessErrorMiddleware } from './infrastructure/businessError.middleware';
+import { getConnectionOptions } from './core/connectionOptions';
 
 class ApiDataResponseHandler {
 	private _middleware: Koa.Middleware;
@@ -81,6 +82,8 @@ export async function startServer(): Promise<Server> {
 		.use(new UserContextMiddleware().build())
 		.use(HandledRoutes.build());
 
+	const dbOptions = getConnectionOptions();
+	logger.info(`Using DB: ${dbOptions.database} at ${dbOptions.host}`);
 	const dbConnection = Container.get(DbConnection);
 
 	await dbConnection.runMigrations();

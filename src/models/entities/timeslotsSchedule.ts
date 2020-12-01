@@ -84,9 +84,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 				endTimeOfDay: day === daysCount - 1 ? lastDayEndTime : null,
 			};
 
-			for (const timeslot of this.generateWeekdayValidTimeslots(weekdayTimeslots, weekDayRange)) {
-				yield timeslot;
-			}
+			yield* this.generateWeekdayValidTimeslots(weekdayTimeslots, weekDayRange);
 		}
 	}
 
@@ -99,11 +97,11 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 				continue;
 			if (range.endTimeOfDay && TimeOfDay.compare(timeslotTemplate._endTime, range.endTimeOfDay) > 0) continue;
 
-			yield new TimeslotWithCapacity(
-				timeslotTemplate._startTime.useTimeOfDay(range.dayOfWeek),
-				timeslotTemplate._endTime.useTimeOfDay(range.dayOfWeek),
-				timeslotTemplate._capacity,
-			);
+			yield {
+				startTime: timeslotTemplate._startTime.useTimeOfDay(range.dayOfWeek),
+				endTime: timeslotTemplate._endTime.useTimeOfDay(range.dayOfWeek),
+				capacity: timeslotTemplate._capacity,
+			} as TimeslotWithCapacity;
 		}
 	}
 }
