@@ -42,7 +42,6 @@ const UnavailabilitiesServiceMock = {
 	search: jest.fn(),
 };
 
-
 // tslint:disable-next-line:no-big-function
 describe('Timeslots Service', () => {
 	const date = new Date(2020, 4, 27);
@@ -51,7 +50,6 @@ describe('Timeslots Service', () => {
 	const timeslot2 = new TimeslotWithCapacity(DateHelper.setHours(date, 16, 0), DateHelper.setHours(date, 17, 0));
 	const timeslot3 = new TimeslotWithCapacity(DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
 	const timeslot4 = new TimeslotWithCapacity(DateHelper.setHours(date, 18, 30), DateHelper.setHours(date, 19, 30));
-
 
 	const ServiceMock = new Service();
 	ServiceMock.id = 1;
@@ -85,7 +83,6 @@ describe('Timeslots Service', () => {
 
 	pendingBookingMock.status = BookingStatus.PendingApproval;
 
-
 	const unavailability1 = new Unavailability();
 	unavailability1.allServiceProviders = true;
 	unavailability1.start = DateHelper.setHours(date, 22, 0);
@@ -96,7 +93,6 @@ describe('Timeslots Service', () => {
 	unavailability2.serviceProviders = [ServiceProviderMock];
 	unavailability2.start = DateHelper.setHours(date, 19, 0);
 	unavailability2.end = DateHelper.setHours(date, 20, 0);
-
 
 	beforeAll(() => {
 		Container.bind(BookingsRepository).factory(() => {
@@ -114,7 +110,6 @@ describe('Timeslots Service', () => {
 	});
 
 	beforeEach(() => {
-
 		BookingsRepositoryMock.search.mockImplementation(() => {
 			return Promise.resolve([pendingBookingMock, BookingMock]);
 		});
@@ -142,9 +137,7 @@ describe('Timeslots Service', () => {
 	afterEach(() => {
 		jest.resetAllMocks();
 		jest.clearAllMocks();
-
 	});
-
 
 	it('should aggregate results', async () => {
 		const service = Container.get(TimeslotsService);
@@ -278,7 +271,6 @@ describe('Timeslots Service', () => {
 		expect(timeslotSPs).toHaveLength(1);
 	});
 
-
 	it('should get no available service providers because all sp are unavailable', async () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 22, 0);
@@ -363,7 +355,6 @@ describe('Timeslots Service Out Of Slot', () => {
 		Container.bind(UnavailabilitiesService).factory(() => {
 			return UnavailabilitiesServiceMock;
 		});
-
 	});
 
 	beforeEach(() => {
@@ -385,9 +376,7 @@ describe('Timeslots Service Out Of Slot', () => {
 
 		TimeslotsScheduleMock.generateValidTimeslots.mockImplementation(() => []);
 		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([]));
-		UnavailabilitiesServiceMock.search.mockImplementation(() =>
-			Promise.resolve([]),
-		);
+		UnavailabilitiesServiceMock.search.mockImplementation(() => Promise.resolve([]));
 
 		const bookingStartTime = DateHelper.setHours(date, 17, 0);
 		const bookingEndDate = DateHelper.setHours(date, 18, 0);

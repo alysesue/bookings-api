@@ -8,6 +8,7 @@ import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-secu
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
+import { CaptchaService } from '../../captcha/captcha.service';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -41,6 +42,8 @@ describe('Bookings.Controller', () => {
 	beforeAll(() => {
 		Container.bind(BookingsService).to(BookingsServiceMock);
 		Container.bind(TimeslotsService).to(jest.fn(() => TimeslotsServiceMock));
+		Container.bind(CaptchaService).to(CaptchaServiceMock);
+
 	});
 
 	it('should accept booking', async () => {
@@ -114,6 +117,7 @@ describe('Bookings.Controller', () => {
 
 	it('should post booking', async () => {
 		BookingsServiceMock.mockPostBooking = Promise.resolve(testBooking1);
+		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(true));
 		const controller = Container.get(BookingsController);
 		const headers = {
 			[MOLSecurityHeaderKeys.USER_UINFIN]: MOLAuthType.USER,
@@ -121,8 +125,9 @@ describe('Bookings.Controller', () => {
 		};
 
 		(controller as any).context = { headers };
-
-		const result = await controller.postBooking(new BookingRequest(), 1);
+		const req = new BookingRequest();
+		req.token = "123";
+		const result = await controller.postBooking(req, 1);
 
 		expect(result).toBeDefined();
 	});
@@ -194,5 +199,14 @@ class BookingsServiceMock extends BookingsService {
 	public async update(bookingId: number, bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
 		return BookingsServiceMock.mockUpdateBooking;
+	}
+}
+
+
+export class CaptchaServiceMock extends CaptchaService {
+	public static verify = jest.fn<Promise<boolean>, any>();
+
+	public async verify(...params): Promise<any> {
+		return await CaptchaServiceMock.verify(...params);
 	}
 }

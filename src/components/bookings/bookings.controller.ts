@@ -27,8 +27,8 @@ import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { BookingsMapper } from './bookings.mapper';
 import { ApiData, ApiDataFactory } from '../../apicontract';
-import { VerifyUserRequest } from '../userSessions/usersessions.apicontract';
-import { UserSessionsService } from '../userSessions/usersessions.service';
+import { CaptchaService } from '../captcha/captcha.service';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 @Route('v1/bookings')
 @Tags('Bookings')
@@ -38,8 +38,7 @@ export class BookingsController extends Controller {
 	@Inject
 	private timeslotService: TimeslotsService;
 	@Inject
-	private userSessionsService: UserSessionsService;
-
+	private CaptchaService: CaptchaService;
 
 	/**
 	 * Creates a new booking.
@@ -59,14 +58,12 @@ export class BookingsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<BookingResponse>> {
 		bookingRequest.outOfSlotBooking = false;
-
-		const res = await this.userSessionsService.verify(new VerifyUserRequest(bookingRequest.token, bookingRequest.citizenUinFin));
-		if (res.success) {
+		if (await this.CaptchaService.verify(bookingRequest.token)) {
 			const booking = await this.bookingsService.save(bookingRequest, serviceId);
 			this.setStatus(201);
 			return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
 		}
-		this.setStatus(401);
+		throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Unable to verify token');
 	}
 
 	/**

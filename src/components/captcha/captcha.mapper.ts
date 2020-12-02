@@ -1,4 +1,4 @@
-import { VerifyUserResponse, GoogleVerifyApiResponse } from "./usersessions.apicontract";
+import { GoogleVerifyApiResponse, VerifyUserResponse } from './captcha.apicontract';
 
 export class UserSessionsMapper {
 	public static mapToResponse(data: GoogleVerifyApiResponse): VerifyUserResponse {
