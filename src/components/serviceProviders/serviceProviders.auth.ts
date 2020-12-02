@@ -83,8 +83,18 @@ export class ServiceProvidersActionAuthVisitor extends PermissionAwareAuthGroupV
 
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		const serviceIds = _userGroup.authorisedServices.map((service) => service.id);
-		if (serviceIds.includes(this.serviceProvider.serviceId) && CrudAction.Read === this.action) {
-			this.markWithPermission();
+		switch (this.action) {
+			case CrudAction.Create:
+				this.markWithPermission();
+				return;
+			case CrudAction.Delete:
+			case CrudAction.Read:
+				if (serviceIds.includes(this.serviceProvider.serviceId)) {
+					this.markWithPermission();
+				}
+				return;
+			default:
+				return;
 		}
 	}
 

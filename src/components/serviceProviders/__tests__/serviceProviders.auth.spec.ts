@@ -23,7 +23,7 @@ describe('Service providers Auth', () => {
 		expect(authVisitor.hasPermission([userGroup])).toBeFalsy();
 	});
 
-	it('should not be able to create a serviceProvider for service admin', () => {
+	it('should be able to create a serviceProvider for service admin', () => {
 		const service = new Service();
 		const userGroup = new ServiceAdminAuthGroup(
 			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
@@ -34,7 +34,7 @@ describe('Service providers Auth', () => {
 		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProvider, CrudAction.Create);
 		authVisitor.visitServiceAdmin(userGroup);
 
-		expect(authVisitor.hasPermission([userGroup])).toBe(false);
+		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 	});
 
 	it('should be able to create a serviceProvider for org admin', () => {
