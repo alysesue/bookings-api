@@ -9,6 +9,7 @@ import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 import { CaptchaService } from '../../captcha/captcha.service';
+import { MOLErrorV2, ErrorCodeV2 } from 'mol-lib-api-contract';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -149,6 +150,29 @@ describe('Bookings.Controller', () => {
 
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 	});
+});
+
+describe('Bookings.Controller captcha tests', () => {
+
+	beforeEach(() => {
+		jest.resetAllMocks();
+	});
+
+	it('should throw error if there is no captcha token on postBooking', async () => {
+		const bookingController = Container.get(BookingsController);
+		const req = new BookingRequest();
+		await expect(async () => await bookingController.postBooking(req, 1)).rejects.toStrictEqual(
+			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Unable to verify token'),
+		);
+	});
+	it('should throw error if there is no captcha token on reschedule', async () => {
+		const bookingController = Container.get(BookingsController);
+		const req = new BookingRequest();
+		await expect(async () => await bookingController.reschedule(1, req)).rejects.toStrictEqual(
+			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Unable to verify token'),
+		);
+	});
+
 });
 
 const TimeslotsServiceMock = {

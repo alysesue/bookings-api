@@ -101,8 +101,12 @@ export class BookingsController extends Controller {
 		@Path() bookingId: number,
 		@Body() rescheduleRequest: BookingRequest,
 	): Promise<ApiData<BookingResponse>> {
-		const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest, false);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(rescheduledBooking));
+		if (await this.CaptchaService.verify(rescheduleRequest.token)) {
+			const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest, false);
+			return ApiDataFactory.create(BookingsMapper.mapDataModel(rescheduledBooking));
+		}
+		throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Unable to verify token');
+
 	}
 
 	/**
