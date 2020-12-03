@@ -12,7 +12,7 @@ After installing git-crypt, go to the root of this repository and run `git crypt
 
 > Bookingsg specific prod git-crypt key is found in `/mol/MOL_PROD_BOOKINGSG_GC_KEY` variable in parameter store. (it is in base 64 format - `mol-prod-bookingsg-gc-key`)
 Get the key and convert it back from base 64
-`/path/to/git-crypt-base-64-string-file | python -m base64 -d > keyfile`
+`cat /path/to/git-crypt-base-64-string-file | python -m base64 -d > keyfile`
 and use git-crypt unlock to unlock prod.env file.
 `git-crypt unlock path/to/prod/keyfile`
 
