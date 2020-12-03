@@ -1,4 +1,4 @@
-import { Booking, BookingBuilder } from '../entities/booking';
+import { BookingBuilder } from '../entities/booking';
 import { ChangeLogAction, User } from '..';
 import { BookingStatus } from '../index';
 
