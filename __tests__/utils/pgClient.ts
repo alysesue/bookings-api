@@ -13,6 +13,7 @@ export class PgClient {
 	}
 	public async cleanAllTables() {
 		// Delete many-to-one relationships first
+		await this.pool.query('DELETE FROM unavailability;');
 		await this.pool.query('DELETE FROM booking_change_log;');
 		await this.pool.query('DELETE FROM booking;');
 		await this.pool.query('DELETE FROM timeslot_item;');

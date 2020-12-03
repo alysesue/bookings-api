@@ -6,6 +6,7 @@ import * as timeSpan from '../../tools/timeSpan';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { User } from './user';
 import { ChangeLogAction } from '../changeLogAction';
+import { DateHelper } from '../../infrastructure/dateHelper';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
@@ -316,9 +317,10 @@ export class Booking {
 	}
 
 	public getUpdateChangeType(previousBooking?: Booking): ChangeLogAction {
-		if (this.startDateTime !== previousBooking.startDateTime || this.endDateTime !== previousBooking.endDateTime) {
-			return ChangeLogAction.Reschedule;
-		} else if (this.serviceProviderId !== previousBooking.serviceProviderId) {
+		if (
+			!DateHelper.equals(this.startDateTime, previousBooking.startDateTime) ||
+			!DateHelper.equals(this.endDateTime, previousBooking.endDateTime)
+		) {
 			return ChangeLogAction.Reschedule;
 		} else {
 			return ChangeLogAction.Update;

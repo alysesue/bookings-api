@@ -43,7 +43,6 @@ describe('Bookings.Controller', () => {
 		Container.bind(BookingsService).to(BookingsServiceMock);
 		Container.bind(TimeslotsService).to(jest.fn(() => TimeslotsServiceMock));
 		Container.bind(CaptchaService).to(CaptchaServiceMock);
-
 	});
 
 	it('should accept booking', async () => {
@@ -126,7 +125,7 @@ describe('Bookings.Controller', () => {
 
 		(controller as any).context = { headers };
 		const req = new BookingRequest();
-		req.token = "123";
+		req.token = '123';
 		const result = await controller.postBooking(req, 1);
 
 		expect(result).toBeDefined();
@@ -201,7 +200,6 @@ class BookingsServiceMock extends BookingsService {
 		return BookingsServiceMock.mockUpdateBooking;
 	}
 }
-
 
 export class CaptchaServiceMock extends CaptchaService {
 	public static verify = jest.fn<Promise<boolean>, any>();

@@ -7,7 +7,7 @@ export const getConfig = () => ({
 	name: packageJSON.name,
 	version: packageJSON.version,
 	port: ConfigUtils.getIntValueFromEnv('PORT', 3000),
-	isDev: Boolean(ConfigUtils.getValueFromEnv('IS_DEV', 'false')),
+	isDev: ConfigUtils.getValueFromEnv('IS_DEV', 'false') === 'true',
 	env: ConfigUtils.getValueFromEnv('NODE_ENV', 'production'),
 	database: {
 		host: ConfigUtils.getValueFromEnv('BOOKINGSG_DB_HOST'),

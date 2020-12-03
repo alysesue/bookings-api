@@ -1,8 +1,62 @@
-import { BookingBuilder } from '../entities/booking';
-import { User } from '..';
+import { Booking, BookingBuilder } from '../entities/booking';
+import { ChangeLogAction, User } from '..';
 import { BookingStatus } from '../index';
 
 describe('Booking tests', () => {
+	it('should get update change type', () => {
+		const booking = new BookingBuilder()
+			.withCitizenUinFin('UINFIN')
+			.withServiceProviderId(1)
+			.withRefId('REFID')
+			.withStartDateTime(new Date('2020-01-10T11:00'))
+			.withEndDateTime(new Date('2020-01-10T12:00'))
+			.withLocation('Location')
+			.withDescription('Description')
+			.withServiceId(2)
+			.build();
+
+		const newbooking = new BookingBuilder()
+			.withCitizenUinFin('UINFIN')
+			.withServiceProviderId(1)
+			.withRefId('REFID')
+			.withStartDateTime(new Date('2020-01-10T11:00'))
+			.withEndDateTime(new Date('2020-01-10T12:00'))
+			.withLocation('New Location')
+			.withDescription('New Description')
+			.withServiceId(2)
+			.build();
+
+		const changeType = newbooking.getUpdateChangeType(booking);
+		expect(changeType).toBe(ChangeLogAction.Update);
+	});
+
+	it('should get reschedule change type', () => {
+		const booking = new BookingBuilder()
+			.withCitizenUinFin('UINFIN')
+			.withServiceProviderId(1)
+			.withRefId('REFID')
+			.withStartDateTime(new Date('2020-01-10T11:00'))
+			.withEndDateTime(new Date('2020-01-10T12:00'))
+			.withLocation('Location')
+			.withDescription('Description')
+			.withServiceId(2)
+			.build();
+
+		const newbooking = new BookingBuilder()
+			.withCitizenUinFin('UINFIN')
+			.withServiceProviderId(1)
+			.withRefId('REFID')
+			.withStartDateTime(new Date('2020-01-10T11:00'))
+			.withEndDateTime(new Date('2020-01-10T14:00'))
+			.withLocation('Location')
+			.withDescription('Description')
+			.withServiceId(2)
+			.build();
+
+		const changeType = newbooking.getUpdateChangeType(booking);
+		expect(changeType).toBe(ChangeLogAction.Reschedule);
+	});
+
 	it('should create accepted booking with builder', () => {
 		const start = new Date('2020-01-10T11:00');
 		const end = new Date('2020-01-10T12:00');

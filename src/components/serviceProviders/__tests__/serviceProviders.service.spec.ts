@@ -4,6 +4,7 @@ import { DeleteResult } from 'typeorm';
 import { ServiceProvidersService } from '../serviceProviders.service';
 import { ServiceProvidersRepository } from '../serviceProviders.repository';
 import {
+	Organisation,
 	ScheduleForm,
 	Service,
 	ServiceProvider,
@@ -23,7 +24,7 @@ import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
-import { ServiceAdminAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { OrganisationAdminAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.repository';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
@@ -32,6 +33,10 @@ afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
+
+const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
+	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
+};
 
 // tslint:disable-next-line:no-big-function
 describe('ServiceProviders.Service', () => {
@@ -50,6 +55,8 @@ describe('ServiceProviders.Service', () => {
 	timeslotsScheduleMock._serviceProvider = serviceProviderMock;
 	const serviceMockWithTemplate = new Service();
 	const request = new TimeslotItemRequest();
+	const organisation = new Organisation();
+	organisation.id = 1;
 
 	const serviceProvider = ServiceProvider.create('Peter', 1, 'test@email.com', '0000');
 	serviceProvider.id = 1;
@@ -95,6 +102,7 @@ describe('ServiceProviders.Service', () => {
 		serviceMockWithTemplate.timeslotsScheduleId = timeslotsScheduleMock._id;
 		serviceMockWithTemplate.timeslotsSchedule = cloneDeep(timeslotsScheduleMock);
 		serviceMockWithTemplate.timeslotsSchedule.timeslotItems = [timeslotItemMock];
+		serviceMockWithTemplate.organisationId = 1;
 
 		request.weekDay = Weekday.Thursday;
 		request.startTime = '11:00';
@@ -115,8 +123,10 @@ describe('ServiceProviders.Service', () => {
 
 	it('should save a service provider', async () => {
 		UserContextMock.getAuthGroups.mockImplementation(() =>
-			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
+			Promise.resolve([new OrganisationAdminAuthGroup(adminMock, [organisation])]),
 		);
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
 		await Container.get(ServiceProvidersService).saveServiceProviders([serviceProviderMock], 1);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
@@ -134,12 +144,15 @@ describe('ServiceProviders.Service', () => {
 
 	it('should set provider schedule', async () => {
 		UserContextMock.getAuthGroups.mockReturnValue(
-			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
+			Promise.resolve([new OrganisationAdminAuthGroup(adminMock, [organisation])]),
 		);
-		const service = new Service();
-		service.id = 1;
-		const serviceProviderData = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
-		serviceProviderData.service = service;
+		const serviceProviderData = ServiceProvider.create(
+			'Peter',
+			serviceMockWithTemplate.id,
+			'test@email.com',
+			'0000',
+		);
+		serviceProviderData.service = serviceMockWithTemplate;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderData;
 		ScheduleFormsServiceMock.updateScheduleFormInEntity.mockImplementation(() => {
 			serviceProviderData.scheduleForm = new ScheduleForm();
@@ -153,13 +166,11 @@ describe('ServiceProviders.Service', () => {
 	});
 
 	it('should update a service provider', async () => {
-		const service = new Service();
-		service.id = 1;
-		serviceProviderMock.service = service;
+		serviceProviderMock.service = serviceMockWithTemplate;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
 		UserContextMock.getAuthGroups.mockReturnValue(
-			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+			Promise.resolve([new OrganisationAdminAuthGroup(adminMock, [organisation])]),
 		);
 		await Container.get(ServiceProvidersService).updateSp(serviceProviderMock, 1);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
@@ -272,8 +283,8 @@ describe('ServiceProviders.Service', () => {
 			serviceProvider2.id = 2;
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider1, new TimeslotWithCapacity(entry.startTime, entry.endTime, 1));
-			map.set(serviceProvider2, new TimeslotWithCapacity(entry.startTime, entry.endTime, 1));
+			map.set(serviceProvider1, createTimeslot(entry.startTime, entry.endTime, 1));
+			map.set(serviceProvider2, createTimeslot(entry.startTime, entry.endTime, 1));
 
 			entry.setRelatedServiceProviders(map);
 

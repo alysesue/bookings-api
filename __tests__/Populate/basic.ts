@@ -26,3 +26,17 @@ export const populateServiceAndServiceProvider = async ({
 	const serviceProviderId = JSON.parse(response.body).data[0].id;
 	return { serviceId, serviceProviderId };
 };
+
+export const populateOutOfSlotBooking = async ({ startDateTime, endDateTime, serviceId, serviceProviderId, citizenUinFin, citizenName, citizenEmail  }): Promise<string> => {
+	const response = await AdminRequestEndpointSG.create({serviceId}).post('/bookings/admin', { body:
+			{
+				startDateTime,
+				endDateTime,
+				serviceProviderId,
+				citizenUinFin,
+				citizenName,
+				citizenEmail,
+			}
+	});
+	return JSON.parse(response.body).data.id;
+};

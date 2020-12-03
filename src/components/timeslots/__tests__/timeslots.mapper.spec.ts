@@ -20,7 +20,7 @@ describe('Timeslots Mapper', () => {
 		const spData = ServiceProvider.create('Timmy', 1);
 		spData.id = 1;
 		const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-		map.set(spData, new TimeslotWithCapacity(entry.startTime, entry.endTime, 1));
+		map.set(spData, { startTime: entry.startTime, endTime: entry.endTime, capacity: 1 } as TimeslotWithCapacity);
 
 		entry.setRelatedServiceProviders(map);
 
@@ -42,8 +42,16 @@ describe('Timeslots Mapper', () => {
 		serviceProvider2.id = 2;
 
 		const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-		map.set(serviceProvider1, new TimeslotWithCapacity(entry.startTime, entry.endTime, 1));
-		map.set(serviceProvider2, new TimeslotWithCapacity(entry.startTime, entry.endTime, 5));
+		map.set(serviceProvider1, {
+			startTime: entry.startTime,
+			endTime: entry.endTime,
+			capacity: 1,
+		} as TimeslotWithCapacity);
+		map.set(serviceProvider2, {
+			startTime: entry.startTime,
+			endTime: entry.endTime,
+			capacity: 5,
+		} as TimeslotWithCapacity);
 		entry.setRelatedServiceProviders(map);
 
 		const timeslotServiceProviders = Array.from(entry.getTimeslotServiceProviders());
