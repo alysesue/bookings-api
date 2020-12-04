@@ -10,7 +10,6 @@ import { BusinessError } from '../../../errors/businessError';
 import { concatIteratables, iterableToArray } from '../../../tools/asyncIterables';
 import { BookingBusinessValidations } from './bookingBusinessValidations';
 import { CaptchaService } from '../../captcha/captcha.service';
-import { PreProcessedFileInfo } from 'typescript';
 
 export interface IValidator {
 	validate(booking: Booking): Promise<void>;
