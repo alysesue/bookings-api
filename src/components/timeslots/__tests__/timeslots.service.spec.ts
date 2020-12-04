@@ -45,7 +45,6 @@ const UnavailabilitiesServiceMock = {
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
 	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
 };
-
 // tslint:disable-next-line:no-big-function
 describe('Timeslots Service', () => {
 	const date = new Date(2020, 4, 27);
