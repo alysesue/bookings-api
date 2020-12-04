@@ -126,7 +126,7 @@ describe('Bookings.Controller', () => {
 
 		(controller as any).context = { headers };
 		const req = new BookingRequest();
-		req.token = '123';
+		req.captchaToken = '123';
 		const result = await controller.postBooking(req, 1);
 
 		expect(result).toBeDefined();
@@ -150,29 +150,6 @@ describe('Bookings.Controller', () => {
 
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 	});
-});
-
-describe('Bookings.Controller captcha tests', () => {
-
-	beforeEach(() => {
-		jest.resetAllMocks();
-	});
-
-	it('should throw error if there is no captcha token on postBooking', async () => {
-		const bookingController = Container.get(BookingsController);
-		const req = new BookingRequest();
-		await expect(async () => await bookingController.postBooking(req, 1)).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Unable to verify token'),
-		);
-	});
-	it('should throw error if there is no captcha token on reschedule', async () => {
-		const bookingController = Container.get(BookingsController);
-		const req = new BookingRequest();
-		await expect(async () => await bookingController.reschedule(1, req)).rejects.toStrictEqual(
-			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Unable to verify token'),
-		);
-	});
-
 });
 
 const TimeslotsServiceMock = {

@@ -58,12 +58,9 @@ export class BookingsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<BookingResponse>> {
 		bookingRequest.outOfSlotBooking = false;
-		if (await this.CaptchaService.verify(bookingRequest.token)) {
-			const booking = await this.bookingsService.save(bookingRequest, serviceId);
-			this.setStatus(201);
-			return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
-		}
-		throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Unable to verify token');
+		const booking = await this.bookingsService.save(bookingRequest, serviceId);
+		this.setStatus(201);
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
 	}
 
 	/**
@@ -101,12 +98,8 @@ export class BookingsController extends Controller {
 		@Path() bookingId: number,
 		@Body() rescheduleRequest: BookingRequest,
 	): Promise<ApiData<BookingResponse>> {
-		if (await this.CaptchaService.verify(rescheduleRequest.token)) {
-			const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest, false);
-			return ApiDataFactory.create(BookingsMapper.mapDataModel(rescheduledBooking));
-		}
-		throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Unable to verify token');
-
+		const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest, false);
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(rescheduledBooking));
 	}
 
 	/**

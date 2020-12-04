@@ -8,5 +8,4 @@ import './components/organisations/organisations.controller';
 import './components/services/services.controller';
 import './components/serviceProviders/serviceProviders.controller';
 import './components/users/users.controller';
-import './components/captcha/usersessions.controller';
 import './components/unavailabilities/unavailabilities.controller';

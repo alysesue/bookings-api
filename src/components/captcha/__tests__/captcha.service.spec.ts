@@ -14,12 +14,12 @@ describe('Captcha Service', () => {
 	it('should verify token to google captcha api', async () => {
 		const returnVal = { success: true } as GoogleVerifyApiResponse;
 		(post as jest.Mock).mockImplementation(() => Promise.resolve(returnVal));
-		await Container.get(CaptchaService).verify("123");
+		await CaptchaService.verify("123");
 		expect(post).toBeCalled();
 	});
 
 	it('should return false when no token is provided', async () => {
-		const res = await Container.get(CaptchaService).verify("");
+		const res = await CaptchaService.verify("");
 		expect(res).toBe(false);
 	});
 

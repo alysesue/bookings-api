@@ -13,6 +13,7 @@ import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
+import { CaptchaService } from '../../captcha/captcha.service';
 
 export class BookingRepositoryMock extends BookingsRepository {
 	public static booking: Booking;
@@ -96,7 +97,7 @@ export class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
-	public init() {}
+	public init() { }
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(...params);
 	}
@@ -118,9 +119,17 @@ export class BookingChangeLogsServiceMock extends BookingChangeLogsService {
 export class ServicesServiceMock extends ServicesService {
 	public static getService = jest.fn();
 
-	public init() {}
+	public init() { }
 
 	public async getService(...params): Promise<any> {
 		return await ServicesServiceMock.getService(params);
+	}
+}
+
+export class CaptchaServiceMock extends CaptchaService {
+	public static verify = jest.fn<Promise<boolean>, any>();
+
+	public async verify(...params): Promise<any> {
+		return await CaptchaServiceMock.verify(...params);
 	}
 }

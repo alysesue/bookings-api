@@ -2,7 +2,7 @@ import { BusinessValidation } from '../../../models';
 
 /** Reserved BookingBusinessValidations range: 10001 - 10199 */
 export class BookingBusinessValidations {
-	private constructor() {}
+	private constructor() { }
 
 	public static readonly ServiceProviderNotAvailable = new BusinessValidation({
 		code: '10001',
@@ -53,5 +53,10 @@ export class BookingBusinessValidations {
 	public static readonly OutOfSlotServiceProviderRequired = new BusinessValidation({
 		code: '10010',
 		message: `Service provider is required for out of slot bookings`,
+	});
+
+	public static readonly InvalidCaptchaToken = new BusinessValidation({
+		code: '10011',
+		message: `Invalid captcha token`,
 	});
 }

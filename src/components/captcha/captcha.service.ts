@@ -8,7 +8,7 @@ const RECAPTCHA_THRESHOLD = 0.5;
 
 @InRequestScope
 export class CaptchaService {
-	public async verify(token: string): Promise<boolean> {
+	public static async verify(token: string): Promise<boolean> {
 		if (token) {
 			const secretKey = getConfig().recaptchaKey;
 			const res = await post<GoogleVerifyApiResponse>(

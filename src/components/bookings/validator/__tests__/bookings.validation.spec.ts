@@ -15,9 +15,11 @@ import {
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
 	UserContextMock,
+	CaptchaServiceMock.
 } from '../../__tests__/bookings.mocks';
 import { TimeslotWithCapacity } from '../../../../models/timeslotWithCapacity';
 import { AvailableTimeslotProviders } from '../../../../components/timeslots/availableTimeslotProviders';
+import { CaptchaService } from '../../../captcha/captcha.service';
 
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
 	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
@@ -49,12 +51,16 @@ describe('Booking validation tests', () => {
 		Container.bind(UnavailabilitiesService).to(UnavailabilitiesServiceMock);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
+		Container.bind(CaptchaService).to(CaptchaServiceMock);
 	});
 
 	beforeEach(() => {
 		jest.resetAllMocks();
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = undefined;
+
+		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(true));
+
 	});
 
 	it('should return regular booking validator', () => {
