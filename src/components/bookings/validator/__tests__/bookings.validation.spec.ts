@@ -15,7 +15,6 @@ import {
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
 	UserContextMock,
-	CaptchaServiceMock.
 } from '../../__tests__/bookings.mocks';
 import { TimeslotWithCapacity } from '../../../../models/timeslotWithCapacity';
 import { AvailableTimeslotProviders } from '../../../../components/timeslots/availableTimeslotProviders';
@@ -24,6 +23,8 @@ import { CaptchaService } from '../../../captcha/captcha.service';
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
 	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
 };
+
+jest.mock('../../../captcha/captcha.service');
 
 // tslint:disable-next-line:no-big-function
 describe('Booking validation tests', () => {
@@ -51,7 +52,6 @@ describe('Booking validation tests', () => {
 		Container.bind(UnavailabilitiesService).to(UnavailabilitiesServiceMock);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
-		Container.bind(CaptchaService).to(CaptchaServiceMock);
 	});
 
 	beforeEach(() => {
@@ -59,8 +59,9 @@ describe('Booking validation tests', () => {
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = undefined;
 
-		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(true));
-
+		const mockVerify = jest.fn();
+		mockVerify.mockReturnValue(Promise.resolve(true));
+		CaptchaService.verify = mockVerify;
 	});
 
 	it('should return regular booking validator', () => {
@@ -127,6 +128,26 @@ describe('Booking validation tests', () => {
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
 		).rejects.toMatchInlineSnapshot('[BusinessError: [10006] Citizen name not provided]');
+	});
+
+	it('should validate token', async () => {
+		(CaptchaService.verify as jest.Mock).mockRestore();
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenName('Andy')
+			.withCitizenUinFin('G3382058K')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.build();
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10011] Invalid captcha token]');
 	});
 
 	it('should concatenate validations', async () => {
