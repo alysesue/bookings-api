@@ -1,5 +1,5 @@
 import {PgClient} from "../../utils/pgClient";
-import {AdminRequestEndpointSG} from "../../utils/requestEndpointSG";
+import {OrganisationAdminRequestEndpointSG} from "../../utils/requestEndpointSG";
 import { populateServiceAndServiceProvider} from "../../Populate/basic";
 
 describe('Timeslots functional tests', () => {
@@ -22,7 +22,7 @@ describe('Timeslots functional tests', () => {
     });
 
     it('should create and get timeslots for organisation admin', async() => {
-        const createTimeslotsResponse = await AdminRequestEndpointSG.create({}).post(
+        const createTimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({}).post(
             `/service-providers/${result.serviceProviderId}/timeslotSchedule/timeslots`,
             {
                 body: {
@@ -35,7 +35,7 @@ describe('Timeslots functional tests', () => {
         );
         expect(createTimeslotsResponse.statusCode).toEqual(201);
 
-        const getTimeslotsResponse = await AdminRequestEndpointSG.create({}).get(`/service-providers/${result.serviceProviderId}/timeslotSchedule`);
-        expect(getTimeslotsResponse).toEqual(200);
+        const getTimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({}).get(`/service-providers/${result.serviceProviderId}/timeslotSchedule`);
+        expect(getTimeslotsResponse.statusCode).toEqual(200);
     });
 });

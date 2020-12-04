@@ -16,7 +16,7 @@ class RequestEndpointSG extends RequestEndpoint {
 	};
 }
 
-export class AdminRequestEndpointSG extends RequestEndpointSG {
+export class OrganisationAdminRequestEndpointSG extends RequestEndpointSG {
 	private ADMIN_HEADERS = {
 		'mol-token-bypass': 'true',
 		'mol-admin-email': 'admin@palo-it.com',
@@ -35,7 +35,7 @@ export class AdminRequestEndpointSG extends RequestEndpointSG {
 		organisation?: string;
 		nameService?: string;
 		serviceId?: string;
-	}): AdminRequestEndpointSG => {
+	}): OrganisationAdminRequestEndpointSG => {
 		const apiService = serviceId ? { 'x-api-service': serviceId } : {};
 		const headers = {
 			'mol-admin-email': `${nameService}@palo-it.com`,
@@ -46,7 +46,91 @@ export class AdminRequestEndpointSG extends RequestEndpointSG {
 			'mol-admin-username': `${nameService}User`,
 			...apiService,
 		};
-		return new AdminRequestEndpointSG(headers);
+		return new OrganisationAdminRequestEndpointSG(headers);
+	};
+
+	private constructor(headers: { [e: string]: string }) {
+		super();
+		this.setHeaders({
+			...this.ADMIN_HEADERS,
+			...headers,
+		});
+	}
+}
+
+export class ServiceAdminRequestEndpointSG extends RequestEndpointSG {
+	private ADMIN_HEADERS = {
+		'mol-token-bypass': 'true',
+		'mol-admin-email': 'admin@palo-it.com',
+		'mol-admin-groups': 'bookingsg:svc-admin-marriage:localorg',
+		'mol-admin-id': 'df9e8028-f308-4fb7-a9d8-d8af00455981',
+		'mol-admin-name': 'Armin The Admin',
+		'mol-admin-username': 'adminUser',
+		'mol-auth-type': 'ADMIN',
+	};
+
+	public static create = ({
+								organisation = 'localorg',
+								nameService = 'admin',
+								serviceId,
+							}: {
+		organisation?: string;
+		nameService?: string;
+		serviceId?: string;
+	}): ServiceAdminRequestEndpointSG => {
+		const apiService = serviceId ? { 'x-api-service': serviceId } : {};
+		const headers = {
+			'mol-admin-email': `${nameService}@palo-it.com`,
+			'mol-admin-groups': `bookingsg:svc-admin-${nameService}:${organisation}`,
+			// TODO: generate uuid
+			'mol-admin-id': `f9b327e70bbcf42494ccb28b2d98e00e`,
+			'mol-admin-name': `${nameService} The Admin`,
+			'mol-admin-username': `${nameService}User`,
+			...apiService,
+		};
+		return new ServiceAdminRequestEndpointSG(headers);
+	};
+
+	private constructor(headers: { [e: string]: string }) {
+		super();
+		this.setHeaders({
+			...this.ADMIN_HEADERS,
+			...headers,
+		});
+	}
+}
+
+export class ServiceProviderRequestEndpointSG extends RequestEndpointSG {
+	private ADMIN_HEADERS = {
+		'mol-token-bypass': 'true',
+		'mol-admin-email': 'admin@palo-it.com',
+		'mol-admin-groups': 'bookingsg:service-provider:localorg',
+		'mol-admin-id': 'df9e8028-f308-4fb7-a9d8-d8af00455981',
+		'mol-admin-name': 'Armin The Admin',
+		'mol-admin-username': 'adminUser',
+		'mol-auth-type': 'ADMIN',
+	};
+
+	public static create = ({
+								organisation = 'localorg',
+								nameService = 'admin',
+								serviceId,
+							}: {
+		organisation?: string;
+		nameService?: string;
+		serviceId?: string;
+	}): ServiceProviderRequestEndpointSG => {
+		const apiService = serviceId ? { 'x-api-service': serviceId } : {};
+		const headers = {
+			'mol-admin-email': `${nameService}@palo-it.com`,
+			'mol-admin-groups': `bookingsg:service-provider:${organisation}`,
+			// TODO: generate uuid
+			'mol-admin-id': `f9b327e70bbcf42494ccb28b2d98e00e`,
+			'mol-admin-name': `${nameService} The Admin`,
+			'mol-admin-username': `${nameService}User`,
+			...apiService,
+		};
+		return new ServiceProviderRequestEndpointSG(headers);
 	};
 
 	private constructor(headers: { [e: string]: string }) {
