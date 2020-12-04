@@ -10,6 +10,7 @@ import { BusinessError } from '../../../errors/businessError';
 import { concatIteratables, iterableToArray } from '../../../tools/asyncIterables';
 import { BookingBusinessValidations } from './bookingBusinessValidations';
 import { CaptchaService } from '../../captcha/captcha.service';
+import { PreProcessedFileInfo } from 'typescript';
 
 export interface IValidator {
 	validate(booking: Booking): Promise<void>;
@@ -51,17 +52,13 @@ abstract class BookingsValidator implements IValidator {
 			yield BookingBusinessValidations.EndTimeLesserThanStartTime;
 		}
 	}
-	private static async *validateToken(booking: Booking): AsyncIterable<BusinessValidation> {
-		const res = await CaptchaService.verify(booking.captchaToken);
-		if (!res) {
-			yield BookingBusinessValidations.InvalidCaptchaToken;
-		}
-	}
 
 	public async *getValidations(booking: Booking): AsyncIterable<BusinessValidation> {
 		let yieldedAny = false;
+
+		yield* this.validateToken(booking);
+
 		for await (const validation of concatIteratables(
-			BookingsValidator.validateToken(booking),
 			this.validateServiceProviderExisting(booking),
 			BookingsValidator.validateDuration(booking),
 			BookingsValidator.validateCitizenDetails(booking),
@@ -78,6 +75,8 @@ abstract class BookingsValidator implements IValidator {
 	}
 
 	protected abstract validateAvailability(booking: Booking): AsyncIterable<BusinessValidation>;
+
+	protected abstract validateToken(booking: Booking): AsyncIterable<BusinessValidation>;
 
 	protected async *validateServiceProviderExisting(booking: Booking): AsyncIterable<BusinessValidation> {
 		if (booking.serviceProviderId) {
@@ -160,6 +159,10 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 			}),
 		);
 	}
+
+	protected async *validateToken(booking: Booking): AsyncIterable<BusinessValidation> {
+		return;
+	}
 }
 
 @InRequestScope
@@ -191,6 +194,13 @@ class SlotBookingsValidator extends BookingsValidator {
 			if (providers.length === 0) {
 				yield BookingBusinessValidations.ServiceProvidersNotAvailable;
 			}
+		}
+	}
+
+	protected async *validateToken(booking: Booking): AsyncIterable<BusinessValidation> {
+		const res = await CaptchaService.verify(booking.captchaToken);
+		if (!res) {
+			yield BookingBusinessValidations.InvalidCaptchaToken;
 		}
 	}
 }
