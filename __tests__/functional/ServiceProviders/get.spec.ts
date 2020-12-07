@@ -1,4 +1,4 @@
-import { AdminRequestEndpointSG } from '../../utils/requestEndpointSG';
+import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { PgClient } from '../../utils/pgClient';
 import { populateService } from '../../Populate/basic';
 
@@ -26,7 +26,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it('Post & Get serviceProvider', async () => {
-		const portResponse = await AdminRequestEndpointSG.create({ serviceId: serviceId! }).post('/service-providers', {
+		const portResponse = await OrganisationAdminRequestEndpointSG.create({ serviceId: serviceId! }).post('/service-providers', {
 			body: {
 				serviceProviders: [
 					{
@@ -39,7 +39,7 @@ describe('Tests endpoint and populate data', () => {
 		});
 		expect(portResponse.statusCode).toEqual(204);
 
-		const getResponse = await AdminRequestEndpointSG.create({ serviceId: serviceId! }).get('/service-providers');
+		const getResponse = await OrganisationAdminRequestEndpointSG.create({ serviceId: serviceId! }).get('/service-providers');
 		expect(getResponse.statusCode).toEqual(200);
 		expect(JSON.parse(getResponse.body).data[0].name).toEqual(SP_NAME);
 		expect(JSON.parse(getResponse.body).data[0].email).toEqual(SP_EMAIL);

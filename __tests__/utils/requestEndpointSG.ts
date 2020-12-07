@@ -16,7 +16,7 @@ class RequestEndpointSG extends RequestEndpoint {
 	};
 }
 
-export class AdminRequestEndpointSG extends RequestEndpointSG {
+export class OrganisationAdminRequestEndpointSG extends RequestEndpointSG {
 	private ADMIN_HEADERS = {
 		'mol-token-bypass': 'true',
 		'mol-admin-email': 'admin@palo-it.com',
@@ -35,7 +35,7 @@ export class AdminRequestEndpointSG extends RequestEndpointSG {
 		organisation?: string;
 		nameService?: string;
 		serviceId?: string;
-	}): AdminRequestEndpointSG => {
+	}): OrganisationAdminRequestEndpointSG => {
 		const apiService = serviceId ? { 'x-api-service': serviceId } : {};
 		const headers = {
 			'mol-admin-email': `${nameService}@palo-it.com`,
@@ -46,7 +46,7 @@ export class AdminRequestEndpointSG extends RequestEndpointSG {
 			'mol-admin-username': `${nameService}User`,
 			...apiService,
 		};
-		return new AdminRequestEndpointSG(headers);
+		return new OrganisationAdminRequestEndpointSG(headers);
 	};
 
 	private constructor(headers: { [e: string]: string }) {
