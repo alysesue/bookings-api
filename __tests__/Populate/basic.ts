@@ -48,3 +48,24 @@ export const populateOutOfSlotBooking = async ({
 	});
 	return JSON.parse(response.body).data.id;
 };
+
+export const populateIndividualTimeslot = async ({
+	serviceProviderId,
+	weekDay,
+	startTime,
+	endTime,
+	capacity,
+}): Promise<{id: number, endTime: string, startTime: string, weekDay: number, capacity: number}> => {
+	const response = await OrganisationAdminRequestEndpointSG.create({}).post(
+		`/service-providers/${serviceProviderId}/timeslotSchedule/timeslots`,
+		{
+			body: {
+				weekDay,
+				startTime,
+				endTime,
+				capacity,
+			},
+		},
+	);
+	return JSON.parse(response.body).data;
+};

@@ -8,6 +8,10 @@ import {
 
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
+	const WEEKDAY = 0;
+	const START_TIME = '10:00';
+	const END_TIME = '11:00';
+	const CAPACITY = 2;
 	let result1;
 
 	beforeAll(async () => {
@@ -30,13 +34,17 @@ describe('Timeslots functional tests', () => {
 		    `/service-providers/${result1.serviceProviderId}/timeslotSchedule/timeslots`,
 		    {
 		        body: {
-		            weekDay: 0,
-		            startTime: '10:00',
-		            endTime: '11:00',
-		            capacity: 2,
+		            weekDay: WEEKDAY,
+		            startTime: START_TIME,
+		            endTime: END_TIME,
+		            capacity: CAPACITY,
 		        },
 		    },
 		);
 		expect(response.statusCode).toEqual(201);
+		expect(JSON.parse(response.body).data.weekDay).toEqual(WEEKDAY);
+		expect(JSON.parse(response.body).data.startTime).toEqual(START_TIME);
+		expect(JSON.parse(response.body).data.endTime).toEqual(END_TIME);
+		expect(JSON.parse(response.body).data.capacity).toEqual(CAPACITY);
 	});
 });
