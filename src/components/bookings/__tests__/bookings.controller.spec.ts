@@ -9,7 +9,6 @@ import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 import { CaptchaService } from '../../captcha/captcha.service';
-import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 afterAll(() => {
 	jest.resetAllMocks();
