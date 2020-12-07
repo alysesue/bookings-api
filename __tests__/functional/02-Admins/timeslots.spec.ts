@@ -1,41 +1,44 @@
-import {PgClient} from "../../utils/pgClient";
-import {OrganisationAdminRequestEndpointSG} from "../../utils/requestEndpointSG";
-import { populateServiceAndServiceProvider} from "../../Populate/basic";
+import { PgClient } from '../../utils/pgClient';
+import {
+	OrganisationAdminRequestEndpointSG,
+} from '../../utils/requestEndpointSG';
+import {
+	populateIndividualTimeslot,
+	populateServiceAndServiceProvider,
+} from '../../Populate/basic';
 
 describe('Timeslots functional tests', () => {
-    const pgClient = new PgClient();
-    let result;
+	const pgClient = new PgClient();
+	let result1;
 
-    beforeAll(async () => {
-        await pgClient.cleanAllTables();
-    });
-    afterAll(async () => {
-        await pgClient.close();
-    });
+	beforeAll(async () => {
+		await pgClient.cleanAllTables();
+	});
+	afterAll(async () => {
+		await pgClient.close();
+	});
 
-    beforeEach(async () => {
-        result = await populateServiceAndServiceProvider({});
-    });
+	beforeEach(async () => {
+		result1 = await populateServiceAndServiceProvider({nameService: 'Service1'});
+		await populateIndividualTimeslot({serviceProviderId: result1.serviceProviderId, weekDay: 0, startTime: '01:00', endTime: '02:00', capacity: 1});
+	});
 
-    afterEach(async () => {
-        await pgClient.cleanAllTables();
-    });
+	afterEach(async () => {
+		await pgClient.cleanAllTables();
+	});
 
-    it('should create and get timeslots for organisation admin', async() => {
-        const createTimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({}).post(
-            `/service-providers/${result.serviceProviderId}/timeslotSchedule/timeslots`,
-            {
-                body: {
-                    weekDay: 0,
-                    startTime: '01:00',
-                    endTime: '02:00',
-                    capacity: 1,
-                },
-            },
-        );
-        expect(createTimeslotsResponse.statusCode).toEqual(201);
-
-        const getTimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({}).get(`/service-providers/${result.serviceProviderId}/timeslotSchedule`);
-        expect(getTimeslotsResponse.statusCode).toEqual(200);
-    });
+	it('should create individual timeslot with capacity', async () => {
+		const response = await OrganisationAdminRequestEndpointSG.create({}).post(
+		    `/service-providers/${result1.serviceProviderId}/timeslotSchedule/timeslots`,
+		    {
+		        body: {
+		            weekDay: 0,
+		            startTime: '10:00',
+		            endTime: '11:00',
+		            capacity: 2,
+		        },
+		    },
+		);
+		expect(response.statusCode).toEqual(201);
+	});
 });

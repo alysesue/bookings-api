@@ -27,16 +27,42 @@ export const populateServiceAndServiceProvider = async ({
 	return { serviceId, serviceProviderId };
 };
 
-export const populateOutOfSlotBooking = async ({ startDateTime, endDateTime, serviceId, serviceProviderId, citizenUinFin, citizenName, citizenEmail  }): Promise<string> => {
-	const response = await OrganisationAdminRequestEndpointSG.create({serviceId}).post('/bookings/admin', { body:
-			{
-				startDateTime,
-				endDateTime,
-				serviceProviderId,
-				citizenUinFin,
-				citizenName,
-				citizenEmail,
-			}
+export const populateOutOfSlotBooking = async ({
+	startDateTime,
+	endDateTime,
+	serviceId,
+	serviceProviderId,
+	citizenUinFin,
+	citizenName,
+	citizenEmail,
+}): Promise<string> => {
+	const response = await OrganisationAdminRequestEndpointSG.create({ serviceId }).post('/bookings/admin', {
+		body: {
+			startDateTime,
+			endDateTime,
+			serviceProviderId,
+			citizenUinFin,
+			citizenName,
+			citizenEmail,
+		},
 	});
 	return JSON.parse(response.body).data.id;
+};
+
+export const populateIndividualTimeslot = async ({
+	serviceProviderId,
+ 	weekDay,
+	startTime,
+ 	endTime,
+	capacity,
+ }): Promise<any> => {
+	const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/service-providers/${serviceProviderId}/timeslotSchedule/timeslots`, {
+		body: {
+			weekDay,
+			startTime,
+			endTime,
+			capacity,
+		},
+	});
+	return JSON.parse(response.body).data;
 };

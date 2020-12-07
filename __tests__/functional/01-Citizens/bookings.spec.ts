@@ -1,6 +1,9 @@
 import { PgClient } from '../../utils/pgClient';
 import { CitizenRequestEndpointSG } from '../../utils/requestEndpointSG';
-import {populateOutOfSlotBooking, populateServiceAndServiceProvider} from '../../Populate/basic';
+import {
+	populateOutOfSlotBooking,
+	populateServiceAndServiceProvider
+} from '../../Populate/basic';
 
 describe('Bookings functional tests', () => {
 	const pgClient = new PgClient();
