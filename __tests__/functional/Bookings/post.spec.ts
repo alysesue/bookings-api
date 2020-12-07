@@ -1,5 +1,5 @@
 import { PgClient } from '../../utils/pgClient';
-import { CitizenRequestEndpointSG } from '../../utils/requestEndpointSG';
+import { CitizenRequestEndpointSG, OrganisationAdminRequestEndpointSG} from '../../utils/requestEndpointSG';
 import {
 	populateOutOfSlotBooking,
 	populateServiceAndServiceProvider
@@ -29,6 +29,11 @@ describe('Bookings functional tests', () => {
 
 	afterEach(async () => {
 		await pgClient.cleanAllTables();
+	});
+
+	it('admin should be able to create out of slot booking', async () => {
+		const adminCreateBookingOos = await OrganisationAdminRequestEndpointSG.create({ serviceId: result.serviceId }).post(`/bookings/admin`, { body: { startDateTime, endDateTime, serviceProviderId: result.serviceProviderId, citizenUinFin, citizenName, citizenEmail } });
+		expect(adminCreateBookingOos.statusCode).toEqual(201);
 	});
 
 	it('admin should create out of slot booking and citizen cancels a booking', async() => {

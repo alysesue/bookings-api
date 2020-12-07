@@ -1,4 +1,3 @@
-import { Container } from 'typescript-ioc';
 import { CaptchaService } from '../captcha.service';
 import { GoogleVerifyApiResponse } from '../captcha.apicontract';
 import { post } from '../../../interface';

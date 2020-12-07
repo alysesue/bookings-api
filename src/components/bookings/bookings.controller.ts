@@ -28,7 +28,6 @@ import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/commo
 import { BookingsMapper } from './bookings.mapper';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { CaptchaService } from '../captcha/captcha.service';
-import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 @Route('v1/bookings')
 @Tags('Bookings')
