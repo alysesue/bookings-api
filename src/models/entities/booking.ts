@@ -24,6 +24,7 @@ export class BookingBuilder {
 	public citizenName: string;
 	public citizenEmail: string;
 	public autoAccept: boolean;
+	public captchaToken: string;
 
 	public withServiceId(serviceId: number): BookingBuilder {
 		this.serviceId = serviceId;
@@ -87,6 +88,10 @@ export class BookingBuilder {
 
 	public withAutoAccept(autoAccept: boolean): BookingBuilder {
 		this.autoAccept = !!autoAccept;
+		return this;
+	}
+	public withCaptchaToken(captchaToken: string): BookingBuilder {
+		this.captchaToken = captchaToken;
 		return this;
 	}
 
@@ -181,6 +186,7 @@ export class Booking {
 		instance._citizenPhone = builder.citizenPhone;
 		instance._citizenName = builder.citizenName;
 		instance._citizenEmail = builder.citizenEmail;
+		instance._captchaToken = builder.captchaToken;
 
 		return instance;
 	}
@@ -301,6 +307,12 @@ export class Booking {
 
 	public set location(location: string) {
 		this._location = location;
+	}
+
+	private _captchaToken: string;
+
+	public get captchaToken(): string {
+		return this._captchaToken;
 	}
 
 	public clone(): Booking {

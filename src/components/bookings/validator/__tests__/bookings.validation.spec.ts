@@ -18,10 +18,13 @@ import {
 } from '../../__tests__/bookings.mocks';
 import { TimeslotWithCapacity } from '../../../../models/timeslotWithCapacity';
 import { AvailableTimeslotProviders } from '../../../../components/timeslots/availableTimeslotProviders';
+import { CaptchaService } from '../../../captcha/captcha.service';
 
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
 	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
 };
+
+jest.mock('../../../captcha/captcha.service');
 
 // tslint:disable-next-line:no-big-function
 describe('Booking validation tests', () => {
@@ -55,6 +58,10 @@ describe('Booking validation tests', () => {
 		jest.resetAllMocks();
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = undefined;
+
+		const mockVerify = jest.fn();
+		mockVerify.mockReturnValue(Promise.resolve(true));
+		CaptchaService.verify = mockVerify;
 	});
 
 	it('should return regular booking validator', () => {
@@ -121,6 +128,27 @@ describe('Booking validation tests', () => {
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
 		).rejects.toMatchInlineSnapshot('[BusinessError: [10006] Citizen name not provided]');
+	});
+
+	it('should validate token', async () => {
+		(CaptchaService.verify as jest.Mock).mockRestore();
+		const booking = new BookingBuilder()
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.withCitizenName('Andy')
+			.withCitizenUinFin('G3382058K')
+			.withCitizenEmail('email@gmail.com')
+			.build();
+
+		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10011] Invalid captcha token]');
 	});
 
 	it('should concatenate validations', async () => {

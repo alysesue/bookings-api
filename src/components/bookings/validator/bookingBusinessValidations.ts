@@ -54,4 +54,9 @@ export class BookingBusinessValidations {
 		code: '10010',
 		message: `Service provider is required for out of slot bookings`,
 	});
+
+	public static readonly InvalidCaptchaToken = new BusinessValidation({
+		code: '10011',
+		message: `Invalid captcha token`,
+	});
 }

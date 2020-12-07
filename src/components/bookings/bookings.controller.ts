@@ -27,15 +27,18 @@ import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { BookingsMapper } from './bookings.mapper';
 import { ApiData, ApiDataFactory } from '../../apicontract';
+import { CaptchaService } from '../captcha/captcha.service';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 @Route('v1/bookings')
 @Tags('Bookings')
 export class BookingsController extends Controller {
 	@Inject
 	private bookingsService: BookingsService;
-
 	@Inject
 	private timeslotService: TimeslotsService;
+	@Inject
+	private CaptchaService: CaptchaService;
 
 	/**
 	 * Creates a new booking.

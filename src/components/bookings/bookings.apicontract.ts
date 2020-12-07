@@ -28,6 +28,7 @@ export class BookingRequest {
 	public citizenPhone?: string | null;
 	public location?: string | null;
 	public description?: string | null;
+	public captchaToken?: string | null;
 }
 
 export interface RescheduleBookingRequest extends BookingRequest {

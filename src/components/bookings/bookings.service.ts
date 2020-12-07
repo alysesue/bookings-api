@@ -279,6 +279,7 @@ export class BookingsService {
 			.withCitizenPhone(bookingRequest.citizenPhone)
 			.withCitizenEmail(bookingRequest.citizenEmail)
 			.withAutoAccept(BookingsService.shouldAutoAccept(currentUser, serviceProvider))
+			.withCaptchaToken(bookingRequest.captchaToken)
 			.build();
 
 		booking.serviceProvider = serviceProvider;

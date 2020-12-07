@@ -13,6 +13,7 @@ import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
+import { CaptchaService } from '../../captcha/captcha.service';
 
 export class BookingRepositoryMock extends BookingsRepository {
 	public static booking: Booking;

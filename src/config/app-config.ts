@@ -16,6 +16,7 @@ export const getConfig = () => ({
 		username: ConfigUtils.getValueFromEnv('BOOKINGSG_DB_USERNAME'),
 		password: ConfigUtils.getValueFromEnv('DB_PASSWORD_BOOKINGSG_APP'),
 	},
+	recaptchaKey: ConfigUtils.getValueFromEnv('RECAPTCHA_KEY_BOOKINGSG_APP'),
 });
 
 export const basePath = '/bookingsg';
