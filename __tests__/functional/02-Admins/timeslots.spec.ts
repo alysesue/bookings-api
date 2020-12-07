@@ -3,7 +3,6 @@ import {
 	OrganisationAdminRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
 import {
-	populateIndividualTimeslot,
 	populateServiceAndServiceProvider,
 } from '../../Populate/basic';
 
@@ -20,7 +19,6 @@ describe('Timeslots functional tests', () => {
 
 	beforeEach(async () => {
 		result1 = await populateServiceAndServiceProvider({nameService: 'Service1'});
-		await populateIndividualTimeslot({serviceProviderId: result1.serviceProviderId, weekDay: 0, startTime: '01:00', endTime: '02:00', capacity: 1});
 	});
 
 	afterEach(async () => {
