@@ -65,7 +65,7 @@ describe('Bookings functional tests - with provided slots', () => {
 
 	beforeEach(async () => {
 		result = await populateServiceAndServiceProvider({});
-		slots = await populateIndividualTimeslot({ serviceProviderId: result.serviceProvider.id, weekDay: 0, startTime: "08:00", endTime: "09:00", capacity: 1 });
+		slots = await populateIndividualTimeslot({ serviceProviderId: result.serviceProviderId, weekDay: 0, startTime: "08:00", endTime: "09:00", capacity: 1 });
 	});
 
 	afterEach(async () => {
@@ -76,6 +76,12 @@ describe('Bookings functional tests - with provided slots', () => {
 	it('admin should create booking in provided slot', async () => {
 		const adminCreateBooking = await OrganisationAdminRequestEndpointSG.create({ serviceId: result.serviceId }).post(`/bookings/admin`, { body: { startDateTime, endDateTime, serviceProviderId: result.serviceProviderId, citizenUinFin, citizenName, citizenEmail } });
 		expect(adminCreateBooking.statusCode).toEqual(201);
+	});
+	it('citizen should create booking in provided slot', async () => {
+		const citizenCreateBooking = await CitizenRequestEndpointSG.create({ serviceId: result.serviceId }).post(`/bookings`, { body: { token: "123", startDateTime, endDateTime, serviceProviderId: result.serviceProviderId, citizenUinFin, citizenName, citizenEmail } });
+		expect(citizenCreateBooking.statusCode).toEqual(201);
+
+		// need to mock token/captcha service
 	});
 
 });
