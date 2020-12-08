@@ -144,8 +144,10 @@ describe('ServiceProviders.Controller', () => {
 
 
 
-		ServicesServiceMock.getServices.mockReturnValue([svc1]);
-		ServiceProvidersSvcMock.getAvailableServiceProviders.mockReturnValue([sp1, sp3]);
+		ServicesServiceMock.getServices.mockReturnValue([svc1, svc2]);
+		ServiceProvidersSvcMock.getAvailableServiceProviders
+			.mockImplementationOnce(() => [sp1])
+			.mockImplementationOnce(() => [sp3]);
 		const result = await Container.get(ServiceProvidersController).getAvailableServiceProviders(startDate, endDate);
 
 		expect(result.data.length).toBe(2);
