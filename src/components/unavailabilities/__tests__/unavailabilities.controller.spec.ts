@@ -67,17 +67,9 @@ describe('Unavailabilities controller tests', () => {
 	});
 
 	it('should delete unavailability', async () => {
-		const entity = Unavailability.create();
-		entity.id = 1;
-		entity.start = new Date();
-		entity.end = new Date();
-		entity.allServiceProviders = true;
-
-		UnavailabilitiesServiceMock.create.mockReturnValue(Promise.resolve(entity));
+		UnavailabilitiesServiceMock.deleteUnavailability.mockReturnValue(Promise.resolve());
 
 		const controller = Container.get(UnavailabilitiesController);
-		const request = new UnavailabilityRequest();
-		await controller.addUnavailability(request, 1);
 		const idInput = 1;
 		await controller.deleteUnavailability(idInput);
 
