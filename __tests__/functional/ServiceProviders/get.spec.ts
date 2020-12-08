@@ -26,23 +26,28 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it('Post & Get serviceProvider', async () => {
-		const portResponse = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).post('/service-providers', {
-			body: {
-				serviceProviders: [
-					{
-						name: SP_NAME,
-						email: SP_EMAIL,
-						phone: SP_PHONE,
-					},
-				],
+		const portResponse = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).post(
+			'/service-providers',
+			{
+				body: {
+					serviceProviders: [
+						{
+							name: SP_NAME,
+							email: SP_EMAIL,
+							phone: SP_PHONE,
+						},
+					],
+				},
 			},
-		});
+		);
 		expect(portResponse.statusCode).toEqual(204);
 
-		const getResponse = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).get('/service-providers');
+		const getResponse = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).get(
+			'/service-providers',
+		);
 		expect(getResponse.statusCode).toEqual(200);
-		expect(JSON.parse(getResponse.body).data[0].name).toEqual(SP_NAME);
-		expect(JSON.parse(getResponse.body).data[0].email).toEqual(SP_EMAIL);
-		expect(JSON.parse(getResponse.body).data[0].phone).toEqual(SP_PHONE);
+		expect(getResponse.body.data[0].name).toEqual(SP_NAME);
+		expect(getResponse.body.data[0].email).toEqual(SP_EMAIL);
+		expect(getResponse.body.data[0].phone).toEqual(SP_PHONE);
 	});
 });

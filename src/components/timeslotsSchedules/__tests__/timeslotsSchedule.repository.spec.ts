@@ -4,10 +4,10 @@ import { TimeslotsScheduleRepository } from '../timeslotsSchedule.repository';
 import { IEntityWithTimeslotsSchedule, ITimeslotsSchedule } from '../../../models/interfaces';
 import { TransactionManager } from '../../../core/transactionManager';
 import { UserContext } from '../../../infrastructure/auth/userContext';
-import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
 import { TimeslotItemsQueryAuthVisitor } from '../../timeslotItems/timeslotItems.auth';
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
 import { TimeslotItemsRepository } from '../../timeslotItems/timeslotItems.repository';
+import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 
 jest.mock('../../timeslotItems/timeslotItems.auth');
 

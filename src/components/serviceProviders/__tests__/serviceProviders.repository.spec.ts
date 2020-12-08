@@ -261,11 +261,11 @@ describe('Service Provider repository', () => {
 	});
 
 	it('should get linked user', async () => {
-		const serviceProvider = ServiceProvider.create('J', 1);
+		const serviceProvider = ServiceProvider.create('J', 1, '', '', 'ABC12');
 		serviceProvider.id = 1;
-		serviceProvider._serviceProviderGroupMap = new ServiceProviderGroupMap();
-		serviceProvider._serviceProviderGroupMap.molAdminId = userMock.adminUser.molAdminId;
-		serviceProvider._serviceProviderGroupMap.serviceProviderId = serviceProvider.id;
+		serviceProvider.serviceProviderGroupMap = new ServiceProviderGroupMap();
+		serviceProvider.serviceProviderGroupMap.molAdminId = userMock.adminUser.molAdminId;
+		serviceProvider.serviceProviderGroupMap.serviceProviderId = serviceProvider.id;
 
 		UsersRepositoryMock.getUsersByMolAdminIds.mockImplementation(() => Promise.resolve([userMock]));
 		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(serviceProvider));

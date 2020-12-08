@@ -238,8 +238,8 @@ describe('Users Service', () => {
 		headers[MOLSecurityHeaderKeys.ADMIN_GROUPS] = 'bookingsg:service-provider:localorg';
 
 		const serviceProvider = ServiceProvider.create('Peter', 1, 'test@email.com', '0000');
-		serviceProvider._serviceProviderGroupMap = new ServiceProviderGroupMap();
-		serviceProvider._serviceProviderGroupMap.molAdminId = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
+		serviceProvider.serviceProviderGroupMap = new ServiceProviderGroupMap();
+		serviceProvider.serviceProviderGroupMap.molAdminId = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
 
 		ServiceProvidersRepositoryNoAuthMock.getServiceProviderByMolAdminId.mockImplementation(() =>
 			Promise.resolve(serviceProvider),
@@ -265,6 +265,14 @@ describe('Users Service', () => {
 			'Service provider not found in BookingSG for mol-admin-id: d080f6ed-3b47-478a-a6c6-dfb5608a199d',
 		);
 		expect(groups.length).toBe(0);
+	});
+
+	it('should test upsert services', async () => {
+		const users = await Container.get(UsersService).upsertAdminUsers([
+			{ name: 'name', email: 'email', phoneNumber: 'phoneNumber', username: 'username' },
+		]);
+		expect(UserRepositoryMock.save).toBeCalled();
+		expect(users.length).toBe(1);
 	});
 });
 

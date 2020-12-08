@@ -45,13 +45,13 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	}
 
 	private async includeLinkedUsers(entries: ServiceProvider[]): Promise<void> {
-		const entriesWithMolAdminId = entries.filter((e) => !!e._serviceProviderGroupMap?.molAdminId);
-		const molAdminIds = entriesWithMolAdminId.map((e) => e._serviceProviderGroupMap.molAdminId);
+		const entriesWithMolAdminId = entries.filter((e) => !!e.serviceProviderGroupMap?.molAdminId);
+		const molAdminIds = entriesWithMolAdminId.map((e) => e.serviceProviderGroupMap.molAdminId);
 
 		const users = await this.usersRepository.getUsersByMolAdminIds(molAdminIds);
 		const usersByMolAdminId = groupByKeyLastValue(users, (u) => u.adminUser.molAdminId);
 		for (const entry of entries) {
-			const molAdminId = entry._serviceProviderGroupMap?.molAdminId;
+			const molAdminId = entry.serviceProviderGroupMap?.molAdminId;
 			entry.linkedUser = molAdminId ? usersByMolAdminId.get(molAdminId) || null : null;
 		}
 	}
@@ -146,6 +146,10 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	}
 
 	public async save(serviceProviders: ServiceProvider): Promise<ServiceProvider> {
+		return (await this.getRepository()).save(serviceProviders);
+	}
+
+	public async saveAll(serviceProviders: ServiceProvider[]): Promise<ServiceProvider[]> {
 		return (await this.getRepository()).save(serviceProviders);
 	}
 }

@@ -2,23 +2,27 @@ import { isEmail, isSGPhoneNumber } from 'mol-lib-api-contract/utils';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { cloneDeep } from 'lodash';
-import { ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { ScheduleForm, Service, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
-import { ServiceProviderModel, ServiceProviderOnboard } from './serviceProviders.apicontract';
+import {
+	MolServiceProviderOnboard,
+	MolServiceProviderOnboardContract,
+	ServiceProviderModel,
+} from './serviceProviders.apicontract';
 import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
 import { ServicesService } from '../services/services.service';
 import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
 import { TimeslotsService } from '../timeslots/timeslots.service';
-import {
-	CustomServiceProviderAction,
-	ServiceProvidersAction,
-	ServiceProvidersActionAuthVisitor,
-} from './serviceProviders.auth';
+import { ServiceProvidersActionAuthVisitor } from './serviceProviders.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { CrudAction } from '../../enums/crudAction';
 import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract';
 import { ServiceProvidersMapper } from './serviceProviders.mapper';
+import { MolUpsertUsersResult } from '../users/molUsers/molUsers.apicontract';
+import { MolUsersService } from '../users/molUsers/molUsers.service';
+import { UsersService } from '../users/users.service';
+import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 
 @InRequestScope
 export class ServiceProvidersService {
@@ -46,8 +50,14 @@ export class ServiceProvidersService {
 	@Inject
 	private userContext: UserContext;
 
+	@Inject
+	private usersService: UsersService;
+
+	@Inject
+	private molUsersService: MolUsersService;
+
 	/**
-	 * @deprecated use onboard atm
+	 * @deprecated please use createServiceProviders
 	 */
 	private static async validateServiceProvider(sp: ServiceProviderModel): Promise<string[]> {
 		const errors: string[] = [];
@@ -59,7 +69,7 @@ export class ServiceProvidersService {
 	}
 
 	/**
-	 * @deprecated use onboard atm
+	 * @deprecated please use createServiceProviders
 	 */
 	private static async validateServiceProviders(sps: ServiceProviderModel[]) {
 		const errorsPromises = sps.map((e) => ServiceProvidersService.validateServiceProvider(e));
@@ -126,35 +136,57 @@ export class ServiceProvidersService {
 		return sp;
 	}
 
-	private async mapAndValidateServiceProvidersOnboard(serviceProvidersOnboards: ServiceProviderOnboard[]) {
+	private async findOrCreateService(serviceName: string, services: Service[]): Promise<Service> {
+		const orga = await this.userContext.verifyAndGetFirstAuthorisedOrganisation();
+		const service = services.find((s) => s.name === serviceName);
+		if (!service) {
+			return Service.create(serviceName, orga);
+		}
+		return service;
+	}
+
+	private async mapAndValidateServiceProvidersOnboard(serviceProvidersOnboards: MolServiceProviderOnboard[]) {
 		const services = await this.servicesService.getServices();
-		const serviceProviders = serviceProvidersOnboards.map((sp) => this.mapper.mapToEntity(sp, services));
-		const allBusinessValidation = [];
-		await Promise.all(
-			serviceProviders.map(async (sp) => {
-				for await (const businessValidation of sp.asyncValidate()) {
-					allBusinessValidation.push(businessValidation);
-				}
+		const serviceProviders = await Promise.all(
+			serviceProvidersOnboards.map(async (sp) => {
+				const service = await this.findOrCreateService(sp.serviceName, services);
+				return this.mapper.mapToEntity(sp, service);
 			}),
 		);
-		if (allBusinessValidation.length > 0) {
-			const response = allBusinessValidation.map((val) => val.message);
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setResponseData(response);
-		}
+		await ServiceProvider.validateEntities(serviceProviders);
+
 		return serviceProviders;
 	}
 
-	public async onboardServiceProvidersCSV(spRequest: ServiceProviderOnboard[]): Promise<ServiceProvider[]> {
-		const sps = await this.mapAndValidateServiceProvidersOnboard(spRequest);
-		await Promise.all(
-			sps.map(async (sp) => await this.verifyActionPermission(sp, CustomServiceProviderAction.Onboard)),
+	public async createServiceProviders(
+		serviceProviderOnboardContracts: MolServiceProviderOnboardContract[],
+	): Promise<MolUpsertUsersResult> {
+		const orga = await this.userContext.verifyAndGetFirstAuthorisedOrganisation(
+			'Cannot add service provider with this organisation',
 		);
-		await Promise.all(sps.map(async (sp) => await this.serviceProvidersRepository.save(sp)));
-		return sps;
+		const molServiceProviderOnboards = MolUsersMapper.mapServiceProviderGroup(
+			serviceProviderOnboardContracts,
+			orga,
+		);
+
+		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molServiceProviderOnboards);
+
+		const upsertedMolUser = [...(res?.created || []), ...(res?.updated || [])];
+
+		if (upsertedMolUser) {
+			await this.usersService.upsertAdminUsers(upsertedMolUser);
+			const upsertedAdminUsers = molServiceProviderOnboards.filter((adminUser) =>
+				upsertedMolUser.some((molUser) => molUser.email === adminUser.email),
+			);
+			const sps = await this.mapAndValidateServiceProvidersOnboard(upsertedAdminUsers);
+			await Promise.all(sps.map(async (sp) => await this.verifyActionPermission(sp, CrudAction.Create)));
+			await this.serviceProvidersRepository.saveAll(sps);
+		}
+		return res;
 	}
 
 	/**
-	 * @deprecated use onboard atm
+	 * @deprecated please use createServiceProviders
 	 */
 	public async saveServiceProviders(listRequest: ServiceProviderModel[], serviceId: number) {
 		await ServiceProvidersService.validateServiceProviders(listRequest);
@@ -165,7 +197,7 @@ export class ServiceProvidersService {
 	}
 
 	/**
-	 * @deprecated use onboard atm
+	 * @deprecated please use createServiceProviders
 	 */
 	public async saveServiceProvider(item: ServiceProviderModel, serviceId: number) {
 		const serviceProvider = ServiceProvider.create(item.name, serviceId, item.email, item.phone);
@@ -338,10 +370,7 @@ export class ServiceProvidersService {
 		return await this.serviceProvidersRepository.save(serviceProvider);
 	}
 
-	private async verifyActionPermission(
-		serviceProvider: ServiceProvider,
-		action: ServiceProvidersAction,
-	): Promise<void> {
+	private async verifyActionPermission(serviceProvider: ServiceProvider, action: CrudAction): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
 		if (!new ServiceProvidersActionAuthVisitor(serviceProvider, action).hasPermission(authGroups)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(

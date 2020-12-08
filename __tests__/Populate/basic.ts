@@ -10,9 +10,13 @@ export const populateService = async ({
 	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post('/services', {
 		body: { name: nameService },
 	});
-	return JSON.parse(response.body).data;
+	return response.body.data;
 };
 
+/**
+ * @deprecated Please use populateUserServiceProvider
+ *
+ */
 export const populateServiceAndServiceProvider = async ({
 	organisation = 'localorg',
 	nameService = 'admin',
@@ -29,8 +33,32 @@ export const populateServiceAndServiceProvider = async ({
 		},
 	});
 	const response = await OrganisationAdminRequestEndpointSG.create({}).get('/service-providers');
-	const serviceProvider = JSON.parse(response.body).data;
+	const serviceProvider = response.body.data;
 	return { service, serviceProvider };
+};
+
+export const populateUserServiceProvider = async ({
+	organisation = 'localorg',
+	nameService = 'admin',
+	serviceProviderName = 'sp',
+	}): Promise<{ services: ServiceResponse; serviceProviders: ServiceProviderResponseModel }> => {
+	await OrganisationAdminRequestEndpointSG.create({ organisation }).post('/users/service-providers/upsert', {
+		body: [
+			{
+				name: serviceProviderName,
+				phoneNumber: '+33 3333 3333',
+				email: 'ad@ad.com',
+				agencyUserId: '2',
+				uinfin: '1221jskfl 1233',
+				serviceName: nameService,
+			},
+		],
+	});
+	const response = await OrganisationAdminRequestEndpointSG.create({}).get('/service-providers');
+	const responseService = await OrganisationAdminRequestEndpointSG.create({}).get('/services');
+	const serviceProviders = response.body.data;
+	const services = responseService.body.data;
+	return { services, serviceProviders };
 };
 
 export const populateOutOfSlotBooking = async ({
@@ -52,7 +80,7 @@ export const populateOutOfSlotBooking = async ({
 			citizenEmail,
 		},
 	});
-	return JSON.parse(response.body).data.id;
+	return response.body.data.id;
 };
 
 export const populateIndividualTimeslot = async ({
@@ -73,5 +101,5 @@ export const populateIndividualTimeslot = async ({
 			},
 		},
 	);
-	return JSON.parse(response.body).data;
+	return response.body.data;
 };

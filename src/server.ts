@@ -86,7 +86,7 @@ export async function startServer(): Promise<Server> {
 				textLimit: '10mb',
 			}),
 		)
-		.use(cors({ credentials: config.isDev }))
+		.use(cors({ credentials: config.isLocal }))
 		.use(noCache({ global: true }))
 		.use(await useSwagger())
 		.use(new KoaErrorHandler().build())

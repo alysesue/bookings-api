@@ -5,15 +5,20 @@ import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
 import { User } from './user';
 import { ScheduleForm } from './scheduleForm';
 import { TimeslotsSchedule } from './timeslotsSchedule';
-import { isEmail, isSGPhoneNumber } from 'mol-lib-api-contract/utils';
 import { BusinessValidation } from '../businessValidation';
+import { AbstractEntity } from './abstractEntity';
 
 const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
 const DEFAULT_SCHEFULE_FORM_CONFIRMED = false;
 
 @Entity()
-export class ServiceProvider implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
-	constructor() {}
+export class ServiceProvider
+	extends AbstractEntity
+	implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
+	constructor() {
+		super();
+	}
+
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
@@ -25,8 +30,16 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._id = id;
 	}
 
-	@OneToOne(() => ServiceProviderGroupMap, (e) => e._serviceProvider, { nullable: true })
-	public _serviceProviderGroupMap: ServiceProviderGroupMap;
+	@OneToOne(() => ServiceProviderGroupMap, (e) => e._serviceProvider, { nullable: true, cascade: true })
+	private _serviceProviderGroupMap: ServiceProviderGroupMap;
+
+	public get serviceProviderGroupMap(): ServiceProviderGroupMap {
+		return this._serviceProviderGroupMap;
+	}
+
+	public set serviceProviderGroupMap(value: ServiceProviderGroupMap) {
+		this._serviceProviderGroupMap = value;
+	}
 
 	public get autoAcceptBookings(): boolean {
 		return this._autoAcceptBookings;
@@ -44,6 +57,18 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._createdAt = value;
 	}
 
+	@Column({ type: 'varchar', length: 100, nullable: true })
+	@Index({ unique: true })
+	private _agencyUserId: string;
+
+	public get agencyUserId() {
+		return this._agencyUserId;
+	}
+
+	public set agencyUserId(value: string) {
+		this._agencyUserId = value;
+	}
+
 	@Column()
 	private _createdAt: Date;
 
@@ -59,7 +84,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._serviceId = value;
 	}
 
-	@ManyToOne(() => Service)
+	@ManyToOne(() => Service, { cascade: true })
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
@@ -106,6 +131,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		instance._createdAt = new Date();
 		instance._email = email;
 		instance._phone = phone;
+		instance._agencyUserId = agencyUserId;
 		instance._autoAcceptBookings = autoAcceptBookings;
 		instance._scheduleFormConfirmed = DEFAULT_SCHEFULE_FORM_CONFIRMED;
 		return instance;
@@ -195,15 +221,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._linkedUser = value;
 	}
 
-	public get agencyUserId(): string {
-		return this._linkedUser?.adminUser?.agencyUserId;
-	}
-
 	public async *asyncValidate(): AsyncIterable<BusinessValidation> {
-		if (!this.serviceId) yield new BusinessValidation(`For service provider: ${this.name}. Service not found`);
-		if (this.phone && !(await isSGPhoneNumber(this.phone)).pass)
-			yield new BusinessValidation(`For service provider: ${this.name}. Phone number is invalid: ${this.phone}.`);
-		if (this.email && !(await isEmail(this.email)).pass)
-			yield new BusinessValidation(`For service provider: ${this.name}. Email is invalid: ${this.email}.`);
+		if (!this.service) yield new BusinessValidation(`For service provider: ${this.name}. Service not found`);
 	}
 }

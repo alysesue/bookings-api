@@ -1,15 +1,25 @@
-import { Controller, Get, Response, Route, SuccessResponse, Tags } from 'tsoa';
+import { Body, Controller, Get, Post, Response, Route, SuccessResponse, Tags } from 'tsoa';
+import { MOLAuth } from 'mol-lib-common';
 import { Inject } from 'typescript-ioc';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { UserProfileResponse } from './users.apicontract';
 import { UserProfileMapper } from './users.mapper';
 import { ApiData, ApiDataFactory } from '../../apicontract';
+import { parseCsv, stringToArrayOfStringWhenSemicolon } from '../../tools/csvParser';
+import { MolServiceProviderOnboardContract } from '../serviceProviders/serviceProviders.apicontract';
+import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
+import { ServicesService } from '../services/services.service';
+import { MolAdminUserContract } from './molUsers/molUsers.apicontract';
 
 @Route('v1/users')
 @Tags('Users')
 export class UsersController extends Controller {
 	@Inject
 	private _userContext: UserContext;
+	@Inject
+	private serviceProvidersService: ServiceProvidersService;
+	@Inject
+	private servicesService: ServicesService;
 
 	/**
 	 * Returns information about the current user.
@@ -22,5 +32,64 @@ export class UsersController extends Controller {
 		const user = await this._userContext.getCurrentUser();
 		const groups = await this._userContext.getAuthGroups();
 		return ApiDataFactory.create(UserProfileMapper.mapToResponse({ user, groups }));
+	}
+
+	/**
+	 * Creates multiple admin for services(CSV format). Only available for organisation user.
+	 * Create new service if not exist
+	 * @param serviceRequest
+	 * @param @isInt serviceId The service id.
+	 */
+	@Post('service-admins/upsert/csv')
+	@SuccessResponse(204, 'Created')
+	@MOLAuth({ agency: {}, admin: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async createServicesAdminsCSV(@Body() serviceRequest: string): Promise<void> {
+		const requestList = parseCsv(serviceRequest) as any;
+		requestList.forEach((user) => (user.services = stringToArrayOfStringWhenSemicolon(user.services)));
+		await this.servicesService.createServicesAdmins(requestList as MolAdminUserContract[]);
+	}
+
+	/**
+	 * Creates multiple admin for services(JSON format). Only available for organisation user.
+	 * Create new service if not exist
+	 * @param serviceRequest
+	 * @param @isInt serviceId The service id.
+	 */
+	@Post('service-admins/upsert')
+	@SuccessResponse(204, 'Created')
+	@MOLAuth({ agency: {}, admin: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async createServicesAdmins(@Body() adminUserContracts: MolAdminUserContract[]): Promise<void> {
+		await this.servicesService.createServicesAdmins(adminUserContracts);
+	}
+
+	/**
+	 * Creates multiple service providers (CSV format). Only available for organisation user.
+	 * @param spRequest
+	 * @param @isInt serviceId The service id.
+	 */
+	@Post('service-providers/upsert/csv')
+	@SuccessResponse(204, 'Created')
+	@MOLAuth({ agency: {}, admin: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async onboardServiceProvidersCSV(@Body() spRequest: string): Promise<void> {
+		const onboard = parseCsv(spRequest);
+		await this.serviceProvidersService.createServiceProviders(onboard as MolServiceProviderOnboardContract[]);
+	}
+
+	/**
+	 * Creates multiple service providers (JSON format). Only available for organisation user.
+	 * @param spRequest
+	 * @param @isInt serviceId The service id.
+	 */
+	@Post('service-providers/upsert')
+	@SuccessResponse(204, 'Created')
+	@MOLAuth({ agency: {}, admin: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async onboardServiceProviders(
+		@Body() serviceProviderOnboards: MolServiceProviderOnboardContract[],
+	): Promise<void> {
+		await this.serviceProvidersService.createServiceProviders(serviceProviderOnboards);
 	}
 }

@@ -1,5 +1,6 @@
 import { TimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.apicontract';
 import { ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
+import { IMolCognitoUser } from '../users/molUsers/molUsers.apicontract';
 
 export class ServiceProviderModel {
 	public name: string;
@@ -13,15 +14,25 @@ export class ServiceProviderModel {
 	}
 }
 
-export class ServiceProviderOnboard extends ServiceProviderModel {
-	public serviceName: string;
-	public agencyUserId?: string;
-	public autoAcceptBookings?: boolean;
+export interface MolServiceProviderOnboard extends IMolCognitoUser {
+	sub?: string; // cognito id
+	username: string;
+	name: string;
+	email: string;
+	phoneNumber: string;
+	agencyUserId?: string;
+	uinfin?: string;
+	groups?: string[];
 
-	constructor(name: string, email?: string, phone?: string) {
-		super(name, email, phone);
-	}
+	serviceName: string;
+	autoAcceptBookings?: boolean;
 }
+
+export type MolServiceProviderOnboardContract = Pick<
+	MolServiceProviderOnboard,
+	// tslint:disable-next-line:max-union-size
+	'name' | 'email' | 'username' | 'phoneNumber' | 'agencyUserId' | 'uinfin' | 'serviceName' | 'autoAcceptBookings'
+>;
 
 export class ServiceProviderResponseModel {
 	/**

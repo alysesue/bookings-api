@@ -5,6 +5,7 @@ import { ServiceProvidersService } from '../serviceProviders.service';
 import { ServiceProvidersRepository } from '../serviceProviders.repository';
 import {
 	Organisation,
+	OrganisationAdminGroupMap,
 	ScheduleForm,
 	Service,
 	ServiceProvider,
@@ -13,7 +14,7 @@ import {
 	TimeslotsSchedule,
 	User,
 } from '../../../models';
-import { ServiceProviderModel, ServiceProviderOnboard } from '../serviceProviders.apicontract';
+import { MolServiceProviderOnboard, ServiceProviderModel } from '../serviceProviders.apicontract';
 import { ScheduleFormsService } from '../../scheduleForms/scheduleForms.service';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TimeslotItemsService } from '../../timeslotItems/timeslotItems.service';
@@ -23,12 +24,22 @@ import { ServicesService } from '../../services/services.service';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { UserContext } from '../../../infrastructure/auth/userContext';
-import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
-import { OrganisationAdminAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
+import {
+	OrganisationAdminAuthGroup,
+	ServiceAdminAuthGroup,
+	ServiceProviderAuthGroup,
+} from '../../../infrastructure/auth/authGroup';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.repository';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
+import { MolUsersService } from '../../users/molUsers/molUsers.service';
+import { MolAdminUserContract } from '../../users/molUsers/molUsers.apicontract';
+import { OrganisationsNoauthRepository } from '../../organisations/organisations.noauth.repository';
+import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
+import { MolUsersServiceMock } from '../../users/molUsers/__mocks__/molUsers.service';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { UsersServiceMock } from '../../users/__mocks__/users.service';
+import { UsersService } from '../../users/users.service';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -58,6 +69,8 @@ describe('ServiceProviders.Service', () => {
 	const request = new TimeslotItemRequest();
 	const organisation = new Organisation();
 	organisation.id = 1;
+	organisation._organisationAdminGroupMap = new OrganisationAdminGroupMap();
+	organisation._organisationAdminGroupMap.organisationRef = 'orgTest';
 
 	const serviceProvider = ServiceProvider.create('Peter', 1, 'test@email.com', '0000');
 	serviceProvider.id = 1;
@@ -77,6 +90,9 @@ describe('ServiceProviders.Service', () => {
 		Container.bind(ScheduleFormsService).to(ScheduleFormsServiceMock);
 		Container.bind(TimeslotsService).to(TimeslotsServiceMock);
 		Container.bind(UserContext).to(UserContextMock);
+		Container.bind(UsersService).to(UsersServiceMock);
+		Container.bind(MolUsersService).to(MolUsersServiceMock);
+		Container.bind(OrganisationsNoauthRepository).to(OrganisationsRepositoryMock);
 	});
 
 	afterEach(() => {
@@ -137,24 +153,53 @@ describe('ServiceProviders.Service', () => {
 			serviceName: 'name',
 			agencyUserId: 'asd',
 			autoAcceptBookings: false,
-		} as ServiceProviderOnboard;
+		} as MolServiceProviderOnboard;
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
 		);
-		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
-		const res = await Container.get(ServiceProvidersService).onboardServiceProvidersCSV([spOnboard]);
+		const admins = [
+			{
+				name: 'name',
+				email: 'email',
+				phoneNumber: 'phoneNumber',
+				services: ['service 1'],
+			},
+		] as MolAdminUserContract[];
+
+		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: admins }));
+		UserContextMock.getFirstAuthorisedOrganisation.mockReturnValue(Promise.resolve(organisation));
+		UsersServiceMock.upsertAdminUsers.mockReturnValue(Promise.resolve([spOnboard as any]));
+
+		ServiceProvidersRepositoryMock.saveAll.mockImplementation(() => serviceProviderMock);
+		const res = await Container.get(ServiceProvidersService).createServiceProviders([spOnboard]);
 		expect(ServicesServiceMock.getServicesCalled).toBeCalled();
-		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
-		expect(res.length).toBe(1);
+		expect(ServiceProvidersRepositoryMock.saveAll).toBeCalled();
+		expect(res.created.length).toBe(1);
 	});
 
 	it('should throw when onboard contain error', async () => {
-		const spOnboard = new ServiceProviderOnboard('aa', 'bb', 'cc');
+		const spOnboard = {
+			name: 'aa',
+			serviceName: 'name',
+			agencyUserId: 'asd',
+			autoAcceptBookings: false,
+		} as MolServiceProviderOnboard;
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
 		);
+		const admins = [
+			{
+				name: 'name',
+				email: 'email',
+				phoneNumber: 'phoneNumber',
+				services: ['service 1'],
+			},
+		] as MolAdminUserContract[];
+
+		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: admins }));
+		UserContextMock.getFirstAuthorisedOrganisation.mockReturnValue(Promise.resolve(organisation));
 		try {
-			await Container.get(ServiceProvidersService).onboardServiceProvidersCSV([spOnboard]);
+			await Container.get(ServiceProvidersService).createServiceProviders([spOnboard]);
 		} catch (e) {
 			expect(e.code).toBe('SYS_INVALID_PARAM');
 		}
@@ -356,6 +401,7 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	public static getServiceProvidersMock: ServiceProvider[];
 	public static getServiceProviderMock: ServiceProvider;
 	public static save = jest.fn();
+	public static saveAll = jest.fn();
 
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
 		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProvidersMock);
@@ -367,6 +413,10 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 
 	public async save(listRequest: ServiceProviderModel): Promise<ServiceProvider> {
 		return await ServiceProvidersRepositoryMock.save();
+	}
+
+	public async saveAll(listRequest: ServiceProviderModel[]): Promise<ServiceProvider[]> {
+		return await ServiceProvidersRepositoryMock.saveAll();
 	}
 }
 
@@ -436,5 +486,13 @@ class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
 	}
 	public async createTimeslotsSchedule(data: TimeslotsSchedule): Promise<TimeslotsSchedule> {
 		return Promise.resolve(TimeslotsScheduleRepositoryMock.createTimeslotsScheduleMock);
+	}
+}
+
+class OrganisationsRepositoryMock extends OrganisationsNoauthRepository {
+	public static getOrganisationById = jest.fn();
+
+	public async getOrganisationById(orgaId: number): Promise<Organisation> {
+		return await OrganisationsRepositoryMock.getOrganisationById(orgaId);
 	}
 }

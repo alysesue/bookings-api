@@ -57,6 +57,19 @@ describe('Organisations repository', () => {
 		await repository.save(data);
 		expect(TransactionManagerMock.save.mock.calls[0][0]).toStrictEqual(data);
 	});
+
+	it('should get organisations with id', async () => {
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve([organisationMock])),
+		};
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const repository = Container.get(OrganisationsNoauthRepository);
+		const result = await repository.getOrganisationById(2);
+		expect(result).toEqual([organisationMock]);
+	});
 });
 
 class TransactionManagerMock implements Partial<TransactionManager> {

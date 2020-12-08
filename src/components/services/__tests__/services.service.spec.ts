@@ -2,7 +2,16 @@ import { DeleteResult } from 'typeorm';
 import { Container } from 'typescript-ioc';
 import { ServicesService } from '../services.service';
 import { ServiceRequest } from '../service.apicontract';
-import { Organisation, ScheduleForm, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule, User } from '../../../models';
+import {
+	Organisation,
+	OrganisationAdminGroupMap,
+	ScheduleForm,
+	Service,
+	TimeOfDay,
+	TimeslotItem,
+	TimeslotsSchedule,
+	User,
+} from '../../../models';
 import { ServicesRepository } from '../services.repository';
 import { ScheduleFormsService } from '../../scheduleForms/scheduleForms.service';
 import { TimeslotsScheduleService } from '../../timeslotsSchedules/timeslotsSchedule.service';
@@ -10,10 +19,16 @@ import { TimeslotItemsService } from '../../timeslotItems/timeslotItems.service'
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 import { Weekday } from '../../../enums/weekday';
 import { UserContext } from '../../../infrastructure/auth/userContext';
-import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { ServicesActionAuthVisitor } from '../services.auth';
 import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.repository';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
+import { OrganisationsNoauthRepository } from '../../organisations/organisations.noauth.repository';
+import { MolUsersService } from '../../users/molUsers/molUsers.service';
+import { IMolCognitoUser, MolAdminUserContract, MolUpsertUsersResult } from '../../users/molUsers/molUsers.apicontract';
+import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
+import { UsersServiceMock } from '../../users/__mocks__/users.service';
+import { UsersService } from '../../users/users.service';
 
 jest.mock('../services.auth');
 
@@ -44,7 +59,10 @@ beforeAll(() => {
 	Container.bind(ScheduleFormsService).to(ScheduleFormsServiceMock);
 	Container.bind(TimeslotsScheduleService).to(TimeslotsScheduleMockClass);
 	Container.bind(TimeslotItemsService).to(TimeslotItemsServiceMock);
+	Container.bind(MolUsersService).to(MolUsersServiceMock);
 	Container.bind(UserContext).to(UserContextMock);
+	Container.bind(UsersService).to(UsersServiceMock);
+	Container.bind(OrganisationsNoauthRepository).to(OrganisationsRepositoryMock);
 });
 
 beforeEach(() => {
@@ -76,12 +94,36 @@ const userMock = User.createAdminUser({
 
 const organisation = new Organisation();
 organisation.id = 1;
+organisation._organisationAdminGroupMap = { organisationRef: 'orga', organisationId: 1 } as OrganisationAdminGroupMap;
 
 describe('Services service tests', () => {
+	it('should create admin service and service', async () => {
+		const admins = [
+			{
+				name: 'name',
+				email: 'email',
+				phoneNumber: 'phoneNumber',
+				services: ['service 1'],
+			},
+		] as MolAdminUserContract[];
+		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: admins }));
+		UserContextMock.getFirstAuthorisedOrganisation.mockReturnValue(Promise.resolve(organisation));
+		UsersServiceMock.upsertAdminUsers.mockReturnValue(Promise.resolve([admins as any]));
+
+		const res = await Container.get(ServicesService).createServicesAdmins(admins);
+		expect(MolUsersServiceMock.molUpsertUser).toBeCalled();
+		expect(ServicesRepositoryMockClass.saveAll).toBeCalled();
+		expect(ServicesRepositoryMockClass.saveAll.mock.calls[0][0][0]._name).toBe('service 1');
+		expect(res.created[0].groups).toStrictEqual(['bookingsg:svc-admin-service1:orga']);
+	});
+
 	it('should save service', async () => {
 		const request = new ServiceRequest();
 		request.name = 'John';
 		request.organisationId = 1;
+		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
+			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
+		);
 
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMockClass.save.mock.calls[0][0].name).toBe('John');
@@ -225,12 +267,17 @@ describe('Services service tests', () => {
 
 class ServicesRepositoryMockClass extends ServicesRepository {
 	public static save = jest.fn();
+	public static saveAll = jest.fn();
 	public static getService = jest.fn();
 	public static get = jest.fn();
 	public static getAll = jest.fn();
 
 	public async save(service: Service): Promise<Service> {
 		return ServicesRepositoryMockClass.save(service);
+	}
+
+	public async saveAll(service: Service[]): Promise<Service[]> {
+		return ServicesRepositoryMockClass.saveAll(service);
 	}
 
 	public async get(id: number): Promise<Service> {
@@ -253,6 +300,7 @@ class ScheduleFormsServiceMock extends ScheduleFormsService {
 		return await ScheduleFormsServiceMock.updateScheduleFormInEntity(...params);
 	}
 }
+
 class TimeslotItemsServiceMock extends TimeslotItemsService {
 	public static mapAndSaveTimeslotItemsToTimeslotsSchedule = jest.fn();
 	public static deleteTimeslot = jest.fn();
@@ -296,16 +344,18 @@ class TimeslotsScheduleMockClass extends TimeslotItemsService {
 	}
 }
 
-class UserContextMock extends UserContext {
-	public static getCurrentUser = jest.fn<Promise<User>, any>();
-	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
+class MolUsersServiceMock extends MolUsersService {
+	public static molUpsertUser = jest.fn();
 
-	public init() {}
-	public async getCurrentUser(...params): Promise<any> {
-		return await UserContextMock.getCurrentUser(...params);
+	public async molUpsertUser(users: IMolCognitoUser[]): Promise<MolUpsertUsersResult> {
+		return await MolUsersServiceMock.molUpsertUser(users);
 	}
+}
 
-	public async getAuthGroups(...params): Promise<any> {
-		return await UserContextMock.getAuthGroups(...params);
+class OrganisationsRepositoryMock extends OrganisationsNoauthRepository {
+	public static getOrganisationById = jest.fn();
+
+	public async getOrganisationById(orgaId: number): Promise<Organisation> {
+		return await OrganisationsRepositoryMock.getOrganisationById(orgaId);
 	}
 }

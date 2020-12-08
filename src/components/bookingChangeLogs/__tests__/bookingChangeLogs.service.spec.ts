@@ -120,7 +120,7 @@ describe('BookingChangeLogs service', () => {
 			.build();
 		booking.service = service;
 
-		const serviceProvider = ServiceProvider.create('J', 1, 'sp@email.com', '010000000');
+		const serviceProvider = ServiceProvider.create('J', 1, 'sp@email.com', '010000000', 'ABC12');
 		serviceProvider.id = 1;
 		serviceProvider.linkedUser = adminMock;
 

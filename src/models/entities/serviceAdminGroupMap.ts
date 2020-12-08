@@ -29,4 +29,14 @@ export class ServiceAdminGroupMap {
 	public get serviceOrganisationRef() {
 		return this._serviceOrganisationRef;
 	}
+
+	public static create(serviceOrganisationRef: string) {
+		const serviceGroupMap = new ServiceAdminGroupMap();
+		serviceGroupMap._serviceOrganisationRef = serviceOrganisationRef;
+		return serviceGroupMap;
+	}
+
+	public static createServiceOrganisationRef(serviceRef: string, organisationRef: string) {
+		return `${serviceRef}:${organisationRef}`;
+	}
 }

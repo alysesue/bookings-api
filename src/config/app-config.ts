@@ -7,7 +7,8 @@ export const getConfig = () => ({
 	name: packageJSON.name,
 	version: packageJSON.version,
 	port: ConfigUtils.getIntValueFromEnv('PORT', 3000),
-	isDev: ConfigUtils.getValueFromEnv('IS_DEV', 'false') === 'true',
+	logQueries: ConfigUtils.getValueFromEnv('LOG_QUERIES', 'false') === 'true',
+	isLocal: ConfigUtils.getValueFromEnv('IS_LOCAL', 'false') === 'true',
 	isFunctionalTest: ConfigUtils.getValueFromEnv('IS_FUNCTIONAL_TEST', 'false') === 'true',
 	env: ConfigUtils.getValueFromEnv('NODE_ENV', 'production'),
 	encryptionKey: ConfigUtils.getValueFromEnv('ENCRYPTION_KEY_BOOKINGSG_APP'),
@@ -17,6 +18,9 @@ export const getConfig = () => ({
 		instance: ConfigUtils.getValueFromEnv('BOOKINGSG_DB_INSTANCE'),
 		username: ConfigUtils.getValueFromEnv('BOOKINGSG_DB_USERNAME'),
 		password: ConfigUtils.getValueFromEnv('DB_PASSWORD_BOOKINGSG_APP'),
+	},
+	molAdminAuthForwarder: {
+		url: ConfigUtils.getValueFromEnv('MOL_ADMIN_AUTH_FORWARDER_URL', ''),
 	},
 	recaptchaKey: ConfigUtils.getValueFromEnv('RECAPTCHA_KEY_BOOKINGSG_APP'),
 });

@@ -38,12 +38,12 @@ import {
 	ServicesServiceMock,
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
-	UserContextMock,
 	UsersServiceMock,
 } from './bookings.mocks';
 import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { UsersService } from '../../../components/users/users.service';
+import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 
 afterAll(() => {
 	jest.resetAllMocks();

@@ -9,8 +9,12 @@ import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServicesActionAuthVisitor } from './services.auth';
 import { CrudAction } from '../../enums/crudAction';
-import { OrganisationAdminAuthGroup } from '../../infrastructure/auth/authGroup';
 import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract';
+import { OrganisationsNoauthRepository } from '../organisations/organisations.noauth.repository';
+import { MolUsersService } from '../users/molUsers/molUsers.service';
+import { MolAdminUserContract, MolUpsertUsersResult } from '../users/molUsers/molUsers.apicontract';
+import { UsersService } from '../users/users.service';
+import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 
 @InRequestScope
 export class ServicesService {
@@ -21,24 +25,49 @@ export class ServicesService {
 	@Inject
 	private timeslotItemsService: TimeslotItemsService;
 	@Inject
+	private organisationsRepository: OrganisationsNoauthRepository;
+	@Inject
+	private molUsersService: MolUsersService;
+	@Inject
 	private userContext: UserContext;
+	@Inject
+	private usersService: UsersService;
+
+	private async createServices(adminUsers: MolAdminUserContract[], orga: Organisation): Promise<void> {
+		const allServiceNames = [].concat(...adminUsers.map((a) => a.services));
+		const allServices = allServiceNames.map((s) => Service.create(s, orga));
+		await this.servicesRepository.saveAll(allServices);
+	}
+
+	public async createServicesAdmins(adminUserContracts?: MolAdminUserContract[]): Promise<MolUpsertUsersResult> {
+		const orga = await this.userContext.verifyAndGetFirstAuthorisedOrganisation(
+			'User not authorized to add services.',
+		);
+		const molAdminUser = MolUsersMapper.mapServicesAdminsGroups(adminUserContracts, orga);
+		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molAdminUser);
+
+		if (res?.error) return res;
+		const upsertedMolUser = [...(res?.created || []), ...(res?.updated || [])];
+		if (upsertedMolUser) {
+			await this.usersService.upsertAdminUsers(upsertedMolUser);
+			const upsertedAdminUsers = adminUserContracts.filter((adminUser) =>
+				upsertedMolUser.some((molUser) => molUser.email === adminUser.email),
+			);
+			await this.createServices(upsertedAdminUsers, orga);
+		}
+		return res;
+	}
 
 	public async createService(request: ServiceRequest): Promise<Service> {
-		const service = new Service();
-		service.name = request.name?.trim();
-		if (!service.name) {
+		if (!request.name?.trim()) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service name is empty');
 		}
+		const orga = request.organisationId
+			? await this.organisationsRepository.getOrganisationById(request.organisationId)
+			: await this.userContext.verifyAndGetFirstAuthorisedOrganisation('User not authorized to add services.');
 
-		if (request.organisationId) {
-			service.organisationId = request.organisationId;
-		} else {
-			const authorisedOrganisation = await this.getFirstAuthorisedOrganisation();
-			service.organisationId = authorisedOrganisation.id;
-		}
-
+		const service = Service.create(request.name, orga);
 		await this.verifyActionPermission(service, CrudAction.Create);
-
 		return await this.servicesRepository.save(service);
 	}
 
@@ -89,6 +118,10 @@ export class ServicesService {
 		return await this.servicesRepository.getAll();
 	}
 
+	public async saveAll(services: Service[]): Promise<Service[]> {
+		return await this.servicesRepository.saveAll(services);
+	}
+
 	public async getService(
 		id: number,
 		includeScheduleForm = false,
@@ -135,19 +168,6 @@ export class ServicesService {
 		service.timeslotsSchedule = TimeslotsSchedule.create(service, undefined);
 		await this.servicesRepository.save(service);
 		return service.timeslotsSchedule;
-	}
-
-	private async getFirstAuthorisedOrganisation(): Promise<Organisation> {
-		const orgAdmins = (await this.userContext.getAuthGroups()).filter(
-			(g) => g instanceof OrganisationAdminAuthGroup,
-		) as OrganisationAdminAuthGroup[];
-		if (orgAdmins.length === 0) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
-				'User not authorized to add services.',
-			);
-		} else {
-			return orgAdmins[0].authorisedOrganisations[0];
-		}
 	}
 
 	private async verifyActionPermission(service: Service, action: CrudAction): Promise<void> {

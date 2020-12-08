@@ -5,18 +5,13 @@ class RequestEndpointSG extends RequestEndpoint {
 
 	constructor() {
 		super();
-		this.setBaseUrl(this.BASE_URL);
+		this.setBaseUrl(this.BASE_URL).setJson();
 	}
 
 	public setHeaders = (headerObject: { [e: string]: string }) => {
 		Object.keys(headerObject).forEach((key) => {
 			this.setHeader(key, headerObject[key]);
 		});
-		return this;
-	};
-
-	public createTextRequest = () => {
-		this.setJson(false).setHeader('Content-Type', 'text/plain');
 		return this;
 	};
 }
@@ -148,11 +143,7 @@ export class CitizenRequestEndpointSG extends RequestEndpointSG {
 		'mol-auth-type': 'USER',
 	};
 
-	public static create = ({
-		serviceId,
-	}: {
-		serviceId?: string;
-	}): CitizenRequestEndpointSG => {
+	public static create = ({ serviceId }: { serviceId?: string }): CitizenRequestEndpointSG => {
 		const apiService = serviceId ? { 'x-api-service': serviceId } : {};
 		const headers = {
 			'mol-token-bypass': 'true',

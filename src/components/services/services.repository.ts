@@ -42,6 +42,10 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		return (await this.getRepository()).save(service);
 	}
 
+	public async saveAll(service: Service[]): Promise<Service[]> {
+		return (await this.getRepository()).save(service);
+	}
+
 	private async getServiceQueryById(id: number): Promise<SelectQueryBuilder<Service>> {
 		const authGroups = await this.userContext.getAuthGroups();
 		const { userCondition, userParams } = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(

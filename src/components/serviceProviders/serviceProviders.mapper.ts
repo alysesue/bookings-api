@@ -1,7 +1,7 @@
 import { InRequestScope } from 'typescript-ioc';
-import { Service, ServiceProvider } from '../../models';
+import { Service, ServiceProvider, ServiceProviderGroupMap } from '../../models';
 import {
-	ServiceProviderOnboard,
+	MolServiceProviderOnboard,
 	ServiceProviderResponseModel,
 	ServiceProviderSummaryModel,
 } from './serviceProviders.apicontract';
@@ -40,18 +40,18 @@ export class ServiceProvidersMapper {
 		return entries?.map((e) => this.mapSummaryDataModel(e));
 	}
 
-	public mapToEntity(sp: ServiceProviderOnboard, services: Service[]): ServiceProvider {
-		const getService = (name?: string) => services.find((s) => s.name === name);
-		const service = getService(sp?.serviceName);
+	public mapToEntity(sp: MolServiceProviderOnboard, service: Service): ServiceProvider {
 		const spCreated = ServiceProvider.create(
 			sp.name,
 			service?.id,
 			sp.email,
-			sp.phone,
+			sp.phoneNumber,
 			sp.agencyUserId,
 			sp.autoAcceptBookings,
 		);
 		spCreated.service = service;
+		spCreated.serviceProviderGroupMap = new ServiceProviderGroupMap();
+		spCreated.serviceProviderGroupMap.molAdminId = sp.sub;
 		return spCreated;
 	}
 }

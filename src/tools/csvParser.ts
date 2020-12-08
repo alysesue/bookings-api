@@ -1,5 +1,6 @@
 import * as parse from 'csv-parse/lib/sync';
 import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 export const parseCsv = (input: string | Buffer): [] => {
 	try {
@@ -10,6 +11,10 @@ export const parseCsv = (input: string | Buffer): [] => {
 		});
 	} catch (e) {
 		logger.error(e);
-		throw new Error('Invalid csv format');
+		throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid csv format`);
 	}
+};
+
+export const stringToArrayOfStringWhenSemicolon = (field?: string): string[] => {
+	return field?.split(';').map((value) => value.trim());
 };

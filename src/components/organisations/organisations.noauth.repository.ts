@@ -32,4 +32,16 @@ export class OrganisationsNoauthRepository extends RepositoryBase<Organisation> 
 
 		return await query.getMany();
 	}
+
+	public async getOrganisationById(orgaId: number): Promise<Organisation> {
+		const repository = await this.getRepository();
+
+		const query = repository
+			.createQueryBuilder('org')
+			.innerJoinAndSelect('org._organisationAdminGroupMap', 'orggroup', 'org."_id" IN (:...orgaId)', {
+				orgaId,
+			});
+
+		return await query.getOne();
+	}
 }

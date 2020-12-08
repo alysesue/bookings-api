@@ -15,6 +15,7 @@ import { OrganisationInfo, OrganisationsService } from '../organisations/organis
 import { ServiceRefInfo, ServicesRepositoryNoAuth } from '../services/services.noauth.repository';
 import { ServiceProvidersRepositoryNoAuth } from '../serviceProviders/serviceProviders.noauth.repository';
 import { AnonymousCookieData } from '../../infrastructure/bookingSGCookieHelper';
+import { IMolCognitoUser } from './molUsers/molUsers.apicontract';
 
 export type HeadersType = { [key: string]: string };
 
@@ -84,7 +85,6 @@ export class UsersService {
 		molUserUinFin: string;
 	}): Promise<User> {
 		if (!molUserId || !molUserUinFin) return null;
-
 		const user = User.createSingPassUser(molUserId, molUserUinFin);
 		return await this.getOrSaveInternal(user, () => this.usersRepository.getUserByMolUserId(molUserId));
 	}
@@ -113,6 +113,21 @@ export class UsersService {
 		return await this.getOrSaveInternal(agencyUser, () =>
 			this.usersRepository.getUserByAgencyAppId(data.agencyAppId),
 		);
+	}
+
+	public async upsertAdminUsers(molAdminUsers: IMolCognitoUser[]): Promise<User[]> {
+		return Promise.all(molAdminUsers.map((molAdminUser) => this.upsertAdminUser(molAdminUser)));
+	}
+
+	public async upsertAdminUser(molAdminUser: IMolCognitoUser): Promise<User> {
+		const adminUser = User.createAdminUser({
+			molAdminId: molAdminUser.sub,
+			userName: molAdminUser.username,
+			email: molAdminUser.email,
+			name: molAdminUser.name,
+			agencyUserId: molAdminUser.agencyUserId,
+		});
+		return await this.usersRepository.save(adminUser);
 	}
 
 	private async getOrganisationAdminUserGroup({

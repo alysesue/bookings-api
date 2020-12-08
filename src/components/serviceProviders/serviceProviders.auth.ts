@@ -49,16 +49,11 @@ export class ServiceProvidersQueryAuthVisitor extends QueryAuthGroupVisitor {
 	}
 }
 
-export enum CustomServiceProviderAction {
-	Onboard,
-}
-export type ServiceProvidersAction = CustomServiceProviderAction | CrudAction;
-
 export class ServiceProvidersActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 	private readonly serviceProvider: ServiceProvider;
-	private readonly action: ServiceProvidersAction;
+	private readonly action: CrudAction;
 
-	constructor(serviceProvider: ServiceProvider, action: ServiceProvidersAction) {
+	constructor(serviceProvider: ServiceProvider, action: CrudAction) {
 		super();
 		this.serviceProvider = serviceProvider;
 		this.action = action;
@@ -80,7 +75,6 @@ export class ServiceProvidersActionAuthVisitor extends PermissionAwareAuthGroupV
 		const authorisedOrganisationIds = _userGroup.authorisedOrganisations.map((org) => org.id);
 		switch (this.action) {
 			case CrudAction.Create:
-			case CustomServiceProviderAction.Onboard:
 				this.markWithPermission();
 				return;
 			case CrudAction.Delete:
@@ -97,9 +91,6 @@ export class ServiceProvidersActionAuthVisitor extends PermissionAwareAuthGroupV
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		const serviceIds = _userGroup.authorisedServices.map((service) => service.id);
 		switch (this.action) {
-			case CrudAction.Create:
-				this.markWithPermission();
-				return;
 			case CrudAction.Delete:
 			case CrudAction.Update:
 				if (serviceIds.includes(this.serviceProvider.serviceId)) {
