@@ -50,7 +50,7 @@ export class BookingsController extends Controller {
 	@Post()
 	@SuccessResponse(201, 'Created')
 	@Security('service')
-	@Response(401, 'Valid authentication types: [user]')
+	@Response(401, 'Unauthorized')
 	public async postBooking(
 		@Body() bookingRequest: BookingRequest,
 		@Header('x-api-service') serviceId: number,

@@ -1,5 +1,6 @@
 import { QueryAuthGroupVisitor } from '../../infrastructure/auth/queryAuthGroupVisitor';
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
@@ -17,6 +18,8 @@ export class BookingChangeLogsQueryAuthVisitor extends QueryAuthGroupVisitor {
 		this._serviceAlias = serviceAlias;
 		this._bookingAlias = bookingAlias;
 	}
+
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 

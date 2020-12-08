@@ -70,4 +70,5 @@ export enum AuthGroupTypeContract {
 	organisationAdmin = 'organisation-admin',
 	serviceAdmin = 'service-admin',
 	serviceProvider = 'service-provider',
+	anonymous = 'anonymous',
 }

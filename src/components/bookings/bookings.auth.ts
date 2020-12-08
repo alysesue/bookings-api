@@ -1,5 +1,6 @@
 import { Booking, ChangeLogAction } from '../../models';
 import {
+	AnonymousAuthGroup,
 	AuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
@@ -28,6 +29,14 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 
 		this._booking = booking;
 		this._changeLogAction = changeLogAction;
+	}
+
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
+		// tslint:disable-next-line: no-small-switch
+		switch (this._changeLogAction) {
+			case ChangeLogAction.Create:
+				this.markWithPermission();
+		}
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
@@ -75,6 +84,8 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
 		this._alias = alias;
 		this._serviceAlias = serviceAlias;
 	}
+
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
 		const authorisedUinFin = _citizenGroup.user.singPassUser.UinFin;

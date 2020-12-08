@@ -15,6 +15,7 @@ export abstract class AuthGroup {
 
 // Visitor Pattern
 export interface IAuthGroupVisitor {
+	visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void | Promise<void>;
 	visitCitizen(_citizenGroup: CitizenAuthGroup): void | Promise<void>;
 	visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void | Promise<void>;
 	visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void | Promise<void>;
@@ -30,8 +31,9 @@ export class AnonymousAuthGroup extends AuthGroup {
 		}
 	}
 
-	// TODO: visitor
-	public acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void> {}
+	public acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void> {
+		return visitor.visitAnonymous(this);
+	}
 }
 
 export class CitizenAuthGroup extends AuthGroup {

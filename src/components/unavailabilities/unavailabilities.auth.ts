@@ -1,5 +1,6 @@
 import { Unavailability } from '../../models';
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
@@ -20,9 +21,9 @@ export class UnavailabilitiesQueryAuthVisitor extends QueryAuthGroupVisitor {
 		this._serviceAlias = serviceAlias;
 	}
 
-	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
-		this.addAuthCondition('FALSE', {});
-	}
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
+
+	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		const authorisedOrganisationIds = _userGroup.authorisedOrganisations.map((org) => org.id);
@@ -62,6 +63,8 @@ export class UnavailabilitiesActionAuthVisitor extends PermissionAwareAuthGroupV
 			throw new Error('UnavailabilitiesActionAuthVisitor - service cannot be null');
 		}
 	}
+
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 

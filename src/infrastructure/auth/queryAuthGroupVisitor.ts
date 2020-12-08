@@ -1,5 +1,6 @@
 import { AuthConditionCollection, UserConditionParams } from './authConditionCollection';
 import {
+	AnonymousAuthGroup,
 	AuthGroup,
 	CitizenAuthGroup,
 	IAuthGroupVisitor,
@@ -28,6 +29,7 @@ export abstract class QueryAuthGroupVisitor implements IAuthGroupVisitor {
 	}
 
 	public abstract visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void;
+	public abstract visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void;
 	public abstract visitCitizen(_citizenGroup: CitizenAuthGroup): void;
 	public abstract visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void;
 	public abstract visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void;
@@ -49,6 +51,7 @@ export abstract class PermissionAwareAuthGroupVisitor implements IAuthGroupVisit
 	}
 
 	public abstract visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void;
+	public abstract visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void;
 	public abstract visitCitizen(_citizenGroup: CitizenAuthGroup): void;
 	public abstract visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void;
 	public abstract visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void;
