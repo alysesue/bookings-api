@@ -167,6 +167,50 @@ describe('Unavailabilities repository', () => {
 		expect(results).toBeDefined();
 	});
 
+	it('should not get unavailability for a service provider', async () => {
+		const queryBuilderMock = ({
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			where: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve([])),
+		} as unknown) as SelectQueryBuilder<Unavailability>;
+
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => {
+			return queryBuilderMock;
+		});
+
+		const unavailability = new Unavailability();
+		unavailability.id = 2;
+		unavailability.allServiceProviders = true;
+		unavailability.serviceProviders = [];
+		const repository = Container.get(UnavailabilitiesRepository);
+		const entry = await repository.get({ id: NaN });
+
+		expect(entry).toBeNull();
+	});
+
+	it('should get unavailability for a service provider', async () => {
+		const queryBuilderMock = ({
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			where: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve([])),
+		} as unknown) as SelectQueryBuilder<Unavailability>;
+
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => {
+			return queryBuilderMock;
+		});
+
+		const unavailability = new Unavailability();
+		unavailability.id = 2;
+		unavailability.allServiceProviders = true;
+		unavailability.serviceProviders = [];
+		const repository = Container.get(UnavailabilitiesRepository);
+		const entry = await repository.get({ id: unavailability.id });
+
+		expect(queryBuilderMock.leftJoinAndSelect).toHaveBeenCalled();
+		expect(queryBuilderMock.getOne).toHaveBeenCalled();
+		expect(entry).toBeDefined();
+	});
+
 	it('should delete unavailability for all service providers', async () => {
 		const queryBuilderMock = ({
 			where: jest.fn(() => queryBuilderMock),
