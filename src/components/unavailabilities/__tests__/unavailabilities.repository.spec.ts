@@ -183,7 +183,7 @@ describe('Unavailabilities repository', () => {
 		unavailability.allServiceProviders = true;
 		unavailability.serviceProviders = [];
 		const repository = Container.get(UnavailabilitiesRepository);
-		const entry = await repository.get({ id: NaN });
+		const entry = await repository.get({ id: null });
 
 		expect(entry).toBeNull();
 	});
