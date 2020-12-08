@@ -46,14 +46,12 @@ describe('Bookings functional tests - out of slots', () => {
 
 describe('Bookings functional tests - with provided slots', () => {
 	const pgClient = new PgClient();
-	const date = new Date();
-	const startDateTime = new Date(2020, 12, 6, 8, 0);
-	const endDateTime = new Date(2020, 12, 6, 9, 0);
+	const startDateTime = new Date(Date.UTC(2020, 11, 6, 0, 0));
+	const endDateTime = new Date(Date.UTC(2020, 11, 6, 1, 0))
 	const citizenUinFin = 'G3382058K';
 	const citizenName = 'Jane';
 	const citizenEmail = 'jane@email.com';
 	let result;
-	let slots;
 
 	beforeAll(async () => {
 		await pgClient.cleanAllTables();
@@ -65,7 +63,7 @@ describe('Bookings functional tests - with provided slots', () => {
 
 	beforeEach(async () => {
 		result = await populateServiceAndServiceProvider({});
-		slots = await populateIndividualTimeslot({ serviceProviderId: result.serviceProviderId, weekDay: 0, startTime: "08:00", endTime: "09:00", capacity: 1 });
+		await populateIndividualTimeslot({ serviceProviderId: result.serviceProviderId, weekDay: 0, startTime: "08:00", endTime: "09:00", capacity: 1 });
 	});
 
 	afterEach(async () => {
@@ -78,10 +76,7 @@ describe('Bookings functional tests - with provided slots', () => {
 		expect(adminCreateBooking.statusCode).toEqual(201);
 	});
 	it('citizen should create booking in provided slot', async () => {
-		const citizenCreateBooking = await CitizenRequestEndpointSG.create({ serviceId: result.serviceId }).post(`/bookings`, { body: { token: "123", startDateTime, endDateTime, serviceProviderId: result.serviceProviderId, citizenUinFin, citizenName, citizenEmail } });
+		const citizenCreateBooking = await CitizenRequestEndpointSG.create({ serviceId: result.serviceId }).post(`/bookings`, { body: { token: "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI", startDateTime, endDateTime, serviceProviderId: result.serviceProviderId, citizenUinFin, citizenName, citizenEmail } });
 		expect(citizenCreateBooking.statusCode).toEqual(201);
-
-		// need to mock token/captcha service
 	});
-
 });

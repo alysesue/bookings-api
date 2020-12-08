@@ -55,7 +55,7 @@ export const populateIndividualTimeslot = async ({
 	startTime,
 	endTime,
 	capacity,
-}): Promise<{id: number, endTime: string, startTime: string, weekDay: number, capacity: number}> => {
+}): Promise<{ id: number, endTime: string, startTime: string, weekDay: number, capacity: number }> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({}).post(
 		`/service-providers/${serviceProviderId}/timeslotSchedule/timeslots`,
 		{
