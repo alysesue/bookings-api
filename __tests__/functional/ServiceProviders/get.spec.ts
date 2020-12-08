@@ -7,7 +7,7 @@ describe('Tests endpoint and populate data', () => {
 	const SP_EMAIL = `${SP_NAME}@govtech.com`;
 	const SP_PHONE = '1800 944 7853';
 	const pgClient = new PgClient();
-	let serviceId;
+	let service;
 
 	beforeAll(async () => {
 		await pgClient.cleanAllTables();
@@ -18,7 +18,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	beforeEach(async () => {
-		serviceId = await populateService({});
+		service = await populateService({});
 	});
 
 	afterEach(async () => {
@@ -26,7 +26,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it('Post & Get serviceProvider', async () => {
-		const portResponse = await OrganisationAdminRequestEndpointSG.create({ serviceId: serviceId! }).post('/service-providers', {
+		const portResponse = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).post('/service-providers', {
 			body: {
 				serviceProviders: [
 					{
@@ -39,7 +39,7 @@ describe('Tests endpoint and populate data', () => {
 		});
 		expect(portResponse.statusCode).toEqual(204);
 
-		const getResponse = await OrganisationAdminRequestEndpointSG.create({ serviceId: serviceId! }).get('/service-providers');
+		const getResponse = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).get('/service-providers');
 		expect(getResponse.statusCode).toEqual(200);
 		expect(JSON.parse(getResponse.body).data[0].name).toEqual(SP_NAME);
 		expect(JSON.parse(getResponse.body).data[0].email).toEqual(SP_EMAIL);

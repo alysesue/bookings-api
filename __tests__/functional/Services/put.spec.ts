@@ -19,9 +19,9 @@ describe('Tests endpoint and populate data', () => {
     });
 
     it("should update first service's name", async () => {
-        const idService = await populateService({ nameService: SERVICE_NAME });
+        const service = await populateService({ nameService: SERVICE_NAME });
 
-        const response2 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${idService}`, {
+        const response2 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
             body: { name: SERVICE_NAME_UPDATED },
         });
         expect(response2.statusCode).toEqual(200);
