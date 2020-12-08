@@ -9,6 +9,7 @@ export const getConfig = () => ({
 	port: ConfigUtils.getIntValueFromEnv('PORT', 3000),
 	isDev: ConfigUtils.getValueFromEnv('IS_DEV', 'false') === 'true',
 	env: ConfigUtils.getValueFromEnv('NODE_ENV', 'production'),
+	encryptionKey: ConfigUtils.getValueFromEnv('ENCRYPTION_KEY_BOOKINGSG_APP'),
 	database: {
 		host: ConfigUtils.getValueFromEnv('BOOKINGSG_DB_HOST'),
 		port: ConfigUtils.getValueFromEnv('BOOKINGSG_DB_PORT'),

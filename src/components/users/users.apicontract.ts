@@ -31,6 +31,7 @@ export enum UserTypeContract {
 	singpass = 'singpass',
 	admin = 'admin',
 	agency = 'agency',
+	anonymous = 'anonymous',
 }
 
 export class AuthGroupResponse {

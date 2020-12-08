@@ -2,7 +2,7 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { ContainerContext } from '../containerContext.middleware';
 import { User } from '../../models';
 import { UsersService } from '../../components/users/users.service';
-import { AuthGroup, CitizenAuthGroup } from './authGroup';
+import { AnonymousAuthGroup, AuthGroup, CitizenAuthGroup } from './authGroup';
 import { AsyncLazy } from '../../tools/asyncLazy';
 
 @InRequestScope
@@ -21,6 +21,14 @@ export class UserContext {
 		this._requestHeaders = requestHeaders || {};
 		this._currentUser = new AsyncLazy(this.getCurrentUserInternal.bind(this));
 		this._authGroups = new AsyncLazy(this.getAuthGroupsInternal.bind(this));
+	}
+
+	public setAnonymousUser(user: User): void {
+		if (!user) return;
+
+		const authGroup = new AnonymousAuthGroup(user);
+		this._currentUser = new AsyncLazy(() => Promise.resolve<User>(user));
+		this._authGroups = new AsyncLazy(() => Promise.resolve<AuthGroup[]>([authGroup]));
 	}
 
 	public async getCurrentUser(): Promise<User> {

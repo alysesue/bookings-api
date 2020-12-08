@@ -1,6 +1,6 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { basePath } from '../../config/app-config';
-import { ContainerContextMiddleware } from '../containerContext.middleware';
+import { ContainerContext, ContainerContextMiddleware } from '../containerContext.middleware';
 import * as Koa from 'koa';
 
 afterEach(() => {
@@ -31,8 +31,10 @@ describe('Container context test', () => {
 		const finalMiddleware = jest.fn().mockImplementation((ctx: Koa.Context, next: Koa.Next) => {
 			const container = ContainerContextMiddleware.getContainerContext(ctx);
 			const objB = container.resolve(InjectedClassB);
+			const containerResolved = container.resolve(ContainerContext);
 
 			expect(objB.classA.value).toBe(11);
+			expect(containerResolved === container).toBe(true);
 			return next();
 		});
 

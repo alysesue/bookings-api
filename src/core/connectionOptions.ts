@@ -2,6 +2,7 @@ import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConne
 import {
 	AdminUser,
 	AgencyUser,
+	AnonymousUser,
 	Booking,
 	BookingChangeLog,
 	Organisation,
@@ -34,6 +35,7 @@ export function getConnectionOptions(): PostgresConnectionOptions {
 		entities: [
 			AdminUser,
 			AgencyUser,
+			AnonymousUser,
 			Booking,
 			BookingChangeLog,
 			Organisation,

@@ -21,6 +21,19 @@ export interface IAuthGroupVisitor {
 	visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void | Promise<void>;
 }
 
+export class AnonymousAuthGroup extends AuthGroup {
+	constructor(user: User) {
+		super(user);
+
+		if (!user.isAnonymous()) {
+			throw new Error('AnonymousAuthGroup must be created with an anonymous User.');
+		}
+	}
+
+	// TODO: visitor
+	public acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void> {}
+}
+
 export class CitizenAuthGroup extends AuthGroup {
 	constructor(citizenUser: User) {
 		super(citizenUser);

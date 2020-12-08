@@ -22,6 +22,7 @@ import { UserContextMiddleware } from './infrastructure/userContext.middleware';
 import { ApiData } from './apicontract';
 import { BusinessErrorMiddleware } from './infrastructure/businessError.middleware';
 import { getConnectionOptions } from './core/connectionOptions';
+import { KoaContextStoreMiddleware } from './infrastructure/KoaContextStore.middleware';
 
 class ApiDataResponseHandler {
 	private _middleware: Koa.Middleware;
@@ -42,6 +43,18 @@ class ApiDataResponseHandler {
 			}
 		};
 	}
+}
+
+function bypassMiddleware(regexp: RegExp, target: Koa.Middleware): Koa.Middleware {
+	async function bypass(this: any, ctx, next) {
+		if (regexp.test(ctx.path)) {
+			await next();
+		} else {
+			await target.call(this, ctx, next);
+		}
+	}
+
+	return bypass;
 }
 
 export async function startServer(): Promise<Server> {
@@ -79,7 +92,14 @@ export async function startServer(): Promise<Server> {
 		.use(HealthCheckMiddleware.build())
 		.use(router.allowedMethods())
 		.use(new ContainerContextMiddleware().build())
-		.use(new UserContextMiddleware().build())
+		.use(new KoaContextStoreMiddleware().build())
+		.use(
+			bypassMiddleware(
+				// tslint:disable-next-line: tsr-detect-non-literal-regexp
+				new RegExp(`^${basePath}/api/v1/usersessions/anonymous$`),
+				new UserContextMiddleware().build(),
+			),
+		)
 		.use(HandledRoutes.build());
 
 	const dbOptions = getConnectionOptions();

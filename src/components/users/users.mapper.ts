@@ -44,6 +44,8 @@ export class UserProfileMapper {
 			instance.agency = new AgencyUserContract();
 			instance.agency.appId = user.agencyUser.agencyAppId;
 			instance.agency.name = user.agencyUser.agencyName;
+		} else if (user.isAnonymous()) {
+			instance.userType = UserTypeContract.anonymous;
 		} else {
 			throw new Error('User cannot be mapped to UserTypeResponse. Id: ' + user.id);
 		}

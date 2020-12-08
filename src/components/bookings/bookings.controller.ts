@@ -50,7 +50,6 @@ export class BookingsController extends Controller {
 	@Post()
 	@SuccessResponse(201, 'Created')
 	@Security('service')
-	@MOLAuth({ user: { minLevel: MOLUserAuthLevel.L2 } })
 	@Response(401, 'Valid authentication types: [user]')
 	public async postBooking(
 		@Body() bookingRequest: BookingRequest,

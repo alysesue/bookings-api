@@ -1,6 +1,4 @@
-import { Controller, Get, Response, Route, Tags } from 'tsoa';
-import { MOLAuth } from 'mol-lib-common';
-import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
+import { Controller, Get, Response, Route, SuccessResponse, Tags } from 'tsoa';
 import { Inject } from 'typescript-ioc';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { UserProfileResponse } from './users.apicontract';
@@ -12,18 +10,14 @@ import { ApiData, ApiDataFactory } from '../../apicontract';
 export class UsersController extends Controller {
 	@Inject
 	private _userContext: UserContext;
+
 	/**
 	 * Returns information about the current user.
 	 * It returns Unauthorized (401) status code if the user is not logged in.
-	 * @param nric
 	 */
 	@Get('me')
-	@MOLAuth({
-		admin: {},
-		agency: {},
-		user: { minLevel: MOLUserAuthLevel.L2 },
-	})
-	@Response(401, 'Valid authentication types: [admin,agency,user]')
+	@SuccessResponse(200, 'Ok')
+	@Response(401, 'Unauthorized')
 	public async getProfile(): Promise<ApiData<UserProfileResponse>> {
 		const user = await this._userContext.getCurrentUser();
 		const groups = await this._userContext.getAuthGroups();

@@ -3,6 +3,7 @@ import { IUser } from '../interfaces';
 import { SingPassUser } from './singPassUser';
 import { AdminUser } from './adminUser';
 import { AgencyUser } from './agencyUser';
+import { AnonymousUser } from './anonymousUser';
 
 @Entity()
 export class User implements IUser {
@@ -52,6 +53,9 @@ export class User implements IUser {
 		this._agencyUser = value;
 	}
 
+	@OneToOne((type) => AnonymousUser, (e) => e._User, { cascade: true, nullable: true })
+	public _anonymousUser: AnonymousUser;
+
 	public isCitizen(): boolean {
 		return !!this._singPassUser;
 	}
@@ -62,6 +66,10 @@ export class User implements IUser {
 
 	public isAgency(): boolean {
 		return !!this._agencyUser;
+	}
+
+	public isAnonymous(): boolean {
+		return !!this._anonymousUser;
 	}
 
 	public static createSingPassUser(molUserId: string, userUinFin: string): User {
@@ -85,6 +93,16 @@ export class User implements IUser {
 	public static createAgencyUser(data: { agencyAppId: string; agencyName: string }): User {
 		const instance = new User();
 		instance.agencyUser = AgencyUser.create(data);
+		return instance;
+	}
+
+	public static createAnonymousUser(data: { trackingId?: string }): User {
+		const anonymousUser = AnonymousUser.create(data);
+		if (!anonymousUser) {
+			return null;
+		}
+		const instance = new User();
+		instance._anonymousUser = anonymousUser;
 		return instance;
 	}
 }

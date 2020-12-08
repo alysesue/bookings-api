@@ -49,7 +49,7 @@ export class UsersService {
 			return null;
 		}
 
-		let user: User;
+		let user: User = null;
 		switch (authType) {
 			case MOLAuthType.USER:
 				user = await this.getOrSaveSingpassUser({
@@ -71,12 +71,6 @@ export class UsersService {
 					agencyName: headers[MOLSecurityHeaderKeys.AGENCY_NAME],
 				});
 				break;
-		}
-
-		if (!user) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
-				'BookingSG User could not be created. authType: ' + authType,
-			);
 		}
 
 		return user;

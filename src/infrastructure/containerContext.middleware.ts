@@ -1,10 +1,11 @@
 import * as Koa from 'koa';
-import { BuildContext, Container, Inject, Scope } from 'typescript-ioc';
+import { BuildContext, Container, Inject, InRequestScope, Scope } from 'typescript-ioc';
 
 export abstract class ContainerContext {
 	public abstract resolve<T>(source: Function & { prototype: T }): T;
 }
 
+@InRequestScope
 export class ContainerContextHolder implements ContainerContext {
 	@Inject
 	private _containerBuildContext: BuildContext;
