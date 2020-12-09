@@ -21,6 +21,17 @@ export class AnonymousUser {
 		this._id = value;
 	}
 
+	@Column({ nullable: false})
+	private _createdAt: Date;
+
+	public get createdAt(): Date {
+		return this._createdAt;
+	}
+
+	public set createdAt(value: Date) {
+		this._createdAt = value;
+	}
+
 	@Column({ type: 'uuid', nullable: false })
 	@Index({ unique: true })
 	private _trackingId: string;
@@ -29,11 +40,12 @@ export class AnonymousUser {
 		return this._trackingId;
 	}
 
-	public static create({ trackingId }: { trackingId?: string }): AnonymousUser | undefined {
-		if (trackingId && !uuid.validate(trackingId)) {
+	public static create({ createdAt, trackingId }: { createdAt: Date; trackingId: string }): AnonymousUser | undefined {
+		if (!createdAt || !trackingId || !uuid.validate(trackingId)) {
 			return null;
 		}
 		const instance = new AnonymousUser();
+		instance._createdAt = createdAt;
 		instance._trackingId = trackingId || uuid.v4();
 		return instance;
 	}

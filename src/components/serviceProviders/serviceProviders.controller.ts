@@ -141,12 +141,7 @@ export class ServiceProvidersController extends Controller {
 	 * @param @isInt spId The service provider id.
 	 */
 	@Get('{spId}')
-	@MOLAuth({
-		admin: {},
-		agency: {},
-		user: { minLevel: MOLUserAuthLevel.L2 },
-	})
-	@Response(401, 'Valid authentication types: [admin,agency,user]')
+	@Response(401, 'Unauthorized')
 	public async getServiceProvider(@Path() spId: number): Promise<ApiData<ServiceProviderResponseModel>> {
 		const dataModel = await this.serviceProvidersService.getServiceProvider(spId, true, true);
 		return ApiDataFactory.create(this.mapper.mapDataModel(dataModel));

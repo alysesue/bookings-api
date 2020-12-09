@@ -16,6 +16,7 @@ export class UserSessionsController extends Controller {
 	public async createAnonymous(): Promise<void> {
 		const trackingId = uuid.v4();
 		this.cookieHelper.setCookieValue({
+			createdAt: new Date(),
 			trackingId,
 		});
 		this.molCookieHelper.delete();

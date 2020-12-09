@@ -1,9 +1,8 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { UsersRepository } from './users.repository';
-import { User } from '../../models';
+import { AnonymousUser, User } from '../../models';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
-import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 import { ParsedUserGroup, UserGroupParser, UserGroupRole } from '../../infrastructure/auth/userGroupParser';
 import {
@@ -15,6 +14,7 @@ import {
 import { OrganisationInfo, OrganisationsService } from '../organisations/organisations.service';
 import { ServiceRefInfo, ServicesRepositoryNoAuth } from '../services/services.noauth.repository';
 import { ServiceProvidersRepositoryNoAuth } from '../serviceProviders/serviceProviders.noauth.repository';
+import { AnonymousCookieData } from '../../infrastructure/bookingSGCookieHelper';
 
 export type HeadersType = { [key: string]: string };
 
@@ -226,5 +226,24 @@ export class UsersService {
 		}
 
 		return groups;
+	}
+
+	public async createAnonymousUserFromCookie(data: AnonymousCookieData): Promise<User> {
+		const user = await this.usersRepository.getUserByTrackingId(data.trackingId);
+		if (user) {
+			return user;
+		}
+
+		//Creates only in memory till a booking is made to avoid populating the database.
+		return User.createAnonymousUser(data);
+	}
+
+	public async persistAnonymousUser(user: User): Promise<User> {
+		if (user.isAnonymous() && !user.isPersisted()){
+			const usersRepo = this.usersRepository;
+			return await this.getOrSaveInternal(user, () => usersRepo.getUserByTrackingId(user.anonymousUser.trackingId))
+		}
+
+		return user;
 	}
 }

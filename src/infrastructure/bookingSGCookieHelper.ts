@@ -3,6 +3,11 @@ import { getConfig } from '../config/app-config';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { KoaContextStore } from './KoaContextStore.middleware';
 
+export type AnonymousCookieData = {
+	createdAt: Date;
+	trackingId: string;
+}
+
 @InRequestScope
 export class BookingSGCookieHelper {
 	private static readonly CookieName = 'BookingSGToken';
@@ -17,7 +22,7 @@ export class BookingSGCookieHelper {
 		this._encryptor = new AesEncryption(config.encryptionKey, 'base64');
 	}
 
-	public setCookieValue<T extends {}>(value: T) {
+	public setCookieValue(value: AnonymousCookieData) {
 		const json = JSON.stringify(value);
 		const encrypted = this._encryptor.encrypt(Buffer.from(json, BookingSGCookieHelper.stringEncoding));
 		const config = getConfig();
@@ -31,7 +36,7 @@ export class BookingSGCookieHelper {
 		});
 	}
 
-	public getCookieValue<T extends {}>(): T | undefined {
+	public getCookieValue(): AnonymousCookieData | undefined {
 		const koaContext = this._koaContextStore.koaContext;
 		const encrypted = koaContext.cookies.get(BookingSGCookieHelper.CookieName);
 		if (!encrypted) {

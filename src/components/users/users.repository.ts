@@ -11,6 +11,17 @@ export class UsersRepository extends RepositoryBase<User> {
 		return await (await this.getRepository()).save(user);
 	}
 
+	public async getUserByTrackingId(trackingId?: string): Promise<User> {
+		if (!trackingId) return null;
+
+		const repository = await this.getRepository();
+		const query = repository
+			.createQueryBuilder('u')
+			.innerJoinAndSelect('u._anonymousUser', 'anonymous', 'anonymous."_trackingId" = :trackingId', { trackingId });
+
+		return await query.getOne();
+	}
+
 	public async getUserByMolUserId(molUserId?: string): Promise<User> {
 		if (!molUserId) return null;
 

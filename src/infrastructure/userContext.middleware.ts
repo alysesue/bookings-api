@@ -18,11 +18,8 @@ export class UserContextMiddleware {
 			const user = await userContext.getCurrentUser();
 			if (!user) {
 				const cookieHelper = containerContext.resolve(BookingSGCookieHelper);
-				const anonymousData = cookieHelper.getCookieValue<{ trackingId: string }>();
-				if (anonymousData) {
-					const anonymousUser = User.createAnonymousUser(anonymousData);
-					userContext.setAnonymousUser(anonymousUser);
-				}
+				const anonymousData = cookieHelper.getCookieValue();
+				userContext.setAnonymousUser(anonymousData);
 			}
 
 			const userGroups = await userContext.getAuthGroups();

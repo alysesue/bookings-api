@@ -56,6 +56,14 @@ export class User implements IUser {
 	@OneToOne((type) => AnonymousUser, (e) => e._User, { cascade: true, nullable: true })
 	public _anonymousUser: AnonymousUser;
 
+	public get anonymousUser(): AnonymousUser {
+		return this._anonymousUser;
+	}
+
+	public set anonymousUser(value: AnonymousUser) {
+		this._anonymousUser = value;
+	}
+
 	public isCitizen(): boolean {
 		return !!this._singPassUser;
 	}
@@ -70,6 +78,10 @@ export class User implements IUser {
 
 	public isAnonymous(): boolean {
 		return !!this._anonymousUser;
+	}
+
+	public isPersisted(): boolean {
+		return !!this.id;
 	}
 
 	public static createSingPassUser(molUserId: string, userUinFin: string): User {
@@ -96,7 +108,7 @@ export class User implements IUser {
 		return instance;
 	}
 
-	public static createAnonymousUser(data: { trackingId?: string }): User {
+	public static createAnonymousUser(data: { createdAt: Date; trackingId: string }): User {
 		const anonymousUser = AnonymousUser.create(data);
 		if (!anonymousUser) {
 			return null;
