@@ -1,11 +1,13 @@
 import { Organisation, Service, ServiceProvider, User } from '../../../models';
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	IAuthGroupVisitor,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../authGroup';
+import * as uuid from 'uuid';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -32,6 +34,7 @@ describe('auth group tests', () => {
 	});
 
 	const visitorMock = {
+		visitAnonymous: jest.fn(),
 		visitCitizen: jest.fn(),
 		visitOrganisationAdmin: jest.fn(),
 		visitServiceAdmin: jest.fn(),
@@ -39,10 +42,17 @@ describe('auth group tests', () => {
 	} as IAuthGroupVisitor;
 
 	it('should validate user type for user groups', async () => {
+		expect(() => new AnonymousAuthGroup(adminMock)).toThrowError();
 		expect(() => new CitizenAuthGroup(adminMock)).toThrowError();
 		expect(() => new OrganisationAdminAuthGroup(singpassMock, [organisation])).toThrowError();
 		expect(() => new ServiceAdminAuthGroup(singpassMock, [service])).toThrowError();
 		expect(() => new ServiceProviderAuthGroup(singpassMock, serviceProvider)).toThrowError();
+	});
+
+	it('should create anonymous group', async () => {
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const authGroup = new AnonymousAuthGroup(anonymous);
+		expect(authGroup).toBeDefined();
 	});
 
 	it('should create citizen group', async () => {
@@ -75,6 +85,14 @@ describe('auth group tests', () => {
 
 	it('should validate service provider group', async () => {
 		expect(() => new ServiceProviderAuthGroup(adminMock, null)).toThrowError();
+	});
+
+	it('should visit anonymous group', async () => {
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const authGroup = new AnonymousAuthGroup(anonymous);
+
+		authGroup.acceptVisitor(visitorMock);
+		expect(visitorMock.visitAnonymous).toBeCalledTimes(1);
 	});
 
 	it('should visit citizen group', async () => {

@@ -35,6 +35,7 @@ export abstract class QueryAuthGroupVisitor implements IAuthGroupVisitor {
 	public abstract visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void;
 
 	public async createUserVisibilityCondition(authGroups: AuthGroup[]): Promise<UserConditionParams> {
+		this._conditions = new AuthConditionCollection();
 		for (const group of authGroups) {
 			group.acceptVisitor(this);
 		}
@@ -57,6 +58,7 @@ export abstract class PermissionAwareAuthGroupVisitor implements IAuthGroupVisit
 	public abstract visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void;
 
 	public hasPermission(authGroups: AuthGroup[]): boolean {
+		this._hasPermission = false;
 		for (const group of authGroups) {
 			group.acceptVisitor(this);
 		}

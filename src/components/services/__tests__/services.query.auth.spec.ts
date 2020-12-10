@@ -1,11 +1,13 @@
 import { Organisation, Service, ServiceProvider, User } from '../../../models';
 import { ServicesQueryAuthVisitor } from '../services.auth';
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
+import * as uuid from 'uuid';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -35,6 +37,15 @@ describe('Services query auth', () => {
 		const result = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition([]);
 
 		expect(result.userCondition).toStrictEqual('FALSE');
+		expect(result.userParams).toStrictEqual({});
+	});
+
+	it(`should return no filter for anonymous user (all services visible)`, async () => {
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const groups = [new AnonymousAuthGroup(anonymous)];
+		const result = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(groups);
+
+		expect(result.userCondition).toStrictEqual('');
 		expect(result.userParams).toStrictEqual({});
 	});
 

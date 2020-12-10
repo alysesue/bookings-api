@@ -1,5 +1,6 @@
 import { Organisation, Service, ServiceProvider, User } from '../../../models';
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
@@ -7,6 +8,7 @@ import {
 } from '../../../infrastructure/auth/authGroup';
 import { ServicesActionAuthVisitor } from '../services.auth';
 import { CrudAction } from '../../../enums/crudAction';
+import * as uuid from 'uuid';
 
 // tslint:disable-next-line: no-big-function
 describe('Service action auth tests', () => {
@@ -22,7 +24,6 @@ describe('Service action auth tests', () => {
 			[organisation],
 		);
 		const authVisitor = new ServicesActionAuthVisitor(service, CrudAction.Create);
-		authVisitor.visitOrganisationAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 	});
@@ -39,7 +40,6 @@ describe('Service action auth tests', () => {
 			[organisation],
 		);
 		const authVisitor = new ServicesActionAuthVisitor(service, CrudAction.Create);
-		authVisitor.visitOrganisationAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
@@ -54,7 +54,6 @@ describe('Service action auth tests', () => {
 			[service],
 		);
 		const authVisitor = new ServicesActionAuthVisitor(service, CrudAction.Create);
-		authVisitor.visitServiceAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
@@ -71,7 +70,6 @@ describe('Service action auth tests', () => {
 			[organisation],
 		);
 		const authVisitor = new ServicesActionAuthVisitor(service, CrudAction.Update);
-		authVisitor.visitOrganisationAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 	});
@@ -86,7 +84,6 @@ describe('Service action auth tests', () => {
 			[service],
 		);
 		const authVisitor = new ServicesActionAuthVisitor(service, CrudAction.Update);
-		authVisitor.visitServiceAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 	});
@@ -103,7 +100,6 @@ describe('Service action auth tests', () => {
 			[organisation],
 		);
 		const authVisitor = new ServicesActionAuthVisitor(service, CrudAction.Update);
-		authVisitor.visitOrganisationAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
@@ -122,7 +118,6 @@ describe('Service action auth tests', () => {
 			[service],
 		);
 		const authVisitor = new ServicesActionAuthVisitor(serviceOfServiceAdmin, CrudAction.Update);
-		authVisitor.visitServiceAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
@@ -139,7 +134,6 @@ describe('Service action auth tests', () => {
 			[organisation],
 		);
 		const authVisitor = new ServicesActionAuthVisitor(service, CrudAction.Delete);
-		authVisitor.visitOrganisationAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 	});
@@ -156,7 +150,6 @@ describe('Service action auth tests', () => {
 			[organisation],
 		);
 		const authVisitor = new ServicesActionAuthVisitor(service, CrudAction.Delete);
-		authVisitor.visitOrganisationAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
@@ -171,7 +164,6 @@ describe('Service action auth tests', () => {
 			[service],
 		);
 		const authVisitor = new ServicesActionAuthVisitor(service, CrudAction.Delete);
-		authVisitor.visitServiceAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
@@ -187,15 +179,29 @@ describe('Service action auth tests', () => {
 			serviceProvider,
 		);
 		const authVisitorCreate = new ServicesActionAuthVisitor(service, CrudAction.Create);
-		authVisitorCreate.visitServiceProvider(userGroup);
 		const authVisitorUpdate = new ServicesActionAuthVisitor(service, CrudAction.Update);
-		authVisitorCreate.visitServiceProvider(userGroup);
 		const authVisitorDelete = new ServicesActionAuthVisitor(service, CrudAction.Delete);
-		authVisitorDelete.visitServiceProvider(userGroup);
 
 		expect(authVisitorCreate.hasPermission([userGroup])).toBe(false);
 		expect(authVisitorUpdate.hasPermission([userGroup])).toBe(false);
 		expect(authVisitorDelete.hasPermission([userGroup])).toBe(false);
+	});
+
+	it('should not have authorisation to perform any action as anonymous user', () => {
+		const service = new Service();
+		service.organisationId = 1;
+		service.id = 1;
+
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const groups = [new AnonymousAuthGroup(anonymous)];
+
+		const authVisitorCreate = new ServicesActionAuthVisitor(service, CrudAction.Create);
+		const authVisitorUpdate = new ServicesActionAuthVisitor(service, CrudAction.Update);
+		const authVisitorDelete = new ServicesActionAuthVisitor(service, CrudAction.Delete);
+
+		expect(authVisitorCreate.hasPermission(groups)).toBe(false);
+		expect(authVisitorUpdate.hasPermission(groups)).toBe(false);
+		expect(authVisitorDelete.hasPermission(groups)).toBe(false);
 	});
 
 	it('should not have authorisation to perform any action by citizens', () => {
@@ -205,11 +211,8 @@ describe('Service action auth tests', () => {
 
 		const userGroup = new CitizenAuthGroup(User.createSingPassUser('', ''));
 		const authVisitorCreate = new ServicesActionAuthVisitor(service, CrudAction.Create);
-		authVisitorCreate.visitCitizen(userGroup);
 		const authVisitorUpdate = new ServicesActionAuthVisitor(service, CrudAction.Update);
-		authVisitorCreate.visitCitizen(userGroup);
 		const authVisitorDelete = new ServicesActionAuthVisitor(service, CrudAction.Delete);
-		authVisitorDelete.visitCitizen(userGroup);
 
 		expect(authVisitorCreate.hasPermission([userGroup])).toBe(false);
 		expect(authVisitorUpdate.hasPermission([userGroup])).toBe(false);

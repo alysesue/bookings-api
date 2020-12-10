@@ -1,5 +1,5 @@
 import * as Koa from 'koa';
-import { Container, Inject, InRequestScope, Scope } from 'typescript-ioc';
+import { Container, InRequestScope, Scope } from 'typescript-ioc';
 import { ContainerContextMiddleware } from './containerContext.middleware';
 
 export abstract class KoaContextStore {

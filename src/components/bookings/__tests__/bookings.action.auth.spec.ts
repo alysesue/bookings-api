@@ -2,11 +2,13 @@ import { BookingBuilder } from '../../../models/entities/booking';
 import { ChangeLogAction, Organisation, Service, ServiceProvider, User } from '../../../models';
 import { BookingActionAuthVisitor } from '../bookings.auth';
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
+import * as uuid from 'uuid';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -44,6 +46,28 @@ describe('Bookings action auth', () => {
 		expect(() => new BookingActionAuthVisitor(null, ChangeLogAction.Accept)).toThrowError();
 		expect(() => new BookingActionAuthVisitor(booking, undefined)).toThrowError();
 		expect(() => new BookingActionAuthVisitor(booking, null)).toThrowError();
+	});
+
+	it('should validate anonymous user action permission', async () => {
+		const booking = new BookingBuilder()
+			.withServiceId(service.id)
+			.withCitizenUinFin('ABC1234')
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+
+		booking.service = service;
+
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const groups = [new AnonymousAuthGroup(anonymous)];
+
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Create).hasPermission(groups)).toBe(true);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Update).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Cancel).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reschedule).hasPermission(groups)).toBe(false);
+
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Accept).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reject).hasPermission(groups)).toBe(false);
 	});
 
 	it('should validate citizen action permission', async () => {

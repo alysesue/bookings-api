@@ -1,13 +1,14 @@
 import { Organisation, Service, ServiceProvider, User } from '../../../models';
 import { CrudAction } from '../../../enums/crudAction';
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
-import { ScheduleFormsActionAuthVisitor, ScheduleFormsQueryAuthVisitor } from '../scheduleForms.auth';
-import { ServiceProvidersActionAuthVisitor } from '../../serviceProviders/serviceProviders.auth';
+import { ScheduleFormsQueryAuthVisitor } from '../scheduleForms.auth';
+import * as uuid from 'uuid';
 
 // tslint:disable-next-line:no-big-function
 describe('Query scheduleForm Auth', () => {
@@ -72,6 +73,21 @@ describe('Query scheduleForm Auth', () => {
 
 		expect(userCondition).toBe('(service._organisationId IN (:...authorisedOrgIds))');
 		expect(userParams).toStrictEqual({ authorisedOrgIds: [1] });
+	});
+
+	it('should test query condition as anonymous user', async () => {
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const groups = [new AnonymousAuthGroup(anonymous)];
+		const serviceProvider = ServiceProvider.create('new sp', 1);
+		serviceProvider.service = new Service();
+
+		const { userCondition, userParams } = await new ScheduleFormsQueryAuthVisitor(
+			'service',
+			'serviceProvider',
+		).createUserVisibilityCondition(groups);
+
+		expect(userCondition).toBe('FALSE');
+		expect(userParams).toStrictEqual({});
 	});
 
 	it('should test query condition entity citizen', async () => {

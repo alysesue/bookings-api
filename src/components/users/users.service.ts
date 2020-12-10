@@ -234,7 +234,7 @@ export class UsersService {
 			return user;
 		}
 
-		//Creates only in memory till a booking is made to avoid populating the database.
+		//Creates user only in memory till a booking is made to avoid populating the database.
 		return User.createAnonymousUser(data);
 	}
 

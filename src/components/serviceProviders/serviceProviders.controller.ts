@@ -32,7 +32,6 @@ import {
 } from '../timeslotItems/timeslotItems.apicontract';
 import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
 import { MOLAuth } from 'mol-lib-common';
-import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 
 @InRequestScope

@@ -1,11 +1,13 @@
 import { Organisation, Service, ServiceProvider, User } from '../../../models';
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
 import { UnavailabilitiesQueryAuthVisitor } from '../unavailabilities.auth';
+import * as uuid from 'uuid';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -37,11 +39,20 @@ describe('Unavailabilities query auth', () => {
 		expect(result.userParams).toStrictEqual({});
 	});
 
+	it(`should return FALSE for anonymous user`, async () => {
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const groups = [new AnonymousAuthGroup(anonymous)];
+		const result = await new UnavailabilitiesQueryAuthVisitor('un', 'svc').createUserVisibilityCondition(groups);
+
+		expect(result.userCondition).toStrictEqual('FALSE');
+		expect(result.userParams).toStrictEqual({});
+	});
+
 	it(`should return FALSE for citizen group`, async () => {
 		const groups = [new CitizenAuthGroup(singpassMock)];
 		const result = await new UnavailabilitiesQueryAuthVisitor('un', 'svc').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('(FALSE)');
+		expect(result.userCondition).toStrictEqual('FALSE');
 		expect(result.userParams).toStrictEqual({});
 	});
 
