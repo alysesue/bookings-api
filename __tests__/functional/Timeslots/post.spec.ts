@@ -12,7 +12,7 @@ describe('Timeslots functional tests', () => {
 	const START_TIME = '10:00';
 	const END_TIME = '11:00';
 	const CAPACITY = 2;
-	let result1;
+	let result;
 
 	beforeAll(async () => {
 		await pgClient.cleanAllTables();
@@ -22,7 +22,7 @@ describe('Timeslots functional tests', () => {
 	});
 
 	beforeEach(async () => {
-		result1 = await populateServiceAndServiceProvider({nameService: 'Service1'});
+		result = await populateServiceAndServiceProvider({nameService: 'Service1'});
 	});
 
 	afterEach(async () => {
@@ -31,7 +31,7 @@ describe('Timeslots functional tests', () => {
 
 	it('should create individual timeslot with capacity', async () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post(
-		    `/service-providers/${result1.serviceProviderId}/timeslotSchedule/timeslots`,
+		    `/service-providers/${result.serviceProvider[0].id}/timeslotSchedule/timeslots`,
 		    {
 		        body: {
 		            weekDay: WEEKDAY,
