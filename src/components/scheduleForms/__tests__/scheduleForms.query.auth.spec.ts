@@ -1,5 +1,4 @@
 import { Organisation, Service, ServiceProvider, User } from '../../../models';
-import { CrudAction } from '../../../enums/crudAction';
 import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,

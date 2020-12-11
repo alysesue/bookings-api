@@ -7,9 +7,11 @@ import { UsersService } from '../../components/users/users.service';
 import { User } from '../../models';
 import { UserContext } from '../auth/userContext';
 import { AuthGroup } from '../auth/authGroup';
+import { AnonymousCookieData, BookingSGCookieHelper } from '../bookingSGCookieHelper';
 
 beforeAll(() => {
 	Container.bind(UsersService).to(UsersServiceMock);
+	Container.bind(BookingSGCookieHelper).to(BookingSGCookieHelperMock);
 });
 
 afterEach(() => {
@@ -41,6 +43,39 @@ describe('user Context middleware tests', () => {
 			expect(UsersServiceMock.getOrSaveUserFromHeaders).toBeCalledTimes(1);
 			expect(user).toBeDefined();
 			expect(user).toBe(another);
+
+			return await next();
+		});
+
+		const context = buildSampleKoaContext(`${basePath}/somepath`);
+		await containerMiddleware(context, () => {
+			return userContextMiddleware(context, () => {
+				return nextMiddleware(context, () => {});
+			});
+		});
+
+		expect(nextMiddleware).toBeCalled();
+	});
+
+	it('should get anonymous user', async () => {
+		const containerMiddleware = new ContainerContextMiddleware().build();
+		const userContextMiddleware = new UserContextMiddleware().build();
+
+		const cookieData = { createdAt: new Date(0), trackingId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f' };
+		const anonymous = User.createAnonymousUser({ ...cookieData });
+		BookingSGCookieHelperMock.getCookieValue.mockReturnValue(cookieData);
+		UsersServiceMock.createAnonymousUserFromCookie.mockImplementation(() => Promise.resolve(anonymous));
+
+		const nextMiddleware = jest.fn().mockImplementation(async (ctx: Koa.Context, next: Koa.Next) => {
+			const container = ContainerContextMiddleware.getContainerContext(ctx);
+			const userContext = container.resolve(UserContext);
+			const user = await userContext.getCurrentUser();
+			const another = await userContext.getCurrentUser();
+
+			expect(UsersServiceMock.getOrSaveUserFromHeaders).toBeCalledTimes(1);
+			expect(user).toBeDefined();
+			expect(user).toBe(another);
+			expect(user.isAnonymous()).toBe(true);
 
 			return await next();
 		});
@@ -116,9 +151,14 @@ describe('user Context middleware tests', () => {
 	});
 });
 
-class UsersServiceMock extends UsersService {
+class UsersServiceMock implements Partial<UsersService> {
+	public static createAnonymousUserFromCookie = jest.fn<Promise<User>, any>();
 	public static getOrSaveUserFromHeaders = jest.fn<Promise<User>, any>();
 	public static getUserGroupsFromHeaders = jest.fn<Promise<AuthGroup[]>, any>();
+
+	public async createAnonymousUserFromCookie(...params): Promise<any> {
+		return await UsersServiceMock.createAnonymousUserFromCookie(...params);
+	}
 
 	public async getOrSaveUserFromHeaders(...params): Promise<any> {
 		return await UsersServiceMock.getOrSaveUserFromHeaders(...params);
@@ -126,5 +166,13 @@ class UsersServiceMock extends UsersService {
 
 	public async getUserGroupsFromHeaders(...params): Promise<any> {
 		return await UsersServiceMock.getUserGroupsFromHeaders(...params);
+	}
+}
+
+class BookingSGCookieHelperMock implements Partial<BookingSGCookieHelper> {
+	public static getCookieValue = jest.fn<AnonymousCookieData | undefined, any>();
+
+	public getCookieValue(): AnonymousCookieData | undefined {
+		return BookingSGCookieHelperMock.getCookieValue();
 	}
 }

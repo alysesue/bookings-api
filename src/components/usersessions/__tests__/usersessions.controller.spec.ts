@@ -8,11 +8,11 @@ afterAll(() => {
 });
 
 const BookingSGCookieHelperMock = {
-	setCookieValue: jest.fn()
+	setCookieValue: jest.fn(),
 };
 
 const MolCookieHelperMock = {
-	delete: jest.fn()
+	delete: jest.fn(),
 };
 
 beforeAll(() => {

@@ -1,13 +1,13 @@
-import { Container } from "typescript-ioc";
-import { BookingSGCookieHelper } from "../bookingSGCookieHelper";
-import { KoaContextStore } from "../KoaContextStore.middleware";
+import { Container } from 'typescript-ioc';
+import { BookingSGCookieHelper } from '../bookingSGCookieHelper';
+import { KoaContextStore } from '../koaContextStore.middleware';
 import * as Koa from 'koa';
 import * as Cookies from 'cookies';
 import { AesEncryption } from '../aesencryption';
 
 jest.mock('../../config/app-config', () => {
 	const configMock = {
-		encryptionKey: '4hvph+8VIlDtm4e7e917gS1IyKbSYocKjylHsMdJYkg='
+		encryptionKey: '4hvph+8VIlDtm4e7e917gS1IyKbSYocKjylHsMdJYkg=',
 	};
 
 	return {
@@ -22,14 +22,14 @@ describe('BookingSGCookieHelper tests', () => {
 		koaContext: {
 			cookies: {
 				set: jest.fn(),
-				get: jest.fn()
-			} as Partial<Cookies>
-		} as Koa.Context
+				get: jest.fn(),
+			} as Partial<Cookies>,
+		} as Koa.Context,
 	};
 
 	const AesEncryptionMock: Partial<AesEncryption> = {
 		encrypt: jest.fn(),
-		decrypt: jest.fn()
+		decrypt: jest.fn(),
 	};
 
 	beforeAll(() => {
@@ -39,7 +39,7 @@ describe('BookingSGCookieHelper tests', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
 		(AesEncryption as jest.Mock).mockReturnValue(AesEncryptionMock);
-	})
+	});
 
 	it('should set cookie value', async () => {
 		const cookieHelper = Container.get(BookingSGCookieHelper);
@@ -50,19 +50,19 @@ describe('BookingSGCookieHelper tests', () => {
 
 		cookieHelper.setCookieValue(data);
 
-		expect(AesEncryptionMock.encrypt).toHaveBeenCalledWith(JSON.stringify(data));
 		expect(KoaContextStoreMock.koaContext.cookies.set).toHaveBeenCalledWith(
-			 'BookingSGToken',
-			 'Some Encrypted Value',
-			 {"httpOnly": true, "overwrite": true, "sameSite": "lax", "secure": true}
+			'BookingSGToken',
+			'Some Encrypted Value',
+			{ httpOnly: true, overwrite: true, sameSite: 'lax', secure: true },
 		);
 	});
 
 	it('should get cookie value', async () => {
 		const cookieHelper = Container.get(BookingSGCookieHelper);
 		const data = { createdAt: new Date(0), trackingId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f' };
+		const json = JSON.stringify(data);
 		(AesEncryptionMock.decrypt as jest.Mock).mockImplementation(() => {
-			return JSON.stringify(data);
+			return json;
 		});
 
 		(KoaContextStoreMock.koaContext.cookies.get as jest.Mock).mockReturnValue('cookie value');
@@ -71,6 +71,6 @@ describe('BookingSGCookieHelper tests', () => {
 		expect(KoaContextStoreMock.koaContext.cookies.get).toHaveBeenCalled();
 		expect(AesEncryptionMock.decrypt).toHaveBeenCalledWith('cookie value');
 
-		expect(result).toBe(data);
+		expect(result).toStrictEqual(JSON.parse(json));
 	});
 });

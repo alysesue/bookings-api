@@ -118,7 +118,7 @@ timeslotsScheduleMock.timeslotItems = [
 	),
 ];
 
-class TransactionManagerMock extends TransactionManager {
+class TransactionManagerMock implements Partial<TransactionManager> {
 	public static createQueryBuilder = jest.fn();
 	public static find = jest.fn();
 	public static findOne = jest.fn();

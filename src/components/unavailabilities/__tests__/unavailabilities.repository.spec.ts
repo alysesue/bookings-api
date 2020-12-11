@@ -166,7 +166,7 @@ describe('Unavailabilities repository', () => {
 	});
 });
 
-class TransactionManagerMock extends TransactionManager {
+class TransactionManagerMock implements Partial<TransactionManager> {
 	public static save = jest.fn();
 	public static find = jest.fn();
 	public static findOne = jest.fn();

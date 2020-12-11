@@ -22,8 +22,8 @@ import { UserContextMiddleware } from './infrastructure/userContext.middleware';
 import { ApiData } from './apicontract';
 import { BusinessErrorMiddleware } from './infrastructure/businessError.middleware';
 import { getConnectionOptions } from './core/connectionOptions';
-import { KoaContextStoreMiddleware } from './infrastructure/KoaContextStore.middleware';
 import { CitizenUserValidationMiddleware } from './infrastructure/citizenUserValidation.middleware';
+import { KoaContextStoreMiddleware } from './infrastructure/koaContextStore.middleware';
 
 class ApiDataResponseHandler {
 	private _middleware: Koa.Middleware;

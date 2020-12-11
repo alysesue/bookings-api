@@ -1,7 +1,6 @@
 import { GoogleCalendarService } from '../google.calendar.service';
 import { calendar_v3 } from 'googleapis';
 import * as mockEvents from './createEventResponse.json';
-import { Booking } from '../../models';
 import { Container } from 'typescript-ioc';
 import { GoogleApi } from '../google.api';
 import { BookingBuilder } from '../../models/entities/booking';

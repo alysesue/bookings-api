@@ -7,7 +7,7 @@ import {
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
-import { ScheduleFormsActionAuthVisitor, ScheduleFormsQueryAuthVisitor } from '../scheduleForms.auth';
+import { ScheduleFormsActionAuthVisitor } from '../scheduleForms.auth';
 import { ServiceProvidersActionAuthVisitor } from '../../serviceProviders/serviceProviders.auth';
 import * as uuid from 'uuid';
 
@@ -93,10 +93,16 @@ describe('Action scheduleForm Auth', () => {
 		const serviceProvider = ServiceProvider.create('new sp', 1);
 		serviceProvider.service = new Service();
 
-		expect(new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Create).hasPermission(groups)).toBe(false);
-		expect(new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Update).hasPermission(groups)).toBe(false);
+		expect(new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Create).hasPermission(groups)).toBe(
+			false,
+		);
+		expect(new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Update).hasPermission(groups)).toBe(
+			false,
+		);
 		expect(new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Read).hasPermission(groups)).toBe(false);
-		expect(new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Delete).hasPermission(groups)).toBe(false);
+		expect(new ScheduleFormsActionAuthVisitor(serviceProvider, CrudAction.Delete).hasPermission(groups)).toBe(
+			false,
+		);
 	});
 
 	it("shouldn't be able to create/update/read/delete as a citizen", () => {

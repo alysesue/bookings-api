@@ -1,11 +1,9 @@
 import * as crypto from 'crypto';
-import { AesEncryption } from "../aesencryption";
+import { AesEncryption } from '../aesencryption';
 
 describe('AesEncryption tests', () => {
 	it('should encrypt and decrypt', async () => {
 		const someKey = crypto.randomBytes(32);
-		console.log(someKey.toString('base64'));
-
 		const encryption = new AesEncryption(someKey);
 
 		const someValue = 'Some test value :)';

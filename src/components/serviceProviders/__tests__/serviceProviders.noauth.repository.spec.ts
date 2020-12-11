@@ -62,7 +62,7 @@ describe('Service Provider No Auth repository', () => {
 	});
 });
 
-class TransactionManagerMock extends TransactionManager {
+class TransactionManagerMock implements Partial<TransactionManager> {
 	public static insert = jest.fn();
 	public static find = jest.fn();
 	public static update = jest.fn();

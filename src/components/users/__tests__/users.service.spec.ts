@@ -99,8 +99,8 @@ describe('Users Service', () => {
 		UserRepositoryMock.getUserByMolUserId.mockImplementation(() => Promise.resolve(userMock));
 
 		const service = Container.get(UsersService);
-		const test = async () => await service.getOrSaveUserFromHeaders(headers);
-		await expect(test).rejects.toThrowError();
+		const result = await service.getOrSaveUserFromHeaders(headers);
+		expect(result).toBe(null);
 	});
 
 	it("should save if user doesn't exist", async () => {
@@ -154,8 +154,8 @@ describe('Users Service', () => {
 		const userMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 		UserRepositoryMock.getUserByMolAdminId.mockImplementation(() => Promise.resolve(userMock));
 		const service = Container.get(UsersService);
-		const test = async () => await service.getOrSaveUserFromHeaders(headers);
-		await expect(test).rejects.toThrowError();
+		const result = await service.getOrSaveUserFromHeaders(headers);
+		expect(result).toBe(null);
 	});
 
 	it('should return null user', async () => {
@@ -169,9 +169,9 @@ describe('Users Service', () => {
 		const headers = {};
 		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = 'NEW_TYPE';
 		const service = Container.get(UsersService);
-		const test = async () => await service.getOrSaveUserFromHeaders(headers);
+		const result = await service.getOrSaveUserFromHeaders(headers);
 
-		await expect(test).rejects.toThrowError();
+		expect(result).toBe(null);
 	});
 
 	it('should return no user groups', async () => {
