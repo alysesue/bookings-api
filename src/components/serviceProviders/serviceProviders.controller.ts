@@ -34,11 +34,15 @@ import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from '../ti
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { ApiData, ApiDataFactory } from '../../apicontract';
+import { ServicesService } from '../services/services.service';
+import { Service, ServiceProvider } from '../../models';
 
 @InRequestScope
 @Route('v1/service-providers')
 @Tags('Service Providers')
 export class ServiceProvidersController extends Controller {
+	@Inject
+	private servicesService: ServicesService;
 	@Inject
 	private serviceProvidersService: ServiceProvidersService;
 
@@ -124,16 +128,24 @@ export class ServiceProvidersController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 */
 	@Get('available')
-	@Security('service')
+	@Security('optional-service')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getAvailableServiceProviders(
 		@Query() from: Date,
 		@Query() to: Date,
-		@Header('x-api-service') serviceId: number,
+		@Header('x-api-service') serviceId?: number,
 	): Promise<ApiData<ServiceProviderResponseModel[]>> {
-		const dataModels = await this.serviceProvidersService.getAvailableServiceProviders(from, to, serviceId);
-		return ApiDataFactory.create(this.mapper.mapDataModels(dataModels));
+		let result: ServiceProvider[] = [];
+		if (serviceId) {
+			result = await this.serviceProvidersService.getAvailableServiceProviders(from, to, serviceId);
+		} else {
+			const servicesList = await this.servicesService.getServices();
+			for (const service of servicesList) {
+				result.push(...await this.serviceProvidersService.getAvailableServiceProviders(from, to, service.id));
+			}
+		}
+		return ApiDataFactory.create(this.mapper.mapDataModels(result));
 	}
 
 	/**

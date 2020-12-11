@@ -8,6 +8,12 @@ import {
 } from '../../../infrastructure/auth/authGroup';
 
 describe('Service providers Auth', () => {
+
+	it('should throw errors', () => {
+		expect(() => new ServiceProvidersActionAuthVisitor(null, CrudAction.Create)).toThrowError();
+		const serviceProvider = ServiceProvider.create('provider', 1);
+		expect(() => new ServiceProvidersActionAuthVisitor(serviceProvider, CrudAction.Create)).toThrowError();
+	});
 	it('should not be able to create a serviceProvider for serviceProvider', () => {
 		const serviceProvider = ServiceProvider.create('provider', 1);
 		serviceProvider.service = new Service();
@@ -112,6 +118,56 @@ describe('Service providers Auth', () => {
 		const serviceProviderToUpdate = ServiceProvider.create('new sp', 1);
 		serviceProviderToUpdate.service = new Service();
 		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProviderToUpdate, CrudAction.Update);
+		authVisitor.visitServiceAdmin(serviceAdminAuthGroup);
+
+		expect(authVisitor.hasPermission([serviceAdminAuthGroup])).toBe(false);
+	});
+
+	it('should able to read service provider for service admin', () => {
+		const service = new Service();
+		service.id = 1;
+		const serviceAdminAuthGroup = new ServiceAdminAuthGroup(
+			User.createAdminUser({ userName: '', molAdminId: '', email: '', name: '' }),
+			[service],
+		);
+
+		const spData = ServiceProvider.create('new sp', 1);
+		spData.service = service;
+		const authVisitor = new ServiceProvidersActionAuthVisitor(spData, CrudAction.Read);
+		authVisitor.visitServiceAdmin(serviceAdminAuthGroup);
+
+		expect(authVisitor.hasPermission([serviceAdminAuthGroup])).toBe(true);
+	});
+
+	it('should able to delete service provider for service admin in the same service', () => {
+		const service = new Service();
+		service.id = 1;
+		const serviceAdminAuthGroup = new ServiceAdminAuthGroup(
+			User.createAdminUser({ userName: '', molAdminId: '', email: '', name: '' }),
+			[service],
+		);
+
+		const spData = ServiceProvider.create('new sp', 1);
+		spData.service = service;
+		const authVisitor = new ServiceProvidersActionAuthVisitor(spData, CrudAction.Delete);
+		authVisitor.visitServiceAdmin(serviceAdminAuthGroup);
+
+		expect(authVisitor.hasPermission([serviceAdminAuthGroup])).toBe(true);
+	});
+
+	it('should not be able to delete service provider for service admin in different service', () => {
+		const service = new Service();
+		service.id = 1;
+		const service2 = new Service();
+		service2.id = 2;
+		const serviceAdminAuthGroup = new ServiceAdminAuthGroup(
+			User.createAdminUser({ userName: '', molAdminId: '', email: '', name: '' }),
+			[service2],
+		);
+
+		const spData = ServiceProvider.create('new sp', 1);
+		spData.service = service;
+		const authVisitor = new ServiceProvidersActionAuthVisitor(spData, CrudAction.Delete);
 		authVisitor.visitServiceAdmin(serviceAdminAuthGroup);
 
 		expect(authVisitor.hasPermission([serviceAdminAuthGroup])).toBe(false);
