@@ -1,7 +1,7 @@
 import { AesEncryption } from './aesencryption';
 import { getConfig } from '../config/app-config';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { KoaContextStore } from './KoaContextStore.middleware';
+import { KoaContextStore } from './koaContextStore.middleware';
 
 export type AnonymousCookieData = {
 	createdAt: Date;

@@ -15,6 +15,7 @@ const config = {
 		'!**/transactionManager.ts',
 		'!**/connectionOptions.ts',
 		'!**/server.ts',
+		'!**/stopWatch.ts',
 		'!**/koaContextStore.middleware.ts',
 		'!**/citizenUserValidation.middleware.ts',
 	],
