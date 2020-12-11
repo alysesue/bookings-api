@@ -35,7 +35,7 @@ import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { ServicesService } from '../services/services.service';
-import { Service, ServiceProvider } from '../../models';
+import { ServiceProvider } from '../../models';
 
 @InRequestScope
 @Route('v1/service-providers')
@@ -142,7 +142,7 @@ export class ServiceProvidersController extends Controller {
 		} else {
 			const servicesList = await this.servicesService.getServices();
 			for (const service of servicesList) {
-				result.push(...await this.serviceProvidersService.getAvailableServiceProviders(from, to, service.id));
+				result.push(...(await this.serviceProvidersService.getAvailableServiceProviders(from, to, service.id)));
 			}
 		}
 		return ApiDataFactory.create(this.mapper.mapDataModels(result));

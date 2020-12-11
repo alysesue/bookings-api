@@ -8,7 +8,6 @@ import {
 } from '../../../infrastructure/auth/authGroup';
 
 describe('Service providers Auth', () => {
-
 	it('should throw errors', () => {
 		expect(() => new ServiceProvidersActionAuthVisitor(null, CrudAction.Create)).toThrowError();
 		const serviceProvider = ServiceProvider.create('provider', 1);
