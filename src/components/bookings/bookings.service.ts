@@ -292,7 +292,8 @@ export class BookingsService {
 
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
 
-		booking.creator = await this.usersService.persistAnonymousUser(currentUser);
+		// Persists in memory user only after validating booking.
+		booking.creator = await this.usersService.persistUserIfRequired(currentUser);
 		await this.bookingsRepository.insert(booking);
 
 		return [ChangeLogAction.Create, booking];

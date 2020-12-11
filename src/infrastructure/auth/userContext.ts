@@ -43,9 +43,9 @@ export class UserContext {
 
 	private async getCurrentUserInternal(): Promise<User> {
 		const usersService = this.containerContext.resolve(UsersService);
-		if (this._anonymousCookieData){
+		if (this._anonymousCookieData) {
 			return await usersService.createAnonymousUserFromCookie(this._anonymousCookieData);
-		}else{
+		} else {
 			return await usersService.getOrSaveUserFromHeaders(this._requestHeaders);
 		}
 	}
@@ -56,9 +56,9 @@ export class UserContext {
 			return [];
 		}
 
-		if (user.isAnonymous()){
-			return [new AnonymousAuthGroup(user)]
-		}else if (user.isCitizen()) {
+		if (user.isAnonymous()) {
+			return [new AnonymousAuthGroup(user)];
+		} else if (user.isCitizen()) {
 			return [new CitizenAuthGroup(user)];
 		} else {
 			const usersService = this.containerContext.resolve(UsersService);

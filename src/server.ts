@@ -23,6 +23,7 @@ import { ApiData } from './apicontract';
 import { BusinessErrorMiddleware } from './infrastructure/businessError.middleware';
 import { getConnectionOptions } from './core/connectionOptions';
 import { KoaContextStoreMiddleware } from './infrastructure/KoaContextStore.middleware';
+import { CitizenUserValidationMiddleware } from './infrastructure/citizenUserValidation.middleware';
 
 class ApiDataResponseHandler {
 	private _middleware: Koa.Middleware;
@@ -67,6 +68,9 @@ export async function startServer(): Promise<Server> {
 	RegisterRoutes(router);
 	// @ts-ignore
 	const HandledRoutes = new ApiDataResponseHandler(router.routes());
+	// tslint:disable-next-line: tsr-detect-non-literal-regexp
+	const byPassAuthPath = new RegExp(`^${basePath}/api/v1/usersessions/anonymous$`);
+
 	const koaServer = new Koa()
 		.use(
 			compress({
@@ -93,13 +97,8 @@ export async function startServer(): Promise<Server> {
 		.use(router.allowedMethods())
 		.use(new ContainerContextMiddleware().build())
 		.use(new KoaContextStoreMiddleware().build())
-		.use(
-			bypassMiddleware(
-				// tslint:disable-next-line: tsr-detect-non-literal-regexp
-				new RegExp(`^${basePath}/api/v1/usersessions/anonymous$`),
-				new UserContextMiddleware().build(),
-			),
-		)
+		.use(bypassMiddleware(byPassAuthPath, new UserContextMiddleware().build()))
+		.use(bypassMiddleware(byPassAuthPath, new CitizenUserValidationMiddleware().build()))
 		.use(HandledRoutes.build());
 
 	const dbOptions = getConnectionOptions();

@@ -6,7 +6,7 @@ import { KoaContextStore } from './KoaContextStore.middleware';
 export type AnonymousCookieData = {
 	createdAt: Date;
 	trackingId: string;
-}
+};
 
 @InRequestScope
 export class BookingSGCookieHelper {
@@ -19,7 +19,8 @@ export class BookingSGCookieHelper {
 
 	constructor() {
 		const config = getConfig();
-		this._encryptor = new AesEncryption(config.encryptionKey, 'base64');
+		const key = Buffer.from(config.encryptionKey, 'base64');
+		this._encryptor = new AesEncryption(key);
 	}
 
 	public setCookieValue(value: AnonymousCookieData) {

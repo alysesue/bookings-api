@@ -1,34 +1,30 @@
 import * as crypto from 'crypto';
 
 const algorithm = 'aes-256-cbc';
+const expectedKeyBytes = 32;
 const encryptionEncoding = 'base64';
 const IV_SIZE = 16;
 const SALT_SIZE = 8;
 
 export class AesEncryption {
-	private _aesKey: string;
-	private _keyEncoding: BufferEncoding;
+	private _aeskey: Uint8Array;
 
-	public constructor(aesKey: string, keyEncoding: BufferEncoding) {
-		if (!aesKey || aesKey.length === 0) {
-			throw new Error('Encryption key not found');
+	public constructor(buffer: Buffer) {
+		if (buffer.length !== expectedKeyBytes) {
+			throw new Error(`Encryption key must have ${expectedKeyBytes} bytes.`);
 		}
-		this._aesKey = aesKey;
-		this._keyEncoding = keyEncoding;
+
+		this._aeskey = new Uint8Array(buffer);
 	}
 
 	private hash128(input: Buffer): Buffer {
 		return crypto.createHash('md5').update(input).digest();
 	}
 
-	private getKey(): Buffer {
-		return Buffer.from(this._aesKey, this._keyEncoding);
-	}
-
 	public encrypt(buffer: Buffer): string {
 		const ivPublic = crypto.randomBytes(IV_SIZE);
 		const ivHash = this.hash128(ivPublic);
-		const cipher = crypto.createCipheriv(algorithm, this.getKey(), ivHash);
+		const cipher = crypto.createCipheriv(algorithm, this._aeskey, ivHash, { autoDestroy: true });
 
 		const salt = crypto.randomBytes(SALT_SIZE);
 		const input = Buffer.concat([salt, buffer]);
@@ -41,13 +37,12 @@ export class AesEncryption {
 
 	public decrypt(text: string): Buffer {
 		try {
-			const key = Buffer.from(this._aesKey, this._keyEncoding);
 			const concatenated = Buffer.from(text, encryptionEncoding);
 			const ivPublic = concatenated.slice(0, IV_SIZE);
 			const ivHash = this.hash128(ivPublic);
 			const encryptedValue = concatenated.slice(IV_SIZE);
 
-			const decipher = crypto.createDecipheriv(algorithm, this.getKey(), ivHash);
+			const decipher = crypto.createDecipheriv(algorithm, this._aeskey, ivHash, { autoDestroy: true });
 			let decrypted = decipher.update(encryptedValue);
 			const final = decipher.final();
 			decrypted = Buffer.concat([decrypted, final]);

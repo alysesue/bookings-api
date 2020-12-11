@@ -17,7 +17,9 @@ export class UsersRepository extends RepositoryBase<User> {
 		const repository = await this.getRepository();
 		const query = repository
 			.createQueryBuilder('u')
-			.innerJoinAndSelect('u._anonymousUser', 'anonymous', 'anonymous."_trackingId" = :trackingId', { trackingId });
+			.innerJoinAndSelect('u._anonymousUser', 'anonymous', 'anonymous."_trackingId" = :trackingId', {
+				trackingId,
+			});
 
 		return await query.getOne();
 	}

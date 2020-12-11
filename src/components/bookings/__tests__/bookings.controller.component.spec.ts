@@ -106,7 +106,7 @@ describe('Booking Integration tests', () => {
 	});
 });
 
-class BookingRepositoryMock extends BookingsRepository {
+class BookingRepositoryMock implements Partial<BookingsRepository> {
 	public static getBooking = jest.fn();
 	public static update = jest.fn();
 
@@ -119,7 +119,7 @@ class BookingRepositoryMock extends BookingsRepository {
 	}
 }
 
-class TimeslotsServiceMock extends TimeslotsService {
+class TimeslotsServiceMock implements Partial<TimeslotsService> {
 	public static availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 	public static isProviderAvailableForTimeslot = jest.fn<Promise<boolean>, any>();
 
@@ -141,7 +141,7 @@ class TimeslotsServiceMock extends TimeslotsService {
 	}
 }
 
-class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
+class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersRepository> {
 	public static getServiceProviderMock: ServiceProvider;
 
 	public async getServiceProvider(): Promise<ServiceProvider> {
@@ -149,7 +149,7 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	}
 }
 
-class UserContextMock extends UserContext {
+class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
@@ -163,7 +163,7 @@ class UserContextMock extends UserContext {
 	}
 }
 
-class BookingChangeLogsServiceMock extends BookingChangeLogsService {
+class BookingChangeLogsServiceMock implements Partial<BookingChangeLogsService> {
 	public static executeAndLogAction = jest.fn();
 
 	public async executeAndLogAction(...params): Promise<any> {
@@ -171,11 +171,11 @@ class BookingChangeLogsServiceMock extends BookingChangeLogsService {
 	}
 }
 
-class ServicesServiceMock extends ServicesService {
+class ServicesServiceMock implements Partial<ServicesService> {
 	public static getService = jest.fn();
 
 	public init() {}
 	public async getService(...params): Promise<any> {
-		return await ServicesServiceMock.getService(params);
+		return await ServicesServiceMock.getService(...params);
 	}
 }

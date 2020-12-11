@@ -21,7 +21,7 @@ export class AnonymousUser {
 		this._id = value;
 	}
 
-	@Column({ nullable: false})
+	@Column({ nullable: false })
 	private _createdAt: Date;
 
 	public get createdAt(): Date {
@@ -40,7 +40,13 @@ export class AnonymousUser {
 		return this._trackingId;
 	}
 
-	public static create({ createdAt, trackingId }: { createdAt: Date; trackingId: string }): AnonymousUser | undefined {
+	public static create({
+		createdAt,
+		trackingId,
+	}: {
+		createdAt: Date;
+		trackingId: string;
+	}): AnonymousUser | undefined {
 		if (!createdAt || !trackingId || !uuid.validate(trackingId)) {
 			return null;
 		}

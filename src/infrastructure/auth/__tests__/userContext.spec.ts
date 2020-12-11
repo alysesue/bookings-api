@@ -3,7 +3,8 @@ import { Container } from 'typescript-ioc';
 import { UsersService } from '../../../components/users/users.service';
 import { User } from '../../../models';
 import { UserContext } from '../../auth/userContext';
-import { AuthGroup, CitizenAuthGroup } from '../../auth/authGroup';
+import { AnonymousAuthGroup, AuthGroup, CitizenAuthGroup } from '../../auth/authGroup';
+import * as uuid from 'uuid';
 
 beforeAll(() => {
 	Container.bind(UsersService).to(UsersServiceMock);
@@ -65,11 +66,29 @@ describe('User Context tests', () => {
 		expect(user).toBe(adminMock);
 		expect(groups).toStrictEqual([]);
 	});
+
+	it('should get anonymous user', async () => {
+		const data = { createdAt: new Date(), trackingId: uuid.v4() };
+
+		const anonymous = User.createAnonymousUser(data);
+		const scope = ContainerContextHolder.create();
+		const userContext = scope.resolve(UserContext);
+
+		userContext.setAnonymousUser(data);
+		UsersServiceMock.createAnonymousUserFromCookie.mockReturnValue(Promise.resolve(anonymous));
+		const user = await userContext.getCurrentUser();
+		const groups = await userContext.getAuthGroups();
+
+		expect(UsersServiceMock.createAnonymousUserFromCookie).toHaveBeenCalled();
+		expect(user).toStrictEqual(anonymous);
+		expect(groups).toStrictEqual([new AnonymousAuthGroup(anonymous)]);
+	});
 });
 
-class UsersServiceMock extends UsersService {
+class UsersServiceMock implements Partial<UsersService> {
 	public static getOrSaveUserFromHeaders = jest.fn<Promise<User>, any>();
 	public static getUserGroupsFromHeaders = jest.fn<Promise<AuthGroup[]>, any>();
+	public static createAnonymousUserFromCookie = jest.fn<Promise<User>, any>();
 
 	public async getOrSaveUserFromHeaders(...params): Promise<any> {
 		return await UsersServiceMock.getOrSaveUserFromHeaders(...params);
@@ -77,5 +96,9 @@ class UsersServiceMock extends UsersService {
 
 	public async getUserGroupsFromHeaders(...params): Promise<any> {
 		return await UsersServiceMock.getUserGroupsFromHeaders(...params);
+	}
+
+	public async createAnonymousUserFromCookie(...params): Promise<User> {
+		return await UsersServiceMock.createAnonymousUserFromCookie(...params);
 	}
 }

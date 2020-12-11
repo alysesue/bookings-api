@@ -234,14 +234,18 @@ export class UsersService {
 			return user;
 		}
 
-		//Creates user only in memory till a booking is made to avoid populating the database.
+		// Creates user only in memory till a booking is made to avoid populating the database.
 		return User.createAnonymousUser(data);
 	}
 
-	public async persistAnonymousUser(user: User): Promise<User> {
-		if (user.isAnonymous() && !user.isPersisted()){
+	public async persistUserIfRequired(user: User): Promise<User> {
+		if (user.isPersisted()) return user;
+
+		if (user.isAnonymous()) {
 			const usersRepo = this.usersRepository;
-			return await this.getOrSaveInternal(user, () => usersRepo.getUserByTrackingId(user.anonymousUser.trackingId))
+			return await this.getOrSaveInternal(user, () =>
+				usersRepo.getUserByTrackingId(user.anonymousUser.trackingId),
+			);
 		}
 
 		return user;

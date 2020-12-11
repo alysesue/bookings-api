@@ -13,8 +13,9 @@ import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
+import { UsersService } from '../../../components/users/users.service';
 
-export class BookingRepositoryMock extends BookingsRepository {
+export class BookingRepositoryMock implements Partial<BookingsRepository> {
 	public static booking: Booking;
 	public static searchBookingsMock: Booking[];
 	public static saveMock: Promise<InsertResult>;
@@ -40,7 +41,7 @@ export class BookingRepositoryMock extends BookingsRepository {
 	}
 }
 
-export class TimeslotsServiceMock extends TimeslotsService {
+export class TimeslotsServiceMock implements Partial<TimeslotsService> {
 	public static availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 	public static acceptedBookings: Booking[] = [];
 	public static isProviderAvailableForTimeslot = jest.fn<Promise<boolean>, any>();
@@ -68,7 +69,7 @@ export class TimeslotsServiceMock extends TimeslotsService {
 	}
 }
 
-export class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
+export class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersRepository> {
 	public static getServiceProviderMock: ServiceProvider;
 
 	public async getServiceProvider(): Promise<ServiceProvider> {
@@ -76,7 +77,7 @@ export class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	}
 }
 
-export class ServiceProvidersServiceMock extends ServiceProvidersService {
+export class ServiceProvidersServiceMock implements Partial<ServiceProvidersService> {
 	public static getServiceProvider = jest.fn<Promise<ServiceProvider>, any>();
 
 	public async getServiceProvider(...params): Promise<any> {
@@ -84,7 +85,7 @@ export class ServiceProvidersServiceMock extends ServiceProvidersService {
 	}
 }
 
-export class UnavailabilitiesServiceMock extends UnavailabilitiesService {
+export class UnavailabilitiesServiceMock implements Partial<UnavailabilitiesService> {
 	public static isUnavailable = jest.fn();
 
 	public async isUnavailable(...params): Promise<any> {
@@ -92,7 +93,7 @@ export class UnavailabilitiesServiceMock extends UnavailabilitiesService {
 	}
 }
 
-export class UserContextMock extends UserContext {
+export class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
@@ -106,7 +107,7 @@ export class UserContextMock extends UserContext {
 	}
 }
 
-export class BookingChangeLogsServiceMock extends BookingChangeLogsService {
+export class BookingChangeLogsServiceMock implements Partial<BookingChangeLogsService> {
 	public static executeAndLogAction = jest.fn();
 	public static action: ChangeLogAction;
 
@@ -115,12 +116,20 @@ export class BookingChangeLogsServiceMock extends BookingChangeLogsService {
 	}
 }
 
-export class ServicesServiceMock extends ServicesService {
+export class ServicesServiceMock implements Partial<ServicesService> {
 	public static getService = jest.fn();
 
 	public init() {}
 
 	public async getService(...params): Promise<any> {
-		return await ServicesServiceMock.getService(params);
+		return await ServicesServiceMock.getService(...params);
+	}
+}
+
+export class UsersServiceMock implements Partial<UsersService> {
+	public static persistUserIfRequired = jest.fn();
+
+	public async persistUserIfRequired(...params): Promise<User> {
+		return await UsersServiceMock.persistUserIfRequired(...params);
 	}
 }
