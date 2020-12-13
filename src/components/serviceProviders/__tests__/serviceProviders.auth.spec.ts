@@ -8,7 +8,6 @@ import {
 } from '../../../infrastructure/auth/authGroup';
 
 describe('Service providers Auth', () => {
-
 	it('should throw errors', () => {
 		expect(() => new ServiceProvidersActionAuthVisitor(null, CrudAction.Create)).toThrowError();
 		const serviceProvider = ServiceProvider.create('provider', 1);
@@ -71,7 +70,7 @@ describe('Service providers Auth', () => {
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 	});
 
-	it('should not update service provider for service admin', () => {
+	it('should update service provider for service admin', () => {
 		const service = new Service();
 		service.id = 1;
 		const serviceAdminAuthGroup = new ServiceAdminAuthGroup(
@@ -84,7 +83,7 @@ describe('Service providers Auth', () => {
 		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProviderToUpdate, CrudAction.Update);
 		authVisitor.visitServiceAdmin(serviceAdminAuthGroup);
 
-		expect(authVisitor.hasPermission([serviceAdminAuthGroup])).toBe(false);
+		expect(authVisitor.hasPermission([serviceAdminAuthGroup])).toBe(true);
 	});
 
 	it('should not be able to update a service provider not belonging to authorised services for org admin', () => {
@@ -121,22 +120,6 @@ describe('Service providers Auth', () => {
 		authVisitor.visitServiceAdmin(serviceAdminAuthGroup);
 
 		expect(authVisitor.hasPermission([serviceAdminAuthGroup])).toBe(false);
-	});
-
-	it('should able to read service provider for service admin', () => {
-		const service = new Service();
-		service.id = 1;
-		const serviceAdminAuthGroup = new ServiceAdminAuthGroup(
-			User.createAdminUser({ userName: '', molAdminId: '', email: '', name: '' }),
-			[service],
-		);
-
-		const spData = ServiceProvider.create('new sp', 1);
-		spData.service = service;
-		const authVisitor = new ServiceProvidersActionAuthVisitor(spData, CrudAction.Read);
-		authVisitor.visitServiceAdmin(serviceAdminAuthGroup);
-
-		expect(authVisitor.hasPermission([serviceAdminAuthGroup])).toBe(true);
 	});
 
 	it('should able to delete service provider for service admin in the same service', () => {

@@ -142,7 +142,7 @@ export class ServiceProvidersController extends Controller {
 		} else {
 			const servicesList = await this.servicesService.getServices();
 			for (const service of servicesList) {
-				result.push(...await this.serviceProvidersService.getAvailableServiceProviders(from, to, service.id));
+				result.push(...(await this.serviceProvidersService.getAvailableServiceProviders(from, to, service.id)));
 			}
 		}
 		return ApiDataFactory.create(this.mapper.mapDataModels(result));
@@ -170,6 +170,9 @@ export class ServiceProvidersController extends Controller {
 	 * @param spRequest
 	 */
 	@Put('{spId}')
+	@SuccessResponse(200, 'Ok')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async updateServiceProvider(
 		@Path() spId: number,
 		@Body() spRequest: ServiceProviderModel,

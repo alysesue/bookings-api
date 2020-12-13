@@ -71,7 +71,6 @@ export class ServiceProvidersActionAuthVisitor extends PermissionAwareAuthGroupV
 				return;
 			case CrudAction.Delete:
 			case CrudAction.Update:
-			case CrudAction.Read:
 				if (authorisedOrganisationIds.includes(this.serviceProvider.service.organisationId)) {
 					this.markWithPermission();
 				}
@@ -88,7 +87,7 @@ export class ServiceProvidersActionAuthVisitor extends PermissionAwareAuthGroupV
 				this.markWithPermission();
 				return;
 			case CrudAction.Delete:
-			case CrudAction.Read:
+			case CrudAction.Update:
 				if (serviceIds.includes(this.serviceProvider.serviceId)) {
 					this.markWithPermission();
 				}
@@ -101,7 +100,7 @@ export class ServiceProvidersActionAuthVisitor extends PermissionAwareAuthGroupV
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
 		const authorizedServiceProviderId = _userGroup.authorisedServiceProvider.id;
 		// tslint:disable-next-line: tsr-detect-possible-timing-attacks
-		if (authorizedServiceProviderId === this.serviceProvider.id && CrudAction.Read === this.action) {
+		if (authorizedServiceProviderId === this.serviceProvider.id && CrudAction.Update === this.action) {
 			this.markWithPermission();
 		}
 	}
