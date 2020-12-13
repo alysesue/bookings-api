@@ -1,5 +1,5 @@
 import { Container } from 'typescript-ioc';
-import { ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule, Service } from '../../../models';
+import { ScheduleForm, Service, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
 import { ServiceProvidersController } from '../serviceProviders.controller';
 import { ServiceProvidersService } from '../serviceProviders.service';
 import { ServiceProviderModel } from '../serviceProviders.apicontract';
@@ -23,6 +23,7 @@ jest.mock('mol-lib-common', () => {
 	};
 });
 
+// tslint:disable-next-line: no-big-function
 describe('ServiceProviders.Controller', () => {
 	const sp1 = ServiceProvider.create('Monica', 1);
 	const sp2 = ServiceProvider.create('Timmy', 1);
@@ -102,7 +103,6 @@ describe('ServiceProviders.Controller', () => {
 	});
 
 	it('should get available SP from a service', async () => {
-
 		const startDate = new Date(2020, 12, 6, 7, 0);
 		const endDate = new Date(2020, 12, 6, 10, 0);
 		const timeslots = new TimeslotsSchedule();
@@ -115,14 +115,17 @@ describe('ServiceProviders.Controller', () => {
 		timeslots.timeslotItems = [timeslotItem];
 		sp1.timeslotsSchedule = timeslots;
 		ServiceProvidersSvcMock.getAvailableServiceProviders.mockReturnValue([sp1]);
-		const result = await Container.get(ServiceProvidersController).getAvailableServiceProviders(startDate, endDate, 1);
+		const result = await Container.get(ServiceProvidersController).getAvailableServiceProviders(
+			startDate,
+			endDate,
+			1,
+		);
 
 		expect(result.data.length).toBe(1);
 		expect(result.data[0].serviceId).toBe(1);
 	});
 
 	it('should get available SP from multiple services', async () => {
-
 		const svc1 = new Service();
 		svc1.id = 1;
 		const svc2 = new Service();
@@ -142,8 +145,6 @@ describe('ServiceProviders.Controller', () => {
 		sp1.timeslotsSchedule = timeslots;
 		sp3.timeslotsSchedule = timeslots;
 
-
-
 		ServicesServiceMock.getServices.mockReturnValue([svc1, svc2]);
 		ServiceProvidersSvcMock.getAvailableServiceProviders
 			.mockImplementationOnce(() => [sp1])
@@ -153,7 +154,6 @@ describe('ServiceProviders.Controller', () => {
 		expect(result.data.length).toBe(2);
 		expect(result.data[0].serviceId).toBe(1);
 		expect(result.data[1].serviceId).toBe(2);
-
 	});
 
 	it('should save multiple service providers', async () => {
@@ -199,7 +199,9 @@ describe('ServiceProviders.Controller', () => {
 	});
 
 	it('should update a service provider', async () => {
-		ServiceProvidersSvcMock.updateServiceProvider.mockReturnValue(ServiceProvider.create('Test', 1, 'test@gmail.com'));
+		ServiceProvidersSvcMock.updateServiceProvider.mockReturnValue(
+			ServiceProvider.create('Test', 1, 'test@gmail.com'),
+		);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.updateServiceProvider(1, {
 			name: 'Test',
@@ -208,9 +210,6 @@ describe('ServiceProviders.Controller', () => {
 		expect(ServiceProvidersSvcMock.updateServiceProvider).toBeCalled();
 		expect(result.data.email).toBe('test@gmail.com');
 	});
-
-
-
 
 	it('should set provider schedule timeslots', async () => {
 		ServiceProvidersSvcMock.createTimeslotItemForServiceProvider.mockReturnValue(mockItem);
@@ -293,12 +292,10 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 	}
 }
 
-
 class ServicesServiceMock extends ServicesService {
 	public static getServices = jest.fn();
 
 	public async getServices(): Promise<Service[]> {
 		return ServicesServiceMock.getServices();
 	}
-
 }

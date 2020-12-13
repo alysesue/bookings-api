@@ -170,7 +170,6 @@ describe('Service Provider repository', () => {
 		expect(result).toBeNull();
 	});
 
-
 	it('should return null when no SP data', async () => {
 		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(null));
 
@@ -328,7 +327,7 @@ class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
-	public init() { }
+	public init() {}
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(...params);
 	}

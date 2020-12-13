@@ -28,7 +28,7 @@ import { OrganisationAdminAuthGroup, ServiceProviderAuthGroup } from '../../../i
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.repository';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
-import { MOLErrorV2, ErrorCodeV2 } from 'mol-lib-api-contract';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -124,7 +124,9 @@ describe('ServiceProviders.Service', () => {
 
 	it('should throw error when service provider is not found', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = null;
-		await expect(async () => await Container.get(ServiceProvidersService).getServiceProvider(1, true, true)).rejects.toStrictEqual(
+		await expect(
+			async () => await Container.get(ServiceProvidersService).getServiceProvider(1, true, true),
+		).rejects.toStrictEqual(
 			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider with id 1 not found'),
 		);
 	});
@@ -194,7 +196,9 @@ describe('ServiceProviders.Service', () => {
 		serviceProviderMock.scheduleForm = null;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 
-		await expect(async () => await Container.get(ServiceProvidersService).getProviderScheduleForm(1)).rejects.toStrictEqual(
+		await expect(
+			async () => await Container.get(ServiceProvidersService).getProviderScheduleForm(1),
+		).rejects.toStrictEqual(
 			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service schedule form not found'),
 		);
 	});
