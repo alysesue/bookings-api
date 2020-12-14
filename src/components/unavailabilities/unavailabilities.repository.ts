@@ -6,6 +6,7 @@ import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
 import { UnavailabilitiesQueryAuthVisitor } from './unavailabilities.auth';
 import { andWhere } from '../../tools/queryConditions';
+import { DefaultIsolationLevel, TransactionManager } from '../../core/transactionManager';
 
 @InRequestScope
 export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {
@@ -37,7 +38,7 @@ export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {
 		const query = repository
 			.createQueryBuilder('u')
 			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
-			.leftJoin('u._service', 'service');
+			.leftJoinAndSelect('u._service', 'service');
 
 		return query;
 	}
@@ -119,5 +120,53 @@ export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {
 	}): Promise<number> {
 		const query = await this.createSearchQuery(options);
 		return await query.getCount();
+	}
+
+	public async get(options: { id: number; skipAuthorisation?: boolean }): Promise<Unavailability> {
+		const { id } = options;
+		if (!id) {
+			return null;
+		}
+		const idCondition = 'u."_id" = :id';
+		const spRelationFilter = await this.getServiceProviderRelationFilter(options);
+		const query = await this.createSelectQuery([idCondition], { id }, options);
+
+		const entry = await query
+			.leftJoinAndSelect(
+				'u._serviceProviders',
+				'sp_relation',
+				spRelationFilter.condition,
+				spRelationFilter.params,
+			)
+			.getOne();
+		return entry;
+	}
+
+	public async delete(unavailability: Unavailability): Promise<void> {
+		await this.transactionManager.runInTransaction(DefaultIsolationLevel, async () => {
+			const { id } = unavailability;
+			const serviceProviderIds = unavailability.serviceProviders.map((sp) => sp.id);
+			const repository = await this.getRepository();
+			if (serviceProviderIds.length > 0) {
+				await repository
+					.createQueryBuilder()
+					.delete()
+					.from('public.unavailable_service_provider')
+					.where('unavailability_id = :id AND "serviceProvider_id" IN (:...serviceProviderIds)', {
+						id,
+						serviceProviderIds,
+					})
+					.execute();
+			}
+
+			await repository
+				.createQueryBuilder()
+				.delete()
+				.where(
+					`_id = :id AND NOT EXISTS(SELECT 1 FROM public.unavailable_service_provider sp_relation WHERE sp_relation.unavailability_id = :id)`,
+					{ id },
+				)
+				.execute();
+		});
 	}
 }

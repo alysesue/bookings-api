@@ -65,11 +65,22 @@ describe('Unavailabilities controller tests', () => {
 
 		expect(result).toBeDefined();
 	});
+
+	it('should delete unavailability', async () => {
+		UnavailabilitiesServiceMock.deleteUnavailability.mockReturnValue(Promise.resolve());
+
+		const controller = Container.get(UnavailabilitiesController);
+		const idInput = 1;
+		await controller.deleteUnavailability(idInput);
+
+		expect(UnavailabilitiesServiceMock.deleteUnavailability).toHaveBeenCalledWith(1);
+	});
 });
 
 const UnavailabilitiesServiceMock = {
 	create: jest.fn(),
 	search: jest.fn(),
+	deleteUnavailability: jest.fn(),
 };
 
 class UnavailabilitiesServiceMockClass extends UnavailabilitiesService {
@@ -79,5 +90,9 @@ class UnavailabilitiesServiceMockClass extends UnavailabilitiesService {
 
 	public async search(...params): Promise<any> {
 		return await UnavailabilitiesServiceMock.search(...params);
+	}
+
+	public async deleteUnavailability(id): Promise<any> {
+		return await UnavailabilitiesServiceMock.deleteUnavailability(id);
 	}
 }

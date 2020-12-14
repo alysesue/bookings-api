@@ -1,5 +1,19 @@
 import { Inject } from 'typescript-ioc';
-import { Body, Controller, Get, Header, Post, Query, Response, Route, Security, SuccessResponse, Tags } from 'tsoa';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Header,
+	Path,
+	Post,
+	Query,
+	Response,
+	Route,
+	Security,
+	SuccessResponse,
+	Tags,
+} from 'tsoa';
 import { UnavailabilitiesService } from './unavailabilities.service';
 import { UnavailabilityRequest, UnavailabilityResponse } from './unavailabilities.apicontract';
 import { Unavailability } from '../../models';
@@ -18,6 +32,7 @@ export class UnavailabilitiesController extends Controller {
 	private mapToResponse(data: Unavailability): UnavailabilityResponse {
 		const serviceProviders = this.serviceProvidersMapper.mapSummaryDataModels(data.serviceProviders);
 		return {
+			id: data.id,
 			startTime: data.start,
 			endTime: data.end,
 			allServiceProviders: data.allServiceProviders,
@@ -69,5 +84,17 @@ export class UnavailabilitiesController extends Controller {
 			serviceProviderId,
 		});
 		return ApiDataFactory.create(entries.map((e) => this.mapToResponse(e)));
+	}
+
+	/**
+	 * Deletes an unavailability for a service provider
+	 * @param id The ID of the unavailability.
+	 */
+	@Delete('{id}')
+	@SuccessResponse(204, 'Deleted')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async deleteUnavailability(@Path() id: number): Promise<void> {
+		await this.unavailabilitiesService.deleteUnavailability(id);
 	}
 }

@@ -6,6 +6,7 @@ import {
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
+import { CrudAction } from '../../../enums/crudAction';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -16,6 +17,8 @@ afterEach(() => {
 	jest.resetAllMocks();
 	jest.clearAllMocks();
 });
+
+// tslint:disable-next-line:no-big-function
 describe('Unavailabilities action auth', () => {
 	const organisation = new Organisation();
 	organisation.id = 1;
@@ -31,7 +34,9 @@ describe('Unavailabilities action auth', () => {
 	it('should validate param to have service', async () => {
 		const unavailabilityMock = new Unavailability();
 		const groups = [new CitizenAuthGroup(singpassMock)];
-		expect(() => new UnavailabilitiesActionAuthVisitor(unavailabilityMock).hasPermission(groups)).toThrow();
+		expect(() =>
+			new UnavailabilitiesActionAuthVisitor(unavailabilityMock, CrudAction.Create).hasPermission(groups),
+		).toThrow();
 	});
 	it('should validate FALSE for citizen action permission', async () => {
 		const unavailabilityMock = new Unavailability();
@@ -42,7 +47,9 @@ describe('Unavailabilities action auth', () => {
 		unavailabilityMock.service = serviceMock;
 		const groups = [new CitizenAuthGroup(singpassMock)];
 
-		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock).hasPermission(groups)).toBe(false);
+		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock, CrudAction.Create).hasPermission(groups)).toBe(
+			false,
+		);
 	});
 	it('should validate TRUE for the same organisation admin action permission', async () => {
 		const unavailabilityMock = new Unavailability();
@@ -57,7 +64,9 @@ describe('Unavailabilities action auth', () => {
 
 		const groups = [new OrganisationAdminAuthGroup(adminMock, [organisationMock])];
 
-		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock).hasPermission(groups)).toBe(true);
+		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock, CrudAction.Create).hasPermission(groups)).toBe(
+			true,
+		);
 	});
 
 	it('should validate FALSE for different organisation admin action permission', async () => {
@@ -73,7 +82,9 @@ describe('Unavailabilities action auth', () => {
 
 		const groups = [new OrganisationAdminAuthGroup(adminMock, [organisationMock])];
 
-		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock).hasPermission(groups)).toBe(false);
+		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock, CrudAction.Create).hasPermission(groups)).toBe(
+			false,
+		);
 	});
 
 	it('should validate TRUE in different service admin action permission', async () => {
@@ -88,7 +99,9 @@ describe('Unavailabilities action auth', () => {
 
 		const groups = [new ServiceAdminAuthGroup(adminMock, [authorisedService])];
 
-		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock).hasPermission(groups)).toBe(true);
+		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock, CrudAction.Create).hasPermission(groups)).toBe(
+			true,
+		);
 	});
 
 	it('should validate FALSE in different service admin action permission', async () => {
@@ -104,7 +117,9 @@ describe('Unavailabilities action auth', () => {
 
 		const groups = [new ServiceAdminAuthGroup(adminMock, [authorisedService])];
 
-		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock).hasPermission(groups)).toBe(false);
+		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock, CrudAction.Create).hasPermission(groups)).toBe(
+			false,
+		);
 	});
 	it('should validate TRUE for the same service provider timeslot action permission', async () => {
 		const service = new Service();
@@ -121,7 +136,9 @@ describe('Unavailabilities action auth', () => {
 
 		const groups = [new ServiceProviderAuthGroup(adminMock, serviceProviderA)];
 
-		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock).hasPermission(groups)).toBe(true);
+		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock, CrudAction.Create).hasPermission(groups)).toBe(
+			true,
+		);
 	});
 
 	it('should validate FALSE for the different service provider action permission', async () => {
@@ -143,6 +160,114 @@ describe('Unavailabilities action auth', () => {
 
 		const groups = [new ServiceProviderAuthGroup(adminMock, serviceProviderA)];
 
-		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock).hasPermission(groups)).toBe(false);
+		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock, CrudAction.Create).hasPermission(groups)).toBe(
+			false,
+		);
+	});
+
+	it('should delete unavailability by organisation admin', () => {
+		// tslint:disable-next-line:no-shadowed-variable
+		const organisation = new Organisation();
+		organisation.id = 1;
+		const service = new Service();
+		service.organisationId = 1;
+		service.id = 1;
+
+		const userGroup = new OrganisationAdminAuthGroup(
+			User.createAdminUser({ molAdminId: '', email: '', name: '', userName: '' }),
+			[organisation],
+		);
+
+		const serviceProviderA = ServiceProvider.create('Alice', service.id, 'test@email.com', '0000');
+		serviceProviderA.id = 1;
+		serviceProviderA.service = service;
+
+		const unavailabilityMock = new Unavailability();
+		unavailabilityMock.serviceId = 1;
+		unavailabilityMock.service = service;
+		unavailabilityMock.serviceProviders = [serviceProviderA];
+
+		const authVisitor = new UnavailabilitiesActionAuthVisitor(unavailabilityMock, CrudAction.Delete);
+		authVisitor.visitOrganisationAdmin(userGroup);
+
+		expect(authVisitor.hasPermission([userGroup])).toBe(true);
+	});
+
+	it('should delete unavailability by service admin', () => {
+		// tslint:disable-next-line:no-shadowed-variable
+		const organisation = new Organisation();
+		organisation.id = 1;
+		const service = new Service();
+		service.organisationId = 1;
+		service.id = 1;
+
+		const userGroup = new ServiceAdminAuthGroup(
+			User.createAdminUser({ molAdminId: '', email: '', name: '', userName: '' }),
+			[service],
+		);
+
+		const serviceProviderA = ServiceProvider.create('Alice', service.id, 'test@email.com', '0000');
+		serviceProviderA.id = 1;
+		serviceProviderA.service = service;
+
+		const unavailabilityMock = new Unavailability();
+		unavailabilityMock.serviceId = 1;
+		unavailabilityMock.service = service;
+		unavailabilityMock.serviceProviders = [serviceProviderA];
+
+		const authVisitor = new UnavailabilitiesActionAuthVisitor(unavailabilityMock, CrudAction.Delete);
+		authVisitor.visitServiceAdmin(userGroup);
+
+		expect(authVisitor.hasPermission([userGroup])).toBe(true);
+	});
+
+	it('should delete unavailability by service provider', () => {
+		// tslint:disable-next-line:no-shadowed-variable
+		const organisation = new Organisation();
+		organisation.id = 1;
+		const service = new Service();
+		service.organisationId = 1;
+		service.id = 1;
+
+		const serviceProvider = ServiceProvider.create('Alice', service.id, 'test@email.com', '0000');
+		serviceProvider.id = 1;
+		serviceProvider.service = service;
+
+		const userGroup = new ServiceProviderAuthGroup(
+			User.createAdminUser({ molAdminId: '', email: '', name: '', userName: '' }),
+			serviceProvider,
+		);
+
+		const unavailabilityMock = new Unavailability();
+		unavailabilityMock.serviceId = 1;
+		unavailabilityMock.service = service;
+		unavailabilityMock.serviceProviders = [serviceProvider];
+
+		const authVisitor = new UnavailabilitiesActionAuthVisitor(unavailabilityMock, CrudAction.Delete);
+		authVisitor.visitServiceProvider(userGroup);
+
+		expect(authVisitor.hasPermission([userGroup])).toBe(true);
+	});
+
+	it('should not have authorisation to perform any action by citizens', () => {
+		const service = new Service();
+		service.organisationId = 1;
+		service.id = 1;
+
+		const serviceProvider = ServiceProvider.create('Alice', service.id, 'test@email.com', '0000');
+		serviceProvider.id = 1;
+		serviceProvider.service = service;
+
+		const userGroup = new CitizenAuthGroup(User.createSingPassUser('', ''));
+
+		const unavailabilityMock = new Unavailability();
+		unavailabilityMock.serviceId = 1;
+		unavailabilityMock.service = service;
+		unavailabilityMock.serviceProviders = [serviceProvider];
+
+		const authVisitor = new UnavailabilitiesActionAuthVisitor(unavailabilityMock, CrudAction.Delete);
+		authVisitor.visitCitizen(userGroup);
+
+		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
 });
