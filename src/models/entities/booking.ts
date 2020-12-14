@@ -314,6 +314,9 @@ export class Booking {
 	public get captchaToken(): string {
 		return this._captchaToken;
 	}
+	public set captchaToken(value: string) {
+		this._captchaToken = value;
+	}
 
 	public clone(): Booking {
 		const instance = new Booking();
