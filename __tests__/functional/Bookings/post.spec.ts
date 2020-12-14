@@ -32,12 +32,12 @@ describe('Bookings functional tests', () => {
 	});
 
 	it('admin should be able to create out of slot booking', async () => {
-		const adminCreateBookingOos = await OrganisationAdminRequestEndpointSG.create({ serviceId: result.serviceId }).post(`/bookings/admin`, { body: { startDateTime, endDateTime, serviceProviderId: result.serviceProviderId, citizenUinFin, citizenName, citizenEmail } });
+		const adminCreateBookingOos = await OrganisationAdminRequestEndpointSG.create({ serviceId: result.service.id }).post(`/bookings/admin`, { body: { startDateTime, endDateTime, serviceProviderId: result.serviceProvider[0].id, citizenUinFin, citizenName, citizenEmail } });
 		expect(adminCreateBookingOos.statusCode).toEqual(201);
 	});
 
 	it('admin should create out of slot booking and citizen cancels a booking', async() => {
-        const bookingId = await populateOutOfSlotBooking({startDateTime, endDateTime, serviceId: result.serviceId, serviceProviderId: result.serviceProviderId, citizenUinFin, citizenName, citizenEmail});
+        const bookingId = await populateOutOfSlotBooking({startDateTime, endDateTime, serviceId: result.service.id, serviceProviderId: result.serviceProvider[0].id, citizenUinFin, citizenName, citizenEmail});
 	    const citizenCancelBookingResponse = await CitizenRequestEndpointSG.create({}).post(`/bookings/${bookingId}/cancel`, {});
 	    expect(citizenCancelBookingResponse.statusCode).toEqual(204);
 	});

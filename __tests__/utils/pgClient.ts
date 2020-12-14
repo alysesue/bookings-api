@@ -28,6 +28,14 @@ export class PgClient {
 		await this.pool.query('DELETE FROM schedule_form;');
 	}
 
+	public async mapServiceAdminToService({serviceId, nameService, organisation }) {
+		await this.pool.query(`INSERT INTO public.service_admin_group_map("_serviceId", "_serviceOrganisationRef") values(${serviceId}, '${nameService}:${organisation}')`);
+	}
+
+	public async mapServiceProviderToAdminId({serviceProviderId, molAdminId}) {
+		await this.pool.query(`INSERT INTO public.service_provider_group_map("_serviceProviderId","_molAdminId") values (${serviceProviderId}, '${molAdminId}')`)
+	}
+
 	public async close() {
 		await this.pool.end();
 	}

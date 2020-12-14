@@ -103,6 +103,18 @@ describe('Service Provider repository', () => {
 		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
 	});
 
+	it('should return null when schedule form id is not provided', async () => {
+		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(null));
+
+		const spRepository = Container.get(ServiceProvidersRepository);
+
+		const result = await spRepository.getByScheduleFormId({ scheduleFormId: null });
+		expect(result).toBeNull();
+
+		expect(TransactionManagerMock.createQueryBuilder).toBeCalledTimes(0);
+		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalledTimes(0);
+	});
+
 	it('should skip authorisation check', async () => {
 		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([]));
 
@@ -146,6 +158,30 @@ describe('Service Provider repository', () => {
 		expect(result).toBeDefined();
 	});
 
+	it('should return null when no id provided', async () => {
+		const serviceProvider = ServiceProvider.create('J', 1);
+		serviceProvider.id = 1;
+		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(serviceProvider));
+
+		const spRepository = Container.get(ServiceProvidersRepository);
+		const result = await spRepository.getServiceProvider({ id: null });
+
+		expect(TransactionManagerMock.createQueryBuilder).toBeCalledTimes(0);
+		expect(result).toBeNull();
+	});
+
+	it('should return null when no SP data', async () => {
+		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(null));
+
+		const spRepository = Container.get(ServiceProvidersRepository);
+		const result = await spRepository.getServiceProvider({ id: 1 });
+
+		expect(TransactionManagerMock.createQueryBuilder).toBeCalled();
+		expect(queryBuilderMock.where).toHaveBeenCalledWith('(sp._id = :id)', { id: 1 });
+		expect(queryBuilderMock.getOne).toBeCalled();
+		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
+		expect(result).toBeDefined();
+	});
 	it('should get list of SP with schedule', async () => {
 		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([ServiceProvider.create('J', 1)]));
 
