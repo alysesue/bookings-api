@@ -16,7 +16,7 @@ describe('Service providers Auth', () => {
 		const serviceProvider = ServiceProvider.create('provider', 1);
 		expect(() => new ServiceProvidersActionAuthVisitor(serviceProvider, CrudAction.Create)).toThrowError();
 	});
-	
+
 	it('should not be able to create a serviceProvider as anonymous user', () => {
 		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
 		const groups = [new AnonymousAuthGroup(anonymous)];
