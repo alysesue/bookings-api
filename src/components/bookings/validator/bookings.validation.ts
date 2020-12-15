@@ -10,6 +10,7 @@ import { BusinessError } from '../../../errors/businessError';
 import { concatIteratables, iterableToArray } from '../../../tools/asyncIterables';
 import { BookingBusinessValidations } from './bookingBusinessValidations';
 import { CaptchaService } from '../../captcha/captcha.service';
+import { getConfig } from '../../../config/app-config';
 
 export interface IValidator {
 	validate(booking: Booking): Promise<void>;
@@ -55,7 +56,7 @@ abstract class BookingsValidator implements IValidator {
 	public async *getValidations(booking: Booking): AsyncIterable<BusinessValidation> {
 		let yieldedAny = false;
 
-		yield* this.validateToken(booking);
+		if (!getConfig().isFunctionalTest) yield* this.validateToken(booking);
 
 		for await (const validation of concatIteratables(
 			this.validateServiceProviderExisting(booking),

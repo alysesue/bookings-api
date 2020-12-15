@@ -1,7 +1,7 @@
 import { OrganisationAdminRequestEndpointSG } from '../utils/requestEndpointSG';
 import { ServiceProviderResponseModel } from '../../src/components/serviceProviders/serviceProviders.apicontract';
 import { ServiceResponse } from '../../src/components/services/service.apicontract';
-import {TimeslotItemResponse} from "../../src/components/timeslotItems/timeslotItems.apicontract";
+import { TimeslotItemResponse } from "../../src/components/timeslotItems/timeslotItems.apicontract";
 
 export const populateService = async ({
 	organisation = 'localorg',
