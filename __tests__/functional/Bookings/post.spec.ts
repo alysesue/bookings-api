@@ -47,42 +47,4 @@ describe('Bookings functional tests as citizen - out of slots', () => {
 		);
 		expect(citizenCancelBookingResponse.statusCode).toEqual(204);
 	});
-
-	it('citizen should create booking in provided slot', async () => {
-		await populateIndividualTimeslot({
-			serviceProviderId: result.serviceProvider[0].id,
-			weekDay: 0,
-			startTime: '08:00',
-			endTime: '09:00',
-			capacity: 1,
-		});
-
-		const citizenCreateBooking = await CitizenRequestEndpointSG.create({
-			serviceId: result.service.id,
-		}).post(`/bookings`, {
-			body: {
-				token: '123321token',
-				startDateTime,
-				endDateTime,
-				serviceProviderId: result.serviceProvider[0].id,
-				citizenUinFin,
-				citizenName,
-				citizenEmail,
-			},
-		});
-		expect(citizenCreateBooking.statusCode).toEqual(201);
-		const adminCreateBookingOos = await OrganisationAdminRequestEndpointSG.create({
-			serviceId: result.service.id,
-		}).post(`/bookings/admin`, {
-			body: {
-				startDateTime,
-				endDateTime,
-				serviceProviderId: result.serviceProvider[0].id,
-				citizenUinFin,
-				citizenName,
-				citizenEmail,
-			},
-		});
-		expect(adminCreateBookingOos.statusCode).toEqual(201);
-	});
 });
