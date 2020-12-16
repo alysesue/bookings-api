@@ -1,10 +1,6 @@
 import { PgClient } from '../../utils/pgClient';
-import { CitizenRequestEndpointSG, OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
-import {
-	populateIndividualTimeslot,
-	populateOutOfSlotBooking,
-	populateServiceAndServiceProvider,
-} from '../../Populate/basic';
+import { CitizenRequestEndpointSG } from '../../utils/requestEndpointSG';
+import { populateOutOfSlotBooking, populateServiceAndServiceProvider } from '../../Populate/basic';
 
 describe('Bookings functional tests as citizen - out of slots', () => {
 	const pgClient = new PgClient();
