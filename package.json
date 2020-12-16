@@ -27,7 +27,7 @@
 		"lint-staged": "lint-staged",
 		"watcher-install": "npm install",
 		"watcher-build": "npm run build && npm run watcher-env",
-		"watcher-env": "cp .env ./dist/.env",
+		"watcher-env": "cp ./params/secrets/mylocal.env ./dist/.env",
 		"watcher-run": "(npm run watcher-env; cd ./dist; forever --minUptime 1000ms --spinSleepTime 3000ms -c \"node --trace-warnings --inspect=0.0.0.0:6000\" index.js)",
 		"params:new": "npm run fixLF && ./node_modules/mol-bamboo-scripts/scripts/generator/service-params-new-env.sh",
 		"fixLF": "node ./src/fixLF.js"
