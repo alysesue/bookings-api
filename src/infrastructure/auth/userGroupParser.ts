@@ -114,7 +114,7 @@ export class UserGroupParser {
 	}
 
 	public static generateServiceProviderUserGroup(organisationRef: string): string {
-		return `${BookingSGToken}:${ServiceProviderToken}${organisationRef}`;
+		return `${BookingSGToken}:${ServiceProviderToken}:${organisationRef}`;
 	}
 }
 

@@ -1,7 +1,8 @@
+import * as uuid from 'uuid';
 import { OrganisationAdminRequestEndpointSG } from '../utils/requestEndpointSG';
 import { ServiceProviderResponseModel } from '../../src/components/serviceProviders/serviceProviders.apicontract';
 import { ServiceResponse } from '../../src/components/services/service.apicontract';
-import { TimeslotItemResponse } from "../../src/components/timeslotItems/timeslotItems.apicontract";
+import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslotItems.apicontract';
 
 export const populateService = async ({
 	organisation = 'localorg',
@@ -41,14 +42,14 @@ export const populateUserServiceProvider = async ({
 	organisation = 'localorg',
 	nameService = 'admin',
 	serviceProviderName = 'sp',
-	}): Promise<{ services: ServiceResponse; serviceProviders: ServiceProviderResponseModel }> => {
+}): Promise<{ services: ServiceResponse; serviceProviders: ServiceProviderResponseModel }> => {
 	await OrganisationAdminRequestEndpointSG.create({ organisation }).post('/users/service-providers/upsert', {
 		body: [
 			{
 				name: serviceProviderName,
 				phoneNumber: '+33 3333 3333',
 				email: 'ad@ad.com',
-				agencyUserId: '2',
+				agencyUserId: uuid.v4(),
 				uinfin: '1221jskfl 1233',
 				serviceName: nameService,
 			},
