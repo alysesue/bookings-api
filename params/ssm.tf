@@ -87,12 +87,10 @@ resource "aws_ssm_parameter" "recaptcha-key_bookingsg_app" {
   overwrite = true
 }
 
-
-  overwrite = true
-}
-
 resource "aws_ssm_parameter" "encryption-key_bookingsg_app" {
   name   = "${local.path-prefix}/ENCRYPTION_KEY_BOOKINGSG_APP"
   type   = "SecureString"
   key_id = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
-  value  = "${data.external.static.result.DB_PASSWORD_BOOKINGSG_APP}"
+  value  = "${data.external.static.result.ENCRYPTION_KEY_BOOKINGSG_APP}"
+  overwrite = true
+}
