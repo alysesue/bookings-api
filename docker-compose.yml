@@ -29,7 +29,6 @@ services:
       - ./src:/service/src:delegated
       - ./package.json:/service/package.json:delegated
       - ./package-lock.json:/service/package-lock.json:delegated
-      - ./params:/service/params:delegated
       - bookingsg-dist:/service/dist
       - ./.env:/service/.env:delegated
     depends_on:
