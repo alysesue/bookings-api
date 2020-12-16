@@ -10,6 +10,7 @@ export const getConfig = () => ({
 	isDev: ConfigUtils.getValueFromEnv('IS_DEV', 'false') === 'true',
 	isFunctionalTest: ConfigUtils.getValueFromEnv('IS_FUNCTIONAL_TEST', 'false') === 'true',
 	env: ConfigUtils.getValueFromEnv('NODE_ENV', 'production'),
+	encryptionKey: ConfigUtils.getValueFromEnv('ENCRYPTION_KEY_BOOKINGSG_APP'),
 	database: {
 		host: ConfigUtils.getValueFromEnv('BOOKINGSG_DB_HOST'),
 		port: ConfigUtils.getValueFromEnv('BOOKINGSG_DB_PORT'),

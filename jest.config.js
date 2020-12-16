@@ -14,7 +14,10 @@ const config = {
 		'!**/swagger.middleware.ts',
 		'!**/transactionManager.ts',
 		'!**/connectionOptions.ts',
-		'!**/server.ts'
+		'!**/server.ts',
+		'!**/stopWatch.ts',
+		'!**/koaContextStore.middleware.ts',
+		'!**/citizenUserValidation.middleware.ts',
 	],
 	coverageThreshold: {
 		global: {

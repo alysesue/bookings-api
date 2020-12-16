@@ -1,4 +1,5 @@
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
@@ -19,6 +20,11 @@ export class ServiceProvidersQueryAuthVisitor extends QueryAuthGroupVisitor {
 		super();
 		this._alias = alias;
 		this._serviceAlias = serviceAlias;
+	}
+
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
+		// TODO: check service setting for anonymous
+		this.addAsTrue();
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
@@ -60,6 +66,8 @@ export class ServiceProvidersActionAuthVisitor extends PermissionAwareAuthGroupV
 			throw new Error('ServiceProvidersActionAuthVisitor - service cannot be null');
 		}
 	}
+
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 

@@ -6,7 +6,7 @@ import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
 import { UnavailabilitiesQueryAuthVisitor } from './unavailabilities.auth';
 import { andWhere } from '../../tools/queryConditions';
-import { DefaultIsolationLevel, TransactionManager } from '../../core/transactionManager';
+import { DefaultIsolationLevel } from '../../core/transactionManager';
 
 @InRequestScope
 export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {

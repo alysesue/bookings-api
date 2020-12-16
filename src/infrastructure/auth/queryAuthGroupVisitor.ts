@@ -1,5 +1,6 @@
 import { AuthConditionCollection, UserConditionParams } from './authConditionCollection';
 import {
+	AnonymousAuthGroup,
 	AuthGroup,
 	CitizenAuthGroup,
 	IAuthGroupVisitor,
@@ -28,11 +29,13 @@ export abstract class QueryAuthGroupVisitor implements IAuthGroupVisitor {
 	}
 
 	public abstract visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void;
+	public abstract visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void;
 	public abstract visitCitizen(_citizenGroup: CitizenAuthGroup): void;
 	public abstract visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void;
 	public abstract visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void;
 
 	public async createUserVisibilityCondition(authGroups: AuthGroup[]): Promise<UserConditionParams> {
+		this._conditions = new AuthConditionCollection();
 		for (const group of authGroups) {
 			group.acceptVisitor(this);
 		}
@@ -49,11 +52,13 @@ export abstract class PermissionAwareAuthGroupVisitor implements IAuthGroupVisit
 	}
 
 	public abstract visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void;
+	public abstract visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void;
 	public abstract visitCitizen(_citizenGroup: CitizenAuthGroup): void;
 	public abstract visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void;
 	public abstract visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void;
 
 	public hasPermission(authGroups: AuthGroup[]): boolean {
+		this._hasPermission = false;
 		for (const group of authGroups) {
 			group.acceptVisitor(this);
 		}

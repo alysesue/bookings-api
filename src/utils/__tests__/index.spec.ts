@@ -1,5 +1,3 @@
-import * as parse from 'csv-parse/lib/sync';
-
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { parseCsv } from '../index';

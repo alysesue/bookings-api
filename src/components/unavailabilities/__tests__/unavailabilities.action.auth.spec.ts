@@ -1,12 +1,14 @@
 import { Organisation, Service, ServiceProvider, Unavailability, User } from '../../../models';
 import { UnavailabilitiesActionAuthVisitor } from '../unavailabilities.auth';
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
 import { CrudAction } from '../../../enums/crudAction';
+import * as uuid from 'uuid';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -38,6 +40,22 @@ describe('Unavailabilities action auth', () => {
 			new UnavailabilitiesActionAuthVisitor(unavailabilityMock, CrudAction.Create).hasPermission(groups),
 		).toThrow();
 	});
+
+	it('should validate FALSE for anonymous user action permission', async () => {
+		const unavailabilityMock = new Unavailability();
+		const serviceMock = new Service();
+		serviceMock.id = 1;
+		serviceMock.name = 'Test';
+		unavailabilityMock.serviceId = 1;
+		unavailabilityMock.service = serviceMock;
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const groups = [new AnonymousAuthGroup(anonymous)];
+
+		expect(new UnavailabilitiesActionAuthVisitor(unavailabilityMock, CrudAction.Create).hasPermission(groups)).toBe(
+			false,
+		);
+	});
+
 	it('should validate FALSE for citizen action permission', async () => {
 		const unavailabilityMock = new Unavailability();
 		const serviceMock = new Service();
@@ -51,6 +69,7 @@ describe('Unavailabilities action auth', () => {
 			false,
 		);
 	});
+
 	it('should validate TRUE for the same organisation admin action permission', async () => {
 		const unavailabilityMock = new Unavailability();
 		const serviceMock = new Service();

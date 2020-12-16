@@ -39,9 +39,11 @@ import {
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
 	UserContextMock,
+	UsersServiceMock,
 } from './bookings.mocks';
 import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
+import { UsersService } from '../../../components/users/users.service';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -116,6 +118,7 @@ describe('Bookings.Service', () => {
 		Container.bind(BookingsValidatorFactory).to(BookingValidatorFactoryMock);
 		Container.bind(BookingChangeLogsService).to(BookingChangeLogsServiceMock);
 		Container.bind(ServicesService).to(ServicesServiceMock);
+		Container.bind(UsersService).to(UsersServiceMock);
 	});
 
 	beforeEach(() => {
@@ -138,6 +141,8 @@ describe('Bookings.Service', () => {
 		BookingChangeLogsServiceMock.action = 0;
 		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 		TimeslotsServiceMock.acceptedBookings = [];
+
+		UsersServiceMock.persistUserIfRequired.mockImplementation((u) => Promise.resolve(u));
 	});
 
 	afterAll(() => {

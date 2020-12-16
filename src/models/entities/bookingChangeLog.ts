@@ -90,6 +90,10 @@ export class BookingChangeLog {
 		return this._serviceId;
 	}
 
+	public get service(): Service {
+		return this._service;
+	}
+
 	constructor() {}
 
 	public static create({

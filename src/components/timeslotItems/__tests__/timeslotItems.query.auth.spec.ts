@@ -1,5 +1,6 @@
 import { TimeslotItemsQueryAuthVisitor } from '../timeslotItems.auth';
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
@@ -7,6 +8,7 @@ import {
 } from '../../../infrastructure/auth/authGroup';
 import { Organisation, Service, ServiceProvider } from '../../../models/entities';
 import { User } from '../../../models';
+import * as uuid from 'uuid';
 
 const adminUser = User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' });
 
@@ -101,7 +103,21 @@ describe('Timeslot items query auth tests', () => {
 		});
 	});
 
-	it('should not query by auth filter for citizen', async () => {
+	it('should not query any data as anonymous user', async () => {
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const groups = [new AnonymousAuthGroup(anonymous)];
+
+		const visitor = await new TimeslotItemsQueryAuthVisitor(
+			'service alias',
+			'service provider alias',
+			'service provider service alias',
+		).createUserVisibilityCondition(groups);
+
+		expect(visitor.userParams).toStrictEqual({});
+		expect(visitor.userCondition).toStrictEqual('FALSE');
+	});
+
+	it('should not query any data as a citizen', async () => {
 		const userGroup = new CitizenAuthGroup(singPassUser);
 
 		const visitor = await new TimeslotItemsQueryAuthVisitor(

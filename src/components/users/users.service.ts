@@ -3,7 +3,6 @@ import { UsersRepository } from './users.repository';
 import { User } from '../../models';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
-import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 import { ParsedUserGroup, UserGroupParser, UserGroupRole } from '../../infrastructure/auth/userGroupParser';
 import {
@@ -15,6 +14,7 @@ import {
 import { OrganisationInfo, OrganisationsService } from '../organisations/organisations.service';
 import { ServiceRefInfo, ServicesRepositoryNoAuth } from '../services/services.noauth.repository';
 import { ServiceProvidersRepositoryNoAuth } from '../serviceProviders/serviceProviders.noauth.repository';
+import { AnonymousCookieData } from '../../infrastructure/bookingSGCookieHelper';
 
 export type HeadersType = { [key: string]: string };
 
@@ -49,7 +49,7 @@ export class UsersService {
 			return null;
 		}
 
-		let user: User;
+		let user: User = null;
 		switch (authType) {
 			case MOLAuthType.USER:
 				user = await this.getOrSaveSingpassUser({
@@ -71,12 +71,6 @@ export class UsersService {
 					agencyName: headers[MOLSecurityHeaderKeys.AGENCY_NAME],
 				});
 				break;
-		}
-
-		if (!user) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
-				'BookingSG User could not be created. authType: ' + authType,
-			);
 		}
 
 		return user;
@@ -232,5 +226,28 @@ export class UsersService {
 		}
 
 		return groups;
+	}
+
+	public async createAnonymousUserFromCookie(data: AnonymousCookieData): Promise<User> {
+		const user = await this.usersRepository.getUserByTrackingId(data.trackingId);
+		if (user) {
+			return user;
+		}
+
+		// Creates user only in memory till a booking is made to avoid populating the database.
+		return User.createAnonymousUser(data);
+	}
+
+	public async persistUserIfRequired(user: User): Promise<User> {
+		if (user.isPersisted()) return user;
+
+		if (user.isAnonymous()) {
+			const usersRepo = this.usersRepository;
+			return await this.getOrSaveInternal(user, () =>
+				usersRepo.getUserByTrackingId(user.anonymousUser.trackingId),
+			);
+		}
+
+		return user;
 	}
 }

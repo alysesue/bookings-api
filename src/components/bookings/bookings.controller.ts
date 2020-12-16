@@ -27,7 +27,6 @@ import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { BookingsMapper } from './bookings.mapper';
 import { ApiData, ApiDataFactory } from '../../apicontract';
-import { CaptchaService } from '../captcha/captcha.service';
 
 @Route('v1/bookings')
 @Tags('Bookings')
@@ -36,8 +35,6 @@ export class BookingsController extends Controller {
 	private bookingsService: BookingsService;
 	@Inject
 	private timeslotService: TimeslotsService;
-	@Inject
-	private CaptchaService: CaptchaService;
 
 	/**
 	 * Creates a new booking.
@@ -50,8 +47,7 @@ export class BookingsController extends Controller {
 	@Post()
 	@SuccessResponse(201, 'Created')
 	@Security('service')
-	@MOLAuth({ user: { minLevel: MOLUserAuthLevel.L2 } })
-	@Response(401, 'Valid authentication types: [user]')
+	@Response(401, 'Unauthorized')
 	public async postBooking(
 		@Body() bookingRequest: BookingRequest,
 		@Header('x-api-service') serviceId: number,

@@ -1,18 +1,5 @@
 import { Inject } from 'typescript-ioc';
-import {
-	Body,
-	Controller,
-	Delete,
-	Deprecated,
-	Get,
-	Path,
-	Post,
-	Put,
-	Response,
-	Route,
-	SuccessResponse,
-	Tags,
-} from 'tsoa';
+import { Body, Controller, Delete, Get, Path, Post, Put, Response, Route, SuccessResponse, Tags } from 'tsoa';
 import { ServiceRequest, ServiceResponse } from './service.apicontract';
 import { ServicesService } from './services.service';
 import { Service } from '../../models';

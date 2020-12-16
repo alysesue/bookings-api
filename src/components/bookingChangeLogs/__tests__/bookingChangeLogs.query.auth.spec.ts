@@ -1,4 +1,5 @@
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
@@ -6,6 +7,7 @@ import {
 } from '../../../infrastructure/auth/authGroup';
 import { Organisation, Service, ServiceProvider, User } from '../../../models';
 import { BookingChangeLogsQueryAuthVisitor } from '../bookingChangeLogs.auth';
+import * as uuid from 'uuid';
 
 const adminMock = User.createAdminUser({
 	molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
@@ -26,6 +28,19 @@ const serviceProvider = new ServiceProvider();
 serviceProvider.id = 10;
 
 describe('BookingChangeLogs query auth tests', () => {
+	it('should not allow anonymous user to view booking change logs', async () => {
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const anonymousGroup = [new AnonymousAuthGroup(anonymous)];
+		const visitor = await new BookingChangeLogsQueryAuthVisitor(
+			'changelog',
+			'service',
+			'booking',
+		).createUserVisibilityCondition(anonymousGroup);
+
+		expect(visitor.userCondition).toStrictEqual('FALSE');
+		expect(visitor.userParams).toStrictEqual({});
+	});
+
 	it('should not allow citizen to view booking change logs', async () => {
 		const citizens = [new CitizenAuthGroup(singpassMock)];
 		const visitor = await new BookingChangeLogsQueryAuthVisitor(

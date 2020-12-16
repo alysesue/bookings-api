@@ -2,10 +2,13 @@ import { ServiceProvidersActionAuthVisitor } from '../serviceProviders.auth';
 import { Organisation, Service, ServiceProvider, User } from '../../../models';
 import { CrudAction } from '../../../enums/crudAction';
 import {
+	AnonymousAuthGroup,
+	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
+import * as uuid from 'uuid';
 
 describe('Service providers Auth', () => {
 	it('should throw errors', () => {
@@ -13,6 +16,29 @@ describe('Service providers Auth', () => {
 		const serviceProvider = ServiceProvider.create('provider', 1);
 		expect(() => new ServiceProvidersActionAuthVisitor(serviceProvider, CrudAction.Create)).toThrowError();
 	});
+
+	it('should not be able to create a serviceProvider as anonymous user', () => {
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const groups = [new AnonymousAuthGroup(anonymous)];
+
+		const newServiceProvider = ServiceProvider.create('new sp', 1);
+		newServiceProvider.service = new Service();
+		const authVisitor = new ServiceProvidersActionAuthVisitor(newServiceProvider, CrudAction.Create);
+
+		expect(authVisitor.hasPermission(groups)).toBe(false);
+	});
+
+	it('should not be able to create a serviceProvider as a citizen', () => {
+		const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+		const groups = [new CitizenAuthGroup(singpassMock)];
+
+		const newServiceProvider = ServiceProvider.create('new sp', 1);
+		newServiceProvider.service = new Service();
+		const authVisitor = new ServiceProvidersActionAuthVisitor(newServiceProvider, CrudAction.Create);
+
+		expect(authVisitor.hasPermission(groups)).toBe(false);
+	});
+
 	it('should not be able to create a serviceProvider for serviceProvider', () => {
 		const serviceProvider = ServiceProvider.create('provider', 1);
 		serviceProvider.service = new Service();
@@ -23,9 +49,8 @@ describe('Service providers Auth', () => {
 		const newServiceProvider = ServiceProvider.create('new sp', 1);
 		newServiceProvider.service = new Service();
 		const authVisitor = new ServiceProvidersActionAuthVisitor(newServiceProvider, CrudAction.Create);
-		authVisitor.visitServiceProvider(userGroup);
 
-		expect(authVisitor.hasPermission([userGroup])).toBeFalsy();
+		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
 
 	it('should be able to create a serviceProvider for service admin', () => {
@@ -37,7 +62,6 @@ describe('Service providers Auth', () => {
 		const serviceProvider = ServiceProvider.create('new sp', 1);
 		serviceProvider.service = service;
 		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProvider, CrudAction.Create);
-		authVisitor.visitServiceAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 	});
@@ -51,7 +75,6 @@ describe('Service providers Auth', () => {
 		const serviceProvider = ServiceProvider.create('new sp', 1);
 		serviceProvider.service = new Service();
 		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProvider, CrudAction.Create);
-		authVisitor.visitOrganisationAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 	});
@@ -65,7 +88,6 @@ describe('Service providers Auth', () => {
 		const serviceProviderToUpdate = ServiceProvider.create('new sp', 1);
 		serviceProviderToUpdate.service = new Service();
 		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProviderToUpdate, CrudAction.Update);
-		authVisitor.visitOrganisationAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 	});
@@ -81,7 +103,6 @@ describe('Service providers Auth', () => {
 		const serviceProviderToUpdate = ServiceProvider.create('new sp', 1);
 		serviceProviderToUpdate.service = service;
 		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProviderToUpdate, CrudAction.Update);
-		authVisitor.visitServiceAdmin(serviceAdminAuthGroup);
 
 		expect(authVisitor.hasPermission([serviceAdminAuthGroup])).toBe(true);
 	});
@@ -101,7 +122,6 @@ describe('Service providers Auth', () => {
 		const serviceProviderToUpdate = ServiceProvider.create('new sp', serviceForServiceProvider.id);
 		serviceProviderToUpdate.service = serviceForServiceProvider;
 		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProviderToUpdate, CrudAction.Update);
-		authVisitor.visitOrganisationAdmin(userGroup);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
@@ -151,7 +171,6 @@ describe('Service providers Auth', () => {
 		const spData = ServiceProvider.create('new sp', 1);
 		spData.service = service;
 		const authVisitor = new ServiceProvidersActionAuthVisitor(spData, CrudAction.Delete);
-		authVisitor.visitServiceAdmin(serviceAdminAuthGroup);
 
 		expect(authVisitor.hasPermission([serviceAdminAuthGroup])).toBe(false);
 	});

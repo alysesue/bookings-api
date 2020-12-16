@@ -1,13 +1,10 @@
 import { logger } from 'mol-lib-common';
-import { TransactionManager } from '../../core/transactionManager';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Organisation, OrganisationAdminGroupMap } from '../../models';
 import { OrganisationsNoauthRepository } from './organisations.noauth.repository';
 
 @InRequestScope
 export class OrganisationsService {
-	@Inject
-	private transactionManager: TransactionManager;
 	@Inject
 	private organisationsRepository: OrganisationsNoauthRepository;
 

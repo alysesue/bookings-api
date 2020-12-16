@@ -1,4 +1,5 @@
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
@@ -28,6 +29,8 @@ export class ServicesActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 			throw new Error('ServicesActionAuthVisitor - Organisation ID cannot be null or undefined');
 		}
 	}
+
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 
@@ -63,6 +66,11 @@ export class ServicesQueryAuthVisitor extends QueryAuthGroupVisitor {
 	constructor(alias: string) {
 		super();
 		this._alias = alias;
+	}
+
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
+		// TODO: check service setting for anonymous
+		this.addAsTrue();
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {

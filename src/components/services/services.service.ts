@@ -6,7 +6,6 @@ import { ServiceRequest } from './service.apicontract';
 import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
 import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
-import { TimeslotsScheduleService } from '../timeslotsSchedules/timeslotsSchedule.service';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServicesActionAuthVisitor } from './services.auth';
 import { CrudAction } from '../../enums/crudAction';
@@ -21,8 +20,6 @@ export class ServicesService {
 	private scheduleFormsService: ScheduleFormsService;
 	@Inject
 	private timeslotItemsService: TimeslotItemsService;
-	@Inject
-	private timeslotsScheduleService: TimeslotsScheduleService;
 	@Inject
 	private userContext: UserContext;
 

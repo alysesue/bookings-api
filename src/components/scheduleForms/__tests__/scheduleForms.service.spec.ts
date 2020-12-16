@@ -283,7 +283,7 @@ class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
 	}
 }
 
-class TransactionManagerMock extends TransactionManager {
+class TransactionManagerMock implements Partial<TransactionManager> {
 	public static runInTransaction = jest.fn();
 
 	public async runInTransaction(...params): Promise<any> {

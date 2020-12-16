@@ -3,7 +3,6 @@ import { Body, Controller, Path, Put, Response, Route, SuccessResponse, Tags } f
 import { MOLAuth } from 'mol-lib-common';
 import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract';
 import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
-import { ServiceProvidersMapper } from '../serviceProviders/serviceProviders.mapper';
 
 @InRequestScope
 @Route('v1/organisations')
@@ -11,8 +10,6 @@ import { ServiceProvidersMapper } from '../serviceProviders/serviceProviders.map
 export class OrganisationsController extends Controller {
 	@Inject
 	private serviceProvidersService: ServiceProvidersService;
-	@Inject
-	private mapper: ServiceProvidersMapper;
 
 	/**
 	 * Creates weekly schedlue for each service providers of the organisation.

@@ -25,7 +25,7 @@ export class WeekDaySchedule {
 	@Column({ type: 'time', transformer: TimeTransformer, nullable: true })
 	public closeTime?: TimeOfDay;
 	@Column({ nullable: false })
-	private scheduleFormId: number;
+	public scheduleFormId: number;
 
 	constructor() {}
 

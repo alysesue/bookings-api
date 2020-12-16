@@ -25,6 +25,32 @@ describe('User repository', () => {
 		jest.clearAllMocks();
 	});
 
+	it('should getUserByTrackingId', async () => {
+		const queryBuilderMock = {
+			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve([userMock])),
+		};
+		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		const userRepository = Container.get(UsersRepository);
+
+		const result = await userRepository.getUserByTrackingId('d080f6ed-3b47-478a-a6c6-dfb5608a199d');
+		expect(result).toStrictEqual([userMock]);
+	});
+
+	it('should not getUserByTrackingId when id is null', async () => {
+		const queryBuilderMock = {
+			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve([userMock])),
+		};
+		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		const userRepository = Container.get(UsersRepository);
+
+		const resultA = await userRepository.getUserByTrackingId(null);
+		const resultB = await userRepository.getUserByTrackingId();
+		expect(resultA).toBeNull();
+		expect(resultB).toBeNull();
+	});
+
 	it('should save user', async () => {
 		const saveResult = [{ id: 'abc' }];
 		InnerRepositoryMock.save.mockImplementation(() => saveResult);

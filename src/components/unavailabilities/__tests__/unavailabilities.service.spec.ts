@@ -9,7 +9,6 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { UnavailabilitiesActionAuthVisitor } from '../unavailabilities.auth';
 import { ServicesRepository } from '../../../components/services/services.repository';
-import { ServicesService } from '../../services/services.service';
 
 jest.mock('../unavailabilities.auth');
 

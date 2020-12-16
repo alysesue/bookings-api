@@ -202,7 +202,7 @@ describe('Bookings repository', () => {
 	});
 });
 
-class TransactionManagerMock extends TransactionManager {
+class TransactionManagerMock implements Partial<TransactionManager> {
 	public static insert = jest.fn();
 	public static find = jest.fn();
 	public static update = jest.fn();
@@ -227,7 +227,7 @@ class TransactionManagerMock extends TransactionManager {
 	}
 }
 
-class UserContextMock extends UserContext {
+class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
@@ -241,7 +241,7 @@ class UserContextMock extends UserContext {
 	}
 }
 
-class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
+class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersRepository> {
 	public static getServiceProviders = jest.fn<Promise<ServiceProvider[]>, any>();
 	public async getServiceProviders(...params): Promise<any> {
 		return await ServiceProvidersRepositoryMock.getServiceProviders(...params);

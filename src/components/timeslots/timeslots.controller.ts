@@ -3,7 +3,6 @@ import { Controller, Get, Header, Query, Response, Route, Security, Tags } from 
 import { AvailabilityEntryResponse, TimeslotEntryResponse } from './timeslots.apicontract';
 import { TimeslotsService } from './timeslots.service';
 import { MOLAuth } from 'mol-lib-common';
-import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { TimeslotsMapper } from './timeslots.mapper';
 
@@ -24,12 +23,7 @@ export class TimeslotsController extends Controller {
 	 */
 	@Get('availability')
 	@Security('service')
-	@MOLAuth({
-		admin: {},
-		agency: {},
-		user: { minLevel: MOLUserAuthLevel.L2 },
-	})
-	@Response(401, 'Valid authentication types: [admin,agency,user]')
+	@Response(401, 'Unauthorized')
 	public async getAvailability(
 		@Query() startDate: Date,
 		@Query() endDate: Date,

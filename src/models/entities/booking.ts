@@ -274,6 +274,10 @@ export class Booking {
 		return this._creator;
 	}
 
+	public set creator(value: User) {
+		this._creator = value;
+	}
+
 	public get citizenUinFin(): string {
 		return this._citizenUinFin;
 	}

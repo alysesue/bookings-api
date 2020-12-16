@@ -1,5 +1,6 @@
 // tslint:disable: tsr-detect-possible-timing-attacks
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
@@ -23,6 +24,8 @@ export class TimeslotItemsQueryAuthVisitor extends QueryAuthGroupVisitor {
 		this.serviceProviderAlias = serviceProviderAlias;
 		this.serviceProviderServiceAlias = serviceProviderServiceAlias;
 	}
+
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 
@@ -71,6 +74,8 @@ export class TimeslotItemsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 
 		this._timeslotSchedule = timeslotSchedule;
 	}
+
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 

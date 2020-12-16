@@ -15,10 +15,25 @@ export abstract class AuthGroup {
 
 // Visitor Pattern
 export interface IAuthGroupVisitor {
+	visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void | Promise<void>;
 	visitCitizen(_citizenGroup: CitizenAuthGroup): void | Promise<void>;
 	visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void | Promise<void>;
 	visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void | Promise<void>;
 	visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void | Promise<void>;
+}
+
+export class AnonymousAuthGroup extends AuthGroup {
+	constructor(user: User) {
+		super(user);
+
+		if (!user.isAnonymous()) {
+			throw new Error('AnonymousAuthGroup must be created with an anonymous User.');
+		}
+	}
+
+	public acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void> {
+		return visitor.visitAnonymous(this);
+	}
 }
 
 export class CitizenAuthGroup extends AuthGroup {

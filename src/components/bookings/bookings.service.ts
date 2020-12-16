@@ -18,6 +18,7 @@ import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { BookingActionAuthVisitor } from './bookings.auth';
 import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
+import { UsersService } from '../users/users.service';
 
 @InRequestScope
 export class BookingsService {
@@ -39,6 +40,8 @@ export class BookingsService {
 	private servicesService: ServicesService;
 	@Inject
 	private changeLogsService: BookingChangeLogsService;
+	@Inject
+	private usersService: UsersService;
 
 	private static getCitizenUinFin(currentUser: User, bookingRequest: BookingRequest): string {
 		if (currentUser && currentUser.isCitizen()) {
@@ -288,6 +291,9 @@ export class BookingsService {
 		await validator.validate(booking);
 
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
+
+		// Persists in memory user only after validating booking.
+		booking.creator = await this.usersService.persistUserIfRequired(currentUser);
 		await this.bookingsRepository.insert(booking);
 
 		return [ChangeLogAction.Create, booking];

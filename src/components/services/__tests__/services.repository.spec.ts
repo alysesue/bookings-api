@@ -155,7 +155,7 @@ describe('Services repository', () => {
 	});
 });
 
-class TransactionManagerMock extends TransactionManager {
+class TransactionManagerMock implements Partial<TransactionManager> {
 	public static createQueryBuilder = jest.fn();
 	public static save = jest.fn();
 	public static find = jest.fn();

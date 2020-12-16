@@ -1,11 +1,13 @@
 import { Organisation, Service, ServiceProvider, TimeslotsSchedule, User } from '../../../models';
 import { TimeslotItemsActionAuthVisitor } from '../timeslotItems.auth';
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
+import * as uuid from 'uuid';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -30,6 +32,17 @@ describe('TimeslotItems action auth', () => {
 		const groups = [new CitizenAuthGroup(singpassMock)];
 		expect(() => new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toThrow();
 	});
+
+	it('should validate FALSE for anonymous user action permission', async () => {
+		const serviceMock = new Service();
+		const timeslotsScheduleMock = new TimeslotsSchedule();
+		timeslotsScheduleMock._service = serviceMock;
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const groups = [new AnonymousAuthGroup(anonymous)];
+
+		expect(new TimeslotItemsActionAuthVisitor(timeslotsScheduleMock).hasPermission(groups)).toBe(false);
+	});
+
 	it('should validate FALSE for citizen action permission', async () => {
 		const serviceMock = new Service();
 		const timeslotsScheduleMock = new TimeslotsSchedule();

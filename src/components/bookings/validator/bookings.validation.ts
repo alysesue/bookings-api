@@ -56,7 +56,12 @@ abstract class BookingsValidator implements IValidator {
 	public async *getValidations(booking: Booking): AsyncIterable<BusinessValidation> {
 		let yieldedAny = false;
 
-		if (!getConfig().isFunctionalTest) yield* this.validateToken(booking);
+		if (!getConfig().isFunctionalTest) {
+			for await (const validation of this.validateToken(booking)) {
+				yield validation;
+				return; // stops iterable (method scoped)
+			}
+		}
 
 		for await (const validation of concatIteratables(
 			this.validateServiceProviderExisting(booking),

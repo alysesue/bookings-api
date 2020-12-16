@@ -1,11 +1,13 @@
 import { Organisation, Service, ServiceProvider, User } from '../../../models';
 import { BookingQueryAuthVisitor, BookingQueryVisitorFactory } from '../bookings.auth';
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
+import * as uuid from 'uuid';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -34,6 +36,16 @@ describe('Bookings query auth', () => {
 
 	it('should return FALSE query when user has no groups', async () => {
 		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition([]);
+
+		expect(result.userCondition).toStrictEqual('FALSE');
+		expect(result.userParams).toStrictEqual({});
+	});
+
+	it('should return FALSE for anonymous user', async () => {
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const groups = [new AnonymousAuthGroup(anonymous)];
+
+		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
 		expect(result.userCondition).toStrictEqual('FALSE');
 		expect(result.userParams).toStrictEqual({});

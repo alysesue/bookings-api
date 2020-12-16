@@ -1,4 +1,5 @@
 import {
+	AnonymousAuthGroup,
 	AuthGroup,
 	CitizenAuthGroup,
 	IAuthGroupVisitor,
@@ -44,6 +45,8 @@ export class UserProfileMapper {
 			instance.agency = new AgencyUserContract();
 			instance.agency.appId = user.agencyUser.agencyAppId;
 			instance.agency.name = user.agencyUser.agencyName;
+		} else if (user.isAnonymous()) {
+			instance.userType = UserTypeContract.anonymous;
 		} else {
 			throw new Error('User cannot be mapped to UserTypeResponse. Id: ' + user.id);
 		}
@@ -60,6 +63,12 @@ class AuthGroupResponseVisitor implements IAuthGroupVisitor {
 	private _mappedGroups: AuthGroupResponse[];
 	constructor() {
 		this._mappedGroups = [];
+	}
+
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
+		this._mappedGroups.push({
+			authGroupType: AuthGroupTypeContract.anonymous,
+		});
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
