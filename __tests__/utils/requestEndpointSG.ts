@@ -68,10 +68,10 @@ export class ServiceAdminRequestEndpointSG extends RequestEndpointSG {
 		'mol-auth-type': 'ADMIN',
 	};
 	public static create = ({
-								organisation = 'localorg',
-								nameService = 'admin',
-								serviceId,
-							}: {
+		organisation = 'localorg',
+		nameService = 'admin',
+		serviceId,
+	}: {
 		organisation?: string;
 		nameService?: string;
 		serviceId?: string;
@@ -106,10 +106,10 @@ export class ServiceProviderRequestEndpointSG extends RequestEndpointSG {
 		'mol-auth-type': 'ADMIN',
 	};
 	public static create = ({
-								organisation = 'localorg',
-								nameService = 'admin',
-								serviceId,
-							}: {
+		organisation = 'localorg',
+		nameService = 'admin',
+		serviceId,
+	}: {
 		organisation?: string;
 		nameService?: string;
 		serviceId?: string;
@@ -138,7 +138,7 @@ export class CitizenRequestEndpointSG extends RequestEndpointSG {
 	private CITIZEN_HEADERS = {
 		'mol-token-bypass': 'true',
 		'mol-user-id': 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
-		'mol-user-uinfin': 'G3382058K',
+		'mol-user-uinfin': 'S7429377H',
 		'mol-user-auth-level': '2',
 		'mol-auth-type': 'USER',
 	};
@@ -152,7 +152,7 @@ export class CitizenRequestEndpointSG extends RequestEndpointSG {
 		const headers = {
 			'mol-token-bypass': 'true',
 			'mol-user-id': 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
-			'mol-user-uinfin': 'G3382058K',
+			'mol-user-uinfin': 'S7429377H',
 			'mol-user-auth-level': '2',
 			'mol-auth-type': 'USER',
 			...apiService,

@@ -87,6 +87,15 @@ resource "aws_ssm_parameter" "recaptcha-key_bookingsg_app" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "is-functional_test" {
+  name  = "${local.path-prefix}/IS_FUNCTIONAL_TEST"
+  type  = "SecureString"
+  key_id  = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
+  value = "${data.external.static.result.IS_FUNCTIONAL_TEST}"
+
+  overwrite = true
+}
+
 resource "aws_ssm_parameter" "encryption-key_bookingsg_app" {
   name   = "${local.path-prefix}/ENCRYPTION_KEY_BOOKINGSG_APP"
   type   = "SecureString"

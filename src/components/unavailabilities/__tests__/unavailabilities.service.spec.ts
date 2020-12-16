@@ -33,10 +33,10 @@ describe('Unavailabilities service tests', () => {
 
 	beforeEach(() => {
 		visitorObj.hasPermission.mockReturnValue(true);
-
 		(UnavailabilitiesActionAuthVisitor as jest.Mock).mockImplementation(() => {
 			return visitorObj;
 		});
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
@@ -181,12 +181,42 @@ describe('Unavailabilities service tests', () => {
 
 		expect(isUnavailable).toBe(true);
 	});
+
+	it('should not delete unavailability that does not exist', async () => {
+		UnavailabilitiesRepositoryMock.get.mockImplementation(() => Promise.resolve(null));
+
+		const test = async () => await Container.get(UnavailabilitiesService).deleteUnavailability(1);
+
+		expect(test).rejects.toThrowErrorMatchingInlineSnapshot(`"Unavailability entry not found."`);
+		expect(visitorObj.hasPermission).not.toBeCalled();
+		expect(UnavailabilitiesRepositoryMock.delete).toBeCalledTimes(0);
+	});
+
+	it('should delete unavailability that does exist', async () => {
+		const tempUnavailability = new Unavailability();
+		tempUnavailability.id = 1;
+		tempUnavailability.allServiceProviders = true;
+		UnavailabilitiesRepositoryMock.get.mockImplementation(() => Promise.resolve(tempUnavailability));
+		UnavailabilitiesRepositoryMock.delete.mockImplementation(() => Promise.resolve());
+
+		await Container.get(UnavailabilitiesService).deleteUnavailability(1);
+
+		expect(UnavailabilitiesRepositoryMock.get).toBeCalledTimes(1);
+		expect(visitorObj.hasPermission).toBeCalled();
+		expect(UnavailabilitiesRepositoryMock.delete).toBeCalledTimes(1);
+	});
 });
 
 class UnavailabilitiesRepositoryMock extends UnavailabilitiesRepository {
 	public static save = jest.fn();
+	public static get = jest.fn();
 	public static search = jest.fn();
 	public static searchCount = jest.fn();
+	public static delete = jest.fn();
+
+	public async get(...params): Promise<any> {
+		return await UnavailabilitiesRepositoryMock.get(...params);
+	}
 
 	public async save(...params): Promise<any> {
 		return await UnavailabilitiesRepositoryMock.save(...params);
@@ -198,6 +228,10 @@ class UnavailabilitiesRepositoryMock extends UnavailabilitiesRepository {
 
 	public async searchCount(...params): Promise<any> {
 		return await UnavailabilitiesRepositoryMock.searchCount(...params);
+	}
+
+	public async delete(id): Promise<any> {
+		return await UnavailabilitiesRepositoryMock.delete(id);
 	}
 }
 
@@ -217,9 +251,13 @@ class ServicesRepositoryMock extends ServicesRepository {
 }
 
 export class UserContextMock extends UserContext {
+	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
 	public init() {}
+	public async getCurrentUser(...params): Promise<any> {
+		return await UserContextMock.getCurrentUser(...params);
+	}
 
 	public async getAuthGroups(...params): Promise<any> {
 		return await UserContextMock.getAuthGroups(...params);

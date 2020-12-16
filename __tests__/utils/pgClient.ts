@@ -13,27 +13,34 @@ export class PgClient {
 	}
 	public async cleanAllTables() {
 		// Delete many-to-one relationships first
-		await this.pool.query('DELETE FROM service_admin_group_map');
-		await this.pool.query('DELETE FROM unavailability;');
-		await this.pool.query('DELETE FROM booking_change_log;');
-		await this.pool.query('DELETE FROM booking;');
-		await this.pool.query('DELETE FROM timeslot_item;');
-		await this.pool.query('DELETE FROM week_day_break;');
-		await this.pool.query('DELETE FROM week_day_schedule;');
-		await this.pool.query('DELETE FROM service_provider_group_map;');
-		await this.pool.query('DELETE FROM service_provider;');
-		await this.pool.query('DELETE FROM service;');
-		await this.pool.query('DELETE FROM admin_user;');
-		await this.pool.query('DELETE FROM timeslots_schedule;');
-		await this.pool.query('DELETE FROM schedule_form;');
+		await this.pool.query('DELETE FROM public.service_admin_group_map');
+		await this.pool.query('DELETE FROM public.unavailability;');
+		await this.pool.query('DELETE FROM public.booking_change_log;');
+		await this.pool.query('DELETE FROM public.booking;');
+		await this.pool.query('DELETE FROM public.timeslot_item;');
+		await this.pool.query('DELETE FROM public.week_day_break;');
+		await this.pool.query('DELETE FROM public.week_day_schedule;');
+		await this.pool.query('DELETE FROM public.service_provider_group_map;');
+		await this.pool.query('DELETE FROM public.service_provider;');
+		await this.pool.query('DELETE FROM public.service;');
+		await this.pool.query('DELETE FROM public.admin_user;');
+		await this.pool.query('DELETE FROM public.sing_pass_user;');
+		await this.pool.query('DELETE FROM public.agency_user;');
+		await this.pool.query('DELETE FROM public.user;');
+		await this.pool.query('DELETE FROM public.timeslots_schedule;');
+		await this.pool.query('DELETE FROM public.schedule_form;');
 	}
 
-	public async mapServiceAdminToService({serviceId, nameService, organisation }) {
-		await this.pool.query(`INSERT INTO public.service_admin_group_map("_serviceId", "_serviceOrganisationRef") values(${serviceId}, '${nameService}:${organisation}')`);
+	public async mapServiceAdminToService({ serviceId, nameService, organisation }) {
+		await this.pool.query(
+			`INSERT INTO public.service_admin_group_map("_serviceId", "_serviceOrganisationRef") values(${serviceId}, '${nameService}:${organisation}')`,
+		);
 	}
 
-	public async mapServiceProviderToAdminId({serviceProviderId, molAdminId}) {
-		await this.pool.query(`INSERT INTO public.service_provider_group_map("_serviceProviderId","_molAdminId") values (${serviceProviderId}, '${molAdminId}')`)
+	public async mapServiceProviderToAdminId({ serviceProviderId, molAdminId }) {
+		await this.pool.query(
+			`INSERT INTO public.service_provider_group_map("_serviceProviderId","_molAdminId") values (${serviceProviderId}, '${molAdminId}')`,
+		);
 	}
 
 	public async close() {

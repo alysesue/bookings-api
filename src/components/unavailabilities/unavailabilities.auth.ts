@@ -1,3 +1,4 @@
+// tslint:disable tsr-detect-possible-timing-attacks
 import { Unavailability } from '../../models';
 import {
 	AnonymousAuthGroup,
@@ -10,6 +11,7 @@ import {
 	PermissionAwareAuthGroupVisitor,
 	QueryAuthGroupVisitor,
 } from '../../infrastructure/auth/queryAuthGroupVisitor';
+import { CrudAction } from '../../enums/crudAction';
 
 export class UnavailabilitiesQueryAuthVisitor extends QueryAuthGroupVisitor {
 	private _alias: string;
@@ -53,9 +55,11 @@ export class UnavailabilitiesQueryAuthVisitor extends QueryAuthGroupVisitor {
 
 export class UnavailabilitiesActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 	private readonly unavailability: Unavailability;
-	constructor(unavailability: Unavailability) {
+	private readonly action: CrudAction;
+	constructor(unavailability: Unavailability, action: CrudAction) {
 		super();
 		this.unavailability = unavailability;
+		this.action = action;
 		if (!this.unavailability) {
 			throw new Error('UnavailabilitiesActionAuthVisitor - unavailability cannot be null');
 		}
@@ -80,9 +84,21 @@ export class UnavailabilitiesActionAuthVisitor extends PermissionAwareAuthGroupV
 		}
 	}
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
-		// tslint:disable-next-line: tsr-detect-possible-timing-attacks
-		if (this.unavailability.serviceProviders.some((sp) => sp.id === _userGroup.authorisedServiceProvider.id)) {
-			this.markWithPermission();
+		const hasServiceProvider = this.unavailability.serviceProviders.some(
+			(sp) => sp.id === _userGroup.authorisedServiceProvider.id,
+		);
+
+		// tslint:disable-next-line: no-small-switch
+		switch (this.action) {
+			case CrudAction.Delete:
+				if (!this.unavailability.allServiceProviders && hasServiceProvider) {
+					this.markWithPermission();
+				}
+				break;
+			default:
+				if (hasServiceProvider) {
+					this.markWithPermission();
+				}
 		}
 	}
 }
