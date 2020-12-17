@@ -50,7 +50,7 @@ describe('BookingSGCookieHelper tests', () => {
 		expect(KoaContextStoreMock.koaContext.cookies.set).toHaveBeenCalledWith(
 			'BookingSGToken',
 			'Some Encrypted Value',
-			{ httpOnly: true, overwrite: true, sameSite: 'lax', secure: true },
+			{ httpOnly: true, overwrite: true, sameSite: 'lax' },
 		);
 	});
 
@@ -70,7 +70,7 @@ describe('BookingSGCookieHelper tests', () => {
 		expect(KoaContextStoreMock.koaContext.cookies.set).toHaveBeenCalledWith(
 			'BookingSGToken',
 			'Some Encrypted Value',
-			{ httpOnly: true, overwrite: true, sameSite: false, secure: false },
+			{ httpOnly: true, overwrite: true, sameSite: false },
 		);
 	});
 
@@ -117,7 +117,6 @@ describe('BookingSGCookieHelper tests', () => {
 			httpOnly: true,
 			overwrite: true,
 			sameSite: 'lax',
-			secure: true,
 		});
 	});
 
@@ -134,7 +133,6 @@ describe('BookingSGCookieHelper tests', () => {
 			httpOnly: true,
 			overwrite: true,
 			sameSite: false,
-			secure: false,
 		});
 	});
 });

@@ -31,7 +31,6 @@ export class BookingSGCookieHelper {
 		const koaContext = this._koaContextStore.koaContext;
 		koaContext.cookies.set(BookingSGCookieHelper.CookieName, encrypted, {
 			httpOnly: true,
-			secure: !config.isDev,
 			sameSite: config.isDev ? false : 'lax',
 			overwrite: true,
 		});
@@ -63,7 +62,6 @@ export class MolCookieHelper {
 
 		koaContext.cookies.set(MolCookieHelper.CookieName, undefined, {
 			httpOnly: true,
-			secure: !config.isDev,
 			sameSite: config.isDev ? false : 'lax',
 			overwrite: true,
 		});
