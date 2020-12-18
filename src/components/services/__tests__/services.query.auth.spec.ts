@@ -40,12 +40,12 @@ describe('Services query auth', () => {
 		expect(result.userParams).toStrictEqual({});
 	});
 
-	it(`should return no filter for anonymous user (all services visible)`, async () => {
+	it(`should filter services for anonymous user`, async () => {
 		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
 		const groups = [new AnonymousAuthGroup(anonymous)];
 		const result = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('');
+		expect(result.userCondition).toStrictEqual('(svc."_allowAnonymousBookings" = true)');
 		expect(result.userParams).toStrictEqual({});
 	});
 

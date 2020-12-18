@@ -35,7 +35,9 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 		// tslint:disable-next-line: no-small-switch
 		switch (this._changeLogAction) {
 			case ChangeLogAction.Create:
-				this.markWithPermission();
+				if (this._booking.service.allowAnonymousBookings) {
+					this.markWithPermission();
+				}
 		}
 	}
 

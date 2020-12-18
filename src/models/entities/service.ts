@@ -99,4 +99,14 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	public get timeslotsSchedule(): TimeslotsSchedule {
 		return this._timeslotsSchedule;
 	}
+
+	@Column({ type: 'boolean', default: false })
+	private _allowAnonymousBookings: boolean;
+
+	public set allowAnonymousBookings(value: boolean) {
+		this._allowAnonymousBookings = value;
+	}
+	public get allowAnonymousBookings(): boolean {
+		return this._allowAnonymousBookings;
+	}
 }
