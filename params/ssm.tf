@@ -37,15 +37,6 @@ resource "aws_ssm_parameter" "bookingsg-db_port" {
   overwrite = true
 }
 
-resource "aws_ssm_parameter" "bookingsg-db_host" {
-  name  = "${local.path-prefix}/BOOKINGSG_DB_HOST"
-  type  = "String"
-  value = "${data.external.static.result.BOOKINGSG_DB_HOST}"
-
-  overwrite = true
-}
-
-
 # resource "aws_ssm_parameter" "test" {
 #   name  = "${local.path-prefix}/TEST"
 #   type  = "String"
