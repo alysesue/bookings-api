@@ -31,7 +31,7 @@ export interface MolServiceProviderOnboard extends IMolCognitoUser {
 export type MolServiceProviderOnboardContract = Pick<
 	MolServiceProviderOnboard,
 	// tslint:disable-next-line:max-union-size
-	'name' | 'email' | 'username' | 'phoneNumber' | 'agencyUserId' | 'uinfin' | 'serviceName' | 'autoAcceptBookings'
+	'name' | 'email' | 'phoneNumber' | 'agencyUserId' | 'uinfin' | 'serviceName' | 'autoAcceptBookings'
 >;
 
 export class ServiceProviderResponseModel {
