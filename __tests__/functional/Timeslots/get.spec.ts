@@ -27,9 +27,9 @@ describe('Timeslots functional tests', () => {
 	let result1;
 	let result2;
 	let result3;
-	let serviceProviderId1;
-	let serviceProviderId2;
-	let serviceProviderId3;
+	let serviceProvider1;
+	let serviceProvider2;
+	let serviceProvider3;
 	let serviceId1;
 	let serviceId2;
 	let serviceId3;
@@ -55,30 +55,30 @@ describe('Timeslots functional tests', () => {
 			serviceProviderName: SERVICE_PROVIDER_NAME_3,
 		});
 
-		serviceProviderId1 = result1.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1).id;
-		serviceProviderId2 = result2.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_2).id;
-		serviceProviderId3 = result3.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_3).id;
+		serviceProvider1 = result1.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);
+		serviceProvider2 = result2.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_2);
+		serviceProvider3 = result3.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_3);
 
 		serviceId1 = result1.services.find((item) => item.name === NAME_SERVICE_1).id;
 		serviceId2 = result2.services.find((item) => item.name === NAME_SERVICE_2).id;
 		serviceId3 = result3.services.find((item) => item.name === NAME_SERVICE_3).id;
 
 		await populateIndividualTimeslot({
-			serviceProviderId: serviceProviderId1,
+			serviceProviderId: serviceProvider1.id,
 			weekDay: WEEKDAY,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
 			capacity: CAPACITY,
 		});
 		await populateIndividualTimeslot({
-			serviceProviderId: serviceProviderId2,
+			serviceProviderId: serviceProvider2.id,
 			weekDay: WEEKDAY,
 			startTime: START_TIME_2,
 			endTime: END_TIME_2,
 			capacity: CAPACITY,
 		});
 		await populateIndividualTimeslot({
-			serviceProviderId: serviceProviderId3,
+			serviceProviderId: serviceProvider3.id,
 			weekDay: WEEKDAY,
 			startTime: START_TIME_3,
 			endTime: END_TIME_3,
@@ -87,18 +87,18 @@ describe('Timeslots functional tests', () => {
 	});
 
 	afterEach(async () => {
-		// await pgClient.cleanAllTables();
+		await pgClient.cleanAllTables();
 	});
 
-	xit('organisation admin should get all timeslot schedules', async () => {
+	it('organisation admin should get all timeslot schedules', async () => {
 		const service1TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({}).get(
-			`/service-providers/${serviceProviderId1}/timeslotSchedule`,
+			`/service-providers/${serviceProvider1.id}/timeslotSchedule`,
 		);
 		const service2TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({}).get(
-			`/service-providers/${serviceProviderId2}/timeslotSchedule`,
+			`/service-providers/${serviceProvider2.id}/timeslotSchedule`,
 		);
 		const service3TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({}).get(
-			`/service-providers/${serviceProviderId3}/timeslotSchedule`,
+			`/service-providers/${serviceProvider3.id}/timeslotSchedule`,
 		);
 
 		expect(service1TimeslotsResponse.statusCode).toEqual(200);
@@ -114,11 +114,11 @@ describe('Timeslots functional tests', () => {
 		expect(service3TimeslotsResponse.body.data.timeslots[0].endTime).toEqual(END_TIME_3);
 	});
 
-	xit('service admin should only get timeslot schedules for their service', async () => {
+	it('service admin should only get timeslot schedules for their service', async () => {
 		const service1TimeslotsResponse = await ServiceAdminRequestEndpointSG.create({
 			nameService: NAME_SERVICE_1,
 			serviceId: serviceId1,
-		}).get(`/service-providers/${serviceProviderId1}/timeslotSchedule`);
+		}).get(`/service-providers/${serviceProvider1.id}/timeslotSchedule`);
 
 		expect(service1TimeslotsResponse.statusCode).toEqual(200);
 		expect(service1TimeslotsResponse.body.data.timeslots[0].startTime).toEqual(START_TIME_1);
@@ -128,49 +128,51 @@ describe('Timeslots functional tests', () => {
 			await ServiceAdminRequestEndpointSG.create({
 				nameService: NAME_SERVICE_1,
 				serviceId: serviceId1,
-			}).get(`/service-providers/${serviceProviderId2}/timeslotSchedule`);
+			}).get(`/service-providers/${serviceProvider2}/timeslotSchedule`);
 			await ServiceAdminRequestEndpointSG.create({
 				nameService: NAME_SERVICE_1,
 				serviceId: serviceId1,
-			}).get(`/service-providers/${serviceProviderId3}/timeslotSchedule`);
+			}).get(`/service-providers/${serviceProvider3}/timeslotSchedule`);
 		} catch (e) {
 			expect(e.message).toBe(ERROR_MESSAGE);
 		}
 	});
 
 	it('service provider should only get their timeslot schedule', async () => {
+		const molAdaminId = await pgClient.getMolAdminIdWithAgencyUserId(serviceProvider1.agencyUserId);
 		const service1TimeslotsResponse = await ServiceProviderRequestEndpointSG.create({
 			nameService: NAME_SERVICE_1,
 			serviceId: serviceId1,
-		}).get(`/service-providers/${serviceProviderId1}/timeslotSchedule`);
+			molAdminId: molAdaminId,
+		}).get(`/service-providers/${serviceProvider1.id}/timeslotSchedule`);
 		expect(service1TimeslotsResponse.statusCode).toEqual(200);
 		expect(service1TimeslotsResponse.body.data.timeslots[0].startTime).toEqual(START_TIME_1);
 		expect(service1TimeslotsResponse.body.data.timeslots[0].endTime).toEqual(END_TIME_1);
 
-		// try {
-		// 	await ServiceProviderRequestEndpointSG.create({
-		// 		nameService: NAME_SERVICE_1,
-		// 		serviceId: serviceId1,
-		// 	}).get(`/service-providers/${serviceProviderId2}/timeslotSchedule`);
-		// 	await ServiceProviderRequestEndpointSG.create({
-		// 		nameService: NAME_SERVICE_1,
-		// 		serviceId: serviceId1,
-		// 	}).get(`/service-providers/${serviceProviderId3}/timeslotSchedule`);
-		// } catch (e) {
-		// 	expect(e.message).toBe(ERROR_MESSAGE);
-		// }
+		try {
+			await ServiceProviderRequestEndpointSG.create({
+				nameService: NAME_SERVICE_1,
+				serviceId: serviceId1,
+			}).get(`/service-providers/${serviceProvider2.id}/timeslotSchedule`);
+			await ServiceProviderRequestEndpointSG.create({
+				nameService: NAME_SERVICE_1,
+				serviceId: serviceId1,
+			}).get(`/service-providers/${serviceProvider3.id}/timeslotSchedule`);
+		} catch (e) {
+			expect(e.message).toBe(ERROR_MESSAGE);
+		}
 	});
 
-	xit('citizen should not get any timeslot schedules', async () => {
+	it('citizen should not get any timeslot schedules', async () => {
 		try {
 			await CitizenRequestEndpointSG.create({ serviceId: serviceId1 }).get(
-				`/service-providers/${serviceProviderId1}/timeslotSchedule`,
+				`/service-providers/${serviceProvider1.id}/timeslotSchedule`,
 			);
 			await CitizenRequestEndpointSG.create({ serviceId: serviceId2 }).get(
-				`/service-providers/${serviceProviderId2}/timeslotSchedule`,
+				`/service-providers/${serviceProvider2.id}/timeslotSchedule`,
 			);
 			await CitizenRequestEndpointSG.create({ serviceId: serviceId3 }).get(
-				`/service-providers/${serviceProviderId3}/timeslotSchedule`,
+				`/service-providers/${serviceProvider3.id}/timeslotSchedule`,
 			);
 		} catch (e) {
 			expect(e.message).toBe(ERROR_MESSAGE);

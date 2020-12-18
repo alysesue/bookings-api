@@ -16,7 +16,7 @@ export class ServiceProviderModel {
 
 export interface MolServiceProviderOnboard extends IMolCognitoUser {
 	sub?: string; // cognito id
-	username: string;
+	username?: string;
 	name: string;
 	email: string;
 	phoneNumber: string;

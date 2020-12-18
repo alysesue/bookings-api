@@ -8,7 +8,7 @@ export class PgClient {
 			host: 'localhost',
 			database: process.env['BOOKINGSG_DB_INSTANCE'],
 			password: process.env['DB_PASSWORD_BOOKINGSG_APP'],
-			port: process.env['BOOKINGSG_DB_PORT'],
+			port: +process.env['BOOKINGSG_DB_PORT'],
 		});
 	}
 	public async cleanAllTables() {
@@ -33,14 +33,24 @@ export class PgClient {
 
 	public async mapServiceAdminToService({ serviceId, nameService, organisation }) {
 		await this.pool.query(
+			// tslint:disable-next-line:tsr-detect-sql-literal-injection
 			`INSERT INTO public.service_admin_group_map("_serviceId", "_serviceOrganisationRef") values(${serviceId}, '${nameService}:${organisation}')`,
 		);
 	}
 
 	public async mapServiceProviderToAdminId({ serviceProviderId, molAdminId }) {
 		await this.pool.query(
+			// tslint:disable-next-line:tsr-detect-sql-literal-injection
 			`INSERT INTO public.service_provider_group_map("_serviceProviderId","_molAdminId") values (${serviceProviderId}, '${molAdminId}')`,
 		);
+	}
+
+	public async getMolAdminIdWithAgencyUserId(agencyUserId): Promise<string> {
+		const res = await this.pool.query(
+			// tslint:disable-next-line:tsr-detect-sql-literal-injection
+			`SELECT "ad"."_molAdminId" from admin_user as ad where "ad"."_agencyUserId" = '${agencyUserId}'`,
+		);
+		return res.rows[0]._molAdminId;
 	}
 
 	public async close() {
