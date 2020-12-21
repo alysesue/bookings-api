@@ -15,7 +15,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	afterEach(async () => {
-		// await pgClient.cleanAllTables();
+		await pgClient.cleanAllTables();
 	});
 
 	it("should update first service's name", async () => {
