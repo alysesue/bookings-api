@@ -111,11 +111,15 @@ export class ServiceProvidersController extends Controller {
 		@Header('x-api-service') serviceId?: number,
 		@Query() includeTimeslotsSchedule = false,
 		@Query() includeScheduleForm = false,
+		@Query() limit?: number,
+		@Query() page?: number,
 	): Promise<ApiData<ServiceProviderResponseModel[]>> {
 		const dataModels = await this.serviceProvidersService.getServiceProviders(
 			serviceId,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
+			limit,
+			page,
 		);
 		return ApiDataFactory.create(this.mapper.mapDataModels(dataModels));
 	}

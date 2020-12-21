@@ -65,9 +65,11 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			includeScheduleForm?: boolean;
 			includeTimeslotsSchedule?: boolean;
 			skipAuthorisation?: boolean;
+			limit?: number;
+			pageNumber?: number;
 		} = {},
 	): Promise<ServiceProvider[]> {
-		const { serviceId, ids, scheduleFormId, organisationId } = options;
+		const { serviceId, ids, scheduleFormId, organisationId, limit, pageNumber } = options;
 		const serviceCondition = serviceId ? 'sp."_serviceId" = :serviceId ' : '';
 		const idsCondition = ids && ids.length > 0 ? 'sp._id IN (:...ids)' : '';
 		const scheduleFormIdCondition = scheduleFormId ? 'sp._scheduleFormId = :scheduleFormId' : '';
@@ -78,6 +80,11 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			{ serviceId, ids, scheduleFormId, organisationId },
 			options,
 		);
+		if (limit && pageNumber) {
+			query.limit(limit);
+			query.offset(limit * (pageNumber - 1));
+		}
+		query.orderBy('sp._name');
 		const entries = await query.getMany();
 		return await this.processIncludes(entries, options);
 	}

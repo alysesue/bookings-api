@@ -43,12 +43,18 @@ describe('Service Provider repository', () => {
 		leftJoinAndSelect: jest.Mock;
 		getMany: jest.Mock<Promise<ServiceProvider[]>, any>;
 		getOne: jest.Mock<Promise<ServiceProvider>, any>;
+		orderBy: jest.Mock<any, any>;
+		limit: jest.Mock;
+		offset: jest.Mock;
 	} = {
 		where: jest.fn(),
 		leftJoin: jest.fn(),
 		leftJoinAndSelect: jest.fn(),
 		getMany: jest.fn<Promise<ServiceProvider[]>, any>(),
 		getOne: jest.fn<Promise<ServiceProvider>, any>(),
+		orderBy: jest.fn<any, any>(),
+		limit: jest.fn(),
+		offset: jest.fn(),
 	};
 
 	const QueryAuthVisitorMock = {
@@ -276,6 +282,20 @@ describe('Service Provider repository', () => {
 		expect(result).toBeDefined();
 		expect(result.linkedUser).toBeDefined();
 		expect(result.agencyUserId).toBe('ABC12');
+	});
+
+	it('should get list of SP with limit and pageNumber', async () => {
+		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([]));
+
+		const spRepository = Container.get(ServiceProvidersRepository);
+
+		const result = await spRepository.getServiceProviders({ serviceId: 1, limit: 5, pageNumber: 1 });
+		expect(TransactionManagerMock.createQueryBuilder).toBeCalled();
+		expect(queryBuilderMock.getMany).toBeCalled();
+		expect(queryBuilderMock.limit).toBeCalled();
+		expect(queryBuilderMock.offset).toBeCalled();
+		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
+		expect(result).toBeDefined();
 	});
 });
 

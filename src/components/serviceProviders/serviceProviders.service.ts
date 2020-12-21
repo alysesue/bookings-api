@@ -73,11 +73,15 @@ export class ServiceProvidersService {
 		serviceId?: number,
 		includeScheduleForm = false,
 		includeTimeslotsSchedule = false,
+		limit?: number,
+		pageNumber?: number,
 	): Promise<ServiceProvider[]> {
 		return await this.serviceProvidersRepository.getServiceProviders({
 			serviceId,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
+			limit,
+			pageNumber,
 		});
 	}
 
