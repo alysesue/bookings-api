@@ -3,6 +3,7 @@ import {
 	ServiceProviderListRequest,
 	ServiceProviderModel,
 	ServiceProviderResponseModel,
+	ServiceProviderPaginationResponseModel,
 } from './serviceProviders.apicontract';
 import { ServiceProvidersService } from './serviceProviders.service';
 import {
@@ -113,7 +114,8 @@ export class ServiceProvidersController extends Controller {
 		@Query() includeScheduleForm = false,
 		@Query() limit?: number,
 		@Query() page?: number,
-	): Promise<ApiData<ServiceProviderResponseModel[]>> {
+	): Promise<ApiData<ServiceProviderPaginationResponseModel>> {
+		const response = new ServiceProviderPaginationResponseModel();
 		const dataModels = await this.serviceProvidersService.getServiceProviders(
 			serviceId,
 			includeScheduleForm,
@@ -121,7 +123,15 @@ export class ServiceProvidersController extends Controller {
 			limit,
 			page,
 		);
-		return ApiDataFactory.create(this.mapper.mapDataModels(dataModels));
+		response.serviceProviders = this.mapper.mapDataModels(dataModels);
+		response.totalCount = await this.serviceProvidersService.getServiceProvidersCount(
+			serviceId,
+			includeScheduleForm,
+			includeTimeslotsSchedule,
+			limit,
+			page,
+		);
+		return ApiDataFactory.create(response);
 	}
 
 	/**

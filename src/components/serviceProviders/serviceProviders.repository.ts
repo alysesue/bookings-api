@@ -56,6 +56,31 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		}
 	}
 
+	private async getRetrieveSpQuery(
+		options: {
+			ids?: number[];
+			serviceId?: number;
+			organisationId?: number;
+			scheduleFormId?: number;
+			includeScheduleForm?: boolean;
+			includeTimeslotsSchedule?: boolean;
+			skipAuthorisation?: boolean;
+			limit?: number;
+			pageNumber?: number;
+		} = {}): Promise<SelectQueryBuilder<ServiceProvider>> {
+		const { serviceId, ids, scheduleFormId, organisationId } = options;
+		const serviceCondition = serviceId ? 'sp."_serviceId" = :serviceId ' : '';
+		const idsCondition = ids && ids.length > 0 ? 'sp._id IN (:...ids)' : '';
+		const scheduleFormIdCondition = scheduleFormId ? 'sp._scheduleFormId = :scheduleFormId' : '';
+		const organisationIdCondition = organisationId ? 'service._organisationId = :organisationId' : '';
+
+		return await this.createSelectQuery(
+			[serviceCondition, idsCondition, scheduleFormIdCondition, organisationIdCondition],
+			{ serviceId, ids, scheduleFormId, organisationId },
+			options,
+		);
+	}
+
 	public async getServiceProviders(
 		options: {
 			ids?: number[];
@@ -69,17 +94,8 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			pageNumber?: number;
 		} = {},
 	): Promise<ServiceProvider[]> {
-		const { serviceId, ids, scheduleFormId, organisationId, limit, pageNumber } = options;
-		const serviceCondition = serviceId ? 'sp."_serviceId" = :serviceId ' : '';
-		const idsCondition = ids && ids.length > 0 ? 'sp._id IN (:...ids)' : '';
-		const scheduleFormIdCondition = scheduleFormId ? 'sp._scheduleFormId = :scheduleFormId' : '';
-		const organisationIdCondition = organisationId ? 'service._organisationId = :organisationId' : '';
-
-		const query = await this.createSelectQuery(
-			[serviceCondition, idsCondition, scheduleFormIdCondition, organisationIdCondition],
-			{ serviceId, ids, scheduleFormId, organisationId },
-			options,
-		);
+		const { limit, pageNumber } = options;
+		const query = await this.getRetrieveSpQuery(options);
 		if (limit && pageNumber) {
 			query.limit(limit);
 			query.offset(limit * (pageNumber - 1));
@@ -88,6 +104,25 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		const entries = await query.getMany();
 		return await this.processIncludes(entries, options);
 	}
+
+	public async getServiceProvidersCount(
+		options: {
+			ids?: number[];
+			serviceId?: number;
+			organisationId?: number;
+			scheduleFormId?: number;
+			includeScheduleForm?: boolean;
+			includeTimeslotsSchedule?: boolean;
+			skipAuthorisation?: boolean;
+			limit?: number;
+			pageNumber?: number;
+		} = {},
+	): Promise<number> {
+		const query = await this.getRetrieveSpQuery(options);
+		return query.getCount();
+	}
+
+
 
 	public async getByScheduleFormId(options: {
 		scheduleFormId: number;

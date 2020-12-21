@@ -85,6 +85,22 @@ export class ServiceProvidersService {
 		});
 	}
 
+	public async getServiceProvidersCount(
+		serviceId?: number,
+		includeScheduleForm = false,
+		includeTimeslotsSchedule = false,
+		limit?: number,
+		pageNumber?: number,
+	): Promise<number> {
+		return await this.serviceProvidersRepository.getServiceProvidersCount({
+			serviceId,
+			includeScheduleForm,
+			includeTimeslotsSchedule,
+			limit,
+			pageNumber,
+		});
+	}
+
 	public async getAvailableServiceProviders(from: Date, to: Date, serviceId?: number): Promise<ServiceProvider[]> {
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots(from, to, serviceId, false);
 
