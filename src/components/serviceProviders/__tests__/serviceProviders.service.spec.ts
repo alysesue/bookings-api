@@ -170,10 +170,8 @@ describe('ServiceProviders.Service', () => {
 		UserContextMock.getFirstAuthorisedOrganisation.mockReturnValue(Promise.resolve(organisation));
 		UsersServiceMock.upsertAdminUsers.mockReturnValue(Promise.resolve([spOnboard as any]));
 
-		ServiceProvidersRepositoryMock.saveAll.mockImplementation(() => serviceProviderMock);
 		const res = await Container.get(ServiceProvidersService).createServiceProviders([spOnboard]);
 		expect(ServicesServiceMock.getServicesCalled).toBeCalled();
-		expect(ServiceProvidersRepositoryMock.saveAll).toBeCalled();
 		expect(res.created.length).toBe(1);
 	});
 
@@ -401,7 +399,6 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	public static getServiceProvidersMock: ServiceProvider[];
 	public static getServiceProviderMock: ServiceProvider;
 	public static save = jest.fn();
-	public static saveAll = jest.fn();
 
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
 		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProvidersMock);
@@ -413,10 +410,6 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 
 	public async save(listRequest: ServiceProviderModel): Promise<ServiceProvider> {
 		return await ServiceProvidersRepositoryMock.save();
-	}
-
-	public async saveAll(listRequest: ServiceProviderModel[]): Promise<ServiceProvider[]> {
-		return await ServiceProvidersRepositoryMock.saveAll();
 	}
 }
 

@@ -180,7 +180,7 @@ export class ServiceProvidersService {
 			);
 			const sps = await this.mapAndValidateServiceProvidersOnboard(upsertedAdminUsers);
 			await Promise.all(sps.map(async (sp) => await this.verifyActionPermission(sp, CrudAction.Create)));
-			await this.serviceProvidersRepository.saveAll(sps);
+			await Promise.all(sps.map(async (sp) => await this.serviceProvidersRepository.save(sp)));
 		}
 		return res;
 	}

@@ -112,8 +112,8 @@ describe('Services service tests', () => {
 
 		const res = await Container.get(ServicesService).createServicesAdmins(admins);
 		expect(MolUsersServiceMock.molUpsertUser).toBeCalled();
-		expect(ServicesRepositoryMockClass.saveAll).toBeCalled();
-		expect(ServicesRepositoryMockClass.saveAll.mock.calls[0][0][0]._name).toBe('service 1');
+		expect(ServicesRepositoryMockClass.save).toBeCalled();
+		expect(ServicesRepositoryMockClass.save.mock.calls[0][0]._name).toBe('service 1');
 		expect(res.created[0].groups).toStrictEqual(['bookingsg:svc-admin-service1:orga']);
 	});
 
@@ -267,17 +267,12 @@ describe('Services service tests', () => {
 
 class ServicesRepositoryMockClass extends ServicesRepository {
 	public static save = jest.fn();
-	public static saveAll = jest.fn();
 	public static getService = jest.fn();
 	public static get = jest.fn();
 	public static getAll = jest.fn();
 
 	public async save(service: Service): Promise<Service> {
 		return ServicesRepositoryMockClass.save(service);
-	}
-
-	public async saveAll(service: Service[]): Promise<Service[]> {
-		return ServicesRepositoryMockClass.saveAll(service);
 	}
 
 	public async get(id: number): Promise<Service> {

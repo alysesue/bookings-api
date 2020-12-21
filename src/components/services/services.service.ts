@@ -36,7 +36,7 @@ export class ServicesService {
 	private async createServices(adminUsers: MolAdminUserContract[], orga: Organisation): Promise<void> {
 		const allServiceNames = [].concat(...adminUsers.map((a) => a.services));
 		const allServices = allServiceNames.map((s) => Service.create(s, orga));
-		await this.servicesRepository.saveAll(allServices);
+		await Promise.all(allServices.map(async (srv) => await this.servicesRepository.save(srv)));
 	}
 
 	public async createServicesAdmins(adminUserContracts?: MolAdminUserContract[]): Promise<MolUpsertUsersResult> {
@@ -116,10 +116,6 @@ export class ServicesService {
 
 	public async getServices(): Promise<Service[]> {
 		return await this.servicesRepository.getAll();
-	}
-
-	public async saveAll(services: Service[]): Promise<Service[]> {
-		return await this.servicesRepository.saveAll(services);
 	}
 
 	public async getService(

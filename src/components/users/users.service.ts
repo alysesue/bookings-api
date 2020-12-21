@@ -177,8 +177,7 @@ export class UsersService {
 			const notFoundGroupRefs = parsedGroups.filter(
 				(g) =>
 					!services.find(
-						(s) =>
-							s._serviceAdminGroupMap.serviceOrganisationRef === `${g.serviceRef}:${g.organisationRef}`,
+						(s) => s.serviceAdminGroupMap.serviceOrganisationRef === `${g.serviceRef}:${g.organisationRef}`,
 					),
 			);
 			if (notFoundGroupRefs.length > 0) {

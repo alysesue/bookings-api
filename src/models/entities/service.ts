@@ -46,7 +46,15 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	}
 
 	@OneToOne((type) => ServiceAdminGroupMap, (e) => e._service, { nullable: true, cascade: true })
-	public _serviceAdminGroupMap: ServiceAdminGroupMap;
+	private _serviceAdminGroupMap: ServiceAdminGroupMap;
+
+	public get serviceAdminGroupMap(): ServiceAdminGroupMap {
+		return this._serviceAdminGroupMap;
+	}
+
+	public set serviceAdminGroupMap(value: ServiceAdminGroupMap) {
+		this._serviceAdminGroupMap = value;
+	}
 
 	@Column({ type: 'varchar', length: 100, nullable: false })
 	private _name: string;

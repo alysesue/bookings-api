@@ -39,10 +39,22 @@ export class ServicesRepository extends RepositoryBase<Service> {
 	}
 
 	public async save(service: Service): Promise<Service> {
-		return (await this.getRepository()).save(service);
-	}
+		const repository = await this.getRepository();
+		const serviceFound = await repository
+			.createQueryBuilder('s')
+			.innerJoinAndSelect('s._organisation', 'org', 'org."_name" = :orgName', {
+				orgName: service.organisation.name,
+			})
+			.innerJoinAndSelect('s._serviceAdminGroupMap', 'srvAdminGroupMap')
+			.andWhere('s._name = :name', { name: service.name })
+			.getOne();
 
-	public async saveAll(service: Service[]): Promise<Service[]> {
+		if (serviceFound) {
+			service.id = serviceFound?.id;
+			service.organisation = serviceFound?.organisation;
+			service.organisationId = serviceFound?.organisation.id;
+			service.serviceAdminGroupMap.serviceId = serviceFound.serviceAdminGroupMap?.serviceId;
+		}
 		return (await this.getRepository()).save(service);
 	}
 

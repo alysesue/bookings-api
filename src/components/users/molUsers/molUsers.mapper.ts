@@ -28,7 +28,7 @@ export class MolUsersMapper {
 			const molAdminUsers: MolAdminUser = admin;
 			molAdminUsers.groups = admin.services?.map((serviceName) =>
 				UserGroupParser.generateServiceAdminUserGroup(
-					Service.create(serviceName, orga)._serviceAdminGroupMap.serviceOrganisationRef,
+					Service.create(serviceName, orga).serviceAdminGroupMap.serviceOrganisationRef,
 				),
 			);
 			return molAdminUsers;

@@ -8,7 +8,21 @@ export class UsersRepository extends RepositoryBase<User> {
 		super(User);
 	}
 	public async save(user: User): Promise<User> {
-		return await (await this.getRepository()).save(user);
+		const repository = await this.getRepository();
+		if (user?.adminUser?.agencyUserId) {
+			const userFound = await repository
+				.createQueryBuilder('u')
+				.innerJoinAndSelect('u._adminUser', 'adminUser')
+				.where('adminUser._agencyUserId = :agencyUserId', { agencyUserId: user.adminUser.agencyUserId })
+				.getOne();
+			if (userFound) {
+				user.id = userFound?.id;
+				user.adminUser._User = userFound?.adminUser?._User;
+				user.adminUser.id = userFound?.adminUser?.id;
+			}
+		}
+
+		return await repository.save(user);
 	}
 
 	public async getUserByTrackingId(trackingId?: string): Promise<User> {

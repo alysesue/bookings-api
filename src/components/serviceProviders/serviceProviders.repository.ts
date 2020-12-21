@@ -145,11 +145,17 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			.leftJoinAndSelect('sp._service', 'service');
 	}
 
-	public async save(serviceProviders: ServiceProvider): Promise<ServiceProvider> {
-		return (await this.getRepository()).save(serviceProviders);
-	}
-
-	public async saveAll(serviceProviders: ServiceProvider[]): Promise<ServiceProvider[]> {
-		return (await this.getRepository()).save(serviceProviders);
+	public async save(serviceProvider: ServiceProvider): Promise<ServiceProvider> {
+		const repository = await this.getRepository();
+		if (serviceProvider?.agencyUserId) {
+			const spFound = await repository
+				.createQueryBuilder('sp')
+				.where('sp._agencyUserId = :agencyUserId', { agencyUserId: serviceProvider.agencyUserId })
+				.getOne();
+			if (spFound) {
+				serviceProvider.id = spFound?.id;
+			}
+		}
+		return await repository.save(serviceProvider);
 	}
 }

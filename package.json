@@ -103,7 +103,7 @@
 		"googleapis": "^49.0.0",
 		"koa-no-cache": "^2.0.0",
 		"koa-proxy": "^1.0.0-alpha.3",
-		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:~6.2.7",
+		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:~7.2.5",
 		"mol-lib-common": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-common.git#semver:~4.1.17",
 		"moment": "^2.25.3",
 		"node-forge": "^0.10.0",

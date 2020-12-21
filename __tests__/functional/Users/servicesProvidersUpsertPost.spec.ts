@@ -16,7 +16,7 @@ describe('Tests endpoint and populate data', () => {
 		await pgClient.cleanAllTables();
 	});
 
-	it('Post service', async () => {
+	it('Post service provider', async () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/users/service-providers/upsert', {
 			body: [
 				{
@@ -34,5 +34,36 @@ describe('Tests endpoint and populate data', () => {
 		const responseService = await OrganisationAdminRequestEndpointSG.create({}).get('/services');
 		expect(responseServiceProvider.body.data[0].name).toEqual('name');
 		expect(responseService.body.data[0].name).toEqual('service');
+	});
+
+	it('Post upsert service providers', async () => {
+		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/users/service-providers/upsert', {
+			body: [
+				{
+					name: 'name',
+					email: 'email@email.com',
+					phoneNumber: '+33 3333 3333',
+					agencyUserId: '1',
+					uinfin: '1221jskfl 1233',
+					serviceName: 'service',
+				},
+			],
+		});
+		expect(response.statusCode).toEqual(204);
+		const response2 = await OrganisationAdminRequestEndpointSG.create({}).post('/users/service-providers/upsert', {
+			body: [
+				{
+					name: 'name2',
+					email: 'email@email.com',
+					phoneNumber: '+33 3333 3333',
+					agencyUserId: '1',
+					uinfin: '1221jskfl 1233',
+					serviceName: 'service',
+				},
+			],
+		});
+		expect(response2.statusCode).toEqual(204);
+		const responseServiceProvider = await OrganisationAdminRequestEndpointSG.create({}).get('/service-providers');
+		expect(responseServiceProvider.body.data[0].name).toEqual('name2');
 	});
 });
