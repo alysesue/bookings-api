@@ -54,7 +54,7 @@ describe('ServiceProviders.Controller', () => {
 		ServiceProvidersSvcMock.getServiceProviders.mockReturnValue([sp1, sp2]);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders();
-		expect(result.data.length).toBe(2);
+		expect(result.data.serviceProviders.length).toBe(2);
 	});
 
 	it('should get service providers with timeslots', async () => {
@@ -71,7 +71,7 @@ describe('ServiceProviders.Controller', () => {
 
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders(undefined, true);
-		expect(result.data.length).toBe(1);
+		expect(result.data.serviceProviders.length).toBe(1);
 		expect(result.data[0].timeslotsSchedule.timeslots[0].weekDay).toBe(timeslotItem._weekDay);
 	});
 

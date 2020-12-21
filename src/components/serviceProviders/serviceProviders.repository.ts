@@ -67,7 +67,8 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			skipAuthorisation?: boolean;
 			limit?: number;
 			pageNumber?: number;
-		} = {}): Promise<SelectQueryBuilder<ServiceProvider>> {
+		} = {},
+	): Promise<SelectQueryBuilder<ServiceProvider>> {
 		const { serviceId, ids, scheduleFormId, organisationId } = options;
 		const serviceCondition = serviceId ? 'sp."_serviceId" = :serviceId ' : '';
 		const idsCondition = ids && ids.length > 0 ? 'sp._id IN (:...ids)' : '';
@@ -114,15 +115,11 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			includeScheduleForm?: boolean;
 			includeTimeslotsSchedule?: boolean;
 			skipAuthorisation?: boolean;
-			limit?: number;
-			pageNumber?: number;
 		} = {},
 	): Promise<number> {
 		const query = await this.getRetrieveSpQuery(options);
 		return query.getCount();
 	}
-
-
 
 	public async getByScheduleFormId(options: {
 		scheduleFormId: number;

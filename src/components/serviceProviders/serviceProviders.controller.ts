@@ -2,8 +2,8 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import {
 	ServiceProviderListRequest,
 	ServiceProviderModel,
-	ServiceProviderResponseModel,
 	ServiceProviderPaginationResponseModel,
+	ServiceProviderResponseModel,
 } from './serviceProviders.apicontract';
 import { ServiceProvidersService } from './serviceProviders.service';
 import {
@@ -128,8 +128,6 @@ export class ServiceProvidersController extends Controller {
 			serviceId,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
-			limit,
-			page,
 		);
 		return ApiDataFactory.create(response);
 	}

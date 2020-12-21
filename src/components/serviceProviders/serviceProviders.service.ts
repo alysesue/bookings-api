@@ -89,15 +89,11 @@ export class ServiceProvidersService {
 		serviceId?: number,
 		includeScheduleForm = false,
 		includeTimeslotsSchedule = false,
-		limit?: number,
-		pageNumber?: number,
 	): Promise<number> {
 		return await this.serviceProvidersRepository.getServiceProvidersCount({
 			serviceId,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
-			limit,
-			pageNumber,
 		});
 	}
 
