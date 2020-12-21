@@ -64,6 +64,7 @@ export class UsersService {
 					userName: headers[MOLSecurityHeaderKeys.ADMIN_USERNAME],
 					email: headers[MOLSecurityHeaderKeys.ADMIN_EMAIL],
 					name: headers[MOLSecurityHeaderKeys.ADMIN_NAME],
+					agencyUserId: headers[MOLSecurityHeaderKeys.ADMIN_AGENCY_USER_ID],
 				});
 				break;
 			case MOLAuthType.AGENCY:

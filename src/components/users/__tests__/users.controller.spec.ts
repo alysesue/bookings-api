@@ -109,13 +109,13 @@ describe('users controller', () => {
 
 	it('should get admin profile with agencyUserId', async () => {
 		const headers = {};
-		// TODO: update when govtech add agency_user_id in headers
 		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.ADMIN;
 		headers[MOLSecurityHeaderKeys.ADMIN_ID] = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
 		headers[MOLSecurityHeaderKeys.ADMIN_USERNAME] = 'UserName';
 		headers[MOLSecurityHeaderKeys.ADMIN_EMAIL] = 'test@email.com';
 		headers[MOLSecurityHeaderKeys.ADMIN_NAME] = 'Name';
 		headers[MOLSecurityHeaderKeys.ADMIN_GROUPS] = 'service-provider-service1:localorg';
+		headers[MOLSecurityHeaderKeys.ADMIN_AGENCY_USER_ID] = '12';
 
 		const userMock = User.createAdminUser({
 			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',

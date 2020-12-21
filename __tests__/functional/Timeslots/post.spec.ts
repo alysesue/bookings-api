@@ -1,6 +1,6 @@
 import { PgClient } from '../../utils/pgClient';
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
-import { populateServiceAndServiceProvider, populateUserServiceProvider } from '../../Populate/basic';
+import { populateUserServiceProvider } from '../../Populate/basic';
 
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
