@@ -56,7 +56,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		}
 	}
 
-	private async getRetrieveSpQuery(
+	private getSpQuery(
 		options: {
 			ids?: number[];
 			serviceId?: number;
@@ -75,7 +75,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		const scheduleFormIdCondition = scheduleFormId ? 'sp._scheduleFormId = :scheduleFormId' : '';
 		const organisationIdCondition = organisationId ? 'service._organisationId = :organisationId' : '';
 
-		return await this.createSelectQuery(
+		return this.createSelectQuery(
 			[serviceCondition, idsCondition, scheduleFormIdCondition, organisationIdCondition],
 			{ serviceId, ids, scheduleFormId, organisationId },
 			options,
@@ -96,7 +96,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		} = {},
 	): Promise<ServiceProvider[]> {
 		const { limit, pageNumber } = options;
-		const query = await this.getRetrieveSpQuery(options);
+		const query = await this.getSpQuery(options);
 		if (limit && pageNumber) {
 			query.limit(limit);
 			query.offset(limit * (pageNumber - 1));
@@ -117,7 +117,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			skipAuthorisation?: boolean;
 		} = {},
 	): Promise<number> {
-		const query = await this.getRetrieveSpQuery(options);
+		const query = await this.getSpQuery(options);
 		return query.getCount();
 	}
 
