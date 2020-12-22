@@ -54,7 +54,14 @@ describe('ServiceProviders.Controller', () => {
 		ServiceProvidersSvcMock.getServiceProviders.mockReturnValue([sp1, sp2]);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders();
-		expect(result.data.serviceProviders.length).toBe(2);
+		expect(result.data.length).toBe(2);
+	});
+
+	it('should get total service providers', async () => {
+		ServiceProvidersSvcMock.getServiceProvidersCount.mockReturnValue(2);
+		const controller = Container.get(ServiceProvidersController);
+		const result = await controller.getTotalServiceProviders();
+		expect(result.data.total).toBe(2);
 	});
 
 	it('should get service providers with timeslots', async () => {
@@ -71,7 +78,7 @@ describe('ServiceProviders.Controller', () => {
 
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders(undefined, true);
-		expect(result.data.serviceProviders.length).toBe(1);
+		expect(result.data.length).toBe(1);
 		expect(result.data[0].timeslotsSchedule.timeslots[0].weekDay).toBe(timeslotItem._weekDay);
 	});
 
@@ -235,6 +242,7 @@ describe('ServiceProviders.Controller', () => {
 
 const ServiceProvidersSvcMock = {
 	getServiceProvider: jest.fn(),
+	getServiceProvidersCount: jest.fn(),
 	getServiceProviders: jest.fn(),
 	getAvailableServiceProviders: jest.fn(),
 	updateServiceProvider: jest.fn(),
@@ -251,6 +259,10 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 	public async getServiceProvider(spId: number): Promise<ServiceProvider> {
 		return ServiceProvidersSvcMock.getServiceProvider();
 	}
+	public async getServiceProvidersCount(): Promise<number> {
+		return ServiceProvidersSvcMock.getServiceProvidersCount();
+	}
+
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
 		return ServiceProvidersSvcMock.getServiceProviders();
 	}

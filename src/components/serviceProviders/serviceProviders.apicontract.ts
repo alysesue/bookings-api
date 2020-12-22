@@ -31,13 +31,12 @@ export class ServiceProviderResponseModel {
 	public scheduleFormConfirmed: boolean;
 }
 
-export class ServiceProviderPaginationResponseModel {
-	public serviceProviders: ServiceProviderResponseModel[];
-	public totalCount: number;
-}
-
 export class ServiceProviderListRequest {
 	public serviceProviders: ServiceProviderModel[];
+}
+
+export class TotalServiceProviderResponse {
+	public total: number;
 }
 
 export class ServiceProviderSummaryModel {

@@ -2,8 +2,8 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import {
 	ServiceProviderListRequest,
 	ServiceProviderModel,
-	ServiceProviderPaginationResponseModel,
 	ServiceProviderResponseModel,
+	TotalServiceProviderResponse,
 } from './serviceProviders.apicontract';
 import { ServiceProvidersService } from './serviceProviders.service';
 import {
@@ -103,6 +103,8 @@ export class ServiceProvidersController extends Controller {
 	 * @param @isInt serviceId (Optional) Filters by a service (id).
 	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
 	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
+	 * @param @isInt limit (Optional) the total number of records required.
+	 * @param @isInt page (Optional) the page number currently requested.
 	 */
 	@Get('')
 	@Security('optional-service')
@@ -114,8 +116,7 @@ export class ServiceProvidersController extends Controller {
 		@Query() includeScheduleForm = false,
 		@Query() limit?: number,
 		@Query() page?: number,
-	): Promise<ApiData<ServiceProviderPaginationResponseModel>> {
-		const response = new ServiceProviderPaginationResponseModel();
+	): Promise<ApiData<ServiceProviderResponseModel[]>> {
 		const dataModels = await this.serviceProvidersService.getServiceProviders(
 			serviceId,
 			includeScheduleForm,
@@ -123,13 +124,30 @@ export class ServiceProvidersController extends Controller {
 			limit,
 			page,
 		);
-		response.serviceProviders = this.mapper.mapDataModels(dataModels);
-		response.totalCount = await this.serviceProvidersService.getServiceProvidersCount(
+		return ApiDataFactory.create(this.mapper.mapDataModels(dataModels));
+	}
+
+	/**
+	 * Retrieves the total number of service providers.
+	 * @param @isInt serviceId (Optional) Filters by a service (id).
+	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
+	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
+	 */
+	@Get('/count')
+	@Security('optional-service')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async getTotalServiceProviders(
+		@Header('x-api-service') serviceId?: number,
+		@Query() includeTimeslotsSchedule = false,
+		@Query() includeScheduleForm = false,
+	): Promise<ApiData<TotalServiceProviderResponse>> {
+		const total = await this.serviceProvidersService.getServiceProvidersCount(
 			serviceId,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
 		);
-		return ApiDataFactory.create(response);
+		return ApiDataFactory.create({ total });
 	}
 
 	/**
