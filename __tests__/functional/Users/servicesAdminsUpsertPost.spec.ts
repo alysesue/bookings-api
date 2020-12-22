@@ -30,7 +30,7 @@ describe('Tests endpoint and populate data', () => {
 				email: 'email@email.com',
 				phoneNumber: '+33 3333 3333',
 				agencyUserId: '2',
-				uinfin: '1221jskfl 1233',
+				uinfin: 'S5287560I',
 				services: ['service1', 'service2'],
 			},
 		];
@@ -47,7 +47,7 @@ describe('Tests endpoint and populate data', () => {
 				email: 'email@email.com',
 				phoneNumber: '+33 3333 3333',
 				agencyUserId: '2',
-				uinfin: '1221jskfl 1233',
+				uinfin: 'S5287560I',
 				services: ['service1', 'service2'],
 			},
 		];

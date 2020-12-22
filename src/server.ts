@@ -14,7 +14,7 @@ import { basePath, getConfig } from './config/app-config';
 import { HealthCheckMiddleware } from './health/HealthCheckMiddleware';
 import { RegisterRoutes } from './routes';
 import { DbConnection } from './core/db.connection';
-import { Container } from 'typescript-ioc';
+import { Container, Scope } from 'typescript-ioc';
 import * as cors from '@koa/cors';
 import { useSwagger } from './infrastructure/swagger.middleware';
 import { ContainerContextMiddleware } from './infrastructure/containerContext.middleware';
@@ -24,6 +24,7 @@ import { BusinessErrorMiddleware } from './infrastructure/businessError.middlewa
 import { getConnectionOptions } from './core/connectionOptions';
 import { CitizenUserValidationMiddleware } from './infrastructure/citizenUserValidation.middleware';
 import { KoaContextStoreMiddleware } from './infrastructure/koaContextStore.middleware';
+import { MolUsersService, MolUsersServiceFactory } from './components/users/molUsers/molUsers.service';
 
 class ApiDataResponseHandler {
 	private _middleware: Koa.Middleware;
@@ -58,6 +59,12 @@ function bypassMiddleware(regexp: RegExp, target: Koa.Middleware): Koa.Middlewar
 	return bypass;
 }
 
+function setIOCBindings() {
+	Container.bind(MolUsersService)
+		.factory((buildContext) => buildContext.resolve(MolUsersServiceFactory).getService())
+		.scope(Scope.Request);
+}
+
 export async function startServer(): Promise<Server> {
 	const config = getConfig();
 	// Setup service
@@ -70,7 +77,7 @@ export async function startServer(): Promise<Server> {
 	const HandledRoutes = new ApiDataResponseHandler(router.routes());
 	// tslint:disable-next-line: tsr-detect-non-literal-regexp
 	const byPassAuthPath = new RegExp(`^${basePath}/api/v1/usersessions/anonymous$`);
-
+	setIOCBindings();
 	const koaServer = new Koa()
 		.use(
 			compress({

@@ -12,7 +12,7 @@ export class MolUsersMapper {
 		orga: Organisation,
 	): MolServiceProviderOnboard[] {
 		return serviceProviderOnboardContracts.map((serviceProvider) => {
-			const molServiceProviderOnboard: MolServiceProviderOnboard = serviceProvider;
+			const molServiceProviderOnboard: MolServiceProviderOnboard = { ...serviceProvider };
 			molServiceProviderOnboard.groups = [
 				UserGroupParser.generateServiceProviderUserGroup(orga._organisationAdminGroupMap.organisationRef),
 			];
@@ -25,7 +25,7 @@ export class MolUsersMapper {
 		orga: Organisation,
 	): MolAdminUser[] {
 		return molAdminUserContracts.map((admin) => {
-			const molAdminUsers: MolAdminUser = admin;
+			const molAdminUsers: MolAdminUser = { ...admin };
 			molAdminUsers.groups = admin.services?.map((serviceName) =>
 				UserGroupParser.generateServiceAdminUserGroup(
 					Service.create(serviceName, orga).serviceAdminGroupMap.serviceOrganisationRef,

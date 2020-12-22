@@ -1,60 +1,41 @@
-import { InRequestScope } from 'typescript-ioc';
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { v4 as uuidv4 } from 'uuid';
-import {
-	IMolCognitoUser,
-	MolGetUserInfoOptions,
-	MolGetUsersResponse,
-	MolUpsertUsersResult,
-} from './molUsers.apicontract';
-import { get, post } from '../../../tools/fetch';
+import { IMolCognitoUserRequest, MolUpsertUsersResult } from './molUsers.apicontract';
+import { post } from '../../../tools/fetch';
 import { getConfig } from '../../../config/app-config';
 
+export abstract class MolUsersService {
+	public abstract molUpsertUser(users: IMolCognitoUserRequest[]): Promise<MolUpsertUsersResult>;
+}
+
 @InRequestScope
-export class MolUsersService {
-	private config = getConfig();
-
-	// TODO: Change when we can get it from the header
-	private TOKEN =
-		'eyJ2ZXJzaW9uIjoiMCIsImVuYyI6IkEyNTZHQ00iLCJhbGciOiJkaXIiLCJraWQiOiI4ZmRnSmhKLTluTGVxalZTa2FzaU82dTNNQzhldkhXV1RzVnEzYzlxTlhNIn0..PnAHz57kiFUNf1NU.cywvBGJMvKwYgNuLZzLvN2uOz0iIb_YJtManMpcjipwACGapnXFVCJxXV05_0lzKqXCVVd5aXulRPsj7yoRV3J68AF2BsruBhPQQ4HYAaibBkD7EdMgLAXk0L6b3TBK1ICuE1UxWqQNuoayieUPaAuzji5Kx3_5Noysd6ZuSgXURggz0Stuti78PLayGq2FQ_z2sXTyAx3bmKQQhg-yYZQ.2axppa448BI00f17W0VZAA';
-
-	public async molUpsertUser(users: IMolCognitoUser[]): Promise<MolUpsertUsersResult> {
-		if (this.config.isLocal) return this.molUpsertUserLocal(users);
-		else return this.molUpsertUserEnv(users);
-	}
-
-	private async molUpsertUserEnv(users: IMolCognitoUser[]): Promise<MolUpsertUsersResult> {
-		const URL_MOL_USER = this.config.molAdminAuthForwarder.url;
-		const headers = { authorization: this.TOKEN };
-		const upsertRes = await post(URL_MOL_USER, users, headers);
+export class MolUsersServiceAuthForwarder extends MolUsersService {
+	public async molUpsertUser(users: IMolCognitoUserRequest[]): Promise<MolUpsertUsersResult> {
+		const config = getConfig();
+		const URL_MOL_USER = `${config.molAdminAuthForwarder.url}/api/users/v1`;
+		const upsertRes = await post(URL_MOL_USER, users);
 		return upsertRes;
-	}
-
-	private async molUpsertUserLocal(users: IMolCognitoUser[]): Promise<MolUpsertUsersResult> {
-		users.forEach((user) => (user.sub = uuidv4()));
-
-		return Promise.resolve({ created: users });
-	}
-
-	public async molGetUser(molGetUserInfoOptions: MolGetUserInfoOptions): Promise<MolGetUsersResponse> {
-		if (this.config.isLocal) return this.molGetUserLocal(molGetUserInfoOptions);
-		else return this.molGetUserEnv(molGetUserInfoOptions);
-	}
-
-	private async molGetUserEnv(molGetUserInfoOptions: MolGetUserInfoOptions): Promise<MolGetUsersResponse> {
-		const URL_MOL_USER = this.config.molAdminAuthForwarder.url;
-		const headers = { authorization: this.TOKEN };
-		const upsertRes = await get(URL_MOL_USER, molGetUserInfoOptions, headers);
-		return upsertRes;
-	}
-
-	private async molGetUserLocal(molGetUserInfoOptions: MolGetUserInfoOptions): Promise<MolGetUsersResponse> {
-		return Promise.resolve({
-			user: {
-				...molGetUserInfoOptions,
-				username: 'mockUsername',
-				name: 'mockName',
-				phoneNumber: 'MockPhoneNumber',
-			},
-		});
 	}
 }
+
+@InRequestScope
+export class MolUsersServiceLocal extends MolUsersService {
+	public async molUpsertUser(users: IMolCognitoUserRequest[]): Promise<MolUpsertUsersResult> {
+		const created = users.map((user) => ({ ...user, sub: uuidv4() }));
+
+		return Promise.resolve({ created });
+	}
+}
+
+@InRequestScope
+export class MolUsersServiceFactory {
+	@Inject
+	private _authForwarderService: MolUsersServiceAuthForwarder;
+	@Inject
+	private _localService: MolUsersServiceLocal;
+
+	public getService(): MolUsersService {
+		return getConfig().isLocal ? this._localService : this._authForwarderService;
+	}
+}
+

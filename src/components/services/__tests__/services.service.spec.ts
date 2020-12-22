@@ -25,7 +25,11 @@ import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.re
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
 import { OrganisationsNoauthRepository } from '../../organisations/organisations.noauth.repository';
 import { MolUsersService } from '../../users/molUsers/molUsers.service';
-import { IMolCognitoUser, MolAdminUserContract, MolUpsertUsersResult } from '../../users/molUsers/molUsers.apicontract';
+import {
+	IMolCognitoUserRequest,
+	MolAdminUserContract,
+	MolUpsertUsersResult,
+} from '../../users/molUsers/molUsers.apicontract';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { UsersServiceMock } from '../../users/__mocks__/users.service';
 import { UsersService } from '../../users/users.service';
@@ -342,7 +346,7 @@ class TimeslotsScheduleMockClass extends TimeslotItemsService {
 class MolUsersServiceMock extends MolUsersService {
 	public static molUpsertUser = jest.fn();
 
-	public async molUpsertUser(users: IMolCognitoUser[]): Promise<MolUpsertUsersResult> {
+	public async molUpsertUser(users: IMolCognitoUserRequest[]): Promise<MolUpsertUsersResult> {
 		return await MolUsersServiceMock.molUpsertUser(users);
 	}
 }

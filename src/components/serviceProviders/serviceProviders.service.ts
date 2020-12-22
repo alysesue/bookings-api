@@ -176,7 +176,7 @@ export class ServiceProvidersService {
 		if (upsertedMolUser) {
 			await this.usersService.upsertAdminUsers(upsertedMolUser);
 			const upsertedAdminUsers = molServiceProviderOnboards.filter((adminUser) =>
-				upsertedMolUser.some((molUser) => molUser.email === adminUser.email),
+				upsertedMolUser.some((molUser) => molUser.uinfin === adminUser.uinfin),
 			);
 			const sps = await this.mapAndValidateServiceProvidersOnboard(upsertedAdminUsers);
 			await Promise.all(sps.map(async (sp) => await this.verifyActionPermission(sp, CrudAction.Create)));

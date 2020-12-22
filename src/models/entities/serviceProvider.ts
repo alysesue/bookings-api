@@ -84,7 +84,7 @@ export class ServiceProvider
 		this._serviceId = value;
 	}
 
-	@ManyToOne(() => Service, { cascade: true })
+	@ManyToOne(() => Service)
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 

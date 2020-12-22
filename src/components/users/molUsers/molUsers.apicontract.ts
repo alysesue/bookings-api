@@ -2,17 +2,16 @@ export interface FailureResult {
 	reason: { name: string; message: string };
 }
 
-export interface MolUpsertUsersFailureResult extends FailureResult, IMolCognitoUser {}
+export interface MolUpsertUsersFailureResult extends FailureResult, IMolCognitoUserRequest {}
 
-export type MolGetUserInfoOptions = Pick<IMolCognitoUser, 'uinfin' | 'agencyUserId' | 'email'>;
+export type MolGetUserInfoOptions = Pick<IMolCognitoUserRequest, 'uinfin' | 'agencyUserId' | 'email'>;
 
 export interface MolGetUsersResponse {
-	user?: IMolCognitoUser;
+	user?: IMolCognitoUserRequest;
 	message?: string;
 }
 
-export class MolAdminUser implements IMolCognitoUser {
-	public sub?: string; // cognito id
+export class MolAdminUser implements IMolCognitoUserRequest {
 	public username?: string;
 	public name: string;
 	public email: string;
@@ -43,20 +42,29 @@ export interface MolUpsertUsersResult {
 	/**
 	 * Newly created accounts
 	 */
-	created?: IMolCognitoUser[];
+	created?: IMolCognitoUserResponse[];
 
 	/**
 	 * Updated accounts
 	 */
-	updated?: IMolCognitoUser[];
+	updated?: IMolCognitoUserResponse[];
 
 	/**
 	 * Accounts that have failed to be created
 	 */
 	failed?: MolUpsertUsersFailureResult[];
 }
+export interface IMolCognitoUserRequest {
+	username?: string;
+	name: string;
+	email: string;
+	phoneNumber: string;
+	agencyUserId?: string;
+	uinfin?: string;
+	groups?: string[];
+}
 
-export interface IMolCognitoUser {
+export interface IMolCognitoUserResponse {
 	sub?: string; // cognito id
 	username?: string;
 	name: string;

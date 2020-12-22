@@ -1,6 +1,5 @@
 import { TimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.apicontract';
 import { ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
-import { IMolCognitoUser } from '../users/molUsers/molUsers.apicontract';
 
 export class ServiceProviderModel {
 	public name: string;
@@ -14,8 +13,7 @@ export class ServiceProviderModel {
 	}
 }
 
-export interface MolServiceProviderOnboard extends IMolCognitoUser {
-	sub?: string; // cognito id
+export interface MolServiceProviderOnboard {
 	username?: string;
 	name: string;
 	email: string;

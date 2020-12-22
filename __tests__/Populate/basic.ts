@@ -1,4 +1,3 @@
-import * as uuid from 'uuid';
 import { OrganisationAdminRequestEndpointSG } from '../utils/requestEndpointSG';
 import { ServiceProviderResponseModel } from '../../src/components/serviceProviders/serviceProviders.apicontract';
 import { ServiceResponse } from '../../src/components/services/service.apicontract';
@@ -49,8 +48,8 @@ export const populateUserServiceProvider = async ({
 				name: serviceProviderName,
 				phoneNumber: '+33 3333 3333',
 				email: 'ad@ad.com',
-				agencyUserId: uuid.v4(),
-				uinfin: '1221jskfl 1233',
+				agencyUserId: '001',
+				uinfin: 'S6752764Z',
 				serviceName: nameService,
 			},
 		],

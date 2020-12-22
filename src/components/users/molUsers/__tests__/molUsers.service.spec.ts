@@ -1,6 +1,6 @@
 import { Container } from 'typescript-ioc';
-import { MolUsersService } from '../molUsers.service';
-import { get, post } from '../../../../tools/fetch';
+import { MolUsersServiceFactory } from '../molUsers.service';
+import { post } from '../../../../tools/fetch';
 import { getConfig } from '../../../../config/app-config';
 
 jest.mock('../../../../tools/fetch', () => ({
@@ -22,32 +22,19 @@ describe('Test class MolUsersService', () => {
 		jest.resetAllMocks();
 	});
 
-	it('Should call get when no local', async () => {
-		const user = { email: 'tintin' };
-		(get as jest.Mock).mockReturnValue({ user });
-		(getConfig as jest.Mock).mockReturnValue({ isLocal: false, molAdminAuthForwarder: { url: 'url' } });
-		const results = await Container.get(MolUsersService).molGetUser({ email: 'as@ad.com', uinfin: 's' });
-		expect(get).toBeCalledTimes(1);
-		expect(results.user).toBe(user);
-	});
-
-	it('Should not call get when no local', async () => {
-		(getConfig as jest.Mock).mockReturnValue({ isLocal: true, molAdminAuthForwarder: { url: 'url' } });
-		await Container.get(MolUsersService).molGetUser({ email: 'as@ad.com', uinfin: 's' });
-		expect(get).toBeCalledTimes(0);
-	});
-
-	it('Should call post when no local', async () => {
+	it('Should call post when isLocal = false', async () => {
 		const user = { email: 'tintin' };
 		(post as jest.Mock).mockReturnValue({ user });
 		(getConfig as jest.Mock).mockReturnValue({ isLocal: false, molAdminAuthForwarder: { url: 'url' } });
-		await Container.get(MolUsersService).molUpsertUser([]);
+		const service = Container.get(MolUsersServiceFactory).getService();
+		await service.molUpsertUser([]);
 		expect(post).toBeCalledTimes(1);
 	});
 
-	it('Should not call post when local', async () => {
+	it('Should not call post when isLocal = true', async () => {
 		(getConfig as jest.Mock).mockReturnValue({ isLocal: true, molAdminAuthForwarder: { url: 'url' } });
-		await Container.get(MolUsersService).molUpsertUser([]);
+		const service = Container.get(MolUsersServiceFactory).getService();
+		await service.molUpsertUser([]);
 		expect(post).toBeCalledTimes(0);
 	});
 });
