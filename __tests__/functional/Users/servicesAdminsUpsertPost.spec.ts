@@ -20,7 +20,7 @@ describe('Tests endpoint and populate data', () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/users/service-admins/upsert', {
 			body: [],
 		});
-		expect(response.statusCode).toEqual(204);
+		expect(response.statusCode).toEqual(200);
 	});
 
 	it('Post upsert service admin', async () => {
@@ -37,7 +37,7 @@ describe('Tests endpoint and populate data', () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/users/service-admins/upsert', {
 			body,
 		});
-		expect(response.statusCode).toEqual(204);
+		expect(response.statusCode).toEqual(200);
 	});
 
 	it('Post upsert service admin', async () => {
@@ -54,11 +54,11 @@ describe('Tests endpoint and populate data', () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/users/service-admins/upsert', {
 			body,
 		});
-		expect(response.statusCode).toEqual(204);
+		expect(response.statusCode).toEqual(200);
 		body[0].name = 'name2';
 		const response2 = await OrganisationAdminRequestEndpointSG.create({}).post('/users/service-admins/upsert', {
 			body,
 		});
-		expect(response2.statusCode).toEqual(204);
+		expect(response2.statusCode).toEqual(200);
 	});
 });

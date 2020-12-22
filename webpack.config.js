@@ -20,4 +20,6 @@ webPackConfig.plugins.push(
 		],
 	}),
 );
+webPackConfig.output = webPackConfig.output || {};
+webPackConfig.output.pathinfo = false;
 exports['default'] = webPackConfig;

@@ -145,11 +145,11 @@ export class ServiceProvidersService {
 			(srv) => !services.some((s) => s.name === srv.trim()),
 		);
 
-		const newServices = await Promise.all(
-			newServicesName.map(
-				async (name) => await this.servicesService.createService({ name, organisationId: orga.id }),
-			),
-		);
+		const newServices = [];
+		for (const name of newServicesName) {
+			newServices.push(await this.servicesService.createService({ name, organisationId: orga.id }));
+		}
+
 		const allServices = [...services, ...newServices];
 		const serviceProviders = serviceProvidersOnboards.map((sp) => {
 			const matchSrv = allServices.find((srv) => srv.name.toLowerCase() === sp.serviceName.toLowerCase());
@@ -185,9 +185,11 @@ export class ServiceProvidersService {
 					upsertedAdminUsers.push({ ...adminUser, molAdminId: matchMolUser.sub });
 				}
 			});
-			const sps = await this.mapAndValidateServiceProvidersOnboard(molServiceProviderOnboards);
-			await Promise.all(sps.map(async (sp) => await this.verifyActionPermission(sp, CrudAction.Create)));
-			await Promise.all(sps.map(async (sp) => await this.serviceProvidersRepository.save(sp)));
+			const sps = await this.mapAndValidateServiceProvidersOnboard(upsertedAdminUsers);
+			for (const sp of sps) {
+				await this.verifyActionPermission(sp, CrudAction.Create);
+				await this.serviceProvidersRepository.save(sp);
+			}
 		}
 		return res;
 	}

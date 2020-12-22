@@ -38,7 +38,7 @@ export class OrganisationsNoauthRepository extends RepositoryBase<Organisation> 
 
 		const query = repository
 			.createQueryBuilder('org')
-			.innerJoinAndSelect('org._organisationAdminGroupMap', 'orggroup', 'org."_id" IN (:...orgaId)', {
+			.innerJoinAndSelect('org._organisationAdminGroupMap', 'orggroup', 'org."_id" = :orgaId', {
 				orgaId,
 			});
 
