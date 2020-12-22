@@ -114,11 +114,10 @@ describe('Services service tests', () => {
 		UserContextMock.getFirstAuthorisedOrganisation.mockReturnValue(Promise.resolve(organisation));
 		UsersServiceMock.upsertAdminUsers.mockReturnValue(Promise.resolve([admins as any]));
 
-		const res = await Container.get(ServicesService).createServicesAdmins(admins);
+		await Container.get(ServicesService).createServicesAdmins(admins);
 		expect(MolUsersServiceMock.molUpsertUser).toBeCalled();
 		expect(ServicesRepositoryMockClass.save).toBeCalled();
 		expect(ServicesRepositoryMockClass.save.mock.calls[0][0]._name).toBe('service 1');
-		expect(res.created[0].groups).toStrictEqual(['bookingsg:svc-admin-service1:orga']);
 	});
 
 	it('should save service', async () => {

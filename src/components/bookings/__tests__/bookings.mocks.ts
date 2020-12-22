@@ -7,7 +7,6 @@ import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotPro
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { BookingChangeLogsService } from '../../bookingChangeLogs/bookingChangeLogs.service';
-import { ServicesService } from '../../services/services.service';
 import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
@@ -97,16 +96,6 @@ export class BookingChangeLogsServiceMock implements Partial<BookingChangeLogsSe
 
 	public async executeAndLogAction(...params): Promise<any> {
 		return await BookingChangeLogsServiceMock.executeAndLogAction(...params);
-	}
-}
-
-export class ServicesServiceMock implements Partial<ServicesService> {
-	public static getService = jest.fn();
-
-	public init() {}
-
-	public async getService(...params): Promise<any> {
-		return await ServicesServiceMock.getService(...params);
 	}
 }
 

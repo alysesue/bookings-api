@@ -60,7 +60,9 @@ export class UsersController extends Controller {
 	@SuccessResponse(200, 'Created')
 	@MOLAuth({ agency: {}, admin: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async createServicesAdmins(@Body() adminUserContracts: MolAdminUserContract[]): Promise<MolUpsertUsersResult> {
+	public async createServicesAdmins(
+		@Body() adminUserContracts: MolAdminUserContract[],
+	): Promise<MolUpsertUsersResult> {
 		return await this.servicesService.createServicesAdmins(adminUserContracts);
 	}
 

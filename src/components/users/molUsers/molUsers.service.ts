@@ -38,4 +38,3 @@ export class MolUsersServiceFactory {
 		return getConfig().isLocal ? this._localService : this._authForwarderService;
 	}
 }
-

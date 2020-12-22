@@ -35,7 +35,6 @@ import {
 	BookingRepositoryMock,
 	ServiceProvidersRepositoryMock,
 	ServiceProvidersServiceMock,
-	ServicesServiceMock,
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
 	UsersServiceMock,
@@ -44,6 +43,7 @@ import { ServiceProvidersService } from '../../../components/serviceProviders/se
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { UsersService } from '../../../components/users/users.service';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
+import { ServicesServiceMock } from '../../services/__mocks__/services.service';
 
 afterAll(() => {
 	jest.resetAllMocks();

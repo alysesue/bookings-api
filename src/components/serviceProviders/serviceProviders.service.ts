@@ -185,7 +185,7 @@ export class ServiceProvidersService {
 					upsertedAdminUsers.push({ ...adminUser, molAdminId: matchMolUser.sub });
 				}
 			});
-			const sps = await this.mapAndValidateServiceProvidersOnboard(molServiceProviderOnboards);
+			const sps = await this.mapAndValidateServiceProvidersOnboard(upsertedAdminUsers);
 			await Promise.all(sps.map(async (sp) => await this.verifyActionPermission(sp, CrudAction.Create)));
 			await Promise.all(sps.map(async (sp) => await this.serviceProvidersRepository.save(sp)));
 		}
