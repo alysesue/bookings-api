@@ -20,6 +20,7 @@ export interface MolServiceProviderOnboard {
 	phoneNumber: string;
 	agencyUserId?: string;
 	uinfin?: string;
+	molAdminId?: string;
 	groups?: string[];
 
 	serviceName: string;

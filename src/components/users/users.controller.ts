@@ -9,7 +9,7 @@ import { parseCsv, stringToArrayOfStringWhenSemicolon } from '../../tools/csvPar
 import { MolServiceProviderOnboardContract } from '../serviceProviders/serviceProviders.apicontract';
 import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
 import { ServicesService } from '../services/services.service';
-import { MolAdminUserContract } from './molUsers/molUsers.apicontract';
+import { MolAdminUserContract, MolUpsertUsersResult } from './molUsers/molUsers.apicontract';
 
 @Route('v1/users')
 @Tags('Users')
@@ -41,13 +41,13 @@ export class UsersController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 */
 	@Post('service-admins/upsert/csv')
-	@SuccessResponse(204, 'Created')
+	@SuccessResponse(200, 'Created')
 	@MOLAuth({ agency: {}, admin: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async createServicesAdminsCSV(@Body() serviceRequest: string): Promise<void> {
+	public async createServicesAdminsCSV(@Body() serviceRequest: string): Promise<MolUpsertUsersResult> {
 		const requestList = parseCsv(serviceRequest) as any;
 		requestList.forEach((user) => (user.services = stringToArrayOfStringWhenSemicolon(user.services)));
-		await this.servicesService.createServicesAdmins(requestList as MolAdminUserContract[]);
+		return await this.servicesService.createServicesAdmins(requestList as MolAdminUserContract[]);
 	}
 
 	/**
@@ -57,11 +57,11 @@ export class UsersController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 */
 	@Post('service-admins/upsert')
-	@SuccessResponse(204, 'Created')
+	@SuccessResponse(200, 'Created')
 	@MOLAuth({ agency: {}, admin: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async createServicesAdmins(@Body() adminUserContracts: MolAdminUserContract[]): Promise<void> {
-		await this.servicesService.createServicesAdmins(adminUserContracts);
+	public async createServicesAdmins(@Body() adminUserContracts: MolAdminUserContract[]): Promise<MolUpsertUsersResult> {
+		return await this.servicesService.createServicesAdmins(adminUserContracts);
 	}
 
 	/**
@@ -70,12 +70,14 @@ export class UsersController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 */
 	@Post('service-providers/upsert/csv')
-	@SuccessResponse(204, 'Created')
+	@SuccessResponse(200, 'Created')
 	@MOLAuth({ agency: {}, admin: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async onboardServiceProvidersCSV(@Body() spRequest: string): Promise<void> {
+	public async onboardServiceProvidersCSV(@Body() spRequest: string): Promise<MolUpsertUsersResult> {
 		const onboard = parseCsv(spRequest);
-		await this.serviceProvidersService.createServiceProviders(onboard as MolServiceProviderOnboardContract[]);
+		return await this.serviceProvidersService.createServiceProviders(
+			onboard as MolServiceProviderOnboardContract[],
+		);
 	}
 
 	/**
@@ -84,12 +86,12 @@ export class UsersController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 */
 	@Post('service-providers/upsert')
-	@SuccessResponse(204, 'Created')
+	@SuccessResponse(200, 'Created')
 	@MOLAuth({ agency: {}, admin: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async onboardServiceProviders(
 		@Body() serviceProviderOnboards: MolServiceProviderOnboardContract[],
-	): Promise<void> {
-		await this.serviceProvidersService.createServiceProviders(serviceProviderOnboards);
+	): Promise<MolUpsertUsersResult> {
+		return await this.serviceProvidersService.createServiceProviders(serviceProviderOnboards);
 	}
 }

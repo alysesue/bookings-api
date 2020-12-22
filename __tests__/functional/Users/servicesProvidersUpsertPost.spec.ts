@@ -36,7 +36,7 @@ describe('Tests endpoint and populate data', () => {
 		expect(responseService.body.data[0].name).toEqual('service');
 	});
 
-	it('Post upsert service providers', async () => {
+	xit('Post upsert service providers', async () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/users/service-providers/upsert', {
 			body: [
 				{

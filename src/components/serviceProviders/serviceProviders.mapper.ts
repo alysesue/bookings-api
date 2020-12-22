@@ -51,7 +51,7 @@ export class ServiceProvidersMapper {
 		);
 		spCreated.service = service;
 		spCreated.serviceProviderGroupMap = new ServiceProviderGroupMap();
-		spCreated.serviceProviderGroupMap.molAdminId = sp.sub;
+		spCreated.serviceProviderGroupMap.molAdminId = sp.molAdminId;
 		return spCreated;
 	}
 }

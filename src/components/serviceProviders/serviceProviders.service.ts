@@ -2,7 +2,7 @@ import { isEmail, isSGPhoneNumber } from 'mol-lib-api-contract/utils';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { cloneDeep } from 'lodash';
-import { ScheduleForm, Service, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
 import {
 	MolServiceProviderOnboard,
@@ -136,23 +136,26 @@ export class ServiceProvidersService {
 		return sp;
 	}
 
-	private async findOrCreateService(serviceName: string, services: Service[]): Promise<Service> {
-		const orga = await this.userContext.verifyAndGetFirstAuthorisedOrganisation();
-		const service = services.find((s) => s.name === serviceName);
-		if (!service) {
-			return Service.create(serviceName, orga);
-		}
-		return service;
-	}
-
 	private async mapAndValidateServiceProvidersOnboard(serviceProvidersOnboards: MolServiceProviderOnboard[]) {
+		const orga = await this.userContext.verifyAndGetFirstAuthorisedOrganisation();
 		const services = await this.servicesService.getServices();
-		const serviceProviders = await Promise.all(
-			serviceProvidersOnboards.map(async (sp) => {
-				const service = await this.findOrCreateService(sp.serviceName, services);
-				return this.mapper.mapToEntity(sp, service);
-			}),
+		const servicesName = serviceProvidersOnboards.map((sp) => sp.serviceName);
+		const newServicesNameMap = new Map(servicesName.map((s) => [s.toLowerCase(), s]));
+		const newServicesName = [...newServicesNameMap.values()].filter(
+			(srv) => !services.some((s) => s.name === srv.trim()),
 		);
+
+		const newServices = await Promise.all(
+			newServicesName.map(
+				async (name) => await this.servicesService.createService({ name, organisationId: orga.id }),
+			),
+		);
+		const allServices = [...services, ...newServices];
+		const serviceProviders = serviceProvidersOnboards.map((sp) => {
+			const matchSrv = allServices.find((srv) => srv.name.toLowerCase() === sp.serviceName.toLowerCase());
+			return this.mapper.mapToEntity(sp, matchSrv);
+		});
+
 		await ServiceProvider.validateEntities(serviceProviders);
 
 		return serviceProviders;
@@ -175,10 +178,14 @@ export class ServiceProvidersService {
 
 		if (upsertedMolUser) {
 			await this.usersService.upsertAdminUsers(upsertedMolUser);
-			const upsertedAdminUsers = molServiceProviderOnboards.filter((adminUser) =>
-				upsertedMolUser.some((molUser) => molUser.uinfin === adminUser.uinfin),
-			);
-			const sps = await this.mapAndValidateServiceProvidersOnboard(upsertedAdminUsers);
+			const upsertedAdminUsers: MolServiceProviderOnboard[] = [];
+			molServiceProviderOnboards.forEach((adminUser) => {
+				const matchMolUser = upsertedMolUser.find((molUser) => molUser.uinfin === adminUser.uinfin);
+				if (matchMolUser) {
+					upsertedAdminUsers.push({ ...adminUser, molAdminId: matchMolUser.sub });
+				}
+			});
+			const sps = await this.mapAndValidateServiceProvidersOnboard(molServiceProviderOnboards);
 			await Promise.all(sps.map(async (sp) => await this.verifyActionPermission(sp, CrudAction.Create)));
 			await Promise.all(sps.map(async (sp) => await this.serviceProvidersRepository.save(sp)));
 		}
