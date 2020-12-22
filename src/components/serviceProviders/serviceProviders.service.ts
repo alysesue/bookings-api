@@ -137,20 +137,10 @@ export class ServiceProvidersService {
 	}
 
 	private async mapAndValidateServiceProvidersOnboard(serviceProvidersOnboards: MolServiceProviderOnboard[]) {
-		const orga = await this.userContext.verifyAndGetFirstAuthorisedOrganisation();
-		const services = await this.servicesService.getServices();
-		const servicesName = serviceProvidersOnboards.map((sp) => sp.serviceName);
-		const newServicesNameMap = new Map(servicesName.map((s) => [s.toLowerCase(), s]));
-		const newServicesName = [...newServicesNameMap.values()].filter(
-			(srv) => !services.some((s) => s.name === srv.trim()),
-		);
+		const organisation = await this.userContext.verifyAndGetFirstAuthorisedOrganisation();
+		const serviceNames = serviceProvidersOnboards.map((sp) => sp.serviceName);
 
-		const newServices = [];
-		for (const name of newServicesName) {
-			newServices.push(await this.servicesService.createService({ name, organisationId: orga.id }));
-		}
-
-		const allServices = [...services, ...newServices];
+		const allServices = await this.servicesService.createServices(serviceNames, organisation);
 		const serviceProviders = serviceProvidersOnboards.map((sp) => {
 			const matchSrv = allServices.find((srv) => srv.name.toLowerCase() === sp.serviceName.toLowerCase());
 			return this.mapper.mapToEntity(sp, matchSrv);
@@ -176,20 +166,27 @@ export class ServiceProvidersService {
 
 		const upsertedMolUser = [...(res?.created || []), ...(res?.updated || [])];
 
-		if (upsertedMolUser) {
+		if (upsertedMolUser.length > 0) {
 			await this.usersService.upsertAdminUsers(upsertedMolUser);
 			const upsertedAdminUsers: MolServiceProviderOnboard[] = [];
 			molServiceProviderOnboards.forEach((adminUser) => {
-				const matchMolUser = upsertedMolUser.find((molUser) => molUser.uinfin === adminUser.uinfin);
+				const matchMolUser = upsertedMolUser.find(
+					(molUser) =>
+						(!!adminUser.agencyUserId && molUser.agencyUserId === adminUser.agencyUserId) ||
+						(!!adminUser.uinfin && molUser.uinfin === adminUser.uinfin) ||
+						(!!adminUser.email && molUser.email === adminUser.email),
+				);
 				if (matchMolUser) {
 					upsertedAdminUsers.push({ ...adminUser, molAdminId: matchMolUser.sub });
 				}
 			});
 			const sps = await this.mapAndValidateServiceProvidersOnboard(upsertedAdminUsers);
-			for (const sp of sps) {
-				await this.verifyActionPermission(sp, CrudAction.Create);
-				await this.serviceProvidersRepository.save(sp);
-			}
+			await Promise.allSettled(
+				sps.map(async (sp) => {
+					await this.verifyActionPermission(sp, CrudAction.Create);
+					return await this.serviceProvidersRepository.save(sp);
+				}),
+			);
 		}
 		return res;
 	}

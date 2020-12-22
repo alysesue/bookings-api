@@ -44,3 +44,20 @@ export function groupByKeyLastValue<TKey, TValue>(
 
 	return result;
 }
+
+export function uniqueStringArray(
+	input: string[],
+	{ caseInsensitive, trim, skipEmpty }: { caseInsensitive: boolean; trim: boolean; skipEmpty: boolean },
+): string[] {
+	if (input.length === 0) return [];
+	let values = input.filter((str) => str !== undefined && str !== null);
+	if (trim) {
+		values = values.map((str) => str.trim());
+	}
+	if (skipEmpty) {
+		values = values.filter((str) => !!str);
+	}
+
+	const mapStr = new Map(values.map((str) => [caseInsensitive ? str.toLowerCase() : str, str]));
+	return [...mapStr.values()];
+}
