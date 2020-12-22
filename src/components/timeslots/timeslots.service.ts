@@ -149,9 +149,15 @@ export class TimeslotsService {
 		serviceId: number,
 		includeBookings: boolean = false,
 		serviceProviderId?: number,
+		serviceProviderIds?: number[],
 	): Promise<AvailableTimeslotProviders[]> {
 		const getAggregatedTimeslotEntriesWatch = new StopWatch('getAggregatedTimeslotEntries');
-		const aggregatedEntries = await this.getAggregatedTimeslotEntries(startDateTime, endDateTime, serviceId);
+		const aggregatedEntries = await this.getAggregatedTimeslotEntries(
+			startDateTime,
+			endDateTime,
+			serviceId,
+			serviceProviderIds,
+		);
 		getAggregatedTimeslotEntriesWatch.stop();
 
 		const bookings = await this.bookingsRepository.search({
@@ -273,6 +279,7 @@ export class TimeslotsService {
 		minStartTime: Date,
 		maxEndTime: Date,
 		serviceId: number,
+		serviceProviderIds: number[] = [],
 	): Promise<Map<TimeslotKey, AggregatedEntryId<ServiceProvider>>> {
 		const aggregator = TimeslotAggregator.createCustom<ServiceProvider, AggregatedEntryId<ServiceProvider>>(
 			AggregatedEntryId,
@@ -284,6 +291,7 @@ export class TimeslotsService {
 		}
 
 		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({
+			ids: serviceProviderIds,
 			serviceId,
 			includeTimeslotsSchedule: true,
 			skipAuthorisation: true, // loads all SPs regardless of user role

@@ -61,14 +61,15 @@ export class TimeslotsController extends Controller {
 		@Query() endDate: Date,
 		@Header('x-api-service') serviceId: number,
 		@Query() includeBookings: boolean = false,
-		@Query() serviceProviderId?: number,
+		@Query() serviceProviderIds?: number[],
 	): Promise<ApiData<TimeslotEntryResponse[]>> {
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
 			serviceId,
 			includeBookings,
-			serviceProviderId,
+			undefined,
+			serviceProviderIds,
 		);
 		return ApiDataFactory.create(timeslots?.map((t) => TimeslotsMapper.mapTimeslotEntry(t)));
 	}
