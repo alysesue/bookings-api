@@ -9,4 +9,6 @@ export function trimFields<T extends {}>(obj: T): T {
 			obj[key] = value.trim();
 		}
 	}
+
+	return obj;
 }

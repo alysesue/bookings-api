@@ -155,7 +155,7 @@ export class ServiceProvidersService {
 				serviceProvider = existingServiceProviders.find(
 					(sp) =>
 						!!onboardingSp.agencyUserId &&
-						sp.agencyUserId.toLowerCase() === onboardingSp.agencyUserId.toLowerCase(),
+						sp.agencyUserId?.toLowerCase() === onboardingSp.agencyUserId.toLowerCase(),
 				);
 			}
 
