@@ -25,6 +25,7 @@ export class BookingBuilder {
 	public citizenEmail: string;
 	public autoAccept: boolean;
 	public captchaToken: string;
+	public markOnHold: boolean;
 
 	public withServiceId(serviceId: number): BookingBuilder {
 		this.serviceId = serviceId;
@@ -95,6 +96,11 @@ export class BookingBuilder {
 		return this;
 	}
 
+	public withMarkOnHold(markOnHold: boolean): BookingBuilder {
+		this.markOnHold = markOnHold;
+		return this;
+	}
+
 	public build(): Booking {
 		return Booking.create(this);
 	}
@@ -155,6 +161,10 @@ export class Booking {
 	@Column({ nullable: true })
 	private _citizenPhone: string;
 
+	@Column({ nullable: true })
+	@Index()
+	private _onHoldDateTime: Date;
+
 	public get citizenPhone(): string {
 		return this._citizenPhone;
 	}
@@ -169,11 +179,16 @@ export class Booking {
 
 	public static create(builder: BookingBuilder): Booking {
 		const instance = new Booking();
-		if (builder.serviceProviderId) {
-			instance._serviceProviderId = builder.serviceProviderId;
-			instance._status = builder.autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
+		if (!builder.markOnHold) {
+			if (builder.serviceProviderId) {
+				instance._serviceProviderId = builder.serviceProviderId;
+				instance._status = builder.autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
+			} else {
+				instance._status = BookingStatus.PendingApproval;
+			}
 		} else {
-			instance._status = BookingStatus.PendingApproval;
+			instance._status = BookingStatus.OnHold;
+			instance._onHoldDateTime = new Date();
 		}
 		instance._serviceId = builder.serviceId;
 		instance._startDateTime = builder.startDateTime;
