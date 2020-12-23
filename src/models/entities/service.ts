@@ -8,7 +8,7 @@ import { ScheduleForm } from './scheduleForm';
 @Entity()
 @Index(['_organisationId', '_name'], { unique: true })
 export class Service implements IService, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
-	public constructor() {}
+	public constructor() { }
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
@@ -136,5 +136,16 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	}
 	public get allowAnonymousBookings(): boolean {
 		return this._allowAnonymousBookings;
+	}
+
+	@Column({ nullable: true, default: false })
+	private _isOnHold: boolean;
+
+	public get isOnHold(): boolean {
+		return this._isOnHold;
+	}
+
+	public set isOnHold(isOnHold: boolean) {
+		this._isOnHold = isOnHold;
 	}
 }
