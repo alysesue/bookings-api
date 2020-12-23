@@ -15,6 +15,7 @@ import { MolUsersService } from '../users/molUsers/molUsers.service';
 import { MolAdminUserContract, MolUpsertUsersResult } from '../users/molUsers/molUsers.apicontract';
 import { UsersService } from '../users/users.service';
 import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
+import { uniqueStringArray } from '../../tools/collections';
 
 @InRequestScope
 export class ServicesService {
@@ -33,10 +34,24 @@ export class ServicesService {
 	@Inject
 	private usersService: UsersService;
 
-	private async createServices(adminUsers: MolAdminUserContract[], orga: Organisation): Promise<void> {
-		const allServiceNames = [].concat(...adminUsers.map((a) => a.services));
-		const allServices = allServiceNames.map((s) => Service.create(s, orga));
-		await Promise.all(allServices.map(async (srv) => await this.servicesRepository.save(srv)));
+	public async createServices(names: string[], organisation: Organisation): Promise<Service[]> {
+		const allServiceNames = uniqueStringArray(names, {
+			caseInsensitive: true,
+			skipEmpty: true,
+			trim: true,
+		});
+
+		const existingServices = await this.servicesRepository.getServicesByName({
+			names: allServiceNames,
+			organisationId: organisation.id,
+		});
+
+		const newServices = allServiceNames
+			.filter((name) => !existingServices.some((existing) => existing.name.toLowerCase() === name.toLowerCase()))
+			.map((s) => Service.create(s, organisation));
+
+		const saved = await this.servicesRepository.saveMany(newServices);
+		return [...existingServices, ...saved];
 	}
 
 	public async createServicesAdmins(adminUserContracts?: MolAdminUserContract[]): Promise<MolUpsertUsersResult> {
@@ -51,15 +66,22 @@ export class ServicesService {
 		if (upsertedMolUser) {
 			await this.usersService.upsertAdminUsers(upsertedMolUser);
 			const upsertedAdminUsers = adminUserContracts.filter((adminUser) =>
-				upsertedMolUser.some((molUser) => molUser.email === adminUser.email),
+				upsertedMolUser.some(
+					(molUser) =>
+						(!!adminUser.uinfin && molUser.uinfin === adminUser.uinfin) ||
+						(!!adminUser.email && molUser.email === adminUser.email),
+				),
 			);
-			await this.createServices(upsertedAdminUsers, orga);
+
+			const serviceNames = [].concat(...upsertedAdminUsers.map((a) => a.services));
+			await this.createServices(serviceNames, orga);
 		}
 		return res;
 	}
 
 	public async createService(request: ServiceRequest): Promise<Service> {
-		if (!request.name?.trim()) {
+		request.name = request.name?.trim();
+		if (!request.name) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service name is empty');
 		}
 		const orga = request.organisationId

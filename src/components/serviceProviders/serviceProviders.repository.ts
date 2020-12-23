@@ -150,7 +150,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		if (serviceProvider?.agencyUserId) {
 			const spFound = await repository
 				.createQueryBuilder('sp')
-				.where('sp._agencyUserId = :agencyUserId', { agencyUserId: serviceProvider.agencyUserId })
+				.where('sp."_agencyUserId" = :agencyUserId', { agencyUserId: serviceProvider.agencyUserId })
 				.getOne();
 			if (spFound) {
 				serviceProvider.id = spFound?.id;

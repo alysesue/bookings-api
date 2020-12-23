@@ -141,7 +141,7 @@
 		"mol-bamboo-scripts": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-bamboo-scripts.git#semver:~1.4.2",
 		"mol-lib-config": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-config.git#semver:~5.2.2",
 		"ts-jest": "^25.5.1",
-		"ts-loader": "^7.0.2",
+		"ts-loader": "^7.0.5",
 		"ts-node": "^8.9.1",
 		"tslint": "^6.1.2",
 		"tslint-config-prettier": "^1.18.0",

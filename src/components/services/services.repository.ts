@@ -38,26 +38,46 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		return entries;
 	}
 
-	public async save(service: Service): Promise<Service> {
-		const repository = await this.getRepository();
-		if (service.organisation) {
-			const serviceFound = await repository
-				.createQueryBuilder('s')
-				.innerJoinAndSelect('s._organisation', 'org', 'org."_name" = :orgName', {
-					orgName: service.organisation.name,
-				})
-				.innerJoinAndSelect('s._serviceAdminGroupMap', 'srvAdminGroupMap')
-				.andWhere('s._name = :name', { name: service.name })
-				.getOne();
-
-			if (serviceFound) {
-				service.id = serviceFound?.id;
-				service.organisation = serviceFound?.organisation;
-				service.organisationId = serviceFound?.organisation.id;
-				service.serviceAdminGroupMap.serviceId = serviceFound.serviceAdminGroupMap?.serviceId;
-			}
+	public async getServicesByName({
+		names,
+		organisationId,
+	}: {
+		names: string[];
+		organisationId: number;
+	}): Promise<Service[]> {
+		if (names.length === 0) {
+			return [];
 		}
+
+		const authGroups = await this.userContext.getAuthGroups();
+		const { userCondition, userParams } = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(
+			authGroups,
+		);
+
+		const repository = await this.getRepository();
+		const orgCondition = 'svc."_organisationId" = :organisationId';
+		const namesCondition = 'svc._name IN (:...names)';
+
+		const query = repository
+			.createQueryBuilder('svc')
+			.where(
+				[userCondition, orgCondition, namesCondition]
+					.filter((c) => c)
+					.map((c) => `(${c})`)
+					.join(' AND '),
+				{ ...userParams, organisationId, names },
+			)
+			.leftJoinAndSelect('svc._serviceAdminGroupMap', 'svcAdminGroupMap');
+
+		return await query.getMany();
+	}
+
+	public async save(service: Service): Promise<Service> {
 		return (await this.getRepository()).save(service);
+	}
+
+	public async saveMany(services: Service[]): Promise<Service[]> {
+		return (await this.getRepository()).save(services);
 	}
 
 	private async getServiceQueryById(id: number): Promise<SelectQueryBuilder<Service>> {
