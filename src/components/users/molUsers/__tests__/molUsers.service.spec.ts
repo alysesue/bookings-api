@@ -2,6 +2,7 @@ import { Container } from 'typescript-ioc';
 import { MolUsersServiceFactory } from '../molUsers.service';
 import { post } from '../../../../tools/fetch';
 import { getConfig } from '../../../../config/app-config';
+import { IMolCognitoUserRequest } from '../molUsers.apicontract';
 
 jest.mock('../../../../tools/fetch', () => ({
 	get: jest.fn(),
@@ -33,8 +34,29 @@ describe('Test class MolUsersService', () => {
 
 	it('Should not call post when isLocal = true', async () => {
 		(getConfig as jest.Mock).mockReturnValue({ isLocal: true, molAdminAuthForwarder: { url: 'url' } });
+		const user = {
+			name: 'name',
+			email: '',
+			phoneNumber: '',
+			agencyUserId: '123',
+			uinfin: 'sd',
+		};
 		const service = Container.get(MolUsersServiceFactory).getService();
-		await service.molUpsertUser([]);
+		await service.molUpsertUser([user as IMolCognitoUserRequest]);
 		expect(post).toBeCalledTimes(0);
+	});
+
+	it('Should throw exception if no identifier', async () => {
+		(getConfig as jest.Mock).mockReturnValue({ isLocal: true, molAdminAuthForwarder: { url: 'url' } });
+		const user = {
+			name: 'name',
+			phoneNumber: '',
+		};
+		const service = Container.get(MolUsersServiceFactory).getService();
+		try {
+			await service.molUpsertUser([user as IMolCognitoUserRequest]);
+		} catch (e) {
+			expect(e.message).toBe('MolUsersServiceLocal: User name undefined');
+		}
 	});
 });
