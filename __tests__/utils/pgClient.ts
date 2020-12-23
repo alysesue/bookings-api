@@ -14,6 +14,7 @@ export class PgClient {
 	public async cleanAllTables() {
 		// Delete many-to-one relationships first
 		await this.pool.query('DELETE FROM public.service_admin_group_map');
+		await this.pool.query('DELETE FROM public.unavailable_service_provider;');
 		await this.pool.query('DELETE FROM public.unavailability;');
 		await this.pool.query('DELETE FROM public.booking_change_log;');
 		await this.pool.query('DELETE FROM public.booking;');
@@ -26,9 +27,12 @@ export class PgClient {
 		await this.pool.query('DELETE FROM public.admin_user;');
 		await this.pool.query('DELETE FROM public.sing_pass_user;');
 		await this.pool.query('DELETE FROM public.agency_user;');
+		await this.pool.query('DELETE FROM public.anonymous_user;');
 		await this.pool.query('DELETE FROM public.user;');
 		await this.pool.query('DELETE FROM public.timeslots_schedule;');
 		await this.pool.query('DELETE FROM public.schedule_form;');
+		await this.pool.query('DELETE FROM public.organisation_admin_group_map;');
+		await this.pool.query('DELETE FROM public.organisation;');
 	}
 
 	public async mapServiceAdminToService({ serviceId, nameService, organisation }) {
