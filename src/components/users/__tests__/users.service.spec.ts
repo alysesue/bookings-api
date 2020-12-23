@@ -266,14 +266,6 @@ describe('Users Service', () => {
 		);
 		expect(groups.length).toBe(0);
 	});
-
-	it('should test upsert services', async () => {
-		const users = await Container.get(UsersService).upsertAdminUsers([
-			{ name: 'name', email: 'email', phoneNumber: 'phoneNumber', username: 'username' },
-		]);
-		expect(UserRepositoryMock.save).toBeCalled();
-		expect(users.length).toBe(1);
-	});
 });
 
 class UserRepositoryMock extends UsersRepository {

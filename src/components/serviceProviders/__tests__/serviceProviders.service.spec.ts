@@ -134,7 +134,7 @@ describe('ServiceProviders.Service', () => {
 	});
 
 	it('should get all service providers', async () => {
-		ServiceProvidersRepositoryMock.getServiceProvidersMock = [serviceProviderMock];
+		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([serviceProviderMock]));
 		const result = await Container.get(ServiceProvidersService).getServiceProviders();
 		expect(result.length).toBe(1);
 	});
@@ -159,58 +159,32 @@ describe('ServiceProviders.Service', () => {
 			name: 'aa',
 			serviceName: 'service 1',
 			agencyUserId: 'asd',
+			email: 'email',
 			autoAcceptBookings: false,
 		} as MolServiceProviderOnboard;
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
 		);
-		const admins = [
+		const molAdminUserContracts = [
 			{
 				name: 'name',
 				email: 'email',
+				agencyUserId: 'asd',
 				phoneNumber: 'phoneNumber',
 				services: ['service 1'],
 			},
 		] as MolAdminUserContract[];
 
-		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: admins }));
+		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: molAdminUserContracts }));
 		UserContextMock.getFirstAuthorisedOrganisation.mockReturnValue(Promise.resolve(organisation));
 		UsersServiceMock.upsertAdminUsers.mockReturnValue(Promise.resolve([spOnboard as any]));
 		ServicesServiceMockMock.getServices.mockReturnValue(Promise.resolve([]));
-		ServicesServiceMockMock.createService.mockReturnValue(Promise.resolve({ name: 'service 1' }));
+		ServicesServiceMockMock.createServices.mockReturnValue(Promise.resolve([{ name: 'service 1' }]));
+		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([] as ServiceProvider[]));
 
-		const res = await Container.get(ServiceProvidersService).createServiceProviders([spOnboard]);
-		expect(ServicesServiceMockMock.getServices).toBeCalled();
-		expect(res.created.length).toBe(1);
-	});
-
-	it('should throw when onboard contain error', async () => {
-		const spOnboard = {
-			name: 'aa',
-			serviceName: 'name',
-			agencyUserId: 'asd',
-			autoAcceptBookings: false,
-		} as MolServiceProviderOnboard;
-		UserContextMock.getAuthGroups.mockImplementation(() =>
-			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
-		);
-		const admins = [
-			{
-				name: 'name',
-				email: 'email',
-				phoneNumber: 'phoneNumber',
-				services: ['service 1'],
-			},
-		] as MolAdminUserContract[];
-		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: admins }));
-		UserContextMock.getFirstAuthorisedOrganisation.mockReturnValue(Promise.resolve(organisation));
-		ServicesServiceMockMock.getServices.mockReturnValue(Promise.resolve([]));
-		ServicesServiceMockMock.createService.mockReturnValue(Promise.resolve({ name: 'service 1' }));
-		try {
-			await Container.get(ServiceProvidersService).createServiceProviders([spOnboard]);
-		} catch (e) {
-			expect(e.code).toBe('SYS_INVALID_PARAM');
-		}
+		await Container.get(ServiceProvidersService).createServiceProviders([spOnboard]);
+		expect(ServiceProvidersRepositoryMock.getServiceProviders).toBeCalled();
+		expect(ServiceProvidersRepositoryMock.saveMany).toBeCalled();
 	});
 
 	it('should save a service provider', async () => {
@@ -224,8 +198,25 @@ describe('ServiceProviders.Service', () => {
 		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
 	});
 
+	it('should not save service provider and throw error', async () => {
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new OrganisationAdminAuthGroup(adminMock, [organisation])]),
+		);
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
+		try {
+			await Container.get(ServiceProvidersService).saveServiceProviders(
+				[{ ...serviceProviderMock, phone: 'dd', email: 'ss' } as ServiceProvider],
+				1,
+			);
+		} catch (e) {
+			expect(e.message).toBe('Bulk of service providers incorrect');
+		}
+		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(0);
+	});
+
 	it('Set scheduleFrom for serviceProviders', async () => {
-		ServiceProvidersRepositoryMock.getServiceProvidersMock = [serviceProviderMock];
+		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([serviceProviderMock]));
 		ScheduleFormsServiceMock.updateScheduleFormInEntity.mockImplementation(() => {
 			serviceProviderMock.scheduleForm = new ScheduleForm();
 			return Promise.resolve(serviceProviderMock);
@@ -406,12 +397,13 @@ describe('ServiceProviders.Service', () => {
 
 class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	public static sp: ServiceProvider;
-	public static getServiceProvidersMock: ServiceProvider[];
+	public static getServiceProviders = jest.fn();
 	public static getServiceProviderMock: ServiceProvider;
 	public static save = jest.fn();
+	public static saveMany = jest.fn();
 
-	public async getServiceProviders(): Promise<ServiceProvider[]> {
-		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProvidersMock);
+	public async getServiceProviders(...params): Promise<ServiceProvider[]> {
+		return await ServiceProvidersRepositoryMock.getServiceProviders(...params);
 	}
 
 	public async getServiceProvider(...params): Promise<ServiceProvider> {
@@ -420,6 +412,10 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 
 	public async save(listRequest: ServiceProviderModel): Promise<ServiceProvider> {
 		return await ServiceProvidersRepositoryMock.save();
+	}
+
+	public async saveMany(...params): Promise<ServiceProvider[]> {
+		return await ServiceProvidersRepositoryMock.saveMany(...params);
 	}
 }
 

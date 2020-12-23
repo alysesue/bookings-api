@@ -59,7 +59,7 @@ const visitorObject = {
 };
 
 beforeAll(() => {
-	Container.bind(ServicesRepository).to(ServicesRepositoryMockClass);
+	Container.bind(ServicesRepository).to(ServicesRepositoryMock);
 	Container.bind(ScheduleFormsService).to(ScheduleFormsServiceMock);
 	Container.bind(TimeslotsScheduleService).to(TimeslotsScheduleMockClass);
 	Container.bind(TimeslotItemsService).to(TimeslotItemsServiceMock);
@@ -113,11 +113,13 @@ describe('Services service tests', () => {
 		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: admins }));
 		UserContextMock.getFirstAuthorisedOrganisation.mockReturnValue(Promise.resolve(organisation));
 		UsersServiceMock.upsertAdminUsers.mockReturnValue(Promise.resolve([admins as any]));
+		ServicesRepositoryMock.getServicesByName.mockReturnValue(Promise.resolve([]));
+		ServicesRepositoryMock.saveMany.mockReturnValue(Promise.resolve([]));
 
 		await Container.get(ServicesService).createServicesAdmins(admins);
 		expect(MolUsersServiceMock.molUpsertUser).toBeCalled();
-		expect(ServicesRepositoryMockClass.save).toBeCalled();
-		expect(ServicesRepositoryMockClass.save.mock.calls[0][0]._name).toBe('service 1');
+		expect(ServicesRepositoryMock.getServicesByName).toBeCalled();
+		expect(ServicesRepositoryMock.saveMany).toBeCalled();
 	});
 
 	it('should save service', async () => {
@@ -129,24 +131,24 @@ describe('Services service tests', () => {
 		);
 
 		await Container.get(ServicesService).createService(request);
-		expect(ServicesRepositoryMockClass.save.mock.calls[0][0].name).toBe('John');
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
 	});
 
 	it('should update service', async () => {
 		const newService = new Service();
 		newService.id = 1;
 		newService.organisationId = 1;
-		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(newService));
+		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(newService));
 		const request = new ServiceRequest();
 		request.name = 'John';
 		request.organisationId = 1;
 
 		await Container.get(ServicesService).updateService(1, request);
-		expect(ServicesRepositoryMockClass.save.mock.calls[0][0].name).toBe('John');
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
 	});
 
 	it('should throw if service not found', async () => {
-		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(undefined));
+		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(undefined));
 		const request = new ServiceRequest();
 		request.name = 'John';
 
@@ -157,7 +159,7 @@ describe('Services service tests', () => {
 		const newService = new Service();
 		newService.organisationId = 1;
 		newService.id = 1;
-		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(newService));
+		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(newService));
 
 		ScheduleFormsServiceMock.updateScheduleFormInEntity.mockImplementation(() => {
 			newService.scheduleForm = new ScheduleForm();
@@ -177,14 +179,14 @@ describe('Services service tests', () => {
 		newService.scheduleForm = new ScheduleForm();
 		newService.scheduleForm.id = 2;
 
-		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(newService));
+		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(newService));
 
 		const schedule = await Container.get(ServicesService).getServiceScheduleForm(1);
 		expect(schedule).toBeDefined();
 	});
 
 	it('should throw service not found', async () => {
-		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(null));
+		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(null));
 		ScheduleFormsServiceMock.updateScheduleFormInEntity.mockImplementation(() => Promise.resolve());
 
 		await expect(async () => {
@@ -198,33 +200,33 @@ describe('Services service tests', () => {
 	});
 
 	it('should return TimeslotsSchedule', async () => {
-		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(serviceMockWithTemplate));
+		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(serviceMockWithTemplate));
 
 		const data = await Container.get(ServicesService).getServiceTimeslotsSchedule(1);
-		expect(ServicesRepositoryMockClass.getService).toBeCalledTimes(1);
+		expect(ServicesRepositoryMock.getService).toBeCalledTimes(1);
 		expect(data).toBe(serviceMockWithTemplate.timeslotsSchedule);
 	});
 
 	it('should add timeslotItem', async () => {
-		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(serviceMockWithTemplate));
+		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(serviceMockWithTemplate));
 
 		TimeslotItemsServiceMock.createTimeslotItem.mockImplementation(() => Promise.resolve());
 		await Container.get(ServicesService).addTimeslotItem(1, timeslotItemRequest);
-		expect(ServicesRepositoryMockClass.getService).toBeCalledTimes(1);
+		expect(ServicesRepositoryMock.getService).toBeCalledTimes(1);
 		expect(TimeslotItemsServiceMock.createTimeslotItem).toBeCalledTimes(1);
 	});
 
 	it(`should create timeslots schedule if it doesn't exist`, async () => {
 		const service = new Service();
 		service.id = 1;
-		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(service));
+		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(service));
 
 		TimeslotItemsServiceMock.createTimeslotItem.mockImplementation(() => Promise.resolve());
 		await Container.get(ServicesService).addTimeslotItem(1, timeslotItemRequest);
 
-		expect(ServicesRepositoryMockClass.getService).toBeCalledTimes(1);
+		expect(ServicesRepositoryMock.getService).toBeCalledTimes(1);
 		expect(TimeslotItemsServiceMock.createTimeslotItem).toBeCalledTimes(1);
-		expect(ServicesRepositoryMockClass.save).toBeCalledTimes(1);
+		expect(ServicesRepositoryMock.save).toBeCalledTimes(1);
 	});
 
 	it('should delete timeslotItem', async () => {
@@ -233,7 +235,7 @@ describe('Services service tests', () => {
 	});
 
 	it('should update timeslotItem', async () => {
-		ServicesRepositoryMockClass.getService.mockImplementation(() => Promise.resolve(serviceMockWithTemplate));
+		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(serviceMockWithTemplate));
 		TimeslotsScheduleMockClass.getTimeslotsScheduleById.mockImplementation(() =>
 			Promise.resolve(serviceMockWithTemplate.timeslotsSchedule),
 		);
@@ -268,26 +270,36 @@ describe('Services service tests', () => {
 	});
 });
 
-class ServicesRepositoryMockClass extends ServicesRepository {
+class ServicesRepositoryMock extends ServicesRepository {
 	public static save = jest.fn();
 	public static getService = jest.fn();
 	public static get = jest.fn();
 	public static getAll = jest.fn();
+	public static getServicesByName = jest.fn();
+	public static saveMany = jest.fn();
+
+	public async getServicesByName(...params): Promise<Service[]> {
+		return ServicesRepositoryMock.getServicesByName(...params);
+	}
 
 	public async save(service: Service): Promise<Service> {
-		return ServicesRepositoryMockClass.save(service);
+		return ServicesRepositoryMock.save(service);
 	}
 
 	public async get(id: number): Promise<Service> {
-		return ServicesRepositoryMockClass.get(id);
+		return ServicesRepositoryMock.get(id);
 	}
 
 	public async getAll(): Promise<Service[]> {
-		return ServicesRepositoryMockClass.getAll();
+		return ServicesRepositoryMock.getAll();
 	}
 
 	public async getService(): Promise<Service> {
-		return ServicesRepositoryMockClass.getService();
+		return ServicesRepositoryMock.getService();
+	}
+
+	public async saveMany(...params): Promise<Service[]> {
+		return ServicesRepositoryMock.saveMany(...params);
 	}
 }
 

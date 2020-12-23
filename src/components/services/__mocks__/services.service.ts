@@ -4,9 +4,14 @@ import { Service } from '../../../models/entities';
 export class ServicesServiceMock implements Partial<ServicesService> {
 	public static getService = jest.fn();
 	public static getServices = jest.fn();
+	public static createServices = jest.fn();
 	public static createService = jest.fn();
 
 	public init() {}
+
+	public async createServices(...params): Promise<Service[]> {
+		return await ServicesServiceMock.createServices(...params);
+	}
 
 	public async createService(...params): Promise<Service> {
 		return await ServicesServiceMock.createService(...params);
