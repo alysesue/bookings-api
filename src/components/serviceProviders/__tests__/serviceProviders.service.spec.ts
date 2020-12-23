@@ -162,7 +162,7 @@ describe('ServiceProviders.Service', () => {
 				name: 'name',
 				email: 'email',
 				phoneNumber: 'phoneNumber',
-				services: ['service 1'],
+				serviceNames: ['service 1'],
 			},
 		] as MolAdminUserContract[];
 
@@ -190,7 +190,7 @@ describe('ServiceProviders.Service', () => {
 				name: 'name',
 				email: 'email',
 				phoneNumber: 'phoneNumber',
-				services: ['service 1'],
+				serviceNames: ['service 1'],
 			},
 		] as MolAdminUserContract[];
 

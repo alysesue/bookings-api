@@ -107,7 +107,7 @@ describe('Services service tests', () => {
 				name: 'name',
 				email: 'email',
 				phoneNumber: 'phoneNumber',
-				services: ['service 1'],
+				serviceNames: ['service 1'],
 			},
 		] as MolAdminUserContract[];
 		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: admins }));

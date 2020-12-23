@@ -19,7 +19,11 @@ import { CrudAction } from '../../enums/crudAction';
 import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract';
 import { OrganisationsNoauthRepository } from '../organisations/organisations.noauth.repository';
 import { MolUsersService } from '../users/molUsers/molUsers.service';
-import { isMolUserMatch, MolAdminUserContract, MolUpsertUsersResult } from '../users/molUsers/molUsers.apicontract';
+import {
+	isMolUserMatch,
+	MolServiceAdminUserContract,
+	MolUpsertUsersResult,
+} from '../users/molUsers/molUsers.apicontract';
 import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 import { uniqueStringArray } from '../../tools/collections';
 
@@ -68,7 +72,9 @@ export class ServicesService {
 		return allServices;
 	}
 
-	public async createServicesAdmins(adminUserContracts?: MolAdminUserContract[]): Promise<MolUpsertUsersResult> {
+	public async createServicesAdmins(
+		adminUserContracts?: MolServiceAdminUserContract[],
+	): Promise<MolUpsertUsersResult> {
 		const orga = await this.userContext.verifyAndGetFirstAuthorisedOrganisation(
 			'User not authorized to add services.',
 		);
@@ -82,7 +88,7 @@ export class ServicesService {
 				upsertedMolUser.some((molUser) => isMolUserMatch(molUser, adminUser)),
 			);
 
-			const serviceNames = [].concat(...upsertedAdminUsers.map((a) => a.services));
+			const serviceNames = [].concat(...upsertedAdminUsers.map((a) => a.serviceNames));
 			await this.createServices(serviceNames, orga);
 		}
 		return res;

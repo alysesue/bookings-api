@@ -13,15 +13,6 @@ export class ServiceProviderModel {
 	}
 }
 
-export type MolServiceProviderWithGroups = MolServiceProviderOnboardContract & {
-	groups: string[];
-};
-
-export type MolServiceProviderOnboard = MolServiceProviderWithGroups & {
-	username: string;
-	molAdminId: string;
-};
-
 export type MolServiceProviderOnboardContract = {
 	name: string;
 	email?: string;
@@ -30,6 +21,15 @@ export type MolServiceProviderOnboardContract = {
 	uinfin?: string;
 	serviceName: string;
 	autoAcceptBookings?: boolean;
+};
+
+export type MolServiceProviderWithGroups = MolServiceProviderOnboardContract & {
+	groups: string[];
+};
+
+export type MolServiceProviderOnboard = MolServiceProviderWithGroups & {
+	username: string;
+	molAdminId: string;
 };
 
 export class ServiceProviderResponseModel {

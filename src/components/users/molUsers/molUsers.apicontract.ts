@@ -11,17 +11,26 @@ export interface MolGetUsersResponse {
 	message?: string;
 }
 
-export type MolAdminUserWithGroups = MolAdminUserContract & {
-	groups: string[];
-};
-
-export type MolAdminUserContract = {
+export type MolServiceAdminUserCSV = {
 	name: string;
 	email: string;
 	phoneNumber: string;
 	agencyUserId?: string;
 	uinfin?: string;
-	services: string[];
+	serviceNames: string; // elements split by ; symbol
+};
+
+export type MolServiceAdminUserContract = {
+	name: string;
+	email: string;
+	phoneNumber: string;
+	agencyUserId?: string;
+	uinfin?: string;
+	serviceNames: string[];
+};
+
+export type MolServiceAdminUserWithGroups = MolServiceAdminUserContract & {
+	groups: string[];
 };
 
 export interface MolUpsertUsersResult {

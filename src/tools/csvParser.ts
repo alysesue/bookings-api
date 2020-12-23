@@ -2,7 +2,7 @@ import * as parse from 'csv-parse/lib/sync';
 import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
-export const parseCsv = (input: string | Buffer): [] => {
+export const parseCsv = <T extends {}>(input: string | Buffer): T[] => {
 	try {
 		return parse(input, {
 			columns: true,

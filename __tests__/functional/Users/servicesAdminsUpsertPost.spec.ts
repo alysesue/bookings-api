@@ -31,7 +31,7 @@ describe('Tests endpoint and populate data', () => {
 				phoneNumber: '+33 3333 3333',
 				agencyUserId: '2',
 				uinfin: 'S5287560I',
-				services: ['service1', 'service2'],
+				serviceNames: ['service1', 'service2'],
 			},
 		];
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/users/service-admins/upsert', {
@@ -48,7 +48,7 @@ describe('Tests endpoint and populate data', () => {
 				phoneNumber: '+33 3333 3333',
 				agencyUserId: '2',
 				uinfin: 'S5287560I',
-				services: ['service1', 'service2'],
+				serviceNames: ['service1', 'service2'],
 			},
 		];
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/users/service-admins/upsert', {

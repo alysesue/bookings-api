@@ -4,7 +4,7 @@ import {
 	MolServiceProviderWithGroups,
 } from '../../serviceProviders/serviceProviders.apicontract';
 import { UserGroupParser } from '../../../infrastructure/auth/userGroupParser';
-import { MolAdminUserContract, MolAdminUserWithGroups } from './molUsers.apicontract';
+import { MolServiceAdminUserContract, MolServiceAdminUserWithGroups } from './molUsers.apicontract';
 import { trimFields } from '../../../tools/object';
 
 export class MolUsersMapper {
@@ -22,11 +22,11 @@ export class MolUsersMapper {
 	}
 
 	public static mapServicesAdminsGroups(
-		molAdminUserContracts: MolAdminUserContract[],
+		molAdminUserContracts: MolServiceAdminUserContract[],
 		orga: Organisation,
-	): MolAdminUserWithGroups[] {
+	): MolServiceAdminUserWithGroups[] {
 		return molAdminUserContracts.map((admin) => {
-			const groups = admin.services?.map((serviceName) =>
+			const groups = admin.serviceNames?.map((serviceName) =>
 				UserGroupParser.generateServiceAdminUserGroup(
 					Service.create(serviceName, orga).serviceAdminGroupMap.serviceOrganisationRef,
 				),
