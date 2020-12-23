@@ -1,37 +1,38 @@
 import { Organisation, Service } from '../../../models';
 import {
-	MolServiceProviderOnboard,
 	MolServiceProviderOnboardContract,
+	MolServiceProviderWithGroups,
 } from '../../serviceProviders/serviceProviders.apicontract';
 import { UserGroupParser } from '../../../infrastructure/auth/userGroupParser';
-import { MolAdminUser, MolAdminUserContract } from './molUsers.apicontract';
+import { MolAdminUserContract, MolAdminUserWithGroups } from './molUsers.apicontract';
+import { trimFields } from '../../../tools/object';
 
 export class MolUsersMapper {
 	public static mapServiceProviderGroup(
 		serviceProviderOnboardContracts: MolServiceProviderOnboardContract[],
 		orga: Organisation,
-	): MolServiceProviderOnboard[] {
+	): MolServiceProviderWithGroups[] {
 		return serviceProviderOnboardContracts.map((serviceProvider) => {
-			const molServiceProviderOnboard: MolServiceProviderOnboard = { ...serviceProvider };
-			molServiceProviderOnboard.groups = [
+			const groups = [
 				UserGroupParser.generateServiceProviderUserGroup(orga._organisationAdminGroupMap.organisationRef),
 			];
-			return molServiceProviderOnboard;
+
+			return trimFields({ ...serviceProvider, groups });
 		});
 	}
 
 	public static mapServicesAdminsGroups(
 		molAdminUserContracts: MolAdminUserContract[],
 		orga: Organisation,
-	): MolAdminUser[] {
+	): MolAdminUserWithGroups[] {
 		return molAdminUserContracts.map((admin) => {
-			const molAdminUsers: MolAdminUser = { ...admin };
-			molAdminUsers.groups = admin.services?.map((serviceName) =>
+			const groups = admin.services?.map((serviceName) =>
 				UserGroupParser.generateServiceAdminUserGroup(
 					Service.create(serviceName, orga).serviceAdminGroupMap.serviceOrganisationRef,
 				),
 			);
-			return molAdminUsers;
+
+			return trimFields({ ...admin, groups });
 		});
 	}
 }

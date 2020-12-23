@@ -1,6 +1,13 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Organisation, ScheduleForm, Service, TimeslotItem, TimeslotsSchedule } from '../../models';
+import {
+	Organisation,
+	ScheduleForm,
+	Service,
+	ServiceAdminGroupMap,
+	TimeslotItem,
+	TimeslotsSchedule,
+} from '../../models';
 import { ServicesRepository } from './services.repository';
 import { ServiceRequest } from './service.apicontract';
 import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
@@ -12,8 +19,7 @@ import { CrudAction } from '../../enums/crudAction';
 import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract';
 import { OrganisationsNoauthRepository } from '../organisations/organisations.noauth.repository';
 import { MolUsersService } from '../users/molUsers/molUsers.service';
-import { MolAdminUserContract, MolUpsertUsersResult } from '../users/molUsers/molUsers.apicontract';
-import { UsersService } from '../users/users.service';
+import { isMolUserMatch, MolAdminUserContract, MolUpsertUsersResult } from '../users/molUsers/molUsers.apicontract';
 import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 import { uniqueStringArray } from '../../tools/collections';
 
@@ -31,8 +37,6 @@ export class ServicesService {
 	private molUsersService: MolUsersService;
 	@Inject
 	private userContext: UserContext;
-	@Inject
-	private usersService: UsersService;
 
 	public async createServices(names: string[], organisation: Organisation): Promise<Service[]> {
 		const allServiceNames = uniqueStringArray(names, {
@@ -44,14 +48,24 @@ export class ServicesService {
 		const existingServices = await this.servicesRepository.getServicesByName({
 			names: allServiceNames,
 			organisationId: organisation.id,
+			skipAuthorisation: true,
 		});
+		for (const service of existingServices) {
+			service.serviceAdminGroupMap = service.serviceAdminGroupMap || new ServiceAdminGroupMap();
+			service.serviceAdminGroupMap.serviceOrganisationRef = ServiceAdminGroupMap.createServiceOrganisationRef(
+				service.getServiceRef(),
+				organisation._organisationAdminGroupMap.organisationRef,
+			);
+		}
 
 		const newServices = allServiceNames
 			.filter((name) => !existingServices.some((existing) => existing.name.toLowerCase() === name.toLowerCase()))
 			.map((s) => Service.create(s, organisation));
 
-		const saved = await this.servicesRepository.saveMany(newServices);
-		return [...existingServices, ...saved];
+		const allServices = [...existingServices, ...newServices];
+		await this.servicesRepository.saveMany(allServices);
+
+		return allServices;
 	}
 
 	public async createServicesAdmins(adminUserContracts?: MolAdminUserContract[]): Promise<MolUpsertUsersResult> {
@@ -64,13 +78,8 @@ export class ServicesService {
 		if (res?.error) return res;
 		const upsertedMolUser = [...(res?.created || []), ...(res?.updated || [])];
 		if (upsertedMolUser) {
-			await this.usersService.upsertAdminUsers(upsertedMolUser);
 			const upsertedAdminUsers = adminUserContracts.filter((adminUser) =>
-				upsertedMolUser.some(
-					(molUser) =>
-						(!!adminUser.uinfin && molUser.uinfin === adminUser.uinfin) ||
-						(!!adminUser.email && molUser.email === adminUser.email),
-				),
+				upsertedMolUser.some((molUser) => isMolUserMatch(molUser, adminUser)),
 			);
 
 			const serviceNames = [].concat(...upsertedAdminUsers.map((a) => a.services));

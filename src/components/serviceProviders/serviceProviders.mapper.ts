@@ -40,18 +40,36 @@ export class ServiceProvidersMapper {
 		return entries?.map((e) => this.mapSummaryDataModel(e));
 	}
 
-	public mapToEntity(sp: MolServiceProviderOnboard, service: Service): ServiceProvider {
-		const spCreated = ServiceProvider.create(
-			sp.name,
-			service?.id,
-			sp.email,
-			sp.phoneNumber,
-			sp.agencyUserId,
-			sp.autoAcceptBookings,
-		);
-		spCreated.service = service;
-		spCreated.serviceProviderGroupMap = new ServiceProviderGroupMap();
-		spCreated.serviceProviderGroupMap.molAdminId = sp.molAdminId;
-		return spCreated;
+	public mapToEntity(
+		onboardingSp: MolServiceProviderOnboard,
+		service: Service,
+		entity: ServiceProvider | undefined,
+	): ServiceProvider {
+		if (!service) {
+			throw new Error('Service is required to create service provider');
+		}
+
+		let serviceProvider: ServiceProvider;
+		if (entity) {
+			serviceProvider = entity;
+			serviceProvider.name = onboardingSp.name;
+			serviceProvider.serviceId = service.id;
+		} else {
+			serviceProvider = ServiceProvider.create(onboardingSp.name, service.id);
+		}
+
+		serviceProvider.email = onboardingSp.email;
+		serviceProvider.phone = onboardingSp.phoneNumber;
+		serviceProvider.agencyUserId = onboardingSp.agencyUserId;
+		serviceProvider.autoAcceptBookings = onboardingSp.autoAcceptBookings;
+
+		serviceProvider.service = service;
+		serviceProvider.serviceId = service.id;
+
+		serviceProvider.serviceProviderGroupMap =
+			serviceProvider.serviceProviderGroupMap || new ServiceProviderGroupMap();
+		serviceProvider.serviceProviderGroupMap.molAdminId = onboardingSp.molAdminId;
+
+		return serviceProvider;
 	}
 }

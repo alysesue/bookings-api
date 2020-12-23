@@ -11,22 +11,18 @@ export interface MolGetUsersResponse {
 	message?: string;
 }
 
-export class MolAdminUser implements IMolCognitoUserRequest {
-	public username?: string;
-	public name: string;
-	public email: string;
-	public phoneNumber: string;
-	public agencyUserId?: string;
-	public uinfin?: string;
-	public groups?: string[];
-	public services: string[];
-}
+export type MolAdminUserWithGroups = MolAdminUserContract & {
+	groups: string[];
+};
 
-export type MolAdminUserContract = Pick<
-	MolAdminUser,
-	// tslint:disable-next-line:max-union-size
-	'name' | 'email' | 'phoneNumber' | 'agencyUserId' | 'uinfin' | 'services'
->;
+export type MolAdminUserContract = {
+	name: string;
+	email: string;
+	phoneNumber: string;
+	agencyUserId?: string;
+	uinfin?: string;
+	services: string[];
+};
 
 export interface MolUpsertUsersResult {
 	/**
@@ -54,10 +50,10 @@ export interface MolUpsertUsersResult {
 	 */
 	failed?: MolUpsertUsersFailureResult[];
 }
+
 export interface IMolCognitoUserRequest {
-	username?: string;
 	name: string;
-	email: string;
+	email?: string;
 	phoneNumber: string;
 	agencyUserId?: string;
 	uinfin?: string;
@@ -65,12 +61,23 @@ export interface IMolCognitoUserRequest {
 }
 
 export interface IMolCognitoUserResponse {
-	sub?: string; // cognito id
-	username?: string;
+	sub: string; // cognito id
+	username: string;
 	name: string;
-	email: string;
+	email?: string;
 	phoneNumber: string;
 	agencyUserId?: string;
 	uinfin?: string;
-	groups?: string[];
+	groups: string[];
+}
+
+export function isMolUserMatch(
+	molUser: IMolCognitoUserResponse,
+	match: { agencyUserId?: string; uinfin?: string; email?: string },
+): boolean {
+	return (
+		(molUser.uinfin?.toLowerCase() || '') === (match.uinfin?.toLowerCase() || '') &&
+		(molUser.agencyUserId?.toLowerCase() || '') === (match.agencyUserId?.toLowerCase() || '') &&
+		(molUser.email?.toLowerCase() || '') === (match.email?.toLowerCase() || '')
+	);
 }

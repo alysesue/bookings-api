@@ -125,6 +125,6 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	}
 
 	public getServiceRef() {
-		return this._name.toLocaleLowerCase().replace(/ /g, '');
+		return this._name.toLowerCase().replace(/ /g, '');
 	}
 }

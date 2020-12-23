@@ -147,15 +147,11 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 
 	public async save(serviceProvider: ServiceProvider): Promise<ServiceProvider> {
 		const repository = await this.getRepository();
-		if (serviceProvider?.agencyUserId) {
-			const spFound = await repository
-				.createQueryBuilder('sp')
-				.where('sp."_agencyUserId" = :agencyUserId', { agencyUserId: serviceProvider.agencyUserId })
-				.getOne();
-			if (spFound) {
-				serviceProvider.id = spFound?.id;
-			}
-		}
 		return await repository.save(serviceProvider);
+	}
+
+	public async saveMany(serviceProviders: ServiceProvider[]): Promise<ServiceProvider[]> {
+		const repository = await this.getRepository();
+		return await repository.save(serviceProviders);
 	}
 }
