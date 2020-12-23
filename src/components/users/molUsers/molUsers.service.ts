@@ -21,7 +21,18 @@ export class MolUsersServiceAuthForwarder extends MolUsersService {
 @InRequestScope
 export class MolUsersServiceLocal extends MolUsersService {
 	public async molUpsertUser(users: IMolCognitoUserRequest[]): Promise<MolUpsertUsersResult> {
-		const created = users.map((user) => ({ ...user, sub: uuidv4() }));
+		const created = users.map((user) => {
+			const username = user.uinfin ?? user.agencyUserId ?? user.email;
+			if (!username) {
+				throw new Error('MolUsersServiceLocal: User name undefined');
+			}
+			return {
+				...user,
+				sub: uuidv4(),
+				username,
+				groups: user.groups || [],
+			};
+		});
 
 		return Promise.resolve({ created });
 	}

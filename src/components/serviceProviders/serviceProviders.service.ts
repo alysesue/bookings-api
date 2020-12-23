@@ -2,7 +2,7 @@ import { isEmail, isSGPhoneNumber } from 'mol-lib-api-contract/utils';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { cloneDeep } from 'lodash';
-import { ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { Organisation, ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
 import {
 	MolServiceProviderOnboard,
@@ -19,9 +19,8 @@ import { UserContext } from '../../infrastructure/auth/userContext';
 import { CrudAction } from '../../enums/crudAction';
 import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract';
 import { ServiceProvidersMapper } from './serviceProviders.mapper';
-import { MolUpsertUsersResult } from '../users/molUsers/molUsers.apicontract';
+import { isMolUserMatch, MolUpsertUsersResult } from '../users/molUsers/molUsers.apicontract';
 import { MolUsersService } from '../users/molUsers/molUsers.service';
-import { UsersService } from '../users/users.service';
 import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 
 @InRequestScope
@@ -49,9 +48,6 @@ export class ServiceProvidersService {
 
 	@Inject
 	private userContext: UserContext;
-
-	@Inject
-	private usersService: UsersService;
 
 	@Inject
 	private molUsersService: MolUsersService;
@@ -136,17 +132,35 @@ export class ServiceProvidersService {
 		return sp;
 	}
 
-	private async mapAndValidateServiceProvidersOnboard(serviceProvidersOnboards: MolServiceProviderOnboard[]) {
-		const organisation = await this.userContext.verifyAndGetFirstAuthorisedOrganisation();
+	private async mapAndValidateServiceProvidersOnboard(
+		serviceProvidersOnboards: MolServiceProviderOnboard[],
+		organisation: Organisation,
+	) {
 		const serviceNames = serviceProvidersOnboards.map((sp) => sp.serviceName);
-
 		const allServices = await this.servicesService.createServices(serviceNames, organisation);
-		const serviceProviders = serviceProvidersOnboards.map((sp) => {
-			const matchSrv = allServices.find((srv) => srv.name.toLowerCase() === sp.serviceName.toLowerCase());
-			return this.mapper.mapToEntity(sp, matchSrv);
+
+		const existingServiceProviders = await this.serviceProvidersRepository.getServiceProviders({
+			organisationId: organisation.id,
+			skipAuthorisation: true,
 		});
 
-		await ServiceProvider.validateEntities(serviceProviders);
+		const serviceProviders = serviceProvidersOnboards.map((onboardingSp) => {
+			const service = allServices.find(
+				(svc) => svc.name.toLowerCase() === onboardingSp.serviceName.toLowerCase(),
+			);
+			let serviceProvider = existingServiceProviders.find(
+				(sp) => sp.serviceProviderGroupMap?.molAdminId?.toLowerCase() === onboardingSp.molAdminId.toLowerCase(),
+			);
+			if (!serviceProvider) {
+				serviceProvider = existingServiceProviders.find(
+					(sp) =>
+						!!onboardingSp.agencyUserId &&
+						sp.agencyUserId?.toLowerCase() === onboardingSp.agencyUserId.toLowerCase(),
+				);
+			}
+
+			return this.mapper.mapToEntity(onboardingSp, service, serviceProvider);
+		});
 
 		return serviceProviders;
 	}
@@ -154,12 +168,12 @@ export class ServiceProvidersService {
 	public async createServiceProviders(
 		serviceProviderOnboardContracts: MolServiceProviderOnboardContract[],
 	): Promise<MolUpsertUsersResult> {
-		const orga = await this.userContext.verifyAndGetFirstAuthorisedOrganisation(
+		const organisation = await this.userContext.verifyAndGetFirstAuthorisedOrganisation(
 			'Cannot add service provider with this organisation',
 		);
 		const molServiceProviderOnboards = MolUsersMapper.mapServiceProviderGroup(
 			serviceProviderOnboardContracts,
-			orga,
+			organisation,
 		);
 
 		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molServiceProviderOnboards);
@@ -167,26 +181,20 @@ export class ServiceProvidersService {
 		const upsertedMolUser = [...(res?.created || []), ...(res?.updated || [])];
 
 		if (upsertedMolUser.length > 0) {
-			await this.usersService.upsertAdminUsers(upsertedMolUser);
 			const upsertedAdminUsers: MolServiceProviderOnboard[] = [];
 			molServiceProviderOnboards.forEach((adminUser) => {
-				const matchMolUser = upsertedMolUser.find(
-					(molUser) =>
-						(!!adminUser.agencyUserId && molUser.agencyUserId === adminUser.agencyUserId) ||
-						(!!adminUser.uinfin && molUser.uinfin === adminUser.uinfin) ||
-						(!!adminUser.email && molUser.email === adminUser.email),
-				);
+				const matchMolUser = upsertedMolUser.find((molUser) => isMolUserMatch(molUser, adminUser));
 				if (matchMolUser) {
-					upsertedAdminUsers.push({ ...adminUser, molAdminId: matchMolUser.sub });
+					upsertedAdminUsers.push({
+						...adminUser,
+						molAdminId: matchMolUser.sub,
+						username: matchMolUser.username,
+					});
 				}
 			});
-			const sps = await this.mapAndValidateServiceProvidersOnboard(upsertedAdminUsers);
-			await Promise.allSettled(
-				sps.map(async (sp) => {
-					await this.verifyActionPermission(sp, CrudAction.Create);
-					return await this.serviceProvidersRepository.save(sp);
-				}),
-			);
+
+			const sps = await this.mapAndValidateServiceProvidersOnboard(upsertedAdminUsers, organisation);
+			await this.serviceProvidersRepository.saveMany(sps);
 		}
 		return res;
 	}

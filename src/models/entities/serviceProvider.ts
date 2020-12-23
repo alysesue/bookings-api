@@ -5,19 +5,13 @@ import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
 import { User } from './user';
 import { ScheduleForm } from './scheduleForm';
 import { TimeslotsSchedule } from './timeslotsSchedule';
-import { BusinessValidation } from '../businessValidation';
-import { AbstractEntity } from './abstractEntity';
 
 const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
 const DEFAULT_SCHEFULE_FORM_CONFIRMED = false;
 
 @Entity()
-export class ServiceProvider
-	extends AbstractEntity
-	implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
-	constructor() {
-		super();
-	}
+export class ServiceProvider implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
+	constructor() {}
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
@@ -58,7 +52,6 @@ export class ServiceProvider
 	}
 
 	@Column({ type: 'varchar', length: 100, nullable: true })
-	@Index({ unique: true })
 	private _agencyUserId: string;
 
 	public get agencyUserId() {
@@ -219,9 +212,5 @@ export class ServiceProvider
 
 	public set linkedUser(value: User) {
 		this._linkedUser = value;
-	}
-
-	public async *asyncValidate(): AsyncIterable<BusinessValidation> {
-		if (!this.service) yield new BusinessValidation(`For service provider: ${this.name}. Service not found`);
 	}
 }

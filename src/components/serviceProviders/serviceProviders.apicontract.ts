@@ -13,25 +13,24 @@ export class ServiceProviderModel {
 	}
 }
 
-export interface MolServiceProviderOnboard {
-	username?: string;
+export type MolServiceProviderWithGroups = MolServiceProviderOnboardContract & {
+	groups: string[];
+};
+
+export type MolServiceProviderOnboard = MolServiceProviderWithGroups & {
+	username: string;
+	molAdminId: string;
+};
+
+export type MolServiceProviderOnboardContract = {
 	name: string;
-	email: string;
+	email?: string;
 	phoneNumber: string;
 	agencyUserId?: string;
 	uinfin?: string;
-	molAdminId?: string;
-	groups?: string[];
-
 	serviceName: string;
 	autoAcceptBookings?: boolean;
-}
-
-export type MolServiceProviderOnboardContract = Pick<
-	MolServiceProviderOnboard,
-	// tslint:disable-next-line:max-union-size
-	'name' | 'email' | 'phoneNumber' | 'agencyUserId' | 'uinfin' | 'serviceName' | 'autoAcceptBookings'
->;
+};
 
 export class ServiceProviderResponseModel {
 	/**
