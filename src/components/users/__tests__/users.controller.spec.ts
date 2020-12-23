@@ -13,7 +13,7 @@ import {
 import { UserProfileResponse } from '../users.apicontract';
 import { ServicesService } from '../../services/services.service';
 import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
-import { MolAdminUserContract, MolUpsertUsersResult } from '../molUsers/molUsers.apicontract';
+import { MolServiceAdminUserContract, MolUpsertUsersResult } from '../molUsers/molUsers.apicontract';
 import { MolServiceProviderOnboard } from '../../serviceProviders/serviceProviders.apicontract';
 
 afterAll(() => {
@@ -201,7 +201,7 @@ describe('users controller', () => {
 
 	it('should call createServicesAdmins', async () => {
 		ServiceProvidersServiceMock.createServiceProviders.mockReturnValue(Promise.resolve([]));
-		await Container.get(UsersController).createServicesAdmins({} as MolAdminUserContract[]);
+		await Container.get(UsersController).createServicesAdmins({} as MolServiceAdminUserContract[]);
 
 		expect(ServicesServiceMock.createServicesAdmins).toBeCalled();
 	});

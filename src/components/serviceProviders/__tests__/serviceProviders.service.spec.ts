@@ -33,7 +33,7 @@ import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.repository';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
 import { MolUsersService } from '../../users/molUsers/molUsers.service';
-import { MolAdminUserContract } from '../../users/molUsers/molUsers.apicontract';
+import { IMolCognitoUserResponse } from '../../users/molUsers/molUsers.apicontract';
 import { OrganisationsNoauthRepository } from '../../organisations/organisations.noauth.repository';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { MolUsersServiceMock } from '../../users/molUsers/__mocks__/molUsers.service';
@@ -165,19 +165,16 @@ describe('ServiceProviders.Service', () => {
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [serviceMockWithTemplate])]),
 		);
-		const molAdminUserContracts = [
-			{
-				name: 'name',
-				email: 'email',
-				agencyUserId: 'asd',
-				phoneNumber: 'phoneNumber',
-				serviceNames: ['service 1'],
-			},
-		] as MolAdminUserContract[];
+		const molUserContract = {
+			...spOnboard,
+			sub: 'd080f6ed-3b47-478a-a6c6-dfb5608a198d',
+			username: 'username',
+			groups: ['bookingsg:service-provider:orgTest'],
+		} as IMolCognitoUserResponse;
 
-		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: molAdminUserContracts }));
+		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: [molUserContract] }));
 		UserContextMock.getFirstAuthorisedOrganisation.mockReturnValue(Promise.resolve(organisation));
-		UsersServiceMock.upsertAdminUsers.mockReturnValue(Promise.resolve([spOnboard as any]));
+
 		ServicesServiceMockMock.getServices.mockReturnValue(Promise.resolve([]));
 		ServicesServiceMockMock.createServices.mockReturnValue(Promise.resolve([{ name: 'service 1' }]));
 		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([] as ServiceProvider[]));

@@ -53,7 +53,7 @@ export class ServiceProvidersController extends Controller {
 	/**
 	 * @deprecated use onboard atm
 	 */
-	private static parseCsvModelToServiceProviders(csvModels: []) {
+	private static parseCsvModelToServiceProviders(csvModels: any[]) {
 		try {
 			const serviceProvidersRequest = csvModels as ServiceProviderModel[];
 

@@ -27,7 +27,8 @@ import { OrganisationsNoauthRepository } from '../../organisations/organisations
 import { MolUsersService } from '../../users/molUsers/molUsers.service';
 import {
 	IMolCognitoUserRequest,
-	MolAdminUserContract,
+	IMolCognitoUserResponse,
+	MolServiceAdminUserContract,
 	MolUpsertUsersResult,
 } from '../../users/molUsers/molUsers.apicontract';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
@@ -102,21 +103,27 @@ organisation._organisationAdminGroupMap = { organisationRef: 'orga', organisatio
 
 describe('Services service tests', () => {
 	it('should create admin service and service', async () => {
-		const admins = [
-			{
-				name: 'name',
-				email: 'email',
-				phoneNumber: 'phoneNumber',
-				serviceNames: ['service 1'],
-			},
-		] as MolAdminUserContract[];
-		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: admins }));
+		const admin = {
+			name: 'name',
+			email: 'email',
+			phoneNumber: 'phoneNumber',
+			serviceNames: ['service1'],
+		} as MolServiceAdminUserContract;
+
+		const molUser = {
+			...admin,
+			sub: 'd080f6ed-3b47-478a-a6c6-dfb5608a198d',
+			username: 'username',
+			groups: ['bookingsg:svc-admin-service1:orga'],
+		} as IMolCognitoUserResponse;
+
+		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: [molUser] }));
 		UserContextMock.getFirstAuthorisedOrganisation.mockReturnValue(Promise.resolve(organisation));
-		UsersServiceMock.upsertAdminUsers.mockReturnValue(Promise.resolve([admins as any]));
+
 		ServicesRepositoryMock.getServicesByName.mockReturnValue(Promise.resolve([]));
 		ServicesRepositoryMock.saveMany.mockReturnValue(Promise.resolve([]));
 
-		await Container.get(ServicesService).createServicesAdmins(admins);
+		await Container.get(ServicesService).createServicesAdmins([admin]);
 		expect(MolUsersServiceMock.molUpsertUser).toBeCalled();
 		expect(ServicesRepositoryMock.getServicesByName).toBeCalled();
 		expect(ServicesRepositoryMock.saveMany).toBeCalled();
