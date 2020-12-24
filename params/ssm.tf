@@ -70,15 +70,6 @@ resource "aws_ssm_parameter" "db-password_bookingsg_app" {
   overwrite = true
 }
 
-resource "aws_ssm_parameter" "db-password_bookingsg_app" {
-  name   = "${local.path-prefix}/DB_PASSWORD_BOOKINGSG_APP"
-  type   = "SecureString"
-  key_id = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
-  value  = "${data.external.static.result.DB_PASSWORD_BOOKINGSG_APP}"
-
-  overwrite = true
-}
-
 resource "aws_ssm_parameter" "mol_admin_auth_forwarder_url" {
   name   = "${local.path-prefix}/MOL_ADMIN_AUTH_FORWARDER_URL"
   type   = "SecureString"
