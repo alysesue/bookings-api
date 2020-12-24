@@ -9,20 +9,24 @@ describe('Tests endpoint and populate data', () => {
 	const pgClient = new PgClient();
 	let service;
 
-	beforeAll(async () => {
+	beforeAll(async (done) => {
 		await pgClient.cleanAllTables();
+		done();
 	});
 
-	afterAll(async () => {
+	afterAll(async (done) => {
 		await pgClient.close();
+		done();
 	});
 
-	beforeEach(async () => {
+	beforeEach(async (done) => {
 		service = await populateService({});
+		done();
 	});
 
-	afterEach(async () => {
+	afterEach(async (done) => {
 		await pgClient.cleanAllTables();
+		done();
 	});
 
 	it('Post & Get serviceProvider', async () => {

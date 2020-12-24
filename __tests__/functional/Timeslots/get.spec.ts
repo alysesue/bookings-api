@@ -34,25 +34,29 @@ describe('Timeslots functional tests', () => {
 	let serviceId2;
 	let serviceId3;
 
-	beforeAll(async () => {
+	afterAll(async (done) => {
 		await pgClient.cleanAllTables();
-	});
-	afterAll(async () => {
 		await pgClient.close();
+		done();
 	});
 
-	beforeEach(async () => {
+	beforeEach(async (done) => {
+		await pgClient.cleanAllTables();
+
 		result1 = await populateUserServiceProvider({
 			nameService: NAME_SERVICE_1,
 			serviceProviderName: SERVICE_PROVIDER_NAME_1,
+			agencyUserId: 'A001',
 		});
 		result2 = await populateUserServiceProvider({
 			nameService: NAME_SERVICE_2,
 			serviceProviderName: SERVICE_PROVIDER_NAME_2,
+			agencyUserId: 'A002',
 		});
 		result3 = await populateUserServiceProvider({
 			nameService: NAME_SERVICE_3,
 			serviceProviderName: SERVICE_PROVIDER_NAME_3,
+			agencyUserId: 'A003',
 		});
 
 		serviceProvider1 = result1.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);
@@ -84,10 +88,8 @@ describe('Timeslots functional tests', () => {
 			endTime: END_TIME_3,
 			capacity: CAPACITY,
 		});
-	});
 
-	afterEach(async () => {
-		await pgClient.cleanAllTables();
+		done();
 	});
 
 	it('organisation admin should get all timeslot schedules', async () => {
@@ -139,11 +141,14 @@ describe('Timeslots functional tests', () => {
 	});
 
 	it('service provider should only get their timeslot schedule', async () => {
-		const molAdaminId = await pgClient.getMolAdminIdWithAgencyUserId(serviceProvider1.agencyUserId);
+		const molAdminId = await pgClient.getAdminIdForServiceProvider({
+			serviceProviderId: serviceProvider1.id,
+		});
+
 		const service1TimeslotsResponse = await ServiceProviderRequestEndpointSG.create({
 			nameService: NAME_SERVICE_1,
 			serviceId: serviceId1,
-			molAdminId: molAdaminId,
+			molAdminId,
 		}).get(`/service-providers/${serviceProvider1.id}/timeslotSchedule`);
 		expect(service1TimeslotsResponse.statusCode).toEqual(200);
 		expect(service1TimeslotsResponse.body.data.timeslots[0].startTime).toEqual(START_TIME_1);

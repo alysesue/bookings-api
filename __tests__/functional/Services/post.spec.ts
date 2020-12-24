@@ -5,15 +5,18 @@ describe('Tests endpoint and populate data', () => {
 	const SERVICE_NAME = 'Service';
 	const pgClient = new PgClient();
 
-	beforeAll(async () => {
+	beforeAll(async (done) => {
 		await pgClient.cleanAllTables();
+		done();
 	});
-	afterAll(async () => {
+	afterAll(async (done) => {
 		await pgClient.close();
+		done();
 	});
 
-	afterEach(async () => {
+	afterEach(async (done) => {
 		await pgClient.cleanAllTables();
+		done();
 	});
 
 	it('Post service', async () => {

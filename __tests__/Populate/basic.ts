@@ -38,18 +38,28 @@ export const populateServiceAndServiceProvider = async ({
 };
 
 export const populateUserServiceProvider = async ({
+	uinfin,
+	email,
+	agencyUserId,
 	organisation = 'localorg',
 	nameService = 'admin',
 	serviceProviderName = 'sp',
+}: {
+	organisation?: string;
+	nameService?: string;
+	serviceProviderName?: string;
+	uinfin?: string;
+	agencyUserId: string; // making this required, so we can identify the service provider user
+	email?: string;
 }): Promise<{ services: ServiceResponse; serviceProviders: ServiceProviderResponseModel }> => {
 	await OrganisationAdminRequestEndpointSG.create({ organisation }).post('/users/service-providers/upsert', {
 		body: [
 			{
 				name: serviceProviderName,
 				phoneNumber: '+33 3333 3333',
-				email: 'ad@ad.com',
-				agencyUserId: '001',
-				uinfin: 'S6752764Z',
+				uinfin,
+				agencyUserId,
+				email,
 				serviceName: nameService,
 			},
 		],

@@ -42,17 +42,10 @@ export class PgClient {
 		);
 	}
 
-	public async mapServiceProviderToAdminId({ serviceProviderId, molAdminId }) {
-		await this.pool.query(
-			// tslint:disable-next-line:tsr-detect-sql-literal-injection
-			`INSERT INTO public.service_provider_group_map("_serviceProviderId","_molAdminId") values (${serviceProviderId}, '${molAdminId}')`,
-		);
-	}
-
-	public async getMolAdminIdWithAgencyUserId(agencyUserId): Promise<string> {
+	public async getAdminIdForServiceProvider({ serviceProviderId }): Promise<string> {
 		const res = await this.pool.query(
 			// tslint:disable-next-line:tsr-detect-sql-literal-injection
-			`SELECT "ad"."_molAdminId" from admin_user as ad where "ad"."_agencyUserId" = '${agencyUserId}'`,
+			`SELECT "map"."_molAdminId" from public.service_provider_group_map map where "map"."_serviceProviderId" = '${serviceProviderId}'`,
 		);
 		return res.rows[0]._molAdminId;
 	}
