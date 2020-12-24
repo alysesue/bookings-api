@@ -13,7 +13,6 @@ import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvi
 import { MapProcessor } from './mapProcessor';
 import { StopWatch } from '../../infrastructure/stopWatch';
 import { nextImmediateTick } from '../../infrastructure/immediateHelper';
-import { logger } from 'mol-lib-common';
 
 export class AvailableTimeslotProcessor extends MapProcessor<TimeslotKey, AvailableTimeslotProviders> {}
 
