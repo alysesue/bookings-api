@@ -115,7 +115,6 @@ describe('users controller', () => {
 		headers[MOLSecurityHeaderKeys.ADMIN_EMAIL] = 'test@email.com';
 		headers[MOLSecurityHeaderKeys.ADMIN_NAME] = 'Name';
 		headers[MOLSecurityHeaderKeys.ADMIN_GROUPS] = 'service-provider-service1:localorg';
-		headers[MOLSecurityHeaderKeys.ADMIN_AGENCY_USER_ID] = '12';
 
 		const userMock = User.createAdminUser({
 			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
