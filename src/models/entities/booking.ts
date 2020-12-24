@@ -165,6 +165,13 @@ export class Booking {
 	@Index()
 	private _onHoldDateTime: Date;
 
+	public get onHoldDateTime(): Date {
+		return this._onHoldDateTime;
+	}
+	public set onHoldDateTime(value: Date) {
+		this._onHoldDateTime = value;
+	}
+
 	public get citizenPhone(): string {
 		return this._citizenPhone;
 	}

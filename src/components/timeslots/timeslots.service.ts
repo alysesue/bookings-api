@@ -13,6 +13,7 @@ import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvi
 import { MapProcessor } from './mapProcessor';
 import { StopWatch } from '../../infrastructure/stopWatch';
 import { nextImmediateTick } from '../../infrastructure/immediateHelper';
+import { logger } from 'mol-lib-common';
 
 export class AvailableTimeslotProcessor extends MapProcessor<TimeslotKey, AvailableTimeslotProviders> {}
 
@@ -143,6 +144,18 @@ export class TimeslotsService {
 		});
 	}
 
+	private setOnHoldTimeslots(onHoldBookings: Booking[]): AvailableTimeslotProcessor {
+		const onHoldBookingsLookup = groupByKey(onHoldBookings, TimeslotsService.bookingKeySelector);
+
+		return new AvailableTimeslotProcessor(([_key, element]) => {
+			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
+			const elementOnHoldBookings = onHoldBookingsLookup.get(elementKey);
+			if (elementOnHoldBookings) {
+				element.setPendingBookings(elementOnHoldBookings);
+			}
+		});
+	}
+
 	public async getAggregatedTimeslots(
 		startDateTime: Date,
 		endDateTime: Date,
@@ -163,14 +176,18 @@ export class TimeslotsService {
 		const bookings = await this.bookingsRepository.search({
 			from: startDateTime,
 			to: endDateTime,
-			statuses: [BookingStatus.PendingApproval, BookingStatus.Accepted],
+			statuses: [BookingStatus.PendingApproval, BookingStatus.Accepted, BookingStatus.OnHold],
 			serviceId,
 			byPassAuth: true,
 		});
 
 		const acceptedBookings = bookings.filter((booking) => booking.status === BookingStatus.Accepted);
 		const pendingBookings = bookings.filter((booking) => booking.status === BookingStatus.PendingApproval);
-
+		const onHoldBookings = bookings.filter((booking) => {
+			const onHoldUntil = new Date(booking.onHoldDateTime);
+			onHoldUntil.setMinutes(onHoldUntil.getMinutes() + 5);
+			return booking.status === BookingStatus.OnHold && new Date() < onHoldUntil;
+		});
 		if (includeBookings) {
 			TimeslotsService.mergeAcceptedBookingsToTimeslots(aggregatedEntries, acceptedBookings);
 		}
@@ -191,6 +208,7 @@ export class TimeslotsService {
 			await this.filterUnavailabilities(startDateTime, endDateTime, serviceId),
 			this.setBookedProviders(acceptedBookings),
 			TimeslotsService.setPendingTimeslots(pendingBookings),
+			this.setOnHoldTimeslots(onHoldBookings),
 			await this.filterVisibleServiceProviders({ entries: mappedEntries, serviceId, serviceProviderId }),
 		];
 
