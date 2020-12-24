@@ -2,22 +2,27 @@ import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointS
 import { PgClient } from '../../utils/pgClient';
 
 describe('Tests endpoint and populate data', () => {
-    const SERVICE_NAME = 'Service';
-    const pgClient = new PgClient();
+	const SERVICE_NAME = 'Service';
+	const pgClient = new PgClient();
 
-    beforeAll(async () => {
-        await pgClient.cleanAllTables();
-    });
-    afterAll(async () => {
-        await pgClient.close();
-    });
+	beforeAll(async (done) => {
+		await pgClient.cleanAllTables();
+		done();
+	});
+	afterAll(async (done) => {
+		await pgClient.close();
+		done();
+	});
 
-    afterEach(async () => {
-        await pgClient.cleanAllTables();
-    });
+	afterEach(async (done) => {
+		await pgClient.cleanAllTables();
+		done();
+	});
 
-    it('Post service', async () => {
-        const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', { body: { name: SERVICE_NAME } });
-        expect(response.statusCode).toEqual(200);
-    });
+	it('Post service', async () => {
+		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
+			body: { name: SERVICE_NAME },
+		});
+		expect(response.statusCode).toEqual(200);
+	});
 });

@@ -3,24 +3,27 @@ import { PgClient } from '../../utils/pgClient';
 import { populateService } from '../../Populate/basic';
 
 describe('Tests endpoint and populate data', () => {
-    const SERVICE_NAME = 'Service';
-    const pgClient = new PgClient();
+	const SERVICE_NAME = 'Service';
+	const pgClient = new PgClient();
 
-    beforeAll(async () => {
-        await pgClient.cleanAllTables();
-    });
-    afterAll(async () => {
-        await pgClient.close();
-    });
+	beforeAll(async (done) => {
+		await pgClient.cleanAllTables();
+		done();
+	});
+	afterAll(async (done) => {
+		await pgClient.close();
+		done();
+	});
 
-    afterEach(async () => {
-        await pgClient.cleanAllTables();
-    });
+	afterEach(async (done) => {
+		await pgClient.cleanAllTables();
+		done();
+	});
 
-    it('Get service', async () => {
-        await populateService({ nameService: SERVICE_NAME });
-        const response = await OrganisationAdminRequestEndpointSG.create({}).get('/services');
-        expect(response.statusCode).toEqual(200);
-        expect(JSON.parse(response.body).data[0].name).toEqual(SERVICE_NAME);
-    });
+	it('Get service', async () => {
+		await populateService({ nameService: SERVICE_NAME });
+		const response = await OrganisationAdminRequestEndpointSG.create({}).get('/services');
+		expect(response.statusCode).toEqual(200);
+		expect(response.body.data[0].name).toEqual(SERVICE_NAME);
+	});
 });

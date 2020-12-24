@@ -1,9 +1,9 @@
 import { CaptchaService } from '../captcha.service';
 import { GoogleVerifyApiResponse } from '../captcha.apicontract';
-import { post } from '../../../interface';
+import { postCaptcha } from '../../../tools/fetch';
 
-jest.mock('../../../interface', () => ({
-	post: jest.fn(),
+jest.mock('../../../tools/fetch', () => ({
+	postCaptcha: jest.fn(),
 }));
 describe('Captcha Service', () => {
 	beforeEach(() => {
@@ -11,9 +11,9 @@ describe('Captcha Service', () => {
 	});
 	it('should verify token to google captcha api', async () => {
 		const returnVal = { success: true } as GoogleVerifyApiResponse;
-		(post as jest.Mock).mockImplementation(() => Promise.resolve(returnVal));
+		(postCaptcha as jest.Mock).mockImplementation(() => Promise.resolve(returnVal));
 		await CaptchaService.verify('123');
-		expect(post).toBeCalled();
+		expect(postCaptcha).toBeCalled();
 	});
 
 	it('should return false when no token is provided', async () => {

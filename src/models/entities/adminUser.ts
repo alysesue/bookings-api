@@ -17,7 +17,6 @@ export class AdminUser {
 	private _molAdminId: string;
 
 	@Column({ type: 'varchar', length: 100, nullable: true })
-	@Index({ unique: true })
 	private _agencyUserId: string;
 
 	@Column({ type: 'varchar', length: 100, nullable: true })

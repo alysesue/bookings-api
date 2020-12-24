@@ -6,10 +6,7 @@ import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
-import { UserContext } from '../../../infrastructure/auth/userContext';
 import { BookingChangeLogsService } from '../../bookingChangeLogs/bookingChangeLogs.service';
-import { ServicesService } from '../../services/services.service';
-import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
@@ -93,36 +90,12 @@ export class UnavailabilitiesServiceMock implements Partial<UnavailabilitiesServ
 	}
 }
 
-export class UserContextMock implements Partial<UserContext> {
-	public static getCurrentUser = jest.fn<Promise<User>, any>();
-	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
-
-	public init() {}
-	public async getCurrentUser(...params): Promise<any> {
-		return await UserContextMock.getCurrentUser(...params);
-	}
-
-	public async getAuthGroups(...params): Promise<any> {
-		return await UserContextMock.getAuthGroups(...params);
-	}
-}
-
 export class BookingChangeLogsServiceMock implements Partial<BookingChangeLogsService> {
 	public static executeAndLogAction = jest.fn();
 	public static action: ChangeLogAction;
 
 	public async executeAndLogAction(...params): Promise<any> {
 		return await BookingChangeLogsServiceMock.executeAndLogAction(...params);
-	}
-}
-
-export class ServicesServiceMock implements Partial<ServicesService> {
-	public static getService = jest.fn();
-
-	public init() {}
-
-	public async getService(...params): Promise<any> {
-		return await ServicesServiceMock.getService(...params);
 	}
 }
 

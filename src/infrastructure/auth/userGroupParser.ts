@@ -108,6 +108,14 @@ export class UserGroupParser {
 
 		return null;
 	}
+
+	public static generateServiceAdminUserGroup(serviceOrganisationRef: string): string {
+		return `${BookingSGToken}:${ServiceAdminToken}${serviceOrganisationRef}`;
+	}
+
+	public static generateServiceProviderUserGroup(organisationRef: string): string {
+		return `${BookingSGToken}:${ServiceProviderToken}:${organisationRef}`;
+	}
 }
 
 export enum UserGroupRole {

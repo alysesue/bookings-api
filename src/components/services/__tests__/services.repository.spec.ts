@@ -1,6 +1,6 @@
 import { ServicesRepository } from '../services.repository';
 import { Container } from 'typescript-ioc';
-import { ScheduleForm, Service, TimeslotsSchedule, User } from '../../../models';
+import { Organisation, ScheduleForm, Service, ServiceAdminGroupMap, TimeslotsSchedule, User } from '../../../models';
 import { ScheduleFormsRepository } from '../../scheduleForms/scheduleForms.repository';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TransactionManager } from '../../../core/transactionManager';
@@ -35,7 +35,7 @@ describe('Services repository', () => {
 	it('should get list of services', async () => {
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
-			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve([])),
 		};
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
@@ -50,7 +50,7 @@ describe('Services repository', () => {
 		const data = new Service();
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
-			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve(data)),
 		};
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
@@ -74,7 +74,7 @@ describe('Services repository', () => {
 
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
-			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve(data)),
 		};
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
@@ -98,7 +98,7 @@ describe('Services repository', () => {
 
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
-			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve(data)),
 		};
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
@@ -112,6 +112,17 @@ describe('Services repository', () => {
 	it('should save a service', async () => {
 		const service: Service = new Service();
 		service.name = 'Coaches';
+		service.organisation = {} as Organisation;
+		service.organisation.name = 'localorg';
+		service.organisation.id = 1;
+		service.serviceAdminGroupMap = {} as ServiceAdminGroupMap;
+
+		const queryBuilderMock = {
+			andWhere: jest.fn(() => queryBuilderMock),
+			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve(service)),
+		};
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(service));
 		const repository = Container.get(ServicesRepository);

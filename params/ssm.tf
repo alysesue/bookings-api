@@ -37,15 +37,6 @@ resource "aws_ssm_parameter" "bookingsg-db_port" {
   overwrite = true
 }
 
-resource "aws_ssm_parameter" "bookingsg-db_host" {
-  name  = "${local.path-prefix}/BOOKINGSG_DB_HOST"
-  type  = "String"
-  value = "${data.external.static.result.BOOKINGSG_DB_HOST}"
-
-  overwrite = true
-}
-
-
 # resource "aws_ssm_parameter" "test" {
 #   name  = "${local.path-prefix}/TEST"
 #   type  = "String"
@@ -69,11 +60,30 @@ resource "aws_ssm_parameter" "bookingsg-db_username" {
 
   overwrite = true
 }
+
 resource "aws_ssm_parameter" "db-password_bookingsg_app" {
   name   = "${local.path-prefix}/DB_PASSWORD_BOOKINGSG_APP"
   type   = "SecureString"
   key_id = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
   value  = "${data.external.static.result.DB_PASSWORD_BOOKINGSG_APP}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "db-password_bookingsg_app" {
+  name   = "${local.path-prefix}/DB_PASSWORD_BOOKINGSG_APP"
+  type   = "SecureString"
+  key_id = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
+  value  = "${data.external.static.result.DB_PASSWORD_BOOKINGSG_APP}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "mol_admin_auth_forwarder_url" {
+  name   = "${local.path-prefix}/MOL_ADMIN_AUTH_FORWARDER_URL"
+  type   = "SecureString"
+  key_id = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
+  value  = "${data.external.static.result.MOL_ADMIN_AUTH_FORWARDER_URL}"
 
   overwrite = true
 }

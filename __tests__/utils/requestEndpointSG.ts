@@ -5,7 +5,7 @@ class RequestEndpointSG extends RequestEndpoint {
 
 	constructor() {
 		super();
-		this.setBaseUrl(this.BASE_URL).setHeader('Content-Type', 'application/json');
+		this.setBaseUrl(this.BASE_URL).setJson();
 	}
 
 	public setHeaders = (headerObject: { [e: string]: string }) => {
@@ -109,16 +109,18 @@ export class ServiceProviderRequestEndpointSG extends RequestEndpointSG {
 		organisation = 'localorg',
 		nameService = 'admin',
 		serviceId,
+		molAdminId = 'e20a41ba-390f-11eb-adc1-0242ac120002',
 	}: {
 		organisation?: string;
 		nameService?: string;
 		serviceId?: string;
+		molAdminId?: string;
 	}): ServiceProviderRequestEndpointSG => {
 		const apiService = serviceId ? { 'x-api-service': serviceId } : {};
 		const headers = {
 			'mol-admin-email': `${nameService}@palo-it.com`,
 			'mol-admin-groups': `bookingsg:service-provider:${organisation}`,
-			'mol-admin-id': `e20a41ba-390f-11eb-adc1-0242ac120002`,
+			'mol-admin-id': molAdminId,
 			'mol-admin-name': `${nameService} The Admin`,
 			'mol-admin-username': `${nameService}User`,
 			...apiService,
@@ -143,11 +145,7 @@ export class CitizenRequestEndpointSG extends RequestEndpointSG {
 		'mol-auth-type': 'USER',
 	};
 
-	public static create = ({
-		serviceId,
-	}: {
-		serviceId?: string;
-	}): CitizenRequestEndpointSG => {
+	public static create = ({ serviceId }: { serviceId?: string }): CitizenRequestEndpointSG => {
 		const apiService = serviceId ? { 'x-api-service': serviceId } : {};
 		const headers = {
 			'mol-token-bypass': 'true',

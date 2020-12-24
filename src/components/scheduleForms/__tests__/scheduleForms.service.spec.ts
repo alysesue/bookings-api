@@ -8,10 +8,10 @@ import { MOLErrorV2 } from 'mol-lib-api-contract';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { ScheduleFormsActionAuthVisitor } from '../scheduleForms.auth';
 import { UserContext } from '../../../infrastructure/auth/userContext';
-import { UserContextMock } from '../../bookings/__tests__/bookings.mocks';
 import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { AsyncFunction, TransactionManager } from '../../../core/transactionManager';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
+import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 
 jest.mock('../scheduleForms.auth');
 

@@ -12,6 +12,7 @@ const DEFAULT_SCHEFULE_FORM_CONFIRMED = false;
 @Entity()
 export class ServiceProvider implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
 	constructor() {}
+
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
@@ -23,8 +24,16 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._id = id;
 	}
 
-	@OneToOne((type) => ServiceProviderGroupMap, (e) => e._serviceProvider, { nullable: true })
-	public _serviceProviderGroupMap: ServiceProviderGroupMap;
+	@OneToOne(() => ServiceProviderGroupMap, (e) => e._serviceProvider, { nullable: true, cascade: true })
+	private _serviceProviderGroupMap: ServiceProviderGroupMap;
+
+	public get serviceProviderGroupMap(): ServiceProviderGroupMap {
+		return this._serviceProviderGroupMap;
+	}
+
+	public set serviceProviderGroupMap(value: ServiceProviderGroupMap) {
+		this._serviceProviderGroupMap = value;
+	}
 
 	public get autoAcceptBookings(): boolean {
 		return this._autoAcceptBookings;
@@ -42,6 +51,17 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._createdAt = value;
 	}
 
+	@Column({ type: 'varchar', length: 100, nullable: true })
+	private _agencyUserId: string;
+
+	public get agencyUserId() {
+		return this._agencyUserId;
+	}
+
+	public set agencyUserId(value: string) {
+		this._agencyUserId = value;
+	}
+
 	@Column()
 	private _createdAt: Date;
 
@@ -57,7 +77,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._serviceId = value;
 	}
 
-	@ManyToOne((type) => Service)
+	@ManyToOne(() => Service)
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
@@ -90,14 +110,22 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._scheduleFormConfirmed = value;
 	}
 
-	public static create(name: string, serviceId: number, email?: string, phone?: string) {
+	public static create(
+		name: string,
+		serviceId: number,
+		email?: string,
+		phone?: string,
+		agencyUserId?: string,
+		autoAcceptBookings = DEFAULT_AUTO_ACCEPT_BOOKINGS,
+	) {
 		const instance = new ServiceProvider();
 		instance._serviceId = serviceId;
 		instance._name = name;
 		instance._createdAt = new Date();
 		instance._email = email;
 		instance._phone = phone;
-		instance._autoAcceptBookings = DEFAULT_AUTO_ACCEPT_BOOKINGS;
+		instance._agencyUserId = agencyUserId;
+		instance._autoAcceptBookings = autoAcceptBookings;
 		instance._scheduleFormConfirmed = DEFAULT_SCHEFULE_FORM_CONFIRMED;
 		return instance;
 	}
@@ -184,9 +212,5 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 
 	public set linkedUser(value: User) {
 		this._linkedUser = value;
-	}
-
-	public get agencyUserId(): string {
-		return this._linkedUser?.adminUser?.agencyUserId;
 	}
 }

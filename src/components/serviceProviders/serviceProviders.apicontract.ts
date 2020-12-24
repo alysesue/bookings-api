@@ -13,6 +13,25 @@ export class ServiceProviderModel {
 	}
 }
 
+export type MolServiceProviderOnboardContract = {
+	name: string;
+	email?: string;
+	phoneNumber: string;
+	agencyUserId?: string;
+	uinfin?: string;
+	serviceName: string;
+	autoAcceptBookings?: boolean;
+};
+
+export type MolServiceProviderWithGroups = MolServiceProviderOnboardContract & {
+	groups: string[];
+};
+
+export type MolServiceProviderOnboard = MolServiceProviderWithGroups & {
+	username: string;
+	molAdminId: string;
+};
+
 export class ServiceProviderResponseModel {
 	/**
 	 * @isInt

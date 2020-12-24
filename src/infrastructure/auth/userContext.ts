@@ -1,9 +1,10 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ContainerContext } from '../containerContext.middleware';
-import { User } from '../../models';
+import { Organisation, User } from '../../models';
 import { UsersService } from '../../components/users/users.service';
-import { AnonymousAuthGroup, AuthGroup, CitizenAuthGroup } from './authGroup';
+import { AnonymousAuthGroup, AuthGroup, CitizenAuthGroup, OrganisationAdminAuthGroup } from './authGroup';
 import { AsyncLazy } from '../../tools/asyncLazy';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { AnonymousCookieData } from '../bookingSGCookieHelper';
 
 @InRequestScope
@@ -63,6 +64,17 @@ export class UserContext {
 		} else {
 			const usersService = this.containerContext.resolve(UsersService);
 			return await usersService.getUserGroupsFromHeaders(user, this._requestHeaders);
+		}
+	}
+
+	public async verifyAndGetFirstAuthorisedOrganisation(errorMessage?: string): Promise<Organisation> {
+		const orgAdmins = (await this._authGroups.getValue()).filter(
+			(g) => g instanceof OrganisationAdminAuthGroup,
+		) as OrganisationAdminAuthGroup[];
+		if (orgAdmins.length === 0) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(errorMessage);
+		} else {
+			return orgAdmins[0].authorisedOrganisations[0];
 		}
 	}
 }
