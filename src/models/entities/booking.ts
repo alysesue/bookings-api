@@ -186,16 +186,16 @@ export class Booking {
 
 	public static create(builder: BookingBuilder): Booking {
 		const instance = new Booking();
-		if (!builder.markOnHold) {
-			if (builder.serviceProviderId) {
-				instance._serviceProviderId = builder.serviceProviderId;
-				instance._status = builder.autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
+		if (builder.serviceProviderId) {
+			instance._serviceProviderId = builder.serviceProviderId;
+			if (builder.markOnHold) {
+				instance._status = BookingStatus.OnHold;
+				instance._onHoldDateTime = new Date();
 			} else {
-				instance._status = BookingStatus.PendingApproval;
+				instance._status = builder.autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
 			}
 		} else {
-			instance._status = BookingStatus.OnHold;
-			instance._onHoldDateTime = new Date();
+			instance._status = BookingStatus.PendingApproval;
 		}
 		instance._serviceId = builder.serviceId;
 		instance._startDateTime = builder.startDateTime;
