@@ -570,4 +570,39 @@ describe('Bookings.Service', () => {
 			).rejects.toThrowError();
 		});
 	});
+
+	describe('On Hold', () => {
+		const onHoldService = new Service();
+		onHoldService.id = 2;
+		onHoldService.isOnHold = true;
+		const onHoldServiceProvider = ServiceProvider.create('provider', 2);
+		onHoldServiceProvider.id = 2;
+		it('should mark booking as onhold and set the onhold current timestamp', async () => {
+			const bookingRequest: BookingRequest = new BookingRequest();
+			bookingRequest.startDateTime = new Date();
+			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+			bookingRequest.serviceProviderId = 2;
+			BookingRepositoryMock.searchBookingsMock = [];
+			const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
+			TimeslotsServiceMock.availableProvidersForTimeslot.set(onHoldServiceProvider, timeslotWithCapacity);
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
+			);
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(onHoldService));
+
+			await Container.get(BookingsService).save(bookingRequest, 2);
+
+			const booking = BookingRepositoryMock.booking;
+			const onHoldDateTime: any = new Date(booking.onHoldDateTime);
+			const timeNow: any = new Date();
+			const diffTimeinSeconds = Math.abs(onHoldDateTime - timeNow) / 1000;
+			expect(booking).not.toBe(undefined);
+			expect(booking.status).toBe(BookingStatus.OnHold);
+			expect(booking.onHoldDateTime).toBeInstanceOf(Date);
+			expect(booking.onHoldDateTime).not.toBeNull();
+			expect(diffTimeinSeconds).toBeLessThan(5);
+		});
+	});
 });
