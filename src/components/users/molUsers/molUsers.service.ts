@@ -13,7 +13,7 @@ export class MolUsersServiceAuthForwarder extends MolUsersService {
 	public async molUpsertUser(users: IMolCognitoUserRequest[]): Promise<MolUpsertUsersResult> {
 		const config = getConfig();
 		const URL_MOL_USER = `${config.molAdminAuthForwarder.url}/api/users/v1`;
-		const upsertRes = await post(URL_MOL_USER, users);
+		const upsertRes = await post(URL_MOL_USER, { users });
 		return upsertRes;
 	}
 }
