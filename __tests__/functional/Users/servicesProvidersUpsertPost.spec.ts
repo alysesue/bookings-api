@@ -25,7 +25,7 @@ describe('Tests endpoint and populate data', () => {
 				{
 					name: 'name',
 					email: 'email@email.com',
-					phoneNumber: '+33 3333 3333',
+					phoneNumber: '800 120 7163',
 					agencyUserId: '2',
 					uinfin: 'S8647188D',
 					serviceName: 'service',
@@ -45,7 +45,7 @@ describe('Tests endpoint and populate data', () => {
 				{
 					name: 'name',
 					email: 'email@email.com',
-					phoneNumber: '+33 3333 3333',
+					phoneNumber: '800 120 7163',
 					agencyUserId: '1',
 					uinfin: 'S8647188D',
 					serviceName: 'service',
@@ -58,7 +58,7 @@ describe('Tests endpoint and populate data', () => {
 				{
 					name: 'name2',
 					email: 'email@email.com',
-					phoneNumber: '+33 3333 3333',
+					phoneNumber: '800 120 7163',
 					agencyUserId: '1',
 					uinfin: 'S8647188D',
 					serviceName: 'service',

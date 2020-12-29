@@ -40,7 +40,7 @@ describe('BookingChangeLogs controller', () => {
 		.withEndDateTime(new Date(Date.UTC(2020, 0, 1, 15, 0)))
 		.build();
 	booking.id = 1;
-	booking.serviceProvider = ServiceProvider.create('name', 1, 'ad@as.com', '+33 3333 3333');
+	booking.serviceProvider = ServiceProvider.create('name', 1, 'ad@as.com', '800 120 7163');
 
 	it('should get logs', async () => {
 		const controller = Container.get(BookingChangeLogsController);
