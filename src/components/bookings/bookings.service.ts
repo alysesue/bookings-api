@@ -283,7 +283,7 @@ export class BookingsService {
 			.withCitizenPhone(bookingRequest.citizenPhone)
 			.withCitizenEmail(bookingRequest.citizenEmail)
 			.withAutoAccept(BookingsService.shouldAutoAccept(currentUser, serviceProvider))
-			.withMarkOnHold(service._isOnHold)
+			.withMarkOnHold(service.isOnHold)
 			.withCaptchaToken(bookingRequest.captchaToken)
 			.build();
 
