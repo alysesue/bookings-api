@@ -132,6 +132,11 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 			return; // stops iterable (method scoped)
 		}
 
+		if (await this.overlapsOtherOnHoldBooking(booking)) {
+			yield BookingBusinessValidations.OverlapsOnHoldBooking;
+			return; // stops iterable (method scoped)
+		}
+
 		if (
 			await this.unAvailabilitiesService.isUnavailable({
 				from: booking.startDateTime,
@@ -143,6 +148,24 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 		) {
 			yield BookingBusinessValidations.ServiceProviderNotAvailable;
 		}
+	}
+
+	private async overlapsOtherOnHoldBooking(booking: Booking): Promise<boolean> {
+		const HOLD_DURATION_IN_MINS = 5;
+		const searchQuery: BookingSearchQuery = {
+			from: booking.startDateTime,
+			to: booking.endDateTime,
+			statuses: [BookingStatus.OnHold],
+			serviceId: booking.serviceId,
+			serviceProviderId: booking.serviceProviderId,
+			byPassAuth: true,
+		};
+		const onHoldBookings = await this.bookingsRepository.search(searchQuery);
+		return onHoldBookings.some((onHoldbooking) => {
+			const onHoldUntil = new Date(onHoldbooking.onHoldDateTime);
+			onHoldUntil.setMinutes(onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
+			return onHoldbooking.status === BookingStatus.OnHold && new Date() < onHoldUntil;
+		});
 	}
 
 	private async overlapsOtherAccepted(booking: Booking): Promise<boolean> {
