@@ -56,7 +56,7 @@ export const populateUserServiceProvider = async ({
 		body: [
 			{
 				name: serviceProviderName,
-				phoneNumber: '800 120 7163',
+
 				uinfin,
 				agencyUserId,
 				email,

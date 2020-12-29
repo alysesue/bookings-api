@@ -194,7 +194,7 @@ describe('users controller', () => {
 
 	it('should call createServiceProviders with CSV', async () => {
 		ServiceProvidersServiceMock.createServiceProviders.mockReturnValue(Promise.resolve([]));
-		await Container.get(UsersController).onboardServiceProvidersCSV('');
+		await Container.get(UsersController).onboardServiceProvidersCSV('', '');
 
 		expect(ServiceProvidersServiceMock.createServiceProviders).toBeCalled();
 	});

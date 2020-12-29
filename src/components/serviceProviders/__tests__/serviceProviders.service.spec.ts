@@ -179,7 +179,7 @@ describe('ServiceProviders.Service', () => {
 		ServicesServiceMockMock.createServices.mockReturnValue(Promise.resolve([{ name: 'service 1' }]));
 		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([] as ServiceProvider[]));
 
-		await Container.get(ServiceProvidersService).createServiceProviders([spOnboard]);
+		await Container.get(ServiceProvidersService).createServiceProviders([spOnboard], '');
 		expect(ServiceProvidersRepositoryMock.getServiceProviders).toBeCalled();
 		expect(ServiceProvidersRepositoryMock.saveMany).toBeCalled();
 	});

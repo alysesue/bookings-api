@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Response, Route, SuccessResponse, Tags } from 'tsoa';
+import { Body, Controller, Get, Header, Post, Response, Route, SuccessResponse, Tags } from 'tsoa';
 import { MOLAuth } from 'mol-lib-common';
 import { Inject } from 'typescript-ioc';
 import { UserContext } from '../../infrastructure/auth/userContext';
@@ -80,9 +80,12 @@ export class UsersController extends Controller {
 	@SuccessResponse(200, 'Created')
 	@MOLAuth({ agency: {}, admin: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async onboardServiceProvidersCSV(@Body() spRequest: string): Promise<MolUpsertUsersResult> {
+	public async onboardServiceProvidersCSV(
+		@Body() spRequest: string,
+		@Header('cookie') cookie: string,
+	): Promise<MolUpsertUsersResult> {
 		const entries = parseCsv<MolServiceProviderOnboardContract>(spRequest);
-		return await this.serviceProvidersService.createServiceProviders(entries);
+		return await this.serviceProvidersService.createServiceProviders(entries, cookie);
 	}
 
 	/**
@@ -97,6 +100,6 @@ export class UsersController extends Controller {
 	public async onboardServiceProviders(
 		@Body() serviceProviderOnboards: MolServiceProviderOnboardContract[],
 	): Promise<MolUpsertUsersResult> {
-		return await this.serviceProvidersService.createServiceProviders(serviceProviderOnboards);
+		return await this.serviceProvidersService.createServiceProviders(serviceProviderOnboards, '');
 	}
 }

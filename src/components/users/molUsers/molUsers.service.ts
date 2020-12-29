@@ -5,16 +5,23 @@ import { post } from '../../../tools/fetch';
 import { getConfig } from '../../../config/app-config';
 
 export abstract class MolUsersService {
-	public abstract molUpsertUser(users: IMolCognitoUserRequest[]): Promise<MolUpsertUsersResult>;
+	public abstract molUpsertUser(
+		users: IMolCognitoUserRequest[],
+		authorisation?: string,
+	): Promise<MolUpsertUsersResult>;
 }
 
 @InRequestScope
 export class MolUsersServiceAuthForwarder extends MolUsersService {
-	public async molUpsertUser(users: IMolCognitoUserRequest[]): Promise<MolUpsertUsersResult> {
+	public async molUpsertUser(users: IMolCognitoUserRequest[], authorisation: string): Promise<MolUpsertUsersResult> {
 		const config = getConfig();
 		const URL_MOL_USER = `${config.molAdminAuthForwarder.url}/api/users/v1`;
-		const upsertRes = await post(URL_MOL_USER, { users });
-		return upsertRes;
+		try {
+			const upsertRes = await post(URL_MOL_USER, { users }, { Authorization: authorisation });
+			return upsertRes;
+		} catch (e) {
+			throw new Error(`MolUsersServiceAuthForwarder: ${e}`);
+		}
 	}
 }
 

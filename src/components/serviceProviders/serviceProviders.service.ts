@@ -167,6 +167,7 @@ export class ServiceProvidersService {
 
 	public async createServiceProviders(
 		serviceProviderOnboardContracts: MolServiceProviderOnboardContract[],
+		cookie: string,
 	): Promise<MolUpsertUsersResult> {
 		const organisation = await this.userContext.verifyAndGetFirstAuthorisedOrganisation(
 			'Cannot add service provider with this organisation',
@@ -176,7 +177,7 @@ export class ServiceProvidersService {
 			organisation,
 		);
 
-		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molServiceProviderOnboards);
+		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molServiceProviderOnboards, cookie);
 
 		const upsertedMolUser = [...(res?.created || []), ...(res?.updated || [])];
 
