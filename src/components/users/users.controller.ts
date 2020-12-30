@@ -48,13 +48,16 @@ export class UsersController extends Controller {
 	@SuccessResponse(200, 'Created')
 	@MOLAuth({ agency: {}, admin: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async createServicesAdminsCSV(@Body() serviceRequest: string): Promise<MolUpsertUsersResult> {
+	public async createServicesAdminsCSV(
+		@Body() serviceRequest: string,
+		@Header('cookie') cookie: string,
+	): Promise<MolUpsertUsersResult> {
 		const requestList = parseCsv<MolServiceAdminUserCSV>(serviceRequest);
 		const entries = requestList.map((user) => ({
 			...user,
 			serviceNames: stringToArrayOfStringWhenSemicolon(user.serviceNames),
 		}));
-		return await this.servicesService.createServicesAdmins(entries);
+		return await this.servicesService.createServicesAdmins(entries, cookie);
 	}
 
 	/**
@@ -67,8 +70,11 @@ export class UsersController extends Controller {
 	@SuccessResponse(200, 'Created')
 	@MOLAuth({ agency: {}, admin: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async createServicesAdmins(@Body() data: MolServiceAdminUserContract[]): Promise<MolUpsertUsersResult> {
-		return await this.servicesService.createServicesAdmins(data);
+	public async createServicesAdmins(
+		@Body() data: MolServiceAdminUserContract[],
+		@Header('cookie') cookie: string,
+	): Promise<MolUpsertUsersResult> {
+		return await this.servicesService.createServicesAdmins(data, cookie);
 	}
 
 	/**
@@ -99,7 +105,8 @@ export class UsersController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async onboardServiceProviders(
 		@Body() serviceProviderOnboards: MolServiceProviderOnboardContract[],
+		@Header('cookie') cookie: string,
 	): Promise<MolUpsertUsersResult> {
-		return await this.serviceProvidersService.createServiceProviders(serviceProviderOnboards, '');
+		return await this.serviceProvidersService.createServiceProviders(serviceProviderOnboards, cookie);
 	}
 }

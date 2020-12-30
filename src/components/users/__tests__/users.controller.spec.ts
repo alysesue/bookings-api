@@ -187,7 +187,7 @@ describe('users controller', () => {
 
 	it('should call createServiceProviders', async () => {
 		ServiceProvidersServiceMock.createServiceProviders.mockReturnValue(Promise.resolve([]));
-		await Container.get(UsersController).onboardServiceProviders({} as MolServiceProviderOnboard[]);
+		await Container.get(UsersController).onboardServiceProviders({} as MolServiceProviderOnboard[], '');
 
 		expect(ServiceProvidersServiceMock.createServiceProviders).toBeCalled();
 	});
@@ -201,14 +201,14 @@ describe('users controller', () => {
 
 	it('should call createServicesAdmins', async () => {
 		ServiceProvidersServiceMock.createServiceProviders.mockReturnValue(Promise.resolve([]));
-		await Container.get(UsersController).createServicesAdmins({} as MolServiceAdminUserContract[]);
+		await Container.get(UsersController).createServicesAdmins({} as MolServiceAdminUserContract[], '');
 
 		expect(ServicesServiceMock.createServicesAdmins).toBeCalled();
 	});
 
 	it('should call createServicesAdmins with CSV', async () => {
 		ServiceProvidersServiceMock.createServiceProviders.mockReturnValue(Promise.resolve([]));
-		await Container.get(UsersController).createServicesAdminsCSV('');
+		await Container.get(UsersController).createServicesAdminsCSV('', '');
 
 		expect(ServicesServiceMock.createServicesAdmins).toBeCalled();
 	});
