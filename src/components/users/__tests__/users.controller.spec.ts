@@ -11,6 +11,10 @@ import {
 	ServiceAdminAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
 import { UserProfileResponse } from '../users.apicontract';
+import { ServicesService } from '../../services/services.service';
+import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
+import { MolServiceAdminUserContract, MolUpsertUsersResult } from '../molUsers/molUsers.apicontract';
+import { MolServiceProviderOnboard } from '../../serviceProviders/serviceProviders.apicontract';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -19,10 +23,23 @@ afterAll(() => {
 
 beforeAll(() => {
 	Container.bind(UserContext).to(UserContextMock);
+	Container.bind(ServicesService).to(ServicesServiceMock);
+	Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
 });
 
 afterEach(() => {
 	jest.resetAllMocks();
+});
+
+jest.mock('mol-lib-common', () => {
+	const actual = jest.requireActual('mol-lib-common');
+	const mock = (config: any) => {
+		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
+	};
+	return {
+		...actual,
+		MOLAuth: mock,
+	};
 });
 
 describe('users controller', () => {
@@ -97,6 +114,8 @@ describe('users controller', () => {
 		headers[MOLSecurityHeaderKeys.ADMIN_USERNAME] = 'UserName';
 		headers[MOLSecurityHeaderKeys.ADMIN_EMAIL] = 'test@email.com';
 		headers[MOLSecurityHeaderKeys.ADMIN_NAME] = 'Name';
+		headers[MOLSecurityHeaderKeys.ADMIN_GROUPS] = 'service-provider-service1:localorg';
+		headers[MOLSecurityHeaderKeys.ADMIN_AGENCY_USER_ID] = '12';
 
 		const userMock = User.createAdminUser({
 			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
@@ -165,6 +184,34 @@ describe('users controller', () => {
 		const test = async () => await controller.getProfile();
 		await expect(test).rejects.toThrowError();
 	});
+
+	it('should call createServiceProviders', async () => {
+		ServiceProvidersServiceMock.createServiceProviders.mockReturnValue(Promise.resolve([]));
+		await Container.get(UsersController).onboardServiceProviders({} as MolServiceProviderOnboard[]);
+
+		expect(ServiceProvidersServiceMock.createServiceProviders).toBeCalled();
+	});
+
+	it('should call createServiceProviders with CSV', async () => {
+		ServiceProvidersServiceMock.createServiceProviders.mockReturnValue(Promise.resolve([]));
+		await Container.get(UsersController).onboardServiceProvidersCSV('', '');
+
+		expect(ServiceProvidersServiceMock.createServiceProviders).toBeCalled();
+	});
+
+	it('should call createServicesAdmins', async () => {
+		ServiceProvidersServiceMock.createServiceProviders.mockReturnValue(Promise.resolve([]));
+		await Container.get(UsersController).createServicesAdmins({} as MolServiceAdminUserContract[]);
+
+		expect(ServicesServiceMock.createServicesAdmins).toBeCalled();
+	});
+
+	it('should call createServicesAdmins with CSV', async () => {
+		ServiceProvidersServiceMock.createServiceProviders.mockReturnValue(Promise.resolve([]));
+		await Container.get(UsersController).createServicesAdminsCSV('');
+
+		expect(ServicesServiceMock.createServicesAdmins).toBeCalled();
+	});
 });
 
 class UserContextMock extends UserContext {
@@ -178,5 +225,23 @@ class UserContextMock extends UserContext {
 
 	public async getAuthGroups(...params): Promise<any> {
 		return await UserContextMock.getAuthGroups(...params);
+	}
+}
+
+class ServiceProvidersServiceMock extends ServiceProvidersService {
+	public static createServiceProviders = jest.fn();
+
+	public init() {}
+	public async createServiceProviders(...params): Promise<MolUpsertUsersResult> {
+		return await ServiceProvidersServiceMock.createServiceProviders(...params);
+	}
+}
+
+class ServicesServiceMock extends ServicesService {
+	public static createServicesAdmins = jest.fn();
+
+	public init() {}
+	public async createServicesAdmins(...params): Promise<MolUpsertUsersResult> {
+		return await ServicesServiceMock.createServicesAdmins(...params);
 	}
 }

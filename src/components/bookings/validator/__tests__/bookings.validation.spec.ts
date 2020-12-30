@@ -14,11 +14,11 @@ import {
 	ServiceProvidersRepositoryMock,
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
-	UserContextMock,
 } from '../../__tests__/bookings.mocks';
 import { TimeslotWithCapacity } from '../../../../models/timeslotWithCapacity';
 import { AvailableTimeslotProviders } from '../../../../components/timeslots/availableTimeslotProviders';
 import { CaptchaService } from '../../../captcha/captcha.service';
+import { UserContextMock } from '../../../../infrastructure/auth/__mocks__/userContext';
 
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
 	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;

@@ -1,6 +1,10 @@
 import { InRequestScope } from 'typescript-ioc';
-import { ServiceProvider } from '../../models';
-import { ServiceProviderResponseModel, ServiceProviderSummaryModel } from './serviceProviders.apicontract';
+import { Service, ServiceProvider, ServiceProviderGroupMap } from '../../models';
+import {
+	MolServiceProviderOnboard,
+	ServiceProviderResponseModel,
+	ServiceProviderSummaryModel,
+} from './serviceProviders.apicontract';
 import { mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
 import { mapToResponse as mapScheduleFormResponse } from '../scheduleForms/scheduleForms.mapper';
 
@@ -34,5 +38,38 @@ export class ServiceProvidersMapper {
 
 	public mapSummaryDataModels(entries: ServiceProvider[]): ServiceProviderSummaryModel[] {
 		return entries?.map((e) => this.mapSummaryDataModel(e));
+	}
+
+	public mapToEntity(
+		onboardingSp: MolServiceProviderOnboard,
+		service: Service,
+		entity: ServiceProvider | undefined,
+	): ServiceProvider {
+		if (!service) {
+			throw new Error('Service is required to create service provider');
+		}
+
+		let serviceProvider: ServiceProvider;
+		if (entity) {
+			serviceProvider = entity;
+			serviceProvider.name = onboardingSp.name;
+			serviceProvider.serviceId = service.id;
+		} else {
+			serviceProvider = ServiceProvider.create(onboardingSp.name, service.id);
+		}
+
+		serviceProvider.email = onboardingSp.email;
+		serviceProvider.phone = onboardingSp.phoneNumber;
+		serviceProvider.agencyUserId = onboardingSp.agencyUserId;
+		serviceProvider.autoAcceptBookings = onboardingSp.autoAcceptBookings;
+
+		serviceProvider.service = service;
+		serviceProvider.serviceId = service.id;
+
+		serviceProvider.serviceProviderGroupMap =
+			serviceProvider.serviceProviderGroupMap || new ServiceProviderGroupMap();
+		serviceProvider.serviceProviderGroupMap.molAdminId = onboardingSp.molAdminId;
+
+		return serviceProvider;
 	}
 }

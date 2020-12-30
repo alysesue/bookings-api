@@ -1,7 +1,7 @@
 import { Container } from 'typescript-ioc';
 import { BookingChangeLogsService } from '../bookingChangeLogs.service';
 import { BookingChangeLogsController } from '../bookingChangeLogs.controller';
-import { BookingChangeLog, ChangeLogAction, User } from '../../../models';
+import { BookingChangeLog, ChangeLogAction, ServiceProvider, User } from '../../../models';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { groupByKey } from '../../../tools/collections';
 
@@ -40,6 +40,7 @@ describe('BookingChangeLogs controller', () => {
 		.withEndDateTime(new Date(Date.UTC(2020, 0, 1, 15, 0)))
 		.build();
 	booking.id = 1;
+	booking.serviceProvider = ServiceProvider.create('name', 1, 'ad@as.com', '800 120 7163');
 
 	it('should get logs', async () => {
 		const controller = Container.get(BookingChangeLogsController);

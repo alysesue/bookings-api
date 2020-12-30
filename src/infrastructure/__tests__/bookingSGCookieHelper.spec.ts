@@ -34,7 +34,7 @@ describe('BookingSGCookieHelper tests', () => {
 		(AesEncryption as jest.Mock).mockReturnValue(AesEncryptionMock);
 		(getConfig as jest.Mock).mockReturnValue({
 			encryptionKey: '4hvph+8VIlDtm4e7e917gS1IyKbSYocKjylHsMdJYkg=',
-			isDev: false,
+			isLocal: false,
 		});
 	});
 
@@ -57,7 +57,7 @@ describe('BookingSGCookieHelper tests', () => {
 	it('should set cookie value (when in dev)', async () => {
 		(getConfig as jest.Mock).mockReturnValue({
 			encryptionKey: '4hvph+8VIlDtm4e7e917gS1IyKbSYocKjylHsMdJYkg=',
-			isDev: true,
+			isLocal: true,
 		});
 		const cookieHelper = Container.get(BookingSGCookieHelper);
 		const data = { createdAt: new Date(0), trackingId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f' };
@@ -123,7 +123,7 @@ describe('BookingSGCookieHelper tests', () => {
 	it('should delete mol bookie (when in DEV)', async () => {
 		(getConfig as jest.Mock).mockReturnValue({
 			encryptionKey: '4hvph+8VIlDtm4e7e917gS1IyKbSYocKjylHsMdJYkg=',
-			isDev: true,
+			isLocal: true,
 		});
 		const molCookieHelper = Container.get(MolCookieHelper);
 

@@ -1,6 +1,13 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Organisation, ScheduleForm, Service, TimeslotItem, TimeslotsSchedule } from '../../models';
+import {
+	Organisation,
+	ScheduleForm,
+	Service,
+	ServiceAdminGroupMap,
+	TimeslotItem,
+	TimeslotsSchedule,
+} from '../../models';
 import { ServicesRepository } from './services.repository';
 import { ServiceRequest } from './service.apicontract';
 import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
@@ -9,8 +16,16 @@ import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServicesActionAuthVisitor } from './services.auth';
 import { CrudAction } from '../../enums/crudAction';
-import { OrganisationAdminAuthGroup } from '../../infrastructure/auth/authGroup';
 import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract';
+import { OrganisationsNoauthRepository } from '../organisations/organisations.noauth.repository';
+import { MolUsersService } from '../users/molUsers/molUsers.service';
+import {
+	isMolUserMatch,
+	MolServiceAdminUserContract,
+	MolUpsertUsersResult,
+} from '../users/molUsers/molUsers.apicontract';
+import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
+import { uniqueStringArray } from '../../tools/collections';
 
 @InRequestScope
 export class ServicesService {
@@ -21,24 +36,75 @@ export class ServicesService {
 	@Inject
 	private timeslotItemsService: TimeslotItemsService;
 	@Inject
+	private organisationsRepository: OrganisationsNoauthRepository;
+	@Inject
+	private molUsersService: MolUsersService;
+	@Inject
 	private userContext: UserContext;
 
+	public async createServices(names: string[], organisation: Organisation): Promise<Service[]> {
+		const allServiceNames = uniqueStringArray(names, {
+			caseInsensitive: true,
+			skipEmpty: true,
+			trim: true,
+		});
+
+		const existingServices = await this.servicesRepository.getServicesByName({
+			names: allServiceNames,
+			organisationId: organisation.id,
+			skipAuthorisation: true,
+		});
+		for (const service of existingServices) {
+			service.serviceAdminGroupMap = service.serviceAdminGroupMap || new ServiceAdminGroupMap();
+			service.serviceAdminGroupMap.serviceOrganisationRef = ServiceAdminGroupMap.createServiceOrganisationRef(
+				service.getServiceRef(),
+				organisation._organisationAdminGroupMap.organisationRef,
+			);
+		}
+
+		const newServices = allServiceNames
+			.filter((name) => !existingServices.some((existing) => existing.name.toLowerCase() === name.toLowerCase()))
+			.map((s) => Service.create(s, organisation));
+
+		const allServices = [...existingServices, ...newServices];
+		await this.servicesRepository.saveMany(allServices);
+
+		return allServices;
+	}
+
+	public async createServicesAdmins(
+		adminUserContracts?: MolServiceAdminUserContract[],
+	): Promise<MolUpsertUsersResult> {
+		const orga = await this.userContext.verifyAndGetFirstAuthorisedOrganisation(
+			'User not authorized to add services.',
+		);
+		const molAdminUser = MolUsersMapper.mapServicesAdminsGroups(adminUserContracts, orga);
+		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molAdminUser);
+
+		if (res?.error) return res;
+		const upsertedMolUser = [...(res?.created || []), ...(res?.updated || [])];
+		if (upsertedMolUser) {
+			const upsertedAdminUsers = adminUserContracts.filter((adminUser) =>
+				upsertedMolUser.some((molUser) => isMolUserMatch(molUser, adminUser)),
+			);
+
+			const serviceNames = [].concat(...upsertedAdminUsers.map((a) => a.serviceNames));
+			await this.createServices(serviceNames, orga);
+		}
+		return res;
+	}
+
 	public async createService(request: ServiceRequest): Promise<Service> {
-		const service = new Service();
-		service.name = request.name?.trim();
-		if (!service.name) {
+		request.name = request.name?.trim();
+		if (!request.name) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service name is empty');
 		}
+		const orga = request.organisationId
+			? await this.organisationsRepository.getOrganisationById(request.organisationId)
+			: await this.userContext.verifyAndGetFirstAuthorisedOrganisation('User not authorized to add services.');
 
-		if (request.organisationId) {
-			service.organisationId = request.organisationId;
-		} else {
-			const authorisedOrganisation = await this.getFirstAuthorisedOrganisation();
-			service.organisationId = authorisedOrganisation.id;
-		}
-
+		const service = Service.create(request.name, orga);
 		await this.verifyActionPermission(service, CrudAction.Create);
-
 		return await this.servicesRepository.save(service);
 	}
 
@@ -135,19 +201,6 @@ export class ServicesService {
 		service.timeslotsSchedule = TimeslotsSchedule.create(service, undefined);
 		await this.servicesRepository.save(service);
 		return service.timeslotsSchedule;
-	}
-
-	private async getFirstAuthorisedOrganisation(): Promise<Organisation> {
-		const orgAdmins = (await this.userContext.getAuthGroups()).filter(
-			(g) => g instanceof OrganisationAdminAuthGroup,
-		) as OrganisationAdminAuthGroup[];
-		if (orgAdmins.length === 0) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
-				'User not authorized to add services.',
-			);
-		} else {
-			return orgAdmins[0].authorisedOrganisations[0];
-		}
 	}
 
 	private async verifyActionPermission(service: Service, action: CrudAction): Promise<void> {

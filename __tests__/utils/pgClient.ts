@@ -8,12 +8,13 @@ export class PgClient {
 			host: 'localhost',
 			database: process.env['BOOKINGSG_DB_INSTANCE'],
 			password: process.env['DB_PASSWORD_BOOKINGSG_APP'],
-			port: process.env['BOOKINGSG_DB_PORT'],
+			port: +process.env['BOOKINGSG_DB_PORT'],
 		});
 	}
 	public async cleanAllTables() {
 		// Delete many-to-one relationships first
 		await this.pool.query('DELETE FROM public.service_admin_group_map');
+		await this.pool.query('DELETE FROM public.unavailable_service_provider;');
 		await this.pool.query('DELETE FROM public.unavailability;');
 		await this.pool.query('DELETE FROM public.booking_change_log;');
 		await this.pool.query('DELETE FROM public.booking;');
@@ -26,21 +27,27 @@ export class PgClient {
 		await this.pool.query('DELETE FROM public.admin_user;');
 		await this.pool.query('DELETE FROM public.sing_pass_user;');
 		await this.pool.query('DELETE FROM public.agency_user;');
+		await this.pool.query('DELETE FROM public.anonymous_user;');
 		await this.pool.query('DELETE FROM public.user;');
 		await this.pool.query('DELETE FROM public.timeslots_schedule;');
 		await this.pool.query('DELETE FROM public.schedule_form;');
+		await this.pool.query('DELETE FROM public.organisation_admin_group_map;');
+		await this.pool.query('DELETE FROM public.organisation;');
 	}
 
 	public async mapServiceAdminToService({ serviceId, nameService, organisation }) {
 		await this.pool.query(
+			// tslint:disable-next-line:tsr-detect-sql-literal-injection
 			`INSERT INTO public.service_admin_group_map("_serviceId", "_serviceOrganisationRef") values(${serviceId}, '${nameService}:${organisation}')`,
 		);
 	}
 
-	public async mapServiceProviderToAdminId({ serviceProviderId, molAdminId }) {
-		await this.pool.query(
-			`INSERT INTO public.service_provider_group_map("_serviceProviderId","_molAdminId") values (${serviceProviderId}, '${molAdminId}')`,
+	public async getAdminIdForServiceProvider({ serviceProviderId }): Promise<string> {
+		const res = await this.pool.query(
+			// tslint:disable-next-line:tsr-detect-sql-literal-injection
+			`SELECT "map"."_molAdminId" from public.service_provider_group_map map where "map"."_serviceProviderId" = '${serviceProviderId}'`,
 		);
+		return res.rows[0]._molAdminId;
 	}
 
 	public async close() {

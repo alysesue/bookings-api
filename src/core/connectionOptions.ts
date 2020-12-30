@@ -26,7 +26,7 @@ import { LoggerOptions } from 'typeorm/logger/LoggerOptions';
 export function getConnectionOptions(): PostgresConnectionOptions {
 	const config = getConfig();
 	const logging: LoggerOptions = ['schema', 'migration', 'error'];
-	if (config.isDev) {
+	if (config.logQueries) {
 		logging.push('query');
 	}
 

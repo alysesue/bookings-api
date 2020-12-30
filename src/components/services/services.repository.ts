@@ -6,6 +6,7 @@ import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSche
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { SelectQueryBuilder } from 'typeorm';
 import { ServicesQueryAuthVisitor } from './services.auth';
+import { andWhere } from '../../tools/queryConditions';
 
 @InRequestScope
 export class ServicesRepository extends RepositoryBase<Service> {
@@ -38,26 +39,54 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		return entries;
 	}
 
+	private async createSelectQuery(
+		queryFilters: string[],
+		queryParams: {},
+		options: {
+			skipAuthorisation?: boolean;
+		},
+	): Promise<SelectQueryBuilder<Service>> {
+		const authGroups = await this.userContext.getAuthGroups();
+		const { userCondition, userParams } = options.skipAuthorisation
+			? { userCondition: '', userParams: {} }
+			: await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(authGroups);
+
+		const repository = await this.getRepository();
+		return repository
+			.createQueryBuilder('svc')
+			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
+			.leftJoinAndSelect('svc._serviceAdminGroupMap', 'svcAdminGroupMap');
+	}
+
+	public async getServicesByName(options: {
+		names: string[];
+		organisationId: number;
+		skipAuthorisation?: boolean;
+	}): Promise<Service[]> {
+		const { names, organisationId } = options;
+		if (names.length === 0) {
+			return [];
+		}
+
+		const orgCondition = 'svc."_organisationId" = :organisationId';
+		const namesCondition = 'svc._name IN (:...names)';
+
+		const query = await this.createSelectQuery([orgCondition, namesCondition], { organisationId, names }, options);
+		return await query.getMany();
+	}
+
 	public async save(service: Service): Promise<Service> {
 		return (await this.getRepository()).save(service);
 	}
 
-	private async getServiceQueryById(id: number): Promise<SelectQueryBuilder<Service>> {
-		const authGroups = await this.userContext.getAuthGroups();
-		const { userCondition, userParams } = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(
-			authGroups,
-		);
+	public async saveMany(services: Service[]): Promise<Service[]> {
+		return (await this.getRepository()).save(services);
+	}
 
-		const repository = await this.getRepository();
+	private async getServiceQueryById(id: number): Promise<SelectQueryBuilder<Service>> {
 		const idCondition = 'svc._id = :id';
-		const query = repository.createQueryBuilder('svc').where(
-			[userCondition, idCondition]
-				.filter((c) => c)
-				.map((c) => `(${c})`)
-				.join(' AND '),
-			{ ...userParams, id },
-		);
-		return query;
+
+		return await this.createSelectQuery([idCondition], { id }, {});
 	}
 
 	public async getServiceWithScheduleForm(id: number): Promise<Service> {
@@ -74,13 +103,7 @@ export class ServicesRepository extends RepositoryBase<Service> {
 	}
 
 	public async getAll(): Promise<Service[]> {
-		const authGroups = await this.userContext.getAuthGroups();
-		const { userCondition, userParams } = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(
-			authGroups,
-		);
-
-		const repository = await this.getRepository();
-		const query = repository.createQueryBuilder('svc').where(userCondition, { ...userParams });
+		const query = await this.createSelectQuery([], {}, {});
 
 		return await query.getMany();
 	}

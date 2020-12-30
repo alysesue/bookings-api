@@ -2,9 +2,13 @@ import { isEmail, isSGPhoneNumber } from 'mol-lib-api-contract/utils';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { cloneDeep } from 'lodash';
-import { ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
+import { Organisation, ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
-import { ServiceProviderModel } from './serviceProviders.apicontract';
+import {
+	MolServiceProviderOnboard,
+	MolServiceProviderOnboardContract,
+	ServiceProviderModel,
+} from './serviceProviders.apicontract';
 import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
 import { ServicesService } from '../services/services.service';
@@ -14,6 +18,10 @@ import { ServiceProvidersActionAuthVisitor } from './serviceProviders.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { CrudAction } from '../../enums/crudAction';
 import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract';
+import { ServiceProvidersMapper } from './serviceProviders.mapper';
+import { isMolUserMatch, MolUpsertUsersResult } from '../users/molUsers/molUsers.apicontract';
+import { MolUsersService } from '../users/molUsers/molUsers.service';
+import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 
 @InRequestScope
 export class ServiceProvidersService {
@@ -30,6 +38,9 @@ export class ServiceProvidersService {
 	private servicesService: ServicesService;
 
 	@Inject
+	private mapper: ServiceProvidersMapper;
+
+	@Inject
 	private timeslotsService: TimeslotsService;
 
 	@Inject
@@ -38,6 +49,12 @@ export class ServiceProvidersService {
 	@Inject
 	private userContext: UserContext;
 
+	@Inject
+	private molUsersService: MolUsersService;
+
+	/**
+	 * @deprecated please use createServiceProviders
+	 */
 	private static async validateServiceProvider(sp: ServiceProviderModel): Promise<string[]> {
 		const errors: string[] = [];
 		if (sp.phone && !(await isSGPhoneNumber(sp.phone)).pass)
@@ -47,6 +64,9 @@ export class ServiceProvidersService {
 		return errors;
 	}
 
+	/**
+	 * @deprecated please use createServiceProviders
+	 */
 	private static async validateServiceProviders(sps: ServiceProviderModel[]) {
 		const errorsPromises = sps.map((e) => ServiceProvidersService.validateServiceProvider(e));
 		await Promise.all(errorsPromises).then((errors) => {
@@ -128,15 +148,89 @@ export class ServiceProvidersService {
 		return sp;
 	}
 
+	private async mapAndValidateServiceProvidersOnboard(
+		serviceProvidersOnboards: MolServiceProviderOnboard[],
+		organisation: Organisation,
+	) {
+		const serviceNames = serviceProvidersOnboards.map((sp) => sp.serviceName);
+		const allServices = await this.servicesService.createServices(serviceNames, organisation);
+
+		const existingServiceProviders = await this.serviceProvidersRepository.getServiceProviders({
+			organisationId: organisation.id,
+			skipAuthorisation: true,
+		});
+
+		const serviceProviders = serviceProvidersOnboards.map((onboardingSp) => {
+			const service = allServices.find(
+				(svc) => svc.name.toLowerCase() === onboardingSp.serviceName.toLowerCase(),
+			);
+			let serviceProvider = existingServiceProviders.find(
+				(sp) => sp.serviceProviderGroupMap?.molAdminId?.toLowerCase() === onboardingSp.molAdminId.toLowerCase(),
+			);
+			if (!serviceProvider) {
+				serviceProvider = existingServiceProviders.find(
+					(sp) =>
+						!!onboardingSp.agencyUserId &&
+						sp.agencyUserId?.toLowerCase() === onboardingSp.agencyUserId.toLowerCase(),
+				);
+			}
+
+			return this.mapper.mapToEntity(onboardingSp, service, serviceProvider);
+		});
+
+		return serviceProviders;
+	}
+
+	public async createServiceProviders(
+		serviceProviderOnboardContracts: MolServiceProviderOnboardContract[],
+		cookie: string,
+	): Promise<MolUpsertUsersResult> {
+		const organisation = await this.userContext.verifyAndGetFirstAuthorisedOrganisation(
+			'Cannot add service provider with this organisation',
+		);
+		const molServiceProviderOnboards = MolUsersMapper.mapServiceProviderGroup(
+			serviceProviderOnboardContracts,
+			organisation,
+		);
+
+		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molServiceProviderOnboards, cookie);
+
+		const upsertedMolUser = [...(res?.created || []), ...(res?.updated || [])];
+
+		if (upsertedMolUser.length > 0) {
+			const upsertedAdminUsers: MolServiceProviderOnboard[] = [];
+			molServiceProviderOnboards.forEach((adminUser) => {
+				const matchMolUser = upsertedMolUser.find((molUser) => isMolUserMatch(molUser, adminUser));
+				if (matchMolUser) {
+					upsertedAdminUsers.push({
+						...adminUser,
+						molAdminId: matchMolUser.sub,
+						username: matchMolUser.username,
+					});
+				}
+			});
+
+			const sps = await this.mapAndValidateServiceProvidersOnboard(upsertedAdminUsers, organisation);
+			await this.serviceProvidersRepository.saveMany(sps);
+		}
+		return res;
+	}
+
+	/**
+	 * @deprecated please use createServiceProviders
+	 */
 	public async saveServiceProviders(listRequest: ServiceProviderModel[], serviceId: number) {
 		await ServiceProvidersService.validateServiceProviders(listRequest);
 		// tslint:disable-next-line:prefer-for-of
 		for (let i = 0; i < listRequest.length; i++) {
-			await this.saveSp(listRequest[i], serviceId);
+			await this.saveServiceProvider(listRequest[i], serviceId);
 		}
 	}
 
-	public async saveSp(item: ServiceProviderModel, serviceId: number) {
+	/**
+	 * @deprecated please use createServiceProviders
+	 */
+	public async saveServiceProvider(item: ServiceProviderModel, serviceId: number) {
 		const serviceProvider = ServiceProvider.create(item.name, serviceId, item.email, item.phone);
 		serviceProvider.service = await this.servicesService.getService(serviceId);
 		await this.verifyActionPermission(serviceProvider, CrudAction.Create);
@@ -311,7 +405,7 @@ export class ServiceProvidersService {
 		const authGroups = await this.userContext.getAuthGroups();
 		if (!new ServiceProvidersActionAuthVisitor(serviceProvider, action).hasPermission(authGroups)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
-				`User cannot perform this service-provider action (${action}) for this service.`,
+				`User cannot perform this service-provider action (${action}) for this service. Service provider: ${serviceProvider.name}`,
 			);
 		}
 	}

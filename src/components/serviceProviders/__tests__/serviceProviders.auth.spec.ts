@@ -63,7 +63,7 @@ describe('Service providers Auth', () => {
 		serviceProvider.service = service;
 		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProvider, CrudAction.Create);
 
-		expect(authVisitor.hasPermission([userGroup])).toBe(true);
+		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
 
 	it('should be able to create a serviceProvider for org admin', () => {

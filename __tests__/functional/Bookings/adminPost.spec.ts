@@ -11,20 +11,24 @@ describe('Bookings functional tests as admin', () => {
 	const citizenEmail = 'jane@email.com';
 	let result;
 
-	beforeAll(async () => {
+	beforeAll(async (done) => {
 		await pgClient.cleanAllTables();
+		done();
 	});
 
-	afterAll(async () => {
+	afterAll(async (done) => {
 		await pgClient.close();
+		done();
 	});
 
-	beforeEach(async () => {
+	beforeEach(async (done) => {
 		result = await populateServiceAndServiceProvider({});
+		done();
 	});
 
-	afterEach(async () => {
+	afterEach(async (done) => {
 		await pgClient.cleanAllTables();
+		done();
 	});
 
 	it('admin should be able to create out of slot booking', async () => {

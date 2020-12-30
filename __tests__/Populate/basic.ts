@@ -1,8 +1,7 @@
 import { OrganisationAdminRequestEndpointSG } from '../utils/requestEndpointSG';
 import { ServiceProviderResponseModel } from '../../src/components/serviceProviders/serviceProviders.apicontract';
 import { ServiceResponse } from '../../src/components/services/service.apicontract';
-import { TimeslotItemResponse } from "../../src/components/timeslotItems/timeslotItems.apicontract";
-import 'moment-timezone';
+import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslotItems.apicontract';
 
 export const populateService = async ({
 	organisation = 'localorg',
@@ -11,9 +10,13 @@ export const populateService = async ({
 	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post('/services', {
 		body: { name: nameService },
 	});
-	return JSON.parse(response.body).data;
+	return response.body.data;
 };
 
+/**
+ * @deprecated Please use populateUserServiceProvider
+ *
+ */
 export const populateServiceAndServiceProvider = async ({
 	organisation = 'localorg',
 	nameService = 'admin',
@@ -30,8 +33,42 @@ export const populateServiceAndServiceProvider = async ({
 		},
 	});
 	const response = await OrganisationAdminRequestEndpointSG.create({}).get('/service-providers');
-	const serviceProvider = JSON.parse(response.body).data;
+	const serviceProvider = response.body.data;
 	return { service, serviceProvider };
+};
+
+export const populateUserServiceProvider = async ({
+	uinfin,
+	email,
+	agencyUserId,
+	organisation = 'localorg',
+	nameService = 'admin',
+	serviceProviderName = 'sp',
+}: {
+	organisation?: string;
+	nameService?: string;
+	serviceProviderName?: string;
+	uinfin?: string;
+	agencyUserId: string; // making this required, so we can identify the service provider user
+	email?: string;
+}): Promise<{ services: ServiceResponse; serviceProviders: ServiceProviderResponseModel }> => {
+	await OrganisationAdminRequestEndpointSG.create({ organisation }).post('/users/service-providers/upsert', {
+		body: [
+			{
+				name: serviceProviderName,
+
+				uinfin,
+				agencyUserId,
+				email,
+				serviceName: nameService,
+			},
+		],
+	});
+	const response = await OrganisationAdminRequestEndpointSG.create({}).get('/service-providers');
+	const responseService = await OrganisationAdminRequestEndpointSG.create({}).get('/services');
+	const serviceProviders = response.body.data;
+	const services = responseService.body.data;
+	return { services, serviceProviders };
 };
 
 export const populateOutOfSlotBooking = async ({
@@ -53,7 +90,7 @@ export const populateOutOfSlotBooking = async ({
 			citizenEmail,
 		},
 	});
-	return JSON.parse(response.body).data.id;
+	return response.body.data.id;
 };
 
 export const populateIndividualTimeslot = async ({
@@ -74,67 +111,67 @@ export const populateIndividualTimeslot = async ({
 			},
 		},
 	);
-	return JSON.parse(response.body).data;
+	return response.body.data;
 };
 
-export const populateWeeklyTimesheet = async ({serviceProviderId, scheduleSlot, closeTime, openTime}) => {
+export const populateWeeklyTimesheet = async ({ serviceProviderId, scheduleSlot, closeTime, openTime }) => {
 	const response = await OrganisationAdminRequestEndpointSG.create({}).put(
 		`/service-providers/${serviceProviderId}/scheduleForm`,
 		{
 			body: {
-                slotsDurationInMin: scheduleSlot,
+				slotsDurationInMin: scheduleSlot,
 				weekdaySchedules: [{
 					weekday: 0,
 					hasScheduleForm: true,
 					breaks: [],
 					closeTime,
 					openTime,
-                },
-                    {
-						weekday: 1,
-						hasScheduleForm: true,
-						breaks: [],
-						closeTime,
-						openTime,
-					},
-					{
-						weekday: 2,
-						hasScheduleForm: true,
-						breaks: [],
-						closeTime,
-						openTime,
-					},
-					{
-						weekday: 3,
-						hasScheduleForm: true,
-						breaks: [],
-						closeTime,
-						openTime,
-					},
-					{
-						weekday: 4,
-						hasScheduleForm: true,
-						breaks: [],
-						closeTime,
-						openTime,
-					},
-					{
-						weekday: 5,
-						hasScheduleForm: true,
-						breaks: [],
-						closeTime,
-						openTime,
-					},
-					{
-						weekday: 6,
-						hasScheduleForm: true,
-						breaks: [],
-						closeTime,
-						openTime,
-					}]
+				},
+				{
+					weekday: 1,
+					hasScheduleForm: true,
+					breaks: [],
+					closeTime,
+					openTime,
+				},
+				{
+					weekday: 2,
+					hasScheduleForm: true,
+					breaks: [],
+					closeTime,
+					openTime,
+				},
+				{
+					weekday: 3,
+					hasScheduleForm: true,
+					breaks: [],
+					closeTime,
+					openTime,
+				},
+				{
+					weekday: 4,
+					hasScheduleForm: true,
+					breaks: [],
+					closeTime,
+					openTime,
+				},
+				{
+					weekday: 5,
+					hasScheduleForm: true,
+					breaks: [],
+					closeTime,
+					openTime,
+				},
+				{
+					weekday: 6,
+					hasScheduleForm: true,
+					breaks: [],
+					closeTime,
+					openTime,
+				}]
 			}
 		}
 	);
 
-    return JSON.parse(response.body).data
+	return JSON.parse(response.body).data
 }

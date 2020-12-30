@@ -10,6 +10,7 @@ import {
 	Body,
 	Controller,
 	Delete,
+	Deprecated,
 	Get,
 	Header,
 	Path,
@@ -22,7 +23,6 @@ import {
 	SuccessResponse,
 	Tags,
 } from 'tsoa';
-import { parseCsv } from '../../utils';
 import { mapToResponse as mapScheduleToResponse } from '../scheduleForms/scheduleForms.mapper';
 import { ScheduleFormRequest, ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
 import { ServiceProvidersMapper } from './serviceProviders.mapper';
@@ -34,6 +34,7 @@ import {
 import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
 import { MOLAuth } from 'mol-lib-common';
 import { ApiData, ApiDataFactory } from '../../apicontract';
+import { parseCsv } from '../../tools/csvParser';
 import { ServicesService } from '../services/services.service';
 import { ServiceProvider } from '../../models';
 
@@ -50,7 +51,10 @@ export class ServiceProvidersController extends Controller {
 	private mapper: ServiceProvidersMapper;
 
 	// TODO: write test for this one
-	private static parseCsvModelToServiceProviders(csvModels: []) {
+	/**
+	 * @deprecated use onboard atm
+	 */
+	private static parseCsvModelToServiceProviders(csvModels: any[]) {
 		try {
 			const serviceProvidersRequest = csvModels as ServiceProviderModel[];
 
@@ -64,6 +68,7 @@ export class ServiceProvidersController extends Controller {
 	}
 
 	/**
+	 * @deprecated
 	 * Creates multiple service providers (json format).
 	 * @param spRequest
 	 * @param @isInt serviceId The service id.
@@ -71,6 +76,7 @@ export class ServiceProvidersController extends Controller {
 	@Post('')
 	@Security('service')
 	@SuccessResponse(204, 'Created')
+	@Deprecated()
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async addServiceProviders(
@@ -81,11 +87,13 @@ export class ServiceProvidersController extends Controller {
 	}
 
 	/**
+	 * @deprecated
 	 * Creates multiple service providers (CSV format). The csv content must contain a single header called name.
 	 * @param spRequest
 	 * @param @isInt serviceId The service id.
 	 */
 	@Post('/csv')
+	@Deprecated()
 	@Security('service')
 	@SuccessResponse(204, 'Created')
 	@MOLAuth({ admin: {}, agency: {} })

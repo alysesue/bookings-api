@@ -63,6 +63,7 @@ export class UsersService {
 					userName: headers[MOLSecurityHeaderKeys.ADMIN_USERNAME],
 					email: headers[MOLSecurityHeaderKeys.ADMIN_EMAIL],
 					name: headers[MOLSecurityHeaderKeys.ADMIN_NAME],
+					agencyUserId: headers[MOLSecurityHeaderKeys.ADMIN_AGENCY_USER_ID],
 				});
 				break;
 			case MOLAuthType.AGENCY:
@@ -84,7 +85,6 @@ export class UsersService {
 		molUserUinFin: string;
 	}): Promise<User> {
 		if (!molUserId || !molUserUinFin) return null;
-
 		const user = User.createSingPassUser(molUserId, molUserUinFin);
 		return await this.getOrSaveInternal(user, () => this.usersRepository.getUserByMolUserId(molUserId));
 	}
@@ -162,8 +162,7 @@ export class UsersService {
 			const notFoundGroupRefs = parsedGroups.filter(
 				(g) =>
 					!services.find(
-						(s) =>
-							s._serviceAdminGroupMap.serviceOrganisationRef === `${g.serviceRef}:${g.organisationRef}`,
+						(s) => s.serviceAdminGroupMap.serviceOrganisationRef === `${g.serviceRef}:${g.organisationRef}`,
 					),
 			);
 			if (notFoundGroupRefs.length > 0) {

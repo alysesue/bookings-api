@@ -8,6 +8,8 @@ import { ScheduleForm } from './scheduleForm';
 @Entity()
 @Index(['_organisationId', '_name'], { unique: true })
 export class Service implements IService, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
+	public constructor() {}
+
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
@@ -43,8 +45,16 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._organisation;
 	}
 
-	@OneToOne((type) => ServiceAdminGroupMap, (e) => e._service, { nullable: true })
-	public _serviceAdminGroupMap: ServiceAdminGroupMap;
+	@OneToOne((type) => ServiceAdminGroupMap, (e) => e._service, { nullable: true, cascade: true })
+	private _serviceAdminGroupMap: ServiceAdminGroupMap;
+
+	public get serviceAdminGroupMap(): ServiceAdminGroupMap {
+		return this._serviceAdminGroupMap;
+	}
+
+	public set serviceAdminGroupMap(value: ServiceAdminGroupMap) {
+		this._serviceAdminGroupMap = value;
+	}
 
 	@Column({ type: 'varchar', length: 100, nullable: false })
 	private _name: string;
@@ -98,5 +108,23 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	}
 	public get timeslotsSchedule(): TimeslotsSchedule {
 		return this._timeslotsSchedule;
+	}
+
+	public static create(name: string, orga: Organisation) {
+		const service = new Service();
+		service._name = name.trim();
+		service._organisation = orga;
+		service._organisationId = orga.id;
+		service._serviceAdminGroupMap = ServiceAdminGroupMap.create(
+			ServiceAdminGroupMap.createServiceOrganisationRef(
+				service.getServiceRef(),
+				orga._organisationAdminGroupMap.organisationRef,
+			),
+		);
+		return service;
+	}
+
+	public getServiceRef() {
+		return this._name.toLowerCase().replace(/ /g, '');
 	}
 }

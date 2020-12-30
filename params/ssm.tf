@@ -45,7 +45,6 @@ resource "aws_ssm_parameter" "bookingsg-db_host" {
   overwrite = true
 }
 
-
 # resource "aws_ssm_parameter" "test" {
 #   name  = "${local.path-prefix}/TEST"
 #   type  = "String"
@@ -69,11 +68,21 @@ resource "aws_ssm_parameter" "bookingsg-db_username" {
 
   overwrite = true
 }
+
 resource "aws_ssm_parameter" "db-password_bookingsg_app" {
   name   = "${local.path-prefix}/DB_PASSWORD_BOOKINGSG_APP"
   type   = "SecureString"
   key_id = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
   value  = "${data.external.static.result.DB_PASSWORD_BOOKINGSG_APP}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "mol_admin_auth_forwarder_url" {
+  name   = "${local.path-prefix}/MOL_ADMIN_AUTH_FORWARDER_URL"
+  type   = "SecureString"
+  key_id = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
+  value  = "${data.external.static.result.MOL_ADMIN_AUTH_FORWARDER_URL}"
 
   overwrite = true
 }
@@ -94,3 +103,28 @@ resource "aws_ssm_parameter" "encryption-key_bookingsg_app" {
   value  = "${data.external.static.result.ENCRYPTION_KEY_BOOKINGSG_APP}"
   overwrite = true
 }
+
+resource "aws_ssm_parameter" "log-queries" {
+  name  = "${local.path-prefix}/LOG_QUERIES"
+  type  = "String"
+  value = "${data.external.static.result.LOG_QUERIES}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "is-functional-test" {
+  name  = "${local.path-prefix}/IS_FUNCTIONAL_TEST"
+  type  = "String"
+  value = "${data.external.static.result.IS_FUNCTIONAL_TEST}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "is-local" {
+  name  = "${local.path-prefix}/IS_LOCAL"
+  type  = "String"
+  value = "${data.external.static.result.IS_LOCAL}"
+
+  overwrite = true
+}
+
