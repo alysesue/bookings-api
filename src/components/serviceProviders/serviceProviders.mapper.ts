@@ -24,6 +24,7 @@ export class ServiceProvidersMapper {
 		response.agencyUserId = spData.agencyUserId;
 		response.timeslotsSchedule = mappedTimeslotSchedule;
 		response.scheduleForm = mappedScheduleForm;
+		response.onHoldEnabled = spData.service.isOnHold;
 
 		return response;
 	}
