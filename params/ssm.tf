@@ -104,14 +104,6 @@ resource "aws_ssm_parameter" "encryption-key_bookingsg_app" {
   overwrite = true
 }
 
-resource "aws_ssm_parameter" "is-local" {
-  name  = "${local.path-prefix}/IS_LOCAL"
-  type  = "String"
-  value = "${data.external.static.result.IS_LOCAL}"
-
-  overwrite = true
-}
-
 resource "aws_ssm_parameter" "log-queries" {
   name  = "${local.path-prefix}/LOG_QUERIES"
   type  = "String"
@@ -120,10 +112,19 @@ resource "aws_ssm_parameter" "log-queries" {
   overwrite = true
 }
 
-resource "aws_ssm_parameter" "is-funtcional-test" {
+resource "aws_ssm_parameter" "is-functional-test" {
   name  = "${local.path-prefix}/IS_FUNCTIONAL_TEST"
   type  = "String"
   value = "${data.external.static.result.IS_FUNCTIONAL_TEST}"
 
   overwrite = true
 }
+
+resource "aws_ssm_parameter" "is-local" {
+  name  = "${local.path-prefix}/IS_LOCAL"
+  type  = "String"
+  value = "${data.external.static.result.IS_LOCAL}"
+
+  overwrite = true
+}
+
