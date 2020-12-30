@@ -17,7 +17,6 @@ import { nextImmediateTick } from '../../infrastructure/immediateHelper';
 export class AvailableTimeslotProcessor extends MapProcessor<TimeslotKey, AvailableTimeslotProviders> {}
 
 const MaxLoopIterationCount = 1000;
-const HOLD_DURATION_IN_MINS = 5;
 @Scoped(Scope.Request)
 export class TimeslotsService {
 	@Inject
@@ -184,8 +183,7 @@ export class TimeslotsService {
 		const acceptedBookings = bookings.filter((booking) => booking.status === BookingStatus.Accepted);
 		const pendingBookings = bookings.filter((booking) => booking.status === BookingStatus.PendingApproval);
 		const onHoldBookings = bookings.filter((booking) => {
-			const onHoldUntil = new Date(booking.onHoldDateTime);
-			onHoldUntil.setMinutes(onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
+			const onHoldUntil = new Date(booking.onHoldUntil);
 			return booking.status === BookingStatus.OnHold && new Date() < onHoldUntil;
 		});
 		if (includeBookings) {

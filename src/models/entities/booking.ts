@@ -163,13 +163,13 @@ export class Booking {
 
 	@Column({ nullable: true })
 	@Index()
-	private _onHoldDateTime: Date;
+	private _onHoldUntil: Date;
 
-	public get onHoldDateTime(): Date {
-		return this._onHoldDateTime;
+	public get onHoldUntil(): Date {
+		return this._onHoldUntil;
 	}
-	public set onHoldDateTime(value: Date) {
-		this._onHoldDateTime = value;
+	public set onHoldUntil(value: Date) {
+		this._onHoldUntil = value;
 	}
 
 	public get citizenPhone(): string {
@@ -185,12 +185,14 @@ export class Booking {
 	}
 
 	public static create(builder: BookingBuilder): Booking {
+		const HOLD_DURATION_IN_MINS = 5;
 		const instance = new Booking();
 		if (builder.serviceProviderId) {
 			instance._serviceProviderId = builder.serviceProviderId;
 			if (builder.markOnHold) {
 				instance._status = BookingStatus.OnHold;
-				instance._onHoldDateTime = new Date();
+				instance._onHoldUntil = new Date();
+				instance._onHoldUntil.setMinutes(instance._onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
 			} else {
 				instance._status = builder.autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
 			}

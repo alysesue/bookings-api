@@ -44,6 +44,7 @@ import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { UsersService } from '../../../components/users/users.service';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { ServicesServiceMock } from '../../services/__mocks__/services.service';
+import { ceil } from 'lodash';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -595,14 +596,14 @@ describe('Bookings.Service', () => {
 			await Container.get(BookingsService).save(bookingRequest, 2);
 
 			const booking = BookingRepositoryMock.booking;
-			const onHoldDateTime: any = new Date(booking.onHoldDateTime);
+			const onHoldDateTime: any = new Date(booking.onHoldUntil);
 			const timeNow: any = new Date();
-			const diffTimeinSeconds = Math.abs(onHoldDateTime - timeNow) / 1000;
+			const diffTimeinMins = Math.abs(onHoldDateTime - timeNow) / (1000 * 60);
 			expect(booking).not.toBe(undefined);
 			expect(booking.status).toBe(BookingStatus.OnHold);
-			expect(booking.onHoldDateTime).toBeInstanceOf(Date);
-			expect(booking.onHoldDateTime).not.toBeNull();
-			expect(diffTimeinSeconds).toBeLessThan(5);
+			expect(booking.onHoldUntil).toBeInstanceOf(Date);
+			expect(booking.onHoldUntil).not.toBeNull();
+			expect(ceil(diffTimeinMins)).toEqual(5);
 		});
 	});
 });

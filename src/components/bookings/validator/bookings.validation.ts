@@ -162,7 +162,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 		};
 		const onHoldBookings = await this.bookingsRepository.search(searchQuery);
 		return onHoldBookings.some((onHoldbooking) => {
-			const onHoldUntil = new Date(onHoldbooking.onHoldDateTime);
+			const onHoldUntil = new Date(onHoldbooking.onHoldUntil);
 			onHoldUntil.setMinutes(onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
 			return onHoldbooking.status === BookingStatus.OnHold && new Date() < onHoldUntil;
 		});
