@@ -48,9 +48,9 @@ export class TimeslotsController extends Controller {
 	 * Pending and accepted bookings count towards availability quota.
 	 * @param startDate The lower bound limit for timeslots' startDate.
 	 * @param endDate The upper bound limit for timeslots' endDate.
-	 * @param @isInt serviceId The available service to be queried.
-	 * @param @isInt serviceProviderId (Optional) Filters timeslots for a specific service provider.
+	 * @param serviceId
 	 * @param includeBookings (Optional)
+	 * @param serviceProviderIds
 	 */
 	@Get('')
 	@Security('service')

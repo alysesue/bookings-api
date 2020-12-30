@@ -6,7 +6,9 @@ import {
 import {
     populateIndividualTimeslot,
     populateServiceAndServiceProvider,
+    populateWeeklyTimesheet,
 } from '../../Populate/basic';
+import {keepTimeFromTimezoneToLocal} from '../../utils/dateTimeUtil';
 
 describe('Timeslots functional tests', () => {
     const pgClient = new PgClient();
@@ -27,9 +29,11 @@ describe('Timeslots functional tests', () => {
     const END_TIME_3 = '14:00';
     const CAPACITY = 2;
     const ERROR_MESSAGE = 'An unexpected error has occurred.';
+    const TIME_FORMAT = 'HH:mm';
     let result1;
     let result2;
     let result3;
+    let serviceId1;
     let serviceProviderId1;
     let serviceProviderId2;
     let serviceProviderId3;
@@ -46,6 +50,8 @@ describe('Timeslots functional tests', () => {
         result2 = await populateServiceAndServiceProvider({nameService: NAME_SERVICE_2, serviceProviderName: SERVICE_PROVIDER_NAME_2});
         result3 = await populateServiceAndServiceProvider({nameService: NAME_SERVICE_3, serviceProviderName: SERVICE_PROVIDER_NAME_3});
 
+        serviceId1 = result1.service.id;
+
         serviceProviderId1 = result1.serviceProvider.find(item => item.name === SERVICE_PROVIDER_NAME_1).id;
         serviceProviderId2 = result2.serviceProvider.find(item => item.name === SERVICE_PROVIDER_NAME_2).id;
         serviceProviderId3 = result3.serviceProvider.find(item => item.name === SERVICE_PROVIDER_NAME_3).id;
@@ -53,6 +59,8 @@ describe('Timeslots functional tests', () => {
         await populateIndividualTimeslot({serviceProviderId: serviceProviderId1, weekDay: WEEKDAY, startTime: START_TIME_1, endTime: END_TIME_1, capacity: CAPACITY});
         await populateIndividualTimeslot({serviceProviderId: serviceProviderId2, weekDay: WEEKDAY, startTime: START_TIME_2, endTime: END_TIME_2, capacity: CAPACITY});
         await populateIndividualTimeslot({serviceProviderId: serviceProviderId3, weekDay: WEEKDAY, startTime: START_TIME_3, endTime: END_TIME_3, capacity: CAPACITY});
+
+        await populateWeeklyTimesheet({serviceProviderId: serviceProviderId1, openTime: START_TIME_1, closeTime: END_TIME_1, scheduleSlot: 60});
     });
 
     afterEach(async () => {
@@ -75,6 +83,20 @@ describe('Timeslots functional tests', () => {
         expect(service3TimeslotsResponse.statusCode).toEqual(200);
         expect(JSON.parse(service3TimeslotsResponse.body).data.timeslots[0].startTime).toEqual(START_TIME_3);
         expect(JSON.parse(service3TimeslotsResponse.body).data.timeslots[0].endTime).toEqual(END_TIME_3);
+    });
+
+    it('organization admin should get all timeslot schedules for specific service provider', async () => {
+        const timeslotsForServiceProviders = await OrganisationAdminRequestEndpointSG.create({serviceId: serviceId1}).get(`timeslots?startDate=2020-11-27T09:00:00.000Z&endDate=2020-11-30T09:59:59.999Z&includeBookings=true`);
+
+        expect(timeslotsForServiceProviders.statusCode).toEqual(200);
+
+        const startDate = JSON.parse(timeslotsForServiceProviders.body).data[0].startTime;
+        const endDate = JSON.parse(timeslotsForServiceProviders.body).data[0].endTime;
+
+        const startTime = keepTimeFromTimezoneToLocal({date: startDate, format: TIME_FORMAT });
+        const endTime = keepTimeFromTimezoneToLocal({date: endDate, format: TIME_FORMAT})
+        expect(startTime).toEqual(START_TIME_1);
+        expect(endTime).toEqual(END_TIME_1);
     });
 
     it('service admin should only get timeslot schedules for their service', async() => {
