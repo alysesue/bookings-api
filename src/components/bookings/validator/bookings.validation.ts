@@ -53,6 +53,10 @@ abstract class BookingsValidator implements IValidator {
 		}
 	}
 
+	private static async *skipValidation(booking: Booking): AsyncIterable<BusinessValidation> {
+		return;
+	}
+
 	public async *getValidations(booking: Booking): AsyncIterable<BusinessValidation> {
 		let yieldedAny = false;
 
@@ -65,8 +69,12 @@ abstract class BookingsValidator implements IValidator {
 
 		for await (const validation of concatIteratables(
 			this.validateServiceProviderExisting(booking),
-			BookingsValidator.validateDuration(booking),
-			BookingsValidator.validateCitizenDetails(booking),
+			booking.service.isOnHold
+				? BookingsValidator.skipValidation(booking)
+				: BookingsValidator.validateDuration(booking),
+			booking.service.isOnHold
+				? BookingsValidator.skipValidation(booking)
+				: BookingsValidator.validateCitizenDetails(booking),
 		)) {
 			yieldedAny = true;
 			yield validation;
