@@ -48,7 +48,7 @@ export class ServiceProviderResponseModel {
 	public phone?: string;
 	public agencyUserId?: string;
 	public scheduleFormConfirmed: boolean;
-	public onHoldEnabled: boolean;
+	public onHoldEnabled?: boolean;
 }
 
 export class ServiceProviderListRequest {

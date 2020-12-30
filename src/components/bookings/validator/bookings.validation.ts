@@ -69,10 +69,10 @@ abstract class BookingsValidator implements IValidator {
 
 		for await (const validation of concatIteratables(
 			this.validateServiceProviderExisting(booking),
-			booking.service.isOnHold
+			booking.service?.isOnHold
 				? BookingsValidator.skipValidation(booking)
 				: BookingsValidator.validateDuration(booking),
-			booking.service.isOnHold
+			booking.service?.isOnHold
 				? BookingsValidator.skipValidation(booking)
 				: BookingsValidator.validateCitizenDetails(booking),
 		)) {
