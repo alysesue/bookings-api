@@ -5,7 +5,7 @@ import { populateService } from '../../Populate/basic';
 describe('Tests endpoint and populate data', () => {
 	const SP_NAME = 'sp';
 	const SP_EMAIL = `${SP_NAME}@govtech.com`;
-	const SP_PHONE = '1800 944 7853';
+	const SP_PHONE = '+6580000000';
 	const pgClient = new PgClient();
 	let service;
 

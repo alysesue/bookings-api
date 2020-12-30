@@ -74,12 +74,13 @@ export class ServicesService {
 
 	public async createServicesAdmins(
 		adminUserContracts?: MolServiceAdminUserContract[],
+		authorisationToken?: string,
 	): Promise<MolUpsertUsersResult> {
 		const orga = await this.userContext.verifyAndGetFirstAuthorisedOrganisation(
 			'User not authorized to add services.',
 		);
 		const molAdminUser = MolUsersMapper.mapServicesAdminsGroups(adminUserContracts, orga);
-		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molAdminUser);
+		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molAdminUser, authorisationToken);
 
 		if (res?.error) return res;
 		const upsertedMolUser = [...(res?.created || []), ...(res?.updated || [])];
