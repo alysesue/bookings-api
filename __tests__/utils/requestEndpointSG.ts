@@ -88,6 +88,7 @@ export class OrganisationAdminRequestEndpointSG extends RequestEndpointSG {
 			'mol-admin-id': `ce6d2f24-3913-11eb-adc1-0242ac120002`,
 			'mol-admin-name': `${nameService} The Admin`,
 			'mol-admin-username': `${nameService}User`,
+			cookie: '',
 			...apiService,
 		};
 		return new OrganisationAdminRequestEndpointSG(headers);
