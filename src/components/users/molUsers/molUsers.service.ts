@@ -18,7 +18,7 @@ export class MolUsersServiceAuthForwarder extends MolUsersService {
 		const URL_MOL_USER = `${config.molAdminAuthForwarder.url}/api/users/v1`;
 		try {
 			const upsertRes = await post(URL_MOL_USER, { users }, { Authorization: authorisation });
-			return upsertRes;
+			return upsertRes.data;
 		} catch (e) {
 			throw new Error(`MolUsersServiceAuthForwarder: ${e}`);
 		}
