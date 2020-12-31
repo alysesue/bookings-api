@@ -390,12 +390,22 @@ describe('ServiceProviders.Service', () => {
 
 		expect(availableServiceProviders).toHaveLength(2);
 	});
+
+	it('should return the total count of service providers', async () => {
+		ServiceProvidersRepositoryMock.getServiceProvidersCountMock = 5;
+
+		const serviceProvidersService = Container.get(ServiceProvidersService);
+		const totalCount = await serviceProvidersService.getServiceProvidersCount(1, true, true);
+
+		expect(totalCount).toBe(5);
+	});
 });
 
 class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	public static sp: ServiceProvider;
 	public static getServiceProviders = jest.fn();
 	public static getServiceProviderMock: ServiceProvider;
+	public static getServiceProvidersCountMock: number;
 	public static save = jest.fn();
 	public static saveMany = jest.fn();
 
@@ -405,6 +415,9 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 
 	public async getServiceProvider(...params): Promise<ServiceProvider> {
 		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
+	}
+	public async getServiceProvidersCount(...params): Promise<number> {
+		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProvidersCountMock);
 	}
 
 	public async save(listRequest: ServiceProviderModel): Promise<ServiceProvider> {
