@@ -173,5 +173,5 @@ export const populateWeeklyTimesheet = async ({ serviceProviderId, scheduleSlot,
 		}
 	);
 
-	return JSON.parse(response.body).data
+	return response.body.data;
 }

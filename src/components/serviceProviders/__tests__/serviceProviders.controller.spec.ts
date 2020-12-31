@@ -59,7 +59,7 @@ describe('ServiceProviders.Controller', () => {
 	});
 
 	it('should get total service providers', async () => {
-		ServiceProvidersSvcMock.getServiceProvidersCount.mockReturnValue(2);
+		ServiceProvidersMock.getServiceProvidersCount.mockReturnValue(2);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getTotalServiceProviders();
 		expect(result.data.total).toBe(2);
@@ -265,7 +265,7 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 		return ServiceProvidersMock.createServiceProviders(serviceProviderOnboardContracts);
 	}
 	public async getServiceProvidersCount(): Promise<number> {
-		return ServiceProvidersSvcMock.getServiceProvidersCount();
+		return ServiceProvidersMock.getServiceProvidersCount();
 	}
 
 	public async getServiceProviders(): Promise<ServiceProvider[]> {

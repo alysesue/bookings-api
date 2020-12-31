@@ -5,7 +5,7 @@ import {
 	ServiceAdminRequestEndpointSG,
 	ServiceProviderRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
-import { populateIndividualTimeslot, populateUserServiceProvider } from '../../Populate/basic';
+import { populateUserServiceProvider, populateWeeklyTimesheet } from '../../Populate/basic';
 import { keepTimeFromTimezoneToLocal } from '../../../__tests__/utils/dateTimeUtil';
 
 describe('Timeslots functional tests', () => {
@@ -16,14 +16,12 @@ describe('Timeslots functional tests', () => {
 	const SERVICE_PROVIDER_NAME_1 = 'SP1';
 	const SERVICE_PROVIDER_NAME_2 = 'SP2';
 	const SERVICE_PROVIDER_NAME_3 = 'SP3';
-	const WEEKDAY = 0;
 	const START_TIME_1 = '09:00';
 	const END_TIME_1 = '10:00';
 	const START_TIME_2 = '11:00';
 	const END_TIME_2 = '12:00';
 	const START_TIME_3 = '13:00';
 	const END_TIME_3 = '14:00';
-	const CAPACITY = 2;
 	const ERROR_MESSAGE = 'An unexpected error has occurred.';
 	const TIME_FORMAT = 'HH:mm';
 	let result1;
@@ -69,27 +67,9 @@ describe('Timeslots functional tests', () => {
 		serviceId2 = result2.services.find((item) => item.name === NAME_SERVICE_2).id;
 		serviceId3 = result3.services.find((item) => item.name === NAME_SERVICE_3).id;
 
-		await populateIndividualTimeslot({
-			serviceProviderId: serviceProvider1.id,
-			weekDay: WEEKDAY,
-			startTime: START_TIME_1,
-			endTime: END_TIME_1,
-			capacity: CAPACITY,
-		});
-		await populateIndividualTimeslot({
-			serviceProviderId: serviceProvider2.id,
-			weekDay: WEEKDAY,
-			startTime: START_TIME_2,
-			endTime: END_TIME_2,
-			capacity: CAPACITY,
-		});
-		await populateIndividualTimeslot({
-			serviceProviderId: serviceProvider3.id,
-			weekDay: WEEKDAY,
-			startTime: START_TIME_3,
-			endTime: END_TIME_3,
-			capacity: CAPACITY,
-		});
+		await populateWeeklyTimesheet({ serviceProviderId: serviceProvider1.id, openTime: START_TIME_1, closeTime: END_TIME_1, scheduleSlot: 60 });
+		await populateWeeklyTimesheet({ serviceProviderId: serviceProvider2.id, openTime: START_TIME_2, closeTime: END_TIME_2, scheduleSlot: 60 });
+		await populateWeeklyTimesheet({ serviceProviderId: serviceProvider3.id, openTime: START_TIME_3, closeTime: END_TIME_3, scheduleSlot: 60 });
 
 		done();
 	});
@@ -123,8 +103,8 @@ describe('Timeslots functional tests', () => {
 
 		expect(timeslotsForServiceProviders.statusCode).toEqual(200);
 
-		const startDate = JSON.parse(timeslotsForServiceProviders.body).data[0].startTime;
-		const endDate = JSON.parse(timeslotsForServiceProviders.body).data[0].endTime;
+		const startDate = timeslotsForServiceProviders.body.data[0].startTime;
+		const endDate = timeslotsForServiceProviders.body.data[0].endTime;
 
 		const startTime = keepTimeFromTimezoneToLocal({ date: startDate, format: TIME_FORMAT });
 		const endTime = keepTimeFromTimezoneToLocal({ date: endDate, format: TIME_FORMAT })
