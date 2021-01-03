@@ -11,20 +11,24 @@ describe('Bookings functional tests as citizen - out of slots', () => {
 	const citizenEmail = 'jane@email.com';
 	let result;
 
-	beforeAll(async () => {
+	beforeAll(async (done) => {
 		await pgClient.cleanAllTables();
+		done();
 	});
 
-	afterAll(async () => {
+	afterAll(async (done) => {
 		await pgClient.close();
+		done();
 	});
 
-	beforeEach(async () => {
+	beforeEach(async (done) => {
 		result = await populateServiceAndServiceProvider({});
+		done();
 	});
 
-	afterEach(async () => {
+	afterEach(async (done) => {
 		await pgClient.cleanAllTables();
+		done();
 	});
 
 	it('admin should create out of slot booking and citizen cancels a booking', async () => {

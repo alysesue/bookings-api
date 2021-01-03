@@ -59,7 +59,7 @@ describe('Timeslots Controller', () => {
 		});
 
 		const controller = Container.get(TimeslotsController);
-		const result = await controller.getTimeslots(new Date(), new Date(), 1, false, 100);
+		const result = await controller.getTimeslots(new Date(), new Date(), 1, false, [100]);
 
 		expect(result).toBeDefined();
 		expect(result.data.length).toBe(1);

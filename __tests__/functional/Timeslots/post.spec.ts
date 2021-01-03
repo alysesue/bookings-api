@@ -1,10 +1,6 @@
 import { PgClient } from '../../utils/pgClient';
-import {
-	OrganisationAdminRequestEndpointSG,
-} from '../../utils/requestEndpointSG';
-import {
-	populateServiceAndServiceProvider,
-} from '../../Populate/basic';
+import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
+import { populateUserServiceProvider } from '../../Populate/basic';
 
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
@@ -14,37 +10,41 @@ describe('Timeslots functional tests', () => {
 	const CAPACITY = 2;
 	let result;
 
-	beforeAll(async () => {
+	beforeAll(async (done) => {
 		await pgClient.cleanAllTables();
+		done();
 	});
-	afterAll(async () => {
+	afterAll(async (done) => {
 		await pgClient.close();
+		done();
 	});
 
-	beforeEach(async () => {
-		result = await populateServiceAndServiceProvider({nameService: 'Service1'});
+	beforeEach(async (done) => {
+		result = await populateUserServiceProvider({ nameService: 'Service1', agencyUserId: 'A001' });
+		done();
 	});
 
-	afterEach(async () => {
+	afterEach(async (done) => {
 		await pgClient.cleanAllTables();
+		done();
 	});
 
 	it('should create individual timeslot with capacity', async () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post(
-		    `/service-providers/${result.serviceProvider[0].id}/timeslotSchedule/timeslots`,
-		    {
-		        body: {
-		            weekDay: WEEKDAY,
-		            startTime: START_TIME,
-		            endTime: END_TIME,
-		            capacity: CAPACITY,
-		        },
-		    },
+			`/service-providers/${result.serviceProviders[0].id}/timeslotSchedule/timeslots`,
+			{
+				body: {
+					weekDay: WEEKDAY,
+					startTime: START_TIME,
+					endTime: END_TIME,
+					capacity: CAPACITY,
+				},
+			},
 		);
 		expect(response.statusCode).toEqual(201);
-		expect(JSON.parse(response.body).data.weekDay).toEqual(WEEKDAY);
-		expect(JSON.parse(response.body).data.startTime).toEqual(START_TIME);
-		expect(JSON.parse(response.body).data.endTime).toEqual(END_TIME);
-		expect(JSON.parse(response.body).data.capacity).toEqual(CAPACITY);
+		expect(response.body.data.weekDay).toEqual(WEEKDAY);
+		expect(response.body.data.startTime).toEqual(START_TIME);
+		expect(response.body.data.endTime).toEqual(END_TIME);
+		expect(response.body.data.capacity).toEqual(CAPACITY);
 	});
 });

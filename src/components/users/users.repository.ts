@@ -8,7 +8,8 @@ export class UsersRepository extends RepositoryBase<User> {
 		super(User);
 	}
 	public async save(user: User): Promise<User> {
-		return await (await this.getRepository()).save(user);
+		const repository = await this.getRepository();
+		return await repository.save(user);
 	}
 
 	public async getUserByTrackingId(trackingId?: string): Promise<User> {

@@ -45,15 +45,41 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	}
 
 	private async includeLinkedUsers(entries: ServiceProvider[]): Promise<void> {
-		const entriesWithMolAdminId = entries.filter((e) => !!e._serviceProviderGroupMap?.molAdminId);
-		const molAdminIds = entriesWithMolAdminId.map((e) => e._serviceProviderGroupMap.molAdminId);
+		const entriesWithMolAdminId = entries.filter((e) => !!e.serviceProviderGroupMap?.molAdminId);
+		const molAdminIds = entriesWithMolAdminId.map((e) => e.serviceProviderGroupMap.molAdminId);
 
 		const users = await this.usersRepository.getUsersByMolAdminIds(molAdminIds);
 		const usersByMolAdminId = groupByKeyLastValue(users, (u) => u.adminUser.molAdminId);
 		for (const entry of entries) {
-			const molAdminId = entry._serviceProviderGroupMap?.molAdminId;
+			const molAdminId = entry.serviceProviderGroupMap?.molAdminId;
 			entry.linkedUser = molAdminId ? usersByMolAdminId.get(molAdminId) || null : null;
 		}
+	}
+
+	private getSpQuery(
+		options: {
+			ids?: number[];
+			serviceId?: number;
+			organisationId?: number;
+			scheduleFormId?: number;
+			includeScheduleForm?: boolean;
+			includeTimeslotsSchedule?: boolean;
+			skipAuthorisation?: boolean;
+			limit?: number;
+			pageNumber?: number;
+		} = {},
+	): Promise<SelectQueryBuilder<ServiceProvider>> {
+		const { serviceId, ids, scheduleFormId, organisationId } = options;
+		const serviceCondition = serviceId ? 'sp."_serviceId" = :serviceId ' : '';
+		const idsCondition = ids && ids.length > 0 ? 'sp._id IN (:...ids)' : '';
+		const scheduleFormIdCondition = scheduleFormId ? 'sp._scheduleFormId = :scheduleFormId' : '';
+		const organisationIdCondition = organisationId ? 'service._organisationId = :organisationId' : '';
+
+		return this.createSelectQuery(
+			[serviceCondition, idsCondition, scheduleFormIdCondition, organisationIdCondition],
+			{ serviceId, ids, scheduleFormId, organisationId },
+			options,
+		);
 	}
 
 	public async getServiceProviders(
@@ -65,21 +91,34 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			includeScheduleForm?: boolean;
 			includeTimeslotsSchedule?: boolean;
 			skipAuthorisation?: boolean;
+			limit?: number;
+			pageNumber?: number;
 		} = {},
 	): Promise<ServiceProvider[]> {
-		const { serviceId, ids, scheduleFormId, organisationId } = options;
-		const serviceCondition = serviceId ? 'sp."_serviceId" = :serviceId ' : '';
-		const idsCondition = ids && ids.length > 0 ? 'sp._id IN (:...ids)' : '';
-		const scheduleFormIdCondition = scheduleFormId ? 'sp._scheduleFormId = :scheduleFormId' : '';
-		const organisationIdCondition = organisationId ? 'service._organisationId = :organisationId' : '';
-
-		const query = await this.createSelectQuery(
-			[serviceCondition, idsCondition, scheduleFormIdCondition, organisationIdCondition],
-			{ serviceId, ids, scheduleFormId, organisationId },
-			options,
-		);
+		const { limit, pageNumber } = options;
+		const query = await this.getSpQuery(options);
+		if (limit && pageNumber) {
+			query.limit(limit);
+			query.offset(limit * (pageNumber - 1));
+		}
+		query.orderBy('sp._name');
 		const entries = await query.getMany();
 		return await this.processIncludes(entries, options);
+	}
+
+	public async getServiceProvidersCount(
+		options: {
+			ids?: number[];
+			serviceId?: number;
+			organisationId?: number;
+			scheduleFormId?: number;
+			includeScheduleForm?: boolean;
+			includeTimeslotsSchedule?: boolean;
+			skipAuthorisation?: boolean;
+		} = {},
+	): Promise<number> {
+		const query = await this.getSpQuery(options);
+		return query.getCount();
 	}
 
 	public async getByScheduleFormId(options: {
@@ -145,7 +184,13 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			.leftJoinAndSelect('sp._service', 'service');
 	}
 
-	public async save(serviceProviders: ServiceProvider): Promise<ServiceProvider> {
-		return (await this.getRepository()).save(serviceProviders);
+	public async save(serviceProvider: ServiceProvider): Promise<ServiceProvider> {
+		const repository = await this.getRepository();
+		return await repository.save(serviceProvider);
+	}
+
+	public async saveMany(serviceProviders: ServiceProvider[]): Promise<ServiceProvider[]> {
+		const repository = await this.getRepository();
+		return await repository.save(serviceProviders);
 	}
 }

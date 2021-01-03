@@ -3,12 +3,14 @@ import {
 	ServiceProviderListRequest,
 	ServiceProviderModel,
 	ServiceProviderResponseModel,
+	TotalServiceProviderResponse,
 } from './serviceProviders.apicontract';
 import { ServiceProvidersService } from './serviceProviders.service';
 import {
 	Body,
 	Controller,
 	Delete,
+	Deprecated,
 	Get,
 	Header,
 	Path,
@@ -21,7 +23,6 @@ import {
 	SuccessResponse,
 	Tags,
 } from 'tsoa';
-import { parseCsv } from '../../utils';
 import { mapToResponse as mapScheduleToResponse } from '../scheduleForms/scheduleForms.mapper';
 import { ScheduleFormRequest, ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
 import { ServiceProvidersMapper } from './serviceProviders.mapper';
@@ -33,6 +34,7 @@ import {
 import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
 import { MOLAuth } from 'mol-lib-common';
 import { ApiData, ApiDataFactory } from '../../apicontract';
+import { parseCsv } from '../../tools/csvParser';
 import { ServicesService } from '../services/services.service';
 import { ServiceProvider } from '../../models';
 
@@ -49,7 +51,10 @@ export class ServiceProvidersController extends Controller {
 	private mapper: ServiceProvidersMapper;
 
 	// TODO: write test for this one
-	private static parseCsvModelToServiceProviders(csvModels: []) {
+	/**
+	 * @deprecated use onboard atm
+	 */
+	private static parseCsvModelToServiceProviders(csvModels: any[]) {
 		try {
 			const serviceProvidersRequest = csvModels as ServiceProviderModel[];
 
@@ -63,6 +68,7 @@ export class ServiceProvidersController extends Controller {
 	}
 
 	/**
+	 * @deprecated
 	 * Creates multiple service providers (json format).
 	 * @param spRequest
 	 * @param @isInt serviceId The service id.
@@ -70,6 +76,7 @@ export class ServiceProvidersController extends Controller {
 	@Post('')
 	@Security('service')
 	@SuccessResponse(204, 'Created')
+	@Deprecated()
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async addServiceProviders(
@@ -80,11 +87,13 @@ export class ServiceProvidersController extends Controller {
 	}
 
 	/**
+	 * @deprecated
 	 * Creates multiple service providers (CSV format). The csv content must contain a single header called name.
 	 * @param spRequest
 	 * @param @isInt serviceId The service id.
 	 */
 	@Post('/csv')
+	@Deprecated()
 	@Security('service')
 	@SuccessResponse(204, 'Created')
 	@MOLAuth({ admin: {}, agency: {} })
@@ -102,6 +111,8 @@ export class ServiceProvidersController extends Controller {
 	 * @param @isInt serviceId (Optional) Filters by a service (id).
 	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
 	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
+	 * @param @isInt limit (Optional) the total number of records required.
+	 * @param @isInt page (Optional) the page number currently requested.
 	 */
 	@Get('')
 	@Security('optional-service')
@@ -111,13 +122,40 @@ export class ServiceProvidersController extends Controller {
 		@Header('x-api-service') serviceId?: number,
 		@Query() includeTimeslotsSchedule = false,
 		@Query() includeScheduleForm = false,
+		@Query() limit?: number,
+		@Query() page?: number,
 	): Promise<ApiData<ServiceProviderResponseModel[]>> {
 		const dataModels = await this.serviceProvidersService.getServiceProviders(
 			serviceId,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
+			limit,
+			page,
 		);
 		return ApiDataFactory.create(this.mapper.mapDataModels(dataModels));
+	}
+
+	/**
+	 * Retrieves the total number of service providers.
+	 * @param @isInt serviceId (Optional) Filters by a service (id).
+	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
+	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
+	 */
+	@Get('/count')
+	@Security('optional-service')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async getTotalServiceProviders(
+		@Header('x-api-service') serviceId?: number,
+		@Query() includeTimeslotsSchedule = false,
+		@Query() includeScheduleForm = false,
+	): Promise<ApiData<TotalServiceProviderResponse>> {
+		const total = await this.serviceProvidersService.getServiceProvidersCount(
+			serviceId,
+			includeScheduleForm,
+			includeTimeslotsSchedule,
+		);
+		return ApiDataFactory.create({ total });
 	}
 
 	/**

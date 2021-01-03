@@ -1,4 +1,4 @@
-import { User } from '../../../models';
+import { AdminUser, User } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { UsersRepository } from '../users.repository';
 import {
@@ -7,6 +7,7 @@ import {
 	TransactionManagerMock,
 } from '../../../infrastructure/tests/dbconnectionmock';
 import { TransactionManager } from '../../../core/transactionManager';
+import { IUser } from '../../../models/interfaces';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -59,6 +60,26 @@ describe('User repository', () => {
 		const result = await userRepository.save({} as User);
 		expect(result).toStrictEqual([{ id: 'abc' }]);
 	});
+
+	it('should find and save user', async () => {
+		userMock.adminUser = {} as AdminUser;
+		userMock.adminUser.agencyUserId = '1';
+		userMock.adminUser._User = {} as IUser;
+		userMock.adminUser._User.id = 1;
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve([userMock])),
+		};
+		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		InnerRepositoryMock.save.mockImplementation(() => userMock);
+		const userRepository = Container.get(UsersRepository);
+
+		const result = await userRepository.save(userMock);
+		expect(result).toStrictEqual(userMock);
+	});
+
 	it('should getUserByMolUserId', async () => {
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),

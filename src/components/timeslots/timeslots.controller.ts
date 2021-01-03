@@ -48,9 +48,9 @@ export class TimeslotsController extends Controller {
 	 * Pending and accepted bookings count towards availability quota.
 	 * @param startDate The lower bound limit for timeslots' startDate.
 	 * @param endDate The upper bound limit for timeslots' endDate.
-	 * @param @isInt serviceId The available service to be queried.
-	 * @param @isInt serviceProviderId (Optional) Filters timeslots for a specific service provider.
+	 * @param serviceId
 	 * @param includeBookings (Optional)
+	 * @param serviceProviderIds
 	 */
 	@Get('')
 	@Security('service')
@@ -61,14 +61,15 @@ export class TimeslotsController extends Controller {
 		@Query() endDate: Date,
 		@Header('x-api-service') serviceId: number,
 		@Query() includeBookings: boolean = false,
-		@Query() serviceProviderId?: number,
+		@Query() serviceProviderIds?: number[],
 	): Promise<ApiData<TimeslotEntryResponse[]>> {
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
 			serviceId,
 			includeBookings,
-			serviceProviderId,
+			undefined,
+			serviceProviderIds,
 		);
 		return ApiDataFactory.create(timeslots?.map((t) => TimeslotsMapper.mapTimeslotEntry(t)));
 	}
