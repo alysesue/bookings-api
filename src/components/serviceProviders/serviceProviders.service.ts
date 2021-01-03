@@ -93,8 +93,24 @@ export class ServiceProvidersService {
 		serviceId?: number,
 		includeScheduleForm = false,
 		includeTimeslotsSchedule = false,
+		limit?: number,
+		pageNumber?: number,
 	): Promise<ServiceProvider[]> {
 		return await this.serviceProvidersRepository.getServiceProviders({
+			serviceId,
+			includeScheduleForm,
+			includeTimeslotsSchedule,
+			limit,
+			pageNumber,
+		});
+	}
+
+	public async getServiceProvidersCount(
+		serviceId?: number,
+		includeScheduleForm = false,
+		includeTimeslotsSchedule = false,
+	): Promise<number> {
+		return await this.serviceProvidersRepository.getServiceProvidersCount({
 			serviceId,
 			includeScheduleForm,
 			includeTimeslotsSchedule,

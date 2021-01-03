@@ -54,6 +54,10 @@ export class ServiceProviderListRequest {
 	public serviceProviders: ServiceProviderModel[];
 }
 
+export class TotalServiceProviderResponse {
+	public total: number;
+}
+
 export class ServiceProviderSummaryModel {
 	/**
 	 * @isInt

@@ -164,6 +164,26 @@ describe('Services repository', () => {
 		const result = await repository.getServicesForUserGroups([]);
 		expect(result).toEqual([]);
 	});
+
+	it('should get service by name', async () => {
+		const service1 = new Service();
+		service1.name = 'Service 1';
+		const service2 = new Service();
+		service2.name = 'Service 2';
+		const data: Service[] = [service1, service2];
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			getMany: jest.fn(() => Promise.resolve(data)),
+		};
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const names: string[] = ['Service 1', 'Service 2'];
+		const repository = Container.get(ServicesRepository);
+		const result = await repository.getServicesByName({ names, organisationId: 1 });
+		expect(result).toHaveLength(2);
+		expect(result[0].name).toEqual('Service 1');
+	});
 });
 
 class TransactionManagerMock implements Partial<TransactionManager> {

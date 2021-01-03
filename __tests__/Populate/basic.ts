@@ -113,3 +113,65 @@ export const populateIndividualTimeslot = async ({
 	);
 	return response.body.data;
 };
+
+export const populateWeeklyTimesheet = async ({ serviceProviderId, scheduleSlot, closeTime, openTime }) => {
+	const response = await OrganisationAdminRequestEndpointSG.create({}).put(
+		`/service-providers/${serviceProviderId}/scheduleForm`,
+		{
+			body: {
+				slotsDurationInMin: scheduleSlot,
+				weekdaySchedules: [{
+					weekday: 0,
+					hasScheduleForm: true,
+					breaks: [],
+					closeTime,
+					openTime,
+				},
+				{
+					weekday: 1,
+					hasScheduleForm: true,
+					breaks: [],
+					closeTime,
+					openTime,
+				},
+				{
+					weekday: 2,
+					hasScheduleForm: true,
+					breaks: [],
+					closeTime,
+					openTime,
+				},
+				{
+					weekday: 3,
+					hasScheduleForm: true,
+					breaks: [],
+					closeTime,
+					openTime,
+				},
+				{
+					weekday: 4,
+					hasScheduleForm: true,
+					breaks: [],
+					closeTime,
+					openTime,
+				},
+				{
+					weekday: 5,
+					hasScheduleForm: true,
+					breaks: [],
+					closeTime,
+					openTime,
+				},
+				{
+					weekday: 6,
+					hasScheduleForm: true,
+					breaks: [],
+					closeTime,
+					openTime,
+				}]
+			}
+		}
+	);
+
+	return response.body.data;
+}

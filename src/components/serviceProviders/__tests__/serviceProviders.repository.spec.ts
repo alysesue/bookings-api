@@ -43,12 +43,20 @@ describe('Service Provider repository', () => {
 		leftJoinAndSelect: jest.Mock;
 		getMany: jest.Mock<Promise<ServiceProvider[]>, any>;
 		getOne: jest.Mock<Promise<ServiceProvider>, any>;
+		orderBy: jest.Mock<any, any>;
+		limit: jest.Mock;
+		offset: jest.Mock;
+		getCount: jest.Mock;
 	} = {
 		where: jest.fn(),
 		leftJoin: jest.fn(),
 		leftJoinAndSelect: jest.fn(),
 		getMany: jest.fn<Promise<ServiceProvider[]>, any>(),
 		getOne: jest.fn<Promise<ServiceProvider>, any>(),
+		orderBy: jest.fn<any, any>(),
+		limit: jest.fn(),
+		offset: jest.fn(),
+		getCount: jest.fn(),
 	};
 
 	const QueryAuthVisitorMock = {
@@ -260,6 +268,16 @@ describe('Service Provider repository', () => {
 		expect(TransactionManagerMock.save.mock.calls[0][0]).toStrictEqual(spInput);
 	});
 
+	it('should save multiple service providers', async () => {
+		const spsInput: ServiceProvider[] = [ServiceProvider.create('abc', 1)];
+
+		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(spsInput));
+		const spRepository = Container.get(ServiceProvidersRepository);
+
+		await spRepository.saveMany(spsInput);
+		expect(TransactionManagerMock.save.mock.calls[0][0]).toStrictEqual(spsInput);
+	});
+
 	it('should get linked user', async () => {
 		const serviceProvider = ServiceProvider.create('J', 1, '', '', 'ABC12');
 		serviceProvider.id = 1;
@@ -277,6 +295,31 @@ describe('Service Provider repository', () => {
 		expect(result.linkedUser).toBeDefined();
 		expect(result.agencyUserId).toBe('ABC12');
 	});
+
+	it('should get list of SP with limit and pageNumber', async () => {
+		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([]));
+
+		const spRepository = Container.get(ServiceProvidersRepository);
+
+		const result = await spRepository.getServiceProviders({ serviceId: 1, limit: 5, pageNumber: 1 });
+		expect(TransactionManagerMock.createQueryBuilder).toBeCalled();
+		expect(queryBuilderMock.getMany).toBeCalled();
+		expect(queryBuilderMock.limit).toBeCalled();
+		expect(queryBuilderMock.offset).toBeCalled();
+		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
+		expect(result).toBeDefined();
+	});
+
+	it('should get the total number of SP', async () => {
+		queryBuilderMock.getCount.mockImplementation(() => Promise.resolve(5));
+
+		const spRepository = Container.get(ServiceProvidersRepository);
+
+		const result = await spRepository.getServiceProvidersCount({ serviceId: 1 });
+		expect(TransactionManagerMock.createQueryBuilder).toBeCalled();
+		expect(queryBuilderMock.getCount).toBeCalled();
+		expect(result).toBe(5);
+	});
 });
 
 class TransactionManagerMock implements Partial<TransactionManager> {
@@ -286,6 +329,7 @@ class TransactionManagerMock implements Partial<TransactionManager> {
 	public static findOne = jest.fn();
 	public static save = jest.fn();
 	public static createQueryBuilder = jest.fn();
+	public static getCount = jest.fn();
 
 	public async getEntityManager(): Promise<any> {
 		const entityManager = {
@@ -296,6 +340,7 @@ class TransactionManagerMock implements Partial<TransactionManager> {
 				update: TransactionManagerMock.update,
 				save: TransactionManagerMock.save,
 				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
+				getCount: TransactionManagerMock.getCount,
 			}),
 		};
 		return Promise.resolve(entityManager);
