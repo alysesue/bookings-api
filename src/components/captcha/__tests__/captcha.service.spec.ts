@@ -1,5 +1,5 @@
 import { CaptchaService } from '../captcha.service';
-import { GoogleVerifyApiResponse } from '../captcha.apicontract';
+import { GoogleVerifyApiResponse, TokenProperties } from '../captcha.apicontract';
 import { postCaptcha } from '../../../tools/fetch';
 
 jest.mock('../../../tools/fetch', () => ({
@@ -10,7 +10,9 @@ describe('Captcha Service', () => {
 		jest.clearAllMocks();
 	});
 	it('should verify token to google captcha api', async () => {
-		const returnVal = { success: true } as GoogleVerifyApiResponse;
+		const tokenProps = {} as TokenProperties;
+		tokenProps.valid = true;
+		const returnVal = { tokenProperties: tokenProps } as GoogleVerifyApiResponse;
 		(postCaptcha as jest.Mock).mockImplementation(() => Promise.resolve(returnVal));
 		await CaptchaService.verify('123');
 		expect(postCaptcha).toBeCalled();
