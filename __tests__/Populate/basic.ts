@@ -51,7 +51,7 @@ export const populateUserServiceProvider = async ({
 	uinfin?: string;
 	agencyUserId: string; // making this required, so we can identify the service provider user
 	email?: string;
-}): Promise<{ services: ServiceResponse; serviceProviders: ServiceProviderResponseModel }> => {
+}): Promise<{ services: ServiceResponse[]; serviceProviders: ServiceProviderResponseModel[] }> => {
 	await OrganisationAdminRequestEndpointSG.create({ organisation }).post('/users/service-providers/upsert', {
 		body: [
 			{
@@ -120,58 +120,60 @@ export const populateWeeklyTimesheet = async ({ serviceProviderId, scheduleSlot,
 		{
 			body: {
 				slotsDurationInMin: scheduleSlot,
-				weekdaySchedules: [{
-					weekday: 0,
-					hasScheduleForm: true,
-					breaks: [],
-					closeTime,
-					openTime,
-				},
-				{
-					weekday: 1,
-					hasScheduleForm: true,
-					breaks: [],
-					closeTime,
-					openTime,
-				},
-				{
-					weekday: 2,
-					hasScheduleForm: true,
-					breaks: [],
-					closeTime,
-					openTime,
-				},
-				{
-					weekday: 3,
-					hasScheduleForm: true,
-					breaks: [],
-					closeTime,
-					openTime,
-				},
-				{
-					weekday: 4,
-					hasScheduleForm: true,
-					breaks: [],
-					closeTime,
-					openTime,
-				},
-				{
-					weekday: 5,
-					hasScheduleForm: true,
-					breaks: [],
-					closeTime,
-					openTime,
-				},
-				{
-					weekday: 6,
-					hasScheduleForm: true,
-					breaks: [],
-					closeTime,
-					openTime,
-				}]
-			}
-		}
+				weekdaySchedules: [
+					{
+						weekday: 0,
+						hasScheduleForm: true,
+						breaks: [],
+						closeTime,
+						openTime,
+					},
+					{
+						weekday: 1,
+						hasScheduleForm: true,
+						breaks: [],
+						closeTime,
+						openTime,
+					},
+					{
+						weekday: 2,
+						hasScheduleForm: true,
+						breaks: [],
+						closeTime,
+						openTime,
+					},
+					{
+						weekday: 3,
+						hasScheduleForm: true,
+						breaks: [],
+						closeTime,
+						openTime,
+					},
+					{
+						weekday: 4,
+						hasScheduleForm: true,
+						breaks: [],
+						closeTime,
+						openTime,
+					},
+					{
+						weekday: 5,
+						hasScheduleForm: true,
+						breaks: [],
+						closeTime,
+						openTime,
+					},
+					{
+						weekday: 6,
+						hasScheduleForm: true,
+						breaks: [],
+						closeTime,
+						openTime,
+					},
+				],
+			},
+		},
 	);
 
 	return response.body.data;
-}
+};
