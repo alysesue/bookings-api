@@ -48,6 +48,7 @@ function main() {
 		fixGlobPattern('./scripts/**/*.js'),
 		fixGlobPattern('./scripts/**/*.ts'),
 		fixGlobPattern('./scripts/**/*.json'),
+		fixGlobPattern('./__tests__/**/*.ts'),
 		fixGlobPattern('./node_modules/mol-bamboo-scripts/**/*.sh'),
 		fixGlobPattern('./node_modules/mol-bamboo-scripts/**/*.json'),
 		fixGlobPattern('./node_modules/mol-lib-config/**/*.sh'),

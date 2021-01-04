@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 
 export class PgClient {
-	private pool;
+	private pool: Pool;
 	constructor() {
 		this.pool = new Pool({
 			user: process.env['BOOKINGSG_DB_USERNAME'],
@@ -36,18 +36,25 @@ export class PgClient {
 	}
 
 	public async mapServiceAdminToService({ serviceId, nameService, organisation }) {
-		await this.pool.query(
-			// tslint:disable-next-line:tsr-detect-sql-literal-injection
-			`INSERT INTO public.service_admin_group_map("_serviceId", "_serviceOrganisationRef") values(${serviceId}, '${nameService}:${organisation}')`,
-		);
+		await this.pool.query({
+			text: `INSERT INTO public.service_admin_group_map("_serviceId", "_serviceOrganisationRef") values($1, $2)`,
+			values: [serviceId, `${nameService}:${organisation}`],
+		});
 	}
 
 	public async getAdminIdForServiceProvider({ serviceProviderId }): Promise<string> {
-		const res = await this.pool.query(
-			// tslint:disable-next-line:tsr-detect-sql-literal-injection
-			`SELECT "map"."_molAdminId" from public.service_provider_group_map map where "map"."_serviceProviderId" = '${serviceProviderId}'`,
-		);
+		const res = await this.pool.query({
+			text: `SELECT "map"."_molAdminId" from public.service_provider_group_map map where "map"."_serviceProviderId" = $1`,
+			values: [serviceProviderId],
+		});
 		return res.rows[0]._molAdminId;
+	}
+
+	public async configureServiceAllowAnonymous({ serviceId }: { serviceId: number }): Promise<void> {
+		await this.pool.query({
+			text: `UPDATE public.service set "_allowAnonymousBookings" = true where _id = $1`,
+			values: [serviceId],
+		});
 	}
 
 	public async close() {

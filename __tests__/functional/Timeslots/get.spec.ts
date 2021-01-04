@@ -67,9 +67,24 @@ describe('Timeslots functional tests', () => {
 		serviceId2 = result2.services.find((item) => item.name === NAME_SERVICE_2).id;
 		serviceId3 = result3.services.find((item) => item.name === NAME_SERVICE_3).id;
 
-		await populateWeeklyTimesheet({ serviceProviderId: serviceProvider1.id, openTime: START_TIME_1, closeTime: END_TIME_1, scheduleSlot: 60 });
-		await populateWeeklyTimesheet({ serviceProviderId: serviceProvider2.id, openTime: START_TIME_2, closeTime: END_TIME_2, scheduleSlot: 60 });
-		await populateWeeklyTimesheet({ serviceProviderId: serviceProvider3.id, openTime: START_TIME_3, closeTime: END_TIME_3, scheduleSlot: 60 });
+		await populateWeeklyTimesheet({
+			serviceProviderId: serviceProvider1.id,
+			openTime: START_TIME_1,
+			closeTime: END_TIME_1,
+			scheduleSlot: 60,
+		});
+		await populateWeeklyTimesheet({
+			serviceProviderId: serviceProvider2.id,
+			openTime: START_TIME_2,
+			closeTime: END_TIME_2,
+			scheduleSlot: 60,
+		});
+		await populateWeeklyTimesheet({
+			serviceProviderId: serviceProvider3.id,
+			openTime: START_TIME_3,
+			closeTime: END_TIME_3,
+			scheduleSlot: 60,
+		});
 
 		done();
 	});
@@ -99,7 +114,9 @@ describe('Timeslots functional tests', () => {
 	});
 
 	it('organization admin should get all timeslot schedules for specific service provider', async () => {
-		const timeslotsForServiceProviders = await OrganisationAdminRequestEndpointSG.create({ serviceId: serviceId1 }).get(`timeslots?startDate=2020-11-27T09:00:00.000Z&endDate=2020-11-30T09:59:59.999Z&includeBookings=true`);
+		const timeslotsForServiceProviders = await OrganisationAdminRequestEndpointSG.create({
+			serviceId: serviceId1,
+		}).get(`timeslots?startDate=2020-11-27T09:00:00.000Z&endDate=2020-11-30T09:59:59.999Z&includeBookings=true`);
 
 		expect(timeslotsForServiceProviders.statusCode).toEqual(200);
 
@@ -107,7 +124,7 @@ describe('Timeslots functional tests', () => {
 		const endDate = timeslotsForServiceProviders.body.data[0].endTime;
 
 		const startTime = keepTimeFromTimezoneToLocal({ date: startDate, format: TIME_FORMAT });
-		const endTime = keepTimeFromTimezoneToLocal({ date: endDate, format: TIME_FORMAT })
+		const endTime = keepTimeFromTimezoneToLocal({ date: endDate, format: TIME_FORMAT });
 		expect(startTime).toEqual(START_TIME_1);
 		expect(endTime).toEqual(END_TIME_1);
 	});
@@ -168,9 +185,19 @@ describe('Timeslots functional tests', () => {
 			await CitizenRequestEndpointSG.create({ serviceId: serviceId1 }).get(
 				`/service-providers/${serviceProvider1.id}/timeslotSchedule`,
 			);
+		} catch (e) {
+			expect(e.message).toBe(ERROR_MESSAGE);
+		}
+
+		try {
 			await CitizenRequestEndpointSG.create({ serviceId: serviceId2 }).get(
 				`/service-providers/${serviceProvider2.id}/timeslotSchedule`,
 			);
+		} catch (e) {
+			expect(e.message).toBe(ERROR_MESSAGE);
+		}
+
+		try {
 			await CitizenRequestEndpointSG.create({ serviceId: serviceId3 }).get(
 				`/service-providers/${serviceProvider3.id}/timeslotSchedule`,
 			);
