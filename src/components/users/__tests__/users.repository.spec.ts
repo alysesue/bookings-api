@@ -21,6 +21,9 @@ beforeAll(() => {
 const userMock = new User();
 userMock.id = 1;
 
+const userMock2 = new User();
+userMock2.id = 2;
+
 describe('User repository', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -126,6 +129,37 @@ describe('User repository', () => {
 		const result = await userRepository.getUserByMolAdminId('d080f6ed-3b47-478a-a6c6-dfb5608a199d');
 		expect(result).toStrictEqual([userMock]);
 	});
+
+	it('should getUserByMolAdminIds', async () => {
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			orderBy: jest.fn(() => queryBuilderMock),
+			getMany: jest.fn(() => Promise.resolve([userMock, userMock2])),
+		};
+		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		const userRepository = Container.get(UsersRepository);
+
+		const result = await userRepository.getUsersByMolAdminIds(['d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'd080f6ed-3b47-478a-a6c6-dfb5608a199e']);
+		expect(result).toStrictEqual([userMock, userMock2]);
+	});
+
+	it('should getUserByAgencyAppId', async () => {
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			orderBy: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve([userMock])),
+		};
+		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		const userRepository = Container.get(UsersRepository);
+
+		const result = await userRepository.getUserByAgencyAppId('d080f6ed-3b47-478a-a6c6-dfb5608a199d');
+		expect(result).toStrictEqual([userMock]);
+	});
+
 
 	it('should not getUserByMolAdminId when id is null', async () => {
 		const queryBuilderMock = {
