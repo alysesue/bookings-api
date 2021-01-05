@@ -9,7 +9,7 @@ export const getConfig = () => ({
 	port: ConfigUtils.getIntValueFromEnv('PORT', 3000),
 	logQueries: ConfigUtils.getValueFromEnv('LOG_QUERIES', 'false') === 'true',
 	isLocal: ConfigUtils.getValueFromEnv('IS_LOCAL', 'false') === 'true',
-	isFunctionalTest: ConfigUtils.getValueFromEnv('IS_FUNCTIONAL_TEST', 'false') === 'true',
+	isAutomatedTest: ConfigUtils.getValueFromEnv('IS_AUTOMATED_TEST', 'false') === 'true',
 	env: ConfigUtils.getValueFromEnv('NODE_ENV', 'production'),
 	encryptionKey: ConfigUtils.getValueFromEnv('ENCRYPTION_KEY_BOOKINGSG_APP'),
 	database: {
