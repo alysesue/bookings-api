@@ -4,11 +4,11 @@ export class VerifyUserResponse {
 
 class GoogleVerifyApiEvent {
 	public token: string;
-	public sitekey: string;
+	public siteKey: string;
 
-	constructor(token: string, sitekey: string) {
+	constructor(token: string, siteKey: string) {
 		this.token = token;
-		this.sitekey = sitekey;
+		this.siteKey = siteKey;
 
 	}
 
@@ -16,8 +16,16 @@ class GoogleVerifyApiEvent {
 export class GoogleVerifyApiRequest {
 	public event: GoogleVerifyApiEvent;
 
-	constructor(token: string, sitekey: string) {
-		this.event = new GoogleVerifyApiEvent(token, sitekey);
+	constructor(token: string, siteKey: string) {
+		this.event = new GoogleVerifyApiEvent(token, siteKey);
+	}
+
+}
+export class GoogleVerifyApiRequestHeader {
+	public referer: string;
+
+	constructor(referer: string, ) {
+		this.referer = referer;
 	}
 
 }

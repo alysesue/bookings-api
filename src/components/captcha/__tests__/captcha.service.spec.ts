@@ -1,9 +1,9 @@
 import { CaptchaService } from '../captcha.service';
 import { GoogleVerifyApiResponse, TokenProperties } from '../captcha.apicontract';
-import { postCaptcha } from '../../../tools/fetch';
+import { post } from '../../../tools/fetch';
 
 jest.mock('../../../tools/fetch', () => ({
-	postCaptcha: jest.fn(),
+	post: jest.fn(),
 }));
 describe('Captcha Service', () => {
 	beforeEach(() => {
@@ -13,9 +13,9 @@ describe('Captcha Service', () => {
 		const tokenProps = {} as TokenProperties;
 		tokenProps.valid = true;
 		const returnVal = { tokenProperties: tokenProps } as GoogleVerifyApiResponse;
-		(postCaptcha as jest.Mock).mockImplementation(() => Promise.resolve(returnVal));
+		(post as jest.Mock).mockImplementation(() => Promise.resolve(returnVal));
 		await CaptchaService.verify('123');
-		expect(postCaptcha).toBeCalled();
+		expect(post).toBeCalled();
 	});
 
 	it('should return false when no token is provided', async () => {
