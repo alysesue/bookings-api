@@ -32,6 +32,16 @@ describe('Test class MolUsersService', () => {
 		expect(post).toBeCalledTimes(1);
 	});
 
+	it('Should have header with EMAIL value when sendEmail true', async () => {
+		const user = { email: 'tintin' };
+		(post as jest.Mock).mockReturnValue({ user });
+		(getConfig as jest.Mock).mockReturnValue({ isLocal: false, molAdminAuthForwarder: { url: 'url' } });
+		const service = Container.get(MolUsersServiceFactory).getService();
+		await service.molUpsertUser([], { token: '', sendEmail: true });
+		expect(post).toBeCalledTimes(1);
+		expect((post as jest.Mock).mock.calls[0][2]['desired-delivery-medium']).toBe('EMAIL');
+	});
+
 	it('Should not call post when isLocal = true', async () => {
 		(getConfig as jest.Mock).mockReturnValue({ isLocal: true, molAdminAuthForwarder: { url: 'url' } });
 		const user = {

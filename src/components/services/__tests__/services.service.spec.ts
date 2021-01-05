@@ -26,7 +26,6 @@ import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontra
 import { OrganisationsNoauthRepository } from '../../organisations/organisations.noauth.repository';
 import { MolUsersService } from '../../users/molUsers/molUsers.service';
 import {
-	IMolCognitoUserRequest,
 	IMolCognitoUserResponse,
 	MolServiceAdminUserContract,
 	MolUpsertUsersResult,
@@ -123,8 +122,9 @@ describe('Services service tests', () => {
 		ServicesRepositoryMock.getServicesByName.mockReturnValue(Promise.resolve([]));
 		ServicesRepositoryMock.saveMany.mockReturnValue(Promise.resolve([]));
 
-		await Container.get(ServicesService).createServicesAdmins([admin]);
+		await Container.get(ServicesService).createServicesAdmins([admin], 'token');
 		expect(MolUsersServiceMock.molUpsertUser).toBeCalled();
+		expect(MolUsersServiceMock.molUpsertUser.mock.calls[0][1].sendEmail).toBe(true);
 		expect(ServicesRepositoryMock.getServicesByName).toBeCalled();
 		expect(ServicesRepositoryMock.saveMany).toBeCalled();
 	});
@@ -364,8 +364,8 @@ class TimeslotsScheduleMockClass extends TimeslotItemsService {
 class MolUsersServiceMock extends MolUsersService {
 	public static molUpsertUser = jest.fn();
 
-	public async molUpsertUser(users: IMolCognitoUserRequest[]): Promise<MolUpsertUsersResult> {
-		return await MolUsersServiceMock.molUpsertUser(users);
+	public async molUpsertUser(...args): Promise<MolUpsertUsersResult> {
+		return await MolUsersServiceMock.molUpsertUser(...args);
 	}
 }
 

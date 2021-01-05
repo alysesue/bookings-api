@@ -141,7 +141,10 @@ describe('User repository', () => {
 		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
 		const userRepository = Container.get(UsersRepository);
 
-		const result = await userRepository.getUsersByMolAdminIds(['d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'd080f6ed-3b47-478a-a6c6-dfb5608a199e']);
+		const result = await userRepository.getUsersByMolAdminIds([
+			'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+			'd080f6ed-3b47-478a-a6c6-dfb5608a199e',
+		]);
 		expect(result).toStrictEqual([userMock, userMock2]);
 	});
 
@@ -159,7 +162,6 @@ describe('User repository', () => {
 		const result = await userRepository.getUserByAgencyAppId('d080f6ed-3b47-478a-a6c6-dfb5608a199d');
 		expect(result).toStrictEqual([userMock]);
 	});
-
 
 	it('should not getUserByMolAdminId when id is null', async () => {
 		const queryBuilderMock = {
