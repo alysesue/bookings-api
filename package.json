@@ -96,6 +96,7 @@
 		"@koa/cors": "^2.2.3",
 		"@popperjs/core": "^2.4.4",
 		"@types/pg": "^7.14.7",
+		"axios": "^0.21.1",
 		"crypto-js": "^4.0.0",
 		"csv-parse": "^4.10.1",
 		"glob": "^7.1.6",
