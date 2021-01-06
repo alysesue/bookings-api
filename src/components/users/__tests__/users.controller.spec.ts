@@ -103,7 +103,7 @@ describe('users controller', () => {
 		const profile = await controller.getProfile();
 		expect(profile.data).toEqual({
 			groups: [{ authGroupType: 'service-admin', services: [{ id: 1, name: 'service1' }] }],
-			user: { admin: { email: 'test@email.com' }, userType: 'admin' },
+			user: { admin: { email: 'test@email.com', name: 'Name' }, userType: 'admin' },
 		} as UserProfileResponse);
 	});
 
@@ -142,7 +142,7 @@ describe('users controller', () => {
 		const profile = await controller.getProfile();
 		expect(profile.data).toEqual({
 			groups: [{ authGroupType: 'service-admin', services: [{ id: 1, name: 'service1' }] }],
-			user: { admin: { email: 'test@email.com', agencyUserId: 'ABC123' }, userType: 'admin' },
+			user: { admin: { email: 'test@email.com', agencyUserId: 'ABC123', name: 'Name' }, userType: 'admin' },
 		} as UserProfileResponse);
 	});
 

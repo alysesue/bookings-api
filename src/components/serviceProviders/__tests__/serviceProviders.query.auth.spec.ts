@@ -40,14 +40,14 @@ describe('Service Providers query auth', () => {
 		expect(result.userParams).toStrictEqual({});
 	});
 
-	it(`should not filter for anonymous user`, async () => {
+	it(`should filter service providers for anonymous user`, async () => {
 		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
 		const groups = [new AnonymousAuthGroup(anonymous)];
-		const result = await new ServiceProvidersQueryAuthVisitor('provider', 'svc').createUserVisibilityCondition(
+		const result = await new ServiceProvidersQueryAuthVisitor('provider', 'sps').createUserVisibilityCondition(
 			groups,
 		);
 
-		expect(result.userCondition).toStrictEqual('');
+		expect(result.userCondition).toStrictEqual('(sps."_allowAnonymousBookings" = true)');
 		expect(result.userParams).toStrictEqual({});
 	});
 

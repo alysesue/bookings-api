@@ -112,10 +112,10 @@ resource "aws_ssm_parameter" "log-queries" {
   overwrite = true
 }
 
-resource "aws_ssm_parameter" "is-functional-test" {
-  name  = "${local.path-prefix}/IS_FUNCTIONAL_TEST"
+resource "aws_ssm_parameter" "is-automated-test" {
+  name  = "${local.path-prefix}/IS_AUTOMATED_TEST"
   type  = "String"
-  value = "${data.external.static.result.IS_FUNCTIONAL_TEST}"
+  value = "${data.external.static.result.IS_AUTOMATED_TEST}"
 
   overwrite = true
 }

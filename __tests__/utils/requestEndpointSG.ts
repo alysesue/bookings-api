@@ -1,5 +1,6 @@
 import { RequestEndpoint } from 'mol-lib-common';
 import * as request from 'request';
+import * as setCookieParser from 'set-cookie-parser';
 
 class RequestEndpointSG {
 	private _requestEndpoint: RequestEndpoint;
@@ -70,6 +71,8 @@ const CITIZEN_HEADERS = {
 	'mol-token-bypass': 'true',
 	'mol-auth-type': 'USER',
 };
+
+const TOKEN_COOKIE = 'BookingSGToken';
 
 export class OrganisationAdminRequestEndpointSG extends RequestEndpointSG {
 	public static create = ({
@@ -166,11 +169,17 @@ export class ServiceProviderRequestEndpointSG extends RequestEndpointSG {
 }
 
 export class CitizenRequestEndpointSG extends RequestEndpointSG {
-	public static create = ({ serviceId }: { serviceId?: string }): CitizenRequestEndpointSG => {
+	public static create = ({
+		citizenUinFin,
+		serviceId,
+	}: {
+		citizenUinFin?: string;
+		serviceId?: string;
+	}): CitizenRequestEndpointSG => {
 		const apiService = serviceId ? { 'x-api-service': serviceId } : {};
 		const headers = {
 			'mol-user-id': 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
-			'mol-user-uinfin': 'S7429377H',
+			'mol-user-uinfin': citizenUinFin || 'S7429377H',
 			'mol-user-auth-level': '2',
 			'mol-auth-type': 'USER',
 			...apiService,
@@ -184,5 +193,43 @@ export class CitizenRequestEndpointSG extends RequestEndpointSG {
 			...CITIZEN_HEADERS,
 			...headers,
 		});
+	}
+}
+
+export class AnonmymousEndpointSG extends RequestEndpointSG {
+	public static create = async ({ serviceId }: { serviceId?: string } = {}): Promise<AnonmymousEndpointSG> => {
+		const apiService = serviceId ? { 'x-api-service': serviceId } : {};
+		const sessionResponse = await AnonmymousEndpointSG.postAnonymousSession();
+		const cookieValue = AnonmymousEndpointSG.parseBookingSGCookie(sessionResponse);
+
+		const headers = {
+			...apiService,
+			cookie: `${TOKEN_COOKIE}=${cookieValue}`,
+		};
+		return new AnonmymousEndpointSG(headers);
+	};
+
+	public static async postAnonymousSession(): Promise<request.Response> {
+		const anonymousSessionRequest = new RequestEndpointSG();
+		return await anonymousSessionRequest.post('/usersessions/anonymous');
+	}
+
+	public static parseBookingSGCookie(response: request.Response): string {
+		for (const cookieString of response.headers['set-cookie']) {
+			const splitCookieHeaders = setCookieParser.splitCookiesString(cookieString);
+			const parsedCookies = setCookieParser.parse(splitCookieHeaders, {
+				decodeValues: false,
+			});
+
+			// tslint:disable-next-line: tsr-detect-possible-timing-attacks
+			if (parsedCookies.length > 0 && parsedCookies[0].name === TOKEN_COOKIE) {
+				return parsedCookies[0].value;
+			}
+		}
+	}
+
+	private constructor(headers: { [e: string]: string }) {
+		super();
+		this.setHeaders(headers);
 	}
 }

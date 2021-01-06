@@ -23,8 +23,7 @@ export class ServiceProvidersQueryAuthVisitor extends QueryAuthGroupVisitor {
 	}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
-		// TODO: check service setting for anonymous
-		this.addAsTrue();
+		this.addAuthCondition(`${this._serviceAlias}."_allowAnonymousBookings" = true`, {});
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {

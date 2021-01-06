@@ -21,6 +21,7 @@ ApiData {
             "admin": AdminUserContract {
               "agencyUserId": "ABC123",
               "email": "test@email.com",
+              "name": "Name",
             },
             "userType": "admin",
           },
