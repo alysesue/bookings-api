@@ -296,17 +296,6 @@ export class BookingsService {
 
 		// Persists in memory user only after validating booking.
 		booking.creator = await this.usersService.persistUserIfRequired(currentUser);
-		const existingOnHoldBooking = await this.searchBookings({
-			from: bookingRequest.startDateTime,
-			to: bookingRequest.endDateTime,
-			serviceProviderId: bookingRequest.serviceProviderId,
-			statuses: [BookingStatus.OnHold],
-		});
-		if (existingOnHoldBooking.length > 0) {
-			existingOnHoldBooking.forEach((existingBooking) => {
-				this.cancelBooking(existingBooking.id);
-			});
-		}
 		await this.bookingsRepository.insert(booking);
 
 		return [ChangeLogAction.Create, booking];
