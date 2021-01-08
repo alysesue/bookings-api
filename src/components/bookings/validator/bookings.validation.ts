@@ -70,7 +70,7 @@ abstract class BookingsValidator implements IValidator {
 		for await (const validation of concatIteratables(
 			this.validateServiceProviderExisting(booking),
 			BookingsValidator.validateDuration(booking),
-			booking.service?.isOnHold
+			booking.status === BookingStatus.OnHold
 				? BookingsValidator.skipValidation(booking)
 				: BookingsValidator.validateCitizenDetails(booking),
 		)) {
@@ -168,8 +168,8 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 		};
 		const onHoldBookings = await this.bookingsRepository.search(searchQuery);
 		return onHoldBookings.some((onHoldbooking) => {
-			const onHoldUntil = new Date(onHoldbooking.onHoldUntil);
-			onHoldUntil.setMinutes(onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
+			const onHoldUntil: Date = onHoldbooking.onHoldUntil;
+			onHoldUntil?.setMinutes(onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
 			return onHoldbooking.status === BookingStatus.OnHold && new Date() < onHoldUntil;
 		});
 	}

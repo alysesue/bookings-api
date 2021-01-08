@@ -183,7 +183,7 @@ export class TimeslotsService {
 		const acceptedBookings = bookings.filter((booking) => booking.status === BookingStatus.Accepted);
 		const pendingBookings = bookings.filter((booking) => booking.status === BookingStatus.PendingApproval);
 		const onHoldBookings = bookings.filter((booking) => {
-			const onHoldUntil = new Date(booking.onHoldUntil);
+			const onHoldUntil = booking.onHoldUntil;
 			return booking.status === BookingStatus.OnHold && new Date() < onHoldUntil;
 		});
 		if (includeBookings) {
