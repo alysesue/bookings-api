@@ -147,6 +147,19 @@ export class ServiceProvidersService {
 		}
 		return sp;
 	}
+	public async getServiceProvidersByName(
+		searchKey: string
+	): Promise<ServiceProvider[]> {
+		const spList = await this.serviceProvidersRepository.getServiceProvidersByName({
+			searchKey
+		});
+		if (!spList) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Service provider with name that contains ${searchKey} not found`);
+		}
+		return spList;
+	}
+
+
 
 	private async mapAndValidateServiceProvidersOnboard(
 		serviceProvidersOnboards: MolServiceProviderOnboard[],
