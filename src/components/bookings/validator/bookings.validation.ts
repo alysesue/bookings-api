@@ -203,7 +203,7 @@ class SlotBookingsValidator extends BookingsValidator {
 	}
 
 	protected async *validateToken(booking: Booking): AsyncIterable<BusinessValidation> {
-		const res = await CaptchaService.verify(booking.captchaToken, booking.captchaReferer);
+		const res = await CaptchaService.verify(booking.captchaToken, booking.captchaOrigin);
 		if (!res) {
 			yield BookingBusinessValidations.InvalidCaptchaToken;
 		}

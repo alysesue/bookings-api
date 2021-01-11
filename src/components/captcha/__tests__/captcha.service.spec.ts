@@ -14,12 +14,12 @@ describe('Captcha Service', () => {
 		tokenProps.valid = true;
 		const returnVal = { tokenProperties: tokenProps } as GoogleVerifyApiResponse;
 		(post as jest.Mock).mockImplementation(() => Promise.resolve(returnVal));
-		await CaptchaService.verify('123');
+		await CaptchaService.verify('123', 'local.booking.gov.sg');
 		expect(post).toBeCalled();
 	});
 
 	it('should return false when no token is provided', async () => {
-		const res = await CaptchaService.verify('');
+		const res = await CaptchaService.verify('', '');
 		expect(res).toBe(false);
 	});
 });

@@ -25,7 +25,7 @@ export class BookingBuilder {
 	public citizenEmail: string;
 	public autoAccept: boolean;
 	public captchaToken: string;
-	public captchaReferer: string;
+	public captchaOrigin: string;
 
 	public withServiceId(serviceId: number): BookingBuilder {
 		this.serviceId = serviceId;
@@ -95,8 +95,8 @@ export class BookingBuilder {
 		this.captchaToken = captchaToken;
 		return this;
 	}
-	public withCaptchaReferer(captchaReferer: string): BookingBuilder {
-		this.captchaReferer = captchaReferer;
+	public withCaptchaOrigin(captchaOrigin: string): BookingBuilder {
+		this.captchaOrigin = captchaOrigin;
 		return this;
 	}
 
@@ -192,7 +192,7 @@ export class Booking {
 		instance._citizenName = builder.citizenName;
 		instance._citizenEmail = builder.citizenEmail;
 		instance._captchaToken = builder.captchaToken;
-		instance._captchaReferer = builder.captchaReferer;
+		instance._captchaOrigin = builder.captchaOrigin;
 
 		return instance;
 	}
@@ -328,13 +328,13 @@ export class Booking {
 		this._captchaToken = value;
 	}
 
-	private _captchaReferer: string;
+	private _captchaOrigin: string;
 
-	public get captchaReferer(): string {
-		return this._captchaReferer;
+	public get captchaOrigin(): string {
+		return this._captchaOrigin;
 	}
-	public set captchaReferer(value: string) {
-		this._captchaReferer = value;
+	public set captchaOrigin(value: string) {
+		this._captchaOrigin = value;
 	}
 	public clone(): Booking {
 		const instance = new Booking();

@@ -26,6 +26,20 @@ jest.mock('mol-lib-common', () => {
 	};
 });
 
+jest.mock('../../../infrastructure/koaContextStore.middleware', () => {
+	const actual = jest.requireActual('../../../infrastructure/koaContextStore.middleware');
+	const header = {
+		origin: "booking.gov.sg"
+	};
+	const mock = () => {
+		return () => { header };
+	};
+	return {
+		...actual,
+		KoaContextStore: mock,
+	};
+});
+
 describe('Bookings.Controller', () => {
 	const testBooking1 = new BookingBuilder()
 		.withServiceId(1)

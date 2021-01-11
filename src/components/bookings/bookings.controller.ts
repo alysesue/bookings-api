@@ -58,10 +58,10 @@ export class BookingsController extends Controller {
 	): Promise<ApiData<BookingResponse>> {
 
 		const koaContext = this._koaContextStore.koaContext;
-		const referer = koaContext.header.referer;
+		const origin = koaContext.header.origin;
 
 		bookingRequest.outOfSlotBooking = false;
-		bookingRequest.captchaReferer = bookingRequest.captchaToken ? referer : undefined;
+		bookingRequest.captchaOrigin = bookingRequest.captchaToken ? origin : undefined;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
 		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));

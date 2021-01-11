@@ -32,7 +32,7 @@ export class BookingRequest {
 	/**
 	 * @ignore
 	 */
-	public captchaReferer?: string | null;
+	public captchaOrigin?: string | null;
 }
 
 export interface RescheduleBookingRequest extends BookingRequest {
