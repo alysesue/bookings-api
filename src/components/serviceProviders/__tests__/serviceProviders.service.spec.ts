@@ -399,6 +399,14 @@ describe('ServiceProviders.Service', () => {
 
 		expect(totalCount).toBe(5);
 	});
+	it('should search SP by name', async () => {
+		ServiceProvidersRepositoryMock.getServiceProvidersByName.mockReturnValue(
+			Promise.resolve([serviceProviderMock]),
+		);
+		const serviceProvidersService = Container.get(ServiceProvidersService);
+		const result = await serviceProvidersService.getServiceProvidersByName('mon');
+		expect(result.length).toBe(1);
+	});
 });
 
 class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
@@ -406,6 +414,7 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	public static getServiceProviders = jest.fn();
 	public static getServiceProviderMock: ServiceProvider;
 	public static getServiceProvidersCountMock: number;
+	public static getServiceProvidersByName = jest.fn();
 	public static save = jest.fn();
 	public static saveMany = jest.fn();
 
@@ -418,6 +427,9 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 	}
 	public async getServiceProvidersCount(...params): Promise<number> {
 		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProvidersCountMock);
+	}
+	public async getServiceProvidersByName(...params): Promise<ServiceProvider[]> {
+		return await ServiceProvidersRepositoryMock.getServiceProvidersByName(...params);
 	}
 
 	public async save(listRequest: ServiceProviderModel): Promise<ServiceProvider> {

@@ -320,6 +320,16 @@ describe('Service Provider repository', () => {
 		expect(queryBuilderMock.getCount).toBeCalled();
 		expect(result).toBe(5);
 	});
+
+	it('should search for SP by name', async () => {
+		queryBuilderMock.getCount.mockImplementation(() => Promise.resolve([]));
+
+		const spRepository = Container.get(ServiceProvidersRepository);
+
+		await spRepository.getServiceProvidersByName({ searchKey: 'zhen' });
+		expect(TransactionManagerMock.createQueryBuilder).toBeCalled();
+		expect(queryBuilderMock.getMany).toBeCalled();
+	});
 });
 
 class TransactionManagerMock implements Partial<TransactionManager> {
@@ -330,6 +340,7 @@ class TransactionManagerMock implements Partial<TransactionManager> {
 	public static save = jest.fn();
 	public static createQueryBuilder = jest.fn();
 	public static getCount = jest.fn();
+	public static getMany = jest.fn();
 
 	public async getEntityManager(): Promise<any> {
 		const entityManager = {
@@ -341,6 +352,7 @@ class TransactionManagerMock implements Partial<TransactionManager> {
 				save: TransactionManagerMock.save,
 				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
 				getCount: TransactionManagerMock.getCount,
+				getMany: TransactionManagerMock.getMany,
 			}),
 		};
 		return Promise.resolve(entityManager);

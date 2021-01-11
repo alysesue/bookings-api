@@ -64,6 +64,12 @@ describe('ServiceProviders.Controller', () => {
 		const result = await controller.getTotalServiceProviders();
 		expect(result.data.total).toBe(2);
 	});
+	it('should search SP by name', async () => {
+		ServiceProvidersMock.getServiceProvidersByName.mockReturnValue([sp1, sp2]);
+		const controller = Container.get(ServiceProvidersController);
+		const result = await controller.getServiceProvidersByName('mon');
+		expect(result.data.length).toBe(2);
+	});
 
 	it('should get service providers with timeslots', async () => {
 		const timeslots = new TimeslotsSchedule();
@@ -253,6 +259,7 @@ const ServiceProvidersMock = {
 	updateTimeslotItemForServiceProvider: jest.fn(),
 	deleteTimeslotForServiceProvider: jest.fn(),
 	createServiceProviders: jest.fn(),
+	getServiceProvidersByName: jest.fn(),
 };
 
 class ServiceProvidersServiceMock extends ServiceProvidersService {
@@ -267,7 +274,9 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 	public async getServiceProvidersCount(): Promise<number> {
 		return ServiceProvidersMock.getServiceProvidersCount();
 	}
-
+	public async getServiceProvidersByName(): Promise<ServiceProvider[]> {
+		return ServiceProvidersMock.getServiceProvidersByName();
+	}
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
 		return ServiceProvidersMock.getServiceProviders();
 	}

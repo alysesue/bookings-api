@@ -202,13 +202,12 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Get('search/{searchKey}')
 	@Response(401, 'Unauthorized')
-	public async getServiceProvidersByName(@Path() searchKey: string): Promise<ApiData<ServiceProviderResponseModel[]>> {
+	public async getServiceProvidersByName(
+		@Path() searchKey: string,
+	): Promise<ApiData<ServiceProviderResponseModel[]>> {
 		const dataModels = await this.serviceProvidersService.getServiceProvidersByName(searchKey);
 		return ApiDataFactory.create(this.mapper.mapDataModels(dataModels));
 	}
-
-
-
 
 	/**
 	 * Updates a single service provider.
