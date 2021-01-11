@@ -201,7 +201,8 @@ export class ServiceProvidersController extends Controller {
 	 * @param searchKey The search keyword.
 	 */
 	@Get('search/{searchKey}')
-	@Response(401, 'Unauthorized')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getServiceProvidersByName(
 		@Path() searchKey: string,
 	): Promise<ApiData<ServiceProviderResponseModel[]>> {

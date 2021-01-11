@@ -106,12 +106,13 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		return await this.processIncludes(entries, options);
 	}
 
-	public async getServiceProvidersByName(options: { searchKey: string }): Promise<ServiceProvider[]> {
-		const { searchKey } = options;
+	public async getServiceProvidersByName(options: { searchKey: string, serviceId?: number; }): Promise<ServiceProvider[]> {
+		const { searchKey, serviceId } = options;
 
 		return (await this.getRepository())
 			.createQueryBuilder('sp')
-			.where('sp._name like :name', { name: `%${searchKey}%` })
+			.where('sp._serviceId = :serviceId AND sp._name like :name', { serviceId: serviceId, name: `%${searchKey}%` })
+			.orderBy('sp._name', 'ASC')
 			.getMany();
 	}
 

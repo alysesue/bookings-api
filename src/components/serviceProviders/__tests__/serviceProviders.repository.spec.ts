@@ -322,7 +322,7 @@ describe('Service Provider repository', () => {
 	});
 
 	it('should search for SP by name', async () => {
-		queryBuilderMock.getCount.mockImplementation(() => Promise.resolve([]));
+		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([]));
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 
@@ -333,26 +333,28 @@ describe('Service Provider repository', () => {
 });
 
 class TransactionManagerMock implements Partial<TransactionManager> {
-	public static insert = jest.fn();
-	public static find = jest.fn();
-	public static update = jest.fn();
-	public static findOne = jest.fn();
-	public static save = jest.fn();
 	public static createQueryBuilder = jest.fn();
+	public static find = jest.fn();
+	public static findOne = jest.fn();
 	public static getCount = jest.fn();
 	public static getMany = jest.fn();
+	public static insert = jest.fn();
+	public static orderBy = jest.fn();
+	public static save = jest.fn();
+	public static update = jest.fn();
 
 	public async getEntityManager(): Promise<any> {
 		const entityManager = {
 			getRepository: () => ({
+				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
 				find: TransactionManagerMock.find,
 				findOne: TransactionManagerMock.findOne,
-				insert: TransactionManagerMock.insert,
-				update: TransactionManagerMock.update,
-				save: TransactionManagerMock.save,
-				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
 				getCount: TransactionManagerMock.getCount,
 				getMany: TransactionManagerMock.getMany,
+				insert: TransactionManagerMock.insert,
+				orderBy: TransactionManagerMock.orderBy,
+				save: TransactionManagerMock.save,
+				update: TransactionManagerMock.update,
 			}),
 		};
 		return Promise.resolve(entityManager);
@@ -384,7 +386,7 @@ class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
-	public init() {}
+	public init() { }
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(...params);
 	}
