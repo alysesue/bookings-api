@@ -59,4 +59,9 @@ export class BookingBusinessValidations {
 		code: '10011',
 		message: `Invalid captcha token`,
 	});
+
+	public static readonly OverlapsOnHoldBooking = new BusinessValidation({
+		code: '10012',
+		message: `Booking request not valid as it overlaps another on hold booking`,
+	});
 }

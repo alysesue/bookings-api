@@ -7,7 +7,7 @@ import { ServiceProvidersRepository } from '../../../serviceProviders/servicePro
 import { UnavailabilitiesService } from '../../../unavailabilities/unavailabilities.service';
 import { UserContext } from '../../../../infrastructure/auth/userContext';
 import { BookingBuilder } from '../../../../models/entities/booking';
-import { User } from '../../../../models';
+import { Service, User } from '../../../../models';
 import { BookingsValidatorFactory } from '../bookings.validation';
 import {
 	BookingRepositoryMock,
@@ -428,5 +428,54 @@ describe('Booking validation tests', () => {
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 
 		await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
+	});
+
+	it('should not allow booking on top of existing on hold booking until previous booking is expired', async () => {
+		const onHoldService = new Service();
+		onHoldService.id = 2;
+		onHoldService.isOnHold = true;
+		const onHoldServiceProvider = ServiceProvider.create('provider', 2);
+		onHoldServiceProvider.id = 2;
+
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withServiceProviderId(2)
+			.withRefId('RFM186')
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.withMarkOnHold(true)
+			.build();
+		booking.service = onHoldService;
+		BookingRepositoryMock.searchBookingsMock = [
+			new BookingBuilder()
+				.withServiceId(2)
+				.withStartDateTime(DateHelper.addMinutes(start, 15))
+				.withEndDateTime(DateHelper.addMinutes(start, 45))
+				.withMarkOnHold(true)
+				.build(),
+		];
+		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
+			const entry = new AvailableTimeslotProviders();
+			entry.startTime = DateHelper.addMinutes(start, 15);
+			entry.endTime = DateHelper.addMinutes(start, 45);
+
+			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
+			map.set(serviceProvider, createTimeslot(entry.startTime, entry.endTime, 1));
+
+			entry.setRelatedServiceProviders(map);
+
+			return Promise.resolve([entry]);
+		});
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+
+		const test = async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
+		await expect(test).rejects.toMatchInlineSnapshot(
+			'[BusinessError: [10003] Booking request not valid as it overlaps another accepted booking]',
+		);
 	});
 });
