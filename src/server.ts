@@ -108,12 +108,8 @@ export async function startServer(): Promise<Server> {
 		.use(bypassMiddleware(byPassAuthPath, new CitizenUserValidationMiddleware().build()))
 		.use(HandledRoutes.build());
 
-	const dbOptions = getConnectionOptions();
+	const dbOptions = getConnectionOptions(false);
 	logger.info(`Using DB: ${dbOptions.database} at ${dbOptions.host}`);
-	const dbConnection = Container.get(DbConnection);
-
-	await dbConnection.runMigrations();
-	await dbConnection.synchronize();
 
 	return await new Promise(async (resolve) => {
 		const server = koaServer.listen(config.port, async () => {
