@@ -25,6 +25,7 @@ export class BookingBuilder {
 	public citizenEmail: string;
 	public autoAccept: boolean;
 	public captchaToken: string;
+	public markOnHold: boolean;
 
 	public withServiceId(serviceId: number): BookingBuilder {
 		this.serviceId = serviceId;
@@ -95,6 +96,11 @@ export class BookingBuilder {
 		return this;
 	}
 
+	public withMarkOnHold(markOnHold: boolean): BookingBuilder {
+		this.markOnHold = markOnHold;
+		return this;
+	}
+
 	public build(): Booking {
 		return Booking.create(this);
 	}
@@ -155,6 +161,17 @@ export class Booking {
 	@Column({ nullable: true })
 	private _citizenPhone: string;
 
+	@Column({ nullable: true })
+	@Index()
+	private _onHoldUntil: Date;
+
+	public get onHoldUntil(): Date {
+		return this._onHoldUntil;
+	}
+	public set onHoldUntil(value: Date) {
+		this._onHoldUntil = value;
+	}
+
 	public get citizenPhone(): string {
 		return this._citizenPhone;
 	}
@@ -168,10 +185,17 @@ export class Booking {
 	}
 
 	public static create(builder: BookingBuilder): Booking {
+		const HOLD_DURATION_IN_MINS = 5;
 		const instance = new Booking();
 		if (builder.serviceProviderId) {
 			instance._serviceProviderId = builder.serviceProviderId;
-			instance._status = builder.autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
+			if (builder.markOnHold) {
+				instance._status = BookingStatus.OnHold;
+				instance._onHoldUntil = new Date();
+				instance._onHoldUntil.setMinutes(instance._onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
+			} else {
+				instance._status = builder.autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
+			}
 		} else {
 			instance._status = BookingStatus.PendingApproval;
 		}
