@@ -1,4 +1,5 @@
 import { Container } from 'typescript-ioc';
+import * as Koa from 'koa';
 import { Booking, BookingStatus } from '../../../models';
 import { BookingsController } from '../bookings.controller';
 import { BookingsService } from '../bookings.service';
@@ -9,6 +10,7 @@ import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 import { CaptchaService } from '../../captcha/captcha.service';
+import { KoaContextStore } from '../../../infrastructure/koaContextStore.middleware';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -26,21 +28,31 @@ jest.mock('mol-lib-common', () => {
 	};
 });
 
-jest.mock('../../../infrastructure/koaContextStore.middleware', () => {
-	const actual = jest.requireActual('../../../infrastructure/koaContextStore.middleware');
-	const header = {
-		origin: "booking.gov.sg"
-	};
-	const mock = () => {
-		return () => { header };
-	};
-	return {
-		...actual,
-		KoaContextStore: mock,
-	};
-});
+// jest.mock('../../../infrastructure/koaContextStore.middleware', () => {
+// 	const actual = jest.requireActual('../../../infrastructure/koaContextStore.middleware');
+// 	const header = {
+// 		origin: "booking.gov.sg"
+// 	};
+// 	const mock = () => {
+// 		return () => { header };
+// 	};
+// 	return {
+// 		...actual,
+// 		KoaContextStore: mock,
+// 	};
+// });
 
 describe('Bookings.Controller', () => {
+
+	const KoaContextStoreMock: Partial<KoaContextStore> = {
+		koaContext: {
+			header: {
+				set: jest.fn(),
+				get: jest.fn(),
+			} as Partial<Headers>,
+		} as Koa.Context,
+	};
+
 	const testBooking1 = new BookingBuilder()
 		.withServiceId(1)
 		.withStartDateTime(new Date('2020-10-01T01:00:00'))
@@ -57,6 +69,7 @@ describe('Bookings.Controller', () => {
 		Container.bind(BookingsService).to(BookingsServiceMock);
 		Container.bind(TimeslotsService).to(jest.fn(() => TimeslotsServiceMock));
 		Container.bind(CaptchaService).to(CaptchaServiceMock);
+		Container.bind(KoaContextStore).factory(() => KoaContextStoreMock);
 	});
 
 	it('should accept booking', async () => {
@@ -222,3 +235,9 @@ export class CaptchaServiceMock extends CaptchaService {
 		return await CaptchaServiceMock.verify(...params);
 	}
 }
+
+// export class KoaContextStoreMock extends KoaContextStore {
+// 	public get koaContext(): Koa.Context {
+// 		return "123";
+// 	}
+// }
