@@ -11,7 +11,7 @@ const DEFAULT_SCHEFULE_FORM_CONFIRMED = false;
 
 @Entity()
 export class ServiceProvider implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
-	constructor() {}
+	constructor() { }
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
@@ -79,6 +79,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 
 	@ManyToOne(() => Service)
 	@JoinColumn({ name: '_serviceId' })
+	@Index()
 	private _service: Service;
 
 	public set service(service: Service) {

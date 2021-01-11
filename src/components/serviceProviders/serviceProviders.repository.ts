@@ -111,7 +111,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 
 		return (await this.getRepository())
 			.createQueryBuilder('sp')
-			.where('sp._serviceId = :serviceId AND sp._name like :name', { serviceId: serviceId, name: `%${searchKey}%` })
+			.where('sp._serviceId = :serviceId AND LOWER(sp._name) like LOWER(:name)', { serviceId: serviceId, name: `%${searchKey}%` })
 			.orderBy('sp._name', 'ASC')
 			.getMany();
 	}
