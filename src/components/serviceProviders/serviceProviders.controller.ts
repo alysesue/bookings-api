@@ -200,7 +200,7 @@ export class ServiceProvidersController extends Controller {
 	 * Retrieves service providers whose name contains the searchKey, mainly for autocomplete feature.
 	 * @param searchKey The search keyword.
 	 */
-	@Get('{searchKey}')
+	@Get('search/{searchKey}')
 	@Response(401, 'Unauthorized')
 	public async getServiceProvidersByName(@Path() searchKey: string): Promise<ApiData<ServiceProviderResponseModel[]>> {
 		const dataModels = await this.serviceProvidersService.getServiceProvidersByName(searchKey);

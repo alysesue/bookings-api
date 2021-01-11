@@ -113,7 +113,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 
 		return (await this.getRepository())
 			.createQueryBuilder("sp")
-			.where("sp._name like :searchKey", { name: `%${searchKey}%` })
+			.where("sp._name like :name", { name: `%${searchKey}%` })
 			.getMany();
 	}
 
