@@ -28,22 +28,7 @@ jest.mock('mol-lib-common', () => {
 	};
 });
 
-// jest.mock('../../../infrastructure/koaContextStore.middleware', () => {
-// 	const actual = jest.requireActual('../../../infrastructure/koaContextStore.middleware');
-// 	const header = {
-// 		origin: "booking.gov.sg"
-// 	};
-// 	const mock = () => {
-// 		return () => { header };
-// 	};
-// 	return {
-// 		...actual,
-// 		KoaContextStore: mock,
-// 	};
-// });
-
 describe('Bookings.Controller', () => {
-
 	const KoaContextStoreMock: Partial<KoaContextStore> = {
 		koaContext: {
 			header: {
@@ -70,6 +55,7 @@ describe('Bookings.Controller', () => {
 		Container.bind(TimeslotsService).to(jest.fn(() => TimeslotsServiceMock));
 		Container.bind(CaptchaService).to(CaptchaServiceMock);
 		Container.bind(KoaContextStore).factory(() => KoaContextStoreMock);
+		KoaContextStoreMock.koaContext.header = { origin: 'local.booking.gov.sg' };
 	});
 
 	it('should accept booking', async () => {
@@ -156,6 +142,9 @@ describe('Bookings.Controller', () => {
 		const result = await controller.postBooking(req, 1);
 
 		expect(result).toBeDefined();
+		expect(KoaContextStoreMock.koaContext.header).toStrictEqual({
+			origin: 'local.booking.gov.sg',
+		});
 	});
 
 	it('should post out of timeslot booking', async () => {
@@ -235,9 +224,3 @@ export class CaptchaServiceMock extends CaptchaService {
 		return await CaptchaServiceMock.verify(...params);
 	}
 }
-
-// export class KoaContextStoreMock extends KoaContextStore {
-// 	public get koaContext(): Koa.Context {
-// 		return "123";
-// 	}
-// }

@@ -39,7 +39,6 @@ export class BookingsController extends Controller {
 	@Inject
 	private _koaContextStore: KoaContextStore;
 
-
 	/**
 	 * Creates a new booking.
 	 * [startDateTime, endDateTime] pair needs to match an available timeslot for the service or service provider.
@@ -56,7 +55,6 @@ export class BookingsController extends Controller {
 		@Body() bookingRequest: BookingRequest,
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<BookingResponse>> {
-
 		const koaContext = this._koaContextStore.koaContext;
 		const origin = koaContext.header.origin;
 
