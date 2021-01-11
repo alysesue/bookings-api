@@ -13,7 +13,6 @@ import 'reflect-metadata';
 import { basePath, getConfig } from './config/app-config';
 import { HealthCheckMiddleware } from './health/HealthCheckMiddleware';
 import { RegisterRoutes } from './routes';
-import { DbConnection } from './core/db.connection';
 import { Container, Scope } from 'typescript-ioc';
 import * as cors from '@koa/cors';
 import { useSwagger } from './infrastructure/swagger.middleware';
