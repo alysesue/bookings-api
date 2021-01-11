@@ -8,7 +8,9 @@ const RECAPTCHA_THRESHOLD = 0.5;
 
 @InRequestScope
 export class CaptchaService {
-	public static async verify(token: string): Promise<boolean> {
+
+	public static async verify(token: string, referer: string): Promise<boolean> {
+
 		if (token) {
 			const apiKey = getConfig().recaptchaApiKey;
 			const siteKey = getConfig().recaptchaSiteKey;
@@ -16,7 +18,7 @@ export class CaptchaService {
 			const res = await post<GoogleVerifyApiResponse>(
 				`${RECATPCHA_URL}/v1beta1/projects/${projectId}/assessments?key=${apiKey}`,
 				new GoogleVerifyApiRequest(token, siteKey),
-				new GoogleVerifyApiRequestHeader("http://www.local.booking.gov.sg/")
+				new GoogleVerifyApiRequestHeader(referer)
 			);
 			return res.tokenProperties.valid && res.score >= RECAPTCHA_THRESHOLD;
 		}
