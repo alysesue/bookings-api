@@ -329,8 +329,8 @@ describe('Service Provider repository', () => {
 
 		const result = await spRepository.getServiceProvidersByName({ searchKey: 'zhen' });
 		expect(TransactionManagerMock.createQueryBuilder).toBeCalled();
-		expect(queryBuilderMock.where).toHaveBeenCalledWith(["", 'LOWER(sp._name) like LOWER(:name)'],
-			{ name: "%zhen%", serviceId: undefined });
+		expect(queryBuilderMock.where).toHaveBeenCalledWith(["", 'sp._name ILIKE :name'],
+			{ name: "zhen%", serviceId: undefined });
 		expect(result).toBeDefined();
 	});
 });

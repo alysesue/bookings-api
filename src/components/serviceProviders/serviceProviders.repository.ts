@@ -111,10 +111,10 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 
 		const repository = await this.getRepository();
 		const serviceCondition = serviceId ? 'sp."_serviceId" = :serviceId ' : '';
-		const nameCondition = searchKey ? 'LOWER(sp._name) like LOWER(:name)' : '';
+		const nameCondition = searchKey ? 'sp._name ILIKE :name' : '';
 
 		return repository.createQueryBuilder('sp')
-			.where([serviceCondition, nameCondition], { serviceId: serviceId, name: `%${searchKey}%` })
+			.where([serviceCondition, nameCondition], { serviceId: serviceId, name: `${searchKey}%` })
 			.orderBy('sp._name', 'ASC')
 			.getMany();
 	}
