@@ -1,4 +1,4 @@
-import { ServiceProvidersActionAuthVisitor } from '../serviceProviders.auth';
+import { ServiceProvidersActionAuthVisitor, SpAction } from '../serviceProviders.auth';
 import { Organisation, Service, ServiceProvider, User } from '../../../models';
 import { CrudAction } from '../../../enums/crudAction';
 import {
@@ -53,15 +53,30 @@ describe('Service providers Auth', () => {
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
 
-	it('should be able to create a serviceProvider for service admin', () => {
+	it('should be able to update a serviceProvider for the same sp', () => {
 		const service = new Service();
-		const userGroup = new ServiceAdminAuthGroup(
-			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
-			[service],
-		);
 		const serviceProvider = ServiceProvider.create('new sp', 1);
+		serviceProvider.id = 1;
+		const userGroup = new ServiceProviderAuthGroup(
+			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
+			serviceProvider,
+		);
 		serviceProvider.service = service;
-		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProvider, CrudAction.Create);
+		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProvider, CrudAction.Update);
+
+		expect(authVisitor.hasPermission([userGroup])).toBe(true);
+	});
+
+	it('should not be able to UpdateExpiryDate a serviceProvider even if it the same sp', () => {
+		const service = new Service();
+		const serviceProvider = ServiceProvider.create('new sp', 1);
+		serviceProvider.id = 1;
+		const userGroup = new ServiceProviderAuthGroup(
+			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
+			serviceProvider,
+		);
+		serviceProvider.service = service;
+		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProvider, SpAction.UpdateExpiryDate);
 
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
@@ -80,6 +95,19 @@ describe('Service providers Auth', () => {
 	});
 
 	it('should be able to update a serviceProvider for org admin', () => {
+		const organisation = new Organisation();
+		const userGroup = new OrganisationAdminAuthGroup(
+			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
+			[organisation],
+		);
+		const serviceProviderToUpdate = ServiceProvider.create('new sp', 1);
+		serviceProviderToUpdate.service = new Service();
+		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProviderToUpdate, CrudAction.Update);
+
+		expect(authVisitor.hasPermission([userGroup])).toBe(true);
+	});
+
+	it('should be able to update a serviceProvider with I m this sp', () => {
 		const organisation = new Organisation();
 		const userGroup = new OrganisationAdminAuthGroup(
 			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),

@@ -328,10 +328,18 @@ export class TimeslotsService {
 				  })
 				: validServiceTimeslots;
 
+			this.removeTimeslotsAfterExpiryDate(timeslotServiceProviders, provider.expiryDate);
 			await aggregator.aggregate(provider, timeslotServiceProviders);
 			await nextImmediateTick();
 		}
 
 		return aggregator.getEntries();
+	}
+
+	private removeTimeslotsAfterExpiryDate(
+		timeslots: Iterable<TimeslotWithCapacity>,
+		expiryDate: Date,
+	): Iterable<TimeslotWithCapacity> {
+		return timeslots
 	}
 }
