@@ -285,6 +285,7 @@ export class BookingsService {
 			.withAutoAccept(BookingsService.shouldAutoAccept(currentUser, serviceProvider))
 			.withMarkOnHold(service.isOnHold)
 			.withCaptchaToken(bookingRequest.captchaToken)
+			.withCaptchaOrigin(bookingRequest.captchaOrigin)
 			.build();
 
 		booking.serviceProvider = serviceProvider;

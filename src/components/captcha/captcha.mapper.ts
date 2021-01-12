@@ -3,7 +3,7 @@ import { GoogleVerifyApiResponse, VerifyUserResponse } from './captcha.apicontra
 export class CaptchaMapper {
 	public static mapToResponse(data: GoogleVerifyApiResponse): VerifyUserResponse {
 		const res = new VerifyUserResponse();
-		res.success = data.success;
+		res.success = data.tokenProperties.valid;
 		return res;
 	}
 }

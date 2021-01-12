@@ -27,6 +27,7 @@ import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { BookingsMapper } from './bookings.mapper';
 import { ApiData, ApiDataFactory } from '../../apicontract';
+import { KoaContextStore } from '../../infrastructure/koaContextStore.middleware';
 
 @Route('v1/bookings')
 @Tags('Bookings')
@@ -35,6 +36,8 @@ export class BookingsController extends Controller {
 	private bookingsService: BookingsService;
 	@Inject
 	private timeslotService: TimeslotsService;
+	@Inject
+	private _koaContextStore: KoaContextStore;
 
 	/**
 	 * Creates a new booking.
@@ -52,7 +55,11 @@ export class BookingsController extends Controller {
 		@Body() bookingRequest: BookingRequest,
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<BookingResponse>> {
+		const koaContext = this._koaContextStore.koaContext;
+		const origin = koaContext.header.origin;
+
 		bookingRequest.outOfSlotBooking = false;
+		bookingRequest.captchaOrigin = bookingRequest.captchaToken ? origin : undefined;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
 		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
