@@ -66,6 +66,7 @@ describe('Service Provider repository', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
 
+		queryBuilderMock.orderBy.mockImplementation(() => queryBuilderMock);
 		queryBuilderMock.where.mockImplementation(() => queryBuilderMock);
 		queryBuilderMock.leftJoin.mockImplementation(() => queryBuilderMock);
 		queryBuilderMock.leftJoinAndSelect.mockImplementation(() => queryBuilderMock);
@@ -320,6 +321,18 @@ describe('Service Provider repository', () => {
 		expect(queryBuilderMock.getCount).toBeCalled();
 		expect(result).toBe(5);
 	});
+
+	it('should search for SP by name', async () => {
+		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([]));
+
+		const spRepository = Container.get(ServiceProvidersRepository);
+
+		const result = await spRepository.getServiceProvidersByName({ searchKey: 'zhen' });
+		expect(TransactionManagerMock.createQueryBuilder).toBeCalled();
+		expect(queryBuilderMock.where).toHaveBeenCalledWith(["", 'sp._name ILIKE :name'],
+			{ name: "zhen%", serviceId: undefined });
+		expect(result).toBeDefined();
+	});
 });
 
 class TransactionManagerMock implements Partial<TransactionManager> {
@@ -372,7 +385,7 @@ class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
-	public init() {}
+	public init() { }
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(...params);
 	}
