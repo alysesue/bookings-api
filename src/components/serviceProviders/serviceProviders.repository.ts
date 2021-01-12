@@ -109,9 +109,12 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	public async getServiceProvidersByName(options: { searchKey: string, serviceId?: number; }): Promise<ServiceProvider[]> {
 		const { searchKey, serviceId } = options;
 
-		return (await this.getRepository())
-			.createQueryBuilder('sp')
-			.where('sp._serviceId = :serviceId AND LOWER(sp._name) like LOWER(:name)', { serviceId: serviceId, name: `%${searchKey}%` })
+		const repository = await this.getRepository();
+		const serviceCondition = serviceId ? 'sp."_serviceId" = :serviceId ' : '';
+		const nameCondition = searchKey ? 'LOWER(sp._name) like LOWER(:name)' : '';
+
+		return repository.createQueryBuilder('sp')
+			.where([serviceCondition, nameCondition], { serviceId: serviceId, name: `%${searchKey}%` })
 			.orderBy('sp._name', 'ASC')
 			.getMany();
 	}

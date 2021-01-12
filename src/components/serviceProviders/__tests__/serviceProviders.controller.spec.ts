@@ -59,16 +59,14 @@ describe('ServiceProviders.Controller', () => {
 	});
 
 	it('should get total service providers', async () => {
-		ServiceProvidersMock.getServiceProvidersCount.mockReturnValue(2);
 		const controller = Container.get(ServiceProvidersController);
-		const result = await controller.getTotalServiceProviders();
-		expect(result.data.total).toBe(2);
+		await controller.getTotalServiceProviders();
+		expect(ServiceProvidersMock.getServiceProvidersCount).toHaveBeenCalled();
 	});
 	it('should search SP by name', async () => {
-		ServiceProvidersMock.getServiceProvidersByName.mockReturnValue([sp1, sp2]);
 		const controller = Container.get(ServiceProvidersController);
-		const result = await controller.getServiceProvidersByName('mon');
-		expect(result.data.length).toBe(2);
+		await controller.getServiceProvidersByName('mon');
+		expect(ServiceProvidersMock.getServiceProvidersByName).toHaveBeenCalled();
 	});
 
 	it('should get service providers with timeslots', async () => {

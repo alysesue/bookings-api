@@ -66,6 +66,7 @@ describe('Service Provider repository', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
 
+		queryBuilderMock.orderBy.mockImplementation(() => queryBuilderMock);
 		queryBuilderMock.where.mockImplementation(() => queryBuilderMock);
 		queryBuilderMock.leftJoin.mockImplementation(() => queryBuilderMock);
 		queryBuilderMock.leftJoinAndSelect.mockImplementation(() => queryBuilderMock);
@@ -326,35 +327,33 @@ describe('Service Provider repository', () => {
 
 		const spRepository = Container.get(ServiceProvidersRepository);
 
-		await spRepository.getServiceProvidersByName({ searchKey: 'zhen' });
+		const result = await spRepository.getServiceProvidersByName({ searchKey: 'zhen' });
 		expect(TransactionManagerMock.createQueryBuilder).toBeCalled();
-		expect(queryBuilderMock.getMany).toBeCalled();
+		expect(queryBuilderMock.where).toHaveBeenCalledWith(["", 'LOWER(sp._name) like LOWER(:name)'],
+			{ name: "%zhen%", serviceId: undefined });
+		expect(result).toBeDefined();
 	});
 });
 
 class TransactionManagerMock implements Partial<TransactionManager> {
-	public static createQueryBuilder = jest.fn();
-	public static find = jest.fn();
-	public static findOne = jest.fn();
-	public static getCount = jest.fn();
-	public static getMany = jest.fn();
 	public static insert = jest.fn();
-	public static orderBy = jest.fn();
-	public static save = jest.fn();
+	public static find = jest.fn();
 	public static update = jest.fn();
+	public static findOne = jest.fn();
+	public static save = jest.fn();
+	public static createQueryBuilder = jest.fn();
+	public static getCount = jest.fn();
 
 	public async getEntityManager(): Promise<any> {
 		const entityManager = {
 			getRepository: () => ({
-				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
 				find: TransactionManagerMock.find,
 				findOne: TransactionManagerMock.findOne,
-				getCount: TransactionManagerMock.getCount,
-				getMany: TransactionManagerMock.getMany,
 				insert: TransactionManagerMock.insert,
-				orderBy: TransactionManagerMock.orderBy,
-				save: TransactionManagerMock.save,
 				update: TransactionManagerMock.update,
+				save: TransactionManagerMock.save,
+				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
+				getCount: TransactionManagerMock.getCount,
 			}),
 		};
 		return Promise.resolve(entityManager);
