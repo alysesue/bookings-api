@@ -1,7 +1,2 @@
 #!/bin/sh
-function main(){
-    TARGET_ENV="dev"
-    LOAD_TEST_PATH="./__tests__/load/src/index.ts" \
-    ./node_modules/mol-lib-config/shared-scripts/k6-test-load.sh ${TARGET_ENV}
-}
-main
+k6 run ./__tests__/load/src/index.ts -e LOAD_TEST_BASE_URL=https://www.dev.booking.gov.sg -e TARGET_ENV=dev -o csv=load_test.csv

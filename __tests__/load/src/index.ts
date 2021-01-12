@@ -1,41 +1,74 @@
 import http from 'k6/http';
-import { check } from 'k6';
+import { check, sleep } from 'k6';
+import { Trend } from 'k6/metrics';
 
-const config = {
-	// baseUrl: 'http://localhost:3999/bookingsg/api/v1/',
-	baseUrl: 'https://www.dev.booking.gov.sg/bookingsg/api/v1/',
-};
+const baseUrl = `${__ENV.LOAD_TEST_BASE_URL}/bookingsg/api/v1`;
+
 const headers = {
-	'use-admin-auth-forwarder': 'true',
-	cookie:
-		'MOLAdminToken=eyJ2ZXJzaW9uIjoiMCIsImVuYyI6IkEyNTZHQ00iLCJhbGciOiJkaXIiLCJraWQiOiI4ZmRnSmhKLTluTGVxalZTa2FzaU82dTNNQzhldkhXV1RzVnEzYzlxTlhNIn0..Pr7EKlFzYs2Suu3k.chmT8WEiQCX2lJRzOm-GfF3B2fpqvT9WkvgW4yyBUBjmcqafu54uu4ojKOqetPacR6gOspZae17Uvwb0Tqqp_uYqHsBBlaKDbsfjr5YCSODA_CjzoDkcgFMwxhcTJt07H2sSzgF86dor_oBsas829hLhzbOOA21AloefFMI5Y3efm-6LK5vYLMAzGyhtA1IZ427PSXmf5ETWi21-KpIjvrGT35nyrb5zOLGkhikGAEosEF4RRzW7xuPQEHC3OHntMeBiHnjlwQV65_o_yXfVyWHJZEoXrKr-n3h8dBNxxS0emdp8mAmaryeukzsJbk9vycdAsjQW8JGXJhDZ4dW86e-IoCahdRxl0QgNTM1HzeIy_yYa4w.JPyRFcudRZ-a5y2-fpQlpQ',
+	accept: '*/*',
 };
 
 export const options = {
-	stages: [
-		{ duration: '1m', target: 50 },
-		{ duration: '1m', target: 100 },
-		{ duration: "1m", target: 150 },
-		{ duration: "1m", target: 200 }
-	],
-	vus: 10,
-	// duration: '30s',
+	scenarios: {
+		one: {
+			executor: 'ramping-vus',
+			startVUs: 1,
+			stages: [
+				{ duration: '10s', target: 25 },
+				{ duration: '10s', target: 25 },
+				{ duration: '10s', target: 50 },
+				{ duration: '10s', target: 50 },
+				{ duration: '5s', target: 0 },
+			],
+		},
+	},
 };
 
-// STUB: Initialization code goes here, these will be executed for every VU
-
 export function setup() {
-	// STUB: Setup is called only once at the beginning of the test, after the init stage but before the VU stage (default function)
 }
 
+let sumDurationTrend = new Trend('request_sum_duration');
+let bookingDurationTrend = new Trend('booking_duration');
+
 export default function () {
-	// STUB: Code inside default is called "VU code", and is run over and over for as long as the test is running
-	// http.get(config.baseUrl + 'service-providers', { headers });
-	const res = http.get(config.baseUrl + 'service-providers', { headers });
-	check(res, { 'status was 200': (r) => r.status === 200 });
-	check(res, { 'status was 401': (r) => r.status === 401 });
+	let response;
+	let request_sum_duration = 0;
+
+	response = http.post(`${baseUrl}/usersessions/anonymous`, null, {
+		headers,
+	});
+	request_sum_duration += response.timings.duration;
+	check(response, { 'session success': (r) => r.status >= 200 && r.status < 300 });
+
+
+	response = http.get(`${baseUrl}/users/me`, { headers });
+	request_sum_duration += response.timings.duration;
+	check(response, { 'user success': (r) => r.status >= 200 && r.status < 300 });
+
+	const postBookingBody = {
+		captchaToken: "dummy",
+		citizenEmail: "jane@gmail.com",
+		citizenName: "Jane",
+		citizenPhone: "0404040404",
+		citizenUinFin: "S4181859Z",
+		description: "I am making a booking",
+		endDateTime: "2023-01-05T02:00:00.000Z",
+		location: "some street name",
+		serviceProviderId: 2,
+		startDateTime: "2023-01-05T01:00:00.000Z",
+	};
+
+	response = http.post(`${baseUrl}/bookings`, JSON.stringify(postBookingBody), {
+		headers: { accept: '*/*', 'content-type': 'application/json', 'x-api-service': '2'},
+	});
+	request_sum_duration += response.timings.duration;
+	bookingDurationTrend.add(response.timings.duration);
+	check(response, { 'booking success': (r) => r.status >= 200 && r.status < 300 });
+
+	sumDurationTrend.add(request_sum_duration);
+
+	sleep(1);
 }
 
 export function teardown() {
-	// STUB: Teardown is called only once at the end of a test, after the VU stage (default function)
 }
