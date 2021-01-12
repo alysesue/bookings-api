@@ -116,7 +116,7 @@ export class TimeslotsService {
 			endDateTime,
 			serviceId,
 			false,
-			serviceProviderId,
+			serviceProviderId ? [serviceProviderId] : undefined,
 		);
 
 		const timeslotEntry = aggregatedEntries.find(
@@ -160,7 +160,6 @@ export class TimeslotsService {
 		endDateTime: Date,
 		serviceId: number,
 		includeBookings: boolean = false,
-		serviceProviderId?: number,
 		serviceProviderIds?: number[],
 	): Promise<AvailableTimeslotProviders[]> {
 		const getAggregatedTimeslotEntriesWatch = new StopWatch('getAggregatedTimeslotEntries');
@@ -190,9 +189,9 @@ export class TimeslotsService {
 			TimeslotsService.mergeAcceptedBookingsToTimeslots(aggregatedEntries, acceptedBookings);
 		}
 
-		if (serviceProviderId) {
+		if (serviceProviderIds && serviceProviderIds.length > 0) {
 			for (const [key, value] of aggregatedEntries) {
-				if (!value.hasGroupId(serviceProviderId)) {
+				if (!serviceProviderIds.some((spId) => value.hasGroupId(spId))) {
 					aggregatedEntries.delete(key);
 				}
 			}
@@ -207,7 +206,7 @@ export class TimeslotsService {
 			this.setBookedProviders(acceptedBookings),
 			TimeslotsService.setPendingTimeslots(pendingBookings),
 			this.setOnHoldTimeslots(onHoldBookings),
-			await this.filterVisibleServiceProviders({ entries: mappedEntries, serviceId, serviceProviderId }),
+			await this.filterVisibleServiceProviders({ entries: mappedEntries, serviceId, serviceProviderIds }),
 		];
 
 		const mapProcessorsWatch = new StopWatch('MapProcessor');
@@ -224,17 +223,18 @@ export class TimeslotsService {
 	private async filterVisibleServiceProviders({
 		entries,
 		serviceId,
-		serviceProviderId,
+		serviceProviderIds,
 	}: {
 		entries: Map<TimeslotKey, AvailableTimeslotProviders>;
 		serviceId: number;
-		serviceProviderId?: number;
+		serviceProviderIds?: number[];
 	}): Promise<AvailableTimeslotProcessor> {
 		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({ serviceId });
 		let visibleServiceProviderIds = serviceProviders.map((sp) => sp.id);
 
-		if (serviceProviderId) {
-			visibleServiceProviderIds = visibleServiceProviderIds.filter((id) => id === serviceProviderId);
+		if (serviceProviderIds && serviceProviderIds.length > 0) {
+			const serviceProviderIdsSet = new Set(serviceProviderIds);
+			visibleServiceProviderIds = visibleServiceProviderIds.filter((id) => serviceProviderIdsSet.has(id));
 		}
 
 		return new AvailableTimeslotProcessor(([key, entry]) => {
@@ -295,7 +295,7 @@ export class TimeslotsService {
 		minStartTime: Date,
 		maxEndTime: Date,
 		serviceId: number,
-		serviceProviderIds: number[] = [],
+		serviceProviderIds?: number[],
 	): Promise<Map<TimeslotKey, AggregatedEntryId<ServiceProvider>>> {
 		const aggregator = TimeslotAggregator.createCustom<ServiceProvider, AggregatedEntryId<ServiceProvider>>(
 			AggregatedEntryId,

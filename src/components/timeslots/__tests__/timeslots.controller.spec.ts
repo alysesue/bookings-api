@@ -3,6 +3,9 @@ import { TimeslotsController } from '../timeslots.controller';
 import { TimeslotsService } from '../timeslots.service';
 import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
 import { DateHelper } from '../../../infrastructure/dateHelper';
+import { UserContext } from '../../../infrastructure/auth/userContext';
+import { Organisation, User } from '../../../models';
+import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -24,15 +27,29 @@ const TimeslotsServiceMock = {
 	getAggregatedTimeslots: jest.fn(() => Promise.resolve([])),
 };
 
-beforeEach(() => {
-	Container.bind(TimeslotsService).to(jest.fn(() => TimeslotsServiceMock));
+const adminUserMock = User.createAdminUser({
+	molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+	agencyUserId: 'ABC1234',
+	email: 'john@email.com',
+	userName: 'JohnAdmin',
+	name: 'John',
 });
 
-afterEach(() => {
-	jest.resetAllMocks();
-});
+const organisation = new Organisation();
+organisation.id = 1;
 
 describe('Timeslots Controller', () => {
+	beforeEach(() => {
+		jest.resetAllMocks();
+
+		Container.bind(TimeslotsService).to(jest.fn(() => TimeslotsServiceMock));
+		Container.bind(UserContext).to(UserContextMock);
+
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new OrganisationAdminAuthGroup(adminUserMock, [organisation])]),
+		);
+	});
+
 	it('should get availability', async () => {
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
@@ -66,3 +83,17 @@ describe('Timeslots Controller', () => {
 		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalled();
 	});
 });
+
+class UserContextMock implements Partial<UserContext> {
+	public static getCurrentUser = jest.fn<Promise<User>, any>();
+	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
+
+	public init() {}
+	public async getCurrentUser(...params): Promise<any> {
+		return await UserContextMock.getCurrentUser(...params);
+	}
+
+	public async getAuthGroups(...params): Promise<any> {
+		return await UserContextMock.getAuthGroups(...params);
+	}
+}
