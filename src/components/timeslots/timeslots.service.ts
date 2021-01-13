@@ -328,7 +328,6 @@ export class TimeslotsService {
 				  })
 				: validServiceTimeslots;
 
-			this.removeTimeslotsAfterExpiryDate(timeslotServiceProviders, provider.expiryDate);
 			await aggregator.aggregate(provider, timeslotServiceProviders);
 			await nextImmediateTick();
 		}
@@ -340,6 +339,9 @@ export class TimeslotsService {
 		timeslots: Iterable<TimeslotWithCapacity>,
 		expiryDate: Date,
 	): Iterable<TimeslotWithCapacity> {
-		return timeslots
+		for (const timeslot of timeslots) {
+
+		}
+
 	}
 }
