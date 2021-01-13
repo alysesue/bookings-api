@@ -6,9 +6,11 @@ import { getConnectionOptions } from './connectionOptions';
 export class DbConnection {
 	protected static CONNECTION: Connection = null;
 
-	public async synchronize() {
+	public async runMigrations() {
 		const conn = await this.getConnection();
-		await conn.synchronize();
+		await conn.runMigrations({
+			transaction: 'all',
+		});
 	}
 
 	public async getConnection(): Promise<Connection> {
@@ -20,7 +22,7 @@ export class DbConnection {
 	}
 
 	protected async initConnection() {
-		const options = getConnectionOptions(false);
+		const options = getConnectionOptions();
 		DbConnection.CONNECTION = await createConnection(options);
 	}
 }

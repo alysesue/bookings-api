@@ -107,7 +107,7 @@ export async function startServer(): Promise<Server> {
 		.use(bypassMiddleware(byPassAuthPath, new CitizenUserValidationMiddleware().build()))
 		.use(HandledRoutes.build());
 
-	const dbOptions = getConnectionOptions(false);
+	const dbOptions = getConnectionOptions();
 	logger.info(`Using DB: ${dbOptions.database} at ${dbOptions.host}`);
 
 	return await new Promise(async (resolve) => {
