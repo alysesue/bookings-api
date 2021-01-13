@@ -2,7 +2,6 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGenerate
 import { Service } from './service';
 import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
 import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
-import { User } from './user';
 import { ScheduleForm } from './scheduleForm';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 
@@ -203,15 +202,4 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 
 	@Column({ type: 'boolean', default: DEFAULT_AUTO_ACCEPT_BOOKINGS })
 	private _autoAcceptBookings: boolean;
-
-	// This is a logical relationship, no foreign key in DB.
-	private _linkedUser: User;
-
-	public get linkedUser(): User {
-		return this._linkedUser;
-	}
-
-	public set linkedUser(value: User) {
-		this._linkedUser = value;
-	}
 }

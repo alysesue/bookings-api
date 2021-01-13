@@ -2,7 +2,7 @@ import { ServiceProvidersRepository } from '../serviceProviders.repository';
 import { Container } from 'typescript-ioc';
 import { ScheduleFormsRepository } from '../../scheduleForms/scheduleForms.repository';
 import { IEntityWithScheduleForm } from '../../../models/interfaces';
-import { Organisation, ServiceProvider, ServiceProviderGroupMap, TimeslotsSchedule, User } from '../../../models';
+import { Organisation, ServiceProvider, TimeslotsSchedule, User } from '../../../models';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TransactionManager } from '../../../core/transactionManager';
 import { ServiceProvidersQueryAuthVisitor } from '../serviceProviders.auth';
@@ -277,24 +277,6 @@ describe('Service Provider repository', () => {
 
 		await spRepository.saveMany(spsInput);
 		expect(TransactionManagerMock.save.mock.calls[0][0]).toStrictEqual(spsInput);
-	});
-
-	it('should get linked user', async () => {
-		const serviceProvider = ServiceProvider.create('J', 1, '', '', 'ABC12');
-		serviceProvider.id = 1;
-		serviceProvider.serviceProviderGroupMap = new ServiceProviderGroupMap();
-		serviceProvider.serviceProviderGroupMap.molAdminId = userMock.adminUser.molAdminId;
-		serviceProvider.serviceProviderGroupMap.serviceProviderId = serviceProvider.id;
-
-		UsersRepositoryMock.getUsersByMolAdminIds.mockImplementation(() => Promise.resolve([userMock]));
-		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(serviceProvider));
-
-		const spRepository = Container.get(ServiceProvidersRepository);
-		const result = await spRepository.getServiceProvider({ id: 1 });
-
-		expect(result).toBeDefined();
-		expect(result.linkedUser).toBeDefined();
-		expect(result.agencyUserId).toBe('ABC12');
 	});
 
 	it('should get list of SP with limit and pageNumber', async () => {

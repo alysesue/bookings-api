@@ -125,7 +125,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 			booking.endDateTime,
 			booking.serviceId,
 			true,
-			booking.serviceProviderId,
+			booking.serviceProviderId ? [booking.serviceProviderId] : undefined,
 		);
 
 		const timeslotOrBoookingExists = existingTimeslot.some(

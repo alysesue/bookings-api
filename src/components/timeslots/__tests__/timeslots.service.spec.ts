@@ -153,7 +153,7 @@ describe('Timeslots Service', () => {
 
 	it('should aggregate results by service provider', async () => {
 		const service = Container.get(TimeslotsService);
-		const result = await service.getAggregatedTimeslots(date, endDate, 1, false, 101);
+		const result = await service.getAggregatedTimeslots(date, endDate, 1, false, [101]);
 		expect(result.length).toBe(1);
 
 		expect(ServicesRepositoryMock.getServiceWithTimeslotsSchedule).toBeCalled();
