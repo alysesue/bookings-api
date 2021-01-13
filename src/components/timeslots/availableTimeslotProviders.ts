@@ -77,7 +77,12 @@ export class AvailableTimeslotProviders {
 		for (const item of providers) {
 			const [spItem, timeslotCapacity] = item;
 			const spTimeslotItem = new TimeslotServiceProvider(spItem, timeslotCapacity.capacity);
-			this._timeslotServiceProviders.set(spItem.id, spTimeslotItem);
+			// Aggregate only if no expiryDate or if the sp licence is expire
+			if (
+				!spTimeslotItem.serviceProvider.expiryDate ||
+				timeslotCapacity.startTime.getTime() < new Date(spTimeslotItem.serviceProvider.expiryDate).getTime()
+			)
+				this._timeslotServiceProviders.set(spItem.id, spTimeslotItem);
 		}
 	}
 

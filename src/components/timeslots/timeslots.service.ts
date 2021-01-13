@@ -334,14 +334,4 @@ export class TimeslotsService {
 
 		return aggregator.getEntries();
 	}
-
-	private removeTimeslotsAfterExpiryDate(
-		timeslots: Iterable<TimeslotWithCapacity>,
-		expiryDate: Date,
-	): Iterable<TimeslotWithCapacity> {
-		for (const timeslot of timeslots) {
-
-		}
-
-	}
 }

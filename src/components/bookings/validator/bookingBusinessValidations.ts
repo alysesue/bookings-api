@@ -60,8 +60,13 @@ export class BookingBusinessValidations {
 		message: `Invalid captcha token`,
 	});
 
-	public static readonly OverlapsOnHoldBooking = new BusinessValidation({
+	public static readonly ServiceProviderLicenceExpire = new BusinessValidation({
 		code: '10012',
+		message: `Licence of service provider will be expired`,
+	});
+
+	public static readonly OverlapsOnHoldBooking = new BusinessValidation({
+		code: '10013',
 		message: `Booking request not valid as it overlaps another on hold booking`,
 	});
 }

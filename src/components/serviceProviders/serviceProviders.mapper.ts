@@ -75,10 +75,7 @@ export class ServiceProvidersMapper {
 		return serviceProvider;
 	}
 
-	public mapServiceProviderModelToEntity(
-		sp: ServiceProviderModel,
-		entity: ServiceProvider,
-	): ServiceProvider {
+	public mapServiceProviderModelToEntity(sp: ServiceProviderModel, entity: ServiceProvider): ServiceProvider {
 		if (!entity) {
 			throw new Error('Service provider not found');
 		}

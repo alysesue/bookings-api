@@ -261,8 +261,7 @@ export class ServiceProvidersService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
 		}
 		await this.verifyActionPermission(serviceProvider, CrudAction.Update);
-		if (request.expiryDate)
-			await this.verifyActionPermission(serviceProvider, SpAction.UpdateExpiryDate);
+		if (request.expiryDate) await this.verifyActionPermission(serviceProvider, SpAction.UpdateExpiryDate);
 
 		await ServiceProvidersService.validateServiceProviders([request]);
 		const updatedServiceProvider = this.mapper.mapServiceProviderModelToEntity(request, serviceProvider);
