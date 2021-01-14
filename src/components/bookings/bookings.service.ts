@@ -237,6 +237,9 @@ export class BookingsService {
 	): Promise<[ChangeLogAction, Booking]> {
 		const updatedBooking = previousBooking.clone();
 		Object.assign(updatedBooking, bookingRequest);
+		updatedBooking.captchaToken = bookingRequest.captchaToken;
+		updatedBooking.captchaOrigin = bookingRequest.captchaOrigin;
+
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
 		});

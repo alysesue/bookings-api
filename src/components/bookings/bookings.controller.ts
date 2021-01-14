@@ -56,10 +56,9 @@ export class BookingsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<BookingResponse>> {
 		const koaContext = this._koaContextStore.koaContext;
-		const origin = koaContext.header.origin;
 
 		bookingRequest.outOfSlotBooking = false;
-		bookingRequest.captchaOrigin = bookingRequest.captchaToken ? origin : undefined;
+		bookingRequest.captchaOrigin = koaContext.header.origin;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
 		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
@@ -100,6 +99,11 @@ export class BookingsController extends Controller {
 		@Path() bookingId: number,
 		@Body() rescheduleRequest: BookingRequest,
 	): Promise<ApiData<BookingResponse>> {
+		const koaContext = this._koaContextStore.koaContext;
+
+		rescheduleRequest.outOfSlotBooking = false;
+		rescheduleRequest.captchaOrigin = koaContext.header.origin;
+
 		const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest, false);
 		return ApiDataFactory.create(BookingsMapper.mapDataModel(rescheduledBooking));
 	}
