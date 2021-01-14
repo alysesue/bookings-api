@@ -62,7 +62,7 @@ export class ServiceProvidersService {
 		if (sp.email && !(await isEmail(sp.email)).pass)
 			errors.push(`For service provider: ${sp.name}. Email is invalid: ${sp.email}.`);
 		if (sp.expiryDate && !(await isDateOnly(sp.expiryDate)).pass)
-			errors.push(`For service provider: ${sp.name}. Expiry is invalid: ${sp.expiryDate}. Should be YYYY-MM-DD`);
+			errors.push(`For service provider: ${sp.name}. Expiry date is invalid: ${sp.expiryDate}`);
 		return errors;
 	}
 
@@ -83,7 +83,7 @@ export class ServiceProvidersService {
 						header: 'First line should be: name, email, phone',
 						email: 'Email should contain @ and .',
 						phone: 'Phone number should be a Singapore phone number',
-						expiryDate: 'Expiry Date, should be in date',
+						expiryDate: 'Expiry Date, should be in format YYYY-MM-DD',
 					},
 				};
 				molError.setResponseData(data);

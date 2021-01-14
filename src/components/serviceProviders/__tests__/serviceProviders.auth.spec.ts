@@ -53,7 +53,20 @@ describe('Service providers Auth', () => {
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
 
-	it('should be able to update a serviceProvider for the same sp', () => {
+	it('should be able to create a serviceProvider for service admin', () => {
+		const service = new Service();
+		const userGroup = new ServiceAdminAuthGroup(
+			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
+			[service],
+		);
+		const serviceProvider = ServiceProvider.create('new sp', 1);
+		serviceProvider.service = service;
+		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProvider, CrudAction.Create);
+
+		expect(authVisitor.hasPermission([userGroup])).toBe(false);
+	});
+
+	it('should be able to update a serviceProvider when Im the serviceProvider', () => {
 		const service = new Service();
 		const serviceProvider = ServiceProvider.create('new sp', 1);
 		serviceProvider.id = 1;
@@ -95,19 +108,6 @@ describe('Service providers Auth', () => {
 	});
 
 	it('should be able to update a serviceProvider for org admin', () => {
-		const organisation = new Organisation();
-		const userGroup = new OrganisationAdminAuthGroup(
-			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
-			[organisation],
-		);
-		const serviceProviderToUpdate = ServiceProvider.create('new sp', 1);
-		serviceProviderToUpdate.service = new Service();
-		const authVisitor = new ServiceProvidersActionAuthVisitor(serviceProviderToUpdate, CrudAction.Update);
-
-		expect(authVisitor.hasPermission([userGroup])).toBe(true);
-	});
-
-	it('should be able to update a serviceProvider with I m this sp', () => {
 		const organisation = new Organisation();
 		const userGroup = new OrganisationAdminAuthGroup(
 			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
