@@ -24,6 +24,7 @@ import { getConnectionOptions } from './core/connectionOptions';
 import { CitizenUserValidationMiddleware } from './infrastructure/citizenUserValidation.middleware';
 import { KoaContextStoreMiddleware } from './infrastructure/koaContextStore.middleware';
 import { MolUsersService, MolUsersServiceFactory } from './components/users/molUsers/molUsers.service';
+import { DbConnection } from './core/db.connection';
 
 class ApiDataResponseHandler {
 	private _middleware: Koa.Middleware;
@@ -109,7 +110,9 @@ export async function startServer(): Promise<Server> {
 
 	const dbOptions = getConnectionOptions();
 	logger.info(`Using DB: ${dbOptions.database} at ${dbOptions.host}`);
+	const dbConnection = Container.get(DbConnection);
 
+	await dbConnection.runMigrations();
 	return await new Promise(async (resolve) => {
 		const server = koaServer.listen(config.port, async () => {
 			logger.info(`${config.name} v${config.version} started on port ${config.port}`);

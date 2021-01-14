@@ -1,28 +1,9 @@
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { getConfig } from '../config/app-config';
 import { LoggerOptions } from 'typeorm/logger/LoggerOptions';
-import {
-	AdminUser,
-	AgencyUser,
-	AnonymousUser,
-	Booking,
-	BookingChangeLog,
-	Organisation,
-	OrganisationAdminGroupMap,
-	ScheduleForm,
-	Service,
-	ServiceAdminGroupMap,
-	ServiceProvider,
-	ServiceProviderGroupMap,
-	SingPassUser,
-	TimeslotItem,
-	TimeslotsSchedule,
-	Unavailability,
-	User,
-	WeekDayBreak,
-	WeekDaySchedule,
-} from '../models';
-
+import * as Migrations from '../migrations';
+import * as Models from '../models';
+import { map } from 'lodash';
 export function getConnectionOptions(): PostgresConnectionOptions {
 	const config = getConfig();
 	const LOCALHOST = '127.0.0.1';
@@ -34,27 +15,7 @@ export function getConnectionOptions(): PostgresConnectionOptions {
 
 	return {
 		database: config.database.instance,
-		entities: [
-			AdminUser,
-			AgencyUser,
-			AnonymousUser,
-			Booking,
-			BookingChangeLog,
-			Organisation,
-			OrganisationAdminGroupMap,
-			ScheduleForm,
-			Service,
-			ServiceAdminGroupMap,
-			ServiceProvider,
-			ServiceProviderGroupMap,
-			SingPassUser,
-			TimeslotItem,
-			TimeslotsSchedule,
-			Unavailability,
-			User,
-			WeekDayBreak,
-			WeekDaySchedule,
-		],
+		entities: map(Models),
 		logging,
 		host: process.env['LOCALHOST'] === 'true' ? LOCALHOST : config.database.host,
 		port: +config.database.port,
@@ -62,7 +23,8 @@ export function getConnectionOptions(): PostgresConnectionOptions {
 		password: config.database.password,
 		synchronize: false,
 		type: 'postgres',
-		migrations: ['migrations/**/*{.js,.ts}'],
-		cli: { migrationsDir: 'migrations', entitiesDir: 'src/models/entities' },
+		migrations: map(Migrations),
+		migrationsRun: true,
+		cli: { migrationsDir: 'src/migrations' },
 	} as PostgresConnectionOptions;
 }
