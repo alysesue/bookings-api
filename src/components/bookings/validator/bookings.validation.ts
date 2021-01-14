@@ -103,10 +103,8 @@ abstract class BookingsValidator implements IValidator {
 	}
 
 	protected async *validateLicenceServiceProviderIsNotExpire(booking: Booking): AsyncIterable<BusinessValidation> {
-		if (booking.serviceProvider) {
-			const expiryDate = new Date(booking.serviceProvider.expiryDate);
-			if (booking.serviceProvider.expiryDate || expiryDate.getTime() < booking.startDateTime.getTime())
-				yield BookingBusinessValidations.ServiceProviderLicenceExpire;
+		if (booking.serviceProvider?.isLicenceExpire(booking.startDateTime)) {
+			yield BookingBusinessValidations.ServiceProviderLicenceExpire;
 		}
 	}
 }

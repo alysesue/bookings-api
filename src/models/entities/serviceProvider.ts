@@ -187,14 +187,19 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 	}
 
 	@Column({ nullable: true, type: 'date' })
-	private _expiryDate: Date;
+	public _expiryDate?: Date;
 
-	public get expiryDate(): Date {
+	public get expiryDate(): Date | undefined {
 		return this._expiryDate;
 	}
 
 	public set expiryDate(value: Date) {
 		this._expiryDate = value;
+	}
+
+	public isLicenceExpire(atThisDate: Date): boolean {
+		if (!this.expiryDate) return false;
+		return new Date(this.expiryDate).getTime() < atThisDate.getTime();
 	}
 
 	@OneToOne('TimeslotsSchedule', '_serviceProvider', {
