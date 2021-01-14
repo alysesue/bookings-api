@@ -186,6 +186,17 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		return this._timeslotsScheduleId;
 	}
 
+	@Column({ nullable: true, type: 'date' })
+	private _expiryDate: Date;
+
+	public get expiryDate(): Date {
+		return this._expiryDate;
+	}
+
+	public set expiryDate(value: Date) {
+		this._expiryDate = value;
+	}
+
 	@OneToOne('TimeslotsSchedule', '_serviceProvider', {
 		cascade: true,
 	})
