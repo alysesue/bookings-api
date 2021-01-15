@@ -10,7 +10,7 @@ const DEFAULT_SCHEFULE_FORM_CONFIRMED = false;
 
 @Entity()
 export class ServiceProvider implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
-	constructor() { }
+	constructor() {}
 
 	@PrimaryGeneratedColumn()
 	private _id: number;

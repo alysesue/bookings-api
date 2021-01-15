@@ -17,10 +17,6 @@ export class BookingRepositoryMock implements Partial<BookingsRepository> {
 	public static searchBookingsMock: Booking[];
 	public static saveMock: Promise<InsertResult>;
 
-	public async getBooking(id: number): Promise<Booking> {
-		return Promise.resolve(BookingRepositoryMock.booking);
-	}
-
 	public async insert(booking: Booking): Promise<InsertResult> {
 		if (BookingRepositoryMock.saveMock) {
 			return BookingRepositoryMock.saveMock;

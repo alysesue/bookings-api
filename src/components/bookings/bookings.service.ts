@@ -304,4 +304,33 @@ export class BookingsService {
 
 		return [ChangeLogAction.Create, booking];
 	}
+
+	private async validateOnHoldBookingInternal(
+		bookingId: number,
+		bookingRequest: BookingRequest,
+	): Promise<[ChangeLogAction, Booking]> {
+		const booking = await this.bookingsRepository.getBooking(bookingId);
+		if (!booking) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Booking ${booking.id} can not be found`);
+		}
+
+		const serviceProvider = await this.serviceProvidersService.getServiceProvider(booking.serviceProviderId);
+
+		if (booking && booking.status === BookingStatus.OnHold && booking.onHoldUntil < new Date()) {
+			const [changeLogAction, updatedBooking] = await this.updateInternal(booking, bookingRequest, true);
+			if (serviceProvider.autoAcceptBookings) {
+				await this.acceptBookingInternal(updatedBooking, { serviceProviderId: serviceProvider.id });
+			}
+			return [changeLogAction, updatedBooking];
+		} else {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Booking ${booking.id} can not be validated`,
+			);
+		}
+	}
+
+	public async validateOnHoldBooking(bookingId: number, bookingRequest: BookingRequest): Promise<Booking> {
+		const validateAction = (bookingId) => this.validateOnHoldBookingInternal(bookingId, bookingRequest);
+		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), validateAction);
+	}
 }

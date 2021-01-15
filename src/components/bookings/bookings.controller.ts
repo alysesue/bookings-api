@@ -244,4 +244,27 @@ export class BookingsController extends Controller {
 	public async rejectBooking(@Path() bookingId: number): Promise<void> {
 		await this.bookingsService.rejectBooking(bookingId);
 	}
+
+	/**
+	 * Validates an on hold booking.
+	 * It will add additional booking information to an existing booking and change the status of the booking
+	 * @param bookingRequest
+	 * @param @isInt bookingId The booking id.
+	 */
+	@Put('{bookingId}/validate')
+	@SuccessResponse(201, 'Validated')
+	@Security('service')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async validateOnHoldBooking(
+		@Body() bookingRequest: BookingRequest,
+		@Path() bookingId: number,
+	): Promise<ApiData<BookingResponse>> {
+		const koaContext = this._koaContextStore.koaContext;
+		bookingRequest.captchaOrigin = koaContext.header.origin;
+		bookingRequest.outOfSlotBooking = false;
+		const booking = await this.bookingsService.validateOnHoldBooking(bookingId, bookingRequest);
+		this.setStatus(201);
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
+	}
 }
