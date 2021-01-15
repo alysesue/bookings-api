@@ -49,6 +49,7 @@ export class ServiceProviderResponseModel {
 	public email?: string;
 	public phone?: string;
 	public agencyUserId?: string;
+	public expiryDate?: Date;
 	public scheduleFormConfirmed: boolean;
 	public onHoldEnabled?: boolean;
 }

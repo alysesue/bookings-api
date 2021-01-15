@@ -21,6 +21,7 @@ export class ServiceProvidersMapper {
 		response.serviceId = spData.serviceId;
 		response.email = spData.email;
 		response.phone = spData.phone;
+		response.expiryDate = spData.expiryDate;
 		response.scheduleFormConfirmed = spData.scheduleFormConfirmed;
 		response.agencyUserId = spData.agencyUserId;
 		response.timeslotsSchedule = mappedTimeslotSchedule;
