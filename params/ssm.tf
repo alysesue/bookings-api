@@ -127,4 +127,30 @@ resource "aws_ssm_parameter" "is-local" {
 
   overwrite = true
 }
+resource "aws_ssm_parameter" "recaptcha-site_key_bookingsg_app" {
+  name  = "${local.path-prefix}/RECAPTCHA_SITE_KEY_BOOKINGSG_APP"
+  type  = "SecureString"
+  key_id  = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
+  value = "${data.external.static.result.RECAPTCHA_SITE_KEY_BOOKINGSG_APP}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "recaptcha-project_id_bookingsg_app" {
+  name  = "${local.path-prefix}/RECAPTCHA_PROJECT_ID_BOOKINGSG_APP"
+  type  = "SecureString"
+  key_id  = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
+  value = "${data.external.static.result.RECAPTCHA_PROJECT_ID_BOOKINGSG_APP}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "recaptcha-api_key_bookingsg_app" {
+  name  = "${local.path-prefix}/RECAPTCHA_API_KEY_BOOKINGSG_APP"
+  type  = "SecureString"
+  key_id  = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
+  value = "${data.external.static.result.RECAPTCHA_API_KEY_BOOKINGSG_APP}"
+
+  overwrite = true
+}
 

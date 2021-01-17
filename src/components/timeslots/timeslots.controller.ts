@@ -5,10 +5,15 @@ import { TimeslotsService } from './timeslots.service';
 import { MOLAuth } from 'mol-lib-common';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { TimeslotsMapper } from './timeslots.mapper';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
 
 @Route('v1/timeslots')
 @Tags('Timeslots')
 export class TimeslotsController extends Controller {
+	@Inject
+	private userContext: UserContext;
+
 	@Inject
 	private timeslotsService: TimeslotsService;
 
@@ -35,11 +40,19 @@ export class TimeslotsController extends Controller {
 			endDate,
 			serviceId,
 			false,
-			serviceProviderId,
+			serviceProviderId ? [serviceProviderId] : undefined,
 		);
 		let result = TimeslotsMapper.mapAvailabilityToResponse(availableTimeslots);
 		result = result.filter((e) => e.availabilityCount > 0);
 		return ApiDataFactory.create(result);
+	}
+
+	private async getServiceProviderAuthGroup(): Promise<ServiceProviderAuthGroup> {
+		const authGroups = (await this.userContext.getAuthGroups()).filter(
+			(g) => g instanceof ServiceProviderAuthGroup,
+		);
+
+		return authGroups.length > 0 ? (authGroups[0] as ServiceProviderAuthGroup) : null;
 	}
 
 	/**
@@ -63,13 +76,23 @@ export class TimeslotsController extends Controller {
 		@Query() includeBookings: boolean = false,
 		@Query() serviceProviderIds?: number[],
 	): Promise<ApiData<TimeslotEntryResponse[]>> {
+		let spIdsFilter = serviceProviderIds;
+		const spGroup = await this.getServiceProviderAuthGroup();
+		if (spGroup) {
+			if (spIdsFilter) {
+				// tslint:disable-next-line: tsr-detect-possible-timing-attacks
+				spIdsFilter = spIdsFilter.filter((id) => id === spGroup.authorisedServiceProvider.id);
+			} else {
+				spIdsFilter = [spGroup.authorisedServiceProvider.id];
+			}
+		}
+
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
 			serviceId,
 			includeBookings,
-			undefined,
-			serviceProviderIds,
+			spIdsFilter,
 		);
 		return ApiDataFactory.create(timeslots?.map((t) => TimeslotsMapper.mapTimeslotEntry(t)));
 	}

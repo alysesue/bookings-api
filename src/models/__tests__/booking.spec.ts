@@ -145,3 +145,126 @@ describe('Booking tests', () => {
 		expect(booking.status).toStrictEqual(BookingStatus.PendingApproval);
 	});
 });
+
+describe('Booking tests with onhold flag', () => {
+	it('should create accepted booking with builder when auto-accept is true and onhold is false', () => {
+		const start = new Date('2020-01-10T11:00');
+		const end = new Date('2020-01-10T12:00');
+		const creator = {} as User;
+
+		const booking = new BookingBuilder()
+			.withCitizenUinFin('UINFIN')
+			.withServiceProviderId(1)
+			.withRefId('REFID')
+			.withStartDateTime(start)
+			.withEndDateTime(end)
+			.withLocation('Location')
+			.withDescription('Description')
+			.withServiceId(2)
+			.withCreator(creator)
+			.withAutoAccept(true)
+			.withMarkOnHold(false)
+			.build();
+
+		expect(booking.citizenUinFin).toStrictEqual('UINFIN');
+		expect(booking.serviceProviderId).toStrictEqual(1);
+		expect(booking.startDateTime).toStrictEqual(start);
+		expect(booking.endDateTime).toStrictEqual(end);
+		expect(booking.refId).toStrictEqual('REFID');
+		expect(booking.location).toStrictEqual('Location');
+		expect(booking.description).toStrictEqual('Description');
+		expect(booking.serviceId).toStrictEqual(2);
+		expect(booking.creator).toStrictEqual(creator);
+		expect(booking.status).toStrictEqual(BookingStatus.Accepted);
+	});
+
+	it('should create pending booking with builder when auto-accept is false and onhold is false', () => {
+		const start = new Date('2020-01-10T11:00');
+		const end = new Date('2020-01-10T12:00');
+		const creator = {} as User;
+		const booking = new BookingBuilder()
+			.withCitizenUinFin('UINFIN')
+			.withServiceProviderId(1)
+			.withRefId('REFID')
+			.withStartDateTime(start)
+			.withEndDateTime(end)
+			.withLocation('Location')
+			.withDescription('Description')
+			.withServiceId(2)
+			.withCreator(creator)
+			.withAutoAccept(false)
+			.withMarkOnHold(false)
+			.build();
+
+		expect(booking.citizenUinFin).toStrictEqual('UINFIN');
+		expect(booking.serviceProviderId).toStrictEqual(1);
+		expect(booking.startDateTime).toStrictEqual(start);
+		expect(booking.endDateTime).toStrictEqual(end);
+		expect(booking.refId).toStrictEqual('REFID');
+		expect(booking.location).toStrictEqual('Location');
+		expect(booking.description).toStrictEqual('Description');
+		expect(booking.serviceId).toStrictEqual(2);
+		expect(booking.creator).toStrictEqual(creator);
+		expect(booking.status).toStrictEqual(BookingStatus.PendingApproval);
+	});
+
+	it('should create on hold booking with builder when auto-accept is true and onhold is true', () => {
+		const start = new Date('2020-01-10T11:00');
+		const end = new Date('2020-01-10T12:00');
+		const creator = {} as User;
+		const booking = new BookingBuilder()
+			.withCitizenUinFin('UINFIN')
+			.withServiceProviderId(1)
+			.withRefId('REFID')
+			.withStartDateTime(start)
+			.withEndDateTime(end)
+			.withLocation('Location')
+			.withDescription('Description')
+			.withServiceId(2)
+			.withCreator(creator)
+			.withAutoAccept(true)
+			.withMarkOnHold(true)
+			.build();
+
+		expect(booking.citizenUinFin).toStrictEqual('UINFIN');
+		expect(booking.serviceProviderId).toStrictEqual(1);
+		expect(booking.startDateTime).toStrictEqual(start);
+		expect(booking.endDateTime).toStrictEqual(end);
+		expect(booking.refId).toStrictEqual('REFID');
+		expect(booking.location).toStrictEqual('Location');
+		expect(booking.description).toStrictEqual('Description');
+		expect(booking.serviceId).toStrictEqual(2);
+		expect(booking.creator).toStrictEqual(creator);
+		expect(booking.status).toStrictEqual(BookingStatus.OnHold);
+	});
+
+	it('should create on hold booking with builder when auto-accept is false and onhold is true', () => {
+		const start = new Date('2020-01-10T11:00');
+		const end = new Date('2020-01-10T12:00');
+		const creator = {} as User;
+		const booking = new BookingBuilder()
+			.withCitizenUinFin('UINFIN')
+			.withServiceProviderId(1)
+			.withRefId('REFID')
+			.withStartDateTime(start)
+			.withEndDateTime(end)
+			.withLocation('Location')
+			.withDescription('Description')
+			.withServiceId(2)
+			.withCreator(creator)
+			.withAutoAccept(false)
+			.withMarkOnHold(true)
+			.build();
+
+		expect(booking.citizenUinFin).toStrictEqual('UINFIN');
+		expect(booking.serviceProviderId).toStrictEqual(1);
+		expect(booking.startDateTime).toStrictEqual(start);
+		expect(booking.endDateTime).toStrictEqual(end);
+		expect(booking.refId).toStrictEqual('REFID');
+		expect(booking.location).toStrictEqual('Location');
+		expect(booking.description).toStrictEqual('Description');
+		expect(booking.serviceId).toStrictEqual(2);
+		expect(booking.creator).toStrictEqual(creator);
+		expect(booking.status).toStrictEqual(BookingStatus.OnHold);
+	});
+});

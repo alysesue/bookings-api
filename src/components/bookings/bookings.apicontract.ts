@@ -29,6 +29,10 @@ export class BookingRequest {
 	public location?: string | null;
 	public description?: string | null;
 	public captchaToken?: string | null;
+	/**
+	 * @ignore
+	 */
+	public captchaOrigin?: string | null;
 }
 
 export interface RescheduleBookingRequest extends BookingRequest {

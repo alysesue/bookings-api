@@ -1,6 +1,6 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Booking, BookingStatus, ChangeLogAction, ServiceProvider, User } from '../../models';
+import { Booking, BookingStatus, ChangeLogAction, Service, ServiceProvider, User } from '../../models';
 import { BookingsRepository } from './bookings.repository';
 import {
 	BookingAcceptRequest,
@@ -237,6 +237,9 @@ export class BookingsService {
 	): Promise<[ChangeLogAction, Booking]> {
 		const updatedBooking = previousBooking.clone();
 		Object.assign(updatedBooking, bookingRequest);
+		updatedBooking.captchaToken = bookingRequest.captchaToken;
+		updatedBooking.captchaOrigin = bookingRequest.captchaOrigin;
+
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
 		});
@@ -264,6 +267,7 @@ export class BookingsService {
 
 	private async saveInternal(bookingRequest: BookingRequest, serviceId: number): Promise<[ChangeLogAction, Booking]> {
 		const currentUser = await this.userContext.getCurrentUser();
+		const service: Service = await this.servicesService.getService(serviceId);
 		let serviceProvider: ServiceProvider | undefined;
 		if (bookingRequest.serviceProviderId) {
 			serviceProvider = await this.serviceProvidersService.getServiceProvider(bookingRequest.serviceProviderId);
@@ -282,7 +286,9 @@ export class BookingsService {
 			.withCitizenPhone(bookingRequest.citizenPhone)
 			.withCitizenEmail(bookingRequest.citizenEmail)
 			.withAutoAccept(BookingsService.shouldAutoAccept(currentUser, serviceProvider))
+			.withMarkOnHold(service.isOnHold)
 			.withCaptchaToken(bookingRequest.captchaToken)
+			.withCaptchaOrigin(bookingRequest.captchaOrigin)
 			.build();
 
 		booking.serviceProvider = serviceProvider;

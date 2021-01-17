@@ -122,7 +122,6 @@ describe('BookingChangeLogs service', () => {
 
 		const serviceProvider = ServiceProvider.create('J', 1, 'sp@email.com', '010000000', 'ABC12');
 		serviceProvider.id = 1;
-		serviceProvider.linkedUser = adminMock;
 
 		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));
 		const action = jest.fn(

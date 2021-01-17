@@ -24,6 +24,7 @@ import { getConnectionOptions } from './core/connectionOptions';
 import { CitizenUserValidationMiddleware } from './infrastructure/citizenUserValidation.middleware';
 import { KoaContextStoreMiddleware } from './infrastructure/koaContextStore.middleware';
 import { MolUsersService, MolUsersServiceFactory } from './components/users/molUsers/molUsers.service';
+import { AutomatedTestMiddleware } from './infrastructure/automatedTest.middleware';
 import { DbConnection } from './core/db.connection';
 
 class ApiDataResponseHandler {
@@ -78,7 +79,7 @@ export async function startServer(): Promise<Server> {
 	// tslint:disable-next-line: tsr-detect-non-literal-regexp
 	const byPassAuthPath = new RegExp(`^${basePath}/api/v1/usersessions/anonymous$`);
 	setIOCBindings();
-	const koaServer = new Koa()
+	let koaServer = new Koa()
 		.use(
 			compress({
 				filter: () => true,
@@ -95,13 +96,19 @@ export async function startServer(): Promise<Server> {
 		)
 		.use(cors({ credentials: config.isLocal }))
 		.use(noCache({ global: true }))
-		.use(await useSwagger())
 		.use(new KoaErrorHandler().build())
+		.use(await useSwagger())
 		.use(new BusinessErrorMiddleware().build())
 		.use(new KoaLoggerContext().build())
 		.use(new KoaMultipartCleaner().build())
 		.use(HealthCheckMiddleware.build())
-		.use(router.allowedMethods())
+		.use(router.allowedMethods());
+
+	if (config.isAutomatedTest) {
+		koaServer = koaServer.use(new AutomatedTestMiddleware().build());
+	}
+
+	koaServer = koaServer
 		.use(new ContainerContextMiddleware().build())
 		.use(new KoaContextStoreMiddleware().build())
 		.use(bypassMiddleware(byPassAuthPath, new UserContextMiddleware().build()))

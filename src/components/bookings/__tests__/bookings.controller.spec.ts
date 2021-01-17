@@ -1,4 +1,5 @@
 import { Container } from 'typescript-ioc';
+import * as Koa from 'koa';
 import { Booking, BookingStatus } from '../../../models';
 import { BookingsController } from '../bookings.controller';
 import { BookingsService } from '../bookings.service';
@@ -9,6 +10,7 @@ import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 import { CaptchaService } from '../../captcha/captcha.service';
+import { KoaContextStore } from '../../../infrastructure/koaContextStore.middleware';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -27,6 +29,15 @@ jest.mock('mol-lib-common', () => {
 });
 
 describe('Bookings.Controller', () => {
+	const KoaContextStoreMock: Partial<KoaContextStore> = {
+		koaContext: {
+			header: {
+				set: jest.fn(),
+				get: jest.fn(),
+			} as Partial<Headers>,
+		} as Koa.Context,
+	};
+
 	const testBooking1 = new BookingBuilder()
 		.withServiceId(1)
 		.withStartDateTime(new Date('2020-10-01T01:00:00'))
@@ -43,6 +54,8 @@ describe('Bookings.Controller', () => {
 		Container.bind(BookingsService).to(BookingsServiceMock);
 		Container.bind(TimeslotsService).to(jest.fn(() => TimeslotsServiceMock));
 		Container.bind(CaptchaService).to(CaptchaServiceMock);
+		Container.bind(KoaContextStore).factory(() => KoaContextStoreMock);
+		KoaContextStoreMock.koaContext.header = { origin: 'local.booking.gov.sg' };
 	});
 
 	it('should accept booking', async () => {
@@ -129,6 +142,7 @@ describe('Bookings.Controller', () => {
 		const result = await controller.postBooking(req, 1);
 
 		expect(result).toBeDefined();
+		expect(req.captchaOrigin).toBe('local.booking.gov.sg');
 	});
 
 	it('should post out of timeslot booking', async () => {

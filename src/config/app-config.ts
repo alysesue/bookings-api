@@ -22,7 +22,9 @@ export const getConfig = () => ({
 	molAdminAuthForwarder: {
 		url: ConfigUtils.getValueFromEnv('MOL_ADMIN_AUTH_FORWARDER_URL', ''),
 	},
-	recaptchaKey: ConfigUtils.getValueFromEnv('RECAPTCHA_KEY_BOOKINGSG_APP'),
+	recaptchaApiKey: ConfigUtils.getValueFromEnv('RECAPTCHA_API_KEY_BOOKINGSG_APP'),
+	recaptchaProjectId: ConfigUtils.getValueFromEnv('RECAPTCHA_PROJECT_ID_BOOKINGSG_APP'),
+	recaptchaSiteKey: ConfigUtils.getValueFromEnv('RECAPTCHA_SITE_KEY_BOOKINGSG_APP'),
 });
 
 export const basePath = '/bookingsg';

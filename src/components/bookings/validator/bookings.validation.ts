@@ -53,6 +53,10 @@ abstract class BookingsValidator implements IValidator {
 		}
 	}
 
+	private static async *skipValidation(booking: Booking): AsyncIterable<BusinessValidation> {
+		return;
+	}
+
 	public async *getValidations(booking: Booking): AsyncIterable<BusinessValidation> {
 		let yieldedAny = false;
 
@@ -66,7 +70,9 @@ abstract class BookingsValidator implements IValidator {
 		for await (const validation of concatIteratables(
 			this.validateServiceProviderExisting(booking),
 			BookingsValidator.validateDuration(booking),
-			BookingsValidator.validateCitizenDetails(booking),
+			booking.status === BookingStatus.OnHold
+				? BookingsValidator.skipValidation(booking)
+				: BookingsValidator.validateCitizenDetails(booking),
 		)) {
 			yieldedAny = true;
 			yield validation;
@@ -119,7 +125,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 			booking.endDateTime,
 			booking.serviceId,
 			true,
-			booking.serviceProviderId,
+			booking.serviceProviderId ? [booking.serviceProviderId] : undefined,
 		);
 
 		const timeslotOrBoookingExists = existingTimeslot.some(
@@ -129,6 +135,11 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 		);
 		if (!timeslotOrBoookingExists && (await this.overlapsOtherAccepted(booking))) {
 			yield BookingBusinessValidations.OverlapsAcceptedBooking;
+			return; // stops iterable (method scoped)
+		}
+
+		if (await this.overlapsOtherOnHoldBooking(booking)) {
+			yield BookingBusinessValidations.OverlapsOnHoldBooking;
 			return; // stops iterable (method scoped)
 		}
 
@@ -143,6 +154,22 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 		) {
 			yield BookingBusinessValidations.ServiceProviderNotAvailable;
 		}
+	}
+
+	private async overlapsOtherOnHoldBooking(booking: Booking): Promise<boolean> {
+		const searchQuery: BookingSearchQuery = {
+			from: booking.startDateTime,
+			to: booking.endDateTime,
+			statuses: [BookingStatus.OnHold],
+			serviceId: booking.serviceId,
+			serviceProviderId: booking.serviceProviderId,
+			byPassAuth: true,
+		};
+		const onHoldBookings = await this.bookingsRepository.search(searchQuery);
+		return onHoldBookings.some((onHoldbooking) => {
+			const onHoldUntil: Date = onHoldbooking.onHoldUntil;
+			return onHoldbooking.status === BookingStatus.OnHold && new Date() < onHoldUntil;
+		});
 	}
 
 	private async overlapsOtherAccepted(booking: Booking): Promise<boolean> {
@@ -203,7 +230,7 @@ class SlotBookingsValidator extends BookingsValidator {
 	}
 
 	protected async *validateToken(booking: Booking): AsyncIterable<BusinessValidation> {
-		const res = await CaptchaService.verify(booking.captchaToken);
+		const res = await CaptchaService.verify(booking.captchaToken, booking.captchaOrigin);
 		if (!res) {
 			yield BookingBusinessValidations.InvalidCaptchaToken;
 		}
