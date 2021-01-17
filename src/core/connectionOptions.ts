@@ -2,7 +2,7 @@ import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConne
 import { getConfig } from '../config/app-config';
 import { LoggerOptions } from 'typeorm/logger/LoggerOptions';
 import * as Migrations from '../migrations';
-import * as Models from '../models';
+import * as Entities from '../models/entities';
 import { map } from 'lodash';
 export function getConnectionOptions(): PostgresConnectionOptions {
 	const config = getConfig();
@@ -15,7 +15,7 @@ export function getConnectionOptions(): PostgresConnectionOptions {
 
 	return {
 		database: config.database.instance,
-		entities: map(Models),
+		entities: map(Entities),
 		logging,
 		host: process.env['LOCALHOST'] === 'true' ? LOCALHOST : config.database.host,
 		port: +config.database.port,
@@ -24,7 +24,7 @@ export function getConnectionOptions(): PostgresConnectionOptions {
 		synchronize: false,
 		type: 'postgres',
 		migrations: map(Migrations),
-		migrationsRun: true,
+		migrationsRun: false,
 		cli: { migrationsDir: 'src/migrations' },
 	} as PostgresConnectionOptions;
 }
