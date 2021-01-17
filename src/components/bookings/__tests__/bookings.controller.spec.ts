@@ -142,7 +142,7 @@ describe('Bookings.Controller', () => {
 		const result = await controller.postBooking(req, 1);
 
 		expect(result).toBeDefined();
-		expect(req.captchaOrigin).toBe("local.booking.gov.sg");
+		expect(req.captchaOrigin).toBe('local.booking.gov.sg');
 	});
 
 	it('should post out of timeslot booking', async () => {

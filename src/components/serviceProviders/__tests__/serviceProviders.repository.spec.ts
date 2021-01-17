@@ -311,8 +311,10 @@ describe('Service Provider repository', () => {
 
 		const result = await spRepository.getServiceProvidersByName({ searchKey: 'zhen' });
 		expect(TransactionManagerMock.createQueryBuilder).toBeCalled();
-		expect(queryBuilderMock.where).toHaveBeenCalledWith(["", 'sp._name ILIKE :name'],
-			{ name: "zhen%", serviceId: undefined });
+		expect(queryBuilderMock.where).toHaveBeenCalledWith(['', 'sp._name ILIKE :name'], {
+			name: 'zhen%',
+			serviceId: undefined,
+		});
 		expect(result).toBeDefined();
 	});
 });
@@ -367,7 +369,7 @@ class UserContextMock extends UserContext {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
-	public init() { }
+	public init() {}
 	public async getCurrentUser(...params): Promise<any> {
 		return await UserContextMock.getCurrentUser(...params);
 	}
