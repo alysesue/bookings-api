@@ -204,7 +204,9 @@ export class ServiceProvidersService {
 			organisation,
 		);
 
-		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molServiceProviderOnboards, cookie);
+		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molServiceProviderOnboards, {
+			token: cookie,
+		});
 
 		const upsertedMolUser = [...(res?.created || []), ...(res?.updated || [])];
 

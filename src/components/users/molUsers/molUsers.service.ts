@@ -4,20 +4,35 @@ import { IMolCognitoUserRequest, MolUpsertUsersResult } from './molUsers.apicont
 import { post } from '../../../tools/fetch';
 import { getConfig } from '../../../config/app-config';
 
+export type OptionsMol = {
+	token: string;
+	// Send email false by default
+	sendEmail?: boolean;
+};
+
 export abstract class MolUsersService {
-	public abstract molUpsertUser(
-		users: IMolCognitoUserRequest[],
-		authorisation?: string,
-	): Promise<MolUpsertUsersResult>;
+	public abstract molUpsertUser(users: IMolCognitoUserRequest[], options?: OptionsMol): Promise<MolUpsertUsersResult>;
 }
 
 @InRequestScope
 export class MolUsersServiceAuthForwarder extends MolUsersService {
-	public async molUpsertUser(users: IMolCognitoUserRequest[], authorisation: string): Promise<MolUpsertUsersResult> {
+	public async molUpsertUser(users: IMolCognitoUserRequest[], options?: OptionsMol): Promise<MolUpsertUsersResult> {
 		const config = getConfig();
 		const URL_MOL_USER = `${config.molAdminAuthForwarder.url}/api/users/v1`;
+		const sendEmailHeader = options?.sendEmail
+			? {
+					'desired-delivery-medium': 'EMAIL',
+			  }
+			: {};
 		try {
-			const upsertRes = await post(URL_MOL_USER, { users }, { Authorization: authorisation });
+			const upsertRes = await post(
+				URL_MOL_USER,
+				{ users },
+				{
+					Authorization: options?.token,
+					...sendEmailHeader,
+				},
+			);
 			return upsertRes.data;
 		} catch (e) {
 			throw new Error(`MolUsersServiceAuthForwarder: ${e}`);
