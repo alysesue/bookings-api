@@ -78,7 +78,6 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 
 	@ManyToOne(() => Service)
 	@JoinColumn({ name: '_serviceId' })
-	@Index()
 	private _service: Service;
 
 	public set service(service: Service) {
