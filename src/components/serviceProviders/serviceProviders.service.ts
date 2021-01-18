@@ -147,9 +147,10 @@ export class ServiceProvidersService {
 		}
 		return sp;
 	}
-	public async getServiceProvidersByName(searchKey: string): Promise<ServiceProvider[]> {
+	public async getServiceProvidersByName(searchKey: string, serviceId: number): Promise<ServiceProvider[]> {
 		const spList = await this.serviceProvidersRepository.getServiceProvidersByName({
 			searchKey,
+			serviceId,
 		});
 		if (!spList) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(

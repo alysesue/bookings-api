@@ -65,7 +65,7 @@ describe('ServiceProviders.Controller', () => {
 	});
 	it('should search SP by name', async () => {
 		const controller = Container.get(ServiceProvidersController);
-		await controller.getServiceProvidersByName('mon');
+		await controller.getServiceProvidersByName('mon', 1);
 		expect(ServiceProvidersMock.getServiceProvidersByName).toHaveBeenCalled();
 	});
 
