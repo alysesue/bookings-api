@@ -96,7 +96,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		const { searchKey, serviceId } = options;
 
 		const repository = await this.getRepository();
-		const serviceCondition = serviceId ? 'sp."_serviceId" = :serviceId ' : '';
+		const serviceCondition = serviceId ? 'sp._serviceId = :serviceId ' : '';
 		const nameCondition = searchKey ? 'sp._name ILIKE :name' : '';
 
 		return repository

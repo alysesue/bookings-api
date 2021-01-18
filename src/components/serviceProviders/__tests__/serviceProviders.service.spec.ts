@@ -404,7 +404,7 @@ describe('ServiceProviders.Service', () => {
 			Promise.resolve([serviceProviderMock]),
 		);
 		const serviceProvidersService = Container.get(ServiceProvidersService);
-		const result = await serviceProvidersService.getServiceProvidersByName('mon');
+		const result = await serviceProvidersService.getServiceProvidersByName('mon', 1);
 		expect(result.length).toBe(1);
 	});
 });
