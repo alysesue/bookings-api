@@ -1,6 +1,6 @@
 export enum CrudAction {
-	Create,
-	Read,
-	Update,
-	Delete,
+	Create = 'Create',
+	Read = 'Read',
+	Update = 'Update',
+	Delete = 'Delete',
 }

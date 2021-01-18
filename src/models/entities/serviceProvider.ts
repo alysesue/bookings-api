@@ -78,7 +78,6 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 
 	@ManyToOne(() => Service)
 	@JoinColumn({ name: '_serviceId' })
-	@Index()
 	private _service: Service;
 
 	public set service(service: Service) {
@@ -184,6 +183,22 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 
 	public get timeslotsScheduleId(): number {
 		return this._timeslotsScheduleId;
+	}
+
+	@Column({ nullable: true, type: 'date' })
+	public _expiryDate?: Date;
+
+	public get expiryDate(): Date | undefined {
+		return this._expiryDate;
+	}
+
+	public set expiryDate(value: Date) {
+		this._expiryDate = value;
+	}
+
+	public isLicenceExpire(atThisDate: Date): boolean {
+		if (!this.expiryDate) return false;
+		return new Date(this.expiryDate).getTime() < atThisDate.getTime();
 	}
 
 	@OneToOne('TimeslotsSchedule', '_serviceProvider', {

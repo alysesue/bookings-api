@@ -64,4 +64,9 @@ export class BookingBusinessValidations {
 		code: '10012',
 		message: `Booking request not valid as it overlaps another on hold booking`,
 	});
+
+	public static readonly ServiceProviderLicenceExpire = new BusinessValidation({
+		code: '10013',
+		message: `Licence of service provider will be expired`,
+	});
 }

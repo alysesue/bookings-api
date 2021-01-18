@@ -19,17 +19,20 @@ import { TimeslotWithCapacity } from '../../../../models/timeslotWithCapacity';
 import { AvailableTimeslotProviders } from '../../../../components/timeslots/availableTimeslotProviders';
 import { CaptchaService } from '../../../captcha/captcha.service';
 import { UserContextMock } from '../../../../infrastructure/auth/__mocks__/userContext';
+import { getConfig } from '../../../../config/app-config';
 
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
 	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
 };
 
 jest.mock('../../../captcha/captcha.service');
+jest.mock('../../../../config/app-config', () => ({
+	getConfig: jest.fn(),
+}));
 
 // tslint:disable-next-line:no-big-function
 describe('Booking validation tests', () => {
-	const serviceProvider = ServiceProvider.create('provider', 1);
-	serviceProvider.id = 1;
+	let serviceProvider;
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 
 	const bookingMock = new BookingBuilder()
@@ -56,12 +59,16 @@ describe('Booking validation tests', () => {
 
 	beforeEach(() => {
 		jest.resetAllMocks();
-
+		serviceProvider = ServiceProvider.create('provider', 1);
+		serviceProvider.id = 1;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = undefined;
 
 		const mockVerify = jest.fn();
 		mockVerify.mockReturnValue(Promise.resolve(true));
 		CaptchaService.verify = mockVerify;
+		(getConfig as jest.Mock).mockReturnValue({
+			isAutomatedTest: false,
+		});
 	});
 
 	it('should return regular booking validator', () => {
@@ -109,6 +116,43 @@ describe('Booking validation tests', () => {
 		const test = async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
 		await expect(test).rejects.toMatchInlineSnapshot(
 			'[BusinessError: [10001] The service provider is not available in the selected time range]',
+		);
+	});
+
+	it('should not allow booking out of timeslots due to expiryDate', async () => {
+		const start = new Date(2020, 8, 26, 8, 0);
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 45))
+			.withServiceProviderId(1)
+			.withRefId('RFM186')
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.build();
+		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
+			const entry = new AvailableTimeslotProviders();
+			entry.startTime = new Date(2020, 8, 26, 8, 0);
+			entry.endTime = new Date(2020, 8, 26, 8, 45);
+
+			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
+			map.set(serviceProvider, createTimeslot(entry.startTime, entry.endTime, 1));
+
+			entry.setRelatedServiceProviders(map);
+
+			return Promise.resolve([entry]);
+		});
+
+		serviceProvider.expiryDate = ('2020-08-25' as unknown) as Date;
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		BookingRepositoryMock.searchBookingsMock = [];
+		TimeslotsServiceMock.acceptedBookings = [bookingMock];
+		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+
+		const test = async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
+		await expect(test).rejects.toMatchInlineSnapshot(
+			'[BusinessError: [10013] Licence of service provider will be expired]',
 		);
 	});
 
