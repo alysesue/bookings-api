@@ -147,7 +147,7 @@ export class ServiceProvidersService {
 		}
 		return sp;
 	}
-	public async getServiceProvidersByName(searchKey: string, serviceId?: number): Promise<ServiceProvider[]> {
+	public async getServiceProvidersByName(searchKey: string, serviceId: number): Promise<ServiceProvider[]> {
 		const spList = await this.serviceProvidersRepository.getServiceProvidersByName({
 			searchKey,
 			serviceId

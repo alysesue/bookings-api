@@ -91,7 +91,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 
 	public async getServiceProvidersByName(options: {
 		searchKey: string;
-		serviceId?: number;
+		serviceId: number;
 	}): Promise<ServiceProvider[]> {
 		const { searchKey, serviceId } = options;
 

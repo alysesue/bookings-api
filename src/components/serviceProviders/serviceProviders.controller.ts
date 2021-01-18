@@ -205,7 +205,7 @@ export class ServiceProvidersController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getServiceProvidersByName(
 		@Path() searchKey: string,
-		@Header('x-api-service') serviceId?: number,
+		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<ServiceProviderResponseModel[]>> {
 		const dataModels = await this.serviceProvidersService.getServiceProvidersByName(searchKey, serviceId);
 		return ApiDataFactory.create(this.mapper.mapDataModels(dataModels));
