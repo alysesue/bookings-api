@@ -101,8 +101,10 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 
 		return repository
 			.createQueryBuilder('sp')
-			.where([serviceCondition, nameCondition], { serviceId, name: `${searchKey}%` })
-			.orderBy('sp._name', 'ASC')
+			.where([serviceCondition, nameCondition]
+				.filter((c) => c)
+				.map((c) => `(${c})`)
+				.join(' AND '), { serviceId: serviceId, name: `${searchKey}%` })
 			.getMany();
 	}
 
