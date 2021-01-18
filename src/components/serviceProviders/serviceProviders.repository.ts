@@ -98,10 +98,13 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		const serviceCondition = serviceId ? 'sp._serviceId = :serviceId ' : '';
 		const nameCondition = searchKey ? 'sp._name ILIKE :name' : '';
 
-		const query = await this.createSelectQuery([serviceCondition, nameCondition], { serviceId, name: `${searchKey}%` }, { skipAuthorisation: false });
+		const query = await this.createSelectQuery(
+			[serviceCondition, nameCondition],
+			{ serviceId, name: `${searchKey}%` },
+			{ skipAuthorisation: false },
+		);
 		query.orderBy('sp._name');
 		return await query.getMany();
-
 	}
 
 	public async getServiceProvidersCount(
