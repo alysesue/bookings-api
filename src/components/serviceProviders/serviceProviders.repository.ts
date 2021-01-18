@@ -91,24 +91,17 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 
 	public async getServiceProvidersByName(options: {
 		searchKey: string;
-		serviceId: number;
+		serviceId?: number;
 	}): Promise<ServiceProvider[]> {
 		const { searchKey, serviceId } = options;
 
-		const repository = await this.getRepository();
 		const serviceCondition = serviceId ? 'sp._serviceId = :serviceId ' : '';
 		const nameCondition = searchKey ? 'sp._name ILIKE :name' : '';
 
-		return repository
-			.createQueryBuilder('sp')
-			.where(
-				[serviceCondition, nameCondition]
-					.filter((c) => c)
-					.map((c) => `(${c})`)
-					.join(' AND '),
-				{ serviceId, name: `${searchKey}%` },
-			)
-			.getMany();
+		const query = await this.createSelectQuery([serviceCondition, nameCondition], { serviceId, name: `${searchKey}%` }, { skipAuthorisation: false });
+		query.orderBy('sp._name');
+		return await query.getMany();
+
 	}
 
 	public async getServiceProvidersCount(
