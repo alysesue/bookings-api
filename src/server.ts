@@ -95,7 +95,6 @@ export async function startServer(): Promise<Server> {
 				textLimit: '10mb',
 			}),
 		)
-		.use(new KoaErrorHandler().build())
 		.use(cors({ credentials: config.isLocal }))
 		.use(noCache({ global: true }))
 		.use(new KoaErrorHandler().build())
