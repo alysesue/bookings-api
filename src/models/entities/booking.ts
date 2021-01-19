@@ -387,4 +387,8 @@ export class Booking {
 	public isValidForRescheduling(): boolean {
 		return this.status === BookingStatus.Accepted || this.status === BookingStatus.PendingApproval;
 	}
+
+	public isValidOnHoldBooking(): boolean {
+		return this.status === BookingStatus.OnHold && this.onHoldUntil > new Date();
+	}
 }

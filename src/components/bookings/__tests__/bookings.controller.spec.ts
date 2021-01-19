@@ -163,6 +163,20 @@ describe('Bookings.Controller', () => {
 
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 	});
+
+	it('should validate on hold booking', async () => {
+		const controller = Container.get(BookingsController);
+		const bookingId = 1;
+		BookingsServiceMock.mockValidateOnHoldBooking = Promise.resolve(testBooking1);
+		const request = new BookingRequest();
+		const result = await controller.validateOnHoldBooking(request, bookingId);
+
+		expect(result.data.startDateTime.toISOString()).toBe('2020-09-30T15:00:00.000Z');
+		expect(result.data.endDateTime.toISOString()).toBe('2020-09-30T16:00:00.000Z');
+		expect(result.data.serviceId).toBe(1);
+		expect(result.data.status).toBe(1);
+		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
+	});
 });
 
 const TimeslotsServiceMock = {
@@ -181,6 +195,7 @@ class BookingsServiceMock extends BookingsService {
 	public static mockBookingId;
 	public static getBookingPromise = Promise.resolve(BookingsServiceMock.mockGetBooking);
 	public static mockUpdateBooking: Booking;
+	public static mockValidateOnHoldBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 
 	public async getBooking(bookingId: number): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
@@ -212,6 +227,11 @@ class BookingsServiceMock extends BookingsService {
 	public async update(bookingId: number, bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
 		return BookingsServiceMock.mockUpdateBooking;
+	}
+
+	public async validateOnHoldBooking(bookingId: number, bookingRequest: BookingRequest): Promise<Booking> {
+		BookingsServiceMock.mockBookingId = bookingId;
+		return BookingsServiceMock.mockValidateOnHoldBooking;
 	}
 }
 

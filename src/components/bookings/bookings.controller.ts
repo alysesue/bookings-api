@@ -260,10 +260,8 @@ export class BookingsController extends Controller {
 		@Body() bookingRequest: BookingRequest,
 		@Path() bookingId: number,
 	): Promise<ApiData<BookingResponse>> {
-		const koaContext = this._koaContextStore.koaContext;
-		bookingRequest.captchaOrigin = koaContext.header.origin;
 		bookingRequest.outOfSlotBooking = false;
-		const booking = await this.bookingsService.validateOnHoldBooking(bookingId, bookingRequest);
+		const booking = await this.bookingsService.validateOnHoldBooking(bookingId, bookingRequest, true);
 		this.setStatus(201);
 		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
 	}
