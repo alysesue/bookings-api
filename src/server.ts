@@ -4,6 +4,7 @@ import * as noCache from 'koa-no-cache';
 import * as body from 'koa-body';
 import * as compress from 'koa-compress';
 import * as KoaRouter from 'koa-router';
+import * as helmet from 'koa-helmet';
 import { logger, LoggerV2 } from 'mol-lib-common';
 import { KoaErrorHandler } from 'mol-lib-common';
 import { KoaLoggerContext } from 'mol-lib-common';
@@ -94,6 +95,7 @@ export async function startServer(): Promise<Server> {
 				textLimit: '10mb',
 			}),
 		)
+		.use(new KoaErrorHandler().build())
 		.use(cors({ credentials: config.isLocal }))
 		.use(noCache({ global: true }))
 		.use(new KoaErrorHandler().build())
@@ -102,6 +104,17 @@ export async function startServer(): Promise<Server> {
 		.use(new KoaLoggerContext().build())
 		.use(new KoaMultipartCleaner().build())
 		.use(HealthCheckMiddleware.build())
+		.use(helmet.contentSecurityPolicy())
+		.use(helmet.dnsPrefetchControl({ allow: true }))
+		.use(helmet.expectCt())
+		.use(helmet.frameguard())
+		.use(helmet.hidePoweredBy())
+		.use(helmet.hsts({ preload: true }))
+		.use(helmet.ieNoOpen())
+		.use(helmet.noSniff())
+		.use(helmet.permittedCrossDomainPolicies())
+		.use(helmet.referrerPolicy())
+		.use(helmet.xssFilter())
 		.use(router.allowedMethods());
 
 	if (config.isAutomatedTest) {
