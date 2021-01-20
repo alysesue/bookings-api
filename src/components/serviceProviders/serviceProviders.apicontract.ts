@@ -5,9 +5,9 @@ export class ServiceProviderModel {
 	public name: string;
 	public email?: string;
 	public phone?: string;
-	public expiryDate?: string;
+	public expiryDate?: Date;
 
-	constructor(name: string, email?: string, phone?: string, expiryDate?: string) {
+	constructor(name: string, email?: string, phone?: string, expiryDate?: Date) {
 		this.name = name;
 		this.email = email;
 		this.phone = phone;
