@@ -4,6 +4,7 @@ import { Booking, BookingStatus, ChangeLogAction, Service, ServiceProvider, User
 import { BookingsRepository } from './bookings.repository';
 import {
 	BookingAcceptRequest,
+	BookingDetailsRequest,
 	BookingRequest,
 	BookingSearchRequest,
 	RescheduleBookingRequest,
@@ -230,15 +231,32 @@ export class BookingsService {
 		return [ChangeLogAction.Accept, booking];
 	}
 
+	private mapBookingDetails(request: BookingDetailsRequest, booking: Booking) {
+		booking.refId = request.refId;
+		booking.citizenUinFin = request.citizenUinFin;
+		booking.citizenName = request.citizenName;
+		booking.citizenEmail = request.citizenEmail;
+		booking.citizenPhone = request.citizenPhone;
+		booking.location = request.location;
+		booking.description = request.description;
+	}
+
+	private mapRequest(request: BookingRequest, booking: Booking) {
+		this.mapBookingDetails(request, booking);
+		booking.startDateTime = request.startDateTime;
+		booking.endDateTime = request.endDateTime;
+		booking.serviceProviderId = request.serviceProviderId;
+		booking.captchaToken = request.captchaToken;
+		booking.captchaOrigin = request.captchaOrigin;
+	}
+
 	public async updateInternal(
 		previousBooking: Booking,
 		bookingRequest: BookingRequest,
 		isAdmin: boolean,
 	): Promise<[ChangeLogAction, Booking]> {
 		const updatedBooking = previousBooking.clone();
-		Object.assign(updatedBooking, bookingRequest);
-		updatedBooking.captchaToken = bookingRequest.captchaToken;
-		updatedBooking.captchaOrigin = bookingRequest.captchaOrigin;
+		this.mapRequest(bookingRequest, updatedBooking);
 
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
@@ -307,7 +325,7 @@ export class BookingsService {
 
 	private async validateOnHoldBookingInternal(
 		previousBooking: Booking,
-		bookingRequest: BookingRequest,
+		bookingRequest: BookingDetailsRequest,
 		isAdmin: boolean,
 	): Promise<[ChangeLogAction, Booking]> {
 		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({
@@ -316,7 +334,8 @@ export class BookingsService {
 
 		if (previousBooking.isValidOnHoldBooking()) {
 			const updatedBooking = previousBooking.clone();
-			Object.assign(updatedBooking, bookingRequest);
+			this.mapBookingDetails(bookingRequest, updatedBooking);
+
 			if (serviceProvider.autoAcceptBookings) {
 				updatedBooking.status = BookingStatus.Accepted;
 			} else {
@@ -332,17 +351,16 @@ export class BookingsService {
 			await this.bookingsRepository.update(updatedBooking);
 
 			return [changeLogAction, updatedBooking];
-
 		} else {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				`Booking ${previousBooking.id} can not be validated`,
+				`Booking ${previousBooking.id} is not on hold or has expired`,
 			);
 		}
 	}
 
 	public async validateOnHoldBooking(
 		bookingId: number,
-		bookingRequest: BookingRequest,
+		bookingRequest: BookingDetailsRequest,
 		isAdmin: boolean,
 	): Promise<Booking> {
 		const validateAction = (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest, isAdmin);

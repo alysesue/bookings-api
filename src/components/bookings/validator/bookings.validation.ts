@@ -165,10 +165,15 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 			serviceProviderId: booking.serviceProviderId,
 			byPassAuth: true,
 		};
-		const onHoldBookings = await this.bookingsRepository.search(searchQuery);
-		return onHoldBookings.some((onHoldbooking) => {
-			const onHoldUntil: Date = onHoldbooking.onHoldUntil;
-			return onHoldbooking.status === BookingStatus.OnHold && new Date() < onHoldUntil;
+		let onHoldBookings = await this.bookingsRepository.search(searchQuery);
+		onHoldBookings = onHoldBookings.filter((b) => b.isValidOnHoldBooking());
+
+		return onHoldBookings.some((item) => {
+			return booking.bookingIntersects({
+				start: item.startDateTime,
+				end: item.endDateTime,
+				id: item.id,
+			});
 		});
 	}
 
