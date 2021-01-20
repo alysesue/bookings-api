@@ -84,8 +84,7 @@ export class ServiceProvidersMapper {
 		newSp.email = sp.email;
 		newSp.phone = sp.phone;
 		newSp.name = sp.name;
-		newSp.expiryDate = new Date(sp.expiryDate);
-
+		newSp.expiryDate = sp?.expiryDate ? new Date(sp.expiryDate) : null;
 		return newSp;
 	}
 }
