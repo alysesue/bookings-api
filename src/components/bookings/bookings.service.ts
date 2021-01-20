@@ -1,24 +1,24 @@
-import {ErrorCodeV2, MOLErrorV2} from 'mol-lib-api-contract';
-import {Inject, InRequestScope} from 'typescript-ioc';
-import {Booking, BookingStatus, ChangeLogAction, Service, ServiceProvider, User} from '../../models';
-import {BookingsRepository} from './bookings.repository';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { Booking, BookingStatus, ChangeLogAction, Service, ServiceProvider, User } from '../../models';
+import { BookingsRepository } from './bookings.repository';
 import {
 	BookingAcceptRequest,
 	BookingRequest,
 	BookingSearchRequest,
 	RescheduleBookingRequest,
 } from './bookings.apicontract';
-import {TimeslotsService} from '../timeslots/timeslots.service';
-import {ServiceProvidersRepository} from '../serviceProviders/serviceProviders.repository';
-import {UnavailabilitiesService} from '../unavailabilities/unavailabilities.service';
-import {BookingBuilder} from '../../models/entities/booking';
-import {BookingsValidatorFactory} from './validator/bookings.validation';
-import {ServicesService} from '../services/services.service';
-import {BookingChangeLogsService} from '../bookingChangeLogs/bookingChangeLogs.service';
-import {UserContext} from '../../infrastructure/auth/userContext';
-import {BookingActionAuthVisitor} from './bookings.auth';
-import {ServiceProvidersService} from '../serviceProviders/serviceProviders.service';
-import {UsersService} from '../users/users.service';
+import { TimeslotsService } from '../timeslots/timeslots.service';
+import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
+import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
+import { BookingBuilder } from '../../models/entities/booking';
+import { BookingsValidatorFactory } from './validator/bookings.validation';
+import { ServicesService } from '../services/services.service';
+import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs.service';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { BookingActionAuthVisitor } from './bookings.auth';
+import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
+import { UsersService } from '../users/users.service';
 
 @InRequestScope
 export class BookingsService {
@@ -306,28 +306,45 @@ export class BookingsService {
 	}
 
 	private async validateOnHoldBookingInternal(
-		booking: Booking,
+		previousBooking: Booking,
 		bookingRequest: BookingRequest,
 		isAdmin: boolean,
 	): Promise<[ChangeLogAction, Booking]> {
-		const serviceProvider = await this.serviceProvidersService.getServiceProvider(booking.serviceProviderId);
+		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({
+			id: previousBooking.serviceProviderId,
+		});
 
-		if (booking.isValidOnHoldBooking()) {
-			const [changeLogAction, updatedBooking] = await this.updateInternal(booking, bookingRequest, isAdmin);
+		if (previousBooking.isValidOnHoldBooking()) {
+			const updatedBooking = previousBooking.clone();
+			Object.assign(updatedBooking, bookingRequest);
 			if (serviceProvider.autoAcceptBookings) {
-				await this.acceptBookingInternal(updatedBooking, { serviceProviderId: serviceProvider.id });
+				updatedBooking.status = BookingStatus.Accepted;
 			} else {
 				updatedBooking.status = BookingStatus.PendingApproval;
 			}
+
+			const validator = this.bookingsValidatorFactory.getValidator(isAdmin);
+			await validator.validate(updatedBooking);
+
+			const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
+			await this.loadBookingDependencies(updatedBooking);
+			await this.verifyActionPermission(updatedBooking, changeLogAction);
+			await this.bookingsRepository.update(updatedBooking);
+
 			return [changeLogAction, updatedBooking];
+
 		} else {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				`Booking ${booking.id} can not be validated`,
+				`Booking ${previousBooking.id} can not be validated`,
 			);
 		}
 	}
 
-	public async validateOnHoldBooking(bookingId: number, bookingRequest: BookingRequest, isAdmin: boolean): Promise<Booking> {
+	public async validateOnHoldBooking(
+		bookingId: number,
+		bookingRequest: BookingRequest,
+		isAdmin: boolean,
+	): Promise<Booking> {
 		const validateAction = (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest, isAdmin);
 		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), validateAction);
 	}
