@@ -1,4 +1,4 @@
-import { isDateOnly, isEmail, isSGPhoneNumber } from 'mol-lib-api-contract/utils';
+import { isDateTime, isEmail, isSGPhoneNumber } from 'mol-lib-api-contract/utils';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { cloneDeep } from 'lodash';
@@ -61,7 +61,7 @@ export class ServiceProvidersService {
 			errors.push(`For service provider: ${sp.name}. Phone number is invalid: ${sp.phone}.`);
 		if (sp.email && !(await isEmail(sp.email)).pass)
 			errors.push(`For service provider: ${sp.name}. Email is invalid: ${sp.email}.`);
-		if (sp.expiryDate && !(await isDateOnly(sp.expiryDate)).pass)
+		if (sp.expiryDate && !(await isDateTime(sp.expiryDate)).pass)
 			errors.push(`For service provider: ${sp.name}. Expiry date is invalid: ${sp.expiryDate}`);
 		return errors;
 	}
@@ -83,7 +83,7 @@ export class ServiceProvidersService {
 						header: 'First line should be: name, email, phone',
 						email: 'Email should contain @ and .',
 						phone: 'Phone number should be a Singapore phone number',
-						expiryDate: 'Expiry Date, should be in format YYYY-MM-DD',
+						expiryDate: 'Expiry Date, should be in format YYYY-MM-DDThh:mm:ss:000Z',
 					},
 				};
 				molError.setResponseData(data);
