@@ -57,7 +57,7 @@ jest.mock('../serviceProviders.auth');
 // tslint:disable-next-line:no-big-function
 describe('ServiceProviders.Service', () => {
 	const serviceProviderMock = ServiceProvider.create('Name', 0);
-	const serviceProviderModelMock = { name: 'Name', expiryDate: '2010-01-20' };
+	const serviceProviderModelMock = { name: 'Name', expiryDate: new Date() };
 	const serviceProviderMockWithTemplate = ServiceProvider.create('Provider 2', 0);
 	const timeslotItemMock = TimeslotItem.create(
 		1,
@@ -204,7 +204,7 @@ describe('ServiceProviders.Service', () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		try {
 			await Container.get(ServiceProvidersService).saveServiceProviders(
-				[{ ...serviceProviderModelMock, phone: 'dd', email: 'ss', expiryDate: 's' }],
+				[{ ...serviceProviderModelMock, phone: 'dd', email: 'ss', expiryDate: new Date() }],
 				1,
 			);
 		} catch (e) {

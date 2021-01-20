@@ -120,7 +120,7 @@ describe('Booking validation tests', () => {
 	});
 
 	it('should not allow booking out of timeslots due to expiryDate', async () => {
-		const start = new Date(2020, 8, 26, 8, 0);
+		const start = new Date(2030, 8, 26, 8, 0);
 		const booking = new BookingBuilder()
 			.withStartDateTime(start)
 			.withEndDateTime(DateHelper.addMinutes(start, 45))
@@ -143,7 +143,7 @@ describe('Booking validation tests', () => {
 			return Promise.resolve([entry]);
 		});
 
-		serviceProvider.expiryDate = ('2020-08-25' as unknown) as Date;
+		serviceProvider.expiryDate = new Date();
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		BookingRepositoryMock.searchBookingsMock = [];
 		TimeslotsServiceMock.acceptedBookings = [bookingMock];
