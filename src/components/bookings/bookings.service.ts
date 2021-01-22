@@ -20,6 +20,7 @@ import { UserContext } from '../../infrastructure/auth/userContext';
 import { BookingActionAuthVisitor } from './bookings.auth';
 import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
 import { UsersService } from '../users/users.service';
+import { BookingsMapper } from './bookings.mapper';
 
 @InRequestScope
 export class BookingsService {
@@ -231,32 +232,13 @@ export class BookingsService {
 		return [ChangeLogAction.Accept, booking];
 	}
 
-	private mapBookingDetails(request: BookingDetailsRequest, booking: Booking) {
-		booking.refId = request.refId;
-		booking.citizenUinFin = request.citizenUinFin;
-		booking.citizenName = request.citizenName;
-		booking.citizenEmail = request.citizenEmail;
-		booking.citizenPhone = request.citizenPhone;
-		booking.location = request.location;
-		booking.description = request.description;
-	}
-
-	private mapRequest(request: BookingRequest, booking: Booking) {
-		this.mapBookingDetails(request, booking);
-		booking.startDateTime = request.startDateTime;
-		booking.endDateTime = request.endDateTime;
-		booking.serviceProviderId = request.serviceProviderId;
-		booking.captchaToken = request.captchaToken;
-		booking.captchaOrigin = request.captchaOrigin;
-	}
-
 	public async updateInternal(
 		previousBooking: Booking,
 		bookingRequest: BookingRequest,
 		isAdmin: boolean,
 	): Promise<[ChangeLogAction, Booking]> {
 		const updatedBooking = previousBooking.clone();
-		this.mapRequest(bookingRequest, updatedBooking);
+		BookingsMapper.mapRequest(bookingRequest, updatedBooking);
 
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
@@ -334,7 +316,7 @@ export class BookingsService {
 
 		if (previousBooking.isValidOnHoldBooking()) {
 			const updatedBooking = previousBooking.clone();
-			this.mapBookingDetails(bookingRequest, updatedBooking);
+			BookingsMapper.mapBookingDetails(bookingRequest, updatedBooking);
 
 			if (serviceProvider.autoAcceptBookings) {
 				updatedBooking.status = BookingStatus.Accepted;
