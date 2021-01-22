@@ -77,7 +77,8 @@ export class AvailableTimeslotProviders {
 		for (const item of providers) {
 			const [spItem, timeslotCapacity] = item;
 			const spTimeslotItem = new TimeslotServiceProvider(spItem, timeslotCapacity.capacity);
-			this._timeslotServiceProviders.set(spItem.id, spTimeslotItem);
+			if (!spTimeslotItem.serviceProvider.isLicenceExpire(timeslotCapacity.startTime))
+				this._timeslotServiceProviders.set(spItem.id, spTimeslotItem);
 		}
 	}
 

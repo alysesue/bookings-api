@@ -2,6 +2,7 @@ import { InRequestScope } from 'typescript-ioc';
 import { Service, ServiceProvider, ServiceProviderGroupMap } from '../../models';
 import {
 	MolServiceProviderOnboard,
+	ServiceProviderModel,
 	ServiceProviderResponseModel,
 	ServiceProviderSummaryModel,
 } from './serviceProviders.apicontract';
@@ -20,6 +21,7 @@ export class ServiceProvidersMapper {
 		response.serviceId = spData.serviceId;
 		response.email = spData.email;
 		response.phone = spData.phone;
+		response.expiryDate = spData.expiryDate;
 		response.scheduleFormConfirmed = spData.scheduleFormConfirmed;
 		response.agencyUserId = spData.agencyUserId;
 		response.timeslotsSchedule = mappedTimeslotSchedule;
@@ -72,5 +74,17 @@ export class ServiceProvidersMapper {
 		serviceProvider.serviceProviderGroupMap.molAdminId = onboardingSp.molAdminId;
 
 		return serviceProvider;
+	}
+
+	public mapServiceProviderModelToEntity(sp: ServiceProviderModel, entity: ServiceProvider): ServiceProvider {
+		if (!entity) {
+			throw new Error('Service provider not found');
+		}
+		const newSp: ServiceProvider = entity;
+		newSp.email = sp.email;
+		newSp.phone = sp.phone;
+		newSp.name = sp.name;
+		newSp.expiryDate = sp?.expiryDate ? new Date(sp.expiryDate) : null;
+		return newSp;
 	}
 }

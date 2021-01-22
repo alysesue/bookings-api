@@ -5,11 +5,13 @@ export class ServiceProviderModel {
 	public name: string;
 	public email?: string;
 	public phone?: string;
+	public expiryDate?: Date | null;
 
-	constructor(name: string, email?: string, phone?: string) {
+	constructor(name: string, email?: string, phone?: string, expiryDate?: Date) {
 		this.name = name;
 		this.email = email;
 		this.phone = phone;
+		this.expiryDate = expiryDate;
 	}
 }
 
@@ -47,6 +49,7 @@ export class ServiceProviderResponseModel {
 	public email?: string;
 	public phone?: string;
 	public agencyUserId?: string;
+	public expiryDate?: Date;
 	public scheduleFormConfirmed: boolean;
 	public onHoldEnabled?: boolean;
 }

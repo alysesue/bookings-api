@@ -80,7 +80,10 @@ export class ServicesService {
 			'User not authorized to add services.',
 		);
 		const molAdminUser = MolUsersMapper.mapServicesAdminsGroups(adminUserContracts, orga);
-		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molAdminUser, authorisationToken);
+		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molAdminUser, {
+			token: authorisationToken,
+			sendEmail: true,
+		});
 
 		if (res?.error) return res;
 		const upsertedMolUser = [...(res?.created || []), ...(res?.updated || [])];

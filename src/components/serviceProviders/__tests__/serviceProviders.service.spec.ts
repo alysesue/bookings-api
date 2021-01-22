@@ -14,7 +14,7 @@ import {
 	TimeslotsSchedule,
 	User,
 } from '../../../models';
-import { MolServiceProviderOnboard, ServiceProviderModel } from '../serviceProviders.apicontract';
+import { MolServiceProviderOnboard } from '../serviceProviders.apicontract';
 import { ScheduleFormsService } from '../../scheduleForms/scheduleForms.service';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TimeslotItemsService } from '../../timeslotItems/timeslotItems.service';
@@ -57,6 +57,7 @@ jest.mock('../serviceProviders.auth');
 // tslint:disable-next-line:no-big-function
 describe('ServiceProviders.Service', () => {
 	const serviceProviderMock = ServiceProvider.create('Name', 0);
+	const serviceProviderModelMock = { name: 'Name', expiryDate: new Date() };
 	const serviceProviderMockWithTemplate = ServiceProvider.create('Provider 2', 0);
 	const timeslotItemMock = TimeslotItem.create(
 		1,
@@ -191,7 +192,7 @@ describe('ServiceProviders.Service', () => {
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
-		await Container.get(ServiceProvidersService).saveServiceProviders([serviceProviderMock], 1);
+		await Container.get(ServiceProvidersService).saveServiceProviders([serviceProviderModelMock], 1);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
 	});
 
@@ -203,11 +204,11 @@ describe('ServiceProviders.Service', () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		try {
 			await Container.get(ServiceProvidersService).saveServiceProviders(
-				[{ ...serviceProviderMock, phone: 'dd', email: 'ss' } as ServiceProvider],
+				[{ ...serviceProviderModelMock, phone: 'dd', email: 'ss', expiryDate: new Date() }],
 				1,
 			);
 		} catch (e) {
-			expect(e.message).toBe('Bulk of service providers incorrect');
+			expect(e.message).toBe('Service providers are incorrect');
 		}
 		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(0);
 	});
@@ -252,7 +253,7 @@ describe('ServiceProviders.Service', () => {
 		UserContextMock.getAuthGroups.mockReturnValue(
 			Promise.resolve([new OrganisationAdminAuthGroup(adminMock, [organisation])]),
 		);
-		await Container.get(ServiceProvidersService).updateSp(serviceProviderMock, 1);
+		await Container.get(ServiceProvidersService).updateSp(serviceProviderModelMock, 1);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
 	});
 
@@ -404,7 +405,7 @@ describe('ServiceProviders.Service', () => {
 			Promise.resolve([serviceProviderMock]),
 		);
 		const serviceProvidersService = Container.get(ServiceProvidersService);
-		const result = await serviceProvidersService.getServiceProvidersByName('mon');
+		const result = await serviceProvidersService.getServiceProvidersByName('mon', 1);
 		expect(result.length).toBe(1);
 	});
 });
@@ -432,7 +433,7 @@ class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
 		return await ServiceProvidersRepositoryMock.getServiceProvidersByName(...params);
 	}
 
-	public async save(listRequest: ServiceProviderModel): Promise<ServiceProvider> {
+	public async save(listRequest: ServiceProvider): Promise<ServiceProvider> {
 		return await ServiceProvidersRepositoryMock.save();
 	}
 

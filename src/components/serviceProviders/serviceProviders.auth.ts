@@ -12,6 +12,12 @@ import {
 import { ServiceProvider } from '../../models/entities';
 import { CrudAction } from '../../enums/crudAction';
 
+export enum SpAction {
+	UpdateExpiryDate = 'UpdateExpiryDate',
+}
+
+export type ServiceProviderAction = SpAction | CrudAction;
+
 export class ServiceProvidersQueryAuthVisitor extends QueryAuthGroupVisitor {
 	private readonly _alias: string;
 	private readonly _serviceAlias: string;
@@ -50,9 +56,9 @@ export class ServiceProvidersQueryAuthVisitor extends QueryAuthGroupVisitor {
 
 export class ServiceProvidersActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 	private readonly serviceProvider: ServiceProvider;
-	private readonly action: CrudAction;
+	private readonly action: ServiceProviderAction;
 
-	constructor(serviceProvider: ServiceProvider, action: CrudAction) {
+	constructor(serviceProvider: ServiceProvider, action: ServiceProviderAction) {
 		super();
 		this.serviceProvider = serviceProvider;
 		this.action = action;
@@ -78,6 +84,7 @@ export class ServiceProvidersActionAuthVisitor extends PermissionAwareAuthGroupV
 				return;
 			case CrudAction.Delete:
 			case CrudAction.Update:
+			case SpAction.UpdateExpiryDate:
 				if (authorisedOrganisationIds.includes(this.serviceProvider.service.organisationId)) {
 					this.markWithPermission();
 				}
@@ -92,6 +99,7 @@ export class ServiceProvidersActionAuthVisitor extends PermissionAwareAuthGroupV
 		switch (this.action) {
 			case CrudAction.Delete:
 			case CrudAction.Update:
+			case SpAction.UpdateExpiryDate:
 				if (serviceIds.includes(this.serviceProvider.serviceId)) {
 					this.markWithPermission();
 				}

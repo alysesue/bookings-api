@@ -1,4 +1,4 @@
-import { isEmail, isSGPhoneNumber } from 'mol-lib-api-contract/utils';
+import { isDateTime, isEmail, isSGPhoneNumber } from 'mol-lib-api-contract/utils';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { cloneDeep } from 'lodash';
@@ -14,7 +14,7 @@ import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract'
 import { ServicesService } from '../services/services.service';
 import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
 import { TimeslotsService } from '../timeslots/timeslots.service';
-import { ServiceProvidersActionAuthVisitor } from './serviceProviders.auth';
+import { ServiceProviderAction, ServiceProvidersActionAuthVisitor, SpAction } from './serviceProviders.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { CrudAction } from '../../enums/crudAction';
 import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract';
@@ -61,6 +61,8 @@ export class ServiceProvidersService {
 			errors.push(`For service provider: ${sp.name}. Phone number is invalid: ${sp.phone}.`);
 		if (sp.email && !(await isEmail(sp.email)).pass)
 			errors.push(`For service provider: ${sp.name}. Email is invalid: ${sp.email}.`);
+		if (sp.expiryDate && !(await isDateTime(sp.expiryDate)).pass)
+			errors.push(`For service provider: ${sp.name}. Expiry date is invalid: ${sp.expiryDate}`);
 		return errors;
 	}
 
@@ -73,7 +75,7 @@ export class ServiceProvidersService {
 			const errorsFlat = [].concat(...errors);
 			if (errorsFlat?.length) {
 				const molError = new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-					`Bulk of service providers incorrect`,
+					`Service providers are incorrect`,
 				);
 				const data = {
 					errors: errorsFlat,
@@ -81,6 +83,7 @@ export class ServiceProvidersService {
 						header: 'First line should be: name, email, phone',
 						email: 'Email should contain @ and .',
 						phone: 'Phone number should be a Singapore phone number',
+						expiryDate: 'Expiry Date, should be in format YYYY-MM-DDThh:mm:ss:000Z',
 					},
 				};
 				molError.setResponseData(data);
@@ -147,9 +150,10 @@ export class ServiceProvidersService {
 		}
 		return sp;
 	}
-	public async getServiceProvidersByName(searchKey: string): Promise<ServiceProvider[]> {
+	public async getServiceProvidersByName(searchKey: string, serviceId: number): Promise<ServiceProvider[]> {
 		const spList = await this.serviceProvidersRepository.getServiceProvidersByName({
 			searchKey,
+			serviceId,
 		});
 		if (!spList) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(
@@ -204,7 +208,9 @@ export class ServiceProvidersService {
 			organisation,
 		);
 
-		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molServiceProviderOnboards, cookie);
+		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molServiceProviderOnboards, {
+			token: cookie,
+		});
 
 		const upsertedMolUser = [...(res?.created || []), ...(res?.updated || [])];
 
@@ -255,11 +261,11 @@ export class ServiceProvidersService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service provider not found');
 		}
 		await this.verifyActionPermission(serviceProvider, CrudAction.Update);
+		if (request.expiryDate) await this.verifyActionPermission(serviceProvider, SpAction.UpdateExpiryDate);
+
 		await ServiceProvidersService.validateServiceProviders([request]);
-		serviceProvider.email = request.email;
-		serviceProvider.phone = request.phone;
-		serviceProvider.name = request.name;
-		return await this.serviceProvidersRepository.save(serviceProvider);
+		const updatedServiceProvider = this.mapper.mapServiceProviderModelToEntity(request, serviceProvider);
+		return await this.serviceProvidersRepository.save(updatedServiceProvider);
 	}
 
 	public async setProvidersScheduleForm(orgaId: number, request: ScheduleFormRequest): Promise<ServiceProvider[]> {
@@ -412,7 +418,10 @@ export class ServiceProvidersService {
 		return await this.serviceProvidersRepository.save(serviceProvider);
 	}
 
-	private async verifyActionPermission(serviceProvider: ServiceProvider, action: CrudAction): Promise<void> {
+	private async verifyActionPermission(
+		serviceProvider: ServiceProvider,
+		action: ServiceProviderAction,
+	): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
 		if (!new ServiceProvidersActionAuthVisitor(serviceProvider, action).hasPermission(authGroups)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(

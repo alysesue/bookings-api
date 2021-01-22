@@ -69,6 +69,7 @@ abstract class BookingsValidator implements IValidator {
 
 		for await (const validation of concatIteratables(
 			this.validateServiceProviderExisting(booking),
+			this.validateLicenceServiceProviderIsNotExpire(booking),
 			BookingsValidator.validateDuration(booking),
 			booking.status === BookingStatus.OnHold
 				? BookingsValidator.skipValidation(booking)
@@ -94,9 +95,16 @@ abstract class BookingsValidator implements IValidator {
 			const provider = await this.serviceProvidersRepository.getServiceProvider({
 				id: booking.serviceProviderId,
 			});
+			booking.serviceProvider = provider;
 			if (!provider) {
 				yield BookingBusinessValidations.ServiceProviderNotFound(booking.serviceProviderId);
 			}
+		}
+	}
+
+	protected async *validateLicenceServiceProviderIsNotExpire(booking: Booking): AsyncIterable<BusinessValidation> {
+		if (booking.serviceProvider?.isLicenceExpire(booking.startDateTime)) {
+			yield BookingBusinessValidations.ServiceProviderLicenceExpire;
 		}
 	}
 }
