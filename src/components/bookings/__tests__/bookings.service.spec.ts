@@ -521,15 +521,13 @@ describe('Bookings.Service', () => {
 	});
 
 	describe('Validate on hold booking', () => {
-		it('should validate on hold booking and change status to accepted', async() => {
+		it('should validate on hold booking and change status to accepted', async () => {
 			const bookingService = Container.get(BookingsService);
-
-			const serviceProvider = ServiceProvider.create('provider', 1);
-			serviceProvider.id = 1;
-			serviceProvider.autoAcceptBookings = true;
-			ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(serviceProvider));
-			ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
-
+			const newServiceProvider = ServiceProvider.create('provider', 1);
+			newServiceProvider.id = 1;
+			newServiceProvider.autoAcceptBookings = true;
+			ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(newServiceProvider));
+			ServiceProvidersRepositoryMock.getServiceProviderMock = newServiceProvider;
 			const start = new Date('2020-02-02T11:00');
 			const end = new Date('2020-02-02T12:00');
 
@@ -559,15 +557,13 @@ describe('Bookings.Service', () => {
 			expect(result.status).toBe(BookingStatus.Accepted);
 		});
 
-		it('should validate on hold booking and change status to pending', async() => {
+		it('should validate on hold booking and change status to pending', async () => {
 			const bookingService = Container.get(BookingsService);
-
-			const serviceProvider = ServiceProvider.create('provider', 1);
-			serviceProvider.id = 1;
-			serviceProvider.autoAcceptBookings = false;
-			ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(serviceProvider));
-			ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
-
+			const sp = ServiceProvider.create('provider', 1);
+			sp.id = 1;
+			sp.autoAcceptBookings = false;
+			ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(sp));
+			ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
 			const start = new Date('2020-02-02T11:00');
 			const end = new Date('2020-02-02T12:00');
 
@@ -579,13 +575,13 @@ describe('Bookings.Service', () => {
 			} as BookingRequest;
 
 			BookingRepositoryMock.booking = new BookingBuilder()
-			.withServiceId(1)
-			.withServiceProviderId(1)
-			.withStartDateTime(start)
-			.withEndDateTime(end)
-			.withAutoAccept(false)
-			.withMarkOnHold(true)
-			.build();
+				.withServiceId(1)
+				.withServiceProviderId(1)
+				.withStartDateTime(start)
+				.withEndDateTime(end)
+				.withAutoAccept(false)
+				.withMarkOnHold(true)
+				.build();
 
 			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 			UserContextMock.getAuthGroups.mockImplementation(() =>
@@ -597,15 +593,13 @@ describe('Bookings.Service', () => {
 			expect(result.status).toBe(BookingStatus.PendingApproval);
 		});
 
-		it('should not validate on hold booking', async() => {
+		it('should not validate on hold booking', async () => {
 			const bookingService = Container.get(BookingsService);
-
-			const serviceProvider = ServiceProvider.create('provider', 1);
-			serviceProvider.id = 1;
-			serviceProvider.autoAcceptBookings = false;
-			ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(serviceProvider));
-			ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
-
+			const serviceProv = ServiceProvider.create('provider', 1);
+			serviceProv.id = 1;
+			serviceProv.autoAcceptBookings = false;
+			ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(serviceProv));
+			ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProv;
 			const start = new Date('2020-02-02T11:00');
 			const end = new Date('2020-02-02T12:00');
 
@@ -617,23 +611,21 @@ describe('Bookings.Service', () => {
 			} as BookingRequest;
 
 			BookingRepositoryMock.booking = new BookingBuilder()
-			.withServiceId(1)
-			.withServiceProviderId(1)
-			.withStartDateTime(start)
-			.withEndDateTime(end)
-			.withAutoAccept(false)
-			.withMarkOnHold(false)
-			.build();
+				.withServiceId(1)
+				.withServiceProviderId(1)
+				.withStartDateTime(start)
+				.withEndDateTime(end)
+				.withAutoAccept(false)
+				.withMarkOnHold(false)
+				.build();
 
 			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 			UserContextMock.getAuthGroups.mockImplementation(() =>
 				Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 			);
-			//TODO: finish test
-
-			await bookingService.validateOnHoldBooking(1, bookingRequest, true);
-
-			// expect(result).toBe('');
+			await expect(
+				async () => await bookingService.validateOnHoldBooking(1, bookingRequest, true),
+			).rejects.toThrowError();
 		});
 	});
 
