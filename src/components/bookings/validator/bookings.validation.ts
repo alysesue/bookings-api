@@ -138,7 +138,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 			return; // stops iterable (method scoped)
 		}
 
-		if (await this.overlapsOtherOnHoldBooking(booking)) {
+		if (!timeslotOrBoookingExists && (await this.overlapsOtherOnHoldBooking(booking))) {
 			yield BookingBusinessValidations.OverlapsOnHoldBooking;
 			return; // stops iterable (method scoped)
 		}
