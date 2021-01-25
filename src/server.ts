@@ -118,7 +118,7 @@ export async function startServer(): Promise<Server> {
 	const dbOptions = getConnectionOptions();
 	logger.info(`Using DB: ${dbOptions.database} at ${dbOptions.host}`);
 	const dbConnection = Container.get(DbConnection);
-
+	await dbConnection.synchronize();
 	await dbConnection.runMigrations();
 	return await new Promise(async (resolve) => {
 		const server = koaServer.listen(config.port, async () => {
