@@ -25,23 +25,15 @@ export class BookingDetailsRequest {
 }
 
 export class BookingRequest extends BookingDetailsRequest {
+	constructor() {
+		super();
+	}
 	public startDateTime: Date;
 	public endDateTime: Date;
 	/**
 	 * @isInt
 	 */
 	public serviceProviderId?: number;
-
-	/**
-	 * An external reference Id for this booking (e.g. external Client Id or booking Id).
-	 */
-	public refId?: string | null;
-	public citizenUinFin?: string;
-	public citizenName?: string;
-	public citizenEmail?: string;
-	public citizenPhone?: string | null;
-	public location?: string | null;
-	public description?: string | null;
 	public captchaToken?: string | null;
 	/**
 	 * @ignore
