@@ -1,4 +1,4 @@
-import { Column, Entity, Generated, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Generated, Index, PrimaryGeneratedColumn } from 'typeorm';
 import { basePath } from '../../config/app-config';
 
 /**
