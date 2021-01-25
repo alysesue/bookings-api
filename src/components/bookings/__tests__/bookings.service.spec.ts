@@ -520,6 +520,115 @@ describe('Bookings.Service', () => {
 		expect(result.status).toBe(BookingStatus.Rejected);
 	});
 
+	describe('Validate on hold booking', () => {
+		it('should validate on hold booking and change status to accepted', async () => {
+			const bookingService = Container.get(BookingsService);
+			const newServiceProvider = ServiceProvider.create('provider', 1);
+			newServiceProvider.id = 1;
+			newServiceProvider.autoAcceptBookings = true;
+			ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(newServiceProvider));
+			ServiceProvidersRepositoryMock.getServiceProviderMock = newServiceProvider;
+			const start = new Date('2020-02-02T11:00');
+			const end = new Date('2020-02-02T12:00');
+
+			const bookingRequest = {
+				citizenEmail: 'test@mail.com',
+				citizenName: 'Jake',
+				citizenUinFin: 'S6979208A',
+				serviceProviderId: 1,
+			} as BookingRequest;
+
+			BookingRepositoryMock.booking = new BookingBuilder()
+				.withServiceId(1)
+				.withServiceProviderId(1)
+				.withStartDateTime(start)
+				.withEndDateTime(end)
+				.withAutoAccept(true)
+				.withMarkOnHold(true)
+				.build();
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+			);
+
+			const result = await bookingService.validateOnHoldBooking(1, bookingRequest, true);
+
+			expect(result.status).toBe(BookingStatus.Accepted);
+		});
+
+		it('should validate on hold booking and change status to pending', async () => {
+			const bookingService = Container.get(BookingsService);
+			const sp = ServiceProvider.create('provider', 1);
+			sp.id = 1;
+			sp.autoAcceptBookings = false;
+			ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(sp));
+			ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
+			const start = new Date('2020-02-02T11:00');
+			const end = new Date('2020-02-02T12:00');
+
+			const bookingRequest = {
+				citizenEmail: 'test@mail.com',
+				citizenName: 'Jake',
+				citizenUinFin: 'S6979208A',
+				serviceProviderId: 1,
+			} as BookingRequest;
+
+			BookingRepositoryMock.booking = new BookingBuilder()
+				.withServiceId(1)
+				.withServiceProviderId(1)
+				.withStartDateTime(start)
+				.withEndDateTime(end)
+				.withAutoAccept(false)
+				.withMarkOnHold(true)
+				.build();
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+			);
+
+			const result = await bookingService.validateOnHoldBooking(1, bookingRequest, true);
+
+			expect(result.status).toBe(BookingStatus.PendingApproval);
+		});
+
+		it('should not validate on hold booking', async () => {
+			const bookingService = Container.get(BookingsService);
+			const serviceProv = ServiceProvider.create('provider', 1);
+			serviceProv.id = 1;
+			serviceProv.autoAcceptBookings = false;
+			ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(serviceProv));
+			ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProv;
+			const start = new Date('2020-02-02T11:00');
+			const end = new Date('2020-02-02T12:00');
+
+			const bookingRequest = {
+				citizenEmail: 'test@mail.com',
+				citizenName: 'Jake',
+				citizenUinFin: 'S6979208A',
+				serviceProviderId: 1,
+			} as BookingRequest;
+
+			BookingRepositoryMock.booking = new BookingBuilder()
+				.withServiceId(1)
+				.withServiceProviderId(1)
+				.withStartDateTime(start)
+				.withEndDateTime(end)
+				.withAutoAccept(false)
+				.withMarkOnHold(false)
+				.build();
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+			);
+			await expect(
+				async () => await bookingService.validateOnHoldBooking(1, bookingRequest, true),
+			).rejects.toThrowError();
+		});
+	});
+
 	describe('Reschedule', () => {
 		it('should reschedule booking', async () => {
 			const bookingService = Container.get(BookingsService);

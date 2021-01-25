@@ -7,13 +7,7 @@ export class BookingAcceptRequest {
 	public serviceProviderId: number;
 }
 
-export class BookingRequest {
-	public startDateTime: Date;
-	public endDateTime: Date;
-	/**
-	 * @isInt
-	 */
-	public serviceProviderId?: number;
+export class BookingDetailsRequest {
 	/**
 	 * @ignore
 	 */
@@ -28,6 +22,18 @@ export class BookingRequest {
 	public citizenPhone?: string | null;
 	public location?: string | null;
 	public description?: string | null;
+}
+
+export class BookingRequest extends BookingDetailsRequest {
+	constructor() {
+		super();
+	}
+	public startDateTime: Date;
+	public endDateTime: Date;
+	/**
+	 * @isInt
+	 */
+	public serviceProviderId?: number;
 	public captchaToken?: string | null;
 	/**
 	 * @ignore

@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { Counter, Trend } from 'k6/metrics';
+import { Trend } from 'k6/metrics';
 
 const baseUrl = `${__ENV.LOAD_TEST_BASE_URL}/bookingsg/api/v1`;
 

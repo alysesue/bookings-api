@@ -16,6 +16,7 @@ import {
 } from 'tsoa';
 import {
 	BookingAcceptRequest,
+	BookingDetailsRequest,
 	BookingProviderResponse,
 	BookingRequest,
 	BookingResponse,
@@ -145,7 +146,7 @@ export class BookingsController extends Controller {
 	 * @param @isInt serviceId The service (id) to be booked.
 	 */
 	@Put('{bookingId}')
-	@SuccessResponse(201, 'Updated')
+	@SuccessResponse(200, 'Updated')
 	@Security('service')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
@@ -155,7 +156,6 @@ export class BookingsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.update(bookingId, bookingRequest, serviceId, true);
-		this.setStatus(201);
 		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
 	}
 
@@ -243,5 +243,24 @@ export class BookingsController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async rejectBooking(@Path() bookingId: number): Promise<void> {
 		await this.bookingsService.rejectBooking(bookingId);
+	}
+
+	/**
+	 * Validates an on hold booking.
+	 * It will add additional booking information to an existing booking and change the status of the booking
+	 * @param bookingRequest
+	 * @param @isInt bookingId The booking id.
+	 */
+	@Post('{bookingId}/validateOnHold')
+	@SuccessResponse(200, 'Validated')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async validateOnHoldBooking(
+		@Body() bookingRequest: BookingDetailsRequest,
+		@Path() bookingId: number,
+	): Promise<ApiData<BookingResponse>> {
+		bookingRequest.outOfSlotBooking = false;
+		const booking = await this.bookingsService.validateOnHoldBooking(bookingId, bookingRequest, true);
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
 	}
 }

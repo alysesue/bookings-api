@@ -4,6 +4,7 @@ import { Booking, BookingStatus, ChangeLogAction, Service, ServiceProvider, User
 import { BookingsRepository } from './bookings.repository';
 import {
 	BookingAcceptRequest,
+	BookingDetailsRequest,
 	BookingRequest,
 	BookingSearchRequest,
 	RescheduleBookingRequest,
@@ -19,6 +20,7 @@ import { UserContext } from '../../infrastructure/auth/userContext';
 import { BookingActionAuthVisitor } from './bookings.auth';
 import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
 import { UsersService } from '../users/users.service';
+import { BookingsMapper } from './bookings.mapper';
 
 @InRequestScope
 export class BookingsService {
@@ -191,7 +193,7 @@ export class BookingsService {
 		booking: Booking,
 		acceptRequest: BookingAcceptRequest,
 	): Promise<[ChangeLogAction, Booking]> {
-		if (booking.status !== BookingStatus.PendingApproval) {
+		if (booking.status !== BookingStatus.PendingApproval && booking.status !== BookingStatus.OnHold) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Booking ${booking.id} is in invalid state for accepting`,
 			);
@@ -236,9 +238,7 @@ export class BookingsService {
 		isAdmin: boolean,
 	): Promise<[ChangeLogAction, Booking]> {
 		const updatedBooking = previousBooking.clone();
-		Object.assign(updatedBooking, bookingRequest);
-		updatedBooking.captchaToken = bookingRequest.captchaToken;
-		updatedBooking.captchaOrigin = bookingRequest.captchaOrigin;
+		BookingsMapper.mapRequest(bookingRequest, updatedBooking);
 
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
@@ -303,5 +303,49 @@ export class BookingsService {
 		await this.bookingsRepository.insert(booking);
 
 		return [ChangeLogAction.Create, booking];
+	}
+
+	private async validateOnHoldBookingInternal(
+		previousBooking: Booking,
+		bookingRequest: BookingDetailsRequest,
+		isAdmin: boolean,
+	): Promise<[ChangeLogAction, Booking]> {
+		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({
+			id: previousBooking.serviceProviderId,
+		});
+
+		if (previousBooking.isValidOnHoldBooking()) {
+			const updatedBooking = previousBooking.clone();
+			BookingsMapper.mapBookingDetails(bookingRequest, updatedBooking);
+
+			if (serviceProvider.autoAcceptBookings) {
+				updatedBooking.status = BookingStatus.Accepted;
+			} else {
+				updatedBooking.status = BookingStatus.PendingApproval;
+			}
+
+			const validator = this.bookingsValidatorFactory.getValidator(isAdmin);
+			await validator.validate(updatedBooking);
+
+			const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
+			await this.loadBookingDependencies(updatedBooking);
+			await this.verifyActionPermission(updatedBooking, changeLogAction);
+			await this.bookingsRepository.update(updatedBooking);
+
+			return [changeLogAction, updatedBooking];
+		} else {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Booking ${previousBooking.id} is not on hold or has expired`,
+			);
+		}
+	}
+
+	public async validateOnHoldBooking(
+		bookingId: number,
+		bookingRequest: BookingDetailsRequest,
+		isAdmin: boolean,
+	): Promise<Booking> {
+		const validateAction = (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest, isAdmin);
+		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), validateAction);
 	}
 }
