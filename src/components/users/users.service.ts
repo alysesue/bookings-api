@@ -30,6 +30,10 @@ export class UsersService {
 	private usersRepository: UsersRepository;
 
 	public static maskNRIC(nricStr: string): string {
+		if (!nricStr) {
+			return nricStr;
+		}
+
 		// tslint:disable-next-line: tsr-detect-unsafe-regexp
 		const re = /(?<=^.{1}).{4}/;
 		return nricStr.replace(re, '****');
