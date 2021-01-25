@@ -29,6 +29,12 @@ export class UsersService {
 	@Inject
 	private usersRepository: UsersRepository;
 
+	public static maskNRIC(nricStr: string): string {
+		// tslint:disable-next-line: tsr-detect-unsafe-regexp
+		const re = /(?<=^.{1}).{4}/;
+		return nricStr.replace(re, '****');
+	}
+
 	private async getOrSaveInternal(user: User, getter: () => Promise<User>): Promise<User> {
 		let userRepo = await getter();
 		if (!userRepo) {
