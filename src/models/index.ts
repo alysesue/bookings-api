@@ -22,7 +22,6 @@ import { ChangeLogAction } from './changeLogAction';
 import { Organisation } from './entities/organisation';
 import { OrganisationAdminGroupMap } from './entities/organisationAdminGroupMap';
 import { AgencyUser } from './entities/agencyUser';
-import { Calendar } from './entities/calendar';
 import { AnonymousUser } from './entities/anonymousUser';
 
 export {
@@ -32,7 +31,6 @@ export {
 	ChangeLogAction,
 	BusinessValidation,
 	BookingStatus,
-	Calendar,
 	User,
 	SingPassUser,
 	AdminUser,

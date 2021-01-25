@@ -6,14 +6,16 @@ import { getConnectionOptions } from './connectionOptions';
 export class DbConnection {
 	protected static CONNECTION: Connection = null;
 
-	public async runMigrations() {
-		const conn = await this.getConnection();
-		await conn.runMigrations();
-	}
-
 	public async synchronize() {
 		const conn = await this.getConnection();
 		await conn.synchronize();
+	}
+
+	public async runMigrations() {
+		const conn = await this.getConnection();
+		await conn.runMigrations({
+			transaction: 'all',
+		});
 	}
 
 	public async getConnection(): Promise<Connection> {

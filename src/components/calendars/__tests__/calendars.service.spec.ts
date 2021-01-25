@@ -1,6 +1,7 @@
 import { CalendarsRepository } from '../calendars.repository';
 import { Container } from 'typescript-ioc';
-import { Booking, Calendar } from '../../../models';
+import { Booking } from '../../../models';
+import { Calendar } from '../../../models/entities/calendar';
 import { CalendarsService } from '../calendars.service';
 import { GoogleCalendarService } from '../../../googleapi/google.calendar.service';
 import { CalendarUserModel } from '../calendars.apicontract';

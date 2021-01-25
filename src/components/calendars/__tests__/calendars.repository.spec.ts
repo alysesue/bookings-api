@@ -1,6 +1,6 @@
 import { CalendarsRepository } from '../calendars.repository';
 import { Container } from 'typescript-ioc';
-import { Calendar } from '../../../models';
+import { Calendar } from '../../../models/entities/calendar';
 import { TransactionManager } from '../../../core/transactionManager';
 afterAll(() => {
 	jest.resetAllMocks();
