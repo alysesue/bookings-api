@@ -40,8 +40,8 @@ describe('Bookings.Controller', () => {
 
 	const testBooking1 = new BookingBuilder()
 		.withServiceId(1)
-		.withStartDateTime(new Date('2020-10-01T01:00:00'))
-		.withEndDateTime(new Date('2020-10-01T02:00:00'))
+		.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
+		.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 		.build();
 
 	const testBooking2 = new BookingBuilder()
@@ -171,8 +171,8 @@ describe('Bookings.Controller', () => {
 		const request = new BookingRequest();
 		const result = await controller.validateOnHoldBooking(request, bookingId);
 
-		expect(result.data.startDateTime.toISOString()).toBe('2020-09-30T15:00:00.000Z');
-		expect(result.data.endDateTime.toISOString()).toBe('2020-09-30T16:00:00.000Z');
+		expect(result.data.startDateTime.toISOString()).toBe('2020-10-01T01:00:00.000Z');
+		expect(result.data.endDateTime.toISOString()).toBe('2020-10-01T02:00:00.000Z');
 		expect(result.data.serviceId).toBe(1);
 		expect(result.data.status).toBe(1);
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
