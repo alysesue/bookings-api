@@ -43,7 +43,11 @@ export class BookingsMapper {
 
 	public static mapBookingDetails(request: BookingDetailsRequest, booking: Booking) {
 		booking.refId = request.refId;
-		booking.citizenUinFin = request.citizenUinFin;
+		if (request.citizenUinFin) {
+			booking.citizenUinFin = request.citizenUinFin;
+		} else {
+			booking.citizenUinFin = booking.citizenUinFin;
+		}
 		booking.citizenName = request.citizenName;
 		booking.citizenEmail = request.citizenEmail;
 		booking.citizenPhone = request.citizenPhone;
