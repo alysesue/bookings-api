@@ -209,7 +209,7 @@ describe('Booking validation tests', () => {
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
 		).rejects.toMatchInlineSnapshot(
-			'[BusinessError: [10005] Citizen Uin/Fin not found, [10006] Citizen name not provided, [10007] Citizen email not provided]',
+			'[BusinessError: [10005] Citizen UIN/FIN not found, [10006] Citizen name not provided, [10007] Citizen email not provided]',
 		);
 	});
 
@@ -387,7 +387,7 @@ describe('Booking validation tests', () => {
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
-		).rejects.toMatchInlineSnapshot('[BusinessError: [10005] Citizen Uin/Fin not found]');
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10005] Citizen UIN/FIN not found]');
 	});
 
 	it('should not allow booking on top of existing booking', async () => {

@@ -26,7 +26,7 @@ export class BookingBusinessValidations {
 
 	public static readonly CitizenUinFinNotFound = new BusinessValidation({
 		code: '10005',
-		message: `Citizen Uin/Fin not found`,
+		message: `Citizen UIN/FIN not found`,
 	});
 
 	public static readonly CitizenNameNotProvided = new BusinessValidation({
