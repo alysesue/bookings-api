@@ -1,7 +1,6 @@
 import { BookingsRepository } from '../bookings.repository';
 import { Booking, ChangeLogAction, ServiceProvider, User } from '../../../models';
 import { InsertResult } from 'typeorm';
-import { BookingSearchRequest } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
@@ -14,7 +13,7 @@ import { UsersService } from '../../../components/users/users.service';
 
 export class BookingRepositoryMock implements Partial<BookingsRepository> {
 	public static booking: Booking;
-	public static searchBookingsMock: Booking[];
+	public static searchBookings = jest.fn<Promise<Booking[]>, any>();
 	public static saveMock: Promise<InsertResult>;
 
 	public async getBooking(id: number): Promise<Booking> {
@@ -33,8 +32,8 @@ export class BookingRepositoryMock implements Partial<BookingsRepository> {
 		return Promise.resolve(booking);
 	}
 
-	public async search(searchRequest: BookingSearchRequest): Promise<Booking[]> {
-		return Promise.resolve(BookingRepositoryMock.searchBookingsMock);
+	public async search(...params): Promise<any> {
+		return await BookingRepositoryMock.searchBookings(...params);
 	}
 }
 

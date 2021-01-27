@@ -55,6 +55,7 @@ export type BookingResponse = {
 	 * @isInt
 	 */
 	status: number;
+	createdAt: Date;
 	startDateTime: Date;
 	endDateTime: Date;
 	/**
@@ -79,36 +80,16 @@ export type BookingResponse = {
 	refId?: string;
 };
 
-export class BookingSearchRequest {
-	public from: Date;
-	public to: Date;
-	public statuses?: BookingStatus[];
-	/**
-	 * @isInt
-	 */
-	public serviceId?: number;
-	/**
-	 * @isInt
-	 */
-	public serviceProviderId?: number;
-	public citizenUinFins?: string[];
-
-	constructor(
-		from: Date,
-		to: Date,
-		statuses?: BookingStatus[],
-		serviceId?: number,
-		citizenUinFins?: string[],
-		serviceProviderId?: number,
-	) {
-		this.from = from;
-		this.to = to;
-		this.statuses = statuses;
-		this.serviceId = serviceId;
-		this.citizenUinFins = citizenUinFins;
-		this.serviceProviderId = serviceProviderId;
-	}
-}
+export type BookingSearchRequest = {
+	from?: Date;
+	to?: Date;
+	fromCreatedAt?: Date;
+	toCreatedAt?: Date;
+	statuses?: BookingStatus[];
+	serviceId?: number;
+	serviceProviderId?: number;
+	citizenUinFins?: string[];
+};
 
 export class BookingProviderResponse {
 	/**

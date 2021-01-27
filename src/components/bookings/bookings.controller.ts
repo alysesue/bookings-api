@@ -177,13 +177,24 @@ export class BookingsController extends Controller {
 	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getBookings(
-		@Query() from: Date,
-		@Query() to: Date,
+		@Query() from?: Date,
+		@Query() to?: Date,
+		@Query() fromCreatedAt?: Date,
+		@Query() toCreatedAt?: Date,
 		@Query() status?: number[],
 		@Query() citizenUinFins?: string[],
 		@Header('x-api-service') serviceId?: number,
 	): Promise<ApiData<BookingResponse[]>> {
-		const searchQuery = new BookingSearchRequest(from, to, status, serviceId, citizenUinFins);
+		const searchQuery: BookingSearchRequest = {
+			from,
+			to,
+			fromCreatedAt,
+			toCreatedAt,
+			statuses: status,
+			serviceId,
+			citizenUinFins,
+		};
+
 		const bookings = await this.bookingsService.searchBookings(searchQuery);
 		return ApiDataFactory.create(BookingsMapper.mapDataModels(bookings));
 	}

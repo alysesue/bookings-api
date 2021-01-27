@@ -1,12 +1,13 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { InsertResult } from 'typeorm';
+import { InsertResult, SelectQueryBuilder } from 'typeorm';
 import { Booking, BookingStatus } from '../../models';
 import { RepositoryBase } from '../../core/repository';
 import { ConcurrencyError } from '../../errors/concurrencyError';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { BookingQueryAuthVisitor, BookingQueryVisitorFactory } from './bookings.auth';
+import { BookingQueryVisitorFactory } from './bookings.auth';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { groupByKeyLastValue } from '../../tools/collections';
+import { andWhere } from '../../tools/queryConditions';
 
 @InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {
@@ -34,26 +35,35 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		}
 	}
 
-	public async getBooking(bookingId: number): Promise<Booking> {
+	private async createSelectQuery(
+		queryFilters: string[],
+		queryParams: {},
+		options: {
+			byPassAuth?: boolean;
+		},
+	): Promise<SelectQueryBuilder<Booking>> {
 		const authGroups = await this.userContext.getAuthGroups();
-		const { userCondition, userParams } = await new BookingQueryAuthVisitor(
-			'booking',
-			'service_relation',
+		const { userCondition, userParams } = await BookingQueryVisitorFactory.getBookingQueryVisitor(
+			options.byPassAuth,
 		).createUserVisibilityCondition(authGroups);
-		const idCondition = 'booking."_id" = :id';
 
 		const repository = await this.getRepository();
-		const query = repository
+		return repository
 			.createQueryBuilder('booking')
-			.where(
-				[userCondition, idCondition]
-					.filter((c) => c)
-					.map((c) => `(${c})`)
-					.join(' AND '),
-				{ ...userParams, id: bookingId },
-			)
-			.leftJoinAndSelect('booking._service', 'service_relation');
+			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
+			.leftJoinAndSelect('booking._service', 'service_relation')
+			.leftJoinAndMapOne(
+				'booking._createdLog',
+				'booking_change_log',
+				'createdlog',
+				'createdlog."_bookingId" = booking._id AND createdlog._action = 1',
+			);
+	}
 
+	public async getBooking(bookingId: number): Promise<Booking> {
+		const idCondition = 'booking."_id" = :id';
+
+		const query = await this.createSelectQuery([idCondition], { id: bookingId }, {});
 		const entry = await query.getOne();
 		if (entry) {
 			await this.includeServiceProviders([entry]);
@@ -95,11 +105,6 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 	}
 
 	public async search(request: BookingSearchQuery): Promise<Booking[]> {
-		const authGroups = await this.userContext.getAuthGroups();
-		const { userCondition, userParams } = await BookingQueryVisitorFactory.getBookingQueryVisitor(
-			request.byPassAuth,
-		).createUserVisibilityCondition(authGroups);
-
 		const serviceCondition = request.serviceId ? 'booking."_serviceId" = :serviceId' : '';
 
 		const serviceProviderCondition = request.serviceProviderId
@@ -114,35 +119,37 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 				? 'booking."_citizenUinFin" IN (:...citizenUinFins)'
 				: '';
 
-		const dateRangeCondition = '(booking."_startDateTime" < :to AND booking."_endDateTime" > :from)';
+		const dateFromCondition = request.from ? 'booking."_endDateTime" > :from' : '';
+		const dateToCondition = request.to ? 'booking."_startDateTime" < :to' : '';
 
-		const repository = await this.getRepository();
-		const query = repository
-			.createQueryBuilder('booking')
-			.where(
+		const createdFromCondition = request.fromCreatedAt ? 'createdlog."_timestamp" > :fromCreatedAt' : '';
+		const createdToCondition = request.toCreatedAt ? 'createdlog."_timestamp" < :toCreatedAt' : '';
+
+		const query = (
+			await this.createSelectQuery(
 				[
-					userCondition,
 					serviceCondition,
 					serviceProviderCondition,
-					dateRangeCondition,
+					dateFromCondition,
+					dateToCondition,
+					createdFromCondition,
+					createdToCondition,
 					statusesCondition,
 					citizenUinFinsCondition,
-				]
-					.filter((c) => c)
-					.map((c) => `(${c})`)
-					.join(' AND '),
+				],
 				{
-					...userParams,
 					serviceId: request.serviceId,
 					serviceProviderId: request.serviceProviderId,
 					from: request.from,
 					to: request.to,
+					fromCreatedAt: request.fromCreatedAt,
+					toCreatedAt: request.toCreatedAt,
 					statuses: request.statuses,
 					citizenUinFins: request.citizenUinFins,
 				},
+				request,
 			)
-			.leftJoinAndSelect('booking._service', 'service_relation')
-			.orderBy('booking._id', 'DESC');
+		).orderBy('booking._id', 'DESC');
 
 		const entries = await query.getMany();
 		await this.includeServiceProviders(entries);
@@ -151,8 +158,10 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 }
 
 export type BookingSearchQuery = {
-	from: Date;
-	to: Date;
+	from?: Date;
+	to?: Date;
+	fromCreatedAt?: Date;
+	toCreatedAt?: Date;
 	statuses?: BookingStatus[];
 	serviceId?: number;
 	serviceProviderId?: number;
