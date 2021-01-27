@@ -154,7 +154,7 @@ class TransactionManagerMock implements Partial<TransactionManager> {
 	}
 }
 
-class UserContextMock extends UserContext {
+class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 

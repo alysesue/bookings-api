@@ -327,7 +327,7 @@ class TransactionManagerMock implements Partial<TransactionManager> {
 	}
 }
 
-class UserContextMock extends UserContext {
+class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
@@ -341,7 +341,7 @@ class UserContextMock extends UserContext {
 	}
 }
 
-class BookingChangeLogsRepositoryMock extends BookingChangeLogsRepository {
+class BookingChangeLogsRepositoryMock implements Partial<BookingChangeLogsRepository> {
 	public static save = jest.fn();
 	public static getLogs = jest.fn<Promise<Map<number, BookingChangeLog[]>>, any>();
 

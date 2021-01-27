@@ -102,7 +102,7 @@ describe('Google calendar wrapper tests', () => {
 	});
 });
 
-class GoogleApiMock extends GoogleApi {
+class GoogleApiMock implements Partial<GoogleApi> {
 	public static mockAclInsertResponse;
 	public static mockQueryResponse;
 	public static insertCalendarsMock;

@@ -83,7 +83,7 @@ const UnavailabilitiesServiceMock = {
 	deleteUnavailability: jest.fn(),
 };
 
-class UnavailabilitiesServiceMockClass extends UnavailabilitiesService {
+class UnavailabilitiesServiceMockClass implements Partial<UnavailabilitiesService> {
 	public async create(...params): Promise<any> {
 		return await UnavailabilitiesServiceMock.create(...params);
 	}

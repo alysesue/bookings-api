@@ -277,7 +277,7 @@ describe('Services service tests', () => {
 	});
 });
 
-class ServicesRepositoryMock extends ServicesRepository {
+class ServicesRepositoryMock implements Partial<ServicesRepository> {
 	public static save = jest.fn();
 	public static getService = jest.fn();
 	public static get = jest.fn();
@@ -310,7 +310,7 @@ class ServicesRepositoryMock extends ServicesRepository {
 	}
 }
 
-class ScheduleFormsServiceMock extends ScheduleFormsService {
+class ScheduleFormsServiceMock implements Partial<ScheduleFormsService> {
 	public static updateScheduleFormInEntity = jest.fn();
 
 	public async updateScheduleFormInEntity(...params): Promise<any> {
@@ -318,7 +318,7 @@ class ScheduleFormsServiceMock extends ScheduleFormsService {
 	}
 }
 
-class TimeslotItemsServiceMock extends TimeslotItemsService {
+class TimeslotItemsServiceMock implements Partial<TimeslotItemsService> {
 	public static mapAndSaveTimeslotItemsToTimeslotsSchedule = jest.fn();
 	public static deleteTimeslot = jest.fn();
 	public static mapAndSaveTimeslotItem = jest.fn();
@@ -353,7 +353,7 @@ class TimeslotItemsServiceMock extends TimeslotItemsService {
 	}
 }
 
-class TimeslotsScheduleMockClass extends TimeslotItemsService {
+class TimeslotsScheduleMockClass implements Partial<TimeslotsScheduleService> {
 	public static getTimeslotsScheduleById = jest.fn();
 
 	public async getTimeslotsScheduleById(id: number): Promise<TimeslotsSchedule> {
@@ -361,7 +361,7 @@ class TimeslotsScheduleMockClass extends TimeslotItemsService {
 	}
 }
 
-class MolUsersServiceMock extends MolUsersService {
+class MolUsersServiceMock implements Partial<MolUsersService> {
 	public static molUpsertUser = jest.fn();
 
 	public async molUpsertUser(...args): Promise<MolUpsertUsersResult> {
@@ -369,7 +369,7 @@ class MolUsersServiceMock extends MolUsersService {
 	}
 }
 
-class OrganisationsRepositoryMock extends OrganisationsNoauthRepository {
+class OrganisationsRepositoryMock implements Partial<OrganisationsNoauthRepository> {
 	public static getOrganisationById = jest.fn();
 
 	public async getOrganisationById(orgaId: number): Promise<Organisation> {

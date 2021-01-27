@@ -94,7 +94,7 @@ describe('Bookings.Service', () => {
 	});
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 
-	class BookingValidatorFactoryMock extends BookingsValidatorFactory {
+	class BookingValidatorFactoryMock implements Partial<BookingsValidatorFactory> {
 		public static validate = jest.fn();
 
 		public getValidator(outOfSlotBooking: boolean): IValidator {

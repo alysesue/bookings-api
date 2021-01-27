@@ -205,7 +205,7 @@ class TransactionManagerMock implements Partial<TransactionManager> {
 	}
 }
 
-class ScheduleFormsRepositoryMock extends ScheduleFormsRepository {
+class ScheduleFormsRepositoryMock implements Partial<ScheduleFormsRepository> {
 	public static getScheduleFormsMock = jest.fn();
 	public static populateSingleEntryScheduleForm = jest.fn();
 
@@ -218,7 +218,7 @@ class ScheduleFormsRepositoryMock extends ScheduleFormsRepository {
 	}
 }
 
-class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
+class TimeslotsScheduleRepositoryMock implements Partial<TimeslotsScheduleRepository> {
 	public static getTimeslotsScheduleByIdMock = jest.fn();
 	public static populateTimeslotsSchedules = jest.fn();
 
@@ -231,7 +231,7 @@ class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
 	}
 }
 
-class UserContextMock extends UserContext {
+class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 

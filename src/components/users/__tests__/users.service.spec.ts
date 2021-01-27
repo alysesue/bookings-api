@@ -17,7 +17,7 @@ import {
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
-import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
+import { logger } from 'mol-lib-common';
 import { ServicesRepositoryNoAuth } from '../../services/services.noauth.repository';
 import { ServiceProvidersRepositoryNoAuth } from '../../serviceProviders/serviceProviders.noauth.repository';
 
@@ -268,7 +268,7 @@ describe('Users Service', () => {
 	});
 });
 
-class UserRepositoryMock extends UsersRepository {
+class UserRepositoryMock implements Partial<UsersRepository> {
 	public static save = jest.fn();
 	public static getUserByMolUserId = jest.fn();
 	public static getUserByMolAdminId = jest.fn();
@@ -286,7 +286,7 @@ class UserRepositoryMock extends UsersRepository {
 	}
 }
 
-class OrganisationsServiceMock extends OrganisationsService {
+class OrganisationsServiceMock implements Partial<OrganisationsService> {
 	public static getOrganisationsForGroups = jest.fn<Promise<Organisation[]>, any>();
 
 	public async getOrganisationsForGroups(...params): Promise<any> {
@@ -294,7 +294,7 @@ class OrganisationsServiceMock extends OrganisationsService {
 	}
 }
 
-class ServicesRepositoryNoAuthMock extends ServicesRepositoryNoAuth {
+class ServicesRepositoryNoAuthMock implements Partial<ServicesRepositoryNoAuth> {
 	public static getServicesForUserGroups = jest.fn<Promise<Service[]>, any>();
 
 	public async getServicesForUserGroups(...params): Promise<any> {
@@ -302,7 +302,7 @@ class ServicesRepositoryNoAuthMock extends ServicesRepositoryNoAuth {
 	}
 }
 
-class ServiceProvidersRepositoryNoAuthMock extends ServiceProvidersRepositoryNoAuth {
+class ServiceProvidersRepositoryNoAuthMock implements Partial<ServiceProvidersRepositoryNoAuth> {
 	public static getServiceProviderByMolAdminId = jest.fn<Promise<ServiceProvider>, any>();
 
 	public async getServiceProviderByMolAdminId(...params): Promise<any> {

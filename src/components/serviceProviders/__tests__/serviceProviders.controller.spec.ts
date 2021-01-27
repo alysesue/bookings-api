@@ -260,7 +260,7 @@ const ServiceProvidersMock = {
 	getServiceProvidersByName: jest.fn(),
 };
 
-class ServiceProvidersServiceMock extends ServiceProvidersService {
+class ServiceProvidersServiceMock implements Partial<ServiceProvidersService> {
 	public async getServiceProvider(spId: number): Promise<ServiceProvider> {
 		return ServiceProvidersMock.getServiceProvider();
 	}
@@ -316,7 +316,7 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 	}
 }
 
-class ServicesServiceMock extends ServicesService {
+class ServicesServiceMock implements Partial<ServicesService> {
 	public static getServices = jest.fn();
 
 	public async getServices(): Promise<Service[]> {

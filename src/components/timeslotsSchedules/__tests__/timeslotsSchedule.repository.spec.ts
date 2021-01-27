@@ -139,7 +139,7 @@ class TransactionManagerMock implements Partial<TransactionManager> {
 	}
 }
 
-class TimeslotItemsRepositoryMock extends TimeslotItemsRepository {
+class TimeslotItemsRepositoryMock implements Partial<TimeslotItemsRepository> {
 	public static deleteTimeslotsForSchedule = jest.fn();
 
 	public async deleteTimeslotsForSchedule(...params): Promise<any> {

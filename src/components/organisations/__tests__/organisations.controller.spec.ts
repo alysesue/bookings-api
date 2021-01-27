@@ -39,7 +39,7 @@ const ServiceProvidersMock = {
 	setProvidersScheduleForm: jest.fn(),
 };
 
-class ServiceProvidersServiceMock extends ServiceProvidersService {
+class ServiceProvidersServiceMock implements Partial<ServiceProvidersService> {
 	public async setProviderScheduleForm(...param): Promise<ScheduleForm> {
 		return ServiceProvidersMock.setProvidersScheduleForm(...param);
 	}

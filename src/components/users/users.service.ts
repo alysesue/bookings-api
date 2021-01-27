@@ -3,7 +3,7 @@ import { UsersRepository } from './users.repository';
 import { User } from '../../models';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
-import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
+import { logger } from 'mol-lib-common';
 import { ParsedUserGroup, UserGroupParser, UserGroupRole } from '../../infrastructure/auth/userGroupParser';
 import {
 	AuthGroup,

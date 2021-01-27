@@ -67,7 +67,7 @@ describe('BookingChangeLogs controller', () => {
 	});
 });
 
-class BookingChangeLogsServiceMock extends BookingChangeLogsService {
+class BookingChangeLogsServiceMock implements Partial<BookingChangeLogsService> {
 	public static getLogs = jest.fn<Promise<Map<number, BookingChangeLog[]>>, any>();
 
 	public async getLogs(...params): Promise<any> {

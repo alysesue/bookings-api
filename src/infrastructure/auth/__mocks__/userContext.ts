@@ -2,7 +2,7 @@ import { UserContext } from '../userContext';
 import { Organisation, User } from '../../../models';
 import { AuthGroup } from '../authGroup';
 
-export class UserContextMock extends UserContext {
+export class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 	public static getFirstAuthorisedOrganisation = jest.fn<Promise<Organisation>, any>();

@@ -183,7 +183,7 @@ const TimeslotsServiceMock = {
 	getAvailableProvidersForTimeslot: jest.fn<Promise<TimeslotServiceProviderResult[]>, any>(() => Promise.resolve([])),
 };
 
-class BookingsServiceMock extends BookingsService {
+class BookingsServiceMock implements Partial<BookingsService> {
 	public static mockBooking: Booking;
 	public static mockAcceptBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockCancelBooking = Promise.resolve(BookingsServiceMock.mockBooking);
@@ -235,7 +235,7 @@ class BookingsServiceMock extends BookingsService {
 	}
 }
 
-export class CaptchaServiceMock extends CaptchaService {
+export class CaptchaServiceMock implements Partial<CaptchaService> {
 	public static verify = jest.fn<Promise<boolean>, any>();
 
 	public async verify(...params): Promise<any> {

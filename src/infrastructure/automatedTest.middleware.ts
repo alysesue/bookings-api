@@ -1,6 +1,6 @@
 import * as Koa from 'koa';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
+import { logger } from 'mol-lib-common';
 
 const AUTOMATED_TEST_HEADER = 'x-bookingsg-automated';
 

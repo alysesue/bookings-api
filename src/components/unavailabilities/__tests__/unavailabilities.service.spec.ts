@@ -207,7 +207,7 @@ describe('Unavailabilities service tests', () => {
 	});
 });
 
-class UnavailabilitiesRepositoryMock extends UnavailabilitiesRepository {
+class UnavailabilitiesRepositoryMock implements Partial<UnavailabilitiesRepository> {
 	public static save = jest.fn();
 	public static get = jest.fn();
 	public static search = jest.fn();
@@ -235,14 +235,14 @@ class UnavailabilitiesRepositoryMock extends UnavailabilitiesRepository {
 	}
 }
 
-class ServiceProvidersRepositoryMock extends ServiceProvidersRepository {
+class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersRepository> {
 	public static getServiceProviders = jest.fn();
 
 	public async getServiceProviders(...params): Promise<any> {
 		return await ServiceProvidersRepositoryMock.getServiceProviders(...params);
 	}
 }
-class ServicesRepositoryMock extends ServicesRepository {
+class ServicesRepositoryMock implements Partial<ServicesRepository> {
 	public static getService = jest.fn();
 
 	public async getService(...params): Promise<any> {
@@ -250,7 +250,7 @@ class ServicesRepositoryMock extends ServicesRepository {
 	}
 }
 
-export class UserContextMock extends UserContext {
+export class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
