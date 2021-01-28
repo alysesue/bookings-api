@@ -238,7 +238,8 @@ export class BookingsService {
 		isAdmin: boolean,
 	): Promise<[ChangeLogAction, Booking]> {
 		const updatedBooking = previousBooking.clone();
-		BookingsMapper.mapRequest(bookingRequest, updatedBooking);
+		const currentUser = await this.userContext.getCurrentUser();
+		BookingsMapper.mapRequest(bookingRequest, updatedBooking, currentUser);
 
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,

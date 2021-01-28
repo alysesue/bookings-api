@@ -1,4 +1,4 @@
-import { Booking, ServiceProvider } from '../../models/entities';
+import { Booking, ServiceProvider, User } from '../../models/entities';
 import {
 	BookingDetailsRequest,
 	BookingProviderResponse,
@@ -41,13 +41,16 @@ export class BookingsMapper {
 		} as BookingProviderResponse;
 	}
 
-	public static mapBookingDetails(request: BookingDetailsRequest, booking: Booking) {
-		booking.refId = request.refId;
-		if (request.citizenUinFin) {
-			booking.citizenUinFin = request.citizenUinFin;
-		} else {
-			booking.citizenUinFin = booking.citizenUinFin;
+	public static getCitizenUinFin(currentUser: User, bookingRequest: BookingDetailsRequest): string {
+		if (currentUser && currentUser.isCitizen()) {
+			return currentUser.singPassUser.UinFin;
 		}
+		return bookingRequest.citizenUinFin;
+	}
+
+	public static mapBookingDetails(request: BookingDetailsRequest, booking: Booking, user?: User) {
+		booking.refId = request.refId;
+		booking.citizenUinFin = this.getCitizenUinFin(user, request);
 		booking.citizenName = request.citizenName;
 		booking.citizenEmail = request.citizenEmail;
 		booking.citizenPhone = request.citizenPhone;
@@ -55,8 +58,8 @@ export class BookingsMapper {
 		booking.description = request.description;
 	}
 
-	public static mapRequest(request: BookingRequest, booking: Booking) {
-		this.mapBookingDetails(request, booking);
+	public static mapRequest(request: BookingRequest, booking: Booking, user?: User) {
+		this.mapBookingDetails(request, booking, user);
 		booking.startDateTime = request.startDateTime;
 		booking.endDateTime = request.endDateTime;
 		booking.serviceProviderId = request.serviceProviderId;
