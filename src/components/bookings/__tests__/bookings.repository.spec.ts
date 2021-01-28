@@ -92,17 +92,17 @@ describe('Bookings repository', () => {
 		const bookingsRepository = Container.get(BookingsRepository);
 
 		const result = await bookingsRepository.search({
-			fromCreatedAt: new Date('2020-01-01T14:00:00.000Z'),
-			toCreatedAt: new Date('2020-01-01T15:00:00.000Z'),
+			fromCreatedDate: new Date('2020-01-01T14:00:00.000Z'),
+			toCreatedDate: new Date('2020-01-01T15:00:00.000Z'),
 		} as BookingSearchQuery);
 
 		expect(result).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalledWith(
-			`((booking."_citizenUinFin" = :authorisedUinFin)) AND (createdlog."_timestamp" > :fromCreatedAt) AND (createdlog."_timestamp" < :toCreatedAt)`,
+			`((booking."_citizenUinFin" = :authorisedUinFin)) AND (createdlog."_timestamp" > :fromCreatedDate) AND (createdlog."_timestamp" < :toCreatedDate)`,
 			{
 				authorisedUinFin: 'ABC1234',
-				fromCreatedAt: new Date('2020-01-01T14:00:00.000Z'),
-				toCreatedAt: new Date('2020-01-01T15:00:00.000Z'),
+				fromCreatedDate: new Date('2020-01-01T14:00:00.000Z'),
+				toCreatedDate: new Date('2020-01-01T15:00:00.000Z'),
 			},
 		);
 

@@ -55,7 +55,7 @@ export type BookingResponse = {
 	 * @isInt
 	 */
 	status: number;
-	createdAt: Date;
+	createdDateTime: Date;
 	startDateTime: Date;
 	endDateTime: Date;
 	/**
@@ -83,8 +83,8 @@ export type BookingResponse = {
 export type BookingSearchRequest = {
 	from?: Date;
 	to?: Date;
-	fromCreatedAt?: Date;
-	toCreatedAt?: Date;
+	fromCreatedDate?: Date;
+	toCreatedDate?: Date;
 	statuses?: BookingStatus[];
 	serviceId?: number;
 	serviceProviderId?: number;

@@ -16,7 +16,7 @@ export class BookingsMapper {
 		return {
 			id: booking.id,
 			status: booking.status,
-			createdAt: booking.createdLog?.timestamp,
+			createdDateTime: booking.createdLog?.timestamp,
 			startDateTime: booking.startDateTime,
 			endDateTime: booking.endDateTime,
 			serviceId: booking.serviceId,

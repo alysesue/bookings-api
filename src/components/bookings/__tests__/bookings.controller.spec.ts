@@ -3,7 +3,7 @@ import * as Koa from 'koa';
 import { Booking, BookingChangeLog, BookingStatus } from '../../../models';
 import { BookingsController } from '../bookings.controller';
 import { BookingsService } from '../bookings.service';
-import { BookingAcceptRequest, BookingRequest } from '../bookings.apicontract';
+import { BookingAcceptRequest, BookingRequest, BookingResponse } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
@@ -107,8 +107,8 @@ describe('Bookings.Controller', () => {
 		expect(BookingsServiceMock.searchBookings).toHaveBeenCalledWith({
 			from: new Date('2020-05-16T20:25:43.511Z'),
 			to: new Date('2020-05-16T21:25:43.511Z'),
-			fromCreatedAt: new Date('2020-05-10T20:25:43.511Z'),
-			toCreatedAt: new Date('2020-05-20T21:25:43.511Z'),
+			fromCreatedDate: new Date('2020-05-10T20:25:43.511Z'),
+			toCreatedDate: new Date('2020-05-20T21:25:43.511Z'),
 			statuses: [1],
 			citizenUinFins: ['abc123', 'xyz456'],
 			serviceId: 1,
@@ -117,12 +117,12 @@ describe('Bookings.Controller', () => {
 		expect(result.data.length).toBe(1);
 		expect(result.data[0]).toEqual({
 			id: 10,
-			createdAt: new Date('2020-01-01T01:01:01.000Z'),
+			createdDateTime: new Date('2020-01-01T01:01:01.000Z'),
 			endDateTime: new Date('2020-10-01T02:00:00.000Z'),
 			serviceId: 1,
 			startDateTime: new Date('2020-10-01T01:00:00.000Z'),
 			status: 1,
-		});
+		} as BookingResponse);
 	});
 
 	it('should return one booking', async () => {

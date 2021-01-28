@@ -155,8 +155,8 @@ describe('Bookings.Service', () => {
 		const searchRequest: BookingSearchRequest = {
 			from: new Date('2020-05-16T20:25:43.511Z'),
 			to: new Date('2020-05-16T21:25:43.511Z'),
-			fromCreatedAt: new Date('2020-05-10T20:25:43.511Z'),
-			toCreatedAt: new Date('2020-05-20T21:25:43.511Z'),
+			fromCreatedDate: new Date('2020-05-10T20:25:43.511Z'),
+			toCreatedDate: new Date('2020-05-20T21:25:43.511Z'),
 			statuses: [1],
 			citizenUinFins: ['abc123', 'xyz456'],
 			serviceId: 1,

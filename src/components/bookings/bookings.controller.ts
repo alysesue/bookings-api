@@ -179,8 +179,8 @@ export class BookingsController extends Controller {
 	public async getBookings(
 		@Query() from?: Date,
 		@Query() to?: Date,
-		@Query() fromCreatedAt?: Date,
-		@Query() toCreatedAt?: Date,
+		@Query() fromCreatedDate?: Date,
+		@Query() toCreatedDate?: Date,
 		@Query() status?: number[],
 		@Query() citizenUinFins?: string[],
 		@Header('x-api-service') serviceId?: number,
@@ -188,8 +188,8 @@ export class BookingsController extends Controller {
 		const searchQuery: BookingSearchRequest = {
 			from,
 			to,
-			fromCreatedAt,
-			toCreatedAt,
+			fromCreatedDate,
+			toCreatedDate,
 			statuses: status,
 			serviceId,
 			citizenUinFins,

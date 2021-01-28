@@ -122,8 +122,8 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		const dateFromCondition = request.from ? 'booking."_endDateTime" > :from' : '';
 		const dateToCondition = request.to ? 'booking."_startDateTime" < :to' : '';
 
-		const createdFromCondition = request.fromCreatedAt ? 'createdlog."_timestamp" > :fromCreatedAt' : '';
-		const createdToCondition = request.toCreatedAt ? 'createdlog."_timestamp" < :toCreatedAt' : '';
+		const createdFromCondition = request.fromCreatedDate ? 'createdlog."_timestamp" > :fromCreatedDate' : '';
+		const createdToCondition = request.toCreatedDate ? 'createdlog."_timestamp" < :toCreatedDate' : '';
 
 		const query = (
 			await this.createSelectQuery(
@@ -142,8 +142,8 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 					serviceProviderId: request.serviceProviderId,
 					from: request.from,
 					to: request.to,
-					fromCreatedAt: request.fromCreatedAt,
-					toCreatedAt: request.toCreatedAt,
+					fromCreatedDate: request.fromCreatedDate,
+					toCreatedDate: request.toCreatedDate,
 					statuses: request.statuses,
 					citizenUinFins: request.citizenUinFins,
 				},
@@ -160,8 +160,8 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 export type BookingSearchQuery = {
 	from?: Date;
 	to?: Date;
-	fromCreatedAt?: Date;
-	toCreatedAt?: Date;
+	fromCreatedDate?: Date;
+	toCreatedDate?: Date;
 	statuses?: BookingStatus[];
 	serviceId?: number;
 	serviceProviderId?: number;
