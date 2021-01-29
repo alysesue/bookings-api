@@ -93,7 +93,7 @@ export class BookingsController extends Controller {
 	 * @param rescheduleRequest A new booking request for reschedule
 	 */
 	@Post('{bookingId}/reschedule')
-	@SuccessResponse(204, 'Accepted')
+	@SuccessResponse(200, 'Accepted')
 	@MOLAuth({ user: { minLevel: MOLUserAuthLevel.L2 } })
 	@Response(401, 'Valid authentication types: [citizen]')
 	public async reschedule(

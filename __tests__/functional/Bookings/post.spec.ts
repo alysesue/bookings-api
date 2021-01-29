@@ -2,13 +2,14 @@ import { PgClient } from '../../utils/pgClient';
 import { AnonmymousEndpointSG, CitizenRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { populateOutOfSlotBooking, populateUserServiceProvider, populateWeeklyTimesheet } from '../../Populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
+import * as request from 'request';
 
 describe('Bookings functional tests', () => {
 	const pgClient = new PgClient();
 	const NAME_SERVICE_1 = 'service1';
 	const SERVICE_PROVIDER_NAME_1 = 'SP1';
 	const START_TIME_1 = '09:00';
-	const END_TIME_1 = '10:00';
+	const END_TIME_1 = '12:00';
 
 	const citizenUinFin = 'S7429377H';
 	const citizenName = 'Jane';
@@ -44,6 +45,25 @@ describe('Bookings functional tests', () => {
 		await pgClient.close();
 		done();
 	});
+
+	const postCitizenInSlotBooking = async (): Promise<request.Response> => {
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+
+		const endpoint = CitizenRequestEndpointSG.create({
+			citizenUinFin,
+			serviceId,
+		});
+		return await endpoint.post('/bookings', {
+			body: {
+				startDateTime,
+				endDateTime,
+				serviceProviderId: serviceProvider.id,
+				citizenName,
+				citizenEmail,
+			},
+		});
+	};
 
 	it('admin should create out of slot booking and citizen cancels a booking', async () => {
 		const startDateTime = new Date(Date.UTC(2051, 11, 10, 0, 0));
@@ -90,14 +110,24 @@ describe('Bookings functional tests', () => {
 	});
 
 	it('should create in-slot booking as a citizen', async () => {
-		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
-		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+		const response = await postCitizenInSlotBooking();
+		expect(response.statusCode).toBe(201);
+		expect(response.body).toBeDefined();
+		expect(response.body.data.id).toBeDefined();
+	});
+
+	it('should reschedule in-slot booking as a citizen', async () => {
+		const bookingResponse = await postCitizenInSlotBooking();
+		const bookingId = bookingResponse.body.data.id;
+
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 3, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 4, 0));
 
 		const endpoint = CitizenRequestEndpointSG.create({
 			citizenUinFin,
 			serviceId,
 		});
-		const response = await endpoint.post('/bookings', {
+		const response = await endpoint.post(`/bookings/${bookingId}/reschedule`, {
 			body: {
 				startDateTime,
 				endDateTime,
@@ -107,7 +137,7 @@ describe('Bookings functional tests', () => {
 			},
 		});
 
-		expect(response.statusCode).toBe(201);
+		expect(response.statusCode).toBe(200);
 	});
 
 	it('should NOT create in-slot booking as anonymous (when service is not configured)', async () => {
