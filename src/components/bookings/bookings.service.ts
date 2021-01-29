@@ -45,13 +45,6 @@ export class BookingsService {
 	@Inject
 	private usersService: UsersService;
 
-	private static getCitizenUinFin(currentUser: User, bookingRequest: BookingRequest): string {
-		if (currentUser && currentUser.isCitizen()) {
-			return currentUser.singPassUser.UinFin;
-		}
-		return bookingRequest.citizenUinFin;
-	}
-
 	public static shouldAutoAccept(currentUser: User, serviceProvider?: ServiceProvider): boolean {
 		if (!serviceProvider) {
 			return false;
@@ -238,7 +231,8 @@ export class BookingsService {
 		isAdmin: boolean,
 	): Promise<[ChangeLogAction, Booking]> {
 		const updatedBooking = previousBooking.clone();
-		BookingsMapper.mapRequest(bookingRequest, updatedBooking);
+		const currentUser = await this.userContext.getCurrentUser();
+		BookingsMapper.mapRequest(bookingRequest, updatedBooking, currentUser);
 
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
@@ -281,7 +275,7 @@ export class BookingsService {
 			.withLocation(bookingRequest.location)
 			.withDescription(bookingRequest.description)
 			.withCreator(currentUser)
-			.withCitizenUinFin(BookingsService.getCitizenUinFin(currentUser, bookingRequest))
+			.withCitizenUinFin(BookingsMapper.getCitizenUinFin(currentUser, bookingRequest))
 			.withCitizenName(bookingRequest.citizenName)
 			.withCitizenPhone(bookingRequest.citizenPhone)
 			.withCitizenEmail(bookingRequest.citizenEmail)
@@ -315,8 +309,9 @@ export class BookingsService {
 		});
 
 		if (previousBooking.isValidOnHoldBooking()) {
+			const currentUser = await this.userContext.getCurrentUser();
 			const updatedBooking = previousBooking.clone();
-			BookingsMapper.mapBookingDetails(bookingRequest, updatedBooking);
+			BookingsMapper.mapBookingDetails(bookingRequest, updatedBooking, currentUser);
 
 			if (serviceProvider.autoAcceptBookings) {
 				updatedBooking.status = BookingStatus.Accepted;
