@@ -4,6 +4,11 @@ export interface IScheduleForm {
 	slotsDurationInMin: number;
 }
 
+export interface IBooking {
+	id: number;
+	serviceId: number;
+}
+
 export interface IEntityWithScheduleForm {
 	scheduleFormId: number;
 	scheduleForm: IScheduleForm;

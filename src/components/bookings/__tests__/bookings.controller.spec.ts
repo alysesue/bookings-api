@@ -1,9 +1,9 @@
 import { Container } from 'typescript-ioc';
 import * as Koa from 'koa';
-import { Booking, BookingStatus } from '../../../models';
+import { Booking, BookingChangeLog, BookingStatus } from '../../../models';
 import { BookingsController } from '../bookings.controller';
 import { BookingsService } from '../bookings.service';
-import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from '../bookings.apicontract';
+import { BookingAcceptRequest, BookingRequest, BookingResponse } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
@@ -43,6 +43,9 @@ describe('Bookings.Controller', () => {
 		.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 		.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 		.build();
+	testBooking1.id = 10;
+	testBooking1.createdLog = new BookingChangeLog();
+	testBooking1.createdLog.timestamp = new Date('2020-01-01T01:01:01Z');
 
 	const testBooking2 = new BookingBuilder()
 		.withServiceId(1)
@@ -90,15 +93,36 @@ describe('Bookings.Controller', () => {
 	});
 
 	it('should search bookings', async () => {
-		BookingsServiceMock.mockSearchBookings = [testBooking1];
+		BookingsServiceMock.searchBookings.mockImplementation(() => Promise.resolve([testBooking1]));
+
 		const from = new Date('2020-05-16T20:25:43.511Z');
 		const to = new Date('2020-05-16T21:25:43.511Z');
+		const fromCreatedDate = new Date('2020-05-10T20:25:43.511Z');
+		const toCreatedDate = new Date('2020-05-20T21:25:43.511Z');
 		const citizenUinFins = ['abc123', 'xyz456'];
 		const controller = Container.get(BookingsController);
 
-		const result = await controller.getBookings(from, to, [1], citizenUinFins, 1);
+		const result = await controller.getBookings(from, to, fromCreatedDate, toCreatedDate, [1], citizenUinFins, 1);
 
-		expect(result.data).toHaveLength(1);
+		expect(BookingsServiceMock.searchBookings).toHaveBeenCalledWith({
+			from: new Date('2020-05-16T20:25:43.511Z'),
+			to: new Date('2020-05-16T21:25:43.511Z'),
+			fromCreatedDate: new Date('2020-05-10T20:25:43.511Z'),
+			toCreatedDate: new Date('2020-05-20T21:25:43.511Z'),
+			statuses: [1],
+			citizenUinFins: ['abc123', 'xyz456'],
+			serviceId: 1,
+		});
+
+		expect(result.data.length).toBe(1);
+		expect(result.data[0]).toEqual({
+			id: 10,
+			createdDateTime: new Date('2020-01-01T01:01:01.000Z'),
+			endDateTime: new Date('2020-10-01T02:00:00.000Z'),
+			serviceId: 1,
+			startDateTime: new Date('2020-10-01T01:00:00.000Z'),
+			status: 1,
+		} as BookingResponse);
 	});
 
 	it('should return one booking', async () => {
@@ -191,7 +215,7 @@ class BookingsServiceMock implements Partial<BookingsService> {
 	public static mockGetBooking: Booking;
 	public static mockPostBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockBookings: Booking[] = [];
-	public static mockSearchBookings: Booking[] = [];
+	public static searchBookings = jest.fn<Promise<Booking[]>, any>();
 	public static mockBookingId;
 	public static getBookingPromise = Promise.resolve(BookingsServiceMock.mockGetBooking);
 	public static mockUpdateBooking: Booking;
@@ -216,8 +240,8 @@ class BookingsServiceMock implements Partial<BookingsService> {
 		return BookingsServiceMock.mockRejectBooking;
 	}
 
-	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
-		return BookingsServiceMock.mockSearchBookings;
+	public async searchBookings(...params): Promise<any> {
+		return await BookingsServiceMock.searchBookings(...params);
 	}
 
 	public async save(bookingRequest: BookingRequest): Promise<Booking> {

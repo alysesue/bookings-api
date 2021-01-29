@@ -1,8 +1,8 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from './user';
-import { Booking } from './booking';
 import { Service } from './service';
 import { ChangeLogAction } from '../changeLogAction';
+import { IBooking } from '../interfaces';
 
 @Entity()
 export class BookingChangeLog {
@@ -21,9 +21,9 @@ export class BookingChangeLog {
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
-	@ManyToOne((type) => Booking, { nullable: false })
+	@ManyToOne('Booking', { nullable: false })
 	@JoinColumn({ name: '_bookingId' })
-	private _booking: Booking;
+	private _booking: IBooking;
 
 	@Column({ nullable: false })
 	@Index()
@@ -54,7 +54,7 @@ export class BookingChangeLog {
 		this._timestamp = value;
 	}
 
-	public get booking(): Booking {
+	public get booking(): IBooking {
 		return this._booking;
 	}
 
@@ -103,7 +103,7 @@ export class BookingChangeLog {
 		previousState,
 		newState,
 	}: {
-		booking: Booking;
+		booking: IBooking;
 		user: User;
 		action: ChangeLogAction;
 		previousState: BookingJsonSchemaV1;
