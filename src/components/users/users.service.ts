@@ -3,7 +3,7 @@ import { UsersRepository } from './users.repository';
 import { User } from '../../models';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
-import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
+import { logger } from 'mol-lib-common';
 import { ParsedUserGroup, UserGroupParser, UserGroupRole } from '../../infrastructure/auth/userGroupParser';
 import {
 	AuthGroup,
@@ -28,6 +28,16 @@ export class UsersService {
 	private serviceProvidersRepositoryNoAuth: ServiceProvidersRepositoryNoAuth;
 	@Inject
 	private usersRepository: UsersRepository;
+
+	public static maskNRIC(nricStr: string): string {
+		if (!nricStr) {
+			return nricStr;
+		}
+
+		// tslint:disable-next-line: tsr-detect-unsafe-regexp
+		const re = /(?<=^.{1}).{4}/;
+		return nricStr.replace(re, '****');
+	}
 
 	private async getOrSaveInternal(user: User, getter: () => Promise<User>): Promise<User> {
 		let userRepo = await getter();

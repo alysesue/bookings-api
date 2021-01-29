@@ -42,7 +42,7 @@ describe('Calendars.controller', () => {
 	});
 });
 
-class CalendarsServiceMock extends CalendarsService {
+class CalendarsServiceMock implements Partial<CalendarsService> {
 	public static addUserMock = jest.fn();
 
 	public async addUser(calendarUUID: string, model: CalendarUserModel): Promise<CalendarUserModel> {

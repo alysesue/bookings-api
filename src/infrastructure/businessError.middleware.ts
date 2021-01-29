@@ -1,5 +1,5 @@
 import * as Koa from 'koa';
-import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
+import { logger } from 'mol-lib-common';
 import { BusinessError } from '../errors/businessError';
 import { ErrorCodeV2 } from 'mol-lib-api-contract';
 import * as HttpStatus from 'http-status-codes';

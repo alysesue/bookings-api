@@ -7,6 +7,7 @@
 		"use:mylocal-env": "cp ./params/secrets/mylocal.env ./.env ",
 		"lint": "NODE_OPTIONS='--max-old-space-size=4096' tslint -p ./tsconfig.json -c ./tslint.json './src/**/*.ts'",
 		"lint-fix": "NODE_OPTIONS='--max-old-space-size=4096' tslint --fix  -p ./tsconfig.json -c ./tslint.json './src/**/*.ts'",
+		"lint-fix:test": "NODE_OPTIONS='--max-old-space-size=4096' tslint --fix -p ./tsconfig.json -c ./tslint.json './__tests__/**/*.ts'",
 		"test": "npm run fixLF && rm -f .env && ./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
 		"atest": "npm run fixLF && rm -f .env && node --expose-gc ./node_modules/jest/bin/jest --maxWorkers=2",
 		"test:cov": "npm run fixLF && rm -f .env && node --expose-gc ./node_modules/jest/bin/jest --maxWorkers=2 --collect-coverage",

@@ -1,4 +1,4 @@
-import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
+import { logger } from 'mol-lib-common';
 import { basePath } from '../config/app-config';
 import * as fs from 'fs';
 import * as swagger2 from 'swagger2';

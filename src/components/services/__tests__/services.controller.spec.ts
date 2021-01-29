@@ -152,13 +152,13 @@ const ServicesServiceMock = {
 	getServiceTimeslotsSchedule: jest.fn(),
 };
 
-class ServicesServiceMockClass extends ServicesService {
-	public async createService(request: ServiceRequest): Promise<Service> {
-		return ServicesServiceMock.createService();
+class ServicesServiceMockClass implements Partial<ServicesService> {
+	public async createService(...params): Promise<Service> {
+		return ServicesServiceMock.createService(...params);
 	}
 
-	public async updateService(id, request: ServiceRequest): Promise<Service> {
-		return ServicesServiceMock.updateService();
+	public async updateService(...params): Promise<Service> {
+		return ServicesServiceMock.updateService(...params);
 	}
 
 	public async getServices(): Promise<Service[]> {

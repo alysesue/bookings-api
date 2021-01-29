@@ -113,12 +113,8 @@ class CalendarRepositoryMockConstants {
 	public static eventId: string;
 }
 
-class GoogleCalendarServiceMock extends GoogleCalendarService {
+class GoogleCalendarServiceMock implements Partial<GoogleCalendarService> {
 	public static deleteEvent = jest.fn();
-
-	constructor() {
-		super();
-	}
 
 	public async getAvailableGoogleCalendars(startTime: Date, endTime: Date, googleCalendarIds: { id: string }[]) {
 		// @ts-ignore

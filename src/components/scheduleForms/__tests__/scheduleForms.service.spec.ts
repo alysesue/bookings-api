@@ -262,7 +262,7 @@ describe('Schedules form template services ', () => {
 	});
 });
 
-class ScheduleFormsRepositoryMock extends ScheduleFormsRepository {
+class ScheduleFormsRepositoryMock implements Partial<ScheduleFormsRepository> {
 	public static saveScheduleForm = jest.fn();
 	public static deleteScheduleForm = jest.fn();
 
@@ -275,7 +275,7 @@ class ScheduleFormsRepositoryMock extends ScheduleFormsRepository {
 	}
 }
 
-class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
+class TimeslotsScheduleRepositoryMock implements Partial<TimeslotsScheduleRepository> {
 	public static deleteTimeslotsSchedule = jest.fn();
 
 	public async deleteTimeslotsSchedule(...params): Promise<any> {

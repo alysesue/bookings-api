@@ -344,7 +344,7 @@ class TransactionManagerMock implements Partial<TransactionManager> {
 	}
 }
 
-class ScheduleFormsRepositoryMock extends ScheduleFormsRepository {
+class ScheduleFormsRepositoryMock implements Partial<ScheduleFormsRepository> {
 	public static populateScheduleFormsMock = jest.fn();
 	public static populateSingleEntryScheduleFormMock = jest.fn();
 
@@ -357,7 +357,7 @@ class ScheduleFormsRepositoryMock extends ScheduleFormsRepository {
 	}
 }
 
-class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
+class TimeslotsScheduleRepositoryMock implements Partial<TimeslotsScheduleRepository> {
 	public static populateTimeslotsSchedules = jest.fn<Promise<any>, any>();
 
 	public async populateTimeslotsSchedules(...params): Promise<any> {
@@ -365,7 +365,7 @@ class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
 	}
 }
 
-class UserContextMock extends UserContext {
+class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
@@ -379,7 +379,7 @@ class UserContextMock extends UserContext {
 	}
 }
 
-class UsersRepositoryMock extends UsersRepository {
+class UsersRepositoryMock implements Partial<UsersRepository> {
 	public static getUsersByMolAdminIds = jest.fn<Promise<User[]>, any>();
 
 	public async getUsersByMolAdminIds(...params): Promise<any> {

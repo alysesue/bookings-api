@@ -11,7 +11,7 @@ import {
 	TimeslotsSchedule,
 	User,
 } from '../../../models';
-import { BookingAcceptRequest, BookingRequest } from '../bookings.apicontract';
+import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { DateHelper } from '../../../infrastructure/dateHelper';
@@ -94,7 +94,7 @@ describe('Bookings.Service', () => {
 	});
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 
-	class BookingValidatorFactoryMock extends BookingsValidatorFactory {
+	class BookingValidatorFactoryMock implements Partial<BookingsValidatorFactory> {
 		public static validate = jest.fn();
 
 		public getValidator(outOfSlotBooking: boolean): IValidator {
@@ -142,6 +142,7 @@ describe('Bookings.Service', () => {
 		BookingChangeLogsServiceMock.action = 0;
 		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 		TimeslotsServiceMock.acceptedBookings = [];
+		BookingRepositoryMock.searchBookings.mockImplementation(() => Promise.resolve([]));
 
 		UsersServiceMock.persistUserIfRequired.mockImplementation((u) => Promise.resolve(u));
 	});
@@ -150,11 +151,28 @@ describe('Bookings.Service', () => {
 		snapshot.restore();
 	});
 
+	it('should search bookings', async () => {
+		const searchRequest: BookingSearchRequest = {
+			from: new Date('2020-05-16T20:25:43.511Z'),
+			to: new Date('2020-05-16T21:25:43.511Z'),
+			fromCreatedDate: new Date('2020-05-10T20:25:43.511Z'),
+			toCreatedDate: new Date('2020-05-20T21:25:43.511Z'),
+			statuses: [1],
+			citizenUinFins: ['abc123', 'xyz456'],
+			serviceId: 1,
+		};
+
+		const instance = await Container.get(BookingsService);
+		await instance.searchBookings(searchRequest);
+
+		expect(BookingRepositoryMock.searchBookings).toHaveBeenCalledWith(searchRequest);
+	});
+
 	it('should save booking from booking request', async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
-		BookingRepositoryMock.searchBookingsMock = [];
+
 		const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 
@@ -177,7 +195,7 @@ describe('Bookings.Service', () => {
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 200;
-		BookingRepositoryMock.searchBookingsMock = [];
+
 		const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(customProvider, timeslotWithCapacity);
 		ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(customProvider));
@@ -202,7 +220,7 @@ describe('Bookings.Service', () => {
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 200;
-		BookingRepositoryMock.searchBookingsMock = [];
+
 		const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(customProvider, timeslotWithCapacity);
 		ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(customProvider));
@@ -227,7 +245,7 @@ describe('Bookings.Service', () => {
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 200;
-		BookingRepositoryMock.searchBookingsMock = [];
+
 		const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(customProvider, timeslotWithCapacity);
 		ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(customProvider));
@@ -250,7 +268,7 @@ describe('Bookings.Service', () => {
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 1;
-		BookingRepositoryMock.searchBookingsMock = [];
+
 		const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
@@ -273,7 +291,7 @@ describe('Bookings.Service', () => {
 		bookingRequest.outOfSlotBooking = true;
 		bookingRequest.refId = 'RFM186';
 		bookingRequest.citizenUinFin = 'NRIC1234';
-		BookingRepositoryMock.searchBookingsMock = [];
+
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(serviceProvider));
 		TimeslotsServiceMock.acceptedBookings = [bookingMock];
@@ -296,7 +314,7 @@ describe('Bookings.Service', () => {
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.outOfSlotBooking = false;
 		bookingRequest.citizenUinFin = 'NRIC1234';
-		BookingRepositoryMock.searchBookingsMock = [];
+
 		const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
@@ -692,7 +710,7 @@ describe('Bookings.Service', () => {
 			bookingRequest.startDateTime = new Date();
 			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 			bookingRequest.serviceProviderId = 2;
-			BookingRepositoryMock.searchBookingsMock = [];
+
 			const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
 			TimeslotsServiceMock.availableProvidersForTimeslot.set(onHoldServiceProvider, timeslotWithCapacity);
 

@@ -48,7 +48,7 @@ describe('Services validation tests', () => {
 	});
 });
 
-class ServicesServiceMock extends ServicesService {
+class ServicesServiceMock implements Partial<ServicesService> {
 	public static getService = jest.fn();
 
 	public async getService(...params): Promise<any> {

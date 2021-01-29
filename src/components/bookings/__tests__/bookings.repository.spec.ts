@@ -19,11 +19,26 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
+// tslint:disable-next-line: no-big-function
 describe('Bookings repository', () => {
 	const singpassUserMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 
+	const queryBuilderMock = {
+		where: jest.fn(),
+		leftJoinAndSelect: jest.fn(),
+		leftJoinAndMapOne: jest.fn(),
+		orderBy: jest.fn(),
+		getOne: jest.fn(),
+		getMany: jest.fn(),
+	};
+
 	beforeEach(() => {
 		jest.resetAllMocks();
+
+		queryBuilderMock.where.mockImplementation(() => queryBuilderMock);
+		queryBuilderMock.leftJoinAndSelect.mockImplementation(() => queryBuilderMock);
+		queryBuilderMock.leftJoinAndMapOne.mockImplementation(() => queryBuilderMock);
+		queryBuilderMock.orderBy.mockImplementation(() => queryBuilderMock);
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassUserMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
@@ -37,13 +52,7 @@ describe('Bookings repository', () => {
 		const bookingMock = new Booking();
 		bookingMock.status = BookingStatus.Accepted;
 
-		const queryBuilderMock = {
-			where: jest.fn(() => queryBuilderMock),
-			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
-			orderBy: jest.fn(() => queryBuilderMock),
-			getMany: jest.fn(() => Promise.resolve([bookingMock])),
-		};
-
+		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([bookingMock]));
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const bookingsRepository = Container.get(BookingsRepository);
@@ -56,7 +65,47 @@ describe('Bookings repository', () => {
 		} as BookingSearchQuery);
 
 		expect(result).toStrictEqual([bookingMock]);
-		expect(queryBuilderMock.where).toBeCalled();
+		expect(queryBuilderMock.where).toBeCalledWith(
+			`((booking."_citizenUinFin" = :authorisedUinFin)) AND \
+(booking."_serviceId" = :serviceId) AND (booking."_serviceProviderId" = :serviceProviderId) AND \
+(booking."_endDateTime" > :from) AND (booking."_startDateTime" < :to)`,
+			{
+				authorisedUinFin: 'ABC1234',
+				from: new Date('2020-01-01T14:00:00.000Z'),
+				to: new Date('2020-01-01T15:00:00.000Z'),
+				serviceId: 1,
+				serviceProviderId: 1,
+			},
+		);
+		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(1);
+		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
+		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
+	});
+
+	it('should search bookings with creation date range', async () => {
+		const bookingMock = new Booking();
+		bookingMock.status = BookingStatus.Accepted;
+
+		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([bookingMock]));
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const bookingsRepository = Container.get(BookingsRepository);
+
+		const result = await bookingsRepository.search({
+			fromCreatedDate: new Date('2020-01-01T14:00:00.000Z'),
+			toCreatedDate: new Date('2020-01-01T15:00:00.000Z'),
+		} as BookingSearchQuery);
+
+		expect(result).toStrictEqual([bookingMock]);
+		expect(queryBuilderMock.where).toBeCalledWith(
+			`((booking."_citizenUinFin" = :authorisedUinFin)) AND (createdlog."_timestamp" > :fromCreatedDate) AND (createdlog."_timestamp" < :toCreatedDate)`,
+			{
+				authorisedUinFin: 'ABC1234',
+				fromCreatedDate: new Date('2020-01-01T14:00:00.000Z'),
+				toCreatedDate: new Date('2020-01-01T15:00:00.000Z'),
+			},
+		);
+
 		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(1);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
 		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
@@ -65,13 +114,8 @@ describe('Bookings repository', () => {
 	it('should search bookings with status', async () => {
 		const bookingMock = new Booking();
 		bookingMock.status = BookingStatus.Accepted;
-		const queryBuilderMock = {
-			where: jest.fn(() => queryBuilderMock),
-			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
-			orderBy: jest.fn(() => queryBuilderMock),
-			getMany: jest.fn(() => Promise.resolve([bookingMock])),
-		};
 
+		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([bookingMock]));
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const bookingsRepository = Container.get(BookingsRepository);
@@ -94,13 +138,8 @@ describe('Bookings repository', () => {
 	it('should search bookings with citizenUinFin', async () => {
 		const bookingMock = new Booking();
 		bookingMock.status = BookingStatus.Accepted;
-		const queryBuilderMock = {
-			where: jest.fn(() => queryBuilderMock),
-			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
-			orderBy: jest.fn(() => queryBuilderMock),
-			getMany: jest.fn(() => Promise.resolve([bookingMock])),
-		};
 
+		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([bookingMock]));
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const bookingsRepository = Container.get(BookingsRepository);
@@ -161,12 +200,7 @@ describe('Bookings repository', () => {
 			.build();
 		booking.id = 1;
 
-		const queryBuilderMock = {
-			where: jest.fn(() => queryBuilderMock),
-			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
-			getOne: jest.fn(() => Promise.resolve(booking)),
-		};
-
+		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(booking));
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const bookingsRepository = Container.get(BookingsRepository);
@@ -186,12 +220,7 @@ describe('Bookings repository', () => {
 		const serviceProvider = ServiceProvider.create('A', 1);
 		serviceProvider.id = 2;
 
-		const queryBuilderMock = {
-			where: jest.fn(() => queryBuilderMock),
-			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
-			getOne: jest.fn(() => Promise.resolve(booking)),
-		};
-
+		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(booking));
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		ServiceProvidersRepositoryMock.getServiceProviders.mockImplementation(() => Promise.resolve([serviceProvider]));
 

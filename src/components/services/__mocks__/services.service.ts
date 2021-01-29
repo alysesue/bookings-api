@@ -6,6 +6,7 @@ export class ServicesServiceMock implements Partial<ServicesService> {
 	public static getServices = jest.fn();
 	public static createServices = jest.fn();
 	public static createService = jest.fn();
+	public static getServiceTimeslotsSchedule = jest.fn();
 
 	public init() {}
 
@@ -23,5 +24,9 @@ export class ServicesServiceMock implements Partial<ServicesService> {
 
 	public async getService(...params): Promise<any> {
 		return await ServicesServiceMock.getService(...params);
+	}
+
+	public async getServiceTimeslotsSchedule(...params): Promise<any> {
+		return await ServicesServiceMock.getServiceTimeslotsSchedule(...params);
 	}
 }

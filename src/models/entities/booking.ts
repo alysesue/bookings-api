@@ -7,6 +7,7 @@ import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { User } from './user';
 import { ChangeLogAction } from '../changeLogAction';
 import { DateHelper } from '../../infrastructure/dateHelper';
+import { BookingChangeLog } from './bookingChangeLog';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
@@ -183,6 +184,15 @@ export class Booking {
 
 	public set citizenPhone(citizenPhone: string) {
 		this._citizenPhone = citizenPhone;
+	}
+
+	// This is a virtual field.
+	private _createdLog?: BookingChangeLog;
+	public get createdLog(): BookingChangeLog | undefined {
+		return this._createdLog;
+	}
+	public set createdLog(value: BookingChangeLog) {
+		this._createdLog = value;
 	}
 
 	constructor() {

@@ -1,4 +1,5 @@
 import { Booking, ServiceProvider, User } from '../../models/entities';
+import { UsersService } from '../users/users.service';
 import {
 	BookingDetailsRequest,
 	BookingProviderResponse,
@@ -15,6 +16,7 @@ export class BookingsMapper {
 		return {
 			id: booking.id,
 			status: booking.status,
+			createdDateTime: booking.createdLog?.timestamp,
 			startDateTime: booking.startDateTime,
 			endDateTime: booking.endDateTime,
 			serviceId: booking.serviceId,
@@ -24,7 +26,7 @@ export class BookingsMapper {
 			serviceProviderName: booking.serviceProvider?.name,
 			serviceProviderEmail: booking.serviceProvider?.email,
 			serviceProviderPhone: booking.serviceProvider?.phone,
-			citizenUinFin: booking.citizenUinFin,
+			citizenUinFin: UsersService.maskNRIC(booking.citizenUinFin),
 			citizenName: booking.citizenName,
 			citizenEmail: booking.citizenEmail,
 			citizenPhone: booking.citizenPhone,

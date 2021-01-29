@@ -1,4 +1,4 @@
-import { ConfigUtils } from 'mol-lib-common/utils/config/ConfigUtils';
+import { ConfigUtils } from 'mol-lib-common';
 
 const packageJSON = require('../../package.json');
 require('dotenv').config();

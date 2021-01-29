@@ -265,7 +265,7 @@ describe('TimeslotsItem services ', () => {
 	});
 });
 
-export class UserContextMock extends UserContext {
+export class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
@@ -279,7 +279,7 @@ export class UserContextMock extends UserContext {
 	}
 }
 
-export class TimeslotsScheduleRepositoryMock extends TimeslotsScheduleRepository {
+export class TimeslotsScheduleRepositoryMock implements Partial<TimeslotsScheduleRepository> {
 	public static getTimeslotsScheduleById = jest.fn<Promise<TimeslotsSchedule>, any>();
 
 	public async getTimeslotsScheduleById(...params): Promise<any> {

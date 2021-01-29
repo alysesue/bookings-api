@@ -214,7 +214,7 @@ describe('users controller', () => {
 	});
 });
 
-class UserContextMock extends UserContext {
+class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
@@ -228,7 +228,7 @@ class UserContextMock extends UserContext {
 	}
 }
 
-class ServiceProvidersServiceMock extends ServiceProvidersService {
+class ServiceProvidersServiceMock implements Partial<ServiceProvidersService> {
 	public static createServiceProviders = jest.fn();
 
 	public init() {}
@@ -237,7 +237,7 @@ class ServiceProvidersServiceMock extends ServiceProvidersService {
 	}
 }
 
-class ServicesServiceMock extends ServicesService {
+class ServicesServiceMock implements Partial<ServicesService> {
 	public static createServicesAdmins = jest.fn();
 
 	public init() {}

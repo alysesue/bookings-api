@@ -1,4 +1,4 @@
-import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
+import { logger } from 'mol-lib-common';
 
 export class StopWatch {
 	private _name: string;

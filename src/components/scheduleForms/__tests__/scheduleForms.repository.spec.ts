@@ -138,7 +138,7 @@ describe('ScheduleForm repository', () => {
 	});
 });
 
-class WeekDayBreakRepositoryMock extends WeekDayBreakRepository {
+class WeekDayBreakRepositoryMock implements Partial<WeekDayBreakRepository> {
 	public static getBreaksForSchedules = jest.fn();
 	public static deleteBreaksForSchedule = jest.fn();
 	public static save = jest.fn();
@@ -191,7 +191,7 @@ class TransactionManagerMock implements Partial<TransactionManager> {
 	}
 }
 
-class UserContextMock extends UserContext {
+class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
 
@@ -205,7 +205,7 @@ class UserContextMock extends UserContext {
 	}
 }
 
-class UsersRepositoryMock extends UsersRepository {
+class UsersRepositoryMock implements Partial<UsersRepository> {
 	public static getUsersByMolAdminIds = jest.fn<Promise<User[]>, any>();
 
 	public async getUsersByMolAdminIds(...params): Promise<any> {

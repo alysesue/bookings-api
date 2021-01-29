@@ -1,7 +1,7 @@
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 // tslint:disable: tsr-detect-possible-timing-attacks
-import { logger } from 'mol-lib-common/debugging/logging/LoggerV2';
+import { logger } from 'mol-lib-common';
 
 const BookingSGToken = 'bookingsg';
 const OrgAdminToken = 'org-admin';

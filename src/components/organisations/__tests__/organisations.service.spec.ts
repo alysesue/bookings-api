@@ -62,7 +62,7 @@ describe('Organisations service', () => {
 	});
 });
 
-class OrganisationsRepositoryMock extends OrganisationsNoauthRepository {
+class OrganisationsRepositoryMock implements Partial<OrganisationsNoauthRepository> {
 	public static getOrganisationsForUserGroups = jest.fn();
 	public static sort = jest.fn();
 	public static save = jest.fn<Promise<Organisation>, any>();

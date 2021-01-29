@@ -59,6 +59,7 @@ describe('Booking validation tests', () => {
 
 	beforeEach(() => {
 		jest.resetAllMocks();
+
 		serviceProvider = ServiceProvider.create('provider', 1);
 		serviceProvider.id = 1;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = undefined;
@@ -69,6 +70,8 @@ describe('Booking validation tests', () => {
 		(getConfig as jest.Mock).mockReturnValue({
 			isAutomatedTest: false,
 		});
+
+		BookingRepositoryMock.searchBookings.mockImplementation(() => Promise.resolve([]));
 	});
 
 	it('should return regular booking validator', () => {
@@ -108,7 +111,7 @@ describe('Booking validation tests', () => {
 		});
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
-		BookingRepositoryMock.searchBookingsMock = [];
+
 		TimeslotsServiceMock.acceptedBookings = [bookingMock];
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(true);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
@@ -145,7 +148,7 @@ describe('Booking validation tests', () => {
 
 		serviceProvider.expiryDate = new Date();
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
-		BookingRepositoryMock.searchBookingsMock = [];
+
 		TimeslotsServiceMock.acceptedBookings = [bookingMock];
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
@@ -209,7 +212,7 @@ describe('Booking validation tests', () => {
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
 		).rejects.toMatchInlineSnapshot(
-			'[BusinessError: [10005] Citizen Uin/Fin not found, [10006] Citizen name not provided, [10007] Citizen email not provided]',
+			'[BusinessError: [10005] Citizen UIN/FIN not found, [10006] Citizen name not provided, [10007] Citizen email not provided]',
 		);
 	});
 
@@ -289,7 +292,6 @@ describe('Booking validation tests', () => {
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.build();
 
-		BookingRepositoryMock.searchBookingsMock = [];
 		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
@@ -323,13 +325,16 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
-		BookingRepositoryMock.searchBookingsMock = [
-			new BookingBuilder()
-				.withServiceId(1)
-				.withStartDateTime(new Date('2020-10-01T01:00:00'))
-				.withEndDateTime(new Date('2020-10-01T02:00:00'))
-				.build(),
-		];
+
+		BookingRepositoryMock.searchBookings.mockImplementation(() =>
+			Promise.resolve([
+				new BookingBuilder()
+					.withServiceId(1)
+					.withStartDateTime(new Date('2020-10-01T01:00:00'))
+					.withEndDateTime(new Date('2020-10-01T02:00:00'))
+					.build(),
+			]),
+		);
 		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
@@ -351,13 +356,15 @@ describe('Booking validation tests', () => {
 			.withServiceProviderId(1)
 			.build();
 
-		BookingRepositoryMock.searchBookingsMock = [
-			new BookingBuilder()
-				.withServiceId(1)
-				.withStartDateTime(new Date('2020-10-01T01:00:00'))
-				.withEndDateTime(new Date('2020-10-01T02:00:00'))
-				.build(),
-		];
+		BookingRepositoryMock.searchBookings.mockImplementation(() =>
+			Promise.resolve([
+				new BookingBuilder()
+					.withServiceId(1)
+					.withStartDateTime(new Date('2020-10-01T01:00:00'))
+					.withEndDateTime(new Date('2020-10-01T02:00:00'))
+					.build(),
+			]),
+		);
 		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
@@ -378,7 +385,6 @@ describe('Booking validation tests', () => {
 			.withServiceProviderId(1)
 			.build();
 
-		BookingRepositoryMock.searchBookingsMock = [];
 		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
@@ -387,7 +393,7 @@ describe('Booking validation tests', () => {
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
-		).rejects.toMatchInlineSnapshot('[BusinessError: [10005] Citizen Uin/Fin not found]');
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10005] Citizen UIN/FIN not found]');
 	});
 
 	it('should not allow booking on top of existing booking', async () => {
@@ -402,13 +408,15 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmail.com')
 			.build();
 
-		BookingRepositoryMock.searchBookingsMock = [
-			new BookingBuilder()
-				.withServiceId(1)
-				.withStartDateTime(new Date(2020, 8, 26, 8, 15))
-				.withEndDateTime(new Date(2020, 8, 26, 8, 45))
-				.build(),
-		];
+		BookingRepositoryMock.searchBookings.mockImplementation(() =>
+			Promise.resolve([
+				new BookingBuilder()
+					.withServiceId(1)
+					.withStartDateTime(new Date(2020, 8, 26, 8, 15))
+					.withEndDateTime(new Date(2020, 8, 26, 8, 45))
+					.build(),
+			]),
+		);
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
 			entry.startTime = new Date(2020, 8, 26, 8, 0);
@@ -454,7 +462,8 @@ describe('Booking validation tests', () => {
 			.build();
 		searchBooking.id = 5;
 
-		BookingRepositoryMock.searchBookingsMock = [searchBooking];
+		BookingRepositoryMock.searchBookings.mockImplementation(() => Promise.resolve([searchBooking]));
+
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
 			entry.startTime = new Date(2020, 8, 26, 7, 15);
@@ -493,14 +502,18 @@ describe('Booking validation tests', () => {
 			.withMarkOnHold(true)
 			.build();
 		booking.service = onHoldService;
-		BookingRepositoryMock.searchBookingsMock = [
-			new BookingBuilder()
-				.withServiceId(2)
-				.withStartDateTime(DateHelper.addMinutes(start, 15))
-				.withEndDateTime(DateHelper.addMinutes(start, 45))
-				.withMarkOnHold(true)
-				.build(),
-		];
+
+		BookingRepositoryMock.searchBookings.mockImplementation(() =>
+			Promise.resolve([
+				new BookingBuilder()
+					.withServiceId(2)
+					.withStartDateTime(DateHelper.addMinutes(start, 15))
+					.withEndDateTime(DateHelper.addMinutes(start, 45))
+					.withMarkOnHold(true)
+					.build(),
+			]),
+		);
+
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
 			entry.startTime = DateHelper.addMinutes(start, 15);
