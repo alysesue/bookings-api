@@ -48,7 +48,7 @@ export class BookingsMapper {
 		return bookingRequest.citizenUinFin;
 	}
 
-	public static mapBookingDetails(request: BookingDetailsRequest, booking: Booking, user?: User) {
+	public static mapBookingDetails(request: BookingDetailsRequest, booking: Booking, user: User) {
 		booking.refId = request.refId;
 		booking.citizenUinFin = this.getCitizenUinFin(user, request);
 		booking.citizenName = request.citizenName;
@@ -58,7 +58,7 @@ export class BookingsMapper {
 		booking.description = request.description;
 	}
 
-	public static mapRequest(request: BookingRequest, booking: Booking, user?: User) {
+	public static mapRequest(request: BookingRequest, booking: Booking, user: User) {
 		this.mapBookingDetails(request, booking, user);
 		booking.startDateTime = request.startDateTime;
 		booking.endDateTime = request.endDateTime;
