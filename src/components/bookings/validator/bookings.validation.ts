@@ -11,6 +11,7 @@ import { concatIteratables, iterableToArray } from '../../../tools/asyncIterable
 import { BookingBusinessValidations } from './bookingBusinessValidations';
 import { CaptchaService } from '../../captcha/captcha.service';
 import { getConfig } from '../../../config/app-config';
+import { MAX_PAGING_LIMIT } from '../../../core/pagedEntities';
 
 export interface IValidator {
 	validate(booking: Booking): Promise<void>;
@@ -172,8 +173,10 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 			serviceId: booking.serviceId,
 			serviceProviderId: booking.serviceProviderId,
 			byPassAuth: true,
+			page: 1,
+			limit: MAX_PAGING_LIMIT,
 		};
-		let onHoldBookings = await this.bookingsRepository.search(searchQuery);
+		let onHoldBookings = (await this.bookingsRepository.search(searchQuery)).entries;
 		onHoldBookings = onHoldBookings.filter((b) => b.isValidOnHoldBooking());
 
 		return onHoldBookings.some((item) => {
@@ -193,9 +196,11 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 			serviceId: booking.serviceId,
 			serviceProviderId: booking.serviceProviderId,
 			byPassAuth: true,
+			page: 1,
+			limit: MAX_PAGING_LIMIT,
 		};
 
-		const acceptedBookings = await this.bookingsRepository.search(searchQuery);
+		const acceptedBookings = (await this.bookingsRepository.search(searchQuery)).entries;
 		return acceptedBookings.some((item) =>
 			booking.bookingIntersects({
 				start: item.startDateTime,

@@ -18,7 +18,7 @@ import * as cors from '@koa/cors';
 import { useSwagger } from './infrastructure/swagger.middleware';
 import { ContainerContextMiddleware } from './infrastructure/containerContext.middleware';
 import { UserContextMiddleware } from './infrastructure/userContext.middleware';
-import { ApiData } from './apicontract';
+import { ApiData, ApiPagedData } from './apicontract';
 import { BusinessErrorMiddleware } from './infrastructure/businessError.middleware';
 import { getConnectionOptions } from './core/connectionOptions';
 import { CitizenUserValidationMiddleware } from './infrastructure/citizenUserValidation.middleware';
@@ -41,7 +41,7 @@ class ApiDataResponseHandler {
 		return async (ctx: Koa.Context, next: Koa.Next): Promise<any> => {
 			await this._middleware(ctx, next);
 
-			if (!(ctx.body instanceof ApiData)) {
+			if (!(ctx.body instanceof ApiData) && !(ctx.body instanceof ApiPagedData)) {
 				await koaResponseMiddleware(ctx, emptyNext);
 			}
 		};

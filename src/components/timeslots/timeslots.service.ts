@@ -13,6 +13,7 @@ import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvi
 import { MapProcessor } from './mapProcessor';
 import { StopWatch } from '../../infrastructure/stopWatch';
 import { nextImmediateTick } from '../../infrastructure/immediateHelper';
+import { MAX_PAGING_LIMIT } from '../../core/pagedEntities';
 
 export class AvailableTimeslotProcessor extends MapProcessor<TimeslotKey, AvailableTimeslotProviders> {}
 
@@ -171,13 +172,17 @@ export class TimeslotsService {
 		);
 		getAggregatedTimeslotEntriesWatch.stop();
 
-		const bookings = await this.bookingsRepository.search({
-			from: startDateTime,
-			to: endDateTime,
-			statuses: [BookingStatus.PendingApproval, BookingStatus.Accepted, BookingStatus.OnHold],
-			serviceId,
-			byPassAuth: true,
-		});
+		const bookings = (
+			await this.bookingsRepository.search({
+				from: startDateTime,
+				to: endDateTime,
+				statuses: [BookingStatus.PendingApproval, BookingStatus.Accepted, BookingStatus.OnHold],
+				serviceId,
+				byPassAuth: true,
+				page: 1,
+				limit: MAX_PAGING_LIMIT,
+			})
+		).entries;
 
 		const acceptedBookings = bookings.filter((booking) => booking.status === BookingStatus.Accepted);
 		const pendingBookings = bookings.filter((booking) => booking.status === BookingStatus.PendingApproval);

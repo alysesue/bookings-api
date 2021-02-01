@@ -82,7 +82,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		const query = await this.getSpQuery(options);
 		if (limit && pageNumber) {
 			query.limit(limit);
-			query.offset(limit * (pageNumber - 1));
+			query.skip(limit * (pageNumber - 1));
 		}
 		query.orderBy('sp._name');
 		const entries = await query.getMany();

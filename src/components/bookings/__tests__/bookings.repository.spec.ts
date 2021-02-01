@@ -7,6 +7,10 @@ import { TransactionManager } from '../../../core/transactionManager';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { AuthGroup, CitizenAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { ServiceProvidersRepository } from '../../../components/serviceProviders/serviceProviders.repository';
+import { PagingHelper } from '../../../core/paging';
+import { IPagedEntities } from '../../../core/pagedEntities';
+
+jest.mock('../../../core/paging');
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
@@ -29,11 +33,16 @@ describe('Bookings repository', () => {
 		leftJoinAndMapOne: jest.fn(),
 		orderBy: jest.fn(),
 		getOne: jest.fn(),
-		getMany: jest.fn(),
 	};
+
+	PagingHelper.getManyWithPaging = jest.fn();
 
 	beforeEach(() => {
 		jest.resetAllMocks();
+
+		(PagingHelper.getManyWithPaging as jest.Mock).mockImplementation(() =>
+			Promise.resolve({ entries: [] } as IPagedEntities<Booking>),
+		);
 
 		queryBuilderMock.where.mockImplementation(() => queryBuilderMock);
 		queryBuilderMock.leftJoinAndSelect.mockImplementation(() => queryBuilderMock);
@@ -52,7 +61,10 @@ describe('Bookings repository', () => {
 		const bookingMock = new Booking();
 		bookingMock.status = BookingStatus.Accepted;
 
-		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([bookingMock]));
+		(PagingHelper.getManyWithPaging as jest.Mock).mockImplementation(() =>
+			Promise.resolve({ entries: [bookingMock] } as IPagedEntities<Booking>),
+		);
+
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const bookingsRepository = Container.get(BookingsRepository);
@@ -64,7 +76,7 @@ describe('Bookings repository', () => {
 			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
 		} as BookingSearchQuery);
 
-		expect(result).toStrictEqual([bookingMock]);
+		expect(result.entries).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalledWith(
 			`((booking."_citizenUinFin" = :authorisedUinFin)) AND \
 (booking."_serviceId" = :serviceId) AND (booking."_serviceProviderId" = :serviceProviderId) AND \
@@ -79,14 +91,17 @@ describe('Bookings repository', () => {
 		);
 		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(1);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
-		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
+		expect(PagingHelper.getManyWithPaging).toBeCalledTimes(1);
 	});
 
 	it('should search bookings with creation date range', async () => {
 		const bookingMock = new Booking();
 		bookingMock.status = BookingStatus.Accepted;
 
-		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([bookingMock]));
+		(PagingHelper.getManyWithPaging as jest.Mock).mockImplementation(() =>
+			Promise.resolve({ entries: [bookingMock] } as IPagedEntities<Booking>),
+		);
+
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const bookingsRepository = Container.get(BookingsRepository);
@@ -96,7 +111,7 @@ describe('Bookings repository', () => {
 			toCreatedDate: new Date('2020-01-01T15:00:00.000Z'),
 		} as BookingSearchQuery);
 
-		expect(result).toStrictEqual([bookingMock]);
+		expect(result.entries).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalledWith(
 			`((booking."_citizenUinFin" = :authorisedUinFin)) AND (createdlog."_timestamp" > :fromCreatedDate) AND (createdlog."_timestamp" < :toCreatedDate)`,
 			{
@@ -108,14 +123,17 @@ describe('Bookings repository', () => {
 
 		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(1);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
-		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
+		expect(PagingHelper.getManyWithPaging).toBeCalledTimes(1);
 	});
 
 	it('should search bookings with status', async () => {
 		const bookingMock = new Booking();
 		bookingMock.status = BookingStatus.Accepted;
 
-		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([bookingMock]));
+		(PagingHelper.getManyWithPaging as jest.Mock).mockImplementation(() =>
+			Promise.resolve({ entries: [bookingMock] } as IPagedEntities<Booking>),
+		);
+
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const bookingsRepository = Container.get(BookingsRepository);
@@ -128,18 +146,21 @@ describe('Bookings repository', () => {
 			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
 		} as BookingSearchQuery);
 
-		expect(result).toStrictEqual([bookingMock]);
+		expect(result.entries).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
 		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(1);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
-		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
+		expect(PagingHelper.getManyWithPaging).toBeCalledTimes(1);
 	});
 
 	it('should search bookings with citizenUinFin', async () => {
 		const bookingMock = new Booking();
 		bookingMock.status = BookingStatus.Accepted;
 
-		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([bookingMock]));
+		(PagingHelper.getManyWithPaging as jest.Mock).mockImplementation(() =>
+			Promise.resolve({ entries: [bookingMock] } as IPagedEntities<Booking>),
+		);
+
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const bookingsRepository = Container.get(BookingsRepository);
@@ -152,11 +173,11 @@ describe('Bookings repository', () => {
 			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
 		} as BookingSearchQuery);
 
-		expect(result).toStrictEqual([bookingMock]);
+		expect(result.entries).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
 		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(1);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
-		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
+		expect(PagingHelper.getManyWithPaging).toBeCalledTimes(1);
 	});
 
 	it('should insert booking', async () => {

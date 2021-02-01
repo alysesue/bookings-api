@@ -1,3 +1,4 @@
+import { PagingRequest } from '../../apicontract';
 import { BookingStatus, ServiceProvider } from '../../models';
 
 export class BookingAcceptRequest {
@@ -89,7 +90,7 @@ export type BookingSearchRequest = {
 	serviceId?: number;
 	serviceProviderId?: number;
 	citizenUinFins?: string[];
-};
+} & PagingRequest;
 
 export class BookingProviderResponse {
 	/**

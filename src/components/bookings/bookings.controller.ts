@@ -27,8 +27,11 @@ import { TimeslotsService } from '../timeslots/timeslots.service';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { BookingsMapper } from './bookings.mapper';
-import { ApiData, ApiDataFactory } from '../../apicontract';
+import { ApiData, ApiDataFactory, ApiPagedData } from '../../apicontract';
 import { KoaContextStore } from '../../infrastructure/koaContextStore.middleware';
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 100;
 
 @Route('v1/bookings')
 @Tags('Bookings')
@@ -163,9 +166,14 @@ export class BookingsController extends Controller {
 	 * Retrieves all bookings that intercept the datetime range provided [from, to].
 	 * @param from The lower bound datetime limit (inclusive) for booking's end time.
 	 * @param to  The upper bound datetime limit (inclusive) for booking's start time.
+	 * @param fromCreatedDate
+	 * @param toCreatedDate
 	 * @param @isInt status (Optional) filters by a list of status: Pending (1), Accepted (2), Cancelled (3).
 	 * @param citizenUinFins (Optional) filters by a list of citizen ids
 	 * @param @isInt serviceId (Optional) filters by a service (id).
+	 * @param @isInt page
+	 * @param @isInt limit
+	 * @param maxId
 	 */
 	@Get('')
 	@SuccessResponse(200, 'Ok')
@@ -176,6 +184,7 @@ export class BookingsController extends Controller {
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
+	// tslint:disable-next-line: parameters-max-number
 	public async getBookings(
 		@Query() from?: Date,
 		@Query() to?: Date,
@@ -183,8 +192,11 @@ export class BookingsController extends Controller {
 		@Query() toCreatedDate?: Date,
 		@Query() status?: number[],
 		@Query() citizenUinFins?: string[],
+		@Query() page?: number,
+		@Query() limit?: number,
+		@Query() maxId?: number,
 		@Header('x-api-service') serviceId?: number,
-	): Promise<ApiData<BookingResponse[]>> {
+	): Promise<ApiPagedData<BookingResponse>> {
 		const searchQuery: BookingSearchRequest = {
 			from,
 			to,
@@ -193,10 +205,13 @@ export class BookingsController extends Controller {
 			statuses: status,
 			serviceId,
 			citizenUinFins,
+			page: page || DEFAULT_PAGE,
+			limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
+			maxId,
 		};
 
-		const bookings = await this.bookingsService.searchBookings(searchQuery);
-		return ApiDataFactory.create(BookingsMapper.mapDataModels(bookings));
+		const pagedBookings = await this.bookingsService.searchBookings(searchQuery);
+		return ApiDataFactory.createPaged(pagedBookings, BookingsMapper.mapDataModel);
 	}
 
 	/**

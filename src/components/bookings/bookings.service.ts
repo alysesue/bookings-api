@@ -21,6 +21,7 @@ import { BookingActionAuthVisitor } from './bookings.auth';
 import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
 import { UsersService } from '../users/users.service';
 import { BookingsMapper } from './bookings.mapper';
+import { IPagedEntities } from '../../core/pagedEntities';
 
 @InRequestScope
 export class BookingsService {
@@ -108,7 +109,7 @@ export class BookingsService {
 		);
 	}
 
-	public async searchBookings(searchRequest: BookingSearchRequest): Promise<Booking[]> {
+	public async searchBookings(searchRequest: BookingSearchRequest): Promise<IPagedEntities<Booking>> {
 		return await this.bookingsRepository.search(searchRequest);
 	}
 
