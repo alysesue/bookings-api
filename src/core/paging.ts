@@ -46,8 +46,8 @@ export class PagingHelper {
 			paging_max_id: any;
 			paging_count_value: any;
 		}>();
-		const maxIdDBValue = Number.parseInt(`${paging_max_id}`, 10);
-		const total = Number.parseInt(`${paging_count_value}`, 10);
+		const maxIdDBValue = Number.parseInt(`${paging_max_id}`, 10) || 0;
+		const total = Number.parseInt(`${paging_count_value}`, 10) || 0;
 
 		const pagingMaxId = maxId || maxIdDBValue;
 		const pagingQuery = new SelectQueryBuilder<T>(query)
