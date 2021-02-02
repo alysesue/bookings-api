@@ -96,13 +96,6 @@ export async function startServer(): Promise<Server> {
 			}),
 		)
 		.use(cors({ credentials: config.isLocal }))
-		.use(noCache({ global: true }))
-		.use(new KoaErrorHandler().build())
-		.use(await useSwagger())
-		.use(new BusinessErrorMiddleware().build())
-		.use(new KoaLoggerContext().build())
-		.use(new KoaMultipartCleaner().build())
-		.use(HealthCheckMiddleware.build())
 		.use(helmet.contentSecurityPolicy())
 		.use(helmet.dnsPrefetchControl({ allow: true }))
 		.use(helmet.expectCt())
@@ -114,6 +107,13 @@ export async function startServer(): Promise<Server> {
 		.use(helmet.permittedCrossDomainPolicies())
 		.use(helmet.referrerPolicy())
 		.use(helmet.xssFilter())
+		.use(noCache({ global: true }))
+		.use(new KoaErrorHandler().build())
+		.use(await useSwagger())
+		.use(new BusinessErrorMiddleware().build())
+		.use(new KoaLoggerContext().build())
+		.use(new KoaMultipartCleaner().build())
+		.use(HealthCheckMiddleware.build())
 		.use(router.allowedMethods());
 
 	if (config.isAutomatedTest) {
