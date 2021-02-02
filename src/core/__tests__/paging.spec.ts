@@ -134,6 +134,36 @@ describe('PagingHelper tests', () => {
 		expect(queryBuilderMock.getMany).toBeCalled();
 	});
 
+	it('should get paged result (with EMPTY maxId)', async () => {
+		queryBuilderMock.getRawOne.mockImplementation(() =>
+			Promise.resolve({ paging_max_id: '', paging_count_value: '' }),
+		);
+
+		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([]));
+
+		const result = await PagingHelper.getManyWithPaging(queryBuilderConstructor(), 'table._id', {
+			page: 1,
+			limit: 50,
+		});
+
+		expect(result).toEqual({
+			entries: [],
+			page: 1,
+			limit: 50,
+			total: 0,
+			maxId: 0,
+			outdatedMaxId: false,
+			hasMore: false,
+		} as IPagedEntities<SampleEntity>);
+
+		expect(queryBuilderMock.andWhere).toHaveBeenCalledWith('table._id <= :pagingMaxId', {
+			pagingMaxId: 0,
+		});
+		expect(queryBuilderMock.skip).toHaveBeenCalledWith(0);
+		expect(queryBuilderMock.take).toHaveBeenCalledWith(50);
+		expect(queryBuilderMock.getMany).toBeCalled();
+	});
+
 	it('should get all results when limit is set to MAX_PAGING_LIMIT', async () => {
 		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([new SampleEntity(), new SampleEntity()]));
 
