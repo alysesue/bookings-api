@@ -118,6 +118,7 @@ describe('Bookings.Controller', () => {
 			undefined,
 			undefined,
 			undefined,
+			undefined,
 			1,
 		);
 
@@ -165,6 +166,7 @@ describe('Bookings.Controller', () => {
 			toCreatedDate,
 			[1],
 			citizenUinFins,
+			[55],
 			2,
 			50,
 			123,
@@ -179,6 +181,7 @@ describe('Bookings.Controller', () => {
 			statuses: [1],
 			citizenUinFins: ['abc123', 'xyz456'],
 			serviceId: 1,
+			serviceProviderIds: [55],
 			page: 2,
 			limit: 50,
 			maxId: 123,
