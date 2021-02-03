@@ -76,11 +76,6 @@ describe('Users Service', () => {
 		name: 'Name',
 	});
 
-	const agencyMock = User.createAgencyUser({
-		agencyAppId: 'LOCAL-APP',
-		agencyName: 'local',
-	});
-
 	it('should return singpass user', async () => {
 		const headers = {};
 		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.USER;
@@ -270,20 +265,6 @@ describe('Users Service', () => {
 			'Service provider not found in BookingSG for mol-admin-id: d080f6ed-3b47-478a-a6c6-dfb5608a199d',
 		);
 		expect(groups.length).toBe(0);
-	});
-
-	it('should mock nric, mask all characters except first and last 4 characters', async () => {
-		const inputNRIC = 'S9269634J';
-		const expected = 'S****634J';
-		const result = UsersService.maskNRIC(inputNRIC, adminMock);
-		expect(result).toEqual(expected);
-	});
-
-	it('should not mock nric when user is agency user', async () => {
-		const inputNRIC = 'S9269634J';
-		const expected = 'S9269634J';
-		const result = UsersService.maskNRIC(inputNRIC, agencyMock);
-		expect(result).toEqual(expected);
 	});
 });
 

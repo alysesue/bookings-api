@@ -1,5 +1,4 @@
 import { Booking, ServiceProvider, User } from '../../models/entities';
-import { UsersService } from '../users/users.service';
 import {
 	BookingDetailsRequest,
 	BookingProviderResponse,
@@ -7,7 +6,19 @@ import {
 	BookingResponse,
 } from './bookings.apicontract';
 
+const asterisk = '*';
+
 export class BookingsMapper {
+	public static maskNRIC(nricStr: string, currentUser: User): string {
+		if (!nricStr || currentUser.isAgency()) {
+			return nricStr;
+		}
+
+		// tslint:disable-next-line: tsr-detect-unsafe-regexp
+		const re = /(?<=^.{1}).{4}/;
+		return nricStr.replace(re, asterisk.repeat(4));
+	}
+
 	public static mapDataModels(bookings: Booking[], currentUser: User): BookingResponse[] {
 		return bookings?.map((booking) => {
 			return this.mapDataModel(booking, currentUser);
@@ -28,7 +39,7 @@ export class BookingsMapper {
 			serviceProviderName: booking.serviceProvider?.name,
 			serviceProviderEmail: booking.serviceProvider?.email,
 			serviceProviderPhone: booking.serviceProvider?.phone,
-			citizenUinFin: UsersService.maskNRIC(booking.citizenUinFin, currentUser),
+			citizenUinFin: BookingsMapper.maskNRIC(booking.citizenUinFin, currentUser),
 			citizenName: booking.citizenName,
 			citizenEmail: booking.citizenEmail,
 			citizenPhone: booking.citizenPhone,
