@@ -71,7 +71,7 @@ describe('Bookings repository', () => {
 
 		const result = await bookingsRepository.search({
 			serviceId: 1,
-			serviceProviderId: 1,
+			serviceProviderIds: [1],
 			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
 			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
 		} as BookingSearchQuery);
@@ -79,14 +79,14 @@ describe('Bookings repository', () => {
 		expect(result.entries).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalledWith(
 			`((booking."_citizenUinFin" = :authorisedUinFin)) AND \
-(booking."_serviceId" = :serviceId) AND (booking."_serviceProviderId" = :serviceProviderId) AND \
+(booking."_serviceId" = :serviceId) AND (booking."_serviceProviderId" IN (:...serviceProviderIds)) AND \
 (booking."_endDateTime" > :from) AND (booking."_startDateTime" < :to)`,
 			{
 				authorisedUinFin: 'ABC1234',
 				from: new Date('2020-01-01T14:00:00.000Z'),
 				to: new Date('2020-01-01T15:00:00.000Z'),
 				serviceId: 1,
-				serviceProviderId: 1,
+				serviceProviderIds: [1],
 			},
 		);
 		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(1);
@@ -140,7 +140,7 @@ describe('Bookings repository', () => {
 
 		const result = await bookingsRepository.search({
 			serviceId: 1,
-			serviceProviderId: 1,
+			serviceProviderIds: [1],
 			statuses: [BookingStatus.Accepted, BookingStatus.PendingApproval],
 			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
 			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),
@@ -167,7 +167,7 @@ describe('Bookings repository', () => {
 
 		const result = await bookingsRepository.search({
 			serviceId: 1,
-			serviceProviderId: 1,
+			serviceProviderIds: [1],
 			citizenUinFins: ['abc123', 'xyz456'],
 			from: new Date(Date.UTC(2020, 0, 1, 14, 0)),
 			to: new Date(Date.UTC(2020, 0, 1, 15, 0)),

@@ -170,6 +170,7 @@ export class BookingsController extends Controller {
 	 * @param toCreatedDate
 	 * @param @isInt status (Optional) filters by a list of status: Pending (1), Accepted (2), Cancelled (3).
 	 * @param citizenUinFins (Optional) filters by a list of citizen ids
+	 * @param @isInt serviceProviderIds
 	 * @param @isInt serviceId (Optional) filters by a service (id).
 	 * @param @isInt page
 	 * @param @isInt limit
@@ -192,6 +193,7 @@ export class BookingsController extends Controller {
 		@Query() toCreatedDate?: Date,
 		@Query() status?: number[],
 		@Query() citizenUinFins?: string[],
+		@Query() serviceProviderIds?: number[],
 		@Query() page?: number,
 		@Query() limit?: number,
 		@Query() maxId?: number,
@@ -205,6 +207,7 @@ export class BookingsController extends Controller {
 			statuses: status,
 			serviceId,
 			citizenUinFins,
+			serviceProviderIds,
 			page: page || DEFAULT_PAGE,
 			limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
 			maxId,

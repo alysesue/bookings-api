@@ -109,9 +109,10 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 	public async search(request: BookingSearchQuery): Promise<IPagedEntities<Booking>> {
 		const serviceCondition = request.serviceId ? 'booking."_serviceId" = :serviceId' : '';
 
-		const serviceProviderCondition = request.serviceProviderId
-			? 'booking."_serviceProviderId" = :serviceProviderId'
-			: '';
+		const serviceProviderCondition =
+			request.serviceProviderIds && request.serviceProviderIds.length > 0
+				? 'booking."_serviceProviderId" IN (:...serviceProviderIds)'
+				: '';
 
 		const statusesCondition =
 			request.statuses && request.statuses.length > 0 ? 'booking."_status" IN (:...statuses)' : '';
@@ -141,7 +142,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 				],
 				{
 					serviceId: request.serviceId,
-					serviceProviderId: request.serviceProviderId,
+					serviceProviderIds: request.serviceProviderIds,
 					from: request.from,
 					to: request.to,
 					fromCreatedDate: request.fromCreatedDate,
@@ -166,7 +167,7 @@ export type BookingSearchQuery = {
 	toCreatedDate?: Date;
 	statuses?: BookingStatus[];
 	serviceId?: number;
-	serviceProviderId?: number;
+	serviceProviderIds?: number[];
 	citizenUinFins?: string[];
 	byPassAuth?: boolean;
 	page: number;

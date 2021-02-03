@@ -88,7 +88,7 @@ export type BookingSearchRequest = {
 	toCreatedDate?: Date;
 	statuses?: BookingStatus[];
 	serviceId?: number;
-	serviceProviderId?: number;
+	serviceProviderIds?: number[];
 	citizenUinFins?: string[];
 } & PagingRequest;
 
