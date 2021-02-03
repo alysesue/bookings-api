@@ -30,7 +30,7 @@ import { BookingsMapper } from './bookings.mapper';
 import { ApiData, ApiDataFactory, ApiPagedData } from '../../apicontract';
 import { KoaContextStore } from '../../infrastructure/koaContextStore.middleware';
 import { UserContext } from '../../infrastructure/auth/userContext';
-
+import { Booking } from '../../models/entities';
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
 
@@ -219,7 +219,10 @@ export class BookingsController extends Controller {
 		};
 
 		const pagedBookings = await this.bookingsService.searchBookings(searchQuery);
-		return ApiDataFactory.createPaged(pagedBookings, BookingsMapper.mapDataModel);
+		const currentUser = await this.userContext.getCurrentUser();
+		return ApiDataFactory.createPaged(pagedBookings, (booking: Booking) => {
+			return BookingsMapper.mapDataModel(booking, currentUser);
+		});
 	}
 
 	/**
