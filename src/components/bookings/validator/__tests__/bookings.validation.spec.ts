@@ -6,7 +6,7 @@ import { TimeslotsService } from '../../../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../../../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../../../unavailabilities/unavailabilities.service';
 import { UserContext } from '../../../../infrastructure/auth/userContext';
-import { BookingBuilder } from '../../../../models/entities/booking';
+import { Booking, BookingBuilder } from '../../../../models/entities/booking';
 import { Service, User } from '../../../../models';
 import { BookingsValidatorFactory } from '../bookings.validation';
 import {
@@ -20,6 +20,7 @@ import { AvailableTimeslotProviders } from '../../../../components/timeslots/ava
 import { CaptchaService } from '../../../captcha/captcha.service';
 import { UserContextMock } from '../../../../infrastructure/auth/__mocks__/userContext';
 import { getConfig } from '../../../../config/app-config';
+import { IPagedEntities } from '../../../../core/pagedEntities';
 
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
 	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
@@ -71,7 +72,9 @@ describe('Booking validation tests', () => {
 			isAutomatedTest: false,
 		});
 
-		BookingRepositoryMock.searchBookings.mockImplementation(() => Promise.resolve([]));
+		BookingRepositoryMock.searchBookings.mockImplementation(() =>
+			Promise.resolve({ entries: [] } as IPagedEntities<Booking>),
+		);
 	});
 
 	it('should return regular booking validator', () => {
@@ -327,13 +330,15 @@ describe('Booking validation tests', () => {
 			.build();
 
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
-			Promise.resolve([
-				new BookingBuilder()
-					.withServiceId(1)
-					.withStartDateTime(new Date('2020-10-01T01:00:00'))
-					.withEndDateTime(new Date('2020-10-01T02:00:00'))
-					.build(),
-			]),
+			Promise.resolve({
+				entries: [
+					new BookingBuilder()
+						.withServiceId(1)
+						.withStartDateTime(new Date('2020-10-01T01:00:00'))
+						.withEndDateTime(new Date('2020-10-01T02:00:00'))
+						.build(),
+				],
+			} as IPagedEntities<Booking>),
 		);
 		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
@@ -357,13 +362,15 @@ describe('Booking validation tests', () => {
 			.build();
 
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
-			Promise.resolve([
-				new BookingBuilder()
-					.withServiceId(1)
-					.withStartDateTime(new Date('2020-10-01T01:00:00'))
-					.withEndDateTime(new Date('2020-10-01T02:00:00'))
-					.build(),
-			]),
+			Promise.resolve({
+				entries: [
+					new BookingBuilder()
+						.withServiceId(1)
+						.withStartDateTime(new Date('2020-10-01T01:00:00'))
+						.withEndDateTime(new Date('2020-10-01T02:00:00'))
+						.build(),
+				],
+			} as IPagedEntities<Booking>),
 		);
 		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
@@ -409,13 +416,15 @@ describe('Booking validation tests', () => {
 			.build();
 
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
-			Promise.resolve([
-				new BookingBuilder()
-					.withServiceId(1)
-					.withStartDateTime(new Date(2020, 8, 26, 8, 15))
-					.withEndDateTime(new Date(2020, 8, 26, 8, 45))
-					.build(),
-			]),
+			Promise.resolve({
+				entries: [
+					new BookingBuilder()
+						.withServiceId(1)
+						.withStartDateTime(new Date(2020, 8, 26, 8, 15))
+						.withEndDateTime(new Date(2020, 8, 26, 8, 45))
+						.build(),
+				],
+			} as IPagedEntities<Booking>),
 		);
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
@@ -462,7 +471,9 @@ describe('Booking validation tests', () => {
 			.build();
 		searchBooking.id = 5;
 
-		BookingRepositoryMock.searchBookings.mockImplementation(() => Promise.resolve([searchBooking]));
+		BookingRepositoryMock.searchBookings.mockImplementation(() =>
+			Promise.resolve({ entries: [searchBooking] } as IPagedEntities<Booking>),
+		);
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
@@ -504,14 +515,16 @@ describe('Booking validation tests', () => {
 		booking.service = onHoldService;
 
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
-			Promise.resolve([
-				new BookingBuilder()
-					.withServiceId(2)
-					.withStartDateTime(DateHelper.addMinutes(start, 15))
-					.withEndDateTime(DateHelper.addMinutes(start, 45))
-					.withMarkOnHold(true)
-					.build(),
-			]),
+			Promise.resolve({
+				entries: [
+					new BookingBuilder()
+						.withServiceId(2)
+						.withStartDateTime(DateHelper.addMinutes(start, 15))
+						.withEndDateTime(DateHelper.addMinutes(start, 45))
+						.withMarkOnHold(true)
+						.build(),
+				],
+			} as IPagedEntities<Booking>),
 		);
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {

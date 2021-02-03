@@ -45,7 +45,7 @@ describe('Service Provider repository', () => {
 		getOne: jest.Mock<Promise<ServiceProvider>, any>;
 		orderBy: jest.Mock<any, any>;
 		limit: jest.Mock;
-		offset: jest.Mock;
+		skip: jest.Mock;
 		getCount: jest.Mock;
 	} = {
 		where: jest.fn(),
@@ -55,7 +55,7 @@ describe('Service Provider repository', () => {
 		getOne: jest.fn<Promise<ServiceProvider>, any>(),
 		orderBy: jest.fn<any, any>(),
 		limit: jest.fn(),
-		offset: jest.fn(),
+		skip: jest.fn(),
 		getCount: jest.fn(),
 	};
 
@@ -288,7 +288,7 @@ describe('Service Provider repository', () => {
 		expect(TransactionManagerMock.createQueryBuilder).toBeCalled();
 		expect(queryBuilderMock.getMany).toBeCalled();
 		expect(queryBuilderMock.limit).toBeCalled();
-		expect(queryBuilderMock.offset).toBeCalled();
+		expect(queryBuilderMock.skip).toBeCalled();
 		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
 		expect(result).toBeDefined();
 	});

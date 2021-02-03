@@ -45,6 +45,7 @@ import { UsersService } from '../../../components/users/users.service';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { ServicesServiceMock } from '../../services/__mocks__/services.service';
 import { ceil } from 'lodash';
+import { IPagedEntities } from '../../../core/pagedEntities';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -142,7 +143,9 @@ describe('Bookings.Service', () => {
 		BookingChangeLogsServiceMock.action = 0;
 		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 		TimeslotsServiceMock.acceptedBookings = [];
-		BookingRepositoryMock.searchBookings.mockImplementation(() => Promise.resolve([]));
+		BookingRepositoryMock.searchBookings.mockImplementation(() =>
+			Promise.resolve({ entries: [] } as IPagedEntities<Booking>),
+		);
 
 		UsersServiceMock.persistUserIfRequired.mockImplementation((u) => Promise.resolve(u));
 	});
@@ -160,6 +163,9 @@ describe('Bookings.Service', () => {
 			statuses: [1],
 			citizenUinFins: ['abc123', 'xyz456'],
 			serviceId: 1,
+			page: 2,
+			limit: 3,
+			maxId: 50,
 		};
 
 		const instance = await Container.get(BookingsService);

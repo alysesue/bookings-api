@@ -11,6 +11,7 @@ import { BookingBuilder } from '../../../models/entities/booking';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 import { CaptchaService } from '../../captcha/captcha.service';
 import { KoaContextStore } from '../../../infrastructure/koaContextStore.middleware';
+import { IPagedEntities } from '../../../core/pagedEntities';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -28,6 +29,7 @@ jest.mock('mol-lib-common', () => {
 	};
 });
 
+// tslint:disable-next-line: no-big-function
 describe('Bookings.Controller', () => {
 	const KoaContextStoreMock: Partial<KoaContextStore> = {
 		koaContext: {
@@ -92,8 +94,12 @@ describe('Bookings.Controller', () => {
 		expect(res.data.startDateTime.toISOString()).toEqual('2020-10-01T15:00:00.000Z');
 	});
 
-	it('should search bookings', async () => {
-		BookingsServiceMock.searchBookings.mockImplementation(() => Promise.resolve([testBooking1]));
+	it('should search bookings (default paging)', async () => {
+		BookingsServiceMock.searchBookings.mockImplementation(() =>
+			Promise.resolve({
+				entries: [testBooking1],
+			} as IPagedEntities<Booking>),
+		);
 
 		const from = new Date('2020-05-16T20:25:43.511Z');
 		const to = new Date('2020-05-16T21:25:43.511Z');
@@ -102,7 +108,18 @@ describe('Bookings.Controller', () => {
 		const citizenUinFins = ['abc123', 'xyz456'];
 		const controller = Container.get(BookingsController);
 
-		const result = await controller.getBookings(from, to, fromCreatedDate, toCreatedDate, [1], citizenUinFins, 1);
+		const result = await controller.getBookings(
+			from,
+			to,
+			fromCreatedDate,
+			toCreatedDate,
+			[1],
+			citizenUinFins,
+			undefined,
+			undefined,
+			undefined,
+			1,
+		);
 
 		expect(BookingsServiceMock.searchBookings).toHaveBeenCalledWith({
 			from: new Date('2020-05-16T20:25:43.511Z'),
@@ -112,6 +129,59 @@ describe('Bookings.Controller', () => {
 			statuses: [1],
 			citizenUinFins: ['abc123', 'xyz456'],
 			serviceId: 1,
+			page: 1,
+			limit: 100,
+		});
+
+		expect(result.data.length).toBe(1);
+		expect(result.data[0]).toEqual({
+			id: 10,
+			createdDateTime: new Date('2020-01-01T01:01:01.000Z'),
+			endDateTime: new Date('2020-10-01T02:00:00.000Z'),
+			serviceId: 1,
+			startDateTime: new Date('2020-10-01T01:00:00.000Z'),
+			status: 1,
+		} as BookingResponse);
+	});
+
+	it('should search bookings (explicit paging)', async () => {
+		BookingsServiceMock.searchBookings.mockImplementation(() =>
+			Promise.resolve({
+				entries: [testBooking1],
+			} as IPagedEntities<Booking>),
+		);
+
+		const from = new Date('2020-05-16T20:25:43.511Z');
+		const to = new Date('2020-05-16T21:25:43.511Z');
+		const fromCreatedDate = new Date('2020-05-10T20:25:43.511Z');
+		const toCreatedDate = new Date('2020-05-20T21:25:43.511Z');
+		const citizenUinFins = ['abc123', 'xyz456'];
+		const controller = Container.get(BookingsController);
+
+		const result = await controller.getBookings(
+			from,
+			to,
+			fromCreatedDate,
+			toCreatedDate,
+			[1],
+			citizenUinFins,
+			2,
+			50,
+			123,
+			1,
+		);
+
+		expect(BookingsServiceMock.searchBookings).toHaveBeenCalledWith({
+			from: new Date('2020-05-16T20:25:43.511Z'),
+			to: new Date('2020-05-16T21:25:43.511Z'),
+			fromCreatedDate: new Date('2020-05-10T20:25:43.511Z'),
+			toCreatedDate: new Date('2020-05-20T21:25:43.511Z'),
+			statuses: [1],
+			citizenUinFins: ['abc123', 'xyz456'],
+			serviceId: 1,
+			page: 2,
+			limit: 50,
+			maxId: 123,
 		});
 
 		expect(result.data.length).toBe(1);
@@ -215,7 +285,7 @@ class BookingsServiceMock implements Partial<BookingsService> {
 	public static mockGetBooking: Booking;
 	public static mockPostBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockBookings: Booking[] = [];
-	public static searchBookings = jest.fn<Promise<Booking[]>, any>();
+	public static searchBookings = jest.fn<Promise<IPagedEntities<Booking>>, any>();
 	public static mockBookingId;
 	public static getBookingPromise = Promise.resolve(BookingsServiceMock.mockGetBooking);
 	public static mockUpdateBooking: Booking;

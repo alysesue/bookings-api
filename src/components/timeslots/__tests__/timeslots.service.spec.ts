@@ -9,6 +9,7 @@ import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
+import { IPagedEntities } from '../../../core/pagedEntities';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -17,7 +18,7 @@ afterAll(() => {
 });
 
 const BookingsRepositoryMock = {
-	search: jest.fn(),
+	search: jest.fn<Promise<IPagedEntities<Booking>>, any>(),
 };
 
 const ServicesRepositoryMock = {
@@ -114,7 +115,7 @@ describe('Timeslots Service', () => {
 
 	beforeEach(() => {
 		BookingsRepositoryMock.search.mockImplementation(() => {
-			return Promise.resolve([pendingBookingMock, BookingMock]);
+			return Promise.resolve({ entries: [pendingBookingMock, BookingMock] } as IPagedEntities<Booking>);
 		});
 
 		ServicesRepositoryMock.getServiceWithTimeslotsSchedule.mockImplementation(() => Promise.resolve(ServiceMock));
@@ -222,8 +223,10 @@ describe('Timeslots Service', () => {
 
 		const testBooking1 = getOutOfSlotBooking(ServiceProviderMock);
 		const testBooking2 = getOutOfSlotBooking(ServiceProviderMock2);
-		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([]));
-		BookingsRepositoryMock.search.mockImplementation(() => Promise.resolve([testBooking1, testBooking2]));
+
+		BookingsRepositoryMock.search.mockImplementation(() =>
+			Promise.resolve({ entries: [testBooking1, testBooking2] } as IPagedEntities<Booking>),
+		);
 
 		const res = await service.getAggregatedTimeslots(date, endDate, 1, true);
 
@@ -262,7 +265,9 @@ describe('Timeslots Service', () => {
 		testBookings[0].serviceProvider = ServiceProviderMock;
 		testBookings[1].serviceProvider = ServiceProviderMock2;
 
-		BookingsRepositoryMock.search.mockReturnValue(testBookings);
+		BookingsRepositoryMock.search.mockReturnValue(
+			Promise.resolve({ entries: testBookings } as IPagedEntities<Booking>),
+		);
 
 		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue([ServiceProviderMock2]);
 
@@ -305,7 +310,9 @@ describe('Timeslots Service', () => {
 			.withRefId('ref')
 			.build();
 		bookingOos.serviceProvider = ServiceProviderMock;
-		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([bookingOos]));
+		BookingsRepositoryMock.search.mockReturnValue(
+			Promise.resolve({ entries: [bookingOos] } as IPagedEntities<Booking>),
+		);
 
 		const newTimeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
 		expect(newTimeslots.length).toBe(2);
@@ -378,7 +385,7 @@ describe('Timeslots Service Out Of Slot', () => {
 		));
 
 		TimeslotsScheduleMock.generateValidTimeslots.mockImplementation(() => []);
-		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([]));
+		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve({ entries: [] } as IPagedEntities<Booking>));
 		UnavailabilitiesServiceMock.search.mockImplementation(() => Promise.resolve([]));
 
 		const bookingStartTime = DateHelper.setHours(date, 17, 0);
@@ -392,7 +399,9 @@ describe('Timeslots Service Out Of Slot', () => {
 			.withRefId('ref')
 			.build();
 		bookingOos.serviceProvider = ServiceProviderMock3;
-		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve([bookingOos]));
+		BookingsRepositoryMock.search.mockReturnValue(
+			Promise.resolve({ entries: [bookingOos] } as IPagedEntities<Booking>),
+		);
 
 		const timeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
 		expect(timeslots.length).toBe(1);

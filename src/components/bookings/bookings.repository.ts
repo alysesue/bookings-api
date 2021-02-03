@@ -8,6 +8,8 @@ import { BookingQueryVisitorFactory } from './bookings.auth';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { andWhere } from '../../tools/queryConditions';
+import { PagingHelper } from '../../core/paging';
+import { IPagedEntities } from '../../core/pagedEntities';
 
 @InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {
@@ -104,7 +106,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return incremented;
 	}
 
-	public async search(request: BookingSearchQuery): Promise<Booking[]> {
+	public async search(request: BookingSearchQuery): Promise<IPagedEntities<Booking>> {
 		const serviceCondition = request.serviceId ? 'booking."_serviceId" = :serviceId' : '';
 
 		const serviceProviderCondition = request.serviceProviderId
@@ -151,9 +153,9 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 			)
 		).orderBy('booking._id', 'DESC');
 
-		const entries = await query.getMany();
-		await this.includeServiceProviders(entries);
-		return entries;
+		const result = await PagingHelper.getManyWithPaging(query, 'booking._id', request);
+		await this.includeServiceProviders(result.entries);
+		return result;
 	}
 }
 
@@ -167,4 +169,13 @@ export type BookingSearchQuery = {
 	serviceProviderId?: number;
 	citizenUinFins?: string[];
 	byPassAuth?: boolean;
+	page: number;
+	limit: number;
+	maxId?: number;
+};
+
+export type PagedEntities<T> = {
+	data: T[];
+	total: number;
+	page: number;
 };
