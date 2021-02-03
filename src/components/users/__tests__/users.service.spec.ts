@@ -76,6 +76,11 @@ describe('Users Service', () => {
 		name: 'Name',
 	});
 
+	const agencyMock = User.createAgencyUser({
+		agencyAppId: 'LOCAL-APP',
+		agencyName: 'local',
+	});
+
 	it('should return singpass user', async () => {
 		const headers = {};
 		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.USER;
@@ -270,7 +275,14 @@ describe('Users Service', () => {
 	it('should mock nric, mask all characters except first and last 4 characters', async () => {
 		const inputNRIC = 'S9269634J';
 		const expected = 'S****634J';
-		const result = UsersService.maskNRIC(inputNRIC);
+		const result = UsersService.maskNRIC(inputNRIC, adminMock);
+		expect(result).toEqual(expected);
+	});
+
+	it('should not mock nric when user is agency user', async () => {
+		const inputNRIC = 'S9269634J';
+		const expected = 'S9269634J';
+		const result = UsersService.maskNRIC(inputNRIC, agencyMock);
 		expect(result).toEqual(expected);
 	});
 });

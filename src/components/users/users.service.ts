@@ -29,14 +29,15 @@ export class UsersService {
 	@Inject
 	private usersRepository: UsersRepository;
 
-	public static maskNRIC(nricStr: string): string {
-		if (!nricStr) {
+	public static maskNRIC(nricStr: string, currentUser: User): string {
+		const asterisk = '*';
+		if (!nricStr || currentUser.isAgency()) {
 			return nricStr;
 		}
 
 		// tslint:disable-next-line: tsr-detect-unsafe-regexp
 		const re = /(?<=^.{1}).{4}/;
-		return nricStr.replace(re, '****');
+		return nricStr.replace(re, asterisk.repeat(4));
 	}
 
 	private async getOrSaveInternal(user: User, getter: () => Promise<User>): Promise<User> {

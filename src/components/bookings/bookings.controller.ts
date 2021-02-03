@@ -29,6 +29,7 @@ import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/commo
 import { BookingsMapper } from './bookings.mapper';
 import { ApiData, ApiDataFactory, ApiPagedData } from '../../apicontract';
 import { KoaContextStore } from '../../infrastructure/koaContextStore.middleware';
+import { UserContext } from '../../infrastructure/auth/userContext';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
@@ -42,6 +43,8 @@ export class BookingsController extends Controller {
 	private timeslotService: TimeslotsService;
 	@Inject
 	private _koaContextStore: KoaContextStore;
+	@Inject
+	private userContext: UserContext;
 
 	/**
 	 * Creates a new booking.
@@ -65,7 +68,7 @@ export class BookingsController extends Controller {
 		bookingRequest.captchaOrigin = koaContext.header.origin;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getCurrentUser()));
 	}
 
 	/**
@@ -87,7 +90,7 @@ export class BookingsController extends Controller {
 		bookingRequest.outOfSlotBooking = true;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getCurrentUser()));
 	}
 
 	/**
@@ -109,7 +112,9 @@ export class BookingsController extends Controller {
 		rescheduleRequest.captchaOrigin = koaContext.header.origin;
 
 		const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest, false);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(rescheduledBooking));
+		return ApiDataFactory.create(
+			BookingsMapper.mapDataModel(rescheduledBooking, await this.userContext.getCurrentUser()),
+		);
 	}
 
 	/**
@@ -159,7 +164,7 @@ export class BookingsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.update(bookingId, bookingRequest, serviceId, true);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getCurrentUser()));
 	}
 
 	/**
@@ -231,7 +236,7 @@ export class BookingsController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getBooking(@Path() bookingId: number): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.getBooking(bookingId);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getCurrentUser()));
 	}
 
 	/**
@@ -290,6 +295,6 @@ export class BookingsController extends Controller {
 	): Promise<ApiData<BookingResponse>> {
 		bookingRequest.outOfSlotBooking = false;
 		const booking = await this.bookingsService.validateOnHoldBooking(bookingId, bookingRequest, true);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking));
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getCurrentUser()));
 	}
 }

@@ -94,6 +94,7 @@ export class TimeslotsController extends Controller {
 			includeBookings,
 			spIdsFilter,
 		);
-		return ApiDataFactory.create(timeslots?.map((t) => TimeslotsMapper.mapTimeslotEntry(t)));
+		const currentUser = await this.userContext.getCurrentUser();
+		return ApiDataFactory.create(timeslots?.map((t) => TimeslotsMapper.mapTimeslotEntry(t, currentUser)));
 	}
 }

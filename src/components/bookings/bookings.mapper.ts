@@ -8,11 +8,13 @@ import {
 } from './bookings.apicontract';
 
 export class BookingsMapper {
-	public static mapDataModels(bookings: Booking[]): BookingResponse[] {
-		return bookings?.map(this.mapDataModel);
+	public static mapDataModels(bookings: Booking[], currentUser: User): BookingResponse[] {
+		return bookings?.map((booking) => {
+			return this.mapDataModel(booking, currentUser);
+		});
 	}
 
-	public static mapDataModel(booking: Booking): BookingResponse {
+	public static mapDataModel(booking: Booking, currentUser: User): BookingResponse {
 		return {
 			id: booking.id,
 			status: booking.status,
@@ -26,7 +28,7 @@ export class BookingsMapper {
 			serviceProviderName: booking.serviceProvider?.name,
 			serviceProviderEmail: booking.serviceProvider?.email,
 			serviceProviderPhone: booking.serviceProvider?.phone,
-			citizenUinFin: UsersService.maskNRIC(booking.citizenUinFin),
+			citizenUinFin: UsersService.maskNRIC(booking.citizenUinFin, currentUser),
 			citizenName: booking.citizenName,
 			citizenEmail: booking.citizenEmail,
 			citizenPhone: booking.citizenPhone,

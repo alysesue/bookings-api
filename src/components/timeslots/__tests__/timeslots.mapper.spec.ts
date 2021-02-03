@@ -1,5 +1,5 @@
 import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
-import { ServiceProvider } from '../../../models';
+import { ServiceProvider, User } from '../../../models';
 import { TimeslotsMapper } from '../timeslots.mapper';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 
@@ -55,7 +55,13 @@ describe('Timeslots Mapper', () => {
 		entry.setRelatedServiceProviders(map);
 
 		const timeslotServiceProviders = Array.from(entry.getTimeslotServiceProviders());
-		const res = TimeslotsMapper.mapTimeslotServiceProviders(timeslotServiceProviders);
+		const adminMock = User.createAdminUser({
+			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+			userName: 'UserName',
+			email: 'test@email.com',
+			name: 'Name',
+		});
+		const res = TimeslotsMapper.mapTimeslotServiceProviders(timeslotServiceProviders, adminMock);
 		const [spResponse, totalCapacity, totalBooked] = res;
 		expect(spResponse.length).toBe(2);
 		expect(spResponse[0].capacity).toBe(1);
