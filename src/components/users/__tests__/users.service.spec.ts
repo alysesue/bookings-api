@@ -266,13 +266,6 @@ describe('Users Service', () => {
 		);
 		expect(groups.length).toBe(0);
 	});
-
-	it('should mock nric, mask all characters except first and last 4 characters', async () => {
-		const inputNRIC = 'S9269634J';
-		const expected = 'S****634J';
-		const result = UsersService.maskNRIC(inputNRIC);
-		expect(result).toEqual(expected);
-	});
 });
 
 class UserRepositoryMock implements Partial<UsersRepository> {

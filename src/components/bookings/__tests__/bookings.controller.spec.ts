@@ -1,6 +1,6 @@
 import { Container } from 'typescript-ioc';
 import * as Koa from 'koa';
-import { Booking, BookingChangeLog, BookingStatus } from '../../../models';
+import { Booking, BookingChangeLog, BookingStatus, User } from '../../../models';
 import { BookingsController } from '../bookings.controller';
 import { BookingsService } from '../bookings.service';
 import { BookingAcceptRequest, BookingRequest, BookingResponse } from '../bookings.apicontract';
@@ -12,6 +12,9 @@ import { TimeslotServiceProviderResult } from '../../../models/timeslotServicePr
 import { CaptchaService } from '../../captcha/captcha.service';
 import { KoaContextStore } from '../../../infrastructure/koaContextStore.middleware';
 import { IPagedEntities } from '../../../core/pagedEntities';
+import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
+import { ContainerContext } from '../../../infrastructure/containerContext.middleware';
+import { UserContext } from '../../../infrastructure/auth/userContext';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -55,12 +58,22 @@ describe('Bookings.Controller', () => {
 		.withEndDateTime(new Date('2020-10-02T16:00:00Z'))
 		.build();
 
+	const adminMock = User.createAdminUser({
+		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+		userName: 'UserName',
+		email: 'test@email.com',
+		name: 'Name',
+	});
+
 	beforeAll(() => {
 		Container.bind(BookingsService).to(BookingsServiceMock);
 		Container.bind(TimeslotsService).to(jest.fn(() => TimeslotsServiceMock));
 		Container.bind(CaptchaService).to(CaptchaServiceMock);
 		Container.bind(KoaContextStore).factory(() => KoaContextStoreMock);
+		Container.bind(UserContext).to(UserContextMock);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		KoaContextStoreMock.koaContext.header = { origin: 'local.booking.gov.sg' };
+		Container.bind(ContainerContext).factory(() => ContainerContext);
 	});
 
 	it('should accept booking', async () => {
