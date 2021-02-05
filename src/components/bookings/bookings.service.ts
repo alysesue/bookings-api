@@ -7,6 +7,7 @@ import {
 	BookingDetailsRequest,
 	BookingRequest,
 	BookingSearchRequest,
+	BookingUpdateRequest,
 	RescheduleBookingRequest,
 } from './bookings.apicontract';
 import { TimeslotsService } from '../timeslots/timeslots.service';
@@ -84,11 +85,16 @@ export class BookingsService {
 
 	public async update(
 		bookingId: number,
-		bookingRequest: BookingRequest,
+		bookingRequest: BookingUpdateRequest,
 		serviceId: number,
 		isAdmin: boolean,
 	): Promise<Booking> {
-		const updateAction = (_booking) => this.updateInternal(_booking, bookingRequest, isAdmin);
+		const updateAction = (_booking) => {
+			if (!bookingRequest.citizenUinFinUpdated) {
+				bookingRequest.citizenUinFin = _booking.citizenUinFin;
+			}
+			return this.updateInternal(_booking, bookingRequest, isAdmin);
+		};
 		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), updateAction);
 	}
 
