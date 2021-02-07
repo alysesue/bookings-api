@@ -11,7 +11,12 @@ import {
 	TimeslotsSchedule,
 	User,
 } from '../../../models';
-import { BookingAcceptRequest, BookingRequest, BookingSearchRequest } from '../bookings.apicontract';
+import {
+	BookingAcceptRequest,
+	BookingRequest,
+	BookingSearchRequest,
+	BookingUpdateRequest,
+} from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { DateHelper } from '../../../infrastructure/dateHelper';
@@ -52,7 +57,7 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
-function getBookingRequest() {
+function getUpdateBookingRequest() {
 	const start = new Date('2020-02-01T11:00');
 	const end = new Date('2020-02-01T12:00');
 	return {
@@ -62,7 +67,8 @@ function getBookingRequest() {
 		citizenEmail: 'test@mail.com',
 		citizenName: 'Jake',
 		citizenUinFin: 'S6979208A',
-	} as BookingRequest;
+		citizenUinFinUpdated: true,
+	} as BookingUpdateRequest;
 }
 
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
@@ -425,6 +431,41 @@ describe('Bookings.Service', () => {
 		);
 	});
 
+	it('should update booking except NRIC', async () => {
+		const bookingService = Container.get(BookingsService);
+
+		const start = new Date('2020-02-02T11:00');
+		const end = new Date('2020-02-02T12:00');
+		const bookingRequest = {
+			refId: 'ref1',
+			startDateTime: start,
+			endDateTime: end,
+			citizenEmail: 'test@mail.com',
+			citizenName: 'Jake',
+			citizenUinFin: 'S****208A',
+			citizenUinFinUpdated: false,
+		} as BookingUpdateRequest;
+
+		BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(service.id)
+			.withCitizenEmail('test@mail.com')
+			.withStartDateTime(start)
+			.withEndDateTime(end)
+			.build();
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
+
+		const booking = await bookingService.update(1, bookingRequest, 2, true);
+
+		expect(booking.refId).toBe('ref1');
+		expect(booking.citizenEmail).toBe('test@mail.com');
+		expect(booking.citizenName).toBe('Jake');
+		expect(booking.citizenUinFin).not.toBe('S6979208A');
+	});
+
 	it('should update booking', async () => {
 		const bookingService = Container.get(BookingsService);
 
@@ -437,7 +478,8 @@ describe('Bookings.Service', () => {
 			citizenEmail: 'test@mail.com',
 			citizenName: 'Jake',
 			citizenUinFin: 'S6979208A',
-		} as BookingRequest;
+			citizenUinFinUpdated: true,
+		} as BookingUpdateRequest;
 
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(service.id)
@@ -461,7 +503,7 @@ describe('Bookings.Service', () => {
 
 	it('should call log with reschedule action', async () => {
 		const bookingService = Container.get(BookingsService);
-		const bookingRequest = getBookingRequest();
+		const bookingUpdateRequest = getUpdateBookingRequest();
 
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(service.id)
@@ -475,20 +517,20 @@ describe('Bookings.Service', () => {
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
 
-		await bookingService.update(1, bookingRequest, 2, true);
+		await bookingService.update(1, bookingUpdateRequest, 2, true);
 
 		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Reschedule);
 	});
 
 	it('should call log with update action', async () => {
 		const bookingService = Container.get(BookingsService);
-		const bookingRequest = getBookingRequest();
+		const bookingUpdateRequest = getUpdateBookingRequest();
 
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(service.id)
 			.withCitizenEmail('test@mail.com')
-			.withStartDateTime(bookingRequest.startDateTime)
-			.withEndDateTime(bookingRequest.endDateTime)
+			.withStartDateTime(bookingUpdateRequest.startDateTime)
+			.withEndDateTime(bookingUpdateRequest.endDateTime)
 			.build();
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
@@ -496,31 +538,31 @@ describe('Bookings.Service', () => {
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
 
-		await bookingService.update(1, bookingRequest, 2, true);
+		await bookingService.update(1, bookingUpdateRequest, 2, true);
 
 		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Update);
 	});
 
 	it('should call log with update action when updating service provider', async () => {
 		const bookingService = Container.get(BookingsService);
-		const bookingRequest = getBookingRequest();
+		const bookingUpdateRequest = getUpdateBookingRequest();
 
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(service.id)
-			.withCitizenEmail(bookingRequest.citizenEmail)
-			.withStartDateTime(bookingRequest.startDateTime)
-			.withEndDateTime(bookingRequest.endDateTime)
+			.withCitizenEmail(bookingUpdateRequest.citizenEmail)
+			.withStartDateTime(bookingUpdateRequest.startDateTime)
+			.withEndDateTime(bookingUpdateRequest.endDateTime)
 			.withServiceProviderId(1)
 			.build();
 
-		bookingRequest.serviceProviderId = 123;
+		bookingUpdateRequest.serviceProviderId = 123;
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
 
-		await bookingService.update(1, bookingRequest, 2, true);
+		await bookingService.update(1, bookingUpdateRequest, 2, true);
 
 		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Update);
 	});

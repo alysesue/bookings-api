@@ -42,6 +42,14 @@ export class BookingRequest extends BookingDetailsRequest {
 	public captchaOrigin?: string | null;
 }
 
+export class BookingUpdateRequest extends BookingRequest {
+	constructor() {
+		super();
+	}
+
+	public citizenUinFinUpdated: boolean;
+}
+
 export interface RescheduleBookingRequest extends BookingRequest {
 	status: BookingStatus;
 	serviceProvider: ServiceProvider;

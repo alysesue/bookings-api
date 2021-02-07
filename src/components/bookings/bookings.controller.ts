@@ -21,6 +21,7 @@ import {
 	BookingRequest,
 	BookingResponse,
 	BookingSearchRequest,
+	BookingUpdateRequest,
 } from './bookings.apicontract';
 import { BookingsService } from './bookings.service';
 import { TimeslotsService } from '../timeslots/timeslots.service';
@@ -160,7 +161,7 @@ export class BookingsController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async updateBooking(
 		@Path() bookingId: number,
-		@Body() bookingRequest: BookingRequest,
+		@Body() bookingRequest: BookingUpdateRequest,
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.update(bookingId, bookingRequest, serviceId, true);
