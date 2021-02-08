@@ -247,12 +247,6 @@ export class BookingsService {
 
 		const autoAcceptBookings = updatedBooking.serviceProvider.autoAcceptBookings;
 
-		if (autoAcceptBookings) {
-			updatedBooking.status = BookingStatus.Accepted;
-		} else {
-			updatedBooking.status = BookingStatus.PendingApproval;
-		}
-
 		autoAcceptBookings
 			? (updatedBooking.status = BookingStatus.Accepted)
 			: (updatedBooking.status = BookingStatus.PendingApproval);
