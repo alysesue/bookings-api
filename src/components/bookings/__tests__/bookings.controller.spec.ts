@@ -3,7 +3,7 @@ import * as Koa from 'koa';
 import { Booking, BookingChangeLog, BookingStatus, User } from '../../../models';
 import { BookingsController } from '../bookings.controller';
 import { BookingsService } from '../bookings.service';
-import { BookingAcceptRequest, BookingRequest, BookingResponse } from '../bookings.apicontract';
+import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingUpdateRequest } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
@@ -101,7 +101,7 @@ describe('Bookings.Controller', () => {
 		const bookingId = 1;
 		BookingsServiceMock.mockUpdateBooking = testBooking2;
 
-		const res = await controller.updateBooking(bookingId, new BookingRequest(), 1);
+		const res = await controller.updateBooking(bookingId, new BookingUpdateRequest(), 1);
 
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 		expect(res.data.startDateTime.toISOString()).toEqual('2020-10-01T15:00:00.000Z');
