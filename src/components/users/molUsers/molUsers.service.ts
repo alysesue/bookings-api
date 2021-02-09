@@ -7,7 +7,7 @@ import { getConfig } from '../../../config/app-config';
 export type OptionsMol = {
 	token: string;
 	// Send email false by default
-	sendEmail?: boolean;
+	desiredDeliveryMediumsHeader?: string;
 };
 
 export abstract class MolUsersService {
@@ -19,9 +19,9 @@ export class MolUsersServiceAuthForwarder extends MolUsersService {
 	public async molUpsertUser(users: IMolCognitoUserRequest[], options?: OptionsMol): Promise<MolUpsertUsersResult> {
 		const config = getConfig();
 		const URL_MOL_USER = `${config.molAdminAuthForwarder.url}/api/users/v1`;
-		const sendEmailHeader = options?.sendEmail
+		const sendEmailHeader = options?.desiredDeliveryMediumsHeader
 			? {
-					'desired-delivery-medium': 'EMAIL',
+					'desired-delivery-medium': options.desiredDeliveryMediumsHeader,
 			  }
 			: {};
 		try {

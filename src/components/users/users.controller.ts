@@ -43,6 +43,8 @@ export class UsersController extends Controller {
 	 * Create new service if not exist
 	 * @param serviceRequest
 	 * @param @isInt serviceId The service id.
+	 *  The `desired-delivery-medium` header is expected as a comma separated string and if not set will default to not sending any invitations<br/>
+	 * e.g. "desired-delivery-medium": "EMAIL,SMS"
 	 */
 	@Post('service-admins/upsert/csv')
 	@SuccessResponse(200, 'Created')
@@ -51,13 +53,14 @@ export class UsersController extends Controller {
 	public async createServicesAdminsCSV(
 		@Body() serviceRequest: string,
 		@Header('cookie') cookie: string,
+		@Header('desired-delivery-medium') desiredDeliveryMediumsHeader?: string,
 	): Promise<MolUpsertUsersResult> {
 		const requestList = parseCsv<MolServiceAdminUserCSV>(serviceRequest);
 		const entries = requestList.map((user) => ({
 			...user,
 			serviceNames: stringToArrayOfStringWhenSemicolon(user.serviceNames),
 		}));
-		return await this.servicesService.createServicesAdmins(entries, cookie);
+		return await this.servicesService.createServicesAdmins(entries, cookie, desiredDeliveryMediumsHeader);
 	}
 
 	/**
@@ -65,6 +68,8 @@ export class UsersController extends Controller {
 	 * Create new service if not exist
 	 * @param serviceRequest
 	 * @param @isInt serviceId The service id.
+	 * The `desired-delivery-medium` header is expected as a comma separated string and if not set will default to not sending any invitations<br/>
+	 * e.g. "desired-delivery-medium": "EMAIL,SMS"
 	 */
 	@Post('service-admins/upsert')
 	@SuccessResponse(200, 'Created')
@@ -73,14 +78,17 @@ export class UsersController extends Controller {
 	public async createServicesAdmins(
 		@Body() data: MolServiceAdminUserContract[],
 		@Header('cookie') cookie: string,
+		@Header('desired-delivery-medium') desiredDeliveryMediumsHeader?: string,
 	): Promise<MolUpsertUsersResult> {
-		return await this.servicesService.createServicesAdmins(data, cookie);
+		return await this.servicesService.createServicesAdmins(data, cookie, desiredDeliveryMediumsHeader);
 	}
 
 	/**
 	 * Creates multiple service providers (CSV format). Only available for organisation user.
 	 * @param spRequest
 	 * @param @isInt serviceId The service id.
+	 *  The `desired-delivery-medium` header is expected as a comma separated string and if not set will default to not sending any invitations<br/>
+	 * e.g. "desired-delivery-medium": "EMAIL,SMS"
 	 */
 	@Post('service-providers/upsert/csv')
 	@SuccessResponse(200, 'Created')
@@ -89,15 +97,18 @@ export class UsersController extends Controller {
 	public async onboardServiceProvidersCSV(
 		@Body() spRequest: string,
 		@Header('cookie') cookie: string,
+		@Header('desired-delivery-medium') desiredDeliveryMediumsHeader?: string,
 	): Promise<MolUpsertUsersResult> {
 		const entries = parseCsv<MolServiceProviderOnboardContract>(spRequest);
-		return await this.serviceProvidersService.createServiceProviders(entries, cookie);
+		return await this.serviceProvidersService.createServiceProviders(entries, cookie, desiredDeliveryMediumsHeader);
 	}
 
 	/**
 	 * Creates multiple service providers (JSON format). Only available for organisation user.
 	 * @param spRequest
 	 * @param @isInt serviceId The service id.
+	 * The `desired-delivery-medium` header is expected as a comma separated string and if not set will default to not sending any invitations<br/>
+	 * e.g. "desired-delivery-medium": "EMAIL,SMS"
 	 */
 	@Post('service-providers/upsert')
 	@SuccessResponse(200, 'Created')
@@ -106,7 +117,12 @@ export class UsersController extends Controller {
 	public async onboardServiceProviders(
 		@Body() serviceProviderOnboards: MolServiceProviderOnboardContract[],
 		@Header('cookie') cookie: string,
+		@Header('desired-delivery-medium') desiredDeliveryMediumsHeader?: string,
 	): Promise<MolUpsertUsersResult> {
-		return await this.serviceProvidersService.createServiceProviders(serviceProviderOnboards, cookie);
+		return await this.serviceProvidersService.createServiceProviders(
+			serviceProviderOnboards,
+			cookie,
+			desiredDeliveryMediumsHeader,
+		);
 	}
 }

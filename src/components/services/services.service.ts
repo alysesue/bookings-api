@@ -75,6 +75,7 @@ export class ServicesService {
 	public async createServicesAdmins(
 		adminUserContracts?: MolServiceAdminUserContract[],
 		authorisationToken?: string,
+		desiredDeliveryMediumsHeader?: string,
 	): Promise<MolUpsertUsersResult> {
 		const orga = await this.userContext.verifyAndGetFirstAuthorisedOrganisation(
 			'User not authorized to add services.',
@@ -82,7 +83,7 @@ export class ServicesService {
 		const molAdminUser = MolUsersMapper.mapServicesAdminsGroups(adminUserContracts, orga);
 		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molAdminUser, {
 			token: authorisationToken,
-			sendEmail: true,
+			desiredDeliveryMediumsHeader,
 		});
 
 		if (res?.error) return res;
