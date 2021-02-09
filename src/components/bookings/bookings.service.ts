@@ -241,15 +241,17 @@ export class BookingsService {
 		const currentUser = await this.userContext.getCurrentUser();
 		BookingsMapper.mapRequest(bookingRequest, updatedBooking, currentUser);
 
-		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
+		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
 		});
 
-		const autoAcceptBookings = updatedBooking.serviceProvider.autoAcceptBookings;
-
-		autoAcceptBookings
-			? (updatedBooking.status = BookingStatus.Accepted)
-			: (updatedBooking.status = BookingStatus.PendingApproval);
+		if (serviceProvider) {
+			updatedBooking.serviceProvider = serviceProvider;
+			const autoAcceptBookings = serviceProvider.autoAcceptBookings;
+			autoAcceptBookings
+				? (updatedBooking.status = BookingStatus.Accepted)
+				: (updatedBooking.status = BookingStatus.PendingApproval);
+		}
 
 		const validator = this.bookingsValidatorFactory.getValidator(isAdmin);
 		await validator.validate(updatedBooking);
