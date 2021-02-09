@@ -8,7 +8,6 @@ import {
 	BookingRequest,
 	BookingSearchRequest,
 	BookingUpdateRequest,
-	RescheduleBookingRequest,
 } from './bookings.apicontract';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
@@ -52,7 +51,7 @@ export class BookingsService {
 			return false;
 		}
 
-		if (currentUser.isCitizen()) {
+		if (currentUser.isCitizen() || currentUser.isAnonymous()) {
 			return serviceProvider.autoAcceptBookings;
 		}
 
@@ -175,18 +174,36 @@ export class BookingsService {
 		return [ChangeLogAction.Reject, booking];
 	}
 
-	private async rescheduleInternal(booking: Booking, rescheduleRequest: BookingRequest, isAdmin: boolean) {
+	private async rescheduleInternal(
+		booking: Booking,
+		rescheduleRequest: BookingRequest,
+		isAdmin: boolean,
+	): Promise<[ChangeLogAction, Booking]> {
 		if (!booking.isValidForRescheduling()) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Booking in invalid state for rescheduling');
 		}
 
-		const request = {
-			...rescheduleRequest,
-			status: BookingStatus.PendingApproval,
-			serviceProvider: null,
-		} as RescheduleBookingRequest;
+		const updatedBooking = booking.clone();
+		const currentUser = await this.userContext.getCurrentUser();
+		BookingsMapper.mapRequest(rescheduleRequest, updatedBooking, currentUser);
 
-		return await this.updateInternal(booking, request, isAdmin);
+		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({
+			id: updatedBooking.serviceProviderId,
+		});
+
+		if (serviceProvider) {
+			updatedBooking.status = BookingsService.getBookingCreationStatus(currentUser, serviceProvider);
+		}
+
+		const validator = this.bookingsValidatorFactory.getValidator(isAdmin);
+		await validator.validate(updatedBooking);
+
+		const changeLogAction = updatedBooking.getUpdateChangeType(booking);
+		await this.loadBookingDependencies(updatedBooking);
+		await this.verifyActionPermission(updatedBooking, changeLogAction);
+		await this.bookingsRepository.update(updatedBooking);
+
+		return [changeLogAction, updatedBooking];
 	}
 
 	private async acceptBookingInternal(
@@ -241,17 +258,9 @@ export class BookingsService {
 		const currentUser = await this.userContext.getCurrentUser();
 		BookingsMapper.mapRequest(bookingRequest, updatedBooking, currentUser);
 
-		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({
+		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
 		});
-
-		if (serviceProvider) {
-			updatedBooking.serviceProvider = serviceProvider;
-			const autoAcceptBookings = serviceProvider.autoAcceptBookings;
-			autoAcceptBookings
-				? (updatedBooking.status = BookingStatus.Accepted)
-				: (updatedBooking.status = BookingStatus.PendingApproval);
-		}
 
 		const validator = this.bookingsValidatorFactory.getValidator(isAdmin);
 		await validator.validate(updatedBooking);
@@ -262,6 +271,12 @@ export class BookingsService {
 		await this.bookingsRepository.update(updatedBooking);
 
 		return [changeLogAction, updatedBooking];
+	}
+
+	private static getBookingCreationStatus(currentUser: User, serviceProvider?: ServiceProvider): BookingStatus {
+		return this.shouldAutoAccept(currentUser, serviceProvider)
+			? BookingStatus.Accepted
+			: BookingStatus.PendingApproval;
 	}
 
 	private async loadBookingDependencies(booking: Booking): Promise<Booking> {

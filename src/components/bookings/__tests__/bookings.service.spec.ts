@@ -710,9 +710,9 @@ describe('Bookings.Service', () => {
 				endDateTime: new Date('2020-10-01T06:00:00'),
 			} as BookingRequest;
 
-			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 			UserContextMock.getAuthGroups.mockImplementation(() =>
-				Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
 			);
 
 			const result = await bookingService.reschedule(1, rescheduleRequest, false);
