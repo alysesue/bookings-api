@@ -199,7 +199,7 @@ export class ServiceProvidersService {
 	public async createServiceProviders(
 		serviceProviderOnboardContracts: MolServiceProviderOnboardContract[],
 		cookie: string,
-		desiredDeliveryMediumsHeader: string,
+		desiredDeliveryMediumsHeader?: string,
 	): Promise<MolUpsertUsersResult> {
 		const organisation = await this.userContext.verifyAndGetFirstAuthorisedOrganisation(
 			'Cannot add service provider with this organisation',

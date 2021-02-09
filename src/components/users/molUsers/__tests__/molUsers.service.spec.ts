@@ -37,7 +37,7 @@ describe('Test class MolUsersService', () => {
 		(post as jest.Mock).mockReturnValue({ user });
 		(getConfig as jest.Mock).mockReturnValue({ isLocal: false, molAdminAuthForwarder: { url: 'url' } });
 		const service = Container.get(MolUsersServiceFactory).getService();
-		await service.molUpsertUser([], { token: '', sendEmail: true });
+		await service.molUpsertUser([], { token: '', desiredDeliveryMediumsHeader: 'EMAIL' });
 		expect(post).toBeCalledTimes(1);
 		expect((post as jest.Mock).mock.calls[0][2]['desired-delivery-medium']).toBe('EMAIL');
 	});

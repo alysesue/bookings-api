@@ -124,7 +124,6 @@ describe('Services service tests', () => {
 
 		await Container.get(ServicesService).createServicesAdmins([admin], 'token');
 		expect(MolUsersServiceMock.molUpsertUser).toBeCalled();
-		expect(MolUsersServiceMock.molUpsertUser.mock.calls[0][1].sendEmail).toBe(true);
 		expect(ServicesRepositoryMock.getServicesByName).toBeCalled();
 		expect(ServicesRepositoryMock.saveMany).toBeCalled();
 	});
