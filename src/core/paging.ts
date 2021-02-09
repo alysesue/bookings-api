@@ -24,7 +24,7 @@ export class PagingHelper {
 		idColumn: string,
 		pagingOptions: { page: number; limit: number; maxId?: number },
 	): Promise<IPagedEntities<T>> {
-		const { page, limit, maxId } = pagingOptions;
+		const { page, limit, maxId: initialMaxId } = pagingOptions;
 		if (!page || page < 1) {
 			throw new Error('Page number must be at least 1');
 		}
@@ -37,19 +37,24 @@ export class PagingHelper {
 			return await PagingHelper.getAllAsPaging(query);
 		}
 
-		const countQuery = new SelectQueryBuilder<T>(query)
+		const { paging_max_id } = await new SelectQueryBuilder<T>(query)
 			.orderBy()
 			.select(`MAX(${idColumn})`, 'paging_max_id')
-			.addSelect(`COUNT(DISTINCT(${idColumn}))`, 'paging_count_value');
-
-		const { paging_max_id, paging_count_value } = await countQuery.getRawOne<{
-			paging_max_id: any;
-			paging_count_value: any;
-		}>();
+			.getRawOne<{
+				paging_max_id: any;
+			}>();
 		const maxIdDBValue = Number.parseInt(`${paging_max_id}`, 10) || 0;
+		const pagingMaxId = initialMaxId || maxIdDBValue;
+
+		const { paging_count_value } = await new SelectQueryBuilder<T>(query)
+			.orderBy()
+			.andWhere(`${idColumn} <= :pagingMaxId`, { pagingMaxId })
+			.select(`COUNT(DISTINCT(${idColumn}))`, 'paging_count_value')
+			.getRawOne<{
+				paging_count_value: any;
+			}>();
 		const total = Number.parseInt(`${paging_count_value}`, 10) || 0;
 
-		const pagingMaxId = maxId || maxIdDBValue;
 		const pagingQuery = new SelectQueryBuilder<T>(query)
 			.andWhere(`${idColumn} <= :pagingMaxId`, { pagingMaxId })
 			.skip(limit * (page - 1))
@@ -63,7 +68,7 @@ export class PagingHelper {
 			limit,
 			total,
 			maxId: pagingMaxId,
-			outdatedMaxId: !!maxId && maxIdDBValue !== maxId,
+			outdatedMaxId: !!initialMaxId && maxIdDBValue !== initialMaxId,
 			hasMore: maxPage > page,
 		};
 
