@@ -92,7 +92,7 @@ export class BookingsService {
 			if (!bookingRequest.citizenUinFinUpdated) {
 				bookingRequest.citizenUinFin = _booking.citizenUinFin;
 			}
-			return this.updateInternal(_booking, bookingRequest, isAdmin);
+			return this.updateInternal(_booking, bookingRequest, () => {}, isAdmin);
 		};
 		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), updateAction);
 	}
@@ -175,35 +175,22 @@ export class BookingsService {
 	}
 
 	private async rescheduleInternal(
-		booking: Booking,
+		previousBooking: Booking,
 		rescheduleRequest: BookingRequest,
 		isAdmin: boolean,
 	): Promise<[ChangeLogAction, Booking]> {
-		if (!booking.isValidForRescheduling()) {
+		if (!previousBooking.isValidForRescheduling()) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Booking in invalid state for rescheduling');
 		}
-
-		const updatedBooking = booking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
-		BookingsMapper.mapRequest(rescheduleRequest, updatedBooking, currentUser);
 
-		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({
-			id: updatedBooking.serviceProviderId,
-		});
+		const afterMap = (updatedBooking: Booking, serviceProvider: ServiceProvider) => {
+			if (serviceProvider) {
+				updatedBooking.status = BookingsService.getBookingCreationStatus(currentUser, serviceProvider);
+			}
+		};
 
-		if (serviceProvider) {
-			updatedBooking.status = BookingsService.getBookingCreationStatus(currentUser, serviceProvider);
-		}
-
-		const validator = this.bookingsValidatorFactory.getValidator(isAdmin);
-		await validator.validate(updatedBooking);
-
-		const changeLogAction = updatedBooking.getUpdateChangeType(booking);
-		await this.loadBookingDependencies(updatedBooking);
-		await this.verifyActionPermission(updatedBooking, changeLogAction);
-		await this.bookingsRepository.update(updatedBooking);
-
-		return [changeLogAction, updatedBooking];
+		return this.updateInternal(previousBooking, rescheduleRequest, afterMap, isAdmin);
 	}
 
 	private async acceptBookingInternal(
@@ -252,6 +239,7 @@ export class BookingsService {
 	public async updateInternal(
 		previousBooking: Booking,
 		bookingRequest: BookingRequest,
+		afterMap: (updatedBooking: Booking, serviceProvider: ServiceProvider) => void | Promise<void>,
 		isAdmin: boolean,
 	): Promise<[ChangeLogAction, Booking]> {
 		const updatedBooking = previousBooking.clone();
@@ -261,6 +249,7 @@ export class BookingsService {
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
 		});
+		await afterMap(updatedBooking, updatedBooking.serviceProvider);
 
 		const validator = this.bookingsValidatorFactory.getValidator(isAdmin);
 		await validator.validate(updatedBooking);
