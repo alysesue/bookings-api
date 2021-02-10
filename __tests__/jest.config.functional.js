@@ -25,6 +25,7 @@ module.exports = {
 	],
 	rootDir: "../",
 	verbose: true,
+	silent: false,
 	bail: true,
 	globalSetup: "./__tests__/jest-global-setup.js",
 	setupFiles: ["./__tests__/jest.setup.js"],

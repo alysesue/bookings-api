@@ -1,9 +1,11 @@
 import { RequestEndpoint } from 'mol-lib-common';
 import * as request from 'request';
+import * as requestPromise from 'request-promise-native';
 import * as setCookieParser from 'set-cookie-parser';
 
 class RequestEndpointSG {
 	private _requestEndpoint: RequestEndpoint;
+	private _headers: { [e: string]: string };
 
 	constructor() {
 		const BASE_URL = process.env['FUNCTIONAL_TEST_BASE_URL'];
@@ -12,10 +14,40 @@ class RequestEndpointSG {
 			baseUrl: BASE_URL,
 			json: true,
 		});
+		this._headers = {};
+	}
+
+	private async apiRequest(options: { method: string; uri: string; body: any; qs: any }): Promise<request.Response> {
+		const BASE_URL = process.env['FUNCTIONAL_TEST_BASE_URL'];
+		let response: request.Response;
+
+		try {
+			await requestPromise({
+				baseUrl: BASE_URL,
+				json: true,
+				headers: this._headers,
+				...options,
+				callback: (_error: any, _response: request.Response) => {
+					response = _response;
+				},
+			});
+
+			return response;
+		} catch (error) {
+			if (response) {
+				// tslint:disable-next-line: no-console
+				console.log(error.name, error.message);
+
+				return response;
+			} else {
+				throw error;
+			}
+		}
 	}
 
 	public setHeaders = (headerObject: { [e: string]: string }) => {
 		Object.keys(headerObject).forEach((key) => {
+			this._headers[key] = headerObject[key];
 			this._requestEndpoint.setHeader(key, headerObject[key]);
 		});
 		return this;
@@ -41,14 +73,14 @@ class RequestEndpointSG {
 		return this._requestEndpoint.post(path, data);
 	}
 
-	public put(
+	public async put(
 		path: string,
 		data?: {
 			params?: object;
 			body?: any;
 		},
 	): Promise<request.Response> {
-		return this._requestEndpoint.put(path, data);
+		return await this.apiRequest({ method: 'PUT', uri: path, qs: data?.params, body: data?.body });
 	}
 
 	public delete(

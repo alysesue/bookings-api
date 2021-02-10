@@ -101,7 +101,7 @@ describe('Bookings.Controller', () => {
 		const bookingId = 1;
 		BookingsServiceMock.mockUpdateBooking = testBooking2;
 
-		const res = await controller.updateBooking(bookingId, new BookingUpdateRequest(), 1);
+		const res = await controller.updateBooking(bookingId, new BookingUpdateRequest());
 
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 		expect(res.data.startDateTime.toISOString()).toEqual('2020-10-01T15:00:00.000Z');
@@ -334,7 +334,7 @@ class BookingsServiceMock implements Partial<BookingsService> {
 		return BookingsServiceMock.mockPostBooking;
 	}
 
-	public async update(bookingId: number, bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
+	public async update(bookingId: number, bookingRequest: BookingRequest): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
 		return BookingsServiceMock.mockUpdateBooking;
 	}

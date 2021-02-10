@@ -3,6 +3,7 @@ import { AnonmymousEndpointSG, CitizenRequestEndpointSG } from '../../utils/requ
 import { populateOutOfSlotBooking, populateUserServiceProvider, populateWeeklyTimesheet } from '../../Populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import * as request from 'request';
+import { BookingStatus } from '../../../src/models';
 
 describe('Bookings functional tests', () => {
 	const pgClient = new PgClient();
@@ -65,6 +66,26 @@ describe('Bookings functional tests', () => {
 		});
 	};
 
+	const postCitizenReschedule = async (bookingId: number): Promise<request.Response> => {
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 3, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 4, 0));
+
+		const endpoint = CitizenRequestEndpointSG.create({
+			citizenUinFin,
+			serviceId,
+		});
+
+		return await endpoint.post(`/bookings/${bookingId}/reschedule`, {
+			body: {
+				startDateTime,
+				endDateTime,
+				serviceProviderId: serviceProvider.id,
+				citizenName,
+				citizenEmail,
+			},
+		});
+	};
+
 	it('admin should create out of slot booking and citizen cancels a booking', async () => {
 		const startDateTime = new Date(Date.UTC(2051, 11, 10, 0, 0));
 		const endDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
@@ -109,35 +130,60 @@ describe('Bookings functional tests', () => {
 		}
 	});
 
-	it('should create in-slot booking as a citizen', async () => {
+	it('[Auto Accept] should create in-slot booking as a citizen', async () => {
 		const response = await postCitizenInSlotBooking();
 		expect(response.statusCode).toBe(201);
 		expect(response.body).toBeDefined();
 		expect(response.body.data.id).toBeDefined();
+		expect(response.body.data.status).toBe(BookingStatus.Accepted);
 	});
 
-	it('should reschedule in-slot booking as a citizen', async () => {
+	it('[Auto Accept] should reschedule in-slot booking as a citizen', async () => {
+		const bookingResponse = await postCitizenInSlotBooking();
+		const bookingId = bookingResponse.body.data.id;
+		const response = await postCitizenReschedule(bookingId);
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body.data.status).toBe(BookingStatus.Accepted);
+	});
+
+	it('[Pending approval] should create in-slot booking as a citizen', async () => {
+		await pgClient.setServiceProviderAutoAccept({
+			serviceProviderId: serviceProvider.id,
+			autoAcceptBookings: false,
+		});
+		const response = await postCitizenInSlotBooking();
+		expect(response.statusCode).toBe(201);
+		expect(response.body).toBeDefined();
+		expect(response.body.data.id).toBeDefined();
+		expect(response.body.data.status).toBe(BookingStatus.PendingApproval);
+	});
+
+	it('[Pending approval] should reschedule in-slot booking as a citizen', async () => {
+		await pgClient.setServiceProviderAutoAccept({
+			serviceProviderId: serviceProvider.id,
+			autoAcceptBookings: false,
+		});
+		const bookingResponse = await postCitizenInSlotBooking();
+		const bookingId = bookingResponse.body.data.id;
+		const response = await postCitizenReschedule(bookingId);
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body.data.status).toBe(BookingStatus.PendingApproval);
+	});
+
+	it('[Pending approval - change after booking] should reschedule in-slot booking as a citizen', async () => {
 		const bookingResponse = await postCitizenInSlotBooking();
 		const bookingId = bookingResponse.body.data.id;
 
-		const startDateTime = new Date(Date.UTC(2051, 11, 10, 3, 0));
-		const endDateTime = new Date(Date.UTC(2051, 11, 10, 4, 0));
-
-		const endpoint = CitizenRequestEndpointSG.create({
-			citizenUinFin,
-			serviceId,
+		await pgClient.setServiceProviderAutoAccept({
+			serviceProviderId: serviceProvider.id,
+			autoAcceptBookings: false,
 		});
-		const response = await endpoint.post(`/bookings/${bookingId}/reschedule`, {
-			body: {
-				startDateTime,
-				endDateTime,
-				serviceProviderId: serviceProvider.id,
-				citizenName,
-				citizenEmail,
-			},
-		});
+		const response = await postCitizenReschedule(bookingId);
 
 		expect(response.statusCode).toBe(200);
+		expect(response.body.data.status).toBe(BookingStatus.PendingApproval);
 	});
 
 	it('should NOT create in-slot booking as anonymous (when service is not configured)', async () => {

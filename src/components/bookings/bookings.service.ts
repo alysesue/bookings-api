@@ -8,7 +8,6 @@ import {
 	BookingRequest,
 	BookingSearchRequest,
 	BookingUpdateRequest,
-	RescheduleBookingRequest,
 } from './bookings.apicontract';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
@@ -52,7 +51,7 @@ export class BookingsService {
 			return false;
 		}
 
-		if (currentUser.isCitizen()) {
+		if (currentUser.isCitizen() || currentUser.isAnonymous()) {
 			return serviceProvider.autoAcceptBookings;
 		}
 
@@ -83,17 +82,12 @@ export class BookingsService {
 		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), acceptAction);
 	}
 
-	public async update(
-		bookingId: number,
-		bookingRequest: BookingUpdateRequest,
-		serviceId: number,
-		isAdmin: boolean,
-	): Promise<Booking> {
+	public async update(bookingId: number, bookingRequest: BookingUpdateRequest, isAdmin: boolean): Promise<Booking> {
 		const updateAction = (_booking) => {
 			if (!bookingRequest.citizenUinFinUpdated) {
 				bookingRequest.citizenUinFin = _booking.citizenUinFin;
 			}
-			return this.updateInternal(_booking, bookingRequest, isAdmin);
+			return this.updateInternal(_booking, bookingRequest, () => {}, isAdmin);
 		};
 		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), updateAction);
 	}
@@ -175,18 +169,23 @@ export class BookingsService {
 		return [ChangeLogAction.Reject, booking];
 	}
 
-	private async rescheduleInternal(booking: Booking, rescheduleRequest: BookingRequest, isAdmin: boolean) {
-		if (!booking.isValidForRescheduling()) {
+	private async rescheduleInternal(
+		previousBooking: Booking,
+		rescheduleRequest: BookingRequest,
+		isAdmin: boolean,
+	): Promise<[ChangeLogAction, Booking]> {
+		if (!previousBooking.isValidForRescheduling()) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Booking in invalid state for rescheduling');
 		}
+		const currentUser = await this.userContext.getCurrentUser();
 
-		const request = {
-			...rescheduleRequest,
-			status: BookingStatus.PendingApproval,
-			serviceProvider: null,
-		} as RescheduleBookingRequest;
+		const afterMap = (updatedBooking: Booking, serviceProvider: ServiceProvider) => {
+			if (serviceProvider) {
+				updatedBooking.status = BookingsService.getBookingCreationStatus(currentUser, serviceProvider);
+			}
+		};
 
-		return await this.updateInternal(booking, request, isAdmin);
+		return this.updateInternal(previousBooking, rescheduleRequest, afterMap, isAdmin);
 	}
 
 	private async acceptBookingInternal(
@@ -235,6 +234,7 @@ export class BookingsService {
 	public async updateInternal(
 		previousBooking: Booking,
 		bookingRequest: BookingRequest,
+		afterMap: (updatedBooking: Booking, serviceProvider: ServiceProvider) => void | Promise<void>,
 		isAdmin: boolean,
 	): Promise<[ChangeLogAction, Booking]> {
 		const updatedBooking = previousBooking.clone();
@@ -244,6 +244,7 @@ export class BookingsService {
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
 		});
+		await afterMap(updatedBooking, updatedBooking.serviceProvider);
 
 		const validator = this.bookingsValidatorFactory.getValidator(isAdmin);
 		await validator.validate(updatedBooking);
@@ -254,6 +255,12 @@ export class BookingsService {
 		await this.bookingsRepository.update(updatedBooking);
 
 		return [changeLogAction, updatedBooking];
+	}
+
+	private static getBookingCreationStatus(currentUser: User, serviceProvider?: ServiceProvider): BookingStatus {
+		return this.shouldAutoAccept(currentUser, serviceProvider)
+			? BookingStatus.Accepted
+			: BookingStatus.PendingApproval;
 	}
 
 	private async loadBookingDependencies(booking: Booking): Promise<Booking> {

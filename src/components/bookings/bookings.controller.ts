@@ -156,15 +156,13 @@ export class BookingsController extends Controller {
 	 */
 	@Put('{bookingId}')
 	@SuccessResponse(200, 'Updated')
-	@Security('service')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async updateBooking(
 		@Path() bookingId: number,
 		@Body() bookingRequest: BookingUpdateRequest,
-		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<BookingResponse>> {
-		const booking = await this.bookingsService.update(bookingId, bookingRequest, serviceId, true);
+		const booking = await this.bookingsService.update(bookingId, bookingRequest, true);
 		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getCurrentUser()));
 	}
 

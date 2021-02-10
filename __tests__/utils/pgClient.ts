@@ -57,6 +57,19 @@ export class PgClient {
 		});
 	}
 
+	public async setServiceProviderAutoAccept({
+		serviceProviderId,
+		autoAcceptBookings,
+	}: {
+		serviceProviderId: number;
+		autoAcceptBookings: boolean;
+	}): Promise<void> {
+		await this.pool.query({
+			text: `UPDATE public.service_provider set "_autoAcceptBookings" = $1 where _id = $2`,
+			values: [autoAcceptBookings, serviceProviderId],
+		});
+	}
+
 	public async close() {
 		await this.pool.end();
 	}
