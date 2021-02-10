@@ -82,12 +82,7 @@ export class BookingsService {
 		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), acceptAction);
 	}
 
-	public async update(
-		bookingId: number,
-		bookingRequest: BookingUpdateRequest,
-		serviceId: number,
-		isAdmin: boolean,
-	): Promise<Booking> {
+	public async update(bookingId: number, bookingRequest: BookingUpdateRequest, isAdmin: boolean): Promise<Booking> {
 		const updateAction = (_booking) => {
 			if (!bookingRequest.citizenUinFinUpdated) {
 				bookingRequest.citizenUinFin = _booking.citizenUinFin;
