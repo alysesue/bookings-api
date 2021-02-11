@@ -34,7 +34,7 @@ export class Organisation implements IOrganisation {
 		return this._name;
 	}
 
-	@Column({ type: 'jsonb', nullable: false })
+	@Column({ type: 'jsonb', nullable: false, default: '{}' })
 	private _configuration: OrgConfigurationJsonVersion & OrgConfigurationJsonSchema;
 
 	public get configuration(): OrgConfigurationJsonSchema {
@@ -49,7 +49,7 @@ export class Organisation implements IOrganisation {
 }
 
 type OrgConfigurationJsonVersion = {
-	schemaVersion: number;
+	schemaVersion?: number;
 };
 
 export type AuthGroupConfigurationJsonSchema = {
