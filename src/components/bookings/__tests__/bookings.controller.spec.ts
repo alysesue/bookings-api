@@ -1,6 +1,6 @@
 import { Container } from 'typescript-ioc';
 import * as Koa from 'koa';
-import { Booking, BookingChangeLog, BookingStatus, User } from '../../../models';
+import { Booking, BookingChangeLog, BookingStatus, Organisation, Service, User } from '../../../models';
 import { BookingsController } from '../bookings.controller';
 import { BookingsService } from '../bookings.service';
 import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingUpdateRequest } from '../bookings.apicontract';
@@ -15,6 +15,10 @@ import { IPagedEntities } from '../../../core/pagedEntities';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { ContainerContext } from '../../../infrastructure/containerContext.middleware';
 import { UserContext } from '../../../infrastructure/auth/userContext';
+import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
+import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+
+jest.mock('../../../models/uinFinConfiguration');
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -43,6 +47,9 @@ describe('Bookings.Controller', () => {
 		} as Koa.Context,
 	};
 
+	const organisation = new Organisation();
+	organisation.id = 1;
+
 	const testBooking1 = new BookingBuilder()
 		.withServiceId(1)
 		.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
@@ -51,12 +58,16 @@ describe('Bookings.Controller', () => {
 	testBooking1.id = 10;
 	testBooking1.createdLog = new BookingChangeLog();
 	testBooking1.createdLog.timestamp = new Date('2020-01-01T01:01:01Z');
+	testBooking1.service = new Service();
+	testBooking1.service.organisation = organisation;
 
 	const testBooking2 = new BookingBuilder()
 		.withServiceId(1)
 		.withStartDateTime(new Date('2020-10-01T15:00:00Z'))
 		.withEndDateTime(new Date('2020-10-02T16:00:00Z'))
 		.build();
+	testBooking2.service = new Service();
+	testBooking2.service.organisation = organisation;
 
 	const adminMock = User.createAdminUser({
 		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
@@ -67,13 +78,32 @@ describe('Bookings.Controller', () => {
 
 	beforeAll(() => {
 		Container.bind(BookingsService).to(BookingsServiceMock);
-		Container.bind(TimeslotsService).to(jest.fn(() => TimeslotsServiceMock));
+		Container.bind(TimeslotsService).factory(() => TimeslotsServiceMock);
 		Container.bind(CaptchaService).to(CaptchaServiceMock);
 		Container.bind(KoaContextStore).factory(() => KoaContextStoreMock);
 		Container.bind(UserContext).to(UserContextMock);
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
-		KoaContextStoreMock.koaContext.header = { origin: 'local.booking.gov.sg' };
 		Container.bind(ContainerContext).factory(() => ContainerContext);
+	});
+
+	beforeEach(() => {
+		jest.resetAllMocks();
+
+		TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockReturnValue(Promise.resolve([]));
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new OrganisationAdminAuthGroup(adminMock, [organisation])]),
+		);
+
+		UserContextMock.getSnapshot.mockReturnValue(
+			Promise.resolve({
+				user: adminMock,
+				authGroups: [new OrganisationAdminAuthGroup(adminMock, [organisation])],
+			}),
+		);
+
+		KoaContextStoreMock.koaContext.header = { origin: 'local.booking.gov.sg' };
+		(UinFinConfiguration as jest.Mock).mockImplementation(() => new UinFinConfigurationMock());
+		UinFinConfigurationMock.canViewPlainUinFin.mockReturnValue(false);
 	});
 
 	it('should accept booking', async () => {
@@ -216,9 +246,15 @@ describe('Bookings.Controller', () => {
 		const startTime = new Date('2020-10-01T01:00:00');
 		const endTime = new Date('2020-10-01T02:00:00');
 
-		BookingsServiceMock.getBookingPromise = Promise.resolve(
-			new BookingBuilder().withServiceId(1).withStartDateTime(startTime).withEndDateTime(endTime).build(),
-		);
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(startTime)
+			.withEndDateTime(endTime)
+			.build();
+		booking.service = new Service();
+		booking.service.organisation = new Organisation();
+
+		BookingsServiceMock.getBookingPromise = Promise.resolve(booking);
 
 		const result = await controller.getBooking(1);
 
@@ -290,7 +326,7 @@ describe('Bookings.Controller', () => {
 });
 
 const TimeslotsServiceMock = {
-	getAvailableProvidersForTimeslot: jest.fn<Promise<TimeslotServiceProviderResult[]>, any>(() => Promise.resolve([])),
+	getAvailableProvidersForTimeslot: jest.fn<Promise<TimeslotServiceProviderResult[]>, any>(),
 };
 
 class BookingsServiceMock implements Partial<BookingsService> {
@@ -350,5 +386,12 @@ export class CaptchaServiceMock implements Partial<CaptchaService> {
 
 	public async verify(...params): Promise<any> {
 		return await CaptchaServiceMock.verify(...params);
+	}
+}
+
+class UinFinConfigurationMock implements Partial<UinFinConfiguration> {
+	public static canViewPlainUinFin = jest.fn<boolean, any>();
+	public canViewPlainUinFin(...params): any {
+		return UinFinConfigurationMock.canViewPlainUinFin(...params);
 	}
 }

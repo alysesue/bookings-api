@@ -59,7 +59,8 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 				'booking_change_log',
 				'createdlog',
 				'createdlog."_bookingId" = booking._id AND createdlog._action = 1',
-			);
+			)
+			.leftJoinAndSelect('service_relation._organisation', 'org_relation');
 	}
 
 	public async getBooking(bookingId: number): Promise<Booking> {

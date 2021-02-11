@@ -2,13 +2,17 @@ import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
 import { ServiceProvider, User } from '../../../models';
 import { TimeslotsMapper } from '../timeslots.mapper';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
+import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
+
+jest.mock('../../../models/uinFinConfiguration');
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
-afterEach(() => {
+beforeEach(() => {
 	jest.resetAllMocks();
+	(UinFinConfiguration as jest.Mock).mockImplementation(() => new UinFinConfigurationMock());
 });
 
 describe('Timeslots Mapper', () => {
@@ -61,7 +65,12 @@ describe('Timeslots Mapper', () => {
 			email: 'test@email.com',
 			name: 'Name',
 		});
-		const res = TimeslotsMapper.mapTimeslotServiceProviders(timeslotServiceProviders, adminMock);
+		UinFinConfigurationMock.canViewPlainUinFin.mockReturnValue(false);
+
+		const res = TimeslotsMapper.mapTimeslotServiceProviders(timeslotServiceProviders, {
+			user: adminMock,
+			authGroups: [],
+		});
 		const [spResponse, totalCapacity, totalBooked] = res;
 		expect(spResponse.length).toBe(2);
 		expect(spResponse[0].capacity).toBe(1);
@@ -70,3 +79,10 @@ describe('Timeslots Mapper', () => {
 		expect(totalBooked).toBe(0);
 	});
 });
+
+class UinFinConfigurationMock implements Partial<UinFinConfiguration> {
+	public static canViewPlainUinFin = jest.fn<boolean, any>();
+	public canViewPlainUinFin(...params): any {
+		return UinFinConfigurationMock.canViewPlainUinFin(...params);
+	}
+}

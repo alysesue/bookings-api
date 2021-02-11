@@ -5,6 +5,7 @@ import { ServiceProviderResponseModel } from '../../../src/components/servicePro
 import * as request from 'request';
 import { BookingStatus } from '../../../src/models';
 
+// tslint:disable-next-line: no-big-function
 describe('Bookings functional tests', () => {
 	const pgClient = new PgClient();
 	const NAME_SERVICE_1 = 'service1';
