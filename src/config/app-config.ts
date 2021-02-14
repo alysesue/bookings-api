@@ -1,4 +1,7 @@
 import { ConfigUtils } from 'mol-lib-common';
+import { QueryRunner } from 'typeorm';
+import { pushIfNotPresent } from '../tools/arrays';
+import { Setting, SettingData } from '../models/entities/setting';
 
 const packageJSON = require('../../package.json');
 require('dotenv').config();
@@ -28,6 +31,24 @@ export const getConfig = () => ({
 	recaptchaProjectId: ConfigUtils.getValueFromEnv('RECAPTCHA_PROJECT_ID_BOOKINGSG_APP'),
 	recaptchaSiteKey: ConfigUtils.getValueFromEnv('RECAPTCHA_SITE_KEY_BOOKINGSG_APP'),
 	accessControlAllowOrigin: ConfigUtils.getValueFromEnv('ACCESS_CONTROL_ALLOW_ORIGIN'),
+	urlRedirectionWhitelist: ConfigUtils.getValueFromEnv('URL_REDIRECTION_WHITELIST')?.split(','),
 });
 
 export const basePath = '/bookingsg';
+
+export const initPopulateDB = async (queryRunner: QueryRunner) => {
+	const conf = getConfig();
+
+	async function populateWhitelistURLRedirection() {
+		const settings: Setting[] = await queryRunner.query(`SELECT "setting"."data" FROM "setting"  WHERE "_id" = 1`);
+		const setting: SettingData = settings[0]?.data;
+		const newRedirectionWhitelistedUrl = setting.redirectionWhitelistedUrl || [];
+		conf.urlRedirectionWhitelist.forEach((s) => pushIfNotPresent(newRedirectionWhitelistedUrl, s));
+		setting.redirectionWhitelistedUrl = newRedirectionWhitelistedUrl;
+		const settingJSON = JSON.stringify(setting);
+		// tslint:disable-next-line:tsr-detect-sql-literal-injection
+		await queryRunner.query(`UPDATE "setting" SET "data"=('${settingJSON}') WHERE "_id" = 1`);
+	}
+
+	await populateWhitelistURLRedirection();
+};

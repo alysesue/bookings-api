@@ -9,6 +9,7 @@ const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
 const DEFAULT_SCHEFULE_FORM_CONFIRMED = false;
 
 @Entity()
+@Index(['_serviceId', '_name'])
 export class ServiceProvider implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
 	constructor() {}
 

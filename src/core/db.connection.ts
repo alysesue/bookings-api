@@ -1,6 +1,7 @@
 import { Connection, createConnection } from 'typeorm';
 import { Singleton } from 'typescript-ioc';
 import { getConnectionOptions } from './connectionOptions';
+import { initPopulateDB } from '../config/app-config';
 
 @Singleton
 export class DbConnection {
@@ -16,6 +17,12 @@ export class DbConnection {
 		await conn.runMigrations({
 			transaction: 'all',
 		});
+	}
+
+	public async runPopulate() {
+		const conn = await this.getConnection();
+		const queryRunner = conn.createQueryRunner();
+		await initPopulateDB(queryRunner);
 	}
 
 	public async getConnection(): Promise<Connection> {
