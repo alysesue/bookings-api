@@ -148,4 +148,15 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	public set isOnHold(isOnHold: boolean) {
 		this._isOnHold = isOnHold;
 	}
+
+	@Column({ nullable: true, default: false })
+	private _isStandAlone: boolean;
+
+	public get isStandAlone(): boolean {
+		return this._isStandAlone;
+	}
+
+	public set isStandAlone(isOnHold: boolean) {
+		this._isStandAlone = isOnHold;
+	}
 }
