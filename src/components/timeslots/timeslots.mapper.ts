@@ -7,7 +7,7 @@ import {
 import { BookingsMapper } from '../bookings/bookings.mapper';
 import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
 import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
-import { User } from '../../models';
+import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
 
 export class TimeslotsMapper {
 	public static mapAvailabilityToResponse(entries: AvailableTimeslotProviders[]): AvailabilityEntryResponse[] {
@@ -22,12 +22,15 @@ export class TimeslotsMapper {
 		return response;
 	}
 
-	public static mapTimeslotEntry(entry: AvailableTimeslotProviders, currentUser: User): TimeslotEntryResponse {
+	public static mapTimeslotEntry(
+		entry: AvailableTimeslotProviders,
+		userContext: UserContextSnapshot,
+	): TimeslotEntryResponse {
 		const [
 			timeslotServiceProviders,
 			totalCapacity,
 			totalAssignedBookings,
-		] = TimeslotsMapper.mapTimeslotServiceProviders(Array.from(entry.getTimeslotServiceProviders()), currentUser);
+		] = TimeslotsMapper.mapTimeslotServiceProviders(Array.from(entry.getTimeslotServiceProviders()), userContext);
 		const response = new TimeslotEntryResponse();
 		response.startTime = entry.startTime;
 		response.endTime = entry.endTime;
@@ -41,12 +44,12 @@ export class TimeslotsMapper {
 
 	public static mapTimeslotServiceProviders(
 		entries: TimeslotServiceProviderResult[],
-		currentUser: User,
+		userContext: UserContextSnapshot,
 	): [TimeslotServiceProviderResponse[], number, number] {
 		let totalCapacity = 0;
 		let totalAssignedBookings = 0;
 		const res = entries.map((entry) => {
-			const item = this.mapServiceProviderTimeslot(entry, currentUser);
+			const item = this.mapServiceProviderTimeslot(entry, userContext);
 			totalCapacity += item.capacity;
 			totalAssignedBookings += item.assignedBookingCount;
 			return item;
@@ -57,7 +60,7 @@ export class TimeslotsMapper {
 
 	private static mapServiceProviderTimeslot(
 		entry: TimeslotServiceProviderResult,
-		currentUser: User,
+		userContext: UserContextSnapshot,
 	): TimeslotServiceProviderResponse {
 		const item = new TimeslotServiceProviderResponse();
 		item.capacity = entry.capacity;
@@ -65,10 +68,10 @@ export class TimeslotsMapper {
 		item.assignedBookingCount = entry.acceptedBookings.length + entry.pendingBookings.length;
 		item.availabilityCount = entry.availabilityCount;
 		item.acceptedBookings = entry.acceptedBookings.map((booking) => {
-			return BookingsMapper.mapDataModel(booking, currentUser);
+			return BookingsMapper.mapDataModel(booking, userContext);
 		});
 		item.pendingBookings = entry.pendingBookings.map((booking) => {
-			return BookingsMapper.mapDataModel(booking, currentUser);
+			return BookingsMapper.mapDataModel(booking, userContext);
 		});
 		return item;
 	}

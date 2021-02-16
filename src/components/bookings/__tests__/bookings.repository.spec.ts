@@ -89,7 +89,7 @@ describe('Bookings repository', () => {
 				serviceProviderIds: [1],
 			},
 		);
-		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(1);
+		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(2);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
 		expect(PagingHelper.getManyWithPaging).toBeCalledTimes(1);
 	});
@@ -121,7 +121,7 @@ describe('Bookings repository', () => {
 			},
 		);
 
-		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(1);
+		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(2);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
 		expect(PagingHelper.getManyWithPaging).toBeCalledTimes(1);
 	});
@@ -148,7 +148,7 @@ describe('Bookings repository', () => {
 
 		expect(result.entries).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
-		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(1);
+		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(2);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
 		expect(PagingHelper.getManyWithPaging).toBeCalledTimes(1);
 	});
@@ -175,7 +175,7 @@ describe('Bookings repository', () => {
 
 		expect(result.entries).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalled();
-		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(1);
+		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(2);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
 		expect(PagingHelper.getManyWithPaging).toBeCalledTimes(1);
 	});
