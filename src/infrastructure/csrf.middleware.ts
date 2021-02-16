@@ -10,20 +10,19 @@ import { JwtUtils } from 'mol-lib-common';
 import { User } from '../models';
 import { DateHelper } from './dateHelper';
 
-const config = getConfig();
-
 export const XSRF_HEADER_NAME = 'x-xsrf-token';
 
-type JWTCsrf = {
+export type JWTCsrf = {
 	type: string;
 	cookieName: string;
 	uuid: string;
-	userId: number;
+	trackingId: string;
 	expiryDate: Date;
 };
 
 export const METHODS_TO_VERIFY_TOKEN = ['post', 'put', 'delete', 'patch'];
 export const METHODS_TO_CREAT_TOKEN = ['head'];
+const BufferEncoding = 'utf8';
 
 const getCurrentUser = async (ctx: Koa.Context): Promise<User> => {
 	const containerContext = ContainerContextMiddleware.getContainerContext(ctx);
@@ -32,25 +31,31 @@ const getCurrentUser = async (ctx: Koa.Context): Promise<User> => {
 };
 
 export class CreateCsrfMiddleware {
-	private _lazyKey = new AsyncLazy<jose.JWK.Key>(() => JwtUtils.createSymmetricKey(config.csrfSecret));
+	private _config: { isLocal: boolean; isAutomatedTest: boolean; csrfSecret: string };
+	private _lazyKey = new AsyncLazy<jose.JWK.Key>(() => JwtUtils.createSymmetricKey(this._config.csrfSecret));
 
-	private async createJwtToken(payload: JWTCsrf): Promise<string> {
+	constructor() {
+		this._config = getConfig();
+	}
+
+	public async createJwtToken(payload: JWTCsrf): Promise<string> {
 		const key = await this._lazyKey.getValue();
-		return await JwtUtils.encryptJwe(key, JSON.stringify(payload));
+		const input = Buffer.from(JSON.stringify(payload), BufferEncoding);
+		return await JwtUtils.encryptJwe(key, input);
 	}
 
 	private async createTokens(ctx: Koa.Context) {
 		const user = await getCurrentUser(ctx);
-		const userId = user?.id;
-		if ((user && user.isAgency()) || !userId) {
+		if (!user || user.isAgency()) {
 			return;
 		}
 
+		const trackingId = user.getTrackingId();
 		const cookieName = `x-${uuid.v4()}`;
 		const cookiePayload: JWTCsrf = {
 			type: 'cookie',
 			uuid: uuid.v4(),
-			userId,
+			trackingId,
 			cookieName,
 			expiryDate: DateHelper.addMinutes(new Date(), 1),
 		};
@@ -60,7 +65,7 @@ export class CreateCsrfMiddleware {
 
 		ctx.cookies.set(cookieName, jwtCookie, {
 			httpOnly: true,
-			sameSite: config.isLocal ? false : 'lax',
+			sameSite: this._config.isLocal ? false : 'lax',
 			maxAge: 10 * 60 * 1000,
 			overwrite: true,
 		});
@@ -80,12 +85,17 @@ export class CreateCsrfMiddleware {
 }
 
 export class VerifyCsrfMiddleware {
-	private _lazyKey = new AsyncLazy<jose.JWK.Key>(() => JwtUtils.createSymmetricKey(config.csrfSecret));
+	private _config: { isLocal: boolean; isAutomatedTest: boolean; csrfSecret: string };
+	private _lazyKey = new AsyncLazy<jose.JWK.Key>(() => JwtUtils.createSymmetricKey(this._config.csrfSecret));
+
+	constructor() {
+		this._config = getConfig();
+	}
 
 	private async readJwtToken(value: string): Promise<JWTCsrf> {
 		const key = await this._lazyKey.getValue();
 		const result = await JwtUtils.decryptJwe(key, value);
-		const decrypted = JSON.parse(result.payload.toString('utf8')) as JWTCsrf;
+		const decrypted = JSON.parse(result.payload.toString(BufferEncoding)) as JWTCsrf;
 		if (decrypted.expiryDate < new Date()) {
 			return {} as JWTCsrf;
 		}
@@ -96,7 +106,7 @@ export class VerifyCsrfMiddleware {
 		const value = ctx.cookies.get(cookieName);
 		ctx.cookies.set(cookieName, undefined, {
 			httpOnly: true,
-			sameSite: config.isLocal ? false : 'lax',
+			sameSite: this._config.isLocal ? false : 'lax',
 			overwrite: true,
 		});
 
@@ -109,7 +119,7 @@ export class VerifyCsrfMiddleware {
 			return;
 		}
 
-		const userId = user?.id;
+		const trackingId = user?.getTrackingId();
 		let cookieDecoded: JWTCsrf;
 		let headerDecoded: JWTCsrf;
 		try {
@@ -128,8 +138,8 @@ export class VerifyCsrfMiddleware {
 			cookieDecoded.type !== 'cookie' ||
 			headerDecoded.type !== 'header' ||
 			cookieDecoded.uuid !== headerDecoded.uuid ||
-			cookieDecoded.userId !== headerDecoded.userId ||
-			cookieDecoded.userId !== userId
+			cookieDecoded.trackingId !== headerDecoded.trackingId ||
+			cookieDecoded.trackingId !== trackingId
 		) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid csrf token`);
 		}
@@ -137,7 +147,7 @@ export class VerifyCsrfMiddleware {
 
 	public build(): Koa.Middleware {
 		return async (ctx: Koa.Context, next: Koa.Next): Promise<any> => {
-			if (METHODS_TO_VERIFY_TOKEN.includes(ctx.request.method.toLowerCase()) && !config.isAutomatedTest) {
+			if (METHODS_TO_VERIFY_TOKEN.includes(ctx.request.method.toLowerCase()) && !this._config.isAutomatedTest) {
 				await this.verifyToken(ctx);
 			}
 			return await next();
