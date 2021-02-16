@@ -289,7 +289,7 @@ export class BookingsController extends Controller {
 	 */
 	@Post('{bookingId}/validateOnHold')
 	@SuccessResponse(200, 'Validated')
-	@MOLAuth({ admin: {}, agency: {} })
+	@MOLAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 } })
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async validateOnHoldBooking(
 		@Body() bookingRequest: BookingDetailsRequest,
