@@ -182,7 +182,8 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			.createQueryBuilder('sp')
 			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
 			.leftJoinAndSelect('sp._serviceProviderGroupMap', 'sp_groupmap')
-			.leftJoinAndSelect('sp._service', 'service');
+			.leftJoinAndSelect('sp._service', 'service')
+			.leftJoinAndSelect('service._organisation', 'svcOrg');
 	}
 
 	public async save(serviceProvider: ServiceProvider): Promise<ServiceProvider> {
