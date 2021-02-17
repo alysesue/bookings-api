@@ -45,14 +45,6 @@ resource "aws_ssm_parameter" "bookingsg-db_host" {
   overwrite = true
 }
 
-# resource "aws_ssm_parameter" "test" {
-#   name  = "${local.path-prefix}/TEST"
-#   type  = "String"
-#   value = "${data.external.static.result.TEST}"
-
-#   overwrite = true
-# }
-
 resource "aws_ssm_parameter" "bookingsg-db_instance" {
   name  = "${local.path-prefix}/BOOKINGSG_DB_INSTANCE"
   type  = "String"
@@ -154,3 +146,27 @@ resource "aws_ssm_parameter" "recaptcha-api_key_bookingsg_app" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "csrf_secret" {
+  name  = "${local.path-prefix}/CSRF_SECRET"
+  type  = "SecureString"
+  key_id  = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
+  value = "${data.external.static.result.CSRF_SECRET}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "booking_env" {
+  name  = "${local.path-prefix}/BOOKING_ENV"
+  type  = "String"
+  value = "${data.external.static.result.BOOKING_ENV}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "access_control_allow_origin" {
+  name  = "${local.path-prefix}/ACCESS_CONTROL_ALLOW_ORIGIN"
+  type  = "String"
+  value = "${data.external.static.result.ACCESS_CONTROL_ALLOW_ORIGIN}"
+
+  overwrite = true
+}
