@@ -18,6 +18,7 @@ const config = {
 		'!**/stopWatch.ts',
 		'!**/koaContextStore.middleware.ts',
 		'!**/citizenUserValidation.middleware.ts',
+		'!**/ormconfig.ts',
 	],
 	coverageThreshold: {
 		global: {

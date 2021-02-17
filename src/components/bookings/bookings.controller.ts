@@ -69,7 +69,7 @@ export class BookingsController extends Controller {
 		bookingRequest.captchaOrigin = koaContext.header.origin;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getCurrentUser()));
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
 	}
 
 	/**
@@ -91,7 +91,7 @@ export class BookingsController extends Controller {
 		bookingRequest.outOfSlotBooking = true;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getCurrentUser()));
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
 	}
 
 	/**
@@ -114,7 +114,7 @@ export class BookingsController extends Controller {
 
 		const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest, false);
 		return ApiDataFactory.create(
-			BookingsMapper.mapDataModel(rescheduledBooking, await this.userContext.getCurrentUser()),
+			BookingsMapper.mapDataModel(rescheduledBooking, await this.userContext.getSnapshot()),
 		);
 	}
 
@@ -163,7 +163,7 @@ export class BookingsController extends Controller {
 		@Body() bookingRequest: BookingUpdateRequest,
 	): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.update(bookingId, bookingRequest, true);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getCurrentUser()));
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
 	}
 
 	/**
@@ -218,9 +218,9 @@ export class BookingsController extends Controller {
 		};
 
 		const pagedBookings = await this.bookingsService.searchBookings(searchQuery);
-		const currentUser = await this.userContext.getCurrentUser();
+		const userContextSnapshot = await this.userContext.getSnapshot();
 		return ApiDataFactory.createPaged(pagedBookings, (booking: Booking) => {
-			return BookingsMapper.mapDataModel(booking, currentUser);
+			return BookingsMapper.mapDataModel(booking, userContextSnapshot);
 		});
 	}
 
@@ -238,7 +238,7 @@ export class BookingsController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getBooking(@Path() bookingId: number): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.getBooking(bookingId);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getCurrentUser()));
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
 	}
 
 	/**
@@ -297,6 +297,6 @@ export class BookingsController extends Controller {
 	): Promise<ApiData<BookingResponse>> {
 		bookingRequest.outOfSlotBooking = false;
 		const booking = await this.bookingsService.validateOnHoldBooking(bookingId, bookingRequest, true);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getCurrentUser()));
+		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
 	}
 }

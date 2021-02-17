@@ -7,6 +7,11 @@ import { AsyncLazy } from '../../tools/asyncLazy';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { AnonymousCookieData } from '../bookingSGCookieHelper';
 
+export type UserContextSnapshot = {
+	user: User;
+	authGroups: AuthGroup[];
+};
+
 @InRequestScope
 export class UserContext {
 	@Inject
@@ -40,6 +45,13 @@ export class UserContext {
 
 	public async getAuthGroups(): Promise<AuthGroup[]> {
 		return await this._authGroups.getValue();
+	}
+
+	public async getSnapshot(): Promise<UserContextSnapshot> {
+		return {
+			user: await this.getCurrentUser(),
+			authGroups: await this.getAuthGroups(),
+		};
 	}
 
 	private async getCurrentUserInternal(): Promise<User> {

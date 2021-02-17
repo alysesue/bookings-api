@@ -29,8 +29,6 @@ import { AutomatedTestMiddleware } from './infrastructure/automatedTest.middlewa
 import { DbConnection } from './core/db.connection';
 import { CreateCsrfMiddleware, VerifyCsrfMiddleware, XSRF_HEADER_NAME } from './infrastructure/csrf.middleware';
 
-const config = getConfig();
-const originWhitelist = config.accessControlAllowOrigin.split(',');
 class ApiDataResponseHandler {
 	private _middleware: Koa.Middleware;
 	constructor(middleware: Koa.Middleware) {
@@ -70,7 +68,7 @@ function setIOCBindings() {
 		.scope(Scope.Request);
 }
 
-function getOriginFromWhitelist(ctx) {
+function getOriginFromWhitelist(ctx: Koa.Context, originWhitelist: string[]) {
 	const requestOrigin = ctx.headers?.origin;
 	if (requestOrigin && (originWhitelist.includes(requestOrigin) || originWhitelist.includes('*'))) {
 		return requestOrigin;
@@ -94,6 +92,8 @@ function getContentPolicyOptions() {
 }
 
 export async function startServer(): Promise<Server> {
+	const config = getConfig();
+	const originWhitelist = config.accessControlAllowOrigin.split(',');
 	// Setup service
 	LoggerV2.setServiceName(config.name);
 
@@ -126,7 +126,7 @@ export async function startServer(): Promise<Server> {
 			cors({
 				credentials: config.isLocal,
 				exposeHeaders: `Origin, X-Requested-With, X-Request-Id, Content-Type, Accept, ${XSRF_HEADER_NAME}`,
-				origin: getOriginFromWhitelist,
+				origin: (ctx) => getOriginFromWhitelist(ctx, originWhitelist),
 				allowMethods: 'GET,PATCH,PUT,POST,DELETE,HEAD',
 			}),
 		)
