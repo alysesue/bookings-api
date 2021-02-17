@@ -1,5 +1,5 @@
 import { logger } from 'mol-lib-common';
-import { basePath } from '../config/app-config';
+import { basePath, getConfig } from '../config/app-config';
 import * as fs from 'fs';
 import * as swagger2 from 'swagger2';
 import { ui } from 'swagger2-koa';
@@ -12,9 +12,10 @@ const swaggerDoc = `${swaggerDir}/swagger.yaml`;
 
 export const useSwagger = async () => {
 	const exists = await fs_exists(swaggerDoc);
+	const config = getConfig();
 
 	logger.info(`Swagger document location: ${swaggerDoc} ${exists ? '(found)' : '(not found)'}`);
-	if (exists) {
+	if (exists && config.bookingEnv !== 'production') {
 		const document = swagger2.loadDocumentSync(swaggerDoc);
 		return ui(document as swagger2.Document, `${basePath}/swagger`);
 	}

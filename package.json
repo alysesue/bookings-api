@@ -34,6 +34,7 @@
 		"watcher-run": "(npm run watcher-env; cd ./dist; forever --minUptime 1000ms --spinSleepTime 3000ms -c \"node --trace-warnings --inspect=0.0.0.0:6000\" index.js)",
 		"params:new": "npm run fixLF && ./node_modules/mol-bamboo-scripts/scripts/generator/service-params-new-env.sh",
 		"fixLF": "node ./src/fixLF.js",
+		"schema:sync": "export LOCALHOST=true && ts-node ./node_modules/typeorm/cli schema:sync -f ./src/core/ormconfig.ts",
 		"migration:generate": "export LOCALHOST=true && ts-node ./node_modules/typeorm/cli migration:generate -f ./src/core/ormconfig.ts -n",
 		"migration": "ts-node node_modules/typeorm/cli migration:run -f ./src/core/ormconfig.ts",
 		"migration:local": "export LOCALHOST=true && npm run migration"
@@ -110,7 +111,7 @@
 		"mol-lib-common": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-common.git#semver:~4.1.17",
 		"moment": "^2.25.3",
 		"node-forge": "^0.10.0",
-		"pg": "^8.4.1",
+		"pg": "^8.5.1",
 		"prettier": "^2.1.1",
 		"react-popper": "^2.2.3",
 		"reflect-metadata": "^0.1.13",
@@ -118,7 +119,7 @@
 		"swagger2": "^2.0.0",
 		"swagger2-koa": "^2.0.0",
 		"tslint-plugin-prettier": "^2.3.0",
-		"typeorm": "^0.2.25",
+		"typeorm": "^0.2.31",
 		"typescript-ioc": "^3.2.2",
 		"uuid": "^8.3.2"
 	},

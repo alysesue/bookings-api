@@ -5,27 +5,38 @@ import {
 	BookingRequest,
 	BookingResponse,
 } from './bookings.apicontract';
+import { UinFinConfiguration } from '../../models/uinFinConfiguration';
+import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
 
-const asterisk = '*';
+// tslint:disable-next-line: tsr-detect-unsafe-regexp
+const MASK_UINFIN_REGEX = /(?<=^.{1}).{4}/;
+const MASK_REPLACE_VALUE = '*'.repeat(4);
 
 export class BookingsMapper {
-	public static maskNRIC(nricStr: string, currentUser: User): string {
-		if (!nricStr || currentUser.isAgency()) {
-			return nricStr;
+	public static maskUinFin(booking: Booking, userContext: UserContextSnapshot): string {
+		if (!booking.service?.organisation) {
+			throw new Error('Booking -> service -> organisation not loaded. BookingsMapper requires it.');
 		}
 
-		// tslint:disable-next-line: tsr-detect-unsafe-regexp
-		const re = /(?<=^.{1}).{4}/;
-		return nricStr.replace(re, asterisk.repeat(4));
+		if (!booking.citizenUinFin) {
+			return booking.citizenUinFin;
+		}
+
+		const uinFinConfig = new UinFinConfiguration(booking.service.organisation);
+		if (uinFinConfig.canViewPlainUinFin(userContext)) {
+			return booking.citizenUinFin;
+		}
+
+		return booking.citizenUinFin.replace(MASK_UINFIN_REGEX, MASK_REPLACE_VALUE);
 	}
 
-	public static mapDataModels(bookings: Booking[], currentUser: User): BookingResponse[] {
+	public static mapDataModels(bookings: Booking[], userContext: UserContextSnapshot): BookingResponse[] {
 		return bookings?.map((booking) => {
-			return this.mapDataModel(booking, currentUser);
+			return this.mapDataModel(booking, userContext);
 		});
 	}
 
-	public static mapDataModel(booking: Booking, currentUser: User): BookingResponse {
+	public static mapDataModel(booking: Booking, userContext: UserContextSnapshot): BookingResponse {
 		return {
 			id: booking.id,
 			status: booking.status,
@@ -39,7 +50,7 @@ export class BookingsMapper {
 			serviceProviderName: booking.serviceProvider?.name,
 			serviceProviderEmail: booking.serviceProvider?.email,
 			serviceProviderPhone: booking.serviceProvider?.phone,
-			citizenUinFin: BookingsMapper.maskNRIC(booking.citizenUinFin, currentUser),
+			citizenUinFin: BookingsMapper.maskUinFin(booking, userContext),
 			citizenName: booking.citizenName,
 			citizenEmail: booking.citizenEmail,
 			citizenPhone: booking.citizenPhone,

@@ -27,6 +27,7 @@ import { KoaContextStoreMiddleware } from './infrastructure/koaContextStore.midd
 import { MolUsersService, MolUsersServiceFactory } from './components/users/molUsers/molUsers.service';
 import { AutomatedTestMiddleware } from './infrastructure/automatedTest.middleware';
 import { DbConnection } from './core/db.connection';
+import { CreateCsrfMiddleware, VerifyCsrfMiddleware, XSRF_HEADER_NAME } from './infrastructure/csrf.middleware';
 
 class ApiDataResponseHandler {
 	private _middleware: Koa.Middleware;
@@ -67,6 +68,14 @@ function setIOCBindings() {
 		.scope(Scope.Request);
 }
 
+function getOriginFromWhitelist(ctx: Koa.Context, originWhitelist: string[]) {
+	const requestOrigin = ctx.headers?.origin;
+	if (requestOrigin && (originWhitelist.includes(requestOrigin) || originWhitelist.includes('*'))) {
+		return requestOrigin;
+	}
+	return originWhitelist[0];
+}
+
 function getContentPolicyOptions() {
 	return {
 		directives: {
@@ -84,6 +93,7 @@ function getContentPolicyOptions() {
 
 export async function startServer(): Promise<Server> {
 	const config = getConfig();
+	const originWhitelist = config.accessControlAllowOrigin.split(',');
 	// Setup service
 	LoggerV2.setServiceName(config.name);
 
@@ -96,6 +106,8 @@ export async function startServer(): Promise<Server> {
 	const byPassAuthPath = new RegExp(`^${basePath}/api/v1/usersessions/anonymous$`);
 	setIOCBindings();
 	let koaServer = new Koa()
+		.use(new ContainerContextMiddleware().build())
+		.use(new KoaContextStoreMiddleware().build())
 		.use(
 			compress({
 				filter: () => true,
@@ -110,7 +122,14 @@ export async function startServer(): Promise<Server> {
 				textLimit: '10mb',
 			}),
 		)
-		.use(cors({ credentials: config.isLocal }))
+		.use(
+			cors({
+				credentials: config.isLocal,
+				exposeHeaders: `Origin, X-Requested-With, X-Request-Id, Content-Type, Accept, ${XSRF_HEADER_NAME}`,
+				origin: (ctx) => getOriginFromWhitelist(ctx, originWhitelist),
+				allowMethods: 'GET,PATCH,PUT,POST,DELETE,HEAD',
+			}),
+		)
 		.use(helmet.contentSecurityPolicy(getContentPolicyOptions()))
 		.use(helmet.dnsPrefetchControl({ allow: true }))
 		.use(helmet.expectCt())
@@ -151,10 +170,10 @@ export async function startServer(): Promise<Server> {
 	}
 
 	koaServer = koaServer
-		.use(new ContainerContextMiddleware().build())
-		.use(new KoaContextStoreMiddleware().build())
 		.use(bypassMiddleware(byPassAuthPath, new UserContextMiddleware().build()))
 		.use(bypassMiddleware(byPassAuthPath, new CitizenUserValidationMiddleware().build()))
+		.use(new VerifyCsrfMiddleware().build())
+		.use(new CreateCsrfMiddleware().build())
 		.use(HandledRoutes.build());
 
 	const dbOptions = getConnectionOptions();

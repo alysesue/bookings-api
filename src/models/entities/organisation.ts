@@ -1,9 +1,14 @@
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IOrganisation } from '../interfaces';
 import { OrganisationAdminGroupMap } from './organisationAdminGroupMap';
+import * as _ from 'lodash';
 
 @Entity()
 export class Organisation implements IOrganisation {
+	constructor() {
+		this._configuration = { schemaVersion: 1 };
+	}
+
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
@@ -28,4 +33,33 @@ export class Organisation implements IOrganisation {
 	public get name() {
 		return this._name;
 	}
+
+	@Column({ type: 'jsonb', nullable: false, default: '{}' })
+	private _configuration: OrgConfigurationJsonVersion & OrgConfigurationJsonSchema;
+
+	public get configuration(): OrgConfigurationJsonSchema {
+		return this._configuration;
+	}
+
+	public set configuration(value: OrgConfigurationJsonSchema) {
+		const clone = _.cloneDeep(value) as OrgConfigurationJsonVersion & OrgConfigurationJsonSchema;
+		clone.schemaVersion = 1;
+		this._configuration = clone;
+	}
 }
+
+type OrgConfigurationJsonVersion = {
+	schemaVersion?: number;
+};
+
+export type AuthGroupConfigurationJsonSchema = {
+	ViewPlainUinFin: boolean;
+};
+
+export type OrgConfigurationJsonSchema = {
+	AuthGroups?: {
+		OrganisationAdmin?: AuthGroupConfigurationJsonSchema;
+		ServiceAdmin?: AuthGroupConfigurationJsonSchema;
+		ServiceProvider?: AuthGroupConfigurationJsonSchema;
+	};
+};

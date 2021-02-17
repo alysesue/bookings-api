@@ -5,11 +5,8 @@ import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
 import { DateHelper } from '../../../infrastructure/dateHelper';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { Organisation, ServiceProvider, User } from '../../../models';
-import {
-	AuthGroup,
-	OrganisationAdminAuthGroup,
-	ServiceProviderAuthGroup,
-} from '../../../infrastructure/auth/authGroup';
+import { OrganisationAdminAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -51,6 +48,18 @@ describe('Timeslots Controller', () => {
 
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new OrganisationAdminAuthGroup(adminUserMock, [organisation])]),
+		);
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminUserMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new OrganisationAdminAuthGroup(adminUserMock, [organisation])]),
+		);
+
+		UserContextMock.getSnapshot.mockReturnValue(
+			Promise.resolve({
+				user: adminUserMock,
+				authGroups: [new OrganisationAdminAuthGroup(adminUserMock, [organisation])],
+			}),
 		);
 	});
 
@@ -135,17 +144,3 @@ describe('Timeslots Controller', () => {
 		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, []);
 	});
 });
-
-class UserContextMock implements Partial<UserContext> {
-	public static getCurrentUser = jest.fn<Promise<User>, any>();
-	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
-
-	public init() {}
-	public async getCurrentUser(...params): Promise<any> {
-		return await UserContextMock.getCurrentUser(...params);
-	}
-
-	public async getAuthGroups(...params): Promise<any> {
-		return await UserContextMock.getAuthGroups(...params);
-	}
-}

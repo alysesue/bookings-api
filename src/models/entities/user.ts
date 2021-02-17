@@ -80,6 +80,16 @@ export class User implements IUser {
 		return !!this._anonymousUser;
 	}
 
+	public getTrackingId(): string {
+		if (this.isAnonymous()) {
+			return this.anonymousUser.trackingId;
+		} else if (this.id) {
+			return `${this.id}`;
+		}
+
+		throw new Error('Tracking id not implemented for this user type or user is not persisted yet.');
+	}
+
 	public isPersisted(): boolean {
 		return !!this.id;
 	}
