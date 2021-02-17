@@ -46,11 +46,11 @@ export class CreateCsrfMiddleware {
 
 	private async createTokens(ctx: Koa.Context) {
 		const user = await getCurrentUser(ctx);
-		if (!user || user.isAgency()) {
+		if (user && user.isAgency()) {
 			return;
 		}
 
-		const trackingId = user.getTrackingId();
+		const trackingId = user?.getTrackingId() || 'none';
 		const cookieName = `x-${uuid.v4()}`;
 		const cookiePayload: JWTCsrf = {
 			type: 'cookie',
@@ -119,7 +119,7 @@ export class VerifyCsrfMiddleware {
 			return;
 		}
 
-		const trackingId = user?.getTrackingId();
+		const trackingId = user?.getTrackingId() || 'none';
 		let cookieDecoded: JWTCsrf;
 		let headerDecoded: JWTCsrf;
 		try {
