@@ -3,6 +3,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class Init1610601065758 implements MigrationInterface {
 	public name = 'init1610601065758';
 
+	// tslint:disable-next-line: no-big-function
 	public async up(queryRunner: QueryRunner): Promise<void> {
 		await queryRunner.query(
 			`CREATE TABLE "timeslot_item" ("_id" SERIAL NOT NULL, "_timeslotsScheduleId" integer NOT NULL, "_weekDay" integer NOT NULL, "_startTime" TIME NOT NULL, "_endTime" TIME NOT NULL, "_capacity" integer NOT NULL DEFAULT '1', CONSTRAINT "PK_7a301e1fea3689bc0d179ad33ae" PRIMARY KEY ("_id"))`,
