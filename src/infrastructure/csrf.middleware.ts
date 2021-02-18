@@ -21,7 +21,8 @@ export type JWTCsrf = {
 };
 
 export const METHODS_TO_VERIFY_TOKEN = ['post', 'put', 'delete', 'patch'];
-export const METHODS_TO_CREAT_TOKEN = ['head'];
+export const METHODS_TO_CREATE_TOKEN = ['head'];
+const SAME_SITE_OPTION = 'strict';
 const BufferEncoding = 'utf8';
 
 const getCurrentUser = async (ctx: Koa.Context): Promise<User> => {
@@ -44,12 +45,20 @@ export class CreateCsrfMiddleware {
 		return await JwtUtils.encryptJwe(key, input);
 	}
 
-	private async createTokens(ctx: Koa.Context) {
+	private async shouldCreateTokens(ctx: Koa.Context): Promise<boolean> {
+		if (this._config.isAutomatedTest || !METHODS_TO_CREATE_TOKEN.includes(ctx.request.method.toLowerCase())) {
+			return false;
+		}
 		const user = await getCurrentUser(ctx);
 		if (user && user.isAgency()) {
-			return;
+			return false;
 		}
 
+		return true;
+	}
+
+	private async createTokens(ctx: Koa.Context): Promise<void> {
+		const user = await getCurrentUser(ctx);
 		const trackingId = user?.getTrackingId() || 'none';
 		const cookieName = `x-${uuid.v4()}`;
 		const cookiePayload: JWTCsrf = {
@@ -65,9 +74,10 @@ export class CreateCsrfMiddleware {
 
 		ctx.cookies.set(cookieName, jwtCookie, {
 			httpOnly: true,
-			sameSite: this._config.isLocal ? false : 'lax',
+			sameSite: this._config.isLocal ? false : SAME_SITE_OPTION,
 			maxAge: 10 * 60 * 1000,
 			overwrite: true,
+			secure: !this._config.isLocal,
 		});
 		ctx.set(XSRF_HEADER_NAME, jwtHeader);
 		ctx.status = 200;
@@ -75,7 +85,7 @@ export class CreateCsrfMiddleware {
 
 	public build(): Koa.Middleware {
 		return async (ctx: Koa.Context, next: Koa.Next): Promise<any> => {
-			if (METHODS_TO_CREAT_TOKEN.includes(ctx.request.method.toLowerCase())) {
+			if (await this.shouldCreateTokens(ctx)) {
 				await this.createTokens(ctx);
 				return;
 			}
@@ -106,8 +116,9 @@ export class VerifyCsrfMiddleware {
 		const value = ctx.cookies.get(cookieName);
 		ctx.cookies.set(cookieName, undefined, {
 			httpOnly: true,
-			sameSite: this._config.isLocal ? false : 'lax',
+			sameSite: this._config.isLocal ? false : SAME_SITE_OPTION,
 			overwrite: true,
+			secure: !this._config.isLocal,
 		});
 
 		return value;

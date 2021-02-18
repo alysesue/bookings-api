@@ -16,6 +16,7 @@ beforeAll(() => {
 	Container.bind(UserContext).to(UserContextMock);
 });
 
+// tslint:disable-next-line: no-big-function
 describe('Test csrf middleware', () => {
 	const containerMiddleware = new ContainerContextMiddleware().build();
 	const adminMock = User.createAdminUser({
@@ -70,6 +71,24 @@ describe('Test csrf middleware', () => {
 
 	it('Should create token', async () => {
 		context.request.method = 'HEAD';
+
+		const nextMiddleware: Koa.Next = jest.fn(() => Promise.resolve());
+		const handler = new CreateCsrfMiddleware();
+		const middleware = handler.build();
+		await containerMiddleware(context, async () => {
+			await middleware(context, nextMiddleware);
+		});
+
+		expect(context.cookies.set).toHaveBeenCalled();
+	});
+
+	it('Should create token (when in DEV)', async () => {
+		context.request.method = 'HEAD';
+		(getConfig as jest.Mock).mockReturnValue({
+			isLocal: true,
+			csrfSecret: 'f0JuxiT87QYtd-5yGxQk5SIX5Mz1tMTGhuKRHyXCvYA',
+			isAutomatedTest: false,
+		});
 
 		const nextMiddleware: Koa.Next = jest.fn(() => Promise.resolve());
 		const handler = new CreateCsrfMiddleware();

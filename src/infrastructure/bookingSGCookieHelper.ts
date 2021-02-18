@@ -33,6 +33,7 @@ export class BookingSGCookieHelper {
 			httpOnly: true,
 			sameSite: config.isLocal ? false : 'lax',
 			overwrite: true,
+			secure: !config.isLocal,
 		});
 	}
 
@@ -64,6 +65,7 @@ export class MolCookieHelper {
 			httpOnly: true,
 			sameSite: config.isLocal ? false : 'lax',
 			overwrite: true,
+			secure: !config.isLocal,
 		});
 	}
 }
