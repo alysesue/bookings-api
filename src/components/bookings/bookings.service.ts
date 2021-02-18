@@ -46,16 +46,20 @@ export class BookingsService {
 	@Inject
 	private usersService: UsersService;
 
+	private static canCreateOutOfSlot(user: User): boolean {
+		return user.isAdmin() || user.isAgency();
+	}
+
 	public static shouldAutoAccept(currentUser: User, serviceProvider?: ServiceProvider): boolean {
 		if (!serviceProvider) {
 			return false;
 		}
 
-		if (currentUser.isCitizen() || currentUser.isAnonymous()) {
-			return serviceProvider.autoAcceptBookings;
+		if (currentUser.isAdmin() || currentUser.isAgency()) {
+			return true;
 		}
 
-		return true;
+		return serviceProvider.autoAcceptBookings;
 	}
 
 	public async cancelBooking(bookingId: number): Promise<Booking> {
@@ -82,12 +86,12 @@ export class BookingsService {
 		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), acceptAction);
 	}
 
-	public async update(bookingId: number, bookingRequest: BookingUpdateRequest, isAdmin: boolean): Promise<Booking> {
+	public async update(bookingId: number, bookingRequest: BookingUpdateRequest): Promise<Booking> {
 		const updateAction = (_booking) => {
 			if (!bookingRequest.citizenUinFinUpdated) {
 				bookingRequest.citizenUinFin = _booking.citizenUinFin;
 			}
-			return this.updateInternal(_booking, bookingRequest, () => {}, isAdmin);
+			return this.updateInternal(_booking, bookingRequest, () => {});
 		};
 		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), updateAction);
 	}
@@ -100,8 +104,8 @@ export class BookingsService {
 		);
 	}
 
-	public async reschedule(bookingId: number, rescheduleRequest: BookingRequest, isAdmin: boolean): Promise<Booking> {
-		const rescheduleAction = (_booking) => this.rescheduleInternal(_booking, rescheduleRequest, isAdmin);
+	public async reschedule(bookingId: number, rescheduleRequest: BookingRequest): Promise<Booking> {
+		const rescheduleAction = (_booking) => this.rescheduleInternal(_booking, rescheduleRequest);
 		return await this.changeLogsService.executeAndLogAction(
 			bookingId,
 			this.getBooking.bind(this),
@@ -172,7 +176,6 @@ export class BookingsService {
 	private async rescheduleInternal(
 		previousBooking: Booking,
 		rescheduleRequest: BookingRequest,
-		isAdmin: boolean,
 	): Promise<[ChangeLogAction, Booking]> {
 		if (!previousBooking.isValidForRescheduling()) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Booking in invalid state for rescheduling');
@@ -185,7 +188,7 @@ export class BookingsService {
 			}
 		};
 
-		return this.updateInternal(previousBooking, rescheduleRequest, afterMap, isAdmin);
+		return this.updateInternal(previousBooking, rescheduleRequest, afterMap);
 	}
 
 	private async acceptBookingInternal(
@@ -235,7 +238,6 @@ export class BookingsService {
 		previousBooking: Booking,
 		bookingRequest: BookingRequest,
 		afterMap: (updatedBooking: Booking, serviceProvider: ServiceProvider) => void | Promise<void>,
-		isAdmin: boolean,
 	): Promise<[ChangeLogAction, Booking]> {
 		const updatedBooking = previousBooking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
@@ -245,8 +247,7 @@ export class BookingsService {
 			id: updatedBooking.serviceProviderId,
 		});
 		await afterMap(updatedBooking, updatedBooking.serviceProvider);
-
-		const validator = this.bookingsValidatorFactory.getValidator(isAdmin);
+		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
 		await validator.validate(updatedBooking);
 
 		const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
@@ -301,7 +302,7 @@ export class BookingsService {
 
 		booking.serviceProvider = serviceProvider;
 		await this.loadBookingDependencies(booking);
-		const validator = this.bookingsValidatorFactory.getValidator(bookingRequest.outOfSlotBooking);
+		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
 		await validator.validate(booking);
 
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
@@ -316,7 +317,6 @@ export class BookingsService {
 	private async validateOnHoldBookingInternal(
 		previousBooking: Booking,
 		bookingRequest: BookingDetailsRequest,
-		isAdmin: boolean,
 	): Promise<[ChangeLogAction, Booking]> {
 		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: previousBooking.serviceProviderId,
@@ -333,7 +333,7 @@ export class BookingsService {
 				updatedBooking.status = BookingStatus.PendingApproval;
 			}
 
-			const validator = this.bookingsValidatorFactory.getValidator(isAdmin);
+			const validator = this.bookingsValidatorFactory.getValidator(true);
 			await validator.validate(updatedBooking);
 
 			const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
@@ -349,12 +349,8 @@ export class BookingsService {
 		}
 	}
 
-	public async validateOnHoldBooking(
-		bookingId: number,
-		bookingRequest: BookingDetailsRequest,
-		isAdmin: boolean,
-	): Promise<Booking> {
-		const validateAction = (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest, isAdmin);
+	public async validateOnHoldBooking(bookingId: number, bookingRequest: BookingDetailsRequest): Promise<Booking> {
+		const validateAction = (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest);
 		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), validateAction);
 	}
 }

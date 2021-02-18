@@ -10,10 +10,6 @@ export class BookingAcceptRequest {
 
 export class BookingDetailsRequest {
 	/**
-	 * @ignore
-	 */
-	public outOfSlotBooking?: boolean;
-	/**
 	 * An external reference Id for this booking (e.g. external Client Id or booking Id).
 	 */
 	public refId?: string | null;
