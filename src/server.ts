@@ -181,6 +181,7 @@ export async function startServer(): Promise<Server> {
 	const dbConnection = Container.get(DbConnection);
 	await dbConnection.runMigrations();
 
+	koaServer.proxy = true;
 	return await new Promise(async (resolve) => {
 		const server = koaServer.listen(config.port, async () => {
 			logger.info(`${config.name} v${config.version} started on port ${config.port}`);

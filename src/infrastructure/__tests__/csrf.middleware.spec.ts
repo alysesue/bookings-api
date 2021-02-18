@@ -16,6 +16,7 @@ beforeAll(() => {
 	Container.bind(UserContext).to(UserContextMock);
 });
 
+// tslint:disable-next-line: no-big-function
 describe('Test csrf middleware', () => {
 	const containerMiddleware = new ContainerContextMiddleware().build();
 	const adminMock = User.createAdminUser({
@@ -81,10 +82,42 @@ describe('Test csrf middleware', () => {
 		expect(context.cookies.set).toHaveBeenCalled();
 	});
 
+	it('Should create token (when in DEV)', async () => {
+		context.request.method = 'HEAD';
+		(getConfig as jest.Mock).mockReturnValue({
+			isLocal: true,
+			csrfSecret: 'f0JuxiT87QYtd-5yGxQk5SIX5Mz1tMTGhuKRHyXCvYA',
+			isAutomatedTest: false,
+		});
+
+		const nextMiddleware: Koa.Next = jest.fn(() => Promise.resolve());
+		const handler = new CreateCsrfMiddleware();
+		const middleware = handler.build();
+		await containerMiddleware(context, async () => {
+			await middleware(context, nextMiddleware);
+		});
+
+		expect(context.cookies.set).toHaveBeenCalled();
+	});
+
 	it('Should create token for anonymous user', async () => {
 		context.request.method = 'HEAD';
 
 		UserContextMock.getCurrentUser.mockReturnValue(Promise.resolve(anonymousUser));
+		const nextMiddleware: Koa.Next = jest.fn(() => Promise.resolve());
+		const handler = new CreateCsrfMiddleware();
+		const middleware = handler.build();
+		await containerMiddleware(context, async () => {
+			await middleware(context, nextMiddleware);
+		});
+
+		expect(context.cookies.set).toHaveBeenCalled();
+	});
+
+	it('Should create token for null user', async () => {
+		context.request.method = 'HEAD';
+
+		UserContextMock.getCurrentUser.mockReturnValue(Promise.resolve(null));
 		const nextMiddleware: Koa.Next = jest.fn(() => Promise.resolve());
 		const handler = new CreateCsrfMiddleware();
 		const middleware = handler.build();
@@ -104,6 +137,34 @@ describe('Test csrf middleware', () => {
 			uuid: '1',
 			cookieName: 'name',
 			trackingId: adminMock.getTrackingId(),
+			expiryDate,
+		};
+		const jwtCookie = await createCsrf.createJwtToken(sampleToken);
+		const jwtHeader = await createCsrf.createJwtToken({ ...sampleToken, type: 'header' });
+
+		(context.cookies.get as jest.Mock).mockReturnValue(jwtCookie);
+		(context.get as jest.Mock).mockReturnValue(jwtHeader);
+
+		const nextMiddleware: Koa.Next = jest.fn(() => Promise.resolve());
+		const handler = new VerifyCsrfMiddleware();
+		const middleware = handler.build();
+		await containerMiddleware(context, async () => {
+			await middleware(context, nextMiddleware);
+		});
+		expect(nextMiddleware as jest.Mock).toBeCalledTimes(1);
+	});
+
+	it('Should validate context for null user', async () => {
+		context.request.method = 'post';
+		UserContextMock.getCurrentUser.mockReturnValue(Promise.resolve(null));
+
+		const createCsrf = new CreateCsrfMiddleware();
+		const expiryDate = new Date(new Date().getTime() + 60 * 1000);
+		const sampleToken: JWTCsrf = {
+			type: 'cookie',
+			uuid: '1',
+			cookieName: 'name',
+			trackingId: 'none',
 			expiryDate,
 		};
 		const jwtCookie = await createCsrf.createJwtToken(sampleToken);
