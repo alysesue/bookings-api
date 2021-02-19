@@ -3,6 +3,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class Init1610601065758 implements MigrationInterface {
 	public name = 'init1610601065758';
 
+	// tslint:disable-next-line: no-big-function
 	public async up(queryRunner: QueryRunner): Promise<void> {
 		await queryRunner.query(
 			`CREATE TABLE "timeslot_item" ("_id" SERIAL NOT NULL, "_timeslotsScheduleId" integer NOT NULL, "_weekDay" integer NOT NULL, "_startTime" TIME NOT NULL, "_endTime" TIME NOT NULL, "_capacity" integer NOT NULL DEFAULT '1', CONSTRAINT "PK_7a301e1fea3689bc0d179ad33ae" PRIMARY KEY ("_id"))`,
@@ -195,9 +196,69 @@ export class Init1610601065758 implements MigrationInterface {
 		await queryRunner.query(
 			`ALTER TABLE "unavailable_service_provider" ADD CONSTRAINT "FK_cee40cd53805ce55719a7e1215c" FOREIGN KEY ("serviceProvider_id") REFERENCES "service_provider"("_id") ON DELETE CASCADE ON UPDATE NO ACTION`,
 		);
+		await queryRunner.query(
+			`ALTER TABLE "service_admin_group_map" DROP CONSTRAINT "FK_429cf862764b719db08fec3ada0"`,
+		);
+		await queryRunner.query(`COMMENT ON COLUMN "service_admin_group_map"."_serviceId" IS NULL`);
+		await queryRunner.query(
+			`ALTER TABLE "service_admin_group_map" ADD CONSTRAINT "UQ_429cf862764b719db08fec3ada0" UNIQUE ("_serviceId")`,
+		);
+		await queryRunner.query(
+			`ALTER TABLE "organisation_admin_group_map" DROP CONSTRAINT "FK_1927cd1967d2d0faf8df4a68ffb"`,
+		);
+		await queryRunner.query(`COMMENT ON COLUMN "organisation_admin_group_map"."_organisationId" IS NULL`);
+		await queryRunner.query(
+			`ALTER TABLE "organisation_admin_group_map" ADD CONSTRAINT "UQ_1927cd1967d2d0faf8df4a68ffb" UNIQUE ("_organisationId")`,
+		);
+		await queryRunner.query(
+			`ALTER TABLE "service_provider_group_map" DROP CONSTRAINT "FK_c369c0472c6ec65e7ab680d2bd7"`,
+		);
+		await queryRunner.query(`COMMENT ON COLUMN "service_provider_group_map"."_serviceProviderId" IS NULL`);
+		await queryRunner.query(
+			`ALTER TABLE "service_provider_group_map" ADD CONSTRAINT "UQ_c369c0472c6ec65e7ab680d2bd7" UNIQUE ("_serviceProviderId")`,
+		);
+		await queryRunner.query(
+			`ALTER TABLE "service_admin_group_map" ADD CONSTRAINT "FK_429cf862764b719db08fec3ada0" FOREIGN KEY ("_serviceId") REFERENCES "service"("_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+		);
+		await queryRunner.query(
+			`ALTER TABLE "organisation_admin_group_map" ADD CONSTRAINT "FK_1927cd1967d2d0faf8df4a68ffb" FOREIGN KEY ("_organisationId") REFERENCES "organisation"("_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+		);
+		await queryRunner.query(
+			`ALTER TABLE "service_provider_group_map" ADD CONSTRAINT "FK_c369c0472c6ec65e7ab680d2bd7" FOREIGN KEY ("_serviceProviderId") REFERENCES "service_provider"("_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+		);
 	}
 
 	public async down(queryRunner: QueryRunner): Promise<void> {
+		await queryRunner.query(
+			`ALTER TABLE "service_provider_group_map" DROP CONSTRAINT "FK_c369c0472c6ec65e7ab680d2bd7"`,
+		);
+		await queryRunner.query(
+			`ALTER TABLE "organisation_admin_group_map" DROP CONSTRAINT "FK_1927cd1967d2d0faf8df4a68ffb"`,
+		);
+		await queryRunner.query(
+			`ALTER TABLE "service_admin_group_map" DROP CONSTRAINT "FK_429cf862764b719db08fec3ada0"`,
+		);
+		await queryRunner.query(
+			`ALTER TABLE "service_provider_group_map" DROP CONSTRAINT "UQ_c369c0472c6ec65e7ab680d2bd7"`,
+		);
+		await queryRunner.query(`COMMENT ON COLUMN "service_provider_group_map"."_serviceProviderId" IS NULL`);
+		await queryRunner.query(
+			`ALTER TABLE "service_provider_group_map" ADD CONSTRAINT "FK_c369c0472c6ec65e7ab680d2bd7" FOREIGN KEY ("_serviceProviderId") REFERENCES "service_provider"("_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+		);
+		await queryRunner.query(
+			`ALTER TABLE "organisation_admin_group_map" DROP CONSTRAINT "UQ_1927cd1967d2d0faf8df4a68ffb"`,
+		);
+		await queryRunner.query(`COMMENT ON COLUMN "organisation_admin_group_map"."_organisationId" IS NULL`);
+		await queryRunner.query(
+			`ALTER TABLE "organisation_admin_group_map" ADD CONSTRAINT "FK_1927cd1967d2d0faf8df4a68ffb" FOREIGN KEY ("_organisationId") REFERENCES "organisation"("_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+		);
+		await queryRunner.query(
+			`ALTER TABLE "service_admin_group_map" DROP CONSTRAINT "UQ_429cf862764b719db08fec3ada0"`,
+		);
+		await queryRunner.query(`COMMENT ON COLUMN "service_admin_group_map"."_serviceId" IS NULL`);
+		await queryRunner.query(
+			`ALTER TABLE "service_admin_group_map" ADD CONSTRAINT "FK_429cf862764b719db08fec3ada0" FOREIGN KEY ("_serviceId") REFERENCES "service"("_id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+		);
 		await queryRunner.query(
 			`ALTER TABLE "unavailable_service_provider" DROP CONSTRAINT "FK_cee40cd53805ce55719a7e1215c"`,
 		);
