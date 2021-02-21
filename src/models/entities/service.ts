@@ -138,7 +138,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._allowAnonymousBookings;
 	}
 
-	@Column({ nullable: true, default: false })
+	@Column({ nullable: false, default: false })
 	private _isOnHold: boolean;
 
 	public get isOnHold(): boolean {
@@ -149,7 +149,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		this._isOnHold = isOnHold;
 	}
 
-	@Column({ nullable: true, default: false })
+	@Column({ nullable: false, default: false })
 	private _isStandAlone: boolean;
 
 	public get isStandAlone(): boolean {
