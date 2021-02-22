@@ -781,4 +781,66 @@ describe('Bookings.Service', () => {
 			expect(ceil(diffTimeinMins)).toEqual(5);
 		});
 	});
+
+	describe('Stand alone', () => {
+		const standAloneService = new Service();
+		standAloneService.id = 10;
+		const standAloneServiceProvider = ServiceProvider.create('provider', 10);
+		standAloneServiceProvider.id = 1;
+		it('Should make an on hold booking if isStandAlone is set to true on service', async () => {
+			standAloneService.isStandAlone = true;
+			standAloneService.isOnHold = false;
+
+			const bookingRequest: BookingRequest = new BookingRequest();
+			bookingRequest.startDateTime = new Date();
+			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+			bookingRequest.serviceProviderId = 1;
+
+			const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
+			TimeslotsServiceMock.availableProvidersForTimeslot.set(standAloneServiceProvider, timeslotWithCapacity);
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
+			);
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(standAloneService));
+
+			await Container.get(BookingsService).save(bookingRequest, 10);
+
+			const booking = BookingRepositoryMock.booking;
+			const onHoldDateTime: any = new Date(booking.onHoldUntil);
+			const timeNow: any = new Date();
+			const diffTimeinMins = Math.abs(onHoldDateTime - timeNow) / (1000 * 60);
+			expect(booking).not.toBe(undefined);
+			expect(booking.status).toBe(BookingStatus.OnHold);
+			expect(booking.onHoldUntil).toBeInstanceOf(Date);
+			expect(booking.onHoldUntil).not.toBeNull();
+			expect(ceil(diffTimeinMins)).toEqual(5);
+		});
+
+		it('Should not make an on hold booking if isStandAlone is set to false on service', async () => {
+			standAloneService.isStandAlone = false;
+			standAloneService.isOnHold = false;
+
+			const bookingRequest: BookingRequest = new BookingRequest();
+			bookingRequest.startDateTime = new Date();
+			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+			bookingRequest.serviceProviderId = 1;
+
+			const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
+			TimeslotsServiceMock.availableProvidersForTimeslot.set(standAloneServiceProvider, timeslotWithCapacity);
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
+			);
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(standAloneService));
+
+			await Container.get(BookingsService).save(bookingRequest, 10);
+
+			const booking = BookingRepositoryMock.booking;
+			expect(booking).not.toBe(undefined);
+			expect(booking.status).toBe(BookingStatus.PendingApproval);
+		});
+	});
 });
