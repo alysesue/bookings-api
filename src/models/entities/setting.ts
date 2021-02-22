@@ -17,6 +17,7 @@ export class Setting {
 
 	@Column({
 		type: 'jsonb',
+		default: JSON.stringify(Setting.initDataSetting()),
 	})
 	private _data: SettingData;
 
@@ -31,6 +32,12 @@ export class Setting {
 		const setting1 = new Setting();
 		setting1._data = data;
 		return setting1;
+	}
+
+	public static initDataSetting(): SettingData {
+		return {
+			redirectionWhitelistedUrl: [],
+		};
 	}
 }
 
