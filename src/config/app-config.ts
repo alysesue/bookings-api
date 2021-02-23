@@ -28,7 +28,6 @@ export const getConfig = () => ({
 	recaptchaProjectId: ConfigUtils.getValueFromEnv('RECAPTCHA_PROJECT_ID_BOOKINGSG_APP'),
 	recaptchaSiteKey: ConfigUtils.getValueFromEnv('RECAPTCHA_SITE_KEY_BOOKINGSG_APP'),
 	accessControlAllowOrigin: ConfigUtils.getValueFromEnv('ACCESS_CONTROL_ALLOW_ORIGIN'),
-	urlRedirectionWhitelist: ConfigUtils.getValueFromEnv('URL_REDIRECTION_WHITELIST', '').split(','),
 });
 
 export const basePath = '/bookingsg';
