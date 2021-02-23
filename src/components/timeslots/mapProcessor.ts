@@ -10,7 +10,7 @@ export class MapProcessor<K, V> {
 		this._actions = actions;
 	}
 
-	public async process(entries: Map<K, V>): Promise<void> {
+	public async process(entries: Iterable<[K, V]>): Promise<void> {
 		let counter = 0;
 		const actionCount = this._actions.length;
 		const actions = this._actions;

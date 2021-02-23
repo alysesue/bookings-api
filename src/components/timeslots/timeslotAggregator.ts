@@ -3,28 +3,32 @@ import { nextImmediateTick } from '../../infrastructure/immediateHelper';
 import { Timeslot } from '../../models';
 import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
 
-const BigIntShift = BigInt(48);
 export const generateTimeslotKey = (startTime: Date, endTime: Date): TimeslotKey =>
-	(BigInt(startTime.getTime()) << BigIntShift) | BigInt(endTime.getTime());
+	generateTimeslotKeyNative(startTime.getTime(), endTime.getTime());
 
-export type TimeslotKey = bigint & BigInt;
+export const generateTimeslotKeyNative = (startTime: number, endTime: number): TimeslotKey =>
+	`${startTime}|${endTime}` as TimeslotKey;
 
-export const compareEntryFn = <TGroup>(a: AggregatedEntry<TGroup>, b: AggregatedEntry<TGroup>): number => {
-	const diffStart = a.getTimeslot().startTime.getTime() - b.getTimeslot().startTime.getTime();
-	if (diffStart !== 0) return diffStart;
-
-	return a.getTimeslot().endTime.getTime() - b.getTimeslot().endTime.getTime();
-};
+export type TimeslotKey = string & { _timeslotKeyType: never };
 
 export declare type EntryConstructorType<T> = (new (timeslot: Timeslot) => T) & Function;
 
+export const compareEntryFn = <TGroup>(a: AggregatedEntry<TGroup>, b: AggregatedEntry<TGroup>): number => {
+	const diffStart = a.getTimeslot().startTimeNative - b.getTimeslot().startTimeNative;
+	if (diffStart !== 0) return diffStart;
+
+	return a.getTimeslot().endTimeNative - b.getTimeslot().endTimeNative;
+};
+
+export class TimeslotMap<TEntry> extends Map<TimeslotKey, TEntry> {}
+
 const MaxLoopIterationCount = 1000;
 export class TimeslotAggregator<TGroup, TEntry extends IAggregatedEntry<TGroup>> {
-	private _map: Map<TimeslotKey, TEntry>;
+	private _map: TimeslotMap<TEntry>;
 	private _constructor: EntryConstructorType<TEntry>;
 
 	private constructor(constructor: EntryConstructorType<TEntry>) {
-		this._map = new Map<TimeslotKey, TEntry>();
+		this._map = new TimeslotMap<TEntry>();
 		this._constructor = constructor;
 	}
 
@@ -39,7 +43,7 @@ export class TimeslotAggregator<TGroup, TEntry extends IAggregatedEntry<TGroup>>
 	}
 
 	private getOrAddEntry(timeslot: Timeslot): TEntry {
-		const key = generateTimeslotKey(timeslot.startTime, timeslot.endTime);
+		const key = generateTimeslotKeyNative(timeslot.startTimeNative, timeslot.endTimeNative);
 		let entry = this._map.get(key);
 		if (!entry) {
 			entry = new this._constructor(timeslot);
@@ -49,9 +53,15 @@ export class TimeslotAggregator<TGroup, TEntry extends IAggregatedEntry<TGroup>>
 		return entry;
 	}
 
+	public aggregateTimeslot(group: TGroup, timeslot: TimeslotWithCapacity): void {
+		const entry = this.getOrAddEntry(timeslot);
+		entry.addGroup(group, timeslot);
+	}
+
 	public async aggregate(group: TGroup, generator: Iterable<TimeslotWithCapacity>): Promise<void> {
 		let counter = 0;
 		for (const timeslot of generator) {
+			this.aggregateTimeslot(group, timeslot);
 			const entry = this.getOrAddEntry(timeslot);
 			entry.addGroup(group, timeslot);
 			if (counter++ > MaxLoopIterationCount) {
@@ -61,7 +71,7 @@ export class TimeslotAggregator<TGroup, TEntry extends IAggregatedEntry<TGroup>>
 		}
 	}
 
-	public getEntries(): Map<TimeslotKey, TEntry> {
+	public getEntries(): TimeslotMap<TEntry> {
 		return this._map;
 	}
 }

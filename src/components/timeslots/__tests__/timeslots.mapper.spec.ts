@@ -18,17 +18,21 @@ beforeEach(() => {
 describe('Timeslots Mapper', () => {
 	it('should map availability', () => {
 		const entry = new AvailableTimeslotProviders();
-		entry.startTime = new Date('2020-09-26T00:00:00.000Z');
-		entry.endTime = new Date('2020-09-26T00:30:00.000Z');
+		entry.startTime = new Date('2020-09-26T00:00:00.000Z').getTime();
+		entry.endTime = new Date('2020-09-26T00:30:00.000Z').getTime();
 
 		const spData = ServiceProvider.create('Timmy', 1);
 		spData.id = 1;
 		const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-		map.set(spData, { startTime: entry.startTime, endTime: entry.endTime, capacity: 1 } as TimeslotWithCapacity);
+		map.set(spData, {
+			startTimeNative: entry.startTime,
+			endTimeNative: entry.endTime,
+			capacity: 1,
+		} as TimeslotWithCapacity);
 
 		entry.setRelatedServiceProviders(map);
 
-		const res = TimeslotsMapper.mapAvailabilityToResponse([entry])[0];
+		const res = TimeslotsMapper.mapAvailabilityToResponse([entry], {})[0];
 
 		expect(res.availabilityCount).toBe(1);
 		expect(res.startTime.toISOString()).toBe('2020-09-26T00:00:00.000Z');
@@ -37,8 +41,8 @@ describe('Timeslots Mapper', () => {
 
 	it('should map service provider timeslot', () => {
 		const entry = new AvailableTimeslotProviders();
-		entry.startTime = new Date(2020, 8, 26, 8, 0);
-		entry.endTime = new Date(2020, 8, 26, 8, 30);
+		entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
+		entry.endTime = new Date(2020, 8, 26, 8, 30).getTime();
 
 		const serviceProvider1 = ServiceProvider.create('Timmy', 1);
 		serviceProvider1.id = 1;
@@ -47,13 +51,13 @@ describe('Timeslots Mapper', () => {
 
 		const map = new Map<ServiceProvider, TimeslotWithCapacity>();
 		map.set(serviceProvider1, {
-			startTime: entry.startTime,
-			endTime: entry.endTime,
+			startTimeNative: entry.startTime,
+			endTimeNative: entry.endTime,
 			capacity: 1,
 		} as TimeslotWithCapacity);
 		map.set(serviceProvider2, {
-			startTime: entry.startTime,
-			endTime: entry.endTime,
+			startTimeNative: entry.startTime,
+			endTimeNative: entry.endTime,
 			capacity: 5,
 		} as TimeslotWithCapacity);
 		entry.setRelatedServiceProviders(map);

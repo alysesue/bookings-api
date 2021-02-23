@@ -39,6 +39,20 @@ export class DateHelper {
 		return (dateA.getTime() - dateB.getTime()) / DateHelper.MsPerDay;
 	}
 
+	public static getWeekDaysInRange(start: Date, end: Date): number[] {
+		const startDateOnly = DateHelper.getDateOnly(start);
+		const endDateOnly = DateHelper.getDateOnly(end);
+		const diffInDays = 1 + DateHelper.DiffInDays(endDateOnly, startDateOnly);
+
+		const weekDays: number[] = [];
+		let dayOfWeek = startDateOnly.getDay();
+		for (let day = 0; day < diffInDays && day < 7; day++) {
+			weekDays.push(dayOfWeek);
+			dayOfWeek = (dayOfWeek + 1) % 7;
+		}
+		return weekDays;
+	}
+
 	public static equals(dateA: Date, dateB: Date): boolean {
 		return dateA.getTime() === dateB.getTime();
 	}

@@ -22,3 +22,12 @@ export const intersectsDateTimeSpan = (dateSpan: IDateSpan, startDate: Date, end
 export const intersectsDateTime = (startDateA: Date, endDateA: Date, startDateB: Date, endDateB: Date) => {
 	return startDateA < endDateB && startDateB < endDateA;
 };
+
+export const intersectsDateTimeNative = (
+	startDateA: number,
+	endDateA: number,
+	startDateB: number,
+	endDateB: number,
+) => {
+	return startDateA < endDateB && startDateB < endDateA;
+};

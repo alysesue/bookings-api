@@ -5,8 +5,8 @@ import { TimeslotServiceProvider, TimeslotServiceProviderResult } from '../../mo
 import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
 
 export class AvailableTimeslotProviders {
-	public startTime: Date;
-	public endTime: Date;
+	public startTime: number;
+	public endTime: number;
 	private _timeslotServiceProviders: Map<number, TimeslotServiceProvider>;
 	private _unassignedPendingBookingCount: number;
 
@@ -59,7 +59,7 @@ export class AvailableTimeslotProviders {
 		return false;
 	}
 
-	public static empty(startTime: Date, endTime: Date): AvailableTimeslotProviders {
+	public static empty(startTime: number, endTime: number): AvailableTimeslotProviders {
 		const instance = new AvailableTimeslotProviders();
 		instance.startTime = startTime;
 		instance.endTime = endTime;
@@ -67,7 +67,10 @@ export class AvailableTimeslotProviders {
 	}
 
 	public static create(entry: AggregatedEntry<ServiceProvider>): AvailableTimeslotProviders {
-		const instance = AvailableTimeslotProviders.empty(entry.getTimeslot().startTime, entry.getTimeslot().endTime);
+		const instance = AvailableTimeslotProviders.empty(
+			entry.getTimeslot().startTimeNative,
+			entry.getTimeslot().endTimeNative,
+		);
 		instance.setRelatedServiceProviders(entry.getGroups());
 		return instance;
 	}
@@ -77,7 +80,7 @@ export class AvailableTimeslotProviders {
 		for (const item of providers) {
 			const [spItem, timeslotCapacity] = item;
 			const spTimeslotItem = new TimeslotServiceProvider(spItem, timeslotCapacity.capacity);
-			if (!spTimeslotItem.serviceProvider.isLicenceExpire(timeslotCapacity.startTime))
+			if (!spTimeslotItem.serviceProvider.isLicenceExpireNative(timeslotCapacity.startTimeNative))
 				this._timeslotServiceProviders.set(spItem.id, spTimeslotItem);
 		}
 	}

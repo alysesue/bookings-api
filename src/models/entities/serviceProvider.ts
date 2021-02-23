@@ -201,6 +201,11 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		return this.expiryDate.getTime() < atThisDate.getTime();
 	}
 
+	public isLicenceExpireNative(atThisDate: number): boolean {
+		if (!this.expiryDate) return false;
+		return this.expiryDate.getTime() < atThisDate;
+	}
+
 	@OneToOne('TimeslotsSchedule', '_serviceProvider', {
 		cascade: true,
 	})

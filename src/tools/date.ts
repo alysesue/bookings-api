@@ -1,13 +1,16 @@
-import * as moment from 'moment';
+import { DateTimeFormatter, LocalTime } from '@js-joda/core';
 import { ParseTimeError } from '../errors/parseTimeError';
 
-const TIME_FORMATS = ['HH:mm', 'H:mm', 'HH:m', 'H:m', 'HH:mm:ss'];
+const jsJoda_formatter = DateTimeFormatter.ofPattern('H:m[:s]');
+const parseTime = (time: string) => jsJoda_formatter.parse(time, LocalTime.FROM);
 
-const parseTime = (time: string) => moment(time, TIME_FORMATS, true);
-
-export const isValidFormatHHmm = (time: string) => {
-	const parsed = parseTime(time);
-	return parsed.isValid();
+export const isValidFormatHHmm = (time: string): boolean => {
+	try {
+		parseTime(time);
+		return true;
+	} catch {
+		return false;
+	}
 };
 
 export const tryParseHHmm = (time: string): { isValid: boolean; hours: number; minutes: number } => {
@@ -15,9 +18,12 @@ export const tryParseHHmm = (time: string): { isValid: boolean; hours: number; m
 		return null;
 	}
 
-	const parsed = parseTime(time);
-	const isValid = parsed.isValid();
-	return { isValid, hours: isValid ? parsed.hours() : null, minutes: isValid ? parsed.minutes() : null };
+	let parsed: LocalTime;
+	try {
+		parsed = parseTime(time);
+	} catch {}
+	const isValid = !!parsed;
+	return { isValid, hours: isValid ? parsed.hour() : null, minutes: isValid ? parsed.minute() : null };
 };
 
 export const parseHHmm = (time: string): { hours: number; minutes: number } => {
