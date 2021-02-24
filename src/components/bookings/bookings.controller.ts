@@ -70,6 +70,22 @@ export class BookingsController extends Controller {
 		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
 	}
 
+	@Post('bulk')
+	@SuccessResponse(201, 'Created')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async postBookings(
+		@Body() bookingRequests: BookingRequest[],
+		@Header('x-api-service') serviceId: number,
+	): Promise<ApiData<BookingResponse[]>> {
+		const bookings = [];
+		bookingRequests.forEach(async (bookingRequest) => {
+			bookings.push(await this.bookingsService.save(bookingRequest, serviceId, true));
+		});
+		this.setStatus(201);
+		return ApiDataFactory.create(BookingsMapper.mapDataModels(bookings, await this.userContext.getSnapshot()));
+	}
+
 	/**
 	 * Creates a new booking. Any startDateTime and endDateTime are allowed.
 	 * If serviceProviderId is specified, the booking status will be Accepted (2),

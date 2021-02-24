@@ -22,6 +22,7 @@ import { ServiceProvidersService } from '../serviceProviders/serviceProviders.se
 import { UsersService } from '../users/users.service';
 import { BookingsMapper } from './bookings.mapper';
 import { IPagedEntities } from '../../core/pagedEntities';
+import { getConfig } from '../../config/app-config';
 
 @InRequestScope
 export class BookingsService {
@@ -117,10 +118,14 @@ export class BookingsService {
 		return await this.bookingsRepository.search(searchRequest);
 	}
 
-	public async save(bookingRequest: BookingRequest, serviceId: number): Promise<Booking> {
+	public async save(
+		bookingRequest: BookingRequest,
+		serviceId: number,
+		bypassCaptcha: boolean = false,
+	): Promise<Booking> {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
-		const saveAction = () => this.saveInternal(bookingRequest, serviceId);
+		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptcha);
 		return await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
 	}
 
@@ -274,7 +279,11 @@ export class BookingsService {
 		return booking;
 	}
 
-	private async saveInternal(bookingRequest: BookingRequest, serviceId: number): Promise<[ChangeLogAction, Booking]> {
+	private async saveInternal(
+		bookingRequest: BookingRequest,
+		serviceId: number,
+		shouldBypassCaptcha: boolean = false,
+	): Promise<[ChangeLogAction, Booking]> {
 		const currentUser = await this.userContext.getCurrentUser();
 		const service: Service = await this.servicesService.getService(serviceId);
 		let serviceProvider: ServiceProvider | undefined;
@@ -303,6 +312,7 @@ export class BookingsService {
 		booking.serviceProvider = serviceProvider;
 		await this.loadBookingDependencies(booking);
 		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
+		validator.bypassCaptcha(shouldBypassCaptcha || getConfig().isAutomatedTest);
 		await validator.validate(booking);
 
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
