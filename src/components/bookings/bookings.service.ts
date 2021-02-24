@@ -253,6 +253,7 @@ export class BookingsService {
 		});
 		await afterMap(updatedBooking, updatedBooking.serviceProvider);
 		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
+		validator.bypassCaptcha(getConfig().isAutomatedTest);
 		await validator.validate(updatedBooking);
 
 		const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
@@ -344,6 +345,7 @@ export class BookingsService {
 			}
 
 			const validator = this.bookingsValidatorFactory.getValidator(true);
+			validator.bypassCaptcha(getConfig().isAutomatedTest);
 			await validator.validate(updatedBooking);
 
 			const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
