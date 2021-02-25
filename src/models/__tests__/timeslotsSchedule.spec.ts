@@ -79,8 +79,8 @@ describe('[Timeslots schedule] template', () => {
 		const list = Array.from(generate);
 
 		expect(list.length).toBe(1);
-		expect(DateHelper.getTimeString(list[0].startTime)).toBe('08:30');
-		expect(DateHelper.getTimeString(list[0].endTime)).toBe('09:30');
+		expect(DateHelper.getTimeString(new Date(list[0].startTimeNative))).toBe('08:30');
+		expect(DateHelper.getTimeString(new Date(list[0].endTimeNative))).toBe('09:30');
 	});
 
 	it('[Timeslots schedule] should discard last timeslot when it doesnt fit the window', () => {
@@ -92,8 +92,8 @@ describe('[Timeslots schedule] template', () => {
 		const list = Array.from(generate);
 
 		expect(list.length).toBe(1);
-		expect(DateHelper.getTimeString(list[0].startTime)).toBe('13:30');
-		expect(DateHelper.getTimeString(list[0].endTime)).toBe('14:30');
+		expect(DateHelper.getTimeString(new Date(list[0].startTimeNative))).toBe('13:30');
+		expect(DateHelper.getTimeString(new Date(list[0].endTimeNative))).toBe('14:30');
 	});
 
 	it('[Timeslots schedule] should generate timeslots over the next day', () => {
@@ -107,11 +107,11 @@ describe('[Timeslots schedule] template', () => {
 		const list = Array.from(generate);
 		expect(list.length).toBe(2);
 
-		expect(list[0].startTime.getDate()).toBe(date.getDate());
-		expect(DateHelper.getTimeString(list[0].startTime)).toBe('13:30');
+		expect(new Date(list[0].startTimeNative).getDate()).toBe(date.getDate());
+		expect(DateHelper.getTimeString(new Date(list[0].startTimeNative))).toBe('13:30');
 
-		expect(list[1].startTime.getDate()).toBe(nextDay.getDate());
-		expect(DateHelper.getTimeString(list[1].startTime)).toBe('09:30');
+		expect(new Date(list[1].startTimeNative).getDate()).toBe(nextDay.getDate());
+		expect(DateHelper.getTimeString(new Date(list[1].startTimeNative))).toBe('09:30');
 	});
 
 	it('[Timeslots schedule] should generate timeslots over multiple days', () => {
@@ -125,11 +125,11 @@ describe('[Timeslots schedule] template', () => {
 		const list = Array.from(generate);
 		expect(list.length).toBe(8); // Thursday is not a work day
 
-		expect(list[0].startTime.getDate()).toBe(date.getDate());
-		expect(DateHelper.getTimeString(list[0].startTime)).toBe('12:30');
+		expect(new Date(list[0].startTimeNative).getDate()).toBe(date.getDate());
+		expect(DateHelper.getTimeString(new Date(list[0].startTimeNative))).toBe('12:30');
 
 		for (const element of list) {
-			const hours = element.startTime.getHours();
+			const hours = new Date(element.startTimeNative).getHours();
 			expect(hours).toBeGreaterThanOrEqual(8);
 			expect(hours).toBeLessThanOrEqual(14);
 		}

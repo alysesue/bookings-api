@@ -1,5 +1,5 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { ServiceProvider } from '../../models';
+import { ServiceProvider, TimeOfDay } from '../../models';
 import { RepositoryBase } from '../../core/repository';
 import { ScheduleFormsRepository } from '../scheduleForms/scheduleForms.repository';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
@@ -7,6 +7,17 @@ import { ServiceProvidersQueryAuthVisitor } from './serviceProviders.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { andWhere } from '../../tools/queryConditions';
 import { SelectQueryBuilder } from 'typeorm';
+import { Weekday } from '../../enums/weekday';
+
+export type ProviderIncludeOptions = {
+	includeScheduleForm?: boolean;
+	includeTimeslotsSchedule?: boolean;
+	timeslotsScheduleOptions?: {
+		weekDays?: Weekday[];
+		startTime?: TimeOfDay;
+		endTime?: TimeOfDay;
+	};
+};
 
 @InRequestScope
 export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> {
@@ -23,17 +34,17 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 
 	private async processIncludes(
 		entries: ServiceProvider[],
-		options: {
-			includeScheduleForm?: boolean;
-			includeTimeslotsSchedule?: boolean;
-		},
+		options: ProviderIncludeOptions,
 	): Promise<ServiceProvider[]> {
 		if (options.includeScheduleForm) {
 			await this.scheduleRepository.populateScheduleForms(entries);
 		}
 
 		if (options.includeTimeslotsSchedule) {
-			await this.timeslotsScheduleRepository.populateTimeslotsSchedules(entries);
+			await this.timeslotsScheduleRepository.populateTimeslotsSchedules(
+				entries,
+				options.timeslotsScheduleOptions || {},
+			);
 		}
 
 		return entries;
@@ -45,8 +56,6 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			serviceId?: number;
 			organisationId?: number;
 			scheduleFormId?: number;
-			includeScheduleForm?: boolean;
-			includeTimeslotsSchedule?: boolean;
 			skipAuthorisation?: boolean;
 			limit?: number;
 			pageNumber?: number;
@@ -71,12 +80,10 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			serviceId?: number;
 			organisationId?: number;
 			scheduleFormId?: number;
-			includeScheduleForm?: boolean;
-			includeTimeslotsSchedule?: boolean;
 			skipAuthorisation?: boolean;
 			limit?: number;
 			pageNumber?: number;
-		} = {},
+		} & ProviderIncludeOptions = {},
 	): Promise<ServiceProvider[]> {
 		const { limit, pageNumber } = options;
 		const query = await this.getSpQuery(options);
@@ -113,21 +120,19 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			serviceId?: number;
 			organisationId?: number;
 			scheduleFormId?: number;
-			includeScheduleForm?: boolean;
-			includeTimeslotsSchedule?: boolean;
 			skipAuthorisation?: boolean;
-		} = {},
+		} & ProviderIncludeOptions = {},
 	): Promise<number> {
 		const query = await this.getSpQuery(options);
 		return query.getCount();
 	}
 
-	public async getByScheduleFormId(options: {
-		scheduleFormId: number;
-		includeScheduleForm?: boolean;
-		includeTimeslotsSchedule?: boolean;
-		skipAuthorisation?: boolean;
-	}): Promise<ServiceProvider> {
+	public async getByScheduleFormId(
+		options: {
+			scheduleFormId: number;
+			skipAuthorisation?: boolean;
+		} & ProviderIncludeOptions,
+	): Promise<ServiceProvider> {
 		const { scheduleFormId } = options;
 		if (!scheduleFormId) {
 			return null;
@@ -144,12 +149,12 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		return (await this.processIncludes([entry], options))[0];
 	}
 
-	public async getServiceProvider(options: {
-		id: number;
-		includeScheduleForm?: boolean;
-		includeTimeslotsSchedule?: boolean;
-		skipAuthorisation?: boolean;
-	}): Promise<ServiceProvider> {
+	public async getServiceProvider(
+		options: {
+			id: number;
+			skipAuthorisation?: boolean;
+		} & ProviderIncludeOptions,
+	): Promise<ServiceProvider> {
 		const { id } = options;
 		if (!id) {
 			return null;

@@ -2,7 +2,7 @@ import { ServiceProvidersRepository } from '../serviceProviders.repository';
 import { Container } from 'typescript-ioc';
 import { ScheduleFormsRepository } from '../../scheduleForms/scheduleForms.repository';
 import { IEntityWithScheduleForm } from '../../../models/interfaces';
-import { Organisation, ServiceProvider, TimeslotsSchedule, User } from '../../../models';
+import { Organisation, ServiceProvider, TimeOfDay, TimeslotsSchedule, User } from '../../../models';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TransactionManager } from '../../../core/transactionManager';
 import { ServiceProvidersQueryAuthVisitor } from '../serviceProviders.auth';
@@ -231,6 +231,48 @@ describe('Service Provider repository', () => {
 
 		expect(queryBuilderMock.getMany).toHaveBeenCalled();
 		expect(TimeslotsScheduleRepositoryMock.populateTimeslotsSchedules).toHaveBeenCalled();
+		expect(result.length).toBe(1);
+		expect(result[0].timeslotsSchedule).toBeDefined();
+	});
+
+	it('should get list of SP with TimeslotsSchedule (with options)', async () => {
+		const sp = ServiceProvider.create('', 1);
+		sp.id = 1;
+		sp.timeslotsScheduleId = 2;
+
+		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([sp]));
+		TimeslotsScheduleRepositoryMock.populateTimeslotsSchedules.mockImplementation(
+			async (entries: ServiceProvider[]) => {
+				for (const entry of entries) {
+					entry.timeslotsSchedule = new TimeslotsSchedule();
+				}
+				return entries;
+			},
+		);
+
+		const spRepository = Container.get(ServiceProvidersRepository);
+		const result = await spRepository.getServiceProviders({
+			serviceId: 1,
+			includeTimeslotsSchedule: true,
+			timeslotsScheduleOptions: {
+				weekDays: [2],
+				startTime: TimeOfDay.create({ hours: 8, minutes: 0 }),
+				endTime: TimeOfDay.create({ hours: 9, minutes: 0 }),
+			},
+		});
+
+		expect(queryBuilderMock.getMany).toHaveBeenCalled();
+		expect(TimeslotsScheduleRepositoryMock.populateTimeslotsSchedules).toHaveBeenCalled();
+
+		expect(TimeslotsScheduleRepositoryMock.populateTimeslotsSchedules.mock.calls[0][0]).toEqual([sp]);
+		expect(JSON.stringify(TimeslotsScheduleRepositoryMock.populateTimeslotsSchedules.mock.calls[0][1])).toEqual(
+			JSON.stringify({
+				weekDays: [2],
+				startTime: TimeOfDay.create({ hours: 8, minutes: 0 }),
+				endTime: TimeOfDay.create({ hours: 9, minutes: 0 }),
+			}),
+		);
+
 		expect(result.length).toBe(1);
 		expect(result[0].timeslotsSchedule).toBeDefined();
 	});

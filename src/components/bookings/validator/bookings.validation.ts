@@ -138,9 +138,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 		);
 
 		const timeslotOrBoookingExists = existingTimeslot.some(
-			(i) =>
-				DateHelper.equals(i.startTime, booking.startDateTime) &&
-				DateHelper.equals(i.endTime, booking.endDateTime),
+			(i) => i.startTime === booking.startDateTime.getTime() && i.endTime === booking.endDateTime.getTime(),
 		);
 		if (!timeslotOrBoookingExists && (await this.overlapsOtherAccepted(booking))) {
 			yield BookingBusinessValidations.OverlapsAcceptedBooking;

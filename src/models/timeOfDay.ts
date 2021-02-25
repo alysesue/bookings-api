@@ -3,27 +3,46 @@ import { DateHelper } from '../infrastructure/dateHelper';
 import { ValueTransformer } from 'typeorm';
 
 export class TimeOfDay {
-	private constructor() {}
+	private static _cache: { [key: string]: TimeOfDay } = {};
 
-	private _hours: number;
+	private static getFromCache(key: string, creator: () => TimeOfDay) {
+		if (!key) return null;
 
+		let instance = TimeOfDay._cache[key];
+		if (!instance) {
+			instance = creator();
+			TimeOfDay._cache[key] = instance;
+		}
+		return instance;
+	}
+
+	private constructor(hours: number, minutes: number) {
+		this._hours = hours;
+		this._minutes = minutes;
+		this._asMinutes = () => {
+			const asMinutes = this._hours * 60 + this._minutes;
+			this._asMinutes = () => asMinutes;
+			return asMinutes;
+		};
+		this._asMilliseconds = () => {
+			const asMilliseconds = (this._hours * 60 + this._minutes) * 60 * 1000;
+			this._asMilliseconds = () => asMilliseconds;
+			return asMilliseconds;
+		};
+	}
+
+	private readonly _hours: number;
 	public get hours(): number {
 		return this._hours;
 	}
 
-	public set hours(value: number) {
-		this._hours = value;
-	}
-
-	private _minutes: number;
-
+	private readonly _minutes: number;
 	public get minutes(): number {
 		return this._minutes;
 	}
 
-	public set minutes(value: number) {
-		this._minutes = value;
-	}
+	private _asMinutes: () => number;
+	private _asMilliseconds: () => number;
 
 	public addMinutes(numOfMinutes: number): TimeOfDay {
 		const minutes = this.AsMinutes() + numOfMinutes;
@@ -37,8 +56,10 @@ export class TimeOfDay {
 	}
 
 	public static parse(time: string): TimeOfDay {
-		const parsedTime = parseHHmm(time);
-		return TimeOfDay.create(parsedTime);
+		return TimeOfDay.getFromCache(time, () => {
+			const parsedTime = parseHHmm(time);
+			return TimeOfDay.create(parsedTime);
+		});
 	}
 
 	public static create(time: { hours: number; minutes: number }): TimeOfDay {
@@ -49,10 +70,7 @@ export class TimeOfDay {
 		if (time.hours < 0 || time.hours > 23) throw new Error(`Invalid hours value: ${time.hours}`);
 		if (time.minutes < 0 || time.minutes > 59) throw new Error(`Invalid minutes value: ${time.minutes}`);
 
-		const instance = new TimeOfDay();
-		instance._hours = time.hours;
-		instance._minutes = time.minutes;
-		return instance;
+		return new TimeOfDay(time.hours, time.minutes);
 	}
 
 	public static fromDate(date: Date): TimeOfDay {
@@ -60,10 +78,7 @@ export class TimeOfDay {
 			return null;
 		}
 
-		const instance = new TimeOfDay();
-		instance._hours = date.getHours();
-		instance._minutes = date.getMinutes();
-		return instance;
+		return new TimeOfDay(date.getHours(), date.getMinutes());
 	}
 
 	public static compare(a: TimeOfDay, b: TimeOfDay): number {
@@ -93,7 +108,11 @@ export class TimeOfDay {
 	}
 
 	public AsMinutes(): number {
-		return this._hours * 60 + this._minutes;
+		return this._asMinutes();
+	}
+
+	public AsMilliseconds(): number {
+		return this._asMilliseconds();
 	}
 }
 

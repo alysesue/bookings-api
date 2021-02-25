@@ -49,7 +49,11 @@ afterAll(() => {
 });
 
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
-	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
+	return {
+		startTimeNative: startTime.getTime(),
+		endTimeNative: endTime.getTime(),
+		capacity: capacity || 1,
+	} as TimeslotWithCapacity;
 };
 
 jest.mock('../serviceProviders.auth');
@@ -365,8 +369,8 @@ describe('ServiceProviders.Service', () => {
 	it('should return only available service providers', async () => {
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date(2020, 8, 26, 8, 0);
-			entry.endTime = new Date(2020, 8, 26, 8, 30);
+			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
+			entry.endTime = new Date(2020, 8, 26, 8, 30).getTime();
 
 			const serviceProvider1 = ServiceProvider.create('Juku', 1);
 			serviceProvider1.id = 1;
@@ -374,8 +378,8 @@ describe('ServiceProviders.Service', () => {
 			serviceProvider2.id = 2;
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider1, createTimeslot(entry.startTime, entry.endTime, 1));
-			map.set(serviceProvider2, createTimeslot(entry.startTime, entry.endTime, 1));
+			map.set(serviceProvider1, createTimeslot(new Date(entry.startTime), new Date(entry.endTime), 1));
+			map.set(serviceProvider2, createTimeslot(new Date(entry.startTime), new Date(entry.endTime), 1));
 
 			entry.setRelatedServiceProviders(map);
 

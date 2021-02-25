@@ -33,7 +33,7 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		}
 
 		if (options.includeTimeslotsSchedule) {
-			await this.timeslotsScheduleRepository.populateTimeslotsSchedules(entries);
+			await this.timeslotsScheduleRepository.populateTimeslotsSchedules(entries, {});
 		}
 
 		return entries;

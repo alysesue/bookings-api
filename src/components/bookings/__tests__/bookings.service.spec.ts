@@ -72,7 +72,11 @@ function getUpdateBookingRequest() {
 }
 
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
-	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
+	return {
+		startTimeNative: startTime.getTime(),
+		endTimeNative: endTime.getTime(),
+		capacity: capacity || 1,
+	} as TimeslotWithCapacity;
 };
 
 // tslint:disable-next-line: no-big-function

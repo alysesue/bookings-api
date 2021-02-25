@@ -96,7 +96,7 @@ const mapBreaks = (
 
 export const mapToResponse = (template: ScheduleForm): ScheduleFormResponse => {
 	if (!template) {
-		return null;
+		return undefined;
 	}
 
 	const response = new ScheduleFormResponse();

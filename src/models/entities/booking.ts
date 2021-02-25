@@ -383,6 +383,13 @@ export class Booking {
 		return timeSpan.intersectsDateTimeSpan(other, this.startDateTime, this.endDateTime);
 	}
 
+	public bookingIntersectsNative(start: number, end: number, id?: number): boolean {
+		if (!start || !end || (id && id === this.id)) {
+			return false;
+		}
+		return timeSpan.intersectsDateTimeNative(start, end, this.startDateTime.getTime(), this.endDateTime.getTime());
+	}
+
 	public getUpdateChangeType(previousBooking?: Booking): ChangeLogAction {
 		if (
 			!DateHelper.equals(this.startDateTime, previousBooking.startDateTime) ||

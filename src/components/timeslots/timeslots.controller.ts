@@ -42,8 +42,8 @@ export class TimeslotsController extends Controller {
 			false,
 			serviceProviderId ? [serviceProviderId] : undefined,
 		);
-		let result = TimeslotsMapper.mapAvailabilityToResponse(availableTimeslots);
-		result = result.filter((e) => e.availabilityCount > 0);
+		const result = TimeslotsMapper.mapAvailabilityToResponse(availableTimeslots, { skipUnavailable: true });
+
 		return ApiDataFactory.create(result);
 	}
 

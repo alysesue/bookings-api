@@ -5,6 +5,7 @@
 		"strict": true,
 		"noImplicitAny": false,
 		"strictNullChecks": false,
+		"strictFunctionTypes": true,
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,
 		"baseUrl": "./",

@@ -10,15 +10,26 @@ import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProvider
 import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
 
 export class TimeslotsMapper {
-	public static mapAvailabilityToResponse(entries: AvailableTimeslotProviders[]): AvailabilityEntryResponse[] {
-		return entries.map((e) => this.mapAvailabilityItem(e));
+	public static mapAvailabilityToResponse(
+		entries: AvailableTimeslotProviders[],
+		options: { skipUnavailable?: boolean },
+	): AvailabilityEntryResponse[] {
+		return entries.map((e) => this.mapAvailabilityItem(e, options)).filter((e) => !!e);
 	}
 
-	private static mapAvailabilityItem(entry: AvailableTimeslotProviders): AvailabilityEntryResponse {
+	private static mapAvailabilityItem(
+		entry: AvailableTimeslotProviders,
+		options: { skipUnavailable?: boolean },
+	): AvailabilityEntryResponse | undefined {
+		const availabilityCount = entry.getAvailabilityCount();
+		if (availabilityCount <= 0 && options.skipUnavailable) {
+			return undefined;
+		}
+
 		const response = new AvailabilityEntryResponse();
-		response.startTime = entry.startTime;
-		response.endTime = entry.endTime;
-		response.availabilityCount = entry.getAvailabilityCount();
+		response.startTime = new Date(entry.startTime);
+		response.endTime = new Date(entry.endTime);
+		response.availabilityCount = availabilityCount;
 		return response;
 	}
 
@@ -32,8 +43,8 @@ export class TimeslotsMapper {
 			totalAssignedBookings,
 		] = TimeslotsMapper.mapTimeslotServiceProviders(Array.from(entry.getTimeslotServiceProviders()), userContext);
 		const response = new TimeslotEntryResponse();
-		response.startTime = entry.startTime;
-		response.endTime = entry.endTime;
+		response.startTime = new Date(entry.startTime);
+		response.endTime = new Date(entry.endTime);
 		response.timeslotServiceProviders = timeslotServiceProviders;
 		response.totalAssignedBookingCount = totalAssignedBookings;
 		response.totalUnassignedBookingCount = entry.unassignedPendingBookingCount;
