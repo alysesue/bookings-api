@@ -33,7 +33,6 @@ import { ServicesService } from '../../services/services.service';
 import {
 	CitizenAuthGroup,
 	ServiceAdminAuthGroup,
-	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
 import {
 	BookingChangeLogsServiceMock,
@@ -248,6 +247,7 @@ describe('Bookings.Service', () => {
 		expect(booking.status).toBe(BookingStatus.PendingApproval);
 	});
 
+	//TODO:
 	it('should always auto accept booking for admins (even when sp flag = false)', async () => {
 		const customProvider = ServiceProvider.create('provider', 1);
 		customProvider.id = 200;
@@ -265,7 +265,7 @@ describe('Bookings.Service', () => {
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
-			Promise.resolve([new ServiceProviderAuthGroup(adminMock, customProvider)]),
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
@@ -295,6 +295,7 @@ describe('Bookings.Service', () => {
 		expect(booking.status).toBe(BookingStatus.Accepted);
 	});
 
+	//TODO
 	it('should allow booking out of timeslots for admin', async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
@@ -309,7 +310,7 @@ describe('Bookings.Service', () => {
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
-			Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProvider)]),
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
