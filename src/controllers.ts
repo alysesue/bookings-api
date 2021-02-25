@@ -11,3 +11,4 @@ import './components/serviceProviders/serviceProviders.controller';
 import './components/users/users.controller';
 import './components/usersessions/usersessions.controller';
 import './components/unavailabilities/unavailabilities.controller';
+import './components/oneOffTimeslots/oneOffTimeslots.controller';

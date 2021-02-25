@@ -40,7 +40,7 @@ export class TimeslotItemsQueryAuthVisitor extends QueryAuthGroupVisitor {
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		const serviceIds = _userGroup.authorisedServices.map((s) => s.id);
 		this.addAuthCondition(
-			`${this.serviceProviderAlias}._id IN (:...serviceIds) OR ${this.serviceProviderServiceAlias}._id IN (:...serviceIds)`,
+			`${this.serviceAlias}._id IN (:...serviceIds) OR ${this.serviceProviderServiceAlias}._id IN (:...serviceIds)`,
 			{ serviceIds },
 		);
 	}
