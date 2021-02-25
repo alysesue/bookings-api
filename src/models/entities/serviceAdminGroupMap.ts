@@ -18,7 +18,7 @@ export class ServiceAdminGroupMap {
 	@JoinColumn({ name: '_serviceId' })
 	public _service: IService;
 
-	@Column({ type: 'varchar', length: 40, nullable: false })
+	@Column({ type: 'varchar', length: 1000, nullable: false })
 	@Index({ unique: true })
 	private _serviceOrganisationRef: string;
 

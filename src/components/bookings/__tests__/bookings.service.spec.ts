@@ -295,12 +295,11 @@ describe('Bookings.Service', () => {
 		expect(booking.status).toBe(BookingStatus.Accepted);
 	});
 
-	it('should allow booking out of timeslots', async () => {
+	it('should allow booking out of timeslots for admin', async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 1;
-		bookingRequest.outOfSlotBooking = true;
 		bookingRequest.refId = 'RFM186';
 		bookingRequest.citizenUinFin = 'NRIC1234';
 
@@ -320,17 +319,16 @@ describe('Bookings.Service', () => {
 		expect(booking.status).toBe(BookingStatus.Accepted);
 	});
 
-	it('should not allow booking out of timeslots', async () => {
+	it('should not allow booking out of timeslots for citizen', async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
-		bookingRequest.outOfSlotBooking = false;
 		bookingRequest.citizenUinFin = 'NRIC1234';
 
 		const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
@@ -458,7 +456,7 @@ describe('Bookings.Service', () => {
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
 
-		const booking = await bookingService.update(1, bookingRequest, true);
+		const booking = await bookingService.update(1, bookingRequest);
 
 		expect(booking.refId).toBe('ref1');
 		expect(booking.citizenEmail).toBe('test@mail.com');
@@ -493,7 +491,7 @@ describe('Bookings.Service', () => {
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
 
-		const booking = await bookingService.update(1, bookingRequest, true);
+		const booking = await bookingService.update(1, bookingRequest);
 
 		expect(booking.refId).toBe('ref1');
 		expect(booking.citizenEmail).toBe('test@mail.com');
@@ -517,7 +515,7 @@ describe('Bookings.Service', () => {
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
 
-		await bookingService.update(1, bookingUpdateRequest, true);
+		await bookingService.update(1, bookingUpdateRequest);
 
 		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Reschedule);
 	});
@@ -538,7 +536,7 @@ describe('Bookings.Service', () => {
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
 
-		await bookingService.update(1, bookingUpdateRequest, true);
+		await bookingService.update(1, bookingUpdateRequest);
 
 		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Update);
 	});
@@ -562,7 +560,7 @@ describe('Bookings.Service', () => {
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
 
-		await bookingService.update(1, bookingUpdateRequest, true);
+		await bookingService.update(1, bookingUpdateRequest);
 
 		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Update);
 	});
@@ -618,7 +616,7 @@ describe('Bookings.Service', () => {
 				Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 			);
 
-			const result = await bookingService.validateOnHoldBooking(1, bookingRequest, true);
+			const result = await bookingService.validateOnHoldBooking(1, bookingRequest);
 
 			expect(result.status).toBe(BookingStatus.Accepted);
 		});
@@ -654,7 +652,7 @@ describe('Bookings.Service', () => {
 				Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 			);
 
-			const result = await bookingService.validateOnHoldBooking(1, bookingRequest, true);
+			const result = await bookingService.validateOnHoldBooking(1, bookingRequest);
 
 			expect(result.status).toBe(BookingStatus.PendingApproval);
 		});
@@ -690,7 +688,7 @@ describe('Bookings.Service', () => {
 				Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 			);
 			await expect(
-				async () => await bookingService.validateOnHoldBooking(1, bookingRequest, true),
+				async () => await bookingService.validateOnHoldBooking(1, bookingRequest),
 			).rejects.toThrowError();
 		});
 	});
@@ -715,7 +713,7 @@ describe('Bookings.Service', () => {
 				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
 			);
 
-			const result = await bookingService.reschedule(1, rescheduleRequest, false);
+			const result = await bookingService.reschedule(1, rescheduleRequest);
 			expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Reschedule);
 			expect(result.status).toStrictEqual(BookingStatus.PendingApproval);
 		});
@@ -736,14 +734,12 @@ describe('Bookings.Service', () => {
 				endDateTime: new Date('2020-10-01T06:00:00'),
 			} as BookingRequest;
 
-			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 			UserContextMock.getAuthGroups.mockImplementation(() =>
 				Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 			);
 
-			await expect(
-				async () => await bookingService.reschedule(1, rescheduleRequest, false),
-			).rejects.toThrowError();
+			await expect(async () => await bookingService.reschedule(1, rescheduleRequest)).rejects.toThrowError();
 		});
 	});
 

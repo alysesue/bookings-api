@@ -18,7 +18,7 @@ export class OrganisationAdminGroupMap {
 	@JoinColumn({ name: '_organisationId' })
 	public _organisation: IOrganisation;
 
-	@Column({ type: 'varchar', length: 20, nullable: false })
+	@Column({ type: 'varchar', length: 1000, nullable: false })
 	@Index({ unique: true })
 	private _organisationRef: string;
 
