@@ -6,7 +6,7 @@ import { ScheduleForm } from './scheduleForm';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 
 const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
-const DEFAULT_SCHEFULE_FORM_CONFIRMED = false;
+const DEFAULT_SCHEDULE_FORM_CONFIRMED = false;
 
 @Entity()
 export class ServiceProvider implements IServiceProvider, IEntityWithScheduleForm, IEntityWithTimeslotsSchedule {
@@ -98,7 +98,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._name = value;
 	}
 
-	@Column({ type: 'boolean', nullable: false, default: DEFAULT_SCHEFULE_FORM_CONFIRMED })
+	@Column({ type: 'boolean', nullable: false, default: DEFAULT_SCHEDULE_FORM_CONFIRMED })
 	private _scheduleFormConfirmed: boolean;
 
 	public get scheduleFormConfirmed(): boolean {
@@ -125,7 +125,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		instance._phone = phone;
 		instance._agencyUserId = agencyUserId;
 		instance._autoAcceptBookings = autoAcceptBookings;
-		instance._scheduleFormConfirmed = DEFAULT_SCHEFULE_FORM_CONFIRMED;
+		instance._scheduleFormConfirmed = DEFAULT_SCHEDULE_FORM_CONFIRMED;
 		return instance;
 	}
 
