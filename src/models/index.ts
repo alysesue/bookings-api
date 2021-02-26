@@ -23,6 +23,7 @@ import { Organisation } from './entities/organisation';
 import { OrganisationAdminGroupMap } from './entities/organisationAdminGroupMap';
 import { AgencyUser } from './entities/agencyUser';
 import { AnonymousUser } from './entities/anonymousUser';
+import { Setting } from './entities/setting';
 
 export {
 	Booking,
@@ -37,6 +38,7 @@ export {
 	AgencyUser,
 	AnonymousUser,
 	ScheduleForm,
+	Setting,
 	Service,
 	ServiceAdminGroupMap,
 	WeekDayBreak,

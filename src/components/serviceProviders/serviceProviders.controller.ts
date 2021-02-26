@@ -132,14 +132,14 @@ export class ServiceProvidersController extends Controller {
 			limit,
 			page,
 		);
-		return ApiDataFactory.create(this.mapper.mapDataModels(dataModels));
+		return ApiDataFactory.create(
+			this.mapper.mapDataModels(dataModels, { includeTimeslotsSchedule, includeScheduleForm }),
+		);
 	}
 
 	/**
 	 * Retrieves the total number of service providers.
 	 * @param @isInt serviceId (Optional) Filters by a service (id).
-	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
-	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
 	 */
 	@Get('/count')
 	@Security('optional-service')
@@ -147,14 +147,8 @@ export class ServiceProvidersController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getTotalServiceProviders(
 		@Header('x-api-service') serviceId?: number,
-		@Query() includeTimeslotsSchedule = false,
-		@Query() includeScheduleForm = false,
 	): Promise<ApiData<TotalServiceProviderResponse>> {
-		const total = await this.serviceProvidersService.getServiceProvidersCount(
-			serviceId,
-			includeScheduleForm,
-			includeTimeslotsSchedule,
-		);
+		const total = await this.serviceProvidersService.getServiceProvidersCount(serviceId);
 		return ApiDataFactory.create({ total });
 	}
 
@@ -182,18 +176,25 @@ export class ServiceProvidersController extends Controller {
 				result.push(...(await this.serviceProvidersService.getAvailableServiceProviders(from, to, service.id)));
 			}
 		}
-		return ApiDataFactory.create(this.mapper.mapDataModels(result));
+		return ApiDataFactory.create(this.mapper.mapDataModels(result, {}));
 	}
 
 	/**
 	 * Retrieves a single service provider.
 	 * @param @isInt spId The service provider id.
+	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
+	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
 	 */
 	@Get('{spId}')
 	@Response(401, 'Unauthorized')
 	public async getServiceProvider(@Path() spId: number): Promise<ApiData<ServiceProviderResponseModel>> {
-		const dataModel = await this.serviceProvidersService.getServiceProvider(spId, true, true);
-		return ApiDataFactory.create(this.mapper.mapDataModel(dataModel));
+		const options = { includeTimeslotsSchedule: true, includeScheduleForm: true };
+		const dataModel = await this.serviceProvidersService.getServiceProvider(
+			spId,
+			options.includeScheduleForm,
+			options.includeTimeslotsSchedule,
+		);
+		return ApiDataFactory.create(this.mapper.mapDataModel(dataModel, options));
 	}
 
 	/**
@@ -209,7 +210,7 @@ export class ServiceProvidersController extends Controller {
 		@Header('x-api-service') serviceId?: number,
 	): Promise<ApiData<ServiceProviderResponseModel[]>> {
 		const dataModels = await this.serviceProvidersService.getServiceProvidersByName(searchKey, serviceId);
-		return ApiDataFactory.create(this.mapper.mapDataModels(dataModels));
+		return ApiDataFactory.create(this.mapper.mapDataModels(dataModels, {}));
 	}
 
 	/**
@@ -226,7 +227,7 @@ export class ServiceProvidersController extends Controller {
 		@Body() spRequest: ServiceProviderModel,
 	): Promise<ApiData<ServiceProviderResponseModel>> {
 		const result = await this.serviceProvidersService.updateSp(spRequest, spId);
-		return ApiDataFactory.create(this.mapper.mapDataModel(result));
+		return ApiDataFactory.create(this.mapper.mapDataModel(result, {}));
 	}
 
 	@Put('{spId}/scheduleForm')

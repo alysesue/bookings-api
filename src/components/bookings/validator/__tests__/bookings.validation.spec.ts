@@ -23,7 +23,19 @@ import { getConfig } from '../../../../config/app-config';
 import { IPagedEntities } from '../../../../core/pagedEntities';
 
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
-	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
+	return {
+		startTimeNative: startTime.getTime(),
+		endTimeNative: endTime.getTime(),
+		capacity: capacity || 1,
+	} as TimeslotWithCapacity;
+};
+
+const createTimeslotNative = (startTime: number, endTime: number, capacity?: number) => {
+	return {
+		startTimeNative: startTime,
+		endTimeNative: endTime,
+		capacity: capacity || 1,
+	} as TimeslotWithCapacity;
 };
 
 jest.mock('../../../captcha/captcha.service');
@@ -102,11 +114,11 @@ describe('Booking validation tests', () => {
 			.build();
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date(2020, 8, 26, 8, 0);
-			entry.endTime = new Date(2020, 8, 26, 8, 45);
+			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
+			entry.endTime = new Date(2020, 8, 26, 8, 45).getTime();
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider, createTimeslot(entry.startTime, entry.endTime, 1));
+			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
 
 			entry.setRelatedServiceProviders(map);
 
@@ -138,11 +150,11 @@ describe('Booking validation tests', () => {
 			.build();
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date(2020, 8, 26, 8, 0);
-			entry.endTime = new Date(2020, 8, 26, 8, 45);
+			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
+			entry.endTime = new Date(2020, 8, 26, 8, 45).getTime();
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider, createTimeslot(entry.startTime, entry.endTime, 1));
+			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
 
 			entry.setRelatedServiceProviders(map);
 
@@ -428,11 +440,11 @@ describe('Booking validation tests', () => {
 		);
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date(2020, 8, 26, 8, 0);
-			entry.endTime = new Date(2020, 8, 26, 8, 45);
+			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
+			entry.endTime = new Date(2020, 8, 26, 8, 45).getTime();
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider, createTimeslot(entry.startTime, entry.endTime, 1));
+			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
 
 			entry.setRelatedServiceProviders(map);
 
@@ -477,11 +489,11 @@ describe('Booking validation tests', () => {
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date(2020, 8, 26, 7, 15);
-			entry.endTime = new Date(2020, 8, 26, 7, 45);
+			entry.startTime = new Date(2020, 8, 26, 7, 15).getTime();
+			entry.endTime = new Date(2020, 8, 26, 7, 45).getTime();
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider, createTimeslot(entry.startTime, entry.endTime, 1));
+			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
 
 			entry.setRelatedServiceProviders(map);
 
@@ -529,11 +541,11 @@ describe('Booking validation tests', () => {
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = DateHelper.addMinutes(start, 15);
-			entry.endTime = DateHelper.addMinutes(start, 45);
+			entry.startTime = DateHelper.addMinutes(start, 15).getTime();
+			entry.endTime = DateHelper.addMinutes(start, 45).getTime();
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider, createTimeslot(entry.startTime, entry.endTime, 1));
+			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
 
 			entry.setRelatedServiceProviders(map);
 

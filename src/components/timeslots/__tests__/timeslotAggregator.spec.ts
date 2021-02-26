@@ -8,14 +8,17 @@ afterAll(() => {
 });
 
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
-	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
+	return {
+		startTimeNative: startTime.getTime(),
+		endTimeNative: endTime.getTime(),
+		capacity: capacity || 1,
+	} as TimeslotWithCapacity;
 };
 
 describe('Timeslot aggregator', () => {
 	it('should generate timeslots key', () => {
 		const key = generateTimeslotKey(new Date(2000000000000), new Date(3000000000000));
-		const expected = BigInt(2000000000000) * BigInt(Math.pow(2, 48)) + BigInt(3000000000000);
-		expect(key).toBe(expected);
+		expect(key).toBe('2000000000000|3000000000000');
 	});
 
 	it('should aggregate timeslots in order', async () => {
@@ -46,15 +49,15 @@ describe('Timeslot aggregator', () => {
 		entries.sort(compareEntryFn);
 
 		expect(entries.length).toBe(5);
-		expect(DateHelper.getTimeString(entries[0].getTimeslot().startTime)).toBe('08:00');
-		expect(DateHelper.getTimeString(entries[0].getTimeslot().endTime)).toBe('08:30');
+		expect(DateHelper.getTimeString(new Date(entries[0].getTimeslot().startTimeNative))).toBe('08:00');
+		expect(DateHelper.getTimeString(new Date(entries[0].getTimeslot().endTimeNative))).toBe('08:30');
 
-		expect(DateHelper.getTimeString(entries[1].getTimeslot().startTime)).toBe('08:00');
-		expect(DateHelper.getTimeString(entries[1].getTimeslot().endTime)).toBe('09:00');
+		expect(DateHelper.getTimeString(new Date(entries[1].getTimeslot().startTimeNative))).toBe('08:00');
+		expect(DateHelper.getTimeString(new Date(entries[1].getTimeslot().endTimeNative))).toBe('09:00');
 
-		expect(DateHelper.getTimeString(entries[2].getTimeslot().startTime)).toBe('08:30');
-		expect(DateHelper.getTimeString(entries[3].getTimeslot().startTime)).toBe('09:00');
-		expect(DateHelper.getTimeString(entries[4].getTimeslot().startTime)).toBe('10:00');
+		expect(DateHelper.getTimeString(new Date(entries[2].getTimeslot().startTimeNative))).toBe('08:30');
+		expect(DateHelper.getTimeString(new Date(entries[3].getTimeslot().startTimeNative))).toBe('09:00');
+		expect(DateHelper.getTimeString(new Date(entries[4].getTimeslot().startTimeNative))).toBe('10:00');
 
 		expect(Array.from(entries[0].getGroups().keys()).join(', ')).toBe('C');
 		expect(Array.from(entries[1].getGroups().keys()).join(',')).toBe('A,B');
@@ -93,15 +96,15 @@ describe('Timeslot aggregator', () => {
 		entries.sort(compareEntryFn);
 
 		expect(entries.length).toBe(5);
-		expect(DateHelper.getTimeString(entries[0].getTimeslot().startTime)).toBe('08:00');
-		expect(DateHelper.getTimeString(entries[0].getTimeslot().endTime)).toBe('08:30');
+		expect(DateHelper.getTimeString(new Date(entries[0].getTimeslot().startTimeNative))).toBe('08:00');
+		expect(DateHelper.getTimeString(new Date(entries[0].getTimeslot().endTimeNative))).toBe('08:30');
 
-		expect(DateHelper.getTimeString(entries[1].getTimeslot().startTime)).toBe('08:00');
-		expect(DateHelper.getTimeString(entries[1].getTimeslot().endTime)).toBe('09:00');
+		expect(DateHelper.getTimeString(new Date(entries[1].getTimeslot().startTimeNative))).toBe('08:00');
+		expect(DateHelper.getTimeString(new Date(entries[1].getTimeslot().endTimeNative))).toBe('09:00');
 
-		expect(DateHelper.getTimeString(entries[2].getTimeslot().startTime)).toBe('08:30');
-		expect(DateHelper.getTimeString(entries[3].getTimeslot().startTime)).toBe('09:00');
-		expect(DateHelper.getTimeString(entries[4].getTimeslot().startTime)).toBe('10:00');
+		expect(DateHelper.getTimeString(new Date(entries[2].getTimeslot().startTimeNative))).toBe('08:30');
+		expect(DateHelper.getTimeString(new Date(entries[3].getTimeslot().startTimeNative))).toBe('09:00');
+		expect(DateHelper.getTimeString(new Date(entries[4].getTimeslot().startTimeNative))).toBe('10:00');
 
 		expect(
 			Array.from(entries[0].getGroups().keys())

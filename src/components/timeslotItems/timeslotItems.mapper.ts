@@ -15,10 +15,7 @@ const mapTimeslotItems = (data: TimeslotItem[]): TimeslotItemResponse[] => {
 
 export const mapToTimeslotsScheduleResponse = (data: TimeslotsSchedule): TimeslotsScheduleResponse => {
 	const response = new TimeslotsScheduleResponse();
-	response.timeslots = [];
-	if (data) {
-		response.timeslots = mapTimeslotItems(data.timeslotItems);
-	}
+	response.timeslots = data?.timeslotItems ? mapTimeslotItems(data.timeslotItems) : [];
 
 	return response;
 };

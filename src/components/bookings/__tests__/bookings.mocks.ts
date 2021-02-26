@@ -54,8 +54,8 @@ export class TimeslotsServiceMock implements Partial<TimeslotsService> {
 		serviceId: number,
 	): Promise<TimeslotServiceProviderResult[]> {
 		const timeslotEntry = new AvailableTimeslotProviders();
-		timeslotEntry.startTime = startDateTime;
-		timeslotEntry.endTime = startDateTime;
+		timeslotEntry.startTime = startDateTime.getTime();
+		timeslotEntry.endTime = endDateTime.getTime();
 		timeslotEntry.setRelatedServiceProviders(TimeslotsServiceMock.availableProvidersForTimeslot);
 
 		return Array.from(timeslotEntry.getTimeslotServiceProviders(true));

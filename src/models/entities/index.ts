@@ -17,6 +17,7 @@ import { BookingChangeLog } from './bookingChangeLog';
 import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
 import { SingPassUser } from './singPassUser';
 import { User } from './user';
+import { Setting } from './setting';
 
 export {
 	AdminUser,
@@ -27,6 +28,7 @@ export {
 	Organisation,
 	OrganisationAdminGroupMap,
 	ScheduleForm,
+	Setting,
 	Service,
 	ServiceAdminGroupMap,
 	ServiceProvider,
