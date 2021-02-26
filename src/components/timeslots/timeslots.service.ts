@@ -350,15 +350,22 @@ export class TimeslotsService {
 			skipAuthorisation: true, // loads all SPs regardless of user role
 		});
 
-		for (const provider of serviceProviders) {
-			const timeslotServiceProviders = provider.timeslotsSchedule || service.timeslotsSchedule;
-			const iterableTimeslots = timeslotServiceProviders.generateValidTimeslots({
+		const validServiceTimeslots = Array.from(
+			service.timeslotsSchedule?.generateValidTimeslots({
 				startDatetime: minStartTime,
 				endDatetime: maxEndTime,
-			});
+			}) || [],
+		);
 
-			aggregator.aggregate(provider, iterableTimeslots);
+		for (const provider of serviceProviders) {
+			const timeslotServiceProviders = provider.timeslotsSchedule
+				? provider.timeslotsSchedule.generateValidTimeslots({
+						startDatetime: minStartTime,
+						endDatetime: maxEndTime,
+				  })
+				: validServiceTimeslots;
 
+			await aggregator.aggregate(provider, timeslotServiceProviders);
 			await nextImmediateTick();
 		}
 
