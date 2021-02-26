@@ -44,8 +44,13 @@ const UnavailabilitiesServiceMock = {
 };
 
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
-	return { startTime, endTime, capacity: capacity || 1 } as TimeslotWithCapacity;
+	return {
+		startTimeNative: startTime.getTime(),
+		endTimeNative: endTime.getTime(),
+		capacity: capacity || 1,
+	} as TimeslotWithCapacity;
 };
+
 // tslint:disable-next-line:no-big-function
 describe('Timeslots Service', () => {
 	const date = new Date(2020, 4, 27);
@@ -232,14 +237,14 @@ describe('Timeslots Service', () => {
 
 		expect(res.length).toBe(4);
 
-		expect(res[0].startTime.getHours()).toBe(8);
-		expect(res[0].endTime.getHours()).toBe(11);
-		expect(res[1].startTime.getHours()).toBe(15);
-		expect(res[1].endTime.getHours()).toBe(16);
-		expect(res[2].startTime.getHours()).toBe(16);
-		expect(res[2].endTime.getHours()).toBe(17);
-		expect(res[3].startTime.getHours()).toBe(17);
-		expect(res[3].endTime.getHours()).toBe(18);
+		expect(new Date(res[0].startTime).getHours()).toBe(8);
+		expect(new Date(res[0].endTime).getHours()).toBe(11);
+		expect(new Date(res[1].startTime).getHours()).toBe(15);
+		expect(new Date(res[1].endTime).getHours()).toBe(16);
+		expect(new Date(res[2].startTime).getHours()).toBe(16);
+		expect(new Date(res[2].endTime).getHours()).toBe(17);
+		expect(new Date(res[3].startTime).getHours()).toBe(17);
+		expect(new Date(res[3].endTime).getHours()).toBe(18);
 	});
 
 	it('should filter out bookings not related to an authorised role', async () => {
@@ -332,6 +337,44 @@ describe('Timeslots Service', () => {
 		expect(result1).toBe(false);
 		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101, true);
 		expect(result2).toBe(false);
+	});
+
+	it('should create timeslotSchedule Options for same day', async () => {
+		const service = Container.get(TimeslotsService);
+		const startDateTime = DateHelper.setHours(date, 8, 0);
+		const endDateTime = DateHelper.setHours(date, 9, 0);
+
+		const options = service.createTimeslotScheduleOptions(startDateTime, endDateTime);
+		expect(JSON.stringify(options)).toEqual(
+			JSON.stringify({ weekDays: [3], startTime: '08:00', endTime: '09:00' }),
+		);
+	});
+
+	it('should create timeslotSchedule Options for next day', async () => {
+		const service = Container.get(TimeslotsService);
+		const startDateTime = DateHelper.setHours(date, 8, 0);
+		const endDateTime = new Date(DateHelper.addDays(date, 1).setHours(9, 0));
+
+		const options = service.createTimeslotScheduleOptions(startDateTime, endDateTime);
+		expect(JSON.stringify(options)).toEqual(JSON.stringify({ weekDays: [3, 4] }));
+	});
+
+	it('should create timeslotSchedule Options for less than a week date range', async () => {
+		const service = Container.get(TimeslotsService);
+		const startDateTime = DateHelper.setHours(date, 8, 0);
+		const endDateTime = new Date(DateHelper.addDays(date, 5).setHours(7, 0));
+
+		const options = service.createTimeslotScheduleOptions(startDateTime, endDateTime);
+		expect(JSON.stringify(options)).toEqual(JSON.stringify({ weekDays: [3, 4, 5, 6, 0, 1] }));
+	});
+
+	it('should NOT create timeslotSchedule Options a week or more date range', async () => {
+		const service = Container.get(TimeslotsService);
+		const startDateTime = DateHelper.setHours(date, 8, 0);
+		const endDateTime = new Date(DateHelper.addDays(date, 6).setHours(7, 0));
+
+		const options = service.createTimeslotScheduleOptions(startDateTime, endDateTime);
+		expect(JSON.stringify(options)).toEqual(JSON.stringify({}));
 	});
 });
 

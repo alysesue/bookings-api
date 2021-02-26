@@ -180,6 +180,7 @@ export async function startServer(): Promise<Server> {
 	logger.info(`Using DB: ${dbOptions.database} at ${dbOptions.host}`);
 	const dbConnection = Container.get(DbConnection);
 	await dbConnection.runMigrations();
+	await dbConnection.runPopulate();
 
 	koaServer.proxy = true;
 	return await new Promise(async (resolve) => {

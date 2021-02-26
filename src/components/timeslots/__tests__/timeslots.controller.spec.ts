@@ -66,8 +66,9 @@ describe('Timeslots Controller', () => {
 	it('should get availability', async () => {
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date();
-			entry.endTime = DateHelper.addMinutes(entry.startTime, 30);
+			const date = new Date();
+			entry.startTime = date.getTime();
+			entry.endTime = DateHelper.addMinutes(date, 30).getTime();
 			return Promise.resolve([entry]);
 		});
 
@@ -83,8 +84,9 @@ describe('Timeslots Controller', () => {
 	it('should get timeslots', async () => {
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date();
-			entry.endTime = DateHelper.addMinutes(entry.startTime, 30);
+			const date = new Date();
+			entry.startTime = date.getTime();
+			entry.endTime = DateHelper.addMinutes(date, 30).getTime();
 			return Promise.resolve([entry]);
 		});
 
@@ -105,8 +107,9 @@ describe('Timeslots Controller', () => {
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date();
-			entry.endTime = DateHelper.addMinutes(entry.startTime, 30);
+			const date = new Date();
+			entry.startTime = date.getTime();
+			entry.endTime = DateHelper.addMinutes(date, 30).getTime();
 			return Promise.resolve([entry]);
 		});
 
@@ -129,8 +132,9 @@ describe('Timeslots Controller', () => {
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date();
-			entry.endTime = DateHelper.addMinutes(entry.startTime, 30);
+			const date = new Date();
+			entry.startTime = date.getTime();
+			entry.endTime = DateHelper.addMinutes(date, 30).getTime();
 			return Promise.resolve([entry]);
 		});
 

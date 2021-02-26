@@ -2,7 +2,7 @@ import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, Pr
 import { Service } from './service';
 import { ServiceProvider } from './serviceProvider';
 import { IUnavailability } from '../interfaces';
-import { intersectsDateTime } from '../../tools/timeSpan';
+import { intersectsDateTime, intersectsDateTimeNative } from '../../tools/timeSpan';
 
 @Entity()
 export class Unavailability implements IUnavailability {
@@ -99,5 +99,9 @@ export class Unavailability implements IUnavailability {
 
 	public intersects(startTime: Date, endTime: Date): boolean {
 		return intersectsDateTime(this.start, this.end, startTime, endTime);
+	}
+
+	public intersectsNative(startTime: number, endTime: number): boolean {
+		return intersectsDateTimeNative(this.start.getTime(), this.end.getTime(), startTime, endTime);
 	}
 }

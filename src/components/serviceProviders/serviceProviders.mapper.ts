@@ -11,11 +11,18 @@ import { mapToResponse as mapScheduleFormResponse } from '../scheduleForms/sched
 
 @InRequestScope
 export class ServiceProvidersMapper {
-	public mapDataModel(spData: ServiceProvider): ServiceProviderResponseModel {
-		const mappedTimeslotSchedule = mapToTimeslotsScheduleResponse(spData.timeslotsSchedule);
-		const mappedScheduleForm = mapScheduleFormResponse(spData.scheduleForm);
-
+	public mapDataModel(
+		spData: ServiceProvider,
+		options: { includeTimeslotsSchedule?: boolean; includeScheduleForm?: boolean },
+	): ServiceProviderResponseModel {
 		const response = new ServiceProviderResponseModel();
+		if (options.includeTimeslotsSchedule) {
+			response.timeslotsSchedule = mapToTimeslotsScheduleResponse(spData.timeslotsSchedule);
+		}
+		if (options.includeScheduleForm) {
+			response.scheduleForm = mapScheduleFormResponse(spData.scheduleForm);
+		}
+
 		response.id = spData.id;
 		response.name = spData.name;
 		response.serviceId = spData.serviceId;
@@ -24,15 +31,17 @@ export class ServiceProvidersMapper {
 		response.expiryDate = spData.expiryDate;
 		response.scheduleFormConfirmed = spData.scheduleFormConfirmed;
 		response.agencyUserId = spData.agencyUserId;
-		response.timeslotsSchedule = mappedTimeslotSchedule;
-		response.scheduleForm = mappedScheduleForm;
+
 		response.onHoldEnabled = spData.service?.isOnHold;
 
 		return response;
 	}
 
-	public mapDataModels(spList: ServiceProvider[]): ServiceProviderResponseModel[] {
-		return spList?.map((e) => this.mapDataModel(e));
+	public mapDataModels(
+		spList: ServiceProvider[],
+		options: { includeTimeslotsSchedule?: boolean; includeScheduleForm?: boolean },
+	): ServiceProviderResponseModel[] {
+		return spList?.map((e) => this.mapDataModel(e, options));
 	}
 
 	public mapSummaryDataModel(entry: ServiceProvider): ServiceProviderSummaryModel {

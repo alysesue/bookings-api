@@ -64,8 +64,6 @@ export class BookingsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<BookingResponse>> {
 		const koaContext = this._koaContextStore.koaContext;
-
-		bookingRequest.outOfSlotBooking = false;
 		bookingRequest.captchaOrigin = koaContext.header.origin;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
@@ -88,7 +86,6 @@ export class BookingsController extends Controller {
 		@Body() bookingRequest: BookingRequest,
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<BookingResponse>> {
-		bookingRequest.outOfSlotBooking = true;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
 		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
@@ -108,11 +105,9 @@ export class BookingsController extends Controller {
 		@Body() rescheduleRequest: BookingRequest,
 	): Promise<ApiData<BookingResponse>> {
 		const koaContext = this._koaContextStore.koaContext;
-
-		rescheduleRequest.outOfSlotBooking = false;
 		rescheduleRequest.captchaOrigin = koaContext.header.origin;
 
-		const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest, false);
+		const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest);
 		return ApiDataFactory.create(
 			BookingsMapper.mapDataModel(rescheduledBooking, await this.userContext.getSnapshot()),
 		);
@@ -162,7 +157,7 @@ export class BookingsController extends Controller {
 		@Path() bookingId: number,
 		@Body() bookingRequest: BookingUpdateRequest,
 	): Promise<ApiData<BookingResponse>> {
-		const booking = await this.bookingsService.update(bookingId, bookingRequest, true);
+		const booking = await this.bookingsService.update(bookingId, bookingRequest);
 		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
 	}
 
@@ -295,8 +290,7 @@ export class BookingsController extends Controller {
 		@Body() bookingRequest: BookingDetailsRequest,
 		@Path() bookingId: number,
 	): Promise<ApiData<BookingResponse>> {
-		bookingRequest.outOfSlotBooking = false;
-		const booking = await this.bookingsService.validateOnHoldBooking(bookingId, bookingRequest, true);
+		const booking = await this.bookingsService.validateOnHoldBooking(bookingId, bookingRequest);
 		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
 	}
 }
