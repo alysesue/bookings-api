@@ -30,10 +30,7 @@ import {
 	GetBookingFunction,
 } from '../../bookingChangeLogs/bookingChangeLogs.service';
 import { ServicesService } from '../../services/services.service';
-import {
-	CitizenAuthGroup,
-	ServiceAdminAuthGroup,
-} from '../../../infrastructure/auth/authGroup';
+import { CitizenAuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import {
 	BookingChangeLogsServiceMock,
 	BookingRepositoryMock,

@@ -519,7 +519,7 @@ describe('Booking validation tests', () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 
-		const getValidation =  async() => Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
+		const getValidation = async () => Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
 
 		await expect(getValidation).resolves;
 	});

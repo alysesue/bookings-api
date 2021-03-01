@@ -74,6 +74,7 @@ describe('Booking tests', () => {
 			.withCreator(creator)
 			.withAutoAccept(true)
 			.build();
+		booking.serviceProviderId = 1;
 
 		expect(booking.citizenUinFin).toStrictEqual('UINFIN');
 		expect(booking.serviceProviderId).toStrictEqual(1);
@@ -104,6 +105,7 @@ describe('Booking tests', () => {
 			.withCreator(creator)
 			.withAutoAccept(true)
 			.build();
+		booking.serviceProviderId = 1;
 
 		expect(booking.citizenUinFin).toStrictEqual('UINFIN');
 		expect(booking.serviceProviderId).toStrictEqual(1);
@@ -165,6 +167,7 @@ describe('Booking tests with onhold flag', () => {
 			.withAutoAccept(true)
 			.withMarkOnHold(false)
 			.build();
+		booking.serviceProviderId = 1;
 
 		expect(booking.citizenUinFin).toStrictEqual('UINFIN');
 		expect(booking.serviceProviderId).toStrictEqual(1);
@@ -195,6 +198,7 @@ describe('Booking tests with onhold flag', () => {
 			.withAutoAccept(false)
 			.withMarkOnHold(false)
 			.build();
+		booking.serviceProviderId = 1;
 
 		expect(booking.citizenUinFin).toStrictEqual('UINFIN');
 		expect(booking.serviceProviderId).toStrictEqual(1);
@@ -225,6 +229,7 @@ describe('Booking tests with onhold flag', () => {
 			.withAutoAccept(true)
 			.withMarkOnHold(true)
 			.build();
+		booking.serviceProviderId = 1;
 
 		expect(booking.citizenUinFin).toStrictEqual('UINFIN');
 		expect(booking.serviceProviderId).toStrictEqual(1);
@@ -255,6 +260,7 @@ describe('Booking tests with onhold flag', () => {
 			.withAutoAccept(false)
 			.withMarkOnHold(true)
 			.build();
+		booking.serviceProviderId = 1;
 
 		expect(booking.citizenUinFin).toStrictEqual('UINFIN');
 		expect(booking.serviceProviderId).toStrictEqual(1);

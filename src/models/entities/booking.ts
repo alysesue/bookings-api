@@ -1,13 +1,13 @@
-import {Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
-import {BookingStatus} from '../bookingStatus';
-import {ServiceProvider} from './serviceProvider';
-import {Service} from './service';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { BookingStatus } from '../bookingStatus';
+import { ServiceProvider } from './serviceProvider';
+import { Service } from './service';
 import * as timeSpan from '../../tools/timeSpan';
-import {IsolationLevel} from 'typeorm/driver/types/IsolationLevel';
-import {User} from './user';
-import {ChangeLogAction} from '../changeLogAction';
-import {DateHelper} from '../../infrastructure/dateHelper';
-import {BookingChangeLog} from './bookingChangeLog';
+import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
+import { User } from './user';
+import { ChangeLogAction } from '../changeLogAction';
+import { DateHelper } from '../../infrastructure/dateHelper';
+import { BookingChangeLog } from './bookingChangeLog';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
@@ -90,7 +90,7 @@ export class BookingBuilder {
 	}
 
 	public withAutoAccept(autoAccept: boolean): BookingBuilder {
-		this.autoAccept = !!autoAccept;
+		this.autoAccept = autoAccept;
 		return this;
 	}
 	public withCaptchaToken(captchaToken: string): BookingBuilder {
@@ -203,28 +203,18 @@ export class Booking {
 		const HOLD_DURATION_IN_MINS = 5;
 		const instance = new Booking();
 
-		if(builder.markOnHold) {
+		if (builder.markOnHold) {
 			instance._status = BookingStatus.OnHold;
 			instance._onHoldUntil = new Date();
 			instance._onHoldUntil.setMinutes(instance._onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
-		} else if(builder.serviceProviderId) {
-			instance._status = builder.autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
 		} else {
-			instance._status = BookingStatus.PendingApproval;
+			if (builder.serviceProviderId) {
+				instance._status = builder.autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
+			} else {
+				instance._status = BookingStatus.PendingApproval;
+			}
 		}
 
-		// if (builder.serviceProviderId) {
-		// 	instance._serviceProviderId = builder.serviceProviderId;
-		// 	if (builder.markOnHold) {
-		// 		instance._status = BookingStatus.OnHold;
-		// 		instance._onHoldUntil = new Date();
-		// 		instance._onHoldUntil.setMinutes(instance._onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
-		// 	} else {
-		// 		instance._status = builder.autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
-		// 	}
-		// } else {
-		// 	instance._status = BookingStatus.PendingApproval;
-		// }
 		instance._serviceId = builder.serviceId;
 		instance._startDateTime = builder.startDateTime;
 		instance._endDateTime = builder.endDateTime;

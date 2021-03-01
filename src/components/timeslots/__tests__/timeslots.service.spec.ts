@@ -64,6 +64,7 @@ describe('Timeslots Service', () => {
 	ServiceMock.id = 1;
 	ServiceMock.timeslotsSchedule = (TimeslotsScheduleMock as unknown) as TimeslotsSchedule;
 	ServiceMock.timeslotsScheduleId = TimeslotsScheduleMock._id;
+	ServiceMock.isOnHold = false;
 
 	const ServiceProviderMock = ServiceProvider.create('Provider', ServiceMock.id);
 	ServiceProviderMock.id = 100;
@@ -227,7 +228,9 @@ describe('Timeslots Service', () => {
 		const service = Container.get(TimeslotsService);
 
 		const testBooking1 = getOutOfSlotBooking(ServiceProviderMock);
+		testBooking1.serviceProviderId = 100;
 		const testBooking2 = getOutOfSlotBooking(ServiceProviderMock2);
+		testBooking2.serviceProviderId = 101;
 
 		BookingsRepositoryMock.search.mockImplementation(() =>
 			Promise.resolve({ entries: [testBooking1, testBooking2] } as IPagedEntities<Booking>),
@@ -296,7 +299,6 @@ describe('Timeslots Service', () => {
 		expect(result2).toBe(false);
 	});
 
-	// TODO
 	it('should not return the overlapped timeslot', async () => {
 		const service = Container.get(TimeslotsService);
 		ServiceProvidersRepositoryMock.getServiceProviders.mockImplementation(() =>
@@ -316,6 +318,7 @@ describe('Timeslots Service', () => {
 			.withRefId('ref')
 			.build();
 		bookingOos.serviceProvider = ServiceProviderMock;
+		bookingOos.serviceProviderId = 100;
 		BookingsRepositoryMock.search.mockReturnValue(
 			Promise.resolve({ entries: [bookingOos] } as IPagedEntities<Booking>),
 		);
@@ -415,6 +418,7 @@ describe('Timeslots Service Out Of Slot', () => {
 		jest.resetAllMocks();
 		jest.clearAllMocks();
 	});
+
 	it('should map accepted out-of-slot booking to timeslot response', async () => {
 		const service = Container.get(TimeslotsService);
 		const ServiceProviderMock3 = ServiceProvider.create('New Sp', ServiceMock.id);
@@ -443,6 +447,7 @@ describe('Timeslots Service Out Of Slot', () => {
 			.withRefId('ref')
 			.build();
 		bookingOos.serviceProvider = ServiceProviderMock3;
+		bookingOos.serviceProviderId = 105;
 		BookingsRepositoryMock.search.mockReturnValue(
 			Promise.resolve({ entries: [bookingOos] } as IPagedEntities<Booking>),
 		);
