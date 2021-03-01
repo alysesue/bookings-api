@@ -296,6 +296,7 @@ describe('Timeslots Service', () => {
 		expect(result2).toBe(false);
 	});
 
+	// TODO
 	it('should not return the overlapped timeslot', async () => {
 		const service = Container.get(TimeslotsService);
 		ServiceProvidersRepositoryMock.getServiceProviders.mockImplementation(() =>

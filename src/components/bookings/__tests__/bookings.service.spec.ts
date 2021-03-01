@@ -251,7 +251,6 @@ describe('Bookings.Service', () => {
 		expect(booking.status).toBe(BookingStatus.PendingApproval);
 	});
 
-	//TODO:
 	it('should always auto accept booking for admins (even when sp flag = false)', async () => {
 		const customProvider = ServiceProvider.create('provider', 1);
 		customProvider.id = 200;
@@ -299,7 +298,6 @@ describe('Bookings.Service', () => {
 		expect(booking.status).toBe(BookingStatus.Accepted);
 	});
 
-	//TODO
 	it('should allow booking out of timeslots for admin', async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
