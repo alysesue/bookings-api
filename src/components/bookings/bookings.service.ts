@@ -287,10 +287,12 @@ export class BookingsService {
 	): Promise<[ChangeLogAction, Booking]> {
 		const currentUser = await this.userContext.getCurrentUser();
 		const service: Service = await this.servicesService.getService(serviceId);
+		const isStandAlone = service.isStandAlone;
 		let serviceProvider: ServiceProvider | undefined;
 		if (bookingRequest.serviceProviderId) {
 			serviceProvider = await this.serviceProvidersService.getServiceProvider(bookingRequest.serviceProviderId);
 		}
+
 		const booking = new BookingBuilder()
 			.withServiceId(serviceId)
 			.withStartDateTime(bookingRequest.startDateTime)
@@ -305,7 +307,7 @@ export class BookingsService {
 			.withCitizenPhone(bookingRequest.citizenPhone)
 			.withCitizenEmail(bookingRequest.citizenEmail)
 			.withAutoAccept(BookingsService.shouldAutoAccept(currentUser, serviceProvider))
-			.withMarkOnHold(service.isOnHold)
+			.withMarkOnHold(isStandAlone ? true : service.isOnHold)
 			.withCaptchaToken(bookingRequest.captchaToken)
 			.withCaptchaOrigin(bookingRequest.captchaOrigin)
 			.build();

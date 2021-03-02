@@ -4,6 +4,7 @@ export class ServiceResponse {
 	 */
 	public id: number;
 	public name: string;
+	public isStandAlone: boolean;
 }
 
 export class ServiceRequest {
