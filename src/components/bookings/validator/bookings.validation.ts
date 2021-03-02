@@ -10,21 +10,26 @@ import { BusinessError } from '../../../errors/businessError';
 import { concatIteratables, iterableToArray } from '../../../tools/asyncIterables';
 import { BookingBusinessValidations } from './bookingBusinessValidations';
 import { CaptchaService } from '../../captcha/captcha.service';
-import { getConfig } from '../../../config/app-config';
 import { MAX_PAGING_LIMIT } from '../../../core/pagedEntities';
 
 export interface IValidator {
 	validate(booking: Booking): Promise<void>;
+	bypassCaptcha(shouldBypassCaptcha: boolean): any;
 }
 
 @InRequestScope
 abstract class BookingsValidator implements IValidator {
 	@Inject
 	private serviceProvidersRepository: ServiceProvidersRepository;
+	private shouldBypassCaptcha: boolean;
 
 	public async validate(booking: Booking): Promise<void> {
 		const validations = await iterableToArray(this.getValidations(booking));
 		BusinessError.throw(validations);
+	}
+
+	public bypassCaptcha(shouldBypassCaptcha) {
+		this.shouldBypassCaptcha = shouldBypassCaptcha;
 	}
 
 	private static async validateUinFin(citizenUinFin: string): Promise<boolean> {
@@ -61,7 +66,7 @@ abstract class BookingsValidator implements IValidator {
 	public async *getValidations(booking: Booking): AsyncIterable<BusinessValidation> {
 		let yieldedAny = false;
 
-		if (!getConfig().isAutomatedTest) {
+		if (!this.shouldBypassCaptcha) {
 			for await (const validation of this.validateToken(booking)) {
 				yield validation;
 				return; // stops iterable (method scoped)
