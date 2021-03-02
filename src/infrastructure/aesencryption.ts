@@ -4,6 +4,7 @@ const algorithm = 'aes-256-cbc';
 const expectedKeyBytes = 32;
 const encryptionEncoding = 'base64';
 const IV_SIZE = 16;
+const HASH_SIZE = 16;
 const SALT_SIZE = 8;
 
 export class AesEncryption {
@@ -27,7 +28,7 @@ export class AesEncryption {
 		const cipher = crypto.createCipheriv(algorithm, this._aeskey, ivHash, { autoDestroy: true });
 
 		const salt = crypto.randomBytes(SALT_SIZE);
-		const input = Buffer.concat([salt, buffer]);
+		const input = Buffer.concat([salt, ivHash, buffer]);
 		let encrypted = cipher.update(input);
 		const final = cipher.final();
 		encrypted = Buffer.concat([ivPublic, encrypted, final]);
@@ -46,8 +47,14 @@ export class AesEncryption {
 			let decrypted = decipher.update(encryptedValue);
 			const final = decipher.final();
 			decrypted = Buffer.concat([decrypted, final]);
+
 			const decryptedNoSalt = decrypted.slice(SALT_SIZE);
-			return decryptedNoSalt;
+			const ivHashDecryped = decryptedNoSalt.slice(0, HASH_SIZE);
+			if (!ivHashDecryped.equals(ivHash)) {
+				return Buffer.from([]);
+			}
+			const decryptedNoIvHash = decryptedNoSalt.slice(HASH_SIZE);
+			return decryptedNoIvHash;
 		} catch (e) {
 			return Buffer.from([]);
 		}
