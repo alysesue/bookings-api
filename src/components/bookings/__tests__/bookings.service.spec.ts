@@ -51,6 +51,7 @@ import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userCont
 import { ServicesServiceMock } from '../../services/__mocks__/services.service';
 import { ceil } from 'lodash';
 import { IPagedEntities } from '../../../core/pagedEntities';
+import { getConfig } from '../../../config/app-config';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -113,6 +114,8 @@ describe('Bookings.Service', () => {
 				public async validate(booking: Booking) {
 					return Promise.resolve(BookingValidatorFactoryMock.validate(booking));
 				}
+
+				public bypassCaptcha(shouldBypassCaptcha: boolean) {}
 			})();
 		}
 	}
@@ -148,7 +151,9 @@ describe('Bookings.Service', () => {
 				return newBooking;
 			},
 		);
-
+		(getConfig as jest.Mock).mockReturnValue({
+			isAutomatedTest: false,
+		});
 		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(service));
 		BookingChangeLogsServiceMock.action = 0;
 		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();

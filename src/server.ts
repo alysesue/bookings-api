@@ -104,6 +104,8 @@ export async function startServer(): Promise<Server> {
 	const HandledRoutes = new ApiDataResponseHandler(router.routes());
 	// tslint:disable-next-line: tsr-detect-non-literal-regexp
 	const byPassAuthPath = new RegExp(`^${basePath}/api/v1/usersessions/anonymous$`);
+	// tslint:disable-next-line: tsr-detect-non-literal-regexp
+	const byPassCSRF = new RegExp(`^${basePath}/api/v1/bookings/bulk$`);
 	setIOCBindings();
 	let koaServer = new Koa()
 		.use(new ContainerContextMiddleware().build())
@@ -172,7 +174,7 @@ export async function startServer(): Promise<Server> {
 	koaServer = koaServer
 		.use(bypassMiddleware(byPassAuthPath, new UserContextMiddleware().build()))
 		.use(bypassMiddleware(byPassAuthPath, new CitizenUserValidationMiddleware().build()))
-		.use(new VerifyCsrfMiddleware().build())
+		.use(bypassMiddleware(byPassCSRF, new VerifyCsrfMiddleware().build()))
 		.use(new CreateCsrfMiddleware().build())
 		.use(HandledRoutes.build());
 

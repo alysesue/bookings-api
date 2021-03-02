@@ -7,6 +7,23 @@ export class ApiData<T> {
 	}
 }
 
+export class FailedRecord<Request, Reason> {
+	public request: Request;
+	public reason: Reason;
+	constructor(request: Request, reason: Reason) {
+		this.request = request;
+		this.reason = reason;
+	}
+}
+export class ApiDataBulk<T, FailedRecords> {
+	public created: T;
+	public failed: FailedRecords;
+	constructor(typedData: T, failedRecords: FailedRecords) {
+		this.created = typedData;
+		this.failed = failedRecords;
+	}
+}
+
 export type PagingRequest = {
 	page: number;
 	limit: number;
@@ -32,6 +49,10 @@ export class ApiDataFactory {
 	private constructor() {}
 	public static create<T>(data: T): ApiData<T> {
 		return new ApiData(data);
+	}
+
+	public static createBulk<T>(created: T, failedBookings: T): ApiDataBulk<T, T> {
+		return new ApiDataBulk(created, failedBookings);
 	}
 
 	private static createPagingInfo(pagedEntities: IPagedEntities<any>): ApiPagingInfo {

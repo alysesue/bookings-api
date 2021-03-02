@@ -28,7 +28,7 @@ import { TimeslotsService } from '../timeslots/timeslots.service';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { BookingsMapper } from './bookings.mapper';
-import { ApiData, ApiDataFactory, ApiPagedData } from '../../apicontract';
+import { ApiData, ApiDataBulk, ApiDataFactory, ApiPagedData, FailedRecord } from '../../apicontract';
 import { KoaContextStore } from '../../infrastructure/koaContextStore.middleware';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { Booking } from '../../models/entities';
@@ -68,6 +68,32 @@ export class BookingsController extends Controller {
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
 		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
+	}
+
+	@Post('bulk')
+	@SuccessResponse(201, 'Created')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async postBookings(
+		@Body() bookingRequests: BookingRequest[],
+		@Header('x-api-service') serviceId: number,
+	): Promise<ApiDataBulk<BookingResponse[], any[]>> {
+		const failedBookings = [];
+		let bookings = await Promise.all(
+			bookingRequests.map(async (bookingRequest) => {
+				try {
+					return await this.bookingsService.save(bookingRequest, serviceId, true);
+				} catch (error) {
+					failedBookings.push(new FailedRecord(bookingRequest, error.message));
+				}
+			}),
+		);
+		bookings = bookings.filter((x) => !!x);
+		this.setStatus(201);
+		return ApiDataFactory.createBulk(
+			BookingsMapper.mapDataModels(bookings, await this.userContext.getSnapshot()),
+			failedBookings,
+		);
 	}
 
 	/**
