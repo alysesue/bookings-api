@@ -156,7 +156,8 @@ export class ServiceProvidersController extends Controller {
 	 * Retrieves available service providers in the specified datetime range.
 	 * @param from The lower bound limit for service providers' availability.
 	 * @param to The upper bound limit for service providers' availability.
-	 * @param @isInt serviceId The service id.
+	 * @param serviceId
+	 * @param serviceProviderIds
 	 */
 	@Get('available')
 	@Security('optional-service')
@@ -316,5 +317,31 @@ export class ServiceProvidersController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async deleteTimeslotItem(@Path() spId: number, @Path() timeslotId: number): Promise<void> {
 		await this.serviceProvidersService.deleteTimeslotItem(spId, timeslotId);
+	}
+
+	/**
+	 * validates service providers availability in the specified datetime range.
+	 * @param from The lower bound limit for service providers' availability.
+	 * @param to The upper bound limit for service providers' availability.
+	 * @param serviceId
+	 * @param serviceProviderId
+	 */
+	@Get('validate')
+	@Security('optional-service')
+	@Response(401, 'Unauthorized')
+	public async getIsServiceProviderAvailable(
+		@Query() from: Date,
+		@Query() to: Date,
+		@Query() serviceProviderId: number,
+		@Header('x-api-service') serviceId?: number,
+	): Promise<ApiData<boolean>> {
+		const isAvailable = await this.serviceProvidersService.isServiceProviderAvailable(
+			from,
+			to,
+			[serviceProviderId],
+			serviceId,
+		);
+
+		return ApiDataFactory.create(isAvailable);
 	}
 }

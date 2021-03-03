@@ -135,6 +135,32 @@ export class ServiceProvidersService {
 		return Array.from(availableServiceProviders);
 	}
 
+	public async isServiceProviderAvailable(
+		from: Date,
+		to: Date,
+		serviceProviderIds: number[],
+		serviceId?: number,
+	): Promise<boolean> {
+		const timeslots = await this.timeslotsService.getAggregatedTimeslots(
+			from,
+			to,
+			serviceId,
+			true,
+			serviceProviderIds,
+		);
+
+		let isAvailable = true;
+
+		timeslots.forEach((timeslot) => {
+			for (const spTimeslotItem of timeslot.getTimeslotServiceProviders()) {
+				if (spTimeslotItem.acceptedBookings.length > 0 || spTimeslotItem.pendingBookings.length > 0) {
+					isAvailable = false;
+				}
+			}
+		});
+		return isAvailable;
+	}
+
 	public async getServiceProvider(
 		id: number,
 		includeScheduleForm = false,
