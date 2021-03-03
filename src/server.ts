@@ -103,7 +103,7 @@ export async function startServer(): Promise<Server> {
 	// @ts-ignore
 	const HandledRoutes = new ApiDataResponseHandler(router.routes());
 	// tslint:disable-next-line: tsr-detect-non-literal-regexp
-	const byPassCSRF = new RegExp(`^${basePath}/api/v1/bookings/bulk$`);
+	const byPassCSRF = new RegExp(`^(${basePath}/api/v1/bookings/bulk|${basePath}/api/v1/encryption/encrypt)$`);
 	// tslint:disable-next-line: tsr-detect-non-literal-regexp
 	const byPassAuthPath = new RegExp(
 		`^(${basePath}/api/v1/usersessions/anonymous|${basePath}/api/v1/encryption/encrypt)$`,
