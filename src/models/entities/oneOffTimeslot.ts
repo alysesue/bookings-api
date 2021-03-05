@@ -1,4 +1,3 @@
-import { intersectsDateTime } from '../../tools/timeSpan';
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IServiceProvider } from '../interfaces';
 import { TimeslotWithCapacity } from '../timeslotWithCapacity';
