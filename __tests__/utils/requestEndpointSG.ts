@@ -1,19 +1,11 @@
-import { RequestEndpoint } from 'mol-lib-common';
 import * as request from 'request';
 import * as requestPromise from 'request-promise-native';
 import * as setCookieParser from 'set-cookie-parser';
 
 class RequestEndpointSG {
-	private _requestEndpoint: RequestEndpoint;
 	private _headers: { [e: string]: string };
 
 	constructor() {
-		const BASE_URL = process.env['FUNCTIONAL_TEST_BASE_URL'];
-		this._requestEndpoint = new RequestEndpoint();
-		this._requestEndpoint.setOptions({
-			baseUrl: BASE_URL,
-			json: true,
-		});
 		this._headers = {};
 	}
 
@@ -36,7 +28,7 @@ class RequestEndpointSG {
 		} catch (error) {
 			if (response) {
 				// tslint:disable-next-line: no-console
-				console.log(error.name, error.message);
+				console.log(`${error.name}\n Request: ${JSON.stringify(options)}\n Response: ${error.message}`);
 
 				return response;
 			} else {
@@ -48,29 +40,28 @@ class RequestEndpointSG {
 	public setHeaders = (headerObject: { [e: string]: string }) => {
 		Object.keys(headerObject).forEach((key) => {
 			this._headers[key] = headerObject[key];
-			this._requestEndpoint.setHeader(key, headerObject[key]);
 		});
 		return this;
 	};
 
-	public get(
+	public async get(
 		path: string,
 		data?: {
 			params?: object;
 			body?: any;
 		},
 	): Promise<request.Response> {
-		return this._requestEndpoint.get(path, data);
+		return await this.apiRequest({ method: 'GET', uri: path, qs: data?.params, body: data?.body });
 	}
 
-	public post(
+	public async post(
 		path: string,
 		data?: {
 			params?: object;
 			body?: any;
 		},
 	): Promise<request.Response> {
-		return this._requestEndpoint.post(path, data);
+		return await this.apiRequest({ method: 'POST', uri: path, qs: data?.params, body: data?.body });
 	}
 
 	public async put(
@@ -83,14 +74,14 @@ class RequestEndpointSG {
 		return await this.apiRequest({ method: 'PUT', uri: path, qs: data?.params, body: data?.body });
 	}
 
-	public delete(
+	public async delete(
 		path: string,
 		data?: {
 			params?: object;
 			body?: any;
 		},
 	): Promise<request.Response> {
-		return this._requestEndpoint.delete(path, data);
+		return await this.apiRequest({ method: 'DELETE', uri: path, qs: data?.params, body: data?.body });
 	}
 }
 

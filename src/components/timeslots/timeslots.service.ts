@@ -22,6 +22,8 @@ import { nextImmediateTick } from '../../infrastructure/immediateHelper';
 import { MAX_PAGING_LIMIT } from '../../core/pagedEntities';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Weekday } from '../../enums/weekday';
+import { OneOffTimeslotsRepository } from '../oneOffTimeslots/oneOffTimeslots.repository';
+import { intersectsDateTimeNative } from '../../tools/timeSpan';
 
 export class AvailableTimeslotProcessor extends MapProcessor<TimeslotKey, AvailableTimeslotProviders> {}
 
@@ -39,6 +41,9 @@ export class TimeslotsService {
 
 	@Inject
 	private unavailabilitiesService: UnavailabilitiesService;
+
+	@Inject
+	private oneOffTimeslotsRepository: OneOffTimeslotsRepository;
 
 	private static timeslotKeySelector = (startNative: number, endNative: number): TimeslotKey =>
 		generateTimeslotKeyNative(startNative, endNative);
@@ -327,6 +332,24 @@ export class TimeslotsService {
 		}
 	}
 
+	private *filterTimeslotsOverrides(
+		timeslots: Iterable<TimeslotWithCapacity>,
+		overrides: TimeslotWithCapacity[],
+	): Iterable<TimeslotWithCapacity> {
+		for (const timeslot of timeslots) {
+			const intersectsAny = overrides.some((override) =>
+				intersectsDateTimeNative(
+					timeslot.startTimeNative,
+					timeslot.endTimeNative,
+					override.startTimeNative,
+					override.endTimeNative,
+				),
+			);
+
+			if (!intersectsAny) yield timeslot;
+		}
+	}
+
 	private async getAggregatedTimeslotEntries(
 		minStartTime: Date,
 		maxEndTime: Date,
@@ -350,6 +373,15 @@ export class TimeslotsService {
 			skipAuthorisation: true, // loads all SPs regardless of user role
 		});
 
+		const oneOffTimeslots = await this.oneOffTimeslotsRepository.search({
+			serviceId,
+			serviceProviderIds,
+			startDateTime: minStartTime,
+			endDateTime: maxEndTime,
+			byPassAuth: true,
+		});
+		const oneOffTimeslotsLookup = groupByKey(oneOffTimeslots, (e) => e.serviceProviderId);
+
 		const validServiceTimeslots = Array.from(
 			service.timeslotsSchedule?.generateValidTimeslots({
 				startDatetime: minStartTime,
@@ -358,14 +390,23 @@ export class TimeslotsService {
 		);
 
 		for (const provider of serviceProviders) {
-			const timeslotServiceProviders = provider.timeslotsSchedule
+			const oneOffTimeslotsSP = oneOffTimeslotsLookup.get(provider.id);
+
+			const timeslotsSP = provider.timeslotsSchedule
 				? provider.timeslotsSchedule.generateValidTimeslots({
 						startDatetime: minStartTime,
 						endDatetime: maxEndTime,
 				  })
 				: validServiceTimeslots;
 
-			await aggregator.aggregate(provider, timeslotServiceProviders);
+			if (oneOffTimeslotsSP && oneOffTimeslotsSP.length > 0) {
+				const filteredTimeslots = this.filterTimeslotsOverrides(timeslotsSP, oneOffTimeslotsSP);
+				await aggregator.aggregate(provider, oneOffTimeslotsSP);
+				await aggregator.aggregate(provider, filteredTimeslots);
+			} else {
+				await aggregator.aggregate(provider, timeslotsSP);
+			}
+
 			await nextImmediateTick();
 		}
 

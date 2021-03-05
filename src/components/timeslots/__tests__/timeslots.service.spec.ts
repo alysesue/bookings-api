@@ -1,5 +1,13 @@
 import { Container } from 'typescript-ioc';
-import { Booking, BookingStatus, Service, ServiceProvider, TimeslotsSchedule, Unavailability } from '../../../models';
+import {
+	Booking,
+	BookingStatus,
+	OneOffTimeslot,
+	Service,
+	ServiceProvider,
+	TimeslotsSchedule,
+	Unavailability,
+} from '../../../models';
 import { TimeslotsService } from '../timeslots.service';
 import { BookingsRepository } from '../../bookings/bookings.repository';
 import { DateHelper } from '../../../infrastructure/dateHelper';
@@ -10,6 +18,7 @@ import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities
 import { BookingBuilder } from '../../../models/entities/booking';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { IPagedEntities } from '../../../core/pagedEntities';
+import { OneOffTimeslotsRepository } from '../../../components/oneOffTimeslots/oneOffTimeslots.repository';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -43,6 +52,10 @@ const UnavailabilitiesServiceMock = {
 	search: jest.fn(),
 };
 
+const OneOffTimeslotsRepositoryMock: Partial<OneOffTimeslotsRepository> = {
+	search: jest.fn(),
+};
+
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
 	return {
 		startTimeNative: startTime.getTime(),
@@ -54,7 +67,7 @@ const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
 // tslint:disable-next-line:no-big-function
 describe('Timeslots Service', () => {
 	const date = new Date(2020, 4, 27);
-	const endDate = DateHelper.setHours(date, 11, 59);
+	const endDate = DateHelper.setHours(date, 23, 59);
 	const timeslot = createTimeslot(DateHelper.setHours(date, 15, 0), DateHelper.setHours(date, 16, 0));
 	const timeslot2 = createTimeslot(DateHelper.setHours(date, 16, 0), DateHelper.setHours(date, 17, 0));
 	const timeslot3 = createTimeslot(DateHelper.setHours(date, 17, 0), DateHelper.setHours(date, 18, 0));
@@ -116,6 +129,9 @@ describe('Timeslots Service', () => {
 		Container.bind(UnavailabilitiesService).factory(() => {
 			return UnavailabilitiesServiceMock;
 		});
+		Container.bind(OneOffTimeslotsRepository).factory(() => {
+			return OneOffTimeslotsRepositoryMock;
+		});
 	});
 
 	beforeEach(() => {
@@ -141,6 +157,8 @@ describe('Timeslots Service', () => {
 		UnavailabilitiesServiceMock.search.mockImplementation(() =>
 			Promise.resolve([unavailability1, unavailability2]),
 		);
+
+		(OneOffTimeslotsRepositoryMock.search as jest.Mock).mockReturnValue(Promise.resolve([]));
 	});
 
 	afterEach(() => {
@@ -151,7 +169,10 @@ describe('Timeslots Service', () => {
 	it('should aggregate results', async () => {
 		const service = Container.get(TimeslotsService);
 		const result = await service.getAggregatedTimeslots(date, endDate, 1);
+		const filtered = result.filter((e) => e.getAvailabilityCount() > 0);
+
 		expect(result.length).toBe(3);
+		expect(filtered.length).toBe(2);
 
 		expect(ServicesRepositoryMock.getServiceWithTimeslotsSchedule).toBeCalled();
 		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
@@ -164,6 +185,28 @@ describe('Timeslots Service', () => {
 
 		expect(ServicesRepositoryMock.getServiceWithTimeslotsSchedule).toBeCalled();
 		expect(TimeslotsScheduleMock.generateValidTimeslots).toBeCalledTimes(1);
+	});
+
+	it('should override schedule timeslots with one off timeslots', async () => {
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.startDateTime = DateHelper.setHours(date, 16, 30);
+		oneOffTimeslots.endDateTime = DateHelper.setHours(date, 20, 30);
+		oneOffTimeslots.capacity = 5;
+		oneOffTimeslots.serviceProvider = ServiceProviderMock2;
+		oneOffTimeslots.serviceProviderId = ServiceProviderMock2.id;
+
+		(OneOffTimeslotsRepositoryMock.search as jest.Mock).mockReturnValue(Promise.resolve([oneOffTimeslots]));
+
+		const service = Container.get(TimeslotsService);
+		const result = await service.getAggregatedTimeslots(date, endDate, 1, false, [ServiceProviderMock2.id]);
+
+		expect(result.length).toBe(1);
+		expect(new Date(result[0].startTime)).toEqual(oneOffTimeslots.startDateTime);
+		expect(new Date(result[0].endTime)).toEqual(oneOffTimeslots.endDateTime);
+
+		const providers = Array.from(result[0].getTimeslotServiceProviders());
+		expect(providers.length).toBe(1);
+		expect(providers[0].capacity).toBe(5);
 	});
 
 	it('should test when there is a pending booking', async () => {

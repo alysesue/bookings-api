@@ -105,6 +105,7 @@
 		"csv-parse": "^4.10.1",
 		"glob": "^7.1.6",
 		"googleapis": "^49.0.0",
+		"hashids": "^2.2.8",
 		"koa-helmet": "^6.0.0",
 		"koa-no-cache": "^2.0.0",
 		"koa-proxy": "^1.0.0-alpha.3",
