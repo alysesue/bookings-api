@@ -1,6 +1,6 @@
-const Hashids = require('hashids');
+const Hashids = require('hashids/cjs');
 import * as crypto from 'crypto';
-import { StopWatch } from '../../../infrastructure/stopWatch';
+import { StopWatch } from '../stopWatch';
 
 function generateSalt(length: number): string {
 	const someKey = crypto.randomBytes(length);
@@ -23,7 +23,7 @@ describe('hashids tests', () => {
 	});
 
 	it('should generate unique ids', () => {
-		const values = new Set();
+		const values = new Set<string>();
 		const hashids = new Hashids(salt, minLength);
 
 		const hashIdStopWatch = new StopWatch('HashId encode');
@@ -42,7 +42,8 @@ describe('hashids tests', () => {
 		hashIdDecodeStopWatch.stop();
 	});
 
-	it('should create key', async () => {
-		console.log(generateSalt(61));
+	it('should create key', () => {
+		const someSalt = generateSalt(61);
+		expect(someSalt).toBeDefined();
 	});
 });

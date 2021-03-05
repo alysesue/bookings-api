@@ -26,9 +26,9 @@ serviceProvider.id = 10;
 describe('Timeslot items query auth tests', () => {
 	it('should return FALSE when user has no groups', async () => {
 		const userGroup = await new TimeslotItemsQueryAuthVisitor(
-			'service alias',
-			'service provider alias',
-			'service provider service alias',
+			'service_alias',
+			'service_provider_alias',
+			'service_provider_service_alias',
 		).createUserVisibilityCondition([]);
 
 		expect(userGroup.userCondition).toStrictEqual('FALSE');
@@ -38,13 +38,13 @@ describe('Timeslot items query auth tests', () => {
 	it('should filter by organisation ID', async () => {
 		const userGroup = new OrganisationAdminAuthGroup(adminUser, [organisation]);
 		const visitor = await new TimeslotItemsQueryAuthVisitor(
-			'service alias',
-			'service provider alias',
-			'service provider service alias',
+			'service_alias',
+			'service_provider_alias',
+			'service_provider_service_alias',
 		).createUserVisibilityCondition([userGroup]);
 
 		expect(visitor.userCondition).toStrictEqual(
-			'(service alias._organisationId IN (:...orgIds) OR service provider service alias._organisationId IN (:...orgIds))',
+			'(service_alias._organisationId IN (:...orgIds) OR service_provider_service_alias._organisationId IN (:...orgIds))',
 		);
 		expect(visitor.userParams).toStrictEqual({ orgIds: [1] });
 	});
@@ -53,13 +53,13 @@ describe('Timeslot items query auth tests', () => {
 		const userGroup = new ServiceAdminAuthGroup(adminUser, [service]);
 
 		const visitor = await new TimeslotItemsQueryAuthVisitor(
-			'service alias',
-			'service provider alias',
-			'service provider service alias',
+			'service_alias',
+			'service_provider_alias',
+			'service_provider_service_alias',
 		).createUserVisibilityCondition([userGroup]);
 
 		expect(visitor.userCondition).toStrictEqual(
-			'(service provider alias._id IN (:...serviceIds) OR service provider service alias._id IN (:...serviceIds))',
+			'(service_alias._id IN (:...serviceIds) OR service_provider_service_alias._id IN (:...serviceIds))',
 		);
 		expect(visitor.userParams).toStrictEqual({ serviceIds: [2] });
 	});
@@ -68,13 +68,13 @@ describe('Timeslot items query auth tests', () => {
 		const userGroup = new ServiceProviderAuthGroup(adminUser, serviceProvider);
 
 		const visitor = await new TimeslotItemsQueryAuthVisitor(
-			'service alias',
-			'service provider alias',
-			'service provider service alias',
+			'service_alias',
+			'service_provider_alias',
+			'service_provider_service_alias',
 		).createUserVisibilityCondition([userGroup]);
 
 		expect(visitor.userCondition).toStrictEqual(
-			'(service alias._id = :serviceId OR service provider alias._id = :serviceProviderId)',
+			'(service_alias._id = :serviceId OR service_provider_alias._id = :serviceProviderId)',
 		);
 		expect(visitor.userParams).toStrictEqual({
 			serviceId: 1,
@@ -88,13 +88,13 @@ describe('Timeslot items query auth tests', () => {
 			new ServiceProviderAuthGroup(adminUser, serviceProvider),
 		];
 		const visitor = await new TimeslotItemsQueryAuthVisitor(
-			'service alias',
-			'service provider alias',
-			'service provider service alias',
+			'service_alias',
+			'service_provider_alias',
+			'service_provider_service_alias',
 		).createUserVisibilityCondition(userGroup);
 
 		expect(visitor.userCondition).toStrictEqual(
-			'((service provider alias._id IN (:...serviceIds) OR service provider service alias._id IN (:...serviceIds)) OR (service alias._id = :serviceId OR service provider alias._id = :serviceProviderId))',
+			'((service_alias._id IN (:...serviceIds) OR service_provider_service_alias._id IN (:...serviceIds)) OR (service_alias._id = :serviceId OR service_provider_alias._id = :serviceProviderId))',
 		);
 		expect(visitor.userParams).toStrictEqual({
 			serviceId: 1,
@@ -108,9 +108,9 @@ describe('Timeslot items query auth tests', () => {
 		const groups = [new AnonymousAuthGroup(anonymous)];
 
 		const visitor = await new TimeslotItemsQueryAuthVisitor(
-			'service alias',
-			'service provider alias',
-			'service provider service alias',
+			'service_alias',
+			'service_provider_alias',
+			'service_provider_service_alias',
 		).createUserVisibilityCondition(groups);
 
 		expect(visitor.userParams).toStrictEqual({});
@@ -121,9 +121,9 @@ describe('Timeslot items query auth tests', () => {
 		const userGroup = new CitizenAuthGroup(singPassUser);
 
 		const visitor = await new TimeslotItemsQueryAuthVisitor(
-			'service alias',
-			'service provider alias',
-			'service provider service alias',
+			'service_alias',
+			'service_provider_alias',
+			'service_provider_service_alias',
 		).createUserVisibilityCondition([userGroup]);
 
 		expect(visitor.userParams).toStrictEqual({});

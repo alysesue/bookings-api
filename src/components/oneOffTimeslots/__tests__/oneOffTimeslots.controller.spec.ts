@@ -51,8 +51,6 @@ describe('One off timeslots Controller test', () => {
 
 		const controller = Container.get(OneOffTimeslotsController);
 		const result = await controller.create(request);
-		// tslint:disable-next-line: no-console
-		console.log(result);
 
 		expect(OneOffTimeslotsServiceMock.save).toHaveBeenCalled();
 		expect(result).toBeDefined();

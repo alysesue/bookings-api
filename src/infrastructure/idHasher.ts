@@ -1,7 +1,6 @@
 import { Singleton } from 'typescript-ioc';
 import { getConfig } from '../config/app-config';
-
-const Hashids = require('hashids');
+const Hashids = require('hashids/cjs');
 
 type HashIdsClassType = {
 	encode(input: number[]): string;

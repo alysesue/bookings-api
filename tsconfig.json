@@ -44,6 +44,6 @@
 		"!./node_modules/**/*.ts"
 	],
 	"lib": [
-		"es6"
+		"es6", "esnext.bigint"
 	]
 }
