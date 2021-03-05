@@ -59,13 +59,13 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 	}): Promise<OneOffTimeslot[]> {
 		const { serviceId, serviceProviderIds, startDateTime, endDateTime } = request;
 
-		const serviceCondition = serviceId ? 'SPservice._id = :serviceId' : '';
+		const serviceCondition = serviceId ? '"serviceProvider"."_serviceId" = :serviceId' : '';
 		const spCondition =
 			serviceProviderIds && serviceProviderIds.length > 0
 				? 'timeslot."_serviceProviderId" IN (:...serviceProviderIds)'
 				: '';
-		const startDateCondition = startDateTime ? 'item."_endDateTime" > :startDateTime' : '';
-		const endDateCondition = endDateTime ? 'item."_startDateTime" < :endDateTime' : '';
+		const startDateCondition = startDateTime ? 'timeslot."_endDateTime" > :startDateTime' : '';
+		const endDateCondition = endDateTime ? 'timeslot."_startDateTime" < :endDateTime' : '';
 
 		const query = await this.createSelectQuery(
 			[serviceCondition, spCondition, startDateCondition, endDateCondition],

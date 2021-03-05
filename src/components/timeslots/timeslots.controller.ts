@@ -79,12 +79,10 @@ export class TimeslotsController extends Controller {
 		let spIdsFilter = serviceProviderIds;
 		const spGroup = await this.getServiceProviderAuthGroup();
 		if (spGroup) {
-			if (spIdsFilter) {
-				// tslint:disable-next-line: tsr-detect-possible-timing-attacks
-				spIdsFilter = spIdsFilter.filter((id) => id === spGroup.authorisedServiceProvider.id);
-			} else {
-				spIdsFilter = [spGroup.authorisedServiceProvider.id];
-			}
+			// tslint:disable-next-line: tsr-detect-possible-timing-attacks
+			spIdsFilter = (spIdsFilter || []).some((id) => id === spGroup.authorisedServiceProvider.id)
+				? [spGroup.authorisedServiceProvider.id]
+				: [0];
 		}
 
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots(

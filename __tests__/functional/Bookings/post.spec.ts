@@ -115,20 +115,17 @@ describe('Bookings functional tests', () => {
 			citizenUinFin,
 			serviceId,
 		});
-		try {
-			await endpoint.post('/bookings', {
-				body: {
-					startDateTime,
-					endDateTime,
-					serviceProviderId: serviceProvider.id,
-					citizenName,
-					citizenEmail,
-				},
-			});
-			fail('should throw');
-		} catch (e) {
-			expect(e.httpStatusCode).toBe(400);
-		}
+
+		const response = await endpoint.post('/bookings', {
+			body: {
+				startDateTime,
+				endDateTime,
+				serviceProviderId: serviceProvider.id,
+				citizenName,
+				citizenEmail,
+			},
+		});
+		expect(response.statusCode).toBe(400);
 	});
 
 	it('[Auto Accept] should create in-slot booking as a citizen', async () => {
@@ -195,22 +192,17 @@ describe('Bookings functional tests', () => {
 			serviceId,
 		});
 
-		try {
-			await endpoint.post('/bookings', {
-				body: {
-					startDateTime,
-					endDateTime,
-					serviceProviderId: serviceProvider.id,
-					citizenUinFin,
-					citizenName,
-					citizenEmail,
-				},
-			});
-
-			fail('should throw');
-		} catch (e) {
-			expect(e.httpStatusCode).toBe(404);
-		}
+		const response = await endpoint.post('/bookings', {
+			body: {
+				startDateTime,
+				endDateTime,
+				serviceProviderId: serviceProvider.id,
+				citizenUinFin,
+				citizenName,
+				citizenEmail,
+			},
+		});
+		expect(response.statusCode).toBe(404);
 	});
 
 	it('should create in-slot booking as anonymous (when service is configured)', async () => {
