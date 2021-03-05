@@ -228,9 +228,7 @@ describe('Timeslots Service', () => {
 		const service = Container.get(TimeslotsService);
 
 		const testBooking1 = getOutOfSlotBooking(ServiceProviderMock);
-		testBooking1.serviceProviderId = 100;
 		const testBooking2 = getOutOfSlotBooking(ServiceProviderMock2);
-		testBooking2.serviceProviderId = 101;
 
 		BookingsRepositoryMock.search.mockImplementation(() =>
 			Promise.resolve({ entries: [testBooking1, testBooking2] } as IPagedEntities<Booking>),
@@ -318,7 +316,7 @@ describe('Timeslots Service', () => {
 			.withRefId('ref')
 			.build();
 		bookingOos.serviceProvider = ServiceProviderMock;
-		bookingOos.serviceProviderId = 100;
+
 		BookingsRepositoryMock.search.mockReturnValue(
 			Promise.resolve({ entries: [bookingOos] } as IPagedEntities<Booking>),
 		);
@@ -447,7 +445,7 @@ describe('Timeslots Service Out Of Slot', () => {
 			.withRefId('ref')
 			.build();
 		bookingOos.serviceProvider = ServiceProviderMock3;
-		bookingOos.serviceProviderId = 105;
+
 		BookingsRepositoryMock.search.mockReturnValue(
 			Promise.resolve({ entries: [bookingOos] } as IPagedEntities<Booking>),
 		);

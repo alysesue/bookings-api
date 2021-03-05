@@ -216,6 +216,7 @@ export class Booking {
 		}
 
 		instance._serviceId = builder.serviceId;
+		instance._serviceProviderId = builder.serviceProviderId;
 		instance._startDateTime = builder.startDateTime;
 		instance._endDateTime = builder.endDateTime;
 		instance._refId = builder.refId;

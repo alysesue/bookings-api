@@ -112,7 +112,6 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
-		booking.serviceProviderId = 1;
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
@@ -150,7 +149,6 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
-		booking.serviceProviderId = 1;
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
@@ -187,7 +185,6 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmail.com')
 			.withServiceProviderId(1)
 			.build();
-		booking.serviceProviderId = 1;
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
@@ -225,7 +222,6 @@ describe('Booking validation tests', () => {
 			.withEndDateTime(DateHelper.addMinutes(start, 60))
 			.withServiceProviderId(1)
 			.build();
-		booking.serviceProviderId = 1;
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
@@ -265,7 +261,6 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmail.com')
 			.withServiceProviderId(5)
 			.build();
-		booking.serviceProviderId = 5;
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
@@ -283,7 +278,6 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withServiceProviderId(1)
 			.build();
-		booking.serviceProviderId = 1;
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
@@ -303,7 +297,6 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmailcom')
 			.withServiceProviderId(1)
 			.build();
-		booking.serviceProviderId = 1;
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
@@ -384,7 +377,6 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmail.com')
 			.withServiceProviderId(1)
 			.build();
-		booking.serviceProviderId = 1;
 
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
 			Promise.resolve({
@@ -439,7 +431,6 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
-		booking.serviceProviderId = 1;
 
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
 			Promise.resolve({
@@ -485,7 +476,6 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmail.com')
 			.build();
 		booking.id = 5;
-		booking.serviceProviderId = 1;
 
 		const searchBooking = new BookingBuilder()
 			.withStartDateTime(new Date(2020, 8, 26, 7, 15))
@@ -497,7 +487,6 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmail.com')
 			.build();
 		searchBooking.id = 5;
-		searchBooking.serviceProviderId = 1;
 
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
 			Promise.resolve({ entries: [searchBooking] } as IPagedEntities<Booking>),
@@ -543,7 +532,6 @@ describe('Booking validation tests', () => {
 			.withMarkOnHold(true)
 			.build();
 		booking.service = onHoldService;
-		booking.serviceProviderId = 1;
 
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
 			Promise.resolve({
