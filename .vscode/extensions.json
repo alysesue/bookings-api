@@ -37,6 +37,8 @@
 		"msjsdiag.vscode-react-native",
 		// Database
 		"jakebathman.mysql-syntax",
+		"prisma.vscode-graphql",
 		// Cloud
+		"mauve.terraform"
 	]
 }

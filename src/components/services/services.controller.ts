@@ -25,6 +25,7 @@ export class ServicesController extends Controller {
 		const response = new ServiceResponse();
 		response.id = service.id;
 		response.name = service.name;
+		response.isStandAlone = service.isStandAlone;
 		return response;
 	}
 

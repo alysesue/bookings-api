@@ -87,6 +87,11 @@ describe('date helper tests', () => {
 		expect(result).toBe(45);
 	});
 
+	it('should get diff in seconds', () => {
+		const result = DateHelper.DiffInSeconds(anotherDate, originalDate);
+		expect(result).toBe(45 * 60);
+	});
+
 	it('should get diff in days', () => {
 		const result = DateHelper.DiffInDays(anotherDate, originalDate);
 		expect(result.toFixed(5)).toBe('0.03125');

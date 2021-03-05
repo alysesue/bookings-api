@@ -1,4 +1,5 @@
 export class DateHelper {
+	private static MsPerSecond = 1000;
 	private static MsPerMinute = 60000;
 	private static MsPerHour = 3600000;
 	private static MsPerDay = 86400000;
@@ -29,6 +30,10 @@ export class DateHelper {
 		newDate.setHours(23, 59, 59, 999);
 
 		return newDate;
+	}
+
+	public static DiffInSeconds(dateA: Date, dateB: Date): number {
+		return (dateA.getTime() - dateB.getTime()) / DateHelper.MsPerSecond;
 	}
 
 	public static DiffInMinutes(dateA: Date, dateB: Date): number {

@@ -30,7 +30,7 @@ import { DbConnection } from './core/db.connection';
 import { CreateCsrfMiddleware, VerifyCsrfMiddleware, XSRF_HEADER_NAME } from './infrastructure/csrf.middleware';
 
 class ApiDataResponseHandler {
-	private _middleware: Koa.Middleware;
+	private readonly _middleware: Koa.Middleware;
 	constructor(middleware: Koa.Middleware) {
 		this._middleware = middleware;
 	}
@@ -103,7 +103,11 @@ export async function startServer(): Promise<Server> {
 	// @ts-ignore
 	const HandledRoutes = new ApiDataResponseHandler(router.routes());
 	// tslint:disable-next-line: tsr-detect-non-literal-regexp
-	const byPassAuthPath = new RegExp(`^${basePath}/api/v1/usersessions/anonymous$`);
+	const byPassCSRF = new RegExp(`^(${basePath}/api/v1/bookings/bulk|${basePath}/api/v1/encryption/encrypt)$`);
+	// tslint:disable-next-line: tsr-detect-non-literal-regexp
+	const byPassAuthPath = new RegExp(
+		`^(${basePath}/api/v1/usersessions/anonymous|${basePath}/api/v1/encryption/encrypt)$`,
+	);
 	setIOCBindings();
 	let koaServer = new Koa()
 		.use(new ContainerContextMiddleware().build())
@@ -172,7 +176,7 @@ export async function startServer(): Promise<Server> {
 	koaServer = koaServer
 		.use(bypassMiddleware(byPassAuthPath, new UserContextMiddleware().build()))
 		.use(bypassMiddleware(byPassAuthPath, new CitizenUserValidationMiddleware().build()))
-		.use(new VerifyCsrfMiddleware().build())
+		.use(bypassMiddleware(byPassCSRF, new VerifyCsrfMiddleware().build()))
 		.use(new CreateCsrfMiddleware().build())
 		.use(HandledRoutes.build());
 

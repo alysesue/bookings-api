@@ -52,9 +52,11 @@ describe('AesEncryption tests', () => {
 		const someKey = crypto.randomBytes(32);
 		const encryption = new AesEncryption(someKey);
 
-		const value = crypto.randomBytes(128).toString('utf8');
-		const decryptedValue = encryption.decrypt(value).toString('utf8');
-		expect(decryptedValue).toBe('');
+		for (let i = 0; i < 10000; i++) {
+			const value = crypto.randomBytes(128).toString('utf8');
+			const decryptedValue = encryption.decrypt(value).toString('utf8');
+			expect(decryptedValue).toBe('');
+		}
 	});
 
 	it('should not decrypt random base64 value', async () => {
