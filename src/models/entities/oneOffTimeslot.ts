@@ -83,12 +83,4 @@ export class OneOffTimeslot implements TimeslotWithCapacity {
 	public get serviceProviderId(): number {
 		return this._serviceProviderId;
 	}
-
-	public intersects(startDateTime: Date, endDateTime: Date, id?: number): boolean {
-		if (id && this.id === id) {
-			return false;
-		}
-
-		return intersectsDateTime(this.startDateTime, this.endDateTime, startDateTime, endDateTime);
-	}
 }
