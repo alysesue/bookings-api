@@ -37,6 +37,7 @@ describe('Test csrf middleware', () => {
 			set: jest.fn(),
 			get: jest.fn(),
 		} as Partial<Cookies>,
+		status: undefined,
 	} as Koa.Context;
 
 	beforeEach(() => {
@@ -98,6 +99,26 @@ describe('Test csrf middleware', () => {
 		});
 
 		expect(context.cookies.set).toHaveBeenCalled();
+		expect(context.status).toBe(204);
+	});
+
+	it('Should return 204 for HEAD requests (when automated tests = true)', async () => {
+		context.request.method = 'HEAD';
+		(getConfig as jest.Mock).mockReturnValue({
+			isLocal: true,
+			csrfSecret: 'f0JuxiT87QYtd-5yGxQk5SIX5Mz1tMTGhuKRHyXCvYA',
+			isAutomatedTest: true,
+		});
+
+		const nextMiddleware: Koa.Next = jest.fn(() => Promise.resolve());
+		const handler = new CreateCsrfMiddleware();
+		const middleware = handler.build();
+		await containerMiddleware(context, async () => {
+			await middleware(context, nextMiddleware);
+		});
+
+		expect(context.status).toBe(204);
+		expect(nextMiddleware as jest.Mock).not.toBeCalledTimes(1);
 	});
 
 	it('Should create token for anonymous user', async () => {
@@ -112,6 +133,7 @@ describe('Test csrf middleware', () => {
 		});
 
 		expect(context.cookies.set).toHaveBeenCalled();
+		expect(context.status).toBe(204);
 	});
 
 	it('Should create token for null user', async () => {

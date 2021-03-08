@@ -46,7 +46,7 @@ export class CreateCsrfMiddleware {
 	}
 
 	private async shouldCreateTokens(ctx: Koa.Context): Promise<boolean> {
-		if (this._config.isAutomatedTest || !METHODS_TO_CREATE_TOKEN.includes(ctx.request.method.toLowerCase())) {
+		if (this._config.isAutomatedTest) {
 			return false;
 		}
 		const user = await getCurrentUser(ctx);
@@ -80,16 +80,18 @@ export class CreateCsrfMiddleware {
 			secure: !this._config.isLocal,
 		});
 		ctx.set(XSRF_HEADER_NAME, jwtHeader);
-		ctx.status = 200;
 	}
 
 	public build(): Koa.Middleware {
 		return async (ctx: Koa.Context, next: Koa.Next): Promise<any> => {
-			if (await this.shouldCreateTokens(ctx)) {
-				await this.createTokens(ctx);
-				return;
+			if (METHODS_TO_CREATE_TOKEN.includes(ctx.request.method.toLowerCase())) {
+				if (await this.shouldCreateTokens(ctx)) {
+					await this.createTokens(ctx);
+				}
+				ctx.status = 204;
+			} else {
+				return await next();
 			}
-			return await next();
 		};
 	}
 }
