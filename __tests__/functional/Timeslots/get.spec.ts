@@ -5,7 +5,7 @@ import {
 	ServiceAdminRequestEndpointSG,
 	ServiceProviderRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
-import { populateUserServiceProvider, populateWeeklyTimesheet } from '../../Populate/basic';
+import { populateUserServiceProvider, populateWeeklyTimesheet } from '../../populate/basic';
 import { keepTimeFromTimezoneToLocal } from '../../../__tests__/utils/dateTimeUtil';
 
 describe('Timeslots functional tests', () => {

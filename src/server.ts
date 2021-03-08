@@ -27,7 +27,7 @@ import { KoaContextStoreMiddleware } from './infrastructure/koaContextStore.midd
 import { MolUsersService, MolUsersServiceFactory } from './components/users/molUsers/molUsers.service';
 import { AutomatedTestMiddleware } from './infrastructure/automatedTest.middleware';
 import { DbConnection } from './core/db.connection';
-import { CreateCsrfMiddleware, VerifyCsrfMiddleware, XSRF_HEADER_NAME } from './infrastructure/csrf.middleware';
+// import { CreateCsrfMiddleware, VerifyCsrfMiddleware, XSRF_HEADER_NAME } from './infrastructure/csrf.middleware';
 
 class ApiDataResponseHandler {
 	private readonly _middleware: Koa.Middleware;
@@ -103,7 +103,7 @@ export async function startServer(): Promise<Server> {
 	// @ts-ignore
 	const HandledRoutes = new ApiDataResponseHandler(router.routes());
 	// tslint:disable-next-line: tsr-detect-non-literal-regexp
-	const byPassCSRF = new RegExp(`^(${basePath}/api/v1/bookings/bulk|${basePath}/api/v1/encryption/encrypt)$`);
+	// const byPassCSRF = new RegExp(`^(${basePath}/api/v1/bookings/bulk|${basePath}/api/v1/encryption/encrypt)$`);
 	// tslint:disable-next-line: tsr-detect-non-literal-regexp
 	const byPassAuthPath = new RegExp(
 		`^(${basePath}/api/v1/usersessions/anonymous|${basePath}/api/v1/encryption/encrypt)$`,
@@ -129,7 +129,7 @@ export async function startServer(): Promise<Server> {
 		.use(
 			cors({
 				credentials: config.isLocal,
-				exposeHeaders: `Origin, X-Requested-With, X-Request-Id, Content-Type, Accept, ${XSRF_HEADER_NAME}`,
+				// exposeHeaders: `Origin, X-Requested-With, X-Request-Id, Content-Type, Accept, ${XSRF_HEADER_NAME}`,
 				origin: (ctx) => getOriginFromWhitelist(ctx, originWhitelist),
 				allowMethods: 'GET,PATCH,PUT,POST,DELETE,HEAD',
 			}),
@@ -176,8 +176,8 @@ export async function startServer(): Promise<Server> {
 	koaServer = koaServer
 		.use(bypassMiddleware(byPassAuthPath, new UserContextMiddleware().build()))
 		.use(bypassMiddleware(byPassAuthPath, new CitizenUserValidationMiddleware().build()))
-		.use(bypassMiddleware(byPassCSRF, new VerifyCsrfMiddleware().build()))
-		.use(new CreateCsrfMiddleware().build())
+		// .use(bypassMiddleware(byPassCSRF, new VerifyCsrfMiddleware().build()))
+		// .use(new CreateCsrfMiddleware().build())
 		.use(HandledRoutes.build());
 
 	const dbOptions = getConnectionOptions();
