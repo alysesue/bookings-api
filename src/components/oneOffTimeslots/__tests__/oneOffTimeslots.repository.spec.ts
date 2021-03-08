@@ -118,7 +118,7 @@ describe('oneOffTimeslots repository tests', () => {
 		expect(
 			queryBuilderMock.where,
 		).toBeCalledWith(
-			'(SPservice._id = :serviceId) AND (timeslot."_serviceProviderId" IN (:...serviceProviderIds))',
+			'("serviceProvider"."_serviceId" = :serviceId) AND (timeslot."_serviceProviderId" IN (:...serviceProviderIds))',
 			{ serviceId: 2, serviceProviderIds: [10, 11] },
 		);
 		expect(queryBuilderMock.getMany).toBeCalled();

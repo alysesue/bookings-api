@@ -76,13 +76,15 @@ export class TimeslotsController extends Controller {
 		@Query() includeBookings: boolean = false,
 		@Query() serviceProviderIds?: number[],
 	): Promise<ApiData<TimeslotEntryResponse[]>> {
-		let spIdsFilter = serviceProviderIds;
+		let spIdsFilter = serviceProviderIds || [];
 		const spGroup = await this.getServiceProviderAuthGroup();
 		if (spGroup) {
-			// tslint:disable-next-line: tsr-detect-possible-timing-attacks
-			spIdsFilter = (spIdsFilter || []).some((id) => id === spGroup.authorisedServiceProvider.id)
-				? [spGroup.authorisedServiceProvider.id]
-				: [0];
+			spIdsFilter =
+				spIdsFilter.length === 0 ||
+				// tslint:disable-next-line: tsr-detect-possible-timing-attacks
+				spIdsFilter.some((id) => id === spGroup.authorisedServiceProvider.id)
+					? [spGroup.authorisedServiceProvider.id]
+					: [0];
 		}
 
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots(

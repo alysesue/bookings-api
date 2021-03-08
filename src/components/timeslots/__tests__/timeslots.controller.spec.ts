@@ -145,6 +145,6 @@ describe('Timeslots Controller', () => {
 
 		expect(result).toBeDefined();
 		expect(result.data.length).toBe(1);
-		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, []);
+		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, [0]);
 	});
 });
