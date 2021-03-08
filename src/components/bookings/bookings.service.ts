@@ -286,6 +286,7 @@ export class BookingsService {
 		shouldBypassCaptcha: boolean = false,
 	): Promise<[ChangeLogAction, Booking]> {
 		const currentUser = await this.userContext.getCurrentUser();
+		const isAdminUser = currentUser.adminUser;
 		const service: Service = await this.servicesService.getService(serviceId);
 		const isStandAlone = service.isStandAlone;
 		let serviceProvider: ServiceProvider | undefined;
@@ -307,7 +308,7 @@ export class BookingsService {
 			.withCitizenPhone(bookingRequest.citizenPhone)
 			.withCitizenEmail(bookingRequest.citizenEmail)
 			.withAutoAccept(BookingsService.shouldAutoAccept(currentUser, serviceProvider))
-			.withMarkOnHold(isStandAlone ? true : service.isOnHold)
+			.withMarkOnHold((isStandAlone && !isAdminUser) ? true : service.isOnHold)
 			.withCaptchaToken(bookingRequest.captchaToken)
 			.withCaptchaOrigin(bookingRequest.captchaOrigin)
 			.build();

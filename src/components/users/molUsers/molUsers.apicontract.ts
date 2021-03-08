@@ -39,7 +39,7 @@ export interface MolUpsertUsersResult {
 	 */
 	error?: string;
 
-	/**b
+	/**
 	 * Csv output with user id appended at the end of each row
 	 */
 	csv?: string;
