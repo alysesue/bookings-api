@@ -56,6 +56,7 @@ export class BookingsMapper {
 			citizenPhone: booking.citizenPhone,
 			location: booking.location,
 			description: booking.description,
+			videoConferenceUrl: booking.videoConferenceUrl,
 			refId: booking.refId,
 		} as BookingResponse;
 	}
@@ -82,6 +83,7 @@ export class BookingsMapper {
 		booking.citizenPhone = request.citizenPhone;
 		booking.location = request.location;
 		booking.description = request.description;
+		booking.videoConferenceUrl = request.videoConferenceUrl;
 	}
 
 	public static mapRequest(request: BookingRequest, booking: Booking, user: User) {

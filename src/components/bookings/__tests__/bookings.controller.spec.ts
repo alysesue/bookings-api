@@ -111,8 +111,8 @@ describe('Bookings.Controller', () => {
 		const bookingId = 1;
 		BookingsServiceMock.mockAcceptBooking = Promise.resolve(testBooking1);
 		const request = new BookingAcceptRequest();
-		await controller.acceptBooking(bookingId, request);
 
+		await controller.acceptBooking(bookingId, request);
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 	});
 
