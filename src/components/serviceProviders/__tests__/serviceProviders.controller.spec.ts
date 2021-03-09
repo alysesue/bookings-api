@@ -241,14 +241,6 @@ describe('ServiceProviders.Controller', () => {
 		await Container.get(ServiceProvidersController).deleteTimeslotItem(1, 1);
 		expect(ServiceProvidersMock.deleteTimeslotForServiceProvider).toBeCalled();
 	});
-
-	it('should validate service provider availability', async () => {
-		const startDate = new Date(2020, 12, 6, 7, 0);
-		const endDate = new Date(2020, 12, 6, 10, 0);
-		ServiceProvidersMock.isServiceProviderAvailable.mockReturnValue(true);
-		await Container.get(ServiceProvidersController).getIsServiceProviderAvailable(startDate, endDate, 1, 1);
-		expect(ServiceProvidersMock.isServiceProviderAvailable).toBeCalled();
-	});
 });
 
 const ServiceProvidersMock = {
@@ -266,7 +258,6 @@ const ServiceProvidersMock = {
 	deleteTimeslotForServiceProvider: jest.fn(),
 	createServiceProviders: jest.fn(),
 	getServiceProvidersByName: jest.fn(),
-	isServiceProviderAvailable: jest.fn(),
 };
 
 class ServiceProvidersServiceMock implements Partial<ServiceProvidersService> {
@@ -322,15 +313,6 @@ class ServiceProvidersServiceMock implements Partial<ServiceProvidersService> {
 
 	public async deleteTimeslotItem(serviceProviderId: number, timeslotsScheduleId: number): Promise<void> {
 		return ServiceProvidersMock.deleteTimeslotForServiceProvider(serviceProviderId, timeslotsScheduleId);
-	}
-
-	public async isServiceProviderAvailable(
-		from: Date,
-		to: Date,
-		serviceProviderId: number[],
-		serviceId: number,
-	): Promise<boolean> {
-		return ServiceProvidersMock.isServiceProviderAvailable(from, to, serviceProviderId, serviceId);
 	}
 }
 

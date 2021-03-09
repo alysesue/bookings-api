@@ -412,38 +412,6 @@ describe('ServiceProviders.Service', () => {
 		const result = await serviceProvidersService.getServiceProvidersByName('mon', 1);
 		expect(result.length).toBe(1);
 	});
-
-	it('should validate isServiceProviderAvailable', async () => {
-		const startTime = new Date(2020, 8, 26, 8, 0).getTime();
-		const endTime = new Date(2020, 8, 26, 8, 30).getTime();
-		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
-			const entry = new AvailableTimeslotProviders();
-			entry.startTime = startTime;
-			entry.endTime = endTime;
-
-			const serviceProvider1 = ServiceProvider.create('Juku', 1);
-			serviceProvider1.id = 1;
-			const serviceProvider2 = ServiceProvider.create('Andi', 1);
-			serviceProvider2.id = 2;
-
-			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider1, createTimeslot(new Date(entry.startTime), new Date(entry.endTime), 1));
-			map.set(serviceProvider2, createTimeslot(new Date(entry.startTime), new Date(entry.endTime), 1));
-
-			entry.setRelatedServiceProviders(map);
-
-			return Promise.resolve([entry]);
-		});
-
-		const serviceProvidersService = Container.get(ServiceProvidersService);
-		const result = await serviceProvidersService.isServiceProviderAvailable(
-			new Date('2020-08-25T12:00'),
-			new Date('2020-08-26T12:00'),
-			[1],
-			1,
-		);
-		expect(result).toBeTruthy();
-	});
 });
 
 class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersRepository> {
@@ -452,7 +420,6 @@ class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersReposito
 	public static getServiceProviderMock: ServiceProvider;
 	public static getServiceProvidersCountMock: number;
 	public static getServiceProvidersByName = jest.fn();
-	public static isServiceProviderAvailable = jest.fn();
 	public static save = jest.fn();
 	public static saveMany = jest.fn();
 
@@ -476,10 +443,6 @@ class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersReposito
 
 	public async saveMany(...params): Promise<ServiceProvider[]> {
 		return await ServiceProvidersRepositoryMock.saveMany(...params);
-	}
-
-	public async isServiceProviderAvailable(...params): Promise<boolean> {
-		return await ServiceProvidersRepositoryMock.isServiceProviderAvailable(...params);
 	}
 }
 
