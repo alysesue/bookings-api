@@ -5,7 +5,11 @@ const SERVICE_ID = '1';
 const populateDBWithUsers = async () => {
 	const org = await OrganisationAdminRequestEndpointSG.create({ serviceId: SERVICE_ID });
 	const headers = { ...org.getHeader(), ['x-api-service']: SERVICE_ID };
-	await fetch().postCSV('/users/service-providers/upsert/csv', './__tests__/seeds/serviceProviders.csv', headers);
+	await fetch().postCSV(
+		'/users/service-providers/upsert/csv',
+		'./__tests__/localSeeds/serviceProviders.csv',
+		headers,
+	);
 };
 
 const addScheduleForm = async () => {
