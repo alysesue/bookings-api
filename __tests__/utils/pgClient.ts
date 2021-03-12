@@ -57,6 +57,12 @@ export class PgClient {
 		});
 	}
 
+	public async setServiceConfigurationOnHold(serviceId: number, onHold: boolean): Promise<void> {
+		await this.pool.query({
+			text: `UPDATE public.service set "_isOnHold" = ${onHold} where _id = ${serviceId}`,
+		});
+	}
+
 	public async setServiceProviderAutoAccept({
 		serviceProviderId,
 		autoAcceptBookings,

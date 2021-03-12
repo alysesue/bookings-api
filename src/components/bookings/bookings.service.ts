@@ -287,12 +287,23 @@ export class BookingsService {
 	): Promise<[ChangeLogAction, Booking]> {
 		const currentUser = await this.userContext.getCurrentUser();
 		const isAdminUser = currentUser.adminUser;
+		const isAgencyUser = currentUser.agencyUser;
 		const service: Service = await this.servicesService.getService(serviceId);
+		const isOnHold = service.isOnHold;
 		const isStandAlone = service.isStandAlone;
 		let serviceProvider: ServiceProvider | undefined;
 		if (bookingRequest.serviceProviderId) {
 			serviceProvider = await this.serviceProvidersService.getServiceProvider(bookingRequest.serviceProviderId);
 		}
+
+		const isServiceOnHold = () => {
+			if(isAdminUser || isAgencyUser || (!isOnHold && !isStandAlone)) {
+				return false;
+			}
+			if((!isAdminUser && !isAgencyUser) && (isStandAlone || isOnHold)) {
+				return true;
+			}
+		};
 
 		const booking = new BookingBuilder()
 			.withServiceId(serviceId)
@@ -308,7 +319,7 @@ export class BookingsService {
 			.withCitizenPhone(bookingRequest.citizenPhone)
 			.withCitizenEmail(bookingRequest.citizenEmail)
 			.withAutoAccept(BookingsService.shouldAutoAccept(currentUser, serviceProvider))
-			.withMarkOnHold((isStandAlone && !isAdminUser) ? true : service.isOnHold)
+			.withMarkOnHold(isServiceOnHold())
 			.withCaptchaToken(bookingRequest.captchaToken)
 			.withCaptchaOrigin(bookingRequest.captchaOrigin)
 			.build();
@@ -341,7 +352,7 @@ export class BookingsService {
 			const updatedBooking = previousBooking.clone();
 			BookingsMapper.mapBookingDetails(bookingRequest, updatedBooking, currentUser);
 
-			if (serviceProvider.autoAcceptBookings) {
+			if (serviceProvider && serviceProvider.autoAcceptBookings) {
 				updatedBooking.status = BookingStatus.Accepted;
 			} else {
 				updatedBooking.status = BookingStatus.PendingApproval;

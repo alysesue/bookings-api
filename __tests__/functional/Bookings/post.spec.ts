@@ -1,5 +1,8 @@
 import { PgClient } from '../../utils/pgClient';
-import { AnonmymousEndpointSG, CitizenRequestEndpointSG } from '../../utils/requestEndpointSG';
+import {
+	AnonmymousEndpointSG,
+	CitizenRequestEndpointSG, OrganisationAdminRequestEndpointSG,
+} from '../../utils/requestEndpointSG';
 import { populateOutOfSlotBooking, populateUserServiceProvider, populateWeeklyTimesheet } from '../../Populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import * as request from 'request';
@@ -48,7 +51,25 @@ describe('Bookings functional tests', () => {
 		done();
 	});
 
-	const postCitizenInSlotBooking = async (): Promise<request.Response> => {
+	const postCitizenInSlotServiceBooking = async (): Promise<request.Response> => {
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+
+		const endpoint = CitizenRequestEndpointSG.create({
+			citizenUinFin,
+			serviceId,
+		});
+		return await endpoint.post('/bookings', {
+			body: {
+				startDateTime,
+				endDateTime,
+				citizenName,
+				citizenEmail,
+			},
+		});
+	};
+
+	const postCitizenInSlotServiceProviderBooking = async (): Promise<request.Response> => {
 		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
 		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
 
@@ -86,6 +107,109 @@ describe('Bookings functional tests', () => {
 			},
 		});
 	};
+
+	const postCitizenServiceOnHoldBooking = async (): Promise<request.Response> => {
+		await pgClient.setServiceConfigurationOnHold(serviceId, true);
+
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+
+		const endpoint = CitizenRequestEndpointSG.create({
+			citizenUinFin,
+			serviceId,
+		});
+		return await endpoint.post('/bookings', {
+			body: {
+				startDateTime,
+				endDateTime,
+			},
+		});
+	};
+
+	const postCitizenServiceProviderOnHoldBooking = async (): Promise<request.Response> => {
+		await pgClient.setServiceConfigurationOnHold(serviceId, true);
+
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+
+		const endpoint = CitizenRequestEndpointSG.create({
+			citizenUinFin,
+			serviceId,
+		});
+		return await endpoint.post('/bookings', {
+			body: {
+				startDateTime,
+				endDateTime,
+				serviceProviderId: serviceProvider.id,
+			},
+		});
+	};
+
+	it('[On hold] Citizen should make an on hold SERVICE booking when on hold flag is true', async () => {
+		const response = await postCitizenServiceOnHoldBooking();
+		expect(response.statusCode).toBe(201);
+		expect(response.body).toBeDefined();
+		expect(response.body.data.status).toBe(BookingStatus.OnHold);
+	});
+
+	it('[On hold] Citizen should make an on hold SERVICE PROVIDER booking when on hold flag is true', async () => {
+		const response = await postCitizenServiceProviderOnHoldBooking();
+		expect(response.statusCode).toBe(201);
+		expect(response.body).toBeDefined();
+		expect(response.body.data.status).toBe(BookingStatus.OnHold);
+	});
+
+	it('[On hold] Citizen should NOT make an on hold SERVICE booking when on hold flag is false', async () => {
+		const response = await postCitizenInSlotServiceBooking();
+		expect(response.statusCode).toBe(201);
+		expect(response.body).toBeDefined();
+		expect(response.body.data.status).not.toBe(BookingStatus.OnHold);
+	});
+
+	it('[On hold] Citizen should NOT make an on hold SERVICE PROVIDER booking when on hold flag is false', async () => {
+		const response = await postCitizenInSlotServiceProviderBooking();
+		expect(response.statusCode).toBe(201);
+		expect(response.body).toBeDefined();
+		expect(response.body.data.status).not.toBe(BookingStatus.OnHold);
+	});
+
+	it('[On hold] Admin should validate SERVICE on hold booking', async () => {
+		const response = await postCitizenServiceOnHoldBooking();
+		const bookingId = response.body.data.id;
+
+		const adminValidateOnHoldResponse = await OrganisationAdminRequestEndpointSG.create({}).post(
+			`/bookings/${bookingId}/validateOnHold`,
+			{
+				body: {
+					citizenName,
+					citizenEmail,
+					citizenUinFin,
+				},
+			},
+		);
+
+		expect(adminValidateOnHoldResponse.statusCode).toEqual(200);
+		expect(adminValidateOnHoldResponse.body.data.status).toEqual(BookingStatus.PendingApproval);
+	});
+
+	it('[On hold] Admin should validate SERVICE PROVIDER on hold booking', async () => {
+		const response = await postCitizenServiceProviderOnHoldBooking();
+		const bookingId = response.body.data.id;
+
+		const adminValidateOnHoldResponse = await OrganisationAdminRequestEndpointSG.create({}).post(
+			`/bookings/${bookingId}/validateOnHold`,
+			{
+				body: {
+					citizenName,
+					citizenEmail,
+					citizenUinFin,
+				},
+			},
+		);
+
+		expect(adminValidateOnHoldResponse.statusCode).toEqual(200);
+		expect(adminValidateOnHoldResponse.body.data.status).toEqual(BookingStatus.Accepted);
+	});
 
 	it('admin should create out of slot booking and citizen cancels a booking', async () => {
 		const startDateTime = new Date(Date.UTC(2051, 11, 10, 0, 0));
@@ -132,7 +256,7 @@ describe('Bookings functional tests', () => {
 	});
 
 	it('[Auto Accept] should create in-slot booking as a citizen', async () => {
-		const response = await postCitizenInSlotBooking();
+		const response = await postCitizenInSlotServiceProviderBooking();
 		expect(response.statusCode).toBe(201);
 		expect(response.body).toBeDefined();
 		expect(response.body.data.id).toBeDefined();
@@ -140,7 +264,7 @@ describe('Bookings functional tests', () => {
 	});
 
 	it('[Auto Accept] should reschedule in-slot booking as a citizen', async () => {
-		const bookingResponse = await postCitizenInSlotBooking();
+		const bookingResponse = await postCitizenInSlotServiceProviderBooking();
 		const bookingId = bookingResponse.body.data.id;
 		const response = await postCitizenReschedule(bookingId);
 
@@ -153,7 +277,7 @@ describe('Bookings functional tests', () => {
 			serviceProviderId: serviceProvider.id,
 			autoAcceptBookings: false,
 		});
-		const response = await postCitizenInSlotBooking();
+		const response = await postCitizenInSlotServiceProviderBooking();
 		expect(response.statusCode).toBe(201);
 		expect(response.body).toBeDefined();
 		expect(response.body.data.id).toBeDefined();
@@ -165,7 +289,7 @@ describe('Bookings functional tests', () => {
 			serviceProviderId: serviceProvider.id,
 			autoAcceptBookings: false,
 		});
-		const bookingResponse = await postCitizenInSlotBooking();
+		const bookingResponse = await postCitizenInSlotServiceProviderBooking();
 		const bookingId = bookingResponse.body.data.id;
 		const response = await postCitizenReschedule(bookingId);
 
@@ -174,7 +298,7 @@ describe('Bookings functional tests', () => {
 	});
 
 	it('[Pending approval - change after booking] should reschedule in-slot booking as a citizen', async () => {
-		const bookingResponse = await postCitizenInSlotBooking();
+		const bookingResponse = await postCitizenInSlotServiceProviderBooking();
 		const bookingId = bookingResponse.body.data.id;
 
 		await pgClient.setServiceProviderAutoAccept({
