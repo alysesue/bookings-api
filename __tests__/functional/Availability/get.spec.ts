@@ -1,5 +1,5 @@
 import { PgClient } from '../../utils/pgClient';
-import { populateUserServiceProvider, populateWeeklyTimesheet } from '../../Populate/basic';
+import { populateUserServiceProvider, populateWeeklyTimesheet } from '../../populate/basic';
 import { AnonmymousEndpointSG } from '../../utils/requestEndpointSG';
 
 describe('Timeslot availability functional tests', () => {

@@ -21,3 +21,14 @@ export const get = async <T = any>(path: string, data?: any, header?: any) => {
 	});
 	return res.data;
 };
+
+export const put = async <T = any>(path: string, data?: any, header?: any) => {
+	const headers = { 'Content-Type': 'application/json', ...header };
+	const res = await axios.request<any, AxiosResponse<T>>({
+		method: 'put',
+		url: path,
+		data,
+		headers,
+	});
+	return res.data;
+};
