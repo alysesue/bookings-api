@@ -23,9 +23,9 @@ export class TimeslotsController extends Controller {
 	 * Pending and accepted bookings count towards availability quota.
 	 * @param startDate The lower bound limit for timeslots' startDate.
 	 * @param endDate The upper bound limit for timeslots' endDate.
-	 * @param serviceId
-	 * @param serviceProviderId
-	 * @param exactTimeslot
+	 * @param @isInt serviceId The available service to be queried.
+	 * @param @isInt serviceProviderId (Optional) Filters timeslots for a specific service provider.
+	 * @param exactTimeslot (Optional) to filter timeslots for the given dates.
 	 */
 	@Get('availability')
 	@Security('service')
@@ -35,7 +35,7 @@ export class TimeslotsController extends Controller {
 		@Query() endDate: Date,
 		@Header('x-api-service') serviceId: number,
 		@Query() serviceProviderId?: number,
-		@Query() exactTimeslot = false,
+		@Query() exactTimeslot: boolean = false,
 	): Promise<ApiData<AvailabilityEntryResponse[]>> {
 		let timeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
