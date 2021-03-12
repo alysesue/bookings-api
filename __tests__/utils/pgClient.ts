@@ -63,6 +63,12 @@ export class PgClient {
 		});
 	}
 
+	public async setServiceConfigurationStandAlone(serviceId: number, standAlone: boolean): Promise<void> {
+		await this.pool.query({
+			text: `UPDATE public.service set "_isStandAlone" = ${standAlone} where _id = ${serviceId}`,
+		});
+	}
+
 	public async setServiceProviderAutoAccept({
 		serviceProviderId,
 		autoAcceptBookings,
