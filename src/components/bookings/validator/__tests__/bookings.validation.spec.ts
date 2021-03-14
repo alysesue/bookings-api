@@ -595,6 +595,6 @@ describe('Booking validation tests', () => {
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
-		).rejects.toMatchInlineSnapshot('[BusinessError: [10014] Invalid video conference URL is provided]');
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10014] Invalid video conference link is provided]');
 	});
 });

@@ -121,8 +121,6 @@ abstract class BookingsValidator implements IValidator {
 			yield BookingBusinessValidations.ServiceProviderLicenceExpire;
 		}
 	}
-
-	public pro;
 }
 
 @InRequestScope
