@@ -72,6 +72,6 @@ export class BookingBusinessValidations {
 
 	public static readonly VideoConferenceUrlIsInvalid = new BusinessValidation({
 		code: '10014',
-		message: `Invalid video conference URL is provided`,
+		message: `Invalid video conference link is provided`,
 	});
 }
