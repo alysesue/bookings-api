@@ -84,7 +84,7 @@ export type BookingResponse = {
 	location?: string;
 	description?: string;
 	refId?: string;
-	videoConferenceUrl: string;
+	videoConferenceUrl?: string;
 };
 
 export type BookingSearchRequest = {
