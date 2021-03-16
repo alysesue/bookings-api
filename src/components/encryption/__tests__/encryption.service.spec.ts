@@ -88,8 +88,5 @@ describe('Test encryption service', () => {
 		const resEncrypted = await Container.get(EncryptionService).encrypt(data as GenericEncryptionData);
 		const decrypted = await Container.get(EncryptionService).decrypt(resEncrypted);
 		expect(decrypted).toStrictEqual(data);
-		expect(JSON.stringify(data).length).toBeGreaterThan(2000);
-		expect(resEncrypted.length).toBeLessThan(1300);
-		expect(decrypted).toStrictEqual(data);
 	});
 });

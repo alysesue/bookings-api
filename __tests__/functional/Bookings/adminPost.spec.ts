@@ -1,6 +1,6 @@
 import { PgClient } from '../../utils/pgClient';
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
-import { populateIndividualTimeslot, populateUserServiceProvider } from '../../Populate/basic';
+import { populateIndividualTimeslot, populateUserServiceProvider } from '../../populate/basic';
 import { BookingStatus } from '../../../src/models';
 import * as request from 'request';
 

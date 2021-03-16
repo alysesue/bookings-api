@@ -1,6 +1,6 @@
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { PgClient } from '../../utils/pgClient';
-import { populateService } from '../../Populate/basic';
+import { populateService } from '../../populate/basic';
 
 describe('Tests endpoint and populate data', () => {
 	const SERVICE_NAME = 'Service';

@@ -37,6 +37,8 @@ class RequestEndpointSG {
 		}
 	}
 
+	public getHeader = () => this._headers;
+
 	public setHeaders = (headerObject: { [e: string]: string }) => {
 		Object.keys(headerObject).forEach((key) => {
 			this._headers[key] = headerObject[key];
