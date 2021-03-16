@@ -51,13 +51,20 @@ export class BookingsService {
 		return user.isAdmin() || user.isAgency();
 	}
 
-	public static shouldAutoAccept(currentUser: User, serviceProvider?: ServiceProvider): boolean {
+	public static shouldAutoAccept(
+		currentUser: User,
+		serviceProvider?: ServiceProvider,
+		skipAgencyCheck: boolean = false,
+	): boolean {
 		if (!serviceProvider) {
 			return false;
 		}
 
-		if (currentUser.isAdmin() || currentUser.isAgency()) {
-			return true;
+		if (!skipAgencyCheck) {
+			// tslint:disable-next-line: no-collapsible-if
+			if (currentUser.isAdmin() || currentUser.isAgency()) {
+				return true;
+			}
 		}
 
 		return serviceProvider.autoAcceptBookings;
@@ -306,7 +313,7 @@ export class BookingsService {
 			.withCitizenName(bookingRequest.citizenName)
 			.withCitizenPhone(bookingRequest.citizenPhone)
 			.withCitizenEmail(bookingRequest.citizenEmail)
-			.withAutoAccept(BookingsService.shouldAutoAccept(currentUser, serviceProvider))
+			.withAutoAccept(BookingsService.shouldAutoAccept(currentUser, serviceProvider, shouldBypassCaptcha))
 			.withMarkOnHold(isStandAlone ? true : service.isOnHold)
 			.withCaptchaToken(bookingRequest.captchaToken)
 			.withCaptchaOrigin(bookingRequest.captchaOrigin)
