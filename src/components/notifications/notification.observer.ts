@@ -9,7 +9,8 @@ export class MailObserver implements IObserver {
 	private notificationService: NotificationsService;
 	public update(subject: ISubject<any>): void {
 		if (subject instanceof BookingsSubject && subject.booking) {
-			this.notificationService.sendEmail({ body: subject.booking });
+			const body = NotificationsService.templateEmailBooking(subject.booking);
+			this.notificationService.sendEmail(body);
 		}
 	}
 }
