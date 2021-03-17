@@ -51,13 +51,20 @@ export class BookingsService {
 		return user.isAdmin() || user.isAgency();
 	}
 
-	public static shouldAutoAccept(currentUser: User, serviceProvider?: ServiceProvider): boolean {
+	public static shouldAutoAccept(
+		currentUser: User,
+		serviceProvider?: ServiceProvider,
+		skipAgencyCheck: boolean = false,
+	): boolean {
 		if (!serviceProvider) {
 			return false;
 		}
 
-		if (currentUser.isAdmin() || currentUser.isAgency()) {
-			return true;
+		if (!skipAgencyCheck) {
+			// tslint:disable-next-line: no-collapsible-if
+			if (currentUser.isAdmin() || currentUser.isAgency()) {
+				return true;
+			}
 		}
 
 		return serviceProvider.autoAcceptBookings;
@@ -121,11 +128,11 @@ export class BookingsService {
 	public async save(
 		bookingRequest: BookingRequest,
 		serviceId: number,
-		bypassCaptcha: boolean = false,
+		bypassCaptchaAndAutoAccept: boolean = false,
 	): Promise<Booking> {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
-		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptcha);
+		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptchaAndAutoAccept);
 		return await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
 	}
 
@@ -283,7 +290,7 @@ export class BookingsService {
 	private async saveInternal(
 		bookingRequest: BookingRequest,
 		serviceId: number,
-		shouldBypassCaptcha: boolean = false,
+		shouldBypassCaptchaAndAutoAccept: boolean = false,
 	): Promise<[ChangeLogAction, Booking]> {
 		const currentUser = await this.userContext.getCurrentUser();
 		const service: Service = await this.servicesService.getService(serviceId);
@@ -306,7 +313,9 @@ export class BookingsService {
 			.withCitizenName(bookingRequest.citizenName)
 			.withCitizenPhone(bookingRequest.citizenPhone)
 			.withCitizenEmail(bookingRequest.citizenEmail)
-			.withAutoAccept(BookingsService.shouldAutoAccept(currentUser, serviceProvider))
+			.withAutoAccept(
+				BookingsService.shouldAutoAccept(currentUser, serviceProvider, shouldBypassCaptchaAndAutoAccept),
+			)
 			.withMarkOnHold(isStandAlone ? true : service.isOnHold)
 			.withCaptchaToken(bookingRequest.captchaToken)
 			.withCaptchaOrigin(bookingRequest.captchaOrigin)
@@ -315,7 +324,7 @@ export class BookingsService {
 		booking.serviceProvider = serviceProvider;
 		await this.loadBookingDependencies(booking);
 		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
-		validator.bypassCaptcha(shouldBypassCaptcha || getConfig().isAutomatedTest);
+		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || getConfig().isAutomatedTest);
 		await validator.validate(booking);
 
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
