@@ -24,6 +24,9 @@ export const getConfig = () => ({
 	molAdminAuthForwarder: {
 		url: ConfigUtils.getValueFromEnv('MOL_ADMIN_AUTH_FORWARDER_URL', ''),
 	},
+	molNotification: {
+		url: ConfigUtils.getValueFromEnv('MOL_NOTIFICATION_URL', ''),
+	},
 	recaptchaApiKey: ConfigUtils.getValueFromEnv('RECAPTCHA_API_KEY_BOOKINGSG_APP'),
 	recaptchaProjectId: ConfigUtils.getValueFromEnv('RECAPTCHA_PROJECT_ID_BOOKINGSG_APP'),
 	recaptchaSiteKey: ConfigUtils.getValueFromEnv('RECAPTCHA_SITE_KEY_BOOKINGSG_APP'),

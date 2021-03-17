@@ -143,4 +143,23 @@ describe('date helper tests', () => {
 		expect(result.getMilliseconds()).toBe(1);
 		expect(result).not.toBe(instance); // immutable
 	});
+
+	it('should format date to 12h time', () => {
+		const instance = new Date(Date.UTC(2020, 4, 27, 11, 30, 1, 1));
+		let result = DateHelper.getTime12hFormatString(instance);
+		expect(result).toBe('7:30pm');
+		result = DateHelper.getTime12hFormatString(originalDate);
+		expect(result).toBe('11:30am');
+		result = DateHelper.getTime12hFormatString(new Date(2020, 4, 27, 0, 30, 1, 1));
+		expect(result).toBe('12:30am');
+		result = DateHelper.getTime12hFormatString(new Date(2020, 4, 27, 0, 0, 0, 0));
+		expect(result).toBe('12:00am');
+		result = DateHelper.getTime12hFormatString(new Date(2020, 4, 27, 12, 0, 0, 0));
+		expect(result).toBe('12:00pm');
+	});
+
+	it('should format date dd/mm/yyyy', () => {
+		const result = DateHelper.getDateFormat(originalDate);
+		expect(result).toBe('27 May 2020');
+	});
 });

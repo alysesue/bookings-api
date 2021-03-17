@@ -128,6 +128,15 @@ resource "aws_ssm_parameter" "mol_admin_auth_forwarder_url" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "mol_notification_url" {
+  name   = "${local.path-prefix}MOL_NOTIFICATION_URL"
+  type   = "SecureString"
+  key_id = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
+  value  = "${data.external.static.result.MOL_NOTIFICATION_URL}"
+
+  overwrite = true
+}
+
 resource "aws_ssm_parameter" "recaptcha-key_bookingsg_app" {
   name   = "${local.path-prefix}/RECAPTCHA_KEY_BOOKINGSG_APP"
   type   = "SecureString"

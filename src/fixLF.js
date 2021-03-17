@@ -22,13 +22,19 @@ async function fixFile(path) {
 		return
 	}
 
-	const contents = (await readFile(path)).toString();
-	counter.read++;
-	if (contents.match(/\r\n/)) {
-		const replaced = contents.replace(/\r\n/g, '\n');
+	try {
+		const contents = (await readFile(path)).toString();
+		counter.read++;
+		if (contents.match(/\r\n/)) {
+			const replaced = contents.replace(/\r\n/g, '\n');
 
-		counter.modified.push(path);
-		await writeFile(path, replaced)
+			counter.modified.push(path);
+			await writeFile(path, replaced)
+		}
+	}
+	catch(e){
+		console.log('Error on file ', path);
+		throw e;
 	}
 }
 
