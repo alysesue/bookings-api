@@ -10,7 +10,7 @@ export class NotificationsService {
 	private config = getConfig();
 	public async sendEmail(body: CreateEmailRequestApiDomain): Promise<void> {
 		const path = `${this.config.molNotification.url}/email/api/v1/send`;
-		if (this.config.isLocal) {
+		if (!this.config.isAutomatedTest) {
 			post(path, body, { ['mol-auth-type']: 'SYSTEM' });
 		}
 	}

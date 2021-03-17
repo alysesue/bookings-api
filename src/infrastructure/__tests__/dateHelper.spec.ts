@@ -145,10 +145,7 @@ describe('date helper tests', () => {
 	});
 
 	it('should format date to 12h time', () => {
-		const instance = new Date(Date.UTC(2020, 4, 27, 11, 30, 1, 1));
-		let result = DateHelper.getTime12hFormatString(instance);
-		expect(result).toBe('7:30pm');
-		result = DateHelper.getTime12hFormatString(originalDate);
+		let result = DateHelper.getTime12hFormatString(originalDate);
 		expect(result).toBe('11:30am');
 		result = DateHelper.getTime12hFormatString(new Date(2020, 4, 27, 0, 30, 1, 1));
 		expect(result).toBe('12:30am');
