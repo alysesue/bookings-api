@@ -17,10 +17,26 @@ export const initPopulateDB = async (queryRunner: QueryRunner) => {
 			whitelists.push('https://gccsit-inter.romomj.com/civil/marriage-process/confirmation');
 			whitelists.push('https://gccuat-inter.marriage.gov.sg/civil/marriage-process/booking');
 			whitelists.push('https://gccuat-inter.marriage.gov.sg/civil/marriage-process/confirmation');
+			whitelists.push('https://gccdev-inter.marriage.gov.sg/civil/marriage-process/booking');
+			whitelists.push('https://gccdev-inter.marriage.gov.sg/muslim/marriage-process/booking');
+			whitelists.push('https://gccdev-inter.marriage.gov.sg/civil/marriage-process/confirmation');
+			whitelists.push('https://gccdev-inter.marriage.gov.sg/muslim/marriage-process/confirmation');
+			whitelists.push('https://gccsit-inter.marriage.gov.sg/civil/marriage-process/booking');
+			whitelists.push('https://gccsit-inter.marriage.gov.sg/muslim/marriage-process/booking');
+			whitelists.push('https://gccsit-inter.marriage.gov.sg/civil/marriage-process/confirmation');
+			whitelists.push('https://gccsit-inter.marriage.gov.sg/muslim/marriage-process/confirmation');
+			whitelists.push('https://gccuat-inter.marriage.gov.sg/civil/marriage-process/booking');
+			whitelists.push('https://gccuat-inter.marriage.gov.sg/muslim/marriage-process/booking');
+			whitelists.push('https://gccuat-inter.marriage.gov.sg/civil/marriage-process/confirmation');
+			whitelists.push('https://gccuat-inter.marriage.gov.sg/muslim/marriage-process/confirmation');
 		}
 		if (conf.bookingEnv === 'production') {
 			whitelists.push('https://www.marriage.gov.sg/civil/marriage-process/booking');
 			whitelists.push('https://www.marriage.gov.sg/civil/marriage-process/confirmation');
+			whitelists.push('https://marriage.gov.sg/civil/marriage-process/booking');
+			whitelists.push('https://marriage.gov.sg/muslim/marriage-process/booking');
+			whitelists.push('https://marriage.gov.sg/civil/marriage-process/confirmation');
+			whitelists.push('https://marriage.gov.sg/muslim/marriage-process/confirmation');
 		}
 		return whitelists;
 	};
