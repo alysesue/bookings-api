@@ -251,11 +251,6 @@ export class BookingsController extends Controller {
 	 */
 	@Get('{bookingId}')
 	@SuccessResponse(200, 'Ok')
-	@MOLAuth({
-		admin: {},
-		agency: {},
-		user: { minLevel: MOLUserAuthLevel.L2 },
-	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getBooking(@Path() bookingId: number): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.getBooking(bookingId);
@@ -310,7 +305,6 @@ export class BookingsController extends Controller {
 	 */
 	@Post('{bookingId}/validateOnHold')
 	@SuccessResponse(200, 'Validated')
-	@MOLAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 } })
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async validateOnHoldBooking(
 		@Body() bookingRequest: BookingDetailsRequest,

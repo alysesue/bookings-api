@@ -38,6 +38,11 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 				if (this._booking.service.allowAnonymousBookings) {
 					this.markWithPermission();
 				}
+			case ChangeLogAction.Update:
+			case ChangeLogAction.Reschedule:
+				if (this._booking.createdLog && _anonymousGroup.user.id === this._booking.createdLog.userId) {
+					this.markWithPermission();
+				}
 		}
 	}
 
@@ -77,17 +82,24 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 	}
 }
 
-export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
+export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IBookingQueryVisitor {
 	private readonly _alias: string;
 	private readonly _serviceAlias: string;
+	private readonly _createdLogAlias: string;
 
-	constructor(alias: string, serviceAlias: string) {
+	constructor(alias: string, serviceAlias: string, createdLogAlias: string) {
 		super();
 		this._alias = alias;
 		this._serviceAlias = serviceAlias;
+		this._createdLogAlias = createdLogAlias;
 	}
 
-	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
+		const userId = _anonymousGroup.user.id;
+		this.addAuthCondition(`${this._createdLogAlias}."_userId" = :userId`, {
+			userId,
+		});
+	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
 		const authorisedUinFin = _citizenGroup.user.singPassUser.UinFin;
@@ -118,18 +130,24 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor {
 	}
 }
 
-class BookingQueryNoAuthVisitor extends BookingQueryAuthVisitor {
+export interface IBookingQueryVisitor {
+	createUserVisibilityCondition(authGroups: AuthGroup[]): Promise<UserConditionParams>;
+}
+
+class BookingQueryNoAuthVisitor implements IBookingQueryVisitor {
 	public async createUserVisibilityCondition(authGroups: AuthGroup[]): Promise<UserConditionParams> {
-		this.addAsTrue();
-		return this.getVisibilityCondition();
+		return {
+			userCondition: '',
+			userParams: {},
+		};
 	}
 }
 
 export class BookingQueryVisitorFactory {
-	public static getBookingQueryVisitor(byPassAuth: boolean): BookingQueryAuthVisitor {
+	public static getBookingQueryVisitor(byPassAuth: boolean): IBookingQueryVisitor {
 		if (byPassAuth) {
-			return new BookingQueryNoAuthVisitor('booking', 'service_relation');
+			return new BookingQueryNoAuthVisitor();
 		}
-		return new BookingQueryAuthVisitor('booking', 'service_relation');
+		return new BookingQueryAuthVisitor('booking', 'service_relation', 'createdLog');
 	}
 }
