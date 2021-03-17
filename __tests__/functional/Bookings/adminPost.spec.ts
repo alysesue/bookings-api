@@ -140,6 +140,10 @@ describe('Bookings functional tests as admin', () => {
 				citizenUinFin,
 				citizenName,
 				citizenEmail,
+				phoneNumber,
+				location,
+				videoConferenceLink,
+				description,
 			},
 		});
 		expect(response.statusCode).toEqual(200);
