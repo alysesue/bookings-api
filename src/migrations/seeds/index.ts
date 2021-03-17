@@ -1,5 +1,4 @@
 import { QueryRunner } from 'typeorm';
-import { Setting } from '../../models/entities';
 import { SettingData } from '../../models/entities/setting';
 import { pushIfNotPresent } from '../../tools/arrays';
 import { getConfig } from '../../config/app-config';
@@ -42,8 +41,8 @@ export const initPopulateDB = async (queryRunner: QueryRunner) => {
 	};
 
 	const populateWhitelistURLRedirection = async () => {
-		const settings: Setting[] = await queryRunner.query(`SELECT "setting"."_data" FROM "setting"  WHERE "_id" = 1`);
-		const setting: SettingData = settings[0]?.data || ({} as SettingData);
+		const settings = await queryRunner.query(`SELECT "setting"."_data" FROM "setting"  WHERE "setting"."_id" = 1`);
+		const setting: SettingData = settings[0]?._data || ({} as SettingData);
 		const newRedirectionWhitelistedUrl = setting?.redirectionWhitelistedUrl || [];
 		getWhitelistURLRedirection().forEach((s) => pushIfNotPresent(newRedirectionWhitelistedUrl, s));
 		setting.redirectionWhitelistedUrl = newRedirectionWhitelistedUrl;
