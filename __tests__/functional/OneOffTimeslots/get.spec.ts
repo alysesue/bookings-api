@@ -5,7 +5,7 @@ import {
 	ServiceAdminRequestEndpointSG,
 	ServiceProviderRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
-import { populateOneOffTimeslot, populateUserServiceProvider } from '../../Populate/basic';
+import { populateOneOffTimeslot, populateUserServiceProvider } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 
 // tslint:disable-next-line: no-big-function
