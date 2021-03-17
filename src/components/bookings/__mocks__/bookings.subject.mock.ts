@@ -2,6 +2,7 @@ import { Booking } from '../../../models/entities';
 import { BookingsSubject } from '../bookings.subject';
 
 export class BookingsSubjectMock extends BookingsSubject {
+	public static notifyMock = jest.fn();
 	public get booking(): Booking {
 		return ({
 			_status: 1,
@@ -18,5 +19,7 @@ export class BookingsSubjectMock extends BookingsSubject {
 		} as unknown) as Booking;
 	}
 
-	public notify(...params): void {}
+	public notify(...params): void {
+		return BookingsSubjectMock.notifyMock(...params);
+	}
 }

@@ -52,6 +52,8 @@ import { ServicesServiceMock } from '../../services/__mocks__/services.service';
 import { ceil } from 'lodash';
 import { IPagedEntities } from '../../../core/pagedEntities';
 import { getConfig } from '../../../config/app-config';
+import { BookingsSubject } from '../bookings.subject';
+import { BookingsSubjectMock } from '../__mocks__/bookings.subject.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -134,6 +136,7 @@ describe('Bookings.Service', () => {
 		Container.bind(BookingChangeLogsService).to(BookingChangeLogsServiceMock);
 		Container.bind(ServicesService).to(ServicesServiceMock);
 		Container.bind(UsersService).to(UsersServiceMock);
+		Container.bind(BookingsSubject).to(BookingsSubjectMock);
 	});
 
 	beforeEach(() => {
@@ -205,6 +208,7 @@ describe('Bookings.Service', () => {
 		const booking = BookingRepositoryMock.booking;
 		expect(booking).not.toBe(undefined);
 		expect(booking.status).toBe(BookingStatus.PendingApproval);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 
 	it('should auto accept booking for citizen (when sp flag = true)', async () => {
@@ -230,6 +234,7 @@ describe('Bookings.Service', () => {
 		const booking = BookingRepositoryMock.booking;
 		expect(booking).not.toBe(undefined);
 		expect(booking.status).toBe(BookingStatus.Accepted);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 
 	it('should not auto accept booking for citizen (when sp flag = false)', async () => {
@@ -255,6 +260,7 @@ describe('Bookings.Service', () => {
 		const booking = BookingRepositoryMock.booking;
 		expect(booking).not.toBe(undefined);
 		expect(booking.status).toBe(BookingStatus.PendingApproval);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 
 	it('should always auto accept booking for admins (even when sp flag = false)', async () => {
@@ -282,6 +288,7 @@ describe('Bookings.Service', () => {
 		const booking = BookingRepositoryMock.booking;
 		expect(booking).not.toBe(undefined);
 		expect(booking.status).toBe(BookingStatus.Accepted);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 
 	it('should save direct booking', async () => {
@@ -302,6 +309,7 @@ describe('Bookings.Service', () => {
 		const booking = BookingRepositoryMock.booking;
 		expect(booking).not.toBe(undefined);
 		expect(booking.status).toBe(BookingStatus.Accepted);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 
 	it('should allow booking out of timeslots for admin', async () => {
@@ -326,6 +334,7 @@ describe('Bookings.Service', () => {
 		const booking = BookingRepositoryMock.booking;
 		expect(booking).not.toBe(undefined);
 		expect(booking.status).toBe(BookingStatus.Accepted);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 
 	it('should not allow booking out of timeslots for citizen', async () => {
@@ -346,6 +355,7 @@ describe('Bookings.Service', () => {
 
 		const booking = BookingRepositoryMock.booking;
 		expect(booking).not.toBe(undefined);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 
 	it('should accept booking', async () => {
@@ -428,6 +438,7 @@ describe('Bookings.Service', () => {
 		const result = await bookingService.cancelBooking(1);
 
 		expect(result.status).toBe(BookingStatus.Cancelled);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 
 	it('should throw exception if booking not found', async () => {
@@ -506,6 +517,7 @@ describe('Bookings.Service', () => {
 		expect(booking.citizenEmail).toBe('test@mail.com');
 		expect(booking.citizenName).toBe('Jake');
 		expect(booking.citizenUinFin).toBe('S6979208A');
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 
 	it('should call log with reschedule action', async () => {
@@ -628,6 +640,7 @@ describe('Bookings.Service', () => {
 			const result = await bookingService.validateOnHoldBooking(1, bookingRequest);
 
 			expect(result.status).toBe(BookingStatus.Accepted);
+			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 		});
 
 		it('should validate on hold booking and change status to pending', async () => {
@@ -699,6 +712,7 @@ describe('Bookings.Service', () => {
 			await expect(
 				async () => await bookingService.validateOnHoldBooking(1, bookingRequest),
 			).rejects.toThrowError();
+			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(0);
 		});
 	});
 
@@ -725,6 +739,7 @@ describe('Bookings.Service', () => {
 			const result = await bookingService.reschedule(1, rescheduleRequest);
 			expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Reschedule);
 			expect(result.status).toStrictEqual(BookingStatus.PendingApproval);
+			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 		});
 
 		it('should not reschedule rejected booking', async () => {
@@ -784,6 +799,7 @@ describe('Bookings.Service', () => {
 			expect(booking.onHoldUntil).toBeInstanceOf(Date);
 			expect(booking.onHoldUntil).not.toBeNull();
 			expect(ceil(diffTimeinMins)).toEqual(5);
+			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 		});
 	});
 

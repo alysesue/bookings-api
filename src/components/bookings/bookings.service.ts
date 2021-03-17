@@ -53,7 +53,7 @@ export class BookingsService {
 	@Inject
 	private mailObserver: MailObserver;
 
-	private constructor() {
+	constructor() {
 		this.bookingsSubject.attach(this.mailObserver);
 	}
 
@@ -409,6 +409,12 @@ export class BookingsService {
 
 	public async validateOnHoldBooking(bookingId: number, bookingRequest: BookingDetailsRequest): Promise<Booking> {
 		const validateAction = (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest);
-		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), validateAction);
+		const booking = await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBooking.bind(this),
+			validateAction,
+		);
+		this.bookingsSubject.notify({ booking });
+		return booking;
 	}
 }
