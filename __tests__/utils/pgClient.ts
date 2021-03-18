@@ -61,6 +61,7 @@ export class PgClient {
 
 	public async setServiceConfigurationStandAlone(serviceId: number, standAlone: boolean): Promise<void> {
 		await this.pool.query({
+			// tslint:disable-next-line:tsr-detect-sql-literal-injection
 			text: `UPDATE public.service set "_isStandAlone" = ${standAlone} where _id = ${serviceId}`,
 		});
 	}
