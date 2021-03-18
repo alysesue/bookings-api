@@ -94,6 +94,11 @@ class RequestEndpointSG {
 	}
 }
 
+// const AGENCY_HEADERS = {
+// 	'mol-token-bypass': 'true',
+// 	'mol-auth-type': 'AGENCY',
+// };
+
 const ADMIN_HEADERS = {
 	'mol-token-bypass': 'true',
 	'mol-auth-type': 'ADMIN',
@@ -105,6 +110,32 @@ const CITIZEN_HEADERS = {
 };
 
 const TOKEN_COOKIE = 'BookingSGToken';
+
+// TODO
+// export class AgencyRequestEndpointSG extends RequestEndpointSG {
+// 	public static create = ({
+// 		agencyAppId = 'ce6d2f24-3913-11eb-adc1-0242ac120002',
+// 		agencyName = 'agency1',
+// 	}: {
+// 		agencyAppId?: string;
+// 		agencyName?: string;
+// 	}): AgencyRequestEndpointSG => {
+// 		const headers = {
+// 			'mol-agency-app-id': agencyAppId,
+// 			'mol-agency-name': agencyName,
+// 			cookie: '',
+// 		};
+// 		return new AgencyRequestEndpointSG(headers);
+// 	};
+//
+// 	private constructor(headers: { [e: string]: string }) {
+// 		super();
+// 		this.setHeaders({
+// 			...AGENCY_HEADERS,
+// 			...headers,
+// 		});
+// 	}
+// }
 
 export class OrganisationAdminRequestEndpointSG extends RequestEndpointSG {
 	public static create = ({
