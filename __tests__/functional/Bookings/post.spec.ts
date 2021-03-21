@@ -73,7 +73,7 @@ describe('Bookings functional tests', () => {
 	};
 
 	const postCitizenBookingWithStartEndDateOnly = async (isOnHold: boolean, isStandAlone: boolean, serviceProviderId?: number): Promise<request.Response> => {
-		await pgClient.setServiceConfigurationOnHold(serviceId, isOnHold)
+		await pgClient.setServiceConfigurationOnHold(serviceId, isOnHold);
 		await pgClient.setServiceConfigurationStandAlone(serviceId, isStandAlone);
 
 		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
@@ -167,45 +167,43 @@ describe('Bookings functional tests', () => {
 		}
 	});
 
-	//TODO
+	it('[On hold] Agency should validate SERVICE on hold booking', async () => {
+		const response = await postCitizenBookingWithStartEndDateOnly(true, false);
+		const bookingId = response.body.data.id;
 
-	// it('[On hold] Agency should validate SERVICE on hold booking', async () => {
-	// 	const response = await postCitizenBookingWithStartEndDateOnly(true, false);
-	// 	const bookingId = response.body.data.id;
-	//
-	// 	const adminValidateOnHoldResponse = await AgencyRequestEndpointSG.create({}).post(
-	// 		`/bookings/${bookingId}/validateOnHold`,
-	// 		{
-	// 			body: {
-	// 				citizenName,
-	// 				citizenEmail,
-	// 				citizenUinFin,
-	// 			},
-	// 		},
-	// 	);
-	//
-	// 	expect(adminValidateOnHoldResponse.statusCode).toEqual(200);
-	// 	expect(adminValidateOnHoldResponse.body.data.status).toEqual(BookingStatus.PendingApproval);
-	// });
-	//
-	// it('[On hold] Agency should validate SERVICE PROVIDER on hold booking', async () => {
-	// 	const response = await postCitizenBookingWithStartEndDateOnly(true, false, serviceProvider.id);
-	// 	const bookingId = response.body.data.id;
-	//
-	// 	const adminValidateOnHoldResponse = await AgencyRequestEndpointSG.create({}).post(
-	// 		`/bookings/${bookingId}/validateOnHold`,
-	// 		{
-	// 			body: {
-	// 				citizenName,
-	// 				citizenEmail,
-	// 				citizenUinFin,
-	// 			},
-	// 		},
-	// 	);
-	//
-	// 	expect(adminValidateOnHoldResponse.statusCode).toEqual(200);
-	// 	expect(adminValidateOnHoldResponse.body.data.status).toEqual(BookingStatus.Accepted);
-	// });
+		const adminValidateOnHoldResponse = await AgencyRequestEndpointSG.create({}).post(
+			`/bookings/${bookingId}/validateOnHold`,
+			{
+				body: {
+					citizenName,
+					citizenEmail,
+					citizenUinFin,
+				},
+			},
+		);
+
+		expect(adminValidateOnHoldResponse.statusCode).toEqual(200);
+		expect(adminValidateOnHoldResponse.body.data.status).toEqual(BookingStatus.PendingApproval);
+	});
+
+	it('[On hold] Agency should validate SERVICE PROVIDER on hold booking', async () => {
+		const response = await postCitizenBookingWithStartEndDateOnly(true, false, serviceProvider.id);
+		const bookingId = response.body.data.id;
+
+		const adminValidateOnHoldResponse = await AgencyRequestEndpointSG.create({}).post(
+			`/bookings/${bookingId}/validateOnHold`,
+			{
+				body: {
+					citizenName,
+					citizenEmail,
+					citizenUinFin,
+				},
+			},
+		);
+
+		expect(adminValidateOnHoldResponse.statusCode).toEqual(200);
+		expect(adminValidateOnHoldResponse.body.data.status).toEqual(BookingStatus.Accepted);
+	});
 
 	it('[On hold] Admin should NOT make a SERVICE on hold booking when on hold flag is true', async () => {
 		try {
