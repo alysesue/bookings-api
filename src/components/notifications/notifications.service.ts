@@ -17,8 +17,8 @@ export class NotificationsService {
 
 	public static templateEmailBooking(data): CreateEmailRequestApiDomain {
 		const status = BookingStatus[data._status];
-		const serviceName = data._service._name;
-		const serviceProviderName = data._serviceProvider._name;
+		const serviceName = data._service?._name;
+		const serviceProviderName = data._serviceProvider?._name;
 		const citizenEmail = data._citizenEmail;
 		const location = data._location;
 		const locationLine = location ? `Location: <b>${location}</b>` : '';
