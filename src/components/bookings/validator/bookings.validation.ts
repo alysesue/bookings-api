@@ -5,7 +5,7 @@ import { DateHelper } from '../../../infrastructure/dateHelper';
 import { BookingSearchQuery, BookingsRepository } from '../bookings.repository';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
-import { isEmail } from 'mol-lib-api-contract/utils';
+import { isEmail, isUrl } from 'mol-lib-api-contract/utils';
 import { isSGUinfin } from '../../../tools/validator';
 import { BusinessError } from '../../../errors/businessError';
 import { concatIteratables, iterableToArray } from '../../../tools/asyncIterables';
@@ -38,6 +38,10 @@ abstract class BookingsValidator implements IValidator {
 		return validUinFin.pass;
 	}
 
+	private static async validateUrl(videoConferenceUrl: string): Promise<boolean> {
+		return (await isUrl(videoConferenceUrl)).pass;
+	}
+
 	private static async *validateCitizenDetails(booking: Booking): AsyncIterable<BusinessValidation> {
 		if (!(await BookingsValidator.validateUinFin(booking.citizenUinFin))) {
 			yield BookingBusinessValidations.CitizenUinFinNotFound;
@@ -49,6 +53,9 @@ abstract class BookingsValidator implements IValidator {
 			yield BookingBusinessValidations.CitizenEmailNotProvided;
 		} else if (!(await isEmail(booking.citizenEmail)).pass) {
 			yield BookingBusinessValidations.CitizenEmailNotValid;
+		}
+		if (booking.videoConferenceUrl && !(await BookingsValidator.validateUrl(booking.videoConferenceUrl))) {
+			yield BookingBusinessValidations.VideoConferenceUrlIsInvalid;
 		}
 	}
 

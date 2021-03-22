@@ -18,6 +18,7 @@ export class BookingBuilder {
 	public refId: string;
 	public location: string;
 	public description: string;
+	public videoConferenceUrl: string;
 	public serviceProviderId: number;
 	public creator: User;
 	public citizenUinFin: string;
@@ -56,6 +57,11 @@ export class BookingBuilder {
 
 	public withDescription(description: string): BookingBuilder {
 		this.description = description;
+		return this;
+	}
+
+	public withVideoConferenceUrl(videoConferenceUrl: string): BookingBuilder {
+		this.videoConferenceUrl = videoConferenceUrl;
 		return this;
 	}
 
@@ -171,6 +177,15 @@ export class Booking {
 	@Index()
 	private _onHoldUntil: Date;
 
+	@Column({ nullable: true })
+	private _description: string;
+
+	@Column({ nullable: true })
+	private _citizenEmail: string;
+
+	@Column({ nullable: true })
+	private _videoConferenceUrl: string;
+
 	public get onHoldUntil(): Date {
 		return this._onHoldUntil;
 	}
@@ -220,6 +235,7 @@ export class Booking {
 		instance._refId = builder.refId;
 		instance._location = builder.location;
 		instance._description = builder.description;
+		instance._videoConferenceUrl = builder.videoConferenceUrl;
 		instance._creator = builder.creator;
 		instance._citizenUinFin = builder.citizenUinFin;
 		instance._citizenPhone = builder.citizenPhone;
@@ -230,9 +246,6 @@ export class Booking {
 
 		return instance;
 	}
-
-	@Column({ nullable: true })
-	private _description: string;
 
 	public get citizenName(): string {
 		return this._citizenName;
@@ -326,9 +339,6 @@ export class Booking {
 		this._citizenUinFin = value;
 	}
 
-	@Column({ nullable: true })
-	private _citizenEmail: string;
-
 	public get refId(): string {
 		return this._refId;
 	}
@@ -370,6 +380,14 @@ export class Booking {
 	public set captchaOrigin(value: string) {
 		this._captchaOrigin = value;
 	}
+
+	public get videoConferenceUrl(): string {
+		return this._videoConferenceUrl;
+	}
+	public set videoConferenceUrl(value: string) {
+		this._videoConferenceUrl = value;
+	}
+
 	public clone(): Booking {
 		const instance = new Booking();
 		Object.assign(instance, this);
