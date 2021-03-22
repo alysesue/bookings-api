@@ -246,9 +246,7 @@ describe('Booking validation tests', () => {
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
-		).rejects.toMatchInlineSnapshot(
-			'[BusinessError: [10010] Service provider is required for out of slot bookings]',
-		);
+		).rejects.toThrowError();
 	});
 
 	it('should validate service provider (not found) for out of slot booking', async () => {

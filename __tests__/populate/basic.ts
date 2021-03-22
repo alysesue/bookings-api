@@ -177,3 +177,25 @@ export const populateWeeklyTimesheet = async ({ serviceProviderId, scheduleSlot,
 
 	return response.body.data;
 };
+
+export const populateOneOffTimeslot = async ({
+	serviceProviderId,
+	startTime,
+	endTime,
+	capacity,
+}: {
+	serviceProviderId: number;
+	startTime: Date;
+	endTime: Date;
+	capacity: number;
+}): Promise<TimeslotItemResponse> => {
+	const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/oneOffTimeslots`, {
+		body: {
+			startDateTime: startTime,
+			endDateTime: endTime,
+			capacity,
+			serviceProviderId,
+		},
+	});
+	return response.body.data;
+};

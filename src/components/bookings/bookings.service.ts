@@ -23,6 +23,8 @@ import { UsersService } from '../users/users.service';
 import { BookingsMapper } from './bookings.mapper';
 import { IPagedEntities } from '../../core/pagedEntities';
 import { getConfig } from '../../config/app-config';
+import { MailObserver } from '../notifications/notification.observer';
+import { BookingsSubject } from './bookings.subject';
 
 @InRequestScope
 export class BookingsService {
@@ -46,29 +48,46 @@ export class BookingsService {
 	private changeLogsService: BookingChangeLogsService;
 	@Inject
 	private usersService: UsersService;
+	@Inject
+	private bookingsSubject: BookingsSubject;
+	@Inject
+	private mailObserver: MailObserver;
+
+	constructor() {
+		this.bookingsSubject.attach(this.mailObserver);
+	}
 
 	private static canCreateOutOfSlot(user: User): boolean {
 		return user.isAdmin() || user.isAgency();
 	}
 
-	public static shouldAutoAccept(currentUser: User, serviceProvider?: ServiceProvider): boolean {
+	public static shouldAutoAccept(
+		currentUser: User,
+		serviceProvider?: ServiceProvider,
+		skipAgencyCheck: boolean = false,
+	): boolean {
 		if (!serviceProvider) {
 			return false;
 		}
 
-		if (currentUser.isAdmin() || currentUser.isAgency()) {
-			return true;
+		if (!skipAgencyCheck) {
+			// tslint:disable-next-line: no-collapsible-if
+			if (currentUser.isAdmin() || currentUser.isAgency()) {
+				return true;
+			}
 		}
 
 		return serviceProvider.autoAcceptBookings;
 	}
 
 	public async cancelBooking(bookingId: number): Promise<Booking> {
-		return await this.changeLogsService.executeAndLogAction(
+		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
 			this.getBooking.bind(this),
 			this.cancelBookingInternal.bind(this),
 		);
+		this.bookingsSubject.notify({ booking });
+		return booking;
 	}
 
 	public async getBooking(bookingId: number): Promise<Booking> {
@@ -84,7 +103,13 @@ export class BookingsService {
 
 	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequest): Promise<Booking> {
 		const acceptAction = (_booking) => this.acceptBookingInternal(_booking, acceptRequest);
-		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), acceptAction);
+		const booking = await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBooking.bind(this),
+			acceptAction,
+		);
+		this.bookingsSubject.notify({ booking });
+		return booking;
 	}
 
 	public async update(bookingId: number, bookingRequest: BookingUpdateRequest): Promise<Booking> {
@@ -94,24 +119,34 @@ export class BookingsService {
 			}
 			return this.updateInternal(_booking, bookingRequest, () => {});
 		};
-		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), updateAction);
+		const booking = await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBooking.bind(this),
+			updateAction,
+		);
+		this.bookingsSubject.notify({ booking });
+		return booking;
 	}
 
 	public async rejectBooking(bookingId: number): Promise<Booking> {
-		return await this.changeLogsService.executeAndLogAction(
+		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
 			this.getBooking.bind(this),
 			this.rejectBookingInternal.bind(this),
 		);
+		this.bookingsSubject.notify({ booking });
+		return booking;
 	}
 
 	public async reschedule(bookingId: number, rescheduleRequest: BookingRequest): Promise<Booking> {
 		const rescheduleAction = (_booking) => this.rescheduleInternal(_booking, rescheduleRequest);
-		return await this.changeLogsService.executeAndLogAction(
+		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
 			this.getBooking.bind(this),
 			rescheduleAction,
 		);
+		this.bookingsSubject.notify({ booking });
+		return booking;
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<IPagedEntities<Booking>> {
@@ -121,12 +156,14 @@ export class BookingsService {
 	public async save(
 		bookingRequest: BookingRequest,
 		serviceId: number,
-		bypassCaptcha: boolean = false,
+		bypassCaptchaAndAutoAccept: boolean = false,
 	): Promise<Booking> {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
-		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptcha);
-		return await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
+		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptchaAndAutoAccept);
+		const booking = await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
+		this.bookingsSubject.notify({ booking });
+		return booking;
 	}
 
 	private async verifyActionPermission(booking: Booking, action: ChangeLogAction): Promise<void> {
@@ -283,7 +320,7 @@ export class BookingsService {
 	private async saveInternal(
 		bookingRequest: BookingRequest,
 		serviceId: number,
-		shouldBypassCaptcha: boolean = false,
+		shouldBypassCaptchaAndAutoAccept: boolean = false,
 	): Promise<[ChangeLogAction, Booking]> {
 		const currentUser = await this.userContext.getCurrentUser();
 		const isAdminUser = currentUser.adminUser;
@@ -297,10 +334,10 @@ export class BookingsService {
 		}
 
 		const isServiceOnHold = () => {
-			if(isAdminUser || isAgencyUser || (!isOnHold && !isStandAlone)) {
+			if (isAdminUser || isAgencyUser || (!isOnHold && !isStandAlone)) {
 				return false;
 			}
-			if((!isAdminUser && !isAgencyUser) && (isStandAlone || isOnHold)) {
+			if (!isAdminUser && !isAgencyUser && (isStandAlone || isOnHold)) {
 				return true;
 			}
 		};
@@ -318,7 +355,9 @@ export class BookingsService {
 			.withCitizenName(bookingRequest.citizenName)
 			.withCitizenPhone(bookingRequest.citizenPhone)
 			.withCitizenEmail(bookingRequest.citizenEmail)
-			.withAutoAccept(BookingsService.shouldAutoAccept(currentUser, serviceProvider))
+			.withAutoAccept(
+				BookingsService.shouldAutoAccept(currentUser, serviceProvider, shouldBypassCaptchaAndAutoAccept),
+			)
 			.withMarkOnHold(isServiceOnHold())
 			.withCaptchaToken(bookingRequest.captchaToken)
 			.withCaptchaOrigin(bookingRequest.captchaOrigin)
@@ -327,7 +366,7 @@ export class BookingsService {
 		booking.serviceProvider = serviceProvider;
 		await this.loadBookingDependencies(booking);
 		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
-		validator.bypassCaptcha(shouldBypassCaptcha || getConfig().isAutomatedTest);
+		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || getConfig().isAutomatedTest);
 		await validator.validate(booking);
 
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
@@ -377,6 +416,12 @@ export class BookingsService {
 
 	public async validateOnHoldBooking(bookingId: number, bookingRequest: BookingDetailsRequest): Promise<Booking> {
 		const validateAction = (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest);
-		return await this.changeLogsService.executeAndLogAction(bookingId, this.getBooking.bind(this), validateAction);
+		const booking = await this.changeLogsService.executeAndLogAction(
+			bookingId,
+			this.getBooking.bind(this),
+			validateAction,
+		);
+		this.bookingsSubject.notify({ booking });
+		return booking;
 	}
 }

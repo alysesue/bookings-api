@@ -17,6 +17,8 @@ import { BookingBuilder } from '../../../models/entities/booking';
 import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
+import { BookingsSubject } from '../bookings.subject';
+import { BookingsSubjectMock } from '../__mocks__/bookings.subject.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -67,6 +69,7 @@ describe('Booking Integration tests', () => {
 		Container.bind(UserContext).to(UserContextMock);
 		Container.bind(BookingChangeLogsService).to(BookingChangeLogsServiceMock);
 		Container.bind(ServicesService).to(ServicesServiceMock);
+		Container.bind(BookingsSubject).to(BookingsSubjectMock);
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = provider;
 		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();

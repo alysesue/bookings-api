@@ -10,9 +10,10 @@ const RECAPTCHA_THRESHOLD = 0.5;
 export class CaptchaService {
 	public static async verify(token: string, origin: string): Promise<boolean> {
 		if (token) {
-			const apiKey = getConfig().recaptchaApiKey;
-			const siteKey = getConfig().recaptchaSiteKey;
-			const projectId = getConfig().recaptchaProjectId;
+			const config = getConfig();
+			const apiKey = config.recaptchaApiKey;
+			const siteKey = config.recaptchaSiteKey;
+			const projectId = config.recaptchaProjectId;
 			const res = await post<GoogleVerifyApiResponse>(
 				`${RECATPCHA_URL}/v1beta1/projects/${projectId}/assessments?key=${apiKey}`,
 				new GoogleVerifyApiRequest(token, siteKey),
