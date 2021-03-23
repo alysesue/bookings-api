@@ -3,6 +3,20 @@ export class DateHelper {
 	private static MsPerMinute = 60000;
 	private static MsPerHour = 3600000;
 	private static MsPerDay = 86400000;
+	private static monthNames = [
+		'January',
+		'February',
+		'March',
+		'April',
+		'May',
+		'June',
+		'July',
+		'August',
+		'September',
+		'October',
+		'November',
+		'December',
+	];
 
 	public static addMinutes(date: Date, minutes: number) {
 		return new Date(date.getTime() + minutes * DateHelper.MsPerMinute);
@@ -81,6 +95,20 @@ export class DateHelper {
 		const hours = date.getHours().toString().padStart(2, '0');
 		const minutes = date.getMinutes().toString().padStart(2, '0');
 		return `${hours}:${minutes}`;
+	}
+
+	public static getTime12hFormatString(date: Date): string {
+		const hours = parseInt(date.getHours().toString().padStart(2, '0'), 10);
+		const minutes = date.getMinutes().toString().padStart(2, '0');
+		const isAvro = hours < 12 || hours === 24 ? 'am' : 'pm';
+		return `${hours % 12 || 12}:${minutes}${isAvro}`;
+	}
+
+	public static getDateFormat(date: Date): string {
+		const month = this.monthNames[date.getMonth()];
+		const day = String(date.getDate()).padStart(2, '0');
+		const year = date.getFullYear();
+		return day + ' ' + month + ' ' + year;
 	}
 
 	public static UTCAsLocal(date: Date): Date {

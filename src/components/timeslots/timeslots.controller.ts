@@ -25,6 +25,7 @@ export class TimeslotsController extends Controller {
 	 * @param endDate The upper bound limit for timeslots' endDate.
 	 * @param @isInt serviceId The available service to be queried.
 	 * @param @isInt serviceProviderId (Optional) Filters timeslots for a specific service provider.
+	 * @param exactTimeslot (Optional) to filter timeslots for the given dates.
 	 */
 	@Get('availability')
 	@Security('service')
@@ -34,15 +35,21 @@ export class TimeslotsController extends Controller {
 		@Query() endDate: Date,
 		@Header('x-api-service') serviceId: number,
 		@Query() serviceProviderId?: number,
+		@Query() exactTimeslot: boolean = false,
 	): Promise<ApiData<AvailabilityEntryResponse[]>> {
-		const availableTimeslots = await this.timeslotsService.getAggregatedTimeslots(
+		let timeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
 			serviceId,
-			false,
+			exactTimeslot,
 			serviceProviderId ? [serviceProviderId] : undefined,
 		);
-		const result = TimeslotsMapper.mapAvailabilityToResponse(availableTimeslots, { skipUnavailable: true });
+
+		if (exactTimeslot) {
+			timeslots = timeslots.some((timeslot) => timeslot.getAvailabilityCount() <= 0) ? [] : timeslots;
+		}
+
+		const result = TimeslotsMapper.mapAvailabilityToResponse(timeslots, { skipUnavailable: true });
 
 		return ApiDataFactory.create(result);
 	}

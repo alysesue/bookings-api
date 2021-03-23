@@ -1,5 +1,4 @@
 import { QueryRunner } from 'typeorm';
-import { Setting } from '../../models/entities';
 import { SettingData } from '../../models/entities/setting';
 import { pushIfNotPresent } from '../../tools/arrays';
 import { getConfig } from '../../config/app-config';
@@ -17,17 +16,33 @@ export const initPopulateDB = async (queryRunner: QueryRunner) => {
 			whitelists.push('https://gccsit-inter.romomj.com/civil/marriage-process/confirmation');
 			whitelists.push('https://gccuat-inter.marriage.gov.sg/civil/marriage-process/booking');
 			whitelists.push('https://gccuat-inter.marriage.gov.sg/civil/marriage-process/confirmation');
+			whitelists.push('https://gccdev-inter.marriage.gov.sg/civil/marriage-process/booking');
+			whitelists.push('https://gccdev-inter.marriage.gov.sg/muslim/marriage-process/booking');
+			whitelists.push('https://gccdev-inter.marriage.gov.sg/civil/marriage-process/confirmation');
+			whitelists.push('https://gccdev-inter.marriage.gov.sg/muslim/marriage-process/confirmation');
+			whitelists.push('https://gccsit-inter.marriage.gov.sg/civil/marriage-process/booking');
+			whitelists.push('https://gccsit-inter.marriage.gov.sg/muslim/marriage-process/booking');
+			whitelists.push('https://gccsit-inter.marriage.gov.sg/civil/marriage-process/confirmation');
+			whitelists.push('https://gccsit-inter.marriage.gov.sg/muslim/marriage-process/confirmation');
+			whitelists.push('https://gccuat-inter.marriage.gov.sg/civil/marriage-process/booking');
+			whitelists.push('https://gccuat-inter.marriage.gov.sg/muslim/marriage-process/booking');
+			whitelists.push('https://gccuat-inter.marriage.gov.sg/civil/marriage-process/confirmation');
+			whitelists.push('https://gccuat-inter.marriage.gov.sg/muslim/marriage-process/confirmation');
 		}
 		if (conf.bookingEnv === 'production') {
 			whitelists.push('https://www.marriage.gov.sg/civil/marriage-process/booking');
 			whitelists.push('https://www.marriage.gov.sg/civil/marriage-process/confirmation');
+			whitelists.push('https://marriage.gov.sg/civil/marriage-process/booking');
+			whitelists.push('https://marriage.gov.sg/muslim/marriage-process/booking');
+			whitelists.push('https://marriage.gov.sg/civil/marriage-process/confirmation');
+			whitelists.push('https://marriage.gov.sg/muslim/marriage-process/confirmation');
 		}
 		return whitelists;
 	};
 
 	const populateWhitelistURLRedirection = async () => {
-		const settings: Setting[] = await queryRunner.query(`SELECT "setting"."_data" FROM "setting"  WHERE "_id" = 1`);
-		const setting: SettingData = settings[0]?.data || ({} as SettingData);
+		const settings = await queryRunner.query(`SELECT "setting"."_data" FROM "setting"  WHERE "setting"."_id" = 1`);
+		const setting: SettingData = settings[0]?._data || ({} as SettingData);
 		const newRedirectionWhitelistedUrl = setting?.redirectionWhitelistedUrl || [];
 		getWhitelistURLRedirection().forEach((s) => pushIfNotPresent(newRedirectionWhitelistedUrl, s));
 		setting.redirectionWhitelistedUrl = newRedirectionWhitelistedUrl;

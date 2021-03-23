@@ -69,4 +69,9 @@ export class BookingBusinessValidations {
 		code: '10013',
 		message: `Licence of service provider will be expired`,
 	});
+
+	public static readonly VideoConferenceUrlIsInvalid = new BusinessValidation({
+		code: '10014',
+		message: `Invalid video conference link is provided`,
+	});
 }
