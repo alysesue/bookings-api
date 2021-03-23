@@ -111,7 +111,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._timeslotsSchedule;
 	}
 
-	public static create(name: string, orga: Organisation, labels: Label[] = []) {
+	public static create(name: string, orga: Organisation, labels?: Label[]) {
 		const service = new Service();
 		service._name = name.trim();
 		service._organisation = orga;
@@ -122,7 +122,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 				orga._organisationAdminGroupMap.organisationRef,
 			),
 		);
-		service.labels = labels;
+		service.labels = Label.creates(labels);
 		return service;
 	}
 

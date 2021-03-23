@@ -8,6 +8,9 @@ export class LabelsMapper {
 	private idHasher: IdHasher;
 
 	public mapToLabelsResponse(data: Label[] = []): LabelResponseModel[] {
+		if (!data || data.length === 0) {
+			return [];
+		}
 		return data.map((i) => {
 			const labelData = new LabelResponseModel();
 			labelData.id = this.idHasher.encode(i.id);

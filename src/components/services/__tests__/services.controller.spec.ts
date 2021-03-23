@@ -63,6 +63,27 @@ describe('Services controller tests', () => {
 		expect(result.data.labels).toHaveLength(0);
 	});
 
+	it('should save a new service with labels', async () => {
+		ServicesServiceMock.createService.mockReturnValue({ name: 'John', labels: [{ id: 1, labelText: 'label' }] });
+
+		const controller = Container.get(ServicesController);
+		const request = new ServiceRequest();
+		const result = await controller.createService(request);
+
+		expect(result.data.name).toBe('John');
+		expect(result.data.labels[0].label).toBe('label');
+	});
+
+	it('should return empty label when none provided', async () => {
+		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
+
+		const controller = Container.get(ServicesController);
+		const request = new ServiceRequest();
+		const result = await controller.createService(request);
+
+		expect(result.data.labels).toHaveLength(0);
+	});
+
 	it('should update a service', async () => {
 		ServicesServiceMock.updateService.mockReturnValue({ name: 'John' });
 
