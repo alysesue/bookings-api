@@ -565,4 +565,41 @@ describe('Booking validation tests', () => {
 			'[BusinessError: [10003] Booking request not valid as it overlaps another accepted booking]',
 		);
 	});
+
+	it('should allow a new booking with a valid video conference url', async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.withVideoConferenceUrl('https://www.videoConference.com/details')
+			.build();
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking))
+			.resolves;
+	});
+
+	it('should validate invalid video conference url in a new booking', async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.withVideoConferenceUrl('video conference url hardcoded input')
+			.build();
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10014] Invalid video conference link is provided]');
+	});
 });

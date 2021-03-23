@@ -19,6 +19,7 @@ export class BookingDetailsRequest {
 	public citizenPhone?: string | null;
 	public location?: string | null;
 	public description?: string | null;
+	public videoConferenceUrl?: string | null;
 }
 
 export class BookingRequest extends BookingDetailsRequest {
@@ -83,6 +84,7 @@ export type BookingResponse = {
 	location?: string;
 	description?: string;
 	refId?: string;
+	videoConferenceUrl?: string;
 };
 
 export type BookingSearchRequest = {
