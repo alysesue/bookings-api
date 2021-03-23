@@ -14,6 +14,7 @@ import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from '../ti
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { ApiData, ApiDataFactory } from '../../apicontract';
+import { mapToLabelsResponse } from '../labels/labels.mapper';
 
 @Route('v1/services')
 @Tags('Services')
@@ -26,6 +27,7 @@ export class ServicesController extends Controller {
 		response.id = service.id;
 		response.name = service.name;
 		response.isStandAlone = service.isStandAlone;
+		response.labels = mapToLabelsResponse(service.labels);
 		return response;
 	}
 

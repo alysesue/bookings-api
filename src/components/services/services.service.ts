@@ -1,6 +1,7 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import {
+	Label,
 	Organisation,
 	ScheduleForm,
 	Service,
@@ -108,9 +109,9 @@ export class ServicesService {
 			? await this.organisationsRepository.getOrganisationById(request.organisationId)
 			: await this.userContext.verifyAndGetFirstAuthorisedOrganisation('User not authorized to add services.');
 
-		const service = Service.create(request.name, orga);
+		const service = Service.create(request.name, orga, request.labels);
 		await this.verifyActionPermission(service, CrudAction.Create);
-		return await this.servicesRepository.save(service);
+		return this.servicesRepository.save(service);
 	}
 
 	public async updateService(id: number, request: ServiceRequest): Promise<Service> {
@@ -118,6 +119,7 @@ export class ServicesService {
 			const service = await this.servicesRepository.getService({ id });
 			if (!service) throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 			service.name = request.name;
+			service.labels = Label.creates(request.labels);
 			await this.verifyActionPermission(service, CrudAction.Update);
 			return await this.servicesRepository.save(service);
 		} catch (e) {
