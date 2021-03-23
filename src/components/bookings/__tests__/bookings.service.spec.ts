@@ -30,7 +30,11 @@ import {
 	GetBookingFunction,
 } from '../../bookingChangeLogs/bookingChangeLogs.service';
 import { ServicesService } from '../../services/services.service';
-import { CitizenAuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import {
+	CitizenAuthGroup,
+	ServiceAdminAuthGroup,
+	ServiceProviderAuthGroup
+} from '../../../infrastructure/auth/authGroup';
 import {
 	BookingChangeLogsServiceMock,
 	BookingRepositoryMock,
@@ -276,7 +280,7 @@ describe('Bookings.Service', () => {
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
-			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+			Promise.resolve([new ServiceProviderAuthGroup(adminMock, customProvider)]),
 		);
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
@@ -322,7 +326,7 @@ describe('Bookings.Service', () => {
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
-			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+			Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProvider)]),
 		);
 
 		await Container.get(BookingsService).save(bookingRequest, 1);

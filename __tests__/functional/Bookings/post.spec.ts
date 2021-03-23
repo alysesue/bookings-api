@@ -4,8 +4,6 @@ import {
 	AnonmymousEndpointSG,
 	CitizenRequestEndpointSG, ServiceAdminRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
-import {populateOutOfSlotBooking, populateUserServiceProvider, populateWeeklyTimesheet} from '../../Populate/basic';
-import { AnonmymousEndpointSG, CitizenRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { populateOutOfSlotBooking, populateUserServiceProvider, populateWeeklyTimesheet } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import * as request from 'request';
@@ -133,42 +131,6 @@ describe('Bookings functional tests', () => {
 		});
 	};
 
-	it('[On hold] Citizen should make an on hold SERVICE booking when on hold flag is true', async () => {
-		try {
-			await postCitizenBookingWithStartEndDateOnly(true, false);
-		} catch(e) {
-			const error = e.toString();
-			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		}
-	});
-
-	it('[On hold] Citizen should make an on hold SERVICE PROVIDER booking when on hold flag is true', async () => {
-		try {
-			await postCitizenBookingWithStartEndDateOnly(true, false, serviceProvider.id);
-		} catch(e) {
-			const error = e.toString();
-			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		}
-	});
-
-	it('[On hold] Citizen should NOT make an on hold SERVICE booking when on hold flag is false', async () => {
-		try {
-			await postCitizenBookingWithStartEndDateOnly(false, false);
-		} catch(e) {
-			const error = e.toString();
-			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		}
-	});
-
-	it('[On hold] Citizen should NOT make an on hold SERVICE PROVIDER booking when on hold flag is false', async () => {
-		try {
-			await postCitizenBookingWithStartEndDateOnly(false, false, serviceProvider.id);
-		} catch(e) {
-			const error = e.toString();
-			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		}
-	});
-
 	it('[On hold] Agency should validate SERVICE on hold booking', async () => {
 		const response = await postCitizenBookingWithStartEndDateOnly(true, false);
 		const bookingId = response.body.data.id;
@@ -225,24 +187,6 @@ describe('Bookings functional tests', () => {
 		}
 	});
 
-	it('[On hold] Admin should NOT make a SERVICE on hold booking when on hold flag is false', async () => {
-		try {
-			await postAdminBookingWithStartEndTimeOnly(false, false);
-		} catch(e) {
-			const error = e.toString();
-			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		}
-	});
-
-	it('[On hold] Admin should NOT make a SERVICE PROVIDER on hold booking when on hold flag is false', async () => {
-		try {
-			await postAdminBookingWithStartEndTimeOnly(false, false, serviceProvider.id);
-		} catch(e) {
-			const error = e.toString();
-			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		}
-	});
-
 	it('[Stand alone] Citizen should make a stand alone SERVICE booking when stand alone flag is true', async () => {
 		const response = await postCitizenBookingWithStartEndDateOnly(false, true);
 		expect(response.statusCode).toBe(201);
@@ -257,24 +201,6 @@ describe('Bookings functional tests', () => {
 		expect(response.body.data.status).toBe(BookingStatus.OnHold);
 	});
 
-	it('[Stand alone] Citizen should NOT make a stand alone SERVICE booking when stand alone flag is false', async () => {
-		try {
-			await postCitizenBookingWithStartEndDateOnly(false, false);
-		} catch (e) {
-			const error = e.toString();
-			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		}
-	});
-
-	it('[Stand alone] Citizen should NOT make a stand alone SERVICE PROVIDER booking when stand alone flag is false', async () => {
-		try {
-			await postCitizenBookingWithStartEndDateOnly(false, false, serviceProvider.id);
-		} catch (e) {
-			const error = e.toString();
-			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		}
-	});
-
 	it('[Stand alone] Admin should NOT make a SERVICE stand alone booking when stand alone flag is true', async () => {
 		try {
 			await postAdminBookingWithStartEndTimeOnly(false, true)
@@ -287,24 +213,6 @@ describe('Bookings functional tests', () => {
 	it('[Stand alone] Admin should NOT make a SERVICE PROVIDER stand alone booking when stand alone flag is true', async () => {
 		try {
 			await postAdminBookingWithStartEndTimeOnly(false, true, serviceProvider.id);
-		} catch (e) {
-			const error = e.toString();
-			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		}
-	});
-
-	it('[Stand alone] Admin should NOT make a SERVICE stand alone booking when stand alone flag is false', async () => {
-		try {
-			await postAdminBookingWithStartEndTimeOnly(false, false);
-		} catch (e) {
-			const error = e.toString();
-			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		}
-	});
-
-	it('[Stand alone] Admin should NOT make a SERVICE PROVIDER stand alone booking when stand alone flag is false', async () => {
-		try {
-			await postAdminBookingWithStartEndTimeOnly(false, false, serviceProvider.id);
 		} catch (e) {
 			const error = e.toString();
 			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);

@@ -23,8 +23,8 @@ function buildSampleKoaContext(path: string): Koa.Context {
 	return {
 		path,
 		headers,
-		request: { host: 'localhost', protocol: 'http', headers },
-	} as Koa.Context;
+		request: {host: 'localhost', protocol: 'http', headers},
+	} as unknown as Koa.Context;
 }
 
 describe('user Context middleware tests', () => {
