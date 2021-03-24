@@ -132,6 +132,7 @@ export async function startServer(): Promise<Server> {
 				exposeHeaders: `Origin, X-Requested-With, X-Request-Id, Content-Type, Accept, ${XSRF_HEADER_NAME}`,
 				origin: (ctx) => getOriginFromWhitelist(ctx, originWhitelist),
 				allowMethods: 'GET,PATCH,PUT,POST,DELETE,HEAD',
+				maxAge: 120,
 			}),
 		)
 		.use(helmet.contentSecurityPolicy(getContentPolicyOptions()))
