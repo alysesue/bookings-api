@@ -714,6 +714,59 @@ describe('Bookings.Service', () => {
 			).rejects.toThrowError();
 			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(0);
 		});
+
+		it('should save a new booking with a valid video conference url from booking request', async () => {
+			const bookingRequest: BookingRequest = new BookingRequest();
+			bookingRequest.startDateTime = new Date();
+			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+			bookingRequest.videoConferenceUrl = 'www.google.com';
+
+			const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
+			TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
+			);
+
+			await Container.get(BookingsService).save(bookingRequest, 1);
+			const booking = BookingRepositoryMock.booking;
+
+			expect(booking).not.toBe(undefined);
+			expect(booking.videoConferenceUrl).toBe('www.google.com');
+			expect(booking.status).toBe(BookingStatus.PendingApproval);
+		});
+
+		it('should update booking with a valid video conference url', async () => {
+			const bookingService = Container.get(BookingsService);
+
+			const start = new Date('2020-02-02T11:00');
+			const end = new Date('2020-02-02T12:00');
+			const bookingRequest = {
+				refId: 'ref1',
+				startDateTime: start,
+				endDateTime: end,
+				citizenEmail: 'test@mail.com',
+				videoConferenceUrl: 'www.google.com',
+			} as BookingUpdateRequest;
+
+			BookingRepositoryMock.booking = new BookingBuilder()
+				.withServiceId(service.id)
+				.withCitizenEmail('test@mail.com')
+				.withStartDateTime(start)
+				.withEndDateTime(end)
+				.build();
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+			);
+
+			const booking = await bookingService.update(1, bookingRequest);
+
+			expect(booking.refId).toBe('ref1');
+			expect(booking.videoConferenceUrl).toBe('www.google.com');
+		});
 	});
 
 	describe('Reschedule', () => {

@@ -350,6 +350,7 @@ export class BookingsService {
 			.withRefId(bookingRequest.refId)
 			.withLocation(bookingRequest.location)
 			.withDescription(bookingRequest.description)
+			.withVideoConferenceUrl(bookingRequest.videoConferenceUrl)
 			.withCreator(currentUser)
 			.withCitizenUinFin(BookingsMapper.getCitizenUinFin(currentUser, bookingRequest))
 			.withCitizenName(bookingRequest.citizenName)
