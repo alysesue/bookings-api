@@ -1,5 +1,6 @@
 require('dotenv').config();
 import { ConfigUtils } from 'mol-lib-common';
+import { MessageQueue } from 'mol-lib-common/message-queue/MessageQueue';
 const packageJSON = require('../../package.json');
 
 export const getConfig = () => ({
@@ -23,6 +24,17 @@ export const getConfig = () => ({
 	molAdminAuthForwarder: {
 		url: ConfigUtils.getValueFromEnv('MOL_ADMIN_AUTH_FORWARDER_URL', ''),
 	},
+	molNotification: {
+		url: ConfigUtils.getValueFromEnv('MOL_NOTIFICATION_URL', ''),
+	},
+	mqConfig: {
+		hosts: Object.values(ConfigUtils.getValueObjectFromEnv('MQ_HOST')),
+		port: ConfigUtils.getIntValueFromEnv('MQ_PORT'),
+		transport: ConfigUtils.getValueFromEnv('MQ_TRANSPORT'),
+		username: ConfigUtils.getValueFromEnv('MQ_USERNAME'),
+		password: ConfigUtils.getValueFromEnv('MQ_PASSWORD'),
+		idle_time_out: 86400000,
+	} as MessageQueue.Config,
 	recaptchaApiKey: ConfigUtils.getValueFromEnv('RECAPTCHA_API_KEY_BOOKINGSG_APP'),
 	recaptchaProjectId: ConfigUtils.getValueFromEnv('RECAPTCHA_PROJECT_ID_BOOKINGSG_APP'),
 	recaptchaSiteKey: ConfigUtils.getValueFromEnv('RECAPTCHA_SITE_KEY_BOOKINGSG_APP'),
