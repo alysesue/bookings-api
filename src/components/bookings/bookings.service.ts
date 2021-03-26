@@ -25,6 +25,7 @@ import { IPagedEntities } from '../../core/pagedEntities';
 import { getConfig } from '../../config/app-config';
 import { MailObserver } from '../notifications/notification.observer';
 import { BookingsSubject } from './bookings.subject';
+import { randomIndex } from '../../tools/arrays';
 
 @InRequestScope
 export class BookingsService {
@@ -331,6 +332,14 @@ export class BookingsService {
 		let serviceProvider: ServiceProvider | undefined;
 		if (bookingRequest.serviceProviderId) {
 			serviceProvider = await this.serviceProvidersService.getServiceProvider(bookingRequest.serviceProviderId);
+		} else if (service.isSpAutoAssigned) {
+			const serviceProviders = await this.serviceProvidersService.getAvailableServiceProviders(
+				bookingRequest.startDateTime,
+				bookingRequest.endDateTime,
+				serviceId,
+			);
+			const random = randomIndex(serviceProviders);
+			serviceProvider = !!serviceProviders.length ? serviceProviders[random] : undefined;
 		}
 
 		const isServiceOnHold = () => {
