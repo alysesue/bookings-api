@@ -14,20 +14,22 @@ import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from '../ti
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { ApiData, ApiDataFactory } from '../../apicontract';
-import { mapToLabelsResponse } from '../labels/labels.mapper';
+import { LabelsMapper } from '../labels/labels.mapper';
 
 @Route('v1/services')
 @Tags('Services')
 export class ServicesController extends Controller {
 	@Inject
 	private servicesService: ServicesService;
+	@Inject
+	private labelsMapper: LabelsMapper;
 
-	private static mapToServiceResponse(service: Service) {
+	private mapToServiceResponse(service: Service) {
 		const response = new ServiceResponse();
 		response.id = service.id;
 		response.name = service.name;
 		response.isStandAlone = service.isStandAlone;
-		response.labels = mapToLabelsResponse(service.labels);
+		response.labels = this.labelsMapper.mapToLabelsResponse(service.labels);
 		return response;
 	}
 
@@ -40,9 +42,7 @@ export class ServicesController extends Controller {
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async createService(@Body() request: ServiceRequest): Promise<ApiData<ServiceResponse>> {
-		return ApiDataFactory.create(
-			ServicesController.mapToServiceResponse(await this.servicesService.createService(request)),
-		);
+		return ApiDataFactory.create(this.mapToServiceResponse(await this.servicesService.createService(request)));
 	}
 
 	/**
@@ -59,7 +59,7 @@ export class ServicesController extends Controller {
 		@Body() serviceRequest: ServiceRequest,
 	): Promise<ApiData<ServiceResponse>> {
 		const service = await this.servicesService.updateService(serviceId, serviceRequest);
-		return ApiDataFactory.create(ServicesController.mapToServiceResponse(service));
+		return ApiDataFactory.create(this.mapToServiceResponse(service));
 	}
 	/**
 	 * Retrieves all services.
@@ -74,7 +74,7 @@ export class ServicesController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getServices(): Promise<ApiData<ServiceResponse[]>> {
 		const services = await this.servicesService.getServices();
-		return ApiDataFactory.create(services.map(ServicesController.mapToServiceResponse));
+		return ApiDataFactory.create(services.map((service) => this.mapToServiceResponse(service)));
 	}
 
 	@Put('{id}/scheduleForm')
@@ -114,7 +114,7 @@ export class ServicesController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getService(serviceId: number): Promise<ApiData<ServiceResponse>> {
 		const service = await this.servicesService.getService(serviceId);
-		return ApiDataFactory.create(ServicesController.mapToServiceResponse(service));
+		return ApiDataFactory.create(this.mapToServiceResponse(service));
 	}
 
 	/**

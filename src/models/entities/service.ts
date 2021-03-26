@@ -5,7 +5,6 @@ import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
 import { Organisation } from './organisation';
 import { ScheduleForm } from './scheduleForm';
 import { Label } from './label';
-import { LabelRequestModel } from '../../components/labels/label.apicontract';
 
 @Entity()
 @Index(['_organisationId', '_name'], { unique: true })
@@ -112,7 +111,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._timeslotsSchedule;
 	}
 
-	public static create(name: string, orga: Organisation, labels?: LabelRequestModel[]) {
+	public static create(name: string, orga: Organisation, labels: Label[] = []) {
 		const service = new Service();
 		service._name = name.trim();
 		service._organisation = orga;
@@ -123,7 +122,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 				orga._organisationAdminGroupMap.organisationRef,
 			),
 		);
-		service.labels = Label.creates(labels);
+		service.labels = labels;
 		return service;
 	}
 
