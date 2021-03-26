@@ -5,7 +5,7 @@ import { ServiceProvidersService } from '../serviceProviders.service';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
 import { ServicesService } from '../../services/services.service';
-import { ServiceProvidersServiceMock } from '../__mocks__/serviceProviders.mock';
+import { ServiceProvidersServiceMock } from '../__mocks__/serviceProviders.service.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
