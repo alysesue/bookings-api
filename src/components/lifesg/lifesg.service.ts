@@ -43,7 +43,6 @@ export class LifeSGMQSerice {
 			});
 			const amqp_message = container.message;
 			container.once('sendable', (context) => {
-				logger.info(`im here`);
 				const stringifiedPayload = JSON.stringify({ action, appointment });
 				const messageBody = amqp_message.data_section(Buffer.from(stringifiedPayload, 'utf8'));
 				context.sender.send({ body: messageBody });
