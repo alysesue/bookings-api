@@ -108,7 +108,8 @@ export class ServicesService {
 			? await this.organisationsRepository.getOrganisationById(request.organisationId)
 			: await this.userContext.verifyAndGetFirstAuthorisedOrganisation('User not authorized to add services.');
 
-		const service = Service.create(request.name, orga);
+		const isSpAutoAssigned = request.isSpAutoAssigned;
+		const service = Service.create(request.name, orga, isSpAutoAssigned);
 		await this.verifyActionPermission(service, CrudAction.Create);
 		return await this.servicesRepository.save(service);
 	}
@@ -118,6 +119,7 @@ export class ServicesService {
 			const service = await this.servicesRepository.getService({ id });
 			if (!service) throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 			service.name = request.name;
+			service.isSpAutoAssigned = request.isSpAutoAssigned;
 			await this.verifyActionPermission(service, CrudAction.Update);
 			return await this.servicesRepository.save(service);
 		} catch (e) {

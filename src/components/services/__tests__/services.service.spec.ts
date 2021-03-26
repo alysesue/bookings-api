@@ -138,12 +138,14 @@ describe('Services service tests', () => {
 
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].isSpAutoAssigned).toBe(false);
 	});
 
 	it('should save service & set SpAutoAssigned', async () => {
 		const request = new ServiceRequest();
 		request.name = 'John';
 		request.organisationId = 1;
+		request.isSpAutoAssigned = true;
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
 			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
 		);
@@ -160,9 +162,11 @@ describe('Services service tests', () => {
 		const request = new ServiceRequest();
 		request.name = 'John';
 		request.organisationId = 1;
+		request.isSpAutoAssigned = true;
 
 		await Container.get(ServicesService).updateService(1, request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].isSpAutoAssigned).toBe(true);
 	});
 
 	it('should throw if service not found', async () => {

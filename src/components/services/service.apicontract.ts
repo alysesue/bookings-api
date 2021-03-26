@@ -10,7 +10,7 @@ export class ServiceResponse {
 
 export class ServiceRequest {
 	public name: string;
-	public isSpAutoAssigned: boolean;
+	public isSpAutoAssigned?: boolean;
 	/**
 	 * @isInt
 	 */

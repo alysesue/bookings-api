@@ -110,11 +110,12 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._timeslotsSchedule;
 	}
 
-	public static create(name: string, orga: Organisation) {
+	public static create(name: string, orga: Organisation, isSpAutoAssigned = false) {
 		const service = new Service();
 		service._name = name.trim();
 		service._organisation = orga;
 		service._organisationId = orga.id;
+		service._isSpAutoAssigned = isSpAutoAssigned;
 		service._serviceAdminGroupMap = ServiceAdminGroupMap.create(
 			ServiceAdminGroupMap.createServiceOrganisationRef(
 				service.getServiceRef(),
