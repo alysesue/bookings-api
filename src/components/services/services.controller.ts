@@ -26,6 +26,7 @@ export class ServicesController extends Controller {
 		response.id = service.id;
 		response.name = service.name;
 		response.isStandAlone = service.isStandAlone;
+		response.isSpAutoAssigned = service.isSpAutoAssigned;
 		return response;
 	}
 

@@ -159,4 +159,15 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	public set isStandAlone(isOnHold: boolean) {
 		this._isStandAlone = isOnHold;
 	}
+
+	@Column({ nullable: false, default: false })
+	private _isSpAutoAssigned: boolean;
+
+	public get isSpAutoAssigned(): boolean {
+		return this._isSpAutoAssigned;
+	}
+
+	public set isSpAutoAssigned(value: boolean) {
+		this._isSpAutoAssigned = value;
+	}
 }

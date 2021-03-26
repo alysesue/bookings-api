@@ -5,10 +5,12 @@ export class ServiceResponse {
 	public id: number;
 	public name: string;
 	public isStandAlone: boolean;
+	public isSpAutoAssigned: boolean;
 }
 
 export class ServiceRequest {
 	public name: string;
+	public isSpAutoAssigned: boolean;
 	/**
 	 * @isInt
 	 */
