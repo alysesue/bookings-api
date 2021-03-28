@@ -112,7 +112,6 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
-
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
 			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
@@ -149,7 +148,6 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
-
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
 			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
@@ -242,11 +240,13 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
-		).rejects.toThrowError();
+		).rejects.toMatchInlineSnapshot(
+			'[BusinessError: [10010] Service provider is required for out of slot bookings]',
+		);
 	});
 
 	it('should validate service provider (not found) for out of slot booking', async () => {
@@ -259,8 +259,7 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmail.com')
 			.withServiceProviderId(5)
 			.build();
-
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
@@ -276,7 +275,6 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withServiceProviderId(1)
 			.build();
-
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
@@ -295,7 +293,6 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmailcom')
 			.withServiceProviderId(1)
 			.build();
-
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 

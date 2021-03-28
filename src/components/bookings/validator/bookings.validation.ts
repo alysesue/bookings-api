@@ -133,7 +133,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 	private timeslotsService: TimeslotsService;
 
 	protected async *validateServiceProviderExisting(booking: Booking): AsyncIterable<BusinessValidation> {
-		if (booking.status === BookingStatus.Accepted && !booking.serviceProviderId) {
+		if (!booking.serviceProviderId) {
 			yield BookingBusinessValidations.OutOfSlotServiceProviderRequired;
 			return;
 		}

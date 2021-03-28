@@ -77,7 +77,6 @@ describe('Timeslots Service', () => {
 	ServiceMock.id = 1;
 	ServiceMock.timeslotsSchedule = (TimeslotsScheduleMock as unknown) as TimeslotsSchedule;
 	ServiceMock.timeslotsScheduleId = TimeslotsScheduleMock._id;
-	ServiceMock.isOnHold = false;
 
 	const ServiceProviderMock = ServiceProvider.create('Provider', ServiceMock.id);
 	ServiceProviderMock.id = 100;
@@ -359,7 +358,6 @@ describe('Timeslots Service', () => {
 			.withRefId('ref')
 			.build();
 		bookingOos.serviceProvider = ServiceProviderMock;
-
 		BookingsRepositoryMock.search.mockReturnValue(
 			Promise.resolve({ entries: [bookingOos] } as IPagedEntities<Booking>),
 		);
@@ -459,7 +457,6 @@ describe('Timeslots Service Out Of Slot', () => {
 		jest.resetAllMocks();
 		jest.clearAllMocks();
 	});
-
 	it('should map accepted out-of-slot booking to timeslot response', async () => {
 		const service = Container.get(TimeslotsService);
 		const ServiceProviderMock3 = ServiceProvider.create('New Sp', ServiceMock.id);
@@ -488,7 +485,6 @@ describe('Timeslots Service Out Of Slot', () => {
 			.withRefId('ref')
 			.build();
 		bookingOos.serviceProvider = ServiceProviderMock3;
-
 		BookingsRepositoryMock.search.mockReturnValue(
 			Promise.resolve({ entries: [bookingOos] } as IPagedEntities<Booking>),
 		);

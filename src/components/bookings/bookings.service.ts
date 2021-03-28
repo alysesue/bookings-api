@@ -334,12 +334,8 @@ export class BookingsService {
 		}
 
 		const isServiceOnHold = () => {
-			if (isAdminUser || isAgencyUser || (!isOnHold && !isStandAlone)) {
-				return false;
-			}
-			if (!isAdminUser && !isAgencyUser && (isStandAlone || isOnHold)) {
-				return true;
-			}
+			if (isAdminUser || isAgencyUser) return false;
+			return isOnHold || isStandAlone;
 		};
 
 		const booking = new BookingBuilder()

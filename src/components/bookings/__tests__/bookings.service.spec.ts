@@ -33,7 +33,7 @@ import { ServicesService } from '../../services/services.service';
 import {
 	CitizenAuthGroup,
 	ServiceAdminAuthGroup,
-	ServiceProviderAuthGroup
+	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
 import {
 	BookingChangeLogsServiceMock,

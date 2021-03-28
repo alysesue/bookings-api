@@ -170,21 +170,20 @@ describe('Bookings functional tests', () => {
 	});
 
 	it('[On hold] Admin should NOT make a SERVICE on hold booking when on hold flag is true', async () => {
-		try {
-			await postAdminBookingWithStartEndTimeOnly(true, false);
-		} catch(e) {
-			const error = e.toString();
-			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		}
+		// try {
+		// 	await postAdminBookingWithStartEndTimeOnly(true, false);
+		// } catch(e) {
+		// 	const error = e.toString();
+		// 	expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
+		// }
+
+		const response = await postAdminBookingWithStartEndTimeOnly(true, false);
+		expect(response.statusCode).toBe(400);
 	});
 
 	it('[On hold] Admin should NOT make a SERVICE PROVIDER on hold booking when on hold flag is true', async () => {
-		try {
-			await postAdminBookingWithStartEndTimeOnly(true, false, serviceProvider.id);
-		} catch(e) {
-			const error = e.toString();
-			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		}
+		const response  = await postAdminBookingWithStartEndTimeOnly(true, false, serviceProvider.id);
+		expect(response.statusCode).toBe(400);
 	});
 
 	it('[Stand alone] Citizen should make a stand alone SERVICE booking when stand alone flag is true', async () => {
@@ -202,21 +201,13 @@ describe('Bookings functional tests', () => {
 	});
 
 	it('[Stand alone] Admin should NOT make a SERVICE stand alone booking when stand alone flag is true', async () => {
-		try {
-			await postAdminBookingWithStartEndTimeOnly(false, true)
-		} catch (e) {
-			const error = e.toString();
-			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		}
+		const response = await postAdminBookingWithStartEndTimeOnly(false, true);
+		expect(response.statusCode).toBe(400);
 	});
 
 	it('[Stand alone] Admin should NOT make a SERVICE PROVIDER stand alone booking when stand alone flag is true', async () => {
-		try {
-			await postAdminBookingWithStartEndTimeOnly(false, true, serviceProvider.id);
-		} catch (e) {
-			const error = e.toString();
-			expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		}
+		const response = await postAdminBookingWithStartEndTimeOnly(false, true, serviceProvider.id);
+		expect(response.statusCode).toBe(400);
 	});
 
 	it('[On hold & Stand alone] Citizen should make an on hold SERVICE booking when on hold and stand alone flag is true', async () => {
