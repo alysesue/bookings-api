@@ -251,7 +251,7 @@ export class BookingsController extends Controller {
 	 */
 	@Get('{bookingId}')
 	@SuccessResponse(200, 'Ok')
-	@Response(401, 'Valid authentication types: [admin,agency,user]')
+	@Response(401, 'Unauthorized')
 	public async getBooking(@Path() bookingId: number): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
@@ -305,7 +305,7 @@ export class BookingsController extends Controller {
 	 */
 	@Post('{bookingId}/validateOnHold')
 	@SuccessResponse(200, 'Validated')
-	@Response(401, 'Valid authentication types: [admin,agency,user]')
+	@Response(401, 'Unauthorized')
 	public async validateOnHoldBooking(
 		@Body() bookingRequest: BookingDetailsRequest,
 		@Path() bookingId: number,

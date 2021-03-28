@@ -104,12 +104,7 @@ export class ServicesController extends Controller {
 	 */
 	@Get('{serviceId}')
 	@SuccessResponse(200, 'Ok')
-	// @MOLAuth({
-	// 	admin: {},
-	// 	agency: {},
-	// 	user: { minLevel: MOLUserAuthLevel.L2 },
-	// })
-	@Response(401, 'Valid authentication types: [admin,agency,user]')
+	@Response(401, 'Unauthorized')
 	public async getService(serviceId: number): Promise<ApiData<ServiceResponse>> {
 		const service = await this.servicesService.getService(serviceId);
 		return ApiDataFactory.create(ServicesController.mapToServiceResponse(service));
