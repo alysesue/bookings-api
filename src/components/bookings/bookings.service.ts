@@ -394,7 +394,7 @@ export class BookingsService {
 				updatedBooking.status = BookingStatus.PendingApproval;
 			}
 
-			const validator = this.bookingsValidatorFactory.getValidator(true);
+			const validator = this.bookingsValidatorFactory.getOnHoldValidator();
 			validator.bypassCaptcha(getConfig().isAutomatedTest);
 			await validator.validate(updatedBooking);
 

@@ -87,6 +87,8 @@ describe('Booking validation tests', () => {
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
 			Promise.resolve({ entries: [] } as IPagedEntities<Booking>),
 		);
+
+		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => Promise.resolve([]));
 	});
 
 	it('should return regular booking validator', () => {
@@ -247,6 +249,20 @@ describe('Booking validation tests', () => {
 		).rejects.toMatchInlineSnapshot(
 			'[BusinessError: [10010] Service provider is required for out of slot bookings]',
 		);
+	});
+
+	it('should NOT validate service provider for out of slot booking (on hold)', async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.build();
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+
+		await Container.get(BookingsValidatorFactory).getOnHoldValidator().validate(booking);
 	});
 
 	it('should validate service provider (not found) for out of slot booking', async () => {
@@ -503,9 +519,7 @@ describe('Booking validation tests', () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 
-		const getValidation = async () => Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
-
-		await expect(getValidation).resolves;
+		await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
 	});
 
 	it('should not allow booking on top of existing on hold booking until previous booking is expired', async () => {
@@ -577,8 +591,7 @@ describe('Booking validation tests', () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
-		await expect(async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking))
-			.resolves;
+		await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
 	});
 
 	it('should validate invalid video conference url in a new booking', async () => {

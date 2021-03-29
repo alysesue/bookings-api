@@ -2,7 +2,8 @@ import { PgClient } from '../../utils/pgClient';
 import {
 	AgencyRequestEndpointSG,
 	AnonmymousEndpointSG,
-	CitizenRequestEndpointSG, ServiceAdminRequestEndpointSG,
+	CitizenRequestEndpointSG,
+	ServiceAdminRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
 import { populateOutOfSlotBooking, populateUserServiceProvider, populateWeeklyTimesheet } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
@@ -52,7 +53,11 @@ describe('Bookings functional tests', () => {
 		done();
 	});
 
-	const postAdminBookingWithStartEndTimeOnly = async (isOnHold: boolean, isStandAlone: boolean, serviceProviderId?: number): Promise<request.Response> => {
+	const postAdminBookingWithStartEndTimeOnly = async (
+		isOnHold: boolean,
+		isStandAlone: boolean,
+		serviceProviderId?: number,
+	): Promise<request.Response> => {
 		await pgClient.setServiceConfigurationOnHold(serviceId, isOnHold);
 		await pgClient.setServiceConfigurationStandAlone(serviceId, isStandAlone);
 
@@ -72,7 +77,11 @@ describe('Bookings functional tests', () => {
 		});
 	};
 
-	const postCitizenBookingWithStartEndDateOnly = async (isOnHold: boolean, isStandAlone: boolean, serviceProviderId?: number): Promise<request.Response> => {
+	const postCitizenBookingWithStartEndDateOnly = async (
+		isOnHold: boolean,
+		isStandAlone: boolean,
+		serviceProviderId?: number,
+	): Promise<request.Response> => {
 		await pgClient.setServiceConfigurationOnHold(serviceId, isOnHold);
 		await pgClient.setServiceConfigurationStandAlone(serviceId, isStandAlone);
 
@@ -170,19 +179,12 @@ describe('Bookings functional tests', () => {
 	});
 
 	it('[On hold] Admin should NOT make a SERVICE on hold booking when on hold flag is true', async () => {
-		// try {
-		// 	await postAdminBookingWithStartEndTimeOnly(true, false);
-		// } catch(e) {
-		// 	const error = e.toString();
-		// 	expect(error).toBe(`SYS_NETWORK_ERROR (400): An unexpected error has occurred.`);
-		// }
-
 		const response = await postAdminBookingWithStartEndTimeOnly(true, false);
 		expect(response.statusCode).toBe(400);
 	});
 
 	it('[On hold] Admin should NOT make a SERVICE PROVIDER on hold booking when on hold flag is true', async () => {
-		const response  = await postAdminBookingWithStartEndTimeOnly(true, false, serviceProvider.id);
+		const response = await postAdminBookingWithStartEndTimeOnly(true, false, serviceProvider.id);
 		expect(response.statusCode).toBe(400);
 	});
 
@@ -211,7 +213,7 @@ describe('Bookings functional tests', () => {
 	});
 
 	it('[On hold & Stand alone] Citizen should make an on hold SERVICE booking when on hold and stand alone flag is true', async () => {
-		const response  = await postCitizenBookingWithStartEndDateOnly(true, true);
+		const response = await postCitizenBookingWithStartEndDateOnly(true, true);
 		expect(response.statusCode).toBe(201);
 		expect(response.body).toBeDefined();
 		expect(response.body.data.status).toBe(BookingStatus.OnHold);

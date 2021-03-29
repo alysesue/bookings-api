@@ -131,9 +131,15 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 	private unAvailabilitiesService: UnavailabilitiesService;
 	@Inject
 	private timeslotsService: TimeslotsService;
+	protected readonly ServiceProviderRequired: boolean;
+
+	constructor(serviceProviderRequired: boolean = true) {
+		super();
+		this.ServiceProviderRequired = serviceProviderRequired;
+	}
 
 	protected async *validateServiceProviderExisting(booking: Booking): AsyncIterable<BusinessValidation> {
-		if (!booking.serviceProviderId) {
+		if (this.ServiceProviderRequired && !booking.serviceProviderId) {
 			yield BookingBusinessValidations.OutOfSlotServiceProviderRequired;
 			return;
 		}
@@ -267,11 +273,20 @@ class SlotBookingsValidator extends BookingsValidator {
 }
 
 @InRequestScope
+class ConfirmOnHoldBookingValidator extends OutOfSlotBookingValidator {
+	constructor() {
+		super(false);
+	}
+}
+
+@InRequestScope
 export class BookingsValidatorFactory {
 	@Inject
 	private slotBookingValidator: SlotBookingsValidator;
 	@Inject
 	private outOfSlotBookingValidator: OutOfSlotBookingValidator;
+	@Inject
+	private confirmOnHoldBookingValidator: ConfirmOnHoldBookingValidator;
 
 	public getValidator(outOfSlotBooking: boolean): IValidator {
 		if (outOfSlotBooking) {
@@ -279,5 +294,9 @@ export class BookingsValidatorFactory {
 		} else {
 			return this.slotBookingValidator;
 		}
+	}
+
+	public getOnHoldValidator(): IValidator {
+		return this.confirmOnHoldBookingValidator;
 	}
 }
