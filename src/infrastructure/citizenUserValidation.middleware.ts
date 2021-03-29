@@ -1,6 +1,7 @@
 import * as Koa from 'koa';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { MOLAuthType, MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth';
+import { tryParseInt } from '../tools/number';
 import { UserContext } from './auth/userContext';
 import { ContainerContextMiddleware } from './containerContext.middleware';
 
@@ -19,7 +20,7 @@ export class CitizenUserValidationMiddleware {
 				// tslint:disable-next-line: tsr-detect-possible-timing-attacks
 				requestHeaders[MOLSecurityHeaderKeys.AUTH_TYPE] === MOLAuthType.USER &&
 				(!requestHeaders[MOLSecurityHeaderKeys.USER_AUTH_LEVEL] ||
-					requestHeaders[MOLSecurityHeaderKeys.USER_AUTH_LEVEL] < MIN_USER_AUTH_LEVEL)
+					tryParseInt(requestHeaders[MOLSecurityHeaderKeys.USER_AUTH_LEVEL] as string) < MIN_USER_AUTH_LEVEL)
 			) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION);
 			}
