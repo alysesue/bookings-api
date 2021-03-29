@@ -5,3 +5,4 @@ export { AddSettings1613952097476 } from './1613952097476-AddSettings';
 export { StandAlone1614060880883 } from './1614060880883-StandAlone';
 export { OneOffTimeslots1614581500291 } from './1614581500291-OneOffTimeslots';
 export { VideoConferenceUrl1615172013022 } from './1615172013022-VideoConferenceUrl';
+export { ServiceEmailConfig1616993422799 } from './1616993422799-ServiceEmailConfig'
