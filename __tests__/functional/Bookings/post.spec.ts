@@ -1,10 +1,5 @@
 import { PgClient } from '../../utils/pgClient';
-import {
-	AgencyRequestEndpointSG,
-	AnonmymousEndpointSG,
-	CitizenRequestEndpointSG,
-	ServiceAdminRequestEndpointSG
-} from '../../utils/requestEndpointSG';
+import { AgencyRequestEndpointSG, AnonmymousEndpointSG, CitizenRequestEndpointSG } from '../../utils/requestEndpointSG';
 import {
 	populateOutOfSlotBooking,
 	populateUserServiceProvider,
@@ -245,15 +240,15 @@ describe('Bookings functional tests', () => {
 	it('[Auto Assign] service provider should be auto assigned if spAutoAssigned flag is true', async () => {
 		const service = await setServiceProviderAutoAssigned({
 			nameService: NAME_SERVICE_1,
-			serviceId: serviceId,
-			isSpAutoAssigned: true
+			serviceId,
+			isSpAutoAssigned: true,
 		});
 		expect(service.isSpAutoAssigned).toBe(true);
 
 		const response = await postCitizenInSlotBookingWithoutServiceProviderId(serviceId);
 		expect(response.statusCode).toBe(201);
 		expect(response.body.data.id).toBeGreaterThan(0);
-		expect(response.body.data.serviceProviderAgencyUserId).toBe("A001");
+		expect(response.body.data.serviceProviderAgencyUserId).toBe('A001');
 		expect(response.body.data.serviceId).toBe(serviceId);
 	});
 
