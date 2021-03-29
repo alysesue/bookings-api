@@ -59,6 +59,20 @@ export class PgClient {
 		});
 	}
 
+	public async setServiceConfigurationOnHold(serviceId: number, onHold: boolean): Promise<void> {
+		await this.pool.query({
+			text: `UPDATE public.service set "_isOnHold" = $1 where _id = $2`,
+			values: [onHold, serviceId],
+		});
+	}
+
+	public async setServiceConfigurationStandAlone(serviceId: number, standAlone: boolean): Promise<void> {
+		await this.pool.query({
+			text: `UPDATE public.service set "_isStandAlone" = $1 where _id = $2`,
+			values: [standAlone, serviceId],
+		});
+	}
+
 	public async setServiceProviderAutoAccept({
 		serviceProviderId,
 		autoAcceptBookings,
