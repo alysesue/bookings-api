@@ -20,7 +20,7 @@ describe('Timeslots functional tests', () => {
 
 
 	afterAll(async (done) => {
-		// await pgClient.cleanAllTables();
+		await pgClient.cleanAllTables();
 		await pgClient.close();
 		done();
 	});
@@ -33,11 +33,8 @@ describe('Timeslots functional tests', () => {
 			serviceProviderName: SERVICE_PROVIDER_NAME_1,
 			agencyUserId: 'A001',
 		});
-
-    console.log(result1);
     
 		serviceProvider1 = result1.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);
-    // serviceId1 = result1.services.find((item) => item.name === NAME_SERVICE_1).id.toString();
 
 		done();
   });
@@ -51,7 +48,6 @@ describe('Timeslots functional tests', () => {
 			labels: labels,
     });
     
-    console.log(response.labels);
     expect(response.labels[0].label).toEqual(labels[0].label);
   });
 });
