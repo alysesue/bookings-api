@@ -1,10 +1,15 @@
 import { PgClient } from '../../utils/pgClient';
-import { AgencyRequestEndpointSG, AnonmymousEndpointSG, CitizenRequestEndpointSG } from '../../utils/requestEndpointSG';
+import {
+	AgencyRequestEndpointSG,
+	AnonmymousEndpointSG,
+	CitizenRequestEndpointSG,
+	ServiceAdminRequestEndpointSG,
+} from '../../utils/requestEndpointSG';
 import {
 	populateOutOfSlotBooking,
 	populateUserServiceProvider,
 	populateWeeklyTimesheet,
-	setServiceProviderAutoAssigned
+	setServiceProviderAutoAssigned,
 } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import * as request from 'request';
