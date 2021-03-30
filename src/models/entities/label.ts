@@ -7,6 +7,12 @@ import { LabelRequestModel } from "../../components/labels/label.apicontract";
 export class Label {
 	public constructor() {}
 
+	public static create(labelText: string): Label {
+		const label = new Label();
+		label.labelText = labelText;
+		return label;
+	}
+
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
