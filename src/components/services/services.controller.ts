@@ -93,7 +93,7 @@ export class ServicesController extends Controller {
 	}
 
 	/**
-	 * Retrieves a single service.
+	 * Retrieves a single service. (Includes Service Labels)
 	 * @param @isInt serviceId The service id.
 	 */
 	@Get('{serviceId}')

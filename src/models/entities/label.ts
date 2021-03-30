@@ -4,6 +4,7 @@ import { IService, ITimeslotItem } from '../interfaces';
 import { LabelRequestModel } from "../../components/labels/label.apicontract";
 
 @Entity()
+// @Unique('ServiceLabels', ['_labelText', '_serviceId'])
 export class Label {
 	public constructor() {}
 
