@@ -3,6 +3,7 @@ import { ServiceProviderResponseModel } from '../../src/components/serviceProvid
 import { ServiceResponse } from '../../src/components/services/service.apicontract';
 import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslotItems.apicontract';
 import { LabelRequestModel } from '../../src/components/labels/label.apicontract';
+import { OneOffTimeslotResponse } from '../../src/components/oneOffTimeslots/oneOffTimeslots.apicontract';
 
 export const populateService = async ({
 	organisation = 'localorg',
@@ -191,7 +192,7 @@ export const populateOneOffTimeslot = async ({
 	endTime: Date;
 	capacity: number;
 	labels?: LabelRequestModel[];
-}): Promise<TimeslotItemResponse> => {
+}): Promise<OneOffTimeslotResponse> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/oneOffTimeslots`, {
 		body: {
 			startDateTime: startTime,

@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { LabelRequestModel } from '../../components/labels/label.apicontract';
 import { IService, ITimeslotItem } from '../interfaces';
+import { LabelRequestModel } from "../../components/labels/label.apicontract";
 
 @Entity()
 export class Label {
@@ -34,7 +35,15 @@ export class Label {
 
 	@ManyToOne('OneOffTimeslot')
 	@JoinColumn({ name: '_oneOffTimeslotId' })
-	public oneOffTimeslot: ITimeslotItem;
+	private _oneOffTimeslot: ITimeslotItem;
+
+	public get oneOffTimeslot(): ITimeslotItem {
+		return this._oneOffTimeslot;
+	}
+
+	public set oneOffTimeslot(value: ITimeslotItem) {
+		this._oneOffTimeslot = value;
+	}
 
 	public static creates(values: LabelRequestModel[]): Label[] {
 		const data: Label[] = [];
