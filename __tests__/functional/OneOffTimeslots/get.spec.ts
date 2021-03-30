@@ -7,6 +7,7 @@ import {
 } from '../../utils/requestEndpointSG';
 import { populateOneOffTimeslot, populateUserServiceProvider } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
+import { LabelRequestModel } from '../../../src/components/labels/label.apicontract';
 
 // tslint:disable-next-line: no-big-function
 describe('Timeslots functional tests', () => {
@@ -25,6 +26,11 @@ describe('Timeslots functional tests', () => {
 	const END_TIME_3 = new Date('2021-03-07T08:00:00Z');
 	const overallStartDate = new Date('2021-03-01T00:00:00Z');
 	const overallEndDate = new Date('2021-04-01T00:00:00Z');
+	
+	const labels: LabelRequestModel[] = [];
+	const label = new LabelRequestModel;
+	label.label = 'Chinese';
+	labels.push(label);
 
 	let serviceProvider1: ServiceProviderResponseModel;
 	let serviceProvider2: ServiceProviderResponseModel;
@@ -71,18 +77,21 @@ describe('Timeslots functional tests', () => {
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
 			capacity: 1,
+			labels: labels,
 		});
 		await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider2.id,
 			startTime: START_TIME_2,
 			endTime: END_TIME_2,
 			capacity: 2,
+			labels: labels,
 		});
 		await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider3.id,
 			startTime: START_TIME_3,
 			endTime: END_TIME_3,
 			capacity: 3,
+			labels: labels,
 		});
 
 		done();

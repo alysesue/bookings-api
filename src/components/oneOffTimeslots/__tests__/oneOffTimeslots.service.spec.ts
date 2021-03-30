@@ -8,6 +8,7 @@ import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 import { OneOffTimeslotsRepository } from '../oneOffTimeslots.repository';
 import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { OneOffTimeslotsActionAuthVisitor } from '../oneOffTimeslots.auth';
+import { LabelRequestModel } from '../../../components/labels/label.apicontract';
 
 jest.mock('../oneOffTimeslots.auth');
 
@@ -38,13 +39,18 @@ describe('OneOffTimeslots Service Tests', () => {
 	});
 
 	it('should save using repository', async () => {
-		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
+		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => { });
+		const labels: LabelRequestModel[] = [];
+		const label = new LabelRequestModel;
+		label.label = 'Chinese';
+		labels.push(label);
 
 		const request = new OneOffTimeslotRequest();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
 		request.endDateTime = DateHelper.addHours(request.startDateTime, 1);
 		request.capacity = 2;
 		request.serviceProviderId = 1;
+		request.labels = labels;
 
 		const service = Container.get(OneOffTimeslotsService);
 		await service.save(request);
@@ -54,6 +60,7 @@ describe('OneOffTimeslots Service Tests', () => {
 		expect(parameter0.startDateTime).toEqual(new Date('2021-03-02T00:00:00Z'));
 		expect(parameter0.endDateTime).toEqual(new Date('2021-03-02T01:00:00Z'));
 		expect(parameter0.capacity).toBe(2);
+		expect(parameter0.labels[0].labelText).toEqual(labels[0].label);
 
 		expect(ServiceProvidersServiceMock.getServiceProvider).toBeCalled();
 	});
