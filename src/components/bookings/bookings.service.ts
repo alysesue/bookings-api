@@ -351,7 +351,7 @@ export class BookingsService {
 			.withServiceId(serviceId)
 			.withStartDateTime(bookingRequest.startDateTime)
 			.withEndDateTime(bookingRequest.endDateTime)
-			.withServiceProviderId(serviceProvider.id)
+			.withServiceProviderId(serviceProvider?.id)
 			.withRefId(bookingRequest.refId)
 			.withLocation(bookingRequest.location)
 			.withDescription(bookingRequest.description)
@@ -368,7 +368,7 @@ export class BookingsService {
 			.withCaptchaToken(bookingRequest.captchaToken)
 			.withCaptchaOrigin(bookingRequest.captchaOrigin)
 			.build();
-		
+
 		booking.serviceProvider = serviceProvider;
 		await this.loadBookingDependencies(booking);
 		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
