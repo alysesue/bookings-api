@@ -6,4 +6,4 @@ export { StandAlone1614060880883 } from './1614060880883-StandAlone';
 export { OneOffTimeslots1614581500291 } from './1614581500291-OneOffTimeslots';
 export { VideoConferenceUrl1615172013022 } from './1615172013022-VideoConferenceUrl';
 export { SettingsMigrationFix1617063843109 } from './1617063843109-SettingsMigrationFix';
-export { Label1616397192886 } from './1616397192886-Label';
+export { Label1617033565406 } from './1617033565406-Label';

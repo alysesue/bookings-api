@@ -16,7 +16,7 @@ export class Label {
 		this._id = value;
 	}
 
-	@Column()
+	@Column({ type: 'varchar', length: 500, nullable: false })
 	private _labelText: string;
 
 	public get labelText(): string {
