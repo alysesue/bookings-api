@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IService } from '../interfaces';
 import { LabelRequestModel } from '../../components/labels/label.apicontract';
+import { IService, ITimeslotItem } from '../interfaces';
 
 @Entity()
 export class Label {
@@ -31,6 +31,10 @@ export class Label {
 	@ManyToOne('Service')
 	@JoinColumn({ name: '_serviceId' })
 	public service: IService;
+
+	@ManyToOne('OneOffTimeslot')
+	@JoinColumn({ name: '_oneOffTimeslotId' })
+	public oneOffTimeslot: ITimeslotItem;
 
 	public static creates(values: LabelRequestModel[]): Label[] {
 		const data: Label[] = [];

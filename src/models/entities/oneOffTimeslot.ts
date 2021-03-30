@@ -1,7 +1,7 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { IServiceProvider } from '../interfaces';
 import { TimeslotWithCapacity } from '../timeslotWithCapacity';
-
+import { Label } from './label';
 @Entity()
 export class OneOffTimeslot implements TimeslotWithCapacity {
 	constructor() {}
@@ -81,5 +81,16 @@ export class OneOffTimeslot implements TimeslotWithCapacity {
 
 	public get serviceProviderId(): number {
 		return this._serviceProviderId;
+	}
+
+	@OneToMany(() => Label, (label) => label.oneOffTimeslot, { cascade: true })
+	private _labels: Label[];
+
+	public set labels(value: Label[]) {
+		this._labels = value;
+	}
+
+	public get labels(): Label[] {
+		return this._labels;
 	}
 }

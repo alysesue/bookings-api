@@ -1,3 +1,5 @@
+import { LabelRequestModel, LabelResponseModel } from "../labels/label.apicontract";
+
 export class OneOffTimeslotRequest {
 	public startDateTime: Date;
 	public endDateTime: Date;
@@ -9,6 +11,7 @@ export class OneOffTimeslotRequest {
 	 * @isInt
 	 */
 	public serviceProviderId: number;
+	public labels?: LabelRequestModel[];
 }
 
 export class OneOffTimeslotResponse {
@@ -19,4 +22,5 @@ export class OneOffTimeslotResponse {
 	 * @isInt
 	 */
 	public capacity: number;
+	public labels?: LabelResponseModel[];
 }
