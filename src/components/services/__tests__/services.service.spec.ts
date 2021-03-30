@@ -135,9 +135,11 @@ describe('Services service tests', () => {
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
 			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
 		);
+		request.labels = [{ label: 'label' }];
 
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].labels).toHaveLength(1);
 	});
 
 	it('should update service', async () => {
@@ -151,6 +153,7 @@ describe('Services service tests', () => {
 
 		await Container.get(ServicesService).updateService(1, request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].labels).toHaveLength(0);
 	});
 
 	it('should throw if service not found', async () => {

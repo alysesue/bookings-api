@@ -26,6 +26,7 @@ import {
 } from '../users/molUsers/molUsers.apicontract';
 import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 import { uniqueStringArray } from '../../tools/collections';
+import { LabelsMapper } from '../labels/labels.mapper';
 
 @InRequestScope
 export class ServicesService {
@@ -41,6 +42,8 @@ export class ServicesService {
 	private molUsersService: MolUsersService;
 	@Inject
 	private userContext: UserContext;
+	@Inject
+	private labelsMapper: LabelsMapper;
 
 	public async createServices(names: string[], organisation: Organisation): Promise<Service[]> {
 		const allServiceNames = uniqueStringArray(names, {
@@ -108,9 +111,11 @@ export class ServicesService {
 			? await this.organisationsRepository.getOrganisationById(request.organisationId)
 			: await this.userContext.verifyAndGetFirstAuthorisedOrganisation('User not authorized to add services.');
 
-		const service = Service.create(request.name, orga);
+		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
+
+		const service = Service.create(request.name, orga, transformedLabels);
 		await this.verifyActionPermission(service, CrudAction.Create);
-		return await this.servicesRepository.save(service);
+		return this.servicesRepository.save(service);
 	}
 
 	public async updateService(id: number, request: ServiceRequest): Promise<Service> {
@@ -118,6 +123,7 @@ export class ServicesService {
 			const service = await this.servicesRepository.getService({ id });
 			if (!service) throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 			service.name = request.name;
+			service.labels = this.labelsMapper.mapToLabels(request.labels);
 			await this.verifyActionPermission(service, CrudAction.Update);
 			return await this.servicesRepository.save(service);
 		} catch (e) {
