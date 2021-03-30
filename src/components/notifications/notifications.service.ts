@@ -15,6 +15,7 @@ export class NotificationsService {
 		}
 	}
 
+	//data = subject.booking
 	public static templateEmailBooking(data): CreateEmailRequestApiDomain {
 		const status = BookingStatus[data._status];
 		const serviceName = data._service?._name || '';
