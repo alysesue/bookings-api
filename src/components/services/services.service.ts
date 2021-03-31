@@ -58,11 +58,13 @@ export class ServicesService {
 			skipAuthorisation: true,
 		});
 		for (const service of existingServices) {
-			service.serviceAdminGroupMap = service.serviceAdminGroupMap || new ServiceAdminGroupMap();
-			service.serviceAdminGroupMap.serviceOrganisationRef = ServiceAdminGroupMap.createServiceOrganisationRef(
-				service.getServiceRef(),
-				organisation._organisationAdminGroupMap.organisationRef,
-			);
+			if (!service.serviceAdminGroupMap) {
+				const ref = ServiceAdminGroupMap.createServiceOrganisationRef(
+					service.getServiceRef(),
+					organisation._organisationAdminGroupMap.organisationRef,
+				);
+				service.serviceAdminGroupMap = ServiceAdminGroupMap.create(ref);
+			}
 		}
 
 		const newServices = allServiceNames
