@@ -15,10 +15,7 @@ export class Setting {
 		return this._id;
 	}
 
-	@Column({
-		type: 'jsonb',
-		default: JSON.stringify(Setting.initDataSetting()),
-	})
+	@Column({ type: 'jsonb', nullable: false, default: '{"redirectionWhitelistedUrl": []}', comment: 'Setting data' })
 	private _data: SettingData;
 
 	public set data(value: SettingData) {
@@ -32,12 +29,6 @@ export class Setting {
 		const setting1 = new Setting();
 		setting1._data = data;
 		return setting1;
-	}
-
-	public static initDataSetting(): SettingData {
-		return {
-			redirectionWhitelistedUrl: [],
-		};
 	}
 }
 
