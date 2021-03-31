@@ -1,6 +1,5 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { IService, ITimeslotItem } from '../interfaces';
-import { LabelRequestModel } from "../../components/labels/label.apicontract";
 
 @Entity()
 @Unique('ServiceLabels', ['_labelText', '_serviceId'])
@@ -40,6 +39,16 @@ export class Label {
 	@JoinColumn({ name: '_serviceId' })
 	public service: IService;
 
+	@Column({ nullable: false })
+	private _serviceId: number;
+	public get serviceId(): number {
+		return this._serviceId;
+	}
+
+	public set serviceId(value: number) {
+		this._serviceId = value;
+	}
+
 	@ManyToOne('OneOffTimeslot')
 	@JoinColumn({ name: '_oneOffTimeslotId' })
 	private _oneOffTimeslot: ITimeslotItem;
@@ -50,24 +59,5 @@ export class Label {
 
 	public set oneOffTimeslot(value: ITimeslotItem) {
 		this._oneOffTimeslot = value;
-	}
-
-	public static creates(values: LabelRequestModel[]): Label[] {
-		const data: Label[] = [];
-
-		if (!values || values.length === 0) {
-			return [];
-		}
-
-		values.forEach((value) => {
-			const entity = new Label();
-			if (value.id) {
-				entity._id = value.id;
-			}
-			entity._labelText = value.label;
-			data.push(entity);
-		});
-
-		return data;
 	}
 }

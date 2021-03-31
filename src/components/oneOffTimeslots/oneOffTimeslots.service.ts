@@ -6,8 +6,9 @@ import { ServiceProvidersService } from '../serviceProviders/serviceProviders.se
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { OneOffTimeslotsActionAuthVisitor } from './oneOffTimeslots.auth';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { LabelsMapper } from '../../components/labels/labels.mapper'
-import { LabelsService } from "../labels/labels.service";
+import { LabelsMapper } from '../../components/labels/labels.mapper';
+import { LabelsService } from '../labels/labels.service';
+
 @InRequestScope
 export class OneOffTimeslotsService {
 	@Inject

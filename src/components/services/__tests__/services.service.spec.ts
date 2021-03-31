@@ -101,6 +101,7 @@ const organisation = new Organisation();
 organisation.id = 1;
 organisation._organisationAdminGroupMap = { organisationRef: 'orga', organisationId: 1 } as OrganisationAdminGroupMap;
 
+// tslint:disable-next-line:no-big-function
 describe('Services service tests', () => {
 	it('should create admin service and service', async () => {
 		const admin = {

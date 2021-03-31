@@ -122,7 +122,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 				orga._organisationAdminGroupMap.organisationRef,
 			),
 		);
-		service.labels = Label.creates(labels);
+		service.labels = labels;
 		return service;
 	}
 

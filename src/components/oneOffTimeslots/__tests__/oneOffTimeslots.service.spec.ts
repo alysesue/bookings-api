@@ -39,9 +39,9 @@ describe('OneOffTimeslots Service Tests', () => {
 	});
 
 	it('should save using repository', async () => {
-		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => { });
+		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
 		const labels: LabelRequestModel[] = [];
-		const label = new LabelRequestModel;
+		const label = new LabelRequestModel();
 		label.label = 'Chinese';
 		labels.push(label);
 
