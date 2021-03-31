@@ -1,7 +1,6 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import {
-	Label,
 	Organisation,
 	ScheduleForm,
 	Service,
@@ -28,7 +27,6 @@ import {
 import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 import { uniqueStringArray } from '../../tools/collections';
 import { LabelsMapper } from '../labels/labels.mapper';
-import { LabelsService } from '../labels/labels.service';
 
 @InRequestScope
 export class ServicesService {
@@ -46,8 +44,6 @@ export class ServicesService {
 	private userContext: UserContext;
 	@Inject
 	private labelsMapper: LabelsMapper;
-	@Inject
-	private labelService: LabelsService;
 
 	public async createServices(names: string[], organisation: Organisation): Promise<Service[]> {
 		const allServiceNames = uniqueStringArray(names, {
@@ -115,12 +111,11 @@ export class ServicesService {
 			? await this.organisationsRepository.getOrganisationById(request.organisationId)
 			: await this.userContext.verifyAndGetFirstAuthorisedOrganisation('User not authorized to add services.');
 
-		let transformedLabels = this.labelsMapper.mapToLabels(request.labels);
-		
+		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
+
 		const service = Service.create(request.name, orga, transformedLabels);
-		transformedLabels = await this.verifyServiceLabel(transformedLabels, service);
 		service.labels = transformedLabels;
-	
+
 		await this.verifyActionPermission(service, CrudAction.Create);
 		return this.servicesRepository.save(service);
 	}
@@ -131,7 +126,6 @@ export class ServicesService {
 			if (!service) throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 			service.name = request.name;
 			service.labels = this.labelsMapper.mapToLabels(request.labels);
-			service.labels = await this.verifyServiceLabel(service.labels, service);
 			await this.verifyActionPermission(service, CrudAction.Update);
 			return await this.servicesRepository.save(service);
 		} catch (e) {
@@ -229,14 +223,5 @@ export class ServicesService {
 				`User cannot perform this action (${action}) for services.`,
 			);
 		}
-	}
-
-	private async verifyServiceLabel(label: Label[], service: Service): Promise<Label[]> {
-		// First Pass: Deduplicate
-		label = label.filter((v,i,a)=>a.findIndex(t=>(t.labelText === v.labelText))===i)
-
-		// Second Pass: Check for duplication in Database
-		this.labelService.verifyExistLabels(label, service);
-		return label;
 	}
 }

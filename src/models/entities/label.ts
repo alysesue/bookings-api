@@ -1,10 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { LabelRequestModel } from '../../components/labels/label.apicontract';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { IService, ITimeslotItem } from '../interfaces';
 import { LabelRequestModel } from "../../components/labels/label.apicontract";
 
 @Entity()
-// @Unique('ServiceLabels', ['_labelText', '_serviceId'])
+@Unique('ServiceLabels', ['_labelText', '_serviceId'])
+@Index(['_serviceId', '_labelText'], { unique: true })
 export class Label {
 	public constructor() {}
 

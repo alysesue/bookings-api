@@ -20,6 +20,8 @@ export class LabelsMapper {
 	}
 
 	public mapToLabels(request: LabelRequestModel[] = []): Label[] {
+		// Remove duplicate labelText
+		request = request.filter((v, i, a) => a.findIndex((t) => t.label === v.label) === i);
 		return request.map((i) => {
 			const entity = new Label();
 			if (i.id) {
