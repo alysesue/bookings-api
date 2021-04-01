@@ -7,6 +7,7 @@ import {
 	OrganisationAdminGroupMap,
 	ScheduleForm,
 	Service,
+	ServiceAdminGroupMap,
 	TimeOfDay,
 	TimeslotItem,
 	TimeslotsSchedule,
@@ -100,6 +101,7 @@ const organisation = new Organisation();
 organisation.id = 1;
 organisation._organisationAdminGroupMap = { organisationRef: 'orga', organisationId: 1 } as OrganisationAdminGroupMap;
 
+// tslint:disable-next-line: no-big-function
 describe('Services service tests', () => {
 	it('should create admin service and service', async () => {
 		const admin = {
@@ -123,6 +125,40 @@ describe('Services service tests', () => {
 		ServicesRepositoryMock.saveMany.mockReturnValue(Promise.resolve([]));
 
 		await Container.get(ServicesService).createServicesAdmins([admin], 'token');
+		expect(MolUsersServiceMock.molUpsertUser).toBeCalled();
+		expect(ServicesRepositoryMock.getServicesByName).toBeCalled();
+		expect(ServicesRepositoryMock.saveMany).toBeCalled();
+	});
+
+	it('should create admin service and service (without replacing service reference)', async () => {
+		const admin = {
+			name: 'name',
+			email: 'email',
+			phoneNumber: 'phoneNumber',
+			serviceNames: ['service1'],
+		} as MolServiceAdminUserContract;
+
+		const molUser = {
+			...admin,
+			sub: 'd080f6ed-3b47-478a-a6c6-dfb5608a198d',
+			username: 'username',
+			groups: ['bookingsg:svc-admin-service1:orga'],
+		} as IMolCognitoUserResponse;
+
+		const service = new Service();
+		service.id = 1;
+		service.name = 'service1';
+		service.serviceAdminGroupMap = ServiceAdminGroupMap.create('service-abc:orga');
+
+		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: [molUser] }));
+		UserContextMock.getFirstAuthorisedOrganisation.mockReturnValue(Promise.resolve(organisation));
+
+		ServicesRepositoryMock.getServicesByName.mockReturnValue(Promise.resolve([service]));
+		ServicesRepositoryMock.saveMany.mockReturnValue(Promise.resolve([]));
+
+		await Container.get(ServicesService).createServicesAdmins([admin], 'token');
+
+		expect(service.serviceAdminGroupMap.serviceOrganisationRef).toEqual('service-abc:orga');
 		expect(MolUsersServiceMock.molUpsertUser).toBeCalled();
 		expect(ServicesRepositoryMock.getServicesByName).toBeCalled();
 		expect(ServicesRepositoryMock.saveMany).toBeCalled();
