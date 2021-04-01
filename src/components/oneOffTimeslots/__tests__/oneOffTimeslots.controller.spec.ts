@@ -59,6 +59,7 @@ describe('One off timeslots Controller test', () => {
 				idSigned: 'A',
 				startDateTime: new Date('2021-03-02T00:00:00.000Z'),
 				endDateTime: new Date('2021-03-02T02:00:00.000Z'),
+				labels: [],
 				capacity: 1,
 			},
 		});
