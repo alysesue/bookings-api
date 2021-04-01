@@ -53,6 +53,6 @@ describe('Tests endpoint and populate data', () => {
 		});
 		
 		expect(response.statusCode).toEqual(400);
-		expect(response.body.errorMessage).toStrictEqual('Service name is already present'); // Not sure about this
+		expect(response.body.errorMessage).toStrictEqual('Label(s) are already present');
 	});
 });
