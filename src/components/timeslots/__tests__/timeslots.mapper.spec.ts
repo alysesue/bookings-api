@@ -3,6 +3,7 @@ import { ServiceProvider, User } from '../../../models';
 import { TimeslotsMapper } from '../timeslots.mapper';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
+import { Container } from 'typescript-ioc';
 
 jest.mock('../../../models/uinFinConfiguration');
 
@@ -71,7 +72,8 @@ describe('Timeslots Mapper', () => {
 		});
 		UinFinConfigurationMock.canViewPlainUinFin.mockReturnValue(false);
 
-		const res = TimeslotsMapper.mapTimeslotServiceProviders(timeslotServiceProviders, {
+		const mapper = Container.get(TimeslotsMapper);
+		const res = mapper.mapTimeslotServiceProviders(timeslotServiceProviders, {
 			user: adminMock,
 			authGroups: [],
 		});

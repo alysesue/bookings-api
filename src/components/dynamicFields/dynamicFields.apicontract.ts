@@ -9,6 +9,8 @@ export class DynamicFieldModel {
 	public SelectList: SelectListModel;
 }
 
+// Classes that represent the metadata (definition) of a dynamic field
+
 export class SelectListModel {
 	public options: SelectListOptionModel[];
 }

@@ -59,10 +59,16 @@ export abstract class DynamicField {
 	public set name(value: string) {
 		this._name = value;
 	}
+
+	public abstract get fieldType(): string;
 }
 
 @ChildEntity()
 export class SelectListDynamicField extends DynamicField {
+	public get fieldType(): string {
+		return 'SelectListDynamicField';
+	}
+
 	@Column({ type: 'jsonb', nullable: false, default: '[]' })
 	private _options: SelectListOption[];
 
