@@ -3,12 +3,14 @@ import { Container } from 'typescript-ioc';
 import { OneOffTimeslotRequest } from '../oneOffTimeslots.apicontract';
 import { OneOffTimeslotsService } from '../oneOffTimeslots.service';
 import { UserContext } from '../../../infrastructure/auth/userContext';
-import { OneOffTimeslot, ServiceProvider, User } from '../../../models';
+import { Label, OneOffTimeslot, Service, ServiceProvider, User } from '../../../models';
 import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 import { OneOffTimeslotsRepository } from '../oneOffTimeslots.repository';
 import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { OneOffTimeslotsActionAuthVisitor } from '../oneOffTimeslots.auth';
 import { LabelRequestModel } from '../../../components/labels/label.apicontract';
+import { LabelsRepository } from '../../../components/labels/labels.repository';
+import { LabelsRepositoryMock } from '../../../components/labels/__mocks__/labels.repository.mock';
 
 jest.mock('../oneOffTimeslots.auth');
 
@@ -20,11 +22,15 @@ describe('OneOffTimeslots Service Tests', () => {
 	const serviceProvider = new ServiceProvider();
 	serviceProvider.id = 1;
 	serviceProvider.name = 'John';
+	const newService = new Service();
+	newService.id = 1;
+	serviceProvider.service = newService;
 
 	beforeAll(() => {
 		Container.bind(OneOffTimeslotsRepository).to(OneOffTimeslotsRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
+		Container.bind(LabelsRepository).to(LabelsRepositoryMock);
 	});
 
 	beforeEach(() => {
@@ -44,6 +50,8 @@ describe('OneOffTimeslots Service Tests', () => {
 		const label = new LabelRequestModel();
 		label.label = 'Chinese';
 		labels.push(label);
+
+		LabelsRepositoryMock.findMock.mockReturnValue([Label.create('Chinese')]);
 
 		const request = new OneOffTimeslotRequest();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
@@ -69,6 +77,7 @@ describe('OneOffTimeslots Service Tests', () => {
 		(authVisitorMock.hasPermission as jest.Mock).mockReturnValue(false);
 
 		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
+		LabelsRepositoryMock.findMock.mockReturnValue([Label.create('Chinese')]);
 
 		const request = new OneOffTimeslotRequest();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
@@ -86,7 +95,7 @@ describe('OneOffTimeslots Service Tests', () => {
 
 	it(`should validate dates`, async () => {
 		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
-
+		LabelsRepositoryMock.findMock.mockReturnValue([Label.create('Chinese')]);
 		const request = new OneOffTimeslotRequest();
 		const date = new Date('2021-03-02T00:00:00Z');
 		request.startDateTime = DateHelper.addHours(date, 1);
