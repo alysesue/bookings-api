@@ -19,13 +19,10 @@ import { CrudAction } from '../../enums/crudAction';
 import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract';
 import { OrganisationsNoauthRepository } from '../organisations/organisations.noauth.repository';
 import { MolUsersService } from '../users/molUsers/molUsers.service';
-import {
-	isMolUserMatch,
-	MolServiceAdminUserContract,
-	MolUpsertUsersResult,
-} from '../users/molUsers/molUsers.apicontract';
+import { MolServiceAdminUserContract, MolUpsertUsersResult } from '../users/molUsers/molUsers.apicontract';
 import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 import { uniqueStringArray } from '../../tools/collections';
+import { LabelsMapper } from '../labels/labels.mapper';
 
 @InRequestScope
 export class ServicesService {
@@ -41,6 +38,8 @@ export class ServicesService {
 	private molUsersService: MolUsersService;
 	@Inject
 	private userContext: UserContext;
+	@Inject
+	private labelsMapper: LabelsMapper;
 
 	public async createServices(names: string[], organisation: Organisation): Promise<Service[]> {
 		const allServiceNames = uniqueStringArray(names, {
@@ -55,11 +54,13 @@ export class ServicesService {
 			skipAuthorisation: true,
 		});
 		for (const service of existingServices) {
-			service.serviceAdminGroupMap = service.serviceAdminGroupMap || new ServiceAdminGroupMap();
-			service.serviceAdminGroupMap.serviceOrganisationRef = ServiceAdminGroupMap.createServiceOrganisationRef(
-				service.getServiceRef(),
-				organisation._organisationAdminGroupMap.organisationRef,
-			);
+			if (!service.serviceAdminGroupMap) {
+				const ref = ServiceAdminGroupMap.createServiceOrganisationRef(
+					service.getServiceRef(),
+					organisation._organisationAdminGroupMap.organisationRef,
+				);
+				service.serviceAdminGroupMap = ServiceAdminGroupMap.create(ref);
+			}
 		}
 
 		const newServices = allServiceNames
@@ -80,22 +81,15 @@ export class ServicesService {
 		const orga = await this.userContext.verifyAndGetFirstAuthorisedOrganisation(
 			'User not authorized to add services.',
 		);
-		const molAdminUser = MolUsersMapper.mapServicesAdminsGroups(adminUserContracts, orga);
+		const serviceNames = [].concat(...adminUserContracts.map((a) => a.serviceNames));
+		const services = await this.createServices(serviceNames, orga);
+
+		const molAdminUser = MolUsersMapper.mapServicesAdminsGroups(adminUserContracts, services, orga);
 		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molAdminUser, {
 			token: authorisationToken,
 			desiredDeliveryMediumsHeader,
 		});
 
-		if (res?.error) return res;
-		const upsertedMolUser = [...(res?.created || []), ...(res?.updated || [])];
-		if (upsertedMolUser) {
-			const upsertedAdminUsers = adminUserContracts.filter((adminUser) =>
-				upsertedMolUser.some((molUser) => isMolUserMatch(molUser, adminUser)),
-			);
-
-			const serviceNames = [].concat(...upsertedAdminUsers.map((a) => a.serviceNames));
-			await this.createServices(serviceNames, orga);
-		}
 		return res;
 	}
 
@@ -108,9 +102,11 @@ export class ServicesService {
 			? await this.organisationsRepository.getOrganisationById(request.organisationId)
 			: await this.userContext.verifyAndGetFirstAuthorisedOrganisation('User not authorized to add services.');
 
-		const service = Service.create(request.name, orga);
+		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
+
+		const service = Service.create(request.name, orga, transformedLabels);
 		await this.verifyActionPermission(service, CrudAction.Create);
-		return await this.servicesRepository.save(service);
+		return this.servicesRepository.save(service);
 	}
 
 	public async updateService(id: number, request: ServiceRequest): Promise<Service> {
@@ -118,6 +114,7 @@ export class ServicesService {
 			const service = await this.servicesRepository.getService({ id });
 			if (!service) throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 			service.name = request.name;
+			service.labels = this.labelsMapper.mapToLabels(request.labels);
 			await this.verifyActionPermission(service, CrudAction.Update);
 			return await this.servicesRepository.save(service);
 		} catch (e) {

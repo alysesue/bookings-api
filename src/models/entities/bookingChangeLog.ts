@@ -29,6 +29,10 @@ export class BookingChangeLog {
 	@Index()
 	private _bookingId: number;
 
+	@Column({ nullable: false })
+	@Index()
+	private _userId: number;
+
 	@ManyToOne((type) => User, { nullable: false })
 	@JoinColumn({ name: '_userId' })
 	private _user: User;
@@ -41,6 +45,10 @@ export class BookingChangeLog {
 
 	@Column({ type: 'jsonb', nullable: false })
 	private _newState: BookingJsonVersion & BookingJsonSchemaV1;
+
+	public get userId(): number {
+		return this._userId;
+	}
 
 	public get id(): number {
 		return this._id;

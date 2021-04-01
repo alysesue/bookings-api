@@ -22,10 +22,6 @@ export class ServiceAdminGroupMap {
 	@Index({ unique: true })
 	private _serviceOrganisationRef: string;
 
-	public set serviceOrganisationRef(value: string) {
-		this._serviceOrganisationRef = value;
-	}
-
 	public get serviceOrganisationRef() {
 		return this._serviceOrganisationRef;
 	}
