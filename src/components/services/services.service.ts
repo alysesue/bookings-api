@@ -112,9 +112,7 @@ export class ServicesService {
 			: await this.userContext.verifyAndGetFirstAuthorisedOrganisation('User not authorized to add services.');
 
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
-
 		const service = Service.create(request.name, orga, transformedLabels);
-		service.labels = transformedLabels;
 
 		await this.verifyActionPermission(service, CrudAction.Create);
 		return this.servicesRepository.save(service);
@@ -129,7 +127,7 @@ export class ServicesService {
 			await this.verifyActionPermission(service, CrudAction.Update);
 			return await this.servicesRepository.save(service);
 		} catch (e) {
-			if (e.message.startsWith('duplicate key value violates unique constraint')){
+			if (e.message.startsWith('duplicate key value violates unique constraint')) {
 				if (e.message.includes('IDX_44b3185ec745b6f7cb4a114396')) {
 					throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Label(s) are already present');
 				}
