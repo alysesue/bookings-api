@@ -23,7 +23,7 @@ export class AutomatedTestMiddleware {
 		logger.info('Using Automated Test Middleware');
 		return async (ctx: Koa.Context, next: Koa.Next): Promise<any> => {
 			const value = ctx.request.headers[AUTOMATED_TEST_HEADER];
-			const automatedHeaders = AutomatedTestMiddleware.parseHeader(value);
+			const automatedHeaders = AutomatedTestMiddleware.parseHeader(value as string);
 			if (automatedHeaders) {
 				for (const headerKey of Object.keys(automatedHeaders)) {
 					ctx.request.headers[headerKey] = automatedHeaders[headerKey];

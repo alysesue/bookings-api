@@ -87,6 +87,11 @@ class RequestEndpointSG {
 	}
 }
 
+const AGENCY_HEADERS = {
+	'mol-token-bypass': 'true',
+	'mol-auth-type': 'AGENCY',
+};
+
 const ADMIN_HEADERS = {
 	'mol-token-bypass': 'true',
 	'mol-auth-type': 'ADMIN',
@@ -98,6 +103,31 @@ const CITIZEN_HEADERS = {
 };
 
 const TOKEN_COOKIE = 'BookingSGToken';
+
+export class AgencyRequestEndpointSG extends RequestEndpointSG {
+	public static create = ({
+		agencyAppId = 'agency-first-app',
+		agencyName = 'localorg',
+	}: {
+		agencyAppId?: string;
+		agencyName?: string;
+		organisation?: string;
+	}): AgencyRequestEndpointSG => {
+		const headers = {
+			'mol-agency-app-id': agencyAppId,
+			'mol-agency-name': agencyName,
+		};
+		return new AgencyRequestEndpointSG(headers);
+	};
+
+	private constructor(headers: { [e: string]: string }) {
+		super();
+		this.setHeaders({
+			...AGENCY_HEADERS,
+			...headers,
+		});
+	}
+}
 
 export class OrganisationAdminRequestEndpointSG extends RequestEndpointSG {
 	public static create = ({

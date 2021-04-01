@@ -2,6 +2,7 @@ import { InRequestScope } from 'typescript-ioc';
 import { GoogleVerifyApiRequest, GoogleVerifyApiRequestHeader, GoogleVerifyApiResponse } from './captcha.apicontract';
 import { getConfig } from '../../config/app-config';
 import { post } from '../../tools/fetch';
+import { logger } from 'mol-lib-common';
 
 const RECATPCHA_URL = 'https://recaptchaenterprise.googleapis.com';
 const RECAPTCHA_THRESHOLD = 0.5;
@@ -19,7 +20,11 @@ export class CaptchaService {
 				new GoogleVerifyApiRequest(token, siteKey),
 				new GoogleVerifyApiRequestHeader(origin),
 			);
-			return res.tokenProperties.valid && res.score >= RECAPTCHA_THRESHOLD;
+			const result = res.tokenProperties.valid && res.score >= RECAPTCHA_THRESHOLD;
+			if (!result) {
+				logger.warn(`Captcha failed:`, res);
+			}
+			return result;
 		}
 		return false;
 	}

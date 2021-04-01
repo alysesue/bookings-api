@@ -108,17 +108,22 @@ describe('Bookings.Service', () => {
 	});
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 
+	const validatorMock = {
+		bypassCaptcha: jest.fn(),
+		validate: jest.fn(),
+	} as IValidator;
+
+	const onHolValidatorMock = {
+		bypassCaptcha: jest.fn(),
+		validate: jest.fn(),
+	} as IValidator;
+
 	class BookingValidatorFactoryMock implements Partial<BookingsValidatorFactory> {
-		public static validate = jest.fn();
-
-		public getValidator(outOfSlotBooking: boolean): IValidator {
-			return new (class implements IValidator {
-				public async validate(booking: Booking) {
-					return Promise.resolve(BookingValidatorFactoryMock.validate(booking));
-				}
-
-				public bypassCaptcha(shouldBypassCaptcha: boolean) {}
-			})();
+		public getValidator(): IValidator {
+			return validatorMock;
+		}
+		public getOnHoldValidator(): IValidator {
+			return onHolValidatorMock;
 		}
 	}
 

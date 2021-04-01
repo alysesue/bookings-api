@@ -1,9 +1,10 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
 import { Organisation } from './organisation';
 import { ScheduleForm } from './scheduleForm';
+import { Label } from './label';
 
 @Entity()
 @Index(['_organisationId', '_name'], { unique: true })
@@ -110,7 +111,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._timeslotsSchedule;
 	}
 
-	public static create(name: string, orga: Organisation) {
+	public static create(name: string, orga: Organisation, labels: Label[] = []) {
 		const service = new Service();
 		service._name = name.trim();
 		service._organisation = orga;
@@ -121,6 +122,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 				orga._organisationAdminGroupMap.organisationRef,
 			),
 		);
+		service.labels = labels;
 		return service;
 	}
 
@@ -159,4 +161,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	public set isStandAlone(isOnHold: boolean) {
 		this._isStandAlone = isOnHold;
 	}
+
+	@OneToMany(() => Label, (label) => label.service, { cascade: true })
+	public labels: Label[];
 }
