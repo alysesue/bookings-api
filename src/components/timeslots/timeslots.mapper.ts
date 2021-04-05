@@ -8,8 +8,13 @@ import { BookingsMapper } from '../bookings/bookings.mapper';
 import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
 import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
 import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
+import { LabelsMapper } from '../../components/labels/labels.mapper';
+import { Inject } from 'typescript-ioc';
 
 export class TimeslotsMapper {
+	@Inject
+	public static labelsMapper: LabelsMapper;
+		
 	public static mapAvailabilityToResponse(
 		entries: AvailableTimeslotProviders[],
 		options: { skipUnavailable?: boolean },
@@ -84,6 +89,8 @@ export class TimeslotsMapper {
 		item.pendingBookings = entry.pendingBookings.map((booking) => {
 			return BookingsMapper.mapDataModel(booking, userContext);
 		});
+		item.labels = this.labelsMapper.mapToLabelsResponse(entry.labels);
+
 		return item;
 	}
 }

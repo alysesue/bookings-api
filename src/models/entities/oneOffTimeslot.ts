@@ -83,7 +83,7 @@ export class OneOffTimeslot implements TimeslotWithCapacity {
 		return this._serviceProviderId;
 	}
 
-	@OneToMany(() => Label, (label) => label.oneOffTimeslot, { cascade: true })
+	@OneToMany(() => Label, (label) => label._oneOffTimeslot, { cascade: true })
 	private _labels: Label[];
 
 	public set labels(value: Label[]) {

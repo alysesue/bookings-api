@@ -51,7 +51,7 @@ export class Label {
 
 	@ManyToOne('OneOffTimeslot')
 	@JoinColumn({ name: '_oneOffTimeslotId' })
-	private _oneOffTimeslot: ITimeslotItem;
+	public _oneOffTimeslot: ITimeslotItem;
 
 	public get oneOffTimeslot(): ITimeslotItem {
 		return this._oneOffTimeslot;

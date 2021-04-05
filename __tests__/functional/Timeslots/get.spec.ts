@@ -5,8 +5,9 @@ import {
 	ServiceAdminRequestEndpointSG,
 	ServiceProviderRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
-import { populateUserServiceProvider, populateWeeklyTimesheet } from '../../populate/basic';
+import { populateOneOffTimeslot, populateUserServiceProvider, populateWeeklyTimesheet } from '../../populate/basic';
 import { keepTimeFromTimezoneToLocal } from '../../../__tests__/utils/dateTimeUtil';
+import { LabelRequestModel } from '../../../src/components/labels/label.apicontract';
 
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
@@ -24,6 +25,14 @@ describe('Timeslots functional tests', () => {
 	const END_TIME_3 = '14:00';
 	const ERROR_MESSAGE = 'An unexpected error has occurred.';
 	const TIME_FORMAT = 'HH:mm';
+	const ONE_OFF_START_TIME_1 = new Date('2021-03-05T01:00:00Z');
+	const ONE_OFF_END_TIME_1 = new Date('2021-03-05T02:00:00Z');
+
+	const labels: LabelRequestModel[] = [];
+	const label = new LabelRequestModel;
+	label.label = 'Chinese';
+	labels.push(label);
+	
 	let result1;
 	let result2;
 	let result3;
@@ -35,7 +44,7 @@ describe('Timeslots functional tests', () => {
 	let serviceId3;
 
 	afterAll(async (done) => {
-		await pgClient.cleanAllTables();
+		//await pgClient.cleanAllTables();
 		await pgClient.close();
 		done();
 	});
@@ -86,6 +95,14 @@ describe('Timeslots functional tests', () => {
 			scheduleSlot: 60,
 		});
 
+		await populateOneOffTimeslot({
+			serviceProviderId: serviceProvider1.id,
+			startTime: ONE_OFF_START_TIME_1,
+			endTime: ONE_OFF_END_TIME_1,
+			capacity: 1,
+			labels: labels,
+		});
+
 		done();
 	});
 
@@ -117,7 +134,7 @@ describe('Timeslots functional tests', () => {
 		const timeslotsForServiceProviders = await OrganisationAdminRequestEndpointSG.create({
 			serviceId: serviceId1,
 		}).get(`timeslots?startDate=2020-11-27T09:00:00.000Z&endDate=2020-11-30T09:59:59.999Z&includeBookings=true`);
-
+	
 		expect(timeslotsForServiceProviders.statusCode).toEqual(200);
 
 		const startDate = timeslotsForServiceProviders.body.data[0].startTime;
@@ -128,6 +145,20 @@ describe('Timeslots functional tests', () => {
 		expect(startTime).toEqual(START_TIME_1);
 		expect(endTime).toEqual(END_TIME_1);
 	});
+
+	it('should return labels', async () => {
+		const timeslotsForServiceProviders = await OrganisationAdminRequestEndpointSG.create({
+			serviceId: serviceId1,
+		}).get(`timeslots?startDate=2021-03-03T09:00:00.000Z&endDate=2021-03-06T09:59:59.999Z&includeBookings=true`);
+	
+		expect(timeslotsForServiceProviders.statusCode).toEqual(200);
+
+		console.log('==================================================',);
+		console.log(require('util').inspect(timeslotsForServiceProviders, false, null, true /* enable colors */));
+		console.log('==================================================',);
+
+	});
+
 	it('service admin should only get timeslot schedules for their service', async () => {
 		const service1TimeslotsResponse = await ServiceAdminRequestEndpointSG.create({
 			nameService: NAME_SERVICE_1,

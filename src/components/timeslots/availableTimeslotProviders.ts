@@ -30,6 +30,7 @@ export class AvailableTimeslotProviders {
 					acceptedBookings: timeslotServiceProvider.acceptedBookings,
 					pendingBookings: timeslotServiceProvider.pendingBookings,
 					availabilityCount: timeslotServiceProvider.getAvailabilityCount(totalAvailability),
+					labels: timeslotServiceProvider.labels,
 				};
 			}
 		}

@@ -41,7 +41,7 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
 			.leftJoin('timeslot._serviceProvider', 'serviceProvider')
 			.leftJoin('serviceProvider._service', 'SPservice')
-			.leftJoin('timeslot._labels', 'label');
+			.leftJoinAndSelect('timeslot._labels', 'label');
 	}
 
 	public async getById(request: { id: number; byPassAuth?: boolean }): Promise<OneOffTimeslot> {

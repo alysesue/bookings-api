@@ -93,7 +93,7 @@ export class TimeslotsController extends Controller {
 					? [spGroup.authorisedServiceProvider.id]
 					: [0];
 		}
-
+		
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
@@ -101,6 +101,7 @@ export class TimeslotsController extends Controller {
 			includeBookings,
 			spIdsFilter,
 		);
+
 		const userContextSnapshot = await this.userContext.getSnapshot();
 		return ApiDataFactory.create(timeslots?.map((t) => TimeslotsMapper.mapTimeslotEntry(t, userContextSnapshot)));
 	}
