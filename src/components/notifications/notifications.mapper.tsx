@@ -6,7 +6,7 @@ class EmailData {
 	public service: Service;
 	public serviceProvider: ServiceProvider;
 	public serviceProviderText: string;
-	public citizenEmail: string;
+	public email: string;
 	public location: string;
 	public locationText: string;
 	public startDateTime: Date;
@@ -17,8 +17,8 @@ export const emailMapper = (data: EmailData) => {
 	const status = data.status;
 	const serviceName = data.service?.name || '';
 	const serviceProviderName = data.serviceProvider?.name;
-	const serviceProviderText = serviceProviderName ? ` - ${serviceProviderName}` : '';
-	const citizenEmail = data.citizenEmail;
+	const serviceProviderText = serviceProviderName ? `<b> - ${serviceProviderName}</b>` : '';
+	const email = data.email;
 	const location = data.location;
 	const locationText = location ? `Location: <b>${location}</b>` : '';
 	const day = DateHelper.getDateFormat(data.startDateTime);
@@ -30,7 +30,7 @@ export const emailMapper = (data: EmailData) => {
 		serviceName,
 		serviceProviderName,
 		serviceProviderText,
-		citizenEmail,
+		email,
 		location,
 		locationText,
 		day,
