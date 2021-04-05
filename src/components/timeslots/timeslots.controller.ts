@@ -93,7 +93,7 @@ export class TimeslotsController extends Controller {
 					? [spGroup.authorisedServiceProvider.id]
 					: [0];
 		}
-		
+
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,

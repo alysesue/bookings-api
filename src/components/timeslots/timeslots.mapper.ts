@@ -14,7 +14,7 @@ import { Inject } from 'typescript-ioc';
 export class TimeslotsMapper {
 	@Inject
 	public static labelsMapper: LabelsMapper;
-		
+
 	public static mapAvailabilityToResponse(
 		entries: AvailableTimeslotProviders[],
 		options: { skipUnavailable?: boolean },

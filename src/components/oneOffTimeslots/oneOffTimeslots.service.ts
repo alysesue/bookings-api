@@ -51,6 +51,7 @@ export class OneOffTimeslotsService {
 		entity.labels = labels;
 
 		this.validate(entity);
+
 		await this.verifyActionPermission(entity);
 		await this.oneOffTimeslotsRepo.save(entity);
 		return entity;

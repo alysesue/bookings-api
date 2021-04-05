@@ -5,7 +5,7 @@ import {
 	ServiceAdminRequestEndpointSG,
 	ServiceProviderRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
-import { populateOneOffTimeslot, populateUserServiceProvider } from '../../populate/basic';
+import { populateOneOffTimeslot, populateServiceLabel, populateUserServiceProvider } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import { LabelRequestModel } from '../../../src/components/labels/label.apicontract';
 
@@ -40,7 +40,7 @@ describe('Timeslots functional tests', () => {
 	let serviceId3: string;
 
 	afterAll(async (done) => {
-		await pgClient.cleanAllTables();
+		// await pgClient.cleanAllTables();
 		await pgClient.close();
 		done();
 	});
@@ -71,6 +71,24 @@ describe('Timeslots functional tests', () => {
 		serviceId1 = result1.services.find((item) => item.name === NAME_SERVICE_1).id.toString();
 		serviceId2 = result2.services.find((item) => item.name === NAME_SERVICE_2).id.toString();
 		serviceId3 = result3.services.find((item) => item.name === NAME_SERVICE_3).id.toString();
+
+		await populateServiceLabel({
+			serviceId: serviceId1,
+			serviceName: NAME_SERVICE_1,
+			label: 'Chinese'
+		});
+
+		await populateServiceLabel({
+			serviceId: serviceId2,
+			serviceName: NAME_SERVICE_2,
+			label: 'Chinese'
+		});
+
+		await populateServiceLabel({
+			serviceId: serviceId3,
+			serviceName: NAME_SERVICE_3,
+			label: 'Chinese'
+		});
 
 		await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
