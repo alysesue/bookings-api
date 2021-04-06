@@ -218,9 +218,8 @@ describe('Users Service', () => {
 
 		const service = new Service();
 		service.id = 2;
-		service.serviceAdminGroupMap = new ServiceAdminGroupMap();
+		service.serviceAdminGroupMap = ServiceAdminGroupMap.create('career-coaching:localorg');
 		service.serviceAdminGroupMap.serviceId = service.id;
-		service.serviceAdminGroupMap.serviceOrganisationRef = 'career-coaching:localorg';
 
 		ServicesRepositoryNoAuthMock.getServicesForUserGroups.mockImplementation(() => Promise.resolve([service]));
 		(logger.warn as jest.Mock).mockImplementation(() => {});

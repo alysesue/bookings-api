@@ -8,3 +8,4 @@ export { VideoConferenceUrl1615172013022 } from './1615172013022-VideoConference
 export { SettingsMigrationFix1617063843109 } from './1617063843109-SettingsMigrationFix';
 export { Label1617033565406 } from './1617033565406-Label';
 export { OneOffTimeslotsAndLabel1617167862646 } from './1617167862646-OneOffTimeslotsAndLabel';
+export { ChangeLogUserIndex1615785814022 } from './1615785814022-ChangeLogUserIndex';
