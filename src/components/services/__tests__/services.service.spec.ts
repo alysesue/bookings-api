@@ -186,7 +186,7 @@ describe('Services service tests', () => {
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
 			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
 		);
-
+		request.labels = [{ label: 'label' }];
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].isSpAutoAssigned).toBe(true);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].labels).toHaveLength(1);
