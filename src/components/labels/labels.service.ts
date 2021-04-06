@@ -13,12 +13,14 @@ export class LabelsService {
 		if (!labelsService) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service does not have any labels`);
 		}
+		const labelsFound: Label[] = [];
 		labels.forEach((label: Label) => {
 			const labelFound = labelsService.find((ls) => ls.labelText === label.labelText);
 			if (!labelFound) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`This label is not present: ${label}`);
 			}
+			labelsFound.push(labelFound)
 		});
-		return labels;
+		return labelsFound;
 	}
 }

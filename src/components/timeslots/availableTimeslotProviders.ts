@@ -80,6 +80,10 @@ export class AvailableTimeslotProviders {
 		this._timeslotServiceProviders = new Map<number, TimeslotServiceProvider>();
 		for (const item of providers) {
 			const [spItem, timeslotCapacity] = item;
+			console.log('==================================================',);
+			console.log(require('util').inspect(spItem, false, null, true /* enable colors */));
+			console.log(require('util').inspect(timeslotCapacity, false, null, true /* enable colors */));
+			console.log('==================================================',);
 			const spTimeslotItem = new TimeslotServiceProvider(spItem, timeslotCapacity.capacity);
 			if (!spTimeslotItem.serviceProvider.isLicenceExpireNative(timeslotCapacity.startTimeNative))
 				this._timeslotServiceProviders.set(spItem.id, spTimeslotItem);

@@ -156,7 +156,6 @@ describe('Timeslots functional tests', () => {
 		console.log('==================================================',);
 		console.log(require('util').inspect(timeslotsForServiceProviders, false, null, true /* enable colors */));
 		console.log('==================================================',);
-
 	});
 
 	it('service admin should only get timeslot schedules for their service', async () => {

@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IServiceProvider } from '../interfaces';
 import { TimeslotWithCapacity } from '../timeslotWithCapacity';
 import { Label } from './label';
@@ -83,7 +83,12 @@ export class OneOffTimeslot implements TimeslotWithCapacity {
 		return this._serviceProviderId;
 	}
 
-	@OneToMany(() => Label, (label) => label._oneOffTimeslot, { cascade: true })
+	@ManyToMany(() => Label, {cascade: true})
+	@JoinTable({
+		name: 'oneofftimeslot_label',
+		joinColumn: { name: 'oneOffTimeslot_id' },
+		inverseJoinColumn: { name: 'label_id' },
+	})
 	private _labels: Label[];
 
 	public set labels(value: Label[]) {

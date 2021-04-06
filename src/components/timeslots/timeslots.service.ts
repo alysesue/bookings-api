@@ -220,6 +220,14 @@ export class TimeslotsService {
 		const mappedEntries = await TimeslotsService.mapServiceProviderAggregatedEntriesToTimeslots(aggregatedEntries);
 		mappingWatch.stop();
 
+		// aggregatedEntries.forEach((entry) => {
+		// 	console.log('==================================================',);
+		// 	console.log(require('util').inspect(entry, false, null, true /* enable colors */));
+		// 	console.log('==================================================',);
+		// });
+		// console.log('==================================================',);
+		// console.log(require('util').inspect(mappedEntries, false, null, true /* enable colors */));
+		// console.log('==================================================',);
 		const mapProcessors: AvailableTimeslotProcessor[] = [
 			await this.filterUnavailabilities(startDateTime, endDateTime, serviceId),
 			this.setBookedProviders(acceptedBookings),
@@ -380,6 +388,7 @@ export class TimeslotsService {
 			endDateTime: maxEndTime,
 			byPassAuth: true,
 		});
+
 		const oneOffTimeslotsLookup = groupByKey(oneOffTimeslots, (e) => e.serviceProviderId);
 
 		const validServiceTimeslots = Array.from(

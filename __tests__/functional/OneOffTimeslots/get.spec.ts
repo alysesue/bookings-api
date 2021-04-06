@@ -1,9 +1,9 @@
 import { PgClient } from '../../utils/pgClient';
 import {
-	CitizenRequestEndpointSG,
+	// CitizenRequestEndpointSG,
 	OrganisationAdminRequestEndpointSG,
-	ServiceAdminRequestEndpointSG,
-	ServiceProviderRequestEndpointSG,
+	// ServiceAdminRequestEndpointSG,
+	// ServiceProviderRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
 import { populateOneOffTimeslot, populateServiceLabel, populateUserServiceProvider } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
@@ -115,147 +115,158 @@ describe('Timeslots functional tests', () => {
 		done();
 	});
 	
-	it('organisation admin should get all oneoff timeslots', async () => {
+	it('one off timeslots should retrieve labels if applicable', async () => {
 		const service1TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
 			serviceId: serviceId1,
 		}).get(`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`);
 
-		const service2TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
-			serviceId: serviceId2,
-		}).get(
-			`/timeslots?serviceProviderIds=${
-				serviceProvider2.id
-			}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
-		);
-
-		const service3TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
-			serviceId: serviceId3,
-		}).get(`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`);
-
 		expect(service1TimeslotsResponse.statusCode).toEqual(200);
-		expect(service1TimeslotsResponse.body.data[0].startTime).toEqual(START_TIME_1.toISOString());
-		expect(service1TimeslotsResponse.body.data[0].endTime).toEqual(END_TIME_1.toISOString());
-		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders.length).toBe(1);
-		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].capacity).toBe(1);
-
-		expect(service2TimeslotsResponse.statusCode).toEqual(200);
-		expect(service2TimeslotsResponse.body.data[0].startTime).toEqual(START_TIME_2.toISOString());
-		expect(service2TimeslotsResponse.body.data[0].endTime).toEqual(END_TIME_2.toISOString());
-		expect(service2TimeslotsResponse.body.data[0].timeslotServiceProviders.length).toBe(1);
-		expect(service2TimeslotsResponse.body.data[0].timeslotServiceProviders[0].capacity).toBe(2);
-
-		expect(service3TimeslotsResponse.statusCode).toEqual(200);
-		expect(service3TimeslotsResponse.body.data[0].startTime).toEqual(START_TIME_3.toISOString());
-		expect(service3TimeslotsResponse.body.data[0].endTime).toEqual(END_TIME_3.toISOString());
-		expect(service3TimeslotsResponse.body.data[0].timeslotServiceProviders.length).toBe(1);
-		expect(service3TimeslotsResponse.body.data[0].timeslotServiceProviders[0].capacity).toBe(3);
+		console.log('==================================================',);
+		console.log(require('util').inspect(service1TimeslotsResponse, false, null, true /* enable colors */));
+		console.log('==================================================',);
 	});
 
-	it('service admin should only get timeslots for their service', async () => {
-		const serviceAdminEndpoint = ServiceAdminRequestEndpointSG.create({
-			nameService: NAME_SERVICE_1,
-			serviceId: serviceId1,
-		});
-		const service1TimeslotsResponse = await serviceAdminEndpoint.get(
-			`/timeslots?serviceProviderIds=${
-				serviceProvider1.id
-			}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
-		);
+	// it('organisation admin should get all oneoff timeslots', async () => {
+	// 	const service1TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
+	// 		serviceId: serviceId1,
+	// 	}).get(`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`);
 
-		expect(service1TimeslotsResponse.statusCode).toEqual(200);
-		expect(service1TimeslotsResponse.body.data[0].startTime).toEqual(START_TIME_1.toISOString());
-		expect(service1TimeslotsResponse.body.data[0].endTime).toEqual(END_TIME_1.toISOString());
+	// 	const service2TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
+	// 		serviceId: serviceId2,
+	// 	}).get(
+	// 		`/timeslots?serviceProviderIds=${
+	// 			serviceProvider2.id
+	// 		}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
+	// 	);
 
-		const service2TimeslotsResponse = await serviceAdminEndpoint.get(
-			`/timeslots?serviceProviderIds=${
-				serviceProvider2.id
-			}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
-		);
-		const service3TimeslotsResponse = await serviceAdminEndpoint.get(
-			`/timeslots?serviceProviderIds=${
-				serviceProvider3.id
-			}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
-		);
+	// 	const service3TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
+	// 		serviceId: serviceId3,
+	// 	}).get(`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`);
 
-		expect(service2TimeslotsResponse.statusCode).toEqual(200);
-		expect(service2TimeslotsResponse.body.data.length).toBe(0);
+	// 	expect(service1TimeslotsResponse.statusCode).toEqual(200);
+	// 	expect(service1TimeslotsResponse.body.data[0].startTime).toEqual(START_TIME_1.toISOString());
+	// 	expect(service1TimeslotsResponse.body.data[0].endTime).toEqual(END_TIME_1.toISOString());
+	// 	expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders.length).toBe(1);
+	// 	expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].capacity).toBe(1);
 
-		expect(service3TimeslotsResponse.statusCode).toEqual(200);
-		expect(service3TimeslotsResponse.body.data.length).toBe(0);
-	});
+	// 	expect(service2TimeslotsResponse.statusCode).toEqual(200);
+	// 	expect(service2TimeslotsResponse.body.data[0].startTime).toEqual(START_TIME_2.toISOString());
+	// 	expect(service2TimeslotsResponse.body.data[0].endTime).toEqual(END_TIME_2.toISOString());
+	// 	expect(service2TimeslotsResponse.body.data[0].timeslotServiceProviders.length).toBe(1);
+	// 	expect(service2TimeslotsResponse.body.data[0].timeslotServiceProviders[0].capacity).toBe(2);
 
-	it('service provider should only get their own timeslots', async () => {
-		const molAdminId = await pgClient.getAdminIdForServiceProvider({
-			serviceProviderId: serviceProvider1.id,
-		});
+	// 	expect(service3TimeslotsResponse.statusCode).toEqual(200);
+	// 	expect(service3TimeslotsResponse.body.data[0].startTime).toEqual(START_TIME_3.toISOString());
+	// 	expect(service3TimeslotsResponse.body.data[0].endTime).toEqual(END_TIME_3.toISOString());
+	// 	expect(service3TimeslotsResponse.body.data[0].timeslotServiceProviders.length).toBe(1);
+	// 	expect(service3TimeslotsResponse.body.data[0].timeslotServiceProviders[0].capacity).toBe(3);
+	// });
 
-		const providerEndpoint = ServiceProviderRequestEndpointSG.create({
-			nameService: NAME_SERVICE_1,
-			serviceId: serviceId1,
-			molAdminId,
-		});
+	// it('service admin should only get timeslots for their service', async () => {
+	// 	const serviceAdminEndpoint = ServiceAdminRequestEndpointSG.create({
+	// 		nameService: NAME_SERVICE_1,
+	// 		serviceId: serviceId1,
+	// 	});
+	// 	const service1TimeslotsResponse = await serviceAdminEndpoint.get(
+	// 		`/timeslots?serviceProviderIds=${
+	// 			serviceProvider1.id
+	// 		}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
+	// 	);
 
-		const service1TimeslotsResponse = await providerEndpoint.get(
-			`/timeslots?serviceProviderIds=${
-				serviceProvider1.id
-			}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
-		);
+	// 	expect(service1TimeslotsResponse.statusCode).toEqual(200);
+	// 	expect(service1TimeslotsResponse.body.data[0].startTime).toEqual(START_TIME_1.toISOString());
+	// 	expect(service1TimeslotsResponse.body.data[0].endTime).toEqual(END_TIME_1.toISOString());
 
-		const service2TimeslotsResponse = await providerEndpoint.get(
-			`/timeslots?serviceProviderIds=${
-				serviceProvider2.id
-			}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
-		);
+	// 	const service2TimeslotsResponse = await serviceAdminEndpoint.get(
+	// 		`/timeslots?serviceProviderIds=${
+	// 			serviceProvider2.id
+	// 		}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
+	// 	);
+	// 	const service3TimeslotsResponse = await serviceAdminEndpoint.get(
+	// 		`/timeslots?serviceProviderIds=${
+	// 			serviceProvider3.id
+	// 		}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
+	// 	);
 
-		const service3TimeslotsResponse = await providerEndpoint.get(
-			`/timeslots?serviceProviderIds=${
-				serviceProvider3.id
-			}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
-		);
+	// 	expect(service2TimeslotsResponse.statusCode).toEqual(200);
+	// 	expect(service2TimeslotsResponse.body.data.length).toBe(0);
 
-		expect(service1TimeslotsResponse.statusCode).toEqual(200);
-		expect(service1TimeslotsResponse.body.data[0].startTime).toEqual(START_TIME_1.toISOString());
-		expect(service1TimeslotsResponse.body.data[0].endTime).toEqual(END_TIME_1.toISOString());
+	// 	expect(service3TimeslotsResponse.statusCode).toEqual(200);
+	// 	expect(service3TimeslotsResponse.body.data.length).toBe(0);
+	// });
 
-		expect(service2TimeslotsResponse.statusCode).toEqual(200);
-		expect(service2TimeslotsResponse.body.data.length).toBe(0);
+	// it('service provider should only get their own timeslots', async () => {
+	// 	const molAdminId = await pgClient.getAdminIdForServiceProvider({
+	// 		serviceProviderId: serviceProvider1.id,
+	// 	});
 
-		expect(service3TimeslotsResponse.statusCode).toEqual(200);
-		expect(service3TimeslotsResponse.body.data.length).toBe(0);
-	});
+	// 	const providerEndpoint = ServiceProviderRequestEndpointSG.create({
+	// 		nameService: NAME_SERVICE_1,
+	// 		serviceId: serviceId1,
+	// 		molAdminId,
+	// 	});
 
-	it('citizen should get availability', async () => {
-		const availability1Response = await CitizenRequestEndpointSG.create({ serviceId: serviceId1 }).get(
-			`/timeslots/availability?serviceProviderId=${
-				serviceProvider1.id
-			}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
-		);
+	// 	const service1TimeslotsResponse = await providerEndpoint.get(
+	// 		`/timeslots?serviceProviderIds=${
+	// 			serviceProvider1.id
+	// 		}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
+	// 	);
 
-		const availability2Response = await CitizenRequestEndpointSG.create({ serviceId: serviceId2 }).get(
-			`/timeslots/availability?serviceProviderId=${
-				serviceProvider2.id
-			}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
-		);
+	// 	const service2TimeslotsResponse = await providerEndpoint.get(
+	// 		`/timeslots?serviceProviderIds=${
+	// 			serviceProvider2.id
+	// 		}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
+	// 	);
 
-		const availability3Response = await CitizenRequestEndpointSG.create({ serviceId: serviceId3 }).get(
-			`/timeslots/availability?serviceProviderId=${
-				serviceProvider3.id
-			}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
-		);
+	// 	const service3TimeslotsResponse = await providerEndpoint.get(
+	// 		`/timeslots?serviceProviderIds=${
+	// 			serviceProvider3.id
+	// 		}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
+	// 	);
 
-		expect(availability1Response.statusCode).toEqual(200);
-		expect(availability1Response.body.data).toEqual([
-			{ availabilityCount: 1, startTime: '2021-03-05T01:00:00.000Z', endTime: '2021-03-05T02:00:00.000Z' },
-		]);
+	// 	expect(service1TimeslotsResponse.statusCode).toEqual(200);
+	// 	expect(service1TimeslotsResponse.body.data[0].startTime).toEqual(START_TIME_1.toISOString());
+	// 	expect(service1TimeslotsResponse.body.data[0].endTime).toEqual(END_TIME_1.toISOString());
 
-		expect(availability2Response.statusCode).toEqual(200);
-		expect(availability2Response.body.data).toEqual([
-			{ availabilityCount: 2, startTime: '2021-03-06T06:00:00.000Z', endTime: '2021-03-06T07:00:00.000Z' },
-		]);
+	// 	expect(service2TimeslotsResponse.statusCode).toEqual(200);
+	// 	expect(service2TimeslotsResponse.body.data.length).toBe(0);
 
-		expect(availability3Response.statusCode).toEqual(200);
-		expect(availability3Response.body.data).toEqual([
-			{ availabilityCount: 3, startTime: '2021-03-07T07:00:00.000Z', endTime: '2021-03-07T08:00:00.000Z' },
-		]);
-	});
+	// 	expect(service3TimeslotsResponse.statusCode).toEqual(200);
+	// 	expect(service3TimeslotsResponse.body.data.length).toBe(0);
+	// });
+
+	// it('citizen should get availability', async () => {
+	// 	const availability1Response = await CitizenRequestEndpointSG.create({ serviceId: serviceId1 }).get(
+	// 		`/timeslots/availability?serviceProviderId=${
+	// 			serviceProvider1.id
+	// 		}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
+	// 	);
+
+	// 	const availability2Response = await CitizenRequestEndpointSG.create({ serviceId: serviceId2 }).get(
+	// 		`/timeslots/availability?serviceProviderId=${
+	// 			serviceProvider2.id
+	// 		}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
+	// 	);
+
+	// 	const availability3Response = await CitizenRequestEndpointSG.create({ serviceId: serviceId3 }).get(
+	// 		`/timeslots/availability?serviceProviderId=${
+	// 			serviceProvider3.id
+	// 		}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`,
+	// 	);
+
+	// 	expect(availability1Response.statusCode).toEqual(200);
+	// 	expect(availability1Response.body.data).toEqual([
+	// 		{ availabilityCount: 1, startTime: '2021-03-05T01:00:00.000Z', endTime: '2021-03-05T02:00:00.000Z' },
+	// 	]);
+
+	// 	expect(availability2Response.statusCode).toEqual(200);
+	// 	expect(availability2Response.body.data).toEqual([
+	// 		{ availabilityCount: 2, startTime: '2021-03-06T06:00:00.000Z', endTime: '2021-03-06T07:00:00.000Z' },
+	// 	]);
+
+	// 	expect(availability3Response.statusCode).toEqual(200);
+	// 	expect(availability3Response.body.data).toEqual([
+	// 		{ availabilityCount: 3, startTime: '2021-03-07T07:00:00.000Z', endTime: '2021-03-07T08:00:00.000Z' },
+	// 	]);
+	// });
 });

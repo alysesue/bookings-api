@@ -1,5 +1,5 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { IService, ITimeslotItem } from '../interfaces';
+import { IService } from '../interfaces';
 
 @Entity()
 @Unique('ServiceLabels', ['_labelText', '_serviceId'])
@@ -47,17 +47,5 @@ export class Label {
 
 	public set serviceId(value: number) {
 		this._serviceId = value;
-	}
-
-	@ManyToOne('OneOffTimeslot')
-	@JoinColumn({ name: '_oneOffTimeslotId' })
-	public _oneOffTimeslot: ITimeslotItem;
-
-	public get oneOffTimeslot(): ITimeslotItem {
-		return this._oneOffTimeslot;
-	}
-
-	public set oneOffTimeslot(value: ITimeslotItem) {
-		this._oneOffTimeslot = value;
 	}
 }
