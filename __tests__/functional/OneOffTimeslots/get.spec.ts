@@ -28,7 +28,7 @@ describe('Timeslots functional tests', () => {
 	const overallEndDate = new Date('2021-04-01T00:00:00Z');
 
 	const labels: LabelRequestModel[] = [];
-	const label = new LabelRequestModel;
+	const label = new LabelRequestModel();
 	label.label = 'Chinese';
 	labels.push(label);
 
@@ -77,26 +77,26 @@ describe('Timeslots functional tests', () => {
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
 			capacity: 1,
-			labels: labels,
+			labels,
 		});
 		await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider2.id,
 			startTime: START_TIME_2,
 			endTime: END_TIME_2,
 			capacity: 2,
-			labels: labels,
+			labels,
 		});
 		await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider3.id,
 			startTime: START_TIME_3,
 			endTime: END_TIME_3,
 			capacity: 3,
-			labels: labels,
+			labels,
 		});
 
 		done();
 	});
-	
+
 	it('organisation admin should get all oneoff timeslots', async () => {
 		const service1TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
 			serviceId: serviceId1,
