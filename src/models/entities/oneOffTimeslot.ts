@@ -83,7 +83,7 @@ export class OneOffTimeslot implements TimeslotWithCapacity {
 		return this._serviceProviderId;
 	}
 
-	@ManyToMany(() => Label, {cascade: true})
+	@ManyToMany(() => Label, { cascade: true })
 	@JoinTable({
 		name: 'oneofftimeslot_label',
 		joinColumn: { name: 'oneOffTimeslot_id' },

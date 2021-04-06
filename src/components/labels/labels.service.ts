@@ -19,7 +19,7 @@ export class LabelsService {
 			if (!labelFound) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`This label is not present: ${label}`);
 			}
-			labelsFound.push(labelFound)
+			labelsFound.push(labelFound);
 		});
 		return labelsFound;
 	}

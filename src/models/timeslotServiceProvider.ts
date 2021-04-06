@@ -56,7 +56,7 @@ export class TimeslotServiceProvider {
 		return this._isVisibleByUser;
 	}
 
-	constructor(serviceProvider: ServiceProvider, capacity: number) {
+	constructor(serviceProvider: ServiceProvider, capacity: number, labels?: Label[]) {
 		this._serviceProvider = serviceProvider;
 		this._capacity = capacity;
 		this._acceptedBookings = [];
@@ -64,6 +64,7 @@ export class TimeslotServiceProvider {
 		this._isOverlapped = false;
 		this._isUnavailable = false;
 		this._isVisibleByUser = true;
+		this._labels = labels;
 	}
 
 	public getAvailabilityCount(maxAvailability?: number): number {
