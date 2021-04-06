@@ -6,6 +6,7 @@ import {
 import { UserGroupParser } from '../../../infrastructure/auth/userGroupParser';
 import { MolServiceAdminUserContract, MolServiceAdminUserWithGroups } from './molUsers.apicontract';
 import { trimFields } from '../../../tools/object';
+import { groupByKeyLastValue } from '../../../tools/collections';
 
 export class MolUsersMapper {
 	public static mapServiceProviderGroup(
@@ -23,14 +24,21 @@ export class MolUsersMapper {
 
 	public static mapServicesAdminsGroups(
 		molAdminUserContracts: MolServiceAdminUserContract[],
+		services: Service[],
 		orga: Organisation,
 	): MolServiceAdminUserWithGroups[] {
+		const serviceLookup = groupByKeyLastValue(services, (s) => s.name.toLowerCase());
+
 		return molAdminUserContracts.map((admin) => {
-			const groups = admin.serviceNames?.map((serviceName) =>
-				UserGroupParser.generateServiceAdminUserGroup(
-					Service.create(serviceName, orga).serviceAdminGroupMap.serviceOrganisationRef,
-				),
-			);
+			const groups = admin.serviceNames?.map((serviceName) => {
+				const service = serviceLookup.get(serviceName.toLowerCase());
+				if (!service) {
+					throw new Error(`Service not created yet: ${serviceName}`);
+				}
+				return UserGroupParser.generateServiceAdminUserGroup(
+					service.serviceAdminGroupMap.serviceOrganisationRef,
+				);
+			});
 
 			return trimFields({ ...admin, groups });
 		});
