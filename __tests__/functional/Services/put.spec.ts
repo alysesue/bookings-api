@@ -51,7 +51,7 @@ describe('Tests endpoint and populate data', () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
 			body: { name: SERVICE_NAME, labels: [{ label: 'name' }] },
 		});
-		
+
 		expect(response.statusCode).toEqual(400);
 		expect(response.body.errorMessage).toStrictEqual('Label(s) are already present');
 	});
