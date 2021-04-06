@@ -1,3 +1,5 @@
+import { LabelRequestModel, LabelResponseModel } from '../labels/label.apicontract';
+
 export class ServiceResponse {
 	/**
 	 * @isInt
@@ -6,6 +8,7 @@ export class ServiceResponse {
 	public name: string;
 	public isStandAlone: boolean;
 	public isSpAutoAssigned: boolean;
+	public labels: LabelResponseModel[];
 }
 
 export class ServiceRequest {
@@ -15,4 +18,5 @@ export class ServiceRequest {
 	 * @isInt
 	 */
 	public organisationId?: number;
+	public labels?: LabelRequestModel[];
 }

@@ -7,6 +7,7 @@ import {
 	OrganisationAdminGroupMap,
 	ScheduleForm,
 	Service,
+	ServiceAdminGroupMap,
 	TimeOfDay,
 	TimeslotItem,
 	TimeslotsSchedule,
@@ -100,6 +101,7 @@ const organisation = new Organisation();
 organisation.id = 1;
 organisation._organisationAdminGroupMap = { organisationRef: 'orga', organisationId: 1 } as OrganisationAdminGroupMap;
 
+// tslint:disable-next-line: no-big-function
 describe('Services service tests', () => {
 	it('should create admin service and service', async () => {
 		const admin = {
@@ -128,6 +130,40 @@ describe('Services service tests', () => {
 		expect(ServicesRepositoryMock.saveMany).toBeCalled();
 	});
 
+	it('should create admin service and service (without replacing service reference)', async () => {
+		const admin = {
+			name: 'name',
+			email: 'email',
+			phoneNumber: 'phoneNumber',
+			serviceNames: ['service1'],
+		} as MolServiceAdminUserContract;
+
+		const molUser = {
+			...admin,
+			sub: 'd080f6ed-3b47-478a-a6c6-dfb5608a198d',
+			username: 'username',
+			groups: ['bookingsg:svc-admin-service1:orga'],
+		} as IMolCognitoUserResponse;
+
+		const service = new Service();
+		service.id = 1;
+		service.name = 'service1';
+		service.serviceAdminGroupMap = ServiceAdminGroupMap.create('service-abc:orga');
+
+		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: [molUser] }));
+		UserContextMock.getFirstAuthorisedOrganisation.mockReturnValue(Promise.resolve(organisation));
+
+		ServicesRepositoryMock.getServicesByName.mockReturnValue(Promise.resolve([service]));
+		ServicesRepositoryMock.saveMany.mockReturnValue(Promise.resolve([]));
+
+		await Container.get(ServicesService).createServicesAdmins([admin], 'token');
+
+		expect(service.serviceAdminGroupMap.serviceOrganisationRef).toEqual('service-abc:orga');
+		expect(MolUsersServiceMock.molUpsertUser).toBeCalled();
+		expect(ServicesRepositoryMock.getServicesByName).toBeCalled();
+		expect(ServicesRepositoryMock.saveMany).toBeCalled();
+	});
+
 	it('should save service', async () => {
 		const request = new ServiceRequest();
 		request.name = 'John';
@@ -135,6 +171,7 @@ describe('Services service tests', () => {
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
 			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
 		);
+		request.labels = [{ label: 'label' }];
 
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
@@ -152,6 +189,7 @@ describe('Services service tests', () => {
 
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].isSpAutoAssigned).toBe(true);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].labels).toHaveLength(1);
 	});
 
 	it('should update service', async () => {
@@ -167,6 +205,7 @@ describe('Services service tests', () => {
 		await Container.get(ServicesService).updateService(1, request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].isSpAutoAssigned).toBe(true);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].labels).toHaveLength(0);
 	});
 
 	it('should throw if service not found', async () => {

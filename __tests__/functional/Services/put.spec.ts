@@ -33,10 +33,10 @@ describe('Tests endpoint and populate data', () => {
 		expect(response3.statusCode).toEqual(200);
 		expect(response3.body.data[0].name).toEqual(SERVICE_NAME_UPDATED);
 	});
-	
+
 	it("should update service's SP autoAssigned flag", async () => {
 		const service = await populateService({ nameService: SERVICE_NAME });
-	
+
 		const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
 			body: { name: SERVICE_NAME_UPDATED, isSpAutoAssigned: true },
 		});

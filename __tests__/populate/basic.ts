@@ -19,7 +19,7 @@ export const setServiceProviderAutoAssigned = async ({
 	isSpAutoAssigned = false,
 }): Promise<ServiceResponse> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceId}`, {
-		body: { name: nameService, isSpAutoAssigned: isSpAutoAssigned },
+		body: { name: nameService, isSpAutoAssigned },
 	});
 	return response.body.data;
 };
