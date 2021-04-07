@@ -36,18 +36,12 @@ export class LifeSGMQSerice {
 					};
 				},
 			});
-			connection.open_sender({
-				target: {
-					address: LIFESG_QUEUE,
-				},
-			});
+			connection.open_sender(LIFESG_QUEUE);
 			const amqp_message = container.message;
-			container.once('sendable', (context) => {
+			container.once('sender_open', (context) => {
 				const stringifiedPayload = JSON.stringify({ action, appointment });
-				const messageBody = amqp_message.data_section(Buffer.from(stringifiedPayload, 'utf8'));
-				context.sender.send({ body: messageBody });
-			});
-			container.on('message', (context) => {
+				const body = amqp_message.data_section(Buffer.from(stringifiedPayload, 'utf8'));
+				context.sender.send({ body });
 				context.connection.close();
 			});
 		} catch (error) {

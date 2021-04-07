@@ -18,9 +18,13 @@ export class LifeSGMapper {
 					agency: AppointmentAgency.HPB,
 					agencyTransactionId: booking.id.toString(),
 					uinfin: booking.citizenUinFin,
-					date: LocalDate.parse(booking.startDateTime.toLocaleDateString()),
-					startTime: LocalTime.parse(booking.startDateTime.toLocaleTimeString()),
-					endTime: LocalTime.parse(booking.endDateTime.toLocaleTimeString()),
+					date: LocalDate.of(
+						booking.startDateTime.getFullYear(),
+						booking.startDateTime.getMonth(),
+						booking.startDateTime.getDate(),
+					),
+					startTime: LocalTime.of(booking.startDateTime.getHours(), booking.startDateTime.getMinutes()),
+					endTime: LocalTime.of(booking.endDateTime.getHours(), booking.endDateTime.getMinutes()),
 					title: booking.service.name,
 					venueName: booking.location,
 					venueDescription: booking.description,
@@ -34,7 +38,7 @@ export class LifeSGMapper {
 					isConfidential: true,
 					isVirtual: false,
 					virtualAppointmentUrl: booking.videoConferenceUrl,
-					agencyLastUpdatedAt: LocalDateTime.parse(new Date().toISOString()),
+					agencyLastUpdatedAt: LocalDateTime.now(),
 				});
 			case ExternalAgencyAppointmentJobAction.CANCEL:
 				return new CancelAppointmentRequestApiDomain({
