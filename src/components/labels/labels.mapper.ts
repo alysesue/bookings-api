@@ -1,8 +1,9 @@
 import { LabelRequestModel, LabelResponseModel } from './label.apicontract';
 import { Label } from '../../models/entities';
-import { Inject } from 'typescript-ioc';
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { IdHasher } from '../../infrastructure/idHasher';
 
+@InRequestScope
 export class LabelsMapper {
 	@Inject
 	private idHasher: IdHasher;

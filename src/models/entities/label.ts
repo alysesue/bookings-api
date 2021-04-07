@@ -3,7 +3,6 @@ import { IService } from '../interfaces';
 
 @Entity()
 @Unique('ServiceLabels', ['_labelText', '_serviceId'])
-@Index(['_serviceId', '_labelText'], { unique: true })
 export class Label {
 	public constructor() {}
 

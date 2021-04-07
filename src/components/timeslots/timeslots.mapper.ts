@@ -9,8 +9,9 @@ import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvi
 import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
 import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
 import { LabelsMapper } from '../../components/labels/labels.mapper';
-import { Inject } from 'typescript-ioc';
+import { Inject, InRequestScope } from 'typescript-ioc';
 
+@InRequestScope
 export class TimeslotsMapper {
 	@Inject
 	public static labelsMapper: LabelsMapper;
@@ -19,7 +20,7 @@ export class TimeslotsMapper {
 		entries: AvailableTimeslotProviders[],
 		options: { skipUnavailable?: boolean },
 	): AvailabilityEntryResponse[] {
-		return entries.map((e) => this.mapAvailabilityItem(e, options)).filter((e) => !!e);
+		return entries.map((e) => TimeslotsMapper.mapAvailabilityItem(e, options)).filter((e) => !!e);
 	}
 
 	private static mapAvailabilityItem(
