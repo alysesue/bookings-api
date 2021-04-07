@@ -116,11 +116,18 @@ describe('Timeslots Controller', () => {
 		const controller = Container.get(TimeslotsController);
 		const startTime = DateHelper.addMinutes(new Date(), -30);
 		const endTime = DateHelper.addMinutes(new Date(), 30);
-		const result = await controller.getTimeslots(startTime, endTime, 1, false);
+		const result = await controller.getTimeslots(startTime, endTime, 1, false, [2], 'Chinese');
 
 		expect(result).toBeDefined();
 		expect(result.data.length).toBe(1);
-		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, [2]);
+		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(
+			startTime,
+			endTime,
+			1,
+			false,
+			[2],
+			'Chinese',
+		);
 	});
 
 	it('should filter out invalid id - as a service provider', async () => {
@@ -141,10 +148,17 @@ describe('Timeslots Controller', () => {
 		const controller = Container.get(TimeslotsController);
 		const startTime = DateHelper.addMinutes(new Date(), -30);
 		const endTime = DateHelper.addMinutes(new Date(), 30);
-		const result = await controller.getTimeslots(startTime, endTime, 1, false, [100]);
+		const result = await controller.getTimeslots(startTime, endTime, 1, false, [100], 'Chinese');
 
 		expect(result).toBeDefined();
 		expect(result.data.length).toBe(1);
-		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, [0]);
+		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(
+			startTime,
+			endTime,
+			1,
+			false,
+			[0],
+			'Chinese',
+		);
 	});
 });

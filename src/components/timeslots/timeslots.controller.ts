@@ -26,6 +26,7 @@ export class TimeslotsController extends Controller {
 	 * @param @isInt serviceId The available service to be queried.
 	 * @param @isInt serviceProviderId (Optional) Filters timeslots for a specific service provider.
 	 * @param exactTimeslot (Optional) to filter timeslots for the given dates.
+	 * @param label (Optional) to filter by label
 	 */
 	@Get('availability')
 	@Security('service')
@@ -73,6 +74,7 @@ export class TimeslotsController extends Controller {
 	 * @param serviceId
 	 * @param includeBookings (Optional)
 	 * @param serviceProviderIds
+	 * @param label (Optional) to filter by label
 	 */
 	@Get('')
 	@Security('service')
