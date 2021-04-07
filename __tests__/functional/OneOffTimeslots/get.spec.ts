@@ -40,7 +40,7 @@ describe('Timeslots functional tests', () => {
 	let serviceId3: string;
 
 	afterAll(async (done) => {
-		await pgClient.cleanAllTables();
+		// await pgClient.cleanAllTables();
 		await pgClient.close();
 		done();
 	});
@@ -113,6 +113,28 @@ describe('Timeslots functional tests', () => {
 		});
 
 		done();
+	});
+
+	it('one off timeslots should query by label and return empty when not found', async () => {
+		const service1TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
+			serviceId: serviceId1,
+		}).get(
+			`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}&label=Enginsh`,
+		);
+
+		expect(service1TimeslotsResponse.statusCode).toEqual(200);
+		expect(service1TimeslotsResponse.body.data).toEqual([]);
+	});
+
+	it('one off timeslots should query by label', async () => {
+		const service1TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
+			serviceId: serviceId1,
+		}).get(
+			`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}&label=Chinese`,
+		);
+
+		expect(service1TimeslotsResponse.statusCode).toEqual(200);
+		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].labels[0].label).toBe('Chinese');
 	});
 
 	it('one off timeslots should retrieve labels if applicable', async () => {

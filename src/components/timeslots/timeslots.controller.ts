@@ -36,6 +36,7 @@ export class TimeslotsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 		@Query() serviceProviderId?: number,
 		@Query() exactTimeslot: boolean = false,
+		@Query() label?: string,
 	): Promise<ApiData<AvailabilityEntryResponse[]>> {
 		let timeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
@@ -43,6 +44,7 @@ export class TimeslotsController extends Controller {
 			serviceId,
 			exactTimeslot,
 			serviceProviderId ? [serviceProviderId] : undefined,
+			label,
 		);
 
 		if (exactTimeslot) {
@@ -82,6 +84,7 @@ export class TimeslotsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 		@Query() includeBookings: boolean = false,
 		@Query() serviceProviderIds?: number[],
+		@Query() label?: string,
 	): Promise<ApiData<TimeslotEntryResponse[]>> {
 		let spIdsFilter = serviceProviderIds || [];
 		const spGroup = await this.getServiceProviderAuthGroup();
@@ -100,6 +103,7 @@ export class TimeslotsController extends Controller {
 			serviceId,
 			includeBookings,
 			spIdsFilter,
+			label,
 		);
 
 		const userContextSnapshot = await this.userContext.getSnapshot();
