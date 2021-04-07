@@ -13,6 +13,17 @@ export const populateService = async ({
 	return response.body.data;
 };
 
+export const setServiceProviderAutoAssigned = async ({
+	nameService = 'admin',
+	serviceId,
+	isSpAutoAssigned = false,
+}): Promise<ServiceResponse> => {
+	const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceId}`, {
+		body: { name: nameService, isSpAutoAssigned },
+	});
+	return response.body.data;
+};
+
 /**
  * @deprecated Please use populateUserServiceProvider
  *

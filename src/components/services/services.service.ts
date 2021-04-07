@@ -102,9 +102,10 @@ export class ServicesService {
 			? await this.organisationsRepository.getOrganisationById(request.organisationId)
 			: await this.userContext.verifyAndGetFirstAuthorisedOrganisation('User not authorized to add services.');
 
+		const isSpAutoAssigned = request.isSpAutoAssigned;
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
 
-		const service = Service.create(request.name, orga, transformedLabels);
+		const service = Service.create(request.name, orga, isSpAutoAssigned, transformedLabels);
 		await this.verifyActionPermission(service, CrudAction.Create);
 		return this.servicesRepository.save(service);
 	}
@@ -114,6 +115,7 @@ export class ServicesService {
 			const service = await this.servicesRepository.getService({ id });
 			if (!service) throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 			service.name = request.name;
+			service.isSpAutoAssigned = request.isSpAutoAssigned;
 			service.labels = this.labelsMapper.mapToLabels(request.labels);
 			await this.verifyActionPermission(service, CrudAction.Update);
 			return await this.servicesRepository.save(service);
