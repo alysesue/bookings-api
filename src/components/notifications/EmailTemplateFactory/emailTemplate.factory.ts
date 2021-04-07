@@ -1,39 +1,18 @@
-import { emailMapper } from "../notifications.mapper";
+import {CreateEmailRequestApiDomain} from "mol-lib-api-contract/notification/mail/create-email/create-email-api-domain";
+import {emailMapper} from "../notifications.mapper";
 
-export abstract class EmailTemplateFactory {
-	public abstract CitizenBookingCreatedEmail(): CitizenBookingCreatedTemplateBase;
-	public abstract CitizenBookingUpdatedEmail(): CitizenBookingUpdatedTemplateBase;
-	public abstract CitizenBookingCancelledBySPEmail(): CitizenBookingCancelledBySPTemplateBase;
-	public abstract CitizenBookingCancelledByCitizenEmail(): CitizenBookingCancelledByCitizenTemplateBase;
-	public abstract ServiceProviderBookingCreatedEmail(): ServiceProviderBookingCreatedTemplateBase;
-	public abstract ServiceProviderBookingUpdatedEmail(): ServiceProviderBookingUpdatedTemplateBase;
-	public abstract ServiceProviderBookingCancelledBySPEmail(): ServiceProviderBookingCancelledBySPTemplateBase;
-	public abstract ServiceProviderBookingCancelledByCitizenEmail(): ServiceProviderBookingCancelledByCitizenTemplateBase;
-}
-
-export abstract class EmailTemplateBase {
-	public to: string;
+export abstract class EmailTemplateBase implements CreateEmailRequestApiDomain{
+	public to: string[];
 	public subject: string;
 	public html: string;
 }
 
-export abstract class CitizenEmailTemplateBase extends EmailTemplateBase {
-	to: string;
-	subject: string;
-	html: string;
-}
-
-export abstract class ServiceProviderEmailTemplateBase implements EmailTemplateBase {
-	to: string;
-	subject: string;
-	html: string;
-}
-
-export class CitizenBookingCreatedTemplateBase extends CitizenEmailTemplateBase {
-	public CitizenBookingCreatedEmail(data) {
-		const {email, serviceName, serviceProviderText, day, time, locationText} = emailMapper(data);
+export class CitizenBookingCreatedTemplateBase extends EmailTemplateBase {
+	public static CitizenBookingCreatedEmail(data) {
+		const {citizenEmail, serviceName, serviceProviderText, status, day, time, locationText} = emailMapper(data);
+		console.log('inside CitizenBookingCreatedEmail');
 		return {
-			to: [email],
+			to: [citizenEmail],
 			subject: `BookingSG confirmation: ${serviceName}${serviceProviderText}`,
 			html: `<pre>
 				Your booking request has been received.
@@ -50,11 +29,11 @@ export class CitizenBookingCreatedTemplateBase extends CitizenEmailTemplateBase 
 	}
 }
 
-export class CitizenBookingUpdatedTemplateBase extends CitizenEmailTemplateBase {
-	public CitizenBookingUpdatedEmail(data) {
-		const {email, serviceName, serviceProviderText, day, time, locationText} = emailMapper(data);
+export class CitizenBookingUpdatedTemplateBase extends EmailTemplateBase {
+	public static CitizenBookingUpdatedEmail(data) {
+		const {citizenEmail, serviceName, serviceProviderText, status, day, time, locationText} = emailMapper(data);
 		return {
-			to: [email],
+			to: [citizenEmail],
 			subject: `BookingSG confirmation: ${serviceName}${serviceProviderText}`,
 			html: `<pre>
 				There has been an update to your booking confirmation.
@@ -71,11 +50,11 @@ export class CitizenBookingUpdatedTemplateBase extends CitizenEmailTemplateBase 
 	}
 }
 
-export class CitizenBookingCancelledBySPTemplateBase extends CitizenEmailTemplateBase {
-	public CitizenBookingCancelledBySPEmail(data) {
-		const {email, serviceName, serviceProviderText, day, time, locationText} = emailMapper(data);
+export class CitizenBookingCancelledBySPTemplateBase extends EmailTemplateBase {
+	public static CitizenBookingCancelledBySPEmail(data) {
+		const {citizenEmail, serviceName, serviceProviderText, status, day, time, locationText} = emailMapper(data);
 		return {
-			to: [email],
+			to: [citizenEmail],
 			subject: `BookingSG confirmation: ${serviceName}${serviceProviderText}`,
 			html: `<pre>
 				The following booking has been cancelled by the other party.
@@ -91,11 +70,11 @@ export class CitizenBookingCancelledBySPTemplateBase extends CitizenEmailTemplat
 	}
 }
 
-export class CitizenBookingCancelledByCitizenTemplateBase extends CitizenEmailTemplateBase {
-	public CitizenBookingCancelledByCitizenEmail(data) {
-		const {email, serviceName, serviceProviderText, day, time, locationText} = emailMapper(data);
+export class CitizenBookingCancelledByCitizenTemplateBase extends EmailTemplateBase {
+	public static CitizenBookingCancelledByCitizenEmail(data) {
+		const {citizenEmail, serviceName, serviceProviderText, status, day, time, locationText} = emailMapper(data);
 		return {
-			to: [email],
+			to: [citizenEmail],
 			subject: `BookingSG confirmation: ${serviceName}${serviceProviderText}`,
 			html: `<pre>
 				You have cancelled the following booking.
@@ -111,11 +90,11 @@ export class CitizenBookingCancelledByCitizenTemplateBase extends CitizenEmailTe
 	}
 }
 
-export class ServiceProviderBookingCreatedTemplateBase extends ServiceProviderEmailTemplateBase {
-	public ServiceProviderBookingCreatedEmail(data) {
-		const {email, serviceName, serviceProviderText, day, time, locationText} = emailMapper(data);
+export class ServiceProviderBookingCreatedTemplateBase extends EmailTemplateBase {
+	public static ServiceProviderBookingCreatedEmail(data) {
+		const {citizenEmail, serviceName, serviceProviderText, status, day, time, locationText} = emailMapper(data);
 		return {
-			to: [email],
+			to: [citizenEmail],
 			subject: `Booking request received`,
 			html: `<pre>
 				You have received a new booking request.
@@ -133,11 +112,11 @@ export class ServiceProviderBookingCreatedTemplateBase extends ServiceProviderEm
 	}
 }
 
-export class ServiceProviderBookingUpdatedTemplateBase extends ServiceProviderEmailTemplateBase {
-	public ServiceProviderBookingUpdatedEmail(data) {
-		const {email, serviceName, serviceProviderText, day, time, locationText} = emailMapper(data);
+export class ServiceProviderBookingUpdatedTemplateBase extends EmailTemplateBase {
+	public static ServiceProviderBookingUpdatedEmail(data) {
+		const {citizenEmail, serviceName, serviceProviderText, status, day, time, locationText} = emailMapper(data);
 		return {
-			to: [email],
+			to: [citizenEmail],
 			subject: `Booking updated`,
 			html: `<pre>
 				Your have updated a booking.
@@ -155,11 +134,11 @@ export class ServiceProviderBookingUpdatedTemplateBase extends ServiceProviderEm
 	}
 }
 
-export class ServiceProviderBookingCancelledBySPTemplateBase extends ServiceProviderEmailTemplateBase {
-	public ServiceProviderBookingCancelledBySPEmail(data) {
-		const {email, serviceName, serviceProviderText, day, time, locationText} = emailMapper(data);
+export class ServiceProviderBookingCancelledBySPTemplateBase extends EmailTemplateBase {
+	public static ServiceProviderBookingCancelledBySPEmail(data) {
+		const {citizenEmail, serviceName, serviceProviderText, status, day, time, locationText} = emailMapper(data);
 		return {
-			to: [email],
+			to: [citizenEmail],
 			subject: `Booking cancelled`,
 			html: `<pre>
 				You have cancelled the following booking.
@@ -175,14 +154,14 @@ export class ServiceProviderBookingCancelledBySPTemplateBase extends ServiceProv
 	}
 }
 
-export class ServiceProviderBookingCancelledByCitizenTemplateBase extends ServiceProviderEmailTemplateBase {
-	public ServiceProviderBookingCancelledByCitizenEmail(data) {
-		const {email, serviceName, serviceProviderText, day, time, locationText} = emailMapper(data);
+export class ServiceProviderBookingCancelledByCitizenTemplateBase extends EmailTemplateBase {
+	public static ServiceProviderBookingCancelledByCitizenEmail(data) {
+		const {citizenEmail, serviceName, serviceProviderText, status, day, time, locationText} = emailMapper(data);
 		return {
-			to: [email],
+			to: [citizenEmail],
 			subject: `Booking cancelled`,
 			html: `<pre>
-				The following bookinghas been cancelled by the other party.
+				The following booking has been cancelled by the other party.
 				<br />
 				Booking for: ${serviceName}${serviceProviderText}.
 				<br />

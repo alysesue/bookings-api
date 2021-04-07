@@ -2,46 +2,57 @@ import { InRequestScope } from 'typescript-ioc';
 import { getConfig } from '../../config/app-config';
 import { post } from '../../tools/fetch';
 import { CreateEmailRequestApiDomain } from 'mol-lib-api-contract/notification/mail/create-email/create-email-api-domain';
-import { BookingStatus } from '../../models';
-import { DateHelper } from '../../infrastructure/dateHelper';
+import {
+	CitizenBookingCreatedTemplateBase,
+	CitizenBookingUpdatedTemplateBase,
+	CitizenBookingCancelledByCitizenTemplateBase,
+	ServiceProviderBookingCreatedTemplateBase,
+	ServiceProviderBookingUpdatedTemplateBase,
+	ServiceProviderBookingCancelledBySPTemplateBase,
+	CitizenBookingCancelledBySPTemplateBase,
+	ServiceProviderBookingCancelledByCitizenTemplateBase,
+} from './EmailTemplateFactory/emailTemplate.factory';
+import { BookingType } from '../../models/bookingType';
 
 @InRequestScope
 export class NotificationsService {
 	private config = getConfig();
-	public async sendEmail(body: CreateEmailRequestApiDomain): Promise<void> {
+	public async sendEmail(body1: CreateEmailRequestApiDomain, body2: CreateEmailRequestApiDomain): Promise<void> {
 		const path = `${this.config.molNotification.url}/email/api/v1/send`;
 		if (!this.config.isAutomatedTest) {
-			await post(path, body, { ['mol-auth-type']: 'SYSTEM' });
+			await post(path, body1, { ['mol-auth-type']: 'SYSTEM' });
+			await post(path, body2, { ['mol-auth-type']: 'SYSTEM' });
 		}
 	}
 
-	//data = subject.booking
-	public static templateEmailBooking(data): CreateEmailRequestApiDomain {
-		const status = BookingStatus[data._status];
-		const serviceName = data._service?._name || '';
-		const serviceProviderName = data._serviceProvider?._name;
-		const serviceProviderText = serviceProviderName ? ` - ${serviceProviderName}` : '';
-		const citizenEmail = data._citizenEmail;
-		const location = data._location;
-		const locationText = location ? `Location: <b>${location}</b>` : '';
-		const day = DateHelper.getDateFormat(data._startDateTime);
-		const time = `${DateHelper.getTime12hFormatString(data._startDateTime)} - ${DateHelper.getTime12hFormatString(
-			data._endDateTime,
-		)}`;
-		return {
-			to: [citizenEmail],
-			subject: `BookingSG confirmation: ${serviceName}${serviceProviderText}`,
-			html: `<pre>
-Your booking request has been received.
-<br />
-Booking for: ${serviceName}${serviceProviderText}.
-<br />
-Below is a confirmation of your booking details.
-Booking status: <b>${status}</b>
-Date: <b>${day}</b>
-Time: <b>${time}</b>
-${locationText}
-				</pre>`,
-		};
+	public createEmail(data): [CreateEmailRequestApiDomain, CreateEmailRequestApiDomain?] {
+		if (data._bookingType === BookingType.Created && data._userType._singPassUser)
+			return [
+				CitizenBookingCreatedTemplateBase.CitizenBookingCreatedEmail(data),
+				ServiceProviderBookingCreatedTemplateBase.ServiceProviderBookingCreatedEmail(data),
+			];
+		if (data._bookingType === BookingType.Updated && data._userType._singPassUser)
+			return [CitizenBookingUpdatedTemplateBase.CitizenBookingUpdatedEmail(data)];
+		// TODO: add another email - what email do SP get when updated by citizen?
+		if (data._bookingType === BookingType.CancelledOrRejected && data._userType._singPassUser)
+			return [
+				CitizenBookingCancelledByCitizenTemplateBase.CitizenBookingCancelledByCitizenEmail(data),
+				ServiceProviderBookingCancelledByCitizenTemplateBase.ServiceProviderBookingCancelledByCitizenEmail(
+					data,
+				),
+			];
+		if (data._bookingType === BookingType.Created && data._userType._adminUser)
+			return [ServiceProviderBookingCreatedTemplateBase.ServiceProviderBookingCreatedEmail(data)];
+		// TODO: add another email - what email do citizens get when SP creates a booking, what email does SP get when they create booking (if any)
+		if (data._bookingType === BookingType.Updated && data._userType._adminUser)
+			return [
+				ServiceProviderBookingUpdatedTemplateBase.ServiceProviderBookingUpdatedEmail(data),
+				CitizenBookingUpdatedTemplateBase.CitizenBookingUpdatedEmail(data),
+			];
+		if (data._bookingType === BookingType.CancelledOrRejected && data._userType._adminUser)
+			return [
+				ServiceProviderBookingCancelledBySPTemplateBase.ServiceProviderBookingCancelledBySPEmail(data),
+				CitizenBookingCancelledBySPTemplateBase.CitizenBookingCancelledBySPEmail(data),
+			];
 	}
 }
