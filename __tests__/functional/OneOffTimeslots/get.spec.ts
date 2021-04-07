@@ -40,7 +40,7 @@ describe('Timeslots functional tests', () => {
 	let serviceId3: string;
 
 	afterAll(async (done) => {
-		// await pgClient.cleanAllTables();
+		await pgClient.cleanAllTables();
 		await pgClient.close();
 		done();
 	});
