@@ -36,18 +36,20 @@ export class Label {
 
 	@ManyToOne('Service')
 	@JoinColumn({ name: '_serviceId' })
-	private _service: IService;
+	public service: IService;
+	// private _service: IService;
 
-	public get service() {
-		return this._service;
-	}
+	// public get service(): IService {
+	// 	return this._service;
+	// }
 
-	public set service(value: IService) {
-		this._service = value;
-	}
+	// public set service(value: IService) {
+	// 	this._service = value;
+	// }
 
 	@Column({ nullable: false })
 	private _serviceId: number;
+
 	public get serviceId(): number {
 		return this._serviceId;
 	}

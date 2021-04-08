@@ -35,7 +35,7 @@ export class LabelsRepository extends RepositoryBase<Label> {
 				.createQueryBuilder('label')
 				// .where(andWhere([serviceCondition, userCondition]), { serviceId, ...userParams })
 				.where(andWhere([serviceCondition]), { serviceId })
-				// .leftJoin('label._service', 'serviceLabel')
+				.leftJoin('label.service', 'serviceLabel')
 				.getMany()
 		);
 	}

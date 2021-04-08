@@ -1,6 +1,6 @@
 import { PgClient } from '../../utils/pgClient';
 
-import { populateOneOffTimeslot, populateUserServiceProvider } from '../../populate/basic';
+import { populateOneOffTimeslot, populateServiceLabel, populateUserServiceProvider } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import { LabelRequestModel } from '../../../src/components/labels/label.apicontract';
 
@@ -34,6 +34,12 @@ describe('Timeslots functional tests', () => {
 		});
 
 		serviceProvider1 = result1.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);
+
+		await populateServiceLabel({
+			serviceId: serviceProvider1.serviceId,
+			serviceName: NAME_SERVICE_1,
+			label: 'Chinese',
+		});
 
 		done();
 	});
