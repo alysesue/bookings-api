@@ -3,6 +3,8 @@ import { ServiceProvider, User } from '../../../models';
 import { TimeslotsMapper } from '../timeslots.mapper';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
+import { Container } from 'typescript-ioc';
+import { TimeslotsMapperMock } from '../__mocks__/timeslots.mapper';
 
 jest.mock('../../../models/uinFinConfiguration');
 
@@ -13,6 +15,7 @@ afterAll(() => {
 beforeEach(() => {
 	jest.resetAllMocks();
 	(UinFinConfiguration as jest.Mock).mockImplementation(() => new UinFinConfigurationMock());
+	Container.bind(TimeslotsMapper).to(TimeslotsMapperMock);
 });
 
 describe('Timeslots Mapper', () => {
