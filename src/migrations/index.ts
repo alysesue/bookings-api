@@ -7,5 +7,5 @@ export { OneOffTimeslots1614581500291 } from './1614581500291-OneOffTimeslots';
 export { VideoConferenceUrl1615172013022 } from './1615172013022-VideoConferenceUrl';
 export { SettingsMigrationFix1617063843109 } from './1617063843109-SettingsMigrationFix';
 export { Label1617033565406 } from './1617033565406-Label';
-export { OneOffTimeslotsAndLabel1617680083952 } from './1617680083952-OneOffTimeslotsAndLabel';
 export { ChangeLogUserIndex1615785814022 } from './1615785814022-ChangeLogUserIndex';
+export { OneOffTimeslotsAndLabel1617867320834 } from './1617867320834-OneOffTimeslotsAndLabel';

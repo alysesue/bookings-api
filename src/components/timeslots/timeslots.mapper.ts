@@ -14,16 +14,16 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 @InRequestScope
 export class TimeslotsMapper {
 	@Inject
-	public static labelsMapper: LabelsMapper;
+	public labelsMapper: LabelsMapper;
 
-	public static mapAvailabilityToResponse(
+	public mapAvailabilityToResponse(
 		entries: AvailableTimeslotProviders[],
 		options: { skipUnavailable?: boolean },
 	): AvailabilityEntryResponse[] {
-		return entries.map((e) => TimeslotsMapper.mapAvailabilityItem(e, options)).filter((e) => !!e);
+		return entries.map((e) => this.mapAvailabilityItem(e, options)).filter((e) => !!e);
 	}
 
-	private static mapAvailabilityItem(
+	private mapAvailabilityItem(
 		entry: AvailableTimeslotProviders,
 		options: { skipUnavailable?: boolean },
 	): AvailabilityEntryResponse | undefined {
@@ -39,15 +39,14 @@ export class TimeslotsMapper {
 		return response;
 	}
 
-	public static mapTimeslotEntry(
+	public mapTimeslotEntry(
 		entry: AvailableTimeslotProviders,
 		userContext: UserContextSnapshot,
 	): TimeslotEntryResponse {
-		const [
-			timeslotServiceProviders,
-			totalCapacity,
-			totalAssignedBookings,
-		] = TimeslotsMapper.mapTimeslotServiceProviders(Array.from(entry.getTimeslotServiceProviders()), userContext);
+		const [timeslotServiceProviders, totalCapacity, totalAssignedBookings] = this.mapTimeslotServiceProviders(
+			Array.from(entry.getTimeslotServiceProviders()),
+			userContext,
+		);
 		const response = new TimeslotEntryResponse();
 		response.startTime = new Date(entry.startTime);
 		response.endTime = new Date(entry.endTime);
@@ -59,7 +58,7 @@ export class TimeslotsMapper {
 		return response;
 	}
 
-	public static mapTimeslotServiceProviders(
+	public mapTimeslotServiceProviders(
 		entries: TimeslotServiceProviderResult[],
 		userContext: UserContextSnapshot,
 	): [TimeslotServiceProviderResponse[], number, number] {
@@ -75,7 +74,7 @@ export class TimeslotsMapper {
 		return [res, totalCapacity, totalAssignedBookings];
 	}
 
-	private static mapServiceProviderTimeslot(
+	private mapServiceProviderTimeslot(
 		entry: TimeslotServiceProviderResult,
 		userContext: UserContextSnapshot,
 	): TimeslotServiceProviderResponse {

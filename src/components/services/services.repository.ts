@@ -107,7 +107,12 @@ export class ServicesRepository extends RepositoryBase<Service> {
 	public async getAll(): Promise<Service[]> {
 		const query = await this.createSelectQuery([], {}, {});
 
-		return await query.getMany();
+		try {
+			return await query.getMany();
+		} catch (e) {
+			console.log('*** createSelectQuery');
+			throw e;
+		}
 	}
 
 	public async getService(options: {

@@ -5,19 +5,18 @@ import { ServiceProviderResponseModel } from '../../../src/components/servicePro
 import { LabelRequestModel } from '../../../src/components/labels/label.apicontract';
 
 describe('Timeslots functional tests', () => {
-  const pgClient = new PgClient();
+	const pgClient = new PgClient();
 	const NAME_SERVICE_1 = 'service1';
 	const SERVICE_PROVIDER_NAME_1 = 'SP1';
 	const START_TIME_1 = new Date('2021-03-05T01:00:00Z');
 	const END_TIME_1 = new Date('2021-03-05T02:00:00Z');
 
 	const labels: LabelRequestModel[] = [];
-	const label = new LabelRequestModel;
+	const label = new LabelRequestModel();
 	label.label = 'Chinese';
 	labels.push(label);
 
 	let serviceProvider1: ServiceProviderResponseModel;
-
 
 	afterAll(async (done) => {
 		await pgClient.cleanAllTables();
@@ -33,21 +32,21 @@ describe('Timeslots functional tests', () => {
 			serviceProviderName: SERVICE_PROVIDER_NAME_1,
 			agencyUserId: 'A001',
 		});
-    
+
 		serviceProvider1 = result1.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);
 
 		done();
-  });
-  
-  it('adding labels to populate one off timeslots', async () => {
-    const response = await populateOneOffTimeslot({
+	});
+
+	it('adding labels to populate one off timeslots', async () => {
+		const response = await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
 			capacity: 1,
-			labels: labels,
-    });
-    
-    expect(response.labels[0].label).toEqual(labels[0].label);
-  });
+			labels,
+		});
+
+		expect(response.labels[0].label).toEqual(labels[0].label);
+	});
 });

@@ -9,7 +9,7 @@ export class LabelsService {
 	private labelsRepository: LabelsRepository;
 
 	public async verifyLabels(labels: Label[], service: Service): Promise<Label[]> {
-		const labelsService = await this.labelsRepository.find(service.id);
+		const labelsService = await this.labelsRepository.find({ serviceId: service.id });
 		if (!labelsService) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service does not have any labels`);
 		}

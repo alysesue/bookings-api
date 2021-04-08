@@ -39,6 +39,7 @@
 		"schema:sync": "export LOCALHOST=true && ts-node ./node_modules/typeorm/cli schema:sync -f ./src/core/ormconfig.ts",
 		"migration:generate": "export LOCALHOST=true && ts-node ./node_modules/typeorm/cli migration:generate -f ./src/core/ormconfig.ts -n",
 		"migration": "ts-node node_modules/typeorm/cli migration:run -f ./src/core/ormconfig.ts",
+		"migration:drop": "export LOCALHOST=true && ts-node node_modules/typeorm/cli schema:drop -f ./src/core/ormconfig.ts",
 		"migration:local": "export LOCALHOST=true && npm run migration"
 	},
 	"husky": {

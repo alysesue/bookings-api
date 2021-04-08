@@ -4,7 +4,6 @@ import { TimeslotsMapper } from '../timeslots.mapper';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
 import { Container } from 'typescript-ioc';
-import { TimeslotsMapperMock } from '../__mocks__/timeslots.mapper';
 
 jest.mock('../../../models/uinFinConfiguration');
 
@@ -14,8 +13,6 @@ afterAll(() => {
 });
 beforeEach(() => {
 	jest.resetAllMocks();
-	(UinFinConfiguration as jest.Mock).mockImplementation(() => new UinFinConfigurationMock());
-	Container.bind(TimeslotsMapper).to(TimeslotsMapperMock);
 });
 
 describe('Timeslots Mapper', () => {
@@ -35,7 +32,8 @@ describe('Timeslots Mapper', () => {
 
 		entry.setRelatedServiceProviders(map);
 
-		const res = TimeslotsMapper.mapAvailabilityToResponse([entry], {})[0];
+		const mapper = Container.get(TimeslotsMapper);
+		const res = mapper.mapAvailabilityToResponse([entry], {})[0];
 
 		expect(res.availabilityCount).toBe(1);
 		expect(res.startTime.toISOString()).toBe('2020-09-26T00:00:00.000Z');
@@ -74,10 +72,12 @@ describe('Timeslots Mapper', () => {
 		});
 		UinFinConfigurationMock.canViewPlainUinFin.mockReturnValue(false);
 
-		const res = TimeslotsMapper.mapTimeslotServiceProviders(timeslotServiceProviders, {
+		const mapper = Container.get(TimeslotsMapper);
+		const res = mapper.mapTimeslotServiceProviders(timeslotServiceProviders, {
 			user: adminMock,
 			authGroups: [],
 		});
+
 		const [spResponse, totalCapacity, totalBooked] = res;
 		expect(spResponse.length).toBe(2);
 		expect(spResponse[0].capacity).toBe(1);

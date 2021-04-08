@@ -17,6 +17,9 @@ export class TimeslotsController extends Controller {
 	@Inject
 	private timeslotsService: TimeslotsService;
 
+	@Inject
+	private timeslotMapper: TimeslotsMapper;
+
 	/**
 	 * Retrieves available timeslots for a service in a defined datetime range [startDate, endDate].
 	 * Availability count returned will be at least 1.
@@ -52,7 +55,7 @@ export class TimeslotsController extends Controller {
 			timeslots = timeslots.some((timeslot) => timeslot.getAvailabilityCount() <= 0) ? [] : timeslots;
 		}
 
-		const result = TimeslotsMapper.mapAvailabilityToResponse(timeslots, { skipUnavailable: true });
+		const result = this.timeslotMapper.mapAvailabilityToResponse(timeslots, { skipUnavailable: true });
 
 		return ApiDataFactory.create(result);
 	}
@@ -109,6 +112,8 @@ export class TimeslotsController extends Controller {
 		);
 
 		const userContextSnapshot = await this.userContext.getSnapshot();
-		return ApiDataFactory.create(timeslots?.map((t) => TimeslotsMapper.mapTimeslotEntry(t, userContextSnapshot)));
+		return ApiDataFactory.create(
+			timeslots?.map((t) => this.timeslotMapper.mapTimeslotEntry(t, userContextSnapshot)),
+		);
 	}
 }
