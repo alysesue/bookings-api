@@ -54,4 +54,21 @@ describe('Tests endpoint and populate data', () => {
 
 		expect(response.body.errorMessage).toStrictEqual('Label(s) are already present');
 	});
+	
+	it("should update service's SP autoAssigned flag", async () => {
+		const service = await populateService({ nameService: SERVICE_NAME });
+
+		const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+			body: { name: SERVICE_NAME_UPDATED, isSpAutoAssigned: true },
+		});
+		expect(response.statusCode).toEqual(200);
+		expect(response.body.data.isSpAutoAssigned).toBe(true);
+
+		const response2 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+			body: { name: SERVICE_NAME_UPDATED, isSpAutoAssigned: false },
+		});
+		expect(response2.statusCode).toEqual(200);
+		expect(response2.body.data.isSpAutoAssigned).toBe(false);
+	});
+	
 });

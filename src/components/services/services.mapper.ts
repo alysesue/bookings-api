@@ -12,6 +12,7 @@ export class ServicesMapper {
 		serviceResponse.id = service.id;
 		serviceResponse.name = service.name;
 		serviceResponse.isStandAlone = service.isStandAlone;
+		serviceResponse.isSpAutoAssigned = service.isSpAutoAssigned;
 		serviceResponse.labels = this.labelsMapper.mapToLabelsResponse(service.labels);
 		return serviceResponse;
 	}
