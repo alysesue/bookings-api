@@ -1,7 +1,7 @@
 export class LabelRequestModel {
 	public label: string;
 	public id?: string;
-	public serviceId?: number;
+	public serviceId: number;
 }
 
 export class LabelResponseModel {

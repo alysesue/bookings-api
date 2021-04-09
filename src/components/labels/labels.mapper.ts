@@ -13,6 +13,7 @@ export class LabelsMapper {
 			const labelData = new LabelResponseModel();
 			labelData.id = this.idHasher.encode(i.id);
 			labelData.label = i.labelText;
+			labelData.serviceId = i.serviceId;
 			return labelData;
 		});
 	}
@@ -26,6 +27,7 @@ export class LabelsMapper {
 				entity.id = this.idHasher.decode(i.id);
 			}
 			entity.labelText = i.label;
+			entity.serviceId = i.serviceId;
 			return entity;
 		});
 	}
