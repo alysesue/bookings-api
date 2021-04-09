@@ -64,6 +64,7 @@ describe('Tests endpoint and populate data', () => {
 		const update1 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
 			body: { name: SERVICE_NAME, labels: [{ label: 'name' }] },
 		});
+
 		const update1Service = update1.body.data as ServiceResponse;
 		expect(update1.statusCode).toEqual(200);
 		expect(update1Service.labels.length).toEqual(1);
@@ -102,5 +103,21 @@ describe('Tests endpoint and populate data', () => {
 		expect(update2Service.labels.length).toEqual(1);
 		expect(update2Service.labels[0].id).toEqual(update1Service.labels[0].id);
 		expect(update2Service.labels[0].label).toEqual('labelA_');
+	});
+
+	it("should update service's SP autoAssigned flag", async () => {
+		const service = await populateService({ nameService: SERVICE_NAME });
+
+		const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+			body: { name: SERVICE_NAME_UPDATED, isSpAutoAssigned: true },
+		});
+		expect(response.statusCode).toEqual(200);
+		expect(response.body.data.isSpAutoAssigned).toBe(true);
+
+		const response2 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+			body: { name: SERVICE_NAME_UPDATED, isSpAutoAssigned: false },
+		});
+		expect(response2.statusCode).toEqual(200);
+		expect(response2.body.data.isSpAutoAssigned).toBe(false);
 	});
 });

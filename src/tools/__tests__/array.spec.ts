@@ -1,4 +1,4 @@
-import { pushIfNotPresent } from '../arrays';
+import { pushIfNotPresent, randomIndex } from '../arrays';
 
 describe('Test array tools', () => {
 	it('Should push if not present', () => {
@@ -11,5 +11,12 @@ describe('Test array tools', () => {
 		const res = ['test'];
 		pushIfNotPresent(res, 'test');
 		expect(res.length).toBe(1);
+	});
+
+	it('Should return random index', () => {
+		for (let i = 0; i < 50; i++) {
+			const random = randomIndex([1, 2, 3]);
+			expect(random === 1 || random === 2 || random === 0).toBe(true);
+		}
 	});
 });

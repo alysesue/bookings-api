@@ -111,11 +111,12 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._timeslotsSchedule;
 	}
 
-	public static create(name: string, orga: Organisation, labels?: Label[]) {
+	public static create(name: string, orga: Organisation, isSpAutoAssigned = false, labels: Label[] = []) {
 		const service = new Service();
 		service._name = name.trim();
 		service._organisation = orga;
 		service._organisationId = orga.id;
+		service._isSpAutoAssigned = isSpAutoAssigned;
 		service._serviceAdminGroupMap = ServiceAdminGroupMap.create(
 			ServiceAdminGroupMap.createServiceOrganisationRef(
 				service.getServiceRef(),
@@ -162,6 +163,16 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		this._isStandAlone = isOnHold;
 	}
 
+	@Column({ nullable: false, default: false })
+	private _isSpAutoAssigned: boolean;
+
+	public get isSpAutoAssigned(): boolean {
+		return this._isSpAutoAssigned;
+	}
+
+	public set isSpAutoAssigned(value: boolean) {
+		this._isSpAutoAssigned = value;
+	}
 	@OneToMany(() => Label, (label) => label.service, { cascade: true })
 	// @OneToMany(() => Label, 'services', { cascade: true, lazy: true })
 	public labels: Label[];

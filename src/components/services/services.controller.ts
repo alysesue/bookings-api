@@ -20,6 +20,7 @@ import { ServicesMapper } from './services.mapper';
 export class ServicesController extends Controller {
 	@Inject
 	private servicesService: ServicesService;
+
 	@Inject
 	private serviceMapper: ServicesMapper;
 

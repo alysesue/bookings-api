@@ -5,7 +5,12 @@ import {
 	CitizenRequestEndpointSG,
 	ServiceAdminRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
-import { populateOutOfSlotBooking, populateUserServiceProvider, populateWeeklyTimesheet } from '../../populate/basic';
+import {
+	populateOutOfSlotBooking,
+	populateUserServiceProvider,
+	populateWeeklyTimesheet,
+	setServiceProviderAutoAssigned,
+} from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import * as request from 'request';
 import { BookingStatus } from '../../../src/models';
@@ -97,6 +102,24 @@ describe('Bookings functional tests', () => {
 				startDateTime,
 				endDateTime,
 				serviceProviderId: serviceProviderId || undefined,
+			},
+		});
+	};
+
+	const postCitizenInSlotBookingWithoutServiceProviderId = async (): Promise<request.Response> => {
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+
+		const endpoint = CitizenRequestEndpointSG.create({
+			citizenUinFin,
+			serviceId,
+		});
+		return await endpoint.post('/bookings', {
+			body: {
+				startDateTime,
+				endDateTime,
+				citizenName,
+				citizenEmail,
 			},
 		});
 	};
@@ -217,6 +240,21 @@ describe('Bookings functional tests', () => {
 		expect(response.statusCode).toBe(201);
 		expect(response.body).toBeDefined();
 		expect(response.body.data.status).toBe(BookingStatus.OnHold);
+	});
+
+	it('[Auto Assign] service provider should be auto assigned if spAutoAssigned flag is true', async () => {
+		const service = await setServiceProviderAutoAssigned({
+			nameService: NAME_SERVICE_1,
+			serviceId,
+			isSpAutoAssigned: true,
+		});
+		expect(service.isSpAutoAssigned).toBe(true);
+
+		const response = await postCitizenInSlotBookingWithoutServiceProviderId();
+		expect(response.statusCode).toBe(201);
+		expect(response.body.data.id).toBeGreaterThan(0);
+		expect(response.body.data.serviceProviderAgencyUserId).toBe('A001');
+		expect(response.body.data.serviceId).toBe(serviceId);
 	});
 
 	it('admin should create out of slot booking and citizen cancels a booking', async () => {
