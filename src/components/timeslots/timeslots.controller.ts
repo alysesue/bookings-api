@@ -46,7 +46,7 @@ export class TimeslotsController extends Controller {
 		@Query() exactTimeslot: boolean = false,
 		@Query() labelIds?: string[],
 	): Promise<ApiData<AvailabilityEntryResponse[]>> {
-		const labelIdsNumber = labelIds ? labelIds.map((id) => this.idHasher.decode(id)) : [];
+		const labelIdsNumber = labelIds && labelIds.length > 0 ? labelIds.map((id) => this.idHasher.decode(id)) : [];
 
 		let timeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
@@ -97,7 +97,7 @@ export class TimeslotsController extends Controller {
 		@Query() serviceProviderIds?: number[],
 		@Query() labelIds?: string[],
 	): Promise<ApiData<TimeslotEntryResponse[]>> {
-		const labelIdsNumber = labelIds ? labelIds.map((id) => this.idHasher.decode(id)) : [];
+		const labelIdsNumber = labelIds && labelIds.length > 0 ? labelIds.map((id) => this.idHasher.decode(id)) : [];
 		let spIdsFilter = serviceProviderIds || [];
 		const spGroup = await this.getServiceProviderAuthGroup();
 		if (spGroup) {
