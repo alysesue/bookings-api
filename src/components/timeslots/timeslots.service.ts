@@ -362,6 +362,7 @@ export class TimeslotsService {
 		const aggregator = TimeslotAggregator.createCustom<ServiceProvider, AggregatedEntryId<ServiceProvider>>(
 			AggregatedEntryId,
 		);
+		const hasLabelFilter = labelIds && labelIds.length > 0;
 
 		const service = await this.servicesRepository.getServiceWithTimeslotsSchedule(serviceId);
 		if (!service) {
@@ -371,7 +372,7 @@ export class TimeslotsService {
 		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({
 			ids: serviceProviderIds,
 			serviceId,
-			includeTimeslotsSchedule: true,
+			includeTimeslotsSchedule: !hasLabelFilter,
 			timeslotsScheduleOptions: this.createTimeslotScheduleOptions(minStartTime, maxEndTime),
 			skipAuthorisation: true, // loads all SPs regardless of user role
 		});
@@ -387,12 +388,15 @@ export class TimeslotsService {
 
 		const oneOffTimeslotsLookup = groupByKey(oneOffTimeslots, (e) => e.serviceProviderId);
 
-		const validServiceTimeslots = Array.from(
-			service.timeslotsSchedule?.generateValidTimeslots({
-				startDatetime: minStartTime,
-				endDatetime: maxEndTime,
-			}) || [],
-		);
+		let validServiceTimeslots = [];
+		if (!hasLabelFilter) {
+			validServiceTimeslots = Array.from(
+				service.timeslotsSchedule?.generateValidTimeslots({
+					startDatetime: minStartTime,
+					endDatetime: maxEndTime,
+				}) || [],
+			);
+		}
 
 		for (const provider of serviceProviders) {
 			const oneOffTimeslotsSP = oneOffTimeslotsLookup.get(provider.id);

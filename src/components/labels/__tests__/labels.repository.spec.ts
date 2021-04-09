@@ -4,6 +4,10 @@ import { TransactionManager } from '../../../core/transactionManager';
 import { LabelsRepository } from '../labels.repository';
 import { TransactionManagerMock } from '../../oneOffTimeslots/__tests__/oneOffTimeslots.repository.spec';
 import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
+import { ServicesQueryAuthVisitor } from '../../../components/services/services.auth';
+import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
+
+jest.mock('../../../components/services/services.auth');
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -13,6 +17,10 @@ afterAll(() => {
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
 });
+
+const QueryAuthVisitorMock = {
+	createUserVisibilityCondition: jest.fn<Promise<UserConditionParams>, any>(),
+};
 
 describe('labels/labels.repository', () => {
 	const label1: Label = new Label();
@@ -25,6 +33,14 @@ describe('labels/labels.repository', () => {
 		{ ...label1, id: 1 },
 		{ ...label2, id: 2 },
 	];
+
+	beforeEach(() => {
+		(ServicesQueryAuthVisitor as jest.Mock).mockImplementation(() => QueryAuthVisitorMock);
+		QueryAuthVisitorMock.createUserVisibilityCondition.mockImplementation(() =>
+			Promise.resolve({ userCondition: '', userParams: {} }),
+		);
+	});
+
 	it('should save a label', async () => {
 		const repository = Container.get(LabelsRepository);
 		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(savedLabels));
@@ -46,6 +62,7 @@ describe('labels/labels.repository', () => {
 		const repository = Container.get(LabelsRepository);
 		const result = await repository.find({ serviceId: 1 });
 		expect(result).toBeDefined();
+		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
 		expect(queryBuilderMock.getMany).toBeCalled();
 	});
 });

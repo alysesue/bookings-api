@@ -1,6 +1,7 @@
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { PgClient } from '../../utils/pgClient';
 import { populateService } from '../../populate/basic';
+import { ServiceResponse } from '../../../src/components/services/service.apicontract';
 
 describe('Tests endpoint and populate data', () => {
 	const SERVICE_NAME = 'Service';
@@ -45,14 +46,61 @@ describe('Tests endpoint and populate data', () => {
 
 	it('Put service with same labels (should fail)', async () => {
 		const service = await populateService({ nameService: SERVICE_NAME });
-		await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+		const update1 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
 			body: { name: SERVICE_NAME, labels: [{ label: 'name' }] },
 		});
-		const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+		expect(update1.statusCode).toEqual(200);
+
+		const update2 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
 			body: { name: SERVICE_NAME, labels: [{ label: 'name' }] },
 		});
 
-		expect(response.statusCode).toEqual(400);
-		expect(response.body.errorMessage).toStrictEqual('Label(s) are already present');
+		expect(update2.statusCode).toEqual(400);
+		expect(update2.body.errorMessage).toStrictEqual('Label(s) are already present');
+	});
+
+	it('Put service with same labels and same id (should pass)', async () => {
+		const service = await populateService({ nameService: SERVICE_NAME });
+		const update1 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+			body: { name: SERVICE_NAME, labels: [{ label: 'name' }] },
+		});
+		const update1Service = update1.body.data as ServiceResponse;
+		expect(update1.statusCode).toEqual(200);
+		expect(update1Service.labels.length).toEqual(1);
+		expect(update1Service.labels[0].label).toEqual('name');
+		const update1LabelId = update1Service.labels[0].id;
+
+		const update2 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+			body: { name: SERVICE_NAME, labels: [{ id: update1LabelId, label: 'name2' }] },
+		});
+		const update2Service = update2.body.data as ServiceResponse;
+
+		expect(update2.statusCode).toEqual(200);
+		expect(update1Service.labels.length).toEqual(1);
+		expect(update2Service.labels[0].id).toEqual(update1LabelId);
+		expect(update2Service.labels[0].label).toEqual('name2');
+	});
+
+	it('Should delete service labels', async () => {
+		const service = await populateService({ nameService: SERVICE_NAME });
+		const update1 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+			body: { name: SERVICE_NAME, labels: [{ label: 'labelA' }, { label: 'labelB' }] },
+		});
+		const update1Service = update1.body.data as ServiceResponse;
+		expect(update1.statusCode).toEqual(200);
+		expect(update1Service.labels.length).toEqual(2);
+		expect(update1Service.labels[0].label).toEqual('labelA');
+
+		const update2 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+			body: { name: SERVICE_NAME, labels: [{ id: update1Service.labels[0].id, label: 'labelA_' }] },
+		});
+		const update2Service = update2.body.data as ServiceResponse;
+
+		// Should define an explicit order for labels in the api
+
+		expect(update2.statusCode).toEqual(200);
+		expect(update2Service.labels.length).toEqual(1);
+		expect(update2Service.labels[0].id).toEqual(update1Service.labels[0].id);
+		expect(update2Service.labels[0].label).toEqual('labelA_');
 	});
 });

@@ -1,14 +1,14 @@
 import { RepositoryBase } from '../../core/repository';
 import { Label } from '../../models/entities';
-import { InRequestScope } from 'typescript-ioc';
-// import { ServicesQueryAuthVisitor } from '../services/services.auth';
-// import { UserContext } from '../../infrastructure/auth/userContext';
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { UserContext } from '../../infrastructure/auth/userContext';
 import { andWhere } from '../../tools/queryConditions';
+import { ServicesQueryAuthVisitor } from '../services/services.auth';
 
 @InRequestScope
 export class LabelsRepository extends RepositoryBase<Label> {
-	// @Inject
-	// private userContext: UserContext;
+	@Inject
+	private userContext: UserContext;
 
 	constructor() {
 		super(Label);
@@ -21,22 +21,19 @@ export class LabelsRepository extends RepositoryBase<Label> {
 
 	public async find(options: { serviceId: number; skipAuthorisation?: boolean }): Promise<Label[]> {
 		const { serviceId } = options;
-		// const authGroups = await this.userContext.getAuthGroups();
+		const authGroups = await this.userContext.getAuthGroups();
 
-		// const { userCondition, userParams } = options.skipAuthorisation
-		// 	? { userCondition: '', userParams: {} }
-		// 	: await new ServicesQueryAuthVisitor('serviceLabel').createUserVisibilityCondition(authGroups);
+		const { userCondition, userParams } = options.skipAuthorisation
+			? { userCondition: '', userParams: {} }
+			: await new ServicesQueryAuthVisitor('servicelabel').createUserVisibilityCondition(authGroups);
 
 		const repository = await this.getRepository();
 		const serviceCondition = 'label."_serviceId" = :serviceId';
 
-		return (
-			repository
-				.createQueryBuilder('label')
-				// .where(andWhere([serviceCondition, userCondition]), { serviceId, ...userParams })
-				.where(andWhere([serviceCondition]), { serviceId })
-				.leftJoin('label.service', 'serviceLabel')
-				.getMany()
-		);
+		return repository
+			.createQueryBuilder('label')
+			.where(andWhere([serviceCondition, userCondition]), { serviceId, ...userParams })
+			.leftJoin('label.service', 'servicelabel')
+			.getMany();
 	}
 }
