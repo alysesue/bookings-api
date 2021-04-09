@@ -4,7 +4,6 @@ import { IObserver, ISubject } from '../../infrastructure/observer';
 import { BookingsSubject } from '../bookings/bookings.subject';
 import { LifeSGMapper } from './lifesg.mapper';
 import { LifeSGMQSerice } from './lifesg.service';
-
 @InRequestScope
 export class LifeSGObserver implements IObserver {
 	@Inject

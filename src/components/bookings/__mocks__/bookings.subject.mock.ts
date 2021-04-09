@@ -5,7 +5,8 @@ export class BookingsSubjectMock extends BookingsSubject {
 	public static notifyMock = jest.fn();
 	public get booking(): Booking {
 		return ({
-			_status: 1,
+			_status: 2,
+			status: 2,
 			_service: {
 				_name: 'name',
 			},

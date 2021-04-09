@@ -2,18 +2,20 @@ import { InRequestScope } from 'typescript-ioc';
 import { Booking } from '../../models/entities';
 import { Subject } from '../../infrastructure/observer';
 import { BookingType } from '../../models/bookingType';
+import { InRequestScope } from 'typescript-ioc';
+import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 
 export type BookingsPublisherProps = {
 	booking: Booking;
 	bookingType?: BookingType;
-	action?: any
+	action?: ExternalAgencyAppointmentJobAction;
 };
 
 @InRequestScope
 export class BookingsSubject extends Subject<BookingsPublisherProps> {
 	private _booking: Booking;
 	private _bookingType: BookingType;
-	private _action?: any;
+	private _action?: ExternalAgencyAppointmentJobAction;
 
 	public get bookingType(): BookingType {
 		return this._bookingType;
@@ -22,7 +24,7 @@ export class BookingsSubject extends Subject<BookingsPublisherProps> {
 		return this._booking;
 	}
 
-	public get action(): any {
+	public get action(): ExternalAgencyAppointmentJobAction {
 		return this._action;
 	}
 

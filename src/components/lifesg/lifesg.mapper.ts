@@ -45,7 +45,7 @@ export class LifeSGMapper {
 					agency: AppointmentAgency.HPB,
 					agencyTransactionId: booking.id.toString(),
 					uinfin: booking.citizenUinFin,
-					agencyLastUpdatedAt: LocalDateTime.parse(new Date().toISOString()),
+					agencyLastUpdatedAt: LocalDateTime.now(),
 				});
 			case ExternalAgencyAppointmentJobAction.DELETE:
 				return new DeleteAppointmentRequestApiDomain({
