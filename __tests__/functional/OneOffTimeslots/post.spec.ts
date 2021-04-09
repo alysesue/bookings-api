@@ -38,7 +38,7 @@ describe('Timeslots functional tests', () => {
 		await populateServiceLabel({
 			serviceId: serviceProvider1.serviceId,
 			serviceName: NAME_SERVICE_1,
-			label: 'Chinese',
+			labels: ['Chinese'],
 		});
 
 		done();

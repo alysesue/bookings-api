@@ -31,6 +31,9 @@ describe('Timeslots functional tests', () => {
 	const label = new LabelRequestModel();
 	label.label = 'Chinese';
 	labels.push(label);
+	const label2 = new LabelRequestModel();
+	label2.label = 'English';
+	labels.push(label2);
 
 	let serviceProvider1: ServiceProviderResponseModel;
 	let serviceProvider2: ServiceProviderResponseModel;
@@ -38,6 +41,8 @@ describe('Timeslots functional tests', () => {
 	let serviceId1: string;
 	let serviceId2: string;
 	let serviceId3: string;
+
+	let service1Results;
 
 	afterAll(async (done) => {
 		await pgClient.cleanAllTables();
@@ -72,22 +77,22 @@ describe('Timeslots functional tests', () => {
 		serviceId2 = result2.services.find((item) => item.name === NAME_SERVICE_2).id.toString();
 		serviceId3 = result3.services.find((item) => item.name === NAME_SERVICE_3).id.toString();
 
-		await populateServiceLabel({
+		service1Results = await populateServiceLabel({
 			serviceId: serviceId1,
 			serviceName: NAME_SERVICE_1,
-			label: 'Chinese',
+			labels: ['Chinese', 'English', 'Malay'],
 		});
 
 		await populateServiceLabel({
 			serviceId: serviceId2,
 			serviceName: NAME_SERVICE_2,
-			label: 'Chinese',
+			labels: ['Chinese', 'English'],
 		});
 
 		await populateServiceLabel({
 			serviceId: serviceId3,
 			serviceName: NAME_SERVICE_3,
-			label: 'Chinese',
+			labels: ['Chinese', 'English'],
 		});
 
 		await populateOneOffTimeslot({
@@ -119,7 +124,7 @@ describe('Timeslots functional tests', () => {
 		const service1TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
 			serviceId: serviceId1,
 		}).get(
-			`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}&label=Enginsh`,
+			`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}&labelIds=English`,
 		);
 
 		expect(service1TimeslotsResponse.statusCode).toEqual(200);
@@ -127,14 +132,17 @@ describe('Timeslots functional tests', () => {
 	});
 
 	it('one off timeslots should query by label', async () => {
+		const labelId0 = service1Results.labels[0].id;
+		const labelId1 = service1Results.labels[1].id;
 		const service1TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
 			serviceId: serviceId1,
 		}).get(
-			`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}&label=Chinese`,
+			`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}&labelIds=${labelId0}&labelIds=${labelId1}`,
 		);
 
 		expect(service1TimeslotsResponse.statusCode).toEqual(200);
 		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].labels[0].label).toBe('Chinese');
+		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].labels[1].label).toBe('English');
 	});
 
 	it('one off timeslots should retrieve labels if applicable', async () => {

@@ -7,6 +7,7 @@ import { ApiData, ApiDataFactory } from '../../apicontract';
 import { TimeslotsMapper } from './timeslots.mapper';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
+import { IdHasher } from '../../infrastructure/idHasher';
 
 @Route('v1/timeslots')
 @Tags('Timeslots')
@@ -20,6 +21,9 @@ export class TimeslotsController extends Controller {
 	@Inject
 	private timeslotMapper: TimeslotsMapper;
 
+	@Inject
+	private idHasher: IdHasher;
+
 	/**
 	 * Retrieves available timeslots for a service in a defined datetime range [startDate, endDate].
 	 * Availability count returned will be at least 1.
@@ -29,7 +33,7 @@ export class TimeslotsController extends Controller {
 	 * @param @isInt serviceId The available service to be queried.
 	 * @param @isInt serviceProviderId (Optional) Filters timeslots for a specific service provider.
 	 * @param exactTimeslot (Optional) to filter timeslots for the given dates.
-	 * @param label (Optional) to filter by label
+	 * @param labelIds (Optional) to filter by label
 	 */
 	@Get('availability')
 	@Security('service')
@@ -40,15 +44,17 @@ export class TimeslotsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 		@Query() serviceProviderId?: number,
 		@Query() exactTimeslot: boolean = false,
-		@Query() label?: string,
+		@Query() labelIds?: string[],
 	): Promise<ApiData<AvailabilityEntryResponse[]>> {
+		const labelIdsNumber = labelIds ? labelIds.map((id) => this.idHasher.decode(id)) : [];
+
 		let timeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
 			serviceId,
 			exactTimeslot,
 			serviceProviderId ? [serviceProviderId] : undefined,
-			label,
+			labelIdsNumber,
 		);
 
 		if (exactTimeslot) {
@@ -77,7 +83,7 @@ export class TimeslotsController extends Controller {
 	 * @param serviceId
 	 * @param includeBookings (Optional)
 	 * @param serviceProviderIds
-	 * @param label (Optional) to filter by label
+	 * @param labelIds (Optional) to filter by label
 	 */
 	@Get('')
 	@Security('service')
@@ -89,8 +95,9 @@ export class TimeslotsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 		@Query() includeBookings: boolean = false,
 		@Query() serviceProviderIds?: number[],
-		@Query() label?: string,
+		@Query() labelIds?: string[],
 	): Promise<ApiData<TimeslotEntryResponse[]>> {
+		const labelIdsNumber = labelIds ? labelIds.map((id) => this.idHasher.decode(id)) : [];
 		let spIdsFilter = serviceProviderIds || [];
 		const spGroup = await this.getServiceProviderAuthGroup();
 		if (spGroup) {
@@ -108,7 +115,7 @@ export class TimeslotsController extends Controller {
 			serviceId,
 			includeBookings,
 			spIdsFilter,
-			label,
+			labelIdsNumber,
 		);
 
 		const userContextSnapshot = await this.userContext.getSnapshot();

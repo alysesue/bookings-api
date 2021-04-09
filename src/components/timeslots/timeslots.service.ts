@@ -176,7 +176,7 @@ export class TimeslotsService {
 		serviceId: number,
 		includeBookings: boolean = false,
 		serviceProviderIds?: number[],
-		label?: string,
+		labelIds?: number[],
 	): Promise<AvailableTimeslotProviders[]> {
 		const getAggregatedTimeslotEntriesWatch = new StopWatch('getAggregatedTimeslotEntries');
 		const aggregatedEntries = await this.getAggregatedTimeslotEntries(
@@ -184,7 +184,7 @@ export class TimeslotsService {
 			endDateTime,
 			serviceId,
 			serviceProviderIds,
-			label,
+			labelIds,
 		);
 		getAggregatedTimeslotEntriesWatch.stop();
 
@@ -357,7 +357,7 @@ export class TimeslotsService {
 		maxEndTime: Date,
 		serviceId: number,
 		serviceProviderIds?: number[],
-		label?: string,
+		labelIds?: number[],
 	): Promise<TimeslotMap<AggregatedEntryId<ServiceProvider>>> {
 		const aggregator = TimeslotAggregator.createCustom<ServiceProvider, AggregatedEntryId<ServiceProvider>>(
 			AggregatedEntryId,
@@ -382,7 +382,7 @@ export class TimeslotsService {
 			startDateTime: minStartTime,
 			endDateTime: maxEndTime,
 			byPassAuth: true,
-			label,
+			labelIds,
 		});
 
 		const oneOffTimeslotsLookup = groupByKey(oneOffTimeslots, (e) => e.serviceProviderId);

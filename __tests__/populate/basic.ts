@@ -5,9 +5,18 @@ import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslo
 import { LabelRequestModel } from '../../src/components/labels/label.apicontract';
 import { OneOffTimeslotResponse } from '../../src/components/oneOffTimeslots/oneOffTimeslots.apicontract';
 
-export const populateServiceLabel = async ({ serviceId, serviceName, label }): Promise<ServiceResponse> => {
+export const populateServiceLabel = async ({
+	serviceId,
+	serviceName,
+	labels,
+}: {
+	serviceId: any;
+	serviceName: any;
+	labels: string[];
+}): Promise<ServiceResponse> => {
+	const labelsMap = labels.map((label) => ({ label }));
 	const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceId}`, {
-		body: { name: serviceName, labels: [{ label }] },
+		body: { name: serviceName, labels: labelsMap },
 	});
 	return response.body.data;
 };
