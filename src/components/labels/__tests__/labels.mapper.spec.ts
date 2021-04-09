@@ -51,6 +51,35 @@ describe('labels/labels.mapper', () => {
 		expect(transformedLabels).toHaveLength(0);
 	});
 
+	it('create a new label', () => {
+		const mapper = Container.get(LabelsMapper);
+		const existingLabels = [Label.create('label1')];
+
+		const mergedLabels = mapper.mergeLabels(existingLabels, [Label.create('label2')]);
+
+		expect(mergedLabels).toHaveLength(2);
+	});
+
+	it('should update a new label', () => {
+		const mapper = Container.get(LabelsMapper);
+		const existingLabels = [Label.create('label1', 2), Label.create('label2', 1)];
+
+		const mergedLabels = mapper.mergeLabels(existingLabels, [Label.create('label1', 2), Label.create('label3', 1)]);
+
+		expect(mergedLabels).toHaveLength(2);
+		expect(mergedLabels[1].labelText).toEqual('label3');
+	});
+
+	it('should delete a label', () => {
+		const mapper = Container.get(LabelsMapper);
+		const existingLabels = [Label.create('label1', 2), Label.create('label2', 1)];
+
+		const mergedLabels = mapper.mergeLabels(existingLabels, [Label.create('label3', 1)]);
+
+		expect(mergedLabels).toHaveLength(1);
+		expect(mergedLabels[0].labelText).toEqual('label3');
+	});
+
 	const createLabelData = (id: number, text: string) => {
 		const entity = new Label();
 		entity.id = id;

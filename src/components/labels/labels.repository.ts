@@ -14,6 +14,12 @@ export class LabelsRepository extends RepositoryBase<Label> {
 		super(Label);
 	}
 
+	public async delete(data: Label[]) {
+		const repository = await this.getRepository();
+
+		await repository.delete(data.map((label) => label.id));
+	}
+
 	public async save(data: Label[]): Promise<Label[]> {
 		const repository = await this.getRepository();
 		return repository.save(data);

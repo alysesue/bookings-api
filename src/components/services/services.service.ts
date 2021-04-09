@@ -116,7 +116,9 @@ export class ServicesService {
 			if (!service) throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 			service.name = request.name;
 			service.isSpAutoAssigned = request.isSpAutoAssigned;
-			service.labels = this.labelsMapper.mapToLabels(request.labels);
+
+			const updatedList = this.labelsMapper.mapToLabels(request.labels);
+			this.labelsMapper.mergeLabels(service.labels, updatedList);
 			await this.verifyActionPermission(service, CrudAction.Update);
 			return await this.servicesRepository.save(service);
 		} catch (e) {

@@ -6,8 +6,11 @@ import { IService } from '../interfaces';
 export class Label {
 	public constructor() {}
 
-	public static create(labelText: string): Label {
+	public static create(labelText: string, id?: number): Label {
 		const label = new Label();
+		if (id) {
+			label._id = id;
+		}
 		label.labelText = labelText;
 		return label;
 	}
@@ -34,7 +37,7 @@ export class Label {
 		this._labelText = value;
 	}
 
-	@ManyToOne('Service')
+	@ManyToOne('Service', { orphanedRowAction: 'delete' })
 	@JoinColumn({ name: '_serviceId' })
 	public service: IService;
 	// private _service: IService;

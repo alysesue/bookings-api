@@ -124,7 +124,7 @@
 		"set-cookie-parser": "^2.4.6",
 		"swagger2": "^2.0.0",
 		"swagger2-koa": "^2.0.0",
-		"typeorm": "^0.2.31",
+		"typeorm": "^0.2.32",
 		"typescript-ioc": "^3.2.2",
 		"uuid": "^8.3.2"
 	},

@@ -38,7 +38,7 @@ describe('Tests endpoint and populate data', () => {
 	it('Put service with labels', async () => {
 		const service = await populateService({ nameService: SERVICE_NAME });
 		const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
-			body: { name: SERVICE_NAME, labels: [{ label: 'name', serviceId: service.id }] },
+			body: { name: SERVICE_NAME, labels: [{ label: 'name' }] },
 		});
 		expect(response.statusCode).toEqual(200);
 		expect(response.body.data.labels[0].label).toBe('name');
@@ -47,12 +47,12 @@ describe('Tests endpoint and populate data', () => {
 	it('Put service with same labels (should fail)', async () => {
 		const service = await populateService({ nameService: SERVICE_NAME });
 		const update1 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
-			body: { name: SERVICE_NAME, labels: [{ label: 'name', serviceId: service.id }] },
+			body: { name: SERVICE_NAME, labels: [{ label: 'name' }] },
 		});
 		expect(update1.statusCode).toEqual(200);
 
 		const update2 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
-			body: { name: SERVICE_NAME, labels: [{ label: 'name', serviceId: service.id }] },
+			body: { name: SERVICE_NAME, labels: [{ label: 'name' }] },
 		});
 
 		expect(update2.statusCode).toEqual(400);
@@ -62,7 +62,7 @@ describe('Tests endpoint and populate data', () => {
 	it('Put service with same labels and same id (should pass)', async () => {
 		const service = await populateService({ nameService: SERVICE_NAME });
 		const update1 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
-			body: { name: SERVICE_NAME, labels: [{ label: 'name', serviceId: service.id }] },
+			body: { name: SERVICE_NAME, labels: [{ label: 'name' }] },
 		});
 
 		const update1Service = update1.body.data as ServiceResponse;
@@ -72,7 +72,7 @@ describe('Tests endpoint and populate data', () => {
 		const update1LabelId = update1Service.labels[0].id;
 
 		const update2 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
-			body: { name: SERVICE_NAME, labels: [{ id: update1LabelId, label: 'name2', serviceId: service.id }] },
+			body: { name: SERVICE_NAME, labels: [{ id: update1LabelId, label: 'name2' }] },
 		});
 		const update2Service = update2.body.data as ServiceResponse;
 
@@ -87,10 +87,7 @@ describe('Tests endpoint and populate data', () => {
 		const update1 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
 			body: {
 				name: SERVICE_NAME,
-				labels: [
-					{ label: 'labelA', serviceId: service.id },
-					{ label: 'labelB', serviceId: service.id },
-				],
+				labels: [{ label: 'labelA' }, { label: 'labelB' }],
 			},
 		});
 		const update1Service = update1.body.data as ServiceResponse;
@@ -101,7 +98,7 @@ describe('Tests endpoint and populate data', () => {
 		const update2 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
 			body: {
 				name: SERVICE_NAME,
-				labels: [{ id: update1Service.labels[0].id, label: 'labelA_', serviceId: service.id }],
+				labels: [{ id: update1Service.labels[0].id, label: 'labelA_' }],
 			},
 		});
 		const update2Service = update2.body.data as ServiceResponse;

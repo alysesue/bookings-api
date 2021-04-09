@@ -13,7 +13,6 @@ export class LabelsMapper {
 			const labelData = new LabelResponseModel();
 			labelData.id = this.idHasher.encode(i.id);
 			labelData.label = i.labelText;
-			labelData.serviceId = i.serviceId;
 			return labelData;
 		});
 	}
@@ -27,8 +26,29 @@ export class LabelsMapper {
 				entity.id = this.idHasher.decode(i.id);
 			}
 			entity.labelText = i.label;
-			entity.serviceId = i.serviceId;
 			return entity;
 		});
+	}
+
+	public mergeLabels(originalList: Label[], updatedList: Label[]): Label[] {
+		updatedList.forEach((label) => {
+			if (label.id) {
+				const foundLabel = originalList.find((l) => l.id === label.id);
+				if (foundLabel) {
+					foundLabel.labelText = label.labelText;
+				}
+			} else {
+				originalList.push(label);
+			}
+		});
+
+		originalList.forEach((originalLabel, index) => {
+			const foundUpdatedLabel = updatedList.find((l) => l.id === originalLabel.id);
+			if (!foundUpdatedLabel) {
+				originalList.splice(index, 1);
+			}
+		});
+
+		return originalList;
 	}
 }
