@@ -2,7 +2,8 @@ import { Label } from '../../../models/entities';
 import { Container } from 'typescript-ioc';
 import { TransactionManager } from '../../../core/transactionManager';
 import { LabelsRepository } from '../labels.repository';
-import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
+import { TransactionManagerMock } from '../../oneOffTimeslots/__tests__/oneOffTimeslots.repository.spec';
+import { SelectQueryBuilder } from 'typeorm/query-builder/SelectQueryBuilder';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -34,9 +35,17 @@ describe('labels/labels.repository', () => {
 	});
 
 	it('should get labels', async () => {
+		const labels: Label[] = [];
+		const queryBuilderMock = ({
+			where: jest.fn(() => queryBuilderMock),
+			leftJoin: jest.fn(() => queryBuilderMock),
+			getMany: jest.fn(() => Promise.resolve(labels)),
+		} as unknown) as SelectQueryBuilder<Label>;
+
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		const repository = Container.get(LabelsRepository);
-		TransactionManagerMock.find.mockImplementation(() => Promise.resolve(savedLabels));
-		const res = await repository.find(1);
-		expect(res).toStrictEqual(savedLabels);
+		const result = await repository.find({ serviceId: 1 });
+		expect(result).toBeDefined();
+		expect(queryBuilderMock.getMany).toBeCalled();
 	});
 });
