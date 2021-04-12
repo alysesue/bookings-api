@@ -6,6 +6,7 @@ import { ServiceProvidersService } from '../serviceProviders/serviceProviders.se
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { OneOffTimeslotsActionAuthVisitor } from './oneOffTimeslots.auth';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { LabelsService } from '../labels/labels.service';
 
 @InRequestScope
 export class OneOffTimeslotsService {
@@ -15,6 +16,8 @@ export class OneOffTimeslotsService {
 	private serviceProvidersService: ServiceProvidersService;
 	@Inject
 	private userContext: UserContext;
+	@Inject
+	private labelsService: LabelsService;
 
 	private async verifyActionPermission(entity: OneOffTimeslot): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
@@ -33,6 +36,7 @@ export class OneOffTimeslotsService {
 
 	public async save(request: OneOffTimeslotRequest): Promise<OneOffTimeslot> {
 		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
+		const labels = await this.labelsService.verifyLabels(request.labelIds, serviceProvider.serviceId);
 
 		const entity = new OneOffTimeslot();
 		entity.serviceProvider = serviceProvider;
@@ -40,8 +44,10 @@ export class OneOffTimeslotsService {
 		entity.startDateTime = request.startDateTime;
 		entity.endDateTime = request.endDateTime;
 		entity.capacity = request.capacity;
+		entity.labels = labels;
 
 		this.validate(entity);
+
 		await this.verifyActionPermission(entity);
 		await this.oneOffTimeslotsRepo.save(entity);
 		return entity;

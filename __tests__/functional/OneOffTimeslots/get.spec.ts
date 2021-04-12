@@ -5,8 +5,9 @@ import {
 	ServiceAdminRequestEndpointSG,
 	ServiceProviderRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
-import { populateOneOffTimeslot, populateUserServiceProvider } from '../../populate/basic';
+import { populateOneOffTimeslot, populateServiceLabel, populateUserServiceProvider } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
+import { ServiceResponse } from '../../../src/components/services/service.apicontract';
 
 // tslint:disable-next-line: no-big-function
 describe('Timeslots functional tests', () => {
@@ -32,6 +33,8 @@ describe('Timeslots functional tests', () => {
 	let serviceId1: string;
 	let serviceId2: string;
 	let serviceId3: string;
+
+	let service1Results: ServiceResponse;
 
 	afterAll(async (done) => {
 		await pgClient.cleanAllTables();
@@ -66,26 +69,81 @@ describe('Timeslots functional tests', () => {
 		serviceId2 = result2.services.find((item) => item.name === NAME_SERVICE_2).id.toString();
 		serviceId3 = result3.services.find((item) => item.name === NAME_SERVICE_3).id.toString();
 
+		service1Results = await populateServiceLabel({
+			serviceId: serviceId1,
+			serviceName: NAME_SERVICE_1,
+			labels: ['Chinese', 'English', 'Malay'],
+		});
+
+		const service2Result = await populateServiceLabel({
+			serviceId: serviceId2,
+			serviceName: NAME_SERVICE_2,
+			labels: ['Chinese', 'English'],
+		});
+
+		const service3Result = await populateServiceLabel({
+			serviceId: serviceId3,
+			serviceName: NAME_SERVICE_3,
+			labels: ['Chinese', 'English'],
+		});
+
 		await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
 			capacity: 1,
+			labelIds: service1Results.labels.map((l) => l.id),
 		});
 		await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider2.id,
 			startTime: START_TIME_2,
 			endTime: END_TIME_2,
 			capacity: 2,
+			labelIds: service2Result.labels.map((l) => l.id),
 		});
 		await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider3.id,
 			startTime: START_TIME_3,
 			endTime: END_TIME_3,
 			capacity: 3,
+			labelIds: service3Result.labels.map((l) => l.id),
 		});
 
 		done();
+	});
+
+	it('one off timeslots should query by label and return empty when not found', async () => {
+		const service1TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
+			serviceId: serviceId1,
+		}).get(
+			`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}&labelIds=English`,
+		);
+
+		expect(service1TimeslotsResponse.statusCode).toEqual(200);
+		expect(service1TimeslotsResponse.body.data).toEqual([]);
+	});
+
+	it('one off timeslots should query by label', async () => {
+		const labelId0 = service1Results.labels[0].id;
+		const labelId1 = service1Results.labels[1].id;
+		const service1TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
+			serviceId: serviceId1,
+		}).get(
+			`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}&labelIds=${labelId0}&labelIds=${labelId1}`,
+		);
+
+		expect(service1TimeslotsResponse.statusCode).toEqual(200);
+		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].labels[0].label).toBe('Chinese');
+		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].labels[1].label).toBe('English');
+	});
+
+	it('one off timeslots should retrieve labels if applicable', async () => {
+		const service1TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
+			serviceId: serviceId1,
+		}).get(`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}`);
+
+		expect(service1TimeslotsResponse.statusCode).toEqual(200);
+		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].labels[0].label).toBe('Chinese');
 	});
 
 	it('organisation admin should get all oneoff timeslots', async () => {

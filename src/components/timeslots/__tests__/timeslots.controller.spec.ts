@@ -120,7 +120,7 @@ describe('Timeslots Controller', () => {
 
 		expect(result).toBeDefined();
 		expect(result.data.length).toBe(1);
-		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, [2]);
+		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, [2], []);
 	});
 
 	it('should filter out invalid id - as a service provider', async () => {
@@ -145,6 +145,6 @@ describe('Timeslots Controller', () => {
 
 		expect(result).toBeDefined();
 		expect(result.data.length).toBe(1);
-		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, [0]);
+		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, [0], []);
 	});
 });

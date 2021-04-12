@@ -13,6 +13,7 @@ export class PgClient {
 	}
 	public async cleanAllTables() {
 		// Delete many-to-one relationships first
+		await this.pool.query('DELETE FROM public.label');
 		await this.pool.query('DELETE FROM public.one_off_timeslot;');
 		await this.pool.query('DELETE FROM public.setting;');
 		await this.pool.query('DELETE FROM public.service_admin_group_map');

@@ -104,25 +104,34 @@ export class ServicesService {
 
 		const isSpAutoAssigned = request.isSpAutoAssigned;
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
-
 		const service = Service.create(request.name, orga, isSpAutoAssigned, transformedLabels);
+
 		await this.verifyActionPermission(service, CrudAction.Create);
 		return this.servicesRepository.save(service);
 	}
 
 	public async updateService(id: number, request: ServiceRequest): Promise<Service> {
+		const service = await this.servicesRepository.getService({ id });
+		if (!service) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
+		}
+
+		service.name = request.name;
+		service.isSpAutoAssigned = request.isSpAutoAssigned || false;
+
+		const updatedList = this.labelsMapper.mapToLabels(request.labels);
+		this.labelsMapper.mergeLabels(service.labels, updatedList);
+		await this.verifyActionPermission(service, CrudAction.Update);
+
 		try {
-			const service = await this.servicesRepository.getService({ id });
-			if (!service) throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
-			service.name = request.name;
-			service.isSpAutoAssigned = request.isSpAutoAssigned;
-			service.labels = this.labelsMapper.mapToLabels(request.labels);
-			await this.verifyActionPermission(service, CrudAction.Update);
 			return await this.servicesRepository.save(service);
 		} catch (e) {
-			if (e.message.startsWith('duplicate key value violates unique constraint'))
+			if (e.message.startsWith('duplicate key value violates unique constraint')) {
+				if (e.message.includes('ServiceLabels')) {
+					throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Label(s) are already present');
+				}
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service name is already present');
-			throw e;
+			}
 		}
 	}
 
