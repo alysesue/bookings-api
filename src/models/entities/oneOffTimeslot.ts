@@ -4,14 +4,9 @@ import { TimeslotWithCapacity } from '../timeslotWithCapacity';
 
 @Entity()
 export class OneOffTimeslot implements TimeslotWithCapacity {
+
 	constructor() {}
 
-	public get startTimeNative(): number {
-		return this._startDateTime.getTime();
-	}
-	public get endTimeNative(): number {
-		return this._endDateTime.getTime();
-	}
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
@@ -34,6 +29,12 @@ export class OneOffTimeslot implements TimeslotWithCapacity {
 	@Column()
 	@Index()
 	private _serviceProviderId: number;
+
+	@Column({ type: 'varchar', length: 5000, nullable: true })
+	private _title: string;
+
+	@Column({ type: 'varchar', length: 5000, nullable: true })
+	private _description: string;
 
 	public get id(): number {
 		return this._id;
@@ -81,5 +82,28 @@ export class OneOffTimeslot implements TimeslotWithCapacity {
 
 	public get serviceProviderId(): number {
 		return this._serviceProviderId;
+	}
+
+	public get title(): string {
+		return this._title;
+	}
+
+	public set title(value: string) {
+		this._title = value;
+	}
+
+	public get description(): string {
+		return this._description;
+	}
+
+	public set description(value: string) {
+		this._description = value;
+	}
+
+	public get startTimeNative(): number {
+		return this._startDateTime.getTime();
+	}
+	public get endTimeNative(): number {
+		return this._endDateTime.getTime();
 	}
 }

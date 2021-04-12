@@ -3,9 +3,8 @@ import { Body, Controller, Post, Response, Route, SuccessResponse, Tags } from '
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { OneOffTimeslotRequest, OneOffTimeslotResponse } from './oneOffTimeslots.apicontract';
 import { OneOffTimeslotsService } from './oneOffTimeslots.service';
-import { OneOffTimeslot } from '../../models';
 import { MOLAuth } from 'mol-lib-common';
-import { IdHasher } from '../../infrastructure/idHasher';
+import { OneOffTimeslotsMapper } from './oneOffTimeslots.mapper';
 
 @Route('v1/oneOffTimeslots')
 @Tags('OneOffTimeslots')
@@ -13,16 +12,7 @@ export class OneOffTimeslotsController extends Controller {
 	@Inject
 	private oneOffTimeslotsService: OneOffTimeslotsService;
 	@Inject
-	private idHasher: IdHasher;
-
-	private mapDataModel(timeslot: OneOffTimeslot): OneOffTimeslotResponse {
-		const response = new OneOffTimeslotResponse();
-		response.idSigned = this.idHasher.encode(timeslot.id);
-		response.startDateTime = timeslot.startDateTime;
-		response.endDateTime = timeslot.endDateTime;
-		response.capacity = timeslot.capacity;
-		return response;
-	}
+	private mapper: OneOffTimeslotsMapper;
 
 	@Post()
 	@SuccessResponse(201, 'Created')
@@ -31,6 +21,6 @@ export class OneOffTimeslotsController extends Controller {
 	public async create(@Body() request: OneOffTimeslotRequest): Promise<ApiData<OneOffTimeslotResponse>> {
 		const timeslot = await this.oneOffTimeslotsService.save(request);
 		this.setStatus(201);
-		return ApiDataFactory.create(this.mapDataModel(timeslot));
+		return ApiDataFactory.create(this.mapper.mapDataModel(timeslot));
 	}
 }
