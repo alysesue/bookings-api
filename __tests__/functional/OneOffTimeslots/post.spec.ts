@@ -52,4 +52,16 @@ describe('Timeslots functional tests', () => {
 		expect(response.labels[0].id).toEqual(service.labels[0].id);
 		expect(response.labels[0].label).toEqual(service.labels[0].label);
 	});
+
+	it('should add oneOffTimeslots', async () => {
+		const service1TimeslotsResponse = await populateOneOffTimeslot({
+			serviceProviderId: serviceProvider1.id,
+			startTime: START_TIME_1,
+			endTime: END_TIME_1,
+			capacity: 1,
+			title: 'Title',
+			description: 'Description',
+		});
+		expect(service1TimeslotsResponse.title).toBeDefined();
+	});
 });
