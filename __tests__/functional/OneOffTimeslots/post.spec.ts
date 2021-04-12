@@ -51,6 +51,29 @@ describe('Timeslots functional tests', () => {
 			description: 'Description',
 		});
 		expect(service1TimeslotsResponse.title).toBeDefined();
-		//ToDo: add expect for each one of the inputs, try to have all on the same test.
+		// ToDo: add expect for each one of the inputs, try to have all on the same test.
+	});
+
+	it('should return error when oneOffTimeslots incorrect', async () => {
+		try {
+			await populateOneOffTimeslot({
+				serviceProviderId: serviceProvider1.id,
+				startTime: END_TIME_1,
+				endTime: START_TIME_1,
+				capacity: 1,
+				title:
+					'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii',
+				description: 'Description',
+			});
+		} catch (e) {
+			const res = [
+				{ code: '10103', message: 'Start time must be less than end time.' },
+				{
+					code: '10101',
+					message: 'Description should be max 4000 characters',
+				},
+			];
+			expect(e.message).toStrictEqual(res);
+		}
 	});
 });
