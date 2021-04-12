@@ -1,23 +1,34 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Label, Service } from '../../models/entities';
+import { Label } from '../../models/entities';
 import { LabelsRepository } from './labels.repository';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { groupByKeyLastValue } from '../../tools/collections';
+import { IdHasher } from '../../infrastructure/idHasher';
 
 @InRequestScope
 export class LabelsService {
 	@Inject
 	private labelsRepository: LabelsRepository;
+	@Inject
+	private idHasher: IdHasher;
 
-	public async verifyLabels(labels: Label[], service: Service): Promise<Label[]> {
-		const labelsService = await this.labelsRepository.find({ serviceId: service.id });
-		if (!labelsService) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Service does not have any labels`);
+	public async verifyLabels(encodedLabelIds: string[], serviceId: number): Promise<Label[]> {
+		if (!encodedLabelIds || encodedLabelIds.length === 0) {
+			return [];
 		}
+
+		const labelIds = new Set<number>(encodedLabelIds.map((encodedId) => this.idHasher.decode(encodedId)));
+
+		const labelsService = await this.labelsRepository.find({ serviceId });
+		const labelsLookup = groupByKeyLastValue(labelsService, (label) => label.id);
+
 		const labelsFound: Label[] = [];
-		labels.forEach((label: Label) => {
-			const labelFound = labelsService.find((ls) => ls.labelText === label.labelText);
+		labelIds.forEach((labelId: number) => {
+			const labelFound = labelsLookup.get(labelId);
 			if (!labelFound) {
-				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`This label is not present: ${label}`);
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+					`Invalid label id: ${this.idHasher.encode(labelId)}`,
+				);
 			}
 			labelsFound.push(labelFound);
 		});

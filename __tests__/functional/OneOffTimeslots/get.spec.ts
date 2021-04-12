@@ -7,7 +7,7 @@ import {
 } from '../../utils/requestEndpointSG';
 import { populateOneOffTimeslot, populateServiceLabel, populateUserServiceProvider } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
-import { LabelRequestModel } from '../../../src/components/labels/label.apicontract';
+import { ServiceResponse } from '../../../src/components/services/service.apicontract';
 
 // tslint:disable-next-line: no-big-function
 describe('Timeslots functional tests', () => {
@@ -27,14 +27,6 @@ describe('Timeslots functional tests', () => {
 	const overallStartDate = new Date('2021-03-01T00:00:00Z');
 	const overallEndDate = new Date('2021-04-01T00:00:00Z');
 
-	const labels: LabelRequestModel[] = [];
-	const label = new LabelRequestModel();
-	label.label = 'Chinese';
-	labels.push(label);
-	const label2 = new LabelRequestModel();
-	label2.label = 'English';
-	labels.push(label2);
-
 	let serviceProvider1: ServiceProviderResponseModel;
 	let serviceProvider2: ServiceProviderResponseModel;
 	let serviceProvider3: ServiceProviderResponseModel;
@@ -42,7 +34,7 @@ describe('Timeslots functional tests', () => {
 	let serviceId2: string;
 	let serviceId3: string;
 
-	let service1Results;
+	let service1Results: ServiceResponse;
 
 	afterAll(async (done) => {
 		await pgClient.cleanAllTables();
@@ -83,13 +75,13 @@ describe('Timeslots functional tests', () => {
 			labels: ['Chinese', 'English', 'Malay'],
 		});
 
-		await populateServiceLabel({
+		const service2Result = await populateServiceLabel({
 			serviceId: serviceId2,
 			serviceName: NAME_SERVICE_2,
 			labels: ['Chinese', 'English'],
 		});
 
-		await populateServiceLabel({
+		const service3Result = await populateServiceLabel({
 			serviceId: serviceId3,
 			serviceName: NAME_SERVICE_3,
 			labels: ['Chinese', 'English'],
@@ -100,21 +92,21 @@ describe('Timeslots functional tests', () => {
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
 			capacity: 1,
-			labels,
+			labelIds: service1Results.labels.map((l) => l.id),
 		});
 		await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider2.id,
 			startTime: START_TIME_2,
 			endTime: END_TIME_2,
 			capacity: 2,
-			labels,
+			labelIds: service2Result.labels.map((l) => l.id),
 		});
 		await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider3.id,
 			startTime: START_TIME_3,
 			endTime: END_TIME_3,
 			capacity: 3,
-			labels,
+			labelIds: service3Result.labels.map((l) => l.id),
 		});
 
 		done();

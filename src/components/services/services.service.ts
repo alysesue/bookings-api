@@ -111,15 +111,19 @@ export class ServicesService {
 	}
 
 	public async updateService(id: number, request: ServiceRequest): Promise<Service> {
-		try {
-			const service = await this.servicesRepository.getService({ id });
-			if (!service) throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
-			service.name = request.name;
-			service.isSpAutoAssigned = request.isSpAutoAssigned;
+		const service = await this.servicesRepository.getService({ id });
+		if (!service) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
+		}
 
-			const updatedList = this.labelsMapper.mapToLabels(request.labels);
-			this.labelsMapper.mergeLabels(service.labels, updatedList);
-			await this.verifyActionPermission(service, CrudAction.Update);
+		service.name = request.name;
+		service.isSpAutoAssigned = request.isSpAutoAssigned || false;
+
+		const updatedList = this.labelsMapper.mapToLabels(request.labels);
+		this.labelsMapper.mergeLabels(service.labels, updatedList);
+		await this.verifyActionPermission(service, CrudAction.Update);
+
+		try {
 			return await this.servicesRepository.save(service);
 		} catch (e) {
 			if (e.message.startsWith('duplicate key value violates unique constraint')) {
@@ -128,7 +132,6 @@ export class ServicesService {
 				}
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service name is already present');
 			}
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
 	}
 

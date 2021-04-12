@@ -53,11 +53,20 @@ describe('labels/labels.mapper', () => {
 
 	it('create a new label', () => {
 		const mapper = Container.get(LabelsMapper);
-		const existingLabels = [Label.create('label1')];
+		const existingLabels = [Label.create('label1', 1)];
 
-		const mergedLabels = mapper.mergeLabels(existingLabels, [Label.create('label2')]);
+		const mergedLabels = mapper.mergeLabels(existingLabels, [Label.create('label1', 1), Label.create('label2')]);
 
 		expect(mergedLabels).toHaveLength(2);
+	});
+
+	it('create a new label and remove existing labels', () => {
+		const mapper = Container.get(LabelsMapper);
+		const existingLabels = [Label.create('Chinese', 1), Label.create('English', 2)];
+
+		const mergedLabels = mapper.mergeLabels(existingLabels, [Label.create('Tamil')]);
+
+		expect(mergedLabels).toHaveLength(1);
 	});
 
 	it('should update a new label', () => {

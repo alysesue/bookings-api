@@ -31,23 +31,18 @@ export class LabelsMapper {
 	}
 
 	public mergeLabels(originalList: Label[], updatedList: Label[]): Label[] {
-		updatedList.forEach((label) => {
-			if (label.id) {
-				const foundLabel = originalList.find((l) => l.id === label.id);
-				if (foundLabel) {
-					foundLabel.labelText = label.labelText;
-				}
+		for (let index = 0; index < originalList.length; ) {
+			const originalLabel = originalList[index];
+			const foundUpdatedLabel = updatedList.find((l) => !!l.id && l.id === originalLabel.id);
+			if (foundUpdatedLabel) {
+				originalLabel.labelText = foundUpdatedLabel.labelText;
+				index++;
 			} else {
-				originalList.push(label);
-			}
-		});
-
-		originalList.forEach((originalLabel, index) => {
-			const foundUpdatedLabel = updatedList.find((l) => l.id === originalLabel.id);
-			if (!foundUpdatedLabel) {
 				originalList.splice(index, 1);
 			}
-		});
+		}
+
+		originalList.push(...updatedList.filter((label) => !label.id));
 
 		return originalList;
 	}

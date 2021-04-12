@@ -6,7 +6,6 @@ import { ServiceProvidersService } from '../serviceProviders/serviceProviders.se
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { OneOffTimeslotsActionAuthVisitor } from './oneOffTimeslots.auth';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { LabelsMapper } from '../../components/labels/labels.mapper';
 import { LabelsService } from '../labels/labels.service';
 
 @InRequestScope
@@ -17,8 +16,6 @@ export class OneOffTimeslotsService {
 	private serviceProvidersService: ServiceProvidersService;
 	@Inject
 	private userContext: UserContext;
-	@Inject
-	private labelMapper: LabelsMapper;
 	@Inject
 	private labelsService: LabelsService;
 
@@ -39,8 +36,7 @@ export class OneOffTimeslotsService {
 
 	public async save(request: OneOffTimeslotRequest): Promise<OneOffTimeslot> {
 		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
-		let labels = this.labelMapper.mapToLabels(request.labels);
-		labels = await this.labelsService.verifyLabels(labels, serviceProvider.service);
+		const labels = await this.labelsService.verifyLabels(request.labelIds, serviceProvider.serviceId);
 
 		const entity = new OneOffTimeslot();
 		entity.serviceProvider = serviceProvider;

@@ -2,7 +2,7 @@ import { PgClient } from '../../utils/pgClient';
 
 import { populateOneOffTimeslot, populateServiceLabel, populateUserServiceProvider } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
-import { LabelRequestModel } from '../../../src/components/labels/label.apicontract';
+import { ServiceResponse } from '../../../src/components/services/service.apicontract';
 
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
@@ -11,12 +11,8 @@ describe('Timeslots functional tests', () => {
 	const START_TIME_1 = new Date('2021-03-05T01:00:00Z');
 	const END_TIME_1 = new Date('2021-03-05T02:00:00Z');
 
-	const labels: LabelRequestModel[] = [];
-	const label = new LabelRequestModel();
-	label.label = 'Chinese';
-	labels.push(label);
-
 	let serviceProvider1: ServiceProviderResponseModel;
+	let service: ServiceResponse;
 
 	afterAll(async (done) => {
 		await pgClient.cleanAllTables();
@@ -35,7 +31,7 @@ describe('Timeslots functional tests', () => {
 
 		serviceProvider1 = result1.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);
 
-		await populateServiceLabel({
+		service = await populateServiceLabel({
 			serviceId: serviceProvider1.serviceId,
 			serviceName: NAME_SERVICE_1,
 			labels: ['Chinese'],
@@ -50,9 +46,10 @@ describe('Timeslots functional tests', () => {
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
 			capacity: 1,
-			labels,
+			labelIds: [service.labels[0].id],
 		});
 
-		expect(response.labels[0].label).toEqual(labels[0].label);
+		expect(response.labels[0].id).toEqual(service.labels[0].id);
+		expect(response.labels[0].label).toEqual(service.labels[0].label);
 	});
 });

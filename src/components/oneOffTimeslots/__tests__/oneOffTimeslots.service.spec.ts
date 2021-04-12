@@ -8,9 +8,7 @@ import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 import { OneOffTimeslotsRepository } from '../oneOffTimeslots.repository';
 import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { OneOffTimeslotsActionAuthVisitor } from '../oneOffTimeslots.auth';
-import { LabelRequestModel } from '../../../components/labels/label.apicontract';
-import { LabelsRepository } from '../../../components/labels/labels.repository';
-import { LabelsRepositoryMock } from '../../../components/labels/__mocks__/labels.repository.mock';
+import { LabelsService } from '../../../components/labels/labels.service';
 
 jest.mock('../oneOffTimeslots.auth');
 
@@ -30,7 +28,7 @@ describe('OneOffTimeslots Service Tests', () => {
 		Container.bind(OneOffTimeslotsRepository).to(OneOffTimeslotsRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
-		Container.bind(LabelsRepository).to(LabelsRepositoryMock);
+		Container.bind(LabelsService).to(LabelServiceMock);
 	});
 
 	beforeEach(() => {
@@ -42,23 +40,20 @@ describe('OneOffTimeslots Service Tests', () => {
 		ServiceProvidersServiceMock.getServiceProvider.mockImplementation(() => {
 			return serviceProvider;
 		});
+
+		LabelServiceMock.verifyLabels.mockReturnValue(Promise.resolve([]));
 	});
 
 	it('should save using repository', async () => {
 		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
-		const labels: LabelRequestModel[] = [];
-		const label = new LabelRequestModel();
-		label.label = 'Chinese';
-		labels.push(label);
-
-		LabelsRepositoryMock.findMock.mockReturnValue([Label.create('Chinese')]);
+		LabelServiceMock.verifyLabels.mockReturnValue(Promise.resolve([Label.create('Chinese')]));
 
 		const request = new OneOffTimeslotRequest();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
 		request.endDateTime = DateHelper.addHours(request.startDateTime, 1);
 		request.capacity = 2;
 		request.serviceProviderId = 1;
-		request.labels = labels;
+		request.labelIds = ['Chinese'];
 
 		const service = Container.get(OneOffTimeslotsService);
 		await service.save(request);
@@ -68,16 +63,14 @@ describe('OneOffTimeslots Service Tests', () => {
 		expect(parameter0.startDateTime).toEqual(new Date('2021-03-02T00:00:00Z'));
 		expect(parameter0.endDateTime).toEqual(new Date('2021-03-02T01:00:00Z'));
 		expect(parameter0.capacity).toBe(2);
-		expect(parameter0.labels[0].labelText).toEqual(labels[0].label);
+		expect(parameter0.labels[0].labelText).toEqual(request.labelIds[0]);
 
 		expect(ServiceProvidersServiceMock.getServiceProvider).toBeCalled();
 	});
 
 	it(`should throw when user doesn't have permisssion`, async () => {
 		(authVisitorMock.hasPermission as jest.Mock).mockReturnValue(false);
-
 		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
-		LabelsRepositoryMock.findMock.mockReturnValue([Label.create('Chinese')]);
 
 		const request = new OneOffTimeslotRequest();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
@@ -95,7 +88,7 @@ describe('OneOffTimeslots Service Tests', () => {
 
 	it(`should validate dates`, async () => {
 		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
-		LabelsRepositoryMock.findMock.mockReturnValue([Label.create('Chinese')]);
+
 		const request = new OneOffTimeslotRequest();
 		const date = new Date('2021-03-02T00:00:00Z');
 		request.startDateTime = DateHelper.addHours(date, 1);
@@ -137,5 +130,12 @@ class UserContextMock implements Partial<UserContext> {
 
 	public async getAuthGroups(...params): Promise<any> {
 		return await UserContextMock.getAuthGroups(...params);
+	}
+}
+
+class LabelServiceMock implements Partial<LabelsService> {
+	public static verifyLabels = jest.fn<Promise<Label[]>, any>();
+	public verifyLabels(...params): Promise<Label[]> {
+		return LabelServiceMock.verifyLabels(...params);
 	}
 }
