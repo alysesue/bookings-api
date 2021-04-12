@@ -4,13 +4,18 @@ import {
 	CreateEmailRequestApiDomain,
 	CreateEmailResponseDataApiDomain,
 } from 'mol-lib-api-contract/notification/mail/create-email/create-email-api-domain';
-import { BookingStatus } from '../../models';
-import { DateHelper } from '../../infrastructure/dateHelper';
 import { CreateEmail } from 'mol-lib-api-contract/notification/mail';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { mailer } from '../../config/mailer';
 import { emailLogger } from '../../config/logger';
 import { MailOptions } from './MailOptions';
+import {
+	CitizenEmailTemplateBookingActionByCitizen,
+	CitizenEmailTemplateBookingActionByServiceProvider,
+	ServiceProviderEmailTemplateBookingActionByCitizen,
+	ServiceProviderEmailTemplateBookingActionByServiceProvider
+} from './emailTemplates';
+import { BookingType } from '../../models/bookingType';
 
 @InRequestScope
 export class NotificationsService {
@@ -46,34 +51,32 @@ export class NotificationsService {
 		}
 	};
 
-	// data = subject.booking
-	public static templateEmailBooking(data): CreateEmailRequestApiDomain {
-		const status = BookingStatus[data._status];
-		const serviceName = data._service?._name || '';
-		const serviceProviderName = data._serviceProvider?._name;
-		const serviceProviderText = serviceProviderName ? ` - ${serviceProviderName}` : '';
-		const citizenEmail = data._citizenEmail;
-		const location = data._location;
-		const locationText = location ? `Location: <b>${location}</b>` : '';
-		const day = DateHelper.getDateFormat(data._startDateTime);
-		const time = `${DateHelper.getTime12hFormatString(data._startDateTime)} - ${DateHelper.getTime12hFormatString(
-			data._endDateTime,
-		)}`;
-		return {
-			to: [citizenEmail],
-			subject: `BookingSG confirmation: ${serviceName}${serviceProviderText}`,
-			html: `<pre>
-Your booking request has been received.
-<br />
-Booking for: ${serviceName}${serviceProviderText}.
-<br />
-Below is a confirmation of your booking details.
-Booking status: <b>${status}</b>
-Date: <b>${day}</b>
-Time: <b>${time}</b>
-${locationText}
-				</pre>`,
-		};
+	public createCitizenEmailFactory(data): CreateEmailRequestApiDomain {
+		if (data._bookingType === BookingType.Created && data._userType._singPassUser)
+			return CitizenEmailTemplateBookingActionByCitizen.CreatedBookingEmail(data);
+		if (data._bookingType === BookingType.Updated && data._userType._singPassUser)
+			return CitizenEmailTemplateBookingActionByCitizen.UpdatedBookingEmail(data);
+		if (data._bookingType === BookingType.CancelledOrRejected && data._userType._singPassUser)
+			return CitizenEmailTemplateBookingActionByCitizen.CancelledBookingEmail(data);
+		if (data._bookingType === BookingType.Created && data._userType._adminUser)
+			return CitizenEmailTemplateBookingActionByServiceProvider.CreatedBookingEmail(data);
+		if (data._bookingType === BookingType.Updated && data._userType._adminUser)
+			return CitizenEmailTemplateBookingActionByServiceProvider.UpdatedBookingEmail(data);
+		if (data._bookingType === BookingType.CancelledOrRejected && data._userType._adminUser)
+			return CitizenEmailTemplateBookingActionByServiceProvider.CancelledBookingEmail(data)
+	}
+
+	public createServiceProviderEmailFactory(data): CreateEmailRequestApiDomain {
+		if (data._bookingType === BookingType.Created && data._userType._singPassUser)
+			return ServiceProviderEmailTemplateBookingActionByCitizen.CreatedBookingEmail(data);
+		if (data._bookingType === BookingType.Updated && data._userType._singPassUser)
+			return ServiceProviderEmailTemplateBookingActionByCitizen.UpdatedBookingEmail(data);
+		if (data._bookingType === BookingType.CancelledOrRejected && data._userType._singPassUser)
+			return ServiceProviderEmailTemplateBookingActionByCitizen.CancelledBookingEmail(data);
+		if (data._bookingType === BookingType.Updated && data._userType._adminUser)
+			return ServiceProviderEmailTemplateBookingActionByServiceProvider.UpdatedBookingEmail(data);
+		if (data._bookingType === BookingType.CancelledOrRejected && data._userType._adminUser)
+			return ServiceProviderEmailTemplateBookingActionByServiceProvider.CancelledBookingEmail(data);
 	}
 
 	private getMergedOptions = (options: MailOptions) => {

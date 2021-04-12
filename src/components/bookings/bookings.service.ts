@@ -1,7 +1,7 @@
-import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { Inject, InRequestScope } from 'typescript-ioc';
-import { Booking, BookingStatus, ChangeLogAction, Service, ServiceProvider, User } from '../../models';
-import { BookingsRepository } from './bookings.repository';
+import {ErrorCodeV2, MOLErrorV2} from 'mol-lib-api-contract';
+import {Inject, InRequestScope} from 'typescript-ioc';
+import {Booking, BookingStatus, ChangeLogAction, Service, ServiceProvider, User} from '../../models';
+import {BookingsRepository} from './bookings.repository';
 import {
 	BookingAcceptRequest,
 	BookingDetailsRequest,
@@ -9,22 +9,23 @@ import {
 	BookingSearchRequest,
 	BookingUpdateRequest,
 } from './bookings.apicontract';
-import { TimeslotsService } from '../timeslots/timeslots.service';
-import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
-import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
-import { BookingBuilder } from '../../models/entities/booking';
-import { BookingsValidatorFactory } from './validator/bookings.validation';
-import { ServicesService } from '../services/services.service';
-import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs.service';
-import { UserContext } from '../../infrastructure/auth/userContext';
-import { BookingActionAuthVisitor } from './bookings.auth';
-import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
-import { UsersService } from '../users/users.service';
-import { BookingsMapper } from './bookings.mapper';
-import { IPagedEntities } from '../../core/pagedEntities';
-import { getConfig } from '../../config/app-config';
-import { MailObserver } from '../notifications/notification.observer';
-import { BookingsSubject } from './bookings.subject';
+import {TimeslotsService} from '../timeslots/timeslots.service';
+import {ServiceProvidersRepository} from '../serviceProviders/serviceProviders.repository';
+import {UnavailabilitiesService} from '../unavailabilities/unavailabilities.service';
+import {BookingBuilder} from '../../models/entities/booking';
+import {BookingsValidatorFactory} from './validator/bookings.validation';
+import {ServicesService} from '../services/services.service';
+import {BookingChangeLogsService} from '../bookingChangeLogs/bookingChangeLogs.service';
+import {UserContext} from '../../infrastructure/auth/userContext';
+import {BookingActionAuthVisitor} from './bookings.auth';
+import {ServiceProvidersService} from '../serviceProviders/serviceProviders.service';
+import {UsersService} from '../users/users.service';
+import {BookingsMapper} from './bookings.mapper';
+import {IPagedEntities} from '../../core/pagedEntities';
+import {getConfig} from '../../config/app-config';
+import {MailObserver} from '../notifications/notification.observer';
+import {BookingsSubject} from './bookings.subject';
+import {BookingType} from "../../models/bookingType";
 
 @InRequestScope
 export class BookingsService {
@@ -86,7 +87,8 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			this.cancelBookingInternal.bind(this),
 		);
-		this.bookingsSubject.notify({ booking });
+		const currentUser = await this.userContext.getCurrentUser();
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.CancelledOrRejected, userType: currentUser });
 		return booking;
 	}
 
@@ -108,7 +110,8 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			acceptAction,
 		);
-		this.bookingsSubject.notify({ booking });
+		const currentUser = await this.userContext.getCurrentUser();
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated, userType: currentUser });
 		return booking;
 	}
 
@@ -124,7 +127,8 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			updateAction,
 		);
-		this.bookingsSubject.notify({ booking });
+		const currentUser = await this.userContext.getCurrentUser();
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated, userType: currentUser });
 		return booking;
 	}
 
@@ -134,7 +138,8 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			this.rejectBookingInternal.bind(this),
 		);
-		this.bookingsSubject.notify({ booking });
+		const currentUser = await this.userContext.getCurrentUser();
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.CancelledOrRejected, userType: currentUser });
 		return booking;
 	}
 
@@ -145,7 +150,8 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			rescheduleAction,
 		);
-		this.bookingsSubject.notify({ booking });
+		const currentUser = await this.userContext.getCurrentUser();
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated, userType: currentUser });
 		return booking;
 	}
 
@@ -162,7 +168,8 @@ export class BookingsService {
 		// Method calls with different services, or timeslots should still run in parallel.
 		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptchaAndAutoAccept);
 		const booking = await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
-		this.bookingsSubject.notify({ booking });
+		const currentUser = await this.userContext.getCurrentUser();
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created, userType: currentUser });
 		return booking;
 	}
 
@@ -276,7 +283,7 @@ export class BookingsService {
 		return [ChangeLogAction.Accept, booking];
 	}
 
-	public async updateInternal(
+	private async updateInternal(
 		previousBooking: Booking,
 		bookingRequest: BookingRequest,
 		afterMap: (updatedBooking: Booking, serviceProvider: ServiceProvider) => void | Promise<void>,
@@ -418,7 +425,8 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			validateAction,
 		);
-		this.bookingsSubject.notify({ booking });
+		const currentUser = await this.userContext.getCurrentUser();
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created, userType: currentUser });
 		return booking;
 	}
 }
