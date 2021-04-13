@@ -2,12 +2,13 @@ import { InRequestScope } from 'typescript-ioc';
 import { getConfig } from '../../config/app-config';
 import { post } from '../../tools/fetch';
 import { CreateEmailRequestApiDomain } from 'mol-lib-api-contract/notification/mail/create-email/create-email-api-domain';
+import { BookingType } from '../../models/bookingType';
 import {
 	CitizenEmailTemplateBookingActionByCitizen,
-	CitizenEmailTemplateBookingActionByServiceProvider,
-	ServiceProviderEmailTemplateBookingActionByCitizen, ServiceProviderEmailTemplateBookingActionByServiceProvider
-} from './emailTemplates';
-import { BookingType } from '../../models/bookingType';
+	CitizenEmailTemplateBookingActionByServiceProvider, EmailTemplateBase,
+	ServiceProviderEmailTemplateBookingActionByCitizen,
+	ServiceProviderEmailTemplateBookingActionByServiceProvider
+} from "./notifications.templates";
 
 @InRequestScope
 export class NotificationsService {
@@ -19,7 +20,7 @@ export class NotificationsService {
 		}
 	}
 
-	public createCitizenEmailFactory(data): CreateEmailRequestApiDomain {
+	public createCitizenEmailFactory(data): EmailTemplateBase {
 		if (data._bookingType === BookingType.Created && data._userType._singPassUser)
 			return CitizenEmailTemplateBookingActionByCitizen.CreatedBookingEmail(data);
 		if (data._bookingType === BookingType.Updated && data._userType._singPassUser)
@@ -34,7 +35,7 @@ export class NotificationsService {
 			return CitizenEmailTemplateBookingActionByServiceProvider.CancelledBookingEmail(data)
 	}
 
-	public createServiceProviderEmailFactory(data): CreateEmailRequestApiDomain {
+	public createServiceProviderEmailFactory(data): EmailTemplateBase {
 		if (data._bookingType === BookingType.Created && data._userType._singPassUser)
 			return ServiceProviderEmailTemplateBookingActionByCitizen.CreatedBookingEmail(data);
 		if (data._bookingType === BookingType.Updated && data._userType._singPassUser)
