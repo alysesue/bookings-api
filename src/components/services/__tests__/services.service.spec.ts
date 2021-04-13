@@ -3,6 +3,7 @@ import { Container } from 'typescript-ioc';
 import { ServicesService } from '../services.service';
 import { ServiceRequest } from '../service.apicontract';
 import {
+	Label,
 	Organisation,
 	OrganisationAdminGroupMap,
 	ScheduleForm,
@@ -101,7 +102,7 @@ const organisation = new Organisation();
 organisation.id = 1;
 organisation._organisationAdminGroupMap = { organisationRef: 'orga', organisationId: 1 } as OrganisationAdminGroupMap;
 
-// tslint:disable-next-line: no-big-function
+// tslint:disable-next-line:no-big-function
 describe('Services service tests', () => {
 	it('should create admin service and service', async () => {
 		const admin = {
@@ -175,6 +176,37 @@ describe('Services service tests', () => {
 
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].isSpAutoAssigned).toBe(false);
+	});
+
+	it('should NOT save service without permission', async () => {
+		const request = new ServiceRequest();
+		request.name = 'John';
+		request.organisationId = 1;
+		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
+			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
+		);
+		visitorObject.hasPermission.mockReturnValue(false);
+
+		request.labels = [{ label: 'label' }];
+		const asyncTest = () => Container.get(ServicesService).createService(request);
+
+		await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(
+			`"User cannot perform this action (Create) for services."`,
+		);
+	});
+
+	it('should save service & set SpAutoAssigned', async () => {
+		const request = new ServiceRequest();
+		request.name = 'John';
+		request.organisationId = 1;
+		request.isSpAutoAssigned = true;
+		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
+			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
+		);
+		request.labels = [{ label: 'label' }];
+		await Container.get(ServicesService).createService(request);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].isSpAutoAssigned).toBe(true);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].labels).toHaveLength(1);
 	});
 
@@ -182,14 +214,42 @@ describe('Services service tests', () => {
 		const newService = new Service();
 		newService.id = 1;
 		newService.organisationId = 1;
+		newService.labels = [];
+
 		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(newService));
+		ServicesRepositoryMock.save.mockImplementation(() => Promise.resolve(newService));
+
 		const request = new ServiceRequest();
 		request.name = 'John';
 		request.organisationId = 1;
+		request.isSpAutoAssigned = true;
 
 		await Container.get(ServicesService).updateService(1, request);
+		expect(ServicesRepositoryMock.save).toBeCalled();
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].isSpAutoAssigned).toBe(true);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].labels).toHaveLength(0);
+	});
+
+	it('should NOT update service without permission', async () => {
+		const newService = new Service();
+		newService.id = 1;
+		newService.organisationId = 1;
+		newService.labels = [];
+
+		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(newService));
+		ServicesRepositoryMock.save.mockImplementation(() => Promise.resolve(newService));
+		visitorObject.hasPermission.mockReturnValue(false);
+
+		const request = new ServiceRequest();
+		request.name = 'John';
+		request.organisationId = 1;
+		request.isSpAutoAssigned = true;
+		const asyncTest = () => Container.get(ServicesService).updateService(1, request);
+
+		await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(
+			`"User cannot perform this action (Update) for services."`,
+		);
 	});
 
 	it('should throw if service not found', async () => {
@@ -312,6 +372,38 @@ describe('Services service tests', () => {
 		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve(orgAdmins));
 
 		expect(orgAdmins[0] instanceof OrganisationAdminAuthGroup).toBe(false);
+	});
+
+	it('should create labels', async () => {
+		const request = new ServiceRequest();
+		request.name = 'John';
+		request.organisationId = 1;
+		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
+			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
+		);
+		request.labels = [{ label: 'Chinese' }, { label: 'Chinese' }];
+
+		await Container.get(ServicesService).createService(request);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].labels).toHaveLength(1);
+	});
+
+	it('should update labels', async () => {
+		const newService = new Service();
+		newService.id = 1;
+		newService.organisationId = 1;
+		newService.name = 'Service A';
+		newService.labels = [Label.create('Chinese', 1), Label.create('English', 2)];
+
+		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(newService));
+		ServicesRepositoryMock.save.mockImplementation(() => Promise.resolve(newService));
+
+		const request = new ServiceRequest();
+		request.name = 'Service A';
+		request.labels = [{ label: 'Tamil' }];
+
+		await Container.get(ServicesService).updateService(1, request);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].labels).toHaveLength(1);
 	});
 });
 

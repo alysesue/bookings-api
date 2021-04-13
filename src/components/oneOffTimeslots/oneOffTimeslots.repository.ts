@@ -40,7 +40,8 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 			.createQueryBuilder('timeslot')
 			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
 			.leftJoin('timeslot._serviceProvider', 'serviceProvider')
-			.leftJoin('serviceProvider._service', 'SPservice');
+			.leftJoin('serviceProvider._service', 'SPservice')
+			.leftJoinAndSelect('timeslot._labels', 'label');
 	}
 
 	public async getById(request: { id: number; byPassAuth?: boolean }): Promise<OneOffTimeslot> {
@@ -56,8 +57,9 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 		serviceProviderIds?: number[];
 		startDateTime?: Date;
 		endDateTime?: Date;
+		labelIds?: number[];
 	}): Promise<OneOffTimeslot[]> {
-		const { serviceId, serviceProviderIds, startDateTime, endDateTime } = request;
+		const { serviceId, serviceProviderIds, startDateTime, endDateTime, labelIds } = request;
 
 		const serviceCondition = serviceId ? '"serviceProvider"."_serviceId" = :serviceId' : '';
 		const spCondition =
@@ -66,10 +68,22 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 				: '';
 		const startDateCondition = startDateTime ? 'timeslot."_endDateTime" > :startDateTime' : '';
 		const endDateCondition = endDateTime ? 'timeslot."_startDateTime" < :endDateTime' : '';
+		const labelsCondition =
+			labelIds && labelIds.length > 0
+				? labelIds.map(
+						(_, index) =>
+							`timeslot."_id" IN (SELECT "oneOffTimeslot_id" FROM oneofftimeslot_label WHERE "label_id" = :label_${index})`,
+				  )
+				: [];
+
+		const labelsParam = {};
+		if (labelIds && labelIds.length > 0) {
+			labelIds.forEach((labelId, index) => (labelsParam[`label_${index}`] = labelId));
+		}
 
 		const query = await this.createSelectQuery(
-			[serviceCondition, spCondition, startDateCondition, endDateCondition],
-			{ serviceId, serviceProviderIds, startDateTime, endDateTime },
+			[serviceCondition, spCondition, startDateCondition, endDateCondition, ...labelsCondition],
+			{ serviceId, serviceProviderIds, startDateTime, endDateTime, ...labelsParam },
 			request,
 		);
 

@@ -63,6 +63,16 @@ describe('Services controller tests', () => {
 		expect(result.data.labels).toHaveLength(0);
 	});
 
+	it('should return empty label when none provided', async () => {
+		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
+
+		const controller = Container.get(ServicesController);
+		const request = new ServiceRequest();
+		const result = await controller.createService(request);
+
+		expect(result.data.labels).toHaveLength(0);
+	});
+
 	it('should update a service', async () => {
 		ServicesServiceMock.updateService.mockReturnValue({ name: 'John' });
 

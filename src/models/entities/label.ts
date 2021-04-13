@@ -1,9 +1,19 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { IService } from '../interfaces';
 
 @Entity()
+@Unique('ServiceLabels', ['_labelText', '_serviceId'])
 export class Label {
 	public constructor() {}
+
+	public static create(labelText: string, id?: number): Label {
+		const label = new Label();
+		if (id) {
+			label._id = id;
+		}
+		label.labelText = labelText;
+		return label;
+	}
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
@@ -27,7 +37,27 @@ export class Label {
 		this._labelText = value;
 	}
 
-	@ManyToOne('Service')
+	@ManyToOne('Service', { orphanedRowAction: 'delete' })
 	@JoinColumn({ name: '_serviceId' })
 	public service: IService;
+	// private _service: IService;
+
+	// public get service(): IService {
+	// 	return this._service;
+	// }
+
+	// public set service(value: IService) {
+	// 	this._service = value;
+	// }
+
+	@Column({ nullable: false })
+	private _serviceId: number;
+
+	public get serviceId(): number {
+		return this._serviceId;
+	}
+
+	public set serviceId(value: number) {
+		this._serviceId = value;
+	}
 }

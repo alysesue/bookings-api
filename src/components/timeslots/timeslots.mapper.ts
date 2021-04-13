@@ -8,6 +8,7 @@ import { BookingsMapper } from '../bookings/bookings.mapper';
 import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
 import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
 import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
+import { LabelsMapper } from '../../components/labels/labels.mapper';
 import { Inject, InRequestScope } from 'typescript-ioc';
 
 @InRequestScope
@@ -15,14 +16,17 @@ export class TimeslotsMapper {
 	@Inject
 	private bookingsMapper: BookingsMapper;
 
-	public static mapAvailabilityToResponse(
+	@Inject
+	public labelsMapper: LabelsMapper;
+
+	public mapAvailabilityToResponse(
 		entries: AvailableTimeslotProviders[],
 		options: { skipUnavailable?: boolean },
 	): AvailabilityEntryResponse[] {
 		return entries.map((e) => this.mapAvailabilityItem(e, options)).filter((e) => !!e);
 	}
 
-	private static mapAvailabilityItem(
+	private mapAvailabilityItem(
 		entry: AvailableTimeslotProviders,
 		options: { skipUnavailable?: boolean },
 	): AvailabilityEntryResponse | undefined {
@@ -88,6 +92,8 @@ export class TimeslotsMapper {
 		item.pendingBookings = entry.pendingBookings.map((booking) => {
 			return this.bookingsMapper.mapDataModel(booking, userContext);
 		});
+		item.labels = this.labelsMapper.mapToLabelsResponse(entry.labels);
+
 		return item;
 	}
 }

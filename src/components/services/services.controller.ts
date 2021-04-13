@@ -20,6 +20,7 @@ import { ServicesMapper } from './services.mapper';
 export class ServicesController extends Controller {
 	@Inject
 	private servicesService: ServicesService;
+
 	@Inject
 	private serviceMapper: ServicesMapper;
 
@@ -93,7 +94,7 @@ export class ServicesController extends Controller {
 	}
 
 	/**
-	 * Retrieves a single service.
+	 * Retrieves a single service. (Includes Service Labels)
 	 * @param @isInt serviceId The service id.
 	 */
 	@Get('{serviceId}')

@@ -8,5 +8,7 @@ export { VideoConferenceUrl1615172013022 } from './1615172013022-VideoConference
 export { SettingsMigrationFix1617063843109 } from './1617063843109-SettingsMigrationFix';
 export { DynamicFields1617079139135 } from './1617079139135-DynamicFields';
 export { DynamicValues1617260385656 } from './1617260385656-DynamicValues';
+export { IsSpAutoAssigned1616719301709 } from './1616719301709-IsSpAutoAssigned';
 export { Label1617033565406 } from './1617033565406-Label';
 export { ChangeLogUserIndex1615785814022 } from './1615785814022-ChangeLogUserIndex';
+export { OneOffTimeslotsAndLabel1617867320834 } from './1617867320834-OneOffTimeslotsAndLabel';

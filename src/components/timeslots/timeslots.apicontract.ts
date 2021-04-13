@@ -1,5 +1,6 @@
 import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
 import { BookingResponse } from '../bookings/bookings.apicontract';
+import { LabelResponseModel } from '../labels/label.apicontract';
 
 export class AvailabilityEntryResponse {
 	/**
@@ -45,6 +46,8 @@ export class TimeslotServiceProviderResponse {
 	 * All pending bookings assigned to this service provider
 	 */
 	public pendingBookings: BookingResponse[];
+
+	public labels?: LabelResponseModel[];
 }
 
 export class TimeslotEntryResponse {

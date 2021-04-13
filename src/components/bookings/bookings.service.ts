@@ -25,6 +25,7 @@ import { IPagedEntities } from '../../core/pagedEntities';
 import { getConfig } from '../../config/app-config';
 import { MailObserver } from '../notifications/notification.observer';
 import { BookingsSubject } from './bookings.subject';
+import { randomIndex } from '../../tools/arrays';
 
 @InRequestScope
 export class BookingsService {
@@ -332,6 +333,14 @@ export class BookingsService {
 		let serviceProvider: ServiceProvider | undefined;
 		if (bookingRequest.serviceProviderId) {
 			serviceProvider = await this.serviceProvidersService.getServiceProvider(bookingRequest.serviceProviderId);
+		} else if (service.isSpAutoAssigned) {
+			const serviceProviders = await this.serviceProvidersService.getAvailableServiceProviders(
+				bookingRequest.startDateTime,
+				bookingRequest.endDateTime,
+				serviceId,
+			);
+			const random = randomIndex(serviceProviders);
+			serviceProvider = !!serviceProviders.length ? serviceProviders[random] : undefined;
 		}
 
 		const isServiceOnHold = () => {
@@ -343,7 +352,7 @@ export class BookingsService {
 			.withServiceId(serviceId)
 			.withStartDateTime(bookingRequest.startDateTime)
 			.withEndDateTime(bookingRequest.endDateTime)
-			.withServiceProviderId(bookingRequest.serviceProviderId)
+			.withServiceProviderId(serviceProvider?.id)
 			.withRefId(bookingRequest.refId)
 			.withLocation(bookingRequest.location)
 			.withDescription(bookingRequest.description)
@@ -368,7 +377,6 @@ export class BookingsService {
 		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
 		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || getConfig().isAutomatedTest);
 		await validator.validate(booking);
-
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
 
 		// Persists in memory user only after validating booking.

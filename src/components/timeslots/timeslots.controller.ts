@@ -7,6 +7,7 @@ import { ApiData, ApiDataFactory } from '../../apicontract';
 import { TimeslotsMapper } from './timeslots.mapper';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
+import { IdHasher } from '../../infrastructure/idHasher';
 
 @Route('v1/timeslots')
 @Tags('Timeslots')
@@ -18,7 +19,10 @@ export class TimeslotsController extends Controller {
 	private timeslotsService: TimeslotsService;
 
 	@Inject
-	private timeslotsMapper: TimeslotsMapper;
+	private timeslotMapper: TimeslotsMapper;
+
+	@Inject
+	private idHasher: IdHasher;
 
 	/**
 	 * Retrieves available timeslots for a service in a defined datetime range [startDate, endDate].
@@ -29,6 +33,7 @@ export class TimeslotsController extends Controller {
 	 * @param @isInt serviceId The available service to be queried.
 	 * @param @isInt serviceProviderId (Optional) Filters timeslots for a specific service provider.
 	 * @param exactTimeslot (Optional) to filter timeslots for the given dates.
+	 * @param labelIds (Optional) to filter by label
 	 */
 	@Get('availability')
 	@Security('service')
@@ -39,20 +44,24 @@ export class TimeslotsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 		@Query() serviceProviderId?: number,
 		@Query() exactTimeslot: boolean = false,
+		@Query() labelIds?: string[],
 	): Promise<ApiData<AvailabilityEntryResponse[]>> {
+		const labelIdsNumber = labelIds && labelIds.length > 0 ? labelIds.map((id) => this.idHasher.decode(id)) : [];
+
 		let timeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
 			serviceId,
 			exactTimeslot,
 			serviceProviderId ? [serviceProviderId] : undefined,
+			labelIdsNumber,
 		);
 
 		if (exactTimeslot) {
 			timeslots = timeslots.some((timeslot) => timeslot.getAvailabilityCount() <= 0) ? [] : timeslots;
 		}
 
-		const result = TimeslotsMapper.mapAvailabilityToResponse(timeslots, { skipUnavailable: true });
+		const result = this.timeslotMapper.mapAvailabilityToResponse(timeslots, { skipUnavailable: true });
 
 		return ApiDataFactory.create(result);
 	}
@@ -74,6 +83,7 @@ export class TimeslotsController extends Controller {
 	 * @param serviceId
 	 * @param includeBookings (Optional)
 	 * @param serviceProviderIds
+	 * @param labelIds (Optional) to filter by label
 	 */
 	@Get('')
 	@Security('service')
@@ -85,7 +95,9 @@ export class TimeslotsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 		@Query() includeBookings: boolean = false,
 		@Query() serviceProviderIds?: number[],
+		@Query() labelIds?: string[],
 	): Promise<ApiData<TimeslotEntryResponse[]>> {
+		const labelIdsNumber = labelIds && labelIds.length > 0 ? labelIds.map((id) => this.idHasher.decode(id)) : [];
 		let spIdsFilter = serviceProviderIds || [];
 		const spGroup = await this.getServiceProviderAuthGroup();
 		if (spGroup) {
@@ -103,10 +115,12 @@ export class TimeslotsController extends Controller {
 			serviceId,
 			includeBookings,
 			spIdsFilter,
+			labelIdsNumber,
 		);
+
 		const userContextSnapshot = await this.userContext.getSnapshot();
 		return ApiDataFactory.create(
-			timeslots?.map((t) => this.timeslotsMapper.mapTimeslotEntry(t, userContextSnapshot)),
+			timeslots?.map((t) => this.timeslotMapper.mapTimeslotEntry(t, userContextSnapshot)),
 		);
 	}
 }

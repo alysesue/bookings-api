@@ -7,11 +7,13 @@ export class ServiceResponse {
 	public id: number;
 	public name: string;
 	public isStandAlone: boolean;
+	public isSpAutoAssigned: boolean;
 	public labels: LabelResponseModel[];
 }
 
 export class ServiceRequest {
 	public name: string;
+	public isSpAutoAssigned?: boolean;
 	/**
 	 * @isInt
 	 */

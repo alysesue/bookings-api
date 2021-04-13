@@ -24,6 +24,7 @@ describe('Timeslots functional tests', () => {
 	const END_TIME_3 = '14:00';
 	const ERROR_MESSAGE = 'An unexpected error has occurred.';
 	const TIME_FORMAT = 'HH:mm';
+
 	let result1;
 	let result2;
 	let result3;
@@ -128,6 +129,7 @@ describe('Timeslots functional tests', () => {
 		expect(startTime).toEqual(START_TIME_1);
 		expect(endTime).toEqual(END_TIME_1);
 	});
+
 	it('service admin should only get timeslot schedules for their service', async () => {
 		const service1TimeslotsResponse = await ServiceAdminRequestEndpointSG.create({
 			nameService: NAME_SERVICE_1,
