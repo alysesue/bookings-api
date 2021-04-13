@@ -228,3 +228,60 @@ resource "aws_ssm_parameter" "access_control_allow_origin" {
 
   overwrite = true
 }
+
+resource "aws_ssm_parameter" "smtp-host" {
+  name  = "${local.path-prefix}/SMTP_HOST"
+  type  = "String"
+  value = "${data.external.static.result.SMTP_HOST}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "smtp-port" {
+  name  = "${local.path-prefix}/SMTP_PORT"
+  type  = "String"
+  value = "${data.external.static.result.SMTP_PORT}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "smtp-secure" {
+  name  = "${local.path-prefix}/SMTP_SECURE"
+  type  = "String"
+  value = "${data.external.static.result.SMTP_SECURE}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "smtp-use-auth" {
+  name  = "${local.path-prefix}/SMTP_USE_AUTH"
+  type  = "String"
+  value = "${data.external.static.result.SMTP_USE_AUTH}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "smtp-auth-username" {
+  name  = "${local.path-prefix}/SMTP_AUTH_USERNAME"
+  type  = "String"
+  value = "${data.external.static.result.SMTP_AUTH_USERNAME}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "smtp-auth-password" {
+  name   = "${local.path-prefix}/SMTP_AUTH_PASSWORD"
+  type   = "SecureString"
+  value  = "${data.external.static.result.SMTP_AUTH_PASSWORD}"
+  key_id = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "mol-sender-email" {
+  name  = "${local.path-prefix}/MOL_SENDER_EMAIL"
+  type  = "String"
+  value = "${data.external.static.result.MOL_SENDER_EMAIL}"
+
+  overwrite = true
+}
