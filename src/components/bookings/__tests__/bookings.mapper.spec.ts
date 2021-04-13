@@ -1,12 +1,26 @@
-import { Booking, Organisation, Service, User } from '../../../models';
+import { Booking, Organisation, SelectListDynamicField, SelectListOption, Service, User } from '../../../models';
 import { BookingsMapper } from '../bookings.mapper';
 import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
+import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entities/booking';
+import { Container } from 'typescript-ioc';
+import { IdHasher } from '../../../infrastructure/idHasher';
+import { IdHasherMock } from '../../../components/labels/__tests__/labels.mapper.spec';
+import {
+	DynamicValueContract,
+	DynamicValueTypeContract,
+	PersistDynamicValueContract,
+} from '../../../components/dynamicFields/dynamicValues.apicontract';
+import { BookingDetailsRequest } from '../bookings.apicontract';
+import { DynamicFieldsService } from '../../../components/dynamicFields/dynamicFields.service';
+import { DynamicFieldsServiceMock } from '../../../components/dynamicFields/__mocks__/dynamicFields.service.mock';
 
 jest.mock('../../../models/uinFinConfiguration');
 
 describe('Bookings mapper tests', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
+		Container.bind(IdHasher).to(IdHasherMock);
+		Container.bind(DynamicFieldsService).to(DynamicFieldsServiceMock);
 		(UinFinConfiguration as jest.Mock).mockImplementation(() => new UinFinConfigurationMock());
 	});
 
@@ -48,6 +62,57 @@ describe('Bookings mapper tests', () => {
 
 		const result = BookingsMapper.maskUinFin(booking, { user: userMock, authGroups: [] });
 		expect(result).toEqual('S9269634J');
+	});
+
+	it('should return dynamic fields ', async () => {
+		const dynamicValues = {
+			fieldId: 1,
+			fieldName: 'testname',
+			type: 'SingleSelection' as DynamicValueType,
+		} as DynamicValueJsonModel;
+
+		const mapper = Container.get(BookingsMapper);
+		const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValues]);
+
+		const dynamicContract = new DynamicValueContract();
+		dynamicContract.fieldIdSigned = undefined;
+		dynamicContract.SingleSelectionKey = undefined;
+		dynamicContract.SingleSelectionValue = undefined;
+		dynamicContract.fieldName = 'testname';
+		dynamicContract.type = 'SingleSelection' as DynamicValueTypeContract;
+
+		expect(dynamicReturn).toEqual([dynamicContract]);
+	});
+
+	it('should return empty array when no dynamic values are passed ', async () => {
+		const mapper = Container.get(BookingsMapper);
+		const dynamicReturn = mapper.mapDynamicValuesModel([]);
+
+		expect(dynamicReturn).toEqual([]);
+	});
+
+	it('... ', async () => {
+		const listOptions = {
+			key: 1,
+			value: 'English',
+		} as SelectListOption;
+		const dynamicRepository = SelectListDynamicField.create(1, 'testDynamic', [listOptions], 1);
+		// DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(Promise.resolve());
+		const dynamicValues = new PersistDynamicValueContract();
+		dynamicValues.SingleSelectionKey = 1;
+		dynamicValues.fieldIdSigned = 'mVpRZpPJ';
+		dynamicValues.type = 'SingleSelection' as DynamicValueTypeContract;
+
+		const bookingRequest = new BookingDetailsRequest();
+		bookingRequest.dynamicValuesUpdated = true;
+		bookingRequest.dynamicValues = [dynamicValues];
+		const mapper = Container.get(BookingsMapper);
+
+		const booking = new Booking();
+		mapper.mapDynamicValuesRequest(bookingRequest, booking);
+
+		console.log(booking);
+		// expect(dynamicReturn).toEqual([]);
 	});
 });
 

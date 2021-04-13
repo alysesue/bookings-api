@@ -65,6 +65,16 @@ export abstract class DynamicField {
 
 @ChildEntity()
 export class SelectListDynamicField extends DynamicField {
+	public static create(serviceId: number, name: string, options: SelectListOption[], id?: number): DynamicField {
+		const dynamicField = new SelectListDynamicField();
+		if (id) {
+			dynamicField.id = id;
+		}
+		dynamicField.serviceId = serviceId;
+		dynamicField.name = name;
+		dynamicField.options = options;
+		return dynamicField;
+	}
 	public get fieldType(): string {
 		return 'SelectListDynamicField';
 	}
@@ -74,6 +84,9 @@ export class SelectListDynamicField extends DynamicField {
 
 	public get options(): SelectListOption[] {
 		return this._options;
+	}
+	public set options(options: SelectListOption[]) {
+		this._options = options;
 	}
 }
 

@@ -62,7 +62,9 @@ export class BookingsMapper {
 		const dynamicValuesLookup = groupByKeyLastValue(bookingRequest.dynamicValues, (e) =>
 			this.idHasher.decode(e.fieldIdSigned),
 		);
+
 		const fieldDefinitions = await this.dynamicFieldsService.getServiceFields(booking.serviceId);
+
 		const dynamicValuesJson = [];
 		for (const field of fieldDefinitions) {
 			const fieldValue = dynamicValuesLookup.get(field.id);

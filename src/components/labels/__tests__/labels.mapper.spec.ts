@@ -106,7 +106,7 @@ describe('labels/labels.mapper', () => {
 	};
 });
 
-class IdHasherMock implements Partial<IdHasher> {
+export class IdHasherMock implements Partial<IdHasher> {
 	public static encode = jest.fn();
 	public static decode = jest.fn();
 	public encode(id: number): string {
