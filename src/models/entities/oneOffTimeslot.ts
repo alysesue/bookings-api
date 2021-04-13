@@ -4,9 +4,7 @@ import { TimeslotWithCapacity } from '../timeslotWithCapacity';
 
 @Entity()
 export class OneOffTimeslot implements TimeslotWithCapacity {
-
 	constructor() {}
-
 
 	@PrimaryGeneratedColumn()
 	private _id: number;

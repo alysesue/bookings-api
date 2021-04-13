@@ -9,8 +9,8 @@ export class OneOffTimeslotRequest {
 	 * @isInt
 	 */
 	public serviceProviderId: number;
-	public title: string;
-	public description: string;
+	public title?: string;
+	public description?: string;
 }
 
 export class OneOffTimeslotResponse {
@@ -21,6 +21,6 @@ export class OneOffTimeslotResponse {
 	 * @isInt
 	 */
 	public capacity: number;
-	public title: string;
-	public description: string;
+	public title?: string;
+	public description?: string;
 }
