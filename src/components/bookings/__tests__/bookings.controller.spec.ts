@@ -17,12 +17,6 @@ import { ContainerContext } from '../../../infrastructure/containerContext.middl
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
 import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
-import {
-	DynamicValueContract,
-	DynamicValueTypeContract,
-	PersistDynamicValueContract,
-} from '../../../components/dynamicFields/dynamicValues.apicontract';
-import { BookingsMapper } from '../bookings.mapper';
 
 jest.mock('../../../models/uinFinConfiguration');
 
@@ -84,7 +78,6 @@ describe('Bookings.Controller', () => {
 
 	beforeAll(() => {
 		Container.bind(BookingsService).to(BookingsServiceMock);
-		Container.bind(BookingsMapper).to(BookingsMapperMock);
 		Container.bind(TimeslotsService).factory(() => TimeslotsServiceMock);
 		Container.bind(CaptchaService).to(CaptchaServiceMock);
 		Container.bind(KoaContextStore).factory(() => KoaContextStoreMock);
@@ -139,7 +132,7 @@ describe('Bookings.Controller', () => {
 		BookingsServiceMock.mockUpdateBooking = testBooking2;
 
 		const res = await controller.updateBooking(bookingId, new BookingUpdateRequest());
-		console.log(res);
+
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 		expect(res.data.startDateTime.toISOString()).toEqual('2020-10-01T15:00:00.000Z');
 	});
@@ -330,26 +323,6 @@ describe('Bookings.Controller', () => {
 		expect(result.data.status).toBe(1);
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 	});
-
-	it('should save booking with valid dynamic values', async () => {
-		const controller = Container.get(BookingsController);
-		const dynamicValues = new PersistDynamicValueContract();
-		dynamicValues.SingleSelectionKey = 1;
-		dynamicValues.fieldIdSigned = 'mVpRZpPJ';
-		dynamicValues.type = 'SingleSelection' as DynamicValueTypeContract;
-		const headers = {
-			[MOLSecurityHeaderKeys.USER_UINFIN]: MOLAuthType.USER,
-			[MOLSecurityHeaderKeys.USER_ID]: 'abc',
-		};
-
-		(controller as any).context = { headers };
-		const req = new BookingRequest();
-		req.dynamicValues = [dynamicValues];
-
-		const result = await controller.postBooking(req, 1);
-		expect(result).toBeDefined();
-		expect(BookingsMapperMock.mockMapDynamicValuesModel).toBeCalled();
-	});
 });
 
 const TimeslotsServiceMock = {
@@ -408,21 +381,6 @@ class BookingsServiceMock implements Partial<BookingsService> {
 	}
 }
 
-export class BookingsMapperMock implements Partial<BookingsMapper> {
-	public static mockMapDynamicValuesRequest = jest.fn();
-	public static mockMapDynamicValuesModel = jest.fn<DynamicValueContract[], any>();
-
-	public async mapDynamicValuesRequest(...params) {
-		BookingsMapperMock.mockMapDynamicValuesRequest(...params);
-	}
-
-	// public mapDataModel(): BookingResponse {
-	// 	return BookingsMapperMock.mockMapDataModel();
-	// }
-	public mapDynamicValuesModel(...params): DynamicValueContract[] {
-		return BookingsMapperMock.mockMapDynamicValuesModel(...params);
-	}
-}
 export class CaptchaServiceMock implements Partial<CaptchaService> {
 	public static verify = jest.fn<Promise<boolean>, any>();
 

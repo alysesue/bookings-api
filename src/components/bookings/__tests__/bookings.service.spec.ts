@@ -42,7 +42,7 @@ import {
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
 	UsersServiceMock,
-} from './bookings.mocks';
+} from '../__mocks__/bookings.mocks';
 import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { UsersService } from '../../../components/users/users.service';

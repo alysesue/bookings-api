@@ -28,6 +28,7 @@ export class DynamicFieldsRepository extends RepositoryBase<DynamicField> {
 			: await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(authGroups);
 
 		const repository = await this.getRepository();
+
 		return repository
 			.createQueryBuilder('field')
 			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })

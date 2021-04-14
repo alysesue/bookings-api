@@ -8,7 +8,7 @@ import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities
 import { BookingChangeLogsService } from '../../bookingChangeLogs/bookingChangeLogs.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
-import { UsersService } from '../../../components/users/users.service';
+import { UsersService } from '../../users/users.service';
 import { IPagedEntities } from '../../../core/pagedEntities';
 
 export class BookingRepositoryMock implements Partial<BookingsRepository> {

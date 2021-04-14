@@ -128,7 +128,7 @@ export class BookingsMapper {
 	}
 
 	public mapDynamicValuesModel(dynamicValues: DynamicValueJsonModel[]): DynamicValueContract[] {
-		return dynamicValues.map((obj) => {
+		return dynamicValues?.map((obj) => {
 			const contract = new DynamicValueContract();
 			contract.fieldIdSigned = this.idHasher.encode(obj.fieldId);
 			contract.fieldName = obj.fieldName;

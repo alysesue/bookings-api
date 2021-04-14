@@ -19,6 +19,7 @@ export class DynamicFieldsMapper {
 
 	public mapDataModel(field: DynamicField): DynamicFieldModel {
 		// Switch mapper implementation to a visitor when dynamic fields get more complicated.
+		if (!field || !field.id) return;
 		const obj = new DynamicFieldModel();
 		obj.idSigned = this.idHasher.encode(field.id);
 		obj.name = field.name;

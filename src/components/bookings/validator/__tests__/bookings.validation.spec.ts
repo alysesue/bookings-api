@@ -14,7 +14,7 @@ import {
 	ServiceProvidersRepositoryMock,
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
-} from '../../__tests__/bookings.mocks';
+} from '../../__mocks__/bookings.mocks';
 import { TimeslotWithCapacity } from '../../../../models/timeslotWithCapacity';
 import { AvailableTimeslotProviders } from '../../../../components/timeslots/availableTimeslotProviders';
 import { CaptchaService } from '../../../captcha/captcha.service';

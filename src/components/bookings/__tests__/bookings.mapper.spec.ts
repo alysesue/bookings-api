@@ -16,12 +16,17 @@ import { DynamicFieldsServiceMock } from '../../../components/dynamicFields/__mo
 
 jest.mock('../../../models/uinFinConfiguration');
 
+beforeAll(() => {
+	Container.bind(IdHasher).to(IdHasherMock);
+	Container.bind(DynamicFieldsService).to(DynamicFieldsServiceMock);
+});
+
 describe('Bookings mapper tests', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
-		Container.bind(IdHasher).to(IdHasherMock);
-		Container.bind(DynamicFieldsService).to(DynamicFieldsServiceMock);
 		(UinFinConfiguration as jest.Mock).mockImplementation(() => new UinFinConfigurationMock());
+		IdHasherMock.encode.mockImplementation((id: number) => id.toString());
+		IdHasherMock.decode.mockImplementation((id: string) => Number.parseInt(id, 10));
 	});
 
 	const userMock = User.createAdminUser({
@@ -30,6 +35,17 @@ describe('Bookings mapper tests', () => {
 		email: 'test@email.com',
 		name: 'Name',
 	});
+
+	const listOptions = {
+		key: 1,
+		value: 'English',
+	} as SelectListOption;
+	const dynamicRepository = SelectListDynamicField.create(1, 'testDynamic', [listOptions], 1);
+
+	const dynamicValues = new PersistDynamicValueContract();
+	dynamicValues.SingleSelectionKey = 1;
+	dynamicValues.fieldIdSigned = 'mVpRZpPJ';
+	dynamicValues.type = 'SingleSelection' as DynamicValueTypeContract;
 
 	it('should throw if organisation not loaded', async () => {
 		const booking = new Booking();
@@ -65,19 +81,21 @@ describe('Bookings mapper tests', () => {
 	});
 
 	it('should return dynamic fields ', async () => {
-		const dynamicValues = {
+		const dynamicValuesJson = {
 			fieldId: 1,
 			fieldName: 'testname',
 			type: 'SingleSelection' as DynamicValueType,
+			SingleSelectionKey: 1,
+			SingleSelectionValue: 'test',
 		} as DynamicValueJsonModel;
 
 		const mapper = Container.get(BookingsMapper);
-		const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValues]);
+		const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValuesJson]);
 
 		const dynamicContract = new DynamicValueContract();
-		dynamicContract.fieldIdSigned = undefined;
-		dynamicContract.SingleSelectionKey = undefined;
-		dynamicContract.SingleSelectionValue = undefined;
+		dynamicContract.fieldIdSigned = '1';
+		dynamicContract.SingleSelectionKey = 1;
+		dynamicContract.SingleSelectionValue = 'test';
 		dynamicContract.fieldName = 'testname';
 		dynamicContract.type = 'SingleSelection' as DynamicValueTypeContract;
 
@@ -91,28 +109,41 @@ describe('Bookings mapper tests', () => {
 		expect(dynamicReturn).toEqual([]);
 	});
 
-	it('... ', async () => {
-		const listOptions = {
-			key: 1,
-			value: 'English',
-		} as SelectListOption;
-		const dynamicRepository = SelectListDynamicField.create(1, 'testDynamic', [listOptions], 1);
-		// DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(Promise.resolve());
-		const dynamicValues = new PersistDynamicValueContract();
-		dynamicValues.SingleSelectionKey = 1;
-		dynamicValues.fieldIdSigned = 'mVpRZpPJ';
-		dynamicValues.type = 'SingleSelection' as DynamicValueTypeContract;
+	it('should return matched dynamic fields ', async () => {
+		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() => Promise.resolve([dynamicRepository]));
+		IdHasherMock.decode.mockImplementation(() => 1);
 
 		const bookingRequest = new BookingDetailsRequest();
 		bookingRequest.dynamicValuesUpdated = true;
 		bookingRequest.dynamicValues = [dynamicValues];
+
 		const mapper = Container.get(BookingsMapper);
-
 		const booking = new Booking();
-		mapper.mapDynamicValuesRequest(bookingRequest, booking);
+		await mapper.mapDynamicValuesRequest(bookingRequest, booking);
 
-		console.log(booking);
-		// expect(dynamicReturn).toEqual([]);
+		const result = {
+			fieldId: 1,
+			fieldName: 'testDynamic',
+			type: 'SingleSelection' as DynamicValueType,
+			SingleSelectionKey: 1,
+			SingleSelectionValue: 'English',
+		} as DynamicValueJsonModel;
+		expect(booking.dynamicValues).toEqual([result]);
+	});
+
+	it('should return empty array when no dynamic fields match', async () => {
+		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() => Promise.resolve([dynamicRepository]));
+		IdHasherMock.decode.mockImplementation(() => 2);
+
+		const bookingRequest = new BookingDetailsRequest();
+		bookingRequest.dynamicValuesUpdated = true;
+		bookingRequest.dynamicValues = [dynamicValues];
+
+		const mapper = Container.get(BookingsMapper);
+		const booking = new Booking();
+		await mapper.mapDynamicValuesRequest(bookingRequest, booking);
+
+		expect(booking.dynamicValues).toEqual([]);
 	});
 });
 
