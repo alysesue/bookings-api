@@ -1,8 +1,9 @@
 import { PgClient } from '../../utils/pgClient';
-import { populateOneOffTimeslot, populateUserServiceProvider } from '../../populate/basic';
-import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 
-// tslint:disable-next-line: no-big-function
+import { populateOneOffTimeslot, populateServiceLabel, populateUserServiceProvider } from '../../populate/basic';
+import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
+import { ServiceResponse } from '../../../src/components/services/service.apicontract';
+
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
 	const NAME_SERVICE_1 = 'service1';
@@ -11,6 +12,7 @@ describe('Timeslots functional tests', () => {
 	const END_TIME_1 = new Date('2021-03-05T02:00:00Z');
 
 	let serviceProvider1: ServiceProviderResponseModel;
+	let service: ServiceResponse;
 
 	afterAll(async (done) => {
 		await pgClient.cleanAllTables();
@@ -29,16 +31,26 @@ describe('Timeslots functional tests', () => {
 
 		serviceProvider1 = result1.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);
 
-		await populateOneOffTimeslot({
+		service = await populateServiceLabel({
+			serviceId: serviceProvider1.serviceId,
+			serviceName: NAME_SERVICE_1,
+			labels: ['Chinese'],
+		});
+
+		done();
+	});
+
+	it('adding labels to populate one off timeslots', async () => {
+		const response = await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
 			capacity: 1,
-			title: 'Title',
-			description: 'Description',
+			labelIds: [service.labels[0].id],
 		});
 
-		done();
+		expect(response.labels[0].id).toEqual(service.labels[0].id);
+		expect(response.labels[0].label).toEqual(service.labels[0].label);
 	});
 
 	it('should add oneOffTimeslots', async () => {
@@ -51,7 +63,6 @@ describe('Timeslots functional tests', () => {
 			description: 'Description',
 		});
 		expect(service1TimeslotsResponse.title).toBeDefined();
-		// ToDo: add expect for each one of the inputs, try to have all on the same test.
 	});
 
 	it('should return error when oneOffTimeslots incorrect', async () => {

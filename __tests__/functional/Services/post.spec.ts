@@ -26,6 +26,14 @@ describe('Tests endpoint and populate data', () => {
 		expect(response.statusCode).toEqual(200);
 	});
 
+	it('Post service with labels', async () => {
+		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
+			body: { name: SERVICE_NAME, labels: [{ label: 'name' }] },
+		});
+		expect(response.statusCode).toEqual(200);
+		expect(response.body.data.labels[0].label).toBe('name');
+	});
+	
 	it('Post service with SP autoAssigned', async () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
 			body: { name: SERVICE_NAME, isSpAutoAssigned: true},

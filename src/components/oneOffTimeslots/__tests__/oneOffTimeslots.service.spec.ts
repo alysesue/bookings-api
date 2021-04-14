@@ -3,11 +3,12 @@ import { Container } from 'typescript-ioc';
 import { OneOffTimeslotRequest } from '../oneOffTimeslots.apicontract';
 import { OneOffTimeslotsService } from '../oneOffTimeslots.service';
 import { UserContext } from '../../../infrastructure/auth/userContext';
-import { OneOffTimeslot, ServiceProvider, User } from '../../../models';
+import { Label, OneOffTimeslot, Service, ServiceProvider, User } from '../../../models';
 import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 import { OneOffTimeslotsRepository } from '../oneOffTimeslots.repository';
 import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { OneOffTimeslotsActionAuthVisitor } from '../oneOffTimeslots.auth';
+import { LabelsService } from '../../../components/labels/labels.service';
 
 jest.mock('../oneOffTimeslots.auth');
 
@@ -19,11 +20,15 @@ describe('OneOffTimeslots Service Tests', () => {
 	const serviceProvider = new ServiceProvider();
 	serviceProvider.id = 1;
 	serviceProvider.name = 'John';
+	const newService = new Service();
+	newService.id = 1;
+	serviceProvider.service = newService;
 
 	beforeAll(() => {
 		Container.bind(OneOffTimeslotsRepository).to(OneOffTimeslotsRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
+		Container.bind(LabelsService).to(LabelServiceMock);
 	});
 
 	beforeEach(() => {
@@ -35,16 +40,20 @@ describe('OneOffTimeslots Service Tests', () => {
 		ServiceProvidersServiceMock.getServiceProvider.mockImplementation(() => {
 			return serviceProvider;
 		});
+
+		LabelServiceMock.verifyLabels.mockReturnValue(Promise.resolve([]));
 	});
 
 	it('should save using repository', async () => {
 		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
+		LabelServiceMock.verifyLabels.mockReturnValue(Promise.resolve([Label.create('Chinese')]));
 
 		const request = new OneOffTimeslotRequest();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
 		request.endDateTime = DateHelper.addHours(request.startDateTime, 1);
 		request.capacity = 2;
 		request.serviceProviderId = 1;
+		request.labelIds = ['Chinese'];
 
 		const service = Container.get(OneOffTimeslotsService);
 		await service.save(request);
@@ -54,13 +63,13 @@ describe('OneOffTimeslots Service Tests', () => {
 		expect(parameter0.startDateTime).toEqual(new Date('2021-03-02T00:00:00Z'));
 		expect(parameter0.endDateTime).toEqual(new Date('2021-03-02T01:00:00Z'));
 		expect(parameter0.capacity).toBe(2);
+		expect(parameter0.labels[0].labelText).toEqual(request.labelIds[0]);
 
 		expect(ServiceProvidersServiceMock.getServiceProvider).toBeCalled();
 	});
 
 	it(`should throw when user doesn't have permisssion`, async () => {
 		(authVisitorMock.hasPermission as jest.Mock).mockReturnValue(false);
-
 		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
 
 		const request = new OneOffTimeslotRequest();
@@ -162,5 +171,12 @@ class UserContextMock implements Partial<UserContext> {
 
 	public async getAuthGroups(...params): Promise<any> {
 		return await UserContextMock.getAuthGroups(...params);
+	}
+}
+
+class LabelServiceMock implements Partial<LabelsService> {
+	public static verifyLabels = jest.fn<Promise<Label[]>, any>();
+	public verifyLabels(...params): Promise<Label[]> {
+		return LabelServiceMock.verifyLabels(...params);
 	}
 }

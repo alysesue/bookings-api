@@ -7,9 +7,9 @@ export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 	protected async *getValidations(entity: OneOffTimeslot) {
 		const { startDateTime, endDateTime, title, description } = entity;
 		const allValidates = concatIteratables(
-			OneOffTimeslotsValidation.validateDescription(description),
-			OneOffTimeslotsValidation.validateTime(startDateTime, endDateTime),
 			OneOffTimeslotsValidation.validateTitle(title),
+			OneOffTimeslotsValidation.validateTime(startDateTime, endDateTime),
+			OneOffTimeslotsValidation.validateDescription(description),
 		);
 		for await (const validation of allValidates) {
 			yield validation;
@@ -33,20 +33,18 @@ export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 }
 
 export class OneOffTimeslotsBusinessValidation {
-	private constructor() {}
-
-	public static readonly DescriptionTooLong = new BusinessValidation({
-		code: '10101',
-		message: `Description should be max 4000 characters`,
-	});
-
 	public static readonly TitleTooLong = new BusinessValidation({
-		code: '10102',
+		code: '10101',
 		message: `Title should be max 100 character`,
 	});
 
 	public static readonly InvalidTime = new BusinessValidation({
-		code: '10103',
+		code: '10102',
 		message: `Start time must be less than end time.`,
+	});
+
+	public static readonly DescriptionTooLong = new BusinessValidation({
+		code: '10103',
+		message: `Description should be max 4000 characters`,
 	});
 }

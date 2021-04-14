@@ -176,6 +176,7 @@ export class TimeslotsService {
 		serviceId: number,
 		includeBookings: boolean = false,
 		serviceProviderIds?: number[],
+		labelIds?: number[],
 	): Promise<AvailableTimeslotProviders[]> {
 		const getAggregatedTimeslotEntriesWatch = new StopWatch('getAggregatedTimeslotEntries');
 		const aggregatedEntries = await this.getAggregatedTimeslotEntries(
@@ -183,6 +184,7 @@ export class TimeslotsService {
 			endDateTime,
 			serviceId,
 			serviceProviderIds,
+			labelIds,
 		);
 		getAggregatedTimeslotEntriesWatch.stop();
 
@@ -355,10 +357,12 @@ export class TimeslotsService {
 		maxEndTime: Date,
 		serviceId: number,
 		serviceProviderIds?: number[],
+		labelIds?: number[],
 	): Promise<TimeslotMap<AggregatedEntryId<ServiceProvider>>> {
 		const aggregator = TimeslotAggregator.createCustom<ServiceProvider, AggregatedEntryId<ServiceProvider>>(
 			AggregatedEntryId,
 		);
+		const hasLabelFilter = labelIds && labelIds.length > 0;
 
 		const service = await this.servicesRepository.getServiceWithTimeslotsSchedule(serviceId);
 		if (!service) {
@@ -368,7 +372,7 @@ export class TimeslotsService {
 		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({
 			ids: serviceProviderIds,
 			serviceId,
-			includeTimeslotsSchedule: true,
+			includeTimeslotsSchedule: !hasLabelFilter,
 			timeslotsScheduleOptions: this.createTimeslotScheduleOptions(minStartTime, maxEndTime),
 			skipAuthorisation: true, // loads all SPs regardless of user role
 		});
@@ -379,15 +383,20 @@ export class TimeslotsService {
 			startDateTime: minStartTime,
 			endDateTime: maxEndTime,
 			byPassAuth: true,
+			labelIds,
 		});
+
 		const oneOffTimeslotsLookup = groupByKey(oneOffTimeslots, (e) => e.serviceProviderId);
 
-		const validServiceTimeslots = Array.from(
-			service.timeslotsSchedule?.generateValidTimeslots({
-				startDatetime: minStartTime,
-				endDatetime: maxEndTime,
-			}) || [],
-		);
+		let validServiceTimeslots = [];
+		if (!hasLabelFilter) {
+			validServiceTimeslots = Array.from(
+				service.timeslotsSchedule?.generateValidTimeslots({
+					startDatetime: minStartTime,
+					endDatetime: maxEndTime,
+				}) || [],
+			);
+		}
 
 		for (const provider of serviceProviders) {
 			const oneOffTimeslotsSP = oneOffTimeslotsLookup.get(provider.id);

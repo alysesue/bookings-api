@@ -2,7 +2,23 @@ import { OrganisationAdminRequestEndpointSG } from '../utils/requestEndpointSG';
 import { ServiceProviderResponseModel } from '../../src/components/serviceProviders/serviceProviders.apicontract';
 import { ServiceResponse } from '../../src/components/services/service.apicontract';
 import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslotItems.apicontract';
-import {OneOffTimeslotResponse} from "../../src/components/oneOffTimeslots/oneOffTimeslots.apicontract";
+import { OneOffTimeslotResponse } from '../../src/components/oneOffTimeslots/oneOffTimeslots.apicontract';
+
+export const populateServiceLabel = async ({
+	serviceId,
+	serviceName,
+	labels,
+}: {
+	serviceId: any;
+	serviceName: any;
+	labels: string[];
+}): Promise<ServiceResponse> => {
+	const labelsMap = labels.map((label) => ({ label }));
+	const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceId}`, {
+		body: { name: serviceName, labels: labelsMap },
+	});
+	return response.body.data;
+};
 
 export const populateService = async ({
 	organisation = 'localorg',
@@ -195,6 +211,7 @@ export const populateOneOffTimeslot = async ({
 	startTime,
 	endTime,
 	capacity,
+	labelIds,
 	title,
 	description,
 }: {
@@ -202,6 +219,7 @@ export const populateOneOffTimeslot = async ({
 	startTime: Date;
 	endTime: Date;
 	capacity: number;
+	labelIds?: string[];
 	title?: string;
 	description?: string;
 }): Promise<OneOffTimeslotResponse> => {
@@ -213,6 +231,7 @@ export const populateOneOffTimeslot = async ({
 			serviceProviderId,
 			title,
 			description,
+			labelIds,
 		},
 	});
 	return response.body.data;

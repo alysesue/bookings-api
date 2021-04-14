@@ -174,5 +174,6 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		this._isSpAutoAssigned = value;
 	}
 	@OneToMany(() => Label, (label) => label.service, { cascade: true })
+	// @OneToMany(() => Label, 'services', { cascade: true, lazy: true })
 	public labels: Label[];
 }

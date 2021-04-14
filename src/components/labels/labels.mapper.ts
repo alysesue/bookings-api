@@ -1,8 +1,9 @@
 import { LabelRequestModel, LabelResponseModel } from './label.apicontract';
 import { Label } from '../../models/entities';
-import { Inject } from 'typescript-ioc';
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { IdHasher } from '../../infrastructure/idHasher';
 
+@InRequestScope
 export class LabelsMapper {
 	@Inject
 	private idHasher: IdHasher;
@@ -17,6 +18,8 @@ export class LabelsMapper {
 	}
 
 	public mapToLabels(request: LabelRequestModel[] = []): Label[] {
+		// Remove duplicate labelText
+		request = request.filter((v, i, a) => a.findIndex((t) => t.label === v.label) === i);
 		return request.map((i) => {
 			const entity = new Label();
 			if (i.id) {
@@ -25,5 +28,22 @@ export class LabelsMapper {
 			entity.labelText = i.label;
 			return entity;
 		});
+	}
+
+	public mergeLabels(originalList: Label[], updatedList: Label[]): Label[] {
+		for (let index = 0; index < originalList.length; ) {
+			const originalLabel = originalList[index];
+			const foundUpdatedLabel = updatedList.find((l) => !!l.id && l.id === originalLabel.id);
+			if (foundUpdatedLabel) {
+				originalLabel.labelText = foundUpdatedLabel.labelText;
+				index++;
+			} else {
+				originalList.splice(index, 1);
+			}
+		}
+
+		originalList.push(...updatedList.filter((label) => !label.id));
+
+		return originalList;
 	}
 }
