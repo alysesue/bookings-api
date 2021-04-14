@@ -35,16 +35,16 @@ export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 export class OneOffTimeslotsBusinessValidation {
 	public static readonly TitleTooLong = new BusinessValidation({
 		code: '10101',
-		message: `Title should be max 100 character`,
+		message: `Title word limit is 100 characters`,
 	});
 
 	public static readonly InvalidTime = new BusinessValidation({
 		code: '10102',
-		message: `Start time must be less than end time.`,
+		message: `Start time must be less than end time`,
 	});
 
 	public static readonly DescriptionTooLong = new BusinessValidation({
 		code: '10103',
-		message: `Description should be max 4000 characters`,
+		message: `Description word limit is 4000 characters`,
 	});
 }
