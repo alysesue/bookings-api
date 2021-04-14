@@ -3,6 +3,21 @@ import { ServiceProviderResponseModel } from '../../src/components/serviceProvid
 import { ServiceResponse } from '../../src/components/services/service.apicontract';
 import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslotItems.apicontract';
 import { OneOffTimeslotResponse } from '../../src/components/oneOffTimeslots/oneOffTimeslots.apicontract';
+import { Inject } from 'typescript-ioc';
+import { IdHasher } from '../../src/infrastructure/idHasher';
+
+export class IdHasherForFunctional {
+	@Inject
+	private idHasher: IdHasher;
+
+	public async convertIdToHash(id: number): Promise<string> {
+		return this.idHasher.encode(id);
+	}
+
+	public async convertHashToId(id: string): Promise<number> {
+		return this.idHasher.decode(id);
+	}
+}
 
 export const populateServiceLabel = async ({
 	serviceId,
