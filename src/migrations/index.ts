@@ -14,3 +14,4 @@ export { ChangeLogUserIndex1615785814022 } from './1615785814022-ChangeLogUserIn
 export { OneOffTimeslotsAndLabel1617867320834 } from './1617867320834-OneOffTimeslotsAndLabel';
 export { OneOfTimeslotsTitle1618189257455 } from './1618189257455-OneOfTimeslotsTitle';
 export { ServiceFlagSendEmail1619141888356 } from './1619141888356-ServiceFlagSendEmail';
+export { EmailDomain1618378217274 } from './1618378217274-EmailDomain';

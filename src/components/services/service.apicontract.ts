@@ -9,6 +9,7 @@ export class ServiceResponse {
 	public isStandAlone: boolean;
 	public isSpAutoAssigned: boolean;
 	public labels: LabelResponseModel[];
+	public emailDomain?: string;
 }
 
 export class ServiceRequest {
@@ -19,4 +20,5 @@ export class ServiceRequest {
 	 */
 	public organisationId?: number;
 	public labels?: LabelRequestModel[];
+	public emailDomain?: string;
 }

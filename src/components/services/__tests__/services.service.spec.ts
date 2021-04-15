@@ -173,10 +173,12 @@ describe('Services service tests', () => {
 			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
 		);
 		request.labels = [{ label: 'label' }];
+		request.emailDomain = 'abc.com';
 
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].isSpAutoAssigned).toBe(false);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].emailDomain).toBe('abc.com');
 	});
 
 	it('should NOT save service without permission', async () => {
@@ -223,12 +225,14 @@ describe('Services service tests', () => {
 		request.name = 'John';
 		request.organisationId = 1;
 		request.isSpAutoAssigned = true;
+		request.emailDomain = 'def.com';
 
 		await Container.get(ServicesService).updateService(1, request);
 		expect(ServicesRepositoryMock.save).toBeCalled();
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].isSpAutoAssigned).toBe(true);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].labels).toHaveLength(0);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].emailDomain).toBe('def.com');
 	});
 
 	it('should NOT update service without permission', async () => {
