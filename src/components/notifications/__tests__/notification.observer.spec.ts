@@ -10,6 +10,7 @@ describe('Test notification observer', () => {
 		Container.bind(NotificationsService).to(NotificationsServiceMock);
 		Container.bind(BookingsSubject).to(BookingsSubjectMock);
 	});
+
 	it('Should test sendEmail if booking object here', async () => {
 		const instance = await Container.get(MailObserver);
 		instance.update(new BookingsSubjectMock());

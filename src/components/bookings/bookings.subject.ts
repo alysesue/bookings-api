@@ -1,12 +1,12 @@
-import {Booking, User} from '../../models/entities';
+import { Booking, User } from '../../models/entities';
 import { Subject } from '../../infrastructure/observer';
 import { InRequestScope } from 'typescript-ioc';
-import {BookingType} from "../../models/bookingType";
+import { BookingType } from '../../models/bookingType';
 
 export type BookingsPublisherProps = {
-	booking: Booking,
-	bookingType?: BookingType,
-	userType?: User,
+	booking: Booking;
+	bookingType?: BookingType;
+	userType?: User;
 };
 
 @InRequestScope
@@ -20,7 +20,7 @@ export class BookingsSubject extends Subject<BookingsPublisherProps> {
 			booking: this._booking,
 			bookingType: this._bookingType,
 			userType: this._userType,
-		}
+		};
 	}
 
 	public notify(props: BookingsPublisherProps): void {

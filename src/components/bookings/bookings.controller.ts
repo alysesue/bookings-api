@@ -31,7 +31,7 @@ import { BookingsMapper } from './bookings.mapper';
 import { ApiData, ApiDataBulk, ApiDataFactory, ApiPagedData, FailedRecord } from '../../apicontract';
 import { KoaContextStore } from '../../infrastructure/koaContextStore.middleware';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { Booking } from '../../models/entities';
+import { Booking } from '../../models';
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
 

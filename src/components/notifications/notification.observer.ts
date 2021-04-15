@@ -1,38 +1,37 @@
-import { Inject, InRequestScope } from 'typescript-ioc';
-import { NotificationsService } from './notifications.service';
-import { IObserver, ISubject } from '../../infrastructure/observer';
+import { InRequestScope } from 'typescript-ioc';
+import { ISubject, Observer } from '../../infrastructure/observer';
 import { BookingsSubject } from '../bookings/bookings.subject';
 import { BookingStatus } from '../../models';
+import { NotificationsService } from './notifications.service';
+import { EmailTemplateBase } from './templates/citizen.mail';
 import { CreateEmailRequestApiDomain } from 'mol-lib-api-contract/notification/mail/create-email/create-email-api-domain';
-import { EmailTemplateBase } from './notifications.templates';
-import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { MOLErrorV2 } from 'mol-lib-api-contract/error';
+import { ErrorCodeV2 } from 'mol-lib-api-contract';
 
 @InRequestScope
-export class MailObserver implements IObserver {
-	@Inject
-	private notificationService: NotificationsService;
-	// @ts-ignore
-	public async update(subject: ISubject<any>): void {
+export class MailObserver implements Observer {
+	public update(subject: ISubject<any>): void {
+		const notificationsService = new NotificationsService();
 		if (
 			subject instanceof BookingsSubject &&
 			subject.booking &&
 			subject.booking.booking.status !== BookingStatus.OnHold
 		) {
-			const citizenEmailBody = this.notificationService.createCitizenEmailFactory(subject);
-			const serviceProviderEmailBody = this.notificationService.createServiceProviderEmailFactory(subject);
-			const citizenEmailDetails = this.constructEmailTemplate(subject, citizenEmailBody, true, false);
-			const serviceProviderEmailDetails = this.constructEmailTemplate(
+			const citizenEmailBody = notificationsService.createCitizenEmailFactory(subject);
+			const serviceProviderEmailBody = notificationsService.createServiceProviderEmailFactory(subject);
+			const citizenEmailDetails = MailObserver.constructEmailTemplate(subject, citizenEmailBody, true, false);
+			const serviceProviderEmailDetails = MailObserver.constructEmailTemplate(
 				subject,
 				serviceProviderEmailBody,
 				false,
 				true,
 			);
-			this.notificationService.sendEmail(citizenEmailDetails);
-			this.notificationService.sendEmail(serviceProviderEmailDetails);
+			notificationsService.sendEmail(citizenEmailDetails);
+			notificationsService.sendEmail(serviceProviderEmailDetails);
 		}
 	}
 
-	private constructEmailTemplate(
+	private static constructEmailTemplate(
 		subject: ISubject<any>,
 		emailTemplate: EmailTemplateBase,
 		citizen: boolean,

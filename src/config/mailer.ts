@@ -3,21 +3,23 @@ import * as inLineCss from 'nodemailer-juice';
 import { getConfig } from './app-config';
 import { emailLogger } from './logger';
 
-const config = getConfig();
 export const mailer = nodemailer
-	.createTransport({
-		host: config.mailer.smtpHost,
-		port: config.mailer.smtpPort,
-		secure: config.mailer.smtpSecure,
-		...(config.mailer.smtpUseAuth
-			? {
-					auth: {
-						user: config.mailer.smtpAuthUsername,
-						pass: config.mailer.smtpAuthPassword,
-					},
-			  }
-			: null),
-		pool: true,
+	.createTransport(() => {
+		const config = getConfig();
+		return {
+			host: config.mailer.smtpHost,
+			port: config.mailer.smtpPort,
+			secure: config.mailer.smtpSecure,
+			...(config.mailer.smtpUseAuth
+				? {
+						auth: {
+							user: config.mailer.smtpAuthUsername,
+							pass: config.mailer.smtpAuthPassword,
+						},
+				  }
+				: null),
+			pool: true,
+		};
 	})
 	.use('compile', inLineCss());
 

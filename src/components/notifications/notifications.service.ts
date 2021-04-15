@@ -1,8 +1,6 @@
 import { InRequestScope } from 'typescript-ioc';
 import { getConfig } from '../../config/app-config';
-import {
-	CreateEmailResponseDataApiDomain,
-} from 'mol-lib-api-contract/notification/mail/create-email/create-email-api-domain';
+import { CreateEmailResponseDataApiDomain } from 'mol-lib-api-contract/notification/mail/create-email/create-email-api-domain';
 import { CreateEmail } from 'mol-lib-api-contract/notification/mail';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { mailer } from '../../config/mailer';
@@ -10,11 +8,14 @@ import { emailLogger } from '../../config/logger';
 import { BookingType } from '../../models/bookingType';
 import { MailOptions } from './MailOptions';
 import {
-    CitizenEmailTemplateBookingActionByCitizen,
-    CitizenEmailTemplateBookingActionByServiceProvider, EmailTemplateBase,
-    ServiceProviderEmailTemplateBookingActionByCitizen,
-    ServiceProviderEmailTemplateBookingActionByServiceProvider
-} from "./notifications.templates";
+	CitizenEmailTemplateBookingActionByCitizen,
+	CitizenEmailTemplateBookingActionByServiceProvider,
+	EmailTemplateBase,
+} from './templates/citizen.mail';
+import {
+	ServiceProviderEmailTemplateBookingActionByCitizen,
+	ServiceProviderEmailTemplateBookingActionByServiceProvider,
+} from './templates/serviceProviders.mail';
 
 @InRequestScope
 export class NotificationsService {
@@ -23,7 +24,9 @@ export class NotificationsService {
 		from: this.config.email.mol.sender,
 	};
 
-	public sendEmail = async (options: CreateEmail.Domain.CreateEmailRequestApiDomain) => {
+	public async sendEmail(
+		options: CreateEmail.Domain.CreateEmailRequestApiDomain,
+	): Promise<CreateEmailResponseDataApiDomain> {
 		const mergedOptions = this.getMergedOptions(options);
 		this.validateEmails(this.getEmailsFromOptions(mergedOptions, true));
 		const recipients = options.to.join(',');
@@ -48,7 +51,7 @@ export class NotificationsService {
 				messageId: err.responseData.messageId,
 			});
 		}
-	};
+	}
 
 	public createCitizenEmailFactory(data): EmailTemplateBase {
 		if (data._bookingType === BookingType.Created && data._userType._singPassUser)
@@ -62,7 +65,7 @@ export class NotificationsService {
 		if (data._bookingType === BookingType.Updated && data._userType._adminUser)
 			return CitizenEmailTemplateBookingActionByServiceProvider.UpdatedBookingEmail(data);
 		if (data._bookingType === BookingType.CancelledOrRejected && data._userType._adminUser)
-			return CitizenEmailTemplateBookingActionByServiceProvider.CancelledBookingEmail(data)
+			return CitizenEmailTemplateBookingActionByServiceProvider.CancelledBookingEmail(data);
 	}
 
 	public createServiceProviderEmailFactory(data): EmailTemplateBase {

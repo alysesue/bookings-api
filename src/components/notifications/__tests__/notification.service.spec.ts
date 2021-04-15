@@ -29,6 +29,7 @@ jest.mock('../../../config/app-config', () => {
 	};
 });
 
+// tslint:disable-next-line:no-big-function
 describe('Send email', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
@@ -38,6 +39,7 @@ describe('Send email', () => {
 			messageId: 'messageId',
 		}));
 	});
+
 	it('should send mail to single recipient', async () => {
 		const options: CreateEmail.Domain.CreateEmailRequestApiDomain = {
 			from: 'from@foo.com',
@@ -276,7 +278,7 @@ Location: <b>Some street</b>
 				_status: 1,
 				_location: 'Some street',
 				_serviceProviderId: 1,
-				_serviceProvider: {}
+				_serviceProvider: {},
 			},
 			_bookingType: 'Created',
 			_userType: { _singPassUser: {} },
@@ -308,7 +310,7 @@ Location: <b>Some street</b>
 				_status: 1,
 				_location: 'Some street',
 				_serviceProviderId: 1,
-				_serviceProvider: {}
+				_serviceProvider: {},
 			},
 			_bookingType: 'Updated',
 			_userType: { _singPassUser: {} },
@@ -340,7 +342,7 @@ Location: <b>Some street</b>
 				_status: 1,
 				_location: 'Some street',
 				_serviceProviderId: 1,
-				_serviceProvider: {}
+				_serviceProvider: {},
 			},
 			_bookingType: 'CancelledOrRejected',
 			_userType: { _singPassUser: {} },
@@ -370,7 +372,7 @@ Location: <b>Some street</b>
 				_status: 2,
 				_location: 'Some street',
 				_serviceProviderId: 1,
-				_serviceProvider: {}
+				_serviceProvider: {},
 			},
 			_bookingType: 'Updated',
 			_userType: { _adminUser: {} },
@@ -402,7 +404,7 @@ Location: <b>Some street</b>
 				_status: 3,
 				_location: 'Some street',
 				_serviceProviderId: 1,
-				_serviceProvider: {}
+				_serviceProvider: {},
 			},
 			_bookingType: 'CancelledOrRejected',
 			_userType: { _adminUser: {} },
@@ -422,4 +424,3 @@ Location: <b>Some street</b>
 		});
 	});
 });
-

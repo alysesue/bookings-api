@@ -1,9 +1,11 @@
 import {
 	CitizenEmailTemplateBookingActionByCitizen,
 	CitizenEmailTemplateBookingActionByServiceProvider,
+} from '../citizen.mail';
+import {
 	ServiceProviderEmailTemplateBookingActionByCitizen,
 	ServiceProviderEmailTemplateBookingActionByServiceProvider,
-} from '../notifications.templates';
+} from '../serviceProviders.mail';
 
 describe('Notification templates tests', () => {
 	const mockData = {
