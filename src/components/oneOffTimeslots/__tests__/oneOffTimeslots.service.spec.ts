@@ -6,9 +6,9 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { Label, OneOffTimeslot, Service, ServiceProvider, User } from '../../../models';
 import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 import { OneOffTimeslotsRepository } from '../oneOffTimeslots.repository';
-import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
+import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
 import { OneOffTimeslotsActionAuthVisitor } from '../oneOffTimeslots.auth';
-import { LabelsService } from '../../../components/labels/labels.service';
+import { LabelsService } from '../../labels/labels.service';
 
 jest.mock('../oneOffTimeslots.auth');
 
@@ -83,63 +83,6 @@ describe('OneOffTimeslots Service Tests', () => {
 
 		await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(
 			'"User cannot perform this action for this one off timeslot."',
-		);
-	});
-
-	it(`should validate dates`, async () => {
-		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
-
-		const request = new OneOffTimeslotRequest();
-		const date = new Date('2021-03-02T00:00:00Z');
-		request.startDateTime = DateHelper.addHours(date, 1);
-		request.endDateTime = date;
-		request.capacity = 2;
-		request.serviceProviderId = 1;
-
-		const service = Container.get(OneOffTimeslotsService);
-		const asyncTest = async () => await service.save(request);
-
-		await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot('"Start time must be less than end time."');
-	});
-
-	it(`should validate title is not more than 100 characters`, async () => {
-		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
-
-		const request = new OneOffTimeslotRequest();
-		const date = new Date('2021-03-02T00:00:00Z');
-		request.startDateTime = date;
-		request.endDateTime = DateHelper.addHours(date, 1);
-		request.capacity = 2;
-		request.serviceProviderId = 1;
-		request.title =
-			'ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt';
-
-		const service = Container.get(OneOffTimeslotsService);
-		const asyncTest = async () => await service.save(request);
-
-		await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot('"Title should be max 100 characters"');
-	});
-
-	it(`should validate description is not more than 4000 characters`, async () => {
-		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
-
-		const request = new OneOffTimeslotRequest();
-		const date = new Date('2021-03-02T00:00:00Z');
-		let longStr = '';
-		while (longStr.length < 4001) {
-			longStr += 'tttttttttttttttttttttttttttttttttttttttt';
-		}
-		request.startDateTime = date;
-		request.endDateTime = DateHelper.addHours(date, 1);
-		request.capacity = 2;
-		request.serviceProviderId = 1;
-		request.description = longStr;
-
-		const service = Container.get(OneOffTimeslotsService);
-		const asyncTest = async () => await service.save(request);
-
-		await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(
-			'"Description should be max 4000 characters"',
 		);
 	});
 });

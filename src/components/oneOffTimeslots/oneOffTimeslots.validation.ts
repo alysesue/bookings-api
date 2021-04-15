@@ -22,7 +22,7 @@ export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 	}
 	private static async *validateTitle(title: string): AsyncIterable<BusinessValidation> {
 		if (title && title.length > 100) {
-			yield OneOffTimeslotsBusinessValidation.DescriptionTooLong;
+			yield OneOffTimeslotsBusinessValidation.TitleTooLong;
 		}
 	}
 	private static async *validateTime(startDateTime: Date, endDateTime: Date): AsyncIterable<BusinessValidation> {
