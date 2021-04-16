@@ -23,7 +23,7 @@ import { DateHelper } from '../../../infrastructure/dateHelper';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { BookingBuilder } from '../../../models/entities/booking';
-import { BookingsValidatorFactory, IValidator } from '../validator/bookings.validation';
+import { BookingsValidatorFactory } from '../validator/bookings.validation';
 import {
 	BookingActionFunction,
 	BookingChangeLogsService,
@@ -45,7 +45,7 @@ import {
 } from '../__mocks__/bookings.mocks';
 import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
-import { UsersService } from '../../../components/users/users.service';
+import { UsersService } from '../../users/users.service';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { ServicesServiceMock } from '../../services/__mocks__/services.service';
 import { ceil } from 'lodash';
@@ -55,6 +55,7 @@ import { BookingsSubject } from '../bookings.subject';
 import { BookingsSubjectMock } from '../__mocks__/bookings.subject.mock';
 import { ServiceProvidersServiceMock } from '../../serviceProviders/__mocks__/serviceProviders.service.mock';
 import { randomIndex } from '../../../tools/arrays';
+import { IValidator } from '../../../infrastructure/validator';
 
 jest.mock('../../../tools/arrays');
 
@@ -114,18 +115,18 @@ describe('Bookings.Service', () => {
 	const validatorMock = {
 		bypassCaptcha: jest.fn(),
 		validate: jest.fn(),
-	} as IValidator;
+	} as IValidator<Booking>;
 
 	const onHolValidatorMock = {
 		bypassCaptcha: jest.fn(),
 		validate: jest.fn(),
-	} as IValidator;
+	} as IValidator<Booking>;
 
 	class BookingValidatorFactoryMock implements Partial<BookingsValidatorFactory> {
-		public getValidator(): IValidator {
+		public getValidator(): IValidator<Booking> {
 			return validatorMock;
 		}
-		public getOnHoldValidator(): IValidator {
+		public getOnHoldValidator(): IValidator<Booking> {
 			return onHolValidatorMock;
 		}
 	}

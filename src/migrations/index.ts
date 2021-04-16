@@ -12,3 +12,4 @@ export { IsSpAutoAssigned1616719301709 } from './1616719301709-IsSpAutoAssigned'
 export { Label1617033565406 } from './1617033565406-Label';
 export { ChangeLogUserIndex1615785814022 } from './1615785814022-ChangeLogUserIndex';
 export { OneOffTimeslotsAndLabel1617867320834 } from './1617867320834-OneOffTimeslotsAndLabel';
+export { OneOfTimeslotsTitle1618189257455 } from './1618189257455-OneOfTimeslotsTitle';
