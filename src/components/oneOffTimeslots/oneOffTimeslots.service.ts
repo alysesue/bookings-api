@@ -7,6 +7,8 @@ import { UserContext } from '../../infrastructure/auth/userContext';
 import { OneOffTimeslotsActionAuthVisitor } from './oneOffTimeslots.auth';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { LabelsService } from '../labels/labels.service';
+import { OneOffTimeslotsMapper } from './oneOffTimeslots.mapper';
+import { OneOffTimeslotsValidation } from './oneOffTimeslots.validation';
 
 @InRequestScope
 export class OneOffTimeslotsService {
@@ -18,6 +20,8 @@ export class OneOffTimeslotsService {
 	private userContext: UserContext;
 	@Inject
 	private labelsService: LabelsService;
+	@Inject
+	private oneOffTimeslotsValidation: OneOffTimeslotsValidation;
 
 	private async verifyActionPermission(entity: OneOffTimeslot): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
@@ -28,26 +32,11 @@ export class OneOffTimeslotsService {
 		}
 	}
 
-	private validate(entity: OneOffTimeslot) {
-		if (entity.startDateTime.getTime() >= entity.endDateTime.getTime()) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Start time must be less than end time.`);
-		}
-	}
-
 	public async save(request: OneOffTimeslotRequest): Promise<OneOffTimeslot> {
 		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
 		const labels = await this.labelsService.verifyLabels(request.labelIds, serviceProvider.serviceId);
-
-		const entity = new OneOffTimeslot();
-		entity.serviceProvider = serviceProvider;
-		entity.serviceProviderId = serviceProvider.id;
-		entity.startDateTime = request.startDateTime;
-		entity.endDateTime = request.endDateTime;
-		entity.capacity = request.capacity;
-		entity.labels = labels;
-
-		this.validate(entity);
-
+		const entity = OneOffTimeslotsMapper.mapToOneOffTimeslots(request, serviceProvider, labels);
+		await this.oneOffTimeslotsValidation.validate(entity);
 		await this.verifyActionPermission(entity);
 		await this.oneOffTimeslotsRepo.save(entity);
 		return entity;

@@ -7,31 +7,16 @@ import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { isEmail, isUrl } from 'mol-lib-api-contract/utils';
 import { isSGUinfin } from '../../../tools/validator';
-import { BusinessError } from '../../../errors/businessError';
-import { concatIteratables, iterableToArray } from '../../../tools/asyncIterables';
+import { concatIteratables } from '../../../tools/asyncIterables';
 import { BookingBusinessValidations } from './bookingBusinessValidations';
 import { CaptchaService } from '../../captcha/captcha.service';
 import { MAX_PAGING_LIMIT } from '../../../core/pagedEntities';
-
-export interface IValidator {
-	validate(booking: Booking): Promise<void>;
-	bypassCaptcha(shouldBypassCaptcha: boolean): any;
-}
+import { IValidator, Validator } from '../../../infrastructure/validator';
 
 @InRequestScope
-abstract class BookingsValidator implements IValidator {
+abstract class BookingsValidator extends Validator<Booking> {
 	@Inject
 	private serviceProvidersRepository: ServiceProvidersRepository;
-	private shouldBypassCaptcha: boolean;
-
-	public async validate(booking: Booking): Promise<void> {
-		const validations = await iterableToArray(this.getValidations(booking));
-		BusinessError.throw(validations);
-	}
-
-	public bypassCaptcha(shouldBypassCaptcha) {
-		this.shouldBypassCaptcha = shouldBypassCaptcha;
-	}
 
 	private static async validateUinFin(citizenUinFin: string): Promise<boolean> {
 		const validUinFin = await isSGUinfin(citizenUinFin);
@@ -288,7 +273,7 @@ export class BookingsValidatorFactory {
 	@Inject
 	private confirmOnHoldBookingValidator: ConfirmOnHoldBookingValidator;
 
-	public getValidator(outOfSlotBooking: boolean): IValidator {
+	public getValidator(outOfSlotBooking: boolean): IValidator<Booking> {
 		if (outOfSlotBooking) {
 			return this.outOfSlotBookingValidator;
 		} else {
@@ -296,7 +281,7 @@ export class BookingsValidatorFactory {
 		}
 	}
 
-	public getOnHoldValidator(): IValidator {
+	public getOnHoldValidator(): IValidator<Booking> {
 		return this.confirmOnHoldBookingValidator;
 	}
 }
