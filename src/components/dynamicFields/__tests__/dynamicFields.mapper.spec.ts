@@ -2,7 +2,7 @@ import { SelectListDynamicField, SelectListOption } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { DynamicFieldsMapper } from '../dynamicFields.mapper';
 import { IdHasher } from '../../../infrastructure/idHasher';
-import { IdHasherMock } from '../../../components/labels/__tests__/labels.mapper.spec';
+import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
 import {
 	DynamicFieldModel,
 	DynamicFieldType,

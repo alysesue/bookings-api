@@ -77,7 +77,7 @@ export class BookingsMapper {
 		booking.dynamicValues = dynamicValuesJson;
 	}
 
-	public static maskUinFin(booking: Booking, userContext: UserContextSnapshot): string {
+	public maskUinFin(booking: Booking, userContext: UserContextSnapshot): string {
 		if (!booking.service?.organisation) {
 			throw new Error('Booking -> service -> organisation not loaded. BookingsMapper requires it.');
 		}
@@ -115,7 +115,7 @@ export class BookingsMapper {
 			serviceProviderName: booking.serviceProvider?.name,
 			serviceProviderEmail: booking.serviceProvider?.email,
 			serviceProviderPhone: booking.serviceProvider?.phone,
-			citizenUinFin: BookingsMapper.maskUinFin(booking, userContext),
+			citizenUinFin: this.maskUinFin(booking, userContext),
 			citizenName: booking.citizenName,
 			citizenEmail: booking.citizenEmail,
 			citizenPhone: booking.citizenPhone,

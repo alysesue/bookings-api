@@ -4,7 +4,7 @@ import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
 import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entities/booking';
 import { Container } from 'typescript-ioc';
 import { IdHasher } from '../../../infrastructure/idHasher';
-import { IdHasherMock } from '../../../components/labels/__tests__/labels.mapper.spec';
+import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
 import {
 	DynamicValueContract,
 	DynamicValueTypeContract,
@@ -49,9 +49,10 @@ describe('Bookings mapper tests', () => {
 
 	it('should throw if organisation not loaded', async () => {
 		const booking = new Booking();
+		const bookingMapper = Container.get(BookingsMapper);
 		booking.citizenUinFin = 'S9269634J';
 
-		const testCase = () => BookingsMapper.maskUinFin(booking, { user: userMock, authGroups: [] });
+		const testCase = () => bookingMapper.maskUinFin(booking, { user: userMock, authGroups: [] });
 		expect(testCase).toThrowErrorMatchingInlineSnapshot(
 			'"Booking -> service -> organisation not loaded. BookingsMapper requires it."',
 		);
@@ -59,24 +60,26 @@ describe('Bookings mapper tests', () => {
 
 	it('should mask nric, mask all characters except first and last 4 characters', async () => {
 		const booking = new Booking();
+		const bookingMapper = Container.get(BookingsMapper);
 		booking.citizenUinFin = 'S9269634J';
 		booking.service = new Service();
 		booking.service.organisation = new Organisation();
 
 		UinFinConfigurationMock.canViewPlainUinFin.mockReturnValue(false);
 
-		const result = BookingsMapper.maskUinFin(booking, { user: userMock, authGroups: [] });
+		const result = bookingMapper.maskUinFin(booking, { user: userMock, authGroups: [] });
 		expect(result).toEqual('S****634J');
 	});
 
 	it('should not mask nric depending on uinfin configuration ', async () => {
 		const booking = new Booking();
+		const bookingMapper = Container.get(BookingsMapper);
 		booking.citizenUinFin = 'S9269634J';
 		booking.service = new Service();
 		booking.service.organisation = new Organisation();
 		UinFinConfigurationMock.canViewPlainUinFin.mockReturnValue(true);
 
-		const result = BookingsMapper.maskUinFin(booking, { user: userMock, authGroups: [] });
+		const result = bookingMapper.maskUinFin(booking, { user: userMock, authGroups: [] });
 		expect(result).toEqual('S9269634J');
 	});
 
