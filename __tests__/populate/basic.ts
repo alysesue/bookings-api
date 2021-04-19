@@ -212,12 +212,16 @@ export const populateOneOffTimeslot = async ({
 	endTime,
 	capacity,
 	labelIds,
+	title,
+	description,
 }: {
 	serviceProviderId: number;
 	startTime: Date;
 	endTime: Date;
 	capacity: number;
 	labelIds?: string[];
+	title?: string;
+	description?: string;
 }): Promise<OneOffTimeslotResponse> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/oneOffTimeslots`, {
 		body: {
@@ -225,6 +229,8 @@ export const populateOneOffTimeslot = async ({
 			endDateTime: endTime,
 			capacity,
 			serviceProviderId,
+			title,
+			description,
 			labelIds,
 		},
 	});
