@@ -87,8 +87,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			this.cancelBookingInternal.bind(this),
 		);
-		const currentUser = await this.userContext.getCurrentUser();
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.CancelledOrRejected, userType: currentUser });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.CancelledOrRejected });
 		return booking;
 	}
 
@@ -110,8 +109,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			acceptAction,
 		);
-		const currentUser = await this.userContext.getCurrentUser();
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated, userType: currentUser });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated });
 		return booking;
 	}
 
@@ -127,8 +125,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			updateAction,
 		);
-		const currentUser = await this.userContext.getCurrentUser();
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated, userType: currentUser });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated });
 		return booking;
 	}
 
@@ -138,8 +135,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			this.rejectBookingInternal.bind(this),
 		);
-		const currentUser = await this.userContext.getCurrentUser();
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.CancelledOrRejected, userType: currentUser });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.CancelledOrRejected });
 		return booking;
 	}
 
@@ -150,8 +146,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			rescheduleAction,
 		);
-		const currentUser = await this.userContext.getCurrentUser();
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated, userType: currentUser });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated });
 		return booking;
 	}
 
@@ -168,8 +163,7 @@ export class BookingsService {
 		// Method calls with different services, or timeslots should still run in parallel.
 		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptchaAndAutoAccept);
 		const booking = await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
-		const currentUser = await this.userContext.getCurrentUser();
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created, userType: currentUser });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created });
 		return booking;
 	}
 

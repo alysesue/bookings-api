@@ -13,6 +13,16 @@ class EmailData {
 	public time: string;
 }
 
+export interface MailOptions {
+	from?: string;
+	to: string | string[];
+	cc?: string | string[];
+	bcc?: string | string[];
+	subject: string;
+	text?: string;
+	html: string;
+}
+
 export const emailMapper = (data): EmailData => {
 	const status = BookingStatusDisplayedInEmails[data._booking._status];
 	const serviceName = data._booking._service?._name || '';

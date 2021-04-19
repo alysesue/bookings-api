@@ -1,11 +1,17 @@
-import { emailMapper } from '../notifications.mapper';
+import { emailMapper, MailOptions } from '../notifications.mapper';
 
 export abstract class EmailTemplateBase {
 	public subject: string;
 	public html: string;
 }
 
-export class CitizenEmailTemplateBookingActionByCitizen extends EmailTemplateBase {
+export abstract class EmailBookingTemplate extends EmailTemplateBase {
+	public static abstract CreatedBookingEmail(data): MailOptions;
+	public static abstract UpdatedBookingEmail(data): MailOptions;
+	public static abstract CancelledBookingEmail(data): MailOptions;
+}
+
+export class CitizenEmailTemplateBookingActionByCitizen implements EmailBookingTemplate {
 	public static CreatedBookingEmail(data) {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 
@@ -61,7 +67,7 @@ Location: <b>${locationText}</b>
 	}
 }
 
-export class CitizenEmailTemplateBookingActionByServiceProvider extends EmailTemplateBase {
+export class CitizenEmailTemplateBookingActionByServiceProvider implements EmailBookingTemplate {
 	public static CreatedBookingEmail(data) {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {

@@ -1,24 +1,18 @@
-import { InRequestScope } from 'typescript-ioc';
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { getConfig } from '../../config/app-config';
 import { CreateEmailResponseDataApiDomain } from 'mol-lib-api-contract/notification/mail/create-email/create-email-api-domain';
 import { CreateEmail } from 'mol-lib-api-contract/notification/mail';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { mailer } from '../../config/mailer';
 import { emailLogger } from '../../config/logger';
-import { BookingType } from '../../models/bookingType';
-import { MailOptions } from './MailOptions';
-import {
-	CitizenEmailTemplateBookingActionByCitizen,
-	CitizenEmailTemplateBookingActionByServiceProvider,
-	EmailTemplateBase,
-} from './templates/citizen.mail';
-import {
-	ServiceProviderEmailTemplateBookingActionByCitizen,
-	ServiceProviderEmailTemplateBookingActionByServiceProvider,
-} from './templates/serviceProviders.mail';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { MailOptions } from "./notifications.mapper";
 
 @InRequestScope
 export class NotificationsService {
+	@Inject
+	private userContext: UserContext;
+
 	private config = getConfig();
 	private defaultOptions = {
 		from: this.config.email.mol.sender,
@@ -51,34 +45,6 @@ export class NotificationsService {
 				messageId: err.responseData.messageId,
 			});
 		}
-	}
-
-	public createCitizenEmailFactory(data): EmailTemplateBase {
-		if (data._bookingType === BookingType.Created && data._userType._singPassUser)
-			return CitizenEmailTemplateBookingActionByCitizen.CreatedBookingEmail(data);
-		if (data._bookingType === BookingType.Updated && data._userType._singPassUser)
-			return CitizenEmailTemplateBookingActionByCitizen.UpdatedBookingEmail(data);
-		if (data._bookingType === BookingType.CancelledOrRejected && data._userType._singPassUser)
-			return CitizenEmailTemplateBookingActionByCitizen.CancelledBookingEmail(data);
-		if (data._bookingType === BookingType.Created && data._userType._adminUser)
-			return CitizenEmailTemplateBookingActionByServiceProvider.CreatedBookingEmail(data);
-		if (data._bookingType === BookingType.Updated && data._userType._adminUser)
-			return CitizenEmailTemplateBookingActionByServiceProvider.UpdatedBookingEmail(data);
-		if (data._bookingType === BookingType.CancelledOrRejected && data._userType._adminUser)
-			return CitizenEmailTemplateBookingActionByServiceProvider.CancelledBookingEmail(data);
-	}
-
-	public createServiceProviderEmailFactory(data): EmailTemplateBase {
-		if (data._bookingType === BookingType.Created && data._userType._singPassUser)
-			return ServiceProviderEmailTemplateBookingActionByCitizen.CreatedBookingEmail(data);
-		if (data._bookingType === BookingType.Updated && data._userType._singPassUser)
-			return ServiceProviderEmailTemplateBookingActionByCitizen.UpdatedBookingEmail(data);
-		if (data._bookingType === BookingType.CancelledOrRejected && data._userType._singPassUser)
-			return ServiceProviderEmailTemplateBookingActionByCitizen.CancelledBookingEmail(data);
-		if (data._bookingType === BookingType.Updated && data._userType._adminUser)
-			return ServiceProviderEmailTemplateBookingActionByServiceProvider.UpdatedBookingEmail(data);
-		if (data._bookingType === BookingType.CancelledOrRejected && data._userType._adminUser)
-			return ServiceProviderEmailTemplateBookingActionByServiceProvider.CancelledBookingEmail(data);
 	}
 
 	private getMergedOptions = (options: MailOptions) => {
