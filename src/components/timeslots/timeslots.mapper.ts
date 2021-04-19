@@ -1,6 +1,7 @@
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import {
 	AvailabilityEntryResponse,
+	CitizenTimeslotServiceProviderResponse,
 	TimeslotEntryResponse,
 	TimeslotServiceProviderResponse,
 } from './timeslots.apicontract';
@@ -32,10 +33,15 @@ export class TimeslotsMapper {
 			return undefined;
 		}
 
+		const [timeslotServiceProviders] = this.mapCitizenTimeslotServiceProviders(
+			Array.from(entry.getTimeslotServiceProviders()),
+		);
+
 		const response = new AvailabilityEntryResponse();
 		response.startTime = new Date(entry.startTime);
 		response.endTime = new Date(entry.endTime);
 		response.availabilityCount = availabilityCount;
+		response.timeslotServiceProviders = timeslotServiceProviders;
 		return response;
 	}
 
@@ -72,6 +78,24 @@ export class TimeslotsMapper {
 		});
 
 		return [res, totalCapacity, totalAssignedBookings];
+	}
+
+	public mapCitizenTimeslotServiceProviders(
+		entries: TimeslotServiceProviderResult[],
+	): [CitizenTimeslotServiceProviderResponse[]] {
+		const res = entries.map((entry) => {
+			const item = this.mapCitizenServiceProviderTimeslot(entry);
+			return item;
+		});
+		return [res];
+	}
+
+	private mapCitizenServiceProviderTimeslot(entry: TimeslotServiceProviderResult): TimeslotServiceProviderResponse {
+		const item = new TimeslotServiceProviderResponse();
+		item.serviceProvider = new ServiceProviderSummaryModel(entry.serviceProvider.id, entry.serviceProvider.name);
+		item.eventTitle = entry.title;
+		item.eventDescription = entry.description;
+		return item;
 	}
 
 	private mapServiceProviderTimeslot(

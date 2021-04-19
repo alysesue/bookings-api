@@ -221,9 +221,6 @@ export class TimeslotsService {
 		const mappedEntries = await TimeslotsService.mapServiceProviderAggregatedEntriesToTimeslots(aggregatedEntries);
 		mappingWatch.stop();
 
-		console.log('MAPPEDENTRIES');
-		console.log(mappedEntries);
-
 		const mapProcessors: AvailableTimeslotProcessor[] = [
 			await this.filterUnavailabilities(startDateTime, endDateTime, serviceId),
 			this.setBookedProviders(acceptedBookings),
@@ -239,10 +236,6 @@ export class TimeslotsService {
 
 		const result = Array.from(mappedEntries.values());
 		result.sort(TimeslotsService.sortAvailableTimeslotProviders);
-
-		console.log('RESULTOFGETAGGREGATEDTIMESLOTS');
-		console.log(result);
-
 		return result;
 	}
 
@@ -391,13 +384,7 @@ export class TimeslotsService {
 			labelIds,
 		});
 
-		// console.log('QUERYGETMANY IS HERE!');
-		// console.log(oneOffTimeslots);
-
 		const oneOffTimeslotsLookup = groupByKey(oneOffTimeslots, (e) => e.serviceProviderId);
-		//
-		// console.log('ONEOFFLOOKUP IS HERE!');
-		// console.log(oneOffTimeslotsLookup);
 
 		let validServiceTimeslots = [];
 		if (!hasLabelFilter) {

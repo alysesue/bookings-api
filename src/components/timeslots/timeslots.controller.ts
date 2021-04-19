@@ -62,7 +62,6 @@ export class TimeslotsController extends Controller {
 		}
 
 		const result = this.timeslotMapper.mapAvailabilityToResponse(timeslots, { skipUnavailable: true });
-
 		return ApiDataFactory.create(result);
 	}
 
@@ -96,8 +95,6 @@ export class TimeslotsController extends Controller {
 		@Query() includeBookings: boolean = false,
 		@Query() serviceProviderIds?: number[],
 		@Query() labelIds?: string[],
-		@Query() title?: string,
-		@Query() description?: string,
 	): Promise<ApiData<TimeslotEntryResponse[]>> {
 		const labelIdsNumber = labelIds && labelIds.length > 0 ? labelIds.map((id) => this.idHasher.decode(id)) : [];
 		let spIdsFilter = serviceProviderIds || [];
