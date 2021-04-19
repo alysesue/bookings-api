@@ -90,7 +90,8 @@ export class TimeslotsMapper {
 			return BookingsMapper.mapDataModel(booking, userContext);
 		});
 		item.labels = this.labelsMapper.mapToLabelsResponse(entry.labels);
-
+		item.eventTitle = entry.title;
+		item.eventDescription = entry.description;
 		return item;
 	}
 }

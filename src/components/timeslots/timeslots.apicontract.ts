@@ -16,6 +16,25 @@ export class AvailabilityEntryResponse {
 	 * @isInt
 	 */
 	public availabilityCount: number;
+	/**
+	 * The detail of service Providers information at this specific timeslot NEW
+	 */
+	public timeslotServiceProviders: CitizenTimeslotServiceProviderResponse[];
+}
+
+export class CitizenTimeslotServiceProviderResponse {
+	/**
+	 * The detail of the service provider
+	 */
+	public serviceProvider: ServiceProviderSummaryModel;
+	/**
+	 * The event title of the slot
+	 */
+	public eventTitle: string;
+	/**
+	 * The event description of the slot
+	 */
+	public eventDescription: string;
 }
 
 export class TimeslotServiceProviderResponse {
@@ -47,7 +66,19 @@ export class TimeslotServiceProviderResponse {
 	 */
 	public pendingBookings: BookingResponse[];
 
+	/**
+	 * The labels linked to the service
+	 */
 	public labels?: LabelResponseModel[];
+
+	/**
+	 * The event title of the slot
+	 */
+	public eventTitle: string;
+	/**
+	 * The event description of the slot
+	 */
+	public eventDescription: string;
 }
 
 export class TimeslotEntryResponse {

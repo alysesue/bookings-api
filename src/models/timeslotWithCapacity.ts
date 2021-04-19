@@ -5,4 +5,6 @@ import { Timeslot } from './timeslot';
 export interface TimeslotWithCapacity extends Timeslot {
 	readonly capacity: number;
 	readonly labels: Label[];
+	readonly title: string;
+	readonly description: string;
 }

@@ -31,6 +31,8 @@ export class AvailableTimeslotProviders {
 					pendingBookings: timeslotServiceProvider.pendingBookings,
 					availabilityCount: timeslotServiceProvider.getAvailabilityCount(totalAvailability),
 					labels: timeslotServiceProvider.labels,
+					title: timeslotServiceProvider.title,
+					description: timeslotServiceProvider.description,
 				};
 			}
 		}
@@ -84,6 +86,8 @@ export class AvailableTimeslotProviders {
 				spItem,
 				timeslotCapacity.capacity,
 				timeslotCapacity.labels,
+				timeslotCapacity.title,
+				timeslotCapacity.description,
 			);
 			if (!spTimeslotItem.serviceProvider.isLicenceExpireNative(timeslotCapacity.startTimeNative)) {
 				this._timeslotServiceProviders.set(spItem.id, spTimeslotItem);
