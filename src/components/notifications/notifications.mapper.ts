@@ -1,11 +1,11 @@
-import { Service, ServiceProvider } from '../../models';
+import { Booking } from '../../models';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { BookingStatusDisplayedInEmails } from '../../models/bookingStatus';
 
 class EmailData {
 	public status: string;
-	public serviceName: Service;
-	public serviceProviderName: ServiceProvider;
+	public serviceName: string;
+	public serviceProviderName: string;
 	public serviceProviderText: string;
 	public location: string;
 	public locationText: string;
@@ -15,7 +15,7 @@ class EmailData {
 
 export interface MailOptions {
 	from?: string;
-	to: string | string[];
+	to: string[];
 	cc?: string | string[];
 	bcc?: string | string[];
 	subject: string;
@@ -23,17 +23,17 @@ export interface MailOptions {
 	html: string;
 }
 
-export const emailMapper = (data): EmailData => {
-	const status = BookingStatusDisplayedInEmails[data._booking._status];
-	const serviceName = data._booking._service?._name || '';
-	const serviceProviderName = data._booking._serviceProvider?._name;
+export const emailMapper = (data: Booking): EmailData => {
+	const status = BookingStatusDisplayedInEmails[data.status];
+	const serviceName = data.service?.name || '';
+	const serviceProviderName = data.serviceProvider?.name;
 	const serviceProviderText = serviceProviderName ? ` - ${serviceProviderName}` : '';
-	const location = data._booking._location;
+	const location = data.location;
 	const locationText = location ? `${location}` : '';
-	const day = DateHelper.getDateFormat(data._booking._startDateTime);
-	const time = `${DateHelper.getTime12hFormatString(
-		data._booking._startDateTime,
-	)} - ${DateHelper.getTime12hFormatString(data._booking._endDateTime)}`;
+	const day = DateHelper.getDateFormat(data.startDateTime);
+	const time = `${DateHelper.getTime12hFormatString(data.startDateTime)} - ${DateHelper.getTime12hFormatString(
+		data.endDateTime,
+	)}`;
 	return {
 		status,
 		serviceName,

@@ -2,7 +2,7 @@ import { EmailBookingTemplate, EmailTemplateBase } from './citizen.mail';
 import { emailMapper } from '../notifications.mapper';
 
 export class ServiceProviderEmailTemplateBookingActionByCitizen implements EmailBookingTemplate {
-	public static CreatedBookingEmail(data) {
+	public CreatedBookingEmail(data) {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG request: ${serviceName}${serviceProviderText}`,
@@ -21,7 +21,7 @@ Location: <b>${locationText}</b>
 		};
 	}
 
-	public static UpdatedBookingEmail(data) {
+	public UpdatedBookingEmail(data) {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG update: ${serviceName}${serviceProviderText}`,
@@ -40,7 +40,7 @@ Location: <b>${locationText}</b>
 		};
 	}
 
-	public static CancelledBookingEmail(data) {
+	public CancelledBookingEmail(data) {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG cancellation: ${serviceName}${serviceProviderText}`,
@@ -59,7 +59,7 @@ Location: <b>${locationText}</b>
 }
 
 export class ServiceProviderEmailTemplateBookingActionByServiceProvider implements EmailBookingTemplate {
-	public static UpdatedBookingEmail(data) {
+	public UpdatedBookingEmail(data) {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG update: ${serviceName}${serviceProviderText}`,
@@ -78,7 +78,7 @@ Location: <b>${locationText}</b>
 		};
 	}
 
-	public static CancelledBookingEmail(data): EmailTemplateBase {
+	public CancelledBookingEmail(data): EmailTemplateBase {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG cancellation: ${serviceName}${serviceProviderText}`,
@@ -93,5 +93,9 @@ Time: <b>${time}</b>
 Location: <b>${locationText}</b>
 </pre>`,
 		};
+	}
+
+	public CreatedBookingEmail(data): EmailTemplateBase {
+		return undefined;
 	}
 }

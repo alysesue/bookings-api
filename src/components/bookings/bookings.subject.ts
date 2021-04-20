@@ -13,11 +13,11 @@ export class BookingsSubject extends Subject<BookingsPublisherProps> {
 	private _booking: Booking;
 	private _bookingType: BookingType;
 
-	public get booking(): BookingsPublisherProps {
-		return {
-			booking: this._booking,
-			bookingType: this._bookingType,
-		};
+	public get bookingType(): BookingType {
+		return this._bookingType;
+	}
+	public get booking(): Booking {
+		return this._booking;
 	}
 
 	public notify(props: BookingsPublisherProps): void {

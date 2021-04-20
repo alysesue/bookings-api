@@ -1,28 +1,21 @@
-import { Inject, InRequestScope } from 'typescript-ioc';
+import { InRequestScope } from 'typescript-ioc';
 import { getConfig } from '../../config/app-config';
 import { CreateEmailResponseDataApiDomain } from 'mol-lib-api-contract/notification/mail/create-email/create-email-api-domain';
-import { CreateEmail } from 'mol-lib-api-contract/notification/mail';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { mailer } from '../../config/mailer';
 import { emailLogger } from '../../config/logger';
-import { UserContext } from '../../infrastructure/auth/userContext';
-import { MailOptions } from "./notifications.mapper";
+import { MailOptions } from './notifications.mapper';
 
 @InRequestScope
 export class NotificationsService {
-	@Inject
-	private userContext: UserContext;
-
 	private config = getConfig();
 	private defaultOptions = {
 		from: this.config.email.mol.sender,
 	};
 
-	public async sendEmail(
-		options: CreateEmail.Domain.CreateEmailRequestApiDomain,
-	): Promise<CreateEmailResponseDataApiDomain> {
+	public async sendEmail(options: MailOptions): Promise<CreateEmailResponseDataApiDomain> {
 		const mergedOptions = this.getMergedOptions(options);
-		this.validateEmails(this.getEmailsFromOptions(mergedOptions, true));
+		this.validateEmails(this.getEmailsFromOptions(mergedOptions));
 		const recipients = options.to.join(',');
 
 		try {
@@ -54,12 +47,8 @@ export class NotificationsService {
 		};
 	};
 
-	private getEmailsFromOptions = (options: MailOptions, forMultipleRecipients: boolean) => {
-		if (forMultipleRecipients) {
-			return [options.from, ...(options.to as string[])];
-		}
-
-		return [options.from, options.to as string];
+	private getEmailsFromOptions = (options: MailOptions) => {
+		return [options.from, ...(options.to as string[])];
 	};
 
 	private validateEmails = (emails: string[]) => {

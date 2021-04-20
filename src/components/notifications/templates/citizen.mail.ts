@@ -1,18 +1,18 @@
-import { emailMapper, MailOptions } from '../notifications.mapper';
+import { emailMapper } from '../notifications.mapper';
 
 export abstract class EmailTemplateBase {
 	public subject: string;
 	public html: string;
 }
 
-export abstract class EmailBookingTemplate extends EmailTemplateBase {
-	public static abstract CreatedBookingEmail(data): MailOptions;
-	public static abstract UpdatedBookingEmail(data): MailOptions;
-	public static abstract CancelledBookingEmail(data): MailOptions;
+export abstract class EmailBookingTemplate {
+	public abstract CreatedBookingEmail(data): EmailTemplateBase;
+	public abstract UpdatedBookingEmail(data): EmailTemplateBase;
+	public abstract CancelledBookingEmail(data): EmailTemplateBase;
 }
 
 export class CitizenEmailTemplateBookingActionByCitizen implements EmailBookingTemplate {
-	public static CreatedBookingEmail(data) {
+	public CreatedBookingEmail(data) {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 
 		return {
@@ -31,7 +31,7 @@ Location: <b>${locationText}</b>
 		};
 	}
 
-	public static UpdatedBookingEmail(data) {
+	public UpdatedBookingEmail(data) {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG update: ${serviceName}${serviceProviderText}`,
@@ -49,7 +49,7 @@ Location: <b>${locationText}</b>
 		};
 	}
 
-	public static CancelledBookingEmail(data) {
+	public CancelledBookingEmail(data) {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG cancellation: ${serviceName}${serviceProviderText}`,
@@ -68,7 +68,7 @@ Location: <b>${locationText}</b>
 }
 
 export class CitizenEmailTemplateBookingActionByServiceProvider implements EmailBookingTemplate {
-	public static CreatedBookingEmail(data) {
+	public CreatedBookingEmail(data) {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG confirmation: ${serviceName}${serviceProviderText}`,
@@ -86,7 +86,7 @@ Location: <b>${locationText}</b>
 		};
 	}
 
-	public static UpdatedBookingEmail(data) {
+	public UpdatedBookingEmail(data) {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG update: ${serviceName}${serviceProviderText}`,
@@ -104,7 +104,7 @@ Location: <b>${locationText}</b>
 		};
 	}
 
-	public static CancelledBookingEmail(data) {
+	public CancelledBookingEmail(data) {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG cancellation: ${serviceName}${serviceProviderText}`,

@@ -419,8 +419,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			validateAction,
 		);
-		const currentUser = await this.userContext.getCurrentUser();
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created, userType: currentUser });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created });
 		return booking;
 	}
 }
