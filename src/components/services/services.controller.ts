@@ -1,7 +1,7 @@
 import { Inject } from 'typescript-ioc';
 import { Body, Controller, Delete, Get, Path, Post, Put, Response, Route, SuccessResponse, Tags } from 'tsoa';
-import { ServiceRequest, ServiceResponse } from './service.apicontract';
-import { ServicesService } from './services.service';
+import { MOLAuth } from 'mol-lib-common';
+import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { mapToResponse as mapSScheduleFormResponseToResponse } from '../scheduleForms/scheduleForms.mapper';
 import { ScheduleFormRequest, ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
 import {
@@ -10,9 +10,9 @@ import {
 	TimeslotsScheduleResponse,
 } from '../timeslotItems/timeslotItems.apicontract';
 import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
-import { MOLAuth } from 'mol-lib-common';
-import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { ApiData, ApiDataFactory } from '../../apicontract';
+import { ServicesService } from './services.service';
+import { ServiceRequest, ServiceResponse } from './service.apicontract';
 import { ServicesMapper } from './services.mapper';
 
 @Route('v1/services')
@@ -26,6 +26,7 @@ export class ServicesController extends Controller {
 
 	/**
 	 * Creates a service for booking.
+	 *
 	 * @param request
 	 */
 	@Post()
@@ -40,6 +41,7 @@ export class ServicesController extends Controller {
 
 	/**
 	 * Update a single service.
+	 *
 	 * @param @isInt serviceId The service id.
 	 * @param serviceRequest
 	 */
@@ -95,6 +97,7 @@ export class ServicesController extends Controller {
 
 	/**
 	 * Retrieves a single service. (Includes Service Labels)
+	 *
 	 * @param @isInt serviceId The service id.
 	 */
 	@Get('{serviceId}')
@@ -107,6 +110,7 @@ export class ServicesController extends Controller {
 
 	/**
 	 * Retrieves all weekly recurring timeslots for a service.
+	 *
 	 * @param @isInt serviceId The service id.
 	 */
 	@Get('{serviceId}/timeslotSchedule')
@@ -120,6 +124,7 @@ export class ServicesController extends Controller {
 
 	/**
 	 * Creates a new weekly recurring timeslot for a service.
+	 *
 	 * @param @isInt serviceId The service id.
 	 * @param request
 	 */
@@ -138,6 +143,7 @@ export class ServicesController extends Controller {
 
 	/**
 	 * Updates a weekly recurring timeslot. Existing bookings are not affected.
+	 *
 	 * @param @isInt serviceId The service id.
 	 * @param @isInt timeslotId The weekly timeslot id.
 	 * @param request
@@ -157,6 +163,7 @@ export class ServicesController extends Controller {
 
 	/**
 	 * Deletes a weekly recurring timeslot. Existing bookings are not affected.
+	 *
 	 * @param @isInt serviceId The service id.
 	 * @param @isInt timeslotId The weekly timeslot id.
 	 */

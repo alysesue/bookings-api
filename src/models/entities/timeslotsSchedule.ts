@@ -1,10 +1,10 @@
 import { Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { TimeslotItem } from './timeslotItem';
 import { IService, IServiceProvider, ITimeslotsSchedule } from '../interfaces';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { groupByKey } from '../../tools/collections';
 import { TimeOfDay } from '../timeOfDay';
 import { TimeslotWithCapacity } from '../timeslotWithCapacity';
+import { TimeslotItem } from './timeslotItem';
 
 const TIME_PER_DAY = 24 * 60 * 60 * 1000;
 

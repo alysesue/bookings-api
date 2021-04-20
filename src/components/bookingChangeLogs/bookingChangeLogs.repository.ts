@@ -24,9 +24,9 @@ export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog
 		const { userCondition, userParams } = options.byPassAuth
 			? { userCondition: '', userParams: {} }
 			: await new BookingChangeLogsQueryAuthVisitor(
-					'changelog',
-					'service',
-					'booking',
+				'changelog',
+				'service',
+				'booking',
 			  ).createUserVisibilityCondition(authGroups);
 
 		const { changedSince, changedUntil, serviceId, bookingIds } = options;

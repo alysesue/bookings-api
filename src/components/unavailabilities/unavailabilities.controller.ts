@@ -14,12 +14,12 @@ import {
 	SuccessResponse,
 	Tags,
 } from 'tsoa';
-import { UnavailabilitiesService } from './unavailabilities.service';
-import { UnavailabilityRequest, UnavailabilityResponse } from './unavailabilities.apicontract';
+import { MOLAuth } from 'mol-lib-common';
 import { Unavailability } from '../../models';
 import { ServiceProvidersMapper } from '../serviceProviders/serviceProviders.mapper';
-import { MOLAuth } from 'mol-lib-common';
 import { ApiData, ApiDataFactory } from '../../apicontract';
+import { UnavailabilitiesService } from './unavailabilities.service';
+import { UnavailabilityRequest, UnavailabilityResponse } from './unavailabilities.apicontract';
 
 @Route('v1/unavailabilities')
 @Tags('Unavailabilities')
@@ -42,6 +42,7 @@ export class UnavailabilitiesController extends Controller {
 
 	/**
 	 * Creates an unavailable (blocked) timeslot for a service or, optionally, for specific service providers.
+	 *
 	 * @param request
 	 * @param @isInt serviceId The service id.
 	 */
@@ -62,6 +63,7 @@ export class UnavailabilitiesController extends Controller {
 
 	/**
 	 * Retrieves unavailabilities
+	 *
 	 * @param @isInt serviceId The service id.
 	 * @param fromDate The lower bound datetime limit (inclusive) for unavailability's end time.
 	 * @param toDate The upper bound datetime limit (inclusive) for unavailability's start time.
@@ -88,6 +90,7 @@ export class UnavailabilitiesController extends Controller {
 
 	/**
 	 * Deletes an unavailability for a service provider
+	 *
 	 * @param id The ID of the unavailability.
 	 */
 	@Delete('{id}')

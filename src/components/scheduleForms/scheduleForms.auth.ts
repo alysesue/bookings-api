@@ -35,46 +35,46 @@ export class ScheduleFormsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		switch (this._action) {
-			case CrudAction.Create:
-			case CrudAction.Read:
-			case CrudAction.Update:
-				const organisationId = this._serviceProvider.service.organisationId;
-				if (_userGroup.hasOrganisationId(organisationId)) {
-					this.markWithPermission();
-				}
-				return;
-			default:
-				return;
+		case CrudAction.Create:
+		case CrudAction.Read:
+		case CrudAction.Update:
+			const organisationId = this._serviceProvider.service.organisationId;
+			if (_userGroup.hasOrganisationId(organisationId)) {
+				this.markWithPermission();
+			}
+			return;
+		default:
+			return;
 		}
 	}
 
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		switch (this._action) {
-			case CrudAction.Create:
-			case CrudAction.Read:
-			case CrudAction.Update:
-				const serviceId = this._serviceProvider.serviceId;
-				if (_userGroup.hasServiceId(serviceId)) {
-					this.markWithPermission();
-				}
-				return;
-			default:
-				return;
+		case CrudAction.Create:
+		case CrudAction.Read:
+		case CrudAction.Update:
+			const serviceId = this._serviceProvider.serviceId;
+			if (_userGroup.hasServiceId(serviceId)) {
+				this.markWithPermission();
+			}
+			return;
+		default:
+			return;
 		}
 	}
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
 		switch (this._action) {
-			case CrudAction.Create:
-			case CrudAction.Read:
-			case CrudAction.Update:
-				const serviceProviderId = this._serviceProvider.id;
-				// tslint:disable-next-line: tsr-detect-possible-timing-attacks
-				if (_userGroup.authorisedServiceProvider.id === serviceProviderId) {
-					this.markWithPermission();
-				}
-				return;
-			default:
-				return;
+		case CrudAction.Create:
+		case CrudAction.Read:
+		case CrudAction.Update:
+			const serviceProviderId = this._serviceProvider.id;
+			// tslint:disable-next-line: tsr-detect-possible-timing-attacks
+			if (_userGroup.authorisedServiceProvider.id === serviceProviderId) {
+				this.markWithPermission();
+			}
+			return;
+		default:
+			return;
 		}
 	}
 }

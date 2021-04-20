@@ -14,6 +14,15 @@ import {
 	SuccessResponse,
 	Tags,
 } from 'tsoa';
+import { MOLAuth } from 'mol-lib-common';
+import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
+import { TimeslotsService } from '../timeslots/timeslots.service';
+import { ApiData, ApiDataBulk, ApiDataFactory, ApiPagedData, FailedRecord } from '../../apicontract';
+import { KoaContextStore } from '../../infrastructure/koaContextStore.middleware';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { Booking } from '../../models/entities';
+import { BookingsMapper } from './bookings.mapper';
+import { BookingsService } from './bookings.service';
 import {
 	BookingAcceptRequest,
 	BookingDetailsRequest,
@@ -23,15 +32,6 @@ import {
 	BookingSearchRequest,
 	BookingUpdateRequest,
 } from './bookings.apicontract';
-import { BookingsService } from './bookings.service';
-import { TimeslotsService } from '../timeslots/timeslots.service';
-import { MOLAuth } from 'mol-lib-common';
-import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
-import { BookingsMapper } from './bookings.mapper';
-import { ApiData, ApiDataBulk, ApiDataFactory, ApiPagedData, FailedRecord } from '../../apicontract';
-import { KoaContextStore } from '../../infrastructure/koaContextStore.middleware';
-import { UserContext } from '../../infrastructure/auth/userContext';
-import { Booking } from '../../models/entities';
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
 
@@ -52,6 +52,7 @@ export class BookingsController extends Controller {
 	 * [startDateTime, endDateTime] pair needs to match an available timeslot for the service or service provider.
 	 * If serviceProviderId is specified, the booking status will be Accepted (2),
 	 * otherwise the status will be Pending (1) and will require approval by an admin.
+	 *
 	 * @param bookingRequest
 	 * @param @isInt serviceId The service (id) to be booked.
 	 */
@@ -100,6 +101,7 @@ export class BookingsController extends Controller {
 	 * Creates a new booking. Any startDateTime and endDateTime are allowed.
 	 * If serviceProviderId is specified, the booking status will be Accepted (2),
 	 * otherwise the status will be Pending (1) and will require approval by an admin.
+	 *
 	 * @param bookingRequest
 	 * @param @isInt serviceId The service (id) to be booked.
 	 */
@@ -119,6 +121,7 @@ export class BookingsController extends Controller {
 
 	/**
 	 * Approves a booking and allocates a service provider to it. The booking must have Pending (1) status and the service provider (serviceProviderId) must be available for this booking timeslot otherwise the request will fail.
+	 *
 	 * @param @isInt bookingId The booking id.
 	 * @param rescheduleRequest A new booking request for reschedule
 	 */
@@ -141,6 +144,7 @@ export class BookingsController extends Controller {
 
 	/**
 	 * Approves a booking and allocates a service provider to it. The booking must have Pending (1) status and the service provider (serviceProviderId) must be available for this booking timeslot otherwise the request will fail.
+	 *
 	 * @param @isInt bookingId The booking id.
 	 * @param acceptRequest
 	 */
@@ -154,6 +158,7 @@ export class BookingsController extends Controller {
 
 	/**
 	 * Cancels a booking. Only future bookings that have Pending (1) or Accepted (2) status can be cancelled.
+	 *
 	 * @param @isInt bookingId The booking id.
 	 */
 	@Post('{bookingId}/cancel')
@@ -171,6 +176,7 @@ export class BookingsController extends Controller {
 	/**
 	 * Updates an existing booking.
 	 * It will delete the exisitng booking and re-create a new booking based on request data.
+	 *
 	 * @param @isInt bookingId The booking id.
 	 * @param bookingRequest
 	 * @param @isInt serviceId The service (id) to be booked.
@@ -189,6 +195,7 @@ export class BookingsController extends Controller {
 
 	/**
 	 * Retrieves all bookings that intercept the datetime range provided [from, to].
+	 *
 	 * @param from The lower bound datetime limit (inclusive) for booking's end time.
 	 * @param to  The upper bound datetime limit (inclusive) for booking's start time.
 	 * @param fromCreatedDate
@@ -247,6 +254,7 @@ export class BookingsController extends Controller {
 
 	/**
 	 * Retrieves a single booking.
+	 *
 	 * @param @isInt bookingId The booking id.
 	 */
 	@Get('{bookingId}')
@@ -259,6 +267,7 @@ export class BookingsController extends Controller {
 
 	/**
 	 * Retrieves a list of available service providers for this booking timeslot.
+	 *
 	 * @param @isInt bookingId The booking id.
 	 */
 	@Get('{bookingId}/providers')
@@ -284,6 +293,7 @@ export class BookingsController extends Controller {
 
 	/**
 	 * Reject a booking request. Only Pending (1) bookings that can be rejected.
+	 *
 	 * @param @isInt bookingId The booking id.
 	 */
 	@Post('{bookingId}/reject')
@@ -300,6 +310,7 @@ export class BookingsController extends Controller {
 	/**
 	 * Validates an on hold booking.
 	 * It will add additional booking information to an existing booking and change the status of the booking
+	 *
 	 * @param bookingRequest
 	 * @param @isInt bookingId The booking id.
 	 */

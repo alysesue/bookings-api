@@ -1,12 +1,12 @@
 import { Booking, ServiceProvider, User } from '../../models/entities';
+import { UinFinConfiguration } from '../../models/uinFinConfiguration';
+import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
 import {
 	BookingDetailsRequest,
 	BookingProviderResponse,
 	BookingRequest,
 	BookingResponse,
 } from './bookings.apicontract';
-import { UinFinConfiguration } from '../../models/uinFinConfiguration';
-import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
 
 // tslint:disable-next-line: tsr-detect-unsafe-regexp
 const MASK_UINFIN_REGEX = /(?<=^.{1}).{4}/;

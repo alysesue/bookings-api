@@ -1,6 +1,6 @@
+import { ValueTransformer } from 'typeorm';
 import { parseHHmm } from '../tools/date';
 import { DateHelper } from '../infrastructure/dateHelper';
-import { ValueTransformer } from 'typeorm';
 
 export class TimeOfDay {
 	private static _cache: { [key: string]: TimeOfDay } = {};

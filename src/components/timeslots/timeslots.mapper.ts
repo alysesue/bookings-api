@@ -1,15 +1,15 @@
-import { AvailableTimeslotProviders } from './availableTimeslotProviders';
-import {
-	AvailabilityEntryResponse,
-	TimeslotEntryResponse,
-	TimeslotServiceProviderResponse,
-} from './timeslots.apicontract';
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { BookingsMapper } from '../bookings/bookings.mapper';
 import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
 import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
 import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
 import { LabelsMapper } from '../../components/labels/labels.mapper';
-import { Inject, InRequestScope } from 'typescript-ioc';
+import {
+	AvailabilityEntryResponse,
+	TimeslotEntryResponse,
+	TimeslotServiceProviderResponse,
+} from './timeslots.apicontract';
+import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 
 @InRequestScope
 export class TimeslotsMapper {

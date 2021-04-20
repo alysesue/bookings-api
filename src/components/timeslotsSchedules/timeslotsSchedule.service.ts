@@ -1,6 +1,6 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { TimeslotsScheduleRepository } from './timeslotsSchedule.repository';
 import { TimeslotsSchedule } from '../../models';
+import { TimeslotsScheduleRepository } from './timeslotsSchedule.repository';
 
 @InRequestScope
 export class TimeslotsScheduleService {

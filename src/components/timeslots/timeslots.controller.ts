@@ -1,13 +1,13 @@
 import { Inject } from 'typescript-ioc';
 import { Controller, Get, Header, Query, Response, Route, Security, Tags } from 'tsoa';
-import { AvailabilityEntryResponse, TimeslotEntryResponse } from './timeslots.apicontract';
-import { TimeslotsService } from './timeslots.service';
 import { MOLAuth } from 'mol-lib-common';
 import { ApiData, ApiDataFactory } from '../../apicontract';
-import { TimeslotsMapper } from './timeslots.mapper';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
 import { IdHasher } from '../../infrastructure/idHasher';
+import { TimeslotsMapper } from './timeslots.mapper';
+import { TimeslotsService } from './timeslots.service';
+import { AvailabilityEntryResponse, TimeslotEntryResponse } from './timeslots.apicontract';
 
 @Route('v1/timeslots')
 @Tags('Timeslots')
@@ -28,6 +28,7 @@ export class TimeslotsController extends Controller {
 	 * Retrieves available timeslots for a service in a defined datetime range [startDate, endDate].
 	 * Availability count returned will be at least 1.
 	 * Pending and accepted bookings count towards availability quota.
+	 *
 	 * @param startDate The lower bound limit for timeslots' startDate.
 	 * @param endDate The upper bound limit for timeslots' endDate.
 	 * @param @isInt serviceId The available service to be queried.
@@ -78,6 +79,7 @@ export class TimeslotsController extends Controller {
 	 * Retrieves timeslots (available and booked) and accepted bookings for a service in a defined datetime range [startDate, endDate].
 	 * Availability count returned may be zero.
 	 * Pending and accepted bookings count towards availability quota.
+	 *
 	 * @param startDate The lower bound limit for timeslots' startDate.
 	 * @param endDate The upper bound limit for timeslots' endDate.
 	 * @param serviceId

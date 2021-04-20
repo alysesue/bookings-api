@@ -1,8 +1,8 @@
 import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Service } from './service';
-import { ServiceProvider } from './serviceProvider';
 import { IUnavailability } from '../interfaces';
 import { intersectsDateTime, intersectsDateTimeNative } from '../../tools/timeSpan';
+import { Service } from './service';
+import { ServiceProvider } from './serviceProvider';
 
 @Entity()
 export class Unavailability implements IUnavailability {

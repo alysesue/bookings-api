@@ -1,9 +1,9 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Label } from '../../models/entities';
-import { LabelsRepository } from './labels.repository';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { Label } from '../../models/entities';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { IdHasher } from '../../infrastructure/idHasher';
+import { LabelsRepository } from './labels.repository';
 
 @InRequestScope
 export class LabelsService {

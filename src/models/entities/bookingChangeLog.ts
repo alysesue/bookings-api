@@ -1,8 +1,8 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { User } from './user';
-import { Service } from './service';
 import { ChangeLogAction } from '../changeLogAction';
 import { IBooking } from '../interfaces';
+import { User } from './user';
+import { Service } from './service';
 
 @Entity()
 export class BookingChangeLog {

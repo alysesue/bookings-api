@@ -1,9 +1,9 @@
-import { logger } from 'mol-lib-common';
-import { basePath, getConfig } from '../config/app-config';
 import * as fs from 'fs';
+import { promisify } from 'util';
+import { logger } from 'mol-lib-common';
 import * as swagger2 from 'swagger2';
 import { ui } from 'swagger2-koa';
-import { promisify } from 'util';
+import { basePath, getConfig } from '../config/app-config';
 
 // tslint:disable-next-line: tsr-detect-non-literal-fs-filename
 const fs_exists = promisify(fs.exists);

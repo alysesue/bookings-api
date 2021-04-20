@@ -1,7 +1,7 @@
-import { Service } from '../../models/entities';
-import { ServiceResponse } from './service.apicontract';
 import { Inject } from 'typescript-ioc';
+import { Service } from '../../models/entities';
 import { LabelsMapper } from '../labels/labels.mapper';
+import { ServiceResponse } from './service.apicontract';
 
 export class ServicesMapper {
 	@Inject

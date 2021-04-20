@@ -2,13 +2,13 @@ import { Body, Controller, Get, Header, Post, Response, Route, SuccessResponse, 
 import { MOLAuth } from 'mol-lib-common';
 import { Inject } from 'typescript-ioc';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { UserProfileResponse } from './users.apicontract';
-import { UserProfileMapper } from './users.mapper';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { parseCsv, stringToArrayOfStringWhenSemicolon } from '../../tools/csvParser';
 import { MolServiceProviderOnboardContract } from '../serviceProviders/serviceProviders.apicontract';
 import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
 import { ServicesService } from '../services/services.service';
+import { UserProfileMapper } from './users.mapper';
+import { UserProfileResponse } from './users.apicontract';
 import {
 	MolServiceAdminUserContract,
 	MolServiceAdminUserCSV,
@@ -41,6 +41,7 @@ export class UsersController extends Controller {
 	/**
 	 * Creates multiple admin for services(CSV format). Only available for organisation user.
 	 * Create new service if not exist
+	 *
 	 * @param serviceRequest
 	 * @param @isInt serviceId The service id.
 	 *  The `desired-delivery-medium` header is expected as a comma separated string and if not set will default to not sending any invitations<br/>
@@ -66,6 +67,7 @@ export class UsersController extends Controller {
 	/**
 	 * Creates multiple admin for services(JSON format). Only available for organisation user.
 	 * Create new service if not exist
+	 *
 	 * @param serviceRequest
 	 * @param @isInt serviceId The service id.
 	 * The `desired-delivery-medium` header is expected as a comma separated string and if not set will default to not sending any invitations<br/>
@@ -85,6 +87,7 @@ export class UsersController extends Controller {
 
 	/**
 	 * Creates multiple service providers (CSV format). Only available for organisation user.
+	 *
 	 * @param spRequest
 	 * @param @isInt serviceId The service id.
 	 *  The `desired-delivery-medium` header is expected as a comma separated string and if not set will default to not sending any invitations<br/>
@@ -105,6 +108,7 @@ export class UsersController extends Controller {
 
 	/**
 	 * Creates multiple service providers (JSON format). Only available for organisation user.
+	 *
 	 * @param spRequest
 	 * @param @isInt serviceId The service id.
 	 * The `desired-delivery-medium` header is expected as a comma separated string and if not set will default to not sending any invitations<br/>

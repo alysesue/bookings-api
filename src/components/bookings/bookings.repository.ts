@@ -4,12 +4,12 @@ import { Booking, BookingStatus } from '../../models';
 import { RepositoryBase } from '../../core/repository';
 import { ConcurrencyError } from '../../errors/concurrencyError';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { BookingQueryVisitorFactory } from './bookings.auth';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { andWhere } from '../../tools/queryConditions';
 import { PagingHelper } from '../../core/paging';
 import { IPagedEntities } from '../../core/pagedEntities';
+import { BookingQueryVisitorFactory } from './bookings.auth';
 
 @InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {

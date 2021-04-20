@@ -1,12 +1,12 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
+import { SelectQueryBuilder } from 'typeorm';
 import { RepositoryBase } from '../../core/repository';
 import { Unavailability } from '../../models';
-import { SelectQueryBuilder } from 'typeorm';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
-import { UnavailabilitiesQueryAuthVisitor } from './unavailabilities.auth';
 import { andWhere } from '../../tools/queryConditions';
 import { DefaultIsolationLevel } from '../../core/transactionManager';
+import { UnavailabilitiesQueryAuthVisitor } from './unavailabilities.auth';
 
 @InRequestScope
 export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {

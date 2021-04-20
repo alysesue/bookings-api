@@ -1,7 +1,23 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Booking, BookingStatus, ChangeLogAction, Service, ServiceProvider, User } from '../../models';
-import { BookingsRepository } from './bookings.repository';
+import { TimeslotsService } from '../timeslots/timeslots.service';
+import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
+import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
+import { BookingBuilder } from '../../models/entities/booking';
+import { ServicesService } from '../services/services.service';
+import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs.service';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
+import { UsersService } from '../users/users.service';
+import { IPagedEntities } from '../../core/pagedEntities';
+import { getConfig } from '../../config/app-config';
+import { MailObserver } from '../notifications/notification.observer';
+import { randomIndex } from '../../tools/arrays';
+import { BookingsSubject } from './bookings.subject';
+import { BookingsMapper } from './bookings.mapper';
+import { BookingActionAuthVisitor } from './bookings.auth';
+import { BookingsValidatorFactory } from './validator/bookings.validation';
 import {
 	BookingAcceptRequest,
 	BookingDetailsRequest,
@@ -9,23 +25,7 @@ import {
 	BookingSearchRequest,
 	BookingUpdateRequest,
 } from './bookings.apicontract';
-import { TimeslotsService } from '../timeslots/timeslots.service';
-import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
-import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
-import { BookingBuilder } from '../../models/entities/booking';
-import { BookingsValidatorFactory } from './validator/bookings.validation';
-import { ServicesService } from '../services/services.service';
-import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs.service';
-import { UserContext } from '../../infrastructure/auth/userContext';
-import { BookingActionAuthVisitor } from './bookings.auth';
-import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
-import { UsersService } from '../users/users.service';
-import { BookingsMapper } from './bookings.mapper';
-import { IPagedEntities } from '../../core/pagedEntities';
-import { getConfig } from '../../config/app-config';
-import { MailObserver } from '../notifications/notification.observer';
-import { BookingsSubject } from './bookings.subject';
-import { randomIndex } from '../../tools/arrays';
+import { BookingsRepository } from './bookings.repository';
 
 @InRequestScope
 export class BookingsService {

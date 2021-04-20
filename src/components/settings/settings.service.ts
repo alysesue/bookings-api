@@ -1,8 +1,8 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { SettingsRepository } from './settings.repository';
-import { SettingData } from '../../models/entities/setting';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { SettingData } from '../../models/entities/setting';
 import { verifyUrl } from '../../tools/url';
+import { SettingsRepository } from './settings.repository';
 
 @InRequestScope
 export class SettingsService {

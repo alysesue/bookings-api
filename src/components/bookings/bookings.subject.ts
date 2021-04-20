@@ -1,6 +1,6 @@
+import { InRequestScope } from 'typescript-ioc';
 import { Booking } from '../../models/entities';
 import { Subject } from '../../infrastructure/observer';
-import { InRequestScope } from 'typescript-ioc';
 
 export type BookingsPublisherProps = { booking: Booking };
 

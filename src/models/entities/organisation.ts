@@ -1,7 +1,7 @@
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import * as _ from 'lodash';
 import { IOrganisation } from '../interfaces';
 import { OrganisationAdminGroupMap } from './organisationAdminGroupMap';
-import * as _ from 'lodash';
 
 @Entity()
 export class Organisation implements IOrganisation {

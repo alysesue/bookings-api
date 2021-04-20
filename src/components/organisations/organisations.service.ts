@@ -16,7 +16,6 @@ export class OrganisationsService {
 	}
 
 	private async createOrganisation(organisationInfo: OrganisationInfo): Promise<Organisation> {
-		let organisation;
 		try {
 			const newOrg = new Organisation();
 			// Organisation name will have organisationRef as the initial value, but it may change later.
@@ -31,7 +30,7 @@ export class OrganisationsService {
 			logger.warn(`Exception when creating Organisation: ${organisationInfo.organisationRef}`, e);
 		}
 
-		organisation = this.getFirstOrNull(
+		const organisation = this.getFirstOrNull(
 			await this.organisationsRepository.getOrganisationsForUserGroups([organisationInfo.organisationRef]),
 		);
 		return organisation;

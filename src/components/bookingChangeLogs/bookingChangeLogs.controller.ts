@@ -2,10 +2,10 @@ import { Inject } from 'typescript-ioc';
 import { Controller, Get, Header, Query, Response, Route, Security, SuccessResponse, Tags } from 'tsoa';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
+import { ApiData, ApiDataFactory } from '../../apicontract';
 import { BookingChangeLogResponse } from './bookingChangeLogs.apicontract';
 import { BookingChangeLogsService } from './bookingChangeLogs.service';
 import { BookingChangeLogsMapper } from './bookingChangeLogs.mapper';
-import { ApiData, ApiDataFactory } from '../../apicontract';
 
 @Route('v1/bookinglogs')
 @Tags('BookingLogs')
@@ -15,6 +15,7 @@ export class BookingChangeLogsController extends Controller {
 
 	/**
 	 * Retrieves all booking logs in the specified datetime range [changedSince, changedUntil).
+	 *
 	 * @param changedSince The lower bound datetime limit (inclusive) for logs' timestamp.
 	 * @param changedUntil The upper bound datetime limit (exclusive) for logs' timestamp.
 	 * @param @isInt bookingIds (Optional) filters by a list of booking ids.

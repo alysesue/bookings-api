@@ -1,6 +1,6 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Service } from './service';
 import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
+import { Service } from './service';
 import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
 import { ScheduleForm } from './scheduleForm';
 import { TimeslotsSchedule } from './timeslotsSchedule';

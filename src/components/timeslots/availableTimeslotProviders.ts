@@ -1,8 +1,8 @@
-import { AggregatedEntry } from './timeslotAggregator';
 import { Booking, ServiceProvider, Unavailability } from '../../models';
 import { groupByKey } from '../../tools/collections';
 import { TimeslotServiceProvider, TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
 import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
+import { AggregatedEntry } from './timeslotAggregator';
 
 export class AvailableTimeslotProviders {
 	public startTime: number;

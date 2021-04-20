@@ -1,17 +1,17 @@
-import { Booking, BookingStatus, BusinessValidation } from '../../../models';
 import { Inject, InRequestScope } from 'typescript-ioc';
+import { isEmail, isUrl } from 'mol-lib-api-contract/utils';
+import { Booking, BookingStatus, BusinessValidation } from '../../../models';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { DateHelper } from '../../../infrastructure/dateHelper';
 import { BookingSearchQuery, BookingsRepository } from '../bookings.repository';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
-import { isEmail, isUrl } from 'mol-lib-api-contract/utils';
 import { isSGUinfin } from '../../../tools/validator';
 import { concatIteratables } from '../../../tools/asyncIterables';
-import { BookingBusinessValidations } from './bookingBusinessValidations';
 import { CaptchaService } from '../../captcha/captcha.service';
 import { MAX_PAGING_LIMIT } from '../../../core/pagedEntities';
 import { IValidator, Validator } from '../../../infrastructure/validator';
+import { BookingBusinessValidations } from './bookingBusinessValidations';
 
 @InRequestScope
 abstract class BookingsValidator extends Validator<Booking> {

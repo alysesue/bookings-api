@@ -1,13 +1,13 @@
 import { InRequestScope } from 'typescript-ioc';
 import { Service, ServiceProvider, ServiceProviderGroupMap } from '../../models';
+import { mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
+import { mapToResponse as mapScheduleFormResponse } from '../scheduleForms/scheduleForms.mapper';
 import {
 	MolServiceProviderOnboard,
 	ServiceProviderModel,
 	ServiceProviderResponseModel,
 	ServiceProviderSummaryModel,
 } from './serviceProviders.apicontract';
-import { mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
-import { mapToResponse as mapScheduleFormResponse } from '../scheduleForms/scheduleForms.mapper';
 
 @InRequestScope
 export class ServiceProvidersMapper {

@@ -1,13 +1,13 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
+import { SelectQueryBuilder } from 'typeorm';
 import { ServiceProvider, TimeOfDay } from '../../models';
 import { RepositoryBase } from '../../core/repository';
 import { ScheduleFormsRepository } from '../scheduleForms/scheduleForms.repository';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
-import { ServiceProvidersQueryAuthVisitor } from './serviceProviders.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { andWhere } from '../../tools/queryConditions';
-import { SelectQueryBuilder } from 'typeorm';
 import { Weekday } from '../../enums/weekday';
+import { ServiceProvidersQueryAuthVisitor } from './serviceProviders.auth';
 
 export type ProviderIncludeOptions = {
 	includeScheduleForm?: boolean;

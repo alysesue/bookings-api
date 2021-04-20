@@ -1,12 +1,12 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
+import { SelectQueryBuilder } from 'typeorm';
 import { Service } from '../../models';
 import { RepositoryBase } from '../../core/repository';
 import { ScheduleFormsRepository } from '../scheduleForms/scheduleForms.repository';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { SelectQueryBuilder } from 'typeorm';
-import { ServicesQueryAuthVisitor } from './services.auth';
 import { andWhere } from '../../tools/queryConditions';
+import { ServicesQueryAuthVisitor } from './services.auth';
 
 @InRequestScope
 export class ServicesRepository extends RepositoryBase<Service> {

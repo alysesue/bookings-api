@@ -1,7 +1,7 @@
 import { InRequestScope } from 'typescript-ioc';
+import { CreateEmailRequestApiDomain } from 'mol-lib-api-contract/notification/mail/create-email/create-email-api-domain';
 import { getConfig } from '../../config/app-config';
 import { post } from '../../tools/fetch';
-import { CreateEmailRequestApiDomain } from 'mol-lib-api-contract/notification/mail/create-email/create-email-api-domain';
 import { BookingStatus } from '../../models';
 import { DateHelper } from '../../infrastructure/dateHelper';
 

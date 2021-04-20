@@ -1,9 +1,9 @@
 import { Inject } from 'typescript-ioc';
 import { Body, Controller, Post, Response, Route, SuccessResponse, Tags } from 'tsoa';
+import { MOLAuth } from 'mol-lib-common';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { OneOffTimeslotRequest, OneOffTimeslotResponse } from './oneOffTimeslots.apicontract';
 import { OneOffTimeslotsService } from './oneOffTimeslots.service';
-import { MOLAuth } from 'mol-lib-common';
 import { OneOffTimeslotsMapper } from './oneOffTimeslots.mapper';
 
 @Route('v1/oneOffTimeslots')

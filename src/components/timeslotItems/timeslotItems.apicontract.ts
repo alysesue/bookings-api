@@ -9,6 +9,7 @@ export class TimeslotItemResponse {
 	public id: number;
 	/**
 	 * The day of the week: [0, 6] starting from Sunday.
+	 *
 	 * @isInt
 	 */
 	public weekDay: number;
@@ -22,6 +23,7 @@ export class TimeslotItemResponse {
 	public endTime: string;
 	/**
 	 * The number of capacity for this timeslot
+	 *
 	 * @isInt
 	 */
 	public capacity: number;
@@ -30,6 +32,7 @@ export class TimeslotItemResponse {
 export class TimeslotItemRequest {
 	/**
 	 * The day of the week: [0, 6] starting from Sunday.
+	 *
 	 * @isInt
 	 */
 	public weekDay: number;
@@ -43,6 +46,7 @@ export class TimeslotItemRequest {
 	public endTime: string;
 	/**
 	 * The number of capacity for this timeslot
+	 *
 	 * @isInt
 	 */
 	public capacity: number = 1;

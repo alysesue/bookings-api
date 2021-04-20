@@ -1,8 +1,8 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { NotificationsService } from './notifications.service';
 import { IObserver, ISubject } from '../../infrastructure/observer';
 import { BookingsSubject } from '../bookings/bookings.subject';
 import { BookingStatus } from '../../models';
+import { NotificationsService } from './notifications.service';
 
 @InRequestScope
 export class MailObserver implements IObserver {

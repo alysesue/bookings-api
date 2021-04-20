@@ -1,12 +1,12 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { BookingStatus } from '../bookingStatus';
-import { ServiceProvider } from './serviceProvider';
-import { Service } from './service';
-import * as timeSpan from '../../tools/timeSpan';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
-import { User } from './user';
+import { BookingStatus } from '../bookingStatus';
+import * as timeSpan from '../../tools/timeSpan';
 import { ChangeLogAction } from '../changeLogAction';
 import { DateHelper } from '../../infrastructure/dateHelper';
+import { ServiceProvider } from './serviceProvider';
+import { Service } from './service';
+import { User } from './user';
 import { BookingChangeLog } from './bookingChangeLog';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';

@@ -34,15 +34,15 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
 		// tslint:disable-next-line: no-small-switch
 		switch (this._changeLogAction) {
-			case ChangeLogAction.Create:
-				if (this._booking.service.allowAnonymousBookings) {
-					this.markWithPermission();
-				}
-			case ChangeLogAction.Update:
-			case ChangeLogAction.Reschedule:
-				if (this._booking.createdLog && _anonymousGroup.user.id === this._booking.createdLog.userId) {
-					this.markWithPermission();
-				}
+		case ChangeLogAction.Create:
+			if (this._booking.service.allowAnonymousBookings) {
+				this.markWithPermission();
+			}
+		case ChangeLogAction.Update:
+		case ChangeLogAction.Reschedule:
+			if (this._booking.createdLog && _anonymousGroup.user.id === this._booking.createdLog.userId) {
+				this.markWithPermission();
+			}
 		}
 	}
 
@@ -50,11 +50,11 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 		const uinFin = _citizenGroup.user.singPassUser.UinFin;
 		if (this._booking.citizenUinFin === uinFin) {
 			switch (this._changeLogAction) {
-				case ChangeLogAction.Create:
-				case ChangeLogAction.Update:
-				case ChangeLogAction.Reschedule:
-				case ChangeLogAction.Cancel:
-					this.markWithPermission();
+			case ChangeLogAction.Create:
+			case ChangeLogAction.Update:
+			case ChangeLogAction.Reschedule:
+			case ChangeLogAction.Cancel:
+				this.markWithPermission();
 			}
 		}
 	}

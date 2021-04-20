@@ -13,6 +13,7 @@ export class OrganisationsController extends Controller {
 
 	/**
 	 * Creates weekly schedlue for each service providers of the organisation.
+	 *
 	 * @param orgaId id organisation
 	 * @param request schedule form
 	 */
