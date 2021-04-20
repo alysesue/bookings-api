@@ -44,7 +44,7 @@ export class UsersController extends Controller {
 	 *
 	 * @param serviceRequest
 	 * @param @isInt serviceId The service id.
-	 *  The `desired-delivery-medium` header is expected as a comma separated string and if not set will default to not sending any invitations<br/>
+	 * The `desired-delivery-medium` header is expected as a comma separated string and if not set will default to not sending any invitations<br/>
 	 * e.g. "desired-delivery-medium": "EMAIL,SMS"
 	 */
 	@Post('service-admins/upsert/csv')
@@ -90,7 +90,7 @@ export class UsersController extends Controller {
 	 *
 	 * @param spRequest
 	 * @param @isInt serviceId The service id.
-	 *  The `desired-delivery-medium` header is expected as a comma separated string and if not set will default to not sending any invitations<br/>
+	 * The `desired-delivery-medium` header is expected as a comma separated string and if not set will default to not sending any invitations<br/>
 	 * e.g. "desired-delivery-medium": "EMAIL,SMS"
 	 */
 	@Post('service-providers/upsert/csv')

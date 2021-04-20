@@ -18,7 +18,6 @@ module.exports = {
     },
     "extends": [
         "prettier"
-        // "prettier/@typescript-eslint"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -85,10 +84,11 @@ module.exports = {
         "@typescript-eslint/no-misused-new": "error",
         "@typescript-eslint/no-namespace": "off",
         "@typescript-eslint/no-parameter-properties": "off",
-        "@typescript-eslint/no-shadow": [
+        "@typescript-eslint/no-shadow": [	// should those be allowed?
             "error",
             {
-                "hoist": "functions"
+                "hoist": "all",
+				"allow": ["K", "V", "TGroup", "TEntry"]
             }
         ],
         "@typescript-eslint/no-unused-expressions": "error",
@@ -213,94 +213,6 @@ module.exports = {
             }
         ],
         "use-isnan": "error",
-        "valid-typeof": "off",
-        "@typescript-eslint/tslint/config": [
-            "error",
-            {
-                "rules": {
-                    "arguments-order": true,
-                    "bool-param-default": true,
-                    "cognitive-complexity": true,
-                    "consecutive-overloads": true,
-                    "max-switch-cases": true,
-                    "max-union-size": true,
-                    "no-accessor-field-mismatch": true,
-                    "no-all-duplicated-branches": true,
-                    "no-alphabetical-sort": true,
-                    "no-array-delete": true,
-                    "no-big-function": true,
-                    "no-case-with-or": true,
-                    "no-circular-imports": true,
-                    "no-collapsible-if": true,
-                    "no-collection-size-mischeck": true,
-                    "no-commented-code": true,
-                    "no-dead-store": true,
-                    "no-duplicate-in-composite": true,
-                    "no-duplicated-branches": true,
-                    "no-element-overwrite": true,
-                    "no-empty-array": true,
-                    "no-empty-destructuring": true,
-                    "no-extra-semicolon": true,
-                    "no-gratuitous-expressions": true,
-                    "no-hardcoded-credentials": true,
-                    "no-identical-conditions": true,
-                    "no-identical-expressions": true,
-                    "no-ignored-initial-value": true,
-                    "no-ignored-return": true,
-                    "no-in-misuse": true,
-                    "no-invariant-return": true,
-                    "no-inverted-boolean-check": true,
-                    "no-misleading-array-reverse": true,
-                    "no-misspelled-operator": true,
-                    "no-multiline-string-literals": true,
-                    "no-nested-switch": true,
-                    "no-nested-template-literals": true,
-                    "no-redundant-boolean": true,
-                    "no-redundant-jump": true,
-                    "no-redundant-parentheses": true,
-                    "no-return-type-any": true,
-                    "no-same-line-conditional": true,
-                    "no-self-assignment": true,
-                    "no-small-switch": true,
-                    "no-statements-same-line": true,
-                    "no-try-promise": true,
-                    "no-unconditional-jump": true,
-                    "no-undefined-argument": true,
-                    "no-unenclosed-multiline-block": true,
-                    "no-unthrown-error": true,
-                    "no-unused-array": true,
-                    "no-use-of-empty-return-value": true,
-                    "no-useless-cast": true,
-                    "no-useless-catch": true,
-                    "no-useless-increment": true,
-                    "no-useless-intersection": true,
-                    "no-variable-usage-before-declaration": true,
-                    "parameters-max-number": true,
-                    "prefer-default-last": true,
-                    "prefer-optional": true,
-                    "prefer-promise-shorthand": true,
-                    "prefer-type-guard": true,
-                    "prettier": true,
-                    "tsr-detect-buffer-noassert": true,
-                    "tsr-detect-child-process": true,
-                    "tsr-detect-eval-with-expression": true,
-                    "tsr-detect-html-injection": true,
-                    "tsr-detect-no-csrf-before-method-override": true,
-                    "tsr-detect-non-literal-buffer": true,
-                    "tsr-detect-non-literal-fs-filename": true,
-                    "tsr-detect-non-literal-regexp": true,
-                    "tsr-detect-non-literal-require": true,
-                    "tsr-detect-possible-timing-attacks": true,
-                    "tsr-detect-pseudo-random-bytes": true,
-                    "tsr-detect-sql-literal-injection": true,
-                    "tsr-detect-unsafe-cross-origin-communication": true,
-                    "tsr-detect-unsafe-properties-access": true,
-                    "tsr-detect-unsafe-regexp": true,
-                    "tsr-disable-mustache-escape": true,
-                    "use-primitive-type": true,
-                    "use-type-alias": true
-                }
-            }
-        ]
+        "valid-typeof": "off"
     }
 };
