@@ -62,8 +62,7 @@ export class TimeslotAggregator<TGroup, TEntry extends IAggregatedEntry<TGroup>>
 		let counter = 0;
 		for (const timeslot of generator) {
 			this.aggregateTimeslot(group, timeslot);
-			const entry = this.getOrAddEntry(timeslot);
-			entry.addGroup(group, timeslot);
+
 			if (counter++ > MaxLoopIterationCount) {
 				counter = 0;
 				await nextImmediateTick();

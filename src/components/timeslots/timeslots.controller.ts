@@ -58,7 +58,9 @@ export class TimeslotsController extends Controller {
 		);
 
 		if (exactTimeslot) {
-			timeslots = timeslots.filter(timeslot => timeslot.startTime === startDate.getTime() && timeslot.endTime === endDate.getTime());
+			timeslots = timeslots.filter(
+				(timeslot) => timeslot.startTime === startDate.getTime() && timeslot.endTime === endDate.getTime(),
+			);
 		}
 
 		const result = this.timeslotMapper.mapAvailabilityToResponse(timeslots, { skipUnavailable: true });

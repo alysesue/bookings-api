@@ -90,8 +90,10 @@ export class TimeslotsMapper {
 		return [res];
 	}
 
-	private mapCitizenServiceProviderTimeslot(entry: TimeslotServiceProviderResult): TimeslotServiceProviderResponse {
-		const item = new TimeslotServiceProviderResponse();
+	private mapCitizenServiceProviderTimeslot(
+		entry: TimeslotServiceProviderResult,
+	): CitizenTimeslotServiceProviderResponse {
+		const item = new CitizenTimeslotServiceProviderResponse();
 		item.serviceProvider = new ServiceProviderSummaryModel(entry.serviceProvider.id, entry.serviceProvider.name);
 		item.eventTitle = entry.title;
 		item.eventDescription = entry.description;
@@ -113,6 +115,7 @@ export class TimeslotsMapper {
 		item.pendingBookings = entry.pendingBookings.map((booking) => {
 			return BookingsMapper.mapDataModel(booking, userContext);
 		});
+		item.oneOffTimeslotId = entry.oneOffTimeslotId;
 		item.labels = this.labelsMapper.mapToLabelsResponse(entry.labels);
 		item.eventTitle = entry.title;
 		item.eventDescription = entry.description;

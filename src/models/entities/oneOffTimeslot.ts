@@ -120,4 +120,8 @@ export class OneOffTimeslot implements TimeslotWithCapacity {
 	public get labels(): Label[] {
 		return this._labels;
 	}
+
+	public get oneOffTimeslotId(): number {
+		return this._id;
+	}
 }

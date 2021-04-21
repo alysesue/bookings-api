@@ -30,11 +30,11 @@ export class CitizenTimeslotServiceProviderResponse {
 	/**
 	 * The event title of the slot
 	 */
-	public eventTitle: string;
+	public eventTitle?: string;
 	/**
 	 * The event description of the slot
 	 */
-	public eventDescription: string;
+	public eventDescription?: string;
 }
 
 export class TimeslotServiceProviderResponse {
@@ -67,18 +67,23 @@ export class TimeslotServiceProviderResponse {
 	public pendingBookings: BookingResponse[];
 
 	/**
+	 * The one off timeslot id
+	 */
+	public oneOffTimeslotId?: number;
+
+	/**
 	 * The labels linked to the service
 	 */
-	public labels?: LabelResponseModel[];
+	public labels: LabelResponseModel[];
 
 	/**
 	 * The event title of the slot
 	 */
-	public eventTitle: string;
+	public eventTitle?: string;
 	/**
 	 * The event description of the slot
 	 */
-	public eventDescription: string;
+	public eventDescription?: string;
 }
 
 export class TimeslotEntryResponse {
