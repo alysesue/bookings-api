@@ -31,7 +31,7 @@ import { CreateCsrfMiddleware, VerifyCsrfMiddleware, XSRF_HEADER_NAME } from './
 
 class ApiDataResponseHandler {
 	private readonly _middleware: Koa.Middleware;
-	constructor(middleware: Koa.Middleware) {
+	constructor(middleware: Koa.Middleware<any, any>) {
 		this._middleware = middleware;
 	}
 
@@ -109,7 +109,7 @@ export async function startServer(): Promise<Server> {
 	// Setup server
 	const router: KoaRouter = new KoaRouter({ prefix: `${basePath}/api` });
 	RegisterRoutes(router);
-	// @ts-ignore
+
 	const HandledRoutes = new ApiDataResponseHandler(router.routes());
 	const CSRFPathsExpression = byPassCSRFPaths.map((p) => `${basePath}${p}`).join('|');
 	// tslint:disable-next-line: tsr-detect-non-literal-regexp
@@ -198,8 +198,8 @@ export async function startServer(): Promise<Server> {
 	await dbConnection.runPopulate();
 
 	koaServer.proxy = true;
-	return await new Promise(async (resolve) => {
-		const server = koaServer.listen(config.port, async () => {
+	return await new Promise((resolve) => {
+		const server = koaServer.listen(config.port, () => {
 			logger.info(`${config.name} v${config.version} started on port ${config.port}`);
 			resolve(server);
 		});

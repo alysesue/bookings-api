@@ -25,7 +25,7 @@ export class MolUsersMapper {
 	public static mapServicesAdminsGroups(
 		molAdminUserContracts: MolServiceAdminUserContract[],
 		services: Service[],
-		orga: Organisation,
+		_orga: Organisation,
 	): MolServiceAdminUserWithGroups[] {
 		const serviceLookup = groupByKeyLastValue(services, (s) => s.name.toLowerCase());
 

@@ -34,7 +34,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._organisationId;
 	}
 
-	@ManyToOne((type) => Organisation)
+	@ManyToOne(() => Organisation)
 	@JoinColumn({ name: '_organisationId' })
 	private _organisation: Organisation;
 
@@ -46,7 +46,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._organisation;
 	}
 
-	@OneToOne((type) => ServiceAdminGroupMap, (e) => e._service, { nullable: true, cascade: true })
+	@OneToOne(() => ServiceAdminGroupMap, (e) => e._service, { nullable: true, cascade: true })
 	private _serviceAdminGroupMap: ServiceAdminGroupMap;
 
 	public get serviceAdminGroupMap(): ServiceAdminGroupMap {
@@ -100,7 +100,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._timeslotsScheduleId;
 	}
 
-	@OneToOne((type) => TimeslotsSchedule, (e) => e._service, { cascade: true })
+	@OneToOne(() => TimeslotsSchedule, (e) => e._service, { cascade: true })
 	@JoinColumn({ name: '_timeslotsScheduleId' })
 	public _timeslotsSchedule: TimeslotsSchedule;
 

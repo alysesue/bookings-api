@@ -17,7 +17,7 @@ export class BookingChangeLog {
 	@Index()
 	private _serviceId: number;
 
-	@ManyToOne((type) => Service)
+	@ManyToOne(() => Service)
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
@@ -33,7 +33,7 @@ export class BookingChangeLog {
 	@Index()
 	private _userId: number;
 
-	@ManyToOne((type) => User, { nullable: false })
+	@ManyToOne(() => User, { nullable: false })
 	@JoinColumn({ name: '_userId' })
 	private _user: User;
 

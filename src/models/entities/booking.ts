@@ -131,7 +131,7 @@ export class Booking {
 	@Index()
 	private _serviceId: number;
 
-	@ManyToOne((type) => Service)
+	@ManyToOne(() => Service)
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
@@ -149,7 +149,7 @@ export class Booking {
 	@Column({ nullable: true })
 	private _refId?: string;
 
-	@ManyToOne((type) => ServiceProvider, { nullable: true })
+	@ManyToOne(() => ServiceProvider, { nullable: true })
 	@JoinColumn({ name: '_serviceProviderId' })
 	private _serviceProvider: ServiceProvider;
 
@@ -157,7 +157,7 @@ export class Booking {
 	@Index()
 	private _serviceProviderId?: number;
 
-	@ManyToOne((type) => User, { nullable: false })
+	@ManyToOne(() => User, { nullable: false })
 	@JoinColumn({ name: '_creatorId' })
 	private _creator: User;
 

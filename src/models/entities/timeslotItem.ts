@@ -44,7 +44,7 @@ export class TimeslotItem implements ITimeSpan {
 		weekDay: Weekday,
 		startTime: TimeOfDay,
 		endTime: TimeOfDay,
-		capacity: number = 1,
+		capacity = 1,
 	): TimeslotItem {
 		const instance = new TimeslotItem();
 		instance._timeslotsScheduleId = timeslotScheduleId;

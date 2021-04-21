@@ -52,7 +52,7 @@ abstract class BookingsValidator extends Validator<Booking> {
 		}
 	}
 
-	private static async *skipValidation(booking: Booking): AsyncIterable<BusinessValidation> {
+	private static async *skipValidation(_booking: Booking): AsyncIterable<BusinessValidation> {
 		return;
 	}
 
@@ -118,7 +118,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 	private timeslotsService: TimeslotsService;
 	protected readonly ServiceProviderRequired: boolean;
 
-	constructor(serviceProviderRequired: boolean = true) {
+	constructor(serviceProviderRequired = true) {
 		super();
 		this.ServiceProviderRequired = serviceProviderRequired;
 	}
@@ -212,7 +212,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 		);
 	}
 
-	protected async *validateToken(booking: Booking): AsyncIterable<BusinessValidation> {
+	protected async *validateToken(_booking: Booking): AsyncIterable<BusinessValidation> {
 		return;
 	}
 }

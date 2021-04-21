@@ -135,7 +135,7 @@ export interface IBookingQueryVisitor {
 }
 
 class BookingQueryNoAuthVisitor implements IBookingQueryVisitor {
-	public async createUserVisibilityCondition(authGroups: AuthGroup[]): Promise<UserConditionParams> {
+	public async createUserVisibilityCondition(_authGroups: AuthGroup[]): Promise<UserConditionParams> {
 		return {
 			userCondition: '',
 			userParams: {},

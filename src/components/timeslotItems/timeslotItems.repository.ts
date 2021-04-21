@@ -43,7 +43,7 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotItem> {
 				'service',
 				'serviceProvider',
 				'SPservice',
-			  ).createUserVisibilityCondition(authGroups);
+			).createUserVisibilityCondition(authGroups);
 
 		const query = repository
 			.createQueryBuilder('timeslotItem')

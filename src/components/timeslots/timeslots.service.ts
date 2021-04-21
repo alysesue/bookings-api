@@ -174,7 +174,7 @@ export class TimeslotsService {
 		startDateTime: Date,
 		endDateTime: Date,
 		serviceId: number,
-		includeBookings: boolean = false,
+		includeBookings = false,
 		serviceProviderIds?: number[],
 		labelIds?: number[],
 	): Promise<AvailableTimeslotProviders[]> {
@@ -405,7 +405,7 @@ export class TimeslotsService {
 				? provider.timeslotsSchedule.generateValidTimeslots({
 					startDatetime: minStartTime,
 					endDatetime: maxEndTime,
-				  })
+				})
 				: validServiceTimeslots;
 
 			if (oneOffTimeslotsSP && oneOffTimeslotsSP.length > 0) {

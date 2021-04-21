@@ -44,7 +44,7 @@ export class TimeslotsController extends Controller {
 		@Query() endDate: Date,
 		@Header('x-api-service') serviceId: number,
 		@Query() serviceProviderId?: number,
-		@Query() exactTimeslot: boolean = false,
+		@Query() exactTimeslot = false,
 		@Query() labelIds?: string[],
 	): Promise<ApiData<AvailabilityEntryResponse[]>> {
 		const labelIdsNumber = labelIds && labelIds.length > 0 ? labelIds.map((id) => this.idHasher.decode(id)) : [];
@@ -95,7 +95,7 @@ export class TimeslotsController extends Controller {
 		@Query() startDate: Date,
 		@Query() endDate: Date,
 		@Header('x-api-service') serviceId: number,
-		@Query() includeBookings: boolean = false,
+		@Query() includeBookings = false,
 		@Query() serviceProviderIds?: number[],
 		@Query() labelIds?: string[],
 	): Promise<ApiData<TimeslotEntryResponse[]>> {

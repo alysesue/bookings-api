@@ -5,7 +5,7 @@ export class StopWatch {
 	private _initial?: Date;
 	private _end?: Date;
 
-	constructor(name: string, start: boolean = true) {
+	constructor(name: string, start = true) {
 		this._name = name;
 		if (start) {
 			this.start();
@@ -16,7 +16,7 @@ export class StopWatch {
 		this._initial = new Date();
 	}
 
-	public stop(log: boolean = true) {
+	public stop(log = true) {
 		this._end = new Date();
 		if (log) {
 			this.log();

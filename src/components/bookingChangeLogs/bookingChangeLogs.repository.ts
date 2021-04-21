@@ -27,7 +27,7 @@ export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog
 				'changelog',
 				'service',
 				'booking',
-			  ).createUserVisibilityCondition(authGroups);
+			).createUserVisibilityCondition(authGroups);
 
 		const { changedSince, changedUntil, serviceId, bookingIds } = options;
 

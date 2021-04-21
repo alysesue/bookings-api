@@ -53,6 +53,7 @@ module.exports = {
                 "default": "array"
             }
         ],
+		"@typescript-eslint/explicit-module-boundary-types": "off",
         "@typescript-eslint/ban-types": "off",
         "@typescript-eslint/consistent-type-assertions": "error",
         "@typescript-eslint/dot-notation": "off",	// mol no-string-literal
@@ -79,6 +80,7 @@ module.exports = {
                 }
             }
         ],
+		"@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
         "@typescript-eslint/member-ordering": "off",
         "@typescript-eslint/naming-convention": "off", // need to find replacement for keywords
         "@typescript-eslint/no-empty-function": "off",
@@ -197,6 +199,7 @@ module.exports = {
             }
         ],
         "react/jsx-wrap-multilines": "off",
+		"require-yield": "off",
         "space-before-function-paren": ["error", {
 			"anonymous": "always",
 			"named": "never",

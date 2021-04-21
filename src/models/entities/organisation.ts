@@ -20,7 +20,7 @@ export class Organisation implements IOrganisation {
 		return this._id;
 	}
 
-	@OneToOne((type) => OrganisationAdminGroupMap, (e) => e._organisation, { nullable: true, cascade: true })
+	@OneToOne(() => OrganisationAdminGroupMap, (e) => e._organisation, { nullable: true, cascade: true })
 	public _organisationAdminGroupMap: OrganisationAdminGroupMap;
 
 	@Column({ type: 'varchar', length: 100, nullable: false })

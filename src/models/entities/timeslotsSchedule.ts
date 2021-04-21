@@ -27,7 +27,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 		return this._serviceProvider;
 	}
 
-	@OneToMany((type) => TimeslotItem, (timeslot) => timeslot._timeslotsSchedule, {
+	@OneToMany(() => TimeslotItem, (timeslot) => timeslot._timeslotsSchedule, {
 		cascade: true,
 	})
 	public timeslotItems: TimeslotItem[];

@@ -22,7 +22,7 @@ export class MolUsersServiceAuthForwarder extends MolUsersService {
 		const sendEmailHeader = options?.desiredDeliveryMediumsHeader
 			? {
 				'desired-delivery-medium': options.desiredDeliveryMediumsHeader,
-			  }
+			}
 			: {};
 		try {
 			const upsertRes = await post(

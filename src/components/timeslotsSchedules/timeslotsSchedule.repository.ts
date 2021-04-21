@@ -48,7 +48,7 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 				'service',
 				'serviceProvider',
 				'SPservice',
-			  ).createUserVisibilityCondition(authGroups);
+			).createUserVisibilityCondition(authGroups);
 
 		const query = repository
 			.createQueryBuilder('timeslotsSchedule')

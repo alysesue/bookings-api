@@ -34,11 +34,11 @@ export class ScheduleFormsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
+		const organisationId = this._serviceProvider.service.organisationId;
 		switch (this._action) {
 		case CrudAction.Create:
 		case CrudAction.Read:
 		case CrudAction.Update:
-			const organisationId = this._serviceProvider.service.organisationId;
 			if (_userGroup.hasOrganisationId(organisationId)) {
 				this.markWithPermission();
 			}
@@ -49,11 +49,11 @@ export class ScheduleFormsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 	}
 
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
+		const serviceId = this._serviceProvider.serviceId;
 		switch (this._action) {
 		case CrudAction.Create:
 		case CrudAction.Read:
 		case CrudAction.Update:
-			const serviceId = this._serviceProvider.serviceId;
 			if (_userGroup.hasServiceId(serviceId)) {
 				this.markWithPermission();
 			}
@@ -63,11 +63,11 @@ export class ScheduleFormsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 		}
 	}
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
+		const serviceProviderId = this._serviceProvider.id;
 		switch (this._action) {
 		case CrudAction.Create:
 		case CrudAction.Read:
 		case CrudAction.Update:
-			const serviceProviderId = this._serviceProvider.id;
 			// tslint:disable-next-line: tsr-detect-possible-timing-attacks
 			if (_userGroup.authorisedServiceProvider.id === serviceProviderId) {
 				this.markWithPermission();

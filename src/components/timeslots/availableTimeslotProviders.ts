@@ -19,7 +19,7 @@ export class AvailableTimeslotProviders {
 		return this._unassignedPendingBookingCount;
 	}
 
-	public *getTimeslotServiceProviders(skipUnassigned: boolean = false): Iterable<TimeslotServiceProviderResult> {
+	public *getTimeslotServiceProviders(skipUnassigned = false): Iterable<TimeslotServiceProviderResult> {
 		const totalAvailability = skipUnassigned ? undefined : this.getInternalAvailabilityCount();
 
 		for (const timeslotServiceProvider of this._timeslotServiceProviders.values()) {
@@ -55,7 +55,8 @@ export class AvailableTimeslotProviders {
 
 	public isValidAndVisible(): boolean {
 		for (const _timeslotSp of this.getTimeslotServiceProviders()) {
-			return true;
+			if (_timeslotSp)
+				return true;
 		}
 		return false;
 	}

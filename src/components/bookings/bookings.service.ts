@@ -65,7 +65,7 @@ export class BookingsService {
 	public static shouldAutoAccept(
 		currentUser: User,
 		serviceProvider?: ServiceProvider,
-		skipAgencyCheck: boolean = false,
+		skipAgencyCheck = false,
 	): boolean {
 		if (!serviceProvider) {
 			return false;
@@ -157,7 +157,7 @@ export class BookingsService {
 	public async save(
 		bookingRequest: BookingRequest,
 		serviceId: number,
-		bypassCaptchaAndAutoAccept: boolean = false,
+		bypassCaptchaAndAutoAccept = false,
 	): Promise<Booking> {
 		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
 		// Method calls with different services, or timeslots should still run in parallel.
@@ -321,7 +321,7 @@ export class BookingsService {
 	private async saveInternal(
 		bookingRequest: BookingRequest,
 		serviceId: number,
-		shouldBypassCaptchaAndAutoAccept: boolean = false,
+		shouldBypassCaptchaAndAutoAccept = false,
 	): Promise<[ChangeLogAction, Booking]> {
 		const currentUser = await this.userContext.getCurrentUser();
 		const isAdminUser = currentUser.adminUser;
@@ -339,7 +339,7 @@ export class BookingsService {
 				serviceId,
 			);
 			const random = randomIndex(serviceProviders);
-			serviceProvider = !!serviceProviders.length ? serviceProviders[random] : undefined;
+			serviceProvider = serviceProviders.length ? serviceProviders[random] : undefined;
 		}
 
 		const isServiceOnHold = () => {

@@ -3,7 +3,7 @@ import { ServicesValidation } from './components/services/services.validation';
 import { ContainerContextMiddleware } from './infrastructure/containerContext.middleware';
 import { tryParseInt } from './tools/number';
 
-export async function koaAuthentication(context: Koa.Context, securityName: string, scopes?: string[]): Promise<any> {
+export async function koaAuthentication(context: Koa.Context, securityName: string, _scopes?: string[]): Promise<any> {
 	const hasService = securityName === 'service';
 	const hasOptionalService = securityName === 'optional-service';
 	if (hasService || hasOptionalService) {

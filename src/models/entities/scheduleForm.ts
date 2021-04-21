@@ -17,7 +17,7 @@ export class ScheduleForm implements IScheduleForm {
 	@Column({ type: 'int' })
 	public slotsDurationInMin: number;
 
-	@OneToMany((type) => WeekDaySchedule, (weekdaySchedule) => weekdaySchedule.scheduleForm, { cascade: true })
+	@OneToMany(() => WeekDaySchedule, (weekdaySchedule) => weekdaySchedule.scheduleForm, { cascade: true })
 	public weekdaySchedules: WeekDaySchedule[];
 
 	@OneToOne('ServiceProvider', '_scheduleForm', { nullable: true })

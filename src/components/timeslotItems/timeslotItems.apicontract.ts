@@ -49,5 +49,5 @@ export class TimeslotItemRequest {
 	 *
 	 * @isInt
 	 */
-	public capacity: number = 1;
+	public capacity = 1;
 }
