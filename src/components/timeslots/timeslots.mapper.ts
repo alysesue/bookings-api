@@ -95,8 +95,8 @@ export class TimeslotsMapper {
 	): CitizenTimeslotServiceProviderResponse {
 		const item = new CitizenTimeslotServiceProviderResponse();
 		item.serviceProvider = new ServiceProviderSummaryModel(entry.serviceProvider.id, entry.serviceProvider.name);
-		item.eventTitle = entry.title;
-		item.eventDescription = entry.description;
+		item.eventTitle = entry.title ?? undefined;
+		item.eventDescription = entry.description ?? undefined;
 		return item;
 	}
 
@@ -117,8 +117,8 @@ export class TimeslotsMapper {
 		});
 		item.oneOffTimeslotId = entry.oneOffTimeslotId;
 		item.labels = this.labelsMapper.mapToLabelsResponse(entry.labels);
-		item.eventTitle = entry.title;
-		item.eventDescription = entry.description;
+		item.eventTitle = entry.title ?? undefined;
+		item.eventDescription = entry.description ?? undefined;
 		return item;
 	}
 }
