@@ -6,7 +6,6 @@ import {
 	ServiceAdminRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
 import {
-	IdHasherForFunctional,
 	populateOutOfSlotBooking,
 	populateUserServiceProvider,
 	populateWeeklyTimesheet,
@@ -17,6 +16,7 @@ import * as request from 'request';
 import { BookingStatus } from '../../../src/models';
 import { PersistDynamicValueContract } from '../../../src/components/dynamicFields/dynamicValues.apicontract';
 import { DynamicValueTypeContract } from '../../../src/components/dynamicFields/dynamicValues.apicontract';
+import { IdHasherForFunctional } from '../../utils/idHashingUtil';
 
 // tslint:disable-next-line: no-big-function
 describe('Bookings functional tests', () => {
