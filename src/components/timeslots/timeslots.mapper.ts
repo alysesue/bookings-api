@@ -14,6 +14,9 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 @InRequestScope
 export class TimeslotsMapper {
 	@Inject
+	private bookingsMapper: BookingsMapper;
+
+	@Inject
 	public labelsMapper: LabelsMapper;
 
 	public mapAvailabilityToResponse(
@@ -84,10 +87,10 @@ export class TimeslotsMapper {
 		item.assignedBookingCount = entry.acceptedBookings.length + entry.pendingBookings.length;
 		item.availabilityCount = entry.availabilityCount;
 		item.acceptedBookings = entry.acceptedBookings.map((booking) => {
-			return BookingsMapper.mapDataModel(booking, userContext);
+			return this.bookingsMapper.mapDataModel(booking, userContext);
 		});
 		item.pendingBookings = entry.pendingBookings.map((booking) => {
-			return BookingsMapper.mapDataModel(booking, userContext);
+			return this.bookingsMapper.mapDataModel(booking, userContext);
 		});
 		item.labels = this.labelsMapper.mapToLabelsResponse(entry.labels);
 

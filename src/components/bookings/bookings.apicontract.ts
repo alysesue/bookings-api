@@ -1,5 +1,6 @@
 import { PagingRequest } from '../../apicontract';
 import { BookingStatus, ServiceProvider } from '../../models';
+import { DynamicValueContract, PersistDynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
 
 export class BookingAcceptRequest {
 	/**
@@ -20,6 +21,8 @@ export class BookingDetailsRequest {
 	public location?: string | null;
 	public description?: string | null;
 	public videoConferenceUrl?: string | null;
+	public dynamicValuesUpdated?: boolean;
+	public dynamicValues?: PersistDynamicValueContract[];
 }
 
 export class BookingRequest extends BookingDetailsRequest {
@@ -85,6 +88,7 @@ export type BookingResponse = {
 	description?: string;
 	refId?: string;
 	videoConferenceUrl?: string;
+	dynamicValues?: DynamicValueContract[];
 };
 
 export type BookingSearchRequest = {

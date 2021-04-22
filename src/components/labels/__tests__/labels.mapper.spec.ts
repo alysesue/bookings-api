@@ -3,6 +3,7 @@ import { LabelsMapper } from '../labels.mapper';
 import { Label } from '../../../models/entities';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { LabelRequestModel } from '../label.apicontract';
+import { IdHasherMock } from '../__mocks__/labels.mapper.mock';
 
 beforeAll(() => {
 	Container.bind(IdHasher).to(IdHasherMock);
@@ -105,15 +106,3 @@ describe('labels/labels.mapper', () => {
 		return request;
 	};
 });
-
-class IdHasherMock implements Partial<IdHasher> {
-	public static encode = jest.fn();
-	public static decode = jest.fn();
-	public encode(id: number): string {
-		return IdHasherMock.encode(id);
-	}
-
-	public decode(id: string): number {
-		return IdHasherMock.decode(id);
-	}
-}
