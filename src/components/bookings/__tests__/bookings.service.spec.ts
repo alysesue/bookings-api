@@ -860,7 +860,7 @@ describe('Bookings.Service', () => {
 			expect(booking.status).toBe(BookingStatus.OnHold);
 			expect(booking.onHoldUntil).toBeInstanceOf(Date);
 			expect(booking.onHoldUntil).not.toBeNull();
-			expect(ceil(diffTimeinMins)).toEqual(5);
+			expect(ceil(diffTimeinMins)).toEqual(10);
 			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 		});
 	});
@@ -898,7 +898,7 @@ describe('Bookings.Service', () => {
 			expect(booking.status).toBe(BookingStatus.OnHold);
 			expect(booking.onHoldUntil).toBeInstanceOf(Date);
 			expect(booking.onHoldUntil).not.toBeNull();
-			expect(ceil(diffTimeinMins)).toEqual(5);
+			expect(ceil(diffTimeinMins)).toEqual(10);
 		});
 
 		it('Should not make an on hold booking if isStandAlone is set to false on service', async () => {
