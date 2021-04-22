@@ -215,7 +215,7 @@ export class Booking {
 	}
 
 	public static create(builder: BookingBuilder): Booking {
-		const HOLD_DURATION_IN_MINS = 5;
+		const HOLD_DURATION_IN_MINS = 10;
 		const instance = new Booking();
 
 		if (builder.markOnHold) {
