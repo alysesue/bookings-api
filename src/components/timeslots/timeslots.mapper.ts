@@ -8,16 +8,25 @@ import { BookingsMapper } from '../bookings/bookings.mapper';
 import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
 import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
 import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
+import { LabelsMapper } from '../../components/labels/labels.mapper';
+import { Inject, InRequestScope } from 'typescript-ioc';
 
+@InRequestScope
 export class TimeslotsMapper {
-	public static mapAvailabilityToResponse(
+	@Inject
+	private bookingsMapper: BookingsMapper;
+
+	@Inject
+	public labelsMapper: LabelsMapper;
+
+	public mapAvailabilityToResponse(
 		entries: AvailableTimeslotProviders[],
 		options: { skipUnavailable?: boolean },
 	): AvailabilityEntryResponse[] {
 		return entries.map((e) => this.mapAvailabilityItem(e, options)).filter((e) => !!e);
 	}
 
-	private static mapAvailabilityItem(
+	private mapAvailabilityItem(
 		entry: AvailableTimeslotProviders,
 		options: { skipUnavailable?: boolean },
 	): AvailabilityEntryResponse | undefined {
@@ -33,15 +42,14 @@ export class TimeslotsMapper {
 		return response;
 	}
 
-	public static mapTimeslotEntry(
+	public mapTimeslotEntry(
 		entry: AvailableTimeslotProviders,
 		userContext: UserContextSnapshot,
 	): TimeslotEntryResponse {
-		const [
-			timeslotServiceProviders,
-			totalCapacity,
-			totalAssignedBookings,
-		] = TimeslotsMapper.mapTimeslotServiceProviders(Array.from(entry.getTimeslotServiceProviders()), userContext);
+		const [timeslotServiceProviders, totalCapacity, totalAssignedBookings] = this.mapTimeslotServiceProviders(
+			Array.from(entry.getTimeslotServiceProviders()),
+			userContext,
+		);
 		const response = new TimeslotEntryResponse();
 		response.startTime = new Date(entry.startTime);
 		response.endTime = new Date(entry.endTime);
@@ -53,7 +61,7 @@ export class TimeslotsMapper {
 		return response;
 	}
 
-	public static mapTimeslotServiceProviders(
+	public mapTimeslotServiceProviders(
 		entries: TimeslotServiceProviderResult[],
 		userContext: UserContextSnapshot,
 	): [TimeslotServiceProviderResponse[], number, number] {
@@ -69,7 +77,7 @@ export class TimeslotsMapper {
 		return [res, totalCapacity, totalAssignedBookings];
 	}
 
-	private static mapServiceProviderTimeslot(
+	private mapServiceProviderTimeslot(
 		entry: TimeslotServiceProviderResult,
 		userContext: UserContextSnapshot,
 	): TimeslotServiceProviderResponse {
@@ -79,11 +87,13 @@ export class TimeslotsMapper {
 		item.assignedBookingCount = entry.acceptedBookings.length + entry.pendingBookings.length;
 		item.availabilityCount = entry.availabilityCount;
 		item.acceptedBookings = entry.acceptedBookings.map((booking) => {
-			return BookingsMapper.mapDataModel(booking, userContext);
+			return this.bookingsMapper.mapDataModel(booking, userContext);
 		});
 		item.pendingBookings = entry.pendingBookings.map((booking) => {
-			return BookingsMapper.mapDataModel(booking, userContext);
+			return this.bookingsMapper.mapDataModel(booking, userContext);
 		});
+		item.labels = this.labelsMapper.mapToLabelsResponse(entry.labels);
+
 		return item;
 	}
 }

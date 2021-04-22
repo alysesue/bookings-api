@@ -39,6 +39,7 @@
 		"schema:sync": "export LOCALHOST=true && ts-node ./node_modules/typeorm/cli schema:sync -f ./src/core/ormconfig.ts",
 		"migration:generate": "export LOCALHOST=true && ts-node ./node_modules/typeorm/cli migration:generate -f ./src/core/ormconfig.ts -n",
 		"migration": "ts-node node_modules/typeorm/cli migration:run -f ./src/core/ormconfig.ts",
+		"migration:drop": "export LOCALHOST=true && ts-node node_modules/typeorm/cli schema:drop -f ./src/core/ormconfig.ts",
 		"migration:local": "export LOCALHOST=true && npm run migration"
 	},
 	"husky": {
@@ -114,6 +115,7 @@
 		"mol-lib-api-contract": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-api-contract.git#semver:~7.2.5",
 		"mol-lib-common": "git+https://mol-tech-support:MzM0MzQyNDg5NDMwOpTeYhhhv5A3YbEacxIksAUgeoLu@bitbucket.ship.gov.sg/scm/push/mol-lib-common.git#semver:~4.1.17",
 		"moment": "^2.25.3",
+		"netmask": "^2.0.2",
 		"node-forge": "^0.10.0",
 		"nodemailer": "^6.5.0",
 		"nodemailer-juice": "^1.0.1",
@@ -125,7 +127,7 @@
 		"set-cookie-parser": "^2.4.6",
 		"swagger2": "^2.0.0",
 		"swagger2-koa": "^2.0.0",
-		"typeorm": "^0.2.31",
+		"typeorm": "^0.2.32",
 		"typescript-ioc": "^3.2.2",
 		"uuid": "^8.3.2"
 	},

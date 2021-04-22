@@ -1,17 +1,10 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IServiceProvider } from '../interfaces';
 import { TimeslotWithCapacity } from '../timeslotWithCapacity';
-
+import { Label } from './label';
 @Entity()
 export class OneOffTimeslot implements TimeslotWithCapacity {
 	constructor() {}
-
-	public get startTimeNative(): number {
-		return this._startDateTime.getTime();
-	}
-	public get endTimeNative(): number {
-		return this._endDateTime.getTime();
-	}
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
@@ -34,6 +27,12 @@ export class OneOffTimeslot implements TimeslotWithCapacity {
 	@Column()
 	@Index()
 	private _serviceProviderId: number;
+
+	@Column({ type: 'varchar', length: 5000, nullable: true })
+	private _title: string;
+
+	@Column({ type: 'varchar', length: 5000, nullable: true })
+	private _description: string;
 
 	public get id(): number {
 		return this._id;
@@ -81,5 +80,44 @@ export class OneOffTimeslot implements TimeslotWithCapacity {
 
 	public get serviceProviderId(): number {
 		return this._serviceProviderId;
+	}
+
+	public get title(): string {
+		return this._title;
+	}
+
+	public set title(value: string) {
+		this._title = value;
+	}
+
+	public get description(): string {
+		return this._description;
+	}
+
+	public set description(value: string) {
+		this._description = value;
+	}
+
+	public get startTimeNative(): number {
+		return this._startDateTime.getTime();
+	}
+	public get endTimeNative(): number {
+		return this._endDateTime.getTime();
+	}
+
+	@ManyToMany(() => Label, { cascade: true })
+	@JoinTable({
+		name: 'oneofftimeslot_label',
+		joinColumn: { name: 'oneOffTimeslot_id' },
+		inverseJoinColumn: { name: 'label_id' },
+	})
+	private _labels: Label[];
+
+	public set labels(value: Label[]) {
+		this._labels = value;
+	}
+
+	public get labels(): Label[] {
+		return this._labels;
 	}
 }

@@ -91,6 +91,15 @@ function getContentPolicyOptions() {
 	};
 }
 
+const byPassCSRFPaths = [
+	'/api/v1/bookings/bulk',
+	'/api/v1/encryption/encrypt',
+	'/api/v1/users/service-admins/upsert',
+	'/api/v1/users/service-admins/upsert/csv',
+	'/api/v1/users/service-providers/upsert',
+	'/api/v1/users/service-providers/upsert/csv',
+];
+
 export async function startServer(): Promise<Server> {
 	const config = getConfig();
 	const originWhitelist = config.accessControlAllowOrigin.split(',');
@@ -102,8 +111,9 @@ export async function startServer(): Promise<Server> {
 	RegisterRoutes(router);
 	// @ts-ignore
 	const HandledRoutes = new ApiDataResponseHandler(router.routes());
+	const CSRFPathsExpression = byPassCSRFPaths.map((p) => `${basePath}${p}`).join('|');
 	// tslint:disable-next-line: tsr-detect-non-literal-regexp
-	const byPassCSRF = new RegExp(`^(${basePath}/api/v1/bookings/bulk|${basePath}/api/v1/encryption/encrypt)$`);
+	const byPassCSRF = new RegExp(`^(${CSRFPathsExpression})$`);
 	// tslint:disable-next-line: tsr-detect-non-literal-regexp
 	const byPassAuthPath = new RegExp(
 		`^(${basePath}/api/v1/usersessions/anonymous|${basePath}/api/v1/encryption/encrypt)$`,

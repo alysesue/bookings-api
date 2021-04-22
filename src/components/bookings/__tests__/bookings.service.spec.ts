@@ -23,7 +23,7 @@ import { DateHelper } from '../../../infrastructure/dateHelper';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { BookingBuilder } from '../../../models/entities/booking';
-import { BookingsValidatorFactory, IValidator } from '../validator/bookings.validation';
+import { BookingsValidatorFactory } from '../validator/bookings.validation';
 import {
 	BookingActionFunction,
 	BookingChangeLogsService,
@@ -39,12 +39,11 @@ import {
 	BookingChangeLogsServiceMock,
 	BookingRepositoryMock,
 	ServiceProvidersRepositoryMock,
-	ServiceProvidersServiceMock,
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
 	UsersServiceMock,
-} from './bookings.mocks';
-import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
+} from '../__mocks__/bookings.mocks';
+import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { UsersService } from '../../users/users.service';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
@@ -57,6 +56,11 @@ import { BookingsSubjectMock } from '../__mocks__/bookings.subject.mock';
 import { getConfigMock } from '../../../config/__mocks__/app-config.mock';
 import { MailObserver } from '../../notifications/notification.observer';
 import { MockObserver } from '../../../infrastructure/__mocks__/observer.mock';
+import { ServiceProvidersServiceMock } from '../../serviceProviders/__mocks__/serviceProviders.service.mock';
+import { randomIndex } from '../../../tools/arrays';
+import { IValidator } from '../../../infrastructure/validator';
+
+jest.mock('../../../tools/arrays');
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -114,18 +118,18 @@ describe('Bookings.Service', () => {
 	const validatorMock = {
 		bypassCaptcha: jest.fn(),
 		validate: jest.fn(),
-	} as IValidator;
+	} as IValidator<Booking>;
 
 	const onHolValidatorMock = {
 		bypassCaptcha: jest.fn(),
 		validate: jest.fn(),
-	} as IValidator;
+	} as IValidator<Booking>;
 
 	class BookingValidatorFactoryMock implements Partial<BookingsValidatorFactory> {
-		public getValidator(): IValidator {
+		public getValidator(): IValidator<Booking> {
 			return validatorMock;
 		}
-		public getOnHoldValidator(): IValidator {
+		public getOnHoldValidator(): IValidator<Booking> {
 			return onHolValidatorMock;
 		}
 	}
@@ -230,7 +234,7 @@ describe('Bookings.Service', () => {
 
 		const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(customProvider, timeslotWithCapacity);
-		ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(customProvider));
+		ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(Promise.resolve(customProvider));
 		ServiceProvidersRepositoryMock.getServiceProviderMock = customProvider;
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
@@ -256,7 +260,7 @@ describe('Bookings.Service', () => {
 
 		const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(customProvider, timeslotWithCapacity);
-		ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(customProvider));
+		ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(Promise.resolve(customProvider));
 		ServiceProvidersRepositoryMock.getServiceProviderMock = customProvider;
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
@@ -282,7 +286,7 @@ describe('Bookings.Service', () => {
 
 		const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(customProvider, timeslotWithCapacity);
-		ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(customProvider));
+		ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(Promise.resolve(customProvider));
 		ServiceProvidersRepositoryMock.getServiceProviderMock = customProvider;
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
@@ -307,7 +311,7 @@ describe('Bookings.Service', () => {
 		const timeslotWithCapacity = createTimeslot(bookingRequest.startDateTime, bookingRequest.endDateTime);
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
-		ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(serviceProvider));
+		ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(Promise.resolve(serviceProvider));
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
 
@@ -328,7 +332,7 @@ describe('Bookings.Service', () => {
 		bookingRequest.citizenUinFin = 'NRIC1234';
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
-		ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(serviceProvider));
+		ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(Promise.resolve(serviceProvider));
 		TimeslotsServiceMock.acceptedBookings = [bookingMock];
 		UnavailabilitiesServiceMock.isUnavailable.mockReturnValue(false);
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
@@ -618,7 +622,7 @@ describe('Bookings.Service', () => {
 			const newServiceProvider = ServiceProvider.create('provider', 1);
 			newServiceProvider.id = 1;
 			newServiceProvider.autoAcceptBookings = true;
-			ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(newServiceProvider));
+			ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(Promise.resolve(newServiceProvider));
 			ServiceProvidersRepositoryMock.getServiceProviderMock = newServiceProvider;
 			const start = new Date('2020-02-02T11:00');
 			const end = new Date('2020-02-02T12:00');
@@ -655,7 +659,7 @@ describe('Bookings.Service', () => {
 			const sp = ServiceProvider.create('provider', 1);
 			sp.id = 1;
 			sp.autoAcceptBookings = false;
-			ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(sp));
+			ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(Promise.resolve(sp));
 			ServiceProvidersRepositoryMock.getServiceProviderMock = sp;
 			const start = new Date('2020-02-02T11:00');
 			const end = new Date('2020-02-02T12:00');
@@ -691,7 +695,7 @@ describe('Bookings.Service', () => {
 			const serviceProv = ServiceProvider.create('provider', 1);
 			serviceProv.id = 1;
 			serviceProv.autoAcceptBookings = false;
-			ServiceProvidersServiceMock.getServiceProvider.mockReturnValue(Promise.resolve(serviceProv));
+			ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(Promise.resolve(serviceProv));
 			ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProv;
 			const start = new Date('2020-02-02T11:00');
 			const end = new Date('2020-02-02T12:00');
@@ -922,6 +926,52 @@ describe('Bookings.Service', () => {
 			const booking = BookingRepositoryMock.booking;
 			expect(booking).not.toBe(undefined);
 			expect(booking.status).toBe(BookingStatus.PendingApproval);
+		});
+	});
+
+	describe('Service provider auto assigned', () => {
+		const spAutoAssignedService = new Service();
+		spAutoAssignedService.id = 10;
+		spAutoAssignedService.isSpAutoAssigned = true;
+
+		const customProvider = ServiceProvider.create('provider', 1);
+		customProvider.id = 200;
+
+		let bookingRequest: BookingRequest;
+
+		beforeEach(() => {
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(spAutoAssignedService));
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
+			);
+			bookingRequest = new BookingRequest();
+			bookingRequest.startDateTime = new Date();
+			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+			(randomIndex as jest.Mock).mockReturnValue(0);
+		});
+
+		it('should  select random SP (even when  spAutoAssigned flag = true)', async () => {
+			ServiceProvidersServiceMock.getAvailableServiceProvidersMock.mockReturnValue([customProvider]);
+
+			await Container.get(BookingsService).save(bookingRequest, 10);
+
+			expect(ServiceProvidersServiceMock.getAvailableServiceProvidersMock).toHaveBeenCalledTimes(1);
+			expect(randomIndex as jest.Mock).toHaveBeenCalledTimes(1);
+			const booking = BookingRepositoryMock.booking;
+			expect(booking.serviceProvider).toBe(customProvider);
+		});
+
+		it('should not select random SP if request as serviceProviderId (even when  spAutoAssigned flag = true)', async () => {
+			bookingRequest.serviceProviderId = 1;
+
+			await Container.get(BookingsService).save(bookingRequest, 10);
+
+			expect(ServiceProvidersServiceMock.getAvailableServiceProvidersMock).toHaveBeenCalledTimes(0);
+			expect(ServiceProvidersServiceMock.getServiceProviderMock).toHaveBeenCalled();
+			expect(randomIndex as jest.Mock).toHaveBeenCalledTimes(0);
+			const booking = BookingRepositoryMock.booking;
+			expect(booking.serviceProvider).toBe(undefined);
 		});
 	});
 });

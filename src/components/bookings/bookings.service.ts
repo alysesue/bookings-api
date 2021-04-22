@@ -26,6 +26,7 @@ import { getConfig } from '../../config/app-config';
 import { MailObserver } from '../notifications/notification.observer';
 import { BookingsSubject } from './bookings.subject';
 import { BookingType } from '../../models/bookingType';
+import { randomIndex } from '../../tools/arrays';
 
 @InRequestScope
 export class BookingsService {
@@ -53,6 +54,12 @@ export class BookingsService {
 	private changeLogsService: BookingChangeLogsService;
 	@Inject
 	private usersService: UsersService;
+	@Inject
+	private bookingsSubject: BookingsSubject;
+	@Inject
+	private mailObserver: MailObserver;
+	@Inject
+	private bookingsMapper: BookingsMapper;
 
 	constructor() {
 		this.bookingsSubject.attach(this.mailObserver);
@@ -159,8 +166,6 @@ export class BookingsService {
 		serviceId: number,
 		bypassCaptchaAndAutoAccept: boolean = false,
 	): Promise<Booking> {
-		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
-		// Method calls with different services, or timeslots should still run in parallel.
 		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptchaAndAutoAccept);
 		const booking = await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
 		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created });
@@ -285,6 +290,7 @@ export class BookingsService {
 		const updatedBooking = previousBooking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
 		BookingsMapper.mapRequest(bookingRequest, updatedBooking, currentUser);
+		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking);
 
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
@@ -332,6 +338,14 @@ export class BookingsService {
 		let serviceProvider: ServiceProvider | undefined;
 		if (bookingRequest.serviceProviderId) {
 			serviceProvider = await this.serviceProvidersService.getServiceProvider(bookingRequest.serviceProviderId);
+		} else if (service.isSpAutoAssigned) {
+			const serviceProviders = await this.serviceProvidersService.getAvailableServiceProviders(
+				bookingRequest.startDateTime,
+				bookingRequest.endDateTime,
+				serviceId,
+			);
+			const random = randomIndex(serviceProviders);
+			serviceProvider = !!serviceProviders.length ? serviceProviders[random] : undefined;
 		}
 
 		const isServiceOnHold = () => {
@@ -343,7 +357,7 @@ export class BookingsService {
 			.withServiceId(serviceId)
 			.withStartDateTime(bookingRequest.startDateTime)
 			.withEndDateTime(bookingRequest.endDateTime)
-			.withServiceProviderId(bookingRequest.serviceProviderId)
+			.withServiceProviderId(serviceProvider?.id)
 			.withRefId(bookingRequest.refId)
 			.withLocation(bookingRequest.location)
 			.withDescription(bookingRequest.description)
@@ -361,12 +375,13 @@ export class BookingsService {
 			.withCaptchaOrigin(bookingRequest.captchaOrigin)
 			.build();
 
+		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, booking);
+
 		booking.serviceProvider = serviceProvider;
 		await this.loadBookingDependencies(booking);
 		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
 		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || getConfig().isAutomatedTest);
 		await validator.validate(booking);
-
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
 
 		// Persists in memory user only after validating booking.
@@ -388,6 +403,7 @@ export class BookingsService {
 			const currentUser = await this.userContext.getCurrentUser();
 			const updatedBooking = previousBooking.clone();
 			BookingsMapper.mapBookingDetails(bookingRequest, updatedBooking, currentUser);
+			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking);
 
 			if (serviceProvider && serviceProvider.autoAcceptBookings) {
 				updatedBooking.status = BookingStatus.Accepted;

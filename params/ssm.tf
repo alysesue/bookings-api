@@ -129,10 +129,19 @@ resource "aws_ssm_parameter" "mol_admin_auth_forwarder_url" {
 }
 
 resource "aws_ssm_parameter" "mol_notification_url" {
-  name   = "${local.path-prefix}MOL_NOTIFICATION_URL"
+  name   = "${local.path-prefix}/MOL_NOTIFICATION_URL"
   type   = "SecureString"
   key_id = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
   value  = "${data.external.static.result.MOL_NOTIFICATION_URL}"
+
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "bookingsg_hashid_salt" {
+  name   = "${local.path-prefix}/BOOKINGSG_HASHID_SALT"
+  type   = "SecureString"
+  key_id = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
+  value  = "${data.external.static.result.BOOKINGSG_HASHID_SALT}"
 
   overwrite = true
 }

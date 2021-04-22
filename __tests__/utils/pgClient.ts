@@ -1,3 +1,4 @@
+import { QueryResult } from 'pg';
 import { Pool } from 'pg';
 
 export class PgClient {
@@ -13,6 +14,8 @@ export class PgClient {
 	}
 	public async cleanAllTables() {
 		// Delete many-to-one relationships first
+		await this.pool.query('DELETE FROM public.dynamic_field');
+		await this.pool.query('DELETE FROM public.label');
 		await this.pool.query('DELETE FROM public.one_off_timeslot;');
 		await this.pool.query('DELETE FROM public.setting;');
 		await this.pool.query('DELETE FROM public.service_admin_group_map');
@@ -35,6 +38,13 @@ export class PgClient {
 		await this.pool.query('DELETE FROM public.schedule_form;');
 		await this.pool.query('DELETE FROM public.organisation_admin_group_map;');
 		await this.pool.query('DELETE FROM public.organisation;');
+	}
+
+	public async mapDynamicFields({ type, serviceId, name, options }): Promise<QueryResult<any>> {
+		return await this.pool.query({
+			text: `INSERT INTO public.dynamic_field("type", "_serviceId", "_name", "_options") values($1, $2, $3, $4) RETURNING _id`,
+			values: [type, serviceId, name, options],
+		});
 	}
 
 	public async mapServiceAdminToService({ serviceId, nameService, organisation }) {

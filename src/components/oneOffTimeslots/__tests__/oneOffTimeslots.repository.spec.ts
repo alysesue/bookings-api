@@ -131,7 +131,7 @@ describe('oneOffTimeslots repository tests', () => {
 	});
 });
 
-class TransactionManagerMock implements Partial<TransactionManager> {
+export class TransactionManagerMock implements Partial<TransactionManager> {
 	public static insert = jest.fn();
 	public static find = jest.fn();
 	public static update = jest.fn();

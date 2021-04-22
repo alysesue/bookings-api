@@ -6,6 +6,7 @@ import { ScheduleForm, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } fro
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 import { Weekday } from '../../../enums/weekday';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
+import { LabelsMapper } from '../../labels/labels.mapper';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -26,6 +27,7 @@ jest.mock('mol-lib-common', () => {
 describe('Services controller tests', () => {
 	beforeAll(() => {
 		Container.bind(ServicesService).to(ServicesServiceMockClass);
+		Container.bind(LabelsMapper).to(LabelsMapperMock);
 	});
 
 	it('should save a new service', async () => {
@@ -36,6 +38,39 @@ describe('Services controller tests', () => {
 		const result = await controller.createService(request);
 
 		expect(result.data.name).toBe('John');
+	});
+
+	it('should save a new service with labels', async () => {
+		ServicesServiceMock.createService.mockReturnValue({ name: 'John', labels: [{ id: 1, labelText: 'label' }] });
+		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([{ id: '1', label: 'label' }]);
+
+		const controller = Container.get(ServicesController);
+		const request = new ServiceRequest();
+		const result = await controller.createService(request);
+
+		expect(result.data.name).toBe('John');
+		expect(result.data.labels[0].label).toBe('label');
+	});
+
+	it('should return empty label when none provided', async () => {
+		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
+		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([]);
+
+		const controller = Container.get(ServicesController);
+		const request = new ServiceRequest();
+		const result = await controller.createService(request);
+
+		expect(result.data.labels).toHaveLength(0);
+	});
+
+	it('should return empty label when none provided', async () => {
+		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
+
+		const controller = Container.get(ServicesController);
+		const request = new ServiceRequest();
+		const result = await controller.createService(request);
+
+		expect(result.data.labels).toHaveLength(0);
 	});
 
 	it('should update a service', async () => {
@@ -50,6 +85,7 @@ describe('Services controller tests', () => {
 
 	it('should get all services', async () => {
 		ServicesServiceMock.getServices.mockReturnValue([{ name: 'John' }, { name: 'Mary' }]);
+		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([]);
 
 		const response = await Container.get(ServicesController).getServices();
 		expect(response.data).toHaveLength(2);
@@ -199,5 +235,12 @@ class ServicesServiceMockClass implements Partial<ServicesService> {
 
 	public async getServiceTimeslotsSchedule(id: number): Promise<TimeslotsSchedule> {
 		return ServicesServiceMock.getServiceTimeslotsSchedule(id);
+	}
+}
+
+class LabelsMapperMock implements Partial<LabelsMapper> {
+	public static mapToLabelsResponse = jest.fn();
+	public mapToLabelsResponse(...params) {
+		return LabelsMapperMock.mapToLabelsResponse(...params);
 	}
 }

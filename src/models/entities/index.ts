@@ -19,3 +19,5 @@ export { SingPassUser } from './singPassUser';
 export { User } from './user';
 export { Setting } from './setting';
 export { OneOffTimeslot } from './oneOffTimeslot';
+export { DynamicField, SelectListDynamicField } from './dynamicField';
+export { Label } from './label';

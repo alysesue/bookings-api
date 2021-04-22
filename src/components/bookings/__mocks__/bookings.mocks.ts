@@ -6,10 +6,9 @@ import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotPro
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { BookingChangeLogsService } from '../../bookingChangeLogs/bookingChangeLogs.service';
-import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
-import { UsersService } from '../../../components/users/users.service';
+import { UsersService } from '../../users/users.service';
 import { IPagedEntities } from '../../../core/pagedEntities';
 
 export class BookingRepositoryMock implements Partial<BookingsRepository> {
@@ -71,14 +70,6 @@ export class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersR
 
 	public async getServiceProvider(): Promise<ServiceProvider> {
 		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
-	}
-}
-
-export class ServiceProvidersServiceMock implements Partial<ServiceProvidersService> {
-	public static getServiceProvider = jest.fn<Promise<ServiceProvider>, any>();
-
-	public async getServiceProvider(...params): Promise<any> {
-		return await ServiceProvidersServiceMock.getServiceProvider(...params);
 	}
 }
 
