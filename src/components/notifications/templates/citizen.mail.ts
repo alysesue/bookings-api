@@ -12,7 +12,7 @@ export abstract class EmailBookingTemplate {
 }
 
 export class CitizenEmailTemplateBookingActionByCitizen implements EmailBookingTemplate {
-	public CreatedBookingEmail(data) {
+	public CreatedBookingEmail(data): EmailTemplateBase {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 
 		return {
@@ -26,12 +26,12 @@ Below is a confirmation of your booking details.
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
-Location: <b>${locationText}</b>
+${locationText}
 </pre>`,
 		};
 	}
 
-	public UpdatedBookingEmail(data) {
+	public UpdatedBookingEmail(data): EmailTemplateBase {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG update: ${serviceName}${serviceProviderText}`,
@@ -44,12 +44,12 @@ Below is a confirmation of your updated booking details.
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
-Location: <b>${locationText}</b>
+${locationText}
 </pre>`,
 		};
 	}
 
-	public CancelledBookingEmail(data) {
+	public CancelledBookingEmail(data): EmailTemplateBase {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG cancellation: ${serviceName}${serviceProviderText}`,
@@ -61,14 +61,14 @@ Booking for: <b>${serviceName}${serviceProviderText}.</b>
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
-Location: <b>${locationText}</b>
+${locationText}
 </pre>`,
 		};
 	}
 }
 
 export class CitizenEmailTemplateBookingActionByServiceProvider implements EmailBookingTemplate {
-	public CreatedBookingEmail(data) {
+	public CreatedBookingEmail(data): EmailTemplateBase {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG confirmation: ${serviceName}${serviceProviderText}`,
@@ -81,12 +81,12 @@ Below is a confirmation of your booking details.
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
-Location: <b>${locationText}</b>
+${locationText}
 </pre>`,
 		};
 	}
 
-	public UpdatedBookingEmail(data) {
+	public UpdatedBookingEmail(data): EmailTemplateBase {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG update: ${serviceName}${serviceProviderText}`,
@@ -99,12 +99,12 @@ Below is a confirmation of your updated booking details.
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
-Location: <b>${locationText}</b>
+${locationText}
 </pre>`,
 		};
 	}
 
-	public CancelledBookingEmail(data) {
+	public CancelledBookingEmail(data): EmailTemplateBase {
 		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
 		return {
 			subject: `BookingSG cancellation: ${serviceName}${serviceProviderText}`,
@@ -116,7 +116,7 @@ Booking for: <b>${serviceName}${serviceProviderText}.</b>
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
-Location: <b>${locationText}</b>
+${locationText}
 </pre>`,
 		};
 	}

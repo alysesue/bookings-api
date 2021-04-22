@@ -29,7 +29,7 @@ export const emailMapper = (data: Booking): EmailData => {
 	const serviceProviderName = data.serviceProvider?.name;
 	const serviceProviderText = serviceProviderName ? ` - ${serviceProviderName}` : '';
 	const location = data.location;
-	const locationText = location ? `${location}` : '';
+	const locationText = location ? `Location: <b>${location}</b>` : '';
 	const day = DateHelper.getDateFormat(data.startDateTime);
 	const time = `${DateHelper.getTime12hFormatString(data.startDateTime)} - ${DateHelper.getTime12hFormatString(
 		data.endDateTime,

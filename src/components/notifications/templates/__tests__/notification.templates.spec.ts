@@ -20,57 +20,57 @@ describe('Notification templates tests', () => {
 	};
 
 	it('should create citizen email for citizen created booking', () => {
-		const result = CitizenEmailTemplateBookingActionByCitizen.CreatedBookingEmail(mockData);
+		const result = new CitizenEmailTemplateBookingActionByCitizen().CreatedBookingEmail(mockData);
 		expect(result).toMatchSnapshot();
 	});
 
 	it('should create citizen email for citizen updated booking', () => {
-		const result = CitizenEmailTemplateBookingActionByCitizen.UpdatedBookingEmail(mockData);
+		const result = new CitizenEmailTemplateBookingActionByCitizen().UpdatedBookingEmail(mockData);
 		expect(result).toMatchSnapshot();
 	});
 
 	it('should create citizen email for citizen cancelled booking', () => {
-		const result = CitizenEmailTemplateBookingActionByCitizen.CancelledBookingEmail(mockData);
+		const result = new CitizenEmailTemplateBookingActionByCitizen().CancelledBookingEmail(mockData);
 		expect(result).toMatchSnapshot();
 	});
 
 	it('should create citizen email for service provider created booking', () => {
-		const result = CitizenEmailTemplateBookingActionByServiceProvider.CreatedBookingEmail(mockData);
+		const result = new CitizenEmailTemplateBookingActionByServiceProvider().CreatedBookingEmail(mockData);
 		expect(result).toMatchSnapshot();
 	});
 
 	it('should create citizen email for service provider updated booking', () => {
-		const result = CitizenEmailTemplateBookingActionByServiceProvider.UpdatedBookingEmail(mockData);
+		const result = new CitizenEmailTemplateBookingActionByServiceProvider().UpdatedBookingEmail(mockData);
 		expect(result).toMatchSnapshot();
 	});
 
 	it('should create citizen email for service provider cancelled booking', () => {
-		const result = CitizenEmailTemplateBookingActionByServiceProvider.CancelledBookingEmail(mockData);
+		const result = new CitizenEmailTemplateBookingActionByServiceProvider().CancelledBookingEmail(mockData);
 		expect(result).toMatchSnapshot();
 	});
 
 	it('should create service provider email for citizen created booking', () => {
-		const result = ServiceProviderEmailTemplateBookingActionByCitizen.CreatedBookingEmail(mockData);
+		const result = new ServiceProviderEmailTemplateBookingActionByCitizen().CreatedBookingEmail(mockData);
 		expect(result).toMatchSnapshot();
 	});
 
 	it('should create service provider email for citizen updated booking', () => {
-		const result = ServiceProviderEmailTemplateBookingActionByCitizen.UpdatedBookingEmail(mockData);
+		const result = new ServiceProviderEmailTemplateBookingActionByCitizen().UpdatedBookingEmail(mockData);
 		expect(result).toMatchSnapshot();
 	});
 
 	it('should create service provider email for citizen cancelled booking', () => {
-		const result = ServiceProviderEmailTemplateBookingActionByCitizen.CancelledBookingEmail(mockData);
+		const result = new ServiceProviderEmailTemplateBookingActionByCitizen().CancelledBookingEmail(mockData);
 		expect(result).toMatchSnapshot();
 	});
 
 	it('should create service provider email for service provider updated booking', () => {
-		const result = ServiceProviderEmailTemplateBookingActionByServiceProvider.UpdatedBookingEmail(mockData);
+		const result = new ServiceProviderEmailTemplateBookingActionByServiceProvider().UpdatedBookingEmail(mockData);
 		expect(result).toMatchSnapshot();
 	});
 
 	it('should create service provider email for service provider cancelled booking', () => {
-		const result = ServiceProviderEmailTemplateBookingActionByServiceProvider.CancelledBookingEmail(mockData);
+		const result = new ServiceProviderEmailTemplateBookingActionByServiceProvider().CancelledBookingEmail(mockData);
 		expect(result).toMatchSnapshot();
 	});
 });

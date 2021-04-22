@@ -16,7 +16,7 @@ Below is a summary of the booking request details.
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
-Location: <b>${locationText}</b>
+${locationText}
 </pre>`,
 		};
 	}
@@ -35,7 +35,7 @@ Below is a confirmation of the updated booking details.
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
-Location: <b>${locationText}</b>
+${locationText}
 </pre>`,
 		};
 	}
@@ -52,7 +52,7 @@ Booking for: <b>${serviceName}${serviceProviderText}.</b>
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
-Location: <b>${locationText}</b>
+${locationText}
 </pre>`,
 		};
 	}
@@ -73,7 +73,7 @@ Below is a summary of your updated booking details.
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
-Location: <b>${locationText}</b>
+${locationText}
 </pre>`,
 		};
 	}
@@ -90,7 +90,7 @@ Booking for: <b>${serviceName}${serviceProviderText}.</b>
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
-Location: <b>${locationText}</b>
+${locationText}
 </pre>`,
 		};
 	}

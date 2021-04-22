@@ -25,42 +25,56 @@ export class MailObserver implements Observer {
 	private notificationsService: NotificationsService;
 	@Inject
 	private userContext: UserContext;
+	@Inject
+	private citizenEmailTemplateBookingActionByServiceProvider: CitizenEmailTemplateBookingActionByServiceProvider;
+	@Inject
+	private citizenEmailTemplateBookingActionByCitizen: CitizenEmailTemplateBookingActionByCitizen;
+	@Inject
+	private serviceProviderEmailTemplateBookingActionByServiceProvider: ServiceProviderEmailTemplateBookingActionByServiceProvider;
+	@Inject
+	private serviceProviderEmailTemplateBookingActionByCitizen: ServiceProviderEmailTemplateBookingActionByCitizen;
 
 	public async update(subject: ISubject<any>): Promise<void> {
-		if (subject instanceof BookingsSubject && subject.booking && subject.booking.status !== BookingStatus.OnHold) {
-			console.log('========================================');
-			console.log(require('util').inspect(subject, false, null, true /* enable colors */));
-			console.log('========================================');
-			const citizenEmailBody = await this.createCitizenEmailFactory(subject);
-			const serviceProviderEmailBody = await this.createServiceProviderEmailFactory(subject);
-			const citizenEmailDetails = MailObserver.constructEmailTemplate(subject, citizenEmailBody, true, false);
-			const serviceProviderEmailDetails = MailObserver.constructEmailTemplate(
-				subject,
-				serviceProviderEmailBody,
-				false,
-				true,
-			);
-			this.notificationsService.sendEmail(citizenEmailDetails);
-			this.notificationsService.sendEmail(serviceProviderEmailDetails);
+		if (subject instanceof BookingsSubject && subject.booking?.status !== BookingStatus.OnHold) {
+			if (!subject.booking.service.sendNotifications) return;
+			await this.emailBookingToCitizen(subject.booking, subject.bookingType);
+			if (!subject.booking.service.sendNotificationsToServiceProviders) return;
+			await this.emailBookingToServiceProvider(subject.booking, subject.bookingType);
 		}
 	}
 
-	private async createCitizenEmailFactory(data: BookingsSubject): Promise<EmailTemplateBase> {
-		const currentUser = await this.userContext.getCurrentUser();
-		const userIsAdmin = currentUser.isAdmin() || currentUser.isAgency();
-		const templates = userIsAdmin
-			? new CitizenEmailTemplateBookingActionByServiceProvider()
-			: new CitizenEmailTemplateBookingActionByCitizen();
-		return this.templateFactory(data.booking, data.bookingType, templates);
+	private async emailBookingToCitizen(booking: Booking, bookingType: BookingType): Promise<void> {
+		const body = await this.createCitizenEmailFactory(booking, bookingType);
+		const email = MailObserver.verifyEmail(booking.citizenEmail);
+		const citizenEmailDetails = MailObserver.constructEmailTemplate(body, email);
+		if (citizenEmailDetails?.html) await this.notificationsService.sendEmail(citizenEmailDetails);
+	}
+	private async emailBookingToServiceProvider(booking: Booking, bookingType: BookingType): Promise<void> {
+		const serviceProviderEmailBody = await this.createServiceProviderEmailFactory(booking, bookingType);
+		const email = MailObserver.verifyEmail(booking.serviceProvider?.email);
+		const serviceProviderEmailDetails = MailObserver.constructEmailTemplate(serviceProviderEmailBody, email);
+		if (serviceProviderEmailDetails?.html) await this.notificationsService.sendEmail(serviceProviderEmailDetails);
 	}
 
-	private async createServiceProviderEmailFactory(data: BookingsSubject): Promise<EmailTemplateBase> {
+	private async createCitizenEmailFactory(booking: Booking, bookingType: BookingType): Promise<EmailTemplateBase> {
 		const currentUser = await this.userContext.getCurrentUser();
 		const userIsAdmin = currentUser.isAdmin() || currentUser.isAgency();
 		const templates = userIsAdmin
-			? new ServiceProviderEmailTemplateBookingActionByServiceProvider()
-			: new ServiceProviderEmailTemplateBookingActionByCitizen();
-		return this.templateFactory(data.booking, data.bookingType, templates);
+			? this.citizenEmailTemplateBookingActionByServiceProvider
+			: this.citizenEmailTemplateBookingActionByCitizen;
+		return this.templateFactory(booking, bookingType, templates);
+	}
+
+	private async createServiceProviderEmailFactory(
+		booking: Booking,
+		bookingType: BookingType,
+	): Promise<EmailTemplateBase> {
+		const currentUser = await this.userContext.getCurrentUser();
+		const userIsAdmin = currentUser.isAdmin() || currentUser.isAgency();
+		const templates = userIsAdmin
+			? this.serviceProviderEmailTemplateBookingActionByServiceProvider
+			: this.serviceProviderEmailTemplateBookingActionByCitizen;
+		return this.templateFactory(booking, bookingType, templates);
 	}
 
 	private templateFactory(
@@ -80,31 +94,16 @@ export class MailObserver implements Observer {
 		}
 	}
 
-	private static constructEmailTemplate(
-		subject: ISubject<BookingsSubject>,
-		emailTemplate: EmailTemplateBase | undefined,
-		citizen: boolean,
-		serviceProvider: boolean,
-	): MailOptions {
-		let email;
-		if (citizen) {
-			if (subject instanceof BookingsSubject && subject.booking.citizenEmail) {
-				email = subject.booking.citizenEmail;
-			} else {
-				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Email not found`);
-			}
-		}
-		if (serviceProvider) {
-			if (subject instanceof BookingsSubject && subject.booking.serviceProvider.email) {
-				email = subject.booking.serviceProvider.email;
-			} else {
-				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Email not found`);
-			}
-		}
+	private static constructEmailTemplate(emailTemplate: EmailTemplateBase | undefined, email: string): MailOptions {
 		return {
 			to: [email],
 			subject: emailTemplate?.subject,
 			html: emailTemplate?.html,
 		};
+	}
+
+	private static verifyEmail(email: string | undefined): string {
+		if (!email) throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Email not found`);
+		return email;
 	}
 }

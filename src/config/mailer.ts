@@ -1,27 +1,25 @@
+import { emailLogger } from './logger';
 import * as nodemailer from 'nodemailer';
 import * as inLineCss from 'nodemailer-juice';
-import { getConfig } from './app-config';
-import { emailLogger } from './logger';
+import { getConfig } from "./app-config";
 
-export const mailer = nodemailer
-	.createTransport(() => {
-		const config = getConfig();
-		return {
-			host: config.mailer.smtpHost,
-			port: config.mailer.smtpPort,
-			secure: config.mailer.smtpSecure,
-			...(config.mailer.smtpUseAuth
-				? {
-						auth: {
-							user: config.mailer.smtpAuthUsername,
-							pass: config.mailer.smtpAuthPassword,
-						},
-				  }
-				: null),
-			pool: true,
-		};
-	})
-	.use('compile', inLineCss());
+const config = getConfig();
+const smtp = {
+	host: config?.mailer?.smtpHost,
+	port: config?.mailer?.smtpPort,
+	secure: config?.mailer?.smtpSecure,
+	...(config?.mailer?.smtpUseAuth
+		? {
+				auth: {
+					user: config?.mailer?.smtpAuthUsername,
+					pass: config?.mailer?.smtpAuthPassword,
+				},
+		  }
+		: null),
+	pool: true,
+};
+
+export const mailer = nodemailer.createTransport(smtp).use('compile', inLineCss());
 
 mailer.verify((err) => {
 	if (err) {

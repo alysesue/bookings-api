@@ -1,9 +1,10 @@
-import { ConfigUtils } from 'mol-lib-common';
-
-const packageJSON = require('../../package.json');
 require('dotenv').config();
+import { ConfigUtils } from 'mol-lib-common';
+const packageJSON = require('../../package.json');
 
-export const getConfig = () => ({
+export const getConfig = () => config;
+
+const config = {
 	name: packageJSON.name,
 	version: packageJSON.version,
 	port: ConfigUtils.getIntValueFromEnv('PORT', 3000),
@@ -30,19 +31,19 @@ export const getConfig = () => ({
 	hashIdSalt: ConfigUtils.getValueFromEnv('BOOKINGSG_HASHID_SALT'),
 	accessControlAllowOrigin: ConfigUtils.getValueFromEnv('ACCESS_CONTROL_ALLOW_ORIGIN'),
 	mailer: {
-		smtpHost: ConfigUtils.getValueFromEnv('SMTP_HOST'),
-		smtpPort: ConfigUtils.getValueFromEnv('SMTP_PORT'),
+		smtpHost: ConfigUtils.getValueFromEnv('SMTP_HOST', ''),
+		smtpPort: ConfigUtils.getValueFromEnv('SMTP_PORT', ''),
 		smtpSecure: ConfigUtils.getBooleanValueFromEnv('SMTP_SECURE', true),
 		smtpUseAuth: ConfigUtils.getBooleanValueFromEnv('SMTP_USE_AUTH', true),
-		smtpAuthUsername: ConfigUtils.getValueFromEnv('SMTP_AUTH_USERNAME'),
-		smtpAuthPassword: ConfigUtils.getValueFromEnv('SMTP_AUTH_PASSWORD'),
+		smtpAuthUsername: ConfigUtils.getValueFromEnv('SMTP_AUTH_USERNAME', ''),
+		smtpAuthPassword: ConfigUtils.getValueFromEnv('SMTP_AUTH_PASSWORD', ''),
 	},
 
 	email: {
 		mol: {
-			sender: ConfigUtils.getValueFromEnv('MOL_SENDER_EMAIL'),
+			sender: ConfigUtils.getValueFromEnv('MOL_SENDER_EMAIL', ''),
 		},
 	},
-});
+};
 
 export const basePath = '/bookingsg';

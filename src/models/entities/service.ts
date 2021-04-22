@@ -161,6 +161,17 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	}
 
 	@Column({ nullable: false, default: false })
+	private _sendNotifications: boolean;
+
+	public get sendNotifications(): boolean {
+		return this._sendNotifications;
+	}
+
+	public set sendNotifications(value: boolean) {
+		this._sendNotifications = value;
+	}
+
+	@Column({ nullable: false, default: false })
 	private _sendNotificationsToServiceProviders: boolean;
 
 	public get sendNotificationsToServiceProviders(): boolean {
