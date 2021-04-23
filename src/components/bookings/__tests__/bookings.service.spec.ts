@@ -43,7 +43,7 @@ import {
 	UnavailabilitiesServiceMock,
 	UsersServiceMock,
 } from '../__mocks__/bookings.mocks';
-import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
+import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { UsersService } from '../../users/users.service';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
@@ -53,6 +53,8 @@ import { IPagedEntities } from '../../../core/pagedEntities';
 import { getConfig } from '../../../config/app-config';
 import { BookingsSubject } from '../bookings.subject';
 import { BookingsSubjectMock } from '../__mocks__/bookings.subject.mock';
+import { MailObserver } from '../../notifications/notification.observer';
+import { MockObserver } from '../../../infrastructure/__mocks__/observer.mock';
 import { ServiceProvidersServiceMock } from '../../serviceProviders/__mocks__/serviceProviders.service.mock';
 import { randomIndex } from '../../../tools/arrays';
 import { IValidator } from '../../../infrastructure/validator';
@@ -146,6 +148,7 @@ describe('Bookings.Service', () => {
 		Container.bind(ServicesService).to(ServicesServiceMock);
 		Container.bind(UsersService).to(UsersServiceMock);
 		Container.bind(BookingsSubject).to(BookingsSubjectMock);
+		Container.bind(MailObserver).to(MockObserver);
 	});
 
 	beforeEach(() => {

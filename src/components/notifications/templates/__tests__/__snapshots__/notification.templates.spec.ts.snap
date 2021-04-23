@@ -1,0 +1,187 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Notification templates tests should create citizen email for citizen cancelled booking 1`] = `
+Object {
+  "html": "<pre>
+You have cancelled the following booking.
+<br />
+Booking for: <b>Career.</b>
+<br />
+Booking status: <b>Pending Approval</b>
+Date: <b>14 April 2021</b>
+Time: <b>10:00am - 11:00am</b>
+Location: <b>Some street</b>
+</pre>",
+  "subject": "BookingSG cancellation: Career",
+}
+`;
+
+exports[`Notification templates tests should create citizen email for citizen created booking 1`] = `
+Object {
+  "html": "<pre>
+Your booking request has been received.
+<br />
+Booking for: <b>Career.</b>
+<br />
+Below is a confirmation of your booking details.
+Booking status: <b>Pending Approval</b>
+Date: <b>14 April 2021</b>
+Time: <b>10:00am - 11:00am</b>
+Location: <b>Some street</b>
+</pre>",
+  "subject": "BookingSG confirmation: Career",
+}
+`;
+
+exports[`Notification templates tests should create citizen email for citizen updated booking 1`] = `
+Object {
+  "html": "<pre>
+You have updated a booking.
+<br />
+Booking for: <b>Career.</b>
+<br />
+Below is a confirmation of your updated booking details.
+Booking status: <b>Pending Approval</b>
+Date: <b>14 April 2021</b>
+Time: <b>10:00am - 11:00am</b>
+Location: <b>Some street</b>
+</pre>",
+  "subject": "BookingSG update: Career",
+}
+`;
+
+exports[`Notification templates tests should create citizen email for service provider cancelled booking 1`] = `
+Object {
+  "html": "<pre>
+The following booking has been cancelled by the other party.
+<br />
+Booking for: <b>Career.</b>
+<br />
+Booking status: <b>Pending Approval</b>
+Date: <b>14 April 2021</b>
+Time: <b>10:00am - 11:00am</b>
+Location: <b>Some street</b>
+</pre>",
+  "subject": "BookingSG cancellation: Career",
+}
+`;
+
+exports[`Notification templates tests should create citizen email for service provider created booking 1`] = `
+Object {
+  "html": "<pre>
+A booking has been made.
+<br />
+Booking for: <b>Career.</b>
+<br />
+Below is a confirmation of your booking details.
+Booking status: <b>Pending Approval</b>
+Date: <b>14 April 2021</b>
+Time: <b>10:00am - 11:00am</b>
+Location: <b>Some street</b>
+</pre>",
+  "subject": "BookingSG confirmation: Career",
+}
+`;
+
+exports[`Notification templates tests should create citizen email for service provider updated booking 1`] = `
+Object {
+  "html": "<pre>
+There has been an update to your booking confirmation.
+<br />
+Booking for: <b>Career.</b>
+<br />
+Below is a confirmation of your updated booking details.
+Booking status: <b>Pending Approval</b>
+Date: <b>14 April 2021</b>
+Time: <b>10:00am - 11:00am</b>
+Location: <b>Some street</b>
+</pre>",
+  "subject": "BookingSG update: Career",
+}
+`;
+
+exports[`Notification templates tests should create service provider email for citizen cancelled booking 1`] = `
+Object {
+  "html": "<pre>
+The following booking has been cancelled by the other party.
+<br />
+Booking for: <b>Career.</b>
+<br />
+Booking status: <b>Pending Approval</b>
+Date: <b>14 April 2021</b>
+Time: <b>10:00am - 11:00am</b>
+Location: <b>Some street</b>
+</pre>",
+  "subject": "BookingSG cancellation: Career",
+}
+`;
+
+exports[`Notification templates tests should create service provider email for citizen created booking 1`] = `
+Object {
+  "html": "<pre>
+You have received a new booking request.
+<br />
+Booking for: <b>Career.</b>
+<br />
+Below is a summary of the booking request details.
+<br/>
+Booking status: <b>Pending Approval</b>
+Date: <b>14 April 2021</b>
+Time: <b>10:00am - 11:00am</b>
+Location: <b>Some street</b>
+</pre>",
+  "subject": "BookingSG request: Career",
+}
+`;
+
+exports[`Notification templates tests should create service provider email for citizen updated booking 1`] = `
+Object {
+  "html": "<pre>
+There has been an update to the following booking by the other party.
+<br />
+Booking for: <b>Career.</b>
+<br />
+Below is a confirmation of the updated booking details.
+<br/>
+Booking status: <b>Pending Approval</b>
+Date: <b>14 April 2021</b>
+Time: <b>10:00am - 11:00am</b>
+Location: <b>Some street</b>
+</pre>",
+  "subject": "BookingSG update: Career",
+}
+`;
+
+exports[`Notification templates tests should create service provider email for service provider cancelled booking 1`] = `
+Object {
+  "html": "<pre>
+You have cancelled the following booking.
+<br />
+Booking for: <b>Career.</b>
+<br />
+Booking status: <b>Pending Approval</b>
+Date: <b>14 April 2021</b>
+Time: <b>10:00am - 11:00am</b>
+Location: <b>Some street</b>
+</pre>",
+  "subject": "BookingSG cancellation: Career",
+}
+`;
+
+exports[`Notification templates tests should create service provider email for service provider updated booking 1`] = `
+Object {
+  "html": "<pre>
+You have updated a booking.
+<br />
+Booking for: <b>Career.</b>
+<br />
+Below is a summary of your updated booking details.
+<br/>
+Booking status: <b>Pending Approval</b>
+Date: <b>14 April 2021</b>
+Time: <b>10:00am - 11:00am</b>
+Location: <b>Some street</b>
+</pre>",
+  "subject": "BookingSG update: Career",
+}
+`;

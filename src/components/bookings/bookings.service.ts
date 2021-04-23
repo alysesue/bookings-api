@@ -25,10 +25,15 @@ import { IPagedEntities } from '../../core/pagedEntities';
 import { getConfig } from '../../config/app-config';
 import { MailObserver } from '../notifications/notification.observer';
 import { BookingsSubject } from './bookings.subject';
+import { BookingType } from '../../models/bookingType';
 import { randomIndex } from '../../tools/arrays';
 
 @InRequestScope
 export class BookingsService {
+	@Inject
+	private bookingsSubject: BookingsSubject;
+	@Inject
+	private mailObserver: MailObserver;
 	@Inject
 	public unavailabilitiesService: UnavailabilitiesService;
 	@Inject
@@ -49,10 +54,6 @@ export class BookingsService {
 	private changeLogsService: BookingChangeLogsService;
 	@Inject
 	private usersService: UsersService;
-	@Inject
-	private bookingsSubject: BookingsSubject;
-	@Inject
-	private mailObserver: MailObserver;
 	@Inject
 	private bookingsMapper: BookingsMapper;
 
@@ -89,7 +90,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			this.cancelBookingInternal.bind(this),
 		);
-		this.bookingsSubject.notify({ booking });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.CancelledOrRejected });
 		return booking;
 	}
 
@@ -111,7 +112,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			acceptAction,
 		);
-		this.bookingsSubject.notify({ booking });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated });
 		return booking;
 	}
 
@@ -127,7 +128,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			updateAction,
 		);
-		this.bookingsSubject.notify({ booking });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated });
 		return booking;
 	}
 
@@ -137,7 +138,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			this.rejectBookingInternal.bind(this),
 		);
-		this.bookingsSubject.notify({ booking });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.CancelledOrRejected });
 		return booking;
 	}
 
@@ -148,7 +149,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			rescheduleAction,
 		);
-		this.bookingsSubject.notify({ booking });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated });
 		return booking;
 	}
 
@@ -163,7 +164,7 @@ export class BookingsService {
 	): Promise<Booking> {
 		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptchaAndAutoAccept);
 		const booking = await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
-		this.bookingsSubject.notify({ booking });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created });
 		return booking;
 	}
 
@@ -277,7 +278,7 @@ export class BookingsService {
 		return [ChangeLogAction.Accept, booking];
 	}
 
-	public async updateInternal(
+	private async updateInternal(
 		previousBooking: Booking,
 		bookingRequest: BookingRequest,
 		afterMap: (updatedBooking: Booking, serviceProvider: ServiceProvider) => void | Promise<void>,
@@ -430,7 +431,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			validateAction,
 		);
-		this.bookingsSubject.notify({ booking });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created });
 		return booking;
 	}
 }

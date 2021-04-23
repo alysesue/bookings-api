@@ -14,6 +14,10 @@ export interface IObserver {
 	update<T>(subject: ISubject<T>): void;
 }
 
+export abstract class Observer implements IObserver {
+	public abstract update<T>(subject: ISubject<T>): void;
+}
+
 export abstract class Subject<T> implements ISubject<T> {
 	private _observers: IObserver[] = [];
 	public attach(observers: IObserver | IObserver[]): void {
