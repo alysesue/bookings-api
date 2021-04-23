@@ -53,6 +53,8 @@ export class BookingsService {
 	private bookingsSubject: BookingsSubject;
 	@Inject
 	private mailObserver: MailObserver;
+	@Inject
+	private bookingsMapper: BookingsMapper;
 
 	constructor() {
 		this.bookingsSubject.attach(this.mailObserver);
@@ -159,8 +161,6 @@ export class BookingsService {
 		serviceId: number,
 		bypassCaptchaAndAutoAccept = false,
 	): Promise<Booking> {
-		// Potential improvement: each [serviceId, bookingRequest.startDateTime, bookingRequest.endDateTime] save method call should be executed serially.
-		// Method calls with different services, or timeslots should still run in parallel.
 		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptchaAndAutoAccept);
 		const booking = await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
 		this.bookingsSubject.notify({ booking });
@@ -285,6 +285,7 @@ export class BookingsService {
 		const updatedBooking = previousBooking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
 		BookingsMapper.mapRequest(bookingRequest, updatedBooking, currentUser);
+		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking);
 
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
@@ -369,6 +370,8 @@ export class BookingsService {
 			.withCaptchaOrigin(bookingRequest.captchaOrigin)
 			.build();
 
+		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, booking);
+
 		booking.serviceProvider = serviceProvider;
 		await this.loadBookingDependencies(booking);
 		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
@@ -395,6 +398,7 @@ export class BookingsService {
 			const currentUser = await this.userContext.getCurrentUser();
 			const updatedBooking = previousBooking.clone();
 			BookingsMapper.mapBookingDetails(bookingRequest, updatedBooking, currentUser);
+			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking);
 
 			if (serviceProvider && serviceProvider.autoAcceptBookings) {
 				updatedBooking.status = BookingStatus.Accepted;

@@ -149,7 +149,7 @@ module.exports = {
             "undefined"
         ],
         "id-match": "error",
-        "import/order": "error",
+        "import/order": "off",
 		"indent": ["error", "tab"], // mol
         "jsdoc/check-alignment": "error",
         "jsdoc/check-indentation": "error",

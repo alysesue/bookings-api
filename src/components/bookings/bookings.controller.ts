@@ -46,6 +46,8 @@ export class BookingsController extends Controller {
 	private _koaContextStore: KoaContextStore;
 	@Inject
 	private userContext: UserContext;
+	@Inject
+	private bookingsMapper: BookingsMapper;
 
 	/**
 	 * Creates a new booking.
@@ -68,7 +70,7 @@ export class BookingsController extends Controller {
 		bookingRequest.captchaOrigin = koaContext.header.origin;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
+		return ApiDataFactory.create(this.bookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
 	}
 
 	@Post('bulk')
@@ -79,20 +81,20 @@ export class BookingsController extends Controller {
 		@Body() bookingRequests: BookingRequest[],
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiDataBulk<BookingResponse[], any[]>> {
-		const failedBookings = [];
-		let bookings = await Promise.all(
-			bookingRequests.map(async (bookingRequest) => {
-				try {
-					return await this.bookingsService.save(bookingRequest, serviceId, true);
-				} catch (error) {
-					failedBookings.push(new FailedRecord(bookingRequest, error.message));
-				}
-			}),
-		);
-		bookings = bookings.filter((x) => !!x);
+		const failedBookings: FailedRecord<BookingRequest, any>[] = [];
+		const bookings: Booking[] = [];
+
+		for (const bookingRequest of bookingRequests) {
+			try {
+				bookings.push(await this.bookingsService.save(bookingRequest, serviceId, true));
+			} catch (error) {
+				failedBookings.push(new FailedRecord(bookingRequest, error.message));
+			}
+		}
+
 		this.setStatus(201);
 		return ApiDataFactory.createBulk(
-			BookingsMapper.mapDataModels(bookings, await this.userContext.getSnapshot()),
+			this.bookingsMapper.mapDataModels(bookings, await this.userContext.getSnapshot()),
 			failedBookings,
 		);
 	}
@@ -116,7 +118,7 @@ export class BookingsController extends Controller {
 	): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
+		return ApiDataFactory.create(this.bookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
 	}
 
 	/**
@@ -138,7 +140,7 @@ export class BookingsController extends Controller {
 
 		const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest);
 		return ApiDataFactory.create(
-			BookingsMapper.mapDataModel(rescheduledBooking, await this.userContext.getSnapshot()),
+			this.bookingsMapper.mapDataModel(rescheduledBooking, await this.userContext.getSnapshot()),
 		);
 	}
 
@@ -190,7 +192,7 @@ export class BookingsController extends Controller {
 		@Body() bookingRequest: BookingUpdateRequest,
 	): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.update(bookingId, bookingRequest);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
+		return ApiDataFactory.create(this.bookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
 	}
 
 	/**
@@ -248,7 +250,7 @@ export class BookingsController extends Controller {
 		const pagedBookings = await this.bookingsService.searchBookings(searchQuery);
 		const userContextSnapshot = await this.userContext.getSnapshot();
 		return ApiDataFactory.createPaged(pagedBookings, (booking: Booking) => {
-			return BookingsMapper.mapDataModel(booking, userContextSnapshot);
+			return this.bookingsMapper.mapDataModel(booking, userContextSnapshot);
 		});
 	}
 
@@ -262,7 +264,7 @@ export class BookingsController extends Controller {
 	@Response(401, 'Unauthorized')
 	public async getBooking(@Path() bookingId: number): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.getBooking(bookingId);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
+		return ApiDataFactory.create(this.bookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
 	}
 
 	/**
@@ -322,6 +324,6 @@ export class BookingsController extends Controller {
 		@Path() bookingId: number,
 	): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.validateOnHoldBooking(bookingId, bookingRequest);
-		return ApiDataFactory.create(BookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
+		return ApiDataFactory.create(this.bookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
 	}
 }

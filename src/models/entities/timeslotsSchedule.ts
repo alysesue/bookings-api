@@ -87,11 +87,11 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 					if (startTimeOfDay && TimeOfDay.compare(timeslotTemplate._startTime, startTimeOfDay) < 0) continue;
 					if (endTimeOfDay && TimeOfDay.compare(timeslotTemplate._endTime, endTimeOfDay) > 0) continue;
 
-					const timeslot = {
+					const timeslot: TimeslotWithCapacity = {
 						startTimeNative: dateNative + timeslotTemplate._startTime.AsMilliseconds(),
 						endTimeNative: dateNative + timeslotTemplate._endTime.AsMilliseconds(),
 						capacity: timeslotTemplate._capacity,
-					} as TimeslotWithCapacity;
+					};
 
 					yield timeslot;
 				}

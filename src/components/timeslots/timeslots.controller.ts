@@ -59,11 +59,12 @@ export class TimeslotsController extends Controller {
 		);
 
 		if (exactTimeslot) {
-			timeslots = timeslots.some((timeslot) => timeslot.getAvailabilityCount() <= 0) ? [] : timeslots;
+			timeslots = timeslots.filter(
+				(timeslot) => timeslot.startTime === startDate.getTime() && timeslot.endTime === endDate.getTime(),
+			);
 		}
 
 		const result = this.timeslotMapper.mapAvailabilityToResponse(timeslots, { skipUnavailable: true });
-
 		return ApiDataFactory.create(result);
 	}
 

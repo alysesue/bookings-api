@@ -14,6 +14,9 @@ import {
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import * as request from 'request';
 import { BookingStatus } from '../../../src/models';
+import { PersistDynamicValueContract } from '../../../src/components/dynamicFields/dynamicValues.apicontract';
+import { DynamicValueTypeContract } from '../../../src/components/dynamicFields/dynamicValues.apicontract';
+import { IdHasherForFunctional } from '../../utils/idHashingUtil';
 
 // tslint:disable-next-line: no-big-function
 describe('Bookings functional tests', () => {
@@ -29,6 +32,19 @@ describe('Bookings functional tests', () => {
 
 	let serviceProvider: ServiceProviderResponseModel;
 	let serviceId;
+
+	let dynamicFieldId;
+
+	const options = [
+		{
+			key: 1,
+			value: 'option A',
+		},
+		{
+			key: 2,
+			value: 'option B',
+		},
+	];
 
 	beforeEach(async (done) => {
 		await pgClient.cleanAllTables();
@@ -48,6 +64,16 @@ describe('Bookings functional tests', () => {
 			closeTime: END_TIME_1,
 			scheduleSlot: 60,
 		});
+
+		const queryResult = await pgClient.mapDynamicFields({
+			type: 'SelectListDynamicField',
+			serviceId,
+			name: 'Select an option',
+			options: JSON.stringify(options),
+		});
+
+		const idHasher = new IdHasherForFunctional();
+		dynamicFieldId = await idHasher.convertIdToHash(queryResult.rows[0]._id);
 
 		done();
 	});
@@ -124,6 +150,31 @@ describe('Bookings functional tests', () => {
 		});
 	};
 
+	const postCitizenBookingWithDynamicFields = async (): Promise<request.Response> => {
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+
+		const dynamicValues = new PersistDynamicValueContract();
+		dynamicValues.SingleSelectionKey = 1;
+		dynamicValues.fieldIdSigned = dynamicFieldId;
+		dynamicValues.type = 'SingleSelection' as DynamicValueTypeContract;
+
+		const endpoint = CitizenRequestEndpointSG.create({
+			citizenUinFin,
+			serviceId,
+		});
+		return await endpoint.post('/bookings', {
+			body: {
+				startDateTime,
+				endDateTime,
+				citizenName,
+				citizenEmail,
+				dynamicValuesUpdated: true,
+				dynamicValues,
+			},
+		});
+	};
+
 	const postCitizenInSlotServiceProviderBooking = async (): Promise<request.Response> => {
 		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
 		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
@@ -162,6 +213,11 @@ describe('Bookings functional tests', () => {
 			},
 		});
 	};
+
+	it('should make a booking with dynamic values', async () => {
+		const response = await postCitizenBookingWithDynamicFields();
+		expect(response.body.data.dynamicValues[0].fieldIdSigned).toEqual(dynamicFieldId);
+	});
 
 	it('[On hold] Agency should validate SERVICE on hold booking', async () => {
 		const response = await postCitizenBookingWithStartEndDateOnly(true, false);

@@ -21,9 +21,9 @@ export class OneOffTimeslotsMapper {
 		entity.startDateTime = request.startDateTime;
 		entity.endDateTime = request.endDateTime;
 		entity.capacity = request.capacity;
-		entity.title = request.title;
-		entity.description = request.description;
 		entity.labels = labels;
+		entity.title = request.title ?? undefined;
+		entity.description = request.description ?? undefined;
 
 		return entity;
 	}
@@ -34,9 +34,10 @@ export class OneOffTimeslotsMapper {
 		response.startDateTime = timeslot.startDateTime;
 		response.endDateTime = timeslot.endDateTime;
 		response.capacity = timeslot.capacity;
-		response.title = timeslot.title;
-		response.description = timeslot.description;
 		response.labels = this.labelMapper.mapToLabelsResponse(timeslot.labels);
+		response.title = timeslot.title ?? undefined;
+		response.description = timeslot.description ?? undefined;
+
 		return response;
 	}
 }

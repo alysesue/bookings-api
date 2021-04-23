@@ -42,8 +42,8 @@ import {
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
 	UsersServiceMock,
-} from './bookings.mocks';
-import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
+} from '../__mocks__/bookings.mocks';
+import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { UsersService } from '../../users/users.service';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';

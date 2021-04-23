@@ -30,7 +30,10 @@ export class AvailableTimeslotProviders {
 					acceptedBookings: timeslotServiceProvider.acceptedBookings,
 					pendingBookings: timeslotServiceProvider.pendingBookings,
 					availabilityCount: timeslotServiceProvider.getAvailabilityCount(totalAvailability),
+					oneOffTimeslotId: timeslotServiceProvider.oneOffTimeslotId,
 					labels: timeslotServiceProvider.labels,
+					title: timeslotServiceProvider.title,
+					description: timeslotServiceProvider.description,
 				};
 			}
 		}
@@ -81,11 +84,7 @@ export class AvailableTimeslotProviders {
 		this._timeslotServiceProviders = new Map<number, TimeslotServiceProvider>();
 		for (const item of providers) {
 			const [spItem, timeslotCapacity] = item;
-			const spTimeslotItem = new TimeslotServiceProvider(
-				spItem,
-				timeslotCapacity.capacity,
-				timeslotCapacity.labels,
-			);
+			const spTimeslotItem = new TimeslotServiceProvider(spItem, timeslotCapacity);
 			if (!spTimeslotItem.serviceProvider.isLicenceExpireNative(timeslotCapacity.startTimeNative)) {
 				this._timeslotServiceProviders.set(spItem.id, spTimeslotItem);
 			}
@@ -100,7 +99,7 @@ export class AvailableTimeslotProviders {
 			if (spTimeslotItem) {
 				spTimeslotItem.acceptedBookings = spBookings;
 			} else {
-				const newTimeslotItem = new TimeslotServiceProvider(spBookings[0].serviceProvider, 0);
+				const newTimeslotItem = new TimeslotServiceProvider(spBookings[0].serviceProvider, { capacity: 0 });
 				newTimeslotItem.acceptedBookings = spBookings;
 				this._timeslotServiceProviders.set(spId, newTimeslotItem);
 			}

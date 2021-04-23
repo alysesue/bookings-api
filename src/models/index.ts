@@ -5,3 +5,4 @@ export { BookingStatus } from './bookingStatus';
 export { TimeOfDay } from './timeOfDay';
 export { BusinessValidation } from './businessValidation';
 export { ChangeLogAction } from './changeLogAction';
+export { SelectListOption } from './entities/dynamicField';

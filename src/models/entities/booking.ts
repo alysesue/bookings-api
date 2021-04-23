@@ -428,4 +428,27 @@ export class Booking {
 	public isValidOnHoldBooking(): boolean {
 		return this.status === BookingStatus.OnHold && this.onHoldUntil > new Date();
 	}
+
+	@Column({ type: 'jsonb', nullable: false, default: '[]' })
+	private _dynamicValues: DynamicValueJsonModel[];
+
+	public get dynamicValues(): DynamicValueJsonModel[] {
+		return this._dynamicValues;
+	}
+
+	public set dynamicValues(value: DynamicValueJsonModel[]) {
+		this._dynamicValues = value;
+	}
 }
+
+export enum DynamicValueType {
+	SingleSelection = 'SingleSelection',
+}
+
+export type DynamicValueJsonModel = {
+	fieldId: number;
+	fieldName: string;
+	type: DynamicValueType;
+	SingleSelectionKey?: number;
+	SingleSelectionValue?: string;
+};

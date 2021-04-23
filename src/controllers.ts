@@ -1,4 +1,3 @@
-// STUB
 import './components/bookingChangeLogs/bookingChangeLogs.controller';
 import './components/bookings/bookings.controller';
 import './components/scheduleForms/scheduleForms.controller';
@@ -13,3 +12,4 @@ import './components/users/users.controller';
 import './components/usersessions/usersessions.controller';
 import './components/unavailabilities/unavailabilities.controller';
 import './components/oneOffTimeslots/oneOffTimeslots.controller';
+import './components/dynamicFields/dynamicFields.controller';

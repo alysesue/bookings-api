@@ -8,6 +8,7 @@ import {
 import { populateOneOffTimeslot, populateServiceLabel, populateUserServiceProvider } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import { ServiceResponse } from '../../../src/components/services/service.apicontract';
+import { TimeslotEntryResponse } from '../../../src/components/timeslots/timeslots.apicontract';
 
 // tslint:disable-next-line: no-big-function
 describe('Timeslots functional tests', () => {
@@ -93,7 +94,10 @@ describe('Timeslots functional tests', () => {
 			endTime: END_TIME_1,
 			capacity: 1,
 			labelIds: service1Results.labels.map((l) => l.id),
+			title: 'my event',
+			description: 'my description',
 		});
+
 		await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider2.id,
 			startTime: START_TIME_2,
@@ -132,9 +136,13 @@ describe('Timeslots functional tests', () => {
 			`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}&labelIds=${labelId0}&labelIds=${labelId1}`,
 		);
 
+		const data = service1TimeslotsResponse.body.data as TimeslotEntryResponse[];
+
 		expect(service1TimeslotsResponse.statusCode).toEqual(200);
-		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].labels[0].label).toBe('Chinese');
-		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].labels[1].label).toBe('English');
+		expect(data[0].timeslotServiceProviders[0].eventTitle).toBe('my event');
+		expect(data[0].timeslotServiceProviders[0].eventDescription).toBe('my description');
+		expect(data[0].timeslotServiceProviders[0].labels[0].label).toBe('Chinese');
+		expect(data[0].timeslotServiceProviders[0].labels[1].label).toBe('English');
 	});
 
 	it('one off timeslots should retrieve labels if applicable', async () => {
@@ -169,11 +177,15 @@ describe('Timeslots functional tests', () => {
 		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders.length).toBe(1);
 		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].capacity).toBe(1);
 
+		const data2 = service2TimeslotsResponse.body.data as TimeslotEntryResponse[];
+
 		expect(service2TimeslotsResponse.statusCode).toEqual(200);
-		expect(service2TimeslotsResponse.body.data[0].startTime).toEqual(START_TIME_2.toISOString());
-		expect(service2TimeslotsResponse.body.data[0].endTime).toEqual(END_TIME_2.toISOString());
-		expect(service2TimeslotsResponse.body.data[0].timeslotServiceProviders.length).toBe(1);
-		expect(service2TimeslotsResponse.body.data[0].timeslotServiceProviders[0].capacity).toBe(2);
+		expect(data2[0].timeslotServiceProviders[0].eventTitle).toBe(undefined);
+		expect(data2[0].timeslotServiceProviders[0].eventDescription).toBe(undefined);
+		expect(data2[0].startTime).toEqual(START_TIME_2.toISOString());
+		expect(data2[0].endTime).toEqual(END_TIME_2.toISOString());
+		expect(data2[0].timeslotServiceProviders.length).toBe(1);
+		expect(data2[0].timeslotServiceProviders[0].capacity).toBe(2);
 
 		expect(service3TimeslotsResponse.statusCode).toEqual(200);
 		expect(service3TimeslotsResponse.body.data[0].startTime).toEqual(START_TIME_3.toISOString());
@@ -276,17 +288,55 @@ describe('Timeslots functional tests', () => {
 
 		expect(availability1Response.statusCode).toEqual(200);
 		expect(availability1Response.body.data).toEqual([
-			{ availabilityCount: 1, startTime: '2021-03-05T01:00:00.000Z', endTime: '2021-03-05T02:00:00.000Z' },
+			{
+				availabilityCount: 1,
+				startTime: '2021-03-05T01:00:00.000Z',
+				endTime: '2021-03-05T02:00:00.000Z',
+				timeslotServiceProviders: [
+					{
+						eventDescription: 'my description',
+						eventTitle: 'my event',
+						serviceProvider: {
+							id: serviceProvider1.id,
+							name: 'SP1',
+						},
+					},
+				],
+			},
 		]);
 
 		expect(availability2Response.statusCode).toEqual(200);
 		expect(availability2Response.body.data).toEqual([
-			{ availabilityCount: 2, startTime: '2021-03-06T06:00:00.000Z', endTime: '2021-03-06T07:00:00.000Z' },
+			{
+				availabilityCount: 2,
+				startTime: '2021-03-06T06:00:00.000Z',
+				endTime: '2021-03-06T07:00:00.000Z',
+				timeslotServiceProviders: [
+					{
+						serviceProvider: {
+							id: serviceProvider2.id,
+							name: 'SP2',
+						},
+					},
+				],
+			},
 		]);
 
 		expect(availability3Response.statusCode).toEqual(200);
 		expect(availability3Response.body.data).toEqual([
-			{ availabilityCount: 3, startTime: '2021-03-07T07:00:00.000Z', endTime: '2021-03-07T08:00:00.000Z' },
+			{
+				availabilityCount: 3,
+				startTime: '2021-03-07T07:00:00.000Z',
+				endTime: '2021-03-07T08:00:00.000Z',
+				timeslotServiceProviders: [
+					{
+						serviceProvider: {
+							id: serviceProvider3.id,
+							name: 'SP3',
+						},
+					},
+				],
+			},
 		]);
 	});
 });
