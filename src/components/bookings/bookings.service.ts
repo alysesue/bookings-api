@@ -55,10 +55,6 @@ export class BookingsService {
 	@Inject
 	private usersService: UsersService;
 	@Inject
-	private bookingsSubject: BookingsSubject;
-	@Inject
-	private mailObserver: MailObserver;
-	@Inject
 	private bookingsMapper: BookingsMapper;
 
 	constructor() {

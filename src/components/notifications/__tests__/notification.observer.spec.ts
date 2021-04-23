@@ -50,7 +50,6 @@ describe('Test template call', () => {
 		booking = new Booking();
 		booking.startDateTime = new Date('2021-04-14T02:00:00.000Z');
 		booking.endDateTime = new Date('2021-04-14T03:00:00.000Z');
-		booking.service = ({ _name: 'Career' } as unknown) as Service;
 		booking.status = 1;
 		booking.citizenEmail = 'email@email.com';
 		booking.service = ({
@@ -61,7 +60,7 @@ describe('Test template call', () => {
 		booking.serviceProvider = { email: 'test' } as ServiceProvider;
 	});
 
-	it('should reject if not email citizen email', async () => {
+	it('should reject if not email citizen', async () => {
 		booking.citizenEmail = undefined;
 		const bookingSubject = new BookingsSubject();
 		bookingSubject.notify({ booking, bookingType: BookingType.Created });
@@ -78,8 +77,7 @@ describe('Test template call', () => {
 	});
 
 	it('should not send if template empty email', async () => {
-		booking.serviceProvider.email = undefined;
-
+		EmailBookingTemplateMock.CreatedBookingEmailMock.mockReturnValue(undefined);
 		const bookingSubject = new BookingsSubject();
 		bookingSubject.notify({ booking, bookingType: BookingType.Created });
 		await Container.get(MailObserver).update(bookingSubject);
@@ -128,5 +126,4 @@ describe('Test template call', () => {
 		expect(EmailBookingTemplateMock.CancelledBookingEmailMock).toHaveBeenCalledTimes(2);
 		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(2);
 	});
-
 });

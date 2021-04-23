@@ -48,7 +48,7 @@ export class NotificationsService {
 	};
 
 	private getEmailsFromOptions = (options: MailOptions) => {
-		return [options.from, ...(options.to as string[])];
+		return [options.from, ...options.to];
 	};
 
 	private validateEmails = (emails: string[]) => {

@@ -95,5 +95,4 @@ describe('Send email', () => {
 		const instance = await Container.get(NotificationsService);
 		await expect(instance.sendEmail(options)).rejects.toEqual(invalidEmailError);
 	});
-
 });

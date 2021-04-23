@@ -1,7 +1,7 @@
 import { emailLogger } from './logger';
 import * as nodemailer from 'nodemailer';
 import * as inLineCss from 'nodemailer-juice';
-import { getConfig } from "./app-config";
+import { getConfig } from './app-config';
 
 const config = getConfig();
 const smtp = {

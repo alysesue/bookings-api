@@ -43,7 +43,7 @@ import {
 	UnavailabilitiesServiceMock,
 	UsersServiceMock,
 } from '../__mocks__/bookings.mocks';
-import { ServiceProvidersService } from '../../../components/serviceProviders/serviceProviders.service';
+import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { UsersService } from '../../users/users.service';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
@@ -53,7 +53,6 @@ import { IPagedEntities } from '../../../core/pagedEntities';
 import { getConfig } from '../../../config/app-config';
 import { BookingsSubject } from '../bookings.subject';
 import { BookingsSubjectMock } from '../__mocks__/bookings.subject.mock';
-import { getConfigMock } from '../../../config/__mocks__/app-config.mock';
 import { MailObserver } from '../../notifications/notification.observer';
 import { MockObserver } from '../../../infrastructure/__mocks__/observer.mock';
 import { ServiceProvidersServiceMock } from '../../serviceProviders/__mocks__/serviceProviders.service.mock';
@@ -167,7 +166,9 @@ describe('Bookings.Service', () => {
 				return newBooking;
 			},
 		);
-		(getConfig as jest.Mock).mockReturnValue(getConfigMock());
+		(getConfig as jest.Mock).mockReturnValue({
+			isAutomatedTest: false,
+		});
 		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(service));
 		BookingChangeLogsServiceMock.action = 0;
 		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();

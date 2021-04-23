@@ -2,9 +2,7 @@ require('dotenv').config();
 import { ConfigUtils } from 'mol-lib-common';
 const packageJSON = require('../../package.json');
 
-export const getConfig = () => config;
-
-const config = {
+export const getConfig = () => ({
 	name: packageJSON.name,
 	version: packageJSON.version,
 	port: ConfigUtils.getIntValueFromEnv('PORT', 3000),
@@ -44,6 +42,6 @@ const config = {
 			sender: ConfigUtils.getValueFromEnv('MOL_SENDER_EMAIL', ''),
 		},
 	},
-};
+});
 
 export const basePath = '/bookingsg';
