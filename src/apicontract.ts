@@ -51,7 +51,7 @@ export class ApiDataFactory {
 		return new ApiData(data);
 	}
 
-	public static createBulk<T>(created: T, failedBookings: T): ApiDataBulk<T, T> {
+	public static createBulk<T, F>(created: T, failedBookings: F): ApiDataBulk<T, F> {
 		return new ApiDataBulk(created, failedBookings);
 	}
 

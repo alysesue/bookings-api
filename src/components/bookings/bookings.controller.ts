@@ -78,17 +78,17 @@ export class BookingsController extends Controller {
 		@Body() bookingRequests: BookingRequest[],
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiDataBulk<BookingResponse[], any[]>> {
-		const failedBookings = [];
-		let bookings = await Promise.all(
-			bookingRequests.map(async (bookingRequest) => {
-				try {
-					return await this.bookingsService.save(bookingRequest, serviceId, true);
-				} catch (error) {
-					failedBookings.push(new FailedRecord(bookingRequest, error.message));
-				}
-			}),
-		);
-		bookings = bookings.filter((x) => !!x);
+		const failedBookings: FailedRecord<BookingRequest, any>[] = [];
+		const bookings: Booking[] = [];
+
+		for (const bookingRequest of bookingRequests) {
+			try {
+				bookings.push(await this.bookingsService.save(bookingRequest, serviceId, true));
+			} catch (error) {
+				failedBookings.push(new FailedRecord(bookingRequest, error.message));
+			}
+		}
+
 		this.setStatus(201);
 		return ApiDataFactory.createBulk(
 			BookingsMapper.mapDataModels(bookings, await this.userContext.getSnapshot()),
