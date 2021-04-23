@@ -6,7 +6,10 @@ export type TimeslotServiceProviderResult = {
 	acceptedBookings: Booking[];
 	pendingBookings: Booking[];
 	availabilityCount: number;
-	labels: Label[];
+	oneOffTimeslotId?: number;
+	labels?: Label[];
+	title?: string;
+	description?: string;
 };
 
 export class TimeslotServiceProvider {
@@ -17,11 +20,10 @@ export class TimeslotServiceProvider {
 	private _isOverlapped: boolean;
 	private _isUnavailable: boolean;
 	private _isVisibleByUser: boolean;
-	private _labels: Label[];
-
-	public get labels(): Label[] {
-		return this._labels;
-	}
+	private readonly _oneOffTimeslotId?: number;
+	private readonly _labels?: Label[];
+	private readonly _title?: string;
+	private readonly _description?: string;
 
 	public get capacity(): number {
 		return this._capacity;
@@ -56,15 +58,43 @@ export class TimeslotServiceProvider {
 		return this._isVisibleByUser;
 	}
 
-	constructor(serviceProvider: ServiceProvider, capacity: number, labels?: Label[]) {
+	public get oneOffTimeslotId(): number | undefined {
+		return this._oneOffTimeslotId;
+	}
+
+	public get labels(): Label[] | undefined {
+		return this._labels;
+	}
+
+	public get title(): string | undefined {
+		return this._title;
+	}
+
+	public get description(): string | undefined {
+		return this._description;
+	}
+
+	constructor(
+		serviceProvider: ServiceProvider,
+		timeslotData: {
+			readonly capacity: number;
+			readonly oneOffTimeslotId?: number;
+			readonly labels?: Label[];
+			readonly title?: string;
+			readonly description?: string;
+		},
+	) {
 		this._serviceProvider = serviceProvider;
-		this._capacity = capacity;
+		this._capacity = timeslotData.capacity;
 		this._acceptedBookings = [];
 		this._pendingBookings = [];
 		this._isOverlapped = false;
 		this._isUnavailable = false;
 		this._isVisibleByUser = true;
-		this._labels = labels;
+		this._oneOffTimeslotId = timeslotData.oneOffTimeslotId;
+		this._labels = timeslotData.labels;
+		this._title = timeslotData.title;
+		this._description = timeslotData.description;
 	}
 
 	public getAvailabilityCount(maxAvailability?: number): number {

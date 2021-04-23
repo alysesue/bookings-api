@@ -63,7 +63,6 @@ export class TimeslotsService {
 				await nextImmediateTick();
 			}
 		}
-
 		return result;
 	}
 
@@ -237,7 +236,6 @@ export class TimeslotsService {
 
 		const result = Array.from(mappedEntries.values());
 		result.sort(TimeslotsService.sortAvailableTimeslotProviders);
-
 		return result;
 	}
 
