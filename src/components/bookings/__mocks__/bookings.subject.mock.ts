@@ -1,4 +1,4 @@
-import { Booking } from '../../../models/entities';
+import { Booking } from '../../../models';
 import { BookingsSubject } from '../bookings.subject';
 
 export class BookingsSubjectMock extends BookingsSubject {

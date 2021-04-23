@@ -17,6 +17,10 @@ import { ContainerContext } from '../../../infrastructure/containerContext.middl
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
 import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { BookingsSubject } from '../bookings.subject';
+import { BookingsSubjectMock } from '../__mocks__/bookings.subject.mock';
+import { MailObserver } from '../../notifications/notification.observer';
+import { MockObserver } from '../../../infrastructure/__mocks__/observer.mock';
 
 jest.mock('../../../models/uinFinConfiguration');
 
@@ -77,6 +81,8 @@ describe('Bookings.Controller', () => {
 	});
 
 	beforeAll(() => {
+		Container.bind(BookingsSubject).to(BookingsSubjectMock);
+		Container.bind(MailObserver).to(MockObserver);
 		Container.bind(BookingsService).to(BookingsServiceMock);
 		Container.bind(TimeslotsService).factory(() => TimeslotsServiceMock);
 		Container.bind(CaptchaService).to(CaptchaServiceMock);

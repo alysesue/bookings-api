@@ -1,8 +1,8 @@
-import { IObserver, ISubject } from '../observer';
+import { Observer } from '../observer';
 
-export class MockObserver implements IObserver {
+export class MockObserver implements Observer {
 	public updateMock = jest.fn();
-	public update(publisher: ISubject<any>): void {
-		this.updateMock();
+	public update(...params): void {
+		this.updateMock(...params);
 	}
 }

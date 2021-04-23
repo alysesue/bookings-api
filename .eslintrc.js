@@ -178,6 +178,7 @@ module.exports = {
         "no-underscore-dangle": "off",	// turned off
         "no-unsafe-finally": "error",
         "no-unused-labels": "error",
+		"no-useless-escape": "off",
         "no-var": "error",
         "object-shorthand": "error",
         "one-var": [
