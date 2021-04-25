@@ -15,7 +15,7 @@ describe('service/services.mapper', () => {
 		serviceData.id = 1;
 		serviceData.name = 'name';
 		serviceData.isStandAlone = false;
-		serviceData.emailDomain = 'abc.com';
+		serviceData.emailSuffix = 'abc.com';
 
 		const labelResponse = new LabelResponseModel();
 		labelResponse.id = '1';
@@ -27,7 +27,7 @@ describe('service/services.mapper', () => {
 
 		expect(serviceResponse.name).toBe('name');
 		expect(serviceResponse.labels[0].label).toBe('text');
-		expect(serviceResponse.emailDomain).toBe('abc.com');
+		expect(serviceResponse.emailSuffix).toBe('abc.com');
 	});
 });
 

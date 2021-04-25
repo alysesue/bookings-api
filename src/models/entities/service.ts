@@ -116,7 +116,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		orga: Organisation,
 		isSpAutoAssigned = false,
 		labels: Label[] = [],
-		emailDomain?: string,
+		emailSuffix?: string,
 	) {
 		const service = new Service();
 		service._name = name.trim();
@@ -130,7 +130,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 			),
 		);
 		service.labels = labels;
-		service._emailDomain = emailDomain;
+		service._emailSuffix = emailSuffix;
 		return service;
 	}
 
@@ -207,13 +207,13 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	}
 
 	@Column({ nullable: true })
-	private _emailDomain?: string;
+	private _emailSuffix?: string;
 
-	public get emailDomain(): string {
-		return this._emailDomain;
+	public get emailSuffix(): string {
+		return this._emailSuffix;
 	}
 
-	public set emailDomain(value: string) {
-		this._emailDomain = value;
+	public set emailSuffix(value: string) {
+		this._emailSuffix = value;
 	}
 }

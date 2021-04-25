@@ -14,7 +14,7 @@ export class ServicesMapper {
 		serviceResponse.isStandAlone = service.isStandAlone;
 		serviceResponse.isSpAutoAssigned = service.isSpAutoAssigned;
 		serviceResponse.labels = this.labelsMapper.mapToLabelsResponse(service.labels);
-		serviceResponse.emailDomain = service.emailDomain;
+		serviceResponse.emailSuffix = service.emailSuffix;
 		return serviceResponse;
 	}
 }
