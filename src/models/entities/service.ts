@@ -206,7 +206,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		this._sendNotificationsToServiceProviders = value;
 	}
 
-	@Column({ nullable: true })
+	@Column({ type: 'varchar', length: 100, nullable: true })
 	private _emailSuffix?: string;
 
 	public get emailSuffix(): string {
