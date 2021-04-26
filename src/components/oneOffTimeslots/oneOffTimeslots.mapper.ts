@@ -10,7 +10,7 @@ export class OneOffTimeslotsMapper {
 	@Inject
 	private labelMapper: LabelsMapper;
 
-	public static mapToOneOffTimeslots(
+	public mapToOneOffTimeslots(
 		request: OneOffTimeslotRequest,
 		serviceProvider: ServiceProvider,
 		labels?: Label[],
@@ -24,6 +24,9 @@ export class OneOffTimeslotsMapper {
 		entity.labels = labels;
 		entity.title = request.title ?? undefined;
 		entity.description = request.description ?? undefined;
+		if (request.idSigned) {
+			entity.id = this.idHasher.decode(request.idSigned);
+		}
 
 		return entity;
 	}

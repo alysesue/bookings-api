@@ -22,6 +22,8 @@ export class OneOffTimeslotsService {
 	private labelsService: LabelsService;
 	@Inject
 	private oneOffTimeslotsValidation: OneOffTimeslotsValidation;
+	@Inject
+	private mapper: OneOffTimeslotsMapper;
 
 	private async verifyActionPermission(entity: OneOffTimeslot): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
@@ -35,7 +37,7 @@ export class OneOffTimeslotsService {
 	public async save(request: OneOffTimeslotRequest): Promise<OneOffTimeslot> {
 		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
 		const labels = await this.labelsService.verifyLabels(request.labelIds, serviceProvider.serviceId);
-		const entity = OneOffTimeslotsMapper.mapToOneOffTimeslots(request, serviceProvider, labels);
+		const entity = this.mapper.mapToOneOffTimeslots(request, serviceProvider, labels);
 		await this.oneOffTimeslotsValidation.validate(entity);
 		await this.verifyActionPermission(entity);
 		await this.oneOffTimeslotsRepo.save(entity);
