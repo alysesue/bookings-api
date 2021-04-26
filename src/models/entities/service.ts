@@ -64,7 +64,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		this._name = name;
 	}
 
-	public get name() {
+	public get name(): string {
 		return this._name;
 	}
 
@@ -176,4 +176,26 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	@OneToMany(() => Label, (label) => label.service, { cascade: true })
 	// @OneToMany(() => Label, 'services', { cascade: true, lazy: true })
 	public labels: Label[];
+
+	@Column({ nullable: false, default: false })
+	private _sendNotifications: boolean;
+
+	public get sendNotifications(): boolean {
+		return this._sendNotifications;
+	}
+
+	public set sendNotifications(value: boolean) {
+		this._sendNotifications = value;
+	}
+
+	@Column({ nullable: false, default: false })
+	private _sendNotificationsToServiceProviders: boolean;
+
+	public get sendNotificationsToServiceProviders(): boolean {
+		return this._sendNotificationsToServiceProviders;
+	}
+
+	public set sendNotificationsToServiceProviders(value: boolean) {
+		this._sendNotificationsToServiceProviders = value;
+	}
 }

@@ -40,7 +40,7 @@ describe('Timeslots functional tests', () => {
 		done();
 	});
 
-	it('adding labels to populate one off timeslots', async () => {
+	it('should add one off timeslots with labels', async () => {
 		const response = await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
@@ -59,10 +59,34 @@ describe('Timeslots functional tests', () => {
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
 			capacity: 1,
+		});
+		const { idSigned, ...obj } = service1TimeslotsResponse;
+		expect(obj).toEqual({
+			capacity: 1,
+			startDateTime: '2021-03-05T01:00:00.000Z',
+			endDateTime: '2021-03-05T02:00:00.000Z',
+			labels: [],
+		});
+	});
+
+	it('should add oneOffTimeslots with title/description', async () => {
+		const service1TimeslotsResponse = await populateOneOffTimeslot({
+			serviceProviderId: serviceProvider1.id,
+			startTime: START_TIME_1,
+			endTime: END_TIME_1,
+			capacity: 1,
 			title: 'Title',
 			description: 'Description',
 		});
-		expect(service1TimeslotsResponse.title).toBeDefined();
+		const { idSigned, ...obj } = service1TimeslotsResponse;
+		expect(obj).toEqual({
+			capacity: 1,
+			startDateTime: '2021-03-05T01:00:00.000Z',
+			endDateTime: '2021-03-05T02:00:00.000Z',
+			labels: [],
+			title: 'Title',
+			description: 'Description',
+		});
 	});
 
 	it('should return error when oneOffTimeslots incorrect', async () => {

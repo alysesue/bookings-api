@@ -19,6 +19,8 @@ import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 import { BookingsSubject } from '../bookings.subject';
 import { BookingsSubjectMock } from '../__mocks__/bookings.subject.mock';
+import { MailObserver } from '../../notifications/notification.observer';
+import { MockObserver } from '../../../infrastructure/__mocks__/observer.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -70,6 +72,7 @@ describe('Booking Integration tests', () => {
 		Container.bind(BookingChangeLogsService).to(BookingChangeLogsServiceMock);
 		Container.bind(ServicesService).to(ServicesServiceMock);
 		Container.bind(BookingsSubject).to(BookingsSubjectMock);
+		Container.bind(MailObserver).to(MockObserver);
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = provider;
 		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();

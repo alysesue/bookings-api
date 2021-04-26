@@ -1,6 +1,7 @@
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import {
 	AvailabilityEntryResponse,
+	CitizenTimeslotServiceProviderResponse,
 	TimeslotEntryResponse,
 	TimeslotServiceProviderResponse,
 } from './timeslots.apicontract';
@@ -35,10 +36,15 @@ export class TimeslotsMapper {
 			return undefined;
 		}
 
+		const [timeslotServiceProviders] = this.mapCitizenTimeslotServiceProviders(
+			Array.from(entry.getTimeslotServiceProviders()),
+		);
+
 		const response = new AvailabilityEntryResponse();
 		response.startTime = new Date(entry.startTime);
 		response.endTime = new Date(entry.endTime);
 		response.availabilityCount = availabilityCount;
+		response.timeslotServiceProviders = timeslotServiceProviders;
 		return response;
 	}
 
@@ -77,6 +83,26 @@ export class TimeslotsMapper {
 		return [res, totalCapacity, totalAssignedBookings];
 	}
 
+	public mapCitizenTimeslotServiceProviders(
+		entries: TimeslotServiceProviderResult[],
+	): [CitizenTimeslotServiceProviderResponse[]] {
+		const res = entries.map((entry) => {
+			const item = this.mapCitizenServiceProviderTimeslot(entry);
+			return item;
+		});
+		return [res];
+	}
+
+	private mapCitizenServiceProviderTimeslot(
+		entry: TimeslotServiceProviderResult,
+	): CitizenTimeslotServiceProviderResponse {
+		const item = new CitizenTimeslotServiceProviderResponse();
+		item.serviceProvider = new ServiceProviderSummaryModel(entry.serviceProvider.id, entry.serviceProvider.name);
+		item.eventTitle = entry.title ?? undefined;
+		item.eventDescription = entry.description ?? undefined;
+		return item;
+	}
+
 	private mapServiceProviderTimeslot(
 		entry: TimeslotServiceProviderResult,
 		userContext: UserContextSnapshot,
@@ -92,8 +118,10 @@ export class TimeslotsMapper {
 		item.pendingBookings = entry.pendingBookings.map((booking) => {
 			return this.bookingsMapper.mapDataModel(booking, userContext);
 		});
+		item.oneOffTimeslotId = entry.oneOffTimeslotId;
 		item.labels = this.labelsMapper.mapToLabelsResponse(entry.labels);
-
+		item.eventTitle = entry.title ?? undefined;
+		item.eventDescription = entry.description ?? undefined;
 		return item;
 	}
 }

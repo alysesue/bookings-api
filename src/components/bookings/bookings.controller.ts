@@ -31,7 +31,7 @@ import { BookingsMapper } from './bookings.mapper';
 import { ApiData, ApiDataBulk, ApiDataFactory, ApiPagedData, FailedRecord } from '../../apicontract';
 import { KoaContextStore } from '../../infrastructure/koaContextStore.middleware';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { Booking } from '../../models/entities';
+import { Booking } from '../../models';
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
 
@@ -80,17 +80,17 @@ export class BookingsController extends Controller {
 		@Body() bookingRequests: BookingRequest[],
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiDataBulk<BookingResponse[], any[]>> {
-		const failedBookings = [];
-		let bookings = await Promise.all(
-			bookingRequests.map(async (bookingRequest) => {
-				try {
-					return await this.bookingsService.save(bookingRequest, serviceId, true);
-				} catch (error) {
-					failedBookings.push(new FailedRecord(bookingRequest, error.message));
-				}
-			}),
-		);
-		bookings = bookings.filter((x) => !!x);
+		const failedBookings: FailedRecord<BookingRequest, any>[] = [];
+		const bookings: Booking[] = [];
+
+		for (const bookingRequest of bookingRequests) {
+			try {
+				bookings.push(await this.bookingsService.save(bookingRequest, serviceId, true));
+			} catch (error) {
+				failedBookings.push(new FailedRecord(bookingRequest, error.message));
+			}
+		}
+
 		this.setStatus(201);
 		return ApiDataFactory.createBulk(
 			this.bookingsMapper.mapDataModels(bookings, await this.userContext.getSnapshot()),
