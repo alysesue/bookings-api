@@ -52,7 +52,7 @@ export class OneOffTimeslotsQueryAuthVisitor extends QueryAuthGroupVisitor {
 }
 
 export class OneOffTimeslotsActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
-	private _oneOffTimeslot: OneOffTimeslot;
+	private readonly _oneOffTimeslot: OneOffTimeslot;
 
 	constructor(oneOffTimeslot: OneOffTimeslot) {
 		super();

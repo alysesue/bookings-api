@@ -107,10 +107,30 @@ describe('One off timeslots Controller test', () => {
 	});
 });
 
+it('should delete one off timeslot', async () => {
+	const oneOffTimeslots = new OneOffTimeslot();
+	oneOffTimeslots.id = 1;
+	oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
+	oneOffTimeslots.endDateTime = new Date('2021-03-02T02:00:00Z');
+	oneOffTimeslots.capacity = 1;
+	IdHasherMock.encode.mockImplementation(() => {
+		return 'A';
+	});
+
+	const controller = Container.get(OneOffTimeslotsController);
+	await controller.deleteOneOffTimeslot('1');
+
+	expect(OneOffTimeslotsServiceMock.delete).toHaveBeenCalled();
+});
+
 class OneOffTimeslotsServiceMock implements Partial<OneOffTimeslotsService> {
 	public static save = jest.fn();
+	public static delete = jest.fn();
 	public async save(...params): Promise<any> {
 		return OneOffTimeslotsServiceMock.save(...params);
+	}
+	public async delete(...params): Promise<any> {
+		return OneOffTimeslotsServiceMock.delete(...params);
 	}
 }
 

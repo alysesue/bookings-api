@@ -1,5 +1,5 @@
 import { Inject } from 'typescript-ioc';
-import { Body, Controller, Post, Response, Route, SuccessResponse, Tags } from 'tsoa';
+import { Body, Controller, Delete, Path, Post, Response, Route, SuccessResponse, Tags } from 'tsoa';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { OneOffTimeslotRequest, OneOffTimeslotResponse } from './oneOffTimeslots.apicontract';
 import { OneOffTimeslotsService } from './oneOffTimeslots.service';
@@ -14,6 +14,11 @@ export class OneOffTimeslotsController extends Controller {
 	@Inject
 	private mapper: OneOffTimeslotsMapper;
 
+	/**
+	 * Creates a one-off timeslot
+	 * @body request Details of the one-off timeslot to be created.
+	 **/
+
 	@Post()
 	@SuccessResponse(201, 'Created')
 	@MOLAuth({ admin: {}, agency: {} })
@@ -22,5 +27,18 @@ export class OneOffTimeslotsController extends Controller {
 		const timeslot = await this.oneOffTimeslotsService.save(request);
 		this.setStatus(201);
 		return ApiDataFactory.create(this.mapper.mapDataModel(timeslot));
+	}
+
+	/**
+	 * Deletes a one-off timeslot
+	 * @Path id The ID of the unavailability.
+	 **/
+
+	@Delete('{id}')
+	@SuccessResponse(204, 'Deleted')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async deleteOneOffTimeslot(@Path() id: string): Promise<void> {
+		await this.oneOffTimeslotsService.delete(id);
 	}
 }
