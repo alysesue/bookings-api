@@ -11,6 +11,7 @@ import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProvider
 import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
 import { LabelsMapper } from '../../components/labels/labels.mapper';
 import { Inject, InRequestScope } from 'typescript-ioc';
+import { IdHasher } from '../../infrastructure/idHasher';
 
 @InRequestScope
 export class TimeslotsMapper {
@@ -19,6 +20,9 @@ export class TimeslotsMapper {
 
 	@Inject
 	public labelsMapper: LabelsMapper;
+
+	@Inject
+	public idHasher: IdHasher;
 
 	public mapAvailabilityToResponse(
 		entries: AvailableTimeslotProviders[],
@@ -118,7 +122,9 @@ export class TimeslotsMapper {
 		item.pendingBookings = entry.pendingBookings.map((booking) => {
 			return this.bookingsMapper.mapDataModel(booking, userContext);
 		});
-		item.oneOffTimeslotId = entry.oneOffTimeslotId;
+		if (entry.oneOffTimeslotId) {
+			item.oneOffTimeslotId = this.idHasher.encode(entry.oneOffTimeslotId);
+		}
 		item.labels = this.labelsMapper.mapToLabelsResponse(entry.labels);
 		item.eventTitle = entry.title ?? undefined;
 		item.eventDescription = entry.description ?? undefined;
