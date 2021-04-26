@@ -36,7 +36,7 @@ describe('Tests endpoint and populate data', () => {
 
 	it('Post service with SP autoAssigned', async () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
-			body: { name: SERVICE_NAME, isSpAutoAssigned: true},
+			body: { name: SERVICE_NAME, isSpAutoAssigned: true },
 		});
 		expect(response.statusCode).toEqual(200);
 		expect(response.body.data.isSpAutoAssigned).toBe(true);

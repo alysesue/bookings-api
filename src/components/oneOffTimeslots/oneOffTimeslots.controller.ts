@@ -16,9 +16,8 @@ export class OneOffTimeslotsController extends Controller {
 
 	/**
 	 * Creates a one-off timeslot
-	 * @body request Details of the one-off timeslot to be created.
-	 **/
-
+	 * @param request Details of the one-off timeslot to be created.
+	 */
 	@Post()
 	@SuccessResponse(201, 'Created')
 	@MOLAuth({ admin: {}, agency: {} })
@@ -31,9 +30,8 @@ export class OneOffTimeslotsController extends Controller {
 
 	/**
 	 * Deletes a one-off timeslot
-	 * @Path id The ID of the unavailability.
-	 **/
-
+	 * @param id The ID of the one-off timeslot to be deleted.
+	 */
 	@Delete('{id}')
 	@SuccessResponse(204, 'Deleted')
 	@MOLAuth({ admin: {}, agency: {} })

@@ -105,22 +105,15 @@ describe('One off timeslots Controller test', () => {
 			},
 		});
 	});
-});
 
-it('should delete one off timeslot', async () => {
-	const oneOffTimeslots = new OneOffTimeslot();
-	oneOffTimeslots.id = 1;
-	oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
-	oneOffTimeslots.endDateTime = new Date('2021-03-02T02:00:00Z');
-	oneOffTimeslots.capacity = 1;
-	IdHasherMock.encode.mockImplementation(() => {
-		return 'A';
+	it('should delete one off timeslot', async () => {
+		OneOffTimeslotsServiceMock.delete.mockReturnValue(Promise.resolve());
+
+		const controller = Container.get(OneOffTimeslotsController);
+		await controller.deleteOneOffTimeslot('id');
+
+		expect(OneOffTimeslotsServiceMock.delete).toHaveBeenCalledWith('id');
 	});
-
-	const controller = Container.get(OneOffTimeslotsController);
-	await controller.deleteOneOffTimeslot('1');
-
-	expect(OneOffTimeslotsServiceMock.delete).toHaveBeenCalled();
 });
 
 class OneOffTimeslotsServiceMock implements Partial<OneOffTimeslotsService> {
