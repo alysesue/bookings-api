@@ -66,8 +66,6 @@ describe('Timeslots functional tests', () => {
 			startDateTime: '2021-03-05T01:00:00.000Z',
 			endDateTime: '2021-03-05T02:00:00.000Z',
 			labels: [],
-			title: null,
-			description: null,
 		});
 	});
 
