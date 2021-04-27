@@ -1,10 +1,6 @@
 import { LabelResponseModel } from '../labels/label.apicontract';
 
 export class OneOffTimeslotRequest {
-	/**
-	 * @ignore
-	 */
-	public idSigned?: string;
 	public startDateTime: Date;
 	public endDateTime: Date;
 	/**

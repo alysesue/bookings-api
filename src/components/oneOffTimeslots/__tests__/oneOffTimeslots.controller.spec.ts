@@ -123,7 +123,7 @@ describe('One off timeslots Controller test', () => {
 		oneOffTimeslots.title = 'test title';
 		oneOffTimeslots.description = 'test description';
 
-		OneOffTimeslotsServiceMock.save.mockReturnValue(Promise.resolve(oneOffTimeslots));
+		OneOffTimeslotsServiceMock.update.mockReturnValue(Promise.resolve(oneOffTimeslots));
 		IdHasherMock.encode.mockImplementation(() => {
 			return 'A';
 		});
@@ -138,7 +138,7 @@ describe('One off timeslots Controller test', () => {
 		const controller = Container.get(OneOffTimeslotsController);
 		const result = await controller.update('1', request);
 
-		expect(OneOffTimeslotsServiceMock.save).toHaveBeenCalled();
+		expect(OneOffTimeslotsServiceMock.update).toHaveBeenCalled();
 		expect(result).toBeDefined();
 		expect(result).toEqual({
 			data: {

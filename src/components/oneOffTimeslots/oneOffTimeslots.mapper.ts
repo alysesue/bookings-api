@@ -24,11 +24,23 @@ export class OneOffTimeslotsMapper {
 		entity.labels = labels;
 		entity.title = request.title ?? undefined;
 		entity.description = request.description ?? undefined;
-		if (request.idSigned) {
-			entity.id = this.idHasher.decode(request.idSigned);
-		}
 
 		return entity;
+	}
+
+	public updateMapToOneOffTimeslots(
+		request: OneOffTimeslotRequest,
+		entity: OneOffTimeslot,
+		serviceProvider: ServiceProvider,
+		labels?: Label[],
+	) {
+		entity.serviceProvider = serviceProvider;
+		entity.startDateTime = request.startDateTime;
+		entity.endDateTime = request.endDateTime;
+		entity.capacity = request.capacity;
+		entity.labels = labels;
+		entity.title = request.title ?? undefined;
+		entity.description = request.description ?? undefined;
 	}
 
 	public mapDataModel(timeslot: OneOffTimeslot): OneOffTimeslotResponse {
