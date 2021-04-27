@@ -105,12 +105,25 @@ describe('One off timeslots Controller test', () => {
 			},
 		});
 	});
+
+	it('should delete one off timeslot', async () => {
+		OneOffTimeslotsServiceMock.delete.mockReturnValue(Promise.resolve());
+
+		const controller = Container.get(OneOffTimeslotsController);
+		await controller.deleteOneOffTimeslot('id');
+
+		expect(OneOffTimeslotsServiceMock.delete).toHaveBeenCalledWith('id');
+	});
 });
 
 class OneOffTimeslotsServiceMock implements Partial<OneOffTimeslotsService> {
 	public static save = jest.fn();
+	public static delete = jest.fn();
 	public async save(...params): Promise<any> {
 		return OneOffTimeslotsServiceMock.save(...params);
+	}
+	public async delete(...params): Promise<any> {
+		return OneOffTimeslotsServiceMock.delete(...params);
 	}
 }
 
