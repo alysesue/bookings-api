@@ -239,3 +239,37 @@ export const populateOneOffTimeslot = async ({
 	});
 	return response.body.data;
 };
+
+export const updateOneOffTimeslot = async ({
+	serviceProviderId,
+	startTime,
+	endTime,
+	capacity,
+	labelIds,
+	title,
+	description,
+	idSigned,
+}: {
+	serviceProviderId: number;
+	startTime: Date;
+	endTime: Date;
+	capacity: number;
+	labelIds?: string[];
+	title?: string;
+	description?: string;
+	idSigned: string;
+}): Promise<OneOffTimeslotResponse> => {
+	const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/oneOffTimeslots/${idSigned}`, {
+		body: {
+			startDateTime: startTime,
+			endDateTime: endTime,
+			capacity,
+			serviceProviderId,
+			title,
+			description,
+			labelIds,
+			idSigned,
+		},
+	});
+	return response.body.data;
+};

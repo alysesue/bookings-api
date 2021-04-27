@@ -111,36 +111,4 @@ describe('Timeslots functional tests', () => {
 			expect(e.message).toStrictEqual(res);
 		}
 	});
-
-	it('should update oneOffTimeslots', async () => {
-		const service1TimeslotsResponse = await populateOneOffTimeslot({
-			serviceProviderId: serviceProvider1.id,
-			startTime: START_TIME_1,
-			endTime: END_TIME_1,
-			capacity: 1,
-			title: 'Title',
-			description: 'Description',
-		});
-
-		const { idSigned } = service1TimeslotsResponse;
-		const service1TimeslotsUpdatedResponse = await populateOneOffTimeslot({
-			serviceProviderId: serviceProvider1.id,
-			startTime: START_TIME_1,
-			endTime: END_TIME_1,
-			capacity: 5,
-			title: 'Title Changed',
-			description: 'Description Changed',
-			idSigned,
-		});
-
-		expect(service1TimeslotsUpdatedResponse).toEqual({
-			capacity: 5,
-			startDateTime: '2021-03-05T01:00:00.000Z',
-			endDateTime: '2021-03-05T02:00:00.000Z',
-			labels: [],
-			title: 'Title Changed',
-			description: 'Description Changed',
-			idSigned,
-		});
-	});
 });
