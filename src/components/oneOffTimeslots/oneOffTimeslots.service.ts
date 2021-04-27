@@ -43,4 +43,13 @@ export class OneOffTimeslotsService {
 		await this.oneOffTimeslotsRepo.save(entity);
 		return entity;
 	}
+
+	public async delete(id: string): Promise<void> {
+		const entity = await this.oneOffTimeslotsRepo.getById({ id });
+		if (!entity) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`One off timeslot not found`);
+		}
+		await this.verifyActionPermission(entity);
+		await this.oneOffTimeslotsRepo.delete(id);
+	}
 }

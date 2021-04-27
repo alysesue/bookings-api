@@ -10,8 +10,8 @@ import { Booking, Service } from '../../../../models';
 
 describe('Notification templates tests', () => {
 	const booking = new Booking();
-	booking.startDateTime = new Date('2021-04-14T02:00:00.000Z');
-	booking.endDateTime = new Date('2021-04-14T03:00:00.000Z');
+	booking.startDateTime = new Date(2021, 3, 14, 10);
+	booking.endDateTime = new Date(2021, 3, 14, 11);
 	booking.service = { name: 'Career' } as Service;
 	booking.status = 1;
 	booking.location = 'Some street';

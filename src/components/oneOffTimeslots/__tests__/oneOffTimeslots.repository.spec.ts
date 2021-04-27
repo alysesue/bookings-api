@@ -66,7 +66,7 @@ describe('oneOffTimeslots repository tests', () => {
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const repository = Container.get(OneOffTimeslotsRepository);
-		const result = await repository.getById({ id: 2 });
+		const result = await repository.getById({ id: '2' });
 		expect(result).toBeDefined();
 		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
 		expect(queryBuilderMock.getOne).toBeCalled();
@@ -126,7 +126,7 @@ describe('oneOffTimeslots repository tests', () => {
 
 	it('should delete timeslot', async () => {
 		const repository = Container.get(OneOffTimeslotsRepository);
-		await repository.delete(new OneOffTimeslot());
+		await repository.delete('1');
 		expect(TransactionManagerMock.delete).toBeCalled();
 	});
 });

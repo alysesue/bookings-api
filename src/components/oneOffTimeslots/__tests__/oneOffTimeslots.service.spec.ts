@@ -85,6 +85,22 @@ describe('OneOffTimeslots Service Tests', () => {
 			'"User cannot perform this action for this one off timeslot."',
 		);
 	});
+
+	it('should delete one off timeslots', async () => {
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
+		oneOffTimeslots.endDateTime = new Date('2021-03-02T02:00:00Z');
+		oneOffTimeslots.capacity = 1;
+		OneOffTimeslotsRepositoryMock.getById.mockReturnValue(oneOffTimeslots);
+		OneOffTimeslotsRepositoryMock.delete.mockReturnValue(Promise.resolve());
+
+		const service = Container.get(OneOffTimeslotsService);
+		await service.delete('1');
+
+		expect(OneOffTimeslotsRepositoryMock.getById).toBeCalled();
+		expect(OneOffTimeslotsRepositoryMock.delete).toBeCalledWith('1');
+	});
 });
 
 class ServiceProvidersServiceMock implements Partial<ServiceProvidersService> {
@@ -97,9 +113,19 @@ class ServiceProvidersServiceMock implements Partial<ServiceProvidersService> {
 
 class OneOffTimeslotsRepositoryMock implements Partial<OneOffTimeslotsRepository> {
 	public static save = jest.fn();
+	public static delete = jest.fn();
+	public static getById = jest.fn();
 
 	public async save(...params): Promise<any> {
 		return OneOffTimeslotsRepositoryMock.save(...params);
+	}
+
+	public async delete(...params): Promise<any> {
+		return OneOffTimeslotsRepositoryMock.delete(...params);
+	}
+
+	public async getById(...params): Promise<any> {
+		return OneOffTimeslotsRepositoryMock.getById(...params);
 	}
 }
 
