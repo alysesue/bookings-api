@@ -90,7 +90,7 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 		return await query.getMany();
 	}
 
-	public async delete(id: string): Promise<void> {
+	public async delete(id: number): Promise<void> {
 		const repository = await this.getRepository();
 		await repository.delete(id);
 	}

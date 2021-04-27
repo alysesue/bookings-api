@@ -16,14 +16,7 @@ export class OneOffTimeslotsMapper {
 		labels?: Label[],
 	): OneOffTimeslot {
 		const entity = new OneOffTimeslot();
-		entity.serviceProvider = serviceProvider;
-		entity.serviceProviderId = serviceProvider.id;
-		entity.startDateTime = request.startDateTime;
-		entity.endDateTime = request.endDateTime;
-		entity.capacity = request.capacity;
-		entity.labels = labels;
-		entity.title = request.title ?? undefined;
-		entity.description = request.description ?? undefined;
+		this.updateMapToOneOffTimeslots(request, entity, serviceProvider, labels);
 
 		return entity;
 	}

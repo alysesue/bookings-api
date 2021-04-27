@@ -120,12 +120,13 @@ describe('OneOffTimeslots Service Tests', () => {
 		oneOffTimeslots.capacity = 1;
 		OneOffTimeslotsRepositoryMock.getById.mockReturnValue(oneOffTimeslots);
 		OneOffTimeslotsRepositoryMock.delete.mockReturnValue(Promise.resolve());
+		IdHasherMock.decode.mockReturnValue(1);
 
 		const service = Container.get(OneOffTimeslotsService);
 		await service.delete('1');
 
 		expect(OneOffTimeslotsRepositoryMock.getById).toBeCalled();
-		expect(OneOffTimeslotsRepositoryMock.delete).toBeCalledWith('1');
+		expect(OneOffTimeslotsRepositoryMock.delete).toBeCalledWith(1);
 	});
 });
 

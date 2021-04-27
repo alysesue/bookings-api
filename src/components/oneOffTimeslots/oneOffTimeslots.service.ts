@@ -64,8 +64,9 @@ export class OneOffTimeslotsService {
 		return entity;
 	}
 
-	public async delete(id: string): Promise<void> {
-		const entity = await this.oneOffTimeslotsRepo.getById({ id: parseInt(id, 10) });
+	public async delete(idSigned: string): Promise<void> {
+		const id = this.idHasher.decode(idSigned);
+		const entity = await this.oneOffTimeslotsRepo.getById({ id });
 		if (!entity) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`One off timeslot not found`);
 		}
