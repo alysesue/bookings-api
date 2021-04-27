@@ -44,12 +44,30 @@ export class OneOffTimeslotsService {
 		return entity;
 	}
 
-	public async delete(id: string): Promise<void> {
+	public async getOne(id: number): Promise<OneOffTimeslot> {
+		const oneOffTimeslot = await this.oneOffTimeslotsRepo.getById({ id });
+		if (!oneOffTimeslot) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('One off timeslot not found');
+		}
+		return oneOffTimeslot;
+	}
+
+	private async loadOneOffTimeslotDependencies(oneOffTimeslot: OneOffTimeslot): Promise<OneOffTimeslot> {
+		if (!oneOffTimeslot.serviceProvider && oneOffTimeslot.serviceProviderId) {
+			oneOffTimeslot.serviceProvider = await this.serviceProvidersService.getServiceProvider(
+				oneOffTimeslot.serviceProviderId,
+			);
+		}
+		return oneOffTimeslot;
+	}
+
+	public async delete(id: number): Promise<void> {
 		const entity = await this.oneOffTimeslotsRepo.getById({ id });
 		if (!entity) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`One off timeslot not found`);
 		}
+		await this.loadOneOffTimeslotDependencies(entity);
 		await this.verifyActionPermission(entity);
-		await this.oneOffTimeslotsRepo.delete(id);
+		await this.oneOffTimeslotsRepo.delete(entity);
 	}
 }

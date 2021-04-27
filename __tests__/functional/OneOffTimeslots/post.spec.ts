@@ -1,6 +1,11 @@
 import { PgClient } from '../../utils/pgClient';
 
-import { populateOneOffTimeslot, populateServiceLabel, populateUserServiceProvider } from '../../populate/basic';
+import {
+	deleteOneOffTimeslot,
+	populateOneOffTimeslot,
+	populateServiceLabel,
+	populateUserServiceProvider
+} from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import { ServiceResponse } from '../../../src/components/services/service.apicontract';
 
@@ -110,5 +115,19 @@ describe('Timeslots functional tests', () => {
 			];
 			expect(e.message).toStrictEqual(res);
 		}
+	});
+
+	it('should delete one off timeslot', async () => {
+		const service1TimeslotsResponse = await populateOneOffTimeslot({
+			serviceProviderId: serviceProvider1.id,
+			startTime: START_TIME_1,
+			endTime: END_TIME_1,
+			capacity: 1,
+			title: 'Title',
+			description: 'Description',
+		});
+		const { idSigned } = service1TimeslotsResponse;
+		const response = await deleteOneOffTimeslot(idSigned);
+		expect(response.statusCode).toEqual(204);
 	});
 });

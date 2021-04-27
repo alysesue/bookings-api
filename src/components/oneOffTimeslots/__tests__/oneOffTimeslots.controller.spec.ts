@@ -108,10 +108,14 @@ describe('One off timeslots Controller test', () => {
 	it('should delete one off timeslot', async () => {
 		OneOffTimeslotsServiceMock.delete.mockReturnValue(Promise.resolve());
 
-		const controller = Container.get(OneOffTimeslotsController);
-		await controller.deleteOneOffTimeslot('id');
+		IdHasherMock.decode.mockImplementation(() => {
+			return 1;
+		});
 
-		expect(OneOffTimeslotsServiceMock.delete).toHaveBeenCalledWith('id');
+		const controller = Container.get(OneOffTimeslotsController);
+		await controller.deleteOneOffTimeslot('1');
+
+		expect(OneOffTimeslotsServiceMock.delete).toHaveBeenCalledWith(1);
 	});
 
 	it('should update oneOffTimeslots', async () => {
@@ -174,7 +178,11 @@ class OneOffTimeslotsServiceMock implements Partial<OneOffTimeslotsService> {
 
 class IdHasherMock implements Partial<IdHasher> {
 	public static encode = jest.fn();
+	public static decode = jest.fn();
 	public encode(id: number): string {
 		return IdHasherMock.encode();
+	}
+	public decode(id: string): number {
+		return IdHasherMock.decode();
 	}
 }

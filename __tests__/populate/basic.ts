@@ -273,3 +273,7 @@ export const updateOneOffTimeslot = async ({
 	});
 	return response.body.data;
 };
+
+export const deleteOneOffTimeslot = async (idSigned: string): Promise<any> => {
+	return await OrganisationAdminRequestEndpointSG.create({}).delete(`/oneOffTimeslots/${idSigned}`);
+};
