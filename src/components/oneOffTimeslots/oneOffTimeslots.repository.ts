@@ -44,7 +44,7 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 			.leftJoinAndSelect('timeslot._labels', 'label');
 	}
 
-	public async getById(request: { id: string; byPassAuth?: boolean }): Promise<OneOffTimeslot> {
+	public async getById(request: { id: number; byPassAuth?: boolean }): Promise<OneOffTimeslot> {
 		const idCondition = 'timeslot._id = :id';
 		const query = await this.createSelectQuery([idCondition], { id: request.id }, request);
 
@@ -90,7 +90,7 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 		return await query.getMany();
 	}
 
-	public async delete(id: string): Promise<void> {
+	public async delete(id: number): Promise<void> {
 		const repository = await this.getRepository();
 		await repository.delete(id);
 	}

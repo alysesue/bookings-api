@@ -1,5 +1,5 @@
 import { Inject } from 'typescript-ioc';
-import { Body, Controller, Delete, Path, Post, Response, Route, SuccessResponse, Tags } from 'tsoa';
+import { Body, Controller, Delete, Path, Post, Put, Response, Route, SuccessResponse, Tags } from 'tsoa';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { OneOffTimeslotRequest, OneOffTimeslotResponse } from './oneOffTimeslots.apicontract';
 import { OneOffTimeslotsService } from './oneOffTimeslots.service';
@@ -24,6 +24,19 @@ export class OneOffTimeslotsController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async create(@Body() request: OneOffTimeslotRequest): Promise<ApiData<OneOffTimeslotResponse>> {
 		const timeslot = await this.oneOffTimeslotsService.save(request);
+		this.setStatus(201);
+		return ApiDataFactory.create(this.mapper.mapDataModel(timeslot));
+	}
+
+	@Put('{id}')
+	@SuccessResponse(201, 'Updated')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async update(
+		@Path() id: string,
+		@Body() request: OneOffTimeslotRequest,
+	): Promise<ApiData<OneOffTimeslotResponse>> {
+		const timeslot = await this.oneOffTimeslotsService.update(request, id);
 		this.setStatus(201);
 		return ApiDataFactory.create(this.mapper.mapDataModel(timeslot));
 	}

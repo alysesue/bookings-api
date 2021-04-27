@@ -10,22 +10,30 @@ export class OneOffTimeslotsMapper {
 	@Inject
 	private labelMapper: LabelsMapper;
 
-	public static mapToOneOffTimeslots(
+	public mapToOneOffTimeslots(
 		request: OneOffTimeslotRequest,
 		serviceProvider: ServiceProvider,
 		labels?: Label[],
 	): OneOffTimeslot {
 		const entity = new OneOffTimeslot();
+		this.updateMapToOneOffTimeslots(request, entity, serviceProvider, labels);
+
+		return entity;
+	}
+
+	public updateMapToOneOffTimeslots(
+		request: OneOffTimeslotRequest,
+		entity: OneOffTimeslot,
+		serviceProvider: ServiceProvider,
+		labels?: Label[],
+	) {
 		entity.serviceProvider = serviceProvider;
-		entity.serviceProviderId = serviceProvider.id;
 		entity.startDateTime = request.startDateTime;
 		entity.endDateTime = request.endDateTime;
 		entity.capacity = request.capacity;
 		entity.labels = labels;
 		entity.title = request.title ?? undefined;
 		entity.description = request.description ?? undefined;
-
-		return entity;
 	}
 
 	public mapDataModel(timeslot: OneOffTimeslot): OneOffTimeslotResponse {
