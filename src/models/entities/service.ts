@@ -111,7 +111,13 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._timeslotsSchedule;
 	}
 
-	public static create(name: string, orga: Organisation, isSpAutoAssigned = false, labels: Label[] = []) {
+	public static create(
+		name: string,
+		orga: Organisation,
+		isSpAutoAssigned = false,
+		labels: Label[] = [],
+		emailSuffix?: string,
+	) {
 		const service = new Service();
 		service._name = name.trim();
 		service._organisation = orga;
@@ -124,6 +130,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 			),
 		);
 		service.labels = labels;
+		service._emailSuffix = emailSuffix;
 		return service;
 	}
 
@@ -197,5 +204,16 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 
 	public set sendNotificationsToServiceProviders(value: boolean) {
 		this._sendNotificationsToServiceProviders = value;
+	}
+
+	@Column({ type: 'varchar', length: 100, nullable: true })
+	private _emailSuffix?: string;
+
+	public get emailSuffix(): string {
+		return this._emailSuffix;
+	}
+
+	public set emailSuffix(value: string) {
+		this._emailSuffix = value;
 	}
 }
