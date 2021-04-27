@@ -1,5 +1,5 @@
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
-import { populateOneOffTimeslot } from '../../populate/basic';
+import { populateOneOffTimeslot, updateOneOffTimeslot } from '../../populate/basic';
 import { populateUserServiceProvider } from '../../populate/basic';
 import { PgClient } from '../../utils/pgClient';
 
@@ -43,7 +43,7 @@ describe('Timeslots functional tests', () => {
 		});
 
 		const { idSigned } = service1TimeslotsResponse;
-		const service1TimeslotsUpdatedResponse = await populateOneOffTimeslot({
+		const service1TimeslotsUpdatedResponse = await updateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
