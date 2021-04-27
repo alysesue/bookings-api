@@ -110,7 +110,6 @@ export class BookingsMapper {
 			endDateTime: booking.endDateTime,
 			serviceId: booking.serviceId,
 			serviceName: booking.service?.name,
-			emailSuffix: booking.service?.emailSuffix,
 			serviceProviderId: booking.serviceProviderId,
 			serviceProviderAgencyUserId: booking.serviceProvider?.agencyUserId,
 			serviceProviderName: booking.serviceProvider?.name,

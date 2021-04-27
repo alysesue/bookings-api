@@ -72,7 +72,6 @@ export type BookingResponse = {
 	 */
 	serviceId: number;
 	serviceName: string;
-	emailSuffix?: string;
 	/**
 	 * @isInt
 	 */
