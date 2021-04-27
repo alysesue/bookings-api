@@ -9,6 +9,8 @@ import { OneOffTimeslotsRepository } from '../oneOffTimeslots.repository';
 import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
 import { OneOffTimeslotsActionAuthVisitor } from '../oneOffTimeslots.auth';
 import { LabelsService } from '../../labels/labels.service';
+import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
+import { IdHasher } from '../../../infrastructure/idHasher';
 
 jest.mock('../oneOffTimeslots.auth');
 
@@ -25,6 +27,7 @@ describe('OneOffTimeslots Service Tests', () => {
 	serviceProvider.service = newService;
 
 	beforeAll(() => {
+		Container.bind(IdHasher).to(IdHasherMock);
 		Container.bind(OneOffTimeslotsRepository).to(OneOffTimeslotsRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
@@ -84,6 +87,29 @@ describe('OneOffTimeslots Service Tests', () => {
 		await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(
 			'"User cannot perform this action for this one off timeslot."',
 		);
+	});
+
+	it('should update one off timeslots', async () => {
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
+		oneOffTimeslots.endDateTime = DateHelper.addHours(oneOffTimeslots.startDateTime, 1);
+		oneOffTimeslots.capacity = 2;
+		oneOffTimeslots.serviceProviderId = 1;
+		OneOffTimeslotsRepositoryMock.getById.mockReturnValue(oneOffTimeslots);
+		OneOffTimeslotsRepositoryMock.save.mockReturnValue(() => {});
+
+		const request = new OneOffTimeslotRequest();
+		request.startDateTime = new Date('2021-03-02T00:00:00Z');
+		request.endDateTime = DateHelper.addHours(request.startDateTime, 1);
+		request.capacity = 2;
+		request.serviceProviderId = 1;
+
+		const service = Container.get(OneOffTimeslotsService);
+		await service.update(request, '1');
+
+		expect(OneOffTimeslotsRepositoryMock.getById).toBeCalled();
+		expect(OneOffTimeslotsRepositoryMock.save).toBeCalled();
 	});
 
 	it('should delete one off timeslots', async () => {

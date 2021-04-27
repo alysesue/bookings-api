@@ -52,7 +52,7 @@ export class OneOffTimeslotsService {
 		const id = this.idHasher.decode(idSigned);
 		const entity = await this.oneOffTimeslotsRepo.getById({ id });
 		if (!entity) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`One off timeslot can't be found`);
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`One off timeslot can't be found`);
 		}
 		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
 		const labels = await this.labelsService.verifyLabels(request.labelIds, serviceProvider.serviceId);
