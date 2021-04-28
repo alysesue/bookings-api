@@ -3,5 +3,10 @@
 // This is a list of extensions we commonly use for the project
 // =============================================================================
 {
-	"recommendations": []
+	"recommendations": [
+		"waderyan.gitblame",
+		"eamodio.gitlens",
+		"firsttris.vscode-jest-runner",
+		"esbenp.prettier-vscode"
+	]
 }
