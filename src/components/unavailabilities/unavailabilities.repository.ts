@@ -1,12 +1,12 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
+import { SelectQueryBuilder } from 'typeorm';
 import { RepositoryBase } from '../../core/repository';
 import { Unavailability } from '../../models';
-import { SelectQueryBuilder } from 'typeorm';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
-import { UnavailabilitiesQueryAuthVisitor } from './unavailabilities.auth';
 import { andWhere } from '../../tools/queryConditions';
 import { DefaultIsolationLevel } from '../../core/transactionManager';
+import { UnavailabilitiesQueryAuthVisitor } from './unavailabilities.auth';
 
 @InRequestScope
 export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {
@@ -56,7 +56,7 @@ export class UnavailabilitiesRepository extends RepositoryBase<Unavailability> {
 		const dateRangeCondition = 'u."_start" < :to AND u."_end" > :from';
 		const spCondition = serviceProviderId
 			? '(u."_allServiceProviders" AND EXISTS(SELECT 1 FROM public.service_provider esp WHERE esp."_id" = :serviceProviderId AND esp."_serviceId" = u."_serviceId")) OR ' +
-			  'EXISTS(SELECT 1 FROM public.unavailable_service_provider usp WHERE usp."unavailability_id" = u."_id" AND usp."serviceProvider_id" = :serviceProviderId)'
+        'EXISTS(SELECT 1 FROM public.unavailable_service_provider usp WHERE usp."unavailability_id" = u."_id" AND usp."serviceProvider_id" = :serviceProviderId)'
 			: '';
 
 		const query = await this.createSelectQuery(

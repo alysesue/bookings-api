@@ -8,13 +8,10 @@ import {
 	TimeslotItem,
 	TimeslotsSchedule,
 } from '../../models';
-import { ServicesRepository } from './services.repository';
-import { ServiceRequest } from './service.apicontract';
 import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
 import { TimeslotItemsService } from '../timeslotItems/timeslotItems.service';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { ServicesActionAuthVisitor } from './services.auth';
 import { CrudAction } from '../../enums/crudAction';
 import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract';
 import { OrganisationsNoauthRepository } from '../organisations/organisations.noauth.repository';
@@ -23,6 +20,9 @@ import { MolServiceAdminUserContract, MolUpsertUsersResult } from '../users/molU
 import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 import { uniqueStringArray } from '../../tools/collections';
 import { LabelsMapper } from '../labels/labels.mapper';
+import { ServicesActionAuthVisitor } from './services.auth';
+import { ServiceRequest } from './service.apicontract';
+import { ServicesRepository } from './services.repository';
 
 @InRequestScope
 export class ServicesService {

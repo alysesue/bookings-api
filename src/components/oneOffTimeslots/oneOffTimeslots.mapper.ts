@@ -1,8 +1,8 @@
-import { Label, OneOffTimeslot, ServiceProvider } from '../../models';
-import { OneOffTimeslotRequest, OneOffTimeslotResponse } from './oneOffTimeslots.apicontract';
 import { Inject } from 'typescript-ioc';
+import { Label, OneOffTimeslot, ServiceProvider } from '../../models';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { LabelsMapper } from '../labels/labels.mapper';
+import { OneOffTimeslotRequest, OneOffTimeslotResponse } from './oneOffTimeslots.apicontract';
 
 export class OneOffTimeslotsMapper {
 	@Inject

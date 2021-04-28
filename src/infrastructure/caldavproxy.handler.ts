@@ -12,7 +12,7 @@ export class CalDavProxyHandler {
 	@Inject
 	private googleApi: GoogleApi;
 	private readonly koaProxy: any;
-	private _initialized: boolean = false;
+	private _initialized = false;
 	private _calidUserRegex: RegExp;
 	private _calidEventsRegex: RegExp;
 

@@ -1,11 +1,11 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { AesEncryption, ENCRYPTION_ENCODING } from '../../infrastructure/aesencryption';
 import { getConfig } from '../../config/app-config';
 import { Compression } from '../../infrastructure/compression';
 import { DateHelper } from '../../infrastructure/dateHelper';
-import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { EncryptionAuthVisitor, EncryptionSignatureUser } from './encryption.auth';
 import { UserContext } from '../../infrastructure/auth/userContext';
+import { EncryptionAuthVisitor, EncryptionSignatureUser } from './encryption.auth';
 
 @InRequestScope
 export class EncryptionService {

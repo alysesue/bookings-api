@@ -1,7 +1,7 @@
 import { Connection, createConnection } from 'typeorm';
 import { Singleton } from 'typescript-ioc';
-import { getConnectionOptions } from './connectionOptions';
 import { initPopulateDB } from '../migrations/seeds';
+import { getConnectionOptions } from './connectionOptions';
 
 @Singleton
 export class DbConnection {

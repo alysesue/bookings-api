@@ -1,7 +1,23 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Booking, BookingStatus, ChangeLogAction, Service, ServiceProvider, User } from '../../models';
-import { BookingsRepository } from './bookings.repository';
+import { TimeslotsService } from '../timeslots/timeslots.service';
+import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
+import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
+import { BookingBuilder } from '../../models/entities/booking';
+import { ServicesService } from '../services/services.service';
+import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs.service';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
+import { UsersService } from '../users/users.service';
+import { IPagedEntities } from '../../core/pagedEntities';
+import { getConfig } from '../../config/app-config';
+import { MailObserver } from '../notifications/notification.observer';
+import { randomIndex } from '../../tools/arrays';
+import { BookingsSubject } from './bookings.subject';
+import { BookingsMapper } from './bookings.mapper';
+import { BookingActionAuthVisitor } from './bookings.auth';
+import { BookingsValidatorFactory } from './validator/bookings.validation';
 import {
 	BookingAcceptRequest,
 	BookingDetailsRequest,
@@ -9,24 +25,8 @@ import {
 	BookingSearchRequest,
 	BookingUpdateRequest,
 } from './bookings.apicontract';
-import { TimeslotsService } from '../timeslots/timeslots.service';
-import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
-import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
-import { BookingBuilder } from '../../models/entities/booking';
-import { BookingsValidatorFactory } from './validator/bookings.validation';
-import { ServicesService } from '../services/services.service';
-import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs.service';
-import { UserContext } from '../../infrastructure/auth/userContext';
-import { BookingActionAuthVisitor } from './bookings.auth';
-import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
-import { UsersService } from '../users/users.service';
-import { BookingsMapper } from './bookings.mapper';
-import { IPagedEntities } from '../../core/pagedEntities';
-import { getConfig } from '../../config/app-config';
-import { MailObserver } from '../notifications/notification.observer';
-import { BookingsSubject } from './bookings.subject';
-import { BookingType } from '../../models/bookingType';
-import { randomIndex } from '../../tools/arrays';
+import { BookingsRepository } from './bookings.repository';
+import { BookingType } from '../../../src/models/bookingType';
 
 @InRequestScope
 export class BookingsService {
@@ -68,7 +68,7 @@ export class BookingsService {
 	public static shouldAutoAccept(
 		currentUser: User,
 		serviceProvider?: ServiceProvider,
-		skipAgencyCheck: boolean = false,
+		skipAgencyCheck = false,
 	): boolean {
 		if (!serviceProvider) {
 			return false;
@@ -160,7 +160,7 @@ export class BookingsService {
 	public async save(
 		bookingRequest: BookingRequest,
 		serviceId: number,
-		bypassCaptchaAndAutoAccept: boolean = false,
+		bypassCaptchaAndAutoAccept = false,
 	): Promise<Booking> {
 		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptchaAndAutoAccept);
 		const booking = await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
@@ -323,7 +323,7 @@ export class BookingsService {
 	private async saveInternal(
 		bookingRequest: BookingRequest,
 		serviceId: number,
-		shouldBypassCaptchaAndAutoAccept: boolean = false,
+		shouldBypassCaptchaAndAutoAccept = false,
 	): Promise<[ChangeLogAction, Booking]> {
 		const currentUser = await this.userContext.getCurrentUser();
 		const isAdminUser = currentUser.adminUser;
@@ -341,7 +341,7 @@ export class BookingsService {
 				serviceId,
 			);
 			const random = randomIndex(serviceProviders);
-			serviceProvider = !!serviceProviders.length ? serviceProviders[random] : undefined;
+			serviceProvider = serviceProviders.length ? serviceProviders[random] : undefined;
 		}
 
 		const isServiceOnHold = () => {

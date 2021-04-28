@@ -10,11 +10,11 @@ const smtp = {
 	secure: config?.mailer?.smtpSecure,
 	...(config?.mailer?.smtpUseAuth
 		? {
-				auth: {
-					user: config?.mailer?.smtpAuthUsername,
-					pass: config?.mailer?.smtpAuthPassword,
-				},
-		  }
+			auth: {
+				user: config?.mailer?.smtpAuthUsername,
+				pass: config?.mailer?.smtpAuthPassword,
+			},
+		}
 		: null),
 	pool: true,
 };

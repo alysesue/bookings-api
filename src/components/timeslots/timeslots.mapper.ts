@@ -1,3 +1,4 @@
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import {
 	AvailabilityEntryResponse,
@@ -10,7 +11,6 @@ import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvi
 import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
 import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
 import { LabelsMapper } from '../../components/labels/labels.mapper';
-import { Inject, InRequestScope } from 'typescript-ioc';
 import { IdHasher } from '../../infrastructure/idHasher';
 
 @InRequestScope

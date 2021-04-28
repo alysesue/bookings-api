@@ -1,13 +1,13 @@
-import { getConfig } from '../config/app-config';
 import * as Koa from 'koa';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import * as uuid from 'uuid';
-import { ContainerContextMiddleware } from './containerContext.middleware';
-import { UserContext } from './auth/userContext';
 import * as jose from 'node-jose';
-import { AsyncLazy } from '../tools/asyncLazy';
 import { JwtUtils } from 'mol-lib-common';
+import { AsyncLazy } from '../tools/asyncLazy';
+import { getConfig } from '../config/app-config';
 import { User } from '../models';
+import { UserContext } from './auth/userContext';
+import { ContainerContextMiddleware } from './containerContext.middleware';
 import { DateHelper } from './dateHelper';
 
 export const XSRF_HEADER_NAME = 'x-xsrf-token';

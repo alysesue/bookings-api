@@ -1,7 +1,7 @@
 import { InRequestScope } from 'typescript-ioc';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { RepositoryBase } from '../../core/repository';
 import { Setting, SettingData } from '../../models/entities/setting';
-import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 @InRequestScope
 export class SettingsRepository extends RepositoryBase<Setting> {

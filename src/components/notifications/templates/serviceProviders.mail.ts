@@ -95,7 +95,7 @@ ${locationText}
 		};
 	}
 
-	public CreatedBookingEmail(data): EmailTemplateBase {
+	public CreatedBookingEmail(_data): EmailTemplateBase {
 		return undefined;
 	}
 }

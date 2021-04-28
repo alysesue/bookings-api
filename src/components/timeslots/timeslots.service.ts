@@ -1,4 +1,21 @@
 import { Inject, Scope, Scoped } from 'typescript-ioc';
+import { Booking, BookingStatus, ServiceProvider, TimeOfDay, Timeslot } from '../../models';
+import { BookingsRepository } from '../bookings/bookings.repository';
+import { groupByKey } from '../../tools/collections';
+import { ServicesRepository } from '../services/services.repository';
+import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
+import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
+import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
+import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
+import { StopWatch } from '../../infrastructure/stopWatch';
+import { nextImmediateTick } from '../../infrastructure/immediateHelper';
+import { MAX_PAGING_LIMIT } from '../../core/pagedEntities';
+import { DateHelper } from '../../infrastructure/dateHelper';
+import { Weekday } from '../../enums/weekday';
+import { OneOffTimeslotsRepository } from '../oneOffTimeslots/oneOffTimeslots.repository';
+import { intersectsDateTimeNative } from '../../tools/timeSpan';
+import { MapProcessor } from './mapProcessor';
+import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import {
 	AggregatedEntryId,
 	generateTimeslotKey,
@@ -7,23 +24,6 @@ import {
 	TimeslotKey,
 	TimeslotMap,
 } from './timeslotAggregator';
-import { Booking, BookingStatus, ServiceProvider, TimeOfDay, Timeslot } from '../../models';
-import { BookingsRepository } from '../bookings/bookings.repository';
-import { groupByKey } from '../../tools/collections';
-import { ServicesRepository } from '../services/services.repository';
-import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
-import { AvailableTimeslotProviders } from './availableTimeslotProviders';
-import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
-import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
-import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
-import { MapProcessor } from './mapProcessor';
-import { StopWatch } from '../../infrastructure/stopWatch';
-import { nextImmediateTick } from '../../infrastructure/immediateHelper';
-import { MAX_PAGING_LIMIT } from '../../core/pagedEntities';
-import { DateHelper } from '../../infrastructure/dateHelper';
-import { Weekday } from '../../enums/weekday';
-import { OneOffTimeslotsRepository } from '../oneOffTimeslots/oneOffTimeslots.repository';
-import { intersectsDateTimeNative } from '../../tools/timeSpan';
 
 export class AvailableTimeslotProcessor extends MapProcessor<TimeslotKey, AvailableTimeslotProviders> {}
 
@@ -173,7 +173,7 @@ export class TimeslotsService {
 		startDateTime: Date,
 		endDateTime: Date,
 		serviceId: number,
-		includeBookings: boolean = false,
+		includeBookings = false,
 		serviceProviderIds?: number[],
 		labelIds?: number[],
 	): Promise<AvailableTimeslotProviders[]> {
@@ -401,9 +401,9 @@ export class TimeslotsService {
 
 			const timeslotsSP = provider.timeslotsSchedule
 				? provider.timeslotsSchedule.generateValidTimeslots({
-						startDatetime: minStartTime,
-						endDatetime: maxEndTime,
-				  })
+					startDatetime: minStartTime,
+					endDatetime: maxEndTime,
+				})
 				: validServiceTimeslots;
 
 			if (oneOffTimeslotsSP && oneOffTimeslotsSP.length > 0) {

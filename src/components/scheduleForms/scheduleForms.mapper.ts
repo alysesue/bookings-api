@@ -1,12 +1,12 @@
 import { ScheduleForm, TimeOfDay, WeekDayBreak, WeekDaySchedule } from '../../models';
+import { groupByKeyLastValue } from '../../tools/collections';
+import { getErrorResult, getOkResult, isErrorResult, OptionalResult } from '../../errors';
 import {
 	ScheduleFormRequest,
 	ScheduleFormResponse,
 	WeekDayBreakContract,
 	WeekDayScheduleContract,
 } from './scheduleForms.apicontract';
-import { groupByKeyLastValue } from '../../tools/collections';
-import { getErrorResult, getOkResult, isErrorResult, OptionalResult } from '../../errors';
 
 export const mapToEntity = (
 	contract: ScheduleFormRequest,

@@ -35,7 +35,7 @@ export abstract class Subject<T> implements ISubject<T> {
 		});
 	}
 
-	public notify(e: T): void {
+	public notify(_e: T): void {
 		this._observers.forEach((obs) => obs.update(this));
 	}
 }

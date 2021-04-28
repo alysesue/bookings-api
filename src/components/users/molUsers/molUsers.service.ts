@@ -1,8 +1,8 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { v4 as uuidv4 } from 'uuid';
-import { IMolCognitoUserRequest, MolUpsertUsersResult } from './molUsers.apicontract';
 import { post } from '../../../tools/fetch';
 import { getConfig } from '../../../config/app-config';
+import { IMolCognitoUserRequest, MolUpsertUsersResult } from './molUsers.apicontract';
 
 export type OptionsMol = {
 	token: string;
@@ -21,8 +21,8 @@ export class MolUsersServiceAuthForwarder extends MolUsersService {
 		const URL_MOL_USER = `${config.molAdminAuthForwarder.url}/api/users/v1`;
 		const sendEmailHeader = options?.desiredDeliveryMediumsHeader
 			? {
-					'desired-delivery-medium': options.desiredDeliveryMediumsHeader,
-			  }
+				'desired-delivery-medium': options.desiredDeliveryMediumsHeader,
+			}
 			: {};
 		try {
 			const upsertRes = await post(

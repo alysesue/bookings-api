@@ -1,12 +1,5 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import {
-	ServiceProviderListRequest,
-	ServiceProviderModel,
-	ServiceProviderResponseModel,
-	TotalServiceProviderResponse,
-} from './serviceProviders.apicontract';
-import { ServiceProvidersService } from './serviceProviders.service';
-import {
 	Body,
 	Controller,
 	Delete,
@@ -23,20 +16,27 @@ import {
 	SuccessResponse,
 	Tags,
 } from 'tsoa';
-import { mapToResponse as mapScheduleToResponse } from '../scheduleForms/scheduleForms.mapper';
-import { ScheduleFormRequest, ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
-import { ServiceProvidersMapper } from './serviceProviders.mapper';
+import { MOLAuth } from 'mol-lib-common';
 import {
 	TimeslotItemRequest,
 	TimeslotItemResponse,
 	TimeslotsScheduleResponse,
 } from '../timeslotItems/timeslotItems.apicontract';
 import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
-import { MOLAuth } from 'mol-lib-common';
+import { ScheduleFormRequest, ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
+import { mapToResponse as mapScheduleToResponse } from '../scheduleForms/scheduleForms.mapper';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { parseCsv } from '../../tools/csvParser';
 import { ServicesService } from '../services/services.service';
 import { ServiceProvider } from '../../models';
+import { ServiceProvidersMapper } from './serviceProviders.mapper';
+import { ServiceProvidersService } from './serviceProviders.service';
+import {
+	ServiceProviderListRequest,
+	ServiceProviderModel,
+	ServiceProviderResponseModel,
+	TotalServiceProviderResponse,
+} from './serviceProviders.apicontract';
 
 @InRequestScope
 @Route('v1/service-providers')
@@ -108,6 +108,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Retrieves service providers.
+	 *
 	 * @param @isInt serviceId (Optional) Filters by a service (id).
 	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
 	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
@@ -139,6 +140,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Retrieves the total number of service providers.
+	 *
 	 * @param @isInt serviceId (Optional) Filters by a service (id).
 	 */
 	@Get('/count')
@@ -154,6 +156,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Retrieves available service providers in the specified datetime range.
+	 *
 	 * @param from The lower bound limit for service providers' availability.
 	 * @param to The upper bound limit for service providers' availability.
 	 * @param @isInt serviceId The service id.
@@ -181,6 +184,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Retrieves a single service provider.
+	 *
 	 * @param @isInt spId The service provider id.
 	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
 	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
@@ -199,6 +203,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Retrieves service providers whose name contains the searchKey, mainly for autocomplete feature.
+	 *
 	 * @param searchKey The search keyword.
 	 */
 	@Get('search/{searchKey}')
@@ -215,6 +220,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Updates a single service provider.
+	 *
 	 * @param @isInt spId The service provider id.
 	 * @param spRequest
 	 */
@@ -255,6 +261,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Retrieves all weekly recurring timeslots for a service provider.
+	 *
 	 * @param @isInt spId The service provider id.
 	 */
 	@Get('{spId}/timeslotSchedule')
@@ -270,6 +277,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Creates a new weekly recurring timeslot for a service provider.
+	 *
 	 * @param @isInt spId The service provider id.
 	 * @param request
 	 */
@@ -288,6 +296,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Updates a weekly recurring timeslot for a service provider. Existing bookings are not affected.
+	 *
 	 * @param @isInt spId The service provider id.
 	 * @param @isInt timeslotId The weekly timeslot id.
 	 * @param request
@@ -307,6 +316,7 @@ export class ServiceProvidersController extends Controller {
 
 	/**
 	 * Deletes a weekly recurring timeslot for a service provider. Existing bookings are not affected.
+	 *
 	 * @param @isInt spId The service provider id.
 	 * @param @isInt timeslotId The weekly timeslot id.
 	 */

@@ -1,9 +1,9 @@
 import { Inject } from 'typescript-ioc';
 import { Body, Controller, Delete, Path, Post, Put, Response, Route, SuccessResponse, Tags } from 'tsoa';
+import { MOLAuth } from 'mol-lib-common';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { OneOffTimeslotRequest, OneOffTimeslotResponse } from './oneOffTimeslots.apicontract';
 import { OneOffTimeslotsService } from './oneOffTimeslots.service';
-import { MOLAuth } from 'mol-lib-common';
 import { OneOffTimeslotsMapper } from './oneOffTimeslots.mapper';
 
 @Route('v1/oneOffTimeslots')
@@ -16,6 +16,7 @@ export class OneOffTimeslotsController extends Controller {
 
 	/**
 	 * Creates a one-off timeslot
+	 *
 	 * @param request Details of the one-off timeslot to be created.
 	 */
 	@Post()
@@ -43,6 +44,7 @@ export class OneOffTimeslotsController extends Controller {
 
 	/**
 	 * Deletes a one-off timeslot
+	 *
 	 * @param id The ID of the one-off timeslot to be deleted.
 	 */
 	@Delete('{id}')

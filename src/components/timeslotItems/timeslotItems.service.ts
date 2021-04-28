@@ -1,14 +1,14 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
-import { mapTimeslotItemToEntity } from './timeslotItems.mapper';
-import { TimeslotItemRequest } from './timeslotItems.apicontract';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { TimeslotItemsRepository } from './timeslotItems.repository';
-import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { DeleteResult } from 'typeorm';
-import { TimeslotItemsActionAuthVisitor } from './timeslotItems.auth';
+import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
+import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServicesRepository } from '../services/services.repository';
+import { mapTimeslotItemToEntity } from './timeslotItems.mapper';
+import { TimeslotItemRequest } from './timeslotItems.apicontract';
+import { TimeslotItemsRepository } from './timeslotItems.repository';
+import { TimeslotItemsActionAuthVisitor } from './timeslotItems.auth';
 
 @InRequestScope
 export class TimeslotItemsService {

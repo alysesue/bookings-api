@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
+import { DeleteResult } from 'typeorm';
 import { RepositoryBase } from '../../core/repository';
 import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
-import { DeleteResult } from 'typeorm';
 import { IEntityWithTimeslotsSchedule } from '../../models/interfaces';
 import { groupByKey, groupByKeyLastValue } from '../../tools/collections';
 import { UserContext } from '../../infrastructure/auth/userContext';
@@ -45,10 +45,10 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 		const { userCondition, userParams } = request.byPassAuth
 			? { userCondition: '', userParams: {} }
 			: await new TimeslotItemsQueryAuthVisitor(
-					'service',
-					'serviceProvider',
-					'SPservice',
-			  ).createUserVisibilityCondition(authGroups);
+				'service',
+				'serviceProvider',
+				'SPservice',
+			).createUserVisibilityCondition(authGroups);
 
 		const query = repository
 			.createQueryBuilder('timeslotsSchedule')

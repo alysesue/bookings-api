@@ -3,10 +3,10 @@
  */
 import { Inject } from 'typescript-ioc';
 import { Body, Controller, Path, Post, Response, Route, Tags } from 'tsoa';
-import { CalendarUserModel } from './calendars.apicontract';
-import { ApiData, ApiDataFactory } from '../../apicontract';
-import { CalendarsService } from './calendars.service';
 import { MOLAuth } from 'mol-lib-common';
+import { ApiData, ApiDataFactory } from '../../apicontract';
+import { CalendarUserModel } from './calendars.apicontract';
+import { CalendarsService } from './calendars.service';
 
 @Route('v1/calendars')
 @Tags('Calendars')
@@ -16,6 +16,7 @@ export class CalendarsController extends Controller {
 
 	/**
 	 * Adds read or write permission to a Google account for a Calendar.
+	 *
 	 * @param calendarUUID The calendar UUID
 	 * @param model
 	 */

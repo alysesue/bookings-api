@@ -16,6 +16,7 @@ export class DynamicFieldsController extends Controller {
 
 	/**
 	 * Retrieves dynamic fields
+	 *
 	 * @param @isInt serviceId The service id.
 	 */
 	@Get('')

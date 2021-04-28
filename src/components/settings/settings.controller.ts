@@ -11,6 +11,7 @@ export class SettingsController extends Controller {
 
 	/**
 	 * Verify if url redirection is part of the whitelist address
+	 *
 	 * @param url
 	 */
 	@Get('isValidRedirectUrl')

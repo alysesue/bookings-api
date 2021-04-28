@@ -1,9 +1,8 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { UsersRepository } from './users.repository';
-import { User } from '../../models';
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
 import { logger } from 'mol-lib-common';
+import { User } from '../../models';
 import { ParsedUserGroup, UserGroupParser, UserGroupRole } from '../../infrastructure/auth/userGroupParser';
 import {
 	AuthGroup,
@@ -15,6 +14,7 @@ import { OrganisationInfo, OrganisationsService } from '../organisations/organis
 import { ServiceRefInfo, ServicesRepositoryNoAuth } from '../services/services.noauth.repository';
 import { ServiceProvidersRepositoryNoAuth } from '../serviceProviders/serviceProviders.noauth.repository';
 import { AnonymousCookieData } from '../../infrastructure/bookingSGCookieHelper';
+import { UsersRepository } from './users.repository';
 
 export type HeadersType = { [key: string]: string };
 
@@ -51,27 +51,27 @@ export class UsersService {
 
 		let user: User = null;
 		switch (authType) {
-			case MOLAuthType.USER:
-				user = await this.getOrSaveSingpassUser({
-					molUserId: headers[MOLSecurityHeaderKeys.USER_ID],
-					molUserUinFin: headers[MOLSecurityHeaderKeys.USER_UINFIN],
-				});
-				break;
-			case MOLAuthType.ADMIN:
-				user = await this.getOrSaveAdminUser({
-					molAdminId: headers[MOLSecurityHeaderKeys.ADMIN_ID],
-					userName: headers[MOLSecurityHeaderKeys.ADMIN_USERNAME],
-					email: headers[MOLSecurityHeaderKeys.ADMIN_EMAIL],
-					name: headers[MOLSecurityHeaderKeys.ADMIN_NAME],
-					agencyUserId: headers[MOLSecurityHeaderKeys.ADMIN_AGENCY_USER_ID],
-				});
-				break;
-			case MOLAuthType.AGENCY:
-				user = await this.getOrSaveAgencyUser({
-					agencyAppId: headers[MOLSecurityHeaderKeys.AGENCY_APP_ID],
-					agencyName: headers[MOLSecurityHeaderKeys.AGENCY_NAME],
-				});
-				break;
+		case MOLAuthType.USER:
+			user = await this.getOrSaveSingpassUser({
+				molUserId: headers[MOLSecurityHeaderKeys.USER_ID],
+				molUserUinFin: headers[MOLSecurityHeaderKeys.USER_UINFIN],
+			});
+			break;
+		case MOLAuthType.ADMIN:
+			user = await this.getOrSaveAdminUser({
+				molAdminId: headers[MOLSecurityHeaderKeys.ADMIN_ID],
+				userName: headers[MOLSecurityHeaderKeys.ADMIN_USERNAME],
+				email: headers[MOLSecurityHeaderKeys.ADMIN_EMAIL],
+				name: headers[MOLSecurityHeaderKeys.ADMIN_NAME],
+				agencyUserId: headers[MOLSecurityHeaderKeys.ADMIN_AGENCY_USER_ID],
+			});
+			break;
+		case MOLAuthType.AGENCY:
+			user = await this.getOrSaveAgencyUser({
+				agencyAppId: headers[MOLSecurityHeaderKeys.AGENCY_APP_ID],
+				agencyName: headers[MOLSecurityHeaderKeys.AGENCY_NAME],
+			});
+			break;
 		}
 
 		return user;

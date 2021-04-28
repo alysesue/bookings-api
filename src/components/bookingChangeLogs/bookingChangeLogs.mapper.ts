@@ -1,11 +1,11 @@
+import { BookingChangeLog, BookingJsonSchemaV1, ChangeLogAction } from '../../models';
+import { UserProfileMapper } from '../users/users.mapper';
 import {
 	BookingChangeLogResponse,
 	BookingStateResponse,
 	ChangeLogActionContract,
 	ChangeLogEntryResponse,
 } from './bookingChangeLogs.apicontract';
-import { BookingChangeLog, BookingJsonSchemaV1, ChangeLogAction } from '../../models';
-import { UserProfileMapper } from '../users/users.mapper';
 
 type GenericState = { [key: string]: any };
 

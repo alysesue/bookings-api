@@ -1,6 +1,6 @@
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { RepositoryBase } from '../../core/repository';
 import { Label } from '../../models/entities';
-import { Inject, InRequestScope } from 'typescript-ioc';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { andWhere } from '../../tools/queryConditions';
 import { ServicesQueryAuthVisitor } from '../services/services.auth';

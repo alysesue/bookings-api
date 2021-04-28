@@ -3,8 +3,8 @@ import { TimeOfDay, Transformer as TimeTransformer } from '../timeOfDay';
 import { Weekday } from '../../enums/weekday';
 import { ITimeslotsSchedule, ITimeSpan } from '../interfaces';
 import * as timeSpan from '../../tools/timeSpan';
-import { ScheduleForm } from './scheduleForm';
 import { intersects } from '../../tools/timeSpan';
+import { ScheduleForm } from './scheduleForm';
 
 @Entity()
 export class TimeslotItem implements ITimeSpan {
@@ -44,7 +44,7 @@ export class TimeslotItem implements ITimeSpan {
 		weekDay: Weekday,
 		startTime: TimeOfDay,
 		endTime: TimeOfDay,
-		capacity: number = 1,
+		capacity = 1,
 	): TimeslotItem {
 		const instance = new TimeslotItem();
 		instance._timeslotsScheduleId = timeslotScheduleId;

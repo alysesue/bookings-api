@@ -4,9 +4,9 @@ import {
 	MolServiceProviderWithGroups,
 } from '../../serviceProviders/serviceProviders.apicontract';
 import { UserGroupParser } from '../../../infrastructure/auth/userGroupParser';
-import { MolServiceAdminUserContract, MolServiceAdminUserWithGroups } from './molUsers.apicontract';
 import { trimFields } from '../../../tools/object';
 import { groupByKeyLastValue } from '../../../tools/collections';
+import { MolServiceAdminUserContract, MolServiceAdminUserWithGroups } from './molUsers.apicontract';
 
 export class MolUsersMapper {
 	public static mapServiceProviderGroup(
@@ -29,7 +29,7 @@ export class MolUsersMapper {
 	public static mapServicesAdminsGroups(
 		molAdminUserContracts: MolServiceAdminUserContract[],
 		services: Service[],
-		orga: Organisation,
+		_orga: Organisation,
 	): MolServiceAdminUserWithGroups[] {
 		const serviceLookup = groupByKeyLastValue(services, (s) => s.name.toLowerCase());
 

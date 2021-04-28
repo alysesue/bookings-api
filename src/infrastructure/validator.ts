@@ -18,7 +18,7 @@ export abstract class Validator<T> implements IValidator<T> {
 		this.shouldBypassCaptcha = shouldBypassCaptcha;
 	}
 
-	protected async *getValidations(entity: T): AsyncIterable<BusinessValidation> {
+	protected async *getValidations(_entity: T): AsyncIterable<BusinessValidation> {
 		return;
 	}
 }

@@ -1,9 +1,9 @@
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
-import { getConfig } from '../config/app-config';
 import { LoggerOptions } from 'typeorm/logger/LoggerOptions';
+import { map } from 'lodash';
+import { getConfig } from '../config/app-config';
 import * as Migrations from '../migrations';
 import * as Entities from '../models/entities';
-import { map } from 'lodash';
 export function getConnectionOptions(): PostgresConnectionOptions {
 	const config = getConfig();
 	const LOCALHOST = '127.0.0.1';

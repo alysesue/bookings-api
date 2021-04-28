@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { EntityManager } from 'typeorm';
-import { DbConnection } from './db.connection';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
+import { DbConnection } from './db.connection';
 
 export const DefaultIsolationLevel: IsolationLevel = 'READ COMMITTED';
 

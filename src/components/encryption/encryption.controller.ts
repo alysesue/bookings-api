@@ -1,6 +1,6 @@
 import { Body, Controller, Header, Post, Route, SuccessResponse, Tags } from 'tsoa';
-import { ApiData, ApiDataFactory } from '../../apicontract';
 import { Inject, InRequestScope } from 'typescript-ioc';
+import { ApiData, ApiDataFactory } from '../../apicontract';
 import { EncryptionService } from './encryption.service';
 
 @InRequestScope
@@ -12,6 +12,7 @@ export class EncryptionController extends Controller {
 
 	/**
 	 * Encrypt the body
+	 *
 	 * @param request
 	 * The `signature-singpass-user` header is optional, if set to true, a signature is add to the crypted message<br/>
 	 * At the decrypt process, it will verify that the unifin is the request object is the same as the one in the session<br/>
@@ -29,6 +30,7 @@ export class EncryptionController extends Controller {
 
 	/**
 	 * Decrypt the body
+	 *
 	 * @param request
 	 */
 	@Post('decrypt')

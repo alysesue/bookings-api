@@ -20,7 +20,7 @@ export class User implements IUser {
 		this._id = value;
 	}
 
-	@OneToOne((type) => SingPassUser, (e) => e._User, { cascade: true, nullable: true })
+	@OneToOne(() => SingPassUser, (e) => e._User, { cascade: true, nullable: true })
 	public _singPassUser: SingPassUser;
 
 	public get singPassUser(): SingPassUser {
@@ -31,7 +31,7 @@ export class User implements IUser {
 		this._singPassUser = value;
 	}
 
-	@OneToOne((type) => AdminUser, (e) => e._User, { cascade: true, nullable: true })
+	@OneToOne(() => AdminUser, (e) => e._User, { cascade: true, nullable: true })
 	public _adminUser: AdminUser;
 
 	public get adminUser(): AdminUser {
@@ -42,7 +42,7 @@ export class User implements IUser {
 		this._adminUser = value;
 	}
 
-	@OneToOne((type) => AgencyUser, (e) => e._User, { cascade: true, nullable: true })
+	@OneToOne(() => AgencyUser, (e) => e._User, { cascade: true, nullable: true })
 	public _agencyUser: AgencyUser;
 
 	public get agencyUser(): AgencyUser {
@@ -53,7 +53,7 @@ export class User implements IUser {
 		this._agencyUser = value;
 	}
 
-	@OneToOne((type) => AnonymousUser, (e) => e._User, { cascade: true, nullable: true })
+	@OneToOne(() => AnonymousUser, (e) => e._User, { cascade: true, nullable: true })
 	public _anonymousUser: AnonymousUser;
 
 	public get anonymousUser(): AnonymousUser {

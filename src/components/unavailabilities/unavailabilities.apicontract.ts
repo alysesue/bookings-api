@@ -27,6 +27,7 @@ export class UnavailabilityRequest {
 	public allServiceProviders: boolean;
 	/**
 	 * A list of service provider ids. This is only valid when allServiceProviders is equal to false, otherwise this value is ignored.
+	 *
 	 * @isInt
 	 */
 	public serviceProviderIds: number[];

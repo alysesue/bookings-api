@@ -1,6 +1,6 @@
 import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IUser } from '../interfaces';
 import * as uuid from 'uuid';
+import { IUser } from '../interfaces';
 
 @Entity()
 export class AnonymousUser {

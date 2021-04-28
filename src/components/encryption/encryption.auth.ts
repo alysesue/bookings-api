@@ -1,3 +1,4 @@
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,
@@ -7,7 +8,6 @@ import {
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
 import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
-import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 export type EncryptionSignatureUser = {
 	user: string;
