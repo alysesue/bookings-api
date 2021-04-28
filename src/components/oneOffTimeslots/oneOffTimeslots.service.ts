@@ -42,6 +42,16 @@ export class OneOffTimeslotsService {
 		const labels = await this.labelsService.verifyLabels(request.labelIds, serviceProvider.serviceId);
 		const entity = this.mapper.mapToOneOffTimeslots(request, serviceProvider, labels);
 
+		const searchRequest = {
+			serviceProviderIds: [request.serviceProviderId],
+			startDateTime: request.startDateTime,
+			endDateTime: request.endDateTime,
+		};
+		const slotAvailableArr = await this.oneOffTimeslotsRepo.search(searchRequest);
+		if (slotAvailableArr.length){
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Slot cannot be created as a slot with the same date and time already exist`);
+		}
+
 		await this.oneOffTimeslotsValidation.validate(entity);
 		await this.verifyActionPermission(entity);
 		await this.oneOffTimeslotsRepo.save(entity);
