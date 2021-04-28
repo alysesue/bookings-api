@@ -107,15 +107,14 @@ describe('One off timeslots Controller test', () => {
 	});
 	it('should delete one off timeslot', async () => {
 		OneOffTimeslotsServiceMock.delete.mockReturnValue(Promise.resolve());
-
-		IdHasherMock.decode.mockImplementation(() => {
-			return 1;
+		IdHasherMock.encode.mockImplementation(() => {
+			return '1';
 		});
 
 		const controller = Container.get(OneOffTimeslotsController);
 		await controller.deleteOneOffTimeslot('1');
 
-		expect(OneOffTimeslotsServiceMock.delete).toHaveBeenCalledWith(1);
+		expect(OneOffTimeslotsServiceMock.delete).toHaveBeenCalledWith('1');
 	});
 
 	it('should update oneOffTimeslots', async () => {
@@ -127,7 +126,7 @@ describe('One off timeslots Controller test', () => {
 		oneOffTimeslots.title = 'test title';
 		oneOffTimeslots.description = 'test description';
 
-		OneOffTimeslotsServiceMock.save.mockReturnValue(Promise.resolve(oneOffTimeslots));
+		OneOffTimeslotsServiceMock.update.mockReturnValue(Promise.resolve(oneOffTimeslots));
 		IdHasherMock.encode.mockImplementation(() => {
 			return 'A';
 		});
@@ -142,7 +141,7 @@ describe('One off timeslots Controller test', () => {
 		const controller = Container.get(OneOffTimeslotsController);
 		const result = await controller.update('1', request);
 
-		expect(OneOffTimeslotsServiceMock.save).toHaveBeenCalled();
+		expect(OneOffTimeslotsServiceMock.update).toHaveBeenCalled();
 		expect(result).toBeDefined();
 		expect(result).toEqual({
 			data: {
@@ -178,11 +177,7 @@ class OneOffTimeslotsServiceMock implements Partial<OneOffTimeslotsService> {
 
 class IdHasherMock implements Partial<IdHasher> {
 	public static encode = jest.fn();
-	public static decode = jest.fn();
 	public encode(id: number): string {
 		return IdHasherMock.encode();
-	}
-	public decode(id: string): number {
-		return IdHasherMock.decode();
 	}
 }

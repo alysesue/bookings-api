@@ -9,6 +9,7 @@ import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { LabelsService } from '../labels/labels.service';
 import { OneOffTimeslotsMapper } from './oneOffTimeslots.mapper';
 import { OneOffTimeslotsValidation } from './oneOffTimeslots.validation';
+import { IdHasher } from '../../infrastructure/idHasher';
 
 @InRequestScope
 export class OneOffTimeslotsService {
@@ -24,6 +25,8 @@ export class OneOffTimeslotsService {
 	private oneOffTimeslotsValidation: OneOffTimeslotsValidation;
 	@Inject
 	private mapper: OneOffTimeslotsMapper;
+	@Inject
+	private idHasher: IdHasher;
 
 	private async verifyActionPermission(entity: OneOffTimeslot): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
@@ -47,13 +50,31 @@ export class OneOffTimeslotsService {
 		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
 		const labels = await this.labelsService.verifyLabels(request.labelIds, serviceProvider.serviceId);
 		const entity = this.mapper.mapToOneOffTimeslots(request, serviceProvider, labels);
+
 		await this.oneOffTimeslotsValidation.validate(entity);
 		await this.verifyActionPermission(entity);
 		await this.oneOffTimeslotsRepo.save(entity);
 		return entity;
 	}
 
-	public async delete(id: number): Promise<void> {
+	public async update(request: OneOffTimeslotRequest, idSigned: string): Promise<OneOffTimeslot> {
+		const id = this.idHasher.decode(idSigned);
+		const entity = await this.oneOffTimeslotsRepo.getById({ id });
+		if (!entity) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`One off timeslot can't be found`);
+		}
+		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
+		const labels = await this.labelsService.verifyLabels(request.labelIds, serviceProvider.serviceId);
+		this.mapper.updateMapToOneOffTimeslots(request, entity, serviceProvider, labels);
+
+		await this.oneOffTimeslotsValidation.validate(entity);
+		await this.verifyActionPermission(entity);
+		await this.oneOffTimeslotsRepo.save(entity);
+		return entity;
+	}
+
+	public async delete(idSigned: string): Promise<void> {
+		const id = this.idHasher.decode(idSigned);
 		const entity = await this.oneOffTimeslotsRepo.getById({ id });
 		if (!entity) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`One off timeslot not found`);

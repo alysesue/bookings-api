@@ -23,8 +23,6 @@ export const mailer = nodemailer.createTransport(smtp).use('compile', inLineCss(
 
 mailer.verify((err) => {
 	if (err) {
-		emailLogger.error('Config', config);
-		emailLogger.error('Smtp', smtp);
 		emailLogger.error('Unable to configure nodemailer SMTP transport', err);
 	} else {
 		emailLogger.info('Nodemailer SMTP configuration was succeessful');
