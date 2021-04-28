@@ -23,6 +23,8 @@ import {
 } from './serviceProviders.apicontract';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
 
+const DEFAULT_PHONE_NUMBER = '+6580000000';
+
 @InRequestScope
 export class ServiceProvidersService {
 	@Inject
@@ -209,10 +211,13 @@ export class ServiceProvidersService {
 			organisation,
 		);
 
-		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(molServiceProviderOnboards, {
-			token: cookie,
-			desiredDeliveryMediumsHeader,
-		});
+		const res: MolUpsertUsersResult = await this.molUsersService.molUpsertUser(
+			molServiceProviderOnboards.map((sp) => ({ ...sp, phoneNumber: sp.phoneNumber || DEFAULT_PHONE_NUMBER })),
+			{
+				token: cookie,
+				desiredDeliveryMediumsHeader,
+			},
+		);
 
 		const upsertedMolUser = [...(res?.created || []), ...(res?.updated || [])];
 

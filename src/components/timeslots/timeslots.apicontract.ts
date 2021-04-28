@@ -73,7 +73,7 @@ export class TimeslotServiceProviderResponse {
 	/**
 	 * The one off timeslot id
 	 */
-	public oneOffTimeslotId?: number;
+	public oneOffTimeslotId?: string;
 
 	/**
 	 * The labels linked to the service

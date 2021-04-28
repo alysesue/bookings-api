@@ -18,7 +18,7 @@ export class ServiceProviderModel {
 export type MolServiceProviderOnboardContract = {
 	name: string;
 	email?: string;
-	phoneNumber: string;
+	phoneNumber?: string;
 	agencyUserId?: string;
 	uinfin?: string;
 	serviceName: string;

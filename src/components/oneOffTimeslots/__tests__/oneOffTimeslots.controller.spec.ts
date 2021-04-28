@@ -105,12 +105,70 @@ describe('One off timeslots Controller test', () => {
 			},
 		});
 	});
+	it('should delete one off timeslot', async () => {
+		OneOffTimeslotsServiceMock.delete.mockReturnValue(Promise.resolve());
+
+		const controller = Container.get(OneOffTimeslotsController);
+		await controller.deleteOneOffTimeslot('id');
+
+		expect(OneOffTimeslotsServiceMock.delete).toHaveBeenCalledWith('id');
+	});
+
+	it('should update oneOffTimeslots', async () => {
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
+		oneOffTimeslots.endDateTime = new Date('2021-03-02T02:00:00Z');
+		oneOffTimeslots.capacity = 1;
+		oneOffTimeslots.title = 'test title';
+		oneOffTimeslots.description = 'test description';
+
+		OneOffTimeslotsServiceMock.update.mockReturnValue(Promise.resolve(oneOffTimeslots));
+		IdHasherMock.encode.mockImplementation(() => {
+			return 'A';
+		});
+
+		const request = new OneOffTimeslotRequest();
+		request.startDateTime = new Date('2021-03-02T00:00:00Z');
+		request.endDateTime = DateHelper.addHours(request.startDateTime, 1);
+		request.capacity = 2;
+		request.labelIds = [];
+		request.serviceProviderId = 1;
+
+		const controller = Container.get(OneOffTimeslotsController);
+		const result = await controller.update('1', request);
+
+		expect(OneOffTimeslotsServiceMock.update).toHaveBeenCalled();
+		expect(result).toBeDefined();
+		expect(result).toEqual({
+			data: {
+				idSigned: 'A',
+				startDateTime: new Date('2021-03-02T00:00:00.000Z'),
+				endDateTime: new Date('2021-03-02T02:00:00.000Z'),
+				capacity: 1,
+				labels: [],
+				title: 'test title',
+				description: 'test description',
+			},
+		});
+	});
 });
 
 class OneOffTimeslotsServiceMock implements Partial<OneOffTimeslotsService> {
 	public static save = jest.fn();
+	public static update = jest.fn();
+	public static delete = jest.fn();
+
 	public async save(...params): Promise<any> {
 		return OneOffTimeslotsServiceMock.save(...params);
+	}
+
+	public async update(...params): Promise<any> {
+		return OneOffTimeslotsServiceMock.update(...params);
+	}
+
+	public async delete(...params): Promise<any> {
+		return OneOffTimeslotsServiceMock.delete(...params);
 	}
 }
 

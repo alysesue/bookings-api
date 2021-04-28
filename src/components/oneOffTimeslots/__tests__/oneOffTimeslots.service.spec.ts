@@ -9,6 +9,8 @@ import { OneOffTimeslotsRepository } from '../oneOffTimeslots.repository';
 import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
 import { OneOffTimeslotsActionAuthVisitor } from '../oneOffTimeslots.auth';
 import { LabelsService } from '../../labels/labels.service';
+import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
+import { IdHasher } from '../../../infrastructure/idHasher';
 
 jest.mock('../oneOffTimeslots.auth');
 
@@ -25,6 +27,7 @@ describe('OneOffTimeslots Service Tests', () => {
 	serviceProvider.service = newService;
 
 	beforeAll(() => {
+		Container.bind(IdHasher).to(IdHasherMock);
 		Container.bind(OneOffTimeslotsRepository).to(OneOffTimeslotsRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
@@ -85,6 +88,46 @@ describe('OneOffTimeslots Service Tests', () => {
 			'"User cannot perform this action for this one off timeslot."',
 		);
 	});
+
+	it('should update one off timeslots', async () => {
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
+		oneOffTimeslots.endDateTime = DateHelper.addHours(oneOffTimeslots.startDateTime, 1);
+		oneOffTimeslots.capacity = 2;
+		oneOffTimeslots.serviceProviderId = 1;
+		OneOffTimeslotsRepositoryMock.getById.mockReturnValue(oneOffTimeslots);
+		OneOffTimeslotsRepositoryMock.save.mockReturnValue(() => {});
+
+		const request = new OneOffTimeslotRequest();
+		request.startDateTime = new Date('2021-03-02T00:00:00Z');
+		request.endDateTime = DateHelper.addHours(request.startDateTime, 1);
+		request.capacity = 2;
+		request.serviceProviderId = 1;
+
+		const service = Container.get(OneOffTimeslotsService);
+		await service.update(request, '1');
+
+		expect(OneOffTimeslotsRepositoryMock.getById).toBeCalled();
+		expect(OneOffTimeslotsRepositoryMock.save).toBeCalled();
+	});
+
+	it('should delete one off timeslots', async () => {
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
+		oneOffTimeslots.endDateTime = new Date('2021-03-02T02:00:00Z');
+		oneOffTimeslots.capacity = 1;
+		OneOffTimeslotsRepositoryMock.getById.mockReturnValue(oneOffTimeslots);
+		OneOffTimeslotsRepositoryMock.delete.mockReturnValue(Promise.resolve());
+		IdHasherMock.decode.mockReturnValue(1);
+
+		const service = Container.get(OneOffTimeslotsService);
+		await service.delete('1');
+
+		expect(OneOffTimeslotsRepositoryMock.getById).toBeCalled();
+		expect(OneOffTimeslotsRepositoryMock.delete).toBeCalledWith(1);
+	});
 });
 
 class ServiceProvidersServiceMock implements Partial<ServiceProvidersService> {
@@ -97,9 +140,19 @@ class ServiceProvidersServiceMock implements Partial<ServiceProvidersService> {
 
 class OneOffTimeslotsRepositoryMock implements Partial<OneOffTimeslotsRepository> {
 	public static save = jest.fn();
+	public static delete = jest.fn();
+	public static getById = jest.fn();
 
 	public async save(...params): Promise<any> {
 		return OneOffTimeslotsRepositoryMock.save(...params);
+	}
+
+	public async delete(...params): Promise<any> {
+		return OneOffTimeslotsRepositoryMock.delete(...params);
+	}
+
+	public async getById(...params): Promise<any> {
+		return OneOffTimeslotsRepositoryMock.getById(...params);
 	}
 }
 

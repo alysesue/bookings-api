@@ -18,7 +18,11 @@ export class MolUsersMapper {
 				UserGroupParser.generateServiceProviderUserGroup(orga._organisationAdminGroupMap.organisationRef),
 			];
 
-			return trimFields({ ...serviceProvider, groups });
+			return trimFields({
+				...serviceProvider,
+				phoneNumber: serviceProvider.phoneNumber,
+				groups,
+			});
 		});
 	}
 
