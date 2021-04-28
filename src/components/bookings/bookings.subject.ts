@@ -2,7 +2,6 @@ import { InRequestScope } from 'typescript-ioc';
 import { Booking } from '../../models/entities';
 import { Subject } from '../../infrastructure/observer';
 import { BookingType } from '../../models/bookingType';
-import { InRequestScope } from 'typescript-ioc';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 
 export type BookingsPublisherProps = {
