@@ -103,7 +103,6 @@
 	},
 	"dependencies": {
 		"@js-joda/core": "^3.2.0",
-		"@typescript-eslint/eslint-plugin-tslint": "^4.22.0",
 		"axios": "^0.21.1",
 		"crypto-js": "^4.0.0",
 		"csv-parse": "^4.10.1",
@@ -143,6 +142,7 @@
 		"@types/node": "^13.13.10",
 		"@types/pg": "^7.14.7",
 		"@typescript-eslint/eslint-plugin": "^4.22.0",
+		"@typescript-eslint/eslint-plugin-tslint": "^4.22.0",
 		"@typescript-eslint/parser": "^4.22.0",
 		"chalk": "^4.0.0",
 		"circular-dependency-plugin": "^5.2.0",
@@ -153,7 +153,6 @@
 		"eslint-plugin-import": "^2.22.1",
 		"eslint-plugin-jsdoc": "^32.3.0",
 		"eslint-plugin-prefer-arrow": "^1.2.3",
-		"eslint-plugin-react": "^7.23.2",
 		"faker": "^4.1.0",
 		"file-loader": "^6.0.0",
 		"husky": "4.2.5",

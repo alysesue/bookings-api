@@ -30,7 +30,6 @@ module.exports = {
     "plugins": [
         "eslint-plugin-jsdoc",
         "eslint-plugin-prefer-arrow",
-        "eslint-plugin-react",
         "eslint-plugin-import",
         "@typescript-eslint",
         "@typescript-eslint/tslint"
