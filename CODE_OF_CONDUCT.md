@@ -266,6 +266,7 @@ export * as TheOldComponent from "src/components";` Nope!
 - Targeted tests (e.g. Unit/Integration/Benchmark/External) should be placed in the `__tests__` folder at the lowest-common-directory level of what's being tested
 - Broader tests (e.g. Functional/Load) should be placed at the project root's `__tests__` folder
 - Tests that don't allow network/dependencies should have their dependencies mocked (e.g. database, agency APIs, message queues)
+- Consider using `nock` if you only need to mock API responses in an automated test (e.g. jest), but create a `/mock` controller if it's required in manual/UI testing
 - Complex tests are more costly to write and maintain, consider using the "lowest level" test possible to meet your testing goals
 - Reference project in `mol-auth-forwarder`
 
@@ -282,9 +283,9 @@ src/
     component-1-and-2-test.spec.ts
   folder-1/
     component-1.ts
-    component-1-unit-test.spec
-    component-1-benchmark-test.bench.spec
-    component-1-external-integration-test.ext.spec
+    component-1-unit-test.spec.ts
+    component-1-benchmark-test.bench.spec.ts
+    component-1-external-integration-test.ext.spec.ts
   folder-2/
     component-2.ts
 ```
@@ -311,4 +312,5 @@ src/
 
 - API routes should begin with `${DOMAIN}/api/`
 - Health check routes should begin with `${DOMAIN}/health/`
-- Mock routes should begin with `${DOMAIN}/mocks/`
+- Mock routes should begin with `${DOMAIN}/mock/`
+- Document routes should begin with `${DOMAIN}/docs/`
