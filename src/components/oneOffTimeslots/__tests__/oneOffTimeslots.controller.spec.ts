@@ -107,11 +107,14 @@ describe('One off timeslots Controller test', () => {
 	});
 	it('should delete one off timeslot', async () => {
 		OneOffTimeslotsServiceMock.delete.mockReturnValue(Promise.resolve());
+		IdHasherMock.encode.mockImplementation(() => {
+			return '1';
+		});
 
 		const controller = Container.get(OneOffTimeslotsController);
-		await controller.deleteOneOffTimeslot('id');
+		await controller.deleteOneOffTimeslot('1');
 
-		expect(OneOffTimeslotsServiceMock.delete).toHaveBeenCalledWith('id');
+		expect(OneOffTimeslotsServiceMock.delete).toHaveBeenCalledWith('1');
 	});
 
 	it('should update oneOffTimeslots', async () => {

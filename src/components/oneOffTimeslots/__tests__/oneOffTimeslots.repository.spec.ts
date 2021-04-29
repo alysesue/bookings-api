@@ -126,7 +126,7 @@ describe('oneOffTimeslots repository tests', () => {
 
 	it('should delete timeslot', async () => {
 		const repository = Container.get(OneOffTimeslotsRepository);
-		await repository.delete(1);
+		await repository.delete(new OneOffTimeslot());
 		expect(TransactionManagerMock.delete).toBeCalled();
 	});
 });

@@ -128,7 +128,12 @@ describe('OneOffTimeslots Service Tests', () => {
 		await service.delete('1');
 
 		expect(OneOffTimeslotsRepositoryMock.getById).toBeCalled();
-		expect(OneOffTimeslotsRepositoryMock.delete).toBeCalledWith(1);
+		expect(OneOffTimeslotsRepositoryMock.delete).toBeCalledWith({
+			_capacity: 1,
+			_endDateTime: new Date('2021-03-02T02:00:00.000Z'),
+			_id: 1,
+			_startDateTime: new Date('2021-03-02T00:00:00.000Z'),
+		});
 	});
 });
 

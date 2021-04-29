@@ -43,6 +43,7 @@ swagger/
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
+
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries
@@ -787,3 +788,5 @@ load_test.csv
 # ignore node_modules symlink
 node_modules
 node_modules.nosync
+
+.vscode/.vscode/
