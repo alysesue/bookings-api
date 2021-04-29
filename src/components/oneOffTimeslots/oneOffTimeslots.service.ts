@@ -58,7 +58,7 @@ export class OneOffTimeslotsService {
 		};
 		const slotAvailableArr = await this.oneOffTimeslotsRepo.search(searchRequest);
 		if (slotAvailableArr.length){
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Slot cannot be created as a slot with the same date and time already exist`);
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Slot cannot be created as it overlaps with an existing slot.`);
 		}
 
 		await this.oneOffTimeslotsValidation.validate(entity);
