@@ -49,6 +49,7 @@ describe('OneOffTimeslots Service Tests', () => {
 
 	it('should save using repository', async () => {
 		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
+		OneOffTimeslotsRepositoryMock.search.mockImplementation(() => []);
 		LabelServiceMock.verifyLabels.mockReturnValue(Promise.resolve([Label.create('Chinese')]));
 
 		const request = new OneOffTimeslotRequest();
@@ -74,6 +75,7 @@ describe('OneOffTimeslots Service Tests', () => {
 	it(`should throw when user doesn't have permisssion`, async () => {
 		(authVisitorMock.hasPermission as jest.Mock).mockReturnValue(false);
 		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
+		OneOffTimeslotsRepositoryMock.search.mockImplementation(() => []);
 
 		const request = new OneOffTimeslotRequest();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
@@ -147,6 +149,7 @@ class OneOffTimeslotsRepositoryMock implements Partial<OneOffTimeslotsRepository
 	public static save = jest.fn();
 	public static delete = jest.fn();
 	public static getById = jest.fn();
+	public static search = jest.fn();
 
 	public async save(...params): Promise<any> {
 		return OneOffTimeslotsRepositoryMock.save(...params);
@@ -158,6 +161,10 @@ class OneOffTimeslotsRepositoryMock implements Partial<OneOffTimeslotsRepository
 
 	public async getById(...params): Promise<any> {
 		return OneOffTimeslotsRepositoryMock.getById(...params);
+	}
+
+	public async search(...params): Promise<any> {
+		return OneOffTimeslotsRepositoryMock.search(...params);
 	}
 }
 
