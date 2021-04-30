@@ -8,4 +8,5 @@ export interface TimeslotWithCapacity extends Timeslot {
 	readonly labels?: Label[];
 	readonly title?: string;
 	readonly description?: string;
+	readonly isRecurring?: boolean;
 }

@@ -91,6 +91,7 @@ export class TimeslotsSchedule implements ITimeslotsSchedule {
 						startTimeNative: dateNative + timeslotTemplate._startTime.AsMilliseconds(),
 						endTimeNative: dateNative + timeslotTemplate._endTime.AsMilliseconds(),
 						capacity: timeslotTemplate._capacity,
+						isRecurring: true,
 					};
 
 					yield timeslot;

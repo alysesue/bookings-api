@@ -122,6 +122,7 @@ export class TimeslotsMapper {
 		item.labels = this.labelsMapper.mapToLabelsResponse(entry.labels);
 		item.eventTitle = entry.title ?? undefined;
 		item.eventDescription = entry.description ?? undefined;
+		item.isRecurring = entry.isRecurring ?? false;
 		return item;
 	}
 }
