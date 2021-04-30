@@ -12,7 +12,7 @@ export class LifeSGObserver implements IObserver {
 		if (
 			subject instanceof BookingsSubject &&
 			// tslint:disable-next-line: no-in-misuse
-			subject.booking.status in [BookingStatus.Accepted, BookingStatus.Cancelled, BookingStatus.Rejected]
+			[BookingStatus.Accepted, BookingStatus.Cancelled, BookingStatus.Rejected].includes(subject.booking.status)
 		) {
 			this.lifeSGMQSerice.send(
 				LifeSGMapper.mapLifeSGAppointment(subject.booking, subject.action),
