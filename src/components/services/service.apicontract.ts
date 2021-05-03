@@ -20,5 +20,5 @@ export class ServiceRequest {
 	 */
 	public organisationId?: number;
 	public labels?: LabelRequestModel[];
-	public emailSuffix?: string;
+	public emailSuffix?: string | null;
 }
