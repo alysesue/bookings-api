@@ -70,7 +70,7 @@ describe('Send email', () => {
 
 	it('should send mail to multiple recipients', async () => {
 		const options: CreateEmail.Domain.CreateEmailRequestApiDomain = {
-			from: 'from@foo.com',
+			from: 'from@au.foo.com',
 			to: ['to@foo.com', 'anotherto@foo.com'],
 			subject: 'Multiple recipients',
 			html: '<h1>Multiple recipients</h1>',
