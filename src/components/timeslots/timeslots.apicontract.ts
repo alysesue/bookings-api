@@ -88,6 +88,10 @@ export class TimeslotServiceProviderResponse {
 	 * The event description of the slot
 	 */
 	public eventDescription?: string;
+	/**
+	 * Event recurring every week
+	 */
+	public isRecurring: boolean;
 }
 
 export class TimeslotEntryResponse {

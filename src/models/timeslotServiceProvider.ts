@@ -10,6 +10,7 @@ export type TimeslotServiceProviderResult = {
 	labels?: Label[];
 	title?: string;
 	description?: string;
+	isRecurring: boolean;
 };
 
 export class TimeslotServiceProvider {
@@ -24,6 +25,7 @@ export class TimeslotServiceProvider {
 	private readonly _labels?: Label[];
 	private readonly _title?: string;
 	private readonly _description?: string;
+	private readonly _isRecurring?: boolean;
 
 	public get capacity(): number {
 		return this._capacity;
@@ -74,6 +76,10 @@ export class TimeslotServiceProvider {
 		return this._description;
 	}
 
+	public get isRecurring(): boolean {
+		return this._isRecurring;
+	}
+
 	constructor(
 		serviceProvider: ServiceProvider,
 		timeslotData: {
@@ -82,6 +88,7 @@ export class TimeslotServiceProvider {
 			readonly labels?: Label[];
 			readonly title?: string;
 			readonly description?: string;
+			readonly isRecurring?: boolean;
 		},
 	) {
 		this._serviceProvider = serviceProvider;
@@ -95,6 +102,7 @@ export class TimeslotServiceProvider {
 		this._labels = timeslotData.labels;
 		this._title = timeslotData.title;
 		this._description = timeslotData.description;
+		this._isRecurring = timeslotData.isRecurring;
 	}
 
 	public getAvailabilityCount(maxAvailability?: number): number {

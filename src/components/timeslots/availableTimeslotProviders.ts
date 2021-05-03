@@ -34,6 +34,7 @@ export class AvailableTimeslotProviders {
 					labels: timeslotServiceProvider.labels,
 					title: timeslotServiceProvider.title,
 					description: timeslotServiceProvider.description,
+					isRecurring: timeslotServiceProvider.isRecurring,
 				};
 			}
 		}
