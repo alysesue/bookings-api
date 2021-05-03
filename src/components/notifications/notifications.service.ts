@@ -57,7 +57,7 @@ export class NotificationsService {
 
 	private validateEmail = (value): void => {
 		// tslint:disable-next-line: tsr-detect-unsafe-regexp
-		if (!/^\w+((\-|\.)\w+)*\@\w+(\-\w+)*(\.\w{2,})*\.\w{2,}$/.test(value)) {
+		if (!/^\w+((\-|\.)\w+)*\@\w+(\-|\.|(\w+))*$/.test(value)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Invalid email address');
 		}
 	};
