@@ -2,6 +2,10 @@ import { OneOffTimeslot } from '../../models/entities';
 import { Validator } from '../../infrastructure/validator';
 import { BusinessValidation } from '../../models';
 import { concatIteratables } from '../../tools/asyncIterables';
+import {OneOffTimeslotRequest} from "./oneOffTimeslots.apicontract";
+import {ErrorCodeV2, MOLErrorV2} from "mol-lib-api-contract";
+import { OneOffTimeslotsRepository } from './oneOffTimeslots.repository';
+import {Inject} from "typescript-ioc";
 
 export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 	protected async *getValidations(entity: OneOffTimeslot) {
@@ -33,6 +37,21 @@ export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 }
 
 export class OneOffTimeslotsBusinessValidation {
+	@Inject
+	private oneOffTimeslotsRepo: OneOffTimeslotsRepository;
+
+	public async validateOneOffTimeslotsAvailability(request:OneOffTimeslotRequest) {
+		const searchRequest = {
+			serviceProviderIds: [request.serviceProviderId],
+			startDateTime: request.startDateTime,
+			endDateTime: request.endDateTime,
+		};
+		const slotAvailableArr = await this.oneOffTimeslotsRepo.search(searchRequest);
+		if (slotAvailableArr.length) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Slot cannot be created as it overlaps with an existing slot.`);
+		}
+	}
+
 	public static readonly TitleTooLong = new BusinessValidation({
 		code: '10101',
 		message: `Title word limit is 100 characters`,
