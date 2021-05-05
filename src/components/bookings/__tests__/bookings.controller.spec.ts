@@ -168,6 +168,7 @@ describe('Bookings.Controller', () => {
 			undefined,
 			undefined,
 			undefined,
+			false,
 			1,
 		);
 
@@ -219,6 +220,7 @@ describe('Bookings.Controller', () => {
 			2,
 			50,
 			123,
+			false,
 			1,
 		);
 
