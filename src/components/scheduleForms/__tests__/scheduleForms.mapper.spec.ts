@@ -51,4 +51,23 @@ describe('schedule mapper tests', () => {
 			errorResult: ['Value 11:73 is not a valid time.'],
 		});
 	});
+
+	it('should map day schedule correctly with capacity value set', async() => {
+		const scheduleFormsRequest: ScheduleFormRequest = {
+			slotsDurationInMin: 5,
+			weekdaySchedules: [
+				{
+					weekday: Weekday.Monday,
+					hasScheduleForm: true,
+					openTime: '23:23',
+					closeTime: '11:23',
+					capacity: 2
+				} as WeekDayScheduleContract,
+			],
+		} as ScheduleFormRequest;
+		const result = mapToEntity(scheduleFormsRequest, new ScheduleForm());
+		if (result instanceof ScheduleForm) {
+			expect(result.weekdaySchedules[0].capacity).toEqual(2)
+		}
+	})
 });
