@@ -231,6 +231,7 @@ export class BookingsController extends Controller {
 		@Query() page?: number,
 		@Query() limit?: number,
 		@Query() maxId?: number,
+		@Query() getAll?: boolean,
 		@Header('x-api-service') serviceId?: number,
 	): Promise<ApiPagedData<BookingResponse>> {
 		const searchQuery: BookingSearchRequest = {
@@ -243,7 +244,9 @@ export class BookingsController extends Controller {
 			citizenUinFins,
 			serviceProviderIds,
 			page: page || DEFAULT_PAGE,
-			limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
+			limit: getAll
+				? Math.max(limit || DEFAULT_LIMIT, DEFAULT_LIMIT)
+				: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
 			maxId,
 		};
 
