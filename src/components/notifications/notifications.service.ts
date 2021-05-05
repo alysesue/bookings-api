@@ -55,9 +55,10 @@ export class NotificationsService {
 		emails.forEach((email) => this.validateEmail(email));
 	};
 
-	private validateEmail = (value): void => {
+	private validateEmail = (email: string): void => {
 		// tslint:disable-next-line: tsr-detect-unsafe-regexp
-		if (!/^\w+((\-|\.)\w+)*\@\w+(\-|\.|(\w+))*$/.test(value)) {
+		const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+		if (!re.test(email.toLowerCase())) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Invalid email address');
 		}
 	};
