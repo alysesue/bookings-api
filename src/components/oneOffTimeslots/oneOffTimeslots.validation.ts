@@ -50,6 +50,7 @@ export class OneOffTimeslotsBusinessValidation {
 		if (slotAvailableArr && slotAvailableArr.length) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Slot cannot be created as it overlaps with an existing slot.`);
 		}
+		return true;
 	}
 
 	public static readonly TitleTooLong = new BusinessValidation({
