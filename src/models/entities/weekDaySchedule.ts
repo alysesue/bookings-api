@@ -26,7 +26,8 @@ export class WeekDaySchedule {
 	public closeTime?: TimeOfDay;
 	@Column({ nullable: false })
 	public scheduleFormId: number;
-
+	@Column({ nullable: false, default: 1 })
+	public capacity: number;
 	constructor() {}
 
 	// This a logical relationship (WeekDaySchedule[1-*]WeekDayBreak), not mapped directly to database.
