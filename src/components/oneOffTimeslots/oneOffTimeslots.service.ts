@@ -9,6 +9,7 @@ import { OneOffTimeslotsRepository } from './oneOffTimeslots.repository';
 import { OneOffTimeslotsActionAuthVisitor } from './oneOffTimeslots.auth';
 import { OneOffTimeslotsMapper } from './oneOffTimeslots.mapper';
 import { OneOffTimeslotsValidation } from './oneOffTimeslots.validation';
+import { OneOffTimeslotsBusinessValidation } from './oneOffTimeslots.validation';
 import { IdHasher } from '../../infrastructure/idHasher';
 
 @InRequestScope
@@ -23,6 +24,8 @@ export class OneOffTimeslotsService {
 	private labelsService: LabelsService;
 	@Inject
 	private oneOffTimeslotsValidation: OneOffTimeslotsValidation;
+	@Inject
+	private oneOffTimeslotsBusinessValidation: OneOffTimeslotsBusinessValidation;
 	@Inject
 	private mapper: OneOffTimeslotsMapper;
 	@Inject
@@ -47,20 +50,10 @@ export class OneOffTimeslotsService {
 	}
 
 	public async save(request: OneOffTimeslotRequest): Promise<OneOffTimeslot> {
-		const searchRequest = {
-			serviceProviderIds: [request.serviceProviderId],
-			startDateTime: request.startDateTime,
-			endDateTime: request.endDateTime,
-		};
-		const slotAvailableArr = await this.oneOffTimeslotsRepo.search(searchRequest);
-		if (slotAvailableArr.length){
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Slot cannot be created as it overlaps with an existing slot.`);
-		}
-
+		await this.oneOffTimeslotsBusinessValidation.validateOneOffTimeslotsAvailability(request);
 		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
 		const labels = await this.labelsService.verifyLabels(request.labelIds, serviceProvider.serviceId);
 		const entity = this.mapper.mapToOneOffTimeslots(request, serviceProvider, labels);
-
 		await this.oneOffTimeslotsValidation.validate(entity);
 		await this.verifyActionPermission(entity);
 		await this.oneOffTimeslotsRepo.save(entity);
@@ -68,6 +61,7 @@ export class OneOffTimeslotsService {
 	}
 
 	public async update(request: OneOffTimeslotRequest, idSigned: string): Promise<OneOffTimeslot> {
+		await this.oneOffTimeslotsBusinessValidation.validateOneOffTimeslotsAvailability(request);
 		const id = this.idHasher.decode(idSigned);
 		const entity = await this.oneOffTimeslotsRepo.getById({ id });
 		if (!entity) {
