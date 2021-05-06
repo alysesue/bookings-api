@@ -1,10 +1,10 @@
-import {OneOffTimeslotsBusinessValidation, OneOffTimeslotsValidation} from '../oneOffTimeslots.validation';
-import {Container} from 'typescript-ioc';
-import {OneOffTimeslot} from '../../../models';
-import {OneOffTimeslotRequest} from "../oneOffTimeslots.apicontract";
-import {DateHelper} from "../../../infrastructure/dateHelper";
-import {OneOffTimeslotsRepository} from "../oneOffTimeslots.repository";
-import {OneOffTimeslotsRepositoryMock} from "../__mocks__/oneOffTimeslots.mock";
+import { OneOffTimeslotsBusinessValidation, OneOffTimeslotsValidation } from '../oneOffTimeslots.validation';
+import { Container } from 'typescript-ioc';
+import { OneOffTimeslot } from '../../../models';
+import { OneOffTimeslotRequest } from '../oneOffTimeslots.apicontract';
+import { DateHelper } from '../../../infrastructure/dateHelper';
+import { OneOffTimeslotsRepository } from '../oneOffTimeslots.repository';
+import { OneOffTimeslotsRepositoryMock } from '../__mocks__/oneOffTimeslots.mock';
 
 describe('Validation of oneOffTimeslots', () => {
 	beforeAll(() => {
@@ -12,10 +12,7 @@ describe('Validation of oneOffTimeslots', () => {
 	});
 	beforeEach(() => {
 		OneOffTimeslotsRepositoryMock.searchBookings.mockImplementation(() =>
-			Promise.resolve(
-				[{
-
-			}] as OneOffTimeslot[]),
+			Promise.resolve([{}] as OneOffTimeslot[]),
 		);
 	});
 
@@ -37,7 +34,7 @@ describe('Validation of oneOffTimeslots', () => {
 		await expect(validate).rejects.toThrow('[10103] Description word limit is 4000 characters');
 	});
 
-	it('Should call overlap validation when saving', async () => {
+	it('should return true when requested timeslot does not overlap with another oneOffTimeslot', async () => {
 		const oneOffTimeslotsBusinessValidation = Container.get(OneOffTimeslotsBusinessValidation);
 		const request = new OneOffTimeslotRequest();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
@@ -48,13 +45,15 @@ describe('Validation of oneOffTimeslots', () => {
 		expect(result).toBeTruthy();
 	});
 
-	it('Should throw error when overlapping validation', async () => {
+	it('should throw error when requested timeslot overlaps with another oneOffTimeslot', async () => {
 		const oneOffTimeslotsBusinessValidation = Container.get(OneOffTimeslotsBusinessValidation);
 		const request = new OneOffTimeslotRequest();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
-		request.endDateTime = new Date('2021-03-02T01:00:00Z'),
+		request.endDateTime = new Date('2021-03-02T01:00:00Z');
 		request.capacity = 2;
 		request.serviceProviderId = 1;
-		await expect(oneOffTimeslotsBusinessValidation.validateOneOffTimeslotsAvailability(request)).rejects.toThrow('Slot cannot be created as it overlaps with an existing slot.');
+		await expect(oneOffTimeslotsBusinessValidation.validateOneOffTimeslotsAvailability(request)).rejects.toThrow(
+			'Slot cannot be created as it overlaps with an existing slot.',
+		);
 	});
 });

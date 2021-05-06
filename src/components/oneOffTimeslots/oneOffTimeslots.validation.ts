@@ -2,10 +2,10 @@ import { OneOffTimeslot } from '../../models/entities';
 import { Validator } from '../../infrastructure/validator';
 import { BusinessValidation } from '../../models';
 import { concatIteratables } from '../../tools/asyncIterables';
-import {OneOffTimeslotRequest} from "./oneOffTimeslots.apicontract";
-import {ErrorCodeV2, MOLErrorV2} from "mol-lib-api-contract";
+import { OneOffTimeslotRequest } from './oneOffTimeslots.apicontract';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { OneOffTimeslotsRepository } from './oneOffTimeslots.repository';
-import {Inject} from "typescript-ioc";
+import { Inject } from 'typescript-ioc';
 
 export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 	protected async *getValidations(entity: OneOffTimeslot) {
@@ -40,7 +40,7 @@ export class OneOffTimeslotsBusinessValidation {
 	@Inject
 	private oneOffTimeslotsRepo: OneOffTimeslotsRepository;
 
-	public async validateOneOffTimeslotsAvailability(request:OneOffTimeslotRequest) {
+	public async validateOneOffTimeslotsAvailability(request: OneOffTimeslotRequest) {
 		const searchRequest = {
 			serviceProviderIds: [request.serviceProviderId],
 			startDateTime: request.startDateTime,
@@ -48,7 +48,9 @@ export class OneOffTimeslotsBusinessValidation {
 		};
 		const slotAvailableArr = await this.oneOffTimeslotsRepo.search(searchRequest);
 		if (slotAvailableArr && slotAvailableArr.length) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Slot cannot be created as it overlaps with an existing slot.`);
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Slot cannot be created as it overlaps with an existing slot.`,
+			);
 		}
 		return true;
 	}

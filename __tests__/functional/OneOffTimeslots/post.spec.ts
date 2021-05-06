@@ -3,7 +3,7 @@ import {
 	populateOneOffTimeslot,
 	populateServiceLabel,
 	populateUserServiceProvider,
-	updateOneOffTimeslot
+	updateOneOffTimeslot,
 } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import { ServiceResponse } from '../../../src/components/services/service.apicontract';
@@ -20,7 +20,7 @@ describe('Timeslots functional tests', () => {
 	let serviceProvider1: ServiceProviderResponseModel;
 	let service: ServiceResponse;
 
-afterAll(async (done) => {
+	afterAll(async (done) => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
 		done();
@@ -76,7 +76,7 @@ afterAll(async (done) => {
 	});
 
 	it('should add oneOffTimeslots with title/description', async () => {
-		const service1TimeslotsResponse =  await populateOneOffTimeslot({
+		const service1TimeslotsResponse = await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
@@ -136,9 +136,7 @@ afterAll(async (done) => {
 				description: 'Description',
 			});
 		} catch (e) {
-			const res = [
-				{ message: 'Slot cannot be created as it overlaps with an existing slot' },
-			];
+			const res = [{ message: 'Slot cannot be created as it overlaps with an existing slot' }];
 			expect(e.message).toStrictEqual(res);
 		}
 	});
@@ -171,9 +169,7 @@ afterAll(async (done) => {
 				idSigned: idSigned,
 			});
 		} catch (e) {
-			const res = [
-				{ message: 'Slot cannot be created as it overlaps with an existing slot' },
-			];
+			const res = [{ message: 'Slot cannot be created as it overlaps with an existing slot' }];
 			expect(e.message).toStrictEqual(res);
 		}
 	});

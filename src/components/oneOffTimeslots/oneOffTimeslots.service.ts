@@ -9,7 +9,7 @@ import { OneOffTimeslotsRepository } from './oneOffTimeslots.repository';
 import { OneOffTimeslotsActionAuthVisitor } from './oneOffTimeslots.auth';
 import { OneOffTimeslotsMapper } from './oneOffTimeslots.mapper';
 import { OneOffTimeslotsValidation } from './oneOffTimeslots.validation';
-import {OneOffTimeslotsBusinessValidation}  from './oneOffTimeslots.validation';
+import { OneOffTimeslotsBusinessValidation } from './oneOffTimeslots.validation';
 import { IdHasher } from '../../infrastructure/idHasher';
 
 @InRequestScope
