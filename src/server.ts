@@ -5,6 +5,7 @@ import * as body from 'koa-body';
 import * as compress from 'koa-compress';
 import * as KoaRouter from 'koa-router';
 import * as helmet from 'koa-helmet';
+import * as v8 from 'v8';
 import { logger, LoggerV2 } from 'mol-lib-common';
 import { KoaErrorHandler } from 'mol-lib-common';
 import { KoaLoggerContext } from 'mol-lib-common';
@@ -105,6 +106,9 @@ export async function startServer(): Promise<Server> {
 	const originWhitelist = config.accessControlAllowOrigin.split(',');
 	// Setup service
 	LoggerV2.setServiceName(config.name);
+
+	const memory = v8.getHeapStatistics();
+	logger.info(`[Memory] Total available size: ${Math.round(memory.total_available_size  / (1024 * 1024))} MB`);
 
 	// Setup server
 	const router: KoaRouter = new KoaRouter({ prefix: `${basePath}/api` });
