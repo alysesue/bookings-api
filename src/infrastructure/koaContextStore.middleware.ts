@@ -15,11 +15,11 @@ export class KoaContextStoreImplementation implements KoaContextStore {
 	private constructor() {}
 
 	public get manualContext(): boolean {
-		return Boolean(this._koaContext[MANUAL_CONTEXT_RESPONSE]);
+		return Boolean(this.koaContext[MANUAL_CONTEXT_RESPONSE]);
 	}
 
 	public set manualContext(value: boolean) {
-		this._koaContext[MANUAL_CONTEXT_RESPONSE] = value;
+		this.koaContext[MANUAL_CONTEXT_RESPONSE] = value;
 	}
 
 	private static _registered = false;
