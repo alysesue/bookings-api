@@ -44,7 +44,7 @@ class ApiDataResponseHandler {
 			await this._middleware(ctx, next);
 
 			if (
-				!Boolean(ctx[MANUAL_CONTEXT_RESPONSE]) &&
+				!ctx[MANUAL_CONTEXT_RESPONSE] &&
 				!(ctx.body instanceof ApiData) &&
 				!(ctx.body instanceof ApiPagedData)
 			) {

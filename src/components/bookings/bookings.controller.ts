@@ -255,16 +255,10 @@ export class BookingsController extends Controller {
 		const bookingsCSVContent = await this.bookingsMapper.mapBookingsCSV(bookings, userContextSnapshot);
 		const koaContext = this._koaContextStore.koaContext;
 		koaContext.body = bookingsCSVContent;
-		// koaContext.response.body = bookingsCSVContent;
-		// koaContext.response.set('Content-Type', 'text/csv');
-		// koaContext.response.set('Content-Disposition', `attachment; filename="exported-bookings.csv"`);
-		// koaContext.response.se;
-		// this.setStatus(200);
 
 		koaContext.set('Content-Type', 'text/csv');
 		koaContext.set('Content-Disposition', `attachment; filename="exported-bookings.csv"`);
 		this._koaContextStore.manualContext = true;
-		// this._koaContextStore.manualContext = true;
 	}
 
 	/**
