@@ -109,22 +109,3 @@ export class BookingProviderResponse {
 	public id: number;
 	public name: string;
 }
-
-export const BookingHeader = [
-	'Booking ID',
-	'Booking Status',
-	'Booking creation date',
-	'Booking service start date/time',
-	'Booking service end date/time',
-	'Booking location',
-	'Booking description',
-	'Booking reference',
-	'Dynamic Fields',
-	'Citizen FIN number',
-	'Citizen Name',
-	'Citizen Email address',
-	'Citizen Phone number',
-	'Service Provider Name',
-	'Service Provider Email address',
-	'Service Provider Phone number',
-];

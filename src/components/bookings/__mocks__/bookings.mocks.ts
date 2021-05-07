@@ -14,6 +14,7 @@ import { IPagedEntities } from '../../../core/pagedEntities';
 export class BookingRepositoryMock implements Partial<BookingsRepository> {
 	public static booking: Booking;
 	public static searchBookings = jest.fn<Promise<IPagedEntities<Booking>>, any>();
+	public static searchReturnAll = jest.fn<Promise<Booking[]>, any>();
 	public static saveMock: Promise<InsertResult>;
 
 	public async getBooking(id: number): Promise<Booking> {
@@ -34,6 +35,10 @@ export class BookingRepositoryMock implements Partial<BookingsRepository> {
 
 	public async search(...params): Promise<any> {
 		return await BookingRepositoryMock.searchBookings(...params);
+	}
+
+	public async searchReturnAll(...params): Promise<Booking[]> {
+		return await BookingRepositoryMock.searchReturnAll(...params);
 	}
 }
 

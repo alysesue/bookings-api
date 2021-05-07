@@ -176,6 +176,7 @@ describe('Bookings.Service', () => {
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
 			Promise.resolve({ entries: [] } as IPagedEntities<Booking>),
 		);
+		BookingRepositoryMock.searchReturnAll.mockImplementation(() => Promise.resolve([]));
 
 		UsersServiceMock.persistUserIfRequired.mockImplementation((u) => Promise.resolve(u));
 	});
@@ -202,6 +203,45 @@ describe('Bookings.Service', () => {
 		await instance.searchBookings(searchRequest);
 
 		expect(BookingRepositoryMock.searchBookings).toHaveBeenCalledWith(searchRequest);
+	});
+
+	it('should search bookings and return all', async () => {
+		const searchRequest: BookingSearchRequest = {
+			from: new Date('2020-05-16T20:25:43.511Z'),
+			to: new Date('2020-05-16T21:25:43.511Z'),
+			fromCreatedDate: new Date('2020-05-10T20:25:43.511Z'),
+			toCreatedDate: new Date('2020-05-20T21:25:43.511Z'),
+			statuses: [1],
+			citizenUinFins: ['abc123', 'xyz456'],
+			serviceId: 1,
+			page: 2,
+			limit: 3,
+			maxId: 50,
+		};
+
+		const instance = await Container.get(BookingsService);
+		await instance.searchBookingsReturnAll(searchRequest);
+
+		expect(BookingRepositoryMock.searchReturnAll).toHaveBeenCalledWith(searchRequest);
+	});
+
+	it('should check valid limits', async () => {
+		const instance = await Container.get(BookingsService);
+		const response = await instance.checkLimit(10, 20);
+
+		expect(response).toBeUndefined();
+	});
+
+	it('should return limit error', async () => {
+		const instance = await Container.get(BookingsService);
+		let error;
+		try {
+			await instance.checkLimit(10, 1);
+		} catch (e) {
+			error = e;
+		}
+
+		expect(error.message).toEqual(`Maximum rows for export: 1`);
 	});
 
 	it('should save booking from booking request', async () => {

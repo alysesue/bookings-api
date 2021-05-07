@@ -9,7 +9,6 @@ import { AuthGroup, CitizenAuthGroup } from '../../../infrastructure/auth/authGr
 import { ServiceProvidersRepository } from '../../../components/serviceProviders/serviceProviders.repository';
 import { PagingHelper } from '../../../core/paging';
 import { IPagedEntities } from '../../../core/pagedEntities';
-// import { IEntities } from '../../../core/entities';
 
 jest.mock('../../../core/paging');
 
@@ -126,6 +125,24 @@ describe('Bookings repository', () => {
 		expect(queryBuilderMock.leftJoinAndSelect).toBeCalledTimes(2);
 		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
 		expect(PagingHelper.getManyWithPaging).toBeCalledTimes(1);
+	});
+
+	it('should search bookings and return all', async () => {
+		const bookingMock = new Booking();
+		bookingMock.status = BookingStatus.Accepted;
+
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		(queryBuilderMock.getMany as jest.Mock).mockImplementation(() => Promise.resolve([bookingMock]));
+
+		const bookingsRepository = Container.get(BookingsRepository);
+
+		const result = await bookingsRepository.searchReturnAll({
+			fromCreatedDate: new Date('2020-01-01T14:00:00.000Z'),
+			toCreatedDate: new Date('2020-01-01T15:00:00.000Z'),
+		} as BookingSearchQuery);
+
+		expect(result).toStrictEqual([bookingMock]);
+		expect(queryBuilderMock.getMany).toBeCalledTimes(1);
 	});
 
 	it('should search bookings with status', async () => {
@@ -259,6 +276,7 @@ class TransactionManagerMock implements Partial<TransactionManager> {
 	public static find = jest.fn();
 	public static update = jest.fn();
 	public static findOne = jest.fn();
+	public static getMany = jest.fn();
 	public static save = jest.fn();
 	public static query = jest.fn();
 	public static createQueryBuilder = jest.fn();
@@ -271,6 +289,7 @@ class TransactionManagerMock implements Partial<TransactionManager> {
 				insert: TransactionManagerMock.insert,
 				update: TransactionManagerMock.update,
 				save: TransactionManagerMock.save,
+				getMany: TransactionManagerMock.getMany,
 				query: TransactionManagerMock.query,
 				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
 			}),

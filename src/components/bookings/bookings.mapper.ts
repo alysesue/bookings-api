@@ -1,7 +1,6 @@
 import { Booking, DynamicField, SelectListDynamicField, ServiceProvider, User } from '../../models/entities';
 import {
 	BookingDetailsRequest,
-	BookingHeader,
 	BookingProviderResponse,
 	BookingRequest,
 	BookingResponse,
@@ -18,7 +17,6 @@ import {
 	DynamicValueTypeContract,
 	PersistDynamicValueContract,
 } from '../dynamicFields/dynamicValues.apicontract';
-import { ApiCSVData } from '../../apicontract';
 import * as stringify from 'csv-stringify';
 
 // tslint:disable-next-line: tsr-detect-unsafe-regexp
@@ -129,7 +127,8 @@ export class BookingsMapper {
 			dynamicValues: this.mapDynamicValuesModel(booking.dynamicValues),
 		} as BookingResponse;
 	}
-	public mapBookingsCSV(bookings: Booking[], userContext: UserContextSnapshot): Promise<string> {
+
+	public async mapBookingsCSV(bookings: Booking[], userContext: UserContextSnapshot): Promise<string> {
 		const bookingsCSV = bookings.map((booking) => this.mapDataCSV(booking, userContext));
 		return new Promise<string>((resolve, reject) => {
 			stringify(
@@ -148,7 +147,7 @@ export class BookingsMapper {
 	}
 
 	public mapDataCSV(booking: Booking, userContext: UserContextSnapshot): {} {
-		const dynamicValues = this.mapDynamicValuesModel(booking.dynamicValues).map(
+		const dynamicValues = this.mapDynamicValuesModel(booking.dynamicValues)?.map(
 			(item) => `${item.fieldName}:${item.SingleSelectionValue}`,
 		);
 		const bookingDetails = {
@@ -160,7 +159,7 @@ export class BookingsMapper {
 			['Booking location']: `${booking.location}`,
 			['Booking description']: `${booking.description}`,
 			['Booking reference']: `${booking.refId}`,
-			['Dynamic Fields']: `${dynamicValues.join('; ')}`,
+			['Dynamic Fields']: `${dynamicValues?.join('; ')}`,
 			['Citizen FIN number']: `${this.maskUinFin(booking, userContext)}`,
 			['Citizen Name']: `${booking.citizenName}`,
 			['Citizen Email address']: `${booking.citizenEmail}`,
@@ -171,11 +170,6 @@ export class BookingsMapper {
 		};
 
 		return bookingDetails;
-	}
-
-	public mapCSVResponse(apiData: ApiCSVData<string>): string {
-		apiData.data.unshift(BookingHeader.join(','));
-		return apiData.data.join('\n');
 	}
 
 	public mapDynamicValuesModel(dynamicValues: DynamicValueJsonModel[]): DynamicValueContract[] {
