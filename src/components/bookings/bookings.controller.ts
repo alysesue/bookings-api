@@ -263,6 +263,8 @@ export class BookingsController extends Controller {
 
 		koaContext.set('Content-Type', 'text/csv');
 		koaContext.set('Content-Disposition', `attachment; filename="exported-bookings.csv"`);
+		this._koaContextStore.manualContext = true;
+		// this._koaContextStore.manualContext = true;
 	}
 
 	/**
