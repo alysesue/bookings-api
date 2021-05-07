@@ -22,7 +22,6 @@ describe('Timeslots functional tests', () => {
 	const END_TIME_2 = '12:00';
 	const START_TIME_3 = '13:00';
 	const END_TIME_3 = '14:00';
-	const ERROR_MESSAGE = 'An unexpected error has occurred.';
 	const TIME_FORMAT = 'HH:mm';
 
 	let result1;
@@ -140,18 +139,17 @@ describe('Timeslots functional tests', () => {
 		expect(service1TimeslotsResponse.body.data.timeslots[0].startTime).toEqual(START_TIME_1);
 		expect(service1TimeslotsResponse.body.data.timeslots[0].endTime).toEqual(END_TIME_1);
 
-		try {
-			await ServiceAdminRequestEndpointSG.create({
-				nameService: NAME_SERVICE_1,
-				serviceId: serviceId1,
-			}).get(`/service-providers/${serviceProvider2}/timeslotSchedule`);
-			await ServiceAdminRequestEndpointSG.create({
-				nameService: NAME_SERVICE_1,
-				serviceId: serviceId1,
-			}).get(`/service-providers/${serviceProvider3}/timeslotSchedule`);
-		} catch (e) {
-			expect(e.message).toBe(ERROR_MESSAGE);
-		}
+		const response1 = await ServiceAdminRequestEndpointSG.create({
+			nameService: NAME_SERVICE_1,
+			serviceId: serviceId1,
+		}).get(`/service-providers/${serviceProvider2}/timeslotSchedule`);
+		const response2 = await ServiceAdminRequestEndpointSG.create({
+			nameService: NAME_SERVICE_1,
+			serviceId: serviceId1,
+		}).get(`/service-providers/${serviceProvider3}/timeslotSchedule`);
+
+		expect(response1.statusCode).toEqual(400);
+		expect(response2.statusCode).toEqual(400);
 	});
 
 	it('service provider should only get their timeslot schedule', async () => {
@@ -168,43 +166,32 @@ describe('Timeslots functional tests', () => {
 		expect(service1TimeslotsResponse.body.data.timeslots[0].startTime).toEqual(START_TIME_1);
 		expect(service1TimeslotsResponse.body.data.timeslots[0].endTime).toEqual(END_TIME_1);
 
-		try {
-			await ServiceProviderRequestEndpointSG.create({
-				nameService: NAME_SERVICE_1,
-				serviceId: serviceId1,
-			}).get(`/service-providers/${serviceProvider2.id}/timeslotSchedule`);
-			await ServiceProviderRequestEndpointSG.create({
-				nameService: NAME_SERVICE_1,
-				serviceId: serviceId1,
-			}).get(`/service-providers/${serviceProvider3.id}/timeslotSchedule`);
-		} catch (e) {
-			expect(e.message).toBe(ERROR_MESSAGE);
-		}
+		const response1 = await ServiceProviderRequestEndpointSG.create({
+			nameService: NAME_SERVICE_1,
+			serviceId: serviceId1,
+		}).get(`/service-providers/${serviceProvider2.id}/timeslotSchedule`);
+		const response2 = await ServiceProviderRequestEndpointSG.create({
+			nameService: NAME_SERVICE_1,
+			serviceId: serviceId1,
+		}).get(`/service-providers/${serviceProvider3.id}/timeslotSchedule`);
+
+		expect(response1.statusCode).toEqual(401);
+		expect(response2.statusCode).toEqual(401);
 	});
 
 	it('citizen should not get any timeslot schedules', async () => {
-		try {
-			await CitizenRequestEndpointSG.create({ serviceId: serviceId1 }).get(
-				`/service-providers/${serviceProvider1.id}/timeslotSchedule`,
-			);
-		} catch (e) {
-			expect(e.message).toBe(ERROR_MESSAGE);
-		}
+		const response1 = await CitizenRequestEndpointSG.create({ serviceId: serviceId1 }).get(
+			`/service-providers/${serviceProvider1.id}/timeslotSchedule`,
+		);
+		const response2 = await CitizenRequestEndpointSG.create({ serviceId: serviceId2 }).get(
+			`/service-providers/${serviceProvider2.id}/timeslotSchedule`,
+		);
+		const response3 = await CitizenRequestEndpointSG.create({ serviceId: serviceId3 }).get(
+			`/service-providers/${serviceProvider3.id}/timeslotSchedule`,
+		);
 
-		try {
-			await CitizenRequestEndpointSG.create({ serviceId: serviceId2 }).get(
-				`/service-providers/${serviceProvider2.id}/timeslotSchedule`,
-			);
-		} catch (e) {
-			expect(e.message).toBe(ERROR_MESSAGE);
-		}
-
-		try {
-			await CitizenRequestEndpointSG.create({ serviceId: serviceId3 }).get(
-				`/service-providers/${serviceProvider3.id}/timeslotSchedule`,
-			);
-		} catch (e) {
-			expect(e.message).toBe(ERROR_MESSAGE);
-		}
+		expect(response1.statusCode).toEqual(403);
+		expect(response2.statusCode).toEqual(403);
+		expect(response3.statusCode).toEqual(403);
 	});
 });
