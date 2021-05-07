@@ -32,7 +32,7 @@ describe('Timeslots functional tests', () => {
 	});
 
 	it('should delete one off timeslot', async () => {
-		const service1TimeslotsResponse = await populateOneOffTimeslot({
+		const [,service1TimeslotsResponse] = await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,

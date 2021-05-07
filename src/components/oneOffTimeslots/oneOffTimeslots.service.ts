@@ -61,12 +61,13 @@ export class OneOffTimeslotsService {
 	}
 
 	public async update(request: OneOffTimeslotRequest, idSigned: string): Promise<OneOffTimeslot> {
-		await this.oneOffTimeslotsBusinessValidation.validateOneOffTimeslotsAvailability(request);
 		const id = this.idHasher.decode(idSigned);
 		const entity = await this.oneOffTimeslotsRepo.getById({ id });
 		if (!entity) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`One off timeslot can't be found`);
 		}
+
+		await this.oneOffTimeslotsBusinessValidation.validateOneOffTimeslotsAvailability(request, id);
 		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
 		const labels = await this.labelsService.verifyLabels(request.labelIds, serviceProvider.serviceId);
 		this.mapper.updateMapToOneOffTimeslots(request, entity, serviceProvider, labels);

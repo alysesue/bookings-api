@@ -44,11 +44,12 @@ jest.mock('mol-lib-common', () => {
 describe('Bookings.Controller', () => {
 	const KoaContextStoreMock: Partial<KoaContextStore> = {
 		koaContext: {
+			set: jest.fn(),
 			header: {
 				set: jest.fn(),
 				get: jest.fn(),
 			} as Partial<Headers>,
-		} as Koa.Context,
+		} as any as Koa.Context,
 	};
 
 	const organisation = new Organisation();

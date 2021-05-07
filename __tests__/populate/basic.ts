@@ -3,6 +3,7 @@ import { ServiceProviderResponseModel } from '../../src/components/serviceProvid
 import { ServiceResponse } from '../../src/components/services/service.apicontract';
 import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslotItems.apicontract';
 import { OneOffTimeslotResponse } from '../../src/components/oneOffTimeslots/oneOffTimeslots.apicontract';
+import * as request from 'request';
 
 export const populateServiceLabel = async ({
 	serviceId,
@@ -222,7 +223,7 @@ export const populateOneOffTimeslot = async ({
 	labelIds?: string[];
 	title?: string;
 	description?: string;
-}): Promise<OneOffTimeslotResponse> => {
+}): Promise<[request.Response, OneOffTimeslotResponse]> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/oneOffTimeslots`, {
 		body: {
 			startDateTime: startTime,
@@ -234,7 +235,7 @@ export const populateOneOffTimeslot = async ({
 			labelIds,
 		},
 	});
-	return response.body.data;
+	return [response, response.body.data];
 };
 
 export const updateOneOffTimeslot = async ({
@@ -255,7 +256,7 @@ export const updateOneOffTimeslot = async ({
 	title?: string;
 	description?: string;
 	idSigned: string;
-}): Promise<OneOffTimeslotResponse> => {
+}): Promise<[request.Response, OneOffTimeslotResponse]> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/oneOffTimeslots/${idSigned}`, {
 		body: {
 			startDateTime: startTime,
@@ -267,7 +268,7 @@ export const updateOneOffTimeslot = async ({
 			labelIds,
 		},
 	});
-	return response.body.data;
+	return [response, response.body.data];
 };
 
 export const deleteOneOffTimeslot = async (idSigned: string): Promise<any> => {
