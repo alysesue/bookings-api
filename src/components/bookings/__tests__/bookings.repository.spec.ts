@@ -9,6 +9,7 @@ import { AuthGroup, CitizenAuthGroup } from '../../../infrastructure/auth/authGr
 import { ServiceProvidersRepository } from '../../../components/serviceProviders/serviceProviders.repository';
 import { PagingHelper } from '../../../core/paging';
 import { IPagedEntities } from '../../../core/pagedEntities';
+// import { IEntities } from '../../../core/entities';
 
 jest.mock('../../../core/paging');
 
@@ -33,6 +34,7 @@ describe('Bookings repository', () => {
 		leftJoinAndMapOne: jest.fn(),
 		orderBy: jest.fn(),
 		getOne: jest.fn(),
+		getMany: jest.fn(),
 	};
 
 	PagingHelper.getManyWithPaging = jest.fn();

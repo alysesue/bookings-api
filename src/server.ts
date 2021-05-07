@@ -42,8 +42,8 @@ class ApiDataResponseHandler {
 
 		return async (ctx: Koa.Context, next: Koa.Next): Promise<any> => {
 			await this._middleware(ctx, next);
-
-			if (!(ctx.body instanceof ApiData) && !(ctx.body instanceof ApiPagedData)) {
+			console.log(ctx);
+			if (!(ctx.body instanceof ApiData) && !(ctx.body instanceof ApiPagedData) && typeof ctx.body !== 'string') {
 				await koaResponseMiddleware(ctx, emptyNext);
 			}
 		};

@@ -34,6 +34,7 @@ import {
 } from './bookings.apicontract';
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
+const EXPORT_LIMIT = 5000;
 
 @Route('v1/bookings')
 @Tags('Bookings')
@@ -210,6 +211,75 @@ export class BookingsController extends Controller {
 	 * @param @isInt limit
 	 * @param maxId
 	 */
+	@Get('csv')
+	@SuccessResponse(200, 'Ok')
+	@Security('optional-service')
+	@MOLAuth({
+		admin: {},
+		agency: {},
+		user: { minLevel: MOLUserAuthLevel.L2 },
+	})
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	// tslint:disable-next-line: parameters-max-number
+	public async getBookingsCSV(
+		@Query() from?: Date,
+		@Query() to?: Date,
+		@Query() fromCreatedDate?: Date,
+		@Query() toCreatedDate?: Date,
+		@Query() status?: number[],
+		@Query() citizenUinFins?: string[],
+		@Query() serviceProviderIds?: number[],
+		@Query() page?: number,
+		@Query() limit?: number,
+		@Query() maxId?: number,
+		@Header('x-api-service') serviceId?: number,
+	): Promise<void> {
+		await this.bookingsService.checkLimit(limit, EXPORT_LIMIT);
+		const searchQuery: BookingSearchRequest = {
+			from,
+			to,
+			fromCreatedDate,
+			toCreatedDate,
+			statuses: status,
+			serviceId,
+			citizenUinFins,
+			serviceProviderIds,
+			page: page || DEFAULT_PAGE,
+			limit,
+			maxId,
+		};
+
+		const bookings = await this.bookingsService.searchBookingsReturnAll(searchQuery);
+		const userContextSnapshot = await this.userContext.getSnapshot();
+
+		const bookingsCSVContent = await this.bookingsMapper.mapBookingsCSV(bookings, userContextSnapshot);
+		const koaContext = this._koaContextStore.koaContext;
+		koaContext.body = bookingsCSVContent;
+		// koaContext.response.body = bookingsCSVContent;
+		// koaContext.response.set('Content-Type', 'text/csv');
+		// koaContext.response.set('Content-Disposition', `attachment; filename="exported-bookings.csv"`);
+		// koaContext.response.se;
+		// this.setStatus(200);
+
+		koaContext.set('Content-Type', 'text/csv');
+		koaContext.set('Content-Disposition', `attachment; filename="exported-bookings.csv"`);
+	}
+
+	/**
+	 * Retrieves all bookings that intercept the datetime range provided [from, to].
+	 *
+	 * @param from The lower bound datetime limit (inclusive) for booking's end time.
+	 * @param to  The upper bound datetime limit (inclusive) for booking's start time.
+	 * @param fromCreatedDate
+	 * @param toCreatedDate
+	 * @param @isInt status (Optional) filters by a list of status: Pending (1), Accepted (2), Cancelled (3).
+	 * @param citizenUinFins (Optional) filters by a list of citizen ids
+	 * @param @isInt serviceProviderIds
+	 * @param @isInt serviceId (Optional) filters by a service (id).
+	 * @param @isInt page
+	 * @param @isInt limit
+	 * @param maxId
+	 */
 	@Get('')
 	@SuccessResponse(200, 'Ok')
 	@Security('optional-service')
@@ -231,7 +301,6 @@ export class BookingsController extends Controller {
 		@Query() page?: number,
 		@Query() limit?: number,
 		@Query() maxId?: number,
-		@Query() getAll?: boolean,
 		@Header('x-api-service') serviceId?: number,
 	): Promise<ApiPagedData<BookingResponse>> {
 		const searchQuery: BookingSearchRequest = {
@@ -244,9 +313,7 @@ export class BookingsController extends Controller {
 			citizenUinFins,
 			serviceProviderIds,
 			page: page || DEFAULT_PAGE,
-			limit: getAll
-				? Math.max(limit || DEFAULT_LIMIT, DEFAULT_LIMIT)
-				: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
+			limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
 			maxId,
 		};
 
