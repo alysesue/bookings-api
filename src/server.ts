@@ -23,7 +23,7 @@ import { ApiData, ApiPagedData } from './apicontract';
 import { BusinessErrorMiddleware } from './infrastructure/businessError.middleware';
 import { getConnectionOptions } from './core/connectionOptions';
 import { CitizenUserValidationMiddleware } from './infrastructure/citizenUserValidation.middleware';
-import { KoaContextStoreMiddleware } from './infrastructure/koaContextStore.middleware';
+import { KoaContextStoreMiddleware, MANUAL_CONTEXT_RESPONSE } from './infrastructure/koaContextStore.middleware';
 import { MolUsersService, MolUsersServiceFactory } from './components/users/molUsers/molUsers.service';
 import { AutomatedTestMiddleware } from './infrastructure/automatedTest.middleware';
 import { DbConnection } from './core/db.connection';
@@ -43,7 +43,7 @@ class ApiDataResponseHandler {
 		return async (ctx: Koa.Context, next: Koa.Next): Promise<any> => {
 			await this._middleware(ctx, next);
 
-			if (!(ctx.body instanceof ApiData) && !(ctx.body instanceof ApiPagedData)) {
+			if (!Boolean(ctx[MANUAL_CONTEXT_RESPONSE]) && !(ctx.body instanceof ApiData) && !(ctx.body instanceof ApiPagedData)) {
 				await koaResponseMiddleware(ctx, emptyNext);
 			}
 		};

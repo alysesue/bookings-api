@@ -4,12 +4,23 @@ import { ContainerContextMiddleware } from './containerContext.middleware';
 
 export abstract class KoaContextStore {
 	public koaContext: Koa.Context;
+	public manualContext: boolean;
 }
+
+export const MANUAL_CONTEXT_RESPONSE = '_manualContextResponse';
 
 @InRequestScope
 export class KoaContextStoreImplementation implements KoaContextStore {
 	private _koaContext: Koa.Context;
 	private constructor() {}
+
+	public get manualContext(): boolean {
+		return Boolean(this._koaContext[MANUAL_CONTEXT_RESPONSE]);
+	}
+
+	public set manualContext(value: boolean) {
+		this._koaContext[MANUAL_CONTEXT_RESPONSE] = value;
+	}
 
 	private static _registered = false;
 	public static registerInContainer() {

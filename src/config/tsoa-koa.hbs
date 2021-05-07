@@ -201,6 +201,8 @@ export function RegisterRoutes(router: KoaRouter) {
             return Promise.resolve(promise)
             .then((data: any) => {
             if (data || data === false) {
+			if (Boolean(context['_manualContextResponse'])) { return next(); }
+			
             context.body = data;
             context.status = 200;
             } else {
