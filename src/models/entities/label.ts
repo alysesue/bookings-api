@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { IService } from '../interfaces';
+import {Category, IService} from '../interfaces';
 
 @Entity()
 @Unique('ServiceLabels', ['_labelText', '_serviceId'])
@@ -40,6 +40,7 @@ export class Label {
 	@ManyToOne('Service', { orphanedRowAction: 'delete' })
 	@JoinColumn({ name: '_serviceId' })
 	public service: IService;
+	public category: Category;
 	// private _service: IService;
 
 	// public get service(): IService {

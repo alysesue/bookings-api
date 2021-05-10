@@ -1,10 +1,11 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
+import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IService} from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
 import { Organisation } from './organisation';
 import { ScheduleForm } from './scheduleForm';
 import { Label } from './label';
+import { Category } from "./category";
 
 @Entity()
 @Index(['_organisationId', '_name'], { unique: true })
@@ -116,6 +117,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		orga: Organisation,
 		isSpAutoAssigned = false,
 		labels: Label[] = [],
+		categories: Category[] = [],
 		emailSuffix?: string,
 	) {
 		const service = new Service();
@@ -130,6 +132,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 			),
 		);
 		service.labels = labels;
+		service.categories = categories;
 		service._emailSuffix = emailSuffix;
 		return service;
 	}
@@ -180,9 +183,13 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	public set isSpAutoAssigned(value: boolean) {
 		this._isSpAutoAssigned = value;
 	}
+
 	@OneToMany(() => Label, (label) => label.service, { cascade: true })
 	// @OneToMany(() => Label, 'services', { cascade: true, lazy: true })
 	public labels: Label[];
+
+	@OneToMany(() => Category, (category) => category.service, { cascade: true })
+	public categories: Category[];
 
 	@Column({ nullable: false, default: false })
 	private _sendNotifications: boolean;
