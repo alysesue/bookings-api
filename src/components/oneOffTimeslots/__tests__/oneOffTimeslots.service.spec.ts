@@ -99,7 +99,8 @@ describe('OneOffTimeslots Service Tests', () => {
 		oneOffTimeslots.capacity = 2;
 		oneOffTimeslots.serviceProviderId = 1;
 		OneOffTimeslotsRepositoryMock.getById.mockReturnValue(oneOffTimeslots);
-		OneOffTimeslotsRepositoryMock.save.mockReturnValue(() => {});
+		OneOffTimeslotsRepositoryMock.save.mockReturnValue({});
+		OneOffTimeslotsRepositoryMock.search.mockImplementation(() => []);
 
 		const request = new OneOffTimeslotRequest();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
