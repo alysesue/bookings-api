@@ -7,7 +7,7 @@ import { ServiceProvidersRepository } from '../../../serviceProviders/servicePro
 import { UnavailabilitiesService } from '../../../unavailabilities/unavailabilities.service';
 import { UserContext } from '../../../../infrastructure/auth/userContext';
 import { Booking, BookingBuilder } from '../../../../models/entities/booking';
-import { Service, User } from '../../../../models';
+import { BusinessValidation, Service, User } from '../../../../models';
 import { BookingsValidatorFactory } from '../bookings.validation';
 import {
 	BookingRepositoryMock,
@@ -21,6 +21,7 @@ import { CaptchaService } from '../../../captcha/captcha.service';
 import { UserContextMock } from '../../../../infrastructure/auth/__mocks__/userContext';
 import { getConfig } from '../../../../config/app-config';
 import { IPagedEntities } from '../../../../core/pagedEntities';
+import { ContainerContext, ContainerContextHolder } from '../../../../infrastructure/containerContext';
 
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
 	return {
@@ -42,6 +43,10 @@ jest.mock('../../../captcha/captcha.service');
 jest.mock('../../../../config/app-config', () => ({
 	getConfig: jest.fn(),
 }));
+
+beforeAll(() => {
+	ContainerContextHolder.registerInContainer();
+});
 
 // tslint:disable-next-line:no-big-function
 describe('Booking validation tests', () => {
@@ -89,6 +94,22 @@ describe('Booking validation tests', () => {
 		);
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => Promise.resolve([]));
+	});
+
+	it('should get same factory instance in Request scope', () => {
+		const context = Container.get(ContainerContext);
+		const getFactory = () => context.resolve(BookingsValidatorFactory);
+
+		expect(getFactory() === getFactory()).toBe(true);
+	});
+
+	it('should get new instances for validators in Request scope', () => {
+		const context = Container.get(ContainerContext);
+		const factory = context.resolve(BookingsValidatorFactory);
+
+		expect(factory.getValidator(true) === factory.getValidator(true)).toBe(false);
+		expect(factory.getValidator(false) === factory.getValidator(false)).toBe(false);
+		expect(factory.getOnHoldValidator() === factory.getOnHoldValidator()).toBe(false);
 	});
 
 	it('should return regular booking validator', () => {
@@ -192,6 +213,28 @@ describe('Booking validation tests', () => {
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
 		).rejects.toMatchInlineSnapshot('[BusinessError: [10006] Citizen name not provided]');
+	});
+
+	it('should append custom validations to citizen validation', async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.build();
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		const validator = Container.get(BookingsValidatorFactory).getValidator(true);
+		validator.addCustomCitizenValidations(new BusinessValidation({ code: 'abc', message: 'new validation' }));
+
+		const asyncTest = async () => await validator.validate(booking);
+
+		await expect(asyncTest).rejects.toMatchInlineSnapshot(
+			'[BusinessError: [10006] Citizen name not provided, [abc] new validation]',
+		);
 	});
 
 	it('should validate token', async () => {

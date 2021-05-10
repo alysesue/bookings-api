@@ -13,7 +13,7 @@ import { CaptchaService } from '../../captcha/captcha.service';
 import { KoaContextStore } from '../../../infrastructure/koaContextStore.middleware';
 import { IPagedEntities } from '../../../core/pagedEntities';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
-import { ContainerContext } from '../../../infrastructure/containerContext.middleware';
+import { ContainerContext } from '../../../infrastructure/containerContext';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
 import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';

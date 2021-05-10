@@ -11,6 +11,7 @@ import { OneOffTimeslotsActionAuthVisitor } from '../oneOffTimeslots.auth';
 import { LabelsService } from '../../labels/labels.service';
 import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
 import { IdHasher } from '../../../infrastructure/idHasher';
+import { ContainerContextHolder } from '../../../infrastructure/containerContext';
 
 jest.mock('../oneOffTimeslots.auth');
 
@@ -27,6 +28,8 @@ describe('OneOffTimeslots Service Tests', () => {
 	serviceProvider.service = newService;
 
 	beforeAll(() => {
+		ContainerContextHolder.registerInContainer();
+
 		Container.bind(IdHasher).to(IdHasherMock);
 		Container.bind(OneOffTimeslotsRepository).to(OneOffTimeslotsRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
