@@ -99,6 +99,7 @@ describe('OneOffTimeslots Service Tests', () => {
 		oneOffTimeslots.capacity = 2;
 		oneOffTimeslots.serviceProviderId = 1;
 		OneOffTimeslotsRepositoryMock.getById.mockReturnValue(oneOffTimeslots);
+		OneOffTimeslotsRepositoryMock.search.mockImplementation(() => []);
 		OneOffTimeslotsRepositoryMock.save.mockReturnValue(() => {});
 
 		const request = new OneOffTimeslotRequest();
