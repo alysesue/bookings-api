@@ -2,6 +2,10 @@ import { OneOffTimeslot } from '../../models/entities';
 import { Validator } from '../../infrastructure/validator';
 import { BusinessValidation } from '../../models';
 import { concatIteratables } from '../../tools/asyncIterables';
+import { OneOffTimeslotRequest } from './oneOffTimeslots.apicontract';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { OneOffTimeslotsRepository } from './oneOffTimeslots.repository';
+import { Inject, InRequestScope } from 'typescript-ioc';
 
 export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 	protected async *getValidations(entity: OneOffTimeslot) {
@@ -32,7 +36,28 @@ export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 	}
 }
 
+@InRequestScope
 export class OneOffTimeslotsBusinessValidation {
+	@Inject
+	private oneOffTimeslotsRepo: OneOffTimeslotsRepository;
+
+	public async validateOneOffTimeslotsAvailability(request: OneOffTimeslotRequest, updateSlotId?: number) {
+		const searchRequest = {
+			serviceProviderIds: [request.serviceProviderId],
+			startDateTime: request.startDateTime,
+			endDateTime: request.endDateTime,
+		};
+		let slotAvailableArr = await this.oneOffTimeslotsRepo.search(searchRequest);
+		slotAvailableArr = slotAvailableArr.filter(slot => slot.id !== updateSlotId);
+
+		if (slotAvailableArr.length > 0) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Slot cannot be created as it overlaps with an existing slot.`,
+			);
+		}
+		return true;
+	}
+
 	public static readonly TitleTooLong = new BusinessValidation({
 		code: '10101',
 		message: `Title word limit is 100 characters`,

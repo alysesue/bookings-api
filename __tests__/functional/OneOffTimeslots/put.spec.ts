@@ -33,7 +33,7 @@ describe('Timeslots functional tests', () => {
 	});
 
 	it('should update oneOffTimeslots', async () => {
-		const service1TimeslotsResponse = await populateOneOffTimeslot({
+		const [,service1TimeslotsResponse] = await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
@@ -43,7 +43,7 @@ describe('Timeslots functional tests', () => {
 		});
 
 		const { idSigned } = service1TimeslotsResponse;
-		const service1TimeslotsUpdatedResponse = await updateOneOffTimeslot({
+		const [,updatedData] = await updateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
@@ -53,7 +53,7 @@ describe('Timeslots functional tests', () => {
 			idSigned,
 		});
 
-		expect(service1TimeslotsUpdatedResponse).toEqual({
+		expect(updatedData).toEqual({
 			capacity: 5,
 			startDateTime: '2021-03-05T01:00:00.000Z',
 			endDateTime: '2021-03-05T02:00:00.000Z',
