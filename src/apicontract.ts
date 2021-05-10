@@ -44,10 +44,6 @@ export class ApiPagedData<T> {
 	public paging: ApiPagingInfo;
 }
 
-export class ApiCSVData<T> {
-	public data: T[];
-}
-
 export type MapFunction<TInput, TOutput> = (input: TInput) => TOutput;
 export class ApiDataFactory {
 	private constructor() {}
