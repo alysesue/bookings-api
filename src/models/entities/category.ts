@@ -9,11 +9,11 @@ export class Category {
 
 	public static create(categoryName: string, labels?: Label[], id?: number): Category {
 		const category = new Category();
-		category.categoryName = categoryName;
+		category._categoryName = categoryName.trim();
 		if (id) {
 			category._id = id;
 		}
-		if (labels.length) {
+		if (labels && labels.length) {
 			category.labels = labels;
 		}
 		return category;
