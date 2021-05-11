@@ -20,6 +20,7 @@ import { MolServiceAdminUserContract, MolUpsertUsersResult } from '../users/molU
 import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 import { uniqueStringArray } from '../../tools/collections';
 import { LabelsMapper } from '../labels/labels.mapper';
+import { CategoriesMapper } from '../labelsCategories/categories.mapper';
 import { ServicesActionAuthVisitor } from './services.auth';
 import { ServiceRequest } from './service.apicontract';
 import { ServicesRepository } from './services.repository';
@@ -40,6 +41,8 @@ export class ServicesService {
 	private userContext: UserContext;
 	@Inject
 	private labelsMapper: LabelsMapper;
+	@Inject
+	private categoriesMapper: CategoriesMapper;
 
 	public async createServices(names: string[], organisation: Organisation): Promise<Service[]> {
 		const allServiceNames = uniqueStringArray(names, {
@@ -104,7 +107,8 @@ export class ServicesService {
 
 		const isSpAutoAssigned = request.isSpAutoAssigned;
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
-		const service = Service.create(request.name, orga, isSpAutoAssigned, transformedLabels, request.emailSuffix);
+		const transformedCategories = this.categoriesMapper.mapToCategories(request.categories);
+		const service = Service.create(request.name, orga, isSpAutoAssigned, transformedLabels, transformedCategories, request.emailSuffix);
 
 		await this.verifyActionPermission(service, CrudAction.Create);
 		return this.servicesRepository.save(service);
@@ -122,6 +126,8 @@ export class ServicesService {
 
 		const updatedList = this.labelsMapper.mapToLabels(request.labels);
 		this.labelsMapper.mergeLabels(service.labels, updatedList);
+		const updatedCategoriesList = this.categoriesMapper.mapToCategories(request.categories);
+		this.categoriesMapper.mergeCategories(service.categories, updatedCategoriesList);
 		await this.verifyActionPermission(service, CrudAction.Update);
 
 		try {
@@ -130,6 +136,9 @@ export class ServicesService {
 			if (e.message.startsWith('duplicate key value violates unique constraint')) {
 				if (e.message.includes('ServiceLabels')) {
 					throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Label(s) are already present');
+				}
+				if (e.message.includes('ServiceCategories')) {
+					throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Category(ies) are already present');
 				}
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service name is already present');
 			}
