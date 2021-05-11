@@ -197,19 +197,19 @@ export class BookingsController extends Controller {
 	}
 
 	/**
-	 * Retrieves all bookings that intercept the datetime range provided [from, to].
+	 * Retrieves all booking according to filter and returns bookign results as CSV.
 	 *
-	 * @param from The lower bound datetime limit (inclusive) for booking's end time.
-	 * @param to  The upper bound datetime limit (inclusive) for booking's start time.
-	 * @param fromCreatedDate
-	 * @param toCreatedDate
+	 * @param from (Optional) The lower bound datetime limit (inclusive) for booking's end time.
+	 * @param to (Optional) The upper bound datetime limit (inclusive) for booking's start time.
+	 * @param fromCreatedDate (Optional)
+	 * @param toCreatedDate (Optional)
 	 * @param @isInt status (Optional) filters by a list of status: Pending (1), Accepted (2), Cancelled (3).
 	 * @param citizenUinFins (Optional) filters by a list of citizen ids
-	 * @param @isInt serviceProviderIds
+	 * @param @isInt serviceProviderIds (Optional)
 	 * @param @isInt serviceId (Optional) filters by a service (id).
-	 * @param @isInt page
-	 * @param @isInt limit
-	 * @param maxId
+	 * @param @isInt page (Optional)
+	 * @param @isInt limit (Optional)
+	 * @param maxId (Optional)
 	 */
 	@Get('csv')
 	@SuccessResponse(200, 'Ok')
@@ -226,7 +226,7 @@ export class BookingsController extends Controller {
 		@Query() to?: Date,
 		@Query() fromCreatedDate?: Date,
 		@Query() toCreatedDate?: Date,
-		@Query() status?: number[],
+		@Query() statuses?: number[],
 		@Query() citizenUinFins?: string[],
 		@Query() serviceProviderIds?: number[],
 		@Query() page?: number,
@@ -240,7 +240,7 @@ export class BookingsController extends Controller {
 			to,
 			fromCreatedDate,
 			toCreatedDate,
-			statuses: status,
+			statuses,
 			serviceId,
 			citizenUinFins,
 			serviceProviderIds,
@@ -291,7 +291,7 @@ export class BookingsController extends Controller {
 		@Query() to?: Date,
 		@Query() fromCreatedDate?: Date,
 		@Query() toCreatedDate?: Date,
-		@Query() status?: number[],
+		@Query() statuses?: number[],
 		@Query() citizenUinFins?: string[],
 		@Query() serviceProviderIds?: number[],
 		@Query() page?: number,
@@ -304,7 +304,7 @@ export class BookingsController extends Controller {
 			to,
 			fromCreatedDate,
 			toCreatedDate,
-			statuses: status,
+			statuses,
 			serviceId,
 			citizenUinFins,
 			serviceProviderIds,
