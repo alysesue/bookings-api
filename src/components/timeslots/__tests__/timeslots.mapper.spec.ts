@@ -169,11 +169,11 @@ describe('Timeslots Mapper', () => {
 		const mapper = Container.get(TimeslotsMapper);
 		const response = mapper.mapCitizenTimeslotServiceProviders(timeslotServiceProviders);
 
-		expect(response[0].length).toBe(2);
-		expect(response[0][1].eventTitle).toBe('Title Test - serviceProvider2');
-		expect(response[0][0].eventTitle).toBe('Title Test - serviceProvider1');
-		expect(response[0][0].eventDescription).toBe('Description Test - serviceProvider1');
-		expect(response[0][1].eventDescription).toBe('Description Test - serviceProvider2');
+		expect(response.length).toBe(2);
+		expect(response[1].eventTitle).toBe('Title Test - serviceProvider2');
+		expect(response[0].eventTitle).toBe('Title Test - serviceProvider1');
+		expect(response[0].eventDescription).toBe('Description Test - serviceProvider1');
+		expect(response[1].eventDescription).toBe('Description Test - serviceProvider2');
 	});
 });
 

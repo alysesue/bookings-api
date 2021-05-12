@@ -26,29 +26,32 @@ export class TimeslotsMapper {
 
 	public mapAvailabilityToResponse(
 		entries: AvailableTimeslotProviders[],
-		options: { skipUnavailable?: boolean },
+		options: { skipUnavailable?: boolean, exactTimeslot?: boolean },
 	): AvailabilityEntryResponse[] {
 		return entries.map((e) => this.mapAvailabilityItem(e, options)).filter((e) => !!e);
 	}
 
 	private mapAvailabilityItem(
 		entry: AvailableTimeslotProviders,
-		options: { skipUnavailable?: boolean },
+		options: { skipUnavailable?: boolean, exactTimeslot?: boolean },
 	): AvailabilityEntryResponse | undefined {
 		const availabilityCount = entry.getAvailabilityCount();
 		if (availabilityCount <= 0 && options.skipUnavailable) {
 			return undefined;
 		}
 
-		const [timeslotServiceProviders] = this.mapCitizenTimeslotServiceProviders(
-			Array.from(entry.getTimeslotServiceProviders()),
-		);
-
 		const response = new AvailabilityEntryResponse();
 		response.startTime = new Date(entry.startTime);
 		response.endTime = new Date(entry.endTime);
 		response.availabilityCount = availabilityCount;
-		response.timeslotServiceProviders = timeslotServiceProviders;
+
+		if (options.exactTimeslot){
+			response.timeslotServiceProviders = this.mapCitizenTimeslotServiceProviders(
+				Array.from(entry.getTimeslotServiceProviders()),
+
+			);
+		}
+
 		return response;
 	}
 
@@ -89,12 +92,11 @@ export class TimeslotsMapper {
 
 	public mapCitizenTimeslotServiceProviders(
 		entries: TimeslotServiceProviderResult[],
-	): [CitizenTimeslotServiceProviderResponse[]] {
-		const res = entries.map((entry) => {
+	): CitizenTimeslotServiceProviderResponse[] {
+		return entries.map((entry) => {
 			const item = this.mapCitizenServiceProviderTimeslot(entry);
 			return item;
 		});
-		return [res];
 	}
 
 	private mapCitizenServiceProviderTimeslot(
