@@ -318,7 +318,7 @@ describe('Timeslots functional tests', () => {
 		const availability1Response = await CitizenRequestEndpointSG.create({ serviceId: serviceId1 }).get(
 			`/timeslots/availability?serviceProviderId=${
 				serviceProvider1.id
-			}&startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}&exactTimeslot=true`,
+			}&startDate=2021-03-05T01:00:00.000Z&endDate=2021-03-05T02:00:00.000Z&exactTimeslot=true`,
 		);
 
 		expect(availability1Response.statusCode).toEqual(200);
