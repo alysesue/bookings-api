@@ -233,8 +233,8 @@ export class BookingsController extends Controller {
 		@Query() maxId?: number,
 		@Header('x-api-service') serviceId?: number,
 	): Promise<void> {
-		if (!statuses) {
-			statuses = this.bookingsMapper.mapStatuses();
+		if (!status) {
+			status = this.bookingsMapper.mapStatuses();
 		}
 		await this.bookingsService.checkLimit(limit, EXPORT_LIMIT);
 		const searchQuery: BookingSearchRequest = {
@@ -301,8 +301,8 @@ export class BookingsController extends Controller {
 		@Query() maxId?: number,
 		@Header('x-api-service') serviceId?: number,
 	): Promise<ApiPagedData<BookingResponse>> {
-		if (!statuses) {
-			statuses = this.bookingsMapper.mapStatuses();
+		if (!status) {
+			status = this.bookingsMapper.mapStatuses();
 		}
 		const searchQuery: BookingSearchRequest = {
 			from,
