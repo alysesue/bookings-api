@@ -108,6 +108,24 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 	}
 
 	public async search(request: BookingSearchQuery): Promise<IPagedEntities<Booking>> {
+		const query = await this.searchQueryFormulation(request);
+
+		const result = await PagingHelper.getManyWithPaging(query, 'booking._id', request);
+
+		await this.includeServiceProviders(result.entries);
+		return result;
+	}
+
+	public async searchReturnAll(request: BookingSearchQuery): Promise<Booking[]> {
+		const query = await this.searchQueryFormulation(request);
+
+		const result = await query.getMany();
+
+		await this.includeServiceProviders(result);
+		return result;
+	}
+
+	private async searchQueryFormulation(request: BookingSearchQuery): Promise<SelectQueryBuilder<Booking>> {
 		const serviceCondition = request.serviceId ? 'booking."_serviceId" = :serviceId' : '';
 
 		const serviceProviderCondition =
@@ -155,9 +173,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 			)
 		).orderBy('booking._id', 'DESC');
 
-		const result = await PagingHelper.getManyWithPaging(query, 'booking._id', request);
-		await this.includeServiceProviders(result.entries);
-		return result;
+		return query;
 	}
 }
 

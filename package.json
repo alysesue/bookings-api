@@ -106,6 +106,7 @@
 		"axios": "^0.21.1",
 		"crypto-js": "^4.0.0",
 		"csv-parse": "^4.10.1",
+		"csv-stringify": "^5.6.2",
 		"glob": "^7.1.6",
 		"googleapis": "^49.0.0",
 		"hashids": "^2.2.8",

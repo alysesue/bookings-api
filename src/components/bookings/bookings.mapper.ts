@@ -17,6 +17,7 @@ import {
 	DynamicValueTypeContract,
 	PersistDynamicValueContract,
 } from '../dynamicFields/dynamicValues.apicontract';
+import * as stringify from 'csv-stringify';
 
 // tslint:disable-next-line: tsr-detect-unsafe-regexp
 const MASK_UINFIN_REGEX = /(?<=^.{1}).{4}/;
@@ -125,6 +126,50 @@ export class BookingsMapper {
 			refId: booking.refId,
 			dynamicValues: this.mapDynamicValuesModel(booking.dynamicValues),
 		} as BookingResponse;
+	}
+
+	public async mapBookingsCSV(bookings: Booking[], userContext: UserContextSnapshot): Promise<string> {
+		const bookingsCSV = bookings.map((booking) => this.mapDataCSV(booking, userContext));
+		return new Promise<string>((resolve, reject) => {
+			stringify(
+				bookingsCSV,
+				{
+					header: true,
+				},
+				function (err, data) {
+					if (err) {
+						reject(err);
+					}
+					resolve(data);
+				},
+			);
+		});
+	}
+
+	public mapDataCSV(booking: Booking, userContext: UserContextSnapshot): {} {
+		const dynamicValues = this.mapDynamicValuesModel(booking.dynamicValues)?.map(
+			(item) => `${item.fieldName}:${item.SingleSelectionValue}`,
+		);
+		const bookingDetails = {
+			['Booking ID']: `${booking.id.toString()}`,
+			['Booking Status']: `${booking.status}`,
+			['Booking creation date']: `${booking.createdLog?.timestamp.toString()}`,
+			['Booking service start date/time']: `${booking.startDateTime.toString()}`,
+			['Booking service end date/time']: `${booking.endDateTime.toString()}`,
+			['Booking location']: `${booking.location}`,
+			['Booking description']: `${booking.description}`,
+			['Booking reference']: `${booking.refId}`,
+			['Dynamic Fields']: `${dynamicValues?.join('; ')}`,
+			['Citizen FIN number']: `${this.maskUinFin(booking, userContext)}`,
+			['Citizen Name']: `${booking.citizenName}`,
+			['Citizen Email address']: `${booking.citizenEmail}`,
+			['Citizen Phone number']: `${booking.citizenPhone}`,
+			['Service Provider Name']: `${booking.serviceProvider?.name}`,
+			['Service Provider Email address']: `${booking.serviceProvider?.email}`,
+			['Service Provider Phone number']: `${booking.serviceProvider?.phone}`,
+		};
+
+		return bookingDetails;
 	}
 
 	public mapDynamicValuesModel(dynamicValues: DynamicValueJsonModel[]): DynamicValueContract[] {

@@ -157,6 +157,10 @@ export class BookingsService {
 		return await this.bookingsRepository.search(searchRequest);
 	}
 
+	public async searchBookingsReturnAll(searchRequest: BookingSearchRequest): Promise<Booking[]> {
+		return await this.bookingsRepository.searchReturnAll(searchRequest);
+	}
+
 	public async save(
 		bookingRequest: BookingRequest,
 		serviceId: number,
@@ -166,6 +170,12 @@ export class BookingsService {
 		const booking = await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
 		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created });
 		return booking;
+	}
+
+	public async checkLimit(limit: number, exportLmit: number): Promise<void> {
+		if (limit > exportLmit) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Maximum rows for export: ${exportLmit}`);
+		}
 	}
 
 	private async verifyActionPermission(booking: Booking, action: ChangeLogAction): Promise<void> {
