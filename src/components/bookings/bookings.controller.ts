@@ -217,7 +217,6 @@ export class BookingsController extends Controller {
 	@MOLAuth({
 		admin: {},
 		agency: {},
-		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	// tslint:disable-next-line: parameters-max-number
@@ -234,6 +233,9 @@ export class BookingsController extends Controller {
 		@Query() maxId?: number,
 		@Header('x-api-service') serviceId?: number,
 	): Promise<void> {
+		if (!statuses) {
+			statuses = this.bookingsMapper.mapStatuses();
+		}
 		await this.bookingsService.checkLimit(limit, EXPORT_LIMIT);
 		const searchQuery: BookingSearchRequest = {
 			from,
@@ -299,6 +301,9 @@ export class BookingsController extends Controller {
 		@Query() maxId?: number,
 		@Header('x-api-service') serviceId?: number,
 	): Promise<ApiPagedData<BookingResponse>> {
+		if (!statuses) {
+			statuses = this.bookingsMapper.mapStatuses();
+		}
 		const searchQuery: BookingSearchRequest = {
 			from,
 			to,
