@@ -18,6 +18,7 @@ import {
 	PersistDynamicValueContract,
 } from '../dynamicFields/dynamicValues.apicontract';
 import * as stringify from 'csv-stringify';
+import { BookingStatus, bookingStatusArray } from '../../models/bookingStatus';
 
 // tslint:disable-next-line: tsr-detect-unsafe-regexp
 const MASK_UINFIN_REGEX = /(?<=^.{1}).{4}/;
@@ -152,7 +153,7 @@ export class BookingsMapper {
 		);
 		const bookingDetails = {
 			['Booking ID']: `${booking.id.toString()}`,
-			['Booking Status']: `${booking.status}`,
+			['Booking Status']: `${BookingStatus[booking.status]}`,
 			['Booking creation date']: `${booking.createdLog?.timestamp.toString()}`,
 			['Booking service start date/time']: `${booking.startDateTime.toString()}`,
 			['Booking service end date/time']: `${booking.endDateTime.toString()}`,
@@ -218,5 +219,9 @@ export class BookingsMapper {
 		booking.serviceProviderId = request.serviceProviderId;
 		booking.captchaToken = request.captchaToken;
 		booking.captchaOrigin = request.captchaOrigin;
+	}
+
+	public mapStatuses(): number[] {
+		return bookingStatusArray.map((value) => value);
 	}
 }
