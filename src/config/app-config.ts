@@ -48,7 +48,9 @@ export const getConfig = () => ({
 		smtpAuthUsername: ConfigUtils.getValueFromEnv('SMTP_AUTH_USERNAME', ''),
 		smtpAuthPassword: ConfigUtils.getValueFromEnv('SMTP_AUTH_PASSWORD', ''),
 	},
-
+	featureFlag: {
+		lifeSGSync: ConfigUtils.getValueFromEnv('LIFESG_SYNC', 'false') === 'true'
+	},
 	email: {
 		mol: {
 			sender: ConfigUtils.getValueFromEnv('MOL_SENDER_EMAIL', ''),

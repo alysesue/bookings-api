@@ -29,6 +29,7 @@ import { BookingsRepository } from './bookings.repository';
 import { BookingType } from '../../../src/models/bookingType';
 import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
+import { logger } from 'mol-lib-common';
 
 @InRequestScope
 export class BookingsService {
@@ -62,7 +63,12 @@ export class BookingsService {
 	private bookingsMapper: BookingsMapper;
 
 	constructor() {
-		this.bookingsSubject.attach([this.mailObserver, this.lifeSGObserver]);
+		logger.debug(`====== lifeSG ======= ${getConfig().featureFlag.lifeSGSync}`)
+		this.bookingsSubject.attach(
+			getConfig().featureFlag.lifeSGSync ?
+				[this.mailObserver, this.lifeSGObserver] :
+				[this.mailObserver]
+		);
 	}
 
 	private static canCreateOutOfSlot(user: User): boolean {
