@@ -33,6 +33,22 @@ services:
       - ./.env:/service/.env:delegated
     depends_on:
       - db
+      - appointment-mq-node-1
+      - appointment-mq-node-2
+  appointment-mq-node-1:
+    image: rmohr/activemq:5.15.9
+    container_name: appointment-mq-node-1
+    hostname: activemq-node-1
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+  appointment-mq-node-2:
+    image: rmohr/activemq:5.15.9
+    container_name: appointment-mq-node-2
+    hostname: activemq-node-2
+    ports:
+      - "61617:61616"
+      - "8162:8161"
 volumes:
   gt_dbdata:
   bookingsg-dist:

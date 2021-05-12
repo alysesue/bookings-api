@@ -168,6 +168,9 @@ describe('Bookings.Service', () => {
 		);
 		(getConfig as jest.Mock).mockReturnValue({
 			isAutomatedTest: false,
+			featureFlag: {
+				lifeSGSync: 'true'
+			}
 		});
 		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(service));
 		BookingChangeLogsServiceMock.action = 0;
