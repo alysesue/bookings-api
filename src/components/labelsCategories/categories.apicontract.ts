@@ -1,12 +1,15 @@
+import {LabelRequestModel, LabelResponseModel} from "../labels/label.apicontract";
+
 export class CategoryRequestModel {
-	public category: string;
+	// public category: string;
 	public categoryName: string;
+	public labels?: LabelRequestModel[];
 	public id?: string;
 }
 
 export class CategoryResponseModel {
-	public id: string;
 	public categoryName: string;
-	public categoryLabels: string[];
+	public labels: LabelResponseModel[];
+	public id: string;
 	public serviceId: number;
 }

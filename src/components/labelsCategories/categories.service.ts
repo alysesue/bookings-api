@@ -1,6 +1,6 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { Category } from '../../models/entities/category';
+import { Category } from '../../models/entities';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { CategoriesRepository } from './categories.repository';

@@ -1,5 +1,5 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Category } from '../../models/entities/category';
+import { Category } from '../../models/entities';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { CategoryRequestModel, CategoryResponseModel } from './categories.apicontract';
 
@@ -13,6 +13,7 @@ export class CategoriesMapper {
 			const categoryData = new CategoryResponseModel();
 			categoryData.id = this.idHasher.encode(i.id);
 			categoryData.categoryName = i.categoryName;
+			// categoryData.labels = i.labels;
 			return categoryData;
 		});
 	}

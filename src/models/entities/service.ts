@@ -5,7 +5,7 @@ import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
 import { Organisation } from './organisation';
 import { ScheduleForm } from './scheduleForm';
 import { Label } from './label';
-import { Category } from "./category";
+import { Category } from './category';
 
 @Entity()
 @Index(['_organisationId', '_name'], { unique: true })

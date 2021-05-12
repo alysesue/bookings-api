@@ -1,8 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import {Category, IService} from '../interfaces';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { IService } from '../interfaces';
+import { Category } from './category';
 
 @Entity()
-@Unique('ServiceLabels', ['_labelText', '_serviceId'])
 export class Label {
 	public constructor() {}
 

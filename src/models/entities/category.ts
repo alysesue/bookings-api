@@ -3,19 +3,20 @@ import { IService } from '../interfaces';
 import { Label } from './label';
 
 @Entity()
-@Unique('ServiceCategories', ['_categoryName', '_labels', '_serviceId'])
+@Unique('ServiceCategories', ['_categoryName', '_serviceId'])
 export class Category {
 	public constructor() {}
 
-	public static create(categoryName: string, labels?: Label[], id?: number): Category {
+	public static create(categoryName: string, labels: Label[] = [], id?: number): Category {
 		const category = new Category();
-		category._categoryName = categoryName.trim();
+		category.categoryName = categoryName.trim();
 		if (id) {
 			category._id = id;
 		}
-		if (labels && labels.length) {
-			category.labels = labels;
-		}
+		category.labels = labels;
+		// if (labels && labels.length) {
+		// 	category.labels = labels;
+		// }
 		return category;
 	}
 
@@ -42,7 +43,6 @@ export class Category {
 	}
 
 	@OneToMany(() => Label, (label) => label.category, { cascade: true })
-	// @OneToMany(() => Label, 'services', { cascade: true, lazy: true })
 	public labels: Label[];
 
 	@ManyToOne('Service', { orphanedRowAction: 'delete' })

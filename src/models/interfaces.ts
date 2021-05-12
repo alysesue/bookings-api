@@ -61,9 +61,3 @@ export interface IUnavailability {
 	start: Date;
 	end: Date;
 }
-
-export interface Category {
-	id: number;
-	serviceId: number;
-	labels?: string[];
-}

@@ -57,7 +57,8 @@ export class ServicesRepository extends RepositoryBase<Service> {
 			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
 			.leftJoinAndSelect('svc._serviceAdminGroupMap', 'svcAdminGroupMap')
 			.leftJoinAndSelect('svc._organisation', 'svcOrg')
-			.leftJoinAndSelect('svc.labels', 'svcLabels');
+			.leftJoinAndSelect('svc.labels', 'svcLabels')
+			.leftJoinAndSelect('svc.categories', 'svcCategories');
 	}
 
 	public async getServicesByName(options: {
