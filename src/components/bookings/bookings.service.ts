@@ -121,6 +121,7 @@ export class BookingsService {
 			if (!bookingRequest.citizenUinFinUpdated) {
 				bookingRequest.citizenUinFin = _booking.citizenUinFin;
 			}
+
 			return this.updateInternal(_booking, bookingRequest, () => {});
 		};
 		const booking = await this.changeLogsService.executeAndLogAction(
@@ -295,7 +296,6 @@ export class BookingsService {
 		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
 		validator.bypassCaptcha(getConfig().isAutomatedTest);
 		await validator.validate(updatedBooking);
-
 		const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
 		await this.loadBookingDependencies(updatedBooking);
 		await this.verifyActionPermission(updatedBooking, changeLogAction);
@@ -331,6 +331,7 @@ export class BookingsService {
 		const service: Service = await this.servicesService.getService(serviceId);
 		const isOnHold = service.isOnHold;
 		const isStandAlone = service.isStandAlone;
+
 		let serviceProvider: ServiceProvider | undefined;
 		if (bookingRequest.serviceProviderId) {
 			serviceProvider = await this.serviceProvidersService.getServiceProvider(bookingRequest.serviceProviderId);
