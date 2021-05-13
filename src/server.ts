@@ -29,6 +29,7 @@ import { MolUsersService, MolUsersServiceFactory } from './components/users/molU
 import { AutomatedTestMiddleware } from './infrastructure/automatedTest.middleware';
 import { DbConnection } from './core/db.connection';
 import { CreateCsrfMiddleware, VerifyCsrfMiddleware, XSRF_HEADER_NAME } from './infrastructure/csrf.middleware';
+import { mailer } from './config/mailer';
 
 class ApiDataResponseHandler {
 	private readonly _middleware: Koa.Middleware;
@@ -204,6 +205,7 @@ export async function startServer(): Promise<Server> {
 	const dbConnection = Container.get(DbConnection);
 	await dbConnection.runMigrations();
 	await dbConnection.runPopulate();
+	await mailer();
 
 	koaServer.proxy = true;
 	return await new Promise((resolve) => {
