@@ -19,7 +19,7 @@ export class NotificationsService {
 		const recipients = options.to.join(',');
 
 		try {
-			const info = await mailer.sendMail({ ...mergedOptions, to: recipients });
+			const info = await (await mailer()).sendMail({ ...mergedOptions, to: recipients });
 			if (info.rejected.length > 0) {
 				emailLogger.error('Nodemailer error', info);
 				throw new MOLErrorV2(ErrorCodeV2.SYS_GENERIC).setResponseData(info);
