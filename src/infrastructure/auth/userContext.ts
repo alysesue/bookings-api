@@ -1,11 +1,11 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { ContainerContext } from '../containerContext.middleware';
 import { Organisation, User } from '../../models';
 import { UsersService } from '../../components/users/users.service';
 import { AsyncLazy } from '../../tools/asyncLazy';
 import { AnonymousCookieData } from '../bookingSGCookieHelper';
 import { AnonymousAuthGroup, AuthGroup, CitizenAuthGroup, OrganisationAdminAuthGroup } from './authGroup';
+import { ContainerContext } from '../containerContext';
 
 export type UserContextSnapshot = {
 	user: User;

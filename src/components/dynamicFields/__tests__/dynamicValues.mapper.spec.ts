@@ -44,8 +44,8 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		IdHasherMock.decode.mockImplementation((id: string) => Number.parseInt(id, 10));
 	});
 
-	it('should map select list dynamic field ', async () => {
-		const dynamicValuesJson = {
+	it('should map select list dynamic field value ', async () => {
+		const dynamicValueJson = {
 			fieldId: 1,
 			fieldName: 'testname',
 			type: 'SingleSelection' as DynamicValueType,
@@ -54,7 +54,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		} as DynamicValueJsonModel;
 
 		const mapper = Container.get(DynamicValuesMapper);
-		const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValuesJson]);
+		const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValueJson]);
 
 		expect(dynamicReturn).toEqual([
 			{
@@ -67,8 +67,23 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		]);
 	});
 
-	it('should map text dynamic field ', async () => {
-		const dynamicValuesJson = {
+	it('should map select list dynamic field value to string ', async () => {
+		const dynamicValueJson = {
+			fieldId: 1,
+			fieldName: 'testname',
+			type: 'SingleSelection' as DynamicValueType,
+			SingleSelectionKey: 1,
+			SingleSelectionValue: 'test',
+		} as DynamicValueJsonModel;
+
+		const mapper = Container.get(DynamicValuesMapper);
+		const str = mapper.getValueAsString(dynamicValueJson);
+
+		expect(str).toEqual('test');
+	});
+
+	it('should map text dynamic field value ', async () => {
+		const dynamicValueJson = {
 			fieldId: 1,
 			fieldName: 'testname',
 			type: DynamicValueType.Text,
@@ -76,7 +91,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		} as DynamicValueJsonModel;
 
 		const mapper = Container.get(DynamicValuesMapper);
-		const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValuesJson]);
+		const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValueJson]);
 		expect(dynamicReturn).toEqual([
 			{
 				fieldIdSigned: '1',
@@ -85,6 +100,19 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 				type: 'Text',
 			},
 		]);
+	});
+
+	it('should map text dynamic field value to string', async () => {
+		const dynamicValueJson = {
+			fieldId: 1,
+			fieldName: 'testname',
+			type: DynamicValueType.Text,
+			textValue: 'some text',
+		} as DynamicValueJsonModel;
+
+		const mapper = Container.get(DynamicValuesMapper);
+		const str = mapper.getValueAsString(dynamicValueJson);
+		expect(str).toEqual('some text');
 	});
 
 	it('should return empty array when no dynamic values are passed ', async () => {
@@ -180,6 +208,38 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 				new BusinessValidation({
 					code: '10202',
 					message: 'Sample text field is required.',
+				}),
+			],
+		} as MapRequestOptionalResult);
+	});
+
+	it(`should validate value type for dynamic fields`, async () => {
+		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() =>
+			Promise.resolve([createSelectFieldEntity(), createTextField()]),
+		);
+
+		const dynamicValue = new PersistDynamicValueContract();
+		dynamicValue.fieldIdSigned = '1';
+		dynamicValue.type = DynamicValueTypeContract.Text;
+		dynamicValue.textValue = 'some text';
+
+		const dynamicValue2 = new PersistDynamicValueContract();
+		dynamicValue2.fieldIdSigned = '2';
+		dynamicValue2.type = DynamicValueTypeContract.SingleSelection;
+		dynamicValue2.singleSelectionKey = 1;
+
+		const mapper = Container.get(DynamicValuesMapper);
+		const dynamicReturn = await mapper.mapDynamicValuesRequest([dynamicValue, dynamicValue2], 100);
+
+		expect(dynamicReturn).toEqual({
+			errorResult: [
+				new BusinessValidation({
+					code: '10201',
+					message: 'Value type mismatch for testDynamic field.',
+				}),
+				new BusinessValidation({
+					code: '10201',
+					message: 'Value type mismatch for Sample text field.',
 				}),
 			],
 		} as MapRequestOptionalResult);

@@ -21,7 +21,7 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 	visitSelectList(_selectListField: SelectListDynamicField) {
 		// valid field value type for this field
 		if (this._fieldValue.type !== DynamicValueTypeContract.SingleSelection) {
-			this.addValidation(DynamicValueBusinessValidations.IncorrectFieldValueType);
+			this.addValidation(DynamicValueBusinessValidations.IncorrectFieldValueType.create(_selectListField));
 			return;
 		}
 
@@ -41,7 +41,7 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 
 	visitTextField(_textField: TextDynamicField) {
 		if (this._fieldValue.type !== DynamicValueTypeContract.Text) {
-			this.addValidation(DynamicValueBusinessValidations.IncorrectFieldValueType);
+			this.addValidation(DynamicValueBusinessValidations.IncorrectFieldValueType.create(_textField));
 			return;
 		}
 		this._fieldValue.textValue = this._fieldValue.textValue?.trim();
@@ -101,9 +101,9 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 class DynamicValueBusinessValidations {
 	private constructor() {}
 
-	public static readonly IncorrectFieldValueType = new BusinessValidation({
+	public static readonly IncorrectFieldValueType = new BusinessValidationTemplate<{ name: string }>({
 		code: '10201',
-		message: `Field value type doesn't match the field definition.`,
+		templateMessage: ({ name }) => `Value type mismatch for ${name} field.`,
 	});
 
 	public static readonly FieldValueIsRequired = new BusinessValidationTemplate<{ name: string }>({
