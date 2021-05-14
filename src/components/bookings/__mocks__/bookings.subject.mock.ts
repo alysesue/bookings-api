@@ -1,11 +1,12 @@
-import { Booking } from '../../../models';
+import { Booking, BookingStatus } from '../../../models';
 import { BookingsSubject } from '../bookings.subject';
 
 export class BookingsSubjectMock extends BookingsSubject {
 	public static notifyMock = jest.fn();
 	public get booking(): Booking {
 		return ({
-			_status: 1,
+			_status: BookingStatus.Accepted,
+			status: BookingStatus.Accepted,
 			_service: {
 				_name: 'name',
 			},
@@ -21,5 +22,43 @@ export class BookingsSubjectMock extends BookingsSubject {
 
 	public notify(...params): void {
 		return BookingsSubjectMock.notifyMock(...params);
+	}
+}
+
+export class PendingApprovalBookingSubjectMock extends BookingsSubjectMock {
+	public get booking(): Booking {
+		return ({
+			_status: BookingStatus.PendingApproval,
+			status: BookingStatus.PendingApproval,
+			_service: {
+				_name: 'name',
+			},
+			_serviceProvider: {
+				_name: 'name',
+			},
+			_citizenEmail: 'email',
+			_location: 'location',
+			_startDateTime: new Date(),
+			_endDateTime: new Date(),
+		} as unknown) as Booking;
+	}
+}
+
+export class OnHoldBookingSubjectMock extends BookingsSubjectMock {
+	public get booking(): Booking {
+		return ({
+			_status: BookingStatus.OnHold,
+			status: BookingStatus.OnHold,
+			_service: {
+				_name: 'name',
+			},
+			_serviceProvider: {
+				_name: 'name',
+			},
+			_citizenEmail: 'email',
+			_location: 'location',
+			_startDateTime: new Date(),
+			_endDateTime: new Date(),
+		} as unknown) as Booking;
 	}
 }

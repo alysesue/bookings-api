@@ -27,6 +27,9 @@ import {
 } from './bookings.apicontract';
 import { BookingsRepository } from './bookings.repository';
 import { BookingType } from '../../../src/models/bookingType';
+import { LifeSGObserver } from '../lifesg/lifesg.observer';
+import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
+import { logger } from 'mol-lib-common';
 
 @InRequestScope
 export class BookingsService {
@@ -34,6 +37,8 @@ export class BookingsService {
 	private bookingsSubject: BookingsSubject;
 	@Inject
 	private mailObserver: MailObserver;
+	@Inject
+	private lifeSGObserver: LifeSGObserver;
 	@Inject
 	public unavailabilitiesService: UnavailabilitiesService;
 	@Inject
@@ -58,7 +63,12 @@ export class BookingsService {
 	private bookingsMapper: BookingsMapper;
 
 	constructor() {
-		this.bookingsSubject.attach(this.mailObserver);
+		logger.debug(`====== lifeSG ======= ${getConfig().featureFlag.lifeSGSync}`)
+		this.bookingsSubject.attach(
+			getConfig().featureFlag.lifeSGSync ?
+				[this.mailObserver, this.lifeSGObserver] :
+				[this.mailObserver]
+		);
 	}
 
 	private static canCreateOutOfSlot(user: User): boolean {
@@ -90,7 +100,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			this.cancelBookingInternal.bind(this),
 		);
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.CancelledOrRejected });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.CancelledOrRejected, action: ExternalAgencyAppointmentJobAction.CANCEL });
 		return booking;
 	}
 
@@ -112,7 +122,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			acceptAction,
 		);
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated, action: ExternalAgencyAppointmentJobAction.UPDATE });
 		return booking;
 	}
 
@@ -128,7 +138,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			updateAction,
 		);
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated, action: ExternalAgencyAppointmentJobAction.UPDATE });
 		return booking;
 	}
 
@@ -138,7 +148,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			this.rejectBookingInternal.bind(this),
 		);
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.CancelledOrRejected });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.CancelledOrRejected, action: ExternalAgencyAppointmentJobAction.UPDATE });
 		return booking;
 	}
 
@@ -149,12 +159,16 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			rescheduleAction,
 		);
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated, action: ExternalAgencyAppointmentJobAction.UPDATE });
 		return booking;
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<IPagedEntities<Booking>> {
 		return await this.bookingsRepository.search(searchRequest);
+	}
+
+	public async searchBookingsReturnAll(searchRequest: BookingSearchRequest): Promise<Booking[]> {
+		return await this.bookingsRepository.searchReturnAll(searchRequest);
 	}
 
 	public async save(
@@ -164,8 +178,14 @@ export class BookingsService {
 	): Promise<Booking> {
 		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptchaAndAutoAccept);
 		const booking = await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created, action: ExternalAgencyAppointmentJobAction.CREATE });
 		return booking;
+	}
+
+	public async checkLimit(limit: number, exportLmit: number): Promise<void> {
+		if (limit > exportLmit) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Maximum rows for export: ${exportLmit}`);
+		}
 	}
 
 	private async verifyActionPermission(booking: Booking, action: ChangeLogAction): Promise<void> {
@@ -431,7 +451,7 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			validateAction,
 		);
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created });
+		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created, action: ExternalAgencyAppointmentJobAction.UPDATE });
 		return booking;
 	}
 }

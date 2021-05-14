@@ -64,7 +64,7 @@ export class TimeslotsController extends Controller {
 			);
 		}
 
-		const result = this.timeslotMapper.mapAvailabilityToResponse(timeslots, { skipUnavailable: true });
+		const result = this.timeslotMapper.mapAvailabilityToResponse(timeslots, { skipUnavailable: true, exactTimeslot });
 		return ApiDataFactory.create(result);
 	}
 

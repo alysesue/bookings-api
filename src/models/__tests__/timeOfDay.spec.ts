@@ -1,10 +1,69 @@
+import { range } from 'lodash';
+import { StopWatch } from '../../infrastructure/stopWatch';
 import { TimeOfDay, Transformer } from '../timeOfDay';
 
 describe('Time of day tests', () => {
+	const padStart = (n: number) => n.toString().padStart(2, '0');
+
 	it('should parse time of day', () => {
 		const timeA = TimeOfDay.parse('08:30');
 		expect(timeA.hours).toBe(8);
 		expect(timeA.minutes).toBe(30);
+	});
+
+	it('should parse time of day [2]', () => {
+		const timeA = TimeOfDay.parse('08:30:00');
+		expect(timeA.hours).toBe(8);
+		expect(timeA.minutes).toBe(30);
+	});
+
+	it('should parse time of day [3]', () => {
+		const timeA = TimeOfDay.parse('08:30:20');
+		expect(timeA.hours).toBe(8);
+		expect(timeA.minutes).toBe(30);
+	});
+
+
+	it('should parse time of day [perf]', () => {
+		const allTimes: string[] = [];
+		const watchTestData = new StopWatch('Test data');
+		for (const hour of range(0, 23)) {
+			for (const minute of range(0, 59)) {
+				for (const second of range(0, 59)) {
+					allTimes.push(`${padStart(hour)}:${padStart(minute)}:${padStart(second)}`);
+				}
+			}
+		}
+		watchTestData.stop();
+
+		const watchParse = new StopWatch('Parse fist time');
+		let parsed: TimeOfDay;
+		for(const time of allTimes){
+			parsed = TimeOfDay.parse(time);
+			parsed.AsMilliseconds();
+			parsed.AsMinutes();
+		}
+		watchParse.stop();
+
+		const watchParseSecond = new StopWatch('Parse second time');
+		for(const time of allTimes){
+			parsed = TimeOfDay.parse(time);
+			parsed.AsMilliseconds();
+			parsed.AsMinutes();
+		}
+		watchParseSecond.stop();
+	});
+
+	it('should create time of day [perf]', () => {
+		const allTimes: TimeOfDay[] = [];
+		const watchTestData = new StopWatch('create time');
+		const max = 24*60*60;
+		for (let i = 0; i < max; i++) {
+			allTimes.push(TimeOfDay.create({hours: 8, minutes: 30}));
+		}
+		watchTestData.stop();
+
+		expect(allTimes.length).toEqual(max);
 	});
 
 	it('should not parse null time', () => {
@@ -50,6 +109,13 @@ describe('Time of day tests', () => {
 		const minutes = time.AsMinutes();
 
 		expect(minutes).toBe(80);
+	});
+
+	it('should convert to milliseconds', () => {
+		const time = TimeOfDay.parse('01:20');
+		const milliseconds = time.AsMilliseconds();
+
+		expect(milliseconds).toBe(4800000);
 	});
 
 	it('should calculate diff in minutes', () => {

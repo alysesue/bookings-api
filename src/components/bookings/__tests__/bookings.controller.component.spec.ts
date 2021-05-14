@@ -21,6 +21,8 @@ import { BookingsSubject } from '../bookings.subject';
 import { BookingsSubjectMock } from '../__mocks__/bookings.subject.mock';
 import { MailObserver } from '../../notifications/notification.observer';
 import { MockObserver } from '../../../infrastructure/__mocks__/observer.mock';
+import { LifeSGObserver } from '../../lifesg/lifesg.observer';
+import { getConfig } from '../../../config/app-config';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -37,6 +39,10 @@ jest.mock('mol-lib-common', () => {
 		MOLAuth: mock,
 	};
 });
+jest.mock('../../../config/app-config', () => ({
+	getConfig: jest.fn(),
+}));
+
 
 beforeEach(() => {
 	TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
@@ -73,6 +79,12 @@ describe('Booking Integration tests', () => {
 		Container.bind(ServicesService).to(ServicesServiceMock);
 		Container.bind(BookingsSubject).to(BookingsSubjectMock);
 		Container.bind(MailObserver).to(MockObserver);
+		Container.bind(LifeSGObserver).to(MockObserver);
+		(getConfig as jest.Mock).mockReturnValue({
+			featureFlag: {
+				lifeSGSync: 'true'
+			}
+		});
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = provider;
 		TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();

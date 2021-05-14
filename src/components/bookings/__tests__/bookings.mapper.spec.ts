@@ -13,6 +13,7 @@ import {
 import { BookingDetailsRequest } from '../bookings.apicontract';
 import { DynamicFieldsService } from '../../../components/dynamicFields/dynamicFields.service';
 import { DynamicFieldsServiceMock } from '../../../components/dynamicFields/__mocks__/dynamicFields.service.mock';
+import { bookingStatusArray } from '../../../models/bookingStatus';
 
 jest.mock('../../../models/uinFinConfiguration');
 
@@ -147,6 +148,13 @@ describe('Bookings mapper tests', () => {
 		await mapper.mapDynamicValuesRequest(bookingRequest, booking);
 
 		expect(booking.dynamicValues).toEqual([]);
+	});
+
+	it('should return all booking statuses in numbers', async () => {
+		const mapper = Container.get(BookingsMapper);
+		const statuses = mapper.mapStatuses();
+
+		expect(statuses).toEqual(bookingStatusArray.map((value) => value));
 	});
 });
 

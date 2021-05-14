@@ -43,13 +43,15 @@ jest.mock('mol-lib-common', () => {
 // tslint:disable-next-line: no-big-function
 describe('Bookings.Controller', () => {
 	const KoaContextStoreMock: Partial<KoaContextStore> = {
-		koaContext: {
+		koaContext: ({
 			set: jest.fn(),
+			remove: jest.fn(),
 			header: {
 				set: jest.fn(),
 				get: jest.fn(),
 			} as Partial<Headers>,
-		} as any as Koa.Context,
+		} as any) as Koa.Context,
+		manualContext: false,
 	};
 
 	const organisation = new Organisation();
@@ -109,6 +111,11 @@ describe('Bookings.Controller', () => {
 		);
 
 		KoaContextStoreMock.koaContext.header = { origin: 'local.booking.gov.sg' };
+		KoaContextStoreMock.manualContext = false;
+		KoaContextStoreMock.koaContext.body = undefined;
+		KoaContextStoreMock.koaContext.remove('Content-Type');
+		KoaContextStoreMock.koaContext.remove('Content-Disposition');
+
 		(UinFinConfiguration as jest.Mock).mockImplementation(() => new UinFinConfigurationMock());
 		UinFinConfigurationMock.canViewPlainUinFin.mockReturnValue(false);
 	});
@@ -330,6 +337,53 @@ describe('Bookings.Controller', () => {
 		expect(result.data.status).toBe(1);
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 	});
+
+	it('should search and return all bookings', async () => {
+		BookingsServiceMock.mockSearchBookingsReturnAll.mockImplementation(() => Promise.resolve([testBooking1]));
+		BookingsServiceMock.mockCheckLimit.mockImplementation();
+
+		KoaContextStoreMock.manualContext = true;
+		KoaContextStoreMock.koaContext.set('Content-Type', 'text/csv');
+		KoaContextStoreMock.koaContext.set('Content-Disposition', `attachment; filename="exported-bookings.csv"`);
+
+		const from = new Date('2020-05-16T20:25:43.511Z');
+		const to = new Date('2020-05-16T21:25:43.511Z');
+		const fromCreatedDate = new Date('2020-05-10T20:25:43.511Z');
+		const toCreatedDate = new Date('2020-05-20T21:25:43.511Z');
+		const citizenUinFins = ['abc123', 'xyz456'];
+		const controller = Container.get(BookingsController);
+
+		await controller.getBookingsCSV(
+			from,
+			to,
+			fromCreatedDate,
+			toCreatedDate,
+			[1],
+			citizenUinFins,
+			[55],
+			2,
+			50,
+			123,
+			1,
+		);
+
+		expect(BookingsServiceMock.mockSearchBookingsReturnAll).toHaveBeenCalledWith({
+			from: new Date('2020-05-16T20:25:43.511Z'),
+			to: new Date('2020-05-16T21:25:43.511Z'),
+			fromCreatedDate: new Date('2020-05-10T20:25:43.511Z'),
+			toCreatedDate: new Date('2020-05-20T21:25:43.511Z'),
+			statuses: [1],
+			citizenUinFins: ['abc123', 'xyz456'],
+			serviceId: 1,
+			serviceProviderIds: [55],
+			page: 2,
+			limit: 50,
+			maxId: 123,
+		});
+
+		expect(KoaContextStoreMock.koaContext.body).toBeDefined();
+		expect(typeof KoaContextStoreMock.koaContext.body).toBe('string');
+	});
 });
 
 const TimeslotsServiceMock = {
@@ -345,6 +399,8 @@ class BookingsServiceMock implements Partial<BookingsService> {
 	public static mockPostBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockBookings: Booking[] = [];
 	public static searchBookings = jest.fn<Promise<IPagedEntities<Booking>>, any>();
+	public static mockSearchBookingsReturnAll = jest.fn<Promise<Booking[]>, any>();
+	public static mockCheckLimit = jest.fn<Promise<void>, any>();
 	public static mockBookingId;
 	public static getBookingPromise = Promise.resolve(BookingsServiceMock.mockGetBooking);
 	public static mockUpdateBooking: Booking;
@@ -371,6 +427,14 @@ class BookingsServiceMock implements Partial<BookingsService> {
 
 	public async searchBookings(...params): Promise<any> {
 		return await BookingsServiceMock.searchBookings(...params);
+	}
+
+	public async searchBookingsReturnAll(...params): Promise<any> {
+		return await BookingsServiceMock.mockSearchBookingsReturnAll(...params);
+	}
+
+	public async checkLimit(...params): Promise<void> {
+		return BookingsServiceMock.mockCheckLimit(...params);
 	}
 
 	public async save(bookingRequest: BookingRequest): Promise<Booking> {

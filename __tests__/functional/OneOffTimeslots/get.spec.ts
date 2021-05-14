@@ -291,17 +291,7 @@ describe('Timeslots functional tests', () => {
 			{
 				availabilityCount: 1,
 				startTime: '2021-03-05T01:00:00.000Z',
-				endTime: '2021-03-05T02:00:00.000Z',
-				timeslotServiceProviders: [
-					{
-						eventDescription: 'my description',
-						eventTitle: 'my event',
-						serviceProvider: {
-							id: serviceProvider1.id,
-							name: 'SP1',
-						},
-					},
-				],
+				endTime: '2021-03-05T02:00:00.000Z'
 			},
 		]);
 
@@ -310,15 +300,7 @@ describe('Timeslots functional tests', () => {
 			{
 				availabilityCount: 2,
 				startTime: '2021-03-06T06:00:00.000Z',
-				endTime: '2021-03-06T07:00:00.000Z',
-				timeslotServiceProviders: [
-					{
-						serviceProvider: {
-							id: serviceProvider2.id,
-							name: 'SP2',
-						},
-					},
-				],
+				endTime: '2021-03-06T07:00:00.000Z'
 			},
 		]);
 
@@ -327,12 +309,31 @@ describe('Timeslots functional tests', () => {
 			{
 				availabilityCount: 3,
 				startTime: '2021-03-07T07:00:00.000Z',
-				endTime: '2021-03-07T08:00:00.000Z',
+				endTime: '2021-03-07T08:00:00.000Z'
+			},
+		]);
+	});
+
+	it('citizen should get availability for exact timeslot', async () => {
+		const availability1Response = await CitizenRequestEndpointSG.create({ serviceId: serviceId1 }).get(
+			`/timeslots/availability?serviceProviderId=${
+				serviceProvider1.id
+			}&startDate=2021-03-05T01:00:00.000Z&endDate=2021-03-05T02:00:00.000Z&exactTimeslot=true`,
+		);
+
+		expect(availability1Response.statusCode).toEqual(200);
+		expect(availability1Response.body.data).toEqual([
+			{
+				availabilityCount: 1,
+				startTime: '2021-03-05T01:00:00.000Z',
+				endTime: '2021-03-05T02:00:00.000Z',
 				timeslotServiceProviders: [
 					{
+						eventDescription: 'my description',
+						eventTitle: 'my event',
 						serviceProvider: {
-							id: serviceProvider3.id,
-							name: 'SP3',
+							id: serviceProvider1.id,
+							name: 'SP1',
 						},
 					},
 				],
