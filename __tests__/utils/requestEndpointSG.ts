@@ -63,6 +63,7 @@ class RequestEndpointSG {
 			body?: any;
 		},
 	): Promise<request.Response> {
+		await this.csrfHandler(path, data);
 		return await this.apiRequest({ method: 'POST', uri: path, qs: data?.params, body: data?.body });
 	}
 
@@ -73,6 +74,7 @@ class RequestEndpointSG {
 			body?: any;
 		},
 	): Promise<request.Response> {
+		await this.csrfHandler(path, data);
 		return await this.apiRequest({ method: 'PUT', uri: path, qs: data?.params, body: data?.body });
 	}
 
@@ -84,6 +86,21 @@ class RequestEndpointSG {
 		},
 	): Promise<request.Response> {
 		return await this.apiRequest({ method: 'DELETE', uri: path, qs: data?.params, body: data?.body });
+	}
+
+	private async csrfHandler(
+		path: string,
+		data?: {
+			params?: object,
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			body?: any;
+		},
+	) {
+		const res = await this.apiRequest({ method: 'HEAD', uri: path, qs: data?.params, body: undefined });
+		let cookie = this.getHeader().cookie ?? this.getHeader().Cookie ?? '';
+		cookie += `; ${res.headers['set-cookie']}`;
+		const csrf = res.headers['x-xsrf-token'] as string;
+		this.setHeaders({ ['x-xsrf-token']: csrf, cookie});
 	}
 }
 

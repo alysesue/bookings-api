@@ -5,6 +5,7 @@ import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { mailer } from '../../config/mailer';
 import { emailLogger } from '../../config/logger';
 import { MailOptions } from './notifications.mapper';
+import { isEmail } from 'mol-lib-api-contract/utils';
 
 @InRequestScope
 export class NotificationsService {
@@ -15,7 +16,7 @@ export class NotificationsService {
 
 	public async sendEmail(options: MailOptions): Promise<CreateEmailResponseDataApiDomain> {
 		const mergedOptions = this.getMergedOptions(options);
-		this.validateEmails(this.getEmailsFromOptions(mergedOptions));
+		await this.validateEmails(this.getEmailsFromOptions(mergedOptions));
 		const recipients = options.to.join(',');
 
 		try {
@@ -51,13 +52,12 @@ export class NotificationsService {
 		return [options.from, ...options.to];
 	};
 
-	private validateEmails = (emails: string[]) => {
-		emails.forEach((email) => this.validateEmail(email));
+	private validateEmails = async (emails: string[]) => {
+		await Promise.all(emails.map((email) => this.validateEmail(email)));
 	};
 
-	private validateEmail = (value): void => {
-		// tslint:disable-next-line: tsr-detect-unsafe-regexp
-		if (!/^\w+((\-|\.)\w+)*\@\w+(\-|\.|(\w+))*$/.test(value)) {
+	private validateEmail = async (email: string): Promise<void> => {
+		if (!(await isEmail(email.toLowerCase())).pass) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Invalid email address');
 		}
 	};
