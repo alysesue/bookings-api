@@ -676,4 +676,69 @@ describe('Booking validation tests', () => {
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
 		).rejects.toMatchInlineSnapshot('[BusinessError: [10014] Invalid video conference link is provided]');
 	});
+
+	it('should validate null NRIC when noNRIC is true', async () => {
+		const booking = new BookingBuilder()
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.withCitizenUinFin(null)
+			.build();
+		booking.service = {
+			noNric: true,
+		} as Service
+
+		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(null));
+
+		await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
+	});
+	it('should validate valid NRIC when noNRIC is true', async () => {
+		const booking = new BookingBuilder()
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.withCitizenUinFin('G3382058K')
+			.build();
+		booking.service = {
+			noNric: true,
+		} as Service
+
+		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(null));
+
+		await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
+	});
+	it('should not validate invalid NRIC when noNRIC is true', async () => {
+		const booking = new BookingBuilder()
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.withCitizenUinFin('abcde')
+			.build();
+		booking.service = {
+			noNric: true,
+		} as Service
+
+		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(null));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10005] Citizen UIN/FIN not found]');	});
 });
