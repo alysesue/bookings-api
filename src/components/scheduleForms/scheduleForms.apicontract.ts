@@ -34,6 +34,12 @@ export class WeekDayScheduleContract {
 	 */
 	public closeTime?: string;
 	public breaks: WeekDayBreakContract[];
+	/**
+	 * The number of capacity for this timeslot
+	 *
+	 * @isInt
+	 */
+	public capacity = 1;
 }
 
 export class ScheduleFormResponse {

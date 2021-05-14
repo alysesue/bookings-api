@@ -43,24 +43,20 @@ describe('Timeslot availability functional tests', () => {
 
 	it('should NOT retrieve service availability as anonymous (when service is configuration is not set)', async () => {
 		const endpoint = await AnonmymousEndpointSG.create({ serviceId: serviceId1 });
-		try {
-			await endpoint.get(
-				'/timeslots/availability?startDate=2021-01-03T23:52:31.754Z&endDate=2021-01-31T15:59:59.999Z',
-			);
-		} catch (e) {
-			expect(e.httpStatusCode).toBe(404);
-		}
+		const response = await endpoint.get(
+			'/timeslots/availability?startDate=2021-01-03T23:52:31.754Z&endDate=2021-01-31T15:59:59.999Z',
+		);
+
+		expect(response.statusCode).toBe(404);
 	});
 
 	it('should NOT retrieve service provider availability as anonymous (when service is configuration is not set)', async () => {
 		const endpoint = await AnonmymousEndpointSG.create({ serviceId: serviceId1 });
-		try {
-			await endpoint.get(
-				`/timeslots/availability?serviceProviderId=${serviceProvider1.id}&startDate=2021-01-03T23:52:31.754Z&endDate=2021-01-31T15:59:59.999Z`,
-			);
-		} catch (e) {
-			expect(e.httpStatusCode).toBe(404);
-		}
+		const response = await endpoint.get(
+			`/timeslots/availability?serviceProviderId=${serviceProvider1.id}&startDate=2021-01-03T23:52:31.754Z&endDate=2021-01-31T15:59:59.999Z`,
+		);
+
+		expect(response.statusCode).toBe(404);
 	});
 
 	it('should retrieve service availability as anonymous (when service is configuration is set)', async () => {
@@ -77,12 +73,10 @@ describe('Timeslot availability functional tests', () => {
 		await pgClient.configureServiceAllowAnonymous({ serviceId: serviceId1 });
 
 		const endpoint = await AnonmymousEndpointSG.create({ serviceId: serviceId1 });
-		try {
-			await endpoint.get(
-				`/timeslots/availability?serviceProviderId=${serviceProvider1.id}&startDate=2021-01-03T23:52:31.754Z&endDate=2021-01-31T15:59:59.999Z`,
-			);
-		} catch (e) {
-			expect(e.httpStatusCode).toBe(404);
-		}
+		const response = await endpoint.get(
+			`/timeslots/availability?serviceProviderId=${serviceProvider1.id}&startDate=2021-01-03T23:52:31.754Z&endDate=2021-01-31T15:59:59.999Z`,
+		);
+
+		expect(response.statusCode).toBe(200);
 	});
 });

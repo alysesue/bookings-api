@@ -4,6 +4,8 @@ import { CreateEmail } from 'mol-lib-api-contract/notification/mail';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract/error';
 import { mailer } from '../../../config/mailer';
 
+jest.mock('../../../config/mailer');
+
 jest.mock('../../../config/app-config', () => {
 	const configMock = {
 		isLocal: true,
@@ -31,13 +33,19 @@ jest.mock('../../../config/app-config', () => {
 
 // tslint:disable-next-line:no-big-function
 describe('Send email', () => {
+	const mailerMock = {
+		sendMail: jest.fn()
+	};
+
 	beforeEach(() => {
 		jest.resetAllMocks();
-		mailer.sendMail = jest.fn(() => ({
+		mailerMock.sendMail.mockImplementation(() => Promise.resolve({
 			accepted: ['success@foo.com'],
 			rejected: ['reject@foo.com'],
 			messageId: 'messageId',
 		}));
+
+		(mailer as jest.Mock).mockImplementation(() => Promise.resolve(mailerMock));
 	});
 
 	it('should send mail to single recipient', async () => {
@@ -53,7 +61,7 @@ describe('Send email', () => {
 		};
 		const instance = await Container.get(NotificationsService);
 		await instance.sendEmail(options);
-		expect(mailer.sendMail).toHaveBeenCalledWith(expectedOptions);
+		expect(mailerMock.sendMail).toHaveBeenCalledWith(expectedOptions);
 	});
 
 	it('should throw error when email is invalid', async () => {
@@ -81,7 +89,7 @@ describe('Send email', () => {
 		};
 		const instance = await Container.get(NotificationsService);
 		await instance.sendEmail(options);
-		expect(mailer.sendMail).toHaveBeenCalledWith(expectedOptions);
+		expect(mailerMock.sendMail).toHaveBeenCalledWith(expectedOptions);
 	});
 
 	it('should throw error when any email is invalid', async () => {

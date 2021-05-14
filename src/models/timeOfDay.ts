@@ -5,13 +5,14 @@ import { DateHelper } from '../infrastructure/dateHelper';
 export class TimeOfDay {
 	private static _cache: { [key: string]: TimeOfDay } = {};
 
-	private static getFromCache(key: string, creator: () => TimeOfDay) {
-		if (!key) return null;
+	private static getFromCache(time: string) {
+		if (!time) return null;
 
-		let instance = TimeOfDay._cache[key];
+		let instance = TimeOfDay._cache[time];
 		if (!instance) {
-			instance = creator();
-			TimeOfDay._cache[key] = instance;
+			const parsedTime = parseHHmm(time);
+			instance = TimeOfDay.create(parsedTime)
+			TimeOfDay._cache[time] = instance;
 		}
 		return instance;
 	}
@@ -19,16 +20,6 @@ export class TimeOfDay {
 	private constructor(hours: number, minutes: number) {
 		this._hours = hours;
 		this._minutes = minutes;
-		this._asMinutes = () => {
-			const asMinutes = this._hours * 60 + this._minutes;
-			this._asMinutes = () => asMinutes;
-			return asMinutes;
-		};
-		this._asMilliseconds = () => {
-			const asMilliseconds = (this._hours * 60 + this._minutes) * 60 * 1000;
-			this._asMilliseconds = () => asMilliseconds;
-			return asMilliseconds;
-		};
 	}
 
 	private readonly _hours: number;
@@ -41,8 +32,8 @@ export class TimeOfDay {
 		return this._minutes;
 	}
 
-	private _asMinutes: () => number;
-	private _asMilliseconds: () => number;
+	private _asMinutes: number | undefined;
+	private _asMilliseconds: number | undefined;
 
 	public addMinutes(numOfMinutes: number): TimeOfDay {
 		const minutes = this.AsMinutes() + numOfMinutes;
@@ -56,10 +47,7 @@ export class TimeOfDay {
 	}
 
 	public static parse(time: string): TimeOfDay {
-		return TimeOfDay.getFromCache(time, () => {
-			const parsedTime = parseHHmm(time);
-			return TimeOfDay.create(parsedTime);
-		});
+		return TimeOfDay.getFromCache(time);
 	}
 
 	public static create(time: { hours: number; minutes: number }): TimeOfDay {
@@ -108,11 +96,18 @@ export class TimeOfDay {
 	}
 
 	public AsMinutes(): number {
-		return this._asMinutes();
+		if (this._asMinutes === undefined) {
+			this._asMinutes = this._hours * 60 + this._minutes;
+		}
+		return this._asMinutes;
 	}
 
 	public AsMilliseconds(): number {
-		return this._asMilliseconds();
+		if (this._asMilliseconds === undefined) {
+			this._asMilliseconds = this.AsMinutes() * 60 * 1000;
+		}
+
+		return this._asMilliseconds;
 	}
 }
 

@@ -34,6 +34,7 @@ import {
 } from './bookings.apicontract';
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
+const EXPORT_LIMIT = 5000;
 
 @Route('v1/bookings')
 @Tags('Bookings')
@@ -196,6 +197,73 @@ export class BookingsController extends Controller {
 	}
 
 	/**
+	 * Retrieves all booking according to filter and returns bookign results as CSV.
+	 *
+	 * @param from (Optional) The lower bound datetime limit (inclusive) for booking's end time.
+	 * @param to (Optional) The upper bound datetime limit (inclusive) for booking's start time.
+	 * @param fromCreatedDate (Optional)
+	 * @param toCreatedDate (Optional)
+	 * @param @isInt status (Optional) filters by a list of status: Pending (1), Accepted (2), Cancelled (3).
+	 * @param citizenUinFins (Optional) filters by a list of citizen ids
+	 * @param @isInt serviceProviderIds (Optional)
+	 * @param @isInt serviceId (Optional) filters by a service (id).
+	 * @param @isInt page (Optional)
+	 * @param @isInt limit (Optional)
+	 * @param maxId (Optional)
+	 */
+	@Get('csv')
+	@SuccessResponse(200, 'Ok')
+	@Security('optional-service')
+	@MOLAuth({
+		admin: {},
+		agency: {},
+	})
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	// tslint:disable-next-line: parameters-max-number
+	public async getBookingsCSV(
+		@Query() from?: Date,
+		@Query() to?: Date,
+		@Query() fromCreatedDate?: Date,
+		@Query() toCreatedDate?: Date,
+		@Query() status?: number[],
+		@Query() citizenUinFins?: string[],
+		@Query() serviceProviderIds?: number[],
+		@Query() page?: number,
+		@Query() limit?: number,
+		@Query() maxId?: number,
+		@Header('x-api-service') serviceId?: number,
+	): Promise<void> {
+		if (!status) {
+			status = this.bookingsMapper.mapStatuses();
+		}
+		await this.bookingsService.checkLimit(limit, EXPORT_LIMIT);
+		const searchQuery: BookingSearchRequest = {
+			from,
+			to,
+			fromCreatedDate,
+			toCreatedDate,
+			statuses: status,
+			serviceId,
+			citizenUinFins,
+			serviceProviderIds,
+			page: page || DEFAULT_PAGE,
+			limit,
+			maxId,
+		};
+
+		const bookings = await this.bookingsService.searchBookingsReturnAll(searchQuery);
+		const userContextSnapshot = await this.userContext.getSnapshot();
+
+		const bookingsCSVContent = await this.bookingsMapper.mapBookingsCSV(bookings, userContextSnapshot);
+		const koaContext = this._koaContextStore.koaContext;
+		koaContext.body = bookingsCSVContent;
+
+		koaContext.set('Content-Type', 'text/csv');
+		koaContext.set('Content-Disposition', `attachment; filename="exported-bookings.csv"`);
+		this._koaContextStore.manualContext = true;
+	}
+
+	/**
 	 * Retrieves all bookings that intercept the datetime range provided [from, to].
 	 *
 	 * @param from The lower bound datetime limit (inclusive) for booking's end time.
@@ -233,6 +301,9 @@ export class BookingsController extends Controller {
 		@Query() maxId?: number,
 		@Header('x-api-service') serviceId?: number,
 	): Promise<ApiPagedData<BookingResponse>> {
+		if (!status) {
+			status = this.bookingsMapper.mapStatuses();
+		}
 		const searchQuery: BookingSearchRequest = {
 			from,
 			to,

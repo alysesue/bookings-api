@@ -38,6 +38,7 @@ const setDayContractEntity = (
 	entity: WeekDaySchedule,
 ): OptionalResult<WeekDaySchedule, string[]> => {
 	entity.hasScheduleForm = contract.hasScheduleForm;
+	entity.capacity = contract.capacity;
 	const errors: string[] = [];
 
 	try {
@@ -114,6 +115,7 @@ export const mapDayScheduleToResponse = (daySchedule: WeekDaySchedule): WeekDayS
 	dayContract.openTime = daySchedule.openTime?.toJSON();
 	dayContract.closeTime = daySchedule.closeTime?.toJSON();
 	dayContract.breaks = daySchedule.breaks?.map((e) => mapBreaksToResponse(e));
+	dayContract.capacity = daySchedule.capacity;
 
 	return dayContract;
 };

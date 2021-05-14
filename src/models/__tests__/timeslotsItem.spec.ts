@@ -32,6 +32,20 @@ describe('Should test timeslots items', () => {
 		expect(timeslotItems[0]._endTime.toString()).toBe('08:15');
 	});
 
+	it('should generate timeslot and set capacity for that timeslot', async () => {
+		break1.startTime = TimeOfDay.create({ hours: 8, minutes: 15 });
+		break1.endTime = TimeOfDay.create({ hours: 8, minutes: 30 });
+		weekdaySchedule.breaks = [break1];
+		weekdaySchedule.capacity = 2;
+		scheduleFormRequestComplex.weekdaySchedules = [weekdaySchedule];
+		const timeslotItems = TimeslotItem.generateTimeslotsItems(scheduleFormRequestComplex, 1);
+		expect(timeslotItems.length).toBe(1);
+		expect(timeslotItems[0]._weekDay).toBe(Weekday.Monday);
+		expect(timeslotItems[0]._startTime.toString()).toBe('08:05');
+		expect(timeslotItems[0]._endTime.toString()).toBe('08:15');
+		expect(timeslotItems[0]._capacity.toString()).toBe('2');
+	});
+
 	it('should generate timeslots with complex schedueForm', async () => {
 		weekdaySchedule.openTime = TimeOfDay.create({ hours: 8, minutes: 6 });
 		weekdaySchedule.closeTime = TimeOfDay.create({ hours: 8, minutes: 40 });

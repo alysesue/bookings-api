@@ -18,9 +18,10 @@ export class AvailabilityEntryResponse {
 	 */
 	public availabilityCount: number;
 	/**
-	 * The detail of service Providers information at this specific timeslot NEW
+	 * The detail of service Providers information at this specific timeslot.
+	 * This is only returned when exactTimeslot=true in the parameters
 	 */
-	public timeslotServiceProviders: CitizenTimeslotServiceProviderResponse[];
+	public timeslotServiceProviders?: CitizenTimeslotServiceProviderResponse[];
 }
 
 export class CitizenTimeslotServiceProviderResponse {

@@ -6,6 +6,13 @@ export enum BookingStatus {
 	OnHold = 5,
 }
 
+export const bookingStatusArray = [
+	BookingStatus.PendingApproval,
+	BookingStatus.Accepted,
+	BookingStatus.Cancelled,
+	BookingStatus.Rejected,
+];
+
 export enum BookingStatusDisplayedInEmails {
 	'Pending Approval' = 1,
 	Accepted = 2,

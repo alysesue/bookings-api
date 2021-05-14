@@ -22,7 +22,7 @@ export class StopWatch {
 	}
 
 
-	public stop(log= true) {
+	public stop(log = true) {
 		const memory = v8.getHeapStatistics();
 		this._endMemoryMemoryAvailKB = memory.total_available_size  / 1024;
 		this._end = new Date();

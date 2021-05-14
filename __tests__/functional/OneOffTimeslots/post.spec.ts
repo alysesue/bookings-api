@@ -47,7 +47,7 @@ describe('Timeslots functional tests', () => {
 	});
 
 	it('should add one off timeslots with labels', async () => {
-		const response = await populateOneOffTimeslot({
+		const [, data] = await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
@@ -55,12 +55,12 @@ describe('Timeslots functional tests', () => {
 			labelIds: [service.labels[0].id],
 		});
 
-		expect(response.labels[0].id).toEqual(service.labels[0].id);
-		expect(response.labels[0].label).toEqual(service.labels[0].label);
+		expect(data.labels[0].id).toEqual(service.labels[0].id);
+		expect(data.labels[0].label).toEqual(service.labels[0].label);
 	});
 
 	it('should add oneOffTimeslots', async () => {
-		const service1TimeslotsResponse = await populateOneOffTimeslot({
+		const [,service1TimeslotsResponse] = await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
@@ -76,7 +76,7 @@ describe('Timeslots functional tests', () => {
 	});
 
 	it('should add oneOffTimeslots with title/description', async () => {
-		const service1TimeslotsResponse = await populateOneOffTimeslot({
+		const [,service1TimeslotsResponse] = await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
@@ -96,81 +96,71 @@ describe('Timeslots functional tests', () => {
 	});
 
 	it('should return error when oneOffTimeslots incorrect', async () => {
-		try {
-			await populateOneOffTimeslot({
-				serviceProviderId: serviceProvider1.id,
-				startTime: END_TIME_1,
-				endTime: START_TIME_1,
-				capacity: 1,
-				title:
-					'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii',
-				description: 'Description',
-			});
-		} catch (e) {
-			const res = [
-				{ code: '10103', message: 'Start time must be less than end time.' },
-				{
-					code: '10101',
-					message: 'Description should be max 4000 characters',
-				},
-			];
-			expect(e.message).toStrictEqual(res);
-		}
+		const [response] = await populateOneOffTimeslot({
+			serviceProviderId: serviceProvider1.id,
+			startTime: END_TIME_1,
+			endTime: START_TIME_1,
+			capacity: 1,
+			title:
+				'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii',
+			description: 'Description',
+		});
+
+		expect(response.body.data).toEqual([{"code": "10101", "message": "Title word limit is 100 characters"}, {"code": "10102", "message": "Start time must be less than end time"}]);
 	});
 	it('should return error when oneOffTimeslots booked overlapping', async () => {
-		try {
-			await populateOneOffTimeslot({
-				serviceProviderId: serviceProvider1.id,
-				startTime: END_TIME_1,
-				endTime: START_TIME_1,
-				capacity: 1,
-				title: 'title1',
-				description: 'Description',
-			});
-			await populateOneOffTimeslot({
-				serviceProviderId: serviceProvider1.id,
-				startTime: END_TIME_1,
-				endTime: START_TIME_1,
-				capacity: 1,
-				title: 'title2',
-				description: 'Description',
-			});
-		} catch (e) {
-			const res = [{ message: 'Slot cannot be created as it overlaps with an existing slot' }];
-			expect(e.message).toStrictEqual(res);
-		}
+		await populateOneOffTimeslot({
+			serviceProviderId: serviceProvider1.id,
+			startTime: START_TIME_1,
+			endTime: END_TIME_1,
+			capacity: 1,
+			title: 'title1',
+			description: 'Description',
+		});
+		const [response] = await populateOneOffTimeslot({
+			serviceProviderId: serviceProvider1.id,
+			startTime: START_TIME_1,
+			endTime: END_TIME_1,
+			capacity: 1,
+			title: 'title2',
+			description: 'Description',
+		});
+
+		expect(response.statusCode).toEqual(400);
+		expect(response.body).toEqual({
+			"errorCode": "SYS_INVALID_PARAM",
+			"errorMessage": "Slot cannot be created as it overlaps with an existing slot.",
+		});
 	});
 	it('should return error when oneOffTimeslots updated overlapping', async () => {
-		try {
-			await populateOneOffTimeslot({
-				serviceProviderId: serviceProvider1.id,
-				startTime: END_TIME_1,
-				endTime: START_TIME_1,
-				capacity: 1,
-				title: 'title1',
-				description: 'Description',
-			});
-			const service2TimeslotsResponse = await populateOneOffTimeslot({
-				serviceProviderId: serviceProvider1.id,
-				startTime: END_TIME_2,
-				endTime: START_TIME_2,
-				capacity: 1,
-				title: 'title2',
-				description: 'Description',
-			});
-			const { idSigned } = service2TimeslotsResponse;
-			await updateOneOffTimeslot({
-				serviceProviderId: serviceProvider1.id,
-				startTime: END_TIME_1,
-				endTime: START_TIME_1,
-				capacity: 1,
-				title: 'title2',
-				description: 'Description',
-				idSigned: idSigned,
-			});
-		} catch (e) {
-			const res = [{ message: 'Slot cannot be created as it overlaps with an existing slot' }];
-			expect(e.message).toStrictEqual(res);
-		}
+		await populateOneOffTimeslot({
+			serviceProviderId: serviceProvider1.id,
+			startTime: START_TIME_1,
+			endTime: END_TIME_1,
+			capacity: 1,
+			title: 'title1',
+			description: 'Description',
+		});
+		const [,service2TimeslotsResponse] = await populateOneOffTimeslot({
+			serviceProviderId: serviceProvider1.id,
+			startTime: START_TIME_2,
+			endTime: END_TIME_2,
+			capacity: 1,
+			title: 'title2',
+			description: 'Description',
+		});
+		const { idSigned } = service2TimeslotsResponse;
+		const [response] = await updateOneOffTimeslot({
+			serviceProviderId: serviceProvider1.id,
+			startTime: START_TIME_1,
+			endTime: END_TIME_1,
+			capacity: 1,
+			title: 'title2',
+			description: 'Description',
+			idSigned: idSigned,
+		});
+
+		expect(response.statusCode).toEqual(400);
+		expect(response.body).toEqual({"errorCode":"SYS_INVALID_PARAM","errorMessage":"Slot cannot be created as it overlaps with an existing slot."})
 	});
 });
