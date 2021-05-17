@@ -8,10 +8,12 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 	private _fieldValue: PersistDynamicValueContract;
 	private _valueJson: Partial<DynamicValueJsonModel>;
 	private _businessValidations: BusinessValidation[];
+	private _validateRequiredFields: boolean;
 
-	constructor() {
+	constructor(validateRequiredFields: boolean) {
 		this._valueJson = undefined;
 		this._businessValidations = [];
+		this._validateRequiredFields = validateRequiredFields;
 	}
 
 	private addValidation(validation: BusinessValidation) {
@@ -27,7 +29,7 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 
 		const selectedOption = _selectListField.options.find((o) => o.key === this._fieldValue.singleSelectionKey);
 		if (!selectedOption) {
-			this.addValidation(DynamicValueBusinessValidations.FieldValueIsRequired.create(_selectListField));
+			this.markFieldNotProvided(_selectListField);
 			return;
 		}
 
@@ -39,6 +41,16 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 		};
 	}
 
+	private markFieldNotProvided(field: DynamicField) {
+		// validation not allowed for admins (they can't input values), it might change in the future
+		if (this._validateRequiredFields) {
+			this.addValidation(DynamicValueBusinessValidations.FieldValueIsRequired.create(field));
+		}
+
+		this._valueJson = undefined;
+		return;
+	}
+
 	visitTextField(_textField: TextDynamicField) {
 		if (this._fieldValue.type !== DynamicValueTypeContract.Text) {
 			this.addValidation(DynamicValueBusinessValidations.IncorrectFieldValueType.create(_textField));
@@ -47,7 +59,7 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 		this._fieldValue.textValue = this._fieldValue.textValue?.trim();
 
 		if (!this._fieldValue.textValue) {
-			this.addValidation(DynamicValueBusinessValidations.FieldValueIsRequired.create(_textField));
+			this.markFieldNotProvided(_textField);
 			return;
 		}
 
@@ -62,7 +74,7 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 	public mapFieldValueToJson(field: DynamicField, fieldValue: PersistDynamicValueContract): void {
 		if (!fieldValue) {
 			// All field values are required for now
-			this.addValidation(DynamicValueBusinessValidations.FieldValueIsRequired.create(field));
+			this.markFieldNotProvided(field);
 			return;
 		}
 

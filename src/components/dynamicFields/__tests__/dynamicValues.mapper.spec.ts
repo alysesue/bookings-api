@@ -10,13 +10,16 @@ import {
 } from '../dynamicValues.apicontract';
 import { DynamicFieldsService } from '../dynamicFields.service';
 import { DynamicFieldsServiceMock } from '../__mocks__/dynamicFields.service.mock';
-import { BusinessValidation, SelectListDynamicField, SelectListOption, TextDynamicField } from '../../../models';
+import { BusinessValidation, SelectListDynamicField, SelectListOption, TextDynamicField, User } from '../../../models';
+import { UserContext } from '../../../infrastructure/auth/userContext';
+import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 
 jest.mock('../dynamicFields.service');
 
 beforeAll(() => {
 	Container.bind(IdHasher).to(IdHasherMock);
 	Container.bind(DynamicFieldsService).to(DynamicFieldsServiceMock);
+	Container.bind(UserContext).to(UserContextMock);
 });
 
 describe('dynamicFields/dynamicValues.mapper', () => {
@@ -37,11 +40,16 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		return textField;
 	};
 
+	const userMock = { isAdmin: jest.fn() } as Partial<User>;
+
 	beforeEach(() => {
 		jest.resetAllMocks();
 
 		IdHasherMock.encode.mockImplementation((id: number) => id.toString());
 		IdHasherMock.decode.mockImplementation((id: string) => Number.parseInt(id, 10));
+
+		(UserContextMock.getCurrentUser as jest.Mock).mockImplementation(() => userMock);
+		(userMock.isAdmin as jest.Mock).mockImplementation(() => false);
 	});
 
 	it('should map select list dynamic field value ', async () => {
@@ -181,6 +189,19 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		} as MapRequestOptionalResult);
 	});
 
+	it(`should NOT validate dynamic fields are required for admins (this might change later)`, async () => {
+		(userMock.isAdmin as jest.Mock).mockImplementation(() => true);
+
+		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() =>
+			Promise.resolve([createSelectFieldEntity(), createTextField()]),
+		);
+
+		const mapper = Container.get(DynamicValuesMapper);
+		const dynamicReturn = await mapper.mapDynamicValuesRequest([], 100);
+
+		expect(dynamicReturn).toEqual({ result: [] } as MapRequestOptionalResult);
+	});
+
 	it(`should validate dynamic fields are required (object provided but value is empty)`, async () => {
 		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() =>
 			Promise.resolve([createSelectFieldEntity(), createTextField()]),
@@ -287,3 +308,17 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		} as MapRequestOptionalResult);
 	});
 });
+
+class UserContextMock implements Partial<UserContext> {
+	public static getCurrentUser = jest.fn<Promise<User>, any>();
+	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
+
+	public init() {}
+	public async getCurrentUser(...params): Promise<any> {
+		return await UserContextMock.getCurrentUser(...params);
+	}
+
+	public async getAuthGroups(...params): Promise<any> {
+		return await UserContextMock.getAuthGroups(...params);
+	}
+}
