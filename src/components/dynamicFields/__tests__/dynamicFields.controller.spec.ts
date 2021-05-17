@@ -27,8 +27,8 @@ describe('dynamicFields/dynamicFields.controller', () => {
 		dynamicFieldModel.idSigned = '1';
 		dynamicFieldModel.name = 'testDynamicController';
 		dynamicFieldModel.type = DynamicFieldType.SelectList;
-		dynamicFieldModel.SelectList = new SelectListModel();
-		dynamicFieldModel.SelectList.options = [selectOption];
+		dynamicFieldModel.selectList = new SelectListModel();
+		dynamicFieldModel.selectList.options = [selectOption];
 
 		DynamicFieldsMapperMock.mockMapDataModels.mockImplementation(() => [dynamicFieldModel]);
 		const container = Container.get(DynamicFieldsController);

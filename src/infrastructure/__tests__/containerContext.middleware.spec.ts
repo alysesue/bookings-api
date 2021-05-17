@@ -1,7 +1,8 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { basePath } from '../../config/app-config';
-import { ContainerContext, ContainerContextMiddleware } from '../containerContext.middleware';
+import { ContainerContextMiddleware } from '../containerContext.middleware';
 import * as Koa from 'koa';
+import { ContainerContext } from '../containerContext';
 
 afterEach(() => {
 	jest.resetAllMocks();

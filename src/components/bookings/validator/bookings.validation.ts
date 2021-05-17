@@ -1,4 +1,4 @@
-import { Inject, InRequestScope } from 'typescript-ioc';
+import { Inject, InRequestScope, Scope, Scoped } from 'typescript-ioc';
 import { isEmail, isUrl } from 'mol-lib-api-contract/utils';
 import {Booking, BookingStatus, BusinessValidation} from '../../../models';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
@@ -12,11 +12,32 @@ import { CaptchaService } from '../../captcha/captcha.service';
 import { MAX_PAGING_LIMIT } from '../../../core/pagedEntities';
 import { IValidator, Validator } from '../../../infrastructure/validator';
 import { BookingBusinessValidations } from './bookingBusinessValidations';
+import { ContainerContext } from '../../../infrastructure/containerContext';
 
-@InRequestScope
-abstract class BookingsValidator extends Validator<Booking> {
+export interface IBookingsValidator extends IValidator<Booking>  {
+	bypassCaptcha(shouldBypassCaptcha: boolean): void;
+	addCustomCitizenValidations(...customValidations: BusinessValidation[]);
+}
+
+abstract class BookingsValidator extends Validator<Booking> implements IBookingsValidator {
 	@Inject
 	private serviceProvidersRepository: ServiceProvidersRepository;
+
+	protected shouldBypassCaptcha = false;
+	private _customCitizenValidations: BusinessValidation[];
+
+	constructor(){
+		super();
+		this._customCitizenValidations = [];
+	}
+
+	public bypassCaptcha(shouldBypassCaptcha: boolean) {
+		this.shouldBypassCaptcha = shouldBypassCaptcha;
+	}
+
+	public addCustomCitizenValidations(...customValidations: BusinessValidation[]) {
+		this._customCitizenValidations.push(...customValidations);
+	}
 
 	private static async validateUinFin(citizenUinFin: string, noNric?: boolean): Promise<boolean> {
 		if (noNric && !citizenUinFin){
@@ -45,6 +66,10 @@ abstract class BookingsValidator extends Validator<Booking> {
 		}
 		if (booking.videoConferenceUrl && !(await BookingsValidator.validateUrl(booking.videoConferenceUrl))) {
 			yield BookingBusinessValidations.VideoConferenceUrlIsInvalid;
+		}
+
+		if (this._customCitizenValidations.length > 0){
+			yield* this._customCitizenValidations;
 		}
 	}
 
@@ -76,7 +101,7 @@ abstract class BookingsValidator extends Validator<Booking> {
 			BookingsValidator.validateDuration(booking),
 			booking.status === BookingStatus.OnHold
 				? BookingsValidator.skipValidation(booking)
-				: BookingsValidator.validateCitizenDetails(booking),
+				: this.validateCitizenDetails(booking),
 		)) {
 			yieldedAny = true;
 			yield validation;
@@ -112,7 +137,7 @@ abstract class BookingsValidator extends Validator<Booking> {
 	}
 }
 
-@InRequestScope
+@Scoped(Scope.Local)
 class OutOfSlotBookingValidator extends BookingsValidator {
 	@Inject
 	private bookingsRepository: BookingsRepository;
@@ -221,7 +246,7 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 	}
 }
 
-@InRequestScope
+@Scoped(Scope.Local)
 class SlotBookingsValidator extends BookingsValidator {
 	@Inject
 	private timeslotsService: TimeslotsService;
@@ -261,7 +286,7 @@ class SlotBookingsValidator extends BookingsValidator {
 	}
 }
 
-@InRequestScope
+@Scoped(Scope.Local)
 class ConfirmOnHoldBookingValidator extends OutOfSlotBookingValidator {
 	constructor() {
 		super(false);
@@ -271,21 +296,17 @@ class ConfirmOnHoldBookingValidator extends OutOfSlotBookingValidator {
 @InRequestScope
 export class BookingsValidatorFactory {
 	@Inject
-	private slotBookingValidator: SlotBookingsValidator;
-	@Inject
-	private outOfSlotBookingValidator: OutOfSlotBookingValidator;
-	@Inject
-	private confirmOnHoldBookingValidator: ConfirmOnHoldBookingValidator;
+	private containerContext: ContainerContext;
 
-	public getValidator(outOfSlotBooking: boolean): IValidator<Booking> {
+	public getValidator(outOfSlotBooking: boolean): IBookingsValidator {
 		if (outOfSlotBooking) {
-			return this.outOfSlotBookingValidator;
+			return this.containerContext.resolve(OutOfSlotBookingValidator);
 		} else {
-			return this.slotBookingValidator;
+			return this.containerContext.resolve(SlotBookingsValidator);
 		}
 	}
 
-	public getOnHoldValidator(): IValidator<Booking> {
-		return this.confirmOnHoldBookingValidator;
+	public getOnHoldValidator(): IBookingsValidator {
+		return this.containerContext.resolve(ConfirmOnHoldBookingValidator);
 	}
 }

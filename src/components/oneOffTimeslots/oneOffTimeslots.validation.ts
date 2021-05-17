@@ -5,10 +5,14 @@ import { concatIteratables } from '../../tools/asyncIterables';
 import { OneOffTimeslotRequest } from './oneOffTimeslots.apicontract';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { OneOffTimeslotsRepository } from './oneOffTimeslots.repository';
-import { Inject, InRequestScope } from 'typescript-ioc';
+import { Inject, Scope, Scoped } from 'typescript-ioc';
 
+@Scoped(Scope.Local)
 export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
-	protected async *getValidations(entity: OneOffTimeslot) {
+	@Inject
+	private oneOffTimeslotsRepo: OneOffTimeslotsRepository;
+
+	protected async *getValidations(entity: OneOffTimeslot): AsyncIterable<BusinessValidation> {
 		const { startDateTime, endDateTime, title, description } = entity;
 		const allValidates = concatIteratables(
 			OneOffTimeslotsValidation.validateTitle(title),
@@ -19,27 +23,6 @@ export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 			yield validation;
 		}
 	}
-	private static async *validateDescription(description: string): AsyncIterable<BusinessValidation> {
-		if (description && description.length > 4000) {
-			yield OneOffTimeslotsBusinessValidation.DescriptionTooLong;
-		}
-	}
-	private static async *validateTitle(title: string): AsyncIterable<BusinessValidation> {
-		if (title && title.length > 100) {
-			yield OneOffTimeslotsBusinessValidation.TitleTooLong;
-		}
-	}
-	private static async *validateTime(startDateTime: Date, endDateTime: Date): AsyncIterable<BusinessValidation> {
-		if (startDateTime.getTime() >= endDateTime.getTime()) {
-			yield OneOffTimeslotsBusinessValidation.InvalidTime;
-		}
-	}
-}
-
-@InRequestScope
-export class OneOffTimeslotsBusinessValidation {
-	@Inject
-	private oneOffTimeslotsRepo: OneOffTimeslotsRepository;
 
 	public async validateOneOffTimeslotsAvailability(request: OneOffTimeslotRequest, updateSlotId?: number) {
 		const searchRequest = {
@@ -57,6 +40,28 @@ export class OneOffTimeslotsBusinessValidation {
 		}
 		return true;
 	}
+
+
+	private static async *validateDescription(description: string): AsyncIterable<BusinessValidation> {
+		if (description && description.length > 4000) {
+			yield OneOffTimeslotsBusinessValidation.DescriptionTooLong;
+		}
+	}
+	private static async *validateTitle(title: string): AsyncIterable<BusinessValidation> {
+		if (title && title.length > 100) {
+			yield OneOffTimeslotsBusinessValidation.TitleTooLong;
+		}
+	}
+	private static async *validateTime(startDateTime: Date, endDateTime: Date): AsyncIterable<BusinessValidation> {
+		if (startDateTime.getTime() >= endDateTime.getTime()) {
+			yield OneOffTimeslotsBusinessValidation.InvalidTime;
+		}
+	}
+}
+
+
+class OneOffTimeslotsBusinessValidation {
+	private constructor() {}
 
 	public static readonly TitleTooLong = new BusinessValidation({
 		code: '10101',

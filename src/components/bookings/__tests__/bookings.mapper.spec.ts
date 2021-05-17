@@ -1,28 +1,36 @@
-import { Booking, Organisation, SelectListDynamicField, SelectListOption, Service, User } from '../../../models';
+import {
+	Booking,
+	BusinessValidation,
+	Organisation,
+	SelectListDynamicField,
+	SelectListOption,
+	Service,
+	User,
+} from '../../../models';
 import { BookingsMapper } from '../bookings.mapper';
 import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
 import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entities/booking';
 import { Container } from 'typescript-ioc';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
-import {
-	DynamicValueContract,
-	DynamicValueTypeContract,
-	PersistDynamicValueContract,
-} from '../../../components/dynamicFields/dynamicValues.apicontract';
+import { PersistDynamicValueContract } from '../../../components/dynamicFields/dynamicValues.apicontract';
 import { BookingDetailsRequest } from '../bookings.apicontract';
-import { DynamicFieldsService } from '../../../components/dynamicFields/dynamicFields.service';
 import { DynamicFieldsServiceMock } from '../../../components/dynamicFields/__mocks__/dynamicFields.service.mock';
 import { bookingStatusArray } from '../../../models/bookingStatus';
+import { IBookingsValidator } from '../validator/bookings.validation';
+import { DynamicValuesMapper, MapRequestOptionalResult } from '../../../components/dynamicFields/dynamicValues.mapper';
 
 jest.mock('../../../models/uinFinConfiguration');
+jest.mock('../../../components/dynamicFields/dynamicValues.mapper');
 
 beforeAll(() => {
 	Container.bind(IdHasher).to(IdHasherMock);
-	Container.bind(DynamicFieldsService).to(DynamicFieldsServiceMock);
+	Container.bind(DynamicValuesMapper).to(DynamicValuesMapperMock);
 });
 
 describe('Bookings mapper tests', () => {
+	DynamicValuesMapper;
+
 	beforeEach(() => {
 		jest.resetAllMocks();
 		(UinFinConfiguration as jest.Mock).mockImplementation(() => new UinFinConfigurationMock());
@@ -41,12 +49,7 @@ describe('Bookings mapper tests', () => {
 		key: 1,
 		value: 'English',
 	} as SelectListOption;
-	const dynamicRepository = SelectListDynamicField.create(1, 'testDynamic', [listOptions], 1);
-
-	const dynamicValues = new PersistDynamicValueContract();
-	dynamicValues.SingleSelectionKey = 1;
-	dynamicValues.fieldIdSigned = 'mVpRZpPJ';
-	dynamicValues.type = 'SingleSelection' as DynamicValueTypeContract;
+	const dynamicFieldEntity = SelectListDynamicField.create(1, 'testDynamic', [listOptions], 1);
 
 	it('should throw if organisation not loaded', async () => {
 		const booking = new Booking();
@@ -84,70 +87,99 @@ describe('Bookings mapper tests', () => {
 		expect(result).toEqual('S9269634J');
 	});
 
-	it('should return dynamic fields ', async () => {
-		const dynamicValuesJson = {
-			fieldId: 1,
-			fieldName: 'testname',
-			type: 'SingleSelection' as DynamicValueType,
-			SingleSelectionKey: 1,
-			SingleSelectionValue: 'test',
-		} as DynamicValueJsonModel;
+	it('should return mapped dynamic fields (when successful)', async () => {
+		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() => Promise.resolve([dynamicFieldEntity]));
 
-		const mapper = Container.get(BookingsMapper);
-		const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValuesJson]);
+		const validator = {
+			bypassCaptcha: jest.fn(),
+			addCustomCitizenValidations: jest.fn(),
+			validate: jest.fn(),
+		} as IBookingsValidator;
 
-		const dynamicContract = new DynamicValueContract();
-		dynamicContract.fieldIdSigned = '1';
-		dynamicContract.SingleSelectionKey = 1;
-		dynamicContract.SingleSelectionValue = 'test';
-		dynamicContract.fieldName = 'testname';
-		dynamicContract.type = 'SingleSelection' as DynamicValueTypeContract;
-
-		expect(dynamicReturn).toEqual([dynamicContract]);
-	});
-
-	it('should return empty array when no dynamic values are passed ', async () => {
-		const mapper = Container.get(BookingsMapper);
-		const dynamicReturn = mapper.mapDynamicValuesModel([]);
-
-		expect(dynamicReturn).toEqual([]);
-	});
-
-	it('should return matched dynamic fields ', async () => {
-		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() => Promise.resolve([dynamicRepository]));
-		IdHasherMock.decode.mockImplementation(() => 1);
-
-		const bookingRequest = new BookingDetailsRequest();
-		bookingRequest.dynamicValuesUpdated = true;
-		bookingRequest.dynamicValues = [dynamicValues];
-
-		const mapper = Container.get(BookingsMapper);
-		const booking = new Booking();
-		await mapper.mapDynamicValuesRequest(bookingRequest, booking);
-
-		const result = {
+		const dynamicValueMock = {
 			fieldId: 1,
 			fieldName: 'testDynamic',
 			type: 'SingleSelection' as DynamicValueType,
-			SingleSelectionKey: 1,
-			SingleSelectionValue: 'English',
+			singleSelectionKey: 1,
+			singleSelectionValue: 'English',
 		} as DynamicValueJsonModel;
-		expect(booking.dynamicValues).toEqual([result]);
-	});
 
-	it('should return empty array when no dynamic fields match', async () => {
-		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() => Promise.resolve([dynamicRepository]));
-		IdHasherMock.decode.mockImplementation(() => 2);
+		DynamicValuesMapperMock.mapDynamicValuesRequest.mockImplementation(() =>
+			Promise.resolve({ result: [dynamicValueMock] } as MapRequestOptionalResult),
+		);
 
 		const bookingRequest = new BookingDetailsRequest();
 		bookingRequest.dynamicValuesUpdated = true;
-		bookingRequest.dynamicValues = [dynamicValues];
+		bookingRequest.dynamicValues = [{} as PersistDynamicValueContract];
 
 		const mapper = Container.get(BookingsMapper);
 		const booking = new Booking();
-		await mapper.mapDynamicValuesRequest(bookingRequest, booking);
+		await mapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
-		expect(booking.dynamicValues).toEqual([]);
+		expect(DynamicValuesMapperMock.mapDynamicValuesRequest).toBeCalled();
+		expect(validator.addCustomCitizenValidations).not.toBeCalled();
+		expect(booking.dynamicValues.length).toEqual(1);
+	});
+
+	it('should not map dynamic fields (when dynamicValuesUpdated = false)', async () => {
+		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() => Promise.resolve([dynamicFieldEntity]));
+
+		const validator = {
+			bypassCaptcha: jest.fn(),
+			addCustomCitizenValidations: jest.fn(),
+			validate: jest.fn(),
+		} as IBookingsValidator;
+
+		const dynamicValueMock = {
+			fieldId: 1,
+			fieldName: 'testDynamic',
+			type: 'SingleSelection' as DynamicValueType,
+			singleSelectionKey: 1,
+			singleSelectionValue: 'English',
+		} as DynamicValueJsonModel;
+
+		DynamicValuesMapperMock.mapDynamicValuesRequest.mockImplementation(() =>
+			Promise.resolve({ result: [dynamicValueMock] } as MapRequestOptionalResult),
+		);
+
+		const bookingRequest = new BookingDetailsRequest();
+		bookingRequest.dynamicValuesUpdated = false;
+		bookingRequest.dynamicValues = [{} as PersistDynamicValueContract];
+
+		const mapper = Container.get(BookingsMapper);
+		const booking = new Booking();
+		await mapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
+
+		expect(DynamicValuesMapperMock.mapDynamicValuesRequest).not.toBeCalled();
+		expect(validator.addCustomCitizenValidations).not.toBeCalled();
+	});
+
+	it('should add dynamic fields validation (when not successful)', async () => {
+		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() => Promise.resolve([dynamicFieldEntity]));
+
+		const validator = {
+			bypassCaptcha: jest.fn(),
+			addCustomCitizenValidations: jest.fn(),
+			validate: jest.fn(),
+		} as IBookingsValidator;
+
+		const validationError = new BusinessValidation({ code: 'abc', message: 'some validation' });
+		DynamicValuesMapperMock.mapDynamicValuesRequest.mockImplementation(() =>
+			Promise.resolve({
+				errorResult: [validationError],
+			} as MapRequestOptionalResult),
+		);
+
+		const bookingRequest = new BookingDetailsRequest();
+		bookingRequest.dynamicValuesUpdated = true;
+		bookingRequest.dynamicValues = [{} as PersistDynamicValueContract];
+
+		const mapper = Container.get(BookingsMapper);
+		const booking = new Booking();
+		await mapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
+
+		expect(DynamicValuesMapperMock.mapDynamicValuesRequest).toBeCalled();
+		expect(validator.addCustomCitizenValidations).toBeCalledWith(validationError);
 	});
 
 	it('should return all booking statuses in numbers', async () => {
@@ -162,5 +194,13 @@ class UinFinConfigurationMock implements Partial<UinFinConfiguration> {
 	public static canViewPlainUinFin = jest.fn<boolean, any>();
 	public canViewPlainUinFin(...params): any {
 		return UinFinConfigurationMock.canViewPlainUinFin(...params);
+	}
+}
+
+class DynamicValuesMapperMock implements Partial<DynamicValuesMapper> {
+	public static mapDynamicValuesRequest = jest.fn<Promise<MapRequestOptionalResult>, any>();
+
+	public async mapDynamicValuesRequest(...params): Promise<MapRequestOptionalResult> {
+		return await DynamicValuesMapperMock.mapDynamicValuesRequest(...params);
 	}
 }

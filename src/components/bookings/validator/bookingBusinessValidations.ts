@@ -1,6 +1,6 @@
 import { BusinessValidation } from '../../../models';
 
-/** Reserved BookingBusinessValidations range: 10001 - 10199 */
+/** Reserved BookingBusinessValidations range: 10001 - 10099 */
 export class BookingBusinessValidations {
 	private constructor() {}
 

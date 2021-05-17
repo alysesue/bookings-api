@@ -1,4 +1,4 @@
-import { ContainerContextHolder } from '../../containerContext.middleware';
+import { ContainerContextHolder } from '../../containerContext';
 import { Container } from 'typescript-ioc';
 import { UsersService } from '../../../components/users/users.service';
 import { User } from '../../../models';

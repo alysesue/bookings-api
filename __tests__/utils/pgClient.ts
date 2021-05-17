@@ -42,7 +42,7 @@ export class PgClient {
 
 	public async mapDynamicFields({ type, serviceId, name, options }): Promise<QueryResult<any>> {
 		return await this.pool.query({
-			text: `INSERT INTO public.dynamic_field("type", "_serviceId", "_name", "_options") values($1, $2, $3, $4) RETURNING _id`,
+			text: `INSERT INTO public.dynamic_field("_type", "_serviceId", "_name", "_options") values($1, $2, $3, $4) RETURNING _id`,
 			values: [type, serviceId, name, options],
 		});
 	}

@@ -88,7 +88,7 @@ describe('Dynamic Fields functional tests', () => {
 		const resultData = response.body.data[0];
 		expect(resultData.name).toEqual('Select an option');
 		expect(resultData.type).toEqual('SelectList');
-		expect(resultData.SelectList.options).toEqual(options);
+		expect(resultData.selectList.options).toEqual(options);
 	});
 
 	it('Should receive empty array if service does not have dynamic fields ', async () => {
