@@ -235,6 +235,10 @@ describe('Booking validation tests', () => {
 			.withServiceProviderId(1)
 			.build();
 
+		booking.service = {
+			noNric: false,
+		} as Service
+
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		const validator = Container.get(BookingsValidatorFactory).getValidator(true);
