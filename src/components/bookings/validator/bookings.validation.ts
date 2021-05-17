@@ -52,7 +52,7 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 		return (await isUrl(videoConferenceUrl)).pass;
 	}
 
-	private static async *validateCitizenDetails(booking: Booking): AsyncIterable<BusinessValidation> {
+	private async *validateCitizenDetails(booking: Booking): AsyncIterable<BusinessValidation> {
 		if (!(await BookingsValidator.validateUinFin(booking.citizenUinFin, booking.service.noNric))) {
 			yield BookingBusinessValidations.CitizenUinFinNotFound;
 		}
