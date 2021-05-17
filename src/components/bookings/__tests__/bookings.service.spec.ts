@@ -23,7 +23,7 @@ import { DateHelper } from '../../../infrastructure/dateHelper';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { BookingBuilder } from '../../../models/entities/booking';
-import { BookingsValidatorFactory } from '../validator/bookings.validation';
+import { BookingsValidatorFactory, IBookingsValidator } from '../validator/bookings.validation';
 import {
 	BookingActionFunction,
 	BookingChangeLogsService,
@@ -57,7 +57,6 @@ import { MailObserver } from '../../notifications/notification.observer';
 import { MockObserver } from '../../../infrastructure/__mocks__/observer.mock';
 import { ServiceProvidersServiceMock } from '../../serviceProviders/__mocks__/serviceProviders.service.mock';
 import { randomIndex } from '../../../tools/arrays';
-import { IValidator } from '../../../infrastructure/validator';
 
 jest.mock('../../../tools/arrays');
 
@@ -117,18 +116,20 @@ describe('Bookings.Service', () => {
 	const validatorMock = {
 		bypassCaptcha: jest.fn(),
 		validate: jest.fn(),
-	} as IValidator<Booking>;
+		addCustomCitizenValidations: jest.fn(),
+	} as IBookingsValidator;
 
 	const onHolValidatorMock = {
 		bypassCaptcha: jest.fn(),
 		validate: jest.fn(),
-	} as IValidator<Booking>;
+		addCustomCitizenValidations: jest.fn(),
+	} as IBookingsValidator;
 
 	class BookingValidatorFactoryMock implements Partial<BookingsValidatorFactory> {
-		public getValidator(): IValidator<Booking> {
+		public getValidator(): IBookingsValidator {
 			return validatorMock;
 		}
-		public getOnHoldValidator(): IValidator<Booking> {
+		public getOnHoldValidator(): IBookingsValidator {
 			return onHolValidatorMock;
 		}
 	}
@@ -169,8 +170,8 @@ describe('Bookings.Service', () => {
 		(getConfig as jest.Mock).mockReturnValue({
 			isAutomatedTest: false,
 			featureFlag: {
-				lifeSGSync: 'true'
-			}
+				lifeSGSync: 'true',
+			},
 		});
 		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(service));
 		BookingChangeLogsServiceMock.action = 0;
