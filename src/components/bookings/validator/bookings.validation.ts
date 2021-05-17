@@ -14,7 +14,7 @@ import { IValidator, Validator } from '../../../infrastructure/validator';
 import { BookingBusinessValidations } from './bookingBusinessValidations';
 import { ContainerContext } from '../../../infrastructure/containerContext';
 
-export interface IBookingsValidator extends IValidator<Booking>  {
+export interface IBookingsValidator extends IValidator<Booking> {
 	bypassCaptcha(shouldBypassCaptcha: boolean): void;
 	addCustomCitizenValidations(...customValidations: BusinessValidation[]);
 }
@@ -26,7 +26,7 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 	protected shouldBypassCaptcha = false;
 	private _customCitizenValidations: BusinessValidation[];
 
-	constructor(){
+	constructor() {
 		super();
 		this._customCitizenValidations = [];
 	}
@@ -64,7 +64,7 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 			yield BookingBusinessValidations.VideoConferenceUrlIsInvalid;
 		}
 
-		if (this._customCitizenValidations.length > 0){
+		if (this._customCitizenValidations.length > 0) {
 			yield* this._customCitizenValidations;
 		}
 	}
@@ -74,6 +74,15 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 
 		if (duration <= 0) {
 			yield BookingBusinessValidations.EndTimeLesserThanStartTime;
+		}
+	}
+
+	private static async *validateBookingDate(booking: Booking): AsyncIterable<BusinessValidation> {
+		const currentDate = DateHelper.getStartOfDay(new Date());
+		const bookingDate = DateHelper.getStartOfDay(booking.startDateTime);
+
+		if (currentDate > bookingDate) {
+			yield BookingBusinessValidations.BookingDateIsNotCurrentOrFuture;
 		}
 	}
 
@@ -95,6 +104,7 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 			this.validateServiceProviderExisting(booking),
 			this.validateLicenceServiceProviderIsNotExpire(booking),
 			BookingsValidator.validateDuration(booking),
+			BookingsValidator.validateBookingDate(booking),
 			booking.status === BookingStatus.OnHold
 				? BookingsValidator.skipValidation(booking)
 				: this.validateCitizenDetails(booking),
