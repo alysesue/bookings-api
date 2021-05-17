@@ -1,14 +1,9 @@
-import { SelectListDynamicField, SelectListOption } from '../../../models';
+import { SelectListDynamicField, SelectListOption, TextDynamicField } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { DynamicFieldsMapper } from '../dynamicFields.mapper';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
-import {
-	DynamicFieldModel,
-	DynamicFieldType,
-	SelectListModel,
-	SelectListOptionModel,
-} from '../dynamicFields.apicontract';
+import { DynamicFieldModel } from '../dynamicFields.apicontract';
 
 describe('dynamicFields/dynamicFields.mapper', () => {
 	beforeEach(() => {
@@ -18,42 +13,79 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		IdHasherMock.decode.mockImplementation((id: string) => Number.parseInt(id, 10));
 	});
 
-	const listOptions = {
-		key: 1,
-		value: 'English',
-	} as SelectListOption;
-	const dynamicRepository = SelectListDynamicField.create(1, 'testDynamic', [listOptions], 1);
+	const createSelectFieldEntity = () => {
+		const listOptions = {
+			key: 1,
+			value: 'English',
+		} as SelectListOption;
+		return SelectListDynamicField.create(1, 'testDynamic', [listOptions], 1);
+	};
 
-	const selectList = new SelectListModel();
-	const selectListOption = new SelectListOptionModel();
-	selectListOption.key = 1;
-	selectListOption.value = 'English';
-	selectList.options = [selectListOption];
+	const createTextField = () => {
+		const textField = new TextDynamicField();
+		textField.id = 2;
+		textField.name = 'Sample text';
+		textField.charLimit = 15;
 
-	const result = new DynamicFieldModel();
-	result.idSigned = '1';
-	result.name = 'testDynamic';
-	result.type = 'SelectList' as DynamicFieldType;
-	result.SelectList = selectList;
+		return textField;
+	};
 
-	it('should return valid mapped result', () => {
+	it('should map select list field', () => {
 		const container = Container.get(DynamicFieldsMapper);
-		const dynamicFieldModel = container.mapDataModel(dynamicRepository);
+		const dynamicFieldModel = container.mapDataModel(createSelectFieldEntity());
 
-		expect(dynamicFieldModel).toEqual(result);
+		expect(dynamicFieldModel).toEqual({
+			selectList: {
+				options: [{ key: 1, value: 'English' }],
+			},
+			idSigned: '1',
+			name: 'testDynamic',
+			type: 'SelectList',
+		} as DynamicFieldModel);
 	});
 
-	it('should return undefined', () => {
+	it('should map text field', () => {
 		const container = Container.get(DynamicFieldsMapper);
-		const dynamicFieldModel = container.mapDataModel(new SelectListDynamicField());
+		const dynamicFieldModel = container.mapDataModel(createTextField());
 
+		expect(dynamicFieldModel).toEqual({
+			textField: {
+				charLimit: 15,
+			},
+			idSigned: '2',
+			name: 'Sample text',
+			type: 'TextField',
+		} as DynamicFieldModel);
+	});
+
+	it('should return undefined when', () => {
+		const container = Container.get(DynamicFieldsMapper);
+
+		const dynamicFieldModel = container.mapDataModel(new SelectListDynamicField());
 		expect(dynamicFieldModel).toEqual(undefined);
 	});
 
-	it('should return valid mapped results', () => {
+	it('should return multiple results', () => {
 		const container = Container.get(DynamicFieldsMapper);
-		const dynamicFieldModel = container.mapDataModels([dynamicRepository]);
+		const dynamicFieldModel = container.mapDataModels([createSelectFieldEntity(), createTextField()]);
 
-		expect(dynamicFieldModel).toEqual([result]);
+		expect(dynamicFieldModel).toEqual([
+			{
+				selectList: {
+					options: [{ key: 1, value: 'English' }],
+				},
+				idSigned: '1',
+				name: 'testDynamic',
+				type: 'SelectList',
+			} as DynamicFieldModel,
+			{
+				textField: {
+					charLimit: 15,
+				},
+				idSigned: '2',
+				name: 'Sample text',
+				type: 'TextField',
+			} as DynamicFieldModel,
+		]);
 	});
 });

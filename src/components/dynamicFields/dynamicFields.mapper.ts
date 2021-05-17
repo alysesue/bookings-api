@@ -5,8 +5,10 @@ import {
 	DynamicFieldType,
 	SelectListModel,
 	SelectListOptionModel,
+	TextFieldModel,
 } from './dynamicFields.apicontract';
 import { IdHasher } from '../../infrastructure/idHasher';
+import { IDynamicFieldVisitor, TextDynamicField } from '../../models/entities/dynamicField';
 
 @InRequestScope
 export class DynamicFieldsMapper {
@@ -18,21 +20,46 @@ export class DynamicFieldsMapper {
 	}
 
 	public mapDataModel(field: DynamicField): DynamicFieldModel {
-		// Switch mapper implementation to a visitor when dynamic fields get more complicated.
-		if (!field || !field.id) return;
-		const obj = new DynamicFieldModel();
-		obj.idSigned = this.idHasher.encode(field.id);
-		obj.name = field.name;
-		obj.type = DynamicFieldType.SelectList;
-		obj.SelectList = new SelectListModel();
-		obj.SelectList.options = (field as SelectListDynamicField).options.map((o) => this.mapOption(o));
-		return obj;
+		return new DynamicFieldMapperVisitor(this.idHasher).mapDataModel(field);
+	}
+}
+
+class DynamicFieldMapperVisitor implements IDynamicFieldVisitor {
+	private readonly _idHasher: IdHasher;
+	private _result: DynamicFieldModel;
+
+	constructor(idHasher: IdHasher) {
+		this._idHasher = idHasher;
 	}
 
-	private mapOption(o: SelectListOption): SelectListOptionModel {
+	private mapSelectListOption(o: SelectListOption): SelectListOptionModel {
 		const obj = new SelectListOptionModel();
 		obj.key = o.key;
 		obj.value = o.value;
 		return obj;
+	}
+
+	visitSelectList(_selectListField: SelectListDynamicField) {
+		this._result.type = DynamicFieldType.SelectList;
+		this._result.selectList = new SelectListModel();
+		this._result.selectList.options = _selectListField.options.map((o) => this.mapSelectListOption(o));
+	}
+
+	visitTextField(_textField: TextDynamicField) {
+		this._result.type = DynamicFieldType.TextField;
+		this._result.textField = new TextFieldModel();
+		this._result.textField.charLimit = _textField.charLimit;
+	}
+
+	public mapDataModel(field: DynamicField): DynamicFieldModel | undefined {
+		if (!field || !field.id) return undefined;
+
+		this._result = new DynamicFieldModel();
+		this._result.idSigned = this._idHasher.encode(field.id);
+		this._result.name = field.name;
+
+		field.acceptVisitor(this);
+
+		return this._result;
 	}
 }

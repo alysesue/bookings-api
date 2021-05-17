@@ -1,19 +1,30 @@
-import { OneOffTimeslotsBusinessValidation, OneOffTimeslotsValidation } from '../oneOffTimeslots.validation';
+import { OneOffTimeslotsValidation } from '../oneOffTimeslots.validation';
 import { Container } from 'typescript-ioc';
 import { OneOffTimeslot } from '../../../models';
 import { OneOffTimeslotRequest } from '../oneOffTimeslots.apicontract';
 import { DateHelper } from '../../../infrastructure/dateHelper';
 import { OneOffTimeslotsRepository } from '../oneOffTimeslots.repository';
 import { OneOffTimeslotsRepositoryMock } from '../__mocks__/oneOffTimeslots.mock';
+import { ContainerContext, ContainerContextHolder } from '../../../infrastructure/containerContext';
+
+beforeAll(() => {
+	ContainerContextHolder.registerInContainer();
+
+	Container.bind(OneOffTimeslotsRepository).to(OneOffTimeslotsRepositoryMock);
+});
 
 describe('Validation of oneOffTimeslots', () => {
-	beforeAll(() => {
-		Container.bind(OneOffTimeslotsRepository).to(OneOffTimeslotsRepositoryMock);
-	});
 	beforeEach(() => {
 		jest.resetAllMocks();
 
 		OneOffTimeslotsRepositoryMock.search.mockImplementation(() => Promise.resolve([{}] as OneOffTimeslot[]));
+	});
+
+	it('should get new instance for validator in Request scope', () => {
+		const context = Container.get(ContainerContext);
+		const factory = () => context.resolve(OneOffTimeslotsValidation);
+
+		expect(factory() === factory()).toBe(false);
 	});
 
 	it('Should return multiple errors due to validation ', async () => {
@@ -35,18 +46,17 @@ describe('Validation of oneOffTimeslots', () => {
 	});
 
 	it('should return true when requested timeslot does not overlap with another oneOffTimeslot', async () => {
-		const oneOffTimeslotsBusinessValidation = Container.get(OneOffTimeslotsBusinessValidation);
 		const request = new OneOffTimeslotRequest();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
 		request.endDateTime = DateHelper.addHours(request.startDateTime, 1);
 		request.capacity = 2;
 		request.serviceProviderId = 1;
-		const result = await oneOffTimeslotsBusinessValidation.validateOneOffTimeslotsAvailability(request);
+		const oneOffTimeslotsValidation = Container.get(OneOffTimeslotsValidation);
+		const result = await oneOffTimeslotsValidation.validateOneOffTimeslotsAvailability(request);
 		expect(result).toBe(true);
 	});
 
 	it('should throw error when requested timeslot overlaps with another oneOffTimeslot', async () => {
-		const oneOffTimeslotsBusinessValidation = Container.get(OneOffTimeslotsBusinessValidation);
 		const request = new OneOffTimeslotRequest();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
 		request.endDateTime = new Date('2021-03-02T01:00:00Z');
@@ -64,8 +74,8 @@ describe('Validation of oneOffTimeslots', () => {
 			]),
 		);
 
-		const asyncTest = async () =>
-			await oneOffTimeslotsBusinessValidation.validateOneOffTimeslotsAvailability(request);
+		const oneOffTimeslotsValidation = Container.get(OneOffTimeslotsValidation);
+		const asyncTest = async () => await oneOffTimeslotsValidation.validateOneOffTimeslotsAvailability(request);
 		await expect(asyncTest).rejects.toThrow('Slot cannot be created as it overlaps with an existing slot.');
 	});
 });

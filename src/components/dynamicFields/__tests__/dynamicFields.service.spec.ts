@@ -15,13 +15,13 @@ describe('dynamicFields/dynamicFields.service', () => {
 		key: 1,
 		value: 'English',
 	} as SelectListOption;
-	const dynamicRepository = SelectListDynamicField.create(1, 'testDynamic', [listOptions], 1);
+	const dynamicFieldEntity = SelectListDynamicField.create(1, 'testDynamic', [listOptions], 1);
 
 	it('should return query result', async () => {
 		const container = Container.get(DynamicFieldsService);
-		DynamicFieldsRepositoryMock.mockGetServiceFields.mockImplementation(() => [dynamicRepository]);
+		DynamicFieldsRepositoryMock.mockGetServiceFields.mockImplementation(() => [dynamicFieldEntity]);
 		const result = await container.getServiceFields(1);
 
-		expect(result).toEqual([dynamicRepository]);
+		expect(result).toEqual([dynamicFieldEntity]);
 	});
 });
