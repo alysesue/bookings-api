@@ -7,6 +7,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { Organisation, ServiceProvider, User } from '../../../models';
 import { OrganisationAdminAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
+import { ServiceProvidersLookup } from '../aggregatorTimeslotProviders';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -65,7 +66,7 @@ describe('Timeslots Controller', () => {
 
 	it('should get availability', async () => {
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
-			const entry = new AvailableTimeslotProviders();
+			const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 			const date = new Date();
 			entry.startTime = date.getTime();
 			entry.endTime = DateHelper.addMinutes(date, 30).getTime();
@@ -83,7 +84,7 @@ describe('Timeslots Controller', () => {
 
 	it('should get timeslots', async () => {
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
-			const entry = new AvailableTimeslotProviders();
+			const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 			const date = new Date();
 			entry.startTime = date.getTime();
 			entry.endTime = DateHelper.addMinutes(date, 30).getTime();
@@ -106,7 +107,7 @@ describe('Timeslots Controller', () => {
 		);
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
-			const entry = new AvailableTimeslotProviders();
+			const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 			const date = new Date();
 			entry.startTime = date.getTime();
 			entry.endTime = DateHelper.addMinutes(date, 30).getTime();
@@ -131,7 +132,7 @@ describe('Timeslots Controller', () => {
 		);
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
-			const entry = new AvailableTimeslotProviders();
+			const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 			const date = new Date();
 			entry.startTime = date.getTime();
 			entry.endTime = DateHelper.addMinutes(date, 30).getTime();

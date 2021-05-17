@@ -10,6 +10,7 @@ import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 import { UsersService } from '../../users/users.service';
 import { IPagedEntities } from '../../../core/pagedEntities';
+import { ServiceProvidersLookup } from '../../../components/timeslots/aggregatorTimeslotProviders';
 
 export class BookingRepositoryMock implements Partial<BookingsRepository> {
 	public static booking: Booking;
@@ -57,10 +58,12 @@ export class TimeslotsServiceMock implements Partial<TimeslotsService> {
 		startDateTime: Date,
 		endDateTime: Date,
 	): Promise<TimeslotServiceProviderResult[]> {
-		const timeslotEntry = new AvailableTimeslotProviders();
+		const timeslotEntry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 		timeslotEntry.startTime = startDateTime.getTime();
 		timeslotEntry.endTime = endDateTime.getTime();
-		timeslotEntry.setRelatedServiceProviders(TimeslotsServiceMock.availableProvidersForTimeslot);
+		for (const [sp, timeslot] of TimeslotsServiceMock.availableProvidersForTimeslot) {
+			timeslotEntry.addServiceProvider(sp, timeslot);
+		}
 
 		return Array.from(timeslotEntry.getTimeslotServiceProviders(true));
 	}

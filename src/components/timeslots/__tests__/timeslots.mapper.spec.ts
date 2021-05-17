@@ -4,6 +4,7 @@ import { TimeslotsMapper } from '../timeslots.mapper';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
 import { Container } from 'typescript-ioc';
+import { ServiceProvidersLookup } from '../aggregatorTimeslotProviders';
 
 jest.mock('../../../models/uinFinConfiguration');
 
@@ -17,20 +18,18 @@ beforeEach(() => {
 
 describe('Timeslots Mapper', () => {
 	it('should map availability', () => {
-		const entry = new AvailableTimeslotProviders();
+		const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 		entry.startTime = new Date('2020-09-26T00:00:00.000Z').getTime();
 		entry.endTime = new Date('2020-09-26T00:30:00.000Z').getTime();
 
 		const spData = ServiceProvider.create('Timmy', 1);
 		spData.id = 1;
-		const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-		map.set(spData, {
+
+		entry.addServiceProvider(spData, {
 			startTimeNative: entry.startTime,
 			endTimeNative: entry.endTime,
 			capacity: 1,
 		} as TimeslotWithCapacity);
-
-		entry.setRelatedServiceProviders(map);
 
 		const mapper = Container.get(TimeslotsMapper);
 		const res = mapper.mapAvailabilityToResponse([entry], {})[0];
@@ -41,7 +40,7 @@ describe('Timeslots Mapper', () => {
 	});
 
 	it('should map service provider timeslot', () => {
-		const entry = new AvailableTimeslotProviders();
+		const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 		entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
 		entry.endTime = new Date(2020, 8, 26, 8, 30).getTime();
 
@@ -50,18 +49,16 @@ describe('Timeslots Mapper', () => {
 		const serviceProvider2 = ServiceProvider.create('Andy', 1);
 		serviceProvider2.id = 2;
 
-		const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-		map.set(serviceProvider1, {
+		entry.addServiceProvider(serviceProvider1, {
 			startTimeNative: entry.startTime,
 			endTimeNative: entry.endTime,
 			capacity: 1,
 		} as TimeslotWithCapacity);
-		map.set(serviceProvider2, {
+		entry.addServiceProvider(serviceProvider2, {
 			startTimeNative: entry.startTime,
 			endTimeNative: entry.endTime,
 			capacity: 5,
 		} as TimeslotWithCapacity);
-		entry.setRelatedServiceProviders(map);
 
 		const timeslotServiceProviders = Array.from(entry.getTimeslotServiceProviders());
 		const adminMock = User.createAdminUser({
@@ -87,7 +84,7 @@ describe('Timeslots Mapper', () => {
 	});
 
 	it('should map service provider timeslot title and description - admin side', () => {
-		const entry = new AvailableTimeslotProviders();
+		const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 		entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
 		entry.endTime = new Date(2020, 8, 26, 8, 30).getTime();
 
@@ -96,22 +93,20 @@ describe('Timeslots Mapper', () => {
 		const serviceProvider2 = ServiceProvider.create('Andy', 1);
 		serviceProvider2.id = 2;
 
-		const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-		map.set(serviceProvider1, {
+		entry.addServiceProvider(serviceProvider1, {
 			startTimeNative: entry.startTime,
 			endTimeNative: entry.endTime,
 			capacity: 1,
 			title: 'Title Test - serviceProvider1',
 			description: 'Description Test - serviceProvider1',
 		} as TimeslotWithCapacity);
-		map.set(serviceProvider2, {
+		entry.addServiceProvider(serviceProvider2, {
 			startTimeNative: entry.startTime,
 			endTimeNative: entry.endTime,
 			capacity: 5,
 			title: 'Title Test - serviceProvider2',
 			description: 'Description Test - serviceProvider2',
 		} as TimeslotWithCapacity);
-		entry.setRelatedServiceProviders(map);
 
 		const timeslotServiceProviders = Array.from(entry.getTimeslotServiceProviders());
 		const adminMock = User.createAdminUser({
@@ -137,7 +132,7 @@ describe('Timeslots Mapper', () => {
 	});
 
 	it('should map service provider timeslot title and description - citizen side', () => {
-		const entry = new AvailableTimeslotProviders();
+		const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 		entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
 		entry.endTime = new Date(2020, 8, 26, 8, 30).getTime();
 
@@ -146,22 +141,20 @@ describe('Timeslots Mapper', () => {
 		const serviceProvider2 = ServiceProvider.create('Andy', 1);
 		serviceProvider2.id = 2;
 
-		const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-		map.set(serviceProvider1, {
+		entry.addServiceProvider(serviceProvider1, {
 			startTimeNative: entry.startTime,
 			endTimeNative: entry.endTime,
 			capacity: 1,
 			title: 'Title Test - serviceProvider1',
 			description: 'Description Test - serviceProvider1',
 		} as TimeslotWithCapacity);
-		map.set(serviceProvider2, {
+		entry.addServiceProvider(serviceProvider2, {
 			startTimeNative: entry.startTime,
 			endTimeNative: entry.endTime,
 			capacity: 5,
 			title: 'Title Test - serviceProvider2',
 			description: 'Description Test - serviceProvider2',
 		} as TimeslotWithCapacity);
-		entry.setRelatedServiceProviders(map);
 
 		const timeslotServiceProviders = Array.from(entry.getTimeslotServiceProviders());
 		UinFinConfigurationMock.canViewPlainUinFin.mockReturnValue(false);

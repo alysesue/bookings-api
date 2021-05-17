@@ -57,6 +57,8 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			organisationId?: number;
 			scheduleFormId?: number;
 			skipAuthorisation?: boolean;
+			skipGroupMap?: boolean;
+			skipService?: boolean;
 			limit?: number;
 			pageNumber?: number;
 		} = {},
@@ -81,6 +83,8 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			organisationId?: number;
 			scheduleFormId?: number;
 			skipAuthorisation?: boolean;
+			skipGroupMap?: boolean;
+			skipService?: boolean;
 			limit?: number;
 			pageNumber?: number;
 		} & ProviderIncludeOptions = {},
@@ -175,6 +179,8 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		queryParams: {},
 		options: {
 			skipAuthorisation?: boolean;
+			skipGroupMap?: boolean;
+			skipService?: boolean;
 		},
 	): Promise<SelectQueryBuilder<ServiceProvider>> {
 		const authGroups = await this.userContext.getAuthGroups();
@@ -183,12 +189,27 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			: await new ServiceProvidersQueryAuthVisitor('sp', 'service').createUserVisibilityCondition(authGroups);
 
 		const repository = await this.getRepository();
-		return repository
+		let query = repository
 			.createQueryBuilder('sp')
-			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
-			.leftJoinAndSelect('sp._serviceProviderGroupMap', 'sp_groupmap')
-			.leftJoinAndSelect('sp._service', 'service')
-			.leftJoinAndSelect('service._organisation', 'svcOrg');
+			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams });
+
+		if (options.skipGroupMap) {
+			query = query.leftJoin('sp._serviceProviderGroupMap', 'sp_groupmap');
+		} else {
+			query = query.leftJoinAndSelect('sp._serviceProviderGroupMap', 'sp_groupmap');
+		}
+
+		if (options.skipService){
+			query = query
+				.leftJoin('sp._service', 'service')
+				.leftJoin('service._organisation', 'svcOrg');
+		} else {
+			query = query
+				.leftJoinAndSelect('sp._service', 'service')
+				.leftJoinAndSelect('service._organisation', 'svcOrg');
+		}
+
+		return query;
 	}
 
 	public async save(serviceProvider: ServiceProvider): Promise<ServiceProvider> {

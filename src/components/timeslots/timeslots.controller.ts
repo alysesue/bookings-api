@@ -8,6 +8,7 @@ import { IdHasher } from '../../infrastructure/idHasher';
 import { TimeslotsMapper } from './timeslots.mapper';
 import { TimeslotsService } from './timeslots.service';
 import { AvailabilityEntryResponse, TimeslotEntryResponse } from './timeslots.apicontract';
+import { StopWatch } from '../../infrastructure/stopWatch';
 
 @Route('v1/timeslots')
 @Tags('Timeslots')
@@ -64,10 +65,13 @@ export class TimeslotsController extends Controller {
 			);
 		}
 
+		const mappingWatch = new StopWatch('EntryResponse map');
 		const result = this.timeslotMapper.mapAvailabilityToResponse(timeslots, {
 			skipUnavailable: true,
 			exactTimeslot,
 		});
+		mappingWatch.stop();
+
 		return ApiDataFactory.create(result);
 	}
 

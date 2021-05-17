@@ -8,12 +8,26 @@ import { TimeslotItemsQueryAuthVisitor } from '../../timeslotItems/timeslotItems
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
 import { TimeslotItemsRepository } from '../../timeslotItems/timeslotItems.repository';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
+import { createPgClient } from '../../../core/pgHelper';
+import { GroupRecordIterator, IGroupRecordIterator } from '../groupRecordIterator';
 
 jest.mock('../../timeslotItems/timeslotItems.auth');
+jest.mock('../../../core/pgHelper');
+jest.mock('../groupRecordIterator');
 
 const QueryAuthVisitorMock = {
 	createUserVisibilityCondition: jest.fn<Promise<UserConditionParams>, any>(),
 };
+
+class GroupRecordIteratorMock<T> implements IGroupRecordIterator<T> {
+	_map: Map<number, T[]>;
+	constructor(map: Map<number, T[]>) {
+		this._map = map;
+	}
+	async *getRecords(): AsyncIterable<[number, T[]]> {
+		for (const item of this._map) yield item;
+	}
+}
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -33,6 +47,8 @@ describe('TimeslotsSchedule repository', () => {
 		getOne: jest.fn(),
 		getMany: jest.fn(),
 		getRawMany: jest.fn(),
+		orderBy: jest.fn(),
+		getQueryAndParameters: jest.fn(),
 	};
 
 	beforeEach(() => {
@@ -41,6 +57,7 @@ describe('TimeslotsSchedule repository', () => {
 		TransactionManagerMock.createQueryBuilder.mockReturnValue(queryBuilderMock);
 		queryBuilderMock.where.mockImplementation(() => queryBuilderMock);
 		queryBuilderMock.leftJoinAndSelect.mockImplementation(() => queryBuilderMock);
+		queryBuilderMock.orderBy.mockImplementation(() => queryBuilderMock);
 		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(null));
 		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve([]));
 		queryBuilderMock.getRawMany.mockImplementation(() => Promise.resolve([]));
@@ -49,6 +66,8 @@ describe('TimeslotsSchedule repository', () => {
 		QueryAuthVisitorMock.createUserVisibilityCondition.mockImplementation(() =>
 			Promise.resolve({ userCondition: '', userParams: {} }),
 		);
+
+		(createPgClient as jest.Mock).mockImplementation(() => ({}));
 	});
 
 	it('should get timeslotsSchedule', async () => {
@@ -83,6 +102,12 @@ describe('TimeslotsSchedule repository', () => {
 
 	it('should populate TimeslotsSchedules in entities (IEntityWithTimeslotsSchedule)', async () => {
 		queryBuilderMock.getMany.mockReturnValue(Promise.resolve([timeslotsScheduleMock]));
+		queryBuilderMock.getQueryAndParameters.mockReturnValue(['', {}]);
+
+		(GroupRecordIterator as jest.Mock).mockImplementation(() => {
+			return new GroupRecordIteratorMock(new Map());
+		});
+
 		const repository = Container.get(TimeslotsScheduleRepository);
 		const entity1 = new SampleEntity();
 		entity1.timeslotsScheduleId = 2;
@@ -91,13 +116,19 @@ describe('TimeslotsSchedule repository', () => {
 		await repository.populateTimeslotsSchedules([entity1, entity2], {});
 
 		expect(queryBuilderMock.getMany).toHaveBeenCalled();
-		expect(queryBuilderMock.getRawMany).toHaveBeenCalled();
+		expect(queryBuilderMock.getQueryAndParameters).toHaveBeenCalled();
 		expect(entity1.timeslotsSchedule).toBeDefined();
 		expect(entity2.timeslotsSchedule).not.toBeDefined();
 	});
 
 	it('should populate TimeslotsSchedules in entities (IEntityWithTimeslotsSchedule) with options', async () => {
 		queryBuilderMock.getMany.mockReturnValue(Promise.resolve([timeslotsScheduleMock]));
+		queryBuilderMock.getQueryAndParameters.mockReturnValue(['', {}]);
+
+		(GroupRecordIterator as jest.Mock).mockImplementation(() => {
+			return new GroupRecordIteratorMock(new Map());
+		});
+
 		const repository = Container.get(TimeslotsScheduleRepository);
 		const entity1 = new SampleEntity();
 		entity1.timeslotsScheduleId = 2;
@@ -111,7 +142,7 @@ describe('TimeslotsSchedule repository', () => {
 
 		expect(TransactionManagerMock.createQueryBuilder).toHaveBeenCalledTimes(2);
 		expect(queryBuilderMock.getMany).toHaveBeenCalled();
-		expect(queryBuilderMock.getRawMany).toHaveBeenCalled();
+		expect(queryBuilderMock.getQueryAndParameters).toHaveBeenCalled();
 		expect(entity1.timeslotsSchedule).toBeDefined();
 		expect(entity2.timeslotsSchedule).not.toBeDefined();
 	});
