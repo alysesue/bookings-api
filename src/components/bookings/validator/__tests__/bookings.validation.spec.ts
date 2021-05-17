@@ -766,7 +766,7 @@ describe('Booking validation tests', () => {
 
 		await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
 	});
-	it('should not validate invalid NRIC when noNRIC is true', async () => {
+	it('It should validate NRIC when present when noNRIC is true', async () => {
 		const booking = new BookingBuilder()
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
