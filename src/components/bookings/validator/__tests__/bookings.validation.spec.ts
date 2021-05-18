@@ -410,7 +410,7 @@ describe('Booking validation tests', () => {
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
-		).rejects.toMatchInlineSnapshot('[BusinessError: [10015] Booking date should not be in the past]');
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10015] Booking date cannot be in the past]');
 	});
 
 	it('should throw on validation error', async () => {

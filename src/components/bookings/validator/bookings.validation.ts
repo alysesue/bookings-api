@@ -82,7 +82,7 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 		const bookingDate = DateHelper.getStartOfDay(booking.startDateTime);
 
 		if (currentDate > bookingDate) {
-			yield BookingBusinessValidations.BookingDateIsNotCurrentOrFuture;
+			yield BookingBusinessValidations.BookingDateInPast;
 		}
 	}
 

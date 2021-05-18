@@ -75,8 +75,8 @@ export class BookingBusinessValidations {
 		message: `Invalid video conference link is provided`,
 	});
 
-	public static readonly BookingDateIsNotCurrentOrFuture = new BusinessValidation({
+	public static readonly BookingDateInPast = new BusinessValidation({
 		code: '10015',
-		message: `Booking date should not be in the past`,
+		message: `Booking date cannot be in the past`,
 	});
 }
