@@ -120,6 +120,7 @@ export class ServicesService {
 		service.name = request.name;
 		service.isSpAutoAssigned = request.isSpAutoAssigned || false;
 		service.emailSuffix = request.emailSuffix;
+		service.noNric = request.noNric || false;
 
 		const updatedList = this.labelsMapper.mapToLabels(request.labels);
 		this.labelsMapper.mergeLabels(service.labels, updatedList);
