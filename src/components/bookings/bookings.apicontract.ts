@@ -14,7 +14,7 @@ export class BookingDetailsRequest {
 	 * An external reference Id for this booking (e.g. external Client Id or booking Id).
 	 */
 	public refId?: string | null;
-	public citizenUinFin?: string;
+	public citizenUinFin?: string | null;
 	public citizenName?: string;
 	public citizenEmail?: string;
 	public citizenPhone?: string | null;

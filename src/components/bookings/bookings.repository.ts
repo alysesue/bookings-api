@@ -71,6 +71,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		if (entry) {
 			await this.includeServiceProviders([entry]);
 		}
+
 		return entry;
 	}
 

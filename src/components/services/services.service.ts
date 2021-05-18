@@ -103,8 +103,9 @@ export class ServicesService {
 			: await this.userContext.verifyAndGetFirstAuthorisedOrganisation('User not authorized to add services.');
 
 		const isSpAutoAssigned = request.isSpAutoAssigned;
+		const noNric = request.noNric;
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
-		const service = Service.create(request.name, orga, isSpAutoAssigned, transformedLabels, request.emailSuffix);
+		const service = Service.create(request.name, orga, isSpAutoAssigned, transformedLabels, request.emailSuffix, noNric);
 
 		await this.verifyActionPermission(service, CrudAction.Create);
 		return this.servicesRepository.save(service);
@@ -119,6 +120,7 @@ export class ServicesService {
 		service.name = request.name;
 		service.isSpAutoAssigned = request.isSpAutoAssigned || false;
 		service.emailSuffix = request.emailSuffix;
+		service.noNric = request.noNric || false;
 
 		const updatedList = this.labelsMapper.mapToLabels(request.labels);
 		this.labelsMapper.mergeLabels(service.labels, updatedList);

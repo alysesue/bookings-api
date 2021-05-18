@@ -1,6 +1,6 @@
 import { Inject, InRequestScope, Scope, Scoped } from 'typescript-ioc';
 import { isEmail, isUrl } from 'mol-lib-api-contract/utils';
-import { Booking, BookingStatus, BusinessValidation } from '../../../models';
+import {Booking, BookingStatus, BusinessValidation} from '../../../models';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { DateHelper } from '../../../infrastructure/dateHelper';
 import { BookingSearchQuery, BookingsRepository } from '../bookings.repository';
@@ -39,17 +39,21 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 		this._customCitizenValidations.push(...customValidations);
 	}
 
-	private static async validateUinFin(citizenUinFin: string): Promise<boolean> {
+	private static async validateUinFin(citizenUinFin: string, noNric?: boolean): Promise<boolean> {
+		if (noNric && !citizenUinFin){
+			return true;
+		}
 		const validUinFin = await isSGUinfin(citizenUinFin);
 		return validUinFin.pass;
 	}
+
 
 	private static async validateUrl(videoConferenceUrl: string): Promise<boolean> {
 		return (await isUrl(videoConferenceUrl)).pass;
 	}
 
 	private async *validateCitizenDetails(booking: Booking): AsyncIterable<BusinessValidation> {
-		if (!(await BookingsValidator.validateUinFin(booking.citizenUinFin))) {
+		if (!(await BookingsValidator.validateUinFin(booking.citizenUinFin, booking.service.noNric))) {
 			yield BookingBusinessValidations.CitizenUinFinNotFound;
 		}
 		if (!booking.citizenName) {
