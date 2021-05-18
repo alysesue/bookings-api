@@ -125,7 +125,7 @@ describe('Booking validation tests', () => {
 	});
 
 	it('should not allow booking out of timeslots due to unavailability', async () => {
-		const start = new Date(2020, 8, 26, 8, 0);
+		const start = new Date(2050, 8, 26, 8, 0);
 		const booking = new BookingBuilder()
 			.withStartDateTime(start)
 			.withEndDateTime(DateHelper.addMinutes(start, 45))
@@ -140,8 +140,8 @@ describe('Booking validation tests', () => {
 		} as Service
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
-			entry.endTime = new Date(2020, 8, 26, 8, 45).getTime();
+			entry.startTime = new Date(2050, 8, 26, 8, 0).getTime();
+			entry.endTime = new Date(2050, 8, 26, 8, 45).getTime();
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
 			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
@@ -413,6 +413,44 @@ describe('Booking validation tests', () => {
 		).rejects.toThrowError();
 	});
 
+	it('should validate end time not earlier than start time', async () => {
+		const booking = new BookingBuilder()
+			.withStartDateTime(new Date('2050-10-01T01:00:00'))
+			.withEndDateTime(new Date('2050-10-01T00:00:00'))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.build();
+
+		const timeslotWithCapacity = createTimeslot(new Date('2050-10-01T01:00:00'), new Date('2050-10-01T02:00:00'));
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
+		).rejects.toMatchInlineSnapshot(
+			'[BusinessError: [10004] End time for booking must be greater than start time]',
+		);
+	});
+
+	it('should validate date should not be in the past', async () => {
+		const booking = new BookingBuilder()
+			.withStartDateTime(new Date('2020-09-01T01:00:00'))
+			.withEndDateTime(new Date('2020-09-01T02:00:00'))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.build();
+
+		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10015] Booking date cannot be in the past]');
+	});
+
 	it('should throw on validation error', async () => {
 		const booking = new BookingBuilder()
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
@@ -503,8 +541,8 @@ describe('Booking validation tests', () => {
 
 	it('should validate no citizenUinFin', async () => {
 		const booking = new BookingBuilder()
-			.withStartDateTime(new Date('2020-10-01T01:00:00'))
-			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.withStartDateTime(new Date('2050-10-01T01:00:00'))
+			.withEndDateTime(new Date('2050-10-01T02:00:00'))
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.withServiceProviderId(1)
@@ -513,7 +551,7 @@ describe('Booking validation tests', () => {
 			noNric: false,
 		} as Service
 
-		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const timeslotWithCapacity = createTimeslot(new Date('2050-10-01T01:00:00'), new Date('2050-10-01T02:00:00'));
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 
@@ -525,7 +563,7 @@ describe('Booking validation tests', () => {
 	});
 
 	it('should not allow booking on top of existing booking', async () => {
-		const start = new Date(2020, 8, 26, 8, 0);
+		const start = new Date(2050, 8, 26, 8, 0);
 		const booking = new BookingBuilder()
 			.withStartDateTime(start)
 			.withEndDateTime(DateHelper.addMinutes(start, 60))
@@ -544,16 +582,16 @@ describe('Booking validation tests', () => {
 				entries: [
 					new BookingBuilder()
 						.withServiceId(1)
-						.withStartDateTime(new Date(2020, 8, 26, 8, 15))
-						.withEndDateTime(new Date(2020, 8, 26, 8, 45))
+						.withStartDateTime(new Date(2050, 8, 26, 8, 15))
+						.withEndDateTime(new Date(2050, 8, 26, 8, 45))
 						.build(),
 				],
 			} as IPagedEntities<Booking>),
 		);
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
-			entry.endTime = new Date(2020, 8, 26, 8, 45).getTime();
+			entry.startTime = new Date(2050, 8, 26, 8, 0).getTime();
+			entry.endTime = new Date(2050, 8, 26, 8, 45).getTime();
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
 			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
@@ -574,8 +612,8 @@ describe('Booking validation tests', () => {
 
 	it('should allow updating booking to out of slot', async () => {
 		const booking = new BookingBuilder()
-			.withStartDateTime(new Date(2020, 8, 26, 8, 15))
-			.withEndDateTime(new Date(2020, 8, 26, 8, 45))
+			.withStartDateTime(new Date(2050, 8, 26, 8, 15))
+			.withEndDateTime(new Date(2050, 8, 26, 8, 45))
 			.withServiceProviderId(1)
 			.withRefId('RFM186')
 			.withCitizenUinFin('G3382058K')
@@ -588,8 +626,8 @@ describe('Booking validation tests', () => {
 		booking.id = 5;
 
 		const searchBooking = new BookingBuilder()
-			.withStartDateTime(new Date(2020, 8, 26, 7, 15))
-			.withEndDateTime(new Date(2020, 8, 26, 7, 45))
+			.withStartDateTime(new Date(2050, 8, 26, 7, 15))
+			.withEndDateTime(new Date(2050, 8, 26, 7, 45))
 			.withServiceProviderId(1)
 			.withRefId('RFM186')
 			.withCitizenUinFin('G3382058K')
@@ -607,8 +645,8 @@ describe('Booking validation tests', () => {
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date(2020, 8, 26, 7, 15).getTime();
-			entry.endTime = new Date(2020, 8, 26, 7, 45).getTime();
+			entry.startTime = new Date(2050, 8, 26, 7, 15).getTime();
+			entry.endTime = new Date(2050, 8, 26, 7, 45).getTime();
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
 			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
