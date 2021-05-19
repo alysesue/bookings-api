@@ -15,7 +15,7 @@ export class CategoriesService {
 	}
 
 	public async update(service: Service, updatedCategories: Category[], updatedLabel: Label[]): Promise<Category[]> {
-		const {newCategories, updateOrKeepCategories, deleteCategories} = this.sortUpdateCategories(service.categories, updatedCategories);
+		const {newCategories, updateOrKeepCategories, deleteCategories} = this.sortUpdateCategories(service.categories, updatedCategories, service.id);
 		const allLabelsOfDeleteCategories = [...(deleteCategories.map(cat => (cat.labels)))].flat(1);
 		const {movedLabelsToNoCategory, deleteLabels} = this.labelsService.sortLabelForDeleteCategory(updatedLabel, allLabelsOfDeleteCategories)
 		service.labels = await this.labelsService.updateLabelToNoCategory(movedLabelsToNoCategory, service)
@@ -24,8 +24,8 @@ export class CategoriesService {
 		return await this.categoriesRepository.save([...newCategories, ...updateOrKeepCategories])
 	}
 
-	public sortUpdateCategories(originalList: Category[], updatedList: Category[]): {newCategories: Category[], updateOrKeepCategories: Category[], deleteCategories: Category[]} {
-		const newCategories = updatedList.filter(category => !category.id)
+	public sortUpdateCategories(originalList: Category[], updatedList: Category[], serviceId: number): {newCategories: Category[], updateOrKeepCategories: Category[], deleteCategories: Category[]} {
+		const newCategories = updatedList.filter(category => !category.id).map(category => {category.serviceId = serviceId; return category})
 		const updateOrKeepCategories = updatedList.filter(category => (originalList.some(origCatego => origCatego.id === category.id)))
 		const deleteCategories = originalList.filter(category => (!updatedList.some(origCatego => origCatego.id === category.id)))
 		return {newCategories, updateOrKeepCategories, deleteCategories}

@@ -129,19 +129,12 @@ export class ServicesService {
 		await this.verifyActionPermission(service, CrudAction.Update);
 
 		const updatedLabelList = this.labelsMapper.mapToLabels(request.labels);
-		console.log('label', updatedLabelList);
-		console.log('labelservice', service.labels);
 		this.labelsMapper.mergeLabels(service.labels, updatedLabelList);
-		console.log('labelmerge => ', updatedLabelList);
 		const updatedCategoriesList = this.categoriesMapper.mapToCategories(request.categories);
 
 		try {
-			console.log('1======>', service.categories);
 			service.categories = await this.categoriesService.update(service, updatedCategoriesList, updatedLabelList);
-			console.log('2======>', service.categories);
-			console.log('2======>', service.labels);
 			const response = await this.servicesRepository.save(service);
-			console.log('response', response.labels);
 			return response
 		} catch (e) {
 			if (e.message.startsWith('duplicate key value violates unique constraint')) {
