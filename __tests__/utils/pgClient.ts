@@ -17,7 +17,7 @@ export class PgClient {
 		await this.pool.query('DELETE FROM public.dynamic_field');
 		await this.pool.query('DELETE FROM public.label');
 		await this.pool.query('DELETE FROM public.one_off_timeslot;');
-		await this.pool.query('DELETE FROM public.setting;');
+		await this.pool.query('DELETE FROM public.category;');
 		await this.pool.query('DELETE FROM public.service_admin_group_map');
 		await this.pool.query('DELETE FROM public.unavailable_service_provider;');
 		await this.pool.query('DELETE FROM public.unavailability;');

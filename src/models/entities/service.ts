@@ -47,7 +47,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._organisation;
 	}
 
-	@OneToOne(() => ServiceAdminGroupMap, (e) => e._service, { nullable: true, cascade: true })
+	@OneToOne(() => ServiceAdminGroupMap, (e) => e._service, { nullable: true, cascade: [ 'insert', 'update', 'remove', 'soft-remove']  })
 	private _serviceAdminGroupMap: ServiceAdminGroupMap;
 
 	public get serviceAdminGroupMap(): ServiceAdminGroupMap {
@@ -185,7 +185,6 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	}
 
 	@OneToMany(() => Label, (label) => label.service, { cascade: true })
-	// @OneToMany(() => Label, 'services', { cascade: true, lazy: true })
 	public labels: Label[];
 
 	@OneToMany(() => Category, (category) => category.service, { cascade: true })

@@ -40,6 +40,11 @@ export interface IService {
 	organisationId: number;
 }
 
+export interface ICategory {
+	id: number;
+}
+
+
 export interface IServiceProvider {
 	id: number;
 	serviceId: number;

@@ -1,9 +1,9 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { IService } from '../interfaces';
 import { Label } from './label';
 
 @Entity()
-@Unique('ServiceCategories', ['_categoryName', '_serviceId'])
+@Index('ServiceCategories', ['_categoryName', '_serviceId'], {unique: true})
 export class Category {
 	public constructor() {}
 
@@ -14,9 +14,6 @@ export class Category {
 			category._id = id;
 		}
 		category.labels = labels;
-		// if (labels && labels.length) {
-		// 	category.labels = labels;
-		// }
 		return category;
 	}
 
@@ -42,21 +39,12 @@ export class Category {
 		this._categoryName = value;
 	}
 
-	@OneToMany(() => Label, (label) => label.category, { cascade: true })
+	@OneToMany(() => Label, (label) => label.category, {  cascade: true })
 	public labels: Label[];
 
 	@ManyToOne('Service', { orphanedRowAction: 'delete' })
 	@JoinColumn({ name: '_serviceId' })
 	public service: IService;
-	// private _service: IService;
-
-	// public get service(): IService {
-	// 	return this._service;
-	// }
-
-	// public set service(value: IService) {
-	// 	this._service = value;
-	// }
 
 	@Column({ nullable: false })
 	private _serviceId: number;

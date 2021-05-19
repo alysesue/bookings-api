@@ -24,11 +24,14 @@ import { CategoriesMapper } from '../labelsCategories/categories.mapper';
 import { ServicesActionAuthVisitor } from './services.auth';
 import { ServiceRequest } from './service.apicontract';
 import { ServicesRepository } from './services.repository';
+import { CategoriesService } from "../labelsCategories/categories.service";
 
 @InRequestScope
 export class ServicesService {
 	@Inject
 	private servicesRepository: ServicesRepository;
+	@Inject
+	private categoriesService: CategoriesService
 	@Inject
 	private scheduleFormsService: ScheduleFormsService;
 	@Inject
@@ -107,9 +110,9 @@ export class ServicesService {
 
 		const isSpAutoAssigned = request.isSpAutoAssigned;
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
-		const transformedCategories = this.categoriesMapper.mapToCategories(request.categories);
-		const service = Service.create(request.name, orga, isSpAutoAssigned, transformedLabels, transformedCategories, request.emailSuffix);
-
+		console.log(require('util').inspect(request.categories, false, null, true /* enable colors */));
+		const mapToCategories = this.categoriesMapper.mapToCategories(request.categories);
+		console.log(require('util').inspect(request.categories, false, null, true /* enable colors */));		const service = Service.create(request.name, orga, isSpAutoAssigned, transformedLabels, mapToCategories, request.emailSuffix);
 		await this.verifyActionPermission(service, CrudAction.Create);
 		return this.servicesRepository.save(service);
 	}
@@ -123,15 +126,23 @@ export class ServicesService {
 		service.name = request.name;
 		service.isSpAutoAssigned = request.isSpAutoAssigned || false;
 		service.emailSuffix = request.emailSuffix;
-
-		const updatedList = this.labelsMapper.mapToLabels(request.labels);
-		this.labelsMapper.mergeLabels(service.labels, updatedList);
-		const updatedCategoriesList = this.categoriesMapper.mapToCategories(request.categories);
-		this.categoriesMapper.mergeCategories(service.categories, updatedCategoriesList);
 		await this.verifyActionPermission(service, CrudAction.Update);
 
+		const updatedLabelList = this.labelsMapper.mapToLabels(request.labels);
+		console.log('label', updatedLabelList);
+		console.log('labelservice', service.labels);
+		this.labelsMapper.mergeLabels(service.labels, updatedLabelList);
+		console.log('labelmerge => ', updatedLabelList);
+		const updatedCategoriesList = this.categoriesMapper.mapToCategories(request.categories);
+
 		try {
-			return await this.servicesRepository.save(service);
+			console.log('1======>', service.categories);
+			service.categories = await this.categoriesService.update(service, updatedCategoriesList, updatedLabelList);
+			console.log('2======>', service.categories);
+			console.log('2======>', service.labels);
+			const response = await this.servicesRepository.save(service);
+			console.log('response', response.labels);
+			return response
 		} catch (e) {
 			if (e.message.startsWith('duplicate key value violates unique constraint')) {
 				if (e.message.includes('ServiceLabels')) {

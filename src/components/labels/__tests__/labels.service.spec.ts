@@ -54,6 +54,21 @@ describe('Test labels service', () => {
 
 		await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(`"Invalid label id: 1"`);
 	});
+
+	it(`Should keep labels`, async () => {
+		const label1 = Label.create('test', 1)
+		const {movedLabelsToNoCategory, deleteLabels} = Container.get(LabelsService).sortLabelForDeleteCategory([label1], [label1]);
+		expect(movedLabelsToNoCategory.length).toBe(1)
+		expect(deleteLabels.length).toBe(0)
+	});
+
+	it(`Should delete labels`, async () => {
+		const label1 = Label.create('test', 1)
+		const {movedLabelsToNoCategory, deleteLabels} = Container.get(LabelsService).sortLabelForDeleteCategory([], [label1]);
+		expect(movedLabelsToNoCategory.length).toBe(0)
+		expect(deleteLabels.length).toBe(1)
+	});
+
 });
 
 class IdHasherMock implements Partial<IdHasher> {

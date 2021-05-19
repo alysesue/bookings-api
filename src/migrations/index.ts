@@ -16,4 +16,5 @@ export { OneOfTimeslotsTitle1618189257455 } from './1618189257455-OneOfTimeslots
 export { ServiceFlagSendEmail1619141888356 } from './1619141888356-ServiceFlagSendEmail';
 export { EmailSuffix1619458019731 } from './1619458019731-EmailSuffix';
 export { CapacityForScheduleForm1620205273706 } from './1620205273706-capacityForScheduleForm1';
-export { Category1620804198970 } from './1620804198970-Category';
+export { Category1621317148775 } from './1621317148775-Category';
+

@@ -1,7 +1,6 @@
 import {LabelRequestModel, LabelResponseModel} from "../labels/label.apicontract";
 
 export class CategoryRequestModel {
-	// public category: string;
 	public categoryName: string;
 	public labels?: LabelRequestModel[];
 	public id?: string;

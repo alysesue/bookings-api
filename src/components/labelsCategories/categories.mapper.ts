@@ -2,18 +2,21 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { Category } from '../../models/entities';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { CategoryRequestModel, CategoryResponseModel } from './categories.apicontract';
+import { LabelsMapper } from "../labels/labels.mapper";
 
 @InRequestScope
 export class CategoriesMapper {
 	@Inject
 	private idHasher: IdHasher;
+	@Inject
+	private labelsMapper: LabelsMapper;
 
 	public mapToCategoriesResponse(data: Category[] = []): CategoryResponseModel[] {
 		return data.map((i) => {
 			const categoryData = new CategoryResponseModel();
 			categoryData.id = this.idHasher.encode(i.id);
 			categoryData.categoryName = i.categoryName;
-			// categoryData.labels = i.labels;
+			categoryData.labels = this.labelsMapper.mapToLabelsResponse(i.labels);
 			return categoryData;
 		});
 	}
@@ -26,24 +29,9 @@ export class CategoriesMapper {
 				entity.id = this.idHasher.decode(i.id);
 			}
 			entity.categoryName = i.categoryName;
+			entity.labels = this.labelsMapper.mapToLabels(i.labels);
 			return entity;
 		});
 	}
 
-	public mergeCategories(originalList: Category[], updatedList: Category[]): Category[] {
-		for (let index = 0; index < originalList.length; ) {
-			const originalCategory = originalList[index];
-			const foundUpdatedCategory = updatedList.find((l) => !!l.id && l.id === originalCategory.id);
-			if (foundUpdatedCategory) {
-				originalCategory.categoryName = foundUpdatedCategory.categoryName;
-				index++;
-			} else {
-				originalList.splice(index, 1);
-			}
-		}
-
-		originalList.push(...updatedList.filter((category) => !category.id));
-
-		return originalList;
-	}
 }

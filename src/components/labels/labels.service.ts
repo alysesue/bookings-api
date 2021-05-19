@@ -1,6 +1,6 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { Label } from '../../models/entities';
+import { Label, Service } from '../../models/entities';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { LabelsRepository } from './labels.repository';
@@ -11,6 +11,31 @@ export class LabelsService {
 	private labelsRepository: LabelsRepository;
 	@Inject
 	private idHasher: IdHasher;
+
+	public async delete(labels: Label[]): Promise<void>{
+		if (!labels.length)
+			return
+		await this.labelsRepository.delete(labels);
+	}
+
+	public async update(labels: Label[]): Promise<Label[]>{
+		if (!labels.length)
+			return []
+		return await this.labelsRepository.save(labels);
+	}
+
+	public sortLabelForDeleteCategory(labelsNoCategory: Label[], labelsCategory: Label[]): {movedLabelsToNoCategory: Label[], deleteLabels: Label[]}{
+		const movedLabelsToNoCategory = labelsCategory.filter(labelCat => labelsNoCategory.some(labelNoCat => labelCat.id === labelNoCat.id));
+		const deleteLabels = labelsCategory.filter(labelCat => !labelsNoCategory.some(labelNoCat => labelCat.id === labelNoCat.id));
+		return { movedLabelsToNoCategory, deleteLabels }
+	}
+
+	public async updateLabelToNoCategory(labels: Label[], service: Service): Promise<Label[]> {
+		labels.forEach(label =>{label.categoryId = null;label.serviceId = service.id} );
+
+		const updateLabel = await this.update(labels)
+		return [...service.labels, ...updateLabel]
+	}
 
 	public async verifyLabels(encodedLabelIds: string[], serviceId: number): Promise<Label[]> {
 		if (!encodedLabelIds || encodedLabelIds.length === 0) {
