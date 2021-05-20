@@ -20,18 +20,18 @@ import { MolServiceAdminUserContract, MolUpsertUsersResult } from '../users/molU
 import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 import { uniqueStringArray } from '../../tools/collections';
 import { LabelsMapper } from '../labels/labels.mapper';
-import { CategoriesMapper } from '../labelsCategories/categories.mapper';
+import { LabelsCategoriesMapper } from '../labelsCategories/labelsCategories.mapper';
 import { ServicesActionAuthVisitor } from './services.auth';
 import { ServiceRequest } from './service.apicontract';
 import { ServicesRepository } from './services.repository';
-import { CategoriesService } from "../labelsCategories/categories.service";
+import { LabelsCategoriesService } from "../labelsCategories/labelsCategories.service";
 
 @InRequestScope
 export class ServicesService {
 	@Inject
 	private servicesRepository: ServicesRepository;
 	@Inject
-	private categoriesService: CategoriesService
+	private categoriesService: LabelsCategoriesService
 	@Inject
 	private scheduleFormsService: ScheduleFormsService;
 	@Inject
@@ -45,7 +45,7 @@ export class ServicesService {
 	@Inject
 	private labelsMapper: LabelsMapper;
 	@Inject
-	private categoriesMapper: CategoriesMapper;
+	private categoriesMapper: LabelsCategoriesMapper;
 
 	public async createServices(names: string[], organisation: Organisation): Promise<Service[]> {
 		const allServiceNames = uniqueStringArray(names, {
@@ -110,9 +110,8 @@ export class ServicesService {
 
 		const isSpAutoAssigned = request.isSpAutoAssigned;
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
-		console.log(require('util').inspect(request.categories, false, null, true /* enable colors */));
 		const mapToCategories = this.categoriesMapper.mapToCategories(request.categories);
-		console.log(require('util').inspect(request.categories, false, null, true /* enable colors */));		const service = Service.create(request.name, orga, isSpAutoAssigned, transformedLabels, mapToCategories, request.emailSuffix);
+		const service = Service.create(request.name, orga, isSpAutoAssigned, transformedLabels, mapToCategories, request.emailSuffix);
 		await this.verifyActionPermission(service, CrudAction.Create);
 		return this.servicesRepository.save(service);
 	}
@@ -134,8 +133,7 @@ export class ServicesService {
 
 		try {
 			service.categories = await this.categoriesService.update(service, updatedCategoriesList, updatedLabelList);
-			const response = await this.servicesRepository.save(service);
-			return response
+			return await this.servicesRepository.save(service);
 		} catch (e) {
 			if (e.message.startsWith('duplicate key value violates unique constraint')) {
 				if (e.message.includes('ServiceLabels')) {

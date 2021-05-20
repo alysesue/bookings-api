@@ -5,7 +5,7 @@ import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
 import { Organisation } from './organisation';
 import { ScheduleForm } from './scheduleForm';
 import { Label } from './label';
-import { Category } from './category';
+import { LabelCategory } from './labelCategory';
 
 @Entity()
 @Index(['_organisationId', '_name'], { unique: true })
@@ -117,7 +117,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		orga: Organisation,
 		isSpAutoAssigned = false,
 		labels: Label[] = [],
-		categories: Category[] = [],
+		categories: LabelCategory[] = [],
 		emailSuffix?: string,
 	) {
 		const service = new Service();
@@ -187,8 +187,8 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	@OneToMany(() => Label, (label) => label.service, { cascade: true })
 	public labels: Label[];
 
-	@OneToMany(() => Category, (category) => category.service, { cascade: true })
-	public categories: Category[];
+	@OneToMany(() => LabelCategory, (category) => category.service, { cascade: true })
+	public categories: LabelCategory[];
 
 	@Column({ nullable: false, default: false })
 	private _sendNotifications: boolean;

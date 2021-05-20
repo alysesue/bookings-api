@@ -1,5 +1,5 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { ICategory, IService } from '../interfaces';
+import { ILabelCategory, IService } from '../interfaces';
 
 @Entity()
 @Index('LabelsCategoriesService', ['_labelText', '_serviceId', '_categoryId'], {unique: true})
@@ -41,9 +41,9 @@ export class Label {
 	@JoinColumn({ name: '_serviceId' })
 	public service: IService;
 
-	@ManyToOne('Category', { orphanedRowAction: 'delete'})
+	@ManyToOne('LabelCategory', { orphanedRowAction: 'delete'})
 	@JoinColumn({ name: '_categoryId' })
-	public category: ICategory;
+	public category: ILabelCategory;
 
 	@Column({ nullable: true })
 	private _categoryId: number;

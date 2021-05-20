@@ -1,29 +1,29 @@
 import { InRequestScope } from 'typescript-ioc';
 import { RepositoryBase } from '../../core/repository';
-import { Category } from '../../models/entities';
+import { LabelCategory } from '../../models/entities';
 
 @InRequestScope
-export class CategoriesRepository extends RepositoryBase<Category> {
+export class LabelsCategoriesRepository extends RepositoryBase<LabelCategory> {
 	// @Inject
 	// private userContext: UserContext;
 
 	constructor() {
-		super(Category);
+		super(LabelCategory);
 	}
 
-	public async delete(data: Category[]) {
+	public async delete(data: LabelCategory[]) {
 		if (!data.length)
 			return
 		const repository = await this.getRepository();
 		await repository.delete(data.map((category) => category.id));
 	}
 
-	public async save(data: Category[]): Promise<Category[]> {
+	public async save(data: LabelCategory[]): Promise<LabelCategory[]> {
 		const repository = await this.getRepository();
 		return repository.save(data);
 	}
 	//
-	// public async find(options: { serviceId: number; skipAuthorisation?: boolean }): Promise<Category[]> {
+	// public async find(options: { serviceId: number; skipAuthorisation?: boolean }): Promise<LabelCategory[]> {
 	// 	const { serviceId } = options;
 	// 	const authGroups = await this.userContext.getAuthGroups();
 	//

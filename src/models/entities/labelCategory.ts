@@ -3,13 +3,13 @@ import { IService } from '../interfaces';
 import { Label } from './label';
 
 @Entity()
-@Index('ServiceCategories', ['_categoryName', '_serviceId'], {unique: true})
-export class Category {
+@Index('ServiceCategories', ['_name', '_serviceId'], {unique: true})
+export class LabelCategory {
 	public constructor() {}
 
-	public static create(categoryName: string, labels: Label[] = [], id?: number): Category {
-		const category = new Category();
-		category.categoryName = categoryName.trim();
+	public static create(name: string, labels: Label[] = [], id?: number): LabelCategory {
+		const category = new LabelCategory();
+		category.name = name.trim();
 		if (id) {
 			category._id = id;
 		}
@@ -29,14 +29,14 @@ export class Category {
 	}
 
 	@Column({ type: 'varchar', length: 500, nullable: false })
-	private _categoryName: string;
+	private _name: string;
 
-	public get categoryName(): string {
-		return this._categoryName;
+	public get name(): string {
+		return this._name;
 	}
 
-	public set categoryName(value: string) {
-		this._categoryName = value;
+	public set name(value: string) {
+		this._name = value;
 	}
 
 	@OneToMany(() => Label, (label) => label.category, {  cascade: true })

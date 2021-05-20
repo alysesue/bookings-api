@@ -21,4 +21,4 @@ export { Setting } from './setting';
 export { OneOffTimeslot } from './oneOffTimeslot';
 export { DynamicField, SelectListDynamicField } from './dynamicField';
 export { Label } from './label';
-export { Category } from './category';
+export { LabelCategory } from './labelCategory';

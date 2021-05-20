@@ -1,20 +1,20 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Category, Label, Service } from '../../models';
-import { CategoriesRepository } from "./categories.repository";
+import { LabelCategory, Label, Service } from '../../models';
+import { LabelsCategoriesRepository } from "./labelsCategories.repository";
 import { LabelsService } from "../labels/labels.service";
 
 @InRequestScope
-export class CategoriesService {
+export class LabelsCategoriesService {
 	@Inject
-	private categoriesRepository: CategoriesRepository;
+	private categoriesRepository: LabelsCategoriesRepository;
 	@Inject
 	private labelsService: LabelsService;
 
-	public async delete(categories: Category[]) {
+	public async delete(categories: LabelCategory[]) {
 		await this.categoriesRepository.delete(categories);
 	}
 
-	public async update(service: Service, updatedCategories: Category[], updatedLabel: Label[]): Promise<Category[]> {
+	public async update(service: Service, updatedCategories: LabelCategory[], updatedLabel: Label[]): Promise<LabelCategory[]> {
 		const {newCategories, updateOrKeepCategories, deleteCategories} = this.sortUpdateCategories(service.categories, updatedCategories, service.id);
 		const allLabelsOfDeleteCategories = [...(deleteCategories.map(cat => (cat.labels)))].flat(1);
 		const {movedLabelsToNoCategory, deleteLabels} = this.labelsService.sortLabelForDeleteCategory(updatedLabel, allLabelsOfDeleteCategories)
@@ -24,7 +24,7 @@ export class CategoriesService {
 		return await this.categoriesRepository.save([...newCategories, ...updateOrKeepCategories])
 	}
 
-	public sortUpdateCategories(originalList: Category[], updatedList: Category[], serviceId: number): {newCategories: Category[], updateOrKeepCategories: Category[], deleteCategories: Category[]} {
+	public sortUpdateCategories(originalList: LabelCategory[], updatedList: LabelCategory[], serviceId: number): {newCategories: LabelCategory[], updateOrKeepCategories: LabelCategory[], deleteCategories: LabelCategory[]} {
 		const newCategories = updatedList.filter(category => !category.id).map(category => {category.serviceId = serviceId; return category})
 		const updateOrKeepCategories = updatedList.filter(category => (originalList.some(origCatego => origCatego.id === category.id)))
 		const deleteCategories = originalList.filter(category => (!updatedList.some(origCatego => origCatego.id === category.id)))

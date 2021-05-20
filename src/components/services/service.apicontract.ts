@@ -1,5 +1,5 @@
 import { LabelRequestModel, LabelResponseModel } from '../labels/label.apicontract';
-import { CategoryRequestModel, CategoryResponseModel } from '../labelsCategories/categories.apicontract';
+import { LabelCategoryRequestModel, LabelCategoryResponseModel } from '../labelsCategories/labelsCategories.apicontract';
 
 export class ServiceResponse {
 	/**
@@ -10,7 +10,7 @@ export class ServiceResponse {
 	public isStandAlone: boolean;
 	public isSpAutoAssigned: boolean;
 	public labels: LabelResponseModel[];
-	public categories: CategoryResponseModel[];
+	public categories: LabelCategoryResponseModel[];
 	public emailSuffix?: string;
 }
 
@@ -22,6 +22,6 @@ export class ServiceRequest {
 	 */
 	public organisationId?: number;
 	public labels?: LabelRequestModel[];
-	public categories?: CategoryRequestModel[];
+	public categories?: LabelCategoryRequestModel[];
 	public emailSuffix?: string | null;
 }
