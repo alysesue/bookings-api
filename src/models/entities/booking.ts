@@ -443,7 +443,7 @@ export class Booking {
 
 export enum DynamicValueType {
 	SingleSelection = 'SingleSelection',
-	Text = 'Text'
+	Text = 'Text',
 }
 
 export type DynamicValueJsonModel = {

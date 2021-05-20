@@ -52,7 +52,7 @@ describe('schedule mapper tests', () => {
 		});
 	});
 
-	it('should map day schedule correctly with capacity value set', async() => {
+	it('should map day schedule correctly with capacity value set', async () => {
 		const scheduleFormsRequest: ScheduleFormRequest = {
 			slotsDurationInMin: 5,
 			weekdaySchedules: [
@@ -61,13 +61,13 @@ describe('schedule mapper tests', () => {
 					hasScheduleForm: true,
 					openTime: '23:23',
 					closeTime: '11:23',
-					capacity: 2
+					capacity: 2,
 				} as WeekDayScheduleContract,
 			],
 		} as ScheduleFormRequest;
 		const result = mapToEntity(scheduleFormsRequest, new ScheduleForm());
 		if (result instanceof ScheduleForm) {
-			expect(result.weekdaySchedules[0].capacity).toEqual(2)
+			expect(result.weekdaySchedules[0].capacity).toEqual(2);
 		}
-	})
+	});
 });

@@ -40,10 +40,10 @@ export class TimeslotItemsRepository extends RepositoryBase<TimeslotItem> {
 		const { userCondition, userParams } = byPassAuth
 			? { userCondition: '', userParams: {} }
 			: await new TimeslotItemsQueryAuthVisitor(
-				'service',
-				'serviceProvider',
-				'SPservice',
-			).createUserVisibilityCondition(authGroups);
+					'service',
+					'serviceProvider',
+					'SPservice',
+			  ).createUserVisibilityCondition(authGroups);
 
 		const query = repository
 			.createQueryBuilder('timeslotItem')

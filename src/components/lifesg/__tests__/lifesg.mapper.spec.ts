@@ -20,7 +20,10 @@ describe('Test lifesg mq observer', () => {
 		bookingMock.service = new Service();
 		bookingMock.service.name = 'service name';
 
-		const mappedLifeSGAppt = LifeSGMapper.mapLifeSGAppointment(bookingMock, ExternalAgencyAppointmentJobAction.CREATE);
+		const mappedLifeSGAppt = LifeSGMapper.mapLifeSGAppointment(
+			bookingMock,
+			ExternalAgencyAppointmentJobAction.CREATE,
+		);
 		expect(mappedLifeSGAppt).toBeInstanceOf(CreateAppointmentRequestApiDomain);
 		if (mappedLifeSGAppt instanceof CreateAppointmentRequestApiDomain) {
 			const expectedMappedAppt = new CreateAppointmentRequestApiDomain({
@@ -49,20 +52,20 @@ describe('Test lifesg mq observer', () => {
 				virtualAppointmentUrl: bookingMock.videoConferenceUrl,
 				agencyLastUpdatedAt: LocalDateTime.now(),
 			});
-			expect(mappedLifeSGAppt.agency).toEqual(expectedMappedAppt.agency)
-			expect(mappedLifeSGAppt.agencyTransactionId).toEqual(expectedMappedAppt.agencyTransactionId)
-			expect(mappedLifeSGAppt.uinfin).toEqual(expectedMappedAppt.uinfin)
-			expect(mappedLifeSGAppt.date).toEqual(expectedMappedAppt.date)
-			expect(mappedLifeSGAppt.startTime).toEqual(expectedMappedAppt.startTime)
-			expect(mappedLifeSGAppt.endTime).toEqual(expectedMappedAppt.endTime)
-			expect(mappedLifeSGAppt.title).toEqual(expectedMappedAppt.title)
-			expect(mappedLifeSGAppt.venueName).toEqual(expectedMappedAppt.venueName)
-			expect(mappedLifeSGAppt.venueDescription).toEqual(expectedMappedAppt.venueDescription)
-			expect(mappedLifeSGAppt.contactNumber).toEqual(expectedMappedAppt.contactNumber)
-			expect(mappedLifeSGAppt.email).toEqual(expectedMappedAppt.email)
-			expect(mappedLifeSGAppt.hideAgencyContactInfo).toEqual(expectedMappedAppt.hideAgencyContactInfo)
-			expect(mappedLifeSGAppt.isConfidential).toEqual(expectedMappedAppt.isConfidential)
-			expect(mappedLifeSGAppt.isVirtual).toEqual(expectedMappedAppt.isVirtual)
+			expect(mappedLifeSGAppt.agency).toEqual(expectedMappedAppt.agency);
+			expect(mappedLifeSGAppt.agencyTransactionId).toEqual(expectedMappedAppt.agencyTransactionId);
+			expect(mappedLifeSGAppt.uinfin).toEqual(expectedMappedAppt.uinfin);
+			expect(mappedLifeSGAppt.date).toEqual(expectedMappedAppt.date);
+			expect(mappedLifeSGAppt.startTime).toEqual(expectedMappedAppt.startTime);
+			expect(mappedLifeSGAppt.endTime).toEqual(expectedMappedAppt.endTime);
+			expect(mappedLifeSGAppt.title).toEqual(expectedMappedAppt.title);
+			expect(mappedLifeSGAppt.venueName).toEqual(expectedMappedAppt.venueName);
+			expect(mappedLifeSGAppt.venueDescription).toEqual(expectedMappedAppt.venueDescription);
+			expect(mappedLifeSGAppt.contactNumber).toEqual(expectedMappedAppt.contactNumber);
+			expect(mappedLifeSGAppt.email).toEqual(expectedMappedAppt.email);
+			expect(mappedLifeSGAppt.hideAgencyContactInfo).toEqual(expectedMappedAppt.hideAgencyContactInfo);
+			expect(mappedLifeSGAppt.isConfidential).toEqual(expectedMappedAppt.isConfidential);
+			expect(mappedLifeSGAppt.isVirtual).toEqual(expectedMappedAppt.isVirtual);
 		}
 	});
 
@@ -77,7 +80,10 @@ describe('Test lifesg mq observer', () => {
 		bookingMock.service = new Service();
 		bookingMock.service.name = 'service name';
 
-		const mappedLifeSGAppt = LifeSGMapper.mapLifeSGAppointment(bookingMock, ExternalAgencyAppointmentJobAction.UPDATE);
+		const mappedLifeSGAppt = LifeSGMapper.mapLifeSGAppointment(
+			bookingMock,
+			ExternalAgencyAppointmentJobAction.UPDATE,
+		);
 		expect(mappedLifeSGAppt).toBeInstanceOf(CreateAppointmentRequestApiDomain);
 		if (mappedLifeSGAppt instanceof CreateAppointmentRequestApiDomain) {
 			const expectedMappedAppt = new CreateAppointmentRequestApiDomain({
@@ -106,9 +112,9 @@ describe('Test lifesg mq observer', () => {
 				virtualAppointmentUrl: bookingMock.videoConferenceUrl,
 				agencyLastUpdatedAt: LocalDateTime.now(),
 			});
-			expect(mappedLifeSGAppt.date).toEqual(expectedMappedAppt.date)
-			expect(mappedLifeSGAppt.startTime).toEqual(expectedMappedAppt.startTime)
-			expect(mappedLifeSGAppt.endTime).toEqual(expectedMappedAppt.endTime)
+			expect(mappedLifeSGAppt.date).toEqual(expectedMappedAppt.date);
+			expect(mappedLifeSGAppt.startTime).toEqual(expectedMappedAppt.startTime);
+			expect(mappedLifeSGAppt.endTime).toEqual(expectedMappedAppt.endTime);
 		}
 	});
 
@@ -123,7 +129,10 @@ describe('Test lifesg mq observer', () => {
 		bookingMock.service = new Service();
 		bookingMock.service.name = 'service name';
 
-		const mappedCanceledBooking = LifeSGMapper.mapLifeSGAppointment(bookingMock, ExternalAgencyAppointmentJobAction.CANCEL);
+		const mappedCanceledBooking = LifeSGMapper.mapLifeSGAppointment(
+			bookingMock,
+			ExternalAgencyAppointmentJobAction.CANCEL,
+		);
 		expect(mappedCanceledBooking).toBeInstanceOf(CancelAppointmentRequestApiDomain);
 		if (mappedCanceledBooking instanceof CancelAppointmentRequestApiDomain) {
 			const expectedMappedAppt = new CancelAppointmentRequestApiDomain({
@@ -149,7 +158,10 @@ describe('Test lifesg mq observer', () => {
 		bookingMock.service = new Service();
 		bookingMock.service.name = 'service name';
 
-		const mappedDeletedBooking = LifeSGMapper.mapLifeSGAppointment(bookingMock, ExternalAgencyAppointmentJobAction.DELETE)
+		const mappedDeletedBooking = LifeSGMapper.mapLifeSGAppointment(
+			bookingMock,
+			ExternalAgencyAppointmentJobAction.DELETE,
+		);
 		expect(mappedDeletedBooking).toBeInstanceOf(DeleteAppointmentRequestApiDomain);
 		if (mappedDeletedBooking instanceof DeleteAppointmentRequestApiDomain) {
 			const expectedMappedAppt = new DeleteAppointmentRequestApiDomain({

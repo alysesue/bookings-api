@@ -111,20 +111,26 @@ class GoogleApiMock implements Partial<GoogleApi> {
 
 	public async getCalendarApi(): Promise<calendar_v3.Calendar> {
 		return {
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			// @ts-ignore
 			acl: {
+				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 				// @ts-ignore
 				insert: () => GoogleApiMock.mockAclInsertResponse,
 			},
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			// @ts-ignore
 			freebusy: {
+				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 				// @ts-ignore
 				query: () => GoogleApiMock.mockQueryResponse,
 			},
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			// @ts-ignore
 			calendars: {
 				insert: () => GoogleApiMock.insertCalendarsMock,
 			},
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			// @ts-ignore
 			events: {
 				insert: () => GoogleApiMock.createEventsMock,

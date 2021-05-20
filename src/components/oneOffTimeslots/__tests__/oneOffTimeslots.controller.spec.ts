@@ -14,7 +14,7 @@ afterAll(() => {
 
 jest.mock('mol-lib-common', () => {
 	const actual = jest.requireActual('mol-lib-common');
-	const mock = (config: any) => {
+	const mock = () => {
 		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
 	};
 	return {
@@ -177,7 +177,7 @@ class OneOffTimeslotsServiceMock implements Partial<OneOffTimeslotsService> {
 
 class IdHasherMock implements Partial<IdHasher> {
 	public static encode = jest.fn();
-	public encode(id: number): string {
+	public encode(): string {
 		return IdHasherMock.encode();
 	}
 }

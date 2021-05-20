@@ -12,6 +12,7 @@ afterAll(() => {
 
 jest.mock('mol-lib-common', () => {
 	const actual = jest.requireActual('mol-lib-common');
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const mock = (config: any) => {
 		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
 	};

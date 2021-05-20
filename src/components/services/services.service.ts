@@ -105,7 +105,14 @@ export class ServicesService {
 		const isSpAutoAssigned = request.isSpAutoAssigned;
 		const noNric = request.noNric;
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
-		const service = Service.create(request.name, orga, isSpAutoAssigned, transformedLabels, request.emailSuffix, noNric);
+		const service = Service.create(
+			request.name,
+			orga,
+			isSpAutoAssigned,
+			transformedLabels,
+			request.emailSuffix,
+			noNric,
+		);
 
 		await this.verifyActionPermission(service, CrudAction.Create);
 		return this.servicesRepository.save(service);

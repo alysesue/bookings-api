@@ -20,8 +20,8 @@ export class ServiceProvidersServiceMock implements Partial<ServiceProvidersServ
 	public static createServiceProvidersMock = jest.fn();
 	public static getServiceProvidersByNameMock = jest.fn();
 
-	public async getServiceProvider(spId: number): Promise<ServiceProvider> {
-		return ServiceProvidersServiceMock.getServiceProviderMock();
+	public async getServiceProvider(...params): Promise<ServiceProvider> {
+		return ServiceProvidersServiceMock.getServiceProviderMock(...params);
 	}
 	public async createServiceProviders(
 		serviceProviderOnboardContracts: MolServiceProviderOnboardContract[],
@@ -45,7 +45,7 @@ export class ServiceProvidersServiceMock implements Partial<ServiceProvidersServ
 		return ServiceProvidersServiceMock.saveMock(listRequest);
 	}
 	public async updateSp(request: ServiceProviderModel, spId: number): Promise<ServiceProvider> {
-		return ServiceProvidersServiceMock.updateServiceProviderMock(request);
+		return ServiceProvidersServiceMock.updateServiceProviderMock(request, spId);
 	}
 	public async setProviderScheduleForm(...params): Promise<ScheduleForm> {
 		return ServiceProvidersServiceMock.setProviderScheduleFormMock(...params);

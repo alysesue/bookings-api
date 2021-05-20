@@ -85,12 +85,12 @@ export class DynamicValuesMapper {
 
 	public getValueAsString(value: DynamicValueJsonModel): string {
 		switch (value.type) {
-		case DynamicValueType.SingleSelection:
-			return value.SingleSelectionValue;
-		case DynamicValueType.Text:
-			return value.textValue;
-		default:
-			throw new Error(`DynamicValuesMapper.getValueAsString() not implemented for type: ${value.type}`);
+			case DynamicValueType.SingleSelection:
+				return value.SingleSelectionValue;
+			case DynamicValueType.Text:
+				return value.textValue;
+			default:
+				throw new Error(`DynamicValuesMapper.getValueAsString() not implemented for type: ${value.type}`);
 		}
 	}
 }

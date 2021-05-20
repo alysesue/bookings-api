@@ -437,15 +437,18 @@ class BookingsServiceMock implements Partial<BookingsService> {
 		return BookingsServiceMock.mockCheckLimit(...params);
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public async save(bookingRequest: BookingRequest): Promise<Booking> {
 		return BookingsServiceMock.mockPostBooking;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public async update(bookingId: number, bookingRequest: BookingRequest): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
 		return BookingsServiceMock.mockUpdateBooking;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public async validateOnHoldBooking(bookingId: number, bookingRequest: BookingRequest): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
 		return BookingsServiceMock.mockValidateOnHoldBooking;

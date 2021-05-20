@@ -44,16 +44,16 @@ export class ServicesActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		const serviceId = this._service.id;
 		switch (this._action) {
-		case CrudAction.Create:
-		case CrudAction.Delete:
-			return;
-		case CrudAction.Update:
-			if (_userGroup.hasServiceId(serviceId)) {
-				this.markWithPermission();
-			}
-			return;
-		default:
-			return;
+			case CrudAction.Create:
+			case CrudAction.Delete:
+				return;
+			case CrudAction.Update:
+				if (_userGroup.hasServiceId(serviceId)) {
+					this.markWithPermission();
+				}
+				return;
+			default:
+				return;
 		}
 	}
 

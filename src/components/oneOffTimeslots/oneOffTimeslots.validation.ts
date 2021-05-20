@@ -31,7 +31,7 @@ export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 			endDateTime: request.endDateTime,
 		};
 		let slotAvailableArr = await this.oneOffTimeslotsRepo.search(searchRequest);
-		slotAvailableArr = slotAvailableArr.filter(slot => slot.id !== updateSlotId);
+		slotAvailableArr = slotAvailableArr.filter((slot) => slot.id !== updateSlotId);
 
 		if (slotAvailableArr.length > 0) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
@@ -40,7 +40,6 @@ export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 		}
 		return true;
 	}
-
 
 	private static async *validateDescription(description: string): AsyncIterable<BusinessValidation> {
 		if (description && description.length > 4000) {
@@ -58,7 +57,6 @@ export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 		}
 	}
 }
-
 
 class OneOffTimeslotsBusinessValidation {
 	private constructor() {}

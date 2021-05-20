@@ -113,7 +113,7 @@ export async function startServer(): Promise<Server> {
 	LoggerV2.setServiceName(config.name);
 
 	const memory = v8.getHeapStatistics();
-	logger.info(`[Memory] Total available size: ${Math.round(memory.total_available_size  / (1024 * 1024))} MB`);
+	logger.info(`[Memory] Total available size: ${Math.round(memory.total_available_size / (1024 * 1024))} MB`);
 
 	// Setup server
 	const router: KoaRouter = new KoaRouter({ prefix: `${basePath}/api` });

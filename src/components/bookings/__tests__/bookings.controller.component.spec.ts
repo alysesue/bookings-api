@@ -43,7 +43,6 @@ jest.mock('../../../config/app-config', () => ({
 	getConfig: jest.fn(),
 }));
 
-
 beforeEach(() => {
 	TimeslotsServiceMock.availableProvidersForTimeslot = new Map<ServiceProvider, TimeslotWithCapacity>();
 });
@@ -82,8 +81,8 @@ describe('Booking Integration tests', () => {
 		Container.bind(LifeSGObserver).to(MockObserver);
 		(getConfig as jest.Mock).mockReturnValue({
 			featureFlag: {
-				lifeSGSync: 'true'
-			}
+				lifeSGSync: 'true',
+			},
 		});
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = provider;
@@ -148,7 +147,6 @@ class TimeslotsServiceMock implements Partial<TimeslotsService> {
 	public async getAvailableProvidersForTimeslot(
 		startDateTime: Date,
 		endDateTime: Date,
-		serviceId: number,
 	): Promise<TimeslotServiceProviderResult[]> {
 		const timeslotEntry = new AvailableTimeslotProviders();
 		timeslotEntry.startTime = startDateTime.getTime();

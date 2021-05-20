@@ -401,9 +401,9 @@ export class TimeslotsService {
 
 			const timeslotsSP = provider.timeslotsSchedule
 				? provider.timeslotsSchedule.generateValidTimeslots({
-					startDatetime: minStartTime,
-					endDatetime: maxEndTime,
-				})
+						startDatetime: minStartTime,
+						endDatetime: maxEndTime,
+				  })
 				: validServiceTimeslots;
 
 			if (oneOffTimeslotsSP && oneOffTimeslotsSP.length > 0) {
