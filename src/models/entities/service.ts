@@ -128,7 +128,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		service._serviceAdminGroupMap = ServiceAdminGroupMap.create(
 			ServiceAdminGroupMap.createServiceOrganisationRef(
 				service.getServiceRef(),
-				orga._organisationAdminGroupMap.organisationRef,
+				orga._organisationAdminGroupMap?.organisationRef,
 			),
 		);
 		service.labels = labels;

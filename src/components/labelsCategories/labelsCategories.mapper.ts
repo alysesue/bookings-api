@@ -15,20 +15,20 @@ export class LabelsCategoriesMapper {
 		return data.map((i) => {
 			const categoryData = new LabelCategoryResponseModel();
 			categoryData.id = this.idHasher.encode(i.id);
-			categoryData.name = i.name;
+			categoryData.categoryName = i.name;
 			categoryData.labels = this.labelsMapper.mapToLabelsResponse(i.labels);
 			return categoryData;
 		});
 	}
 
 	public mapToCategories(request: LabelCategoryRequestModel[] = []): LabelCategory[] {
-		request = request.filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i);
+		request = request.filter((v, i, a) => a.findIndex((t) => t.categoryName === v.categoryName) === i);
 		return request.map((i) => {
 			const entity = new LabelCategory();
 			if (i.id) {
 				entity.id = this.idHasher.decode(i.id);
 			}
-			entity.name = i.name;
+			entity.name = i.categoryName;
 			entity.labels = this.labelsMapper.mapToLabels(i.labels);
 			return entity;
 		});

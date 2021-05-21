@@ -21,7 +21,7 @@ export class LabelsCategoriesService {
 		service.labels = await this.labelsService.updateLabelToNoCategory(movedLabelsToNoCategory, service)
 		await this.labelsService.delete(deleteLabels)
 		await this.delete(deleteCategories);
-		return await this.categoriesRepository.save([...newCategories, ...updateOrKeepCategories])
+		return [...newCategories, ...updateOrKeepCategories];
 	}
 
 	public sortUpdateCategories(originalList: LabelCategory[], updatedList: LabelCategory[], serviceId: number): {newCategories: LabelCategory[], updateOrKeepCategories: LabelCategory[], deleteCategories: LabelCategory[]} {

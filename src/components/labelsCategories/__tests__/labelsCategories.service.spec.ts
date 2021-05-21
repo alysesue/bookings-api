@@ -1,14 +1,35 @@
 import { Container } from "typescript-ioc";
 import { LabelsCategoriesService } from "../labelsCategories.service";
-import { LabelCategory, Label } from "../../../models";
+import { Label, LabelCategory, Organisation, Service } from "../../../models";
+import { LabelsCategoriesRepository } from "../labelsCategories.repository";
+import { LabelsCategoriesRepositoryMock } from "../__mocks__/labelsCategories.repository.mock";
+import { LabelsService } from "../../labels/labels.service";
+import { LabelsServiceMock } from "../../labels/__mocks__/labels.service.mock";
 
 describe('Test categoriesLabels service', () => {
 	beforeAll(() => {
 		jest.resetAllMocks();
+		Container.bind(LabelsCategoriesRepository).to(LabelsCategoriesRepositoryMock);
+		Container.bind(LabelsService).to(LabelsServiceMock);
 	});
 
 	beforeEach(() => {
 		jest.resetAllMocks();
+	});
+
+	it('Should update category', async () => {
+		const label1 = Label.create('Label1', 1)
+		const label2 = Label.create('Label2', 2)
+		const catego1 = LabelCategory.create('catego1', [label1], 1);
+		const catego2 = LabelCategory.create('catego2', [label2]);
+		const originalCategories = [catego1] as LabelCategory[]
+		const updateCategories = [catego2] as LabelCategory[]
+		const service = Service.create('service', {} as Organisation, true, [label1], originalCategories);
+		(LabelsServiceMock.sortLabelForDeleteCategoryMock as jest.Mock).mockReturnValue({movedLabelsToNoCategory: {}, deleteLabels: {}})
+		await Container.get(LabelsCategoriesService).update(service, updateCategories, [label2]);
+
+		expect(LabelsServiceMock.updateLabelToNoCategoryMock).toBeCalledTimes(1);
+		expect(LabelsServiceMock.deleteMock).toBeCalledTimes(1);
 	});
 
 	it('Should add category and delete missing one', async () => {
@@ -19,6 +40,7 @@ describe('Test categoriesLabels service', () => {
 		const originalCategories = [catego1] as LabelCategory[]
 		const updateCategories = [catego2] as LabelCategory[]
 		const updateListOfCategories = await Container.get(LabelsCategoriesService).sortUpdateCategories(originalCategories, updateCategories, 1);
+		console.log('res', updateListOfCategories);
 
 		expect(updateListOfCategories.newCategories).toStrictEqual([catego2]);
 		expect(updateListOfCategories.updateOrKeepCategories).toStrictEqual([]);
