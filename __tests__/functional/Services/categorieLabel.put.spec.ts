@@ -1,13 +1,13 @@
-import { PgClient } from "../../utils/pgClient";
-import { OrganisationAdminRequestEndpointSG } from "../../utils/requestEndpointSG";
-import { ServiceResponse } from "../../../src/components/services/service.apicontract";
-import { LabelCategoryRequestModel } from "../../../src/components/labelsCategories/labelsCategories.apicontract";
+import { PgClient } from '../../utils/pgClient';
+import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
+import { ServiceResponse } from '../../../src/components/services/service.apicontract';
+import { LabelCategoryRequestModel } from '../../../src/components/labelsCategories/labelsCategories.apicontract';
 
 describe('Tests endpoint', () => {
 	const SERVICE_NAME = 'Service1';
 	const pgClient = new PgClient();
-	let categories: LabelCategoryRequestModel[] = [{categoryName: 'category'}];
-	let labels = [{ label: 'labelNoCategory' }]
+	let categories: LabelCategoryRequestModel[] = [{ categoryName: 'category' }];
+	let labels = [{ label: 'labelNoCategory' }];
 	let response;
 	let serviceCreated;
 
@@ -25,9 +25,9 @@ describe('Tests endpoint', () => {
 		done();
 	});
 	beforeEach(async (done) => {
-		categories = [{categoryName: 'category', labels: [{label: 'labelCategory'}]}];
+		categories = [{ categoryName: 'category', labels: [{ label: 'labelCategory' }] }];
 		response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
-			body: { name: SERVICE_NAME, labels, categories  },
+			body: { name: SERVICE_NAME, labels, categories },
 		});
 		serviceCreated = response.body.data as ServiceResponse;
 		expect(response.statusCode).toEqual(200);
@@ -35,13 +35,13 @@ describe('Tests endpoint', () => {
 		expect(serviceCreated.categories[0].categoryName).toBe('category');
 
 		expect(serviceCreated.categories[0].labels[0].label).toBe('labelCategory');
-		labels= [...serviceCreated.labels]
-		categories = [...serviceCreated.categories]
-		done()
-	})
+		labels = [...serviceCreated.labels];
+		categories = [...serviceCreated.categories];
+		done();
+	});
 
 	it('Should update service with a new category', async () => {
-		const newCategories = [serviceCreated.categories[0],{ categoryName: 'category2', labels: []}]
+		const newCategories = [serviceCreated.categories[0], { categoryName: 'category2', labels: [] }];
 		response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceCreated.id}`, {
 			body: { name: SERVICE_NAME, labels, categories: newCategories },
 		});
@@ -63,7 +63,7 @@ describe('Tests endpoint', () => {
 	});
 
 	it('Should update service with label in category deleted', async () => {
-		const newCategories = [{id: serviceCreated.categories[0].id, categoryName: 'category', labels: []}]
+		const newCategories = [{ id: serviceCreated.categories[0].id, categoryName: 'category', labels: [] }];
 		response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceCreated.id}`, {
 			body: { name: SERVICE_NAME, labels, categories: newCategories },
 		});
@@ -76,7 +76,7 @@ describe('Tests endpoint', () => {
 
 	it('Should update service with category fully deleted', async () => {
 		response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceCreated.id}`, {
-			body: { name: SERVICE_NAME, labels, categories: []  },
+			body: { name: SERVICE_NAME, labels, categories: [] },
 		});
 		const service = response.body.data as ServiceResponse;
 		expect(response.statusCode).toEqual(200);
@@ -87,7 +87,7 @@ describe('Tests endpoint', () => {
 	it('Update service with label moved in no category', async () => {
 		const allLabels = [...labels, ...categories[0].labels];
 		response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceCreated.id}`, {
-			body: { name: SERVICE_NAME, labels: [...allLabels], categories: []  },
+			body: { name: SERVICE_NAME, labels: [...allLabels], categories: [] },
 		});
 		const service = response.body.data as ServiceResponse;
 		expect(response.statusCode).toEqual(200);
@@ -97,10 +97,10 @@ describe('Tests endpoint', () => {
 	});
 
 	it('Should merge label if same name in same category ', async () => {
-		categories[0].labels = [...categories[0].labels, { label: 'labelCategory' }]
+		categories[0].labels = [...categories[0].labels, { label: 'labelCategory' }];
 
 		response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceCreated.id}`, {
-			body: { name: SERVICE_NAME, categories  },
+			body: { name: SERVICE_NAME, categories },
 		});
 		const service = response.body.data as ServiceResponse;
 		expect(response.statusCode).toEqual(200);
