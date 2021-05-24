@@ -33,7 +33,7 @@ afterEach(() => {
 
 jest.mock('mol-lib-common', () => {
 	const actual = jest.requireActual('mol-lib-common');
-	const mock = (config: any) => {
+	const mock = () => {
 		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
 	};
 	return {

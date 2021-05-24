@@ -18,7 +18,7 @@ export class ServicesMapper {
 		serviceResponse.isSpAutoAssigned = service.isSpAutoAssigned;
 		serviceResponse.noNric = service.noNric;
 		serviceResponse.labels = this.labelsMapper.mapToLabelsResponse(service.labels);
-		serviceResponse.categories = this.categoriesMapper.mapToCategoriesResponse(service.categories)
+		serviceResponse.categories = this.categoriesMapper.mapToCategoriesResponse(service.categories);
 		serviceResponse.emailSuffix = service.emailSuffix;
 		return serviceResponse;
 	}

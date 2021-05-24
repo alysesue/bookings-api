@@ -51,27 +51,27 @@ export class UsersService {
 
 		let user: User = null;
 		switch (authType) {
-		case MOLAuthType.USER:
-			user = await this.getOrSaveSingpassUser({
-				molUserId: headers[MOLSecurityHeaderKeys.USER_ID],
-				molUserUinFin: headers[MOLSecurityHeaderKeys.USER_UINFIN],
-			});
-			break;
-		case MOLAuthType.ADMIN:
-			user = await this.getOrSaveAdminUser({
-				molAdminId: headers[MOLSecurityHeaderKeys.ADMIN_ID],
-				userName: headers[MOLSecurityHeaderKeys.ADMIN_USERNAME],
-				email: headers[MOLSecurityHeaderKeys.ADMIN_EMAIL],
-				name: headers[MOLSecurityHeaderKeys.ADMIN_NAME],
-				agencyUserId: headers[MOLSecurityHeaderKeys.ADMIN_AGENCY_USER_ID],
-			});
-			break;
-		case MOLAuthType.AGENCY:
-			user = await this.getOrSaveAgencyUser({
-				agencyAppId: headers[MOLSecurityHeaderKeys.AGENCY_APP_ID],
-				agencyName: headers[MOLSecurityHeaderKeys.AGENCY_NAME],
-			});
-			break;
+			case MOLAuthType.USER:
+				user = await this.getOrSaveSingpassUser({
+					molUserId: headers[MOLSecurityHeaderKeys.USER_ID],
+					molUserUinFin: headers[MOLSecurityHeaderKeys.USER_UINFIN],
+				});
+				break;
+			case MOLAuthType.ADMIN:
+				user = await this.getOrSaveAdminUser({
+					molAdminId: headers[MOLSecurityHeaderKeys.ADMIN_ID],
+					userName: headers[MOLSecurityHeaderKeys.ADMIN_USERNAME],
+					email: headers[MOLSecurityHeaderKeys.ADMIN_EMAIL],
+					name: headers[MOLSecurityHeaderKeys.ADMIN_NAME],
+					agencyUserId: headers[MOLSecurityHeaderKeys.ADMIN_AGENCY_USER_ID],
+				});
+				break;
+			case MOLAuthType.AGENCY:
+				user = await this.getOrSaveAgencyUser({
+					agencyAppId: headers[MOLSecurityHeaderKeys.AGENCY_APP_ID],
+					agencyName: headers[MOLSecurityHeaderKeys.AGENCY_NAME],
+				});
+				break;
 		}
 
 		return user;

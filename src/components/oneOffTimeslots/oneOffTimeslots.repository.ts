@@ -32,8 +32,8 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 		const { userCondition, userParams } = options.byPassAuth
 			? { userCondition: '', userParams: {} }
 			: await new OneOffTimeslotsQueryAuthVisitor('serviceProvider', 'SPservice').createUserVisibilityCondition(
-				authGroups,
-			);
+					authGroups,
+			  );
 		const repository = await this.getRepository();
 
 		return repository
@@ -71,9 +71,9 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 		const labelsCondition =
 			labelIds && labelIds.length > 0
 				? labelIds.map(
-					(_, index) =>
-						`timeslot."_id" IN (SELECT "oneOffTimeslot_id" FROM oneofftimeslot_label WHERE "label_id" = :label_${index})`,
-				)
+						(_, index) =>
+							`timeslot."_id" IN (SELECT "oneOffTimeslot_id" FROM oneofftimeslot_label WHERE "label_id" = :label_${index})`,
+				  )
 				: [];
 
 		const labelsParam = {};

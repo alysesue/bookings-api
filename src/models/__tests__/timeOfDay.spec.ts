@@ -23,7 +23,6 @@ describe('Time of day tests', () => {
 		expect(timeA.minutes).toBe(30);
 	});
 
-
 	it('should parse time of day [perf]', () => {
 		const allTimes: string[] = [];
 		const watchTestData = new StopWatch('Test data');
@@ -38,7 +37,7 @@ describe('Time of day tests', () => {
 
 		const watchParse = new StopWatch('Parse fist time');
 		let parsed: TimeOfDay;
-		for(const time of allTimes){
+		for (const time of allTimes) {
 			parsed = TimeOfDay.parse(time);
 			parsed.AsMilliseconds();
 			parsed.AsMinutes();
@@ -46,7 +45,7 @@ describe('Time of day tests', () => {
 		watchParse.stop();
 
 		const watchParseSecond = new StopWatch('Parse second time');
-		for(const time of allTimes){
+		for (const time of allTimes) {
 			parsed = TimeOfDay.parse(time);
 			parsed.AsMilliseconds();
 			parsed.AsMinutes();
@@ -57,9 +56,9 @@ describe('Time of day tests', () => {
 	it('should create time of day [perf]', () => {
 		const allTimes: TimeOfDay[] = [];
 		const watchTestData = new StopWatch('create time');
-		const max = 24*60*60;
+		const max = 24 * 60 * 60;
 		for (let i = 0; i < max; i++) {
-			allTimes.push(TimeOfDay.create({hours: 8, minutes: 30}));
+			allTimes.push(TimeOfDay.create({ hours: 8, minutes: 30 }));
 		}
 		watchTestData.stop();
 

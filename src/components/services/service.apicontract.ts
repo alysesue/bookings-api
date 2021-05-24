@@ -1,5 +1,8 @@
 import { LabelRequestModel, LabelResponseModel } from '../labels/label.apicontract';
-import { LabelCategoryRequestModel, LabelCategoryResponseModel } from '../labelsCategories/labelsCategories.apicontract';
+import {
+	LabelCategoryRequestModel,
+	LabelCategoryResponseModel,
+} from '../labelsCategories/labelsCategories.apicontract';
 
 export class ServiceResponse {
 	/**

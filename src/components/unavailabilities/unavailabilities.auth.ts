@@ -90,15 +90,15 @@ export class UnavailabilitiesActionAuthVisitor extends PermissionAwareAuthGroupV
 
 		// tslint:disable-next-line: no-small-switch
 		switch (this.action) {
-		case CrudAction.Delete:
-			if (!this.unavailability.allServiceProviders && hasServiceProvider) {
-				this.markWithPermission();
-			}
-			break;
-		default:
-			if (hasServiceProvider) {
-				this.markWithPermission();
-			}
+			case CrudAction.Delete:
+				if (!this.unavailability.allServiceProviders && hasServiceProvider) {
+					this.markWithPermission();
+				}
+				break;
+			default:
+				if (hasServiceProvider) {
+					this.markWithPermission();
+				}
 		}
 	}
 }

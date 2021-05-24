@@ -2,7 +2,7 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { LabelCategory } from '../../models/entities';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { LabelCategoryRequestModel, LabelCategoryResponseModel } from './labelsCategories.apicontract';
-import { LabelsMapper } from "../labels/labels.mapper";
+import { LabelsMapper } from '../labels/labels.mapper';
 
 @InRequestScope
 export class LabelsCategoriesMapper {
@@ -33,5 +33,4 @@ export class LabelsCategoriesMapper {
 			return entity;
 		});
 	}
-
 }

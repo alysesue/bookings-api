@@ -44,7 +44,6 @@ export interface ILabelCategory {
 	id: number;
 }
 
-
 export interface IServiceProvider {
 	id: number;
 	serviceId: number;

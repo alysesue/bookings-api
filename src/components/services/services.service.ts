@@ -24,14 +24,14 @@ import { LabelsCategoriesMapper } from '../labelsCategories/labelsCategories.map
 import { ServicesActionAuthVisitor } from './services.auth';
 import { ServiceRequest } from './service.apicontract';
 import { ServicesRepository } from './services.repository';
-import { LabelsCategoriesService } from "../labelsCategories/labelsCategories.service";
+import { LabelsCategoriesService } from '../labelsCategories/labelsCategories.service';
 
 @InRequestScope
 export class ServicesService {
 	@Inject
 	private servicesRepository: ServicesRepository;
 	@Inject
-	private categoriesService: LabelsCategoriesService
+	private categoriesService: LabelsCategoriesService;
 	@Inject
 	private scheduleFormsService: ScheduleFormsService;
 	@Inject
@@ -112,7 +112,16 @@ export class ServicesService {
 		const noNric = request.noNric;
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
 		const mapToCategories = this.categoriesMapper.mapToCategories(request.categories);
-		const service = Service.create(request.name, orga, isSpAutoAssigned, transformedLabels, mapToCategories, request.emailSuffix, noNric);
+		const service = Service.create(
+			request.name,
+			orga,
+			isSpAutoAssigned,
+			transformedLabels,
+			mapToCategories,
+			request.emailSuffix,
+			noNric,
+		);
+
 		await this.verifyActionPermission(service, CrudAction.Create);
 		return this.servicesRepository.save(service);
 	}

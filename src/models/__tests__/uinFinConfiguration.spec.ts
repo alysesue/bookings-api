@@ -18,13 +18,13 @@ describe('UinFinConfiguration tests', () => {
 		return { user: agencyMock, authGroups: authGroupsMock };
 	};
 
-	const getSingpassContext = (organisation: Organisation): UserContextSnapshot => {
+	const getSingpassContext = (): UserContextSnapshot => {
 		const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 		const authGroupsMock = [new CitizenAuthGroup(singpassMock)];
 		return { user: singpassMock, authGroups: authGroupsMock };
 	};
 
-	const getAnonymousContext = (organisation: Organisation): UserContextSnapshot => {
+	const getAnonymousContext = (): UserContextSnapshot => {
 		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
 		const authGroupsMock = [new AnonymousAuthGroup(anonymous)];
 		return { user: anonymous, authGroups: authGroupsMock };
@@ -80,7 +80,7 @@ describe('UinFinConfiguration tests', () => {
 		organisation.id = 2;
 
 		const uinFinConfiguration = new UinFinConfiguration(organisation);
-		const userContext = getSingpassContext(organisation);
+		const userContext = getSingpassContext();
 		const result = uinFinConfiguration.canViewPlainUinFin(userContext);
 
 		expect(result).toBe(false);
@@ -92,7 +92,7 @@ describe('UinFinConfiguration tests', () => {
 		organisation.id = 2;
 
 		const uinFinConfiguration = new UinFinConfiguration(organisation);
-		const userContext = getAnonymousContext(organisation);
+		const userContext = getAnonymousContext();
 		const result = uinFinConfiguration.canViewPlainUinFin(userContext);
 
 		expect(result).toBe(false);

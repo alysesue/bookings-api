@@ -1,5 +1,5 @@
-import { Credentials, JWT, JWTInput } from 'google-auth-library';
 import * as authModule from 'google-auth-library';
+import { Credentials, JWT } from 'google-auth-library';
 import { GoogleApi } from '../google.api';
 
 jest.mock('../../config/app-config', () => {
@@ -15,9 +15,9 @@ jest.mock('google-auth-library', () => {
 	const authorizeMock = jest.fn(() => ({}));
 
 	class JWTMock {
-		public fromJSON(json: JWTInput) {}
+		public fromJSON() {}
 
-		public createScoped(scopes?: string | string[]): JWT {
+		public createScoped(): JWT {
 			return (this as unknown) as JWT;
 		}
 

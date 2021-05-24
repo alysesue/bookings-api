@@ -29,8 +29,6 @@ beforeAll(() => {
 });
 
 describe('Bookings mapper tests', () => {
-	DynamicValuesMapper;
-
 	beforeEach(() => {
 		jest.resetAllMocks();
 		(UinFinConfiguration as jest.Mock).mockImplementation(() => new UinFinConfigurationMock());

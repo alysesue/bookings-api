@@ -12,8 +12,7 @@ export class LabelsCategoriesRepository extends RepositoryBase<LabelCategory> {
 	}
 
 	public async delete(data: LabelCategory[]) {
-		if (!data.length)
-			return
+		if (!data.length) return;
 		const repository = await this.getRepository();
 		await repository.delete(data.map((category) => category.id));
 	}

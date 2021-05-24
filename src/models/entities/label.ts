@@ -2,7 +2,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } 
 import { ILabelCategory, IService } from '../interfaces';
 
 @Entity()
-@Index('LabelsCategoriesService', ['_labelText', '_serviceId', '_categoryId'], {unique: true})
+@Index('LabelsCategoriesService', ['_labelText', '_serviceId', '_categoryId'], { unique: true })
 export class Label {
 	public constructor() {}
 
@@ -37,11 +37,11 @@ export class Label {
 		this._labelText = value;
 	}
 
-	@ManyToOne('Service', { orphanedRowAction: 'delete'})
+	@ManyToOne('Service', { orphanedRowAction: 'delete' })
 	@JoinColumn({ name: '_serviceId' })
 	public service: IService;
 
-	@ManyToOne('LabelCategory', { orphanedRowAction: 'delete'})
+	@ManyToOne('LabelCategory', { orphanedRowAction: 'delete' })
 	@JoinColumn({ name: '_categoryId' })
 	public category: ILabelCategory;
 

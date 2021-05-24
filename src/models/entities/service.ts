@@ -1,5 +1,5 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IService} from '../interfaces';
+import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
 import { Organisation } from './organisation';
@@ -47,7 +47,10 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._organisation;
 	}
 
-	@OneToOne(() => ServiceAdminGroupMap, (e) => e._service, { nullable: true, cascade: [ 'insert', 'update', 'remove', 'soft-remove']  })
+	@OneToOne(() => ServiceAdminGroupMap, (e) => e._service, {
+		nullable: true,
+		cascade: ['insert', 'update', 'remove', 'soft-remove'],
+	})
 	private _serviceAdminGroupMap: ServiceAdminGroupMap;
 
 	public get serviceAdminGroupMap(): ServiceAdminGroupMap {

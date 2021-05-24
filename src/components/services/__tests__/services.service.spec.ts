@@ -35,8 +35,8 @@ import {
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { UsersServiceMock } from '../../users/__mocks__/users.service';
 import { UsersService } from '../../users/users.service';
-import { LabelsCategoriesService } from "../../labelsCategories/labelsCategories.service";
-import { LabelsCategoriesServiceMock } from "../../labelsCategories/__mocks__/labelsCategories.service.mock";
+import { LabelsCategoriesService } from '../../labelsCategories/labelsCategories.service';
+import { LabelsCategoriesServiceMock } from '../../labelsCategories/__mocks__/labelsCategories.service.mock';
 
 jest.mock('../services.auth');
 

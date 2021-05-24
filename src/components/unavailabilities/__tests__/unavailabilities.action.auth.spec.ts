@@ -186,15 +186,15 @@ describe('Unavailabilities action auth', () => {
 
 	it('should delete unavailability by organisation admin', () => {
 		// tslint:disable-next-line:no-shadowed-variable
-		const organisation = new Organisation();
-		organisation.id = 1;
+		const organisation1 = new Organisation();
+		organisation1.id = 1;
 		const service = new Service();
 		service.organisationId = 1;
 		service.id = 1;
 
 		const userGroup = new OrganisationAdminAuthGroup(
 			User.createAdminUser({ molAdminId: '', email: '', name: '', userName: '' }),
-			[organisation],
+			[organisation1],
 		);
 
 		const serviceProviderA = ServiceProvider.create('Alice', service.id, 'test@email.com', '0000');
@@ -213,9 +213,8 @@ describe('Unavailabilities action auth', () => {
 	});
 
 	it('should delete unavailability by service admin', () => {
-		// tslint:disable-next-line:no-shadowed-variable
-		const organisation = new Organisation();
-		organisation.id = 1;
+		const organisation1 = new Organisation();
+		organisation1.id = 1;
 		const service = new Service();
 		service.organisationId = 1;
 		service.id = 1;
@@ -241,9 +240,8 @@ describe('Unavailabilities action auth', () => {
 	});
 
 	it('should delete unavailability by service provider', () => {
-		// tslint:disable-next-line:no-shadowed-variable
-		const organisation = new Organisation();
-		organisation.id = 1;
+		const organisation1 = new Organisation();
+		organisation1.id = 1;
 		const service = new Service();
 		service.organisationId = 1;
 		service.id = 1;

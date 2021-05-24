@@ -59,8 +59,7 @@ export class AvailableTimeslotProviders {
 
 	public isValidAndVisible(): boolean {
 		for (const _timeslotSp of this.getTimeslotServiceProviders()) {
-			if (_timeslotSp)
-				return true;
+			if (_timeslotSp) return true;
 		}
 		return false;
 	}

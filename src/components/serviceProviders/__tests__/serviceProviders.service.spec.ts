@@ -427,18 +427,20 @@ class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersReposito
 		return await ServiceProvidersRepositoryMock.getServiceProviders(...params);
 	}
 
-	public async getServiceProvider(...params): Promise<ServiceProvider> {
+	public async getServiceProvider(): Promise<ServiceProvider> {
 		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
 	}
-	public async getServiceProvidersCount(...params): Promise<number> {
+
+	public async getServiceProvidersCount(): Promise<number> {
 		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProvidersCountMock);
 	}
+
 	public async getServiceProvidersByName(...params): Promise<ServiceProvider[]> {
 		return await ServiceProvidersRepositoryMock.getServiceProvidersByName(...params);
 	}
 
-	public async save(listRequest: ServiceProvider): Promise<ServiceProvider> {
-		return await ServiceProvidersRepositoryMock.save();
+	public async save(...params): Promise<ServiceProvider> {
+		return await ServiceProvidersRepositoryMock.save(...params);
 	}
 
 	public async saveMany(...params): Promise<ServiceProvider[]> {
@@ -491,7 +493,7 @@ class TimeslotsScheduleRepositoryMock implements Partial<TimeslotsScheduleReposi
 	public async getTimeslotsScheduleById(request: TimeslotItemsSearchRequest): Promise<TimeslotsSchedule> {
 		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock({ id: request.id });
 	}
-	public async createTimeslotsSchedule(data: TimeslotsSchedule): Promise<TimeslotsSchedule> {
+	public async createTimeslotsSchedule(): Promise<TimeslotsSchedule> {
 		return Promise.resolve(TimeslotsScheduleRepositoryMock.createTimeslotsScheduleMock);
 	}
 }

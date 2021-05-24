@@ -16,8 +16,7 @@ export class LabelsRepository extends RepositoryBase<Label> {
 
 	public async delete(data: Label[]) {
 		const repository = await this.getRepository();
-		if (!data.length)
-			return
+		if (!data.length) return;
 		await repository.delete(data.map((label) => label.id));
 	}
 

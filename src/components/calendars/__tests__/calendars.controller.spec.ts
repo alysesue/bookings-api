@@ -45,6 +45,7 @@ describe('Calendars.controller', () => {
 class CalendarsServiceMock implements Partial<CalendarsService> {
 	public static addUserMock = jest.fn();
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public async addUser(calendarUUID: string, model: CalendarUserModel): Promise<CalendarUserModel> {
 		return await CalendarsServiceMock.addUserMock();
 	}

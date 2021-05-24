@@ -60,7 +60,6 @@ export class ServicesRepository extends RepositoryBase<Service> {
 			.leftJoinAndSelect('svc.labels', 'svcLabels')
 			.leftJoinAndSelect('svc.categories', 'svcCategories')
 			.leftJoinAndSelect('svcCategories.labels', 'svcCategoriesLabels');
-
 	}
 
 	public async getServicesByName(options: {

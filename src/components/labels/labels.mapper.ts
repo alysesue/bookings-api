@@ -18,16 +18,13 @@ export class LabelsMapper {
 	}
 
 	// Keep duplication if id different as we have to update timeslot before deleting one (Delete Category scenario).
-	private static removeNewLabelDuplicate(labels: LabelRequestModel[] = []): LabelRequestModel[]{
+	private static removeNewLabelDuplicate(labels: LabelRequestModel[] = []): LabelRequestModel[] {
 		const res = labels;
 		for (let i = 0; i < labels.length; i++) {
 			for (let j = i + 1; j < labels.length; j++) {
-				if (labels[i].label === labels[j].label)
-				{
-					if(!labels[i].id)
-						res.splice(i, 1)
-					else if(!labels[j].id)
-						res.splice(j, 1)
+				if (labels[i].label === labels[j].label) {
+					if (!labels[i].id) res.splice(i, 1);
+					else if (!labels[j].id) res.splice(j, 1);
 				}
 			}
 		}
@@ -36,8 +33,10 @@ export class LabelsMapper {
 
 	public mapToLabels(labels: LabelRequestModel[] = []): Label[] {
 		// Remove duplicate labelText
-		const labelNoDeepDuplicate = labels.filter((label, index, self) => self.findIndex(t => t.label === label.label && t.id === label.id) === index)
-		const labelNoDuplicate = LabelsMapper.removeNewLabelDuplicate(labelNoDeepDuplicate)
+		const labelNoDeepDuplicate = labels.filter(
+			(label, index, self) => self.findIndex((t) => t.label === label.label && t.id === label.id) === index,
+		);
+		const labelNoDuplicate = LabelsMapper.removeNewLabelDuplicate(labelNoDeepDuplicate);
 		return labelNoDuplicate.map((i) => {
 			const entity = new Label();
 			if (i.id) {

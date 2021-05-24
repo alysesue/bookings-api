@@ -3,7 +3,7 @@ import { IService } from '../interfaces';
 import { Label } from './label';
 
 @Entity()
-@Index('ServiceCategories', ['_name', '_serviceId'], {unique: true})
+@Index('ServiceCategories', ['_name', '_serviceId'], { unique: true })
 export class LabelCategory {
 	public constructor() {}
 
@@ -39,7 +39,7 @@ export class LabelCategory {
 		this._name = value;
 	}
 
-	@OneToMany(() => Label, (label) => label.category, {  cascade: true })
+	@OneToMany(() => Label, (label) => label.category, { cascade: true })
 	public labels: Label[];
 
 	@ManyToOne('Service', { orphanedRowAction: 'delete' })

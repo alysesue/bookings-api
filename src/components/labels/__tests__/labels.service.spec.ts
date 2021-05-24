@@ -56,37 +56,42 @@ describe('Test labels service', () => {
 	});
 
 	it(`Should keep labels`, async () => {
-		const label1 = Label.create('test', 1)
-		const {movedLabelsToNoCategory, deleteLabels} = Container.get(LabelsService).sortLabelForDeleteCategory([label1], [label1]);
-		expect(movedLabelsToNoCategory.length).toBe(1)
-		expect(deleteLabels.length).toBe(0)
+		const label1 = Label.create('test', 1);
+		const { movedLabelsToNoCategory, deleteLabels } = Container.get(LabelsService).sortLabelForDeleteCategory(
+			[label1],
+			[label1],
+		);
+		expect(movedLabelsToNoCategory.length).toBe(1);
+		expect(deleteLabels.length).toBe(0);
 	});
 
 	it(`Should delete labels`, async () => {
-		const label1 = Label.create('test', 1)
-		const {movedLabelsToNoCategory, deleteLabels} = Container.get(LabelsService).sortLabelForDeleteCategory([], [label1]);
-		expect(movedLabelsToNoCategory.length).toBe(0)
-		expect(deleteLabels.length).toBe(1)
+		const label1 = Label.create('test', 1);
+		const { movedLabelsToNoCategory, deleteLabels } = Container.get(LabelsService).sortLabelForDeleteCategory(
+			[],
+			[label1],
+		);
+		expect(movedLabelsToNoCategory.length).toBe(0);
+		expect(deleteLabels.length).toBe(1);
 	});
 
 	it(`Should merge all labels`, async () => {
 		const label1 = Label.create('test', 1);
 		const label2 = Label.create('test', 2);
-		(LabelsRepositoryMock.saveMock as jest.Mock).mockReturnValue([label2])
-		const service = Service.create('name', {} as Organisation, true, [label1])
+		(LabelsRepositoryMock.saveMock as jest.Mock).mockReturnValue([label2]);
+		const service = Service.create('name', {} as Organisation, true, [label1]);
 		const resAllLabel = await Container.get(LabelsService).updateLabelToNoCategory([label2], service);
-		expect(LabelsRepositoryMock.saveMock).toBeCalledTimes(1)
-		expect(resAllLabel).toStrictEqual([label1, label2])
+		expect(LabelsRepositoryMock.saveMock).toBeCalledTimes(1);
+		expect(resAllLabel).toStrictEqual([label1, label2]);
 	});
 
 	it(`Should sort label moved and label to delete`, async () => {
 		const label1 = Label.create('test', 1);
 		const label2 = Label.create('test', 2);
 		const resAllLabel = await Container.get(LabelsService).sortLabelForDeleteCategory([label2], [label1, label2]);
-		expect(resAllLabel.deleteLabels).toStrictEqual([label1])
-		expect(resAllLabel.movedLabelsToNoCategory).toStrictEqual([label2])
+		expect(resAllLabel.deleteLabels).toStrictEqual([label1]);
+		expect(resAllLabel.movedLabelsToNoCategory).toStrictEqual([label2]);
 	});
-
 });
 
 class IdHasherMock implements Partial<IdHasher> {
