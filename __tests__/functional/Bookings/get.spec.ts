@@ -21,6 +21,12 @@ describe('Bookings functional tests', () => {
 	let serviceProviderId: number;
 	let serviceId: number;
 
+	const SERVICE_PROVIDER_NAME_2 = 'SP2';
+	let serviceProviderId2: number;
+
+	const SERVICE_PROVIDER_NAME_3 = 'SP3';
+	let serviceProviderId3: number;
+
 	afterAll(async (done) => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
@@ -36,12 +42,42 @@ describe('Bookings functional tests', () => {
 		});
 		serviceProviderId = result.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1).id;
 		serviceId = result.services.find((item) => item.name === NAME_SERVICE_1).id;
+
+		const result2 = await populateUserServiceProvider({
+			nameService: NAME_SERVICE_1,
+			serviceProviderName: SERVICE_PROVIDER_NAME_2,
+			agencyUserId: 'A002',
+		});
+		serviceProviderId2 = result2.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_2).id;
+
+		const result3 = await populateUserServiceProvider({
+			nameService: NAME_SERVICE_1,
+			serviceProviderName: SERVICE_PROVIDER_NAME_3,
+			agencyUserId: 'A003',
+		});
+		serviceProviderId3 = result3.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_3).id;
 		done();
 	});
 
 	const createInSlotBooking = async (): Promise<request.Response> => {
 		await populateIndividualTimeslot({
 			serviceProviderId,
+			weekDay: 0,
+			startTime: '08:00',
+			endTime: '09:00',
+			capacity: 1,
+		});
+
+		await populateIndividualTimeslot({
+			serviceProviderId: serviceProviderId2,
+			weekDay: 0,
+			startTime: '08:00',
+			endTime: '09:00',
+			capacity: 1,
+		});
+
+		await populateIndividualTimeslot({
+			serviceProviderId: serviceProviderId3,
 			weekDay: 0,
 			startTime: '08:00',
 			endTime: '09:00',
@@ -81,5 +117,51 @@ describe('Bookings functional tests', () => {
 		expect(bodyLength).toEqual(4);
 		expect(contentDisposition).toEqual(`attachment; filename="exported-bookings.csv"`);
 		expect(contentType).toEqual(`text/csv`);
+	});
+
+	it('should get all bookings with limit', async () => {
+		for (let i = 0; i < 7; i++) {
+			await createInSlotBooking();
+		}
+
+		const response = await OrganisationAdminRequestEndpointSG.create({
+			serviceId: `${serviceId}`,
+		}).get(`/bookings`, {
+			params: { limit: 6 },
+		});
+
+		const dataLength = response.body.data.length;
+		expect(dataLength).toEqual(6);
+	});
+
+	it('should get all bookings with default limit', async () => {
+		for (let i = 0; i < 7; i++) {
+			await createInSlotBooking();
+		}
+
+		const response = await OrganisationAdminRequestEndpointSG.create({
+			serviceId: `${serviceId}`,
+		}).get(`/bookings`, {});
+
+		const dataLength = response.body.data.length;
+		expect(dataLength).toEqual(7);
+	});
+
+	it('should get booking by booking id', async () => {
+		const res = await createInSlotBooking();
+		const resId = res.body.data.id;
+		const response = await OrganisationAdminRequestEndpointSG.create({}).get(`/bookings/${resId}`, {});
+		const bookingId = response.body.data.id;
+
+		expect(resId).toEqual(bookingId);
+	});
+
+	it('should get a list of available service providers for this booking timeslot', async () => {
+		const res = await createInSlotBooking();
+		const resId = res.body.data.id;
+		const response = await OrganisationAdminRequestEndpointSG.create({}).get(`/bookings/${resId}/providers`, {});
+		const spLength = response.body.data.length;
+
+		expect(spLength).toEqual(2);
 	});
 });
