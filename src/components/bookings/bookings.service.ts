@@ -63,11 +63,9 @@ export class BookingsService {
 	private bookingsMapper: BookingsMapper;
 
 	constructor() {
-		logger.debug(`====== lifeSG ======= ${getConfig().featureFlag.lifeSGSync}`)
+		logger.debug(`====== lifeSG ======= ${getConfig().featureFlag.lifeSGSync}`);
 		this.bookingsSubject.attach(
-			getConfig().featureFlag.lifeSGSync ?
-				[this.mailObserver, this.lifeSGObserver] :
-				[this.mailObserver]
+			getConfig().featureFlag.lifeSGSync ? [this.mailObserver, this.lifeSGObserver] : [this.mailObserver],
 		);
 	}
 
@@ -100,7 +98,11 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			this.cancelBookingInternal.bind(this),
 		);
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.CancelledOrRejected, action: ExternalAgencyAppointmentJobAction.CANCEL });
+		this.bookingsSubject.notify({
+			booking,
+			bookingType: BookingType.CancelledOrRejected,
+			action: ExternalAgencyAppointmentJobAction.CANCEL,
+		});
 		return booking;
 	}
 
@@ -122,7 +124,11 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			acceptAction,
 		);
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated, action: ExternalAgencyAppointmentJobAction.UPDATE });
+		this.bookingsSubject.notify({
+			booking,
+			bookingType: BookingType.Updated,
+			action: ExternalAgencyAppointmentJobAction.UPDATE,
+		});
 		return booking;
 	}
 
@@ -139,7 +145,11 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			updateAction,
 		);
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated, action: ExternalAgencyAppointmentJobAction.UPDATE });
+		this.bookingsSubject.notify({
+			booking,
+			bookingType: BookingType.Updated,
+			action: ExternalAgencyAppointmentJobAction.UPDATE,
+		});
 		return booking;
 	}
 
@@ -149,7 +159,11 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			this.rejectBookingInternal.bind(this),
 		);
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.CancelledOrRejected, action: ExternalAgencyAppointmentJobAction.UPDATE });
+		this.bookingsSubject.notify({
+			booking,
+			bookingType: BookingType.CancelledOrRejected,
+			action: ExternalAgencyAppointmentJobAction.UPDATE,
+		});
 		return booking;
 	}
 
@@ -160,7 +174,11 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			rescheduleAction,
 		);
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Updated, action: ExternalAgencyAppointmentJobAction.UPDATE });
+		this.bookingsSubject.notify({
+			booking,
+			bookingType: BookingType.Updated,
+			action: ExternalAgencyAppointmentJobAction.UPDATE,
+		});
 		return booking;
 	}
 
@@ -179,7 +197,11 @@ export class BookingsService {
 	): Promise<Booking> {
 		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptchaAndAutoAccept);
 		const booking = await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created, action: ExternalAgencyAppointmentJobAction.CREATE });
+		this.bookingsSubject.notify({
+			booking,
+			bookingType: BookingType.Created,
+			action: ExternalAgencyAppointmentJobAction.CREATE,
+		});
 		return booking;
 	}
 
@@ -454,7 +476,11 @@ export class BookingsService {
 			this.getBooking.bind(this),
 			validateAction,
 		);
-		this.bookingsSubject.notify({ booking, bookingType: BookingType.Created, action: ExternalAgencyAppointmentJobAction.UPDATE });
+		this.bookingsSubject.notify({
+			booking,
+			bookingType: BookingType.Created,
+			action: ExternalAgencyAppointmentJobAction.UPDATE,
+		});
 		return booking;
 	}
 }

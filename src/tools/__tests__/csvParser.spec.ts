@@ -8,6 +8,7 @@ describe('Utils', () => {
 		expect(csvFile).not.toBe(undefined);
 		const records = parseCsv(csvFile);
 		expect(records.length).toBe(2);
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
 		expect(records[0].email).toBe('aaj');
 	});

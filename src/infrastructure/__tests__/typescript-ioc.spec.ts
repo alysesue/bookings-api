@@ -1,9 +1,9 @@
 import { Container, Inject, InRequestScope, Scope, Scoped } from 'typescript-ioc';
 
-abstract class Counter{
+abstract class Counter {
 	private static _global = 0;
 	private _counter: number;
-	constructor(){
+	constructor() {
 		this._counter = ++Counter._global;
 	}
 
@@ -13,9 +13,7 @@ abstract class Counter{
 }
 
 @InRequestScope
-class ClassC extends Counter {
-
-}
+class ClassC extends Counter {}
 
 @Scoped(Scope.Local)
 class ClassB extends Counter {
@@ -34,7 +32,6 @@ class ClassA extends Counter {
 	public classC2: ClassC;
 }
 
-
 describe('typescript ioc tests', () => {
 	it('should get correct scopes', async () => {
 		const classA = Container.get(ClassA);
@@ -45,4 +42,3 @@ describe('typescript ioc tests', () => {
 		expect(classA.classC.counter).toEqual(classA.classB2.classC.counter);
 	});
 });
-

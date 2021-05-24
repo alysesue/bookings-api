@@ -83,14 +83,14 @@ export class MailObserver implements Observer {
 		templates: EmailBookingTemplate,
 	): EmailTemplateBase | undefined {
 		switch (bookingType) {
-		case BookingType.Created:
-			return templates.CreatedBookingEmail(data);
-		case BookingType.Updated:
-			return templates.UpdatedBookingEmail(data);
-		case BookingType.CancelledOrRejected:
-			return templates.CancelledBookingEmail(data);
-		default:
-			return;
+			case BookingType.Created:
+				return templates.CreatedBookingEmail(data);
+			case BookingType.Updated:
+				return templates.UpdatedBookingEmail(data);
+			case BookingType.CancelledOrRejected:
+				return templates.CancelledBookingEmail(data);
+			default:
+				return;
 		}
 	}
 

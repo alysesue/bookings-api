@@ -34,16 +34,18 @@ jest.mock('../../../config/app-config', () => {
 // tslint:disable-next-line:no-big-function
 describe('Send email', () => {
 	const mailerMock = {
-		sendMail: jest.fn()
+		sendMail: jest.fn(),
 	};
 
 	beforeEach(() => {
 		jest.resetAllMocks();
-		mailerMock.sendMail.mockImplementation(() => Promise.resolve({
-			accepted: ['success@foo.com'],
-			rejected: ['reject@foo.com'],
-			messageId: 'messageId',
-		}));
+		mailerMock.sendMail.mockImplementation(() =>
+			Promise.resolve({
+				accepted: ['success@foo.com'],
+				rejected: ['reject@foo.com'],
+				messageId: 'messageId',
+			}),
+		);
 
 		(mailer as jest.Mock).mockImplementation(() => Promise.resolve(mailerMock));
 	});

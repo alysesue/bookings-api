@@ -17,6 +17,7 @@ export class BookingRepositoryMock implements Partial<BookingsRepository> {
 	public static searchReturnAll = jest.fn<Promise<Booking[]>, any>();
 	public static saveMock: Promise<InsertResult>;
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public async getBooking(id: number): Promise<Booking> {
 		return Promise.resolve(BookingRepositoryMock.booking);
 	}
@@ -55,7 +56,6 @@ export class TimeslotsServiceMock implements Partial<TimeslotsService> {
 	public async getAvailableProvidersForTimeslot(
 		startDateTime: Date,
 		endDateTime: Date,
-		serviceId: number,
 	): Promise<TimeslotServiceProviderResult[]> {
 		const timeslotEntry = new AvailableTimeslotProviders();
 		timeslotEntry.startTime = startDateTime.getTime();

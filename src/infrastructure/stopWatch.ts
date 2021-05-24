@@ -18,13 +18,12 @@ export class StopWatch {
 	public start() {
 		this._initial = new Date();
 		const memory = v8.getHeapStatistics();
-		this._initialMemoryAvailKB = memory.total_available_size  / 1024;
+		this._initialMemoryAvailKB = memory.total_available_size / 1024;
 	}
-
 
 	public stop(log = true) {
 		const memory = v8.getHeapStatistics();
-		this._endMemoryMemoryAvailKB = memory.total_available_size  / 1024;
+		this._endMemoryMemoryAvailKB = memory.total_available_size / 1024;
 		this._end = new Date();
 		if (log) {
 			this.log();
@@ -39,7 +38,13 @@ export class StopWatch {
 			const elapsed = this._end.getTime() - this._initial.getTime();
 			const memoryAlloc = (this._initialMemoryAvailKB - this._endMemoryMemoryAvailKB).toFixed(3);
 
-			logger.info(`[StopWatch - ${this._name}] Ended at ${this._end.toLocaleString()}. Elapsed: ${elapsed} ms; MemoryAlloc: ${memoryAlloc} KB; MemoryAvailable: ${this._endMemoryMemoryAvailKB.toFixed(3)} KB`);
+			logger.info(
+				`[StopWatch - ${
+					this._name
+				}] Ended at ${this._end.toLocaleString()}. Elapsed: ${elapsed} ms; MemoryAlloc: ${memoryAlloc} KB; MemoryAvailable: ${this._endMemoryMemoryAvailKB.toFixed(
+					3,
+				)} KB`,
+			);
 		} else {
 			const elapsed = new Date().getTime() - this._initial.getTime();
 			logger.info(`[StopWatch - ${this._name}] Running: ${elapsed} ms.`);

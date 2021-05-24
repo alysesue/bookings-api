@@ -16,9 +16,9 @@ describe('Test dates', () => {
 		expect(parsed).toBeDefined();
 		expect(parsed.hours).toBe(16);
 		expect(parsed.minutes).toBe(30);
-		// tslint:disable-next-line:no-unused-expression
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(parseHHmm(null)).toBeNull;
-		// tslint:disable-next-line:no-unused-expression
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		expect(parseHHmm(undefined)).toBeNull;
 		try {
 			parseHHmm('1630');

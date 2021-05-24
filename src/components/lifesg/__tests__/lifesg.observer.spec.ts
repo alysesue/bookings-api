@@ -1,6 +1,10 @@
 import { LifeSGServiceMock } from '../__mocks__/lifesg.service.mock';
 import { Container } from 'typescript-ioc';
-import { BookingsSubjectMock, OnHoldBookingSubjectMock, PendingApprovalBookingSubjectMock } from '../../bookings/__mocks__/bookings.subject.mock';
+import {
+	BookingsSubjectMock,
+	OnHoldBookingSubjectMock,
+	PendingApprovalBookingSubjectMock,
+} from '../../bookings/__mocks__/bookings.subject.mock';
 import { BookingsSubject } from '../../bookings/bookings.subject';
 import { LifeSGMQSerice } from '../lifesg.service';
 import { LifeSGObserver } from '../lifesg.observer';

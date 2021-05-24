@@ -26,14 +26,14 @@ export class TimeslotsMapper {
 
 	public mapAvailabilityToResponse(
 		entries: AvailableTimeslotProviders[],
-		options: { skipUnavailable?: boolean, exactTimeslot?: boolean },
+		options: { skipUnavailable?: boolean; exactTimeslot?: boolean },
 	): AvailabilityEntryResponse[] {
 		return entries.map((e) => this.mapAvailabilityItem(e, options)).filter((e) => !!e);
 	}
 
 	private mapAvailabilityItem(
 		entry: AvailableTimeslotProviders,
-		options: { skipUnavailable?: boolean, exactTimeslot?: boolean },
+		options: { skipUnavailable?: boolean; exactTimeslot?: boolean },
 	): AvailabilityEntryResponse | undefined {
 		const availabilityCount = entry.getAvailabilityCount();
 		if (availabilityCount <= 0 && options.skipUnavailable) {
@@ -45,10 +45,9 @@ export class TimeslotsMapper {
 		response.endTime = new Date(entry.endTime);
 		response.availabilityCount = availabilityCount;
 
-		if (options.exactTimeslot){
+		if (options.exactTimeslot) {
 			response.timeslotServiceProviders = this.mapCitizenTimeslotServiceProviders(
 				Array.from(entry.getTimeslotServiceProviders()),
-
 			);
 		}
 

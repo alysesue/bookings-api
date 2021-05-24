@@ -79,33 +79,33 @@ export class ServiceProvidersActionAuthVisitor extends PermissionAwareAuthGroupV
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		const authorisedOrganisationIds = _userGroup.authorisedOrganisations.map((org) => org.id);
 		switch (this.action) {
-		case CrudAction.Create:
-			this.markWithPermission();
-			return;
-		case CrudAction.Delete:
-		case CrudAction.Update:
-		case SpAction.UpdateExpiryDate:
-			if (authorisedOrganisationIds.includes(this.serviceProvider.service.organisationId)) {
+			case CrudAction.Create:
 				this.markWithPermission();
-			}
-			return;
-		default:
-			return;
+				return;
+			case CrudAction.Delete:
+			case CrudAction.Update:
+			case SpAction.UpdateExpiryDate:
+				if (authorisedOrganisationIds.includes(this.serviceProvider.service.organisationId)) {
+					this.markWithPermission();
+				}
+				return;
+			default:
+				return;
 		}
 	}
 
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		const serviceIds = _userGroup.authorisedServices.map((service) => service.id);
 		switch (this.action) {
-		case CrudAction.Delete:
-		case CrudAction.Update:
-		case SpAction.UpdateExpiryDate:
-			if (serviceIds.includes(this.serviceProvider.serviceId)) {
-				this.markWithPermission();
-			}
-			return;
-		default:
-			return;
+			case CrudAction.Delete:
+			case CrudAction.Update:
+			case SpAction.UpdateExpiryDate:
+				if (serviceIds.includes(this.serviceProvider.serviceId)) {
+					this.markWithPermission();
+				}
+				return;
+			default:
+				return;
 		}
 	}
 

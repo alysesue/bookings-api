@@ -11,7 +11,7 @@ export class TimeOfDay {
 		let instance = TimeOfDay._cache[time];
 		if (!instance) {
 			const parsedTime = parseHHmm(time);
-			instance = TimeOfDay.create(parsedTime)
+			instance = TimeOfDay.create(parsedTime);
 			TimeOfDay._cache[time] = instance;
 		}
 		return instance;

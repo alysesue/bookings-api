@@ -88,7 +88,7 @@ export class TimeslotItem implements ITimeSpan {
 						weekDay.weekDay,
 						startTimeslotItem,
 						endTimeslotItem,
-						weekDay.capacity
+						weekDay.capacity,
 					);
 					timeslotItems.push(timeslotItem);
 					startTimeslotItem = endTimeslotItem;

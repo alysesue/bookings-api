@@ -18,33 +18,47 @@ module.exports = {
         "node": true
     },
     "extends": [
-        "prettier",
 		'eslint:recommended',
     	'plugin:@typescript-eslint/recommended',
+        "prettier",
     ],
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-        "project": "tsconfig.json",
-        "sourceType": "module"
+    parser: '@typescript-eslint/parser',
+    parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: 'module',
+        emitWarning: true,
+        project: "tsconfig.json",
     },
     "plugins": [
         "eslint-plugin-jsdoc",
         "eslint-plugin-prefer-arrow",
         "eslint-plugin-import",
         "@typescript-eslint",
-        "@typescript-eslint/tslint"
+        "@typescript-eslint/tslint",
+        // 'plugin:prettier/recommended',
+        'prettier'
     ],
 	"ignorePatterns": [
 		"**/node_modules/*",
-		"**/__tests__/*",
-		"**/__mocks__/*",
-		"src/**/*.unit.ts",
-		"src/**/*.test.ts",
-		"src/**/*.spec.ts",
-		"src/**/*.apispec.ts",
-		"src/**/*.bench.ts"
+        ".eslintrc.js",
+		// "**/__tests__/*",
+		// "**/__mocks__/*",
+		// "src/**/*.unit.ts",
+		// "src/**/*.test.ts",
+		// "src/**/*.spec.ts",
+		// "src/**/*.apispec.ts",
+		// "src/**/*.bench.ts"
 	],
+    "overrides": [
+        {
+            "files": ["**/*.test.ts", "*.ts"],
+            "rules": {
+                "no-unused-expressions": "off"
+            }
+        }
+    ],
     "rules": {
+        "prettier/prettier": "warn",
         "@typescript-eslint/adjacent-overload-signatures": "error",
         "@typescript-eslint/array-type": [
             "error",
@@ -149,7 +163,7 @@ module.exports = {
         ],
         "id-match": "error",
         "import/order": "off",
-		"indent": ["error", "tab"], // mol
+		"indent": ["off", "tab"], // mol
         "jsdoc/check-alignment": "error",
         "jsdoc/check-indentation": "error",
         "jsdoc/newline-after-description": "error",

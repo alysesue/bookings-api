@@ -45,10 +45,10 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 		const { userCondition, userParams } = request.byPassAuth
 			? { userCondition: '', userParams: {} }
 			: await new TimeslotItemsQueryAuthVisitor(
-				'service',
-				'serviceProvider',
-				'SPservice',
-			).createUserVisibilityCondition(authGroups);
+					'service',
+					'serviceProvider',
+					'SPservice',
+			  ).createUserVisibilityCondition(authGroups);
 
 		const query = repository
 			.createQueryBuilder('timeslotsSchedule')

@@ -116,8 +116,7 @@ class CalendarRepositoryMockConstants {
 class GoogleCalendarServiceMock implements Partial<GoogleCalendarService> {
 	public static deleteEvent = jest.fn();
 
-	public async getAvailableGoogleCalendars(startTime: Date, endTime: Date, googleCalendarIds: { id: string }[]) {
-		// @ts-ignore
+	public async getAvailableGoogleCalendars() {
 		return {
 			'google-id-1': { busy: [] },
 			'googleid@group.calendar.google.com': { busy: [] },
@@ -135,6 +134,7 @@ class GoogleCalendarServiceMock implements Partial<GoogleCalendarService> {
 		return Promise.resolve({ email: user.email } as CalendarUserModel);
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public async createEvent(booking: Booking, calendarId: string): Promise<string> {
 		return Promise.resolve('event-id');
 	}

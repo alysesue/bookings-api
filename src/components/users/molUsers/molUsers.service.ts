@@ -21,8 +21,8 @@ export class MolUsersServiceAuthForwarder extends MolUsersService {
 		const URL_MOL_USER = `${config.molAdminAuthForwarder.url}/api/users/v1`;
 		const sendEmailHeader = options?.desiredDeliveryMediumsHeader
 			? {
-				'desired-delivery-medium': options.desiredDeliveryMediumsHeader,
-			}
+					'desired-delivery-medium': options.desiredDeliveryMediumsHeader,
+			  }
 			: {};
 		try {
 			const upsertRes = await post(
