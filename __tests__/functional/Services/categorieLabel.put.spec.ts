@@ -21,11 +21,10 @@ describe('Tests endpoint', () => {
 	});
 
 	afterEach(async (done) => {
-		// await pgClient.cleanAllTables();
+		await pgClient.cleanAllTables();
 		done();
 	});
 	beforeEach(async (done) => {
-		await pgClient.cleanAllTables();
 		categories = [{categoryName: 'category', labels: [{label: 'labelCategory'}]}];
 		response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
 			body: { name: SERVICE_NAME, labels, categories  },
