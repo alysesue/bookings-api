@@ -155,7 +155,7 @@ describe('Bookings functional tests', () => {
 		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
 
 		const dynamicValues = new PersistDynamicValueContract();
-		dynamicValues.SingleSelectionKey = 1;
+		dynamicValues.singleSelectionKey = 1;
 		dynamicValues.fieldIdSigned = dynamicFieldId;
 		dynamicValues.type = 'SingleSelection' as DynamicValueTypeContract;
 

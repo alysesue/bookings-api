@@ -119,12 +119,14 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		labels: Label[] = [],
 		categories: LabelCategory[] = [],
 		emailSuffix?: string,
+		noNric = false,
 	) {
 		const service = new Service();
 		service._name = name.trim();
 		service._organisation = orga;
 		service._organisationId = orga.id;
 		service._isSpAutoAssigned = isSpAutoAssigned;
+		service._noNric = noNric;
 		service._serviceAdminGroupMap = ServiceAdminGroupMap.create(
 			ServiceAdminGroupMap.createServiceOrganisationRef(
 				service.getServiceRef(),
@@ -171,6 +173,17 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 
 	public set isStandAlone(isOnHold: boolean) {
 		this._isStandAlone = isOnHold;
+	}
+
+	@Column({ nullable: false, default: false })
+	private _noNric: boolean;
+
+	public get noNric(): boolean {
+		return this._noNric;
+	}
+
+	public set noNric(value: boolean) {
+		this._noNric = value;
 	}
 
 	@Column({ nullable: false, default: false })

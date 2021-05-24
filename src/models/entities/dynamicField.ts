@@ -10,8 +10,21 @@ import {
 } from 'typeorm';
 import { Service } from './service';
 
+export interface IDynamicFieldVisitor {
+	visitSelectList(_selectListField: SelectListDynamicField);
+	visitTextField(_textField: TextDynamicField);
+}
+
+/**
+ * IMPORTANT: Make sure you export all CHILD entites in entities/index.ts
+ */
+export enum DynamicFieldEntityType {
+	SelectListDynamicFieldType = 'SelectListDynamicField',
+	TextDynamicFieldType = 'TextDynamicField',
+}
+
 @Entity()
-@TableInheritance({ column: { type: 'varchar', name: 'type' } })
+@TableInheritance({ column: { type: 'enum', enum: DynamicFieldEntityType, name: '_type' } })
 export abstract class DynamicField {
 	constructor() {}
 
@@ -25,6 +38,12 @@ export abstract class DynamicField {
 	public set id(id: number) {
 		this._id = id;
 	}
+
+	@Column({
+		type: 'enum',
+		enum: DynamicFieldEntityType,
+	})
+	public _type: DynamicFieldEntityType;
 
 	@Column({ nullable: false })
 	@Index()
@@ -60,10 +79,10 @@ export abstract class DynamicField {
 		this._name = value;
 	}
 
-	public abstract get fieldType(): string;
+	public abstract acceptVisitor(visitor: IDynamicFieldVisitor): void;
 }
 
-@ChildEntity()
+@ChildEntity(DynamicFieldEntityType.SelectListDynamicFieldType)
 export class SelectListDynamicField extends DynamicField {
 	public static create(serviceId: number, name: string, options: SelectListOption[], id?: number): DynamicField {
 		const dynamicField = new SelectListDynamicField();
@@ -75,9 +94,6 @@ export class SelectListDynamicField extends DynamicField {
 		dynamicField.options = options;
 		return dynamicField;
 	}
-	public get fieldType(): string {
-		return 'SelectListDynamicField';
-	}
 
 	@Column({ type: 'jsonb', nullable: false, default: '[]' })
 	private _options: SelectListOption[];
@@ -88,9 +104,31 @@ export class SelectListDynamicField extends DynamicField {
 	public set options(options: SelectListOption[]) {
 		this._options = options;
 	}
+
+	public acceptVisitor(visitor: IDynamicFieldVisitor): void {
+		visitor.visitSelectList(this);
+	}
 }
 
 export type SelectListOption = {
 	key: number;
 	value: string;
 };
+
+@ChildEntity(DynamicFieldEntityType.TextDynamicFieldType)
+export class TextDynamicField extends DynamicField {
+	@Column({ nullable: false, default: 0 })
+	private _charLimit: number;
+
+	public get charLimit(): number {
+		return this._charLimit;
+	}
+
+	public set charLimit(value: number) {
+		this._charLimit = value;
+	}
+
+	public acceptVisitor(visitor: IDynamicFieldVisitor): void {
+		visitor.visitTextField(this);
+	}
+}

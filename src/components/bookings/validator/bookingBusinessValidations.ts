@@ -1,6 +1,6 @@
 import { BusinessValidation } from '../../../models';
 
-/** Reserved BookingBusinessValidations range: 10001 - 10199 */
+/** Reserved BookingBusinessValidations range: 10001 - 10099 */
 export class BookingBusinessValidations {
 	private constructor() {}
 
@@ -73,5 +73,10 @@ export class BookingBusinessValidations {
 	public static readonly VideoConferenceUrlIsInvalid = new BusinessValidation({
 		code: '10014',
 		message: `Invalid video conference link is provided`,
+	});
+
+	public static readonly BookingDateInPast = new BusinessValidation({
+		code: '10015',
+		message: `Booking date cannot be in the past`,
 	});
 }

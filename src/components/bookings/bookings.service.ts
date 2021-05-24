@@ -131,6 +131,7 @@ export class BookingsService {
 			if (!bookingRequest.citizenUinFinUpdated) {
 				bookingRequest.citizenUinFin = _booking.citizenUinFin;
 			}
+
 			return this.updateInternal(_booking, bookingRequest, () => {});
 		};
 		const booking = await this.changeLogsService.executeAndLogAction(
@@ -305,17 +306,17 @@ export class BookingsService {
 	): Promise<[ChangeLogAction, Booking]> {
 		const updatedBooking = previousBooking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
+		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
+		validator.bypassCaptcha(getConfig().isAutomatedTest);
+
 		BookingsMapper.mapRequest(bookingRequest, updatedBooking, currentUser);
-		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking);
+		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
 
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
 		});
 		await afterMap(updatedBooking, updatedBooking.serviceProvider);
-		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
-		validator.bypassCaptcha(getConfig().isAutomatedTest);
 		await validator.validate(updatedBooking);
-
 		const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
 		await this.loadBookingDependencies(updatedBooking);
 		await this.verifyActionPermission(updatedBooking, changeLogAction);
@@ -351,6 +352,7 @@ export class BookingsService {
 		const service: Service = await this.servicesService.getService(serviceId);
 		const isOnHold = service.isOnHold;
 		const isStandAlone = service.isStandAlone;
+
 		let serviceProvider: ServiceProvider | undefined;
 		if (bookingRequest.serviceProviderId) {
 			serviceProvider = await this.serviceProvidersService.getServiceProvider(bookingRequest.serviceProviderId);
@@ -391,12 +393,12 @@ export class BookingsService {
 			.withCaptchaOrigin(bookingRequest.captchaOrigin)
 			.build();
 
-		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, booking);
+		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
+		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || getConfig().isAutomatedTest);
+		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
 		booking.serviceProvider = serviceProvider;
 		await this.loadBookingDependencies(booking);
-		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
-		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || getConfig().isAutomatedTest);
 		await validator.validate(booking);
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
 
@@ -419,7 +421,10 @@ export class BookingsService {
 			const currentUser = await this.userContext.getCurrentUser();
 			const updatedBooking = previousBooking.clone();
 			BookingsMapper.mapBookingDetails(bookingRequest, updatedBooking, currentUser);
-			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking);
+
+			const validator = this.bookingsValidatorFactory.getOnHoldValidator();
+			validator.bypassCaptcha(getConfig().isAutomatedTest);
+			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
 
 			if (serviceProvider && serviceProvider.autoAcceptBookings) {
 				updatedBooking.status = BookingStatus.Accepted;
@@ -427,8 +432,6 @@ export class BookingsService {
 				updatedBooking.status = BookingStatus.PendingApproval;
 			}
 
-			const validator = this.bookingsValidatorFactory.getOnHoldValidator();
-			validator.bypassCaptcha(getConfig().isAutomatedTest);
 			await validator.validate(updatedBooking);
 
 			const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);

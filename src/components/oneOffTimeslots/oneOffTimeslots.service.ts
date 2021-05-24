@@ -9,8 +9,8 @@ import { OneOffTimeslotsRepository } from './oneOffTimeslots.repository';
 import { OneOffTimeslotsActionAuthVisitor } from './oneOffTimeslots.auth';
 import { OneOffTimeslotsMapper } from './oneOffTimeslots.mapper';
 import { OneOffTimeslotsValidation } from './oneOffTimeslots.validation';
-import { OneOffTimeslotsBusinessValidation } from './oneOffTimeslots.validation';
 import { IdHasher } from '../../infrastructure/idHasher';
+import { ContainerContext } from '../../infrastructure/containerContext';
 
 @InRequestScope
 export class OneOffTimeslotsService {
@@ -23,13 +23,15 @@ export class OneOffTimeslotsService {
 	@Inject
 	private labelsService: LabelsService;
 	@Inject
-	private oneOffTimeslotsValidation: OneOffTimeslotsValidation;
-	@Inject
-	private oneOffTimeslotsBusinessValidation: OneOffTimeslotsBusinessValidation;
-	@Inject
 	private mapper: OneOffTimeslotsMapper;
 	@Inject
 	private idHasher: IdHasher;
+	@Inject
+	private containerContext: ContainerContext;
+
+	private getValidator(): OneOffTimeslotsValidation {
+		return this.containerContext.resolve(OneOffTimeslotsValidation);
+	}
 
 	private async verifyActionPermission(entity: OneOffTimeslot): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
@@ -50,11 +52,12 @@ export class OneOffTimeslotsService {
 	}
 
 	public async save(request: OneOffTimeslotRequest): Promise<OneOffTimeslot> {
-		await this.oneOffTimeslotsBusinessValidation.validateOneOffTimeslotsAvailability(request);
+		const validator = this.getValidator();
+		await validator.validateOneOffTimeslotsAvailability(request);
 		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
 		const labels = await this.labelsService.verifyLabels(request.labelIds, serviceProvider.serviceId);
 		const entity = this.mapper.mapToOneOffTimeslots(request, serviceProvider, labels);
-		await this.oneOffTimeslotsValidation.validate(entity);
+		await validator.validate(entity);
 		await this.verifyActionPermission(entity);
 		await this.oneOffTimeslotsRepo.save(entity);
 		return entity;
@@ -67,12 +70,13 @@ export class OneOffTimeslotsService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`One off timeslot can't be found`);
 		}
 
-		await this.oneOffTimeslotsBusinessValidation.validateOneOffTimeslotsAvailability(request, id);
+		const validator = this.getValidator();
+		await validator.validateOneOffTimeslotsAvailability(request, id);
 		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
 		const labels = await this.labelsService.verifyLabels(request.labelIds, serviceProvider.serviceId);
 		this.mapper.updateMapToOneOffTimeslots(request, entity, serviceProvider, labels);
 
-		await this.oneOffTimeslotsValidation.validate(entity);
+		await validator.validate(entity);
 		await this.verifyActionPermission(entity);
 		await this.oneOffTimeslotsRepo.save(entity);
 		return entity;

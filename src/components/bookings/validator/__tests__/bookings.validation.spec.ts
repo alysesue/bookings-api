@@ -7,7 +7,7 @@ import { ServiceProvidersRepository } from '../../../serviceProviders/servicePro
 import { UnavailabilitiesService } from '../../../unavailabilities/unavailabilities.service';
 import { UserContext } from '../../../../infrastructure/auth/userContext';
 import { Booking, BookingBuilder } from '../../../../models/entities/booking';
-import { Service, User } from '../../../../models';
+import { BusinessValidation, Service, User } from '../../../../models';
 import { BookingsValidatorFactory } from '../bookings.validation';
 import {
 	BookingRepositoryMock,
@@ -21,6 +21,7 @@ import { CaptchaService } from '../../../captcha/captcha.service';
 import { UserContextMock } from '../../../../infrastructure/auth/__mocks__/userContext';
 import { getConfig } from '../../../../config/app-config';
 import { IPagedEntities } from '../../../../core/pagedEntities';
+import { ContainerContext, ContainerContextHolder } from '../../../../infrastructure/containerContext';
 
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
 	return {
@@ -42,6 +43,10 @@ jest.mock('../../../captcha/captcha.service');
 jest.mock('../../../../config/app-config', () => ({
 	getConfig: jest.fn(),
 }));
+
+beforeAll(() => {
+	ContainerContextHolder.registerInContainer();
+});
 
 // tslint:disable-next-line:no-big-function
 describe('Booking validation tests', () => {
@@ -91,6 +96,22 @@ describe('Booking validation tests', () => {
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => Promise.resolve([]));
 	});
 
+	it('should get same factory instance in Request scope', () => {
+		const context = Container.get(ContainerContext);
+		const getFactory = () => context.resolve(BookingsValidatorFactory);
+
+		expect(getFactory() === getFactory()).toBe(true);
+	});
+
+	it('should get new instances for validators in Request scope', () => {
+		const context = Container.get(ContainerContext);
+		const factory = context.resolve(BookingsValidatorFactory);
+
+		expect(factory.getValidator(true) === factory.getValidator(true)).toBe(false);
+		expect(factory.getValidator(false) === factory.getValidator(false)).toBe(false);
+		expect(factory.getOnHoldValidator() === factory.getOnHoldValidator()).toBe(false);
+	});
+
 	it('should return regular booking validator', () => {
 		expect(Container.get(BookingsValidatorFactory).getValidator(false).constructor.name).toBe(
 			'SlotBookingsValidator',
@@ -104,7 +125,7 @@ describe('Booking validation tests', () => {
 	});
 
 	it('should not allow booking out of timeslots due to unavailability', async () => {
-		const start = new Date(2020, 8, 26, 8, 0);
+		const start = new Date(2050, 8, 26, 8, 0);
 		const booking = new BookingBuilder()
 			.withStartDateTime(start)
 			.withEndDateTime(DateHelper.addMinutes(start, 45))
@@ -114,10 +135,13 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
-			entry.endTime = new Date(2020, 8, 26, 8, 45).getTime();
+			entry.startTime = new Date(2050, 8, 26, 8, 0).getTime();
+			entry.endTime = new Date(2050, 8, 26, 8, 45).getTime();
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
 			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
@@ -150,6 +174,9 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
 			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
@@ -186,12 +213,42 @@ describe('Booking validation tests', () => {
 			.withServiceProviderId(1)
 			.build();
 
+		booking.service = {
+			noNric: false,
+		} as Service;
+
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
 		).rejects.toMatchInlineSnapshot('[BusinessError: [10006] Citizen name not provided]');
+	});
+
+	it('should append custom validations to citizen validation', async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.build();
+
+		booking.service = {
+			noNric: false,
+		} as Service;
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		const validator = Container.get(BookingsValidatorFactory).getValidator(true);
+		validator.addCustomCitizenValidations(new BusinessValidation({ code: 'abc', message: 'new validation' }));
+
+		const asyncTest = async () => await validator.validate(booking);
+
+		await expect(asyncTest).rejects.toMatchInlineSnapshot(
+			'[BusinessError: [10006] Citizen name not provided, [abc] new validation]',
+		);
 	});
 
 	it('should validate token', async () => {
@@ -203,6 +260,9 @@ describe('Booking validation tests', () => {
 			.withCitizenUinFin('G3382058K')
 			.withCitizenEmail('email@gmail.com')
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 
 		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
@@ -222,6 +282,9 @@ describe('Booking validation tests', () => {
 			.withEndDateTime(DateHelper.addMinutes(start, 60))
 			.withServiceProviderId(1)
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
@@ -242,6 +305,9 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 
 		await expect(
@@ -260,6 +326,9 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 
 		await Container.get(BookingsValidatorFactory).getOnHoldValidator().validate(booking);
@@ -275,6 +344,9 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmail.com')
 			.withServiceProviderId(5)
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 
 		await expect(
@@ -291,6 +363,9 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withServiceProviderId(1)
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
@@ -309,6 +384,9 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmailcom')
 			.withServiceProviderId(1)
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
@@ -322,6 +400,9 @@ describe('Booking validation tests', () => {
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 
 		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
@@ -332,11 +413,57 @@ describe('Booking validation tests', () => {
 		).rejects.toThrowError();
 	});
 
+	it('should validate end time not earlier than start time', async () => {
+		const booking = new BookingBuilder()
+			.withStartDateTime(new Date('2050-10-01T01:00:00'))
+			.withEndDateTime(new Date('2050-10-01T00:00:00'))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
+		const timeslotWithCapacity = createTimeslot(new Date('2050-10-01T01:00:00'), new Date('2050-10-01T02:00:00'));
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
+		).rejects.toMatchInlineSnapshot(
+			'[BusinessError: [10004] End time for booking must be greater than start time]',
+		);
+	});
+
+	it('should validate date should not be in the past', async () => {
+		const booking = new BookingBuilder()
+			.withStartDateTime(new Date('2020-09-01T01:00:00'))
+			.withEndDateTime(new Date('2020-09-01T02:00:00'))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
+
+		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10015] Booking date cannot be in the past]');
+	});
+
 	it('should throw on validation error', async () => {
 		const booking = new BookingBuilder()
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 
 		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
@@ -356,6 +483,9 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
 			Promise.resolve({
@@ -388,6 +518,9 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmail.com')
 			.withServiceProviderId(1)
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
 			Promise.resolve({
@@ -413,14 +546,17 @@ describe('Booking validation tests', () => {
 
 	it('should validate no citizenUinFin', async () => {
 		const booking = new BookingBuilder()
-			.withStartDateTime(new Date('2020-10-01T01:00:00'))
-			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.withStartDateTime(new Date('2050-10-01T01:00:00'))
+			.withEndDateTime(new Date('2050-10-01T02:00:00'))
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.withServiceProviderId(1)
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 
-		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
+		const timeslotWithCapacity = createTimeslot(new Date('2050-10-01T01:00:00'), new Date('2050-10-01T02:00:00'));
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
 
@@ -432,7 +568,7 @@ describe('Booking validation tests', () => {
 	});
 
 	it('should not allow booking on top of existing booking', async () => {
-		const start = new Date(2020, 8, 26, 8, 0);
+		const start = new Date(2050, 8, 26, 8, 0);
 		const booking = new BookingBuilder()
 			.withStartDateTime(start)
 			.withEndDateTime(DateHelper.addMinutes(start, 60))
@@ -442,22 +578,25 @@ describe('Booking validation tests', () => {
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
 			Promise.resolve({
 				entries: [
 					new BookingBuilder()
 						.withServiceId(1)
-						.withStartDateTime(new Date(2020, 8, 26, 8, 15))
-						.withEndDateTime(new Date(2020, 8, 26, 8, 45))
+						.withStartDateTime(new Date(2050, 8, 26, 8, 15))
+						.withEndDateTime(new Date(2050, 8, 26, 8, 45))
 						.build(),
 				],
 			} as IPagedEntities<Booking>),
 		);
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
-			entry.endTime = new Date(2020, 8, 26, 8, 45).getTime();
+			entry.startTime = new Date(2050, 8, 26, 8, 0).getTime();
+			entry.endTime = new Date(2050, 8, 26, 8, 45).getTime();
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
 			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
@@ -478,25 +617,31 @@ describe('Booking validation tests', () => {
 
 	it('should allow updating booking to out of slot', async () => {
 		const booking = new BookingBuilder()
-			.withStartDateTime(new Date(2020, 8, 26, 8, 15))
-			.withEndDateTime(new Date(2020, 8, 26, 8, 45))
+			.withStartDateTime(new Date(2050, 8, 26, 8, 15))
+			.withEndDateTime(new Date(2050, 8, 26, 8, 45))
 			.withServiceProviderId(1)
 			.withRefId('RFM186')
 			.withCitizenUinFin('G3382058K')
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 		booking.id = 5;
 
 		const searchBooking = new BookingBuilder()
-			.withStartDateTime(new Date(2020, 8, 26, 7, 15))
-			.withEndDateTime(new Date(2020, 8, 26, 7, 45))
+			.withStartDateTime(new Date(2050, 8, 26, 7, 15))
+			.withEndDateTime(new Date(2050, 8, 26, 7, 45))
 			.withServiceProviderId(1)
 			.withRefId('RFM186')
 			.withCitizenUinFin('G3382058K')
 			.withCitizenName('Andy')
 			.withCitizenEmail('email@gmail.com')
 			.build();
+		searchBooking.service = {
+			noNric: false,
+		} as Service;
 		searchBooking.id = 5;
 
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
@@ -505,8 +650,8 @@ describe('Booking validation tests', () => {
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
 			const entry = new AvailableTimeslotProviders();
-			entry.startTime = new Date(2020, 8, 26, 7, 15).getTime();
-			entry.endTime = new Date(2020, 8, 26, 7, 45).getTime();
+			entry.startTime = new Date(2050, 8, 26, 7, 15).getTime();
+			entry.endTime = new Date(2050, 8, 26, 7, 45).getTime();
 
 			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
 			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
@@ -540,6 +685,9 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmail.com')
 			.withMarkOnHold(true)
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 		booking.service = onHoldService;
 
 		BookingRepositoryMock.searchBookings.mockImplementation(() =>
@@ -588,6 +736,9 @@ describe('Booking validation tests', () => {
 			.withServiceProviderId(1)
 			.withVideoConferenceUrl('https://www.videoConference.com/details')
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
@@ -605,11 +756,80 @@ describe('Booking validation tests', () => {
 			.withServiceProviderId(1)
 			.withVideoConferenceUrl('video conference url hardcoded input')
 			.build();
+		booking.service = {
+			noNric: false,
+		} as Service;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
 		).rejects.toMatchInlineSnapshot('[BusinessError: [10014] Invalid video conference link is provided]');
+	});
+
+	it('should validate null NRIC when noNRIC is true', async () => {
+		const booking = new BookingBuilder()
+			.withStartDateTime(new Date('2051-10-01T01:00:00'))
+			.withEndDateTime(new Date('2051-10-01T02:00:00'))
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.withCitizenUinFin(null)
+			.build();
+		booking.service = {
+			noNric: true,
+		} as Service;
+
+		const timeslotWithCapacity = createTimeslot(new Date('2051-10-01T01:00:00'), new Date('2051-10-01T02:00:00'));
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(null));
+
+		await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
+	});
+	it('should validate valid NRIC when noNRIC is true', async () => {
+		const booking = new BookingBuilder()
+			.withStartDateTime(new Date('2051-10-01T01:00:00'))
+			.withEndDateTime(new Date('2051-10-01T02:00:00'))
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.withCitizenUinFin('G3382058K')
+			.build();
+		booking.service = {
+			noNric: true,
+		} as Service;
+
+		const timeslotWithCapacity = createTimeslot(new Date('2051-10-01T01:00:00'), new Date('2051-10-01T02:00:00'));
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(null));
+
+		await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking);
+	});
+	it('It should validate NRIC when present when noNRIC is true', async () => {
+		const booking = new BookingBuilder()
+			.withStartDateTime(new Date('2051-10-01T01:00:00'))
+			.withEndDateTime(new Date('2051-10-01T02:00:00'))
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.withCitizenUinFin('abcde')
+			.build();
+		booking.service = {
+			noNric: true,
+		} as Service;
+
+		const timeslotWithCapacity = createTimeslot(new Date('2051-10-01T01:00:00'), new Date('2051-10-01T02:00:00'));
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(null));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10005] Citizen UIN/FIN not found]');
 	});
 });

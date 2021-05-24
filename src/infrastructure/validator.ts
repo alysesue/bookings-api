@@ -4,21 +4,19 @@ import { BusinessValidation } from '../models';
 
 export interface IValidator<T> {
 	validate(booking: T): Promise<void>;
-	bypassCaptcha(shouldBypassCaptcha: boolean): any;
 }
 
+/**
+ * This class has local mutable properties.
+ * Use @Scoped(Scope.Local) in subclassess.
+ * To get an instance use this.containerContext.resolve(ClassName);
+ * ContainerContext can be injected via @Inject
+ */
 export abstract class Validator<T> implements IValidator<T> {
-	protected shouldBypassCaptcha = false;
 	public async validate(entity: T): Promise<void> {
 		const validations = await iterableToArray<BusinessValidation>(this.getValidations(entity));
 		BusinessError.throw(validations);
 	}
 
-	public bypassCaptcha(shouldBypassCaptcha: boolean) {
-		this.shouldBypassCaptcha = shouldBypassCaptcha;
-	}
-
-	protected async *getValidations(_entity: T): AsyncIterable<BusinessValidation> {
-		return;
-	}
+	protected abstract getValidations(_entity: T): AsyncIterable<BusinessValidation>;
 }

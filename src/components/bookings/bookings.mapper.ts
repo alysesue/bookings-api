@@ -1,4 +1,4 @@
-import { Booking, DynamicField, SelectListDynamicField, ServiceProvider, User } from '../../models/entities';
+import { Booking, ServiceProvider, User } from '../../models/entities';
 import {
 	BookingDetailsRequest,
 	BookingProviderResponse,
@@ -7,16 +7,10 @@ import {
 } from './bookings.apicontract';
 import { UinFinConfiguration } from '../../models/uinFinConfiguration';
 import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
-import { groupByKeyLastValue } from '../../tools/collections';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { DynamicFieldsService } from '../dynamicFields/dynamicFields.service';
-import { DynamicValueJsonModel, DynamicValueType } from '../../models/entities/booking';
-import { IdHasher } from '../../infrastructure/idHasher';
-import {
-	DynamicValueContract,
-	DynamicValueTypeContract,
-	PersistDynamicValueContract,
-} from '../dynamicFields/dynamicValues.apicontract';
+import { DynamicValuesMapper } from '../dynamicFields/dynamicValues.mapper';
+import { isErrorResult } from '../../errors';
+import { IBookingsValidator } from './validator/bookings.validation';
 import * as stringify from 'csv-stringify';
 import { BookingStatus, bookingStatusArray } from '../../models/bookingStatus';
 
@@ -27,56 +21,26 @@ const MASK_REPLACE_VALUE = '*'.repeat(4);
 @InRequestScope
 export class BookingsMapper {
 	@Inject
-	private dynamicFieldsService: DynamicFieldsService;
-	@Inject
-	private idHasher: IdHasher;
+	private dynamicValuesMapper: DynamicValuesMapper;
 
-	public mapFieldValueToJson(field: DynamicField, fieldValue: PersistDynamicValueContract): DynamicValueJsonModel {
-		if (!fieldValue) {
-			return undefined;
-		}
-
-		// implement valueJson creation via a visitor for each field type later
-		const selectListField = field as SelectListDynamicField;
-
-		// valid field value type for this field
-		if (fieldValue.type !== DynamicValueTypeContract.SingleSelection) {
-			return undefined;
-		}
-
-		const selectedOption = selectListField.options.find((o) => o.key === fieldValue.SingleSelectionKey);
-		const valueJson: DynamicValueJsonModel = {
-			fieldId: field.id,
-			fieldName: field.name,
-			type: DynamicValueType.SingleSelection,
-			SingleSelectionKey: selectedOption?.key,
-			SingleSelectionValue: selectedOption?.value,
-		};
-
-		return valueJson;
-	}
-
-	public async mapDynamicValuesRequest(bookingRequest: BookingDetailsRequest, booking: Booking) {
+	public async mapDynamicValuesRequest(
+		bookingRequest: BookingDetailsRequest,
+		booking: Booking,
+		validator: IBookingsValidator,
+	): Promise<void> {
 		if (!bookingRequest.dynamicValuesUpdated || !bookingRequest.dynamicValues) {
 			return;
 		}
 
-		const dynamicValuesLookup = groupByKeyLastValue(bookingRequest.dynamicValues, (e) =>
-			this.idHasher.decode(e.fieldIdSigned),
+		const mapResult = await this.dynamicValuesMapper.mapDynamicValuesRequest(
+			bookingRequest.dynamicValues,
+			booking.serviceId,
 		);
-
-		const fieldDefinitions = await this.dynamicFieldsService.getServiceFields(booking.serviceId);
-
-		const dynamicValuesJson = [];
-		for (const field of fieldDefinitions) {
-			const fieldValue = dynamicValuesLookup.get(field.id);
-			const jsonValue = this.mapFieldValueToJson(field, fieldValue);
-			if (jsonValue) {
-				dynamicValuesJson.push(jsonValue);
-			}
+		if (isErrorResult(mapResult)) {
+			validator.addCustomCitizenValidations(...mapResult.errorResult);
+		} else {
+			booking.dynamicValues = mapResult.result;
 		}
-
-		booking.dynamicValues = dynamicValuesJson;
 	}
 
 	public maskUinFin(booking: Booking, userContext: UserContextSnapshot): string {
@@ -125,7 +89,7 @@ export class BookingsMapper {
 			description: booking.description,
 			videoConferenceUrl: booking.videoConferenceUrl,
 			refId: booking.refId,
-			dynamicValues: this.mapDynamicValuesModel(booking.dynamicValues),
+			dynamicValues: this.dynamicValuesMapper.mapDynamicValuesModel(booking.dynamicValues),
 		} as BookingResponse;
 	}
 
@@ -148,8 +112,8 @@ export class BookingsMapper {
 	}
 
 	public mapDataCSV(booking: Booking, userContext: UserContextSnapshot): {} {
-		const dynamicValues = this.mapDynamicValuesModel(booking.dynamicValues)?.map(
-			(item) => `${item.fieldName}:${item.SingleSelectionValue}`,
+		const dynamicValues = booking.dynamicValues?.map(
+			(item) => `${item.fieldName}:${this.dynamicValuesMapper.getValueAsString(item)}`,
 		);
 		const bookingDetails = {
 			['Booking ID']: `${booking.id.toString()}`,
@@ -171,20 +135,6 @@ export class BookingsMapper {
 		};
 
 		return bookingDetails;
-	}
-
-	public mapDynamicValuesModel(dynamicValues: DynamicValueJsonModel[]): DynamicValueContract[] {
-		return dynamicValues?.map((obj) => {
-			const contract = new DynamicValueContract();
-			contract.fieldIdSigned = this.idHasher.encode(obj.fieldId);
-			contract.fieldName = obj.fieldName;
-			// use visitor to map values later
-			contract.type = DynamicValueTypeContract.SingleSelection;
-			contract.SingleSelectionKey = obj.SingleSelectionKey;
-			contract.SingleSelectionValue = obj.SingleSelectionValue;
-
-			return contract;
-		});
 	}
 
 	public static mapProvider(provider: ServiceProvider): BookingProviderResponse {

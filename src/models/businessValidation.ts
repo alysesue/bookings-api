@@ -26,3 +26,17 @@ export class BusinessValidation {
 		return this._message;
 	}
 }
+
+export class BusinessValidationTemplate<P> {
+	private _templateMessage: (p: P) => string;
+	private _code: string;
+
+	constructor(params: { code: string; templateMessage: (p: P) => string }) {
+		this._templateMessage = params.templateMessage;
+		this._code = params.code;
+	}
+
+	public create(params: P): BusinessValidation {
+		return new BusinessValidation({ code: this._code, message: this._templateMessage(params) });
+	}
+}
