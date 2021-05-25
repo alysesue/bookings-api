@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TimeOfDay, Transformer as TimeTransformer } from '../timeOfDay';
 import { Weekday } from '../../enums/weekday';
 import { ITimeslotsSchedule, ITimeSpan } from '../interfaces';
@@ -14,6 +14,7 @@ export class TimeslotItem implements ITimeSpan {
 	public _id: number;
 
 	@Column({ nullable: false })
+	@Index()
 	public _timeslotsScheduleId: number;
 
 	@ManyToOne('TimeslotsSchedule', { nullable: false })
@@ -66,7 +67,7 @@ export class TimeslotItem implements ITimeSpan {
 	public static generateTimeslotsItems(scheduleForm: ScheduleForm, timeslotsScheduleId: number): TimeslotItem[] {
 		const timeslotItems = [];
 		const activeWeekdaySchedules = scheduleForm.weekdaySchedules.filter((weekday) => weekday.hasScheduleForm);
-		activeWeekdaySchedules.forEach((weekDay) => {
+		for (const weekDay of activeWeekdaySchedules) {
 			let startTimeslotItem = weekDay.openTime;
 			let endTimeslotItem = startTimeslotItem.addMinutes(scheduleForm.slotsDurationInMin);
 			while (TimeOfDay.compare(weekDay.closeTime, endTimeslotItem) >= 0) {
@@ -95,7 +96,7 @@ export class TimeslotItem implements ITimeSpan {
 				}
 				endTimeslotItem = startTimeslotItem.addMinutes(scheduleForm.slotsDurationInMin);
 			}
-		});
+		}
 		return timeslotItems;
 	}
 }

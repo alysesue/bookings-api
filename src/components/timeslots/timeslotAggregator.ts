@@ -100,22 +100,3 @@ export class AggregatedEntry<TGroup> implements IAggregatedEntry<TGroup> {
 	}
 }
 
-export class AggregatedEntryId<TGroup extends { id: number }> extends AggregatedEntry<TGroup> {
-	private _ids: Set<number>;
-
-	constructor(timeslot: Timeslot) {
-		super(timeslot);
-		this._ids = new Set<number>();
-	}
-
-	public addGroup(group: TGroup, timeslotDetail: TimeslotWithCapacity): void {
-		if (!this._ids.has(group.id)) {
-			this._ids.add(group.id);
-			super.addGroup(group, timeslotDetail);
-		}
-	}
-
-	public hasGroupId(id: number) {
-		return this._ids.has(id);
-	}
-}

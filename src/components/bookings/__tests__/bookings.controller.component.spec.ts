@@ -23,6 +23,7 @@ import { MailObserver } from '../../notifications/notification.observer';
 import { MockObserver } from '../../../infrastructure/__mocks__/observer.mock';
 import { LifeSGObserver } from '../../lifesg/lifesg.observer';
 import { getConfig } from '../../../config/app-config';
+import { ServiceProvidersLookup } from '../../../components/timeslots/aggregatorTimeslotProviders';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -148,10 +149,12 @@ class TimeslotsServiceMock implements Partial<TimeslotsService> {
 		startDateTime: Date,
 		endDateTime: Date,
 	): Promise<TimeslotServiceProviderResult[]> {
-		const timeslotEntry = new AvailableTimeslotProviders();
+		const timeslotEntry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 		timeslotEntry.startTime = startDateTime.getTime();
 		timeslotEntry.endTime = endDateTime.getTime();
-		timeslotEntry.setRelatedServiceProviders(TimeslotsServiceMock.availableProvidersForTimeslot);
+		for (const [sp, timeslot] of TimeslotsServiceMock.availableProvidersForTimeslot) {
+			timeslotEntry.addServiceProvider(sp, timeslot);
+		}
 
 		return Array.from(timeslotEntry.getTimeslotServiceProviders(true));
 	}

@@ -42,6 +42,7 @@ import { UsersServiceMock } from '../../users/__mocks__/users.service';
 import { UsersService } from '../../users/users.service';
 import { ServicesServiceMock } from '../../services/__mocks__/services.service';
 import { ServiceProvidersActionAuthVisitor } from '../serviceProviders.auth';
+import { ServiceProvidersLookup } from '../../../components/timeslots/aggregatorTimeslotProviders';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -368,7 +369,7 @@ describe('ServiceProviders.Service', () => {
 
 	it('should return only available service providers', async () => {
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
-			const entry = new AvailableTimeslotProviders();
+			const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
 			entry.endTime = new Date(2020, 8, 26, 8, 30).getTime();
 
@@ -377,11 +378,14 @@ describe('ServiceProviders.Service', () => {
 			const serviceProvider2 = ServiceProvider.create('Andi', 1);
 			serviceProvider2.id = 2;
 
-			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider1, createTimeslot(new Date(entry.startTime), new Date(entry.endTime), 1));
-			map.set(serviceProvider2, createTimeslot(new Date(entry.startTime), new Date(entry.endTime), 1));
-
-			entry.setRelatedServiceProviders(map);
+			entry.addServiceProvider(
+				serviceProvider1,
+				createTimeslot(new Date(entry.startTime), new Date(entry.endTime), 1),
+			);
+			entry.addServiceProvider(
+				serviceProvider2,
+				createTimeslot(new Date(entry.startTime), new Date(entry.endTime), 1),
+			);
 
 			return Promise.resolve([entry]);
 		});
