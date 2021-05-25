@@ -34,10 +34,11 @@ export class GroupRecordIterator<TInput, TOutput> implements IGroupRecordIterato
 	}
 
 	public async *getRecords(): AsyncIterable<[number, TOutput[]]> {
-		const _stream = await this._creator();
 		try {
+			const _stream = await this._creator();
+
 			const options = {
-				highWaterMark: undefined,
+				highWaterMark: 1500,
 			} as Partial<EventIteratorOptions>;
 			const eventIterator = new EventIterator<[number, TOutput[]]>(({ push, stop, fail }) => {
 				let groupBatch: TOutput[] = [];

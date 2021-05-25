@@ -12,9 +12,10 @@ import { andWhere } from '../../tools/queryConditions';
 import { Weekday } from '../../enums/weekday';
 import { EmptyGroupRecordIterator, GroupRecordIterator, IGroupRecordIterator } from './groupRecordIterator';
 import { QueryStreamConfig, createQueryStream } from '../../tools/pgQueryStreamContract';
-import { createPgClient } from '../../core/pgHelper';
+import { ConnectionPool } from '../../core/db.connectionPool';
+import { PoolClient } from 'pg';
 
-type TimeslotItemDBQuery = {
+export type TimeslotItemDBQuery = {
 	item__id: number;
 	item__startTime: string;
 	item__endTime: string;
@@ -24,12 +25,15 @@ type TimeslotItemDBQuery = {
 };
 
 const STREAM_BATCH_SIZE = 500;
+
 @InRequestScope
 export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedule> {
 	@Inject
 	private timeslotItemsRepository: TimeslotItemsRepository;
 	@Inject
 	private _userContext: UserContext;
+	@Inject
+	private connectionPool: ConnectionPool;
 
 	constructor() {
 		super(TimeslotsSchedule);
@@ -124,7 +128,7 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 			.orderBy('sp._id');
 
 		const [sql, parameters] = query.getQueryAndParameters();
-		const client = createPgClient();
+		let client: PoolClient;
 
 		const iterator = new GroupRecordIterator(
 			async () => {
@@ -133,10 +137,10 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 					batchSize: STREAM_BATCH_SIZE,
 				} as QueryStreamConfig);
 
-				await client.connect();
+				client = await this.connectionPool.getClient();
 				return client.query(queryStream);
 			},
-			() => client.end(),
+			async () => client?.release(),
 			'spId',
 			TimeslotsScheduleRepository.mapFromDB,
 		);
@@ -166,7 +170,7 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 			.orderBy('item._timeslotsScheduleId');
 
 		const [sql, parameters] = query.getQueryAndParameters();
-		const client = createPgClient();
+		let client: PoolClient;
 
 		const iterator = new GroupRecordIterator(
 			async () => {
@@ -175,10 +179,10 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 					batchSize: STREAM_BATCH_SIZE,
 				});
 
-				await client.connect();
+				client = await this.connectionPool.getClient();
 				return client.query(queryStream);
 			},
-			() => client.end(),
+			async () => client?.release(),
 			'item__timeslotsScheduleId',
 			TimeslotsScheduleRepository.mapFromDB,
 		);

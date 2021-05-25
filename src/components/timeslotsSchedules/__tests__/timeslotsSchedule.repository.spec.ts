@@ -1,6 +1,6 @@
 import { Container } from 'typescript-ioc';
 import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
-import { TimeslotsScheduleRepository } from '../timeslotsSchedule.repository';
+import { TimeslotItemDBQuery, TimeslotsScheduleRepository } from '../timeslotsSchedule.repository';
 import { IEntityWithTimeslotsSchedule, ITimeslotsSchedule } from '../../../models/interfaces';
 import { TransactionManager } from '../../../core/transactionManager';
 import { UserContext } from '../../../infrastructure/auth/userContext';
@@ -8,25 +8,31 @@ import { TimeslotItemsQueryAuthVisitor } from '../../timeslotItems/timeslotItems
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
 import { TimeslotItemsRepository } from '../../timeslotItems/timeslotItems.repository';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
-import { createPgClient } from '../../../core/pgHelper';
-import { GroupRecordIterator, IGroupRecordIterator } from '../groupRecordIterator';
+import { createQueryStream } from '../../../tools/pgQueryStreamContract';
+import { ConnectionPool } from '../../../core/db.connectionPool';
+import { PoolClient } from 'pg';
+import * as events from 'events';
 
 jest.mock('../../timeslotItems/timeslotItems.auth');
-jest.mock('../../../core/pgHelper');
-jest.mock('../groupRecordIterator');
+jest.mock('../../../tools/pgQueryStreamContract');
 
 const QueryAuthVisitorMock = {
 	createUserVisibilityCondition: jest.fn<Promise<UserConditionParams>, any>(),
 };
 
-class GroupRecordIteratorMock<T> implements IGroupRecordIterator<T> {
-	_map: Map<number, T[]>;
-	constructor(map: Map<number, T[]>) {
-		this._map = map;
+const poolClientMock = {
+	query: jest.fn(),
+	release: jest.fn(),
+} as Partial<PoolClient>;
+
+class ConnectionPoolMock implements Partial<ConnectionPool> {
+	public async getClient(): Promise<PoolClient> {
+		return poolClientMock as PoolClient;
 	}
-	async *getRecords(): AsyncIterable<[number, T[]]> {
-		for (const item of this._map) yield item;
-	}
+}
+
+function delay(n: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, n));
 }
 
 afterAll(() => {
@@ -38,6 +44,7 @@ beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
 	Container.bind(UserContext).to(UserContextMock);
 	Container.bind(TimeslotItemsRepository).to(TimeslotItemsRepositoryMock);
+	Container.bind(ConnectionPool).to(ConnectionPoolMock);
 });
 
 describe('TimeslotsSchedule repository', () => {
@@ -67,7 +74,7 @@ describe('TimeslotsSchedule repository', () => {
 			Promise.resolve({ userCondition: '', userParams: {} }),
 		);
 
-		(createPgClient as jest.Mock).mockImplementation(() => ({}));
+		(createQueryStream as jest.Mock).mockReturnValue({});
 	});
 
 	it('should get timeslotsSchedule', async () => {
@@ -104,8 +111,26 @@ describe('TimeslotsSchedule repository', () => {
 		queryBuilderMock.getMany.mockReturnValue(Promise.resolve([timeslotsScheduleMock]));
 		queryBuilderMock.getQueryAndParameters.mockReturnValue(['', {}]);
 
-		(GroupRecordIterator as jest.Mock).mockImplementation(() => {
-			return new GroupRecordIteratorMock(new Map());
+		(poolClientMock.query as jest.Mock).mockImplementation(() => {
+			const emitter = new events.EventEmitter();
+
+			setTimeout(async () => {
+				const dbItem = {
+					item__id: 2,
+					item__startTime: '09:00:00',
+					item__endTime: '10:00:00',
+					item__weekDay: 1,
+					item__timeslotsScheduleId: 1,
+					item__capacity: 3,
+				} as TimeslotItemDBQuery;
+
+				emitter.emit('data', dbItem);
+				await delay(3);
+				emitter.emit('data', { ...dbItem, item__timeslotsScheduleId: 2 });
+				await delay(3);
+				emitter.emit('end');
+			}, 10);
+			return Promise.resolve(emitter);
 		});
 
 		const repository = Container.get(TimeslotsScheduleRepository);
@@ -117,16 +142,37 @@ describe('TimeslotsSchedule repository', () => {
 
 		expect(queryBuilderMock.getMany).toHaveBeenCalled();
 		expect(queryBuilderMock.getQueryAndParameters).toHaveBeenCalled();
+		expect(poolClientMock.query).toBeCalled();
+		expect(poolClientMock.release).toBeCalled();
+
 		expect(entity1.timeslotsSchedule).toBeDefined();
 		expect(entity2.timeslotsSchedule).not.toBeDefined();
 	});
 
-	it('should populate TimeslotsSchedules in entities (IEntityWithTimeslotsSchedule) with options', async () => {
+	it('(2) should populate TimeslotsSchedules in entities (IEntityWithTimeslotsSchedule) with options', async () => {
 		queryBuilderMock.getMany.mockReturnValue(Promise.resolve([timeslotsScheduleMock]));
 		queryBuilderMock.getQueryAndParameters.mockReturnValue(['', {}]);
 
-		(GroupRecordIterator as jest.Mock).mockImplementation(() => {
-			return new GroupRecordIteratorMock(new Map());
+		(poolClientMock.query as jest.Mock).mockImplementation(() => {
+			const emitter = new events.EventEmitter();
+
+			setTimeout(async () => {
+				const dbItem = {
+					item__id: 2,
+					item__startTime: '09:00:00',
+					item__endTime: '10:00:00',
+					item__weekDay: 1,
+					item__timeslotsScheduleId: 1,
+					item__capacity: 3,
+				} as TimeslotItemDBQuery;
+
+				emitter.emit('data', dbItem);
+				await delay(3);
+				emitter.emit('data', { ...dbItem, item__timeslotsScheduleId: 2 });
+				await delay(3);
+				emitter.emit('end');
+			}, 10);
+			return Promise.resolve(emitter);
 		});
 
 		const repository = Container.get(TimeslotsScheduleRepository);
@@ -143,6 +189,9 @@ describe('TimeslotsSchedule repository', () => {
 		expect(TransactionManagerMock.createQueryBuilder).toHaveBeenCalledTimes(2);
 		expect(queryBuilderMock.getMany).toHaveBeenCalled();
 		expect(queryBuilderMock.getQueryAndParameters).toHaveBeenCalled();
+		expect(poolClientMock.query).toBeCalled();
+		expect(poolClientMock.release).toBeCalled();
+
 		expect(entity1.timeslotsSchedule).toBeDefined();
 		expect(entity2.timeslotsSchedule).not.toBeDefined();
 	});
