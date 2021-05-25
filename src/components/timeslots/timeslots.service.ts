@@ -1,5 +1,5 @@
 import { Inject, Scope, Scoped } from 'typescript-ioc';
-import { Booking, BookingStatus, ServiceProvider, TimeOfDay, Timeslot } from '../../models';
+import { Booking, BookingStatus, ServiceProvider, TimeOfDay, TimeslotItem } from '../../models';
 import { BookingsRepository } from '../bookings/bookings.repository';
 import { groupByKey } from '../../tools/collections';
 import { ServicesRepository } from '../services/services.repository';
@@ -16,18 +16,13 @@ import { OneOffTimeslotsRepository } from '../oneOffTimeslots/oneOffTimeslots.re
 import { intersectsDateTimeNative } from '../../tools/timeSpan';
 import { MapProcessor } from './mapProcessor';
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
-import {
-	AggregatedEntryId,
-	generateTimeslotKey,
-	generateTimeslotKeyNative,
-	TimeslotAggregator,
-	TimeslotKey,
-	TimeslotMap,
-} from './timeslotAggregator';
+import { generateTimeslotKey, generateTimeslotKeyNative, TimeslotKey, TimeslotMap } from './timeslotAggregator';
+import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
+import { AggregatorTimeslotProviders, ServiceProvidersLookup } from './aggregatorTimeslotProviders';
+import { TimeslotGenerator } from '../../models/timeslotGenerator';
 
 export class AvailableTimeslotProcessor extends MapProcessor<TimeslotKey, AvailableTimeslotProviders> {}
 
-const MaxLoopIterationCount = 1000;
 @Scoped(Scope.Request)
 export class TimeslotsService {
 	@Inject
@@ -45,29 +40,17 @@ export class TimeslotsService {
 	@Inject
 	private oneOffTimeslotsRepository: OneOffTimeslotsRepository;
 
+	@Inject
+	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
+
 	private static timeslotKeySelector = (startNative: number, endNative: number): TimeslotKey =>
 		generateTimeslotKeyNative(startNative, endNative);
 	private static bookingKeySelector = (booking: Booking): TimeslotKey =>
 		generateTimeslotKey(booking.startDateTime, booking.endDateTime);
 
-	private static async mapServiceProviderAggregatedEntriesToTimeslots(
-		entries: TimeslotMap<AggregatedEntryId<ServiceProvider>>,
-	): Promise<TimeslotMap<AvailableTimeslotProviders>> {
-		let counter = 0;
-		const result = new TimeslotMap<AvailableTimeslotProviders>();
-		for (const [key, entry] of entries) {
-			const mapped = AvailableTimeslotProviders.create(entry);
-			result.set(key, mapped);
-			if (counter++ > MaxLoopIterationCount) {
-				counter = 0;
-				await nextImmediateTick();
-			}
-		}
-		return result;
-	}
-
 	private static mergeAcceptedBookingsToTimeslots(
-		aggregatedEntries: TimeslotMap<AggregatedEntryId<ServiceProvider>>,
+		serviceProviderLookup: ServiceProvidersLookup,
+		aggregatedEntries: TimeslotMap<AvailableTimeslotProviders>,
 		acceptedBookings: Booking[],
 	): void {
 		for (const booking of acceptedBookings) {
@@ -79,23 +62,22 @@ export class TimeslotsService {
 			let aggregatedEntry = aggregatedEntries.get(timeslotKey);
 
 			if (!aggregatedEntry) {
-				const timeslot = {
-					startTimeNative: booking.startDateTime.getTime(),
-					endTimeNative: booking.endDateTime.getTime(),
-				} as Timeslot;
-
-				aggregatedEntry = new AggregatedEntryId<ServiceProvider>(timeslot);
+				aggregatedEntry = AvailableTimeslotProviders.empty(
+					serviceProviderLookup,
+					booking.startDateTime.getTime(),
+					booking.endDateTime.getTime(),
+				);
 				aggregatedEntries.set(timeslotKey, aggregatedEntry);
 			}
 
-			if (!aggregatedEntry.hasGroupId(booking.serviceProvider.id)) {
+			if (!aggregatedEntry.hasServiceProviderId(booking.serviceProvider.id)) {
 				const timeslotForBooking = {
 					startTimeNative: booking.startDateTime.getTime(),
 					endTimeNative: booking.endDateTime.getTime(),
 					capacity: 0,
 				} as TimeslotWithCapacity;
 
-				aggregatedEntry.addGroup(booking.serviceProvider, timeslotForBooking);
+				aggregatedEntry.addServiceProvider(booking.serviceProvider, timeslotForBooking);
 			}
 		}
 	}
@@ -152,7 +134,7 @@ export class TimeslotsService {
 			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
 			const elementPendingBookings = pendingBookingsLookup.get(elementKey);
 			if (elementPendingBookings) {
-				element.setPendingBookings(elementPendingBookings);
+				element.addPendingBookings(elementPendingBookings);
 			}
 		});
 	}
@@ -164,7 +146,7 @@ export class TimeslotsService {
 			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
 			const elementOnHoldBookings = onHoldBookingsLookup.get(elementKey);
 			if (elementOnHoldBookings) {
-				element.setPendingBookings(elementOnHoldBookings);
+				element.addPendingBookings(elementOnHoldBookings);
 			}
 		});
 	}
@@ -178,7 +160,7 @@ export class TimeslotsService {
 		labelIds?: number[],
 	): Promise<AvailableTimeslotProviders[]> {
 		const getAggregatedTimeslotEntriesWatch = new StopWatch('getAggregatedTimeslotEntries');
-		const aggregatedEntries = await this.getAggregatedTimeslotEntries(
+		const [serviceProviderLookup, aggregatedEntries] = await this.getAggregatedTimeslotEntries(
 			startDateTime,
 			endDateTime,
 			serviceId,
@@ -206,35 +188,35 @@ export class TimeslotsService {
 			return booking.status === BookingStatus.OnHold && new Date() < onHoldUntil;
 		});
 		if (includeBookings) {
-			TimeslotsService.mergeAcceptedBookingsToTimeslots(aggregatedEntries, acceptedBookings);
+			TimeslotsService.mergeAcceptedBookingsToTimeslots(
+				serviceProviderLookup,
+				aggregatedEntries,
+				acceptedBookings,
+			);
 		}
 
 		if (serviceProviderIds && serviceProviderIds.length > 0) {
 			for (const [key, value] of aggregatedEntries) {
-				if (!serviceProviderIds.some((spId) => value.hasGroupId(spId))) {
+				if (!serviceProviderIds.some((spId) => value.hasServiceProviderId(spId))) {
 					aggregatedEntries.delete(key);
 				}
 			}
 		}
-
-		const mappingWatch = new StopWatch('mappingWatch');
-		const mappedEntries = await TimeslotsService.mapServiceProviderAggregatedEntriesToTimeslots(aggregatedEntries);
-		mappingWatch.stop();
 
 		const mapProcessors: AvailableTimeslotProcessor[] = [
 			await this.filterUnavailabilities(startDateTime, endDateTime, serviceId),
 			this.setBookedProviders(acceptedBookings),
 			TimeslotsService.setPendingTimeslots(pendingBookings),
 			this.setOnHoldTimeslots(onHoldBookings),
-			await this.filterVisibleServiceProviders({ entries: mappedEntries, serviceId, serviceProviderIds }),
+			await this.filterVisibleServiceProviders({ entries: aggregatedEntries, serviceId, serviceProviderIds }),
 		];
 
 		const mapProcessorsWatch = new StopWatch('MapProcessor');
 		const combinedProcessors = AvailableTimeslotProcessor.combine(...mapProcessors);
-		await combinedProcessors.process(mappedEntries);
+		await combinedProcessors.process(aggregatedEntries);
 		mapProcessorsWatch.stop();
 
-		const result = Array.from(mappedEntries.values());
+		const result = Array.from(aggregatedEntries.values());
 		result.sort(TimeslotsService.sortAvailableTimeslotProviders);
 		return result;
 	}
@@ -248,7 +230,11 @@ export class TimeslotsService {
 		serviceId: number;
 		serviceProviderIds?: number[];
 	}): Promise<AvailableTimeslotProcessor> {
-		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({ serviceId });
+		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({
+			serviceId,
+			skipGroupMap: true,
+			skipService: true,
+		});
 		let visibleServiceProviderIds = serviceProviders.map((sp) => sp.id);
 
 		if (serviceProviderIds && serviceProviderIds.length > 0) {
@@ -332,6 +318,17 @@ export class TimeslotsService {
 		}
 	}
 
+	private *filterSpExpired(
+		provider: ServiceProvider,
+		timeslots: Iterable<TimeslotWithCapacity>,
+	): Iterable<TimeslotWithCapacity> {
+		for (const timeslot of timeslots) {
+			if (!provider.isLicenceExpireNative(timeslot.startTimeNative)) {
+				yield timeslot;
+			}
+		}
+	}
+
 	private *filterTimeslotsOverrides(
 		timeslots: Iterable<TimeslotWithCapacity>,
 		overrides: TimeslotWithCapacity[],
@@ -356,24 +353,25 @@ export class TimeslotsService {
 		serviceId: number,
 		serviceProviderIds?: number[],
 		labelIds?: number[],
-	): Promise<TimeslotMap<AggregatedEntryId<ServiceProvider>>> {
-		const aggregator = TimeslotAggregator.createCustom<ServiceProvider, AggregatedEntryId<ServiceProvider>>(
-			AggregatedEntryId,
-		);
+	): Promise<[ServiceProvidersLookup, TimeslotMap<AvailableTimeslotProviders>]> {
+		const serviceProviderLookup = new ServiceProvidersLookup();
+		const aggregator = new AggregatorTimeslotProviders(serviceProviderLookup);
 		const hasLabelFilter = labelIds && labelIds.length > 0;
 
 		const service = await this.servicesRepository.getServiceWithTimeslotsSchedule(serviceId);
 		if (!service) {
-			return aggregator.getEntries();
+			return [serviceProviderLookup, aggregator.getEntries()];
 		}
 
 		const serviceProviders = await this.serviceProvidersRepo.getServiceProviders({
 			ids: serviceProviderIds,
 			serviceId,
-			includeTimeslotsSchedule: !hasLabelFilter,
-			timeslotsScheduleOptions: this.createTimeslotScheduleOptions(minStartTime, maxEndTime),
+			includeTimeslotsSchedule: false,
 			skipAuthorisation: true, // loads all SPs regardless of user role
+			skipGroupMap: true,
+			skipService: true,
 		});
+		serviceProviderLookup.addMany(serviceProviders);
 
 		const oneOffTimeslots = await this.oneOffTimeslotsRepository.search({
 			serviceId,
@@ -386,37 +384,62 @@ export class TimeslotsService {
 
 		const oneOffTimeslotsLookup = groupByKey(oneOffTimeslots, (e) => e.serviceProviderId);
 
-		let validServiceTimeslots = [];
-		if (!hasLabelFilter) {
-			validServiceTimeslots = Array.from(
-				service.timeslotsSchedule?.generateValidTimeslots({
-					startDatetime: minStartTime,
-					endDatetime: maxEndTime,
-				}) || [],
-			);
-		}
+		const range = {
+			startDatetime: minStartTime,
+			endDatetime: maxEndTime,
+		};
 
-		for (const provider of serviceProviders) {
+		const processor = async (provider: ServiceProvider, timeslotItems: TimeslotItem[]) => {
 			const oneOffTimeslotsSP = oneOffTimeslotsLookup.get(provider.id);
 
-			const timeslotsSP = provider.timeslotsSchedule
-				? provider.timeslotsSchedule.generateValidTimeslots({
-						startDatetime: minStartTime,
-						endDatetime: maxEndTime,
-				  })
-				: validServiceTimeslots;
-
 			if (oneOffTimeslotsSP && oneOffTimeslotsSP.length > 0) {
-				const filteredTimeslots = this.filterTimeslotsOverrides(timeslotsSP, oneOffTimeslotsSP);
+				let timeslotsSP = new TimeslotGenerator(timeslotItems).generateValidTimeslots(range);
+				timeslotsSP = this.filterSpExpired(provider, timeslotsSP);
+				timeslotsSP = this.filterTimeslotsOverrides(timeslotsSP, oneOffTimeslotsSP);
+
+				await aggregator.aggregate(provider, timeslotsSP);
 				await aggregator.aggregate(provider, oneOffTimeslotsSP);
-				await aggregator.aggregate(provider, filteredTimeslots);
 			} else {
+				const timeslotsSP = new TimeslotGenerator(timeslotItems).generateValidTimeslots(range);
 				await aggregator.aggregate(provider, timeslotsSP);
 			}
 
 			await nextImmediateTick();
+		};
+
+		if (hasLabelFilter) {
+			//TimeslotItem (recurrent) has no labels, so skipping it.
+			for (const provider of serviceProviders) {
+				await processor(provider, []);
+			}
+
+			return [serviceProviderLookup, aggregator.getEntries()];
 		}
 
-		return aggregator.getEntries();
+		/* Stores TimeslotItem array for only 1 service provider at a time in memory. */
+		const timeslotsForServiceProviders = await this.timeslotsScheduleRepository.getTimeslotsForServiceProviders({
+			serviceId,
+			providerIds: serviceProviderIds,
+			...this.createTimeslotScheduleOptions(minStartTime, maxEndTime),
+		});
+
+		const processedSpIds = new Set<number>();
+		for await (const [spId, timeslotItems] of timeslotsForServiceProviders.getRecords()) {
+			const provider = serviceProviderLookup.get(spId);
+			if (!provider) {
+				continue;
+			}
+
+			await processor(provider, timeslotItems);
+			processedSpIds.add(spId);
+		}
+
+		const spNoSchedule = serviceProviders.filter((sp) => !processedSpIds.has(sp.id));
+		const serviceTimeslots = service.timeslotsSchedule?.timeslotItems || [];
+		for (const provider of spNoSchedule) {
+			await processor(provider, serviceTimeslots);
+		}
+
+		return [serviceProviderLookup, aggregator.getEntries()];
 	}
 }

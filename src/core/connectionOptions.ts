@@ -4,6 +4,8 @@ import { map } from 'lodash';
 import { getConfig } from '../config/app-config';
 import * as Migrations from '../migrations';
 import * as Entities from '../models/entities';
+import { PoolConfig } from 'pg';
+
 export function getConnectionOptions(): PostgresConnectionOptions {
 	const config = getConfig();
 	const LOCALHOST = '127.0.0.1';
@@ -26,5 +28,8 @@ export function getConnectionOptions(): PostgresConnectionOptions {
 		migrations: map(Migrations),
 		migrationsRun: false,
 		cli: { migrationsDir: 'src/migrations' },
+		extra: {
+			max: 20, //Max connection pool size
+		} as PoolConfig,
 	} as PostgresConnectionOptions;
 }

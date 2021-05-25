@@ -1,18 +1,21 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { DeleteResult } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { RepositoryBase } from '../../core/repository';
 import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { IEntityWithTimeslotsSchedule } from '../../models/interfaces';
-import { groupByKey, groupByKeyLastValue } from '../../tools/collections';
+import { groupByKeyLastValue } from '../../tools/collections';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { TimeslotItemsQueryAuthVisitor } from '../timeslotItems/timeslotItems.auth';
 import { TimeslotItemsRepository, TimeslotItemsSearchRequest } from '../timeslotItems/timeslotItems.repository';
 import { StopWatch } from '../../infrastructure/stopWatch';
-import { nextImmediateTick } from '../../infrastructure/immediateHelper';
 import { andWhere } from '../../tools/queryConditions';
 import { Weekday } from '../../enums/weekday';
+import { EmptyGroupRecordIterator, GroupRecordIterator, IGroupRecordIterator } from './groupRecordIterator';
+import { QueryStreamConfig, createQueryStream } from '../../tools/pgQueryStreamContract';
+import { ConnectionPool } from '../../core/db.connectionPool';
+import { PoolClient } from 'pg';
 
-type TimeslotItemDBQuery = {
+export type TimeslotItemDBQuery = {
 	item__id: number;
 	item__startTime: string;
 	item__endTime: string;
@@ -21,12 +24,16 @@ type TimeslotItemDBQuery = {
 	item__capacity: number;
 };
 
+const STREAM_BATCH_SIZE = 500;
+
 @InRequestScope
 export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedule> {
 	@Inject
 	private timeslotItemsRepository: TimeslotItemsRepository;
 	@Inject
 	private _userContext: UserContext;
+	@Inject
+	private connectionPool: ConnectionPool;
 
 	constructor() {
 		super(TimeslotsSchedule);
@@ -72,40 +79,115 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 		return entity;
 	}
 
+	private createCommonFilterCondition(commonOptions: {
+		weekDays?: Weekday[];
+		startTime?: TimeOfDay;
+		endTime?: TimeOfDay;
+	}): [string[], {}] {
+		const { weekDays, startTime, endTime } = commonOptions;
+
+		const weekDayCondition = weekDays && weekDays.length > 0 ? 'item."_weekDay" IN (:...weekDays)' : '';
+		const startTimeCondition = startTime ? 'item."_endTime" > :startTime' : '';
+		const endTimeCondition = endTime ? 'item."_startTime" < :endTime' : '';
+
+		return [
+			[weekDayCondition, startTimeCondition, endTimeCondition],
+			{
+				weekDays,
+				startTime: startTime?.toString(),
+				endTime: endTime?.toString(),
+			},
+		];
+	}
+
+	/* No auth in this method */
+	public async getTimeslotsForServiceProviders(options: {
+		serviceId: number;
+		providerIds?: number[];
+		weekDays?: Weekday[];
+		startTime?: TimeOfDay;
+		endTime?: TimeOfDay;
+	}): Promise<IGroupRecordIterator<TimeslotItem>> {
+		const { serviceId, providerIds, ...commonOptions } = options;
+
+		const serviceCondition = 'sp."_serviceId" = :serviceId';
+		const providersCondition =
+			providerIds && providerIds.length > 0 ? 'sp._id IN (:...providerIds)' : 'sp._id IS NOT NULL';
+		const [commonFilter, commonParams] = this.createCommonFilterCondition(commonOptions);
+
+		const query = await (await this.getEntityManager())
+			.getRepository<Repository<TimeslotItem>>(TimeslotItem)
+			.createQueryBuilder('item')
+			.where(andWhere([serviceCondition, providersCondition, ...commonFilter]), {
+				serviceId,
+				providerIds,
+				...commonParams,
+			})
+			.leftJoin('service_provider', 'sp', 'sp."_timeslotsScheduleId" = item."_timeslotsScheduleId"')
+			.addSelect('sp._id', 'spId')
+			.orderBy('sp._id');
+
+		const [sql, parameters] = query.getQueryAndParameters();
+		let client: PoolClient;
+
+		const iterator = new GroupRecordIterator(
+			async () => {
+				const queryStream = createQueryStream(sql, parameters, {
+					highWaterMark: STREAM_BATCH_SIZE * 2,
+					batchSize: STREAM_BATCH_SIZE,
+				} as QueryStreamConfig);
+
+				client = await this.connectionPool.getClient();
+				return client.query(queryStream);
+			},
+			async () => client?.release(),
+			'spId',
+			TimeslotsScheduleRepository.mapFromDB,
+		);
+
+		return iterator;
+	}
+
 	private async loadTimeslotsForSchedules(options: {
 		scheduleIds: number[];
 		weekDays?: Weekday[];
 		startTime?: TimeOfDay;
 		endTime?: TimeOfDay;
-	}): Promise<TimeslotItem[]> {
-		const { scheduleIds, weekDays, startTime, endTime } = options;
-		if (scheduleIds.length === 0) return [];
+	}): Promise<IGroupRecordIterator<TimeslotItem>> {
+		const { scheduleIds, ...commonOptions } = options;
+		if (scheduleIds.length === 0) return new EmptyGroupRecordIterator<TimeslotItem>();
 
-		const loadTimeslots = new StopWatch('Load timeslots');
-		try {
-			const scheduleIdCondition = 'item._timeslotsScheduleId IN (:...scheduleIds)';
-			const weekDayCondition = weekDays && weekDays.length > 0 ? 'item."_weekDay" IN (:...weekDays)' : '';
-			const startTimeCondition = startTime ? 'item."_endTime" > :startTime' : '';
-			const endTimeCondition = endTime ? 'item."_startTime" < :endTime' : '';
+		const scheduleIdCondition = 'item._timeslotsScheduleId IN (:...scheduleIds)';
+		const [commonFilter, commonParams] = this.createCommonFilterCondition(commonOptions);
 
-			const entries = await (await this.getEntityManager())
-				.getRepository(TimeslotItem)
-				.createQueryBuilder('item')
-				.where(andWhere([scheduleIdCondition, weekDayCondition, startTimeCondition, endTimeCondition]), {
-					scheduleIds,
-					weekDays,
-					startTime: startTime?.toString(),
-					endTime: endTime?.toString(),
-				})
-				.getRawMany<TimeslotItemDBQuery>();
+		const query = await (await this.getEntityManager())
+			.getRepository<Repository<TimeslotItem>>(TimeslotItem)
+			.createQueryBuilder('item')
+			.where(andWhere([scheduleIdCondition, ...commonFilter]), {
+				scheduleIds,
+				...commonParams,
+			})
+			.orderBy('item._timeslotsScheduleId');
 
-			await nextImmediateTick();
-			const timeslots = entries.map(TimeslotsScheduleRepository.mapFromDB);
-			await nextImmediateTick();
-			return timeslots;
-		} finally {
-			loadTimeslots.stop();
-		}
+		const [sql, parameters] = query.getQueryAndParameters();
+		let client: PoolClient;
+
+		const iterator = new GroupRecordIterator(
+			async () => {
+				const queryStream = createQueryStream(sql, parameters, {
+					highWaterMark: STREAM_BATCH_SIZE * 2,
+					batchSize: STREAM_BATCH_SIZE,
+				});
+
+				client = await this.connectionPool.getClient();
+				return client.query(queryStream);
+			},
+			async () => client?.release(),
+			'item__timeslotsScheduleId',
+			TimeslotsScheduleRepository.mapFromDB,
+		);
+
+		return iterator;
 	}
 
 	public async getTimeslotsSchedulesNoAuth(options: {
@@ -122,12 +204,15 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 			.createQueryBuilder('timeslotsSchedule')
 			.where('timeslotsSchedule._id IN (:...scheduleIds)', { scheduleIds })
 			.getMany();
+		const scheduleLookup = groupByKeyLastValue(schedules, (s) => s._id);
+		schedules.forEach((s) => (s.timeslotItems = []));
 
-		const timeslots = await this.loadTimeslotsForSchedules(options);
-
-		const timeslotsLookup = groupByKey(timeslots, (i) => i._timeslotsScheduleId);
-		for (const schedule of schedules) {
-			schedule.timeslotItems = timeslotsLookup.get(schedule._id) || [];
+		const timeslotIterator = await this.loadTimeslotsForSchedules(options);
+		for await (const [scheduleId, timeslotItems] of timeslotIterator.getRecords()) {
+			const schedule = scheduleLookup.get(scheduleId);
+			if (schedule) {
+				schedule.timeslotItems = timeslotItems;
+			}
 		}
 
 		return schedules;
@@ -143,15 +228,20 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 	): Promise<T[]> {
 		const scheduleIds = entries.map((e) => e.timeslotsScheduleId).filter((id) => !!id);
 
-		const schedulesById = groupByKeyLastValue(
-			await this.getTimeslotsSchedulesNoAuth({ ...timeslotsScheduleOptions, scheduleIds }),
-			(s) => s._id,
-		);
+		const loadTimeslots = new StopWatch('Load timeslots for schedule');
+		try {
+			const schedulesById = groupByKeyLastValue(
+				await this.getTimeslotsSchedulesNoAuth({ ...timeslotsScheduleOptions, scheduleIds }),
+				(s) => s._id,
+			);
 
-		for (const entry of entries.filter((c) => !!c.timeslotsScheduleId)) {
-			entry.timeslotsSchedule = schedulesById.get(entry.timeslotsScheduleId);
+			for (const entry of entries.filter((c) => !!c.timeslotsScheduleId)) {
+				entry.timeslotsSchedule = schedulesById.get(entry.timeslotsScheduleId);
+			}
+			return entries;
+		} finally {
+			loadTimeslots.stop();
 		}
-		return entries;
 	}
 
 	public async deleteTimeslotsSchedule(scheduleId: number): Promise<DeleteResult> {

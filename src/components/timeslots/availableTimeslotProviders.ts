@@ -1,17 +1,24 @@
 import { Booking, ServiceProvider, Unavailability } from '../../models';
 import { groupByKey } from '../../tools/collections';
-import { TimeslotServiceProvider, TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
+import {
+	ITimeslotServiceProvider,
+	TimeslotServiceProviderFactory,
+	TimeslotServiceProviderResult,
+} from '../../models/timeslotServiceProvider';
+import { ServiceProvidersLookup } from './aggregatorTimeslotProviders';
 import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
-import { AggregatedEntry } from './timeslotAggregator';
 
+const CapacityZero = { capacity: 0 } as TimeslotWithCapacity;
 export class AvailableTimeslotProviders {
 	public startTime: number;
 	public endTime: number;
-	private _timeslotServiceProviders: Map<number, TimeslotServiceProvider>;
+	private _timeslotServiceProviders: Readonly<{ [key: string]: Readonly<ITimeslotServiceProvider> }>;
+	private _providerLookup: ServiceProvidersLookup;
 	private _unassignedPendingBookingCount: number;
 
-	constructor() {
-		this._timeslotServiceProviders = new Map<number, TimeslotServiceProvider>();
+	constructor(providerLookup: ServiceProvidersLookup) {
+		this._timeslotServiceProviders = {};
+		this._providerLookup = providerLookup;
 		this._unassignedPendingBookingCount = 0;
 	}
 
@@ -22,10 +29,11 @@ export class AvailableTimeslotProviders {
 	public *getTimeslotServiceProviders(skipUnassigned = false): Iterable<TimeslotServiceProviderResult> {
 		const totalAvailability = skipUnassigned ? undefined : this.getInternalAvailabilityCount();
 
-		for (const timeslotServiceProvider of this._timeslotServiceProviders.values()) {
+		for (const [providerId, timeslotServiceProvider] of Object.entries(this._timeslotServiceProviders)) {
 			if (timeslotServiceProvider.isVisibleByUser && timeslotServiceProvider.isValid()) {
+				const provider = this._providerLookup.get(providerId);
 				yield {
-					serviceProvider: timeslotServiceProvider.serviceProvider,
+					serviceProvider: provider,
 					capacity: timeslotServiceProvider.capacity,
 					acceptedBookings: timeslotServiceProvider.acceptedBookings,
 					pendingBookings: timeslotServiceProvider.pendingBookings,
@@ -42,9 +50,10 @@ export class AvailableTimeslotProviders {
 
 	private getInternalAvailabilityCount(): number {
 		let sumOfAvailability = 0;
-		this._timeslotServiceProviders.forEach((item) => {
+		for (const item of Object.values(this._timeslotServiceProviders)) {
 			sumOfAvailability += item.getAvailabilityCount();
-		});
+		}
+
 		return Math.max(sumOfAvailability - this._unassignedPendingBookingCount, 0);
 	}
 
@@ -64,69 +73,90 @@ export class AvailableTimeslotProviders {
 		return false;
 	}
 
-	public static empty(startTime: number, endTime: number): AvailableTimeslotProviders {
-		const instance = new AvailableTimeslotProviders();
+	public static empty(
+		providerLookup: ServiceProvidersLookup,
+		startTime: number,
+		endTime: number,
+	): AvailableTimeslotProviders {
+		const instance = new AvailableTimeslotProviders(providerLookup);
 		instance.startTime = startTime;
 		instance.endTime = endTime;
 		return instance;
 	}
 
-	public static create(entry: AggregatedEntry<ServiceProvider>): AvailableTimeslotProviders {
-		const instance = AvailableTimeslotProviders.empty(
-			entry.getTimeslot().startTimeNative,
-			entry.getTimeslot().endTimeNative,
-		);
-		instance.setRelatedServiceProviders(entry.getGroups());
-		return instance;
+	private setTimeslotSp(spId: string | number, timeslotSp: Readonly<ITimeslotServiceProvider>) {
+		(this._timeslotServiceProviders as {})[spId] = timeslotSp;
 	}
 
-	public setRelatedServiceProviders(providers: ReadonlyMap<ServiceProvider, TimeslotWithCapacity>) {
-		this._timeslotServiceProviders = new Map<number, TimeslotServiceProvider>();
-		for (const item of providers) {
-			const [spItem, timeslotCapacity] = item;
-			const spTimeslotItem = new TimeslotServiceProvider(spItem, timeslotCapacity);
-			if (!spTimeslotItem.serviceProvider.isLicenceExpireNative(timeslotCapacity.startTimeNative)) {
-				this._timeslotServiceProviders.set(spItem.id, spTimeslotItem);
-			}
+	public addServiceProvider(provider: ServiceProvider, timeslotCapacity: TimeslotWithCapacity) {
+		this._providerLookup.add(provider);
+		const spTimeslotItem = TimeslotServiceProviderFactory.create(timeslotCapacity);
+		this.setTimeslotSp(provider.id, spTimeslotItem);
+	}
+
+	private getWritableTimeslot(providerId: string | number): ITimeslotServiceProvider | undefined {
+		const readable = this._timeslotServiceProviders[providerId];
+		if (!readable) {
+			return undefined;
 		}
+
+		const writable = readable.makeWritable();
+		if (readable !== writable) {
+			this.setTimeslotSp(providerId, writable);
+		}
+
+		return writable;
+	}
+
+	public *getServiceProviders(): Iterable<ServiceProvider> {
+		for (const key of Object.keys(this._timeslotServiceProviders)) {
+			yield this._providerLookup.get(key);
+		}
+	}
+
+	public hasServiceProviderId(providerId: number) {
+		return !!this._timeslotServiceProviders[providerId];
 	}
 
 	public setBookedServiceProviders(bookings: Booking[]) {
 		const bookedProviderIds = groupByKey(bookings, (b) => b.serviceProviderId);
+
 		for (const item of bookedProviderIds) {
 			const [spId, spBookings] = item;
-			const spTimeslotItem = this._timeslotServiceProviders.get(spId);
+			const spTimeslotItem = this.getWritableTimeslot(spId);
 			if (spTimeslotItem) {
 				spTimeslotItem.acceptedBookings = spBookings;
 			} else {
-				const newTimeslotItem = new TimeslotServiceProvider(spBookings[0].serviceProvider, { capacity: 0 });
+				const provider = spBookings[0].serviceProvider;
+				this.addServiceProvider(provider, CapacityZero);
+				const newTimeslotItem = this.getWritableTimeslot(provider.id);
 				newTimeslotItem.acceptedBookings = spBookings;
-				this._timeslotServiceProviders.set(spId, newTimeslotItem);
 			}
 		}
 	}
 
 	public setOverlappingServiceProviders(providerIds: number[]) {
-		providerIds.forEach((id) => {
-			const spTimeslotItem = this._timeslotServiceProviders.get(id);
+		for (const id of providerIds) {
+			const spTimeslotItem = this.getWritableTimeslot(id);
 			if (spTimeslotItem) spTimeslotItem.isOverlapped = true;
-		});
+		}
 	}
 
 	public setUnavailability(unavailability: Unavailability) {
 		if (unavailability.allServiceProviders) {
-			this._timeslotServiceProviders.forEach((spTimeslot) => {
+			for (const providerId of Object.keys(this._timeslotServiceProviders)) {
+				const spTimeslot = this.getWritableTimeslot(providerId);
 				spTimeslot.isUnavailable = true;
-			});
+			}
 		} else {
-			unavailability.serviceProviders.forEach((unavailableSp) => {
-				const spTimeslotItem = this._timeslotServiceProviders.get(unavailableSp.id);
+			for (const unavailableSp of unavailability.serviceProviders) {
+				const spTimeslotItem = this.getWritableTimeslot(unavailableSp.id);
 				if (spTimeslotItem) spTimeslotItem.isUnavailable = true;
-			});
+			}
 		}
 	}
 
-	public setPendingBookings(bookings: Booking[]): void {
+	public addPendingBookings(bookings: Booking[]): void {
 		const assignedPendingBookings = bookings.filter((b) => b.serviceProviderId);
 		const spWithPendingBooking = groupByKey(assignedPendingBookings, (b) => b.serviceProviderId);
 
@@ -134,17 +164,25 @@ export class AvailableTimeslotProviders {
 
 		for (const item of spWithPendingBooking) {
 			const [spid, pendingBookings] = item;
-			const spTimeslotItem = this._timeslotServiceProviders.get(spid);
-			if (spTimeslotItem) spTimeslotItem.pendingBookings = pendingBookings;
+			const spTimeslotItem = this.getWritableTimeslot(spid);
+			if (spTimeslotItem) {
+				spTimeslotItem.pendingBookings = [...spTimeslotItem.pendingBookings, ...pendingBookings];
+			}
 		}
 	}
 
 	public setVisibleServiceProviders(providerIds: number[]): void {
-		this._timeslotServiceProviders.forEach((item) => (item.isVisibleByUser = false));
+		const visibility: { [key: string]: Boolean } = providerIds.reduce((r, id) => {
+			r[id] = true;
+			return r;
+		}, {});
 
-		for (const spId of providerIds) {
-			const spTimeslotItem = this._timeslotServiceProviders.get(spId);
-			if (spTimeslotItem) spTimeslotItem.isVisibleByUser = true;
+		for (const providerId of Object.keys(this._timeslotServiceProviders)) {
+			const isVisible = !!visibility[providerId];
+			const timeslotSp = this._timeslotServiceProviders[providerId];
+			if (timeslotSp.isVisibleByUser !== isVisible) {
+				this.setTimeslotSp(providerId, timeslotSp.setIsVisibleByUser(isVisible));
+			}
 		}
 	}
 }

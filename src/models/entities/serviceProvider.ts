@@ -175,6 +175,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 	}
 
 	@Column({ nullable: true })
+	@Index()
 	private _timeslotsScheduleId: number;
 
 	public set timeslotsScheduleId(id: number) {

@@ -22,6 +22,7 @@ import { UserContextMock } from '../../../../infrastructure/auth/__mocks__/userC
 import { getConfig } from '../../../../config/app-config';
 import { IPagedEntities } from '../../../../core/pagedEntities';
 import { ContainerContext, ContainerContextHolder } from '../../../../infrastructure/containerContext';
+import { ServiceProvidersLookup } from '../../../../components/timeslots/aggregatorTimeslotProviders';
 
 const createTimeslot = (startTime: Date, endTime: Date, capacity?: number) => {
 	return {
@@ -139,14 +140,11 @@ describe('Booking validation tests', () => {
 			noNric: false,
 		} as Service;
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
-			const entry = new AvailableTimeslotProviders();
+			const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 			entry.startTime = new Date(2050, 8, 26, 8, 0).getTime();
 			entry.endTime = new Date(2050, 8, 26, 8, 45).getTime();
 
-			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
-
-			entry.setRelatedServiceProviders(map);
+			entry.addServiceProvider(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
 
 			return Promise.resolve([entry]);
 		});
@@ -178,14 +176,11 @@ describe('Booking validation tests', () => {
 			noNric: false,
 		} as Service;
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
-			const entry = new AvailableTimeslotProviders();
+			const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
 			entry.endTime = new Date(2020, 8, 26, 8, 45).getTime();
 
-			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
-
-			entry.setRelatedServiceProviders(map);
+			entry.addServiceProvider(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
 
 			return Promise.resolve([entry]);
 		});
@@ -594,14 +589,11 @@ describe('Booking validation tests', () => {
 			} as IPagedEntities<Booking>),
 		);
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
-			const entry = new AvailableTimeslotProviders();
+			const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 			entry.startTime = new Date(2050, 8, 26, 8, 0).getTime();
 			entry.endTime = new Date(2050, 8, 26, 8, 45).getTime();
 
-			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
-
-			entry.setRelatedServiceProviders(map);
+			entry.addServiceProvider(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
 
 			return Promise.resolve([entry]);
 		});
@@ -649,14 +641,11 @@ describe('Booking validation tests', () => {
 		);
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
-			const entry = new AvailableTimeslotProviders();
+			const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 			entry.startTime = new Date(2050, 8, 26, 7, 15).getTime();
 			entry.endTime = new Date(2050, 8, 26, 7, 45).getTime();
 
-			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
-
-			entry.setRelatedServiceProviders(map);
+			entry.addServiceProvider(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
 
 			return Promise.resolve([entry]);
 		});
@@ -704,14 +693,11 @@ describe('Booking validation tests', () => {
 		);
 
 		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
-			const entry = new AvailableTimeslotProviders();
+			const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 			entry.startTime = DateHelper.addMinutes(start, 15).getTime();
 			entry.endTime = DateHelper.addMinutes(start, 45).getTime();
 
-			const map = new Map<ServiceProvider, TimeslotWithCapacity>();
-			map.set(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
-
-			entry.setRelatedServiceProviders(map);
+			entry.addServiceProvider(serviceProvider, createTimeslotNative(entry.startTime, entry.endTime, 1));
 
 			return Promise.resolve([entry]);
 		});
