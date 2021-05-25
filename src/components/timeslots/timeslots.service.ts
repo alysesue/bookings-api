@@ -134,7 +134,7 @@ export class TimeslotsService {
 			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
 			const elementPendingBookings = pendingBookingsLookup.get(elementKey);
 			if (elementPendingBookings) {
-				element.setPendingBookings(elementPendingBookings);
+				element.addPendingBookings(elementPendingBookings);
 			}
 		});
 	}
@@ -146,7 +146,7 @@ export class TimeslotsService {
 			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
 			const elementOnHoldBookings = onHoldBookingsLookup.get(elementKey);
 			if (elementOnHoldBookings) {
-				element.setPendingBookings(elementOnHoldBookings);
+				element.addPendingBookings(elementOnHoldBookings);
 			}
 		});
 	}

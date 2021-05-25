@@ -156,7 +156,7 @@ export class AvailableTimeslotProviders {
 		}
 	}
 
-	public setPendingBookings(bookings: Booking[]): void {
+	public addPendingBookings(bookings: Booking[]): void {
 		const assignedPendingBookings = bookings.filter((b) => b.serviceProviderId);
 		const spWithPendingBooking = groupByKey(assignedPendingBookings, (b) => b.serviceProviderId);
 
@@ -165,7 +165,9 @@ export class AvailableTimeslotProviders {
 		for (const item of spWithPendingBooking) {
 			const [spid, pendingBookings] = item;
 			const spTimeslotItem = this.getWritableTimeslot(spid);
-			if (spTimeslotItem) spTimeslotItem.pendingBookings = pendingBookings;
+			if (spTimeslotItem) {
+				spTimeslotItem.pendingBookings = [...spTimeslotItem.pendingBookings, ...pendingBookings];
+			}
 		}
 	}
 
@@ -177,9 +179,9 @@ export class AvailableTimeslotProviders {
 
 		for (const providerId of Object.keys(this._timeslotServiceProviders)) {
 			const isVisible = !!visibility[providerId];
-			if (this._timeslotServiceProviders[providerId].isVisibleByUser !== isVisible) {
-				const item = this.getWritableTimeslot(providerId);
-				item.isVisibleByUser = isVisible;
+			const timeslotSp = this._timeslotServiceProviders[providerId];
+			if (timeslotSp.isVisibleByUser !== isVisible) {
+				this.setTimeslotSp(providerId, timeslotSp.setIsVisibleByUser(isVisible));
 			}
 		}
 	}

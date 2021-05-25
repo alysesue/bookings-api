@@ -27,7 +27,7 @@ export type TimeslotServiceProviderResult = {
 export interface ITimeslotServiceProvider {
 	readonly capacity: number;
 	readonly isRecurring: boolean;
-	isVisibleByUser: Boolean;
+	readonly isVisibleByUser: Boolean;
 
 	acceptedBookings: ReadonlyArray<Booking>;
 	pendingBookings: ReadonlyArray<Booking>;
@@ -40,6 +40,7 @@ export interface ITimeslotServiceProvider {
 	readonly description: string | undefined;
 
 	makeWritable(): ITimeslotServiceProvider;
+	setIsVisibleByUser(value: boolean): Readonly<ITimeslotServiceProvider>;
 	getAvailabilityCount(maxAvailability?: number): number;
 	isValid(): boolean;
 }
@@ -114,12 +115,13 @@ class TimeslotServiceProvider implements ITimeslotServiceProvider {
 		return this._isUnavailable;
 	}
 
-	public set isVisibleByUser(value: boolean) {
+	public setIsVisibleByUser(value: boolean): Readonly<ITimeslotServiceProvider> {
 		if (!value) {
 			this._isHiddenFromUser = !value;
 		} else {
 			delete this._isHiddenFromUser;
 		}
+		return this;
 	}
 
 	public get isVisibleByUser(): boolean {
@@ -158,7 +160,7 @@ class TimeslotServiceProvider implements ITimeslotServiceProvider {
 
 	public static create(timeslotData: TimeslotInputData): Readonly<ITimeslotServiceProvider> {
 		let obj: Readonly<ITimeslotServiceProvider> =
-			ReadonlyTimeslotServiceProvider.getFromCache(timeslotData.capacity || 0) ||
+			ReadonlyTimeslotServiceProvider.getFromCache(timeslotData.capacity || 0, true) ||
 			new TimeslotServiceProvider(timeslotData.capacity);
 		// Only makes it writable if any of the data is customised.
 
@@ -219,12 +221,36 @@ function isValid(timeslot: ITimeslotServiceProvider) {
 	return timeslot.capacity > 0;
 }
 
-/***
- * Cache for Timeslot with IsRecurring = true, isVisibleByUser = true, and capacity = any
- */
 class ReadonlyTimeslotServiceProvider implements Readonly<ITimeslotServiceProvider> {
+	// Cache for Timeslot with IsRecurring = true, isVisibleByUser = true, and capacity = any
 	private static readonly _cache: { [k: string]: ReadonlyTimeslotServiceProvider } = {};
+	// Cache for Timeslot with IsRecurring = true, isVisibleByUser = false, and capacity = any
+	private static readonly _notVisibleByUserCache: { [k: string]: ReadonlyTimeslotServiceProvider } = {};
+
+	//This instance is reused across different times and service providers, so everything must be readonly.
 	private readonly _capacity: number;
+	private readonly _isVisibleByUser: boolean;
+
+	private constructor(capacity: number, isVisibleByUser: boolean) {
+		this._capacity = capacity;
+		this._isVisibleByUser = isVisibleByUser;
+	}
+
+	public static getFromCache(
+		capacity: number,
+		isVisibleByUser: boolean,
+	): ReadonlyTimeslotServiceProvider | undefined {
+		if (capacity > 1000) return undefined;
+
+		const cacheObj = isVisibleByUser ? this._cache : this._notVisibleByUserCache;
+
+		let instance = cacheObj[capacity];
+		if (!instance) {
+			instance = new ReadonlyTimeslotServiceProvider(capacity, isVisibleByUser);
+			cacheObj[capacity] = instance;
+		}
+		return instance;
+	}
 
 	get capacity(): number {
 		return this._capacity;
@@ -234,7 +260,7 @@ class ReadonlyTimeslotServiceProvider implements Readonly<ITimeslotServiceProvid
 		return true;
 	}
 	public get isVisibleByUser(): Boolean {
-		return true;
+		return this._isVisibleByUser;
 	}
 
 	public get acceptedBookings(): readonly Booking[] {
@@ -268,19 +294,11 @@ class ReadonlyTimeslotServiceProvider implements Readonly<ITimeslotServiceProvid
 		return undefined;
 	}
 
-	private constructor(capacity: number) {
-		this._capacity = capacity;
-	}
-
-	public static getFromCache(capacity: number): ReadonlyTimeslotServiceProvider | undefined {
-		if (capacity > 1000) return undefined;
-
-		let instance = this._cache[capacity];
-		if (!instance) {
-			instance = new ReadonlyTimeslotServiceProvider(capacity);
-			this._cache[capacity] = instance;
+	public setIsVisibleByUser(value: boolean): Readonly<ITimeslotServiceProvider> {
+		if (this._isVisibleByUser === value) {
+			return this;
 		}
-		return instance;
+		return ReadonlyTimeslotServiceProvider.getFromCache(this._capacity, value);
 	}
 
 	public makeWritable(): ITimeslotServiceProvider {
