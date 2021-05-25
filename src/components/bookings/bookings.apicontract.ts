@@ -1,5 +1,5 @@
+import { BookingStatus } from '../../models/bookingStatus';
 import { PagingRequest } from '../../apicontract';
-import { BookingStatus, ServiceProvider } from '../../models';
 import { DynamicValueContract, PersistDynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
 
 export class BookingAcceptRequest {
@@ -48,11 +48,6 @@ export class BookingUpdateRequest extends BookingRequest {
 	}
 
 	public citizenUinFinUpdated: boolean;
-}
-
-export interface RescheduleBookingRequest extends BookingRequest {
-	status: BookingStatus;
-	serviceProvider: ServiceProvider;
 }
 
 export type BookingResponse = {

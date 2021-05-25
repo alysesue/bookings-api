@@ -9,7 +9,7 @@ import {
 } from '../../../models';
 import { BookingsMapper } from '../bookings.mapper';
 import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
-import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entities/booking';
+import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entities/jsonModels';
 import { Container } from 'typescript-ioc';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
@@ -18,14 +18,17 @@ import { BookingDetailsRequest } from '../bookings.apicontract';
 import { DynamicFieldsServiceMock } from '../../../components/dynamicFields/__mocks__/dynamicFields.service.mock';
 import { bookingStatusArray } from '../../../models/bookingStatus';
 import { IBookingsValidator } from '../validator/bookings.validation';
-import { DynamicValuesMapper, MapRequestOptionalResult } from '../../../components/dynamicFields/dynamicValues.mapper';
+import {
+	DynamicValuesRequestMapper,
+	MapRequestOptionalResult,
+} from '../../../components/dynamicFields/dynamicValues.mapper';
 
 jest.mock('../../../models/uinFinConfiguration');
 jest.mock('../../../components/dynamicFields/dynamicValues.mapper');
 
 beforeAll(() => {
 	Container.bind(IdHasher).to(IdHasherMock);
-	Container.bind(DynamicValuesMapper).to(DynamicValuesMapperMock);
+	Container.bind(DynamicValuesRequestMapper).to(DynamicValuesRequestMapperMock);
 });
 
 describe('Bookings mapper tests', () => {
@@ -102,7 +105,7 @@ describe('Bookings mapper tests', () => {
 			singleSelectionValue: 'English',
 		} as DynamicValueJsonModel;
 
-		DynamicValuesMapperMock.mapDynamicValuesRequest.mockImplementation(() =>
+		DynamicValuesRequestMapperMock.mapDynamicValuesRequest.mockImplementation(() =>
 			Promise.resolve({ result: [dynamicValueMock] } as MapRequestOptionalResult),
 		);
 
@@ -114,7 +117,7 @@ describe('Bookings mapper tests', () => {
 		const booking = new Booking();
 		await mapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
-		expect(DynamicValuesMapperMock.mapDynamicValuesRequest).toBeCalled();
+		expect(DynamicValuesRequestMapperMock.mapDynamicValuesRequest).toBeCalled();
 		expect(validator.addCustomCitizenValidations).not.toBeCalled();
 		expect(booking.dynamicValues.length).toEqual(1);
 	});
@@ -136,7 +139,7 @@ describe('Bookings mapper tests', () => {
 			singleSelectionValue: 'English',
 		} as DynamicValueJsonModel;
 
-		DynamicValuesMapperMock.mapDynamicValuesRequest.mockImplementation(() =>
+		DynamicValuesRequestMapperMock.mapDynamicValuesRequest.mockImplementation(() =>
 			Promise.resolve({ result: [dynamicValueMock] } as MapRequestOptionalResult),
 		);
 
@@ -148,7 +151,7 @@ describe('Bookings mapper tests', () => {
 		const booking = new Booking();
 		await mapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
-		expect(DynamicValuesMapperMock.mapDynamicValuesRequest).not.toBeCalled();
+		expect(DynamicValuesRequestMapperMock.mapDynamicValuesRequest).not.toBeCalled();
 		expect(validator.addCustomCitizenValidations).not.toBeCalled();
 	});
 
@@ -162,7 +165,7 @@ describe('Bookings mapper tests', () => {
 		} as IBookingsValidator;
 
 		const validationError = new BusinessValidation({ code: 'abc', message: 'some validation' });
-		DynamicValuesMapperMock.mapDynamicValuesRequest.mockImplementation(() =>
+		DynamicValuesRequestMapperMock.mapDynamicValuesRequest.mockImplementation(() =>
 			Promise.resolve({
 				errorResult: [validationError],
 			} as MapRequestOptionalResult),
@@ -176,7 +179,7 @@ describe('Bookings mapper tests', () => {
 		const booking = new Booking();
 		await mapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
-		expect(DynamicValuesMapperMock.mapDynamicValuesRequest).toBeCalled();
+		expect(DynamicValuesRequestMapperMock.mapDynamicValuesRequest).toBeCalled();
 		expect(validator.addCustomCitizenValidations).toBeCalledWith(validationError);
 	});
 
@@ -195,10 +198,10 @@ class UinFinConfigurationMock implements Partial<UinFinConfiguration> {
 	}
 }
 
-class DynamicValuesMapperMock implements Partial<DynamicValuesMapper> {
+class DynamicValuesRequestMapperMock implements Partial<DynamicValuesRequestMapper> {
 	public static mapDynamicValuesRequest = jest.fn<Promise<MapRequestOptionalResult>, any>();
 
 	public async mapDynamicValuesRequest(...params): Promise<MapRequestOptionalResult> {
-		return await DynamicValuesMapperMock.mapDynamicValuesRequest(...params);
+		return await DynamicValuesRequestMapperMock.mapDynamicValuesRequest(...params);
 	}
 }

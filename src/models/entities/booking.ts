@@ -8,6 +8,7 @@ import { ServiceProvider } from './serviceProvider';
 import { Service } from './service';
 import { User } from './user';
 import { BookingChangeLog } from './bookingChangeLog';
+import { DynamicValueJsonModel } from './jsonModels';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
@@ -440,17 +441,3 @@ export class Booking {
 		this._dynamicValues = value;
 	}
 }
-
-export enum DynamicValueType {
-	SingleSelection = 'SingleSelection',
-	Text = 'Text',
-}
-
-export type DynamicValueJsonModel = {
-	fieldId: number;
-	fieldName: string;
-	type: DynamicValueType;
-	SingleSelectionKey?: number;
-	SingleSelectionValue?: string;
-	textValue?: string;
-};

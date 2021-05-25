@@ -63,10 +63,10 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 			.leftJoinAndSelect('service_relation._organisation', 'org_relation');
 	}
 
-	public async getBooking(bookingId: number): Promise<Booking> {
+	public async getBooking(bookingId: number, options: { byPassAuth?: boolean } = {}): Promise<Booking> {
 		const idCondition = 'booking."_id" = :id';
 
-		const query = await this.createSelectQuery([idCondition], { id: bookingId }, {});
+		const query = await this.createSelectQuery([idCondition], { id: bookingId }, options);
 		const entry = await query.getOne();
 		if (entry) {
 			await this.includeServiceProviders([entry]);

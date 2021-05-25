@@ -106,7 +106,7 @@ describe('Booking Integration tests', () => {
 				getBookingFunction: GetBookingFunction,
 				actionFunction: BookingActionFunction,
 			) => {
-				const _booking = await getBookingFunction(bookingId);
+				const _booking = await getBookingFunction(bookingId, {});
 				const [, newBooking] = await actionFunction(_booking);
 				return newBooking;
 			},

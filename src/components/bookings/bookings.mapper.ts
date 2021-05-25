@@ -8,7 +8,7 @@ import {
 import { UinFinConfiguration } from '../../models/uinFinConfiguration';
 import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { DynamicValuesMapper } from '../dynamicFields/dynamicValues.mapper';
+import { DynamicValuesMapper, DynamicValuesRequestMapper } from '../dynamicFields/dynamicValues.mapper';
 import { isErrorResult } from '../../errors';
 import { IBookingsValidator } from './validator/bookings.validation';
 import * as stringify from 'csv-stringify';
@@ -22,6 +22,8 @@ const MASK_REPLACE_VALUE = '*'.repeat(4);
 export class BookingsMapper {
 	@Inject
 	private dynamicValuesMapper: DynamicValuesMapper;
+	@Inject
+	private dynamicValuesRequestMapper: DynamicValuesRequestMapper;
 
 	public async mapDynamicValuesRequest(
 		bookingRequest: BookingDetailsRequest,
@@ -32,7 +34,7 @@ export class BookingsMapper {
 			return;
 		}
 
-		const mapResult = await this.dynamicValuesMapper.mapDynamicValuesRequest(
+		const mapResult = await this.dynamicValuesRequestMapper.mapDynamicValuesRequest(
 			bookingRequest.dynamicValues,
 			booking.serviceId,
 		);

@@ -95,7 +95,7 @@ export class BookingsService {
 	public async cancelBooking(bookingId: number): Promise<Booking> {
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
-			this.getBooking.bind(this),
+			this.getBookingInternal.bind(this),
 			this.cancelBookingInternal.bind(this),
 		);
 		this.bookingsSubject.notify({
@@ -107,10 +107,14 @@ export class BookingsService {
 	}
 
 	public async getBooking(bookingId: number): Promise<Booking> {
+		return this.getBookingInternal(bookingId, {});
+	}
+
+	private async getBookingInternal(bookingId: number, options: { byPassAuth?: boolean }): Promise<Booking> {
 		if (!bookingId) {
 			return null;
 		}
-		const booking = await this.bookingsRepository.getBooking(bookingId);
+		const booking = await this.bookingsRepository.getBooking(bookingId, options);
 		if (!booking) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingId} not found`);
 		}
@@ -121,7 +125,7 @@ export class BookingsService {
 		const acceptAction = (_booking) => this.acceptBookingInternal(_booking, acceptRequest);
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
-			this.getBooking.bind(this),
+			this.getBookingInternal.bind(this),
 			acceptAction,
 		);
 		this.bookingsSubject.notify({
@@ -142,7 +146,7 @@ export class BookingsService {
 		};
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
-			this.getBooking.bind(this),
+			this.getBookingInternal.bind(this),
 			updateAction,
 		);
 		this.bookingsSubject.notify({
@@ -156,7 +160,7 @@ export class BookingsService {
 	public async rejectBooking(bookingId: number): Promise<Booking> {
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
-			this.getBooking.bind(this),
+			this.getBookingInternal.bind(this),
 			this.rejectBookingInternal.bind(this),
 		);
 		this.bookingsSubject.notify({
@@ -171,7 +175,7 @@ export class BookingsService {
 		const rescheduleAction = (_booking) => this.rescheduleInternal(_booking, rescheduleRequest);
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
-			this.getBooking.bind(this),
+			this.getBookingInternal.bind(this),
 			rescheduleAction,
 		);
 		this.bookingsSubject.notify({
@@ -196,7 +200,11 @@ export class BookingsService {
 		bypassCaptchaAndAutoAccept = false,
 	): Promise<Booking> {
 		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptchaAndAutoAccept);
-		const booking = await this.changeLogsService.executeAndLogAction(null, this.getBooking.bind(this), saveAction);
+		const booking = await this.changeLogsService.executeAndLogAction(
+			null,
+			this.getBookingInternal.bind(this),
+			saveAction,
+		);
 		this.bookingsSubject.notify({
 			booking,
 			bookingType: BookingType.Created,
@@ -473,7 +481,7 @@ export class BookingsService {
 		const validateAction = (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest);
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
-			this.getBooking.bind(this),
+			this.getBookingInternal.bind(this),
 			validateAction,
 		);
 		this.bookingsSubject.notify({

@@ -1,8 +1,8 @@
 import { Container } from 'typescript-ioc';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
-import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entities/booking';
-import { DynamicValuesMapper, MapRequestOptionalResult } from '../dynamicValues.mapper';
+import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entities/jsonModels';
+import { DynamicValuesMapper, DynamicValuesRequestMapper, MapRequestOptionalResult } from '../dynamicValues.mapper';
 import {
 	DynamicValueContract,
 	DynamicValueTypeContract,
@@ -145,7 +145,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		dynamicValue2.type = DynamicValueTypeContract.Text;
 		dynamicValue2.textValue = 'some text';
 
-		const mapper = Container.get(DynamicValuesMapper);
+		const mapper = Container.get(DynamicValuesRequestMapper);
 		const dynamicReturn = await mapper.mapDynamicValuesRequest([dynamicValue, dynamicValue2], 100);
 
 		expect(dynamicReturn).toEqual({
@@ -172,7 +172,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 			Promise.resolve([createSelectFieldEntity(), createTextField()]),
 		);
 
-		const mapper = Container.get(DynamicValuesMapper);
+		const mapper = Container.get(DynamicValuesRequestMapper);
 		const dynamicReturn = await mapper.mapDynamicValuesRequest([], 100);
 
 		expect(dynamicReturn).toEqual({
@@ -196,7 +196,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 			Promise.resolve([createSelectFieldEntity(), createTextField()]),
 		);
 
-		const mapper = Container.get(DynamicValuesMapper);
+		const mapper = Container.get(DynamicValuesRequestMapper);
 		const dynamicReturn = await mapper.mapDynamicValuesRequest([], 100);
 
 		expect(dynamicReturn).toEqual({ result: [] } as MapRequestOptionalResult);
@@ -217,7 +217,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		dynamicValue2.type = DynamicValueTypeContract.Text;
 		dynamicValue2.textValue = undefined;
 
-		const mapper = Container.get(DynamicValuesMapper);
+		const mapper = Container.get(DynamicValuesRequestMapper);
 		const dynamicReturn = await mapper.mapDynamicValuesRequest([dynamicValue, dynamicValue2], 100);
 
 		expect(dynamicReturn).toEqual({
@@ -249,7 +249,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		dynamicValue2.type = DynamicValueTypeContract.SingleSelection;
 		dynamicValue2.singleSelectionKey = 1;
 
-		const mapper = Container.get(DynamicValuesMapper);
+		const mapper = Container.get(DynamicValuesRequestMapper);
 		const dynamicReturn = await mapper.mapDynamicValuesRequest([dynamicValue, dynamicValue2], 100);
 
 		expect(dynamicReturn).toEqual({
@@ -274,7 +274,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		dynamicValue.type = DynamicValueTypeContract.Text;
 		dynamicValue.textValue = 'some text';
 
-		const mapper = Container.get(DynamicValuesMapper);
+		const mapper = Container.get(DynamicValuesRequestMapper);
 		const dynamicReturn = await mapper.mapDynamicValuesRequest([dynamicValue], 100);
 
 		expect(dynamicReturn).toEqual({
@@ -295,7 +295,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		dynamicValue.type = DynamicValueTypeContract.Text;
 		dynamicValue.textValue = 'some very long string, some very long string, some very long string';
 
-		const mapper = Container.get(DynamicValuesMapper);
+		const mapper = Container.get(DynamicValuesRequestMapper);
 		const dynamicReturn = await mapper.mapDynamicValuesRequest([dynamicValue], 100);
 
 		expect(dynamicReturn).toEqual({
