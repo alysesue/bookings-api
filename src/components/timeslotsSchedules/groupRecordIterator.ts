@@ -42,7 +42,7 @@ export class GroupRecordIterator<TInput, TOutput> implements IGroupRecordIterato
 			} as Partial<EventIteratorOptions>;
 			const eventIterator = new EventIterator<[number, TOutput[]]>(({ push, stop, fail }) => {
 				let groupBatch: TOutput[] = [];
-				let currentGroupId: number = undefined;
+				let currentGroupId: number;
 
 				const _dataListener = (chunk: TInput) => {
 					const groupId = chunk[this._groupByProperty];

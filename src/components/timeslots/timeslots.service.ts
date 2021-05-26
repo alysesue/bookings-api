@@ -408,7 +408,7 @@ export class TimeslotsService {
 		};
 
 		if (hasLabelFilter) {
-			//TimeslotItem (recurrent) has no labels, so skipping it.
+			// TimeslotItem (recurrent) has no labels, so skipping it.
 			for (const provider of serviceProviders) {
 				await processor(provider, []);
 			}

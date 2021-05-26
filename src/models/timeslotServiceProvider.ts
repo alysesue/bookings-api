@@ -1,6 +1,6 @@
 import { Booking, Label, ServiceProvider } from '.';
 
-const EmptyBookingArray: ReadonlyArray<Booking> = [];
+const EmptyBookingArray: readonly Booking[] = [];
 
 export type TimeslotInputData = {
 	readonly capacity: number;
@@ -14,8 +14,8 @@ export type TimeslotInputData = {
 export type TimeslotServiceProviderResult = {
 	serviceProvider: ServiceProvider;
 	capacity: number;
-	acceptedBookings: ReadonlyArray<Booking>;
-	pendingBookings: ReadonlyArray<Booking>;
+	acceptedBookings: readonly Booking[];
+	pendingBookings: readonly Booking[];
 	availabilityCount: number;
 	oneOffTimeslotId?: number;
 	labels?: Label[];
@@ -29,8 +29,8 @@ export interface ITimeslotServiceProvider {
 	readonly isRecurring: boolean;
 	readonly isVisibleByUser: Boolean;
 
-	acceptedBookings: ReadonlyArray<Booking>;
-	pendingBookings: ReadonlyArray<Booking>;
+	acceptedBookings: readonly Booking[];
+	pendingBookings: readonly Booking[];
 	isOverlapped: Boolean;
 	isUnavailable: Boolean;
 
@@ -61,8 +61,8 @@ class TimeslotServiceProvider implements ITimeslotServiceProvider {
 	private _title?: string;
 	private _description?: string;
 
-	private _acceptedBookings?: ReadonlyArray<Booking>;
-	private _pendingBookings?: ReadonlyArray<Booking>;
+	private _acceptedBookings?: readonly Booking[];
+	private _pendingBookings?: readonly Booking[];
 	private _isOverlapped?: boolean;
 	private _isUnavailable?: boolean;
 	private _isHiddenFromUser?: boolean;
@@ -71,20 +71,20 @@ class TimeslotServiceProvider implements ITimeslotServiceProvider {
 		if (this._isOverlapped || this._isUnavailable) return 0;
 		return this._capacity || 0;
 	}
-	public get acceptedBookings(): ReadonlyArray<Booking> {
+	public get acceptedBookings(): readonly Booking[] {
 		return this._acceptedBookings || EmptyBookingArray;
 	}
-	public set acceptedBookings(collection: ReadonlyArray<Booking>) {
+	public set acceptedBookings(collection: readonly Booking[]) {
 		if (collection && collection.length > 0) {
 			this._acceptedBookings = collection;
 		} else {
 			delete this._acceptedBookings;
 		}
 	}
-	public get pendingBookings(): ReadonlyArray<Booking> {
+	public get pendingBookings(): readonly Booking[] {
 		return this._pendingBookings || EmptyBookingArray;
 	}
-	public set pendingBookings(collection: ReadonlyArray<Booking>) {
+	public set pendingBookings(collection: readonly Booking[]) {
 		if (collection && collection.length > 0) {
 			this._pendingBookings = collection;
 		} else {
@@ -227,7 +227,7 @@ class ReadonlyTimeslotServiceProvider implements Readonly<ITimeslotServiceProvid
 	// Cache for Timeslot with IsRecurring = true, isVisibleByUser = false, and capacity = any
 	private static readonly _notVisibleByUserCache: { [k: string]: ReadonlyTimeslotServiceProvider } = {};
 
-	//This instance is reused across different times and service providers, so everything must be readonly.
+	// This instance is reused across different times and service providers, so everything must be readonly.
 	private readonly _capacity: number;
 	private readonly _isVisibleByUser: boolean;
 

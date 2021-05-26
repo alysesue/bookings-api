@@ -99,4 +99,3 @@ export class AggregatedEntry<TGroup> implements IAggregatedEntry<TGroup> {
 		}
 	}
 }
-
