@@ -38,9 +38,10 @@ export class GroupRecordIterator<TInput, TOutput> implements IGroupRecordIterato
 			const _stream = await this._creator();
 
 			const options = {
-				highWaterMark: 1500,
+				highWaterMark: 20, // Max number of groups (each group has an array of records)
+				lowWaterMark: 2, // Resume stream at this mark
 			} as Partial<EventIteratorOptions>;
-			const eventIterator = new EventIterator<[number, TOutput[]]>(({ push, stop, fail }) => {
+			const eventIterator = new EventIterator<[number, TOutput[]]>((queue) => {
 				let groupBatch: TOutput[] = [];
 				let currentGroupId: number;
 
@@ -58,7 +59,7 @@ export class GroupRecordIterator<TInput, TOutput> implements IGroupRecordIterato
 					} else if (groupId < currentGroupId) {
 						throw new Error('Stream must be ordered by groupId.');
 					} else {
-						push([currentGroupId, groupBatch]);
+						queue.push([currentGroupId, groupBatch]);
 						groupBatch = [];
 						currentGroupId = groupId;
 						groupBatch.push(mapped);
@@ -66,14 +67,24 @@ export class GroupRecordIterator<TInput, TOutput> implements IGroupRecordIterato
 				};
 				const _endListener = () => {
 					if (groupBatch.length > 0) {
-						push([currentGroupId, groupBatch]);
+						queue.push([currentGroupId, groupBatch]);
 					}
-					stop();
+					queue.stop();
+				};
+				const _errorListener = (error: Error) => {
+					queue.fail(error);
 				};
 
 				_stream.on('data', _dataListener);
 				_stream.on('end', _endListener);
-				_stream.on('error', fail);
+				_stream.on('error', _errorListener);
+
+				queue.on('highWater', () => {
+					_stream.pause();
+				});
+				queue.on('lowWater', () => {
+					_stream.resume();
+				});
 
 				return () => {
 					_stream.removeAllListeners();

@@ -170,6 +170,13 @@ describe('TimeslotsSchedule repository', () => {
 				await delay(3);
 				emitter.emit('data', { ...dbItem, item__timeslotsScheduleId: 2 });
 				await delay(3);
+				emitter.emit('data', {
+					...dbItem,
+					item__startTime: '10:00:00',
+					item__endTime: '11:00:00',
+					item__timeslotsScheduleId: 2,
+				});
+				await delay(3);
 				emitter.emit('end');
 			}, 10);
 			return Promise.resolve(emitter);
