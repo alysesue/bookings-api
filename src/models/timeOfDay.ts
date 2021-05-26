@@ -3,16 +3,16 @@ import { parseHHmm } from '../tools/date';
 import { DateHelper } from '../infrastructure/dateHelper';
 
 export class TimeOfDay {
-	private static _cache: { [key: string]: TimeOfDay } = {};
+	private static _cache: { [key: string]: Readonly<TimeOfDay> } = {};
 
-	private static getFromCache(time: string) {
+	private static getFromCache(time: string): Readonly<TimeOfDay> {
 		if (!time) return null;
 
 		let instance = TimeOfDay._cache[time];
 		if (!instance) {
 			const parsedTime = parseHHmm(time);
 			instance = TimeOfDay.create(parsedTime);
-			TimeOfDay._cache[time] = instance;
+			TimeOfDay._cache[time] = Object.freeze(instance);
 		}
 		return instance;
 	}
@@ -20,6 +20,8 @@ export class TimeOfDay {
 	private constructor(hours: number, minutes: number) {
 		this._hours = hours;
 		this._minutes = minutes;
+		this._asMinutes = this._hours * 60 + this._minutes;
+		this._asMilliseconds = this._asMinutes * 60 * 1000;
 	}
 
 	private readonly _hours: number;
@@ -32,8 +34,8 @@ export class TimeOfDay {
 		return this._minutes;
 	}
 
-	private _asMinutes: number | undefined;
-	private _asMilliseconds: number | undefined;
+	private _asMinutes: number;
+	private _asMilliseconds: number;
 
 	public addMinutes(numOfMinutes: number): TimeOfDay {
 		const minutes = this.AsMinutes() + numOfMinutes;
@@ -47,7 +49,7 @@ export class TimeOfDay {
 	}
 
 	public static parse(time: string): TimeOfDay {
-		return TimeOfDay.getFromCache(time);
+		return TimeOfDay.getFromCache(time) as TimeOfDay;
 	}
 
 	public static create(time: { hours: number; minutes: number }): TimeOfDay {
@@ -96,17 +98,10 @@ export class TimeOfDay {
 	}
 
 	public AsMinutes(): number {
-		if (this._asMinutes === undefined) {
-			this._asMinutes = this._hours * 60 + this._minutes;
-		}
 		return this._asMinutes;
 	}
 
 	public AsMilliseconds(): number {
-		if (this._asMilliseconds === undefined) {
-			this._asMilliseconds = this.AsMinutes() * 60 * 1000;
-		}
-
 		return this._asMilliseconds;
 	}
 }

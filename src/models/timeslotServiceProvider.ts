@@ -223,9 +223,9 @@ function isValid(timeslot: ITimeslotServiceProvider) {
 
 class ReadonlyTimeslotServiceProvider implements Readonly<ITimeslotServiceProvider> {
 	// Cache for Timeslot with IsRecurring = true, isVisibleByUser = true, and capacity = any
-	private static readonly _cache: { [k: string]: ReadonlyTimeslotServiceProvider } = {};
+	private static readonly _cache: { [k: string]: Readonly<ITimeslotServiceProvider> } = {};
 	// Cache for Timeslot with IsRecurring = true, isVisibleByUser = false, and capacity = any
-	private static readonly _notVisibleByUserCache: { [k: string]: ReadonlyTimeslotServiceProvider } = {};
+	private static readonly _notVisibleByUserCache: { [k: string]: Readonly<ITimeslotServiceProvider> } = {};
 
 	// This instance is reused across different times and service providers, so everything must be readonly.
 	private readonly _capacity: number;
@@ -239,14 +239,14 @@ class ReadonlyTimeslotServiceProvider implements Readonly<ITimeslotServiceProvid
 	public static getFromCache(
 		capacity: number,
 		isVisibleByUser: boolean,
-	): ReadonlyTimeslotServiceProvider | undefined {
+	): Readonly<ITimeslotServiceProvider> | undefined {
 		if (capacity > 1000) return undefined;
 
 		const cacheObj = isVisibleByUser ? this._cache : this._notVisibleByUserCache;
 
 		let instance = cacheObj[capacity];
 		if (!instance) {
-			instance = new ReadonlyTimeslotServiceProvider(capacity, isVisibleByUser);
+			instance = Object.freeze(new ReadonlyTimeslotServiceProvider(capacity, isVisibleByUser));
 			cacheObj[capacity] = instance;
 		}
 		return instance;
