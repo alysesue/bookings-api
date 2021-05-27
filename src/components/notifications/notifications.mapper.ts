@@ -11,6 +11,7 @@ class EmailData {
 	public locationText: string;
 	public day: string;
 	public time: string;
+	public videoConferenceUrl?: string;
 }
 
 export interface MailOptions {
@@ -34,6 +35,10 @@ export const emailMapper = (data: Booking): EmailData => {
 	const time = `${DateHelper.getTime12hFormatString(data.startDateTime)} - ${DateHelper.getTime12hFormatString(
 		data.endDateTime,
 	)}`;
+	const videoConferenceUrl = data.videoConferenceUrl
+		? `Video Conference Link: <a href='${data.videoConferenceUrl}'>${data.videoConferenceUrl}</a>`
+		: '';
+
 	return {
 		status,
 		serviceName,
@@ -43,5 +48,6 @@ export const emailMapper = (data: Booking): EmailData => {
 		locationText,
 		day,
 		time,
+		videoConferenceUrl,
 	};
 };

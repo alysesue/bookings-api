@@ -13,7 +13,9 @@ export abstract class EmailBookingTemplate {
 
 export class CitizenEmailTemplateBookingActionByCitizen implements EmailBookingTemplate {
 	public CreatedBookingEmail(data): EmailTemplateBase {
-		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
+		const { serviceName, serviceProviderText, status, day, time, locationText, videoConferenceUrl } = emailMapper(
+			data,
+		);
 
 		return {
 			subject: `BookingSG confirmation: ${serviceName}${serviceProviderText}`,
@@ -26,13 +28,17 @@ Below is a confirmation of your booking details.
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
+${videoConferenceUrl}
 ${locationText}
 </pre>`,
 		};
 	}
 
 	public UpdatedBookingEmail(data): EmailTemplateBase {
-		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
+		const { serviceName, serviceProviderText, status, day, time, locationText, videoConferenceUrl } = emailMapper(
+			data,
+		);
+
 		return {
 			subject: `BookingSG update: ${serviceName}${serviceProviderText}`,
 			html: `<pre>
@@ -44,13 +50,17 @@ Below is a confirmation of your updated booking details.
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
+${videoConferenceUrl}
 ${locationText}
 </pre>`,
 		};
 	}
 
 	public CancelledBookingEmail(data): EmailTemplateBase {
-		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
+		const { serviceName, serviceProviderText, status, day, time, locationText, videoConferenceUrl } = emailMapper(
+			data,
+		);
+
 		return {
 			subject: `BookingSG cancellation: ${serviceName}${serviceProviderText}`,
 			html: `<pre>
@@ -61,6 +71,7 @@ Booking for: <b>${serviceName}${serviceProviderText}.</b>
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
+${videoConferenceUrl}
 ${locationText}
 </pre>`,
 		};
@@ -69,7 +80,10 @@ ${locationText}
 
 export class CitizenEmailTemplateBookingActionByServiceProvider implements EmailBookingTemplate {
 	public CreatedBookingEmail(data): EmailTemplateBase {
-		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
+		const { serviceName, serviceProviderText, status, day, time, locationText, videoConferenceUrl } = emailMapper(
+			data,
+		);
+
 		return {
 			subject: `BookingSG confirmation: ${serviceName}${serviceProviderText}`,
 			html: `<pre>
@@ -81,13 +95,17 @@ Below is a confirmation of your booking details.
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
+${videoConferenceUrl}
 ${locationText}
 </pre>`,
 		};
 	}
 
 	public UpdatedBookingEmail(data): EmailTemplateBase {
-		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
+		const { serviceName, serviceProviderText, status, day, time, locationText, videoConferenceUrl } = emailMapper(
+			data,
+		);
+
 		return {
 			subject: `BookingSG update: ${serviceName}${serviceProviderText}`,
 			html: `<pre>
@@ -99,13 +117,17 @@ Below is a confirmation of your updated booking details.
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
+${videoConferenceUrl}
 ${locationText}
 </pre>`,
 		};
 	}
 
 	public CancelledBookingEmail(data): EmailTemplateBase {
-		const { serviceName, serviceProviderText, status, day, time, locationText } = emailMapper(data);
+		const { serviceName, serviceProviderText, status, day, time, locationText, videoConferenceUrl } = emailMapper(
+			data,
+		);
+
 		return {
 			subject: `BookingSG cancellation: ${serviceName}${serviceProviderText}`,
 			html: `<pre>
@@ -116,6 +138,7 @@ Booking for: <b>${serviceName}${serviceProviderText}.</b>
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
 Time: <b>${time}</b>
+${videoConferenceUrl}
 ${locationText}
 </pre>`,
 		};
