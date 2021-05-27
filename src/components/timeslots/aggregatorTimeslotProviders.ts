@@ -54,16 +54,19 @@ export class AggregatorTimeslotProviders {
 		return entry;
 	}
 
-	public aggregateTimeslot(group: ServiceProvider, timeslot: TimeslotWithCapacity): void {
+	public aggregateTimeslot(provider: ServiceProvider, timeslot: TimeslotWithCapacity): void {
+		if (provider.isLicenceExpireNative(timeslot.startTimeNative)) {
+			return;
+		}
+
 		const entry = this.getOrAddEntry(timeslot.startTimeNative, timeslot.endTimeNative);
-		entry.addServiceProvider(group, timeslot);
+		entry.addServiceProvider(provider, timeslot);
 	}
 
 	public async aggregate(group: ServiceProvider, generator: Iterable<TimeslotWithCapacity>): Promise<void> {
 		let counter = 0;
 		for (const timeslot of generator) {
-			const entry = this.getOrAddEntry(timeslot.startTimeNative, timeslot.endTimeNative);
-			entry.addServiceProvider(group, timeslot);
+			this.aggregateTimeslot(group, timeslot);
 
 			if (counter++ > MaxLoopIterationCount) {
 				counter = 0;
