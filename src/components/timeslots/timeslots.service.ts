@@ -318,17 +318,6 @@ export class TimeslotsService {
 		}
 	}
 
-	private *filterSpExpired(
-		provider: ServiceProvider,
-		timeslots: Iterable<TimeslotWithCapacity>,
-	): Iterable<TimeslotWithCapacity> {
-		for (const timeslot of timeslots) {
-			if (!provider.isLicenceExpireNative(timeslot.startTimeNative)) {
-				yield timeslot;
-			}
-		}
-	}
-
 	private *filterTimeslotsOverrides(
 		timeslots: Iterable<TimeslotWithCapacity>,
 		overrides: TimeslotWithCapacity[],
@@ -390,20 +379,15 @@ export class TimeslotsService {
 		};
 
 		const processor = async (provider: ServiceProvider, timeslotItems: TimeslotItem[]) => {
+			let timeslotsSP = new TimeslotGenerator(timeslotItems).generateValidTimeslots(range);
+
 			const oneOffTimeslotsSP = oneOffTimeslotsLookup.get(provider.id);
-
 			if (oneOffTimeslotsSP && oneOffTimeslotsSP.length > 0) {
-				let timeslotsSP = new TimeslotGenerator(timeslotItems).generateValidTimeslots(range);
-				timeslotsSP = this.filterSpExpired(provider, timeslotsSP);
 				timeslotsSP = this.filterTimeslotsOverrides(timeslotsSP, oneOffTimeslotsSP);
-
-				await aggregator.aggregate(provider, timeslotsSP);
 				await aggregator.aggregate(provider, oneOffTimeslotsSP);
-			} else {
-				const timeslotsSP = new TimeslotGenerator(timeslotItems).generateValidTimeslots(range);
-				await aggregator.aggregate(provider, timeslotsSP);
 			}
 
+			await aggregator.aggregate(provider, timeslotsSP);
 			await nextImmediateTick();
 		};
 
