@@ -16,6 +16,7 @@ describe('Notification templates tests', () => {
 	booking.status = 1;
 	booking.location = 'Some street';
 	booking.serviceProviderId = 1;
+	booking.videoConferenceUrl = 'http://www.zoom.us/1234567';
 
 	it('should create citizen email for citizen created booking', () => {
 		const result = new CitizenEmailTemplateBookingActionByCitizen().CreatedBookingEmail(booking);
