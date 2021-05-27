@@ -23,11 +23,6 @@ describe('Notification templates tests', () => {
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create citizen email for citizen created booking', () => {
-		const result = new CitizenEmailTemplateBookingActionByCitizen().CreatedBookingEmail(booking);
-		expect(result).toMatchSnapshot();
-	});
-
 	it('should create citizen email for citizen updated booking', () => {
 		const result = new CitizenEmailTemplateBookingActionByCitizen().UpdatedBookingEmail(booking);
 		expect(result).toMatchSnapshot();
