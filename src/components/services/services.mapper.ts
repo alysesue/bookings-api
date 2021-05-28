@@ -16,6 +16,7 @@ export class ServicesMapper {
 		serviceResponse.noNric = service.noNric;
 		serviceResponse.labels = this.labelsMapper.mapToLabelsResponse(service.labels);
 		serviceResponse.emailSuffix = service.emailSuffix;
+		serviceResponse.videoConferenceUrl = service.videoConferenceUrl;
 		return serviceResponse;
 	}
 }

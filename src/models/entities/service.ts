@@ -118,6 +118,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		labels: Label[] = [],
 		emailSuffix?: string,
 		noNric = false,
+		videoConferenceUrl?: string,
 	) {
 		const service = new Service();
 		service._name = name.trim();
@@ -133,6 +134,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		);
 		service.labels = labels;
 		service._emailSuffix = emailSuffix;
+		service._videoConferenceUrl = videoConferenceUrl;
 		return service;
 	}
 
@@ -228,5 +230,16 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 
 	public set emailSuffix(value: string) {
 		this._emailSuffix = value;
+	}
+
+	@Column({ type: 'varchar', length: 2000, nullable: true })
+	private _videoConferenceUrl?: string;
+
+	public get videoConferenceUrl(): string {
+		return this._videoConferenceUrl;
+	}
+
+	public set videoConferenceUrl(value: string) {
+		this._videoConferenceUrl = value;
 	}
 }

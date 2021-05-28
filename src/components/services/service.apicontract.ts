@@ -11,6 +11,7 @@ export class ServiceResponse {
 	public noNric: boolean;
 	public labels: LabelResponseModel[];
 	public emailSuffix?: string;
+	public videoConferenceUrl?: string;
 }
 
 export class ServiceRequest {
@@ -23,4 +24,5 @@ export class ServiceRequest {
 	public organisationId?: number;
 	public labels?: LabelRequestModel[];
 	public emailSuffix?: string | null;
+	public videoConferenceUrl?: string | null;
 }
