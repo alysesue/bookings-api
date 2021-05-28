@@ -382,6 +382,10 @@ export class BookingsService {
 		const service: Service = await this.servicesService.getService(serviceId);
 		const isOnHold = service.isOnHold;
 		const isStandAlone = service.isStandAlone;
+		const videoConferenceUrl =
+			bookingRequest.videoConferenceUrl && bookingRequest.videoConferenceUrl.length > 0
+				? bookingRequest.videoConferenceUrl
+				: service.videoConferenceUrl;
 
 		let serviceProvider: ServiceProvider | undefined;
 		if (bookingRequest.serviceProviderId) {
@@ -409,7 +413,7 @@ export class BookingsService {
 			.withRefId(bookingRequest.refId)
 			.withLocation(bookingRequest.location)
 			.withDescription(bookingRequest.description)
-			.withVideoConferenceUrl(bookingRequest.videoConferenceUrl)
+			.withVideoConferenceUrl(videoConferenceUrl)
 			.withCreator(currentUser)
 			.withCitizenUinFin(BookingsMapper.getCitizenUinFin(currentUser, bookingRequest))
 			.withCitizenName(bookingRequest.citizenName)
