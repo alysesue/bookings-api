@@ -1,3 +1,4 @@
+import { DynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
 import { UserTypeResponse } from '../users/users.apicontract';
 
 export class BookingChangeLogResponse {
@@ -46,6 +47,9 @@ export type BookingStateResponse = {
 	citizenPhone?: string;
 	location?: string;
 	description?: string;
+	videoConferenceUrl?: string;
+	refId?: string;
+	dynamicValues?: DynamicValueContract[];
 };
 
 export type ChangeLogSearchRequest = {};

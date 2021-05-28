@@ -3,6 +3,7 @@ import { ChangeLogAction } from '../changeLogAction';
 import { IBooking } from '../interfaces';
 import { User } from './user';
 import { Service } from './service';
+import { DynamicValueJsonModel } from './jsonModels';
 
 @Entity()
 export class BookingChangeLog {
@@ -152,4 +153,7 @@ export type BookingJsonSchemaV1 = {
 	citizenPhone?: string;
 	location?: string;
 	description?: string;
+	videoConferenceUrl?: string;
+	refId?: string;
+	dynamicValues?: DynamicValueJsonModel[];
 };

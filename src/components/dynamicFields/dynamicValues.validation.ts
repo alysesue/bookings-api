@@ -2,7 +2,7 @@ import { BusinessValidation, BusinessValidationTemplate, DynamicField, SelectLis
 
 import { IDynamicFieldVisitor, TextDynamicField } from '../../models/entities/dynamicField';
 import { DynamicValueTypeContract, PersistDynamicValueContract } from './dynamicValues.apicontract';
-import { DynamicValueJsonModel, DynamicValueType } from '../../models/entities/booking';
+import { DynamicValueJsonModel, DynamicValueType } from '../../models/entities/jsonModels';
 
 export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 	private _fieldValue: PersistDynamicValueContract;

@@ -6,8 +6,9 @@ import { BookingIsolationLevel } from '../../models/entities/booking';
 import { ConcurrencyError } from '../../errors/concurrencyError';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { BookingChangeLogsRepository, ChangeLogSearchQuery } from './bookingChangeLogs.repository';
+import * as _ from 'lodash';
 
-export type GetBookingFunction = (bookingId: number) => Promise<Booking>;
+export type GetBookingFunction = (bookingId: number, options: { byPassAuth?: boolean }) => Promise<Booking>;
 export type BookingActionFunction = (booking: Booking) => Promise<[ChangeLogAction, Booking]>;
 
 @InRequestScope
@@ -29,8 +30,8 @@ export class BookingChangeLogsService {
 		const jsonObj = {
 			id: booking.id,
 			status: booking.status,
-			startDateTime: booking.startDateTime,
-			endDateTime: booking.endDateTime,
+			startDateTime: new Date(booking.startDateTime),
+			endDateTime: new Date(booking.endDateTime),
 			serviceId: booking.serviceId,
 			serviceName: booking.service.name,
 			citizenUinFin: booking.citizenUinFin,
@@ -39,6 +40,9 @@ export class BookingChangeLogsService {
 			citizenPhone: booking.citizenPhone,
 			location: booking.location,
 			description: booking.description,
+			videoConferenceUrl: booking.videoConferenceUrl,
+			refId: booking.refId,
+			dynamicValues: _.cloneDeep(booking.dynamicValues),
 		} as BookingJsonSchemaV1;
 
 		if (booking.serviceProviderId) {
@@ -86,7 +90,7 @@ export class BookingChangeLogsService {
 	): Promise<Booking> {
 		const user = await this.userContext.getCurrentUser();
 		return await this.transactionManager.runInTransaction(BookingIsolationLevel, async () => {
-			const booking = await getBookingFunction(bookingId);
+			const booking = await getBookingFunction(bookingId, {});
 			const previousState = this.mapToJsonSchema(booking);
 			const [action, newBooking] = await actionFunction(booking);
 			const newState = this.mapToJsonSchema(newBooking);
@@ -100,7 +104,12 @@ export class BookingChangeLogsService {
 			});
 
 			await this.changeLogsRepository.save(changelog);
-			return newBooking;
+			if (bookingId) {
+				return newBooking;
+			} else {
+				const reloadBooking = await getBookingFunction(newBooking.id, { byPassAuth: true });
+				return reloadBooking;
+			}
 		});
 	}
 

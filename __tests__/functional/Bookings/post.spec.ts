@@ -3,6 +3,7 @@ import {
 	AgencyRequestEndpointSG,
 	AnonmymousEndpointSG,
 	CitizenRequestEndpointSG,
+	OrganisationAdminRequestEndpointSG,
 	ServiceAdminRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
 import {
@@ -17,6 +18,8 @@ import { BookingStatus } from '../../../src/models';
 import { PersistDynamicValueContract } from '../../../src/components/dynamicFields/dynamicValues.apicontract';
 import { DynamicValueTypeContract } from '../../../src/components/dynamicFields/dynamicValues.apicontract';
 import { IdHasherForFunctional } from '../../utils/idHashingUtil';
+import { BookingResponse } from '../../../src/components/bookings/bookings.apicontract';
+import { BookingChangeLogResponse } from '../../../src/components/bookingChangeLogs/bookingChangeLogs.apicontract';
 
 // tslint:disable-next-line: no-big-function
 describe('Bookings functional tests', () => {
@@ -31,7 +34,8 @@ describe('Bookings functional tests', () => {
 	const citizenEmail = 'jane@email.com';
 
 	let serviceProvider: ServiceProviderResponseModel;
-	let serviceId;
+	let serviceId: number;
+	let serviceIdStr: string;
 
 	let dynamicFieldId;
 
@@ -57,6 +61,7 @@ describe('Bookings functional tests', () => {
 		serviceProvider = result.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);
 
 		serviceId = result.services.find((item) => item.name === NAME_SERVICE_1).id;
+		serviceIdStr = `${serviceId}`;
 
 		await populateWeeklyTimesheet({
 			serviceProviderId: serviceProvider.id,
@@ -97,7 +102,7 @@ describe('Bookings functional tests', () => {
 
 		const endpoint = ServiceAdminRequestEndpointSG.create({
 			nameService: NAME_SERVICE_1,
-			serviceId,
+			serviceId: serviceIdStr,
 		});
 		return await endpoint.post('/bookings', {
 			body: {
@@ -121,7 +126,7 @@ describe('Bookings functional tests', () => {
 
 		const endpoint = CitizenRequestEndpointSG.create({
 			citizenUinFin,
-			serviceId,
+			serviceId: serviceIdStr,
 		});
 		return await endpoint.post('/bookings', {
 			body: {
@@ -138,7 +143,7 @@ describe('Bookings functional tests', () => {
 
 		const endpoint = CitizenRequestEndpointSG.create({
 			citizenUinFin,
-			serviceId,
+			serviceId: serviceIdStr,
 		});
 		return await endpoint.post('/bookings', {
 			body: {
@@ -154,14 +159,14 @@ describe('Bookings functional tests', () => {
 		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
 		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
 
-		const dynamicValues = new PersistDynamicValueContract();
-		dynamicValues.singleSelectionKey = 1;
-		dynamicValues.fieldIdSigned = dynamicFieldId;
-		dynamicValues.type = 'SingleSelection' as DynamicValueTypeContract;
+		const dynamicValue = new PersistDynamicValueContract();
+		dynamicValue.singleSelectionKey = 1;
+		dynamicValue.fieldIdSigned = dynamicFieldId;
+		dynamicValue.type = 'SingleSelection' as DynamicValueTypeContract;
 
 		const endpoint = CitizenRequestEndpointSG.create({
 			citizenUinFin,
-			serviceId,
+			serviceId: serviceIdStr,
 		});
 		return await endpoint.post('/bookings', {
 			body: {
@@ -170,9 +175,21 @@ describe('Bookings functional tests', () => {
 				citizenName,
 				citizenEmail,
 				dynamicValuesUpdated: true,
-				dynamicValues,
+				dynamicValues: [dynamicValue],
 			},
 		});
+	};
+
+	const getChangeLogs = async (params: {
+		changedSince: Date;
+		changedUntil: Date;
+		bookingIds?: number[];
+	}): Promise<request.Response> => {
+		const endpoint = OrganisationAdminRequestEndpointSG.create({
+			serviceId: `${serviceId}`,
+		});
+
+		return await endpoint.get('/bookinglogs', { params });
 	};
 
 	const postCitizenInSlotServiceProviderBooking = async (): Promise<request.Response> => {
@@ -181,7 +198,7 @@ describe('Bookings functional tests', () => {
 
 		const endpoint = CitizenRequestEndpointSG.create({
 			citizenUinFin,
-			serviceId,
+			serviceId: serviceIdStr,
 		});
 		return await endpoint.post('/bookings', {
 			body: {
@@ -200,7 +217,7 @@ describe('Bookings functional tests', () => {
 
 		const endpoint = CitizenRequestEndpointSG.create({
 			citizenUinFin,
-			serviceId,
+			serviceId: serviceIdStr,
 		});
 
 		return await endpoint.post(`/bookings/${bookingId}/reschedule`, {
@@ -216,7 +233,65 @@ describe('Bookings functional tests', () => {
 
 	it('should make a booking with dynamic values', async () => {
 		const response = await postCitizenBookingWithDynamicFields();
-		expect(response.body.data.dynamicValues[0].fieldIdSigned).toEqual(dynamicFieldId);
+		expect(response.statusCode).toEqual(201);
+		const booking = response.body.data as BookingResponse;
+		expect(booking?.dynamicValues?.length).toEqual(1);
+		expect(booking.dynamicValues[0].fieldIdSigned).toEqual(dynamicFieldId);
+	});
+
+	it('should create a booking log with dynamic values', async () => {
+		const response = await postCitizenBookingWithDynamicFields();
+		expect(response.statusCode).toEqual(201);
+		const booking = response.body.data as BookingResponse;
+
+		const changedUntil = new Date(new Date(booking.createdDateTime).getTime() + 1000 * 60);
+		const changeLogResponse = await getChangeLogs({
+			changedSince: booking.createdDateTime,
+			changedUntil: changedUntil,
+			bookingIds: [booking.id],
+		});
+		expect(changeLogResponse.statusCode).toEqual(200);
+
+		const changeLogs = changeLogResponse.body.data as BookingChangeLogResponse[];
+		expect(changeLogs.length).toEqual(1);
+		expect(changeLogs[0]).toEqual({
+			bookingId: booking.id,
+			changeLogs: [
+				{
+					action: 'create',
+					changes: {
+						citizenEmail: 'jane@email.com',
+						citizenName: 'Jane',
+						citizenUinFin: 'S7429377H',
+						dynamicValues: [
+							{
+								fieldIdSigned: dynamicFieldId,
+								fieldName: 'Select an option',
+								singleSelectionKey: 1,
+								singleSelectionValue: 'option A',
+								type: 'SingleSelection',
+							},
+						],
+						startDateTime: '2051-12-10T01:00:00.000Z',
+						endDateTime: '2051-12-10T02:00:00.000Z',
+						id: booking.id,
+						serviceId,
+						serviceName: 'service1',
+						status: 1,
+					},
+					previousBooking: {
+						schemaVersion: 1,
+					},
+					timestamp: booking.createdDateTime,
+					user: {
+						singpass: {
+							uinfin: 'S7429377H',
+						},
+						userType: 'singpass',
+					},
+				},
+			],
+		});
 	});
 
 	it('[On hold] Agency should validate SERVICE on hold booking', async () => {
@@ -339,7 +414,7 @@ describe('Bookings functional tests', () => {
 
 		const endpoint = CitizenRequestEndpointSG.create({
 			citizenUinFin,
-			serviceId,
+			serviceId: serviceIdStr,
 		});
 
 		const response = await endpoint.post('/bookings', {
@@ -415,7 +490,7 @@ describe('Bookings functional tests', () => {
 		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
 
 		const endpoint = await AnonmymousEndpointSG.create({
-			serviceId,
+			serviceId: serviceIdStr,
 		});
 
 		const response = await endpoint.post('/bookings', {
@@ -438,7 +513,7 @@ describe('Bookings functional tests', () => {
 		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
 
 		const endpoint = await AnonmymousEndpointSG.create({
-			serviceId,
+			serviceId: serviceIdStr,
 		});
 		const response = await endpoint.post('/bookings', {
 			body: {
@@ -462,7 +537,7 @@ describe('Bookings functional tests', () => {
 		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
 
 		const endpoint = await AnonmymousEndpointSG.create({
-			serviceId,
+			serviceId: serviceIdStr,
 		});
 		const bookingResponse = await endpoint.post('/bookings', {
 			body: {

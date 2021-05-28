@@ -6,7 +6,7 @@ import {
 	DynamicValueTypeContract,
 	PersistDynamicValueContract,
 } from './dynamicValues.apicontract';
-import { DynamicValueJsonModel, DynamicValueType } from '../../models/entities/booking';
+import { DynamicValueJsonModel, DynamicValueType } from '../../models/entities/jsonModels';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { DynamicFieldsService } from './dynamicFields.service';
 import { ErrorResult, OkResult, OptionalResult } from '../../errors';
@@ -16,12 +16,7 @@ import { UserContext } from '../../infrastructure/auth/userContext';
 export type MapRequestOptionalResult = OptionalResult<DynamicValueJsonModel[], BusinessValidation[]>;
 
 @InRequestScope
-export class DynamicValuesMapper {
-	static readonly DynamicValueTypeMapping: Readonly<{ [key: string]: DynamicValueTypeContract }> = {
-		[DynamicValueType.SingleSelection]: DynamicValueTypeContract.SingleSelection,
-		[DynamicValueType.Text]: DynamicValueTypeContract.Text,
-	};
-
+export class DynamicValuesRequestMapper {
 	@Inject
 	private userContext: UserContext;
 	@Inject
@@ -57,8 +52,19 @@ export class DynamicValuesMapper {
 
 		return { result: dynamicValuesJson } as OkResult<DynamicValueJsonModel[]>;
 	}
+}
 
-	public mapDynamicValuesModel(dynamicValues: DynamicValueJsonModel[]): DynamicValueContract[] {
+@InRequestScope
+export class DynamicValuesMapper {
+	static readonly DynamicValueTypeMapping: Readonly<{ [key: string]: DynamicValueTypeContract }> = {
+		[DynamicValueType.SingleSelection]: DynamicValueTypeContract.SingleSelection,
+		[DynamicValueType.Text]: DynamicValueTypeContract.Text,
+	};
+
+	@Inject
+	private idHasher: IdHasher;
+
+	public mapDynamicValuesModel(dynamicValues: DynamicValueJsonModel[]): DynamicValueContract[] | undefined {
 		return dynamicValues?.map((obj) => this.mapDynamicValueModel(obj));
 	}
 

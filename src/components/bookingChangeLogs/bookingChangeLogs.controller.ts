@@ -12,6 +12,8 @@ import { BookingChangeLogsMapper } from './bookingChangeLogs.mapper';
 export class BookingChangeLogsController extends Controller {
 	@Inject
 	private changeLogsService: BookingChangeLogsService;
+	@Inject
+	private bookingChangeLogsMapper: BookingChangeLogsMapper;
 
 	/**
 	 * Retrieves all booking logs in the specified datetime range [changedSince, changedUntil).
@@ -37,6 +39,6 @@ export class BookingChangeLogsController extends Controller {
 		@Header('x-api-service') serviceId?: number,
 	): Promise<ApiData<BookingChangeLogResponse[]>> {
 		const logs = await this.changeLogsService.getLogs({ changedSince, changedUntil, serviceId, bookingIds });
-		return ApiDataFactory.create(BookingChangeLogsMapper.mapDataModels(logs));
+		return ApiDataFactory.create(this.bookingChangeLogsMapper.mapDataModels(logs));
 	}
 }
