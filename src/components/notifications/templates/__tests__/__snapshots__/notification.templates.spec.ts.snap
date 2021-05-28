@@ -35,24 +35,6 @@ Location: <b>Some street</b>
 }
 `;
 
-exports[`Notification templates tests should create citizen email for citizen created booking 2`] = `
-Object {
-  "html": "<pre>
-Your booking request has been received.
-<br />
-Booking for: <b>Career.</b>
-<br />
-Below is a confirmation of your booking details.
-Booking status: <b>Pending Approval</b>
-Date: <b>14 April 2021</b>
-Time: <b>10:00am - 11:00am</b>
-Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>
-Location: <b>Some street</b>
-</pre>",
-  "subject": "BookingSG confirmation: Career",
-}
-`;
-
 exports[`Notification templates tests should create citizen email for citizen updated booking 1`] = `
 Object {
   "html": "<pre>
