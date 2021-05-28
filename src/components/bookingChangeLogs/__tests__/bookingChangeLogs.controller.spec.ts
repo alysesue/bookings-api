@@ -4,6 +4,8 @@ import { BookingChangeLogsController } from '../bookingChangeLogs.controller';
 import { BookingChangeLog, ChangeLogAction, ServiceProvider, User } from '../../../models';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { groupByKey } from '../../../tools/collections';
+import { IdHasher } from '../../../infrastructure/idHasher';
+import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -25,6 +27,14 @@ jest.mock('mol-lib-common', () => {
 describe('BookingChangeLogs controller', () => {
 	beforeAll(() => {
 		Container.bind(BookingChangeLogsService).to(BookingChangeLogsServiceMock);
+		Container.bind(IdHasher).to(IdHasherMock);
+	});
+
+	beforeEach(() => {
+		jest.resetAllMocks();
+
+		IdHasherMock.encode.mockImplementation((id: number) => id.toString());
+		IdHasherMock.decode.mockImplementation((id: string) => Number.parseInt(id, 10));
 	});
 
 	const adminMock = User.createAdminUser({
@@ -52,8 +62,18 @@ describe('BookingChangeLogs controller', () => {
 			booking,
 			user: adminMock,
 			action: ChangeLogAction.Create,
-			previousState: { citizenName: 'a', citizenEmail: 'b@email.com' },
-			newState: { citizenName: 'c' },
+			previousState: {
+				citizenName: 'a',
+				citizenEmail: 'b@email.com',
+				videoConferenceUrl: 'https://a.com',
+				refId: 'abc1',
+			},
+			newState: {
+				citizenName: 'c',
+				citizenEmail: 'b@email.com',
+				videoConferenceUrl: 'https://a.com',
+				refId: 'abc1',
+			},
 		});
 		log.timestamp = new Date(Date.UTC(2020, 0, 1, 14, 0));
 
@@ -64,7 +84,37 @@ describe('BookingChangeLogs controller', () => {
 		);
 
 		const result = await controller.getChangeLogs(changedSince, changedUntil, [2, 3], 1);
-		expect(result).toMatchSnapshot();
+		expect(result).toEqual({
+			data: [
+				{
+					bookingId: 1,
+					changeLogs: [
+						{
+							action: 'create',
+							changes: {
+								citizenName: 'c',
+							},
+							previousBooking: {
+								citizenEmail: 'b@email.com',
+								citizenName: 'a',
+								videoConferenceUrl: 'https://a.com',
+								refId: 'abc1',
+								schemaVersion: 1,
+							},
+							timestamp: new Date('2020-01-01T14:00:00.000Z'),
+							user: {
+								admin: {
+									agencyUserId: 'ABC123',
+									email: 'test@email.com',
+									name: 'Name',
+								},
+								userType: 'admin',
+							},
+						},
+					],
+				},
+			],
+		});
 	});
 });
 

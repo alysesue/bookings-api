@@ -161,7 +161,7 @@ describe('Bookings.Service', () => {
 				getBookingFunction: GetBookingFunction,
 				actionFunction: BookingActionFunction,
 			) => {
-				const _booking = await getBookingFunction(bookingId);
+				const _booking = await getBookingFunction(bookingId, {});
 				const [action, newBooking] = await actionFunction(_booking);
 				BookingChangeLogsServiceMock.action = action;
 				return newBooking;

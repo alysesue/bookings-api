@@ -16,6 +16,7 @@ import { BookingChangeLogsRepository } from '../bookingChangeLogs.repository';
 import { ConcurrencyError } from '../../../errors/concurrencyError';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { AuthGroup } from '../../../infrastructure/auth/authGroup';
+import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entities/jsonModels';
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
@@ -109,7 +110,82 @@ describe('BookingChangeLogs service', () => {
 		});
 	});
 
-	it('should execute and save log with service provider', async () => {
+	it('(2) should execute and save log with dynamic values', async () => {
+		const service = new Service();
+		service.id = 1;
+		service.name = 'service';
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
+			.build();
+		booking.service = service;
+
+		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));
+		const action = jest.fn(
+			(_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
+				_booking.dynamicValues = [
+					{
+						fieldId: 1,
+						fieldName: 'text',
+						type: DynamicValueType.Text,
+						textValue: 'some text',
+					} as DynamicValueJsonModel,
+				];
+				return Promise.resolve([ChangeLogAction.Update, _booking]);
+			},
+		);
+
+		const svc = Container.get(BookingChangeLogsService);
+		await svc.executeAndLogAction(1, getBooking, action);
+
+		expect(TransactionManagerMock.runInTransaction).toBeCalled();
+		expect(getBooking).toBeCalled();
+		expect(action).toBeCalled();
+		expect(BookingChangeLogsRepositoryMock.save).toBeCalledTimes(1);
+
+		const changeLogParam = BookingChangeLogsRepositoryMock.save.mock.calls[0][0] as BookingChangeLog;
+		expect(changeLogParam.previousState).toEqual({
+			startDateTime: new Date('2020-10-01T01:00:00Z'),
+			endDateTime: new Date('2020-10-01T02:00:00Z'),
+			citizenEmail: undefined,
+			citizenName: undefined,
+			citizenPhone: undefined,
+			citizenUinFin: undefined,
+			description: undefined,
+			id: undefined,
+			location: undefined,
+			schemaVersion: 1,
+			serviceId: 1,
+			serviceName: 'service',
+			status: 1,
+		});
+		expect(changeLogParam.newState).toEqual({
+			startDateTime: new Date('2020-10-01T01:00:00Z'),
+			endDateTime: new Date('2020-10-01T02:00:00Z'),
+			citizenEmail: undefined,
+			citizenName: undefined,
+			citizenPhone: undefined,
+			citizenUinFin: undefined,
+			description: undefined,
+			id: undefined,
+			location: undefined,
+			schemaVersion: 1,
+			serviceId: 1,
+			serviceName: 'service',
+			status: 1,
+			dynamicValues: [
+				{
+					fieldId: 1,
+					fieldName: 'text',
+					type: DynamicValueType.Text,
+					textValue: 'some text',
+				},
+			],
+		});
+	});
+
+	it('(3) should execute and save log with service provider', async () => {
 		const service = new Service();
 		service.id = 1;
 		service.name = 'service';
