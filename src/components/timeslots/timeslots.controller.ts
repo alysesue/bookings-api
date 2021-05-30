@@ -1,3 +1,4 @@
+import { DateHelper } from './../../infrastructure/dateHelper';
 import { Inject } from 'typescript-ioc';
 import { Controller, Get, Header, Query, Response, Route, Security, Tags } from 'tsoa';
 import { MOLAuth } from 'mol-lib-common';
@@ -9,10 +10,12 @@ import { TimeslotsMapper } from './timeslots.mapper';
 import { TimeslotsService } from './timeslots.service';
 import { AvailabilityEntryResponse, TimeslotEntryResponse, AvailabilityByDayResponse } from './timeslots.apicontract';
 import { StopWatch } from '../../infrastructure/stopWatch';
-
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 @Route('v1/timeslots')
 @Tags('Timeslots')
 export class TimeslotsController extends Controller {
+	MAX_NUMBER_OF_DAYS_TO_FETCH_TIMESLOT = 31;
+
 	@Inject
 	private userContext: UserContext;
 
@@ -89,7 +92,7 @@ export class TimeslotsController extends Controller {
 	 * Pending and accepted bookings count towards availability quota.
 	 *
 	 * @param startDate The lower bound limit for timeslots' startDate.
-	 * @param endDate The upper bound limit for timeslots' endDate.
+	 * @param endDate The upper bound limit for timeslots' endDate. # of days between startDate and endDate cannot be more than 31 days
 	 * @param serviceId
 	 * @param serviceProviderIds
 	 */
@@ -103,6 +106,9 @@ export class TimeslotsController extends Controller {
 		@Header('x-api-service') serviceId: number,
 		@Query() serviceProviderIds?: number[],
 	): Promise<ApiData<AvailabilityByDayResponse[]>> {
+		if (DateHelper.DiffInDays(endDate, startDate) > this.MAX_NUMBER_OF_DAYS_TO_FETCH_TIMESLOT) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Date Range cannot be more than 31 days');
+		}
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots(
 			startDate,
 			endDate,
