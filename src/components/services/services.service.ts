@@ -25,9 +25,12 @@ import { ServicesActionAuthVisitor } from './services.auth';
 import { ServiceRequest } from './service.apicontract';
 import { ServicesRepository } from './services.repository';
 import { LabelsCategoriesService } from '../labelsCategories/labelsCategories.service';
+import { DefaultIsolationLevel, TransactionManager } from '../../core/transactionManager';
 
 @InRequestScope
 export class ServicesService {
+	@Inject
+	private transactionManager: TransactionManager;
 	@Inject
 	private servicesRepository: ServicesRepository;
 	@Inject
@@ -127,7 +130,11 @@ export class ServicesService {
 	}
 
 	public async updateService(id: number, request: ServiceRequest): Promise<Service> {
-		const service = await this.servicesRepository.getService({ id });
+		const service = await this.servicesRepository.getService({
+			id,
+			includeLabelCategories: true,
+			includeLabels: true,
+		});
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
@@ -143,8 +150,14 @@ export class ServicesService {
 		const updatedCategoriesList = this.categoriesMapper.mapToCategories(request.categories);
 
 		try {
-			service.categories = await this.categoriesService.update(service, updatedCategoriesList, updatedLabelList);
-			return await this.servicesRepository.save(service);
+			return await this.transactionManager.runInTransaction(DefaultIsolationLevel, async () => {
+				service.categories = await this.categoriesService.update(
+					service,
+					updatedCategoriesList,
+					updatedLabelList,
+				);
+				return await this.servicesRepository.save(service);
+			});
 		} catch (e) {
 			if (e.message.startsWith('duplicate key value violates unique constraint')) {
 				if (e.message.includes('ServiceLabels')) {
@@ -187,16 +200,36 @@ export class ServicesService {
 		return service.scheduleForm;
 	}
 
-	public async getServices(): Promise<Service[]> {
-		return await this.servicesRepository.getAll();
+	public async getServices({
+		includeScheduleForm = false,
+		includeTimeslotsSchedule = false,
+		includeLabels = false,
+		includeLabelCategories = false,
+	} = {}): Promise<Service[]> {
+		return await this.servicesRepository.getAll({
+			includeLabels,
+			includeLabelCategories,
+			includeTimeslotsSchedule,
+			includeScheduleForm,
+		});
 	}
 
 	public async getService(
 		id: number,
-		includeScheduleForm = false,
-		includeTimeslotsSchedule = false,
+		{
+			includeScheduleForm = false,
+			includeTimeslotsSchedule = false,
+			includeLabels = false,
+			includeLabelCategories = false,
+		} = {},
 	): Promise<Service> {
-		const service = await this.servicesRepository.getService({ id, includeScheduleForm, includeTimeslotsSchedule });
+		const service = await this.servicesRepository.getService({
+			id,
+			includeScheduleForm,
+			includeTimeslotsSchedule,
+			includeLabels,
+			includeLabelCategories,
+		});
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
@@ -204,12 +237,12 @@ export class ServicesService {
 	}
 
 	public async getServiceTimeslotsSchedule(id: number): Promise<TimeslotsSchedule> {
-		const service = await this.getService(id, false, true);
+		const service = await this.getService(id, { includeTimeslotsSchedule: true });
 		return service.timeslotsSchedule;
 	}
 
 	public async addTimeslotItem(serviceId: number, request: TimeslotItemRequest): Promise<TimeslotItem> {
-		const service = await this.getService(serviceId, false, true);
+		const service = await this.getService(serviceId, { includeTimeslotsSchedule: true });
 		if (!service.timeslotsSchedule) {
 			await this.createTimeslotsSchedule(service);
 		}

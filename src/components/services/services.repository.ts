@@ -7,6 +7,8 @@ import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSche
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { andWhere } from '../../tools/queryConditions';
 import { ServicesQueryAuthVisitor } from './services.auth';
+import { LabelsRepository } from '../labels/labels.repository';
+import { LabelsCategoriesRepository } from "../labelsCategories/labelsCategories.repository";
 
 @InRequestScope
 export class ServicesRepository extends RepositoryBase<Service> {
@@ -16,6 +18,10 @@ export class ServicesRepository extends RepositoryBase<Service> {
 	private scheduleFormRepository: ScheduleFormsRepository;
 	@Inject
 	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
+	@Inject
+	private labelsCategoriesRepository: LabelsCategoriesRepository;
+	@Inject
+	private labelsRepository: LabelsRepository;
 
 	constructor() {
 		super(Service);
@@ -26,6 +32,8 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		options: {
 			includeScheduleForm?: boolean;
 			includeTimeslotsSchedule?: boolean;
+			includeLabels?: boolean;
+			includeLabelCategories?: boolean;
 		},
 	): Promise<Service[]> {
 		if (options.includeScheduleForm) {
@@ -34,6 +42,13 @@ export class ServicesRepository extends RepositoryBase<Service> {
 
 		if (options.includeTimeslotsSchedule) {
 			await this.timeslotsScheduleRepository.populateTimeslotsSchedules(entries, {});
+		}
+
+		if (options.includeLabels) {
+			await this.labelsRepository.populateLabelForService(entries);
+		}
+		if (options.includeLabelCategories) {
+			await this.labelsCategoriesRepository.populateCategories(entries);
 		}
 
 		return entries;
@@ -56,10 +71,7 @@ export class ServicesRepository extends RepositoryBase<Service> {
 			.createQueryBuilder('svc')
 			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
 			.leftJoinAndSelect('svc._serviceAdminGroupMap', 'svcAdminGroupMap')
-			.leftJoinAndSelect('svc._organisation', 'svcOrg')
-			.leftJoinAndSelect('svc.labels', 'svcLabels')
-			.leftJoinAndSelect('svc.categories', 'svcCategories')
-			.leftJoinAndSelect('svcCategories.labels', 'svcCategoriesLabels');
+			.leftJoinAndSelect('svc._organisation', 'svcOrg');
 	}
 
 	public async getServicesByName(options: {
@@ -106,16 +118,27 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		});
 	}
 
-	public async getAll(): Promise<Service[]> {
+	public async getAll(options: {
+		includeScheduleForm?: boolean;
+		includeTimeslotsSchedule?: boolean;
+		includeLabels?: boolean;
+		includeLabelCategories?: boolean;
+	}): Promise<Service[]> {
 		const query = await this.createSelectQuery([], {}, {});
 
-		return await query.getMany();
+		const entries = await query.getMany();
+		if (!entries) {
+			return entries;
+		}
+		return (await this.processIncludes(entries, options));
 	}
 
 	public async getService(options: {
 		id: number;
 		includeScheduleForm?: boolean;
 		includeTimeslotsSchedule?: boolean;
+		includeLabels?: boolean;
+		includeLabelCategories?: boolean;
 	}): Promise<Service> {
 		const { id } = options;
 		const query = await this.getServiceQueryById(id);

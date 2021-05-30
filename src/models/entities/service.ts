@@ -49,7 +49,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 
 	@OneToOne(() => ServiceAdminGroupMap, (e) => e._service, {
 		nullable: true,
-		cascade: ['insert', 'update', 'remove', 'soft-remove'],
+		cascade: true,
 	})
 	private _serviceAdminGroupMap: ServiceAdminGroupMap;
 

@@ -32,7 +32,7 @@ export class LabelsCategoriesService {
 		service.labels = await this.labelsService.updateLabelToNoCategory(movedLabelsToNoCategory, service);
 		await this.labelsService.delete(deleteLabels);
 		await this.delete(deleteCategories);
-		return [...newCategories, ...updateOrKeepCategories];
+		return this.categoriesRepository.save([...newCategories, ...updateOrKeepCategories]);
 	}
 
 	public sortUpdateCategories(

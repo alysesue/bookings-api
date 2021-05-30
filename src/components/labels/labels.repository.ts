@@ -1,6 +1,6 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { RepositoryBase } from '../../core/repository';
-import { Label } from '../../models/entities';
+import { Label, LabelCategory, Service } from '../../models/entities';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { andWhere } from '../../tools/queryConditions';
 import { ServicesQueryAuthVisitor } from '../services/services.auth';
@@ -25,8 +25,12 @@ export class LabelsRepository extends RepositoryBase<Label> {
 		return repository.save(data);
 	}
 
-	public async find(options: { serviceId: number; skipAuthorisation?: boolean }): Promise<Label[]> {
-		const { serviceId } = options;
+	public async find(options: {
+		serviceId?: number;
+		categoryId?: number;
+		skipAuthorisation?: boolean;
+	}): Promise<Label[]> {
+		const { serviceId, categoryId } = options;
 		const authGroups = await this.userContext.getAuthGroups();
 
 		const { userCondition, userParams } = options.skipAuthorisation
@@ -34,12 +38,36 @@ export class LabelsRepository extends RepositoryBase<Label> {
 			: await new ServicesQueryAuthVisitor('servicelabel').createUserVisibilityCondition(authGroups);
 
 		const repository = await this.getRepository();
-		const serviceCondition = 'label."_serviceId" = :serviceId';
+		const serviceCondition = serviceId ? 'label."_serviceId" = :serviceId' : '';
+		const categoryCondition = categoryId ? 'label."_categoryId" = :categoryId' : '';
 
 		return repository
 			.createQueryBuilder('label')
-			.where(andWhere([serviceCondition, userCondition]), { serviceId, ...userParams })
+			.where(andWhere([serviceCondition, categoryCondition, userCondition]), {
+				serviceId,
+				categoryId,
+				...userParams,
+			})
 			.leftJoin('label.service', 'servicelabel')
+			.leftJoin('label.category', 'categorylabel')
 			.getMany();
+	}
+
+	public async populateLabelForCategories<T extends LabelCategory>(entries: T[]): Promise<T[]> {
+		return Promise.all(
+			entries.map(async (s) => {
+				s.labels = await this.find({ categoryId: s.id, skipAuthorisation: true });
+				return s;
+			}),
+		);
+	}
+
+	public async populateLabelForService<T extends Service>(entries: T[]): Promise<T[]> {
+		return Promise.all(
+			entries.map(async (s) => {
+				s.labels = await this.find({ serviceId: s.id });
+				return s;
+			}),
+		);
 	}
 }
