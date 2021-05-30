@@ -89,10 +89,9 @@ export class TimeslotsController extends Controller {
 	 * Pending and accepted bookings count towards availability quota.
 	 *
 	 * @param startDate The lower bound limit for timeslots' startDate.
-	 * @param endDate The upper bound limit for timeslots' startDate.
+	 * @param endDate The upper bound limit for timeslots' endDate.
 	 * @param serviceId
 	 * @param serviceProviderIds
-	 * @param labelIds (Optional) to filter by label
 	 */
 	@Get('byday')
 	@Security('service')
@@ -116,6 +115,19 @@ export class TimeslotsController extends Controller {
 
 		return ApiDataFactory.create(result);
 	}
+
+	/**
+	 * Retrieves timeslots (available and booked) and accepted bookings for a service in a defined datetime range [startDate, endDate].
+	 * Availability count returned may be zero.
+	 * Pending and accepted bookings count towards availability quota.
+	 *
+	 * @param startDate The lower bound limit for timeslots' startDate.
+	 * @param endDate The upper bound limit for timeslots' endDate.
+	 * @param serviceId
+	 * @param includeBookings (Optional)
+	 * @param serviceProviderIds
+	 * @param labelIds (Optional) to filter by label
+	 */
 
 	@Get('')
 	@Security('service')
