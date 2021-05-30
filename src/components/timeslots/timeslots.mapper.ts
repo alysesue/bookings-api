@@ -92,10 +92,10 @@ export class TimeslotsMapper {
 	}
 
 	public mapAvailabilityToDateResponse(entries: AvailableTimeslotProviders[]): AvailabilityByDayResponse[] {
-		const groupByDayMap = new Map<Date, number>();
+		const groupByDayMap = new Map<number, number>();
 
 		entries.forEach((entry: AvailableTimeslotProviders) => {
-			const startOfDay = DateHelper.getStartOfDay(new Date(entry.startTime));
+			const startOfDay = DateHelper.getStartOfDay(new Date(entry.startTime)).getTime();
 			const currCount =
 				groupByDayMap.get(startOfDay) === undefined
 					? entry.getAvailabilityCount()
@@ -104,7 +104,7 @@ export class TimeslotsMapper {
 		});
 
 		const result = Array.from(groupByDayMap, ([date, count]) => {
-			return new AvailabilityByDayResponse(date, count);
+			return new AvailabilityByDayResponse(new Date(date), count);
 		});
 
 		return result;
