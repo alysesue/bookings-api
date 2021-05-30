@@ -133,3 +133,21 @@ export class TimeslotEntryResponse {
 	 */
 	public totalCapacity: number;
 }
+
+export class AvailabilityByDayResponse {
+	/**
+	 * Date for the number of slots
+	 */
+	public date: Date;
+	/**
+	 * Total number of available slots for this specific date.
+	 *
+	 * @isInt
+	 */
+	public totalAvailabilityCount: number;
+
+	constructor(date: Date, count: number) {
+		this.date = date;
+		this.totalAvailabilityCount = count;
+	}
+}

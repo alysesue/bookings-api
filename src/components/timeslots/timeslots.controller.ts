@@ -7,7 +7,7 @@ import { ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { TimeslotsMapper } from './timeslots.mapper';
 import { TimeslotsService } from './timeslots.service';
-import { AvailabilityEntryResponse, TimeslotEntryResponse } from './timeslots.apicontract';
+import { AvailabilityEntryResponse, TimeslotEntryResponse, AvailabilityByDayResponse } from './timeslots.apicontract';
 import { StopWatch } from '../../infrastructure/stopWatch';
 
 @Route('v1/timeslots')
@@ -84,17 +84,39 @@ export class TimeslotsController extends Controller {
 	}
 
 	/**
-	 * Retrieves timeslots (available and booked) and accepted bookings for a service in a defined datetime range [startDate, endDate].
+	 * Retrieves availability of all service providers for a service, grouped by day
 	 * Availability count returned may be zero.
 	 * Pending and accepted bookings count towards availability quota.
 	 *
 	 * @param startDate The lower bound limit for timeslots' startDate.
-	 * @param endDate The upper bound limit for timeslots' endDate.
+	 * @param endDate The upper bound limit for timeslots' startDate.
 	 * @param serviceId
-	 * @param includeBookings (Optional)
 	 * @param serviceProviderIds
 	 * @param labelIds (Optional) to filter by label
 	 */
+	@Get('byday')
+	@Security('service')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async getAvailabilityByDay(
+		@Query() startDate: Date,
+		@Query() endDate: Date,
+		@Header('x-api-service') serviceId: number,
+		@Query() serviceProviderIds?: number[],
+	): Promise<ApiData<AvailabilityByDayResponse[]>> {
+		const timeslots = await this.timeslotsService.getAggregatedTimeslots(
+			startDate,
+			endDate,
+			serviceId,
+			false,
+			serviceProviderIds,
+		);
+
+		const result = this.timeslotMapper.mapAvailabilityToDateResponse(timeslots);
+
+		return ApiDataFactory.create(result);
+	}
+
 	@Get('')
 	@Security('service')
 	@MOLAuth({ admin: {}, agency: {} })

@@ -1,6 +1,8 @@
+import { DateHelper } from './../../infrastructure/dateHelper';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import {
+	AvailabilityByDayResponse,
 	AvailabilityEntryResponse,
 	CitizenTimeslotServiceProviderResponse,
 	TimeslotEntryResponse,
@@ -87,6 +89,25 @@ export class TimeslotsMapper {
 		});
 
 		return [res, totalCapacity, totalAssignedBookings];
+	}
+
+	public mapAvailabilityToDateResponse(entries: AvailableTimeslotProviders[]): AvailabilityByDayResponse[] {
+		const groupByDayMap = new Map<Date, number>();
+
+		entries.forEach((entry: AvailableTimeslotProviders) => {
+			const startOfDay = DateHelper.getStartOfDay(new Date(entry.startTime));
+			const currCount =
+				groupByDayMap.get(startOfDay) === undefined
+					? entry.getAvailabilityCount()
+					: entry.getAvailabilityCount() + groupByDayMap.get(startOfDay);
+			groupByDayMap.set(startOfDay, currCount);
+		});
+
+		const result = Array.from(groupByDayMap, ([date, count]) => {
+			return new AvailabilityByDayResponse(date, count);
+		});
+
+		return result;
 	}
 
 	public mapCitizenTimeslotServiceProviders(
