@@ -1,6 +1,6 @@
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { PgClient } from '../../utils/pgClient';
-import { populateService } from '../../populate/basic';
+import { populateService, populateServiceWithVC } from '../../populate/basic';
 import { ServiceResponse } from '../../../src/components/services/service.apicontract';
 
 describe('Tests endpoint and populate data', () => {
@@ -125,5 +125,26 @@ describe('Tests endpoint and populate data', () => {
 		});
 		expect(response2.statusCode).toEqual(200);
 		expect(response2.body.data.isSpAutoAssigned).toBe(false);
+	});
+
+	it("should update service's video conference URL", async () => {
+		const service = await populateServiceWithVC({ nameService: SERVICE_NAME });
+
+		const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+			body: { name: SERVICE_NAME, videoConferenceUrl: 'http://www.zoom.us/7654321' },
+		});
+		expect(response.statusCode).toEqual(200);
+		expect(response.body.data.videoConferenceUrl).toBe('http://www.zoom.us/7654321');
+	});
+
+	it("should not update service's video conference URL", async () => {
+		const service = await populateServiceWithVC({ nameService: SERVICE_NAME });
+
+		const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+			body: { name: SERVICE_NAME, videoConferenceUrl: 'www.zoom.us/7654321' },
+		});
+		expect(response.statusCode).toEqual(404);
+		expect(response.body.errorCode).toBe('SYS_NOT_FOUND');
+		expect(response.body.errorMessage).toBe('Invalid URL');
 	});
 });

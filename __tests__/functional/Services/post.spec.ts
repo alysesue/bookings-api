@@ -41,4 +41,21 @@ describe('Tests endpoint and populate data', () => {
 		expect(response.statusCode).toEqual(200);
 		expect(response.body.data.isSpAutoAssigned).toBe(true);
 	});
+
+	it('Post service with video conference default URL', async () => {
+		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
+			body: { name: SERVICE_NAME, videoConferenceUrl: 'http://www.zoom.us/1234567' },
+		});
+		expect(response.statusCode).toEqual(200);
+		expect(response.body.data.videoConferenceUrl).toBe('http://www.zoom.us/1234567');
+	});
+
+	it('Post service with video conference default URL', async () => {
+		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
+			body: { name: SERVICE_NAME, videoConferenceUrl: 'www.zoom.us/1234567' },
+		});
+		expect(response.statusCode).toEqual(404);
+		expect(response.body.errorCode).toBe('SYS_NOT_FOUND');
+		expect(response.body.errorMessage).toBe('Invalid URL');
+	});
 });
