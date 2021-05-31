@@ -117,7 +117,7 @@ export class TimeslotsController extends Controller {
 			serviceProviderIds,
 		);
 
-		const result = this.timeslotMapper.mapAvailabilityToDateResponse(timeslots);
+		const result = this.timeslotMapper.groupAvailabilityByDateResponse(timeslots);
 
 		return ApiDataFactory.create(result);
 	}

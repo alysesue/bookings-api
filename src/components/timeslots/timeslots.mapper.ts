@@ -91,7 +91,7 @@ export class TimeslotsMapper {
 		return [res, totalCapacity, totalAssignedBookings];
 	}
 
-	public mapAvailabilityToDateResponse(entries: AvailableTimeslotProviders[]): AvailabilityByDayResponse[] {
+	public groupAvailabilityByDateResponse(entries: AvailableTimeslotProviders[]): AvailabilityByDayResponse[] {
 		const groupByDayMap = new Map<number, number>();
 
 		entries.forEach((entry: AvailableTimeslotProviders) => {
