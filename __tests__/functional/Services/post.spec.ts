@@ -50,7 +50,7 @@ describe('Tests endpoint and populate data', () => {
 		expect(response.body.data.videoConferenceUrl).toBe('http://www.zoom.us/1234567');
 	});
 
-	it('Post service with video conference default URL', async () => {
+	it('Post service with invalid video conference default URL', async () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
 			body: { name: SERVICE_NAME, videoConferenceUrl: 'www.zoom.us/1234567' },
 		});
