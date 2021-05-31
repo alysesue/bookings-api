@@ -172,8 +172,7 @@ describe('Services service tests', () => {
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
 			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
 		);
-		request.labels = [{ label: 'label' }];
-		request.emailSuffix = 'abc.com';
+
 		request.videoConferenceUrl = 'www.abc.com';
 
 		let error: string;
