@@ -199,10 +199,8 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			query = query.leftJoinAndSelect('sp._serviceProviderGroupMap', 'sp_groupmap');
 		}
 
-		if (options.skipService){
-			query = query
-				.leftJoin('sp._service', 'service')
-				.leftJoin('service._organisation', 'svcOrg');
+		if (options.skipService) {
+			query = query.leftJoin('sp._service', 'service').leftJoin('service._organisation', 'svcOrg');
 		} else {
 			query = query
 				.leftJoinAndSelect('sp._service', 'service')

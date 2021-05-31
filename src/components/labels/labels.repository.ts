@@ -26,11 +26,11 @@ export class LabelsRepository extends RepositoryBase<Label> {
 	}
 
 	public async find(options: {
-		serviceId?: number;
-		categoryId?: number;
+		serviceIds?: number[];
+		categoryIds?: number[];
 		skipAuthorisation?: boolean;
 	}): Promise<Label[]> {
-		const { serviceId, categoryId } = options;
+		const { serviceIds, categoryIds } = options;
 		const authGroups = await this.userContext.getAuthGroups();
 
 		const { userCondition, userParams } = options.skipAuthorisation
@@ -38,14 +38,14 @@ export class LabelsRepository extends RepositoryBase<Label> {
 			: await new ServicesQueryAuthVisitor('servicelabel').createUserVisibilityCondition(authGroups);
 
 		const repository = await this.getRepository();
-		const serviceCondition = serviceId ? 'label."_serviceId" = :serviceId' : '';
-		const categoryCondition = categoryId ? 'label."_categoryId" = :categoryId' : '';
+		const serviceCondition = serviceIds?.length ? 'label."_serviceId" IN (:...serviceIds) ' : '';
+		const categoryCondition = categoryIds?.length ? 'label."_categoryId" IN  (:...categoryIds) ' : '';
 
 		return repository
 			.createQueryBuilder('label')
 			.where(andWhere([serviceCondition, categoryCondition, userCondition]), {
-				serviceId,
-				categoryId,
+				serviceIds,
+				categoryIds,
 				...userParams,
 			})
 			.leftJoin('label.service', 'servicelabel')
@@ -54,20 +54,22 @@ export class LabelsRepository extends RepositoryBase<Label> {
 	}
 
 	public async populateLabelForCategories<T extends LabelCategory>(entries: T[]): Promise<T[]> {
-		return Promise.all(
-			entries.map(async (s) => {
-				s.labels = await this.find({ categoryId: s.id, skipAuthorisation: true });
-				return s;
-			}),
-		);
+		const ids = entries.map((s) => {
+			return s.id;
+		});
+		const listLabels = await this.find({ categoryIds: ids, skipAuthorisation: true });
+		entries.forEach((entry) => (entry.labels = listLabels.filter((label) => label.categoryId === entry.id)));
+
+		return entries;
 	}
 
 	public async populateLabelForService<T extends Service>(entries: T[]): Promise<T[]> {
-		return Promise.all(
-			entries.map(async (s) => {
-				s.labels = await this.find({ serviceId: s.id });
-				return s;
-			}),
-		);
+		const ids = entries.map((s) => {
+			return s.id;
+		});
+		const listLabels = await this.find({ serviceIds: ids });
+		entries.forEach((entry) => (entry.labels = listLabels.filter((label) => label.serviceId === entry.id)));
+
+		return entries;
 	}
 }

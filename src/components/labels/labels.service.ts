@@ -52,7 +52,7 @@ export class LabelsService {
 
 		const labelIds = new Set<number>(encodedLabelIds.map((encodedId) => this.idHasher.decode(encodedId)));
 
-		const labelsService = await this.labelsRepository.find({ serviceId });
+		const labelsService = await this.labelsRepository.find({ serviceIds: [serviceId] });
 		const labelsLookup = groupByKeyLastValue(labelsService, (label) => label.id);
 
 		const labelsFound: Label[] = [];

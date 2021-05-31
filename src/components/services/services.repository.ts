@@ -8,7 +8,7 @@ import { UserContext } from '../../infrastructure/auth/userContext';
 import { andWhere } from '../../tools/queryConditions';
 import { ServicesQueryAuthVisitor } from './services.auth';
 import { LabelsRepository } from '../labels/labels.repository';
-import { LabelsCategoriesRepository } from "../labelsCategories/labelsCategories.repository";
+import { LabelsCategoriesRepository } from '../labelsCategories/labelsCategories.repository';
 
 @InRequestScope
 export class ServicesRepository extends RepositoryBase<Service> {
@@ -118,19 +118,21 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		});
 	}
 
-	public async getAll(options: {
-		includeScheduleForm?: boolean;
-		includeTimeslotsSchedule?: boolean;
-		includeLabels?: boolean;
-		includeLabelCategories?: boolean;
-	}): Promise<Service[]> {
+	public async getAll(
+		options: {
+			includeScheduleForm?: boolean;
+			includeTimeslotsSchedule?: boolean;
+			includeLabels?: boolean;
+			includeLabelCategories?: boolean;
+		} = {},
+	): Promise<Service[]> {
 		const query = await this.createSelectQuery([], {}, {});
 
 		const entries = await query.getMany();
 		if (!entries) {
 			return entries;
 		}
-		return (await this.processIncludes(entries, options));
+		return await this.processIncludes(entries, options);
 	}
 
 	public async getService(options: {

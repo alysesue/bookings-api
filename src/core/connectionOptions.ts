@@ -29,7 +29,7 @@ export function getConnectionOptions(): PostgresConnectionOptions {
 		migrationsRun: false,
 		cli: { migrationsDir: 'src/migrations' },
 		extra: {
-			max: 20, //Max connection pool size
+			max: 20, // Max connection pool size
 		} as PoolConfig,
 	} as PostgresConnectionOptions;
 }

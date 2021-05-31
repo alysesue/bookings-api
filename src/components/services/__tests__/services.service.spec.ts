@@ -37,6 +37,9 @@ import { UsersServiceMock } from '../../users/__mocks__/users.service';
 import { UsersService } from '../../users/users.service';
 import { LabelsCategoriesService } from '../../labelsCategories/labelsCategories.service';
 import { LabelsCategoriesServiceMock } from '../../labelsCategories/__mocks__/labelsCategories.service.mock';
+import { AsyncFunction, TransactionManager } from '../../../core/transactionManager';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
+import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 
 jest.mock('../services.auth');
 
@@ -72,6 +75,7 @@ beforeAll(() => {
 	Container.bind(UsersService).to(UsersServiceMock);
 	Container.bind(OrganisationsNoauthRepository).to(OrganisationsRepositoryMock);
 	Container.bind(LabelsCategoriesService).to(LabelsCategoriesServiceMock);
+	Container.bind(TransactionManager).to(TransactionManagerMock);
 });
 
 beforeEach(() => {
@@ -91,6 +95,10 @@ beforeEach(() => {
 	UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
 	UserContextMock.getAuthGroups.mockImplementation(() =>
 		Promise.resolve([new OrganisationAdminAuthGroup(userMock, [organisation])]),
+	);
+	TransactionManagerMock.runInTransaction.mockImplementation(
+		async <T extends unknown>(_isolationLevel: IsolationLevel, asyncFunction: AsyncFunction<T>): Promise<T> =>
+			await asyncFunction(),
 	);
 });
 
@@ -408,7 +416,7 @@ describe('Services service tests', () => {
 		const request = new ServiceRequest();
 		request.name = 'Service A';
 		request.labels = [{ label: 'Tamil' }];
-
+		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(newService));
 		await Container.get(ServicesService).updateService(1, request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].labels).toHaveLength(1);
 	});
