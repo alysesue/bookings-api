@@ -546,7 +546,7 @@ describe('Bookings functional tests', () => {
 				citizenEmail,
 			},
 		});
-		console.log(response.body.data);
+
 		expect(response.statusCode).toBe(404);
 	});
 
