@@ -80,15 +80,6 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 		}
 	}
 
-	private static async *validateBookingDate(booking: Booking): AsyncIterable<BusinessValidation> {
-		const currentDate = DateHelper.getStartOfDay(new Date());
-		const bookingDate = DateHelper.getStartOfDay(booking.startDateTime);
-
-		if (currentDate > bookingDate) {
-			yield BookingBusinessValidations.BookingDateInPast;
-		}
-	}
-
 	private static async *skipValidation(_booking: Booking): AsyncIterable<BusinessValidation> {
 		return;
 	}
@@ -107,7 +98,6 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 			this.validateServiceProviderExisting(booking),
 			this.validateLicenceServiceProviderIsNotExpire(booking),
 			BookingsValidator.validateDuration(booking),
-			BookingsValidator.validateBookingDate(booking),
 			booking.status === BookingStatus.OnHold
 				? BookingsValidator.skipValidation(booking)
 				: this.validateCitizenDetails(booking),
