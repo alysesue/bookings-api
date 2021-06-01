@@ -23,7 +23,7 @@ import { LabelsMapper } from '../labels/labels.mapper';
 import { ServicesActionAuthVisitor } from './services.auth';
 import { ServiceRequest } from './service.apicontract';
 import { ServicesRepository } from './services.repository';
-import { verifyUrl } from '../../tools/url';
+import { verifyUrlAndLength } from '../../tools/url';
 
 @InRequestScope
 export class ServicesService {
@@ -99,9 +99,7 @@ export class ServicesService {
 		if (!request.name) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service name is empty');
 		}
-		if (request.videoConferenceUrl) {
-			verifyUrl(request.videoConferenceUrl);
-		}
+		verifyUrlAndLength(request.videoConferenceUrl);
 
 		const orga = request.organisationId
 			? await this.organisationsRepository.getOrganisationById(request.organisationId)
@@ -129,9 +127,7 @@ export class ServicesService {
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
-		if (request.videoConferenceUrl) {
-			verifyUrl(request.videoConferenceUrl);
-		}
+		verifyUrlAndLength(request.videoConferenceUrl);
 
 		service.name = request.name;
 		service.isSpAutoAssigned = request.isSpAutoAssigned || false;
