@@ -1,5 +1,5 @@
 import { Container } from 'typescript-ioc';
-import { ServicesService } from '../services.service';
+import { ServicesRepository } from '../services.repository';
 import { ServicesValidation } from '../services.validation';
 
 afterAll(() => {
@@ -9,7 +9,7 @@ afterAll(() => {
 
 describe('Services validation tests', () => {
 	beforeEach(() => {
-		Container.bind(ServicesService).to(ServicesServiceMock);
+		Container.bind(ServicesRepository).to(ServicesRepositoryMock);
 	});
 
 	afterEach(() => {
@@ -17,41 +17,41 @@ describe('Services validation tests', () => {
 	});
 
 	it('should not enforce service id when optional', async () => {
-		await Container.get(ServicesValidation).validate(true);
-		expect(ServicesServiceMock.getService).not.toHaveBeenCalled();
+		await Container.get(ServicesValidation).validateService(true);
+		expect(ServicesRepositoryMock.getService).not.toHaveBeenCalled();
 	});
 
 	it('should verify service id exists when optional', async () => {
-		ServicesServiceMock.getService.mockReturnValue(Promise.resolve({}));
-		await Container.get(ServicesValidation).validate(true, 1);
-		expect(ServicesServiceMock.getService).toHaveBeenCalled();
+		ServicesRepositoryMock.getService.mockReturnValue(Promise.resolve({}));
+		await Container.get(ServicesValidation).validateService(true, 1);
+		expect(ServicesRepositoryMock.getService).toHaveBeenCalled();
 	});
 
 	it('should verify service id exists when mandatory', async () => {
-		ServicesServiceMock.getService.mockReturnValue(Promise.resolve({}));
-		await Container.get(ServicesValidation).validate(false, 1);
-		expect(ServicesServiceMock.getService).toHaveBeenCalled();
+		ServicesRepositoryMock.getService.mockReturnValue(Promise.resolve({}));
+		await Container.get(ServicesValidation).validateService(false, 1);
+		expect(ServicesRepositoryMock.getService).toHaveBeenCalled();
 	});
 
 	it(`should throw when service id doesn't exist (optional)`, async () => {
-		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(null));
-		const test = async () => await Container.get(ServicesValidation).validate(true, 0);
+		ServicesRepositoryMock.getService.mockReturnValue(Promise.resolve(null));
+		const test = async () => await Container.get(ServicesValidation).validateService(true, 0);
 
 		await expect(test).rejects.toThrowError();
 	});
 
 	it(`should throw when service id doesn't exist (mandatory)`, async () => {
-		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(null));
-		const test = async () => await Container.get(ServicesValidation).validate(false, 0);
+		ServicesRepositoryMock.getService.mockReturnValue(Promise.resolve(null));
+		const test = async () => await Container.get(ServicesValidation).validateService(false, 0);
 
 		await expect(test).rejects.toThrowError();
 	});
 });
 
-class ServicesServiceMock implements Partial<ServicesService> {
+class ServicesRepositoryMock implements Partial<ServicesRepository> {
 	public static getService = jest.fn();
 
 	public async getService(...params): Promise<any> {
-		return await ServicesServiceMock.getService(...params);
+		return await ServicesRepositoryMock.getService(...params);
 	}
 }

@@ -467,7 +467,9 @@ describe('Bookings functional tests', () => {
 				citizenEmail,
 			},
 		});
-		expect(response.statusCode).toBe(400);
+
+		expect(response.body.data[0].code).toBe('10001');
+		expect(response.body.data[0].message).toBe('The service provider is not available in the selected time range');
 	});
 
 	it('[Auto Accept] should create in-slot booking as a citizen', async () => {
@@ -544,6 +546,7 @@ describe('Bookings functional tests', () => {
 				citizenEmail,
 			},
 		});
+		console.log(response.body.data);
 		expect(response.statusCode).toBe(404);
 	});
 

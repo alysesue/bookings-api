@@ -143,8 +143,8 @@ describe('Tests endpoint and populate data', () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
 			body: { name: SERVICE_NAME, videoConferenceUrl: 'www.zoom.us/7654321' },
 		});
-		expect(response.statusCode).toEqual(404);
-		expect(response.body.errorCode).toBe('SYS_NOT_FOUND');
-		expect(response.body.errorMessage).toBe('Invalid URL');
+
+		expect(response.body.errorCode).toBe('SYS_INVALID_PARAM');
+		expect(response.body.errorMessage).toBe('One or more business validations failed');
 	});
 });

@@ -35,6 +35,7 @@ import {
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { UsersServiceMock } from '../../users/__mocks__/users.service';
 import { UsersService } from '../../users/users.service';
+import { ContainerContextHolder } from '../../../infrastructure/containerContext';
 
 jest.mock('../services.auth');
 
@@ -61,6 +62,7 @@ const visitorObject = {
 };
 
 beforeAll(() => {
+	ContainerContextHolder.registerInContainer();
 	Container.bind(ServicesRepository).to(ServicesRepositoryMock);
 	Container.bind(ScheduleFormsService).to(ScheduleFormsServiceMock);
 	Container.bind(TimeslotsScheduleService).to(TimeslotsScheduleMockClass);
@@ -182,7 +184,7 @@ describe('Services service tests', () => {
 			error = e.message as string;
 		}
 
-		expect(error).toEqual(`Invalid URL`);
+		expect(error).toEqual(`[10301] Invalid URL`);
 	});
 
 	it('should save service', async () => {
