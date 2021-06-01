@@ -124,9 +124,7 @@ export class ServicesService {
 
 	public async updateService(id: number, request: ServiceRequest): Promise<Service> {
 		const service = await this.servicesRepository.getService({ id });
-		if (!service) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
-		}
+		this.verifyService(service);
 		verifyUrlAndLength(request.videoConferenceUrl);
 
 		service.name = request.name;
@@ -169,9 +167,7 @@ export class ServicesService {
 			id,
 			includeScheduleForm: true,
 		});
-		if (!service) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
-		}
+		this.verifyService(service);
 
 		if (!service.scheduleForm) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service scheduleForm not found');
@@ -190,9 +186,8 @@ export class ServicesService {
 		includeTimeslotsSchedule = false,
 	): Promise<Service> {
 		const service = await this.servicesRepository.getService({ id, includeScheduleForm, includeTimeslotsSchedule });
-		if (!service) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
-		}
+		this.verifyService(service);
+
 		return service;
 	}
 
@@ -238,6 +233,12 @@ export class ServicesService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
 				`User cannot perform this action (${action}) for services.`,
 			);
+		}
+	}
+
+	private verifyService(service: Service): void {
+		if (!service) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
 	}
 }
