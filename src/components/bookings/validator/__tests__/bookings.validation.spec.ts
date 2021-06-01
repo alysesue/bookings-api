@@ -430,27 +430,6 @@ describe('Booking validation tests', () => {
 		);
 	});
 
-	it('should validate date should not be in the past', async () => {
-		const booking = new BookingBuilder()
-			.withStartDateTime(new Date('2020-09-01T01:00:00'))
-			.withEndDateTime(new Date('2020-09-01T02:00:00'))
-			.withCitizenUinFin('G3382058K')
-			.withCitizenName('Andy')
-			.withCitizenEmail('email@gmail.com')
-			.build();
-		booking.service = {
-			noNric: false,
-		} as Service;
-
-		const timeslotWithCapacity = createTimeslot(new Date('2020-10-01T01:00:00'), new Date('2020-10-01T02:00:00'));
-		TimeslotsServiceMock.availableProvidersForTimeslot.set(serviceProvider, timeslotWithCapacity);
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
-
-		await expect(
-			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
-		).rejects.toMatchInlineSnapshot('[BusinessError: [10015] Booking date cannot be in the past]');
-	});
-
 	it('should throw on validation error', async () => {
 		const booking = new BookingBuilder()
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
