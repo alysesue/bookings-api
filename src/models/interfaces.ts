@@ -40,6 +40,10 @@ export interface IService {
 	organisationId: number;
 }
 
+export interface ILabelCategory {
+	id: number;
+}
+
 export interface IServiceProvider {
 	id: number;
 	serviceId: number;

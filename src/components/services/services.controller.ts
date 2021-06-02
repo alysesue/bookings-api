@@ -1,5 +1,5 @@
 import { Inject } from 'typescript-ioc';
-import { Body, Controller, Delete, Get, Path, Post, Put, Response, Route, SuccessResponse, Tags } from 'tsoa';
+import { Body, Controller, Delete, Get, Path, Post, Put, Query, Response, Route, SuccessResponse, Tags } from 'tsoa';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { mapToResponse as mapSScheduleFormResponseToResponse } from '../scheduleForms/scheduleForms.mapper';
@@ -58,6 +58,11 @@ export class ServicesController extends Controller {
 	}
 	/**
 	 * Retrieves all services.
+	 *
+	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
+	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
+	 * @param includeLabels (Optional) Whether to include labels in the response.
+	 * @param includeLabelCategories (Optional) Whether to include categories with labels in the response.
 	 */
 	@Get()
 	@SuccessResponse(200, 'Ok')
@@ -67,8 +72,18 @@ export class ServicesController extends Controller {
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
-	public async getServices(): Promise<ApiData<ServiceResponse[]>> {
-		const services = await this.servicesService.getServices();
+	public async getServices(
+		@Query() includeTimeslotsSchedule = false,
+		@Query() includeScheduleForm = false,
+		@Query() includeLabels = false,
+		@Query() includeLabelCategories = false,
+	): Promise<ApiData<ServiceResponse[]>> {
+		const services = await this.servicesService.getServices({
+			includeLabels,
+			includeScheduleForm,
+			includeTimeslotsSchedule,
+			includeLabelCategories,
+		});
 		return ApiDataFactory.create(services.map((service) => this.serviceMapper.mapToServiceResponse(service)));
 	}
 
@@ -99,12 +114,27 @@ export class ServicesController extends Controller {
 	 * Retrieves a single service. (Includes Service Labels)
 	 *
 	 * @param @isInt serviceId The service id.
+	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
+	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
+	 * @param includeLabels (Optional) Whether to include labels in the response.
+	 * @param includeLabelCategories (Optional) Whether to include categories with labels in the response.
 	 */
 	@Get('{serviceId}')
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Unauthorized')
-	public async getService(serviceId: number): Promise<ApiData<ServiceResponse>> {
-		const service = await this.servicesService.getService(serviceId);
+	public async getService(
+		serviceId: number,
+		@Query() includeTimeslotsSchedule = false,
+		@Query() includeScheduleForm = false,
+		@Query() includeLabels = false,
+		@Query() includeLabelCategories = false,
+	): Promise<ApiData<ServiceResponse>> {
+		const service = await this.servicesService.getService(serviceId, {
+			includeTimeslotsSchedule,
+			includeScheduleForm,
+			includeLabelCategories,
+			includeLabels,
+		});
 		return ApiDataFactory.create(this.serviceMapper.mapToServiceResponse(service));
 	}
 

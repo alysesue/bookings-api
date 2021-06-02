@@ -5,6 +5,7 @@ import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
 import { Organisation } from './organisation';
 import { ScheduleForm } from './scheduleForm';
 import { Label } from './label';
+import { LabelCategory } from './labelCategory';
 
 @Entity()
 @Index(['_organisationId', '_name'], { unique: true })
@@ -46,7 +47,10 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._organisation;
 	}
 
-	@OneToOne(() => ServiceAdminGroupMap, (e) => e._service, { nullable: true, cascade: true })
+	@OneToOne(() => ServiceAdminGroupMap, (e) => e._service, {
+		nullable: true,
+		cascade: true,
+	})
 	private _serviceAdminGroupMap: ServiceAdminGroupMap;
 
 	public get serviceAdminGroupMap(): ServiceAdminGroupMap {
@@ -116,6 +120,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		orga: Organisation,
 		isSpAutoAssigned = false,
 		labels: Label[] = [],
+		categories: LabelCategory[] = [],
 		emailSuffix?: string,
 		noNric = false,
 	) {
@@ -128,10 +133,11 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		service._serviceAdminGroupMap = ServiceAdminGroupMap.create(
 			ServiceAdminGroupMap.createServiceOrganisationRef(
 				service.getServiceRef(),
-				orga._organisationAdminGroupMap.organisationRef,
+				orga._organisationAdminGroupMap?.organisationRef,
 			),
 		);
 		service.labels = labels;
+		service.categories = categories;
 		service._emailSuffix = emailSuffix;
 		return service;
 	}
@@ -193,9 +199,12 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	public set isSpAutoAssigned(value: boolean) {
 		this._isSpAutoAssigned = value;
 	}
+
 	@OneToMany(() => Label, (label) => label.service, { cascade: true })
-	// @OneToMany(() => Label, 'services', { cascade: true, lazy: true })
 	public labels: Label[];
+
+	@OneToMany(() => LabelCategory, (category) => category.service, { cascade: true })
+	public categories: LabelCategory[];
 
 	@Column({ nullable: false, default: false })
 	private _sendNotifications: boolean;

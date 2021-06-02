@@ -20,14 +20,21 @@ import { MolServiceAdminUserContract, MolUpsertUsersResult } from '../users/molU
 import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 import { uniqueStringArray } from '../../tools/collections';
 import { LabelsMapper } from '../labels/labels.mapper';
+import { LabelsCategoriesMapper } from '../labelsCategories/labelsCategories.mapper';
 import { ServicesActionAuthVisitor } from './services.auth';
 import { ServiceRequest } from './service.apicontract';
 import { ServicesRepository } from './services.repository';
+import { LabelsCategoriesService } from '../labelsCategories/labelsCategories.service';
+import { DefaultIsolationLevel, TransactionManager } from '../../core/transactionManager';
 
 @InRequestScope
 export class ServicesService {
 	@Inject
+	private transactionManager: TransactionManager;
+	@Inject
 	private servicesRepository: ServicesRepository;
+	@Inject
+	private categoriesService: LabelsCategoriesService;
 	@Inject
 	private scheduleFormsService: ScheduleFormsService;
 	@Inject
@@ -40,6 +47,8 @@ export class ServicesService {
 	private userContext: UserContext;
 	@Inject
 	private labelsMapper: LabelsMapper;
+	@Inject
+	private categoriesMapper: LabelsCategoriesMapper;
 
 	public async createServices(names: string[], organisation: Organisation): Promise<Service[]> {
 		const allServiceNames = uniqueStringArray(names, {
@@ -105,11 +114,13 @@ export class ServicesService {
 		const isSpAutoAssigned = request.isSpAutoAssigned;
 		const noNric = request.noNric;
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
+		const mapToCategories = this.categoriesMapper.mapToCategories(request.categories);
 		const service = Service.create(
 			request.name,
 			orga,
 			isSpAutoAssigned,
 			transformedLabels,
+			mapToCategories,
 			request.emailSuffix,
 			noNric,
 		);
@@ -119,7 +130,11 @@ export class ServicesService {
 	}
 
 	public async updateService(id: number, request: ServiceRequest): Promise<Service> {
-		const service = await this.servicesRepository.getService({ id });
+		const service = await this.servicesRepository.getService({
+			id,
+			includeLabelCategories: true,
+			includeLabels: true,
+		});
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
@@ -129,16 +144,27 @@ export class ServicesService {
 		service.emailSuffix = request.emailSuffix;
 		service.noNric = request.noNric || false;
 
-		const updatedList = this.labelsMapper.mapToLabels(request.labels);
-		this.labelsMapper.mergeLabels(service.labels, updatedList);
 		await this.verifyActionPermission(service, CrudAction.Update);
+		const updatedLabelList = this.labelsMapper.mapToLabels(request.labels);
+		this.labelsMapper.mergeLabels(service.labels, updatedLabelList);
+		const updatedCategoriesList = this.categoriesMapper.mapToCategories(request.categories);
 
 		try {
-			return await this.servicesRepository.save(service);
+			return await this.transactionManager.runInTransaction(DefaultIsolationLevel, async () => {
+				service.categories = await this.categoriesService.update(
+					service,
+					updatedCategoriesList,
+					updatedLabelList,
+				);
+				return await this.servicesRepository.save(service);
+			});
 		} catch (e) {
 			if (e.message.startsWith('duplicate key value violates unique constraint')) {
 				if (e.message.includes('ServiceLabels')) {
 					throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Label(s) are already present');
+				}
+				if (e.message.includes('ServiceCategories')) {
+					throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Category(ies) are already present');
 				}
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service name is already present');
 			}
@@ -174,16 +200,36 @@ export class ServicesService {
 		return service.scheduleForm;
 	}
 
-	public async getServices(): Promise<Service[]> {
-		return await this.servicesRepository.getAll();
+	public async getServices({
+		includeScheduleForm = false,
+		includeTimeslotsSchedule = false,
+		includeLabels = false,
+		includeLabelCategories = false,
+	} = {}): Promise<Service[]> {
+		return await this.servicesRepository.getAll({
+			includeLabels,
+			includeLabelCategories,
+			includeTimeslotsSchedule,
+			includeScheduleForm,
+		});
 	}
 
 	public async getService(
 		id: number,
-		includeScheduleForm = false,
-		includeTimeslotsSchedule = false,
+		{
+			includeScheduleForm = false,
+			includeTimeslotsSchedule = false,
+			includeLabels = false,
+			includeLabelCategories = false,
+		} = {},
 	): Promise<Service> {
-		const service = await this.servicesRepository.getService({ id, includeScheduleForm, includeTimeslotsSchedule });
+		const service = await this.servicesRepository.getService({
+			id,
+			includeScheduleForm,
+			includeTimeslotsSchedule,
+			includeLabels,
+			includeLabelCategories,
+		});
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}
@@ -191,12 +237,12 @@ export class ServicesService {
 	}
 
 	public async getServiceTimeslotsSchedule(id: number): Promise<TimeslotsSchedule> {
-		const service = await this.getService(id, false, true);
+		const service = await this.getService(id, { includeTimeslotsSchedule: true });
 		return service.timeslotsSchedule;
 	}
 
 	public async addTimeslotItem(serviceId: number, request: TimeslotItemRequest): Promise<TimeslotItem> {
-		const service = await this.getService(serviceId, false, true);
+		const service = await this.getService(serviceId, { includeTimeslotsSchedule: true });
 		if (!service.timeslotsSchedule) {
 			await this.createTimeslotsSchedule(service);
 		}

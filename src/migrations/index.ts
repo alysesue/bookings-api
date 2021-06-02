@@ -19,3 +19,4 @@ export { CapacityForScheduleForm1620205273706 } from './1620205273706-capacityFo
 export { NoNric1621244901164 } from './1621244901164-NoNric';
 export { TextDynamicField1620723968098 } from './1620723968098-TextDynamicField';
 export { TimeslotItemIndex1621323938147 } from './1621323938147-TimeslotItemIndex';
+export { LabelCategory1621479880832 } from './1621479880832-LabelCategory';

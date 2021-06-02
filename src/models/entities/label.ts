@@ -1,8 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { IService } from '../interfaces';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { ILabelCategory, IService } from '../interfaces';
 
 @Entity()
-@Unique('ServiceLabels', ['_labelText', '_serviceId'])
+@Index('LabelsCategoriesService', ['_labelText', '_serviceId', '_categoryId'], { unique: true })
 export class Label {
 	public constructor() {}
 
@@ -40,17 +40,22 @@ export class Label {
 	@ManyToOne('Service', { orphanedRowAction: 'delete' })
 	@JoinColumn({ name: '_serviceId' })
 	public service: IService;
-	// private _service: IService;
 
-	// public get service(): IService {
-	// 	return this._service;
-	// }
+	@ManyToOne('LabelCategory', { orphanedRowAction: 'delete' })
+	@JoinColumn({ name: '_categoryId' })
+	public category: ILabelCategory;
 
-	// public set service(value: IService) {
-	// 	this._service = value;
-	// }
+	@Column({ nullable: true })
+	private _categoryId: number;
+	public get categoryId(): number {
+		return this._categoryId;
+	}
 
-	@Column({ nullable: false })
+	public set categoryId(value: number) {
+		this._categoryId = value;
+	}
+
+	@Column({ nullable: true })
 	private _serviceId: number;
 
 	public get serviceId(): number {

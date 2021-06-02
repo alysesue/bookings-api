@@ -44,6 +44,44 @@ describe('labels/labels.mapper', () => {
 		expect(transformedLabelRequest[1].labelText).toBe('label2');
 	});
 
+	it('should keep duplicate label if id different', () => {
+		const labelRequest = [createLabelRequestData('12', 'label1'), createLabelRequestData('13', 'label1')];
+		const mapper = Container.get(LabelsMapper);
+
+		IdHasherMock.decode.mockImplementation((id) => Number(id));
+
+		const transformedLabelRequest = mapper.mapToLabels(labelRequest);
+
+		expect(transformedLabelRequest).toHaveLength(2);
+		expect(transformedLabelRequest[1].id).toBe(13);
+		expect(transformedLabelRequest[1].labelText).toBe('label1');
+	});
+
+	it('should keep 1 if same element', () => {
+		const labelRequest = [createLabelRequestData('12', 'label1'), createLabelRequestData('12', 'label1')];
+		const mapper = Container.get(LabelsMapper);
+
+		IdHasherMock.decode.mockImplementation((id) => Number(id));
+
+		const transformedLabelRequest = mapper.mapToLabels(labelRequest);
+
+		expect(transformedLabelRequest).toHaveLength(1);
+		expect(transformedLabelRequest[0].id).toBe(12);
+		expect(transformedLabelRequest[0].labelText).toBe('label1');
+	});
+
+	it('should not keep duplicate label if id null', () => {
+		const labelRequest = [{ id: '12', label: 'labelCategory' }, { label: 'labelCategory' }];
+		const mapper = Container.get(LabelsMapper);
+
+		IdHasherMock.decode.mockImplementation((id) => Number(id));
+
+		const transformedLabelRequest = mapper.mapToLabels(labelRequest);
+
+		expect(transformedLabelRequest).toHaveLength(1);
+		expect(transformedLabelRequest[0].id).toBe(12);
+	});
+
 	it('should return empty labels array when no request data is provided', () => {
 		const mapper = Container.get(LabelsMapper);
 

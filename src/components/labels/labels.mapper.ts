@@ -1,5 +1,5 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Label } from '../../models/entities';
+import { Label } from '../../models';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { LabelRequestModel, LabelResponseModel } from './label.apicontract';
 
@@ -17,10 +17,27 @@ export class LabelsMapper {
 		});
 	}
 
-	public mapToLabels(request: LabelRequestModel[] = []): Label[] {
+	// Keep duplication if id different as we have to update timeslot before deleting one (Delete Category scenario).
+	private static removeNewLabelDuplicate(labels: LabelRequestModel[] = []): LabelRequestModel[] {
+		const res = labels;
+		for (let i = 0; i < labels.length; i++) {
+			for (let j = i + 1; j < labels.length; j++) {
+				if (labels[i].label === labels[j].label) {
+					if (!labels[i].id) res.splice(i, 1);
+					else if (!labels[j].id) res.splice(j, 1);
+				}
+			}
+		}
+		return res;
+	}
+
+	public mapToLabels(labels: LabelRequestModel[] = []): Label[] {
 		// Remove duplicate labelText
-		request = request.filter((v, i, a) => a.findIndex((t) => t.label === v.label) === i);
-		return request.map((i) => {
+		const labelNoDeepDuplicate = labels.filter(
+			(label, index, self) => self.findIndex((t) => t.label === label.label && t.id === label.id) === index,
+		);
+		const labelNoDuplicate = LabelsMapper.removeNewLabelDuplicate(labelNoDeepDuplicate);
+		return labelNoDuplicate.map((i) => {
 			const entity = new Label();
 			if (i.id) {
 				entity.id = this.idHasher.decode(i.id);
