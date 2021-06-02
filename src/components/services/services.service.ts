@@ -25,7 +25,6 @@ import { ServiceRequest } from './service.apicontract';
 import { ServicesRepository } from './services.repository';
 import { ContainerContext } from '../../infrastructure/containerContext';
 import { ServicesValidation } from './services.validation';
-// import { OneOffTimeslotsValidation } from '../oneOffTimeslots/oneOffTimeslots.validation';
 
 @InRequestScope
 export class ServicesService {
