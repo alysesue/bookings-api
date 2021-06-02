@@ -138,8 +138,8 @@ describe('Timeslots Mapper', () => {
 			const svcId = 1;
 
 			const entry1 = createAvailableTimeSlotProviderEntry(
-				new Date('2020-09-26T17:00:00.000Z'),
-				new Date('2020-09-26T17:30:00.000Z'),
+				new Date(2020, 9, 27),
+				new Date(2020, 9, 27, 0, 30),
 				svcId,
 				1,
 				'Timmy',
@@ -148,8 +148,8 @@ describe('Timeslots Mapper', () => {
 
 			entries.push(entry1);
 			const entry2 = createAvailableTimeSlotProviderEntry(
-				new Date('2020-09-26T18:00:00.000Z'),
-				new Date('2020-09-26T18:30:00.000Z'),
+				new Date(2020, 9, 27, 1),
+				new Date(2020, 9, 27, 1, 30),
 				svcId,
 				1,
 				'Jimmy',
@@ -162,15 +162,15 @@ describe('Timeslots Mapper', () => {
 			const res = mapper.groupAvailabilityByDateResponse(entries)[0];
 
 			expect(res.totalAvailabilityCount).toBe(15);
-			expect(res.date.toISOString()).toBe('2020-09-26T16:00:00.000Z');
+			expect(res.date).toEqual(new Date(2020, 9, 27));
 		});
 
 		it('should group availability to individual date when the timeslots are on different days', () => {
 			const entries = new Array<AvailableTimeslotProviders>();
 			const svcId = 1;
 			const entry1 = createAvailableTimeSlotProviderEntry(
-				new Date('2020-09-26T17:00:00.000Z'),
-				new Date('2020-09-26T17:30:00.000Z'),
+				new Date(2020, 9, 27),
+				new Date(2020, 9, 27, 0, 30),
 				svcId,
 				1,
 				'Timmy',
@@ -179,8 +179,8 @@ describe('Timeslots Mapper', () => {
 
 			entries.push(entry1);
 			const entry2 = createAvailableTimeSlotProviderEntry(
-				new Date('2020-09-27T18:00:00.000Z'),
-				new Date('2020-09-27T18:30:00.000Z'),
+				new Date(2020, 9, 28),
+				new Date(2020, 9, 28, 0, 30),
 				svcId,
 				2,
 				'Jimmy',
@@ -193,18 +193,18 @@ describe('Timeslots Mapper', () => {
 			const res = mapper.groupAvailabilityByDateResponse(entries);
 
 			expect(res[0].totalAvailabilityCount).toBe(10);
-			expect(res[0].date.toISOString()).toBe('2020-09-26T16:00:00.000Z');
+			expect(res[0].date).toEqual(new Date(2020, 9, 27));
 
 			expect(res[1].totalAvailabilityCount).toBe(5);
-			expect(res[1].date.toISOString()).toBe('2020-09-27T16:00:00.000Z');
+			expect(res[1].date).toEqual(new Date(2020, 9, 28));
 		});
 
 		it("should return availability as 0 when there's all available slots are booked", () => {
 			const entries = new Array<AvailableTimeslotProviders>();
 			const svcId = 1;
 			const spId = 1;
-			const startTime = new Date('2020-09-26T17:00:00.000Z');
-			const endTime = new Date('2020-09-26T17:30:00.000Z');
+			const startTime = new Date(2020, 9, 27);
+			const endTime = new Date(2020, 9, 27, 0, 30);
 			const entry1 = createAvailableTimeSlotProviderEntry(startTime, endTime, svcId, spId, 'Timmy', 1);
 
 			const bookingBuilder = new BookingBuilder();
@@ -220,7 +220,7 @@ describe('Timeslots Mapper', () => {
 			const res = mapper.groupAvailabilityByDateResponse(entries);
 
 			expect(res[0].totalAvailabilityCount).toBe(0);
-			expect(res[0].date.toISOString()).toBe('2020-09-26T16:00:00.000Z');
+			expect(res[0].date).toEqual(new Date(2020, 9, 27));
 		});
 	});
 
