@@ -1,7 +1,7 @@
 import { Container } from 'typescript-ioc';
 import { LabelsRepository } from '../labels.repository';
 import { LabelsRepositoryMock } from '../__mocks__/labels.repository.mock';
-import { Label } from '../../../models/entities';
+import { Label, Organisation, Service } from '../../../models/entities';
 import { LabelsService } from '../labels.service';
 import { IdHasher } from '../../../infrastructure/idHasher';
 
@@ -53,6 +53,44 @@ describe('Test labels service', () => {
 		const asyncTest = () => service.verifyLabels(labelIds, 2);
 
 		await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(`"Invalid label id: 1"`);
+	});
+
+	it(`Should keep labels`, async () => {
+		const label1 = Label.create('test', 1);
+		const { movedLabelsToNoCategory, deleteLabels } = Container.get(LabelsService).sortLabelForDeleteCategory(
+			[label1],
+			[label1],
+		);
+		expect(movedLabelsToNoCategory.length).toBe(1);
+		expect(deleteLabels.length).toBe(0);
+	});
+
+	it(`Should delete labels`, async () => {
+		const label1 = Label.create('test', 1);
+		const { movedLabelsToNoCategory, deleteLabels } = Container.get(LabelsService).sortLabelForDeleteCategory(
+			[],
+			[label1],
+		);
+		expect(movedLabelsToNoCategory.length).toBe(0);
+		expect(deleteLabels.length).toBe(1);
+	});
+
+	it(`Should merge all labels`, async () => {
+		const label1 = Label.create('test', 1);
+		const label2 = Label.create('test', 2);
+		(LabelsRepositoryMock.saveMock as jest.Mock).mockReturnValue([label2]);
+		const service = Service.create('name', {} as Organisation, true, [label1]);
+		const resAllLabel = await Container.get(LabelsService).updateLabelToNoCategory([label2], service);
+		expect(LabelsRepositoryMock.saveMock).toBeCalledTimes(1);
+		expect(resAllLabel).toStrictEqual([label1, label2]);
+	});
+
+	it(`Should sort label moved and label to delete`, async () => {
+		const label1 = Label.create('test', 1);
+		const label2 = Label.create('test', 2);
+		const resAllLabel = await Container.get(LabelsService).sortLabelForDeleteCategory([label2], [label1, label2]);
+		expect(resAllLabel.deleteLabels).toStrictEqual([label1]);
+		expect(resAllLabel.movedLabelsToNoCategory).toStrictEqual([label2]);
 	});
 });
 
