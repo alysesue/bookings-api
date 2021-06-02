@@ -1,3 +1,4 @@
+import { DateHelper } from './../../infrastructure/dateHelper';
 import { Inject } from 'typescript-ioc';
 import { Controller, Get, Header, Query, Response, Route, Security, Tags } from 'tsoa';
 import { MOLAuth } from 'mol-lib-common';
@@ -7,12 +8,14 @@ import { ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { TimeslotsMapper } from './timeslots.mapper';
 import { TimeslotsService } from './timeslots.service';
-import { AvailabilityEntryResponse, TimeslotEntryResponse } from './timeslots.apicontract';
+import { AvailabilityEntryResponse, TimeslotEntryResponse, AvailabilityByDayResponse } from './timeslots.apicontract';
 import { StopWatch } from '../../infrastructure/stopWatch';
-
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 @Route('v1/timeslots')
 @Tags('Timeslots')
 export class TimeslotsController extends Controller {
+	MAX_NUMBER_OF_DAYS_TO_FETCH_TIMESLOT = 31;
+
 	@Inject
 	private userContext: UserContext;
 
@@ -84,6 +87,42 @@ export class TimeslotsController extends Controller {
 	}
 
 	/**
+	 * Retrieves availability of all service providers for a service, grouped by day
+	 * Availability count returned may be zero.
+	 * Pending and accepted bookings count towards availability quota.
+	 *
+	 * @param startDate The lower bound limit for timeslots' startDate.
+	 * @param endDate The upper bound limit for timeslots' endDate. # of days between startDate and endDate cannot be more than 31 days
+	 * @param serviceId
+	 * @param serviceProviderIds
+	 */
+	@Get('byday')
+	@Security('service')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async getAvailabilityByDay(
+		@Query() startDate: Date,
+		@Query() endDate: Date,
+		@Header('x-api-service') serviceId: number,
+		@Query() serviceProviderIds?: number[],
+	): Promise<ApiData<AvailabilityByDayResponse[]>> {
+		if (DateHelper.DiffInDays(endDate, startDate) > this.MAX_NUMBER_OF_DAYS_TO_FETCH_TIMESLOT) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Date Range cannot be more than 31 days');
+		}
+		const timeslots = await this.timeslotsService.getAggregatedTimeslots(
+			startDate,
+			endDate,
+			serviceId,
+			false,
+			serviceProviderIds,
+		);
+
+		const result = this.timeslotMapper.groupAvailabilityByDateResponse(timeslots);
+
+		return ApiDataFactory.create(result);
+	}
+
+	/**
 	 * Retrieves timeslots (available and booked) and accepted bookings for a service in a defined datetime range [startDate, endDate].
 	 * Availability count returned may be zero.
 	 * Pending and accepted bookings count towards availability quota.
@@ -95,6 +134,7 @@ export class TimeslotsController extends Controller {
 	 * @param serviceProviderIds
 	 * @param labelIds (Optional) to filter by label
 	 */
+
 	@Get('')
 	@Security('service')
 	@MOLAuth({ admin: {}, agency: {} })
