@@ -132,7 +132,7 @@ describe('Timeslots Mapper', () => {
 		expect(spResponse[1].eventDescription).toBe('Description Test - serviceProvider2');
 	});
 
-	describe.only('mapAvailabilityToDateResponse function', () => {
+	describe('mapAvailabilityToDateResponse function', () => {
 		it('should group availability to same date when the timeslots are the same day', () => {
 			const entries = new Array<AvailableTimeslotProviders>();
 			const svcId = 1;
