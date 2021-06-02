@@ -1,3 +1,4 @@
+import { TimeslotsMapper } from './../timeslots.mapper';
 import { Container } from 'typescript-ioc';
 import { TimeslotsController } from '../timeslots.controller';
 import { TimeslotsService } from '../timeslots.service';
@@ -8,6 +9,7 @@ import { Organisation, ServiceProvider, User } from '../../../models';
 import { OrganisationAdminAuthGroup, ServiceProviderAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { ServiceProvidersLookup } from '../aggregatorTimeslotProviders';
+import { MOLErrorV2 } from 'mol-lib-api-contract';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -29,6 +31,10 @@ const TimeslotsServiceMock = {
 	getAggregatedTimeslots: jest.fn(() => Promise.resolve([])),
 };
 
+const TimeslotsMapperMock = {
+	groupAvailabilityByDateResponse: jest.fn(),
+};
+
 const adminUserMock = User.createAdminUser({
 	molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
 	agencyUserId: 'ABC1234',
@@ -45,6 +51,7 @@ describe('Timeslots Controller', () => {
 		jest.resetAllMocks();
 
 		Container.bind(TimeslotsService).to(jest.fn(() => TimeslotsServiceMock));
+		Container.bind(TimeslotsMapper).to(jest.fn(() => TimeslotsMapperMock));
 		Container.bind(UserContext).to(UserContextMock);
 
 		UserContextMock.getAuthGroups.mockImplementation(() =>
@@ -122,6 +129,48 @@ describe('Timeslots Controller', () => {
 		expect(result).toBeDefined();
 		expect(result.data.length).toBe(1);
 		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, [2], []);
+	});
+
+	describe.only('get availability by day', () => {
+		it('should allow fetching of availability for 31 days less 1 minute', async () => {
+			const controller = Container.get(TimeslotsController);
+			const startTime = new Date('2021-04-30T18:01:00.000Z');
+			const endTime = new Date('2021-05-31T18:00:00.000Z');
+			await controller.getAvailabilityByDay(startTime, endTime, 1);
+
+			expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, undefined);
+			expect(TimeslotsMapperMock.groupAvailabilityByDateResponse).toBeCalledTimes(1);
+		});
+
+		it('should allow fetching of availability for exactly 31 days', async () => {
+			const controller = Container.get(TimeslotsController);
+			const startTime = new Date('2021-04-30T18:00:00.000Z');
+			const endTime = new Date('2021-05-31T18:00:00.000Z');
+			await controller.getAvailabilityByDay(startTime, endTime, 1);
+
+			expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, undefined);
+			expect(TimeslotsMapperMock.groupAvailabilityByDateResponse).toBeCalledTimes(1);
+		});
+
+		it('should not allow fetching of availability for 31 days and 1 minute', async () => {
+			const controller = Container.get(TimeslotsController);
+			const startTime = new Date('2021-04-30T17:59:00.000Z'); // exceed by 1 min
+			const endTime = new Date('2021-05-31T18:00:00.000Z');
+			await expect(controller.getAvailabilityByDay(startTime, endTime, 1)).rejects.toThrowError(MOLErrorV2);
+
+			expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledTimes(0);
+			expect(TimeslotsMapperMock.groupAvailabilityByDateResponse).toBeCalledTimes(0);
+		});
+
+		it('should get availability grouped by date', async () => {
+			const controller = Container.get(TimeslotsController);
+			const startTime = DateHelper.addMinutes(new Date(), -30);
+			const endTime = DateHelper.addMinutes(new Date(), 30);
+			await controller.getAvailabilityByDay(startTime, endTime, 1);
+
+			expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, undefined);
+			expect(TimeslotsMapperMock.groupAvailabilityByDateResponse).toBeCalledTimes(1);
+		});
 	});
 
 	it('should filter out invalid id - as a service provider', async () => {

@@ -1,5 +1,6 @@
+import { BookingBuilder } from './../../../models/entities/booking';
 import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
-import { ServiceProvider, User } from '../../../models';
+import { Booking, ServiceProvider, User } from '../../../models';
 import { TimeslotsMapper } from '../timeslots.mapper';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
@@ -131,6 +132,98 @@ describe('Timeslots Mapper', () => {
 		expect(spResponse[1].eventDescription).toBe('Description Test - serviceProvider2');
 	});
 
+	describe('mapAvailabilityToDateResponse function', () => {
+		it('should group availability to same date when the timeslots are the same day', () => {
+			const entries = new Array<AvailableTimeslotProviders>();
+			const svcId = 1;
+
+			const entry1 = createAvailableTimeSlotProviderEntry(
+				new Date('2020-09-26T17:00:00.000Z'),
+				new Date('2020-09-26T17:30:00.000Z'),
+				svcId,
+				1,
+				'Timmy',
+				10,
+			);
+
+			entries.push(entry1);
+			const entry2 = createAvailableTimeSlotProviderEntry(
+				new Date('2020-09-26T18:00:00.000Z'),
+				new Date('2020-09-26T18:30:00.000Z'),
+				svcId,
+				1,
+				'Jimmy',
+				5,
+			);
+
+			entries.push(entry2);
+
+			const mapper = Container.get(TimeslotsMapper);
+			const res = mapper.groupAvailabilityByDateResponse(entries)[0];
+
+			expect(res.totalAvailabilityCount).toBe(15);
+			expect(res.date.toISOString()).toBe('2020-09-26T16:00:00.000Z');
+		});
+
+		it('should group availability to individual date when the timeslots are on different days', () => {
+			const entries = new Array<AvailableTimeslotProviders>();
+			const svcId = 1;
+			const entry1 = createAvailableTimeSlotProviderEntry(
+				new Date('2020-09-26T17:00:00.000Z'),
+				new Date('2020-09-26T17:30:00.000Z'),
+				svcId,
+				1,
+				'Timmy',
+				10,
+			);
+
+			entries.push(entry1);
+			const entry2 = createAvailableTimeSlotProviderEntry(
+				new Date('2020-09-27T18:00:00.000Z'),
+				new Date('2020-09-27T18:30:00.000Z'),
+				svcId,
+				2,
+				'Jimmy',
+				5,
+			);
+
+			entries.push(entry2);
+
+			const mapper = Container.get(TimeslotsMapper);
+			const res = mapper.groupAvailabilityByDateResponse(entries);
+
+			expect(res[0].totalAvailabilityCount).toBe(10);
+			expect(res[0].date.toISOString()).toBe('2020-09-26T16:00:00.000Z');
+
+			expect(res[1].totalAvailabilityCount).toBe(5);
+			expect(res[1].date.toISOString()).toBe('2020-09-27T16:00:00.000Z');
+		});
+
+		it("should return availability as 0 when there's all available slots are booked", () => {
+			const entries = new Array<AvailableTimeslotProviders>();
+			const svcId = 1;
+			const spId = 1;
+			const startTime = new Date('2020-09-26T17:00:00.000Z');
+			const endTime = new Date('2020-09-26T17:30:00.000Z');
+			const entry1 = createAvailableTimeSlotProviderEntry(startTime, endTime, svcId, spId, 'Timmy', 1);
+
+			const bookingBuilder = new BookingBuilder();
+			bookingBuilder.serviceId = svcId;
+			bookingBuilder.serviceProviderId = spId;
+			bookingBuilder.startDateTime = startTime;
+			bookingBuilder.endDateTime = endTime;
+			entry1.setBookedServiceProviders([Booking.create(bookingBuilder)]);
+
+			entries.push(entry1);
+
+			const mapper = Container.get(TimeslotsMapper);
+			const res = mapper.groupAvailabilityByDateResponse(entries);
+
+			expect(res[0].totalAvailabilityCount).toBe(0);
+			expect(res[0].date.toISOString()).toBe('2020-09-26T16:00:00.000Z');
+		});
+	});
+
 	it('should map service provider timeslot title and description - citizen side', () => {
 		const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
 		entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
@@ -169,6 +262,30 @@ describe('Timeslots Mapper', () => {
 		expect(response[1].eventDescription).toBe('Description Test - serviceProvider2');
 	});
 });
+
+function createAvailableTimeSlotProviderEntry(
+	timeslotStartTime: Date,
+	timeslotEndTime: Date,
+	svcId: number,
+	spId: number,
+	spName: string,
+	capacity: number,
+): AvailableTimeslotProviders {
+	const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
+	entry.startTime = timeslotStartTime.getTime();
+	entry.endTime = timeslotEndTime.getTime();
+
+	const spData = ServiceProvider.create(spName, svcId);
+	spData.id = spId;
+
+	entry.addServiceProvider(spData, {
+		startTimeNative: entry.startTime,
+		endTimeNative: entry.endTime,
+		capacity,
+	} as TimeslotWithCapacity);
+
+	return entry;
+}
 
 class UinFinConfigurationMock implements Partial<UinFinConfiguration> {
 	public static canViewPlainUinFin = jest.fn<boolean, any>();
