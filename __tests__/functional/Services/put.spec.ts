@@ -17,7 +17,7 @@ describe('Tests endpoint and populate data', () => {
 		done();
 	});
 
-	afterEach(async (done) => {
+	beforeEach(async (done) => {
 		await pgClient.cleanAllTables();
 		done();
 	});
@@ -44,7 +44,7 @@ describe('Tests endpoint and populate data', () => {
 		expect(response.body.data.labels[0].label).toBe('name');
 	});
 
-	it('Put service with same labels (should fail)', async () => {
+	it('When Put service with same labels should not duplicate', async () => {
 		const service = await populateService({ nameService: SERVICE_NAME });
 		const update1 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
 			body: { name: SERVICE_NAME, labels: [{ label: 'name' }] },
@@ -55,8 +55,9 @@ describe('Tests endpoint and populate data', () => {
 			body: { name: SERVICE_NAME, labels: [{ label: 'name' }] },
 		});
 
-		expect(update2.statusCode).toEqual(400);
-		expect(update2.body.errorMessage).toStrictEqual('Label(s) are already present');
+		expect(update2.statusCode).toEqual(200);
+		expect(update2.body.data.labels.length).toBe(1);
+		expect(update2.body.data.labels[0].id).toBeDefined();
 	});
 
 	it('Put service with same labels and same id (should pass)', async () => {
