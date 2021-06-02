@@ -4,6 +4,7 @@ import { Label, LabelCategory, Service } from '../../models/entities';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { andWhere } from '../../tools/queryConditions';
 import { ServicesQueryAuthVisitor } from '../services/services.auth';
+import { groupByKey } from "../../tools/collections";
 
 @InRequestScope
 export class LabelsRepository extends RepositoryBase<Label> {
@@ -58,7 +59,8 @@ export class LabelsRepository extends RepositoryBase<Label> {
 			return s.id;
 		});
 		const listLabels = await this.find({ categoryIds: ids, skipAuthorisation: true });
-		entries.forEach((entry) => (entry.labels = listLabels.filter((label) => label.categoryId === entry.id)));
+		const lookupTable = groupByKey(listLabels, (b) => b.categoryId);
+		entries.forEach((entry) => entry.labels = lookupTable.get(entry.id) || []);
 
 		return entries;
 	}
@@ -68,7 +70,8 @@ export class LabelsRepository extends RepositoryBase<Label> {
 			return s.id;
 		});
 		const listLabels = await this.find({ serviceIds: ids });
-		entries.forEach((entry) => (entry.labels = listLabels.filter((label) => label.serviceId === entry.id)));
+		const lookupTable = groupByKey(listLabels, (b) => b.serviceId);
+		entries.forEach((entry) => entry.labels = lookupTable.get(entry.id) || []);
 
 		return entries;
 	}
