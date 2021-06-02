@@ -35,6 +35,7 @@ import {
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { UsersServiceMock } from '../../users/__mocks__/users.service';
 import { UsersService } from '../../users/users.service';
+import { ContainerContextHolder } from '../../../infrastructure/containerContext';
 import { LabelsCategoriesService } from '../../labelsCategories/labelsCategories.service';
 import { LabelsCategoriesServiceMock } from '../../labelsCategories/__mocks__/labelsCategories.service.mock';
 import { AsyncFunction, TransactionManager } from '../../../core/transactionManager';
@@ -66,6 +67,7 @@ const visitorObject = {
 };
 
 beforeAll(() => {
+	ContainerContextHolder.registerInContainer();
 	Container.bind(ServicesRepository).to(ServicesRepositoryMock);
 	Container.bind(ScheduleFormsService).to(ScheduleFormsServiceMock);
 	Container.bind(TimeslotsScheduleService).to(TimeslotsScheduleMockClass);
@@ -176,6 +178,26 @@ describe('Services service tests', () => {
 		expect(ServicesRepositoryMock.saveMany).toBeCalled();
 	});
 
+	it('should throw invalid URL error', async () => {
+		const request = new ServiceRequest();
+		request.name = 'John';
+		request.organisationId = 1;
+		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
+			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
+		);
+
+		request.videoConferenceUrl = 'www.abc.com';
+
+		let error: string;
+		try {
+			await Container.get(ServicesService).createService(request);
+		} catch (e) {
+			error = e.message as string;
+		}
+
+		expect(error).toEqual(`[10301] Invalid URL`);
+	});
+
 	it('should save service', async () => {
 		const request = new ServiceRequest();
 		request.name = 'John';
@@ -185,11 +207,13 @@ describe('Services service tests', () => {
 		);
 		request.labels = [{ label: 'label' }];
 		request.emailSuffix = 'abc.com';
+		request.videoConferenceUrl = 'http://www.zoom.us/123456';
 
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].isSpAutoAssigned).toBe(false);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].emailSuffix).toBe('abc.com');
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].videoConferenceUrl).toBe('http://www.zoom.us/123456');
 	});
 
 	it('should NOT save service without permission', async () => {

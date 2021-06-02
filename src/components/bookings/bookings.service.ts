@@ -22,6 +22,7 @@ import {
 	BookingAcceptRequest,
 	BookingDetailsRequest,
 	BookingRequest,
+	BookingRequestExtraction,
 	BookingSearchRequest,
 	BookingUpdateRequest,
 } from './bookings.apicontract';
@@ -370,18 +371,45 @@ export class BookingsService {
 		}
 		return booking;
 	}
-
-	private async saveInternal(
+	private async bookingRequestExtraction(
 		bookingRequest: BookingRequest,
 		serviceId: number,
-		shouldBypassCaptchaAndAutoAccept = false,
-	): Promise<[ChangeLogAction, Booking]> {
+	): Promise<BookingRequestExtraction> {
 		const currentUser = await this.userContext.getCurrentUser();
 		const isAdminUser = currentUser.adminUser;
 		const isAgencyUser = currentUser.agencyUser;
 		const service: Service = await this.servicesService.getService(serviceId);
 		const isOnHold = service.isOnHold;
 		const isStandAlone = service.isStandAlone;
+		const videoConferenceUrl = !!bookingRequest.videoConferenceUrl?.length
+			? bookingRequest.videoConferenceUrl
+			: service.videoConferenceUrl;
+
+		return ({
+			currentUser,
+			isAdminUser,
+			isAgencyUser,
+			service,
+			isOnHold,
+			isStandAlone,
+			videoConferenceUrl,
+		} as any) as BookingRequestExtraction;
+	}
+
+	private async saveInternal(
+		bookingRequest: BookingRequest,
+		serviceId: number,
+		shouldBypassCaptchaAndAutoAccept = false,
+	): Promise<[ChangeLogAction, Booking]> {
+		const {
+			currentUser,
+			isAdminUser,
+			isAgencyUser,
+			service,
+			isOnHold,
+			isStandAlone,
+			videoConferenceUrl,
+		} = await this.bookingRequestExtraction(bookingRequest, serviceId);
 
 		let serviceProvider: ServiceProvider | undefined;
 		if (bookingRequest.serviceProviderId) {
@@ -409,7 +437,7 @@ export class BookingsService {
 			.withRefId(bookingRequest.refId)
 			.withLocation(bookingRequest.location)
 			.withDescription(bookingRequest.description)
-			.withVideoConferenceUrl(bookingRequest.videoConferenceUrl)
+			.withVideoConferenceUrl(videoConferenceUrl)
 			.withCreator(currentUser)
 			.withCitizenUinFin(BookingsMapper.getCitizenUinFin(currentUser, bookingRequest))
 			.withCitizenName(bookingRequest.citizenName)

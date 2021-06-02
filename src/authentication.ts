@@ -10,6 +10,6 @@ export async function koaAuthentication(context: Koa.Context, securityName: stri
 		const serviceId = tryParseInt(context.request.headers['x-api-service'] as string);
 		const containerContext = ContainerContextMiddleware.getContainerContext(context);
 		const servicesValidation = containerContext.resolve(ServicesValidation);
-		await servicesValidation.validate(hasOptionalService, serviceId);
+		await servicesValidation.validateService(hasOptionalService, serviceId);
 	}
 }

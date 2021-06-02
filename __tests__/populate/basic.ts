@@ -31,6 +31,17 @@ export const populateService = async ({
 	return response.body.data;
 };
 
+export const populateServiceWithVC = async ({
+	organisation = 'localorg',
+	nameService = 'admin',
+	videoConferenceUrl = 'http://www.zoom.us/1234567',
+}): Promise<ServiceResponse> => {
+	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post('/services', {
+		body: { name: nameService, videoConferenceUrl: videoConferenceUrl },
+	});
+	return response.body.data;
+};
+
 export const setServiceProviderAutoAssigned = async ({
 	nameService = 'admin',
 	serviceId,

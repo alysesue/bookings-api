@@ -24,6 +24,8 @@ import { LabelsCategoriesMapper } from '../labelsCategories/labelsCategories.map
 import { ServicesActionAuthVisitor } from './services.auth';
 import { ServiceRequest } from './service.apicontract';
 import { ServicesRepository } from './services.repository';
+import { ContainerContext } from '../../infrastructure/containerContext';
+import { ServicesValidation } from './services.validation';
 import { LabelsCategoriesService } from '../labelsCategories/labelsCategories.service';
 import { DefaultIsolationLevel, TransactionManager } from '../../core/transactionManager';
 
@@ -48,7 +50,13 @@ export class ServicesService {
 	@Inject
 	private labelsMapper: LabelsMapper;
 	@Inject
+	private containerContext: ContainerContext;
+	@Inject
 	private categoriesMapper: LabelsCategoriesMapper;
+
+	private getValidator(): ServicesValidation {
+		return this.containerContext.resolve(ServicesValidation);
+	}
 
 	public async createServices(names: string[], organisation: Organisation): Promise<Service[]> {
 		const allServiceNames = uniqueStringArray(names, {
@@ -103,10 +111,9 @@ export class ServicesService {
 	}
 
 	public async createService(request: ServiceRequest): Promise<Service> {
+		const validator = this.getValidator();
 		request.name = request.name?.trim();
-		if (!request.name) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service name is empty');
-		}
+
 		const orga = request.organisationId
 			? await this.organisationsRepository.getOrganisationById(request.organisationId)
 			: await this.userContext.verifyAndGetFirstAuthorisedOrganisation('User not authorized to add services.');
@@ -123,27 +130,30 @@ export class ServicesService {
 			mapToCategories,
 			request.emailSuffix,
 			noNric,
+			request.videoConferenceUrl,
 		);
 
+		await validator.validate(service);
 		await this.verifyActionPermission(service, CrudAction.Create);
 		return this.servicesRepository.save(service);
 	}
 
 	public async updateService(id: number, request: ServiceRequest): Promise<Service> {
+		const validator = this.getValidator();
 		const service = await this.servicesRepository.getService({
 			id,
 			includeLabelCategories: true,
 			includeLabels: true,
 		});
-		if (!service) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
-		}
+		await validator.validateServiceFound(service);
 
 		service.name = request.name;
 		service.isSpAutoAssigned = request.isSpAutoAssigned || false;
 		service.emailSuffix = request.emailSuffix;
 		service.noNric = request.noNric || false;
+		service.videoConferenceUrl = request.videoConferenceUrl;
 
+		await validator.validate(service);
 		await this.verifyActionPermission(service, CrudAction.Update);
 		const updatedLabelList = this.labelsMapper.mapToLabels(request.labels);
 		this.labelsMapper.mergeLabels(service.labels, updatedLabelList);
@@ -185,13 +195,12 @@ export class ServicesService {
 	}
 
 	public async getServiceScheduleForm(id: number): Promise<ScheduleForm> {
+		const validator = this.getValidator();
 		const service = await this.servicesRepository.getService({
 			id,
 			includeScheduleForm: true,
 		});
-		if (!service) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
-		}
+		await validator.validateServiceFound(service);
 
 		if (!service.scheduleForm) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service scheduleForm not found');
@@ -223,6 +232,7 @@ export class ServicesService {
 			includeLabelCategories = false,
 		} = {},
 	): Promise<Service> {
+		const validator = this.getValidator();
 		const service = await this.servicesRepository.getService({
 			id,
 			includeScheduleForm,
@@ -230,9 +240,8 @@ export class ServicesService {
 			includeLabels,
 			includeLabelCategories,
 		});
-		if (!service) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
-		}
+		await validator.validateServiceFound(service);
+
 		return service;
 	}
 

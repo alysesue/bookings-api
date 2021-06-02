@@ -20,6 +20,7 @@ export class ServicesMapper {
 		serviceResponse.labels = this.labelsMapper.mapToLabelsResponse(service.labels);
 		serviceResponse.categories = this.categoriesMapper.mapToCategoriesResponse(service.categories);
 		serviceResponse.emailSuffix = service.emailSuffix;
+		serviceResponse.videoConferenceUrl = service.videoConferenceUrl;
 		return serviceResponse;
 	}
 }

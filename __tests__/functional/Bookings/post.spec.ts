@@ -180,6 +180,26 @@ describe('Bookings functional tests', () => {
 		});
 	};
 
+	const postCitizenBookingWithVideoConferenceURL = async (): Promise<request.Response> => {
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+		const videoConferenceUrl = 'http://www.zoom.us/1234567';
+
+		const endpoint = CitizenRequestEndpointSG.create({
+			citizenUinFin,
+			serviceId: serviceIdStr,
+		});
+		return await endpoint.post('/bookings', {
+			body: {
+				startDateTime,
+				endDateTime,
+				citizenName,
+				citizenEmail,
+				videoConferenceUrl,
+			},
+		});
+	};
+
 	const getChangeLogs = async (params: {
 		changedSince: Date;
 		changedUntil: Date;
@@ -231,6 +251,26 @@ describe('Bookings functional tests', () => {
 		});
 	};
 
+	it('should make a booking with default video conference URL', async () => {
+		await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceId}`, {
+			body: { name: NAME_SERVICE_1, videoConferenceUrl: 'http://www.zoom.us/7654321' },
+		});
+		const response = await postCitizenBookingWithStartEndDateOnly(true, false);
+		expect(response.statusCode).toEqual(201);
+		const booking = response.body.data as BookingResponse;
+		expect(booking.videoConferenceUrl).toEqual('http://www.zoom.us/7654321');
+	});
+
+	it('should make a booking with OA/SA supplied video conference URL', async () => {
+		await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceId}`, {
+			body: { name: NAME_SERVICE_1, videoConferenceUrl: 'http://www.zoom.us/7654321' },
+		});
+		const response = await postCitizenBookingWithVideoConferenceURL();
+		expect(response.statusCode).toEqual(201);
+		const booking = response.body.data as BookingResponse;
+		expect(booking.videoConferenceUrl).toEqual('http://www.zoom.us/1234567');
+	});
+
 	it('should make a booking with dynamic values', async () => {
 		const response = await postCitizenBookingWithDynamicFields();
 		expect(response.statusCode).toEqual(201);
@@ -278,6 +318,7 @@ describe('Bookings functional tests', () => {
 						serviceId,
 						serviceName: 'service1',
 						status: 1,
+						videoConferenceUrl: null,
 					},
 					previousBooking: {
 						schemaVersion: 1,
@@ -426,7 +467,9 @@ describe('Bookings functional tests', () => {
 				citizenEmail,
 			},
 		});
-		expect(response.statusCode).toBe(400);
+
+		expect(response.body.data[0].code).toBe('10001');
+		expect(response.body.data[0].message).toBe('The service provider is not available in the selected time range');
 	});
 
 	it('[Auto Accept] should create in-slot booking as a citizen', async () => {
