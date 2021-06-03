@@ -200,8 +200,8 @@ describe('Bookings repository', () => {
 	});
 
 	it('should insert booking', async () => {
-		const insertResult = new InsertResult();
-		insertResult.identifiers = [{ id: 'abc' }];
+		const insertResult = { identifiers: [{ id: 'abc' }] } as Partial<InsertResult>;
+
 		TransactionManagerMock.insert.mockImplementation(() => insertResult);
 
 		const bookingsRepository = Container.get(BookingsRepository);

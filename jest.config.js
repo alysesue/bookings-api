@@ -1,12 +1,25 @@
-const baseConfigModule = require('mol-lib-config/shared-config/jest.config');
-const baseConfig = baseConfigModule.createBaseConfig(baseConfigModule.TestType.UNIT_AND_INTERGRATION);
-process.env.TZ = 'asia/singapore';
-
 const config = {
-	...baseConfig,
-	setupFiles: ['./jest.setup.ts'],
+	preset: 'ts-jest',
+	testEnvironment: 'node',
+	testMatch: ['<rootDir>/src/**/__tests__/**/*.spec.[jt]s?(x)'],
+	maxConcurrency: 10,
 	collectCoverageFrom: [
-		...baseConfig.collectCoverageFrom,
+		'<rootDir>/src/**/*.{js,jsx,ts,tsx}',
+		'!**/__tests__/**/*',
+		'!**/*{M,m}ock{*,*/**/*}',
+		'!**/*{E,e}num{*,*/**/*}',
+		'!**/*{T,t}emp{*,*/**/*}',
+		'!**/*{E,e}xample{*,*/**/*}',
+		'!**/*{S,s}ample{*,*/**/*}',
+		'!**/*{C,c}ontroller{*,*/**/*}',
+		'!**/*{D,d}eprecated{*,*/**/*}',
+		'!**/*{M,m}igration{*,*/**/*}',
+		'!**/*{E,e}ntity{*,*/**/*}',
+		'!**/{I,i}ndex.*',
+		'!<rootDir>/src/routes.ts',
+		'!<rootDir>/src/server.ts',
+		'!<rootDir>/src/config/**/*',
+		'!<rootDir>/src/health/**/*',
 		'**/*.controller.ts',
 		'!**/*{A,a}picontract{*,*/**/*}',
 		'!**/fixLF.js',
@@ -20,13 +33,16 @@ const config = {
 		'!**/citizenUserValidation.middleware.ts',
 		'!**/ormconfig.ts',
 	],
+	coverageDirectory: '<rootDir>/coverage',
+	coverageReporters: ['text'],
+	modulePaths: ['src'],
+	moduleFileExtensions: ['js', 'ts', 'jsx', 'tsx'],
+	testResultsProcessor: '<rootDir>/node_modules/jest-bamboo-formatter',
+	setupFiles: ['./jest.setup.ts'],
+	verbose: true,
+	bail: false,
 	coverageThreshold: {
-		global: {
-			branches: 80,
-			functions: 80,
-			lines: 80,
-			statements: 80,
-		},
+		global: { branches: 80, functions: 80, lines: 80, statements: 80 },
 	},
 };
 

@@ -41,7 +41,7 @@ describe('WeekDayBreak repository', () => {
 	});
 
 	it('should delete breaks for schedule', async () => {
-		const execute = jest.fn(() => Promise.resolve(new DeleteResult()));
+		const execute = jest.fn(() => Promise.resolve({} as DeleteResult));
 
 		CreateQueryBuilder.mockImplementation(() => ({
 			delete: jest.fn(() => ({

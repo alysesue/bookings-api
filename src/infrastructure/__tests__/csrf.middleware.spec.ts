@@ -12,6 +12,11 @@ import { getConfig } from '../../config/app-config';
 
 jest.mock('../../config/app-config');
 
+// mol-lib-common is globally mocked, we need the real module here.
+jest.mock('mol-lib-common', () => {
+	return jest.requireActual('mol-lib-common');
+});
+
 beforeAll(() => {
 	Container.bind(UserContext).to(UserContextMock);
 });

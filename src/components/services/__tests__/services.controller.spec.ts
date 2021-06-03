@@ -8,20 +8,18 @@ import { Weekday } from '../../../enums/weekday';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
 import { LabelsMapper } from '../../labels/labels.mapper';
 
+jest.mock('../services.service', () => {
+	class ServicesService {}
+	return { ServicesService };
+});
+jest.mock('../../labels/labels.mapper', () => {
+	class LabelsMapper {}
+	return { LabelsMapper };
+});
+
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
-});
-
-jest.mock('mol-lib-common', () => {
-	const actual = jest.requireActual('mol-lib-common');
-	const mock = () => {
-		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
-	};
-	return {
-		...actual,
-		MOLAuth: mock,
-	};
 });
 
 describe('Services controller tests', () => {

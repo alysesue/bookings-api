@@ -31,17 +31,6 @@ afterEach(() => {
 	jest.resetAllMocks();
 });
 
-jest.mock('mol-lib-common', () => {
-	const actual = jest.requireActual('mol-lib-common');
-	const mock = () => {
-		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
-	};
-	return {
-		...actual,
-		MOLAuth: mock,
-	};
-});
-
 describe('users controller', () => {
 	it('should get user profile', async () => {
 		const headers = {

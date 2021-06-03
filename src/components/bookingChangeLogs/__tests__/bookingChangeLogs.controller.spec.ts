@@ -7,21 +7,18 @@ import { groupByKey } from '../../../tools/collections';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
 
+jest.mock('../bookingChangeLogs.service', () => {
+	class BookingChangeLogsService {}
+	return { BookingChangeLogsService };
+});
+jest.mock('../../../infrastructure/idHasher', () => {
+	class IdHasher {}
+	return { IdHasher };
+});
+
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
-});
-
-jest.mock('mol-lib-common', () => {
-	const actual = jest.requireActual('mol-lib-common');
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const mock = (config: any) => {
-		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
-	};
-	return {
-		...actual,
-		MOLAuth: mock,
-	};
 });
 
 describe('BookingChangeLogs controller', () => {

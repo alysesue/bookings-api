@@ -4,17 +4,6 @@ import { Container } from 'typescript-ioc';
 import { ServiceProvidersController } from '../../serviceProviders/serviceProviders.controller';
 import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
 
-jest.mock('mol-lib-common', () => {
-	const actual = jest.requireActual('mol-lib-common');
-	const mock = () => {
-		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
-	};
-	return {
-		...actual,
-		MOLAuth: mock,
-	};
-});
-
 describe('Organisations.controller', () => {
 	beforeAll(() => {
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);

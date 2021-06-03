@@ -14,7 +14,12 @@ import { BusinessValidation, SelectListDynamicField, SelectListOption, TextDynam
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 
-jest.mock('../dynamicFields.service');
+jest.mock('../dynamicFields.service', () => {
+	class DynamicFieldsService {}
+	return {
+		DynamicFieldsService,
+	};
+});
 
 beforeAll(() => {
 	Container.bind(IdHasher).to(IdHasherMock);

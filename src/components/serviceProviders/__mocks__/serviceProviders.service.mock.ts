@@ -4,6 +4,11 @@ import { MolServiceProviderOnboardContract, ServiceProviderModel } from '../serv
 import { MolUpsertUsersResult } from '../../users/molUsers/molUsers.apicontract';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 
+jest.mock('../serviceProviders.service', () => {
+	class ServiceProvidersService {}
+	return { ServiceProvidersService };
+});
+
 export class ServiceProvidersServiceMock implements Partial<ServiceProvidersService> {
 	public static getServiceProviderMock = jest.fn();
 	public static getServiceProvidersCountMock = jest.fn();

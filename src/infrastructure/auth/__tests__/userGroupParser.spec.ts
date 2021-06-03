@@ -13,18 +13,6 @@ beforeEach(() => {
 	(logger.warn as jest.Mock).mockImplementation(() => {});
 });
 
-jest.mock('mol-lib-common/debugging/logging/LoggerV2', () => {
-	const actual = jest.requireActual('mol-lib-common/debugging/logging/LoggerV2');
-
-	const loggerMock = actual.logger;
-	loggerMock.warn = jest.fn();
-
-	return {
-		...actual,
-		logger: loggerMock,
-	};
-});
-
 describe('user group parser tests', () => {
 	it('should not parse null', async () => {
 		const parsedNull = UserGroupParser.parseAdminUserGroups(null);

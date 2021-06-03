@@ -2,8 +2,6 @@ import { SelectQueryBuilder } from 'typeorm';
 import { IPagedEntities, MAX_PAGING_LIMIT } from '../pagedEntities';
 import { PagingHelper } from '../paging';
 
-jest.mock('typeorm');
-
 class SampleEntity {}
 
 describe('PagingHelper tests', () => {

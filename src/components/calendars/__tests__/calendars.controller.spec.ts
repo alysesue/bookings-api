@@ -8,17 +8,6 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
-jest.mock('mol-lib-common', () => {
-	const actual = jest.requireActual('mol-lib-common');
-	const mock = () => {
-		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
-	};
-	return {
-		...actual,
-		MOLAuth: mock,
-	};
-});
-
 describe('Calendars.controller', () => {
 	beforeAll(() => {
 		Container.bind(CalendarsService).to(CalendarsServiceMock);

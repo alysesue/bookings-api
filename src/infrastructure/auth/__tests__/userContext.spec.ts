@@ -6,6 +6,12 @@ import { UserContext } from '../../auth/userContext';
 import { AnonymousAuthGroup, AuthGroup, CitizenAuthGroup } from '../../auth/authGroup';
 import * as uuid from 'uuid';
 
+// We need jest.requireActual(...) because userContext is mocked globally in globalmocks.ts
+// Here, we need the actual implementation to test
+jest.mock('../../auth/userContext', () => {
+	return jest.requireActual('../../auth/userContext');
+});
+
 beforeAll(() => {
 	Container.bind(UsersService).to(UsersServiceMock);
 

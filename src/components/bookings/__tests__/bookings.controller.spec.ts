@@ -2,14 +2,9 @@ import { Container } from 'typescript-ioc';
 import * as Koa from 'koa';
 import { Booking, BookingChangeLog, BookingStatus, Organisation, Service, User } from '../../../models';
 import { BookingsController } from '../bookings.controller';
-import { BookingsService } from '../bookings.service';
 import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingUpdateRequest } from '../bookings.apicontract';
-import { TimeslotsService } from '../../timeslots/timeslots.service';
-import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-security-headers';
-import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
-import { CaptchaService } from '../../captcha/captcha.service';
 import { KoaContextStore } from '../../../infrastructure/koaContextStore.middleware';
 import { IPagedEntities } from '../../../core/pagedEntities';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
@@ -21,23 +16,16 @@ import { BookingsSubject } from '../bookings.subject';
 import { BookingsSubjectMock } from '../__mocks__/bookings.subject.mock';
 import { MailObserver } from '../../notifications/notification.observer';
 import { MockObserver } from '../../../infrastructure/__mocks__/observer.mock';
+import { MOLAuthType, MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth';
+import { BookingsService } from '../bookings.service';
+import { CaptchaService } from '../../captcha/captcha.service';
+import { TimeslotsService } from '../../timeslots/timeslots.service';
 
 jest.mock('../../../models/uinFinConfiguration');
 
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
-});
-
-jest.mock('mol-lib-common', () => {
-	const actual = jest.requireActual('mol-lib-common');
-	const mock = () => {
-		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
-	};
-	return {
-		...actual,
-		MOLAuth: mock,
-	};
 });
 
 // tslint:disable-next-line: no-big-function

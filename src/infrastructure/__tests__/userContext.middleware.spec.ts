@@ -9,6 +9,12 @@ import { UserContext } from '../auth/userContext';
 import { AuthGroup } from '../auth/authGroup';
 import { AnonymousCookieData, BookingSGCookieHelper } from '../bookingSGCookieHelper';
 
+// We need jest.requireActual(...) because userContext is mocked globally in globalmocks.ts
+// Here, we need the actual implementation to test
+jest.mock('../auth/userContext', () => {
+	return jest.requireActual('../auth/userContext');
+});
+
 beforeAll(() => {
 	Container.bind(UsersService).to(UsersServiceMock);
 	Container.bind(BookingSGCookieHelper).to(BookingSGCookieHelperMock);

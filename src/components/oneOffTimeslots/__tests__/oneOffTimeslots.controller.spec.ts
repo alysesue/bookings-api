@@ -7,20 +7,18 @@ import { Label, OneOffTimeslot } from '../../../models';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { LabelResponseModel } from '../../../components/labels/label.apicontract';
 
+jest.mock('../oneOffTimeslots.service', () => {
+	class OneOffTimeslotsService {}
+	return { OneOffTimeslotsService };
+});
+jest.mock('../../../infrastructure/idHasher', () => {
+	class IdHasher {}
+	return { IdHasher };
+});
+
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
-});
-
-jest.mock('mol-lib-common', () => {
-	const actual = jest.requireActual('mol-lib-common');
-	const mock = () => {
-		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
-	};
-	return {
-		...actual,
-		MOLAuth: mock,
-	};
 });
 
 describe('One off timeslots Controller test', () => {

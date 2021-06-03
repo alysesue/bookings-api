@@ -11,6 +11,15 @@ import {
 } from '../dynamicFields.apicontract';
 import { DynamicFieldsController } from '../dynamicFields.controller';
 
+jest.mock('../dynamicFields.service', () => {
+	class DynamicFieldsService {}
+	return { DynamicFieldsService };
+});
+jest.mock('../dynamicFields.mapper', () => {
+	class DynamicFieldsMapper {}
+	return { DynamicFieldsMapper };
+});
+
 beforeAll(() => {
 	Container.bind(DynamicFieldsService).to(DynamicFieldsServiceMock);
 	Container.bind(DynamicFieldsMapper).to(DynamicFieldsMapperMock);

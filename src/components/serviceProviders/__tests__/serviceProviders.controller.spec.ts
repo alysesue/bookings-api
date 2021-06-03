@@ -7,20 +7,19 @@ import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontra
 import { ServicesService } from '../../services/services.service';
 import { ServiceProvidersServiceMock } from '../__mocks__/serviceProviders.service.mock';
 
+jest.mock('../../services/services.service', () => {
+	class ServicesService {}
+	return { ServicesService };
+});
+
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();
 });
 
-jest.mock('mol-lib-common', () => {
-	const actual = jest.requireActual('mol-lib-common');
-	const mock = () => {
-		return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => descriptor;
-	};
-	return {
-		...actual,
-		MOLAuth: mock,
-	};
+beforeAll(() => {
+	Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
+	Container.bind(ServicesService).to(ServicesServiceMock);
 });
 
 // tslint:disable-next-line:no-big-function
@@ -32,9 +31,6 @@ describe('ServiceProviders.Controller', () => {
 	const request = new TimeslotItemRequest();
 
 	beforeEach(() => {
-		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
-		Container.bind(ServicesService).to(ServicesServiceMock);
-
 		mockItem._id = 11;
 
 		mockItem._startTime = TimeOfDay.create({ hours: 8, minutes: 0 });
