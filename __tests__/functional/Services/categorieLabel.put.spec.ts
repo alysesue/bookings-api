@@ -124,9 +124,8 @@ describe('Tests endpoint', () => {
 		expect(response.statusCode).toEqual(200);
 		expect(service.labels.length).toBe(3);
 
-		expect(service.labels[0].label).toBe('labelCategory');
-		expect(service.labels[1].label).toBe('labelNoCategory');
-		expect(service.labels[2].label).toBe('labelCategory');
+		expect(service.labels.filter((la) => la.label === 'labelCategory').length).toBe(2);
+		expect(service.labels.filter((la) => la.label === 'labelNoCategory').length).toBe(1);
 		expect(service.categories.length).toBe(0);
 	});
 });
