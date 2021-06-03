@@ -381,7 +381,7 @@ export class BookingsService {
 		const service: Service = await this.servicesService.getService(serviceId);
 		const isOnHold = service.isOnHold;
 		const isStandAlone = service.isStandAlone;
-		const videoConferenceUrl = !!bookingRequest.videoConferenceUrl?.length
+		const videoConferenceUrl = bookingRequest.videoConferenceUrl?.length
 			? bookingRequest.videoConferenceUrl
 			: service.videoConferenceUrl;
 
