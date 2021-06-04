@@ -45,15 +45,15 @@ export class LabelsService {
 		return [...service.labels, ...updateLabel];
 	}
 
-	public async verifyLabels(encodedLabelIds: string[], serviceId: number): Promise<Label[]> {
+	public async verifyLabels(encodedLabelIds: string[], service: Service): Promise<Label[]> {
 		if (!encodedLabelIds || encodedLabelIds.length === 0) {
 			return [];
 		}
 
 		const labelIds = new Set<number>(encodedLabelIds.map((encodedId) => this.idHasher.decode(encodedId)));
 
-		const labelsService = await this.labelsRepository.find({ serviceIds: [serviceId] });
-		const labelsLookup = groupByKeyLastValue(labelsService, (label) => label.id);
+		const allCategoriesLabels = service.categories.map((cate) => cate.labels).flat(1);
+		const labelsLookup = groupByKeyLastValue([...service.labels, ...allCategoriesLabels], (label) => label.id);
 
 		const labelsFound: Label[] = [];
 		labelIds.forEach((labelId: number) => {
