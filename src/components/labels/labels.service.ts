@@ -1,6 +1,6 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { Label, Service } from '../../models/entities';
+import { Label, Service } from '../../models';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { LabelsRepository } from './labels.repository';
@@ -52,8 +52,9 @@ export class LabelsService {
 
 		const labelIds = new Set<number>(encodedLabelIds.map((encodedId) => this.idHasher.decode(encodedId)));
 
-		const allCategoriesLabels = service.categories.map((cate) => cate.labels).flat(1);
-		const labelsLookup = groupByKeyLastValue([...service.labels, ...allCategoriesLabels], (label) => label.id);
+		const allCategoriesLabels = service.categories?.map((cate) => cate.labels).flat(1) || [];
+		const serviceLabel = service.labels || [];
+		const labelsLookup = groupByKeyLastValue([...serviceLabel, ...allCategoriesLabels], (label) => label.id);
 
 		const labelsFound: Label[] = [];
 		labelIds.forEach((labelId: number) => {
