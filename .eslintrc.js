@@ -12,35 +12,31 @@ https://github.com/typescript-eslint/tslint-to-eslint-config/blob/master/docs/FA
 Happy linting! 💖
 */
 module.exports = {
-	"root": true,
-    "env": {
-        "es6": true,
-        "node": true
-    },
-    "extends": [
-		'eslint:recommended',
-    	'plugin:@typescript-eslint/recommended',
-        "prettier",
-    ],
-    parser: '@typescript-eslint/parser',
-    parserOptions: {
-        ecmaVersion: 2020,
-        sourceType: 'module',
-        emitWarning: true,
-        project: "tsconfig.json",
-    },
-    "plugins": [
-        "eslint-plugin-jsdoc",
-        "eslint-plugin-prefer-arrow",
-        "eslint-plugin-import",
-        "@typescript-eslint",
-        "@typescript-eslint/tslint",
-        // 'plugin:prettier/recommended',
-        'prettier'
-    ],
-	"ignorePatterns": [
-		"**/node_modules/*",
-        ".eslintrc.js",
+	root: true,
+	env: {
+		es6: true,
+		node: true,
+	},
+	extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'],
+	parser: '@typescript-eslint/parser',
+	parserOptions: {
+		ecmaVersion: 2020,
+		sourceType: 'module',
+		emitWarning: true,
+		project: 'tsconfig.json',
+	},
+	plugins: [
+		'eslint-plugin-jsdoc',
+		'eslint-plugin-prefer-arrow',
+		'eslint-plugin-import',
+		'@typescript-eslint',
+		'@typescript-eslint/tslint',
+		// 'plugin:prettier/recommended',
+		'prettier',
+	],
+	ignorePatterns: [
+		'**/node_modules/*',
+		'.eslintrc.js',
 		// "**/__tests__/*",
 		// "**/__mocks__/*",
 		// "src/**/*.unit.ts",
@@ -49,190 +45,169 @@ module.exports = {
 		// "src/**/*.apispec.ts",
 		// "src/**/*.bench.ts"
 	],
-    "overrides": [
-        {
-            "files": ["**/*.test.ts", "*.ts"],
-            "rules": {
-                "no-unused-expressions": "off"
-            }
-        }
-    ],
-    "rules": {
-        "prettier/prettier": "warn",
-        "@typescript-eslint/adjacent-overload-signatures": "error",
-        "@typescript-eslint/array-type": [
-            "error",
-            {
-                "default": "array"
-            }
-        ],
-		"@typescript-eslint/explicit-module-boundary-types": "off",
-        "@typescript-eslint/ban-types": "off",
-        "@typescript-eslint/consistent-type-assertions": "error",
-        "@typescript-eslint/dot-notation": "off",	// mol no-string-literal
-        "@typescript-eslint/explicit-member-accessibility": [	// mol member-access ? should constructor be private/public?
-            "off",
-            // {
-            //     "accessibility": "explicit",
-            //     "overrides": {
-            //         "accessors": "explicit"
-            //     }
-            // }
-        ],
-        "@typescript-eslint/indent": "off",
-        "@typescript-eslint/member-delimiter-style": [
-            "off",
-            {
-                "multiline": {
-                    "delimiter": "none",
-                    "requireLast": true
-                },
-                "singleline": {
-                    "delimiter": "semi",
-                    "requireLast": false
-                }
-            }
-        ],
-		"@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-        "@typescript-eslint/member-ordering": "off",
-        "@typescript-eslint/naming-convention": "off", // need to find replacement for keywords
-        "@typescript-eslint/no-empty-function": "off",
-        "@typescript-eslint/no-empty-interface": "off",
-        "@typescript-eslint/no-explicit-any": "off",
-        "@typescript-eslint/no-misused-new": "error",
-        "@typescript-eslint/no-namespace": "off",
-        "@typescript-eslint/no-parameter-properties": "off",
-        "@typescript-eslint/no-shadow": [	// should those be allowed?
-            "error",
-            {
-                "hoist": "all",
-				"allow": ["K", "V", "TGroup", "TEntry"]
-            }
-        ],
-        "@typescript-eslint/no-unused-expressions": "error",
-        "@typescript-eslint/no-use-before-define": "off",
-        "@typescript-eslint/no-var-requires": "off",
-        "@typescript-eslint/prefer-for-of": "off",	// turned off
-        "@typescript-eslint/prefer-function-type": "error",
-        "@typescript-eslint/prefer-namespace-keyword": "error",
-        "@typescript-eslint/quotes": "off",
-        "@typescript-eslint/semi": [
-            "off",
-            null
-        ],
-        "@typescript-eslint/triple-slash-reference": [
-            "error",
-            {
-                "path": "always",
-                "types": "prefer-import",
-                "lib": "always"
-            }
-        ],
-        "@typescript-eslint/type-annotation-spacing": "off",
-        "@typescript-eslint/unified-signatures": "error",
-        "arrow-body-style": "off",
-        "arrow-parens": [
-            "off",
-            "always"
-        ],
-        "brace-style": [
-            "off",
-            "off"
-        ],
-        "comma-dangle": "off",
-        "complexity": "off",
-        "constructor-super": "error",
-        "curly": "off",	// mol
-        "eol-last": "off",
-        "eqeqeq": [
-            "error",
-            "smart"
-        ],
-        "guard-for-in": "off",
-        "id-blacklist": [
-            "error",
-            "any",
-            "Number",
-            "number",
-            "String",
-            "string",
-            "Boolean",
-            "boolean",
-            "Undefined",
-            "undefined"
-        ],
-        "id-match": "error",
-        "import/order": "off",
-		"indent": ["off", "tab"], // mol
-        "jsdoc/check-alignment": "error",
-        "jsdoc/check-indentation": "error",
-        "jsdoc/newline-after-description": "error",
-        "linebreak-style": "off",
-        "max-classes-per-file": "off",
-        "max-len": [2, {"code": 300, "ignoreTemplateLiterals": true}],	// mol max-line-length
-        "new-parens": "off",
-        "newline-per-chained-call": "off",
-        "no-bitwise": "error",
-        "no-caller": "error",
-        "no-cond-assign": "error",
-        "no-console": "error",
-        "no-debugger": "error",
-        "no-empty": "off",
-        "no-eval": "error",
-        "no-extra-semi": "off",
-        "no-fallthrough": "off",
-        "no-invalid-this": "off",
-        "no-irregular-whitespace": "off",
-        "no-multiple-empty-lines": "off",
-        "no-new-wrappers": "error",
-        "no-throw-literal": "error",
-        "no-trailing-spaces": "off",
-        "no-undef-init": "error",
-        "no-underscore-dangle": "off",	// turned off
-        "no-unsafe-finally": "error",
-        "no-unused-labels": "error",
-		"no-useless-escape": "off",
-        "no-var": "error",
-        "object-shorthand": "error",
-        "one-var": [
-            "error",
-            "never"
-        ],
-        "prefer-arrow/prefer-arrow-functions": "off",	// ESLint does not support allowing standalone function declarations. ESLint does not support allowing named functions defined with the function keyword.
-        "prefer-const": "error",
-        "quote-props": "off",
-        "radix": "error",
-        "react/jsx-curly-spacing": "off",
-        "react/jsx-equals-spacing": "off",
-        "react/jsx-no-bind": "off",
-        "react/jsx-tag-spacing": [
-            "off",
-            {
-                "afterOpening": "allow",
-                "closingSlash": "allow"
-            }
-        ],
-        "react/jsx-wrap-multilines": "off",
-		"require-yield": "off",
-        "space-before-function-paren": ["error", {
-			"anonymous": "always",
-			"named": "never",
-			"asyncArrow": "always"
-		}],
-        "space-in-parens": [
-            "off",
-            "never"
-        ],
-        "spaced-comment": [
-            "error",
-            "always",
-            {
-                "markers": [
-                    "/"
-                ]
-            }
-        ],
-        "use-isnan": "error",
-        "valid-typeof": "off"
-    }
+	overrides: [
+		{
+			files: ['**/*.test.ts', '*.ts'],
+			rules: {
+				'no-unused-expressions': 'off',
+			},
+		},
+	],
+	rules: {
+		'prettier/prettier': 'warn',
+		'@typescript-eslint/adjacent-overload-signatures': 'error',
+		'@typescript-eslint/array-type': [
+			'error',
+			{
+				default: 'array',
+			},
+		],
+		'@typescript-eslint/explicit-module-boundary-types': 'off',
+		'@typescript-eslint/ban-types': 'off',
+		'@typescript-eslint/consistent-type-assertions': 'error',
+		'@typescript-eslint/dot-notation': 'off', // mol no-string-literal
+		'@typescript-eslint/explicit-member-accessibility': [
+			// mol member-access ? should constructor be private/public?
+			'off',
+			// {
+			//     "accessibility": "explicit",
+			//     "overrides": {
+			//         "accessors": "explicit"
+			//     }
+			// }
+		],
+		'@typescript-eslint/indent': 'off',
+		'@typescript-eslint/member-delimiter-style': [
+			'off',
+			{
+				multiline: {
+					delimiter: 'none',
+					requireLast: true,
+				},
+				singleline: {
+					delimiter: 'semi',
+					requireLast: false,
+				},
+			},
+		],
+		'@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+		'@typescript-eslint/member-ordering': 'off',
+		'@typescript-eslint/naming-convention': 'off', // need to find replacement for keywords
+		'@typescript-eslint/no-empty-function': 'off',
+		'@typescript-eslint/no-empty-interface': 'off',
+		'@typescript-eslint/no-explicit-any': 'off',
+		'@typescript-eslint/no-misused-new': 'error',
+		'@typescript-eslint/no-namespace': 'off',
+		'@typescript-eslint/no-parameter-properties': 'off',
+		'no-shadow': 'off',
+		'@typescript-eslint/no-shadow': 'off',
+		'@typescript-eslint/no-unused-expressions': 'error',
+		'@typescript-eslint/no-use-before-define': 'off',
+		'@typescript-eslint/no-var-requires': 'off',
+		'@typescript-eslint/prefer-for-of': 'off', // turned off
+		'@typescript-eslint/prefer-function-type': 'error',
+		'@typescript-eslint/prefer-namespace-keyword': 'error',
+		'@typescript-eslint/quotes': 'off',
+		'@typescript-eslint/semi': ['off', null],
+		'@typescript-eslint/triple-slash-reference': [
+			'error',
+			{
+				path: 'always',
+				types: 'prefer-import',
+				lib: 'always',
+			},
+		],
+		'@typescript-eslint/type-annotation-spacing': 'off',
+		'@typescript-eslint/unified-signatures': 'error',
+		'arrow-body-style': 'off',
+		'arrow-parens': ['off', 'always'],
+		'brace-style': ['off', 'off'],
+		'comma-dangle': 'off',
+		complexity: 'off',
+		'constructor-super': 'error',
+		curly: 'off', // mol
+		'eol-last': 'off',
+		eqeqeq: ['error', 'smart'],
+		'guard-for-in': 'off',
+		'id-blacklist': [
+			'error',
+			'any',
+			'Number',
+			'number',
+			'String',
+			'string',
+			'Boolean',
+			'boolean',
+			'Undefined',
+			'undefined',
+		],
+		'id-match': 'error',
+		'import/order': 'off',
+		indent: ['off', 'tab'], // mol
+		'jsdoc/check-alignment': 'error',
+		'jsdoc/check-indentation': 'error',
+		'jsdoc/newline-after-description': 'error',
+		'linebreak-style': 'off',
+		'max-classes-per-file': 'off',
+		'max-len': [2, { code: 300, ignoreTemplateLiterals: true }], // mol max-line-length
+		'new-parens': 'off',
+		'newline-per-chained-call': 'off',
+		'no-bitwise': 'error',
+		'no-caller': 'error',
+		'no-cond-assign': 'error',
+		'no-console': 'error',
+		'no-debugger': 'error',
+		'no-empty': 'off',
+		'no-eval': 'error',
+		'no-extra-semi': 'off',
+		'no-fallthrough': 'off',
+		'no-invalid-this': 'off',
+		'no-irregular-whitespace': 'off',
+		'no-multiple-empty-lines': 'off',
+		'no-new-wrappers': 'error',
+		'no-throw-literal': 'error',
+		'no-trailing-spaces': 'off',
+		'no-undef-init': 'error',
+		'no-underscore-dangle': 'off', // turned off
+		'no-unsafe-finally': 'error',
+		'no-unused-labels': 'error',
+		'no-useless-escape': 'off',
+		'no-var': 'error',
+		'object-shorthand': 'error',
+		'one-var': ['error', 'never'],
+		'prefer-arrow/prefer-arrow-functions': 'off', // ESLint does not support allowing standalone function declarations. ESLint does not support allowing named functions defined with the function keyword.
+		'prefer-const': 'error',
+		'quote-props': 'off',
+		radix: 'error',
+		'react/jsx-curly-spacing': 'off',
+		'react/jsx-equals-spacing': 'off',
+		'react/jsx-no-bind': 'off',
+		'react/jsx-tag-spacing': [
+			'off',
+			{
+				afterOpening: 'allow',
+				closingSlash: 'allow',
+			},
+		],
+		'react/jsx-wrap-multilines': 'off',
+		'require-yield': 'off',
+		'space-before-function-paren': [
+			'error',
+			{
+				anonymous: 'always',
+				named: 'never',
+				asyncArrow: 'always',
+			},
+		],
+		'space-in-parens': ['off', 'never'],
+		'spaced-comment': [
+			'error',
+			'always',
+			{
+				markers: ['/'],
+			},
+		],
+		'use-isnan': 'error',
+		'valid-typeof': 'off',
+	},
 };
