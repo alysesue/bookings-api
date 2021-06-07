@@ -194,19 +194,6 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		} as MapRequestOptionalResult);
 	});
 
-	it(`should NOT validate dynamic fields are required for admins (this might change later)`, async () => {
-		(userMock.isAdmin as jest.Mock).mockImplementation(() => true);
-
-		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() =>
-			Promise.resolve([createSelectFieldEntity(), createTextField()]),
-		);
-
-		const mapper = Container.get(DynamicValuesRequestMapper);
-		const dynamicReturn = await mapper.mapDynamicValuesRequest([], 100);
-
-		expect(dynamicReturn).toEqual({ result: [] } as MapRequestOptionalResult);
-	});
-
 	it(`should validate dynamic fields are required (object provided but value is empty)`, async () => {
 		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() =>
 			Promise.resolve([createSelectFieldEntity(), createTextField()]),
