@@ -6,6 +6,13 @@ import { DeleteResult } from 'typeorm';
 import { TransactionManager } from '../../../core/transactionManager';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
+jest.mock('../../../core/transactionManager', () => {
+	class TransactionManager {}
+	return {
+		TransactionManager,
+	};
+});
+
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();

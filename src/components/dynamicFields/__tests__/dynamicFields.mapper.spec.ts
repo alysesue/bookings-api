@@ -2,7 +2,7 @@ import { SelectListDynamicField, SelectListOption, TextDynamicField } from '../.
 import { Container } from 'typescript-ioc';
 import { DynamicFieldsMapper } from '../dynamicFields.mapper';
 import { IdHasher } from '../../../infrastructure/idHasher';
-import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
+import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { DynamicFieldModel } from '../dynamicFields.apicontract';
 
 describe('dynamicFields/dynamicFields.mapper', () => {
@@ -18,7 +18,9 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			key: 1,
 			value: 'English',
 		} as SelectListOption;
-		return SelectListDynamicField.create(1, 'testDynamic', [listOptions], 1);
+		const field = SelectListDynamicField.create(1, 'testDynamic', [listOptions]);
+		field.id = 1;
+		return field;
 	};
 
 	const createTextField = () => {

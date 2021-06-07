@@ -5,18 +5,19 @@ jest.mock('../src/config/app-config', () => {
 	};
 });
 
+jest.mock('../src/infrastructure/idHasher', () => {
+	class IdHasher {}
+	return { IdHasher };
+});
+
 jest.mock('../src/infrastructure/auth/userContext', () => {
 	class UserContext {}
-	return {
-		UserContext,
-	};
+	return { UserContext };
 });
 
 jest.mock('../src/core/transactionManager', () => {
 	class TransactionManager {}
-	return {
-		TransactionManager,
-	};
+	return { TransactionManager };
 });
 
 jest.mock('mol-lib-api-contract', () => {

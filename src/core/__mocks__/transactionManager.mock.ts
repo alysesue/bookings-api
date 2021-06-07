@@ -1,6 +1,9 @@
 import { AsyncFunction, TransactionManager } from '../transactionManager';
 
 export class TransactionManagerMock implements Partial<TransactionManager> {
+	public static readonly entityManager = {
+		save: jest.fn(),
+	};
 	public static insert = jest.fn();
 	public static find = jest.fn();
 	public static update = jest.fn();
@@ -23,6 +26,7 @@ export class TransactionManagerMock implements Partial<TransactionManager> {
 				query: TransactionManagerMock.query,
 				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
 			}),
+			save: TransactionManagerMock.entityManager.save,
 		};
 		return Promise.resolve(entityManager);
 	}

@@ -1,7 +1,7 @@
 import { Container } from 'typescript-ioc';
 import { BookingChangeLog, ChangeLogAction, ServiceProvider, User } from '../../../models';
 import { IdHasher } from '../../../infrastructure/idHasher';
-import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
+import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entities/jsonModels';
 import {
 	DynamicValueContract,

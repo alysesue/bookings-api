@@ -6,10 +6,12 @@ import { DynamicFieldsMapperMock } from '../__mocks__/dynamicFields.mapper.mock'
 import {
 	DynamicFieldModel,
 	DynamicFieldType,
+	PersistDynamicFieldModel,
 	SelectListModel,
 	SelectListOptionModel,
 } from '../dynamicFields.apicontract';
 import { DynamicFieldsController } from '../dynamicFields.controller';
+import { TextDynamicField } from '../../../models';
 
 jest.mock('../dynamicFields.service', () => {
 	class DynamicFieldsService {}
@@ -28,6 +30,48 @@ beforeAll(() => {
 describe('dynamicFields/dynamicFields.controller', () => {
 	beforeEach(() => {});
 
+	it('should create dynamic field', async () => {
+		const request = new PersistDynamicFieldModel();
+		request.name = 'field';
+		request.type = DynamicFieldType.TextField;
+		request.textField = { charLimit: 50 };
+
+		const model = new DynamicFieldModel();
+		model.idSigned = '11';
+		const entity = TextDynamicField.create(1, 'notes', 50);
+
+		DynamicFieldsMapperMock.mapDataModel.mockReturnValue(model);
+		DynamicFieldsServiceMock.save.mockReturnValue(Promise.resolve(entity));
+
+		const instance = Container.get(DynamicFieldsController);
+		const result = await instance.create(request, 2);
+
+		expect(DynamicFieldsServiceMock.save).toBeCalled();
+		expect(DynamicFieldsMapperMock.mapDataModel).toBeCalled();
+		expect(result).toEqual({ data: model });
+	});
+
+	it('should update dynamic field', async () => {
+		const request = new PersistDynamicFieldModel();
+		request.name = 'field';
+		request.type = DynamicFieldType.TextField;
+		request.textField = { charLimit: 50 };
+
+		const model = new DynamicFieldModel();
+		model.idSigned = '11';
+		const entity = TextDynamicField.create(1, 'notes', 50);
+
+		DynamicFieldsMapperMock.mapDataModel.mockReturnValue(model);
+		DynamicFieldsServiceMock.update.mockReturnValue(Promise.resolve(entity));
+
+		const instance = Container.get(DynamicFieldsController);
+		const result = await instance.update('11', request);
+
+		expect(DynamicFieldsServiceMock.update).toBeCalled();
+		expect(DynamicFieldsMapperMock.mapDataModel).toBeCalled();
+		expect(result).toEqual({ data: model });
+	});
+
 	it('should return api result', async () => {
 		const selectOption = new SelectListOptionModel();
 		selectOption.key = 1;
@@ -39,12 +83,12 @@ describe('dynamicFields/dynamicFields.controller', () => {
 		dynamicFieldModel.selectList = new SelectListModel();
 		dynamicFieldModel.selectList.options = [selectOption];
 
-		DynamicFieldsMapperMock.mockMapDataModels.mockImplementation(() => [dynamicFieldModel]);
+		DynamicFieldsMapperMock.mapDataModels.mockImplementation(() => [dynamicFieldModel]);
 		const container = Container.get(DynamicFieldsController);
 		const result = await container.getDynamicFields(1);
 
-		expect(DynamicFieldsServiceMock.mockGetServiceFields).toBeCalled();
-		expect(DynamicFieldsMapperMock.mockMapDataModels).toBeCalled();
+		expect(DynamicFieldsServiceMock.getServiceFields).toBeCalled();
+		expect(DynamicFieldsMapperMock.mapDataModels).toBeCalled();
 		expect(result).toBeDefined();
 		expect(result.data).toEqual([dynamicFieldModel]);
 	});

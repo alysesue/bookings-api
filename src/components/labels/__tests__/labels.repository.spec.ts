@@ -10,6 +10,12 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 
 jest.mock('../../../components/services/services.auth');
+jest.mock('../../../core/transactionManager', () => {
+	class TransactionManager {}
+	return {
+		TransactionManager,
+	};
+});
 
 afterAll(() => {
 	jest.resetAllMocks();
