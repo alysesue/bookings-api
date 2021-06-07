@@ -11,14 +11,11 @@ import { groupByKeyLastValue } from '../../tools/collections';
 import { DynamicFieldsService } from './dynamicFields.service';
 import { ErrorResult, OkResult, OptionalResult } from '../../errors';
 import { DynamicValueRequestVisitor } from './dynamicValues.validation';
-import { UserContext } from '../../infrastructure/auth/userContext';
 
 export type MapRequestOptionalResult = OptionalResult<DynamicValueJsonModel[], BusinessValidation[]>;
 
 @InRequestScope
 export class DynamicValuesRequestMapper {
-	@Inject
-	private userContext: UserContext;
 	@Inject
 	private dynamicFieldsService: DynamicFieldsService;
 	@Inject
@@ -28,7 +25,6 @@ export class DynamicValuesRequestMapper {
 		persistValues: PersistDynamicValueContract[],
 		serviceId: number,
 	): Promise<MapRequestOptionalResult> {
-		const user = await this.userContext.getCurrentUser();
 		const dynamicValuesLookup = groupByKeyLastValue(persistValues, (e) => this.idHasher.decode(e.fieldIdSigned));
 
 		const fieldDefinitions = await this.dynamicFieldsService.getServiceFields(serviceId);
@@ -36,8 +32,7 @@ export class DynamicValuesRequestMapper {
 		const dynamicValuesJson = [];
 		for (const field of fieldDefinitions) {
 			const fieldValue = dynamicValuesLookup.get(field.id);
-
-			const visitor = new DynamicValueRequestVisitor(!user.isAdmin());
+			const visitor = new DynamicValueRequestVisitor();
 			visitor.mapFieldValueToJson(field, fieldValue);
 			if (visitor.hasValidations) {
 				validations.push(...visitor.validations);
