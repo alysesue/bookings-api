@@ -50,7 +50,8 @@ describe('Bookings mapper tests', () => {
 		key: 1,
 		value: 'English',
 	} as SelectListOption;
-	const dynamicFieldEntity = SelectListDynamicField.create(1, 'testDynamic', [listOptions], 1);
+	const dynamicFieldEntity = SelectListDynamicField.create(1, 'testDynamic', [listOptions]);
+	dynamicFieldEntity.id = 1;
 
 	it('should throw if organisation not loaded', async () => {
 		const booking = new Booking();

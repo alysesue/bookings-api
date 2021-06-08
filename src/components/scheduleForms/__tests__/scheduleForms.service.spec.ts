@@ -12,6 +12,7 @@ import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGro
 import { AsyncFunction, TransactionManager } from '../../../core/transactionManager';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 jest.mock('../scheduleForms.auth');
 
@@ -280,13 +281,5 @@ class TimeslotsScheduleRepositoryMock implements Partial<TimeslotsScheduleReposi
 
 	public async deleteTimeslotsSchedule(...params): Promise<any> {
 		return await TimeslotsScheduleRepositoryMock.deleteTimeslotsSchedule(...params);
-	}
-}
-
-class TransactionManagerMock implements Partial<TransactionManager> {
-	public static runInTransaction = jest.fn();
-
-	public async runInTransaction(...params): Promise<any> {
-		await TransactionManagerMock.runInTransaction(...params);
 	}
 }

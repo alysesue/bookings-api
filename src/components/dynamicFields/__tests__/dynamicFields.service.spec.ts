@@ -4,6 +4,11 @@ import { DynamicFieldsRepository } from '../dynamicFields.repository';
 import { DynamicFieldsService } from '../dynamicFields.service';
 import { DynamicFieldsRepositoryMock } from '../__mocks__/dynamicFields.repository.mock';
 
+jest.mock('../dynamicFields.repository', () => {
+	class DynamicFieldsRepository {}
+	return { DynamicFieldsRepository };
+});
+
 beforeAll(() => {
 	Container.bind(DynamicFieldsRepository).to(DynamicFieldsRepositoryMock);
 });

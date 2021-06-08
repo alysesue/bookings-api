@@ -5,10 +5,10 @@ import { Container } from 'typescript-ioc';
 import { DynamicFieldsRepository } from '../dynamicFields.repository';
 import { SelectListDynamicField, User } from '../../../models';
 import { TransactionManager } from '../../../core/transactionManager';
-import { TransactionManagerMock } from '../../../components/oneOffTimeslots/__tests__/oneOffTimeslots.repository.spec';
 import { SelectQueryBuilder } from 'typeorm';
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
 import { ServicesQueryAuthVisitor } from '../../../components/services/services.auth';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 jest.mock('../../../components/services/services.auth');
 
@@ -42,11 +42,20 @@ describe('dynamicFields/dynamicFields.repository', () => {
 			getMany: jest.fn(() => Promise.resolve(dynamicFields)),
 		} as unknown) as SelectQueryBuilder<SelectListDynamicField>;
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		QueryAuthVisitorMock.createUserVisibilityCondition.mockImplementation(() =>
+			Promise.resolve({ userCondition: 'field."_serviceId" = :testAuthId', userParams: { testAuthId: 2 } }),
+		);
 
 		const container = Container.get(DynamicFieldsRepository);
 		const dynamicFieldsResult = await container.getServiceFields({ serviceId: 1 });
 		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
-		expect(queryBuilderMock.where).toBeCalledWith('(field."_serviceId" = :serviceId)', { serviceId: 1 });
+		expect(queryBuilderMock.where).toBeCalledWith(
+			'(field."_serviceId" = :testAuthId) AND (field."_serviceId" = :serviceId)',
+			{
+				serviceId: 1,
+				testAuthId: 2,
+			},
+		);
 		expect(queryBuilderMock.getMany).toBeCalled();
 		expect(dynamicFieldsResult).toEqual([]);
 	});
