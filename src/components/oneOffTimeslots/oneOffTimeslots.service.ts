@@ -11,6 +11,7 @@ import { OneOffTimeslotsMapper } from './oneOffTimeslots.mapper';
 import { OneOffTimeslotsValidation } from './oneOffTimeslots.validation';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { ContainerContext } from '../../infrastructure/containerContext';
+import { ServicesService } from '../services/services.service';
 
 @InRequestScope
 export class OneOffTimeslotsService {
@@ -18,6 +19,8 @@ export class OneOffTimeslotsService {
 	private oneOffTimeslotsRepo: OneOffTimeslotsRepository;
 	@Inject
 	private serviceProvidersService: ServiceProvidersService;
+	@Inject
+	private servicesService: ServicesService;
 	@Inject
 	private userContext: UserContext;
 	@Inject
@@ -55,7 +58,11 @@ export class OneOffTimeslotsService {
 		const validator = this.getValidator();
 		await validator.validateOneOffTimeslotsAvailability(request);
 		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
-		const labels = await this.labelsService.verifyLabels(request.labelIds, serviceProvider.serviceId);
+		const service = await this.servicesService.getService(serviceProvider.serviceId, {
+			includeLabels: true,
+			includeLabelCategories: true,
+		});
+		const labels = await this.labelsService.verifyLabels(request.labelIds, service);
 		const entity = this.mapper.mapToOneOffTimeslots(request, serviceProvider, labels);
 		await validator.validate(entity);
 		await this.verifyActionPermission(entity);
@@ -73,7 +80,11 @@ export class OneOffTimeslotsService {
 		const validator = this.getValidator();
 		await validator.validateOneOffTimeslotsAvailability(request, id);
 		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
-		const labels = await this.labelsService.verifyLabels(request.labelIds, serviceProvider.serviceId);
+		const service = await this.servicesService.getService(serviceProvider.serviceId, {
+			includeLabels: true,
+			includeLabelCategories: true,
+		});
+		const labels = await this.labelsService.verifyLabels(request.labelIds, service);
 		this.mapper.updateMapToOneOffTimeslots(request, entity, serviceProvider, labels);
 
 		await validator.validate(entity);

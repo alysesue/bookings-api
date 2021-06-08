@@ -18,29 +18,31 @@ describe('Test labels service', () => {
 		IdHasherMock.encode.mockImplementation((value: number) => value.toString());
 		IdHasherMock.decode.mockImplementation((value: string) => Number.parseInt(value, 10));
 	});
+	const service = new Service();
+	service.labels = [];
+	service.categories = [];
 
 	it('Should skip if array is empty', async () => {
 		LabelsRepositoryMock.findMock.mockReturnValue([]);
-		const resLabel = await Container.get(LabelsService).verifyLabels([], 2);
+		const resLabel = await Container.get(LabelsService).verifyLabels([], service);
 
-		expect(LabelsRepositoryMock.findMock).not.toBeCalled();
 		expect(resLabel).toStrictEqual([]);
 	});
 
-	it('Should skip if array is undefined', async () => {
+	it('Should throw if labels undefined', async () => {
 		LabelsRepositoryMock.findMock.mockReturnValue([]);
-		const resLabel = await Container.get(LabelsService).verifyLabels(undefined, 2);
+		const resLabel = Container.get(LabelsService).verifyLabels(['1'], new Service());
 
-		expect(LabelsRepositoryMock.findMock).not.toBeCalled();
-		expect(resLabel).toStrictEqual([]);
+		await expect(resLabel).rejects.toThrowError('required');
 	});
 
 	it('Should verify if labels are present in Service & remove duplication', async () => {
 		const labelIds = ['1', '1', '2'];
 
-		LabelsRepositoryMock.findMock.mockReturnValue([Label.create('ABC1', 1), Label.create('ABC2', 2)]);
-		const resLabel = await Container.get(LabelsService).verifyLabels(labelIds, 2);
-		expect(LabelsRepositoryMock.findMock).toHaveBeenCalledTimes(1);
+		const service = new Service();
+		service.labels = [Label.create('ABC1', 1), Label.create('ABC2', 2)];
+		service.categories = [];
+		const resLabel = await Container.get(LabelsService).verifyLabels(labelIds, service);
 
 		expect(resLabel).toStrictEqual([Label.create('ABC1', 1), Label.create('ABC2', 2)]);
 	});
@@ -48,10 +50,7 @@ describe('Test labels service', () => {
 	it(`Should throw if label id doesn't exist`, async () => {
 		const labelIds = ['1', '1', '2'];
 
-		LabelsRepositoryMock.findMock.mockReturnValue([Label.create('ABC2', 2), Label.create('ABC3', 3)]);
-		const service = Container.get(LabelsService);
-		const asyncTest = () => service.verifyLabels(labelIds, 2);
-
+		const asyncTest = Container.get(LabelsService).verifyLabels(labelIds, service);
 		await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(`"Invalid label id: 1"`);
 	});
 
