@@ -143,7 +143,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		service.categories = categories;
 		service._emailSuffix = emailSuffix;
 		service._videoConferenceUrl = videoConferenceUrl;
-		if(additionalSettings) {
+		if (additionalSettings) {
 			service.allowAnonymousBookings = additionalSettings.allowAnonymousBookings;
 			service.isOnHold = additionalSettings.isOnHold;
 			service.isStandAlone = additionalSettings.isStandAlone;

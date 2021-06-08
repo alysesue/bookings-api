@@ -255,12 +255,12 @@ describe('Services service tests', () => {
 			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
 		);
 		request.additionalSettings = {
-			"allowAnonymousBookings": true,
-			"isOnHold": true,
-			"isStandAlone": true,
-			"sendNotifications": true,
-			"sendNotificationsToServiceProviders": true
-		}
+			allowAnonymousBookings: true,
+			isOnHold: true,
+			isStandAlone: true,
+			sendNotifications: true,
+			sendNotificationsToServiceProviders: true,
+		};
 
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
@@ -278,8 +278,7 @@ describe('Services service tests', () => {
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
 			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
 		);
-		request.additionalSettings = {
-		}
+		request.additionalSettings = {};
 
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
@@ -343,12 +342,12 @@ describe('Services service tests', () => {
 		request.organisationId = 1;
 		request.emailSuffix = 'def.com';
 		request.additionalSettings = {
-			"allowAnonymousBookings": true,
-			"isOnHold": true,
-			"isStandAlone": true,
-			"sendNotifications": true,
-			"sendNotificationsToServiceProviders": true
-		}
+			allowAnonymousBookings: true,
+			isOnHold: true,
+			isStandAlone: true,
+			sendNotifications: true,
+			sendNotificationsToServiceProviders: true,
+		};
 
 		await Container.get(ServicesService).updateService(1, request);
 		expect(ServicesRepositoryMock.save).toBeCalled();

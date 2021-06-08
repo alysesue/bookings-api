@@ -158,7 +158,8 @@ export class ServicesService {
 			service.isOnHold = request.additionalSettings.isOnHold;
 			service.isStandAlone = request.additionalSettings.isStandAlone;
 			service.sendNotifications = request.additionalSettings.sendNotifications;
-			service.sendNotificationsToServiceProviders = request.additionalSettings.sendNotificationsToServiceProviders;
+			service.sendNotificationsToServiceProviders =
+				request.additionalSettings.sendNotificationsToServiceProviders;
 		}
 
 		await validator.validate(service);
