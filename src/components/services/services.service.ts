@@ -131,6 +131,7 @@ export class ServicesService {
 			request.emailSuffix,
 			noNric,
 			request.videoConferenceUrl,
+			request.description,
 		);
 
 		await validator.validate(service);
@@ -152,6 +153,7 @@ export class ServicesService {
 		service.emailSuffix = request.emailSuffix;
 		service.noNric = request.noNric || false;
 		service.videoConferenceUrl = request.videoConferenceUrl;
+		service.description = request.description;
 
 		await validator.validate(service);
 		await this.verifyActionPermission(service, CrudAction.Update);

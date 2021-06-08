@@ -21,6 +21,7 @@ export class ServicesMapper {
 		serviceResponse.categories = this.categoriesMapper.mapToCategoriesResponse(service.categories);
 		serviceResponse.emailSuffix = service.emailSuffix;
 		serviceResponse.videoConferenceUrl = service.videoConferenceUrl;
+		serviceResponse.description = service.description;
 		return serviceResponse;
 	}
 }

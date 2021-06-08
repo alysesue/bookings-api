@@ -90,6 +90,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	public set scheduleFormId(id: number) {
 		this._scheduleFormId = id;
 	}
+
 	public get scheduleFormId(): number {
 		return this._scheduleFormId;
 	}
@@ -100,6 +101,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	public set timeslotsScheduleId(id: number) {
 		this._timeslotsScheduleId = id;
 	}
+
 	public get timeslotsScheduleId(): number {
 		return this._timeslotsScheduleId;
 	}
@@ -111,6 +113,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	public set timeslotsSchedule(value: TimeslotsSchedule) {
 		this._timeslotsSchedule = value;
 	}
+
 	public get timeslotsSchedule(): TimeslotsSchedule {
 		return this._timeslotsSchedule;
 	}
@@ -124,6 +127,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		emailSuffix?: string,
 		noNric = false,
 		videoConferenceUrl?: string,
+		description?: string,
 	) {
 		const service = new Service();
 		service._name = name.trim();
@@ -141,6 +145,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		service.categories = categories;
 		service._emailSuffix = emailSuffix;
 		service._videoConferenceUrl = videoConferenceUrl;
+		service._description = description;
 		return service;
 	}
 
@@ -154,6 +159,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	public set allowAnonymousBookings(value: boolean) {
 		this._allowAnonymousBookings = value;
 	}
+
 	public get allowAnonymousBookings(): boolean {
 		return this._allowAnonymousBookings;
 	}
@@ -250,5 +256,16 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 
 	public set videoConferenceUrl(value: string) {
 		this._videoConferenceUrl = value;
+	}
+
+	@Column({ type: 'varchar', length: 4000, nullable: true })
+	private _description: string;
+
+	public get description(): string {
+		return this._description;
+	}
+
+	public set description(value: string) {
+		this._description = value;
 	}
 }
