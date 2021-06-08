@@ -247,6 +247,44 @@ describe('Services service tests', () => {
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].labels).toHaveLength(1);
 	});
 
+	it('should save service with additional settings (optional settings)', async () => {
+		const request = new ServiceRequest();
+		request.name = 'John';
+		request.organisationId = 1;
+		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
+			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
+		);
+		request.additionalSettings = {
+			"allowAnonymousBookings": true,
+			"isOnHold": true,
+			"isStandAlone": true,
+			"sendNotifications": true,
+			"sendNotificationsToServiceProviders": true
+		}
+
+		await Container.get(ServicesService).createService(request);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].allowAnonymousBookings).toBe(true);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].isOnHold).toBe(true);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].isStandAlone).toBe(true);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].sendNotifications).toBe(true);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].sendNotificationsToServiceProviders).toBe(true);
+	});
+
+	it('should save service with EMPTY additional settings (optional settings)', async () => {
+		const request = new ServiceRequest();
+		request.name = 'John';
+		request.organisationId = 1;
+		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
+			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
+		);
+		request.additionalSettings = {
+		}
+
+		await Container.get(ServicesService).createService(request);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
+	});
+
 	it('should update service', async () => {
 		const newService = new Service();
 		newService.id = 1;
@@ -289,6 +327,38 @@ describe('Services service tests', () => {
 		await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(
 			`"User cannot perform this action (Update) for services."`,
 		);
+	});
+
+	it('should update service with additional settings (optional settings)', async () => {
+		const newService = new Service();
+		newService.id = 1;
+		newService.organisationId = 1;
+		newService.labels = [];
+
+		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(newService));
+		ServicesRepositoryMock.save.mockImplementation(() => Promise.resolve(newService));
+
+		const request = new ServiceRequest();
+		request.name = 'John';
+		request.organisationId = 1;
+		request.emailSuffix = 'def.com';
+		request.additionalSettings = {
+			"allowAnonymousBookings": true,
+			"isOnHold": true,
+			"isStandAlone": true,
+			"sendNotifications": true,
+			"sendNotificationsToServiceProviders": true
+		}
+
+		await Container.get(ServicesService).updateService(1, request);
+		expect(ServicesRepositoryMock.save).toBeCalled();
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].emailSuffix).toBe('def.com');
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].allowAnonymousBookings).toBe(true);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].isOnHold).toBe(true);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].isStandAlone).toBe(true);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].sendNotifications).toBe(true);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].sendNotificationsToServiceProviders).toBe(true);
 	});
 
 	it('should throw if service not found', async () => {

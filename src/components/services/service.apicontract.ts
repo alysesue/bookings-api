@@ -31,4 +31,13 @@ export class ServiceRequest {
 	public categories?: LabelCategoryRequestModel[];
 	public emailSuffix?: string | null;
 	public videoConferenceUrl?: string | null;
+	public additionalSettings?: AdditionalSettings;
+}
+
+export class AdditionalSettings {
+	public allowAnonymousBookings?: boolean;
+	public isOnHold?: boolean;
+	public isStandAlone?: boolean;
+	public sendNotifications?: boolean;
+	public sendNotificationsToServiceProviders?: boolean;
 }

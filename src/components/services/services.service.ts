@@ -131,6 +131,7 @@ export class ServicesService {
 			request.emailSuffix,
 			noNric,
 			request.videoConferenceUrl,
+			request.additionalSettings,
 		);
 
 		await validator.validate(service);
@@ -152,6 +153,13 @@ export class ServicesService {
 		service.emailSuffix = request.emailSuffix;
 		service.noNric = request.noNric || false;
 		service.videoConferenceUrl = request.videoConferenceUrl;
+		if (request.additionalSettings) {
+			service.allowAnonymousBookings = request.additionalSettings.allowAnonymousBookings;
+			service.isOnHold = request.additionalSettings.isOnHold;
+			service.isStandAlone = request.additionalSettings.isStandAlone;
+			service.sendNotifications = request.additionalSettings.sendNotifications;
+			service.sendNotificationsToServiceProviders = request.additionalSettings.sendNotificationsToServiceProviders;
+		}
 
 		await validator.validate(service);
 		await this.verifyActionPermission(service, CrudAction.Update);
