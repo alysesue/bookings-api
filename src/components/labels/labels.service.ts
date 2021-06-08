@@ -52,7 +52,10 @@ export class LabelsService {
 
 		const labelIds = new Set<number>(encodedLabelIds.map((encodedId) => this.idHasher.decode(encodedId)));
 
-		const allCategoriesLabels = service.categories?.map((cate) => cate.labels).flat(1) || [];
+		if (!service.labels || !service.categories)
+			throw new Error('Categories and labels are required');
+
+		const allCategoriesLabels = service.categories.map((cate) => cate.labels).flat(1) || [];
 		const serviceLabel = service.labels || [];
 		const labelsLookup = groupByKeyLastValue([...serviceLabel, ...allCategoriesLabels], (label) => label.id);
 

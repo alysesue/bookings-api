@@ -18,19 +18,30 @@ describe('Test labels service', () => {
 		IdHasherMock.encode.mockImplementation((value: number) => value.toString());
 		IdHasherMock.decode.mockImplementation((value: string) => Number.parseInt(value, 10));
 	});
+	const service = new Service();
+	service.labels = [];
+	service.categories = [];
 
 	it('Should skip if array is empty', async () => {
 		LabelsRepositoryMock.findMock.mockReturnValue([]);
-		const resLabel = await Container.get(LabelsService).verifyLabels([], new Service());
+		const resLabel = await Container.get(LabelsService).verifyLabels([], service);
 
 		expect(resLabel).toStrictEqual([]);
+	});
+
+	it('Should throw if labels undefined', async () => {
+		LabelsRepositoryMock.findMock.mockReturnValue([]);
+		const resLabel = Container.get(LabelsService).verifyLabels(['1'], new Service());
+
+		await expect(resLabel).rejects.toThrowError('required');
 	});
 
 	it('Should verify if labels are present in Service & remove duplication', async () => {
 		const labelIds = ['1', '1', '2'];
 
 		const service = new Service();
-		service.labels = [Label.create('ABC1', 1), Label.create('ABC2', 2)]
+		service.labels = [Label.create('ABC1', 1), Label.create('ABC2', 2)];
+		service.categories = [];
 		const resLabel = await Container.get(LabelsService).verifyLabels(labelIds, service);
 
 		expect(resLabel).toStrictEqual([Label.create('ABC1', 1), Label.create('ABC2', 2)]);
@@ -39,9 +50,7 @@ describe('Test labels service', () => {
 	it(`Should throw if label id doesn't exist`, async () => {
 		const labelIds = ['1', '1', '2'];
 
-		const service = Container.get(LabelsService);
-		const asyncTest = () => service.verifyLabels(labelIds, new Service());
-
+		const asyncTest = Container.get(LabelsService).verifyLabels(labelIds, service);
 		await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(`"Invalid label id: 1"`);
 	});
 
