@@ -2,6 +2,7 @@ import { Container } from 'typescript-ioc';
 import { ServiceProvider } from '../../../models';
 import { TransactionManager } from '../../../core/transactionManager';
 import { ServiceProvidersRepositoryNoAuth } from '../serviceProviders.noauth.repository';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -61,26 +62,3 @@ describe('Service Provider No Auth repository', () => {
 		expect(result).toBeNull();
 	});
 });
-
-class TransactionManagerMock implements Partial<TransactionManager> {
-	public static insert = jest.fn();
-	public static find = jest.fn();
-	public static update = jest.fn();
-	public static findOne = jest.fn();
-	public static save = jest.fn();
-	public static createQueryBuilder = jest.fn();
-
-	public async getEntityManager(): Promise<any> {
-		const entityManager = {
-			getRepository: () => ({
-				find: TransactionManagerMock.find,
-				findOne: TransactionManagerMock.findOne,
-				insert: TransactionManagerMock.insert,
-				update: TransactionManagerMock.update,
-				save: TransactionManagerMock.save,
-				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
-			}),
-		};
-		return Promise.resolve(entityManager);
-	}
-}

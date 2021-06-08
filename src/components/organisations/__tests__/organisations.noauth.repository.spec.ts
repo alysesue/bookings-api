@@ -2,6 +2,7 @@ import { OrganisationsNoauthRepository } from '../organisations.noauth.repositor
 import { Container } from 'typescript-ioc';
 import { TransactionManager } from '../../../core/transactionManager';
 import { Organisation } from '../../../models/entities/organisation';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -71,19 +72,3 @@ describe('Organisations repository', () => {
 		expect(result).toEqual([organisationMock]);
 	});
 });
-
-class TransactionManagerMock implements Partial<TransactionManager> {
-	public static createQueryBuilder = jest.fn();
-	public static save = jest.fn();
-
-	public async getEntityManager(): Promise<any> {
-		const entityManager = {
-			getRepository: () => ({
-				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
-				save: TransactionManagerMock.save,
-			}),
-		};
-
-		return Promise.resolve(entityManager);
-	}
-}

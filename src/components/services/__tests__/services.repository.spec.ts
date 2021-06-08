@@ -7,6 +7,7 @@ import { TransactionManager } from '../../../core/transactionManager';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup, CitizenAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { ServiceRefInfo, ServicesRepositoryNoAuth } from '../services.noauth.repository';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -185,25 +186,6 @@ describe('Services repository', () => {
 		expect(result[0].name).toEqual('Service 1');
 	});
 });
-
-class TransactionManagerMock implements Partial<TransactionManager> {
-	public static createQueryBuilder = jest.fn();
-	public static save = jest.fn();
-	public static find = jest.fn();
-	public static findOne = jest.fn();
-
-	public async getEntityManager(): Promise<any> {
-		const entityManager = {
-			getRepository: () => ({
-				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
-				find: TransactionManagerMock.find,
-				findOne: TransactionManagerMock.findOne,
-				save: TransactionManagerMock.save,
-			}),
-		};
-		return Promise.resolve(entityManager);
-	}
-}
 
 class ScheduleFormsRepositoryMock implements Partial<ScheduleFormsRepository> {
 	public static getScheduleFormsMock = jest.fn();

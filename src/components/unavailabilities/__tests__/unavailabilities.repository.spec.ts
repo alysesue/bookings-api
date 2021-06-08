@@ -8,6 +8,7 @@ import { UserConditionParams } from '../../../infrastructure/auth/authConditionC
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 jest.mock('../unavailabilities.auth');
 
@@ -286,30 +287,6 @@ describe('Unavailabilities repository', () => {
 		expect(queryBuilderMock.execute).toBeCalledTimes(2);
 	});
 });
-
-class TransactionManagerMock implements Partial<TransactionManager> {
-	public static save = jest.fn();
-	public static find = jest.fn();
-	public static findOne = jest.fn();
-	public static createQueryBuilder = jest.fn();
-	public static runInTransaction = jest.fn();
-
-	public async getEntityManager(): Promise<any> {
-		const entityManager = {
-			getRepository: () => ({
-				find: TransactionManagerMock.find,
-				findOne: TransactionManagerMock.findOne,
-				save: TransactionManagerMock.save,
-				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
-			}),
-		};
-		return Promise.resolve(entityManager);
-	}
-
-	public async runInTransaction<T>(isolationLevel: IsolationLevel, asyncFunction: AsyncFunction<T>): Promise<T> {
-		return TransactionManagerMock.runInTransaction(isolationLevel, asyncFunction);
-	}
-}
 
 class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();

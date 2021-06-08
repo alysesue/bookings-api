@@ -8,6 +8,7 @@ import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/a
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
 import { UsersRepository } from '../../users/users.repository';
 import { ScheduleFormsQueryAuthVisitor } from '../scheduleForms.auth';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 jest.mock('../scheduleForms.auth');
 
@@ -159,37 +160,6 @@ class WeekDayBreakRepositoryMock implements Partial<WeekDayBreakRepository> {
 const scheduleFormMock = new ScheduleForm();
 scheduleFormMock.id = 1;
 scheduleFormMock.initWeekdaySchedules();
-
-class TransactionManagerMock implements Partial<TransactionManager> {
-	public static insert = jest.fn();
-	public static find = jest.fn();
-	public static update = jest.fn();
-	public static findOne = jest.fn();
-	public static getOne = jest.fn();
-	public static getMany = jest.fn();
-	public static save = jest.fn();
-	public static query = jest.fn();
-	public static delete = jest.fn();
-	public static createQueryBuilder = jest.fn();
-
-	public async getEntityManager(): Promise<any> {
-		const entityManager = {
-			getRepository: () => ({
-				find: TransactionManagerMock.find,
-				findOne: TransactionManagerMock.findOne,
-				getOne: TransactionManagerMock.getOne,
-				getMany: TransactionManagerMock.getMany,
-				insert: TransactionManagerMock.insert,
-				update: TransactionManagerMock.update,
-				save: TransactionManagerMock.save,
-				query: TransactionManagerMock.query,
-				delete: TransactionManagerMock.delete,
-				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
-			}),
-		};
-		return Promise.resolve(entityManager);
-	}
-}
 
 class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
