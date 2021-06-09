@@ -17,7 +17,7 @@ export class DynamicFieldsRepository extends RepositoryBase<DynamicField> {
 
 	public async save(entity: DynamicField): Promise<DynamicField> {
 		const manager = await this.getEntityManager();
-		//use entity manager, not repository, to save the inheritance tree
+		// use entity manager, not repository, to save the inheritance tree
 		return await manager.save(entity);
 	}
 
@@ -62,7 +62,7 @@ export class DynamicFieldsRepository extends RepositoryBase<DynamicField> {
 
 	public async delete(field: DynamicField): Promise<void> {
 		const repository = await this.getRepository();
-		//Dynamic values are stored in JSON, so we soft delete the dynamic field metadata just in case it's being used.
+		// Dynamic values are stored in JSON, so we soft delete the dynamic field metadata just in case it's being used.
 		await repository.softDelete(field.id);
 	}
 }

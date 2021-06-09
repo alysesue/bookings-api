@@ -44,7 +44,7 @@ export class DynamicFieldsMapper {
 			);
 		}
 
-		//ensures key uniqueness
+		// ensures key uniqueness
 		const options = Array.from(groupByKeyLastValue(model.selectList.options, (o) => o.key).values());
 
 		if (entity) {

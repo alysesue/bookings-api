@@ -45,7 +45,7 @@ describe('DynamicFields action auth', () => {
 		const serviceA = new Service();
 		serviceA.id = 2;
 		serviceA.name = 'service';
-		serviceA.allowAnonymousBookings = true; //This still shouldn't allow editing.
+		serviceA.allowAnonymousBookings = true; // This still shouldn't allow editing.
 
 		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
 		const groups = [new AnonymousAuthGroup(anonymous)];
