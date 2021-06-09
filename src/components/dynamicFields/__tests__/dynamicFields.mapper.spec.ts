@@ -3,7 +3,13 @@ import { Container } from 'typescript-ioc';
 import { DynamicFieldsMapper } from '../dynamicFields.mapper';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
-import { DynamicFieldModel } from '../dynamicFields.apicontract';
+import {
+	DynamicFieldModel,
+	DynamicFieldType,
+	PersistDynamicFieldModel,
+	SelectListModel,
+	TextFieldModel,
+} from '../dynamicFields.apicontract';
 
 describe('dynamicFields/dynamicFields.mapper', () => {
 	beforeEach(() => {
@@ -89,5 +95,149 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 				type: 'TextField',
 			} as DynamicFieldModel,
 		]);
+	});
+
+	it('[Select List] should map to new entity', () => {
+		const request = new PersistDynamicFieldModel();
+		request.serviceId = 1;
+		request.name = 'options';
+		request.type = DynamicFieldType.SelectList;
+		request.selectList = new SelectListModel();
+		request.selectList.options = [{ key: 1, value: 'option A' }];
+
+		const instance = Container.get(DynamicFieldsMapper);
+		const mapped = instance.mapToEntity(request, null);
+		expect(mapped).toEqual({
+			_name: 'options',
+			_options: [
+				{
+					key: 1,
+					value: 'option A',
+				},
+			],
+			_serviceId: 1,
+		});
+	});
+
+	it('[Select List] should map to existing entity', () => {
+		const request = new PersistDynamicFieldModel();
+		request.serviceId = 1;
+		request.name = 'options';
+		request.type = DynamicFieldType.SelectList;
+		request.selectList = new SelectListModel();
+		request.selectList.options = [{ key: 1, value: 'option A' }];
+
+		const instance = Container.get(DynamicFieldsMapper);
+		const entity = SelectListDynamicField.create(1, 'field', []);
+		entity.id = 11;
+
+		const mapped = instance.mapToEntity(request, entity);
+		expect(mapped).toBe(entity);
+		expect(mapped).toEqual({
+			_id: 11,
+			_name: 'options',
+			_options: [
+				{
+					key: 1,
+					value: 'option A',
+				},
+			],
+			_serviceId: 1,
+		});
+	});
+
+	it('[Select List] should NOT map to with missing information', () => {
+		const request = new PersistDynamicFieldModel();
+		request.serviceId = 1;
+		request.name = 'options';
+		request.type = DynamicFieldType.SelectList;
+
+		const instance = Container.get(DynamicFieldsMapper);
+
+		const _test = () => instance.mapToEntity(request, null);
+		expect(_test).toThrowErrorMatchingInlineSnapshot('"Select list field must contain at least one option."');
+	});
+
+	it('[Select List] should NOT map to existing entity - mapping to TextField', () => {
+		const request = new PersistDynamicFieldModel();
+		request.serviceId = 1;
+		request.name = 'options';
+		request.type = DynamicFieldType.SelectList;
+		request.selectList = new SelectListModel();
+		request.selectList.options = [{ key: 1, value: 'option A' }];
+
+		const instance = Container.get(DynamicFieldsMapper);
+		const entity = TextDynamicField.create(1, 'notes', 10);
+		entity.id = 11;
+
+		const _test = () => instance.mapToEntity(request, entity);
+		expect(_test).toThrowErrorMatchingInlineSnapshot('"Type for field notes cannot be changed once is set."');
+	});
+
+	it('[Text field] should map to new entity', () => {
+		const request = new PersistDynamicFieldModel();
+		request.serviceId = 1;
+		request.name = 'notes';
+		request.type = DynamicFieldType.TextField;
+		request.textField = new TextFieldModel();
+		request.textField.charLimit = 15;
+
+		const instance = Container.get(DynamicFieldsMapper);
+		const mapped = instance.mapToEntity(request, null);
+		expect(mapped).toEqual({
+			_name: 'notes',
+			_charLimit: 15,
+			_serviceId: 1,
+		});
+	});
+
+	it('[Text field] should map to existing entity', () => {
+		const request = new PersistDynamicFieldModel();
+		request.serviceId = 1;
+		request.name = 'notes';
+		request.type = DynamicFieldType.TextField;
+		request.textField = new TextFieldModel();
+		request.textField.charLimit = 15;
+
+		const instance = Container.get(DynamicFieldsMapper);
+		const entity = TextDynamicField.create(1, 'field', 20);
+		entity.id = 11;
+
+		const mapped = instance.mapToEntity(request, entity);
+		expect(mapped).toBe(entity);
+		expect(mapped).toEqual({
+			_id: 11,
+			_name: 'notes',
+			_charLimit: 15,
+			_serviceId: 1,
+		});
+	});
+
+	it('[Text field] should NOT map to existing entity - mapping to Select List', () => {
+		const request = new PersistDynamicFieldModel();
+		request.serviceId = 1;
+		request.name = 'notes';
+		request.type = DynamicFieldType.TextField;
+		request.textField = new TextFieldModel();
+		request.textField.charLimit = 15;
+
+		const instance = Container.get(DynamicFieldsMapper);
+		const entity = SelectListDynamicField.create(1, 'options', []);
+		entity.id = 11;
+
+		const _test = () => instance.mapToEntity(request, entity);
+		expect(_test).toThrowErrorMatchingInlineSnapshot('"Type for field options cannot be changed once is set."');
+	});
+
+	it('[Text field] should NOT map to with missing information', () => {
+		const request = new PersistDynamicFieldModel();
+		request.serviceId = 1;
+		request.name = 'notes';
+		request.type = DynamicFieldType.TextField;
+
+		const instance = Container.get(DynamicFieldsMapper);
+
+		const _test = () => instance.mapToEntity(request, null);
+		expect(_test).toThrowErrorMatchingInlineSnapshot('"Text field char limit must be at least 1."');
 	});
 });

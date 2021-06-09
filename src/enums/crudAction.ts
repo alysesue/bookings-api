@@ -4,3 +4,9 @@ export enum CrudAction {
 	Update = 'Update',
 	Delete = 'Delete',
 }
+
+export enum VisitorCrudAction {
+	Create = 'Create',
+	Update = 'Update',
+	Delete = 'Delete',
+}

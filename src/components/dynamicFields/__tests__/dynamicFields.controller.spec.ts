@@ -28,7 +28,9 @@ beforeAll(() => {
 });
 
 describe('dynamicFields/dynamicFields.controller', () => {
-	beforeEach(() => {});
+	beforeEach(() => {
+		jest.resetAllMocks();
+	});
 
 	it('should create dynamic field', async () => {
 		const request = new PersistDynamicFieldModel();
