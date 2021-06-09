@@ -2,7 +2,7 @@ import { Inject } from 'typescript-ioc';
 import { Service } from '../../models/entities';
 import { LabelsMapper } from '../labels/labels.mapper';
 import { LabelsCategoriesMapper } from '../labelsCategories/labelsCategories.mapper';
-import { ServiceResponse } from './service.apicontract';
+import {ServiceRequest, ServiceResponse} from './service.apicontract';
 
 export class ServicesMapper {
 	@Inject
@@ -22,5 +22,21 @@ export class ServicesMapper {
 		serviceResponse.emailSuffix = service.emailSuffix;
 		serviceResponse.videoConferenceUrl = service.videoConferenceUrl;
 		return serviceResponse;
+	}
+
+	public static mapServiceRequest(service: Service, request: ServiceRequest) {
+		service.name = request.name;
+		service.isSpAutoAssigned = request.isSpAutoAssigned || false;
+		service.emailSuffix = request.emailSuffix;
+		service.noNric = request.noNric || false;
+		service.videoConferenceUrl = request.videoConferenceUrl;
+		if (request.additionalSettings) {
+			service.allowAnonymousBookings = request.additionalSettings.allowAnonymousBookings;
+			service.isOnHold = request.additionalSettings.isOnHold;
+			service.isStandAlone = request.additionalSettings.isStandAlone;
+			service.sendNotifications = request.additionalSettings.sendNotifications;
+			service.sendNotificationsToServiceProviders =
+				request.additionalSettings.sendNotificationsToServiceProviders;
+		}
 	}
 }

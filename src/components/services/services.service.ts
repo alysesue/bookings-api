@@ -21,6 +21,7 @@ import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 import { uniqueStringArray } from '../../tools/collections';
 import { LabelsMapper } from '../labels/labels.mapper';
 import { LabelsCategoriesMapper } from '../labelsCategories/labelsCategories.mapper';
+import { ServicesMapper } from './services.mapper';
 import { ServicesActionAuthVisitor } from './services.auth';
 import { ServiceRequest } from './service.apicontract';
 import { ServicesRepository } from './services.repository';
@@ -146,22 +147,9 @@ export class ServicesService {
 			includeLabelCategories: true,
 			includeLabels: true,
 		});
+
 		await validator.validateServiceFound(service);
-
-		service.name = request.name;
-		service.isSpAutoAssigned = request.isSpAutoAssigned || false;
-		service.emailSuffix = request.emailSuffix;
-		service.noNric = request.noNric || false;
-		service.videoConferenceUrl = request.videoConferenceUrl;
-		if (request.additionalSettings) {
-			service.allowAnonymousBookings = request.additionalSettings.allowAnonymousBookings;
-			service.isOnHold = request.additionalSettings.isOnHold;
-			service.isStandAlone = request.additionalSettings.isStandAlone;
-			service.sendNotifications = request.additionalSettings.sendNotifications;
-			service.sendNotificationsToServiceProviders =
-				request.additionalSettings.sendNotificationsToServiceProviders;
-		}
-
+		ServicesMapper.mapServiceRequest(service, request);
 		await validator.validate(service);
 		await this.verifyActionPermission(service, CrudAction.Update);
 		const updatedLabelList = this.labelsMapper.mapToLabels(request.labels);
