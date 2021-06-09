@@ -142,6 +142,34 @@ describe('dynamicFields/dynamicFields.service', () => {
 		expect(result).toBeDefined();
 	});
 
+	it('should NOT update dynamic field - without permission', async () => {
+		const request = new PersistDynamicFieldModel();
+		request.idSigned = '11';
+		request.name = 'field';
+		request.type = DynamicFieldType.TextField;
+		request.textField = { charLimit: 50 };
+
+		const entity = TextDynamicField.create(1, 'notes', 50);
+		entity.id = 11;
+
+		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(service));
+		DynamicFieldsRepositoryMock.get.mockImplementation(() => Promise.resolve(entity));
+		DynamicFieldsMapperMock.mapToEntity.mockImplementation((_request, entity) => entity);
+		DynamicFieldsRepositoryMock.save.mockImplementation((obj) => Promise.resolve(obj));
+
+		(visitorMock.hasPermission as jest.Mock).mockReturnValue(false);
+
+		const instance = Container.get(DynamicFieldsService);
+
+		const asyncTest = async () => await instance.update(request);
+		await expect(asyncTest).rejects.toMatchInlineSnapshot(
+			'[SYS_INVALID_AUTHORIZATION (403): User cannot perform this action (Update) for dynamic fields.]',
+		);
+
+		expect(visitorMock.hasPermission).toBeCalled();
+		expect(DynamicFieldsRepositoryMock.save).not.toBeCalled();
+	});
+
 	it('should throw if dynamic field not found for Update', async () => {
 		const request = new PersistDynamicFieldModel();
 		request.idSigned = '11';
@@ -177,5 +205,75 @@ describe('dynamicFields/dynamicFields.service', () => {
 		const result = await container.getServiceFields(1);
 
 		expect(result).toEqual([dynamicFieldEntity]);
+	});
+
+	it('should delete dynamic field', async () => {
+		const request = new PersistDynamicFieldModel();
+		request.idSigned = '11';
+		request.name = 'field';
+		request.type = DynamicFieldType.TextField;
+		request.textField = { charLimit: 50 };
+
+		const entity = TextDynamicField.create(1, 'notes', 50);
+		entity.id = 11;
+
+		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(service));
+		DynamicFieldsRepositoryMock.get.mockImplementation(() => Promise.resolve(entity));
+		DynamicFieldsRepositoryMock.delete.mockImplementation(() => Promise.resolve());
+
+		const instance = Container.get(DynamicFieldsService);
+		await instance.delete('11');
+
+		expect(IdHasherMock.decode).toBeCalled();
+		expect(visitorMock.hasPermission).toBeCalled();
+		expect(DynamicFieldsRepositoryMock.delete).toBeCalled();
+	});
+
+	it('should throw if dynamic field not found for Delete', async () => {
+		const request = new PersistDynamicFieldModel();
+		request.idSigned = '11';
+		request.name = 'field';
+		request.type = DynamicFieldType.TextField;
+		request.textField = { charLimit: 50 };
+
+		const entity = TextDynamicField.create(1, 'notes', 50);
+		entity.id = 11;
+
+		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(service));
+		DynamicFieldsRepositoryMock.get.mockImplementation(() => Promise.resolve(null)); // null -> not found
+		DynamicFieldsRepositoryMock.delete.mockImplementation(() => Promise.resolve());
+
+		const instance = Container.get(DynamicFieldsService);
+		const asyncTest = async () => await instance.delete('11');
+
+		await expect(asyncTest).rejects.toMatchInlineSnapshot('[SYS_NOT_FOUND (404): Dynamic field not found.]');
+		expect(DynamicFieldsRepositoryMock.delete).not.toBeCalled();
+	});
+
+	it('should NOT delete dynamic field - without permission', async () => {
+		const request = new PersistDynamicFieldModel();
+		request.idSigned = '11';
+		request.name = 'field';
+		request.type = DynamicFieldType.TextField;
+		request.textField = { charLimit: 50 };
+
+		const entity = TextDynamicField.create(1, 'notes', 50);
+		entity.id = 11;
+
+		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(service));
+		DynamicFieldsRepositoryMock.get.mockImplementation(() => Promise.resolve(entity));
+		DynamicFieldsRepositoryMock.delete.mockImplementation(() => Promise.resolve());
+
+		(visitorMock.hasPermission as jest.Mock).mockReturnValue(false);
+
+		const instance = Container.get(DynamicFieldsService);
+		const asyncTest = async () => await instance.delete('11');
+
+		await expect(asyncTest).rejects.toMatchInlineSnapshot(
+			'[SYS_INVALID_AUTHORIZATION (403): User cannot perform this action (Delete) for dynamic fields.]',
+		);
+
+		expect(visitorMock.hasPermission).toBeCalled();
+		expect(DynamicFieldsRepositoryMock.delete).not.toBeCalled();
 	});
 });

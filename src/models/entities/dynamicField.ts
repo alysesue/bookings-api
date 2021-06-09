@@ -7,6 +7,7 @@ import {
 	ManyToOne,
 	PrimaryGeneratedColumn,
 	TableInheritance,
+	DeleteDateColumn,
 } from 'typeorm';
 import { Service } from './service';
 
@@ -37,6 +38,13 @@ export abstract class DynamicField {
 
 	public set id(id: number) {
 		this._id = id;
+	}
+
+	@DeleteDateColumn()
+	private _deletedAt?: Date;
+
+	public get deletedAt(): Date | undefined {
+		return this._deletedAt;
 	}
 
 	@Column({ nullable: false })

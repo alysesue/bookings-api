@@ -1,6 +1,20 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { DynamicFieldsMapper } from './dynamicFields.mapper';
-import { Body, Controller, Get, Post, Put, Path, Response, Header, SuccessResponse, Route, Security, Tags } from 'tsoa';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Post,
+	Put,
+	Path,
+	Response,
+	Header,
+	SuccessResponse,
+	Route,
+	Security,
+	Tags,
+} from 'tsoa';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { DynamicFieldModel, PersistDynamicFieldModel } from './dynamicFields.apicontract';
 import { DynamicFieldsService } from './dynamicFields.service';
@@ -39,19 +53,19 @@ export class DynamicFieldsController extends Controller {
 	/**
 	 * Updates a dynamic field for bookings under a specific service.
 	 *
-	 * @param fieldId The dynamic field id to be updated
+	 * @param id The dynamic field id to be updated
 	 * @param request The dynamic field details
 	 * @returns The updated dynamic field
 	 */
-	@Put('{fieldId}')
+	@Put('{id}')
 	@SuccessResponse(200, 'Updated')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async update(
-		@Path() fieldId: string,
+		@Path() id: string,
 		@Body() request: PersistDynamicFieldModel,
 	): Promise<ApiData<DynamicFieldModel>> {
-		request.idSigned = fieldId;
+		request.idSigned = id;
 		const entity = await this.dynamicFieldsService.update(request);
 		return ApiDataFactory.create(this.mapper.mapDataModel(entity));
 	}
@@ -66,5 +80,18 @@ export class DynamicFieldsController extends Controller {
 	public async getDynamicFields(@Header('x-api-service') serviceId: number): Promise<ApiData<DynamicFieldModel[]>> {
 		const entries = await this.dynamicFieldsService.getServiceFields(serviceId);
 		return ApiDataFactory.create(this.mapper.mapDataModels(entries));
+	}
+
+	/**
+	 * Deletes a dynamic field
+	 *
+	 * @param id The dynamic field id to be deleted
+	 */
+	@Delete('{id}')
+	@SuccessResponse(204, 'Deleted')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async delete(@Path() id: string): Promise<void> {
+		await this.dynamicFieldsService.delete(id);
 	}
 }

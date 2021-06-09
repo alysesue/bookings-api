@@ -43,6 +43,7 @@ jest.mock('typeorm', () => {
 		TableInheritance: decoratorMock,
 		ChildEntity: decoratorMock,
 		Generated: decoratorMock,
+		DeleteDateColumn: decoratorMock,
 		SelectQueryBuilder: jest.fn(),
 		In: jest.fn(),
 	};

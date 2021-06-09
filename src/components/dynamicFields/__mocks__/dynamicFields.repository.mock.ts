@@ -4,6 +4,7 @@ import { DynamicFieldsRepository } from '../dynamicFields.repository';
 export class DynamicFieldsRepositoryMock implements Partial<DynamicFieldsRepository> {
 	public static getServiceFields = jest.fn<Promise<DynamicField[]>, any>();
 	public static save = jest.fn<Promise<DynamicField>, any>();
+	public static delete = jest.fn<Promise<void>, any>();
 	public static get = jest.fn<Promise<DynamicField>, any>();
 
 	public async getServiceFields(...params): Promise<DynamicField[]> {
@@ -16,5 +17,9 @@ export class DynamicFieldsRepositoryMock implements Partial<DynamicFieldsReposit
 
 	public async get(...params): Promise<DynamicField> {
 		return DynamicFieldsRepositoryMock.get(...params);
+	}
+
+	public async delete(...params): Promise<void> {
+		return DynamicFieldsRepositoryMock.delete(...params);
 	}
 }

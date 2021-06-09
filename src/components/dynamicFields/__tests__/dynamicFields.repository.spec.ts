@@ -71,6 +71,18 @@ describe('dynamicFields/dynamicFields.repository', () => {
 		expect(dynamicFieldsResult).toEqual(entity);
 	});
 
+	it('should delete dynamic field', async () => {
+		const field = TextDynamicField.create(2, 'Notes', 50);
+		field.id = 11;
+
+		TransactionManagerMock.softDelete.mockReturnValue(Promise.resolve());
+
+		const instance = Container.get(DynamicFieldsRepository);
+		await instance.delete(field);
+
+		expect(TransactionManagerMock.softDelete).toBeCalledWith(11);
+	});
+
 	it('should return valid query result', async () => {
 		const dynamicFields: DynamicField[] = [];
 		const queryBuilderMock = ({

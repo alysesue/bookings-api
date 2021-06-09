@@ -4,6 +4,7 @@ import { DynamicFieldsService } from '../dynamicFields.service';
 export class DynamicFieldsServiceMock implements Partial<DynamicFieldsService> {
 	public static getServiceFields = jest.fn<Promise<DynamicField[]>, any>();
 	public static save = jest.fn<Promise<DynamicField>, any>();
+	public static delete = jest.fn<Promise<void>, any>();
 	public static update = jest.fn<Promise<DynamicField>, any>();
 
 	public async getServiceFields(...params): Promise<DynamicField[]> {
@@ -16,5 +17,9 @@ export class DynamicFieldsServiceMock implements Partial<DynamicFieldsService> {
 
 	public async update(...params): Promise<DynamicField> {
 		return DynamicFieldsServiceMock.update(...params);
+	}
+
+	public async delete(...params): Promise<void> {
+		return DynamicFieldsServiceMock.delete(...params);
 	}
 }

@@ -74,6 +74,15 @@ describe('dynamicFields/dynamicFields.controller', () => {
 		expect(result).toEqual({ data: model });
 	});
 
+	it('should delete dynamic field', async () => {
+		DynamicFieldsServiceMock.delete.mockReturnValue(Promise.resolve());
+
+		const instance = Container.get(DynamicFieldsController);
+		await instance.delete('11');
+
+		expect(DynamicFieldsServiceMock.delete).toBeCalled();
+	});
+
 	it('should return api result', async () => {
 		const selectOption = new SelectListOptionModel();
 		selectOption.key = 1;

@@ -59,4 +59,10 @@ export class DynamicFieldsRepository extends RepositoryBase<DynamicField> {
 
 		return await query.getOne();
 	}
+
+	public async delete(field: DynamicField): Promise<void> {
+		const repository = await this.getRepository();
+		//Dynamic values are stored in JSON, so we soft delete the dynamic field metadata just in case it's being used.
+		await repository.softDelete(field.id);
+	}
 }
