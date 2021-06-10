@@ -5,6 +5,13 @@ import { TransactionManager } from '../../../core/transactionManager';
 import { IUser } from '../../../models/interfaces';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
+jest.mock('../../../core/transactionManager', () => {
+	class TransactionManager {}
+	return {
+		TransactionManager,
+	};
+});
+
 afterAll(() => {
 	jest.resetAllMocks();
 	if (global.gc) global.gc();

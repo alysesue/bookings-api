@@ -1,4 +1,4 @@
-import { IdHasher } from '../../../infrastructure/idHasher';
+import { IdHasher } from '../idHasher';
 
 export class IdHasherMock implements Partial<IdHasher> {
 	public static encode = jest.fn();

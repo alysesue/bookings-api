@@ -3,6 +3,10 @@ import { Container } from 'typescript-ioc';
 import { IdHasher } from '../idHasher';
 
 jest.mock('../../config/app-config');
+// idHasher is globally mocked, we need the real implementation here.
+jest.mock('../idHasher', () => {
+	return jest.requireActual('../idHasher');
+});
 
 describe('IdHasher tests', () => {
 	beforeEach(() => {

@@ -9,7 +9,7 @@ import { OneOffTimeslotsRepository } from '../oneOffTimeslots.repository';
 import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
 import { OneOffTimeslotsActionAuthVisitor } from '../oneOffTimeslots.auth';
 import { LabelsService } from '../../labels/labels.service';
-import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
+import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { ContainerContextHolder } from '../../../infrastructure/containerContext';
 import { ServicesService } from "../../services/services.service";

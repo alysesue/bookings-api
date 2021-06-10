@@ -3,7 +3,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { Container } from 'typescript-ioc';
 import { DynamicFieldsRepository } from '../dynamicFields.repository';
-import { SelectListDynamicField, User } from '../../../models';
+import { DynamicField, SelectListDynamicField, TextDynamicField, User } from '../../../models';
 import { TransactionManager } from '../../../core/transactionManager';
 import { SelectQueryBuilder } from 'typeorm';
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
@@ -34,13 +34,62 @@ describe('dynamicFields/dynamicFields.repository', () => {
 		);
 	});
 
+	it('should save dynamic field', async () => {
+		const field = TextDynamicField.create(2, 'Notes', 50);
+		TransactionManagerMock.entityManager.save.mockReturnValue(Promise.resolve({}));
+
+		const container = Container.get(DynamicFieldsRepository);
+		const result = await container.save(field);
+
+		expect(TransactionManagerMock.entityManager.save).toBeCalled();
+		expect(result).toBeDefined();
+	});
+
+	it('should get dynamic field', async () => {
+		const entity = TextDynamicField.create(1, 'notes', 50);
+		entity.id = 11;
+
+		const queryBuilderMock = ({
+			where: jest.fn(() => queryBuilderMock),
+			leftJoin: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve(entity)),
+		} as unknown) as SelectQueryBuilder<DynamicField>;
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		QueryAuthVisitorMock.createUserVisibilityCondition.mockImplementation(() =>
+			Promise.resolve({ userCondition: 'field."_serviceId" = :testAuthId', userParams: { testAuthId: 2 } }),
+		);
+
+		const container = Container.get(DynamicFieldsRepository);
+		const dynamicFieldsResult = await container.get({ id: 11 });
+
+		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
+		expect(queryBuilderMock.where).toBeCalledWith('(field."_serviceId" = :testAuthId) AND (field."_id" = :id)', {
+			id: 11,
+			testAuthId: 2,
+		});
+		expect(queryBuilderMock.getOne).toBeCalled();
+		expect(dynamicFieldsResult).toEqual(entity);
+	});
+
+	it('should delete dynamic field', async () => {
+		const field = TextDynamicField.create(2, 'Notes', 50);
+		field.id = 11;
+
+		TransactionManagerMock.softDelete.mockReturnValue(Promise.resolve());
+
+		const instance = Container.get(DynamicFieldsRepository);
+		await instance.delete(field);
+
+		expect(TransactionManagerMock.softDelete).toBeCalledWith(11);
+	});
+
 	it('should return valid query result', async () => {
-		const dynamicFields: SelectListDynamicField[] = [];
+		const dynamicFields: DynamicField[] = [];
 		const queryBuilderMock = ({
 			where: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve(dynamicFields)),
-		} as unknown) as SelectQueryBuilder<SelectListDynamicField>;
+		} as unknown) as SelectQueryBuilder<DynamicField>;
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		QueryAuthVisitorMock.createUserVisibilityCondition.mockImplementation(() =>
 			Promise.resolve({ userCondition: 'field."_serviceId" = :testAuthId', userParams: { testAuthId: 2 } }),

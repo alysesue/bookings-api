@@ -3,7 +3,7 @@ import { LabelsMapper } from '../labels.mapper';
 import { Label } from '../../../models/entities';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { LabelRequestModel } from '../label.apicontract';
-import { IdHasherMock } from '../__mocks__/labels.mapper.mock';
+import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 
 beforeAll(() => {
 	Container.bind(IdHasher).to(IdHasherMock);

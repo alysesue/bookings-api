@@ -3,12 +3,15 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import {
 	DynamicFieldModel,
 	DynamicFieldType,
+	PersistDynamicFieldModel,
 	SelectListModel,
 	SelectListOptionModel,
 	TextFieldModel,
 } from './dynamicFields.apicontract';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { IDynamicFieldVisitor, TextDynamicField } from '../../models/entities/dynamicField';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { groupByKeyLastValue } from '../../tools/collections';
 
 @InRequestScope
 export class DynamicFieldsMapper {
@@ -21,6 +24,70 @@ export class DynamicFieldsMapper {
 
 	public mapDataModel(field: DynamicField): DynamicFieldModel {
 		return new DynamicFieldMapperVisitor(this.idHasher).mapDataModel(field);
+	}
+
+	private checkExpectedEntityType(type: DynamicFieldType, entity: DynamicField): boolean {
+		switch (type) {
+			case DynamicFieldType.SelectList:
+				return entity instanceof SelectListDynamicField;
+			case DynamicFieldType.TextField:
+				return entity instanceof TextDynamicField;
+			default:
+				throw new Error(`DynamicFieldsMapper.checkExpectedEntityType not implemented for type: ${type}`);
+		}
+	}
+
+	private mapToSelectListField(model: PersistDynamicFieldModel, entity: SelectListDynamicField | null): DynamicField {
+		if (!model.selectList?.options?.length) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Select list field must contain at least one option.`,
+			);
+		}
+
+		// ensures key uniqueness
+		const options = Array.from(groupByKeyLastValue(model.selectList.options, (o) => o.key).values());
+
+		if (entity) {
+			entity.name = model.name;
+			entity.options = options;
+			return entity;
+		}
+
+		return SelectListDynamicField.create(model.serviceId, model.name, options);
+	}
+
+	private mapToTextField(model: PersistDynamicFieldModel, entity: TextDynamicField | null): DynamicField {
+		if (!model.textField?.charLimit) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Text field char limit must be at least 1.`);
+		}
+
+		if (entity) {
+			entity.name = model.name;
+			entity.charLimit = model.textField.charLimit;
+			return entity;
+		}
+
+		return TextDynamicField.create(model.serviceId, model.name, model.textField.charLimit);
+	}
+
+	public mapToEntity(model: PersistDynamicFieldModel, entity: DynamicField | null): DynamicField {
+		if (entity) {
+			const valid = this.checkExpectedEntityType(model.type, entity);
+			if (!valid) {
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+					`Type for field ${entity.name} cannot be changed once is set.`,
+				);
+			}
+		}
+
+		switch (model.type) {
+			case DynamicFieldType.SelectList:
+				return this.mapToSelectListField(model, entity as SelectListDynamicField);
+			case DynamicFieldType.TextField:
+				return this.mapToTextField(model, entity as TextDynamicField);
+			default:
+				throw new Error(`DynamicFieldsMapper.mapToEntity not implemented for type: ${model.type}`);
+		}
 	}
 }
 

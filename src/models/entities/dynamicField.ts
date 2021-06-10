@@ -7,6 +7,7 @@ import {
 	ManyToOne,
 	PrimaryGeneratedColumn,
 	TableInheritance,
+	DeleteDateColumn,
 } from 'typeorm';
 import { Service } from './service';
 
@@ -39,11 +40,12 @@ export abstract class DynamicField {
 		this._id = id;
 	}
 
-	@Column({
-		type: 'enum',
-		enum: DynamicFieldEntityType,
-	})
-	public _type: DynamicFieldEntityType;
+	@DeleteDateColumn()
+	private _deletedAt?: Date;
+
+	public get deletedAt(): Date | undefined {
+		return this._deletedAt;
+	}
 
 	@Column({ nullable: false })
 	@Index()
@@ -84,11 +86,12 @@ export abstract class DynamicField {
 
 @ChildEntity(DynamicFieldEntityType.SelectListDynamicFieldType)
 export class SelectListDynamicField extends DynamicField {
-	public static create(serviceId: number, name: string, options: SelectListOption[], id?: number): DynamicField {
+	constructor() {
+		super();
+	}
+
+	public static create(serviceId: number, name: string, options: SelectListOption[]): DynamicField {
 		const dynamicField = new SelectListDynamicField();
-		if (id) {
-			dynamicField.id = id;
-		}
 		dynamicField.serviceId = serviceId;
 		dynamicField.name = name;
 		dynamicField.options = options;
@@ -117,6 +120,18 @@ export type SelectListOption = {
 
 @ChildEntity(DynamicFieldEntityType.TextDynamicFieldType)
 export class TextDynamicField extends DynamicField {
+	constructor() {
+		super();
+	}
+
+	public static create(serviceId: number, name: string, charLimit: number): DynamicField {
+		const dynamicField = new TextDynamicField();
+		dynamicField.serviceId = serviceId;
+		dynamicField.name = name;
+		dynamicField.charLimit = charLimit;
+		return dynamicField;
+	}
+
 	@Column({ nullable: false, default: 0 })
 	private _charLimit: number;
 

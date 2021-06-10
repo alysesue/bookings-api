@@ -5,6 +5,7 @@ const config = {
 	maxConcurrency: 10,
 	collectCoverageFrom: [
 		'<rootDir>/src/**/*.{js,jsx,ts,tsx}',
+		'!**/*.d.ts',
 		'!**/__tests__/**/*',
 		'!**/*{M,m}ock{*,*/**/*}',
 		'!**/*{E,e}num{*,*/**/*}',

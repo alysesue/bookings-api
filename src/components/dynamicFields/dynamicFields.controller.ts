@@ -1,9 +1,24 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { DynamicFieldsMapper } from './dynamicFields.mapper';
-import { Controller, Get, Header, Route, Security, Tags } from 'tsoa';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Post,
+	Put,
+	Path,
+	Response,
+	Header,
+	SuccessResponse,
+	Route,
+	Security,
+	Tags,
+} from 'tsoa';
 import { ApiData, ApiDataFactory } from '../../apicontract';
-import { DynamicFieldModel } from './dynamicFields.apicontract';
+import { DynamicFieldModel, PersistDynamicFieldModel } from './dynamicFields.apicontract';
 import { DynamicFieldsService } from './dynamicFields.service';
+import { MOLAuth } from 'mol-lib-common';
 
 @InRequestScope
 @Route('v1/dynamicFields')
@@ -15,6 +30,48 @@ export class DynamicFieldsController extends Controller {
 	private mapper: DynamicFieldsMapper;
 
 	/**
+	 * Creates a dynamic field for bookings under a specific service.
+	 *
+	 * @param request The dynamic field details
+	 * @param serviceId The service to add this dynamic field to
+	 * @returns A new dynamic field
+	 */
+	@Post()
+	@SuccessResponse(201, 'Created')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Security('service')
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async create(
+		@Body() request: PersistDynamicFieldModel,
+		@Header('x-api-service') serviceId: number,
+	): Promise<ApiData<DynamicFieldModel>> {
+		request.serviceId = serviceId;
+		const entity = await this.dynamicFieldsService.save(request);
+		this.setStatus(201);
+		return ApiDataFactory.create(this.mapper.mapDataModel(entity));
+	}
+
+	/**
+	 * Updates a dynamic field for bookings under a specific service.
+	 *
+	 * @param id The dynamic field id to be updated
+	 * @param request The dynamic field details
+	 * @returns The updated dynamic field
+	 */
+	@Put('{id}')
+	@SuccessResponse(200, 'Updated')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async update(
+		@Path() id: string,
+		@Body() request: PersistDynamicFieldModel,
+	): Promise<ApiData<DynamicFieldModel>> {
+		request.idSigned = id;
+		const entity = await this.dynamicFieldsService.update(request);
+		return ApiDataFactory.create(this.mapper.mapDataModel(entity));
+	}
+
+	/**
 	 * Retrieves dynamic fields
 	 *
 	 * @param @isInt serviceId The service id.
@@ -24,5 +81,18 @@ export class DynamicFieldsController extends Controller {
 	public async getDynamicFields(@Header('x-api-service') serviceId: number): Promise<ApiData<DynamicFieldModel[]>> {
 		const entries = await this.dynamicFieldsService.getServiceFields(serviceId);
 		return ApiDataFactory.create(this.mapper.mapDataModels(entries));
+	}
+
+	/**
+	 * Deletes a dynamic field
+	 *
+	 * @param id The dynamic field id to be deleted
+	 */
+	@Delete('{id}')
+	@SuccessResponse(204, 'Deleted')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async delete(@Path() id: string): Promise<void> {
+		await this.dynamicFieldsService.delete(id);
 	}
 }
