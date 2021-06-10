@@ -63,7 +63,12 @@ describe('Bookings action auth', () => {
 
 		booking.service = serviceA;
 
-		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const bookingUUID = uuid.v4();
+		const anonymous = User.createAnonymousUser({
+			createdAt: new Date(),
+			trackingId: uuid.v4(),
+			booking: bookingUUID,
+		});
 		const groups = [new AnonymousAuthGroup(anonymous)];
 
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Create).hasPermission(groups)).toBe(true);
@@ -90,7 +95,77 @@ describe('Bookings action auth', () => {
 
 		booking.service = serviceA;
 
-		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const bookingUUID = uuid.v4();
+		const anonymous = User.createAnonymousUser({
+			createdAt: new Date(),
+			trackingId: uuid.v4(),
+			booking: bookingUUID,
+		});
+		const groups = [new AnonymousAuthGroup(anonymous)];
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Create).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Update).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Cancel).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reschedule).hasPermission(groups)).toBe(false);
+
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Accept).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reject).hasPermission(groups)).toBe(false);
+	});
+
+	it('should validate anonymous user reschedule, cancel and update action if user has a valid booking uuid', async () => {
+		const serviceA = new Service();
+		const bookingUUID = uuid.v4();
+		serviceA.id = 4;
+		serviceA.name = 'service';
+		serviceA.allowAnonymousBookings = false;
+
+		const booking = new BookingBuilder()
+			.withServiceId(serviceA.id)
+			.withCitizenUinFin('ABC1234')
+			.withStartDateTime(new Date('2020-10-02T01:00:00'))
+			.withEndDateTime(new Date('2020-10-02T02:00:00'))
+			.build();
+
+		booking.service = serviceA;
+		booking.uuid = bookingUUID;
+
+		const anonymous = User.createAnonymousUser({
+			createdAt: new Date(),
+			trackingId: uuid.v4(),
+			booking: bookingUUID,
+		});
+		const groups = [new AnonymousAuthGroup(anonymous)];
+
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Create).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Update).hasPermission(groups)).toBe(true);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Cancel).hasPermission(groups)).toBe(true);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reschedule).hasPermission(groups)).toBe(true);
+
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Accept).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reject).hasPermission(groups)).toBe(false);
+	});
+
+	it('should validate anonymous user reschedule, cancel and update action - should not allow user to edit any other booking other than his own valid uuid', async () => {
+		const serviceA = new Service();
+		const bookingUUID = uuid.v4();
+		serviceA.id = 4;
+		serviceA.name = 'service';
+		serviceA.allowAnonymousBookings = false;
+
+		const booking = new BookingBuilder()
+			.withServiceId(serviceA.id)
+			.withCitizenUinFin('ABC1234')
+			.withStartDateTime(new Date('2020-10-02T01:00:00'))
+			.withEndDateTime(new Date('2020-10-02T02:00:00'))
+			.build();
+
+		booking.service = serviceA;
+		booking.uuid = bookingUUID;
+
+		const anonymous = User.createAnonymousUser({
+			createdAt: new Date(),
+			trackingId: uuid.v4(),
+			booking: uuid.v4(),
+		});
 		const groups = [new AnonymousAuthGroup(anonymous)];
 
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Create).hasPermission(groups)).toBe(false);

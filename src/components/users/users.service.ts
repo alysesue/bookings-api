@@ -5,6 +5,7 @@ import { logger } from 'mol-lib-common';
 import { User } from '../../models';
 import { ParsedUserGroup, UserGroupParser, UserGroupRole } from '../../infrastructure/auth/userGroupParser';
 import {
+	AnonymousAuthGroup,
 	AuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
@@ -15,6 +16,7 @@ import { ServiceRefInfo, ServicesRepositoryNoAuth } from '../services/services.n
 import { ServiceProvidersRepositoryNoAuth } from '../serviceProviders/serviceProviders.noauth.repository';
 import { AnonymousCookieData } from '../../infrastructure/bookingSGCookieHelper';
 import { UsersRepository } from './users.repository';
+import { BookingsNoAuthRepository } from '../bookings/bookings.noauth.repository';
 
 export type HeadersType = { [key: string]: string };
 
@@ -28,6 +30,8 @@ export class UsersService {
 	private serviceProvidersRepositoryNoAuth: ServiceProvidersRepositoryNoAuth;
 	@Inject
 	private usersRepository: UsersRepository;
+	@Inject
+	private bookingNoAuthRepository: BookingsNoAuthRepository;
 
 	private async getOrSaveInternal(user: User, getter: () => Promise<User>): Promise<User> {
 		let userRepo = await getter();
@@ -235,6 +239,21 @@ export class UsersService {
 
 		// Creates user only in memory till a booking is made to avoid populating the database.
 		return User.createAnonymousUser(data);
+	}
+
+	public async getAnonymousUserRoles(user: User): Promise<AuthGroup[]> {
+		if (!user.isAnonymous()) return [];
+
+		if (user.anonymousUser.bookingUUID) {
+			const bookingInfo = await this.bookingNoAuthRepository.getBookingInfoByUUID(user.anonymousUser.bookingUUID);
+			if (!bookingInfo) {
+				return [];
+			} else {
+				return [new AnonymousAuthGroup(user, bookingInfo)];
+			}
+		}
+
+		return [new AnonymousAuthGroup(user)];
 	}
 
 	public async persistUserIfRequired(user: User): Promise<User> {

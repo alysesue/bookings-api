@@ -13,6 +13,7 @@ import { MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth/common/mol-secu
 import { MOLAuthType } from 'mol-lib-api-contract/auth/common/MOLAuthType';
 import { OrganisationsService } from '../../organisations/organisations.service';
 import {
+	AnonymousAuthGroup,
 	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
@@ -20,12 +21,15 @@ import {
 import { logger } from 'mol-lib-common';
 import { ServicesRepositoryNoAuth } from '../../services/services.noauth.repository';
 import { ServiceProvidersRepositoryNoAuth } from '../../serviceProviders/serviceProviders.noauth.repository';
+import { BookingsNoAuthRepository } from '../../bookings/bookings.noauth.repository';
+import { BookingsNoAuthRepositoryMock } from '../../bookings/__mocks__/bookings.mocks';
 
 beforeAll(() => {
 	Container.bind(UsersRepository).to(UserRepositoryMock);
 	Container.bind(OrganisationsService).to(OrganisationsServiceMock);
 	Container.bind(ServicesRepositoryNoAuth).to(ServicesRepositoryNoAuthMock);
 	Container.bind(ServiceProvidersRepositoryNoAuth).to(ServiceProvidersRepositoryNoAuthMock);
+	Container.bind(BookingsNoAuthRepository).to(BookingsNoAuthRepositoryMock);
 });
 
 afterAll(() => {
@@ -252,6 +256,72 @@ describe('Users Service', () => {
 			'Service provider not found in BookingSG for mol-admin-id: d080f6ed-3b47-478a-a6c6-dfb5608a199d',
 		);
 		expect(groups.length).toBe(0);
+	});
+
+	it('should get anonymous user roles', async () => {
+		const user = User.createAnonymousUser({
+			createdAt: new Date('2020-07-21T00:00Z'),
+			trackingId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+		});
+		const service = Container.get(UsersService);
+
+		const roles = await service.getAnonymousUserRoles(user);
+
+		expect(roles).toEqual([new AnonymousAuthGroup(user)]);
+	});
+
+	it('should get Booking info with anonymous user role', async () => {
+		const user = User.createAnonymousUser({
+			createdAt: new Date('2020-07-21T00:00Z'),
+			trackingId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+			booking: '81baeb3f-d930-4f48-9808-3ee4debc3d8a',
+		});
+		BookingsNoAuthRepositoryMock.getBookingInfoByUUID.mockReturnValue(
+			Promise.resolve({
+				bookingUUID: '81baeb3f-d930-4f48-9808-3ee4debc3d8a',
+				bookingId: 1,
+				serviceId: 2,
+				organisationId: 3,
+				serviceProviderId: 4,
+			}),
+		);
+
+		const service = Container.get(UsersService);
+
+		const roles = await service.getAnonymousUserRoles(user);
+
+		expect(roles).toEqual([
+			new AnonymousAuthGroup(user, {
+				bookingUUID: '81baeb3f-d930-4f48-9808-3ee4debc3d8a',
+				bookingId: 1,
+				serviceId: 2,
+				organisationId: 3,
+				serviceProviderId: 4,
+			}),
+		]);
+	});
+
+	it('should return no roles for anonymous user role (when booking info is not found)', async () => {
+		const user = User.createAnonymousUser({
+			createdAt: new Date('2020-07-21T00:00Z'),
+			trackingId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+			booking: '81baeb3f-d930-4f48-9808-3ee4debc3d8a',
+		});
+		BookingsNoAuthRepositoryMock.getBookingInfoByUUID.mockReturnValue(Promise.resolve(null));
+
+		const service = Container.get(UsersService);
+
+		const roles = await service.getAnonymousUserRoles(user);
+
+		expect(roles).toEqual([]);
+	});
+
+	it('should return no anonymous roles for non-anonymous user', async () => {
+		const service = Container.get(UsersService);
+
+		const roles = await service.getAnonymousUserRoles(adminMock);
+
+		expect(roles).toEqual([]);
 	});
 });
 

@@ -10,6 +10,7 @@ import { ServiceProvidersRepository } from '../../../components/serviceProviders
 import { PagingHelper } from '../../../core/paging';
 import { IPagedEntities } from '../../../core/pagedEntities';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
+import * as uuid from 'uuid';
 
 jest.mock('../../../core/paging');
 
@@ -246,6 +247,24 @@ describe('Bookings repository', () => {
 
 		const bookingsRepository = Container.get(BookingsRepository);
 		const result = await bookingsRepository.getBooking(1);
+		expect(result).toStrictEqual(booking);
+	});
+
+	it('should get booking by uuid', async () => {
+		const bookingUUID = uuid.v4();
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		booking.id = 1;
+		booking.uuid = bookingUUID;
+
+		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(booking));
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const bookingsRepository = Container.get(BookingsRepository);
+		const result = await bookingsRepository.getBookingByUUID(bookingUUID);
 		expect(result).toStrictEqual(booking);
 	});
 

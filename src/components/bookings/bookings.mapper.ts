@@ -70,7 +70,7 @@ export class BookingsMapper {
 
 	// TODO: no need to pass in userContext, Inject it instead
 	public mapDataModel(booking: Booking, userContext: UserContextSnapshot): BookingResponse {
-		return {
+		const response: BookingResponse = {
 			id: booking.id,
 			status: booking.status,
 			createdDateTime: booking.createdLog?.timestamp,
@@ -94,7 +94,8 @@ export class BookingsMapper {
 			dynamicValues: this.dynamicValuesMapper.mapDynamicValuesModel(booking.dynamicValues),
 			serviceProviderAliasName: booking.serviceProvider?.aliasName,
 			reasonToReject: booking.reasonToReject,
-		} as BookingResponse;
+		};
+		return response;
 	}
 
 	public async mapBookingsCSV(bookings: Booking[], userContext: UserContextSnapshot): Promise<string> {

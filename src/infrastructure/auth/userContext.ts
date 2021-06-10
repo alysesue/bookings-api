@@ -4,7 +4,7 @@ import { Organisation, User } from '../../models';
 import { UsersService } from '../../components/users/users.service';
 import { AsyncLazy } from '../../tools/asyncLazy';
 import { AnonymousCookieData } from '../bookingSGCookieHelper';
-import { AnonymousAuthGroup, AuthGroup, CitizenAuthGroup, OrganisationAdminAuthGroup } from './authGroup';
+import { AuthGroup, CitizenAuthGroup, OrganisationAdminAuthGroup } from './authGroup';
 import { ContainerContext } from '../containerContext';
 
 export type UserContextSnapshot = {
@@ -70,7 +70,8 @@ export class UserContext {
 		}
 
 		if (user.isAnonymous()) {
-			return [new AnonymousAuthGroup(user)];
+			const usersService = this.containerContext.resolve(UsersService);
+			return await usersService.getAnonymousUserRoles(user);
 		} else if (user.isCitizen()) {
 			return [new CitizenAuthGroup(user)];
 		} else {

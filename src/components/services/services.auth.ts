@@ -69,7 +69,12 @@ export class ServicesQueryAuthVisitor extends QueryAuthGroupVisitor {
 	}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
-		this.addAuthCondition(`${this._alias}."_allowAnonymousBookings" = true`, {});
+		if (_anonymousGroup.bookingInfo) {
+			const { serviceId } = _anonymousGroup.bookingInfo;
+			this.addAuthCondition(`${this._alias}."_id" = :serviceId`, { serviceId });
+		} else {
+			this.addAuthCondition(`${this._alias}."_allowAnonymousBookings" = true`, {});
+		}
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {

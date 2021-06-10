@@ -52,6 +52,7 @@ describe('dynamicFields/dynamicFields.repository', () => {
 		const queryBuilderMock = ({
 			where: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve(entity)),
 		} as unknown) as SelectQueryBuilder<DynamicField>;
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
@@ -88,6 +89,7 @@ describe('dynamicFields/dynamicFields.repository', () => {
 		const queryBuilderMock = ({
 			where: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve(dynamicFields)),
 		} as unknown) as SelectQueryBuilder<DynamicField>;
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
@@ -114,6 +116,7 @@ describe('dynamicFields/dynamicFields.repository', () => {
 		const queryBuilderMock = ({
 			where: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve(dynamicFields)),
 		} as unknown) as SelectQueryBuilder<SelectListDynamicField>;
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);

@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Generated, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { BookingStatus } from '../bookingStatus';
 import * as timeSpan from '../../tools/timeSpan';
@@ -131,6 +131,11 @@ export class Booking {
 	@Column({ update: false })
 	public _version: number;
 
+	@Column({ type: 'uuid' })
+	@Index({ unique: true })
+	@Generated('uuid')
+	public _uuid: string;
+
 	@PrimaryGeneratedColumn()
 	private _id: number;
 
@@ -195,6 +200,13 @@ export class Booking {
 
 	@Column({ nullable: true })
 	private _reasonToReject: string;
+	public get uuid(): string {
+		return this._uuid;
+	}
+
+	public set uuid(value: string) {
+		this._uuid = value;
+	}
 
 	public get onHoldUntil(): Date {
 		return this._onHoldUntil;

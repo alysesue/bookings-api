@@ -1,4 +1,4 @@
-import { Organisation, Service, ServiceProvider, User } from '../../models';
+import { BookingUUIDInfo, Organisation, Service, ServiceProvider, User } from '../../models';
 
 export abstract class AuthGroup {
 	private _user: User;
@@ -23,13 +23,17 @@ export interface IAuthGroupVisitor {
 }
 
 export class AnonymousAuthGroup extends AuthGroup {
-	constructor(user: User) {
+	constructor(user: User, bookingInfo?: BookingUUIDInfo) {
 		super(user);
 
 		if (!user.isAnonymous()) {
 			throw new Error('AnonymousAuthGroup must be created with an anonymous User.');
 		}
+
+		this.bookingInfo = bookingInfo;
 	}
+
+	public bookingInfo?: BookingUUIDInfo;
 
 	public acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void> {
 		return visitor.visitAnonymous(this);

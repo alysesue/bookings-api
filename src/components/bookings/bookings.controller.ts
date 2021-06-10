@@ -131,8 +131,7 @@ export class BookingsController extends Controller {
 	 */
 	@Post('{bookingId}/reschedule')
 	@SuccessResponse(200, 'Accepted')
-	@MOLAuth({ user: { minLevel: MOLUserAuthLevel.L2 } })
-	@Response(401, 'Valid authentication types: [citizen]')
+	@Response(401, 'Unauthorized')
 	public async reschedule(
 		@Path() bookingId: number,
 		@Body() rescheduleRequest: BookingRequest,
@@ -167,12 +166,7 @@ export class BookingsController extends Controller {
 	 */
 	@Post('{bookingId}/cancel')
 	@SuccessResponse(204, 'Cancelled')
-	@MOLAuth({
-		admin: {},
-		agency: {},
-		user: { minLevel: MOLUserAuthLevel.L2 },
-	})
-	@Response(401, 'Valid authentication types: [admin,agency,user]')
+	@Response(401, 'Unauthorized')
 	public async cancelBooking(@Path() bookingId: number): Promise<void> {
 		await this.bookingsService.cancelBooking(bookingId);
 	}
@@ -336,6 +330,19 @@ export class BookingsController extends Controller {
 	@Response(401, 'Unauthorized')
 	public async getBooking(@Path() bookingId: number): Promise<ApiData<BookingResponse>> {
 		const booking = await this.bookingsService.getBooking(bookingId);
+		return ApiDataFactory.create(this.bookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
+	}
+
+	/**
+	 * Retrieves a single booking by UUID
+	 * @param bookingUUID Booking UUID
+	 * @returns A single booking
+	 */
+	@Get('uuid/{bookingUUID}')
+	@SuccessResponse(200, 'Ok')
+	@Response(401, 'Unauthorized')
+	public async getBookingByUUID(@Path() bookingUUID: string): Promise<ApiData<BookingResponse>> {
+		const booking = await this.bookingsService.getBookingByUUID(bookingUUID);
 		return ApiDataFactory.create(this.bookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
 	}
 
