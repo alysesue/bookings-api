@@ -119,18 +119,16 @@ export class ServicesService {
 			? await this.organisationsRepository.getOrganisationById(request.organisationId)
 			: await this.userContext.verifyAndGetFirstAuthorisedOrganisation('User not authorized to add services.');
 
-		const isSpAutoAssigned = request.isSpAutoAssigned;
-		const noNric = request.noNric;
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
 		const mapToCategories = this.categoriesMapper.mapToCategories(request.categories);
 		const service = Service.create(
 			request.name,
 			orga,
-			isSpAutoAssigned,
+			request.isSpAutoAssigned,
 			transformedLabels,
 			mapToCategories,
 			request.emailSuffix,
-			noNric,
+			request.noNric,
 			request.videoConferenceUrl,
 			request.additionalSettings,
 		);
@@ -149,7 +147,7 @@ export class ServicesService {
 		});
 
 		await validator.validateServiceFound(service);
-		ServicesMapper.mapFromServiceRequest(service, request);
+		ServicesMapper.mapFromServicePutRequest(service, request);
 		await validator.validate(service);
 		await this.verifyActionPermission(service, CrudAction.Update);
 		const updatedLabelList = this.labelsMapper.mapToLabels(request.labels);

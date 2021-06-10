@@ -50,7 +50,7 @@ describe('service/services.mapper', () => {
 		LabelsMapperMock.mapToLabels.mockReturnValue([labelRequest]);
 
 		// const serviceData = serviceMapper.mapFromServiceRequest(serviceData, serviceRequest);
-		ServicesMapper.mapFromServiceRequest(serviceData, serviceRequest);
+		ServicesMapper.mapFromServicePutRequest(serviceData, serviceRequest);
 		expect(serviceData.name).toBe('name');
 		expect(serviceData.emailSuffix).toBe('abc.com');
 		expect(serviceData.isStandAlone).toBe(false);

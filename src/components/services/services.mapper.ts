@@ -30,20 +30,39 @@ export class ServicesMapper {
 		return serviceResponse;
 	}
 
-	public static mapFromServiceRequest(service: Service, request: ServiceRequest) {
-		service.name = request.name;
+	public static mapFromServicePutRequest(service: Service, request: ServiceRequest) {
+		service.name = request.name.trim();
 		service.isSpAutoAssigned = request.isSpAutoAssigned || false;
-		service.emailSuffix = request.emailSuffix;
 		service.noNric = request.noNric || false;
+
+		// ToDo add map to service and categories
+
+		service.emailSuffix = request.emailSuffix;
 		service.videoConferenceUrl = request.videoConferenceUrl;
 		if (request.additionalSettings) {
-			service.allowAnonymousBookings = request.additionalSettings.allowAnonymousBookings;
-			service.isOnHold = request.additionalSettings.isOnHold;
-			service.isStandAlone = request.additionalSettings.isStandAlone;
-			service.sendNotifications = request.additionalSettings.sendNotifications;
-			service.sendNotificationsToServiceProviders =
-				request.additionalSettings.sendNotificationsToServiceProviders;
+			const {
+				allowAnonymousBookings,
+				isOnHold,
+				isStandAlone,
+				sendNotifications,
+				sendNotificationsToServiceProviders,
+			} = request.additionalSettings;
+
+			if (allowAnonymousBookings !== undefined) {
+				service.allowAnonymousBookings = allowAnonymousBookings;
+			}
+			if (isOnHold !== undefined) {
+				service.isOnHold = isOnHold;
+			}
+			if (isStandAlone !== undefined) {
+				service.isStandAlone = isStandAlone;
+			}
+			if (sendNotifications !== undefined) {
+				service.sendNotifications = sendNotifications;
+			}
+			if (sendNotificationsToServiceProviders !== undefined) {
+				service.sendNotificationsToServiceProviders = sendNotificationsToServiceProviders;
+			}
 		}
-		return service;
 	}
 }

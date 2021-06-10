@@ -6,7 +6,7 @@ import { Organisation } from './organisation';
 import { ScheduleForm } from './scheduleForm';
 import { Label } from './label';
 import { LabelCategory } from './labelCategory';
-import { AdditionalSettings } from '../../components/services/service.apicontract';
+import { AdditionalSettingsReq } from '../../components/services/service.apicontract';
 
 @Entity()
 @Index(['_organisationId', '_name'], { unique: true })
@@ -125,7 +125,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		emailSuffix?: string,
 		noNric = false,
 		videoConferenceUrl?: string,
-		additionalSettings?: AdditionalSettings,
+		additionalSettings?: AdditionalSettingsReq,
 	) {
 		const service = new Service();
 		service._name = name.trim();

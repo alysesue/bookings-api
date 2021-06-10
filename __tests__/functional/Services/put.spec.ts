@@ -149,14 +149,14 @@ describe('Tests endpoint and populate data', () => {
 		expect(response.body.errorMessage).toBe('One or more business validations failed');
 	});
 
-	it("should return additionalSettings default values in response when it is not set in Put request", async () => {
+	it('should return additionalSettings default values in response when it is not set in Put request', async () => {
 		const additionalSettingsDefaultValues = {
 			allowAnonymousBookings: false,
 			isOnHold: false,
 			isStandAlone: false,
 			sendNotifications: false,
 			sendNotificationsToServiceProviders: false,
-		} ;
+		};
 
 		const service = await populateService({ nameService: SERVICE_NAME });
 
@@ -168,14 +168,14 @@ describe('Tests endpoint and populate data', () => {
 		expect(putResponse.body.data.additionalSettings).toEqual(additionalSettingsDefaultValues);
 	});
 
-	it("should return additionalSettings default values in response when it is set to empty in Put request", async () => {
+	it('should return additionalSettings default values in response when it is set to empty in Put request', async () => {
 		const additionalSettingsDefaultValues = {
 			allowAnonymousBookings: false,
 			isOnHold: false,
 			isStandAlone: false,
 			sendNotifications: false,
 			sendNotificationsToServiceProviders: false,
-		} ;
+		};
 
 		const service = await populateService({ nameService: SERVICE_NAME });
 
@@ -187,14 +187,14 @@ describe('Tests endpoint and populate data', () => {
 		expect(putResponse.body.data.additionalSettings).toEqual(additionalSettingsDefaultValues);
 	});
 
-	it("should update ALL additionalSettings values and return them in response", async () => {
+	it('should update ALL additionalSettings values and return them in response', async () => {
 		const additionalSettingsUpdated = {
 			allowAnonymousBookings: true,
 			isOnHold: true,
 			isStandAlone: true,
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
-		} ;
+		};
 
 		const service = await populateService({ nameService: SERVICE_NAME });
 
@@ -206,23 +206,56 @@ describe('Tests endpoint and populate data', () => {
 		expect(putResponse.body.data.additionalSettings).toEqual(additionalSettingsUpdated);
 	});
 
-	it("should update part of the additionalSettings values and return ALL of them in response", async () => {
+	it('should update part of the additionalSettings values and return ALL of them in response', async () => {
 		const expectedAdditionalSettings = {
 			allowAnonymousBookings: true,
 			isOnHold: true,
 			isStandAlone: false,
 			sendNotifications: false,
 			sendNotificationsToServiceProviders: false,
-		} ;
+		};
 
 		const service = await populateService({ nameService: SERVICE_NAME });
 
 		const putResponse = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
-			body: { name: SERVICE_NAME_UPDATED, additionalSettings: {allowAnonymousBookings: true, isOnHold: true} },
+			body: { name: SERVICE_NAME_UPDATED, additionalSettings: { allowAnonymousBookings: true, isOnHold: true } },
 		});
 
 		expect(putResponse.statusCode).toEqual(200);
 		expect(putResponse.body.data.additionalSettings).toEqual(expectedAdditionalSettings);
+	});
+
+	it('should update part of the additionalSettings values from true to false', async () => {
+		const additionalSettingsTrue = {
+			allowAnonymousBookings: true,
+			isOnHold: true,
+			isStandAlone: true,
+			sendNotifications: true,
+			sendNotificationsToServiceProviders: true,
+		};
+
+		const expectedAdditionalSettings = {
+			allowAnonymousBookings: true,
+			isOnHold: false,
+			isStandAlone: false,
+			sendNotifications: true,
+			sendNotificationsToServiceProviders: true,
+		};
+
+		const service = await populateService({ nameService: SERVICE_NAME });
+		const putResponse = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+			body: { name: SERVICE_NAME_UPDATED, additionalSettings: additionalSettingsTrue },
+		});
+
+		expect(putResponse.statusCode).toEqual(200);
+		expect(putResponse.body.data.additionalSettings).toEqual(additionalSettingsTrue);
+
+		const putResponse2 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+			body: { name: SERVICE_NAME_UPDATED, additionalSettings: { isOnHold: false, isStandAlone: false } },
+		});
+
+		expect(putResponse2.statusCode).toEqual(200);
+		expect(putResponse2.body.data.additionalSettings).toEqual(expectedAdditionalSettings);
 	});
 
 	it('Put service with invalid values in additionalSettings', async () => {
@@ -241,14 +274,15 @@ describe('Tests endpoint and populate data', () => {
 		});
 
 		const responseData = putResponse.body.data;
-		const responseKey = 'request.request.additionalSettings';
+		const responseKey = 'serviceRequest.serviceRequest.additionalSettings';
 		expect(putResponse.statusCode).toEqual(400);
 		expect(responseData[`${responseKey}.allowAnonymousBookings`].message).toBe('invalid boolean value');
 		expect(responseData[`${responseKey}.isOnHold`].message).toBe('invalid boolean value');
 		expect(responseData[`${responseKey}.isStandAlone`].message).toBe('invalid boolean value');
 		expect(responseData[`${responseKey}.sendNotifications`].message).toBe('invalid boolean value');
-		expect(responseData[`${responseKey}.sendNotificationsToServiceProviders`].message).toBe('invalid boolean value');
+		expect(responseData[`${responseKey}.sendNotificationsToServiceProviders`].message).toBe(
+			'invalid boolean value',
+		);
 		expect(putResponse.body.errorCode).toBe('SYS_INVALID_PARAM');
-		// expect(response.body.errorMessage).toBe('One or more business validations failed');
 	});
 });
