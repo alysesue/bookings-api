@@ -2,7 +2,7 @@ import { Inject } from 'typescript-ioc';
 import { Service } from '../../models/entities';
 import { LabelsMapper } from '../labels/labels.mapper';
 import { LabelsCategoriesMapper } from '../labelsCategories/labelsCategories.mapper';
-import {ServiceRequest, ServiceResponse} from './service.apicontract';
+import {AdditionalSettingsRes, ServiceRequest, ServiceResponse} from './service.apicontract';
 
 export class ServicesMapper {
 	@Inject
@@ -14,17 +14,22 @@ export class ServicesMapper {
 		const serviceResponse = new ServiceResponse();
 		serviceResponse.id = service.id;
 		serviceResponse.name = service.name;
-		serviceResponse.isStandAlone = service.isStandAlone;
 		serviceResponse.isSpAutoAssigned = service.isSpAutoAssigned;
 		serviceResponse.noNric = service.noNric;
 		serviceResponse.labels = this.labelsMapper.mapToLabelsResponse(service.labels);
 		serviceResponse.categories = this.categoriesMapper.mapToCategoriesResponse(service.categories);
 		serviceResponse.emailSuffix = service.emailSuffix;
 		serviceResponse.videoConferenceUrl = service.videoConferenceUrl;
+		serviceResponse.additionalSettings = {} as AdditionalSettingsRes;
+		serviceResponse.additionalSettings.allowAnonymousBookings = service.allowAnonymousBookings;
+		serviceResponse.additionalSettings.isOnHold = service.isOnHold;
+		serviceResponse.additionalSettings.isStandAlone = service.isStandAlone;
+		serviceResponse.additionalSettings.sendNotifications = service.sendNotifications;
+		serviceResponse.additionalSettings.sendNotificationsToServiceProviders = service.sendNotificationsToServiceProviders;
 		return serviceResponse;
 	}
 
-	public static mapServiceRequest(service: Service, request: ServiceRequest) {
+	public static mapFromServiceRequest(service: Service, request: ServiceRequest) {
 		service.name = request.name;
 		service.isSpAutoAssigned = request.isSpAutoAssigned || false;
 		service.emailSuffix = request.emailSuffix;
@@ -38,5 +43,6 @@ export class ServicesMapper {
 			service.sendNotificationsToServiceProviders =
 				request.additionalSettings.sendNotificationsToServiceProviders;
 		}
+		return service;
 	}
 }

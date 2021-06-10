@@ -149,7 +149,7 @@ export class ServicesService {
 		});
 
 		await validator.validateServiceFound(service);
-		ServicesMapper.mapServiceRequest(service, request);
+		ServicesMapper.mapFromServiceRequest(service, request);
 		await validator.validate(service);
 		await this.verifyActionPermission(service, CrudAction.Update);
 		const updatedLabelList = this.labelsMapper.mapToLabels(request.labels);

@@ -10,13 +10,13 @@ export class ServiceResponse {
 	 */
 	public id: number;
 	public name: string;
-	public isStandAlone: boolean;
 	public isSpAutoAssigned: boolean;
 	public noNric: boolean;
 	public labels: LabelResponseModel[];
 	public categories: LabelCategoryResponseModel[];
 	public emailSuffix?: string;
 	public videoConferenceUrl?: string;
+	public additionalSettings: AdditionalSettingsRes;
 }
 
 export class ServiceRequest {
@@ -31,13 +31,21 @@ export class ServiceRequest {
 	public categories?: LabelCategoryRequestModel[];
 	public emailSuffix?: string | null;
 	public videoConferenceUrl?: string | null;
-	public additionalSettings?: AdditionalSettings;
+	public additionalSettings?: AdditionalSettingsReq;
 }
 
-export class AdditionalSettings {
+export class AdditionalSettingsReq {
 	public allowAnonymousBookings?: boolean;
 	public isOnHold?: boolean;
 	public isStandAlone?: boolean;
 	public sendNotifications?: boolean;
 	public sendNotificationsToServiceProviders?: boolean;
+}
+
+export class AdditionalSettingsRes {
+	public allowAnonymousBookings: boolean;
+	public isOnHold: boolean;
+	public isStandAlone: boolean;
+	public sendNotifications: boolean;
+	public sendNotificationsToServiceProviders: boolean;
 }
