@@ -22,3 +22,5 @@ export { TimeslotItemIndex1621323938147 } from './1621323938147-TimeslotItemInde
 export { DefaultVideoConferenceLink1622109472715 } from './1622109472715-DefaultVideoConferenceLink';
 export { LabelCategory1621479880832 } from './1621479880832-LabelCategory';
 export { SoftDeleteDynamicFields1623216158274 } from './1623216158274-SoftDeleteDynamicFields';
+export { ServiceDescription1623112179998 } from './1623112179998-ServiceDescription';
+export { ServiceProviderDescription1623113584184 } from './1623113584184-ServiceProviderDescription';
