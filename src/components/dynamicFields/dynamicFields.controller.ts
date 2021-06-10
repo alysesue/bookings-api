@@ -47,6 +47,7 @@ export class DynamicFieldsController extends Controller {
 	): Promise<ApiData<DynamicFieldModel>> {
 		request.serviceId = serviceId;
 		const entity = await this.dynamicFieldsService.save(request);
+		this.setStatus(201);
 		return ApiDataFactory.create(this.mapper.mapDataModel(entity));
 	}
 

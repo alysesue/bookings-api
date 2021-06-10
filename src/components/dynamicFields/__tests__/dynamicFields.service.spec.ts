@@ -60,6 +60,18 @@ describe('dynamicFields/dynamicFields.service', () => {
 	service.id = 1;
 	service.name = 'svc';
 
+	const createTextFieldRequest = (idSigned?: string) => {
+		const request = new PersistDynamicFieldModel();
+		if (idSigned) {
+			request.idSigned = idSigned;
+		}
+		request.name = 'field';
+		request.type = DynamicFieldType.TextField;
+		request.textField = { charLimit: 50 };
+
+		return request;
+	};
+
 	beforeEach(() => {
 		jest.resetAllMocks();
 
@@ -72,11 +84,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 	});
 
 	it('should save dynamic field', async () => {
-		const request = new PersistDynamicFieldModel();
-		request.name = 'field';
-		request.type = DynamicFieldType.TextField;
-		request.textField = { charLimit: 50 };
-
+		const request = createTextFieldRequest();
 		const entity = TextDynamicField.create(1, 'notes', 50);
 
 		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(service));
@@ -93,11 +101,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 	});
 
 	it('should NOT save dynamic field - without permission', async () => {
-		const request = new PersistDynamicFieldModel();
-		request.name = 'field';
-		request.type = DynamicFieldType.TextField;
-		request.textField = { charLimit: 50 };
-
+		const request = createTextFieldRequest();
 		const entity = TextDynamicField.create(1, 'notes', 50);
 
 		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(service));
@@ -118,12 +122,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 	});
 
 	it('should update dynamic field', async () => {
-		const request = new PersistDynamicFieldModel();
-		request.idSigned = '11';
-		request.name = 'field';
-		request.type = DynamicFieldType.TextField;
-		request.textField = { charLimit: 50 };
-
+		const request = createTextFieldRequest();
 		const entity = TextDynamicField.create(1, 'notes', 50);
 		entity.id = 11;
 
@@ -143,12 +142,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 	});
 
 	it('should NOT update dynamic field - without permission', async () => {
-		const request = new PersistDynamicFieldModel();
-		request.idSigned = '11';
-		request.name = 'field';
-		request.type = DynamicFieldType.TextField;
-		request.textField = { charLimit: 50 };
-
+		const request = createTextFieldRequest('11');
 		const entity = TextDynamicField.create(1, 'notes', 50);
 		entity.id = 11;
 
@@ -171,12 +165,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 	});
 
 	it('should throw if dynamic field not found for Update', async () => {
-		const request = new PersistDynamicFieldModel();
-		request.idSigned = '11';
-		request.name = 'field';
-		request.type = DynamicFieldType.TextField;
-		request.textField = { charLimit: 50 };
-
+		const request = createTextFieldRequest('11');
 		const entity = TextDynamicField.create(1, 'notes', 50);
 		entity.id = 11;
 
@@ -208,12 +197,6 @@ describe('dynamicFields/dynamicFields.service', () => {
 	});
 
 	it('should delete dynamic field', async () => {
-		const request = new PersistDynamicFieldModel();
-		request.idSigned = '11';
-		request.name = 'field';
-		request.type = DynamicFieldType.TextField;
-		request.textField = { charLimit: 50 };
-
 		const entity = TextDynamicField.create(1, 'notes', 50);
 		entity.id = 11;
 
@@ -230,12 +213,6 @@ describe('dynamicFields/dynamicFields.service', () => {
 	});
 
 	it('should throw if dynamic field not found for Delete', async () => {
-		const request = new PersistDynamicFieldModel();
-		request.idSigned = '11';
-		request.name = 'field';
-		request.type = DynamicFieldType.TextField;
-		request.textField = { charLimit: 50 };
-
 		const entity = TextDynamicField.create(1, 'notes', 50);
 		entity.id = 11;
 
@@ -251,12 +228,6 @@ describe('dynamicFields/dynamicFields.service', () => {
 	});
 
 	it('should NOT delete dynamic field - without permission', async () => {
-		const request = new PersistDynamicFieldModel();
-		request.idSigned = '11';
-		request.name = 'field';
-		request.type = DynamicFieldType.TextField;
-		request.textField = { charLimit: 50 };
-
 		const entity = TextDynamicField.create(1, 'notes', 50);
 		entity.id = 11;
 

@@ -39,6 +39,7 @@ describe('DynamicFields action auth', () => {
 		expect(() => new DynamicFieldsActionAuthVisitor(null, VisitorCrudAction.Create)).toThrowError();
 		expect(() => new DynamicFieldsActionAuthVisitor(service, null)).toThrowError();
 		expect(() => new DynamicFieldsActionAuthVisitor(service, VisitorCrudAction.Create)).not.toThrowError();
+		expect(() => new DynamicFieldsActionAuthVisitor(service, undefined)).toThrowError();
 	});
 
 	it('should validate anonymous user action permission - when service allows anonymous booking', async () => {
