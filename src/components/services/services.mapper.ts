@@ -2,7 +2,7 @@ import { Inject } from 'typescript-ioc';
 import { Service } from '../../models/entities';
 import { LabelsMapper } from '../labels/labels.mapper';
 import { LabelsCategoriesMapper } from '../labelsCategories/labelsCategories.mapper';
-import {AdditionalSettingsRes, ServiceRequest, ServiceResponse} from './service.apicontract';
+import { AdditionalSettingsRes, ServiceRequest, ServiceResponse } from './service.apicontract';
 
 export class ServicesMapper {
 	@Inject
@@ -25,7 +25,8 @@ export class ServicesMapper {
 		serviceResponse.additionalSettings.isOnHold = service.isOnHold;
 		serviceResponse.additionalSettings.isStandAlone = service.isStandAlone;
 		serviceResponse.additionalSettings.sendNotifications = service.sendNotifications;
-		serviceResponse.additionalSettings.sendNotificationsToServiceProviders = service.sendNotificationsToServiceProviders;
+		serviceResponse.additionalSettings.sendNotificationsToServiceProviders =
+			service.sendNotificationsToServiceProviders;
 		return serviceResponse;
 	}
 

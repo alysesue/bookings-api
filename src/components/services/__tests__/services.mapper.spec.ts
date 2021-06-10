@@ -2,8 +2,8 @@ import { Container } from 'typescript-ioc';
 import { ServicesMapper } from '../services.mapper';
 import { Service } from '../../../models/entities';
 import { LabelsMapper } from '../../labels/labels.mapper';
-import {LabelRequestModel, LabelResponseModel} from '../../labels/label.apicontract';
-import {AdditionalSettingsReq, ServiceRequest} from "../service.apicontract";
+import { LabelRequestModel, LabelResponseModel } from '../../labels/label.apicontract';
+import { AdditionalSettingsReq, ServiceRequest } from '../service.apicontract';
 
 describe('service/services.mapper', () => {
 	beforeAll(() => {
@@ -55,10 +55,9 @@ describe('service/services.mapper', () => {
 		expect(serviceData.emailSuffix).toBe('abc.com');
 		expect(serviceData.isStandAlone).toBe(false);
 		expect(serviceData.sendNotifications).toBe(true);
-		//ToDo: test the following after api fix
+		// ToDo: test the following after api fix
 		// expect(serviceData.labels[0]).toBe('text');
 	});
-
 });
 
 class LabelsMapperMock implements Partial<LabelsMapper> {
