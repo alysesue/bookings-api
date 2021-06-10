@@ -53,7 +53,6 @@ describe('service/services.mapper', () => {
 
 class LabelsMapperMock implements Partial<LabelsMapper> {
 	public static mapToLabelsResponse = jest.fn();
-	public static mapToLabels = jest.fn();
 
 	public mapToLabelsResponse(...params) {
 		return LabelsMapperMock.mapToLabelsResponse(...params);

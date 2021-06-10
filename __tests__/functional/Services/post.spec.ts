@@ -150,6 +150,5 @@ describe('Tests endpoint and populate data', () => {
 		expect(responseData[`${responseKey}.sendNotifications`].message).toBe('invalid boolean value');
 		expect(responseData[`${responseKey}.sendNotificationsToServiceProviders`].message).toBe('invalid boolean value');
 		expect(response.body.errorCode).toBe('SYS_INVALID_PARAM');
-		// expect(response.body.errorMessage).toBe('One or more business validations failed');
 	});
 });

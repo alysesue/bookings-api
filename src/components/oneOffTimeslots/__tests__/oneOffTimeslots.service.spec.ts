@@ -12,8 +12,8 @@ import { LabelsService } from '../../labels/labels.service';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { ContainerContextHolder } from '../../../infrastructure/containerContext';
-import { ServicesService } from "../../services/services.service";
-import { ServicesServiceMock } from "../../services/__mocks__/services.service";
+import { ServicesService } from '../../services/services.service';
+import { ServicesServiceMock } from '../../services/__mocks__/services.service';
 
 jest.mock('../oneOffTimeslots.auth');
 
