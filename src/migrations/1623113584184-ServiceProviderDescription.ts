@@ -4,7 +4,7 @@ export class ServiceProviderDescription1623113584184 implements MigrationInterfa
 	name = 'ServiceProviderDescription1623113584184';
 
 	public async up(queryRunner: QueryRunner): Promise<void> {
-		await queryRunner.query(`ALTER TABLE "service_provider" ADD "_description" character varying(4000)`);
+		await queryRunner.query(`ALTER TABLE "service_provider" ADD "_description" character varying(100)`);
 	}
 
 	public async down(queryRunner: QueryRunner): Promise<void> {

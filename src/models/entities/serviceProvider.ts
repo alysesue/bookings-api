@@ -226,7 +226,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 	@Column({ type: 'boolean', default: DEFAULT_AUTO_ACCEPT_BOOKINGS })
 	private _autoAcceptBookings: boolean;
 
-	@Column({ type: 'varchar', length: 4000, nullable: true })
+	@Column({ type: 'varchar', length: 100, nullable: true })
 	private _description: string;
 
 	public get description(): string {
