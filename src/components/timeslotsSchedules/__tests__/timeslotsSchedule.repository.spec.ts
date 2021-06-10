@@ -12,6 +12,7 @@ import { createQueryStream } from '../../../tools/pgQueryStreamContract';
 import { ConnectionPool } from '../../../core/db.connectionPool';
 import { PoolClient } from 'pg';
 import * as events from 'events';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 jest.mock('../../timeslotItems/timeslotItems.auth');
 jest.mock('../../../tools/pgQueryStreamContract');
@@ -236,23 +237,6 @@ timeslotsScheduleMock.timeslotItems = [
 		TimeOfDay.create({ hours: 11, minutes: 30 }),
 	),
 ];
-
-class TransactionManagerMock implements Partial<TransactionManager> {
-	public static createQueryBuilder = jest.fn();
-	public static save = jest.fn();
-	public static delete = jest.fn();
-
-	public async getEntityManager(): Promise<any> {
-		const entityManager = {
-			getRepository: () => ({
-				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
-				save: TransactionManagerMock.save,
-				delete: TransactionManagerMock.delete,
-			}),
-		};
-		return Promise.resolve(entityManager);
-	}
-}
 
 class TimeslotItemsRepositoryMock implements Partial<TimeslotItemsRepository> {
 	public static deleteTimeslotsForSchedule = jest.fn();

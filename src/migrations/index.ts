@@ -21,3 +21,4 @@ export { TextDynamicField1620723968098 } from './1620723968098-TextDynamicField'
 export { TimeslotItemIndex1621323938147 } from './1621323938147-TimeslotItemIndex';
 export { DefaultVideoConferenceLink1622109472715 } from './1622109472715-DefaultVideoConferenceLink';
 export { LabelCategory1621479880832 } from './1621479880832-LabelCategory';
+export { SoftDeleteDynamicFields1623216158274 } from './1623216158274-SoftDeleteDynamicFields';

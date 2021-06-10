@@ -10,6 +10,7 @@ import { UserConditionParams } from '../../../infrastructure/auth/authConditionC
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { UsersRepository } from '../../users/users.repository';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 jest.mock('../serviceProviders.auth');
 
@@ -360,31 +361,6 @@ describe('Service Provider repository', () => {
 		expect(result).toBeDefined();
 	});
 });
-
-class TransactionManagerMock implements Partial<TransactionManager> {
-	public static insert = jest.fn();
-	public static find = jest.fn();
-	public static update = jest.fn();
-	public static findOne = jest.fn();
-	public static save = jest.fn();
-	public static createQueryBuilder = jest.fn();
-	public static getCount = jest.fn();
-
-	public async getEntityManager(): Promise<any> {
-		const entityManager = {
-			getRepository: () => ({
-				find: TransactionManagerMock.find,
-				findOne: TransactionManagerMock.findOne,
-				insert: TransactionManagerMock.insert,
-				update: TransactionManagerMock.update,
-				save: TransactionManagerMock.save,
-				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
-				getCount: TransactionManagerMock.getCount,
-			}),
-		};
-		return Promise.resolve(entityManager);
-	}
-}
 
 class ScheduleFormsRepositoryMock implements Partial<ScheduleFormsRepository> {
 	public static populateScheduleFormsMock = jest.fn();

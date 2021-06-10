@@ -8,12 +8,10 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 	private _fieldValue: PersistDynamicValueContract;
 	private _valueJson: Partial<DynamicValueJsonModel>;
 	private _businessValidations: BusinessValidation[];
-	private _validateRequiredFields: boolean;
 
-	constructor(validateRequiredFields: boolean) {
+	constructor() {
 		this._valueJson = undefined;
 		this._businessValidations = [];
-		this._validateRequiredFields = validateRequiredFields;
 	}
 
 	private addValidation(validation: BusinessValidation) {
@@ -42,10 +40,7 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 	}
 
 	private markFieldNotProvided(field: DynamicField) {
-		// validation not allowed for admins (they can't input values), it might change in the future
-		if (this._validateRequiredFields) {
-			this.addValidation(DynamicValueBusinessValidations.FieldValueIsRequired.create(field));
-		}
+		this.addValidation(DynamicValueBusinessValidations.FieldValueIsRequired.create(field));
 
 		this._valueJson = undefined;
 		return;

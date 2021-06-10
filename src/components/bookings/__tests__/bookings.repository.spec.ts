@@ -9,6 +9,7 @@ import { AuthGroup, CitizenAuthGroup } from '../../../infrastructure/auth/authGr
 import { ServiceProvidersRepository } from '../../../components/serviceProviders/serviceProviders.repository';
 import { PagingHelper } from '../../../core/paging';
 import { IPagedEntities } from '../../../core/pagedEntities';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 jest.mock('../../../core/paging');
 
@@ -270,33 +271,6 @@ describe('Bookings repository', () => {
 		expect(result.serviceProvider).toStrictEqual(serviceProvider);
 	});
 });
-
-class TransactionManagerMock implements Partial<TransactionManager> {
-	public static insert = jest.fn();
-	public static find = jest.fn();
-	public static update = jest.fn();
-	public static findOne = jest.fn();
-	public static getMany = jest.fn();
-	public static save = jest.fn();
-	public static query = jest.fn();
-	public static createQueryBuilder = jest.fn();
-
-	public async getEntityManager(): Promise<any> {
-		const entityManager = {
-			getRepository: () => ({
-				find: TransactionManagerMock.find,
-				findOne: TransactionManagerMock.findOne,
-				insert: TransactionManagerMock.insert,
-				update: TransactionManagerMock.update,
-				save: TransactionManagerMock.save,
-				getMany: TransactionManagerMock.getMany,
-				query: TransactionManagerMock.query,
-				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
-			}),
-		};
-		return Promise.resolve(entityManager);
-	}
-}
 
 class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();

@@ -1,10 +1,17 @@
 import { WeekDayBreakRepository } from '../weekdaybreak.repository';
 import { Container } from 'typescript-ioc';
 import { ScheduleForm, TimeOfDay, WeekDayBreak } from '../../../models';
-import { CreateQueryBuilder, TransactionManagerMock } from '../../../infrastructure/tests/dbconnectionmock';
 import { Weekday } from '../../../enums/weekday';
 import { DeleteResult } from 'typeorm';
 import { TransactionManager } from '../../../core/transactionManager';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
+
+jest.mock('../../../core/transactionManager', () => {
+	class TransactionManager {}
+	return {
+		TransactionManager,
+	};
+});
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -15,12 +22,14 @@ beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
 });
 
-beforeEach(() => {
-	jest.clearAllMocks();
-});
-
 describe('WeekDayBreak repository', () => {
+	beforeEach(() => {
+		jest.resetAllMocks();
+	});
+
 	it('should get breaks for schedule', async () => {
+		TransactionManagerMock.find.mockReturnValue(Promise.resolve([]));
+
 		const service = Container.get(WeekDayBreakRepository);
 		const result = await service.getBreaksForSchedules([1, 2, 3]);
 		expect(result).toBeDefined();
@@ -36,6 +45,8 @@ describe('WeekDayBreak repository', () => {
 			schedule,
 		);
 
+		TransactionManagerMock.save.mockReturnValue(Promise.resolve({}));
+
 		const result = await service.save([weekDayBreak]);
 		expect(result).toBeDefined();
 	});
@@ -43,7 +54,7 @@ describe('WeekDayBreak repository', () => {
 	it('should delete breaks for schedule', async () => {
 		const execute = jest.fn(() => Promise.resolve({} as DeleteResult));
 
-		CreateQueryBuilder.mockImplementation(() => ({
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => ({
 			delete: jest.fn(() => ({
 				from: jest.fn(() => ({
 					where: jest.fn(() => ({

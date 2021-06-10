@@ -17,6 +17,7 @@ import { ConcurrencyError } from '../../../errors/concurrencyError';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entities/jsonModels';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
@@ -394,14 +395,6 @@ describe('BookingChangeLogs service', () => {
 		expect(BookingChangeLogsRepositoryMock.getLogs).toBeCalled();
 	});
 });
-
-class TransactionManagerMock implements Partial<TransactionManager> {
-	public static runInTransaction = jest.fn();
-
-	public async runInTransaction(...params): Promise<any> {
-		await TransactionManagerMock.runInTransaction(...params);
-	}
-}
 
 class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();

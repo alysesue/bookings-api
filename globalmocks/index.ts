@@ -1,15 +1,27 @@
-jest.mock('./src/config/app-config', () => {
+jest.mock('../src/config/app-config', () => {
 	return {
 		basePath: '/bookingsg',
 		getConfig: jest.fn(),
 	};
 });
 
-jest.mock('./src/infrastructure/auth/userContext', () => {
+jest.mock('../src/infrastructure/idHasher', () => {
+	class IdHasher {}
+	return { IdHasher };
+});
+
+jest.mock('../src/infrastructure/auth/userContext', () => {
 	class UserContext {}
-	return {
-		UserContext,
-	};
+	return { UserContext };
+});
+
+jest.mock('../src/core/transactionManager', () => {
+	class TransactionManager {}
+	return { TransactionManager };
+});
+
+jest.mock('mol-lib-api-contract', () => {
+	return jest.requireActual('./mol-lib-api-contract-light/error');
 });
 
 jest.mock('typeorm', () => {
@@ -31,6 +43,7 @@ jest.mock('typeorm', () => {
 		TableInheritance: decoratorMock,
 		ChildEntity: decoratorMock,
 		Generated: decoratorMock,
+		DeleteDateColumn: decoratorMock,
 		SelectQueryBuilder: jest.fn(),
 		In: jest.fn(),
 	};

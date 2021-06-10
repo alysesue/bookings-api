@@ -1,6 +1,6 @@
 import { Container } from 'typescript-ioc';
 import { IdHasher } from '../../../infrastructure/idHasher';
-import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
+import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entities/jsonModels';
 import { DynamicValuesMapper, DynamicValuesRequestMapper, MapRequestOptionalResult } from '../dynamicValues.mapper';
 import {
@@ -33,7 +33,9 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 			key: 1,
 			value: 'English',
 		} as SelectListOption;
-		return SelectListDynamicField.create(1, 'testDynamic', [listOptions], 1);
+		const field = SelectListDynamicField.create(1, 'testDynamic', [listOptions]);
+		field.id = 1;
+		return field;
 	};
 
 	const createTextField = () => {
@@ -136,7 +138,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 	});
 
 	it(`should map request fields`, async () => {
-		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() =>
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
 			Promise.resolve([createSelectFieldEntity(), createTextField()]),
 		);
 
@@ -173,7 +175,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 	});
 
 	it(`should validate dynamic fields are required`, async () => {
-		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() =>
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
 			Promise.resolve([createSelectFieldEntity(), createTextField()]),
 		);
 
@@ -194,21 +196,8 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		} as MapRequestOptionalResult);
 	});
 
-	it(`should NOT validate dynamic fields are required for admins (this might change later)`, async () => {
-		(userMock.isAdmin as jest.Mock).mockImplementation(() => true);
-
-		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() =>
-			Promise.resolve([createSelectFieldEntity(), createTextField()]),
-		);
-
-		const mapper = Container.get(DynamicValuesRequestMapper);
-		const dynamicReturn = await mapper.mapDynamicValuesRequest([], 100);
-
-		expect(dynamicReturn).toEqual({ result: [] } as MapRequestOptionalResult);
-	});
-
 	it(`should validate dynamic fields are required (object provided but value is empty)`, async () => {
-		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() =>
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
 			Promise.resolve([createSelectFieldEntity(), createTextField()]),
 		);
 
@@ -240,7 +229,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 	});
 
 	it(`should validate value type for dynamic fields`, async () => {
-		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() =>
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
 			Promise.resolve([createSelectFieldEntity(), createTextField()]),
 		);
 
@@ -272,7 +261,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 	});
 
 	it(`should not map request fields that don't match ids`, async () => {
-		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() => Promise.resolve([createTextField()]));
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() => Promise.resolve([createTextField()]));
 
 		const dynamicValue = new PersistDynamicValueContract();
 		dynamicValue.fieldIdSigned = '5';
@@ -293,7 +282,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 	});
 
 	it(`should validate char limit for text dynamic fields`, async () => {
-		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() => Promise.resolve([createTextField()]));
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() => Promise.resolve([createTextField()]));
 
 		const dynamicValue = new PersistDynamicValueContract();
 		dynamicValue.fieldIdSigned = '2';

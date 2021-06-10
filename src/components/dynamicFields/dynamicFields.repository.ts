@@ -15,6 +15,12 @@ export class DynamicFieldsRepository extends RepositoryBase<DynamicField> {
 		super(DynamicField);
 	}
 
+	public async save(entity: DynamicField): Promise<DynamicField> {
+		const manager = await this.getEntityManager();
+		// use entity manager, not repository, to save the inheritance tree
+		return await manager.save(entity);
+	}
+
 	private async createSelectQuery(
 		queryFilters: string[],
 		queryParams: {},
@@ -44,5 +50,19 @@ export class DynamicFieldsRepository extends RepositoryBase<DynamicField> {
 		const query = await this.createSelectQuery([serviceCondition], { serviceId }, options);
 
 		return await query.getMany();
+	}
+
+	public async get(options: { id: number; skipAuthorisation?: boolean }): Promise<DynamicField> {
+		const { id } = options;
+		const fieldCondition = 'field."_id" = :id';
+		const query = await this.createSelectQuery([fieldCondition], { id }, options);
+
+		return await query.getOne();
+	}
+
+	public async delete(field: DynamicField): Promise<void> {
+		const repository = await this.getRepository();
+		// Dynamic values are stored in JSON, so we soft delete the dynamic field metadata just in case it's being used.
+		await repository.softDelete(field.id);
 	}
 }

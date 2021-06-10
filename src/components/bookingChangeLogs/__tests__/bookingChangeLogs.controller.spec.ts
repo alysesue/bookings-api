@@ -5,7 +5,7 @@ import { BookingChangeLog, ChangeLogAction, ServiceProvider, User } from '../../
 import { BookingBuilder } from '../../../models/entities/booking';
 import { groupByKey } from '../../../tools/collections';
 import { IdHasher } from '../../../infrastructure/idHasher';
-import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
+import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 
 jest.mock('../bookingChangeLogs.service', () => {
 	class BookingChangeLogsService {}

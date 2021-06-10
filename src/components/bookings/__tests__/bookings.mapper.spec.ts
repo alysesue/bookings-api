@@ -12,7 +12,7 @@ import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
 import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entities/jsonModels';
 import { Container } from 'typescript-ioc';
 import { IdHasher } from '../../../infrastructure/idHasher';
-import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
+import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { PersistDynamicValueContract } from '../../../components/dynamicFields/dynamicValues.apicontract';
 import { BookingDetailsRequest } from '../bookings.apicontract';
 import { DynamicFieldsServiceMock } from '../../../components/dynamicFields/__mocks__/dynamicFields.service.mock';
@@ -50,7 +50,8 @@ describe('Bookings mapper tests', () => {
 		key: 1,
 		value: 'English',
 	} as SelectListOption;
-	const dynamicFieldEntity = SelectListDynamicField.create(1, 'testDynamic', [listOptions], 1);
+	const dynamicFieldEntity = SelectListDynamicField.create(1, 'testDynamic', [listOptions]);
+	dynamicFieldEntity.id = 1;
 
 	it('should throw if organisation not loaded', async () => {
 		const booking = new Booking();
@@ -89,7 +90,7 @@ describe('Bookings mapper tests', () => {
 	});
 
 	it('should return mapped dynamic fields (when successful)', async () => {
-		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() => Promise.resolve([dynamicFieldEntity]));
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() => Promise.resolve([dynamicFieldEntity]));
 
 		const validator = {
 			bypassCaptcha: jest.fn(),
@@ -123,7 +124,7 @@ describe('Bookings mapper tests', () => {
 	});
 
 	it('should not map dynamic fields (when dynamicValuesUpdated = false)', async () => {
-		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() => Promise.resolve([dynamicFieldEntity]));
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() => Promise.resolve([dynamicFieldEntity]));
 
 		const validator = {
 			bypassCaptcha: jest.fn(),
@@ -156,7 +157,7 @@ describe('Bookings mapper tests', () => {
 	});
 
 	it('should add dynamic fields validation (when not successful)', async () => {
-		DynamicFieldsServiceMock.mockGetServiceFields.mockImplementation(() => Promise.resolve([dynamicFieldEntity]));
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() => Promise.resolve([dynamicFieldEntity]));
 
 		const validator = {
 			bypassCaptcha: jest.fn(),

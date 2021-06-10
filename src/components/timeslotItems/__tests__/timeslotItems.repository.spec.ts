@@ -6,6 +6,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { TimeslotItemsQueryAuthVisitor } from '../timeslotItems.auth';
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 jest.mock('../timeslotItems.auth');
 
@@ -42,7 +43,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-	jest.clearAllMocks();
+	jest.resetAllMocks();
 
 	(TimeslotItemsQueryAuthVisitor as jest.Mock).mockImplementation(() => QueryAuthVisitorMock);
 	QueryAuthVisitorMock.createUserVisibilityCondition.mockImplementation(() =>
@@ -57,7 +58,7 @@ beforeEach(() => {
 
 describe('TimeslotItems repository', () => {
 	afterEach(() => {
-		jest.clearAllMocks();
+		jest.resetAllMocks();
 	});
 
 	it('should save TimeslotItem', async () => {
@@ -117,23 +118,6 @@ describe('TimeslotItems repository', () => {
 		expect(queryBuilderMock.execute).toBeCalledTimes(1);
 	});
 });
-
-class TransactionManagerMock implements Partial<TransactionManager> {
-	public static createQueryBuilder = jest.fn();
-	public static save = jest.fn();
-	public static delete = jest.fn();
-
-	public async getEntityManager(): Promise<any> {
-		const entityManager = {
-			getRepository: () => ({
-				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
-				save: TransactionManagerMock.save,
-				delete: TransactionManagerMock.delete,
-			}),
-		};
-		return Promise.resolve(entityManager);
-	}
-}
 
 class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();

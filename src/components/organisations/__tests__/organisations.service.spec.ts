@@ -5,6 +5,7 @@ import { Organisation } from '../../../models/entities/organisation';
 import { OrganisationsService } from '../organisations.service';
 import { OrganisationAdminGroupMap } from '../../../models/entities/organisationAdminGroupMap';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -75,13 +76,5 @@ class OrganisationsRepositoryMock implements Partial<OrganisationsNoauthReposito
 	}
 	public async save(...params): Promise<any> {
 		return await OrganisationsRepositoryMock.save(...params);
-	}
-}
-
-class TransactionManagerMock implements Partial<TransactionManager> {
-	public static runInTransaction = jest.fn();
-
-	public async runInTransaction(...params): Promise<any> {
-		await TransactionManagerMock.runInTransaction(...params);
 	}
 }

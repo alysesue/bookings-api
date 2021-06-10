@@ -1,16 +1,20 @@
 import { SettingsRepository } from '../settings.repository';
 import { Container } from 'typescript-ioc';
 import { TransactionManager } from '../../../core/transactionManager';
-import { InnerRepositoryMock, TransactionManagerMock } from '../../../infrastructure/tests/dbconnectionmock';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
 });
 
 describe('Test setting repository', () => {
+	beforeEach(() => {
+		jest.resetAllMocks();
+	});
+
 	it('Should call findOne', async () => {
 		const set = { ah: 'ah' };
-		InnerRepositoryMock.findOne.mockReturnValue({ data: set });
+		TransactionManagerMock.findOne.mockReturnValue({ data: set });
 		const res = await Container.get(SettingsRepository).getSettings();
 		expect(res).toBe(set);
 	});
@@ -22,7 +26,7 @@ describe('Test setting repository', () => {
 			expect(e.message).toBe('Setting not found.');
 		}
 		try {
-			InnerRepositoryMock.findOne.mockReturnValue({});
+			TransactionManagerMock.findOne.mockReturnValue({});
 			await Container.get(SettingsRepository).getSettings();
 		} catch (e) {
 			expect(e.message).toBe('Setting not found.');

@@ -1,13 +1,16 @@
 import { AdminUser, User } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { UsersRepository } from '../users.repository';
-import {
-	CreateQueryBuilder,
-	InnerRepositoryMock,
-	TransactionManagerMock,
-} from '../../../infrastructure/tests/dbconnectionmock';
 import { TransactionManager } from '../../../core/transactionManager';
 import { IUser } from '../../../models/interfaces';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
+
+jest.mock('../../../core/transactionManager', () => {
+	class TransactionManager {}
+	return {
+		TransactionManager,
+	};
+});
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -26,7 +29,7 @@ userMock2.id = 2;
 
 describe('User repository', () => {
 	beforeEach(() => {
-		jest.clearAllMocks();
+		jest.resetAllMocks();
 	});
 
 	it('should getUserByTrackingId', async () => {
@@ -34,7 +37,7 @@ describe('User repository', () => {
 			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve([userMock])),
 		};
-		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		const userRepository = Container.get(UsersRepository);
 
 		const result = await userRepository.getUserByTrackingId('d080f6ed-3b47-478a-a6c6-dfb5608a199d');
@@ -46,7 +49,7 @@ describe('User repository', () => {
 			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve([userMock])),
 		};
-		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		const userRepository = Container.get(UsersRepository);
 
 		const resultA = await userRepository.getUserByTrackingId(null);
@@ -57,7 +60,7 @@ describe('User repository', () => {
 
 	it('should save user', async () => {
 		const saveResult = [{ id: 'abc' }];
-		InnerRepositoryMock.save.mockImplementation(() => saveResult);
+		TransactionManagerMock.save.mockImplementation(() => saveResult);
 		const userRepository = Container.get(UsersRepository);
 
 		const result = await userRepository.save({} as User);
@@ -75,8 +78,8 @@ describe('User repository', () => {
 			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve([userMock])),
 		};
-		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
-		InnerRepositoryMock.save.mockImplementation(() => userMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.save.mockImplementation(() => userMock);
 		const userRepository = Container.get(UsersRepository);
 
 		const result = await userRepository.save(userMock);
@@ -91,7 +94,7 @@ describe('User repository', () => {
 			orderBy: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve([userMock])),
 		};
-		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		const userRepository = Container.get(UsersRepository);
 
 		const result = await userRepository.getUserByMolUserId('d080f6ed-3b47-478a-a6c6-dfb5608a199d');
@@ -106,7 +109,7 @@ describe('User repository', () => {
 			orderBy: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve([userMock])),
 		};
-		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		const userRepository = Container.get(UsersRepository);
 
 		const resultA = await userRepository.getUserByMolUserId(null);
@@ -123,7 +126,7 @@ describe('User repository', () => {
 			orderBy: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve([userMock])),
 		};
-		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		const userRepository = Container.get(UsersRepository);
 
 		const result = await userRepository.getUserByMolAdminId('d080f6ed-3b47-478a-a6c6-dfb5608a199d');
@@ -138,7 +141,7 @@ describe('User repository', () => {
 			orderBy: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve([userMock, userMock2])),
 		};
-		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		const userRepository = Container.get(UsersRepository);
 
 		const result = await userRepository.getUsersByMolAdminIds([
@@ -156,7 +159,7 @@ describe('User repository', () => {
 			orderBy: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve([userMock])),
 		};
-		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		const userRepository = Container.get(UsersRepository);
 
 		const result = await userRepository.getUserByAgencyAppId('d080f6ed-3b47-478a-a6c6-dfb5608a199d');
@@ -171,7 +174,7 @@ describe('User repository', () => {
 			orderBy: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve([userMock])),
 		};
-		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		const userRepository = Container.get(UsersRepository);
 
 		const resultA = await userRepository.getUserByMolAdminId(null);
@@ -188,7 +191,7 @@ describe('User repository', () => {
 			orderBy: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve([userMock])),
 		};
-		CreateQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		const userRepository = Container.get(UsersRepository);
 
 		const resultA = await userRepository.getUserByAgencyAppId(null);

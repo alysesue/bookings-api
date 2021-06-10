@@ -9,9 +9,11 @@ import { OneOffTimeslotsRepository } from '../oneOffTimeslots.repository';
 import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
 import { OneOffTimeslotsActionAuthVisitor } from '../oneOffTimeslots.auth';
 import { LabelsService } from '../../labels/labels.service';
-import { IdHasherMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
+import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { ContainerContextHolder } from '../../../infrastructure/containerContext';
+import { ServicesService } from "../../services/services.service";
+import { ServicesServiceMock } from "../../services/__mocks__/services.service";
 
 jest.mock('../oneOffTimeslots.auth');
 
@@ -34,6 +36,7 @@ describe('OneOffTimeslots Service Tests', () => {
 		Container.bind(OneOffTimeslotsRepository).to(OneOffTimeslotsRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
+		Container.bind(ServicesService).to(ServicesServiceMock);
 		Container.bind(LabelsService).to(LabelServiceMock);
 	});
 
@@ -45,6 +48,10 @@ describe('OneOffTimeslots Service Tests', () => {
 		UserContextMock.getAuthGroups.mockReturnValue(Promise.resolve([]));
 		ServiceProvidersServiceMock.getServiceProvider.mockImplementation(() => {
 			return serviceProvider;
+		});
+
+		ServicesServiceMock.getService.mockImplementation(() => {
+			return newService;
 		});
 
 		LabelServiceMock.verifyLabels.mockReturnValue(Promise.resolve([]));

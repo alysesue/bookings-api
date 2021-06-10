@@ -7,6 +7,7 @@ import { OneOffTimeslotsQueryAuthVisitor } from '../oneOffTimeslots.auth';
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
 import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { SelectQueryBuilder } from 'typeorm';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 jest.mock('../oneOffTimeslots.auth');
 
@@ -130,31 +131,6 @@ describe('oneOffTimeslots repository tests', () => {
 		expect(TransactionManagerMock.delete).toBeCalled();
 	});
 });
-
-export class TransactionManagerMock implements Partial<TransactionManager> {
-	public static insert = jest.fn();
-	public static find = jest.fn();
-	public static update = jest.fn();
-	public static findOne = jest.fn();
-	public static save = jest.fn();
-	public static delete = jest.fn();
-	public static createQueryBuilder = jest.fn();
-
-	public async getEntityManager(): Promise<any> {
-		const entityManager = {
-			getRepository: () => ({
-				find: TransactionManagerMock.find,
-				findOne: TransactionManagerMock.findOne,
-				insert: TransactionManagerMock.insert,
-				update: TransactionManagerMock.update,
-				save: TransactionManagerMock.save,
-				delete: TransactionManagerMock.delete,
-				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
-			}),
-		};
-		return Promise.resolve(entityManager);
-	}
-}
 
 class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();

@@ -7,6 +7,7 @@ import { SelectQueryBuilder } from 'typeorm';
 import { AuthGroup, CitizenAuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { BookingChangeLogsQueryAuthVisitor } from '../bookingChangeLogs.auth';
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
+import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 jest.mock('../bookingChangeLogs.auth');
 
@@ -130,29 +131,6 @@ describe('BookingChangeLogs repository', () => {
 		expect(results).toBeDefined();
 	});
 });
-
-class TransactionManagerMock implements Partial<TransactionManager> {
-	public static insert = jest.fn();
-	public static find = jest.fn();
-	public static update = jest.fn();
-	public static findOne = jest.fn();
-	public static save = jest.fn();
-	public static createQueryBuilder = jest.fn();
-
-	public async getEntityManager(): Promise<any> {
-		const entityManager = {
-			getRepository: () => ({
-				find: TransactionManagerMock.find,
-				findOne: TransactionManagerMock.findOne,
-				insert: TransactionManagerMock.insert,
-				update: TransactionManagerMock.update,
-				save: TransactionManagerMock.save,
-				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
-			}),
-		};
-		return Promise.resolve(entityManager);
-	}
-}
 
 class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
