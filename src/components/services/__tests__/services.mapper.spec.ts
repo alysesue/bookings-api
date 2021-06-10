@@ -2,7 +2,7 @@ import { Container } from 'typescript-ioc';
 import { ServicesMapper } from '../services.mapper';
 import { Service } from '../../../models/entities';
 import { LabelsMapper } from '../../labels/labels.mapper';
-import { LabelRequestModel, LabelResponseModel } from '../../labels/label.apicontract';
+import { LabelResponseModel } from '../../labels/label.apicontract';
 import { AdditionalSettingsReq, ServiceRequest } from '../service.apicontract';
 
 describe('service/services.mapper', () => {
@@ -35,7 +35,6 @@ describe('service/services.mapper', () => {
 	});
 
 	it('should map service request to service data', () => {
-		// const serviceMapper = Container.get(ServicesMapper);
 		const serviceData = new Service();
 		const serviceRequest = new ServiceRequest();
 		serviceRequest.name = 'name';
@@ -44,19 +43,11 @@ describe('service/services.mapper', () => {
 		serviceRequest.additionalSettings.isStandAlone = false;
 		serviceRequest.additionalSettings.sendNotifications = true;
 
-		const labelRequest = new LabelRequestModel();
-		labelRequest.label = 'text';
-
-		LabelsMapperMock.mapToLabels.mockReturnValue([labelRequest]);
-
-		// const serviceData = serviceMapper.mapFromServiceRequest(serviceData, serviceRequest);
 		ServicesMapper.mapFromServicePutRequest(serviceData, serviceRequest);
 		expect(serviceData.name).toBe('name');
 		expect(serviceData.emailSuffix).toBe('abc.com');
 		expect(serviceData.isStandAlone).toBe(false);
 		expect(serviceData.sendNotifications).toBe(true);
-		// ToDo: test the following after api fix
-		// expect(serviceData.labels[0]).toBe('text');
 	});
 });
 

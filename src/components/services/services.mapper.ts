@@ -31,12 +31,10 @@ export class ServicesMapper {
 	}
 
 	public static mapFromServicePutRequest(service: Service, request: ServiceRequest) {
+		// Categories and labels are mapped separately
 		service.name = request.name.trim();
 		service.isSpAutoAssigned = request.isSpAutoAssigned || false;
 		service.noNric = request.noNric || false;
-
-		// ToDo add map to service and categories
-
 		service.emailSuffix = request.emailSuffix;
 		service.videoConferenceUrl = request.videoConferenceUrl;
 		if (request.additionalSettings) {
