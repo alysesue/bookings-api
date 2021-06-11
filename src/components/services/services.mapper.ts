@@ -20,6 +20,7 @@ export class ServicesMapper {
 		serviceResponse.categories = this.categoriesMapper.mapToCategoriesResponse(service.categories);
 		serviceResponse.emailSuffix = service.emailSuffix;
 		serviceResponse.videoConferenceUrl = service.videoConferenceUrl;
+		serviceResponse.description = service.description;
 		serviceResponse.additionalSettings = {} as AdditionalSettingsRes;
 		serviceResponse.additionalSettings.allowAnonymousBookings = service.allowAnonymousBookings;
 		serviceResponse.additionalSettings.isOnHold = service.isOnHold;
@@ -37,6 +38,7 @@ export class ServicesMapper {
 		service.noNric = request.noNric || false;
 		service.emailSuffix = request.emailSuffix;
 		service.videoConferenceUrl = request.videoConferenceUrl;
+		service.description = request.description;
 		if (request.additionalSettings) {
 			const {
 				allowAnonymousBookings,

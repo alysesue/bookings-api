@@ -31,6 +31,7 @@ export class ServiceProvidersMapper {
 		response.expiryDate = spData.expiryDate;
 		response.scheduleFormConfirmed = spData.scheduleFormConfirmed;
 		response.agencyUserId = spData.agencyUserId;
+		response.description = spData?.description;
 
 		response.onHoldEnabled = spData.service?.isOnHold;
 
@@ -94,6 +95,7 @@ export class ServiceProvidersMapper {
 		newSp.phone = sp.phone;
 		newSp.name = sp.name;
 		newSp.expiryDate = sp?.expiryDate ? new Date(sp.expiryDate) : null;
+		newSp.description = sp?.description;
 		return newSp;
 	}
 }

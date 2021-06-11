@@ -16,6 +16,7 @@ export class ServiceResponse {
 	public categories: LabelCategoryResponseModel[];
 	public emailSuffix?: string;
 	public videoConferenceUrl?: string;
+	public description?: string;
 	public additionalSettings: AdditionalSettingsRes;
 }
 
@@ -31,6 +32,7 @@ export class ServiceRequest {
 	public categories?: LabelCategoryRequestModel[];
 	public emailSuffix?: string | null;
 	public videoConferenceUrl?: string | null;
+	public description?: string | null;
 	public additionalSettings?: AdditionalSettingsReq;
 }
 

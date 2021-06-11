@@ -130,6 +130,7 @@ export class ServicesService {
 			request.emailSuffix,
 			request.noNric,
 			request.videoConferenceUrl,
+			request.description,
 			request.additionalSettings,
 		);
 
