@@ -3,6 +3,7 @@ import { ServicesMapper } from '../services.mapper';
 import { Service } from '../../../models/entities';
 import { LabelsMapper } from '../../labels/labels.mapper';
 import { LabelResponseModel } from '../../labels/label.apicontract';
+import { AdditionalSettingsReq, ServiceRequest } from '../service.apicontract';
 
 describe('service/services.mapper', () => {
 	beforeAll(() => {
@@ -14,8 +15,9 @@ describe('service/services.mapper', () => {
 		const serviceData = new Service();
 		serviceData.id = 1;
 		serviceData.name = 'name';
-		serviceData.isStandAlone = false;
 		serviceData.emailSuffix = 'abc.com';
+		serviceData.isStandAlone = false;
+		serviceData.sendNotifications = true;
 
 		const labelResponse = new LabelResponseModel();
 		labelResponse.id = '1';
@@ -26,8 +28,26 @@ describe('service/services.mapper', () => {
 		const serviceResponse = serviceMapper.mapToServiceResponse(serviceData);
 
 		expect(serviceResponse.name).toBe('name');
-		expect(serviceResponse.labels[0].label).toBe('text');
 		expect(serviceResponse.emailSuffix).toBe('abc.com');
+		expect(serviceResponse.additionalSettings.isStandAlone).toBe(false);
+		expect(serviceResponse.additionalSettings.sendNotifications).toBe(true);
+		expect(serviceResponse.labels[0].label).toBe('text');
+	});
+
+	it('should map service request to service data', () => {
+		const serviceData = new Service();
+		const serviceRequest = new ServiceRequest();
+		serviceRequest.name = 'name';
+		serviceRequest.emailSuffix = 'abc.com';
+		serviceRequest.additionalSettings = {} as AdditionalSettingsReq;
+		serviceRequest.additionalSettings.isStandAlone = false;
+		serviceRequest.additionalSettings.sendNotifications = true;
+
+		ServicesMapper.mapFromServicePutRequest(serviceData, serviceRequest);
+		expect(serviceData.name).toBe('name');
+		expect(serviceData.emailSuffix).toBe('abc.com');
+		expect(serviceData.isStandAlone).toBe(false);
+		expect(serviceData.sendNotifications).toBe(true);
 	});
 });
 

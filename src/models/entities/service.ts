@@ -6,6 +6,7 @@ import { Organisation } from './organisation';
 import { ScheduleForm } from './scheduleForm';
 import { Label } from './label';
 import { LabelCategory } from './labelCategory';
+import { AdditionalSettingsReq } from '../../components/services/service.apicontract';
 
 @Entity()
 @Index(['_organisationId', '_name'], { unique: true })
@@ -128,6 +129,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		noNric = false,
 		videoConferenceUrl?: string,
 		description?: string,
+		additionalSettings?: AdditionalSettingsReq,
 	) {
 		const service = new Service();
 		service._name = name.trim();
@@ -146,6 +148,13 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		service._emailSuffix = emailSuffix;
 		service._videoConferenceUrl = videoConferenceUrl;
 		service._description = description;
+		if (additionalSettings) {
+			service.allowAnonymousBookings = additionalSettings.allowAnonymousBookings;
+			service.isOnHold = additionalSettings.isOnHold;
+			service.isStandAlone = additionalSettings.isStandAlone;
+			service.sendNotifications = additionalSettings.sendNotifications;
+			service.sendNotificationsToServiceProviders = additionalSettings.sendNotificationsToServiceProviders;
+		}
 		return service;
 	}
 
@@ -182,8 +191,8 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._isStandAlone;
 	}
 
-	public set isStandAlone(isOnHold: boolean) {
-		this._isStandAlone = isOnHold;
+	public set isStandAlone(isStandAlone: boolean) {
+		this._isStandAlone = isStandAlone;
 	}
 
 	@Column({ nullable: false, default: false })

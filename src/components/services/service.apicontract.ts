@@ -10,7 +10,6 @@ export class ServiceResponse {
 	 */
 	public id: number;
 	public name: string;
-	public isStandAlone: boolean;
 	public isSpAutoAssigned: boolean;
 	public noNric: boolean;
 	public labels: LabelResponseModel[];
@@ -18,6 +17,7 @@ export class ServiceResponse {
 	public emailSuffix?: string;
 	public videoConferenceUrl?: string;
 	public description?: string;
+	public additionalSettings: AdditionalSettingsRes;
 }
 
 export class ServiceRequest {
@@ -33,4 +33,21 @@ export class ServiceRequest {
 	public emailSuffix?: string | null;
 	public videoConferenceUrl?: string | null;
 	public description?: string | null;
+	public additionalSettings?: AdditionalSettingsReq;
+}
+
+export class AdditionalSettingsReq {
+	public allowAnonymousBookings?: boolean;
+	public isOnHold?: boolean;
+	public isStandAlone?: boolean;
+	public sendNotifications?: boolean;
+	public sendNotificationsToServiceProviders?: boolean;
+}
+
+export class AdditionalSettingsRes {
+	public allowAnonymousBookings: boolean;
+	public isOnHold: boolean;
+	public isStandAlone: boolean;
+	public sendNotifications: boolean;
+	public sendNotificationsToServiceProviders: boolean;
 }

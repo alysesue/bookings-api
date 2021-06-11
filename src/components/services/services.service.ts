@@ -21,6 +21,7 @@ import { MolUsersMapper } from '../users/molUsers/molUsers.mapper';
 import { uniqueStringArray } from '../../tools/collections';
 import { LabelsMapper } from '../labels/labels.mapper';
 import { LabelsCategoriesMapper } from '../labelsCategories/labelsCategories.mapper';
+import { ServicesMapper } from './services.mapper';
 import { ServicesActionAuthVisitor } from './services.auth';
 import { ServiceRequest } from './service.apicontract';
 import { ServicesRepository } from './services.repository';
@@ -118,20 +119,19 @@ export class ServicesService {
 			? await this.organisationsRepository.getOrganisationById(request.organisationId)
 			: await this.userContext.verifyAndGetFirstAuthorisedOrganisation('User not authorized to add services.');
 
-		const isSpAutoAssigned = request.isSpAutoAssigned;
-		const noNric = request.noNric;
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
 		const mapToCategories = this.categoriesMapper.mapToCategories(request.categories);
 		const service = Service.create(
 			request.name,
 			orga,
-			isSpAutoAssigned,
+			request.isSpAutoAssigned,
 			transformedLabels,
 			mapToCategories,
 			request.emailSuffix,
-			noNric,
+			request.noNric,
 			request.videoConferenceUrl,
 			request.description,
+			request.additionalSettings,
 		);
 
 		await validator.validate(service);
@@ -146,15 +146,9 @@ export class ServicesService {
 			includeLabelCategories: true,
 			includeLabels: true,
 		});
+
 		await validator.validateServiceFound(service);
-
-		service.name = request.name;
-		service.isSpAutoAssigned = request.isSpAutoAssigned || false;
-		service.emailSuffix = request.emailSuffix;
-		service.noNric = request.noNric || false;
-		service.videoConferenceUrl = request.videoConferenceUrl;
-		service.description = request.description;
-
+		ServicesMapper.mapFromServicePutRequest(service, request);
 		await validator.validate(service);
 		await this.verifyActionPermission(service, CrudAction.Update);
 		const updatedLabelList = this.labelsMapper.mapToLabels(request.labels);
