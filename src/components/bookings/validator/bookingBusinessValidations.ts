@@ -74,4 +74,9 @@ export class BookingBusinessValidations {
 		code: '10014',
 		message: `Invalid video conference link is provided`,
 	});
+
+	public static readonly CitizenNameNotValid = new BusinessValidation({
+		code: '10015',
+		message: `Citizen name is not valid`,
+	});
 }
