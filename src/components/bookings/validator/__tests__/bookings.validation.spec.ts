@@ -220,6 +220,29 @@ describe('Booking validation tests', () => {
 		).rejects.toMatchInlineSnapshot('[BusinessError: [10006] Citizen name not provided]');
 	});
 
+	it('should validate citizen name error', async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenName('@#$%^&')
+			.withCitizenUinFin('G3382058K')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.build();
+
+		booking.service = {
+			noNric: false,
+		} as Service;
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10015] Citizen name is not valid]');
+	});
+
 	it('should append custom validations to citizen validation', async () => {
 		const start = new Date();
 		const booking = new BookingBuilder()
