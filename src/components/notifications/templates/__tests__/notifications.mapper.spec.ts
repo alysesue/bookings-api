@@ -1,4 +1,4 @@
-import { Booking, Service, ServiceProvider } from '../../../../models';
+import { Booking, Organisation, Service, ServiceProvider } from '../../../../models';
 import { emailMapper } from '../../notifications.mapper';
 
 describe('Notification mapper tests', () => {
@@ -50,6 +50,7 @@ describe('Notification mapper tests', () => {
 
 	it('booking video conference link should be empty', () => {
 		booking.videoConferenceUrl = ``;
+		booking.service = Service.create('test', new Organisation());
 
 		const { videoConferenceUrl } = emailMapper(booking);
 		expect(videoConferenceUrl).toEqual(``);
