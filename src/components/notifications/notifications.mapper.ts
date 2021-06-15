@@ -35,9 +35,14 @@ export const emailMapper = (data: Booking): EmailData => {
 	const time = `${DateHelper.getTime12hFormatString(data.startDateTime)} - ${DateHelper.getTime12hFormatString(
 		data.endDateTime,
 	)}`;
-	const videoConferenceUrl = data.videoConferenceUrl
-		? `Video Conference Link: <a href='${data.videoConferenceUrl}'>${data.videoConferenceUrl}</a>`
-		: '';
+
+	let vcLink: string;
+	if (data.videoConferenceUrl) {
+		vcLink = data.videoConferenceUrl;
+	} else if (data.service.videoConferenceUrl) {
+		vcLink = data.service.videoConferenceUrl;
+	}
+	const videoConferenceUrl = vcLink ? `Video Conference Link: <a href='${vcLink}'>${vcLink}</a>` : '';
 
 	return {
 		status,
