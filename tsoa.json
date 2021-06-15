@@ -6,7 +6,19 @@
 		"specVersion": 3,
 		"yaml": true,
 		"host": "localhost:3999/bookingsg/api",
-		"schemes": ["http", "https"]
+		"schemes": ["http", "https"],
+		"securityDefinitions": {
+			"service": {
+				"type": "apiKey",
+				"name": "x-api-service",
+				"in": "header"
+			},
+			"optional-service": {
+				"type": "apiKey",
+				"name": "x-api-service",
+				"in": "header"
+			}
+		}
 	},
 	"routes": {
 		"routesDir": "./src",

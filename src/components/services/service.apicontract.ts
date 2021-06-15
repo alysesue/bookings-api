@@ -18,6 +18,10 @@ export class ServiceResponse {
 	public videoConferenceUrl?: string;
 	public description?: string;
 	public additionalSettings: AdditionalSettingsRes;
+	/**
+	 * @deprecated use additionalSettings.isStandAlone
+	 */
+	public isStandAlone: boolean;
 }
 
 export class ServiceRequest {

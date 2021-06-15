@@ -25,6 +25,7 @@ export class ServicesMapper {
 		serviceResponse.additionalSettings.allowAnonymousBookings = service.allowAnonymousBookings;
 		serviceResponse.additionalSettings.isOnHold = service.isOnHold;
 		serviceResponse.additionalSettings.isStandAlone = service.isStandAlone;
+		serviceResponse.isStandAlone = service.isStandAlone;
 		serviceResponse.additionalSettings.sendNotifications = service.sendNotifications;
 		serviceResponse.additionalSettings.sendNotificationsToServiceProviders =
 			service.sendNotificationsToServiceProviders;
