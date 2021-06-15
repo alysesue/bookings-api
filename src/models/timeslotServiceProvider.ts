@@ -68,7 +68,6 @@ class TimeslotServiceProvider implements ITimeslotServiceProvider {
 	private _isHiddenFromUser?: boolean;
 
 	public get capacity(): number {
-		if (this._isUnavailable) return 0;
 		return this._capacity || 0;
 	}
 	public get acceptedBookings(): readonly Booking[] {
