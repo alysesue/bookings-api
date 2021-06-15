@@ -281,12 +281,18 @@ export class TimeslotsService {
 		const acceptedBookingsLookup = groupByKey(acceptedBookings, TimeslotsService.bookingKeySelector);
 
 		return new AvailableTimeslotProcessor(([_key, element]) => {
-			const result = acceptedBookings
+			const overlappingSps = acceptedBookings
 				.filter((booking) => {
+					if (
+						booking.startDateTime.getTime() === element.startTime &&
+						booking.endDateTime.getTime() === element.endTime
+					) {
+						return false; // Don't count bookings that overlap exactly
+					}
 					return booking.bookingIntersectsNative(element.startTime, element.endTime);
 				})
 				.map((booking) => booking.serviceProviderId);
-			element.setOverlappingServiceProviders(result);
+			element.setOverlappingServiceProviders(overlappingSps);
 
 			const elementKey = TimeslotsService.timeslotKeySelector(element.startTime, element.endTime);
 			const acceptedBookingsForTimeslot = acceptedBookingsLookup.get(elementKey);
