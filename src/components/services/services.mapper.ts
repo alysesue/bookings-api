@@ -59,12 +59,26 @@ export class ServicesMapper {
 			sendSMSNotificationsToServiceProviders,
 		} = request.additionalSettings;
 
-		service.allowAnonymousBookings = allowAnonymousBookings;
-		service.isOnHold = isOnHold;
-		service.isStandAlone = isStandAlone;
-		service.sendNotifications = sendNotifications;
-		service.sendNotificationsToServiceProviders = sendNotificationsToServiceProviders;
-		service.sendSMSNotifications = sendSMSNotifications;
-		service.sendSMSNotificationsToServiceProviders = sendSMSNotificationsToServiceProviders;
+		if (allowAnonymousBookings !== undefined) {
+			service.allowAnonymousBookings = allowAnonymousBookings;
+		}
+		if (isOnHold !== undefined) {
+			service.isOnHold = isOnHold;
+		}
+		if (isStandAlone !== undefined) {
+			service.isStandAlone = isStandAlone;
+		}
+		if (sendNotifications !== undefined) {
+			service.sendNotifications = sendNotifications;
+		}
+		if (sendNotificationsToServiceProviders !== undefined) {
+			service.sendNotificationsToServiceProviders = sendNotificationsToServiceProviders;
+		}
+		if (sendSMSNotifications !== undefined) {
+			service.sendSMSNotifications = sendSMSNotifications;
+		}
+		if (sendSMSNotificationsToServiceProviders !== undefined) {
+			service.sendSMSNotificationsToServiceProviders = sendSMSNotificationsToServiceProviders;
+		}
 	}
 }

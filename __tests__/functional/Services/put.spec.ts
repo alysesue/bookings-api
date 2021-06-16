@@ -246,8 +246,13 @@ describe('Tests endpoint and populate data', () => {
 		};
 
 		const expectedAdditionalSettings = {
+			allowAnonymousBookings: true,
 			isOnHold: false,
 			isStandAlone: false,
+			sendNotifications: true,
+			sendNotificationsToServiceProviders: true,
+			sendSMSNotifications: true,
+			sendSMSNotificationsToServiceProviders: true,
 		};
 
 		const service = await populateService({ nameService: SERVICE_NAME });
