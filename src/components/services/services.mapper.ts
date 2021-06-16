@@ -29,6 +29,9 @@ export class ServicesMapper {
 		serviceResponse.additionalSettings.sendNotifications = service.sendNotifications;
 		serviceResponse.additionalSettings.sendNotificationsToServiceProviders =
 			service.sendNotificationsToServiceProviders;
+		serviceResponse.additionalSettings.sendSMSNotifications = service.sendSMSNotifications;
+		serviceResponse.additionalSettings.sendSMSNotificationsToServiceProviders =
+			service.sendSMSNotificationsToServiceProviders;
 		return serviceResponse;
 	}
 
@@ -41,29 +44,27 @@ export class ServicesMapper {
 		service.videoConferenceUrl = request.videoConferenceUrl;
 		service.description = request.description;
 		if (request.additionalSettings) {
-			const {
-				allowAnonymousBookings,
-				isOnHold,
-				isStandAlone,
-				sendNotifications,
-				sendNotificationsToServiceProviders,
-			} = request.additionalSettings;
-
-			if (allowAnonymousBookings !== undefined) {
-				service.allowAnonymousBookings = allowAnonymousBookings;
-			}
-			if (isOnHold !== undefined) {
-				service.isOnHold = isOnHold;
-			}
-			if (isStandAlone !== undefined) {
-				service.isStandAlone = isStandAlone;
-			}
-			if (sendNotifications !== undefined) {
-				service.sendNotifications = sendNotifications;
-			}
-			if (sendNotificationsToServiceProviders !== undefined) {
-				service.sendNotificationsToServiceProviders = sendNotificationsToServiceProviders;
-			}
+			this.additionalSettingsMapper(service, request);
 		}
+	}
+
+	private static additionalSettingsMapper(service: Service, request: ServiceRequest) {
+		const {
+			allowAnonymousBookings,
+			isOnHold,
+			isStandAlone,
+			sendNotifications,
+			sendNotificationsToServiceProviders,
+			sendSMSNotifications,
+			sendSMSNotificationsToServiceProviders,
+		} = request.additionalSettings;
+
+		service.allowAnonymousBookings = allowAnonymousBookings;
+		service.isOnHold = isOnHold;
+		service.isStandAlone = isStandAlone;
+		service.sendNotifications = sendNotifications;
+		service.sendNotificationsToServiceProviders = sendNotificationsToServiceProviders;
+		service.sendSMSNotifications = sendSMSNotifications;
+		service.sendSMSNotificationsToServiceProviders = sendSMSNotificationsToServiceProviders;
 	}
 }
