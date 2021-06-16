@@ -1,12 +1,13 @@
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { PgClient } from '../../utils/pgClient';
-import { populateService, populateServiceWithVC } from '../../populate/basic';
+import { populateService, populateServiceWithFields } from '../../populate/basic';
 import { ServiceResponse } from '../../../src/components/services/service.apicontract';
 
 describe('Tests endpoint and populate data', () => {
 	const SERVICE_NAME = 'Service';
 	const SERVICE_NAME_UPDATED = 'ServiceUpdated';
 	const pgClient = new PgClient();
+	const videoConferenceUrl = 'http://www.zoom.us/1234567';
 
 	beforeAll(async (done) => {
 		await pgClient.cleanAllTables();
@@ -129,7 +130,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it("should update service's video conference URL", async () => {
-		const service = await populateServiceWithVC({ nameService: SERVICE_NAME });
+		const service = await populateServiceWithFields({ nameService: SERVICE_NAME, videoConferenceUrl });
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
 			body: { name: SERVICE_NAME, videoConferenceUrl: 'http://www.zoom.us/7654321' },
@@ -139,7 +140,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it("should not update service's video conference URL", async () => {
-		const service = await populateServiceWithVC({ nameService: SERVICE_NAME });
+		const service = await populateServiceWithFields({ nameService: SERVICE_NAME, videoConferenceUrl });
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
 			body: { name: SERVICE_NAME, videoConferenceUrl: 'www.zoom.us/7654321' },
@@ -156,6 +157,8 @@ describe('Tests endpoint and populate data', () => {
 			isStandAlone: false,
 			sendNotifications: false,
 			sendNotificationsToServiceProviders: false,
+			sendSMSNotifications: false,
+			sendSMSNotificationsToServiceProviders: false,
 		};
 
 		const service = await populateService({ nameService: SERVICE_NAME });
@@ -175,6 +178,8 @@ describe('Tests endpoint and populate data', () => {
 			isStandAlone: false,
 			sendNotifications: false,
 			sendNotificationsToServiceProviders: false,
+			sendSMSNotifications: false,
+			sendSMSNotificationsToServiceProviders: false,
 		};
 
 		const service = await populateService({ nameService: SERVICE_NAME });
@@ -194,6 +199,8 @@ describe('Tests endpoint and populate data', () => {
 			isStandAlone: true,
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
+			sendSMSNotifications: false,
+			sendSMSNotificationsToServiceProviders: false,
 		};
 
 		const service = await populateService({ nameService: SERVICE_NAME });
@@ -213,6 +220,8 @@ describe('Tests endpoint and populate data', () => {
 			isStandAlone: false,
 			sendNotifications: false,
 			sendNotificationsToServiceProviders: false,
+			sendSMSNotifications: false,
+			sendSMSNotificationsToServiceProviders: false,
 		};
 
 		const service = await populateService({ nameService: SERVICE_NAME });
@@ -232,14 +241,13 @@ describe('Tests endpoint and populate data', () => {
 			isStandAlone: true,
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
+			sendSMSNotifications: true,
+			sendSMSNotificationsToServiceProviders: true,
 		};
 
 		const expectedAdditionalSettings = {
-			allowAnonymousBookings: true,
 			isOnHold: false,
 			isStandAlone: false,
-			sendNotifications: true,
-			sendNotificationsToServiceProviders: true,
 		};
 
 		const service = await populateService({ nameService: SERVICE_NAME });
@@ -265,6 +273,8 @@ describe('Tests endpoint and populate data', () => {
 			isStandAlone: 'test standAlone',
 			sendNotifications: 'test notif',
 			sendNotificationsToServiceProviders: 'test notifSP',
+			sendSMSNotifications: 'test sms notif',
+			sendSMSNotificationsToServiceProviders: 'test sms notifSP',
 		};
 
 		const service = await populateService({ nameService: SERVICE_NAME });
@@ -281,6 +291,10 @@ describe('Tests endpoint and populate data', () => {
 		expect(responseData[`${responseKey}.isStandAlone`].message).toBe('invalid boolean value');
 		expect(responseData[`${responseKey}.sendNotifications`].message).toBe('invalid boolean value');
 		expect(responseData[`${responseKey}.sendNotificationsToServiceProviders`].message).toBe(
+			'invalid boolean value',
+		);
+		expect(responseData[`${responseKey}.sendSMSNotifications`].message).toBe('invalid boolean value');
+		expect(responseData[`${responseKey}.sendSMSNotificationsToServiceProviders`].message).toBe(
 			'invalid boolean value',
 		);
 		expect(putResponse.body.errorCode).toBe('SYS_INVALID_PARAM');

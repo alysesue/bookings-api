@@ -154,6 +154,8 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 			service.isStandAlone = additionalSettings.isStandAlone;
 			service.sendNotifications = additionalSettings.sendNotifications;
 			service.sendNotificationsToServiceProviders = additionalSettings.sendNotificationsToServiceProviders;
+			service.sendSMSNotifications = additionalSettings.sendSMSNotifications;
+			service.sendSMSNotificationsToServiceProviders = additionalSettings.sendSMSNotificationsToServiceProviders;
 		}
 		return service;
 	}
