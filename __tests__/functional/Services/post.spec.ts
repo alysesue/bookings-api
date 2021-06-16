@@ -68,6 +68,8 @@ describe('Tests endpoint and populate data', () => {
 			isStandAlone: false,
 			sendNotifications: false,
 			sendNotificationsToServiceProviders: false,
+			sendSMSNotifications: false,
+			sendSMSNotificationsToServiceProviders: false,
 		};
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
@@ -85,6 +87,8 @@ describe('Tests endpoint and populate data', () => {
 			isStandAlone: false,
 			sendNotifications: false,
 			sendNotificationsToServiceProviders: false,
+			sendSMSNotifications: false,
+			sendSMSNotificationsToServiceProviders: false,
 		};
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
@@ -102,6 +106,8 @@ describe('Tests endpoint and populate data', () => {
 			isStandAlone: true,
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
+			sendSMSNotifications: true,
+			sendSMSNotificationsToServiceProviders: true,
 		};
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
@@ -114,8 +120,10 @@ describe('Tests endpoint and populate data', () => {
 
 	it('should post part of the additionalSettings values and return ALL of them in response', async () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
-			body: { name: SERVICE_NAME, additionalSettings: {sendNotifications: true,
-					sendNotificationsToServiceProviders: true} },
+			body: {
+				name: SERVICE_NAME,
+				additionalSettings: { sendNotifications: true, sendNotificationsToServiceProviders: true },
+			},
 		});
 
 		expect(response.statusCode).toEqual(200);
@@ -125,6 +133,8 @@ describe('Tests endpoint and populate data', () => {
 			isStandAlone: false,
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
+			sendSMSNotifications: false,
+			sendSMSNotificationsToServiceProviders: false,
 		});
 	});
 
@@ -135,6 +145,8 @@ describe('Tests endpoint and populate data', () => {
 			isStandAlone: 'test standAlone',
 			sendNotifications: 'test notif',
 			sendNotificationsToServiceProviders: 'test notifSP',
+			sendSMSNotifications: 'test sms notif',
+			sendSMSNotificationsToServiceProviders: 'test sms notifSP',
 		};
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
@@ -148,7 +160,13 @@ describe('Tests endpoint and populate data', () => {
 		expect(responseData[`${responseKey}.isOnHold`].message).toBe('invalid boolean value');
 		expect(responseData[`${responseKey}.isStandAlone`].message).toBe('invalid boolean value');
 		expect(responseData[`${responseKey}.sendNotifications`].message).toBe('invalid boolean value');
-		expect(responseData[`${responseKey}.sendNotificationsToServiceProviders`].message).toBe('invalid boolean value');
+		expect(responseData[`${responseKey}.sendNotificationsToServiceProviders`].message).toBe(
+			'invalid boolean value',
+		);
+		expect(responseData[`${responseKey}.sendSMSNotifications`].message).toBe('invalid boolean value');
+		expect(responseData[`${responseKey}.sendSMSNotificationsToServiceProviders`].message).toBe(
+			'invalid boolean value',
+		);
 		expect(response.body.errorCode).toBe('SYS_INVALID_PARAM');
 	});
 });
