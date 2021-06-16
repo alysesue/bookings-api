@@ -245,6 +245,28 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		this._sendNotificationsToServiceProviders = value;
 	}
 
+	@Column({ nullable: false, default: false })
+	private _sendSMSNotifications: boolean;
+
+	public get sendSMSNotifications(): boolean {
+		return this._sendSMSNotifications;
+	}
+
+	public set sendSMSNotifications(value: boolean) {
+		this._sendSMSNotifications = value;
+	}
+
+	@Column({ nullable: false, default: false })
+	private _sendSMSNotificationsToServiceProviders: boolean;
+
+	public get sendSMSNotificationsToServiceProviders(): boolean {
+		return this._sendSMSNotificationsToServiceProviders;
+	}
+
+	public set sendSMSNotificationsToServiceProviders(value: boolean) {
+		this._sendSMSNotificationsToServiceProviders = value;
+	}
+
 	@Column({ type: 'varchar', length: 100, nullable: true })
 	private _emailSuffix?: string;
 
