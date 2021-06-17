@@ -155,7 +155,6 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 			service.sendNotifications = additionalSettings.sendNotifications;
 			service.sendNotificationsToServiceProviders = additionalSettings.sendNotificationsToServiceProviders;
 			service.sendSMSNotifications = additionalSettings.sendSMSNotifications;
-			service.sendSMSNotificationsToServiceProviders = additionalSettings.sendSMSNotificationsToServiceProviders;
 		}
 		return service;
 	}
@@ -256,17 +255,6 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 
 	public set sendSMSNotifications(value: boolean) {
 		this._sendSMSNotifications = value;
-	}
-
-	@Column({ nullable: false, default: false })
-	private _sendSMSNotificationsToServiceProviders: boolean;
-
-	public get sendSMSNotificationsToServiceProviders(): boolean {
-		return this._sendSMSNotificationsToServiceProviders;
-	}
-
-	public set sendSMSNotificationsToServiceProviders(value: boolean) {
-		this._sendSMSNotificationsToServiceProviders = value;
 	}
 
 	@Column({ type: 'varchar', length: 100, nullable: true })

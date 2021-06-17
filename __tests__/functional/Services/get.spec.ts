@@ -37,7 +37,6 @@ describe('Tests endpoint and populate data', () => {
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
 			sendSMSNotifications: false,
-			sendSMSNotificationsToServiceProviders: false,
 		} as AdditionalSettingsReq;
 
 		await populateServiceWithFields({ nameService: SERVICE_NAME, additionalSettings });
@@ -50,8 +49,5 @@ describe('Tests endpoint and populate data', () => {
 			(response.body.data[0] as ServiceResponse).additionalSettings.sendNotificationsToServiceProviders,
 		).toEqual(true);
 		expect((response.body.data[0] as ServiceResponse).additionalSettings.sendSMSNotifications).toEqual(false);
-		expect(
-			(response.body.data[0] as ServiceResponse).additionalSettings.sendSMSNotificationsToServiceProviders,
-		).toEqual(false);
 	});
 });

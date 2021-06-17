@@ -34,7 +34,6 @@ describe('service/services.mapper', () => {
 		expect(serviceResponse.additionalSettings.sendNotifications).toBe(true);
 		expect(serviceResponse.additionalSettings.sendNotificationsToServiceProviders).toBeUndefined();
 		expect(serviceResponse.additionalSettings.sendSMSNotifications).toBe(true);
-		expect(serviceResponse.additionalSettings.sendSMSNotificationsToServiceProviders).toBeUndefined();
 		expect(serviceResponse.labels[0].label).toBe('text');
 	});
 
@@ -55,7 +54,6 @@ describe('service/services.mapper', () => {
 		expect(serviceData.sendNotifications).toBe(true);
 		expect(serviceData.sendNotificationsToServiceProviders).toBeUndefined();
 		expect(serviceData.sendSMSNotifications).toBe(true);
-		expect(serviceData.sendSMSNotificationsToServiceProviders).toBeUndefined();
 	});
 });
 
