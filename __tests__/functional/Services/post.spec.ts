@@ -69,7 +69,6 @@ describe('Tests endpoint and populate data', () => {
 			sendNotifications: false,
 			sendNotificationsToServiceProviders: false,
 			sendSMSNotifications: false,
-			sendSMSNotificationsToServiceProviders: false,
 		};
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
@@ -88,7 +87,6 @@ describe('Tests endpoint and populate data', () => {
 			sendNotifications: false,
 			sendNotificationsToServiceProviders: false,
 			sendSMSNotifications: false,
-			sendSMSNotificationsToServiceProviders: false,
 		};
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
@@ -107,7 +105,6 @@ describe('Tests endpoint and populate data', () => {
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
 			sendSMSNotifications: true,
-			sendSMSNotificationsToServiceProviders: true,
 		};
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
@@ -134,7 +131,6 @@ describe('Tests endpoint and populate data', () => {
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
 			sendSMSNotifications: false,
-			sendSMSNotificationsToServiceProviders: false,
 		});
 	});
 
@@ -146,7 +142,6 @@ describe('Tests endpoint and populate data', () => {
 			sendNotifications: 'test notif',
 			sendNotificationsToServiceProviders: 'test notifSP',
 			sendSMSNotifications: 'test sms notif',
-			sendSMSNotificationsToServiceProviders: 'test sms notifSP',
 		};
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
@@ -164,9 +159,6 @@ describe('Tests endpoint and populate data', () => {
 			'invalid boolean value',
 		);
 		expect(responseData[`${responseKey}.sendSMSNotifications`].message).toBe('invalid boolean value');
-		expect(responseData[`${responseKey}.sendSMSNotificationsToServiceProviders`].message).toBe(
-			'invalid boolean value',
-		);
 		expect(response.body.errorCode).toBe('SYS_INVALID_PARAM');
 	});
 });

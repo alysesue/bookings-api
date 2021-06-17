@@ -47,7 +47,6 @@ export class AdditionalSettingsReq {
 	public sendNotifications?: boolean;
 	public sendNotificationsToServiceProviders?: boolean;
 	public sendSMSNotifications?: boolean;
-	public sendSMSNotificationsToServiceProviders?: boolean;
 }
 
 export class AdditionalSettingsRes {
@@ -57,5 +56,4 @@ export class AdditionalSettingsRes {
 	public sendNotifications: boolean;
 	public sendNotificationsToServiceProviders: boolean;
 	public sendSMSNotifications: boolean;
-	public sendSMSNotificationsToServiceProviders: boolean;
 }

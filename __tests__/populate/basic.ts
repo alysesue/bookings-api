@@ -58,7 +58,6 @@ export const populateServiceWithAdditionalSettings = async ({
 		sendNotifications: true,
 		sendNotificationsToServiceProviders: true,
 		sendSMSNotifications: false,
-		sendSMSNotificationsToServiceProviders: false,
 	},
 }): Promise<ServiceResponse> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post('/services', {
