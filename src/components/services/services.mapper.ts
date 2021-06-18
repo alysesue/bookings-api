@@ -2,7 +2,7 @@ import { Inject } from 'typescript-ioc';
 import { Service } from '../../models/entities';
 import { LabelsMapper } from '../labels/labels.mapper';
 import { LabelsCategoriesMapper } from '../labelsCategories/labelsCategories.mapper';
-import { AdditionalSettingsRes, ServiceRequest, ServiceResponse } from './service.apicontract';
+import { AdditionalSettings, PartialAdditionalSettings, ServiceRequest, ServiceResponse } from './service.apicontract';
 
 export class ServicesMapper {
 	@Inject
@@ -21,32 +21,43 @@ export class ServicesMapper {
 		serviceResponse.emailSuffix = service.emailSuffix;
 		serviceResponse.videoConferenceUrl = service.videoConferenceUrl;
 		serviceResponse.description = service.description;
-		serviceResponse.additionalSettings = {} as AdditionalSettingsRes;
-		serviceResponse.additionalSettings.allowAnonymousBookings = service.allowAnonymousBookings;
-		serviceResponse.additionalSettings.isOnHold = service.isOnHold;
-		serviceResponse.additionalSettings.isStandAlone = service.isStandAlone;
 		serviceResponse.isStandAlone = service.isStandAlone;
-		serviceResponse.additionalSettings.sendNotifications = service.sendNotifications;
-		serviceResponse.additionalSettings.sendNotificationsToServiceProviders =
-			service.sendNotificationsToServiceProviders;
-		serviceResponse.additionalSettings.sendSMSNotifications = service.sendSMSNotifications;
+		serviceResponse.minDaysInAdvance = service.minDaysInAdvance;
+		serviceResponse.maxDaysInAdvance = service.maxDaysInAdvance;
+
+		serviceResponse.additionalSettings = this.mapToSettingsResponse(service);
 		return serviceResponse;
 	}
 
-	public static mapFromServicePutRequest(service: Service, request: ServiceRequest) {
+	private mapToSettingsResponse(service: Service): AdditionalSettings {
+		const additionalSettings = new AdditionalSettings();
+		additionalSettings.allowAnonymousBookings = service.allowAnonymousBookings;
+		additionalSettings.isOnHold = service.isOnHold;
+		additionalSettings.isStandAlone = service.isStandAlone;
+		additionalSettings.sendNotifications = service.sendNotifications;
+		additionalSettings.sendNotificationsToServiceProviders = service.sendNotificationsToServiceProviders;
+		additionalSettings.sendSMSNotifications = service.sendSMSNotifications;
+		return additionalSettings;
+	}
+
+	public static mapToEntity(service: Service, request: ServiceRequest) {
 		// Categories and labels are mapped separately
+
 		service.name = request.name.trim();
-		service.isSpAutoAssigned = request.isSpAutoAssigned || false;
-		service.noNric = request.noNric || false;
+		service.setIsSpAutoAssigned(request.isSpAutoAssigned);
+		service.setNoNric(request.noNric);
 		service.emailSuffix = request.emailSuffix;
 		service.videoConferenceUrl = request.videoConferenceUrl;
 		service.description = request.description;
+		service.minDaysInAdvance = request.minDaysInAdvance === undefined ? null : request.minDaysInAdvance;
+		service.maxDaysInAdvance = request.maxDaysInAdvance === undefined ? null : request.maxDaysInAdvance;
+
 		if (request.additionalSettings) {
-			this.additionalSettingsMapper(service, request);
+			this.additionalSettingsMapper(service, request.additionalSettings);
 		}
 	}
 
-	private static additionalSettingsMapper(service: Service, request: ServiceRequest) {
+	private static additionalSettingsMapper(service: Service, settings: PartialAdditionalSettings) {
 		const {
 			allowAnonymousBookings,
 			isOnHold,
@@ -54,7 +65,7 @@ export class ServicesMapper {
 			sendNotifications,
 			sendNotificationsToServiceProviders,
 			sendSMSNotifications,
-		} = request.additionalSettings;
+		} = settings;
 
 		if (allowAnonymousBookings !== undefined) {
 			service.allowAnonymousBookings = allowAnonymousBookings;

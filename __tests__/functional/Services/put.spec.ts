@@ -183,7 +183,7 @@ describe('Tests endpoint and populate data', () => {
 		const service = await populateService({ nameService: SERVICE_NAME });
 
 		const putResponse = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
-			body: { name: SERVICE_NAME_UPDATED, additionalSettings: {} },
+			body: { name: SERVICE_NAME_UPDATED, additionalSettings: undefined },
 		});
 
 		expect(putResponse.statusCode).toEqual(200);
@@ -230,7 +230,7 @@ describe('Tests endpoint and populate data', () => {
 		expect(putResponse.body.data.additionalSettings).toEqual(expectedAdditionalSettings);
 	});
 
-	it('should update part of the additionalSettings values from true to false', async () => {
+	it('should update additionalSettings values from true to false', async () => {
 		const additionalSettingsTrue = {
 			allowAnonymousBookings: true,
 			isOnHold: true,
@@ -240,12 +240,12 @@ describe('Tests endpoint and populate data', () => {
 			sendSMSNotifications: true,
 		};
 
-		const expectedAdditionalSettings = {
-			allowAnonymousBookings: true,
+		const additionalSettingsFalse = {
+			allowAnonymousBookings: false,
 			isOnHold: false,
 			isStandAlone: false,
-			sendNotifications: true,
-			sendNotificationsToServiceProviders: true,
+			sendNotifications: false,
+			sendNotificationsToServiceProviders: false,
 			sendSMSNotifications: true,
 		};
 
@@ -258,11 +258,18 @@ describe('Tests endpoint and populate data', () => {
 		expect(putResponse.body.data.additionalSettings).toEqual(additionalSettingsTrue);
 
 		const putResponse2 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
-			body: { name: SERVICE_NAME_UPDATED, additionalSettings: { isOnHold: false, isStandAlone: false } },
+			body: { name: SERVICE_NAME_UPDATED, additionalSettings: additionalSettingsFalse },
 		});
 
 		expect(putResponse2.statusCode).toEqual(200);
-		expect(putResponse2.body.data.additionalSettings).toEqual(expectedAdditionalSettings);
+		expect(putResponse2.body.data.additionalSettings).toEqual({
+			allowAnonymousBookings: false,
+			isOnHold: false,
+			isStandAlone: false,
+			sendNotifications: false,
+			sendNotificationsToServiceProviders: false,
+			sendSMSNotifications: true,
+		});
 	});
 
 	it('Put service with invalid values in additionalSettings', async () => {
@@ -293,5 +300,17 @@ describe('Tests endpoint and populate data', () => {
 		);
 		expect(responseData[`${responseKey}.sendSMSNotifications`].message).toBe('invalid boolean value');
 		expect(putResponse.body.errorCode).toBe('SYS_INVALID_PARAM');
+	});
+
+	it(`Put service with 'days in advance' configuration`, async () => {
+		const service = await populateService({ nameService: SERVICE_NAME });
+
+		const putResponse = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+			body: { name: SERVICE_NAME_UPDATED, minDaysInAdvance: 10, maxDaysInAdvance: 20 },
+		});
+
+		expect(putResponse.statusCode).toEqual(200);
+		expect(putResponse.body.data.minDaysInAdvance).toBe(10);
+		expect(putResponse.body.data.maxDaysInAdvance).toBe(20);
 	});
 });

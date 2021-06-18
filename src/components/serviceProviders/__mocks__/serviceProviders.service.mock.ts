@@ -8,7 +8,7 @@ export class ServiceProvidersServiceMock implements Partial<ServiceProvidersServ
 	public static getServiceProviderMock = jest.fn();
 	public static getServiceProvidersCountMock = jest.fn();
 	public static getServiceProvidersMock = jest.fn();
-	public static getAvailableServiceProvidersMock = jest.fn();
+	public static getAvailableServiceProvidersMock = jest.fn<Promise<ServiceProvider[]>, any>();
 	public static updateServiceProviderMock = jest.fn();
 	public static saveMock = jest.fn();
 	public static setProviderScheduleFormMock = jest.fn();
@@ -37,8 +37,8 @@ export class ServiceProvidersServiceMock implements Partial<ServiceProvidersServ
 	public async getServiceProviders(): Promise<ServiceProvider[]> {
 		return ServiceProvidersServiceMock.getServiceProvidersMock();
 	}
-	public async getAvailableServiceProviders(): Promise<ServiceProvider[]> {
-		return ServiceProvidersServiceMock.getAvailableServiceProvidersMock();
+	public async getAvailableServiceProviders(...params): Promise<any> {
+		return await ServiceProvidersServiceMock.getAvailableServiceProvidersMock(...params);
 	}
 
 	public async saveServiceProviders(listRequest: ServiceProviderModel[]): Promise<void> {

@@ -139,10 +139,17 @@ describe('ServiceProviders.Controller', () => {
 		);
 		timeslots.timeslotItems = [timeslotItem];
 		sp1.timeslotsSchedule = timeslots;
-		ServiceProvidersServiceMock.getAvailableServiceProvidersMock.mockReturnValue([sp1]);
+		ServiceProvidersServiceMock.getAvailableServiceProvidersMock.mockReturnValue(Promise.resolve([sp1]));
 		const result = await Container.get(ServiceProvidersController).getAvailableServiceProviders(
 			startDate,
 			endDate,
+			1,
+		);
+
+		expect(ServiceProvidersServiceMock.getAvailableServiceProvidersMock).toBeCalledWith(
+			startDate,
+			endDate,
+			false,
 			1,
 		);
 
@@ -172,9 +179,17 @@ describe('ServiceProviders.Controller', () => {
 
 		ServicesServiceMock.getServices.mockReturnValue([svc1, svc2]);
 		ServiceProvidersServiceMock.getAvailableServiceProvidersMock
-			.mockImplementationOnce(() => [sp1])
-			.mockImplementationOnce(() => [sp3]);
+			.mockImplementationOnce(() => Promise.resolve([sp1]))
+			.mockImplementationOnce(() => Promise.resolve([sp3]));
 		const result = await Container.get(ServiceProvidersController).getAvailableServiceProviders(startDate, endDate);
+
+		expect(ServiceProvidersServiceMock.getAvailableServiceProvidersMock).toBeCalledTimes(2);
+		expect(ServiceProvidersServiceMock.getAvailableServiceProvidersMock.mock.calls[0]).toEqual([
+			startDate,
+			endDate,
+			false,
+			1,
+		]);
 
 		expect(result.data.length).toBe(2);
 		expect(result.data[0].serviceId).toBe(1);

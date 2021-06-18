@@ -354,12 +354,13 @@ export class BookingsController extends Controller {
 	public async getBookingProviders(@Path() bookingId: number): Promise<ApiData<BookingProviderResponse[]>> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 
-		const providers = await this.timeslotService.getAvailableProvidersForTimeslot(
-			booking.startDateTime,
-			booking.endDateTime,
-			booking.serviceId,
-			true,
-		);
+		const providers = await this.timeslotService.getAvailableProvidersForTimeslot({
+			startDateTime: booking.startDateTime,
+			endDateTime: booking.endDateTime,
+			serviceId: booking.serviceId,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
 
 		return ApiDataFactory.create(providers.map((e) => BookingsMapper.mapProvider(e.serviceProvider)));
 	}

@@ -3,11 +3,30 @@ import { ServicesMapper } from '../services.mapper';
 import { Service } from '../../../models/entities';
 import { LabelsMapper } from '../../labels/labels.mapper';
 import { LabelResponseModel } from '../../labels/label.apicontract';
-import { AdditionalSettingsReq, ServiceRequest } from '../service.apicontract';
+import { AdditionalSettings, ServiceRequest } from '../service.apicontract';
 
 describe('service/services.mapper', () => {
 	beforeAll(() => {
 		Container.bind(LabelsMapper).to(LabelsMapperMock);
+	});
+
+	it('should map simple service data to response', () => {
+		const serviceMapper = Container.get(ServicesMapper);
+		const serviceData = new Service();
+		serviceData.id = 1;
+		serviceData.name = 'name';
+
+		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([]);
+
+		const serviceResponse = serviceMapper.mapToServiceResponse(serviceData);
+
+		expect(serviceResponse).toEqual({
+			id: 1,
+			name: 'name',
+			additionalSettings: {},
+			categories: [],
+			labels: [],
+		});
 	});
 
 	it('should map service data to response', () => {
@@ -16,9 +35,18 @@ describe('service/services.mapper', () => {
 		serviceData.id = 1;
 		serviceData.name = 'name';
 		serviceData.emailSuffix = 'abc.com';
-		serviceData.isStandAlone = false;
+		serviceData.allowAnonymousBookings = true;
+		serviceData.isOnHold = false;
+		serviceData.isStandAlone = true;
 		serviceData.sendNotifications = true;
 		serviceData.sendSMSNotifications = true;
+		serviceData.sendNotificationsToServiceProviders = false;
+		serviceData.minDaysInAdvance = 10;
+		serviceData.maxDaysInAdvance = 20;
+		serviceData.description = 'desc';
+		serviceData.setIsSpAutoAssigned(false);
+		serviceData.setNoNric(false);
+		serviceData.videoConferenceUrl = 'https://a.com';
 
 		const labelResponse = new LabelResponseModel();
 		labelResponse.id = '1';
@@ -28,13 +56,33 @@ describe('service/services.mapper', () => {
 
 		const serviceResponse = serviceMapper.mapToServiceResponse(serviceData);
 
-		expect(serviceResponse.name).toBe('name');
-		expect(serviceResponse.emailSuffix).toBe('abc.com');
-		expect(serviceResponse.additionalSettings.isStandAlone).toBe(false);
-		expect(serviceResponse.additionalSettings.sendNotifications).toBe(true);
-		expect(serviceResponse.additionalSettings.sendNotificationsToServiceProviders).toBeUndefined();
-		expect(serviceResponse.additionalSettings.sendSMSNotifications).toBe(true);
-		expect(serviceResponse.labels[0].label).toBe('text');
+		expect(serviceResponse).toEqual({
+			additionalSettings: {
+				allowAnonymousBookings: true,
+				isOnHold: false,
+				isStandAlone: true,
+				sendNotifications: true,
+				sendNotificationsToServiceProviders: false,
+				sendSMSNotifications: true,
+			},
+			categories: [],
+			description: 'desc',
+			emailSuffix: 'abc.com',
+			id: 1,
+			isSpAutoAssigned: false,
+			isStandAlone: true,
+			labels: [
+				{
+					id: '1',
+					label: 'text',
+				},
+			],
+			maxDaysInAdvance: 20,
+			minDaysInAdvance: 10,
+			name: 'name',
+			noNric: false,
+			videoConferenceUrl: 'https://a.com',
+		});
 	});
 
 	it('should map service request to service data', () => {
@@ -42,18 +90,62 @@ describe('service/services.mapper', () => {
 		const serviceRequest = new ServiceRequest();
 		serviceRequest.name = 'name';
 		serviceRequest.emailSuffix = 'abc.com';
-		serviceRequest.additionalSettings = {} as AdditionalSettingsReq;
-		serviceRequest.additionalSettings.isStandAlone = false;
-		serviceRequest.additionalSettings.sendNotifications = true;
-		serviceRequest.additionalSettings.sendSMSNotifications = true;
 
-		ServicesMapper.mapFromServicePutRequest(serviceData, serviceRequest);
+		ServicesMapper.mapToEntity(serviceData, serviceRequest);
 		expect(serviceData.name).toBe('name');
 		expect(serviceData.emailSuffix).toBe('abc.com');
-		expect(serviceData.isStandAlone).toBe(false);
+	});
+
+	it('(2) should map service request to service data - with additional settings', () => {
+		const serviceData = new Service();
+		const serviceRequest = new ServiceRequest();
+		serviceRequest.name = 'name';
+		serviceRequest.emailSuffix = 'abc.com';
+		serviceRequest.additionalSettings = new AdditionalSettings();
+		serviceRequest.additionalSettings.allowAnonymousBookings = true;
+		serviceRequest.additionalSettings.isOnHold = false;
+		serviceRequest.additionalSettings.isStandAlone = true;
+		serviceRequest.additionalSettings.sendNotifications = true;
+		serviceRequest.additionalSettings.sendSMSNotifications = true;
+		serviceRequest.additionalSettings.sendNotificationsToServiceProviders = false;
+
+		ServicesMapper.mapToEntity(serviceData, serviceRequest);
+		expect(serviceData.name).toBe('name');
+		expect(serviceData.emailSuffix).toBe('abc.com');
+		expect(serviceData.allowAnonymousBookings).toBe(true);
+		expect(serviceData.isOnHold).toBe(false);
+		expect(serviceData.isStandAlone).toBe(true);
 		expect(serviceData.sendNotifications).toBe(true);
-		expect(serviceData.sendNotificationsToServiceProviders).toBeUndefined();
 		expect(serviceData.sendSMSNotifications).toBe(true);
+		expect(serviceData.sendNotificationsToServiceProviders).toBe(false);
+		expect(serviceData.minDaysInAdvance).toBe(null);
+		expect(serviceData.maxDaysInAdvance).toBe(null);
+	});
+
+	it('(3) should map service request to service data - with days in advance', () => {
+		const serviceData = new Service();
+		const serviceRequest = new ServiceRequest();
+		serviceRequest.name = 'name';
+		serviceRequest.emailSuffix = 'abc.com';
+		serviceRequest.additionalSettings = new AdditionalSettings();
+		serviceRequest.additionalSettings.allowAnonymousBookings = true;
+		serviceRequest.additionalSettings.isOnHold = false;
+		serviceRequest.additionalSettings.isStandAlone = true;
+		serviceRequest.additionalSettings.sendNotifications = true;
+		serviceRequest.additionalSettings.sendNotificationsToServiceProviders = false;
+		serviceRequest.minDaysInAdvance = 10;
+		serviceRequest.maxDaysInAdvance = 60;
+
+		ServicesMapper.mapToEntity(serviceData, serviceRequest);
+		expect(serviceData.name).toBe('name');
+		expect(serviceData.emailSuffix).toBe('abc.com');
+		expect(serviceData.allowAnonymousBookings).toBe(true);
+		expect(serviceData.isOnHold).toBe(false);
+		expect(serviceData.isStandAlone).toBe(true);
+		expect(serviceData.sendNotifications).toBe(true);
+		expect(serviceData.sendNotificationsToServiceProviders).toBe(false);
+		expect(serviceData.minDaysInAdvance).toBe(10);
+		expect(serviceData.maxDaysInAdvance).toBe(60);
 	});
 });
 

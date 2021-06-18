@@ -121,22 +121,14 @@ export class ServicesService {
 
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
 		const mapToCategories = this.categoriesMapper.mapToCategories(request.categories);
-		const service = Service.create(
-			request.name,
-			orga,
-			request.isSpAutoAssigned,
-			transformedLabels,
-			mapToCategories,
-			request.emailSuffix,
-			request.noNric,
-			request.videoConferenceUrl,
-			request.description,
-			request.additionalSettings,
-		);
+		const service = Service.create(request.name, orga, transformedLabels, mapToCategories);
+		ServicesMapper.mapToEntity(service, request);
 
 		await validator.validate(service);
 		await this.verifyActionPermission(service, CrudAction.Create);
-		return this.servicesRepository.save(service);
+		await this.servicesRepository.save(service);
+
+		return await this.getService(service.id, { includeLabels: true, includeLabelCategories: true });
 	}
 
 	public async updateService(id: number, request: ServiceRequest): Promise<Service> {
@@ -148,7 +140,8 @@ export class ServicesService {
 		});
 
 		await validator.validateServiceFound(service);
-		ServicesMapper.mapFromServicePutRequest(service, request);
+		ServicesMapper.mapToEntity(service, request);
+
 		await validator.validate(service);
 		await this.verifyActionPermission(service, CrudAction.Update);
 		const updatedLabelList = this.labelsMapper.mapToLabels(request.labels);

@@ -1,7 +1,7 @@
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { PgClient } from '../../utils/pgClient';
 import { populateService, populateServiceWithFields } from '../../populate/basic';
-import { AdditionalSettingsReq, ServiceResponse } from '../../../src/components/services/service.apicontract';
+import { PartialAdditionalSettings, ServiceResponse } from '../../../src/components/services/service.apicontract';
 
 describe('Tests endpoint and populate data', () => {
 	const SERVICE_NAME = 'Service';
@@ -37,7 +37,7 @@ describe('Tests endpoint and populate data', () => {
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
 			sendSMSNotifications: false,
-		} as AdditionalSettingsReq;
+		} as PartialAdditionalSettings;
 
 		await populateServiceWithFields({ nameService: SERVICE_NAME, additionalSettings });
 		const response = await OrganisationAdminRequestEndpointSG.create({}).get('/services');

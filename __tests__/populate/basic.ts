@@ -1,6 +1,6 @@
 import { OrganisationAdminRequestEndpointSG } from '../utils/requestEndpointSG';
 import { ServiceProviderResponseModel } from '../../src/components/serviceProviders/serviceProviders.apicontract';
-import { AdditionalSettingsReq, ServiceResponse } from '../../src/components/services/service.apicontract';
+import { PartialAdditionalSettings, ServiceResponse } from '../../src/components/services/service.apicontract';
 import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslotItems.apicontract';
 import { OneOffTimeslotResponse } from '../../src/components/oneOffTimeslots/oneOffTimeslots.apicontract';
 import * as request from 'request';
@@ -40,7 +40,7 @@ export const populateServiceWithFields = async ({
 	organisation?: string;
 	nameService?: string;
 	videoConferenceUrl?: string;
-	additionalSettings?: AdditionalSettingsReq;
+	additionalSettings?: PartialAdditionalSettings;
 }): Promise<ServiceResponse> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post('/services', {
 		body: { name: nameService, videoConferenceUrl, additionalSettings },

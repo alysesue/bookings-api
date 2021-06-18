@@ -99,14 +99,19 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		return (await this.getRepository()).save(services);
 	}
 
-	private async getServiceQueryById(id: number): Promise<SelectQueryBuilder<Service>> {
+	private async getServiceQueryById(
+		id: number,
+		options: {
+			skipAuthorisation?: boolean;
+		},
+	): Promise<SelectQueryBuilder<Service>> {
 		const idCondition = 'svc._id = :id';
 
-		return await this.createSelectQuery([idCondition], { id }, {});
+		return await this.createSelectQuery([idCondition], { id }, options);
 	}
 
 	public async getServiceWithScheduleForm(id: number): Promise<Service> {
-		const query = await this.getServiceQueryById(id);
+		const query = await this.getServiceQueryById(id, {});
 		const entry = await query.getOne();
 		return this.scheduleFormRepository.populateSingleEntryScheduleForm(entry);
 	}
@@ -141,9 +146,10 @@ export class ServicesRepository extends RepositoryBase<Service> {
 		includeTimeslotsSchedule?: boolean;
 		includeLabels?: boolean;
 		includeLabelCategories?: boolean;
+		skipAuthorisation?: boolean;
 	}): Promise<Service> {
-		const { id } = options;
-		const query = await this.getServiceQueryById(id);
+		const { id, skipAuthorisation } = options;
+		const query = await this.getServiceQueryById(id, { skipAuthorisation });
 		const entry = await query.getOne();
 
 		if (!entry) {
