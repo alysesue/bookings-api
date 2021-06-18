@@ -49,6 +49,7 @@ export class MailObserver implements Observer {
 		const citizenEmailDetails = MailObserver.constructEmailTemplate(body, email);
 		if (citizenEmailDetails?.html) await this.notificationsService.sendEmail(citizenEmailDetails);
 	}
+
 	private async emailBookingToServiceProvider(booking: Booking, bookingType: BookingType): Promise<void> {
 		const serviceProviderEmailBody = await this.createServiceProviderEmailFactory(booking, bookingType);
 		const email = MailObserver.verifyEmail(booking.serviceProvider?.email);
