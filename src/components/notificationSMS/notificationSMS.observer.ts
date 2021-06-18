@@ -25,6 +25,7 @@ export class SMSObserver implements Observer {
 	public async update<T>(subject: ISubject<T>): Promise<void> {
 		if (subject instanceof BookingsSubject && subject.booking?.status !== BookingStatus.OnHold) {
 			if (!subject.booking.service.sendSMSNotifications) return;
+			if (!subject.booking.citizenPhone) return;
 			const currentUser = await this.userContext.getCurrentUser();
 			const userIsAdmin = currentUser.isAdmin() || currentUser.isAgency();
 			const templates = userIsAdmin
