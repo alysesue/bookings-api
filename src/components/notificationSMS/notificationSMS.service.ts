@@ -2,8 +2,8 @@ import { post } from '../../tools/fetch';
 import { getConfig } from '../../config/app-config';
 import { smsLogger } from '../../config/logger';
 import { InRequestScope } from 'typescript-ioc';
-import { isSGPhoneNumber } from "mol-lib-api-contract/utils";
-import { ErrorCodeV2, MOLErrorV2 } from "mol-lib-api-contract";
+import { isSGPhoneNumber } from 'mol-lib-api-contract/utils';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 export type SMSmessage = string;
 
@@ -32,5 +32,4 @@ export class NotificationSMSService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Invalid phone number');
 		}
 	};
-
 }

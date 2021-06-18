@@ -34,7 +34,7 @@ jest.mock('../../../config/app-config', () => {
 
 describe('Test of notification SMS', () => {
 	beforeAll(() => {
-		(post as jest.Mock).mockImplementation(jest.fn())
+		(post as jest.Mock).mockImplementation(jest.fn());
 	});
 
 	it('Should call post when sending an sms', async () => {
