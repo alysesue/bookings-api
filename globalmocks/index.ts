@@ -102,23 +102,3 @@ jest.mock('tsoa', () => {
 		Deprecated: decoratorMock,
 	};
 });
-
-jest.mock('../src/config/app-config', () => {
-	return {
-		getConfig: () => ({
-			name: 'test',
-			version: '0.1',
-			port: 3000,
-			env: 'production',
-			database: {
-				host: 'host',
-				port: '1111',
-				instance: 'database',
-				username: 'user',
-			},
-			molNotification: {
-				url: '',
-			},
-		}),
-	};
-});

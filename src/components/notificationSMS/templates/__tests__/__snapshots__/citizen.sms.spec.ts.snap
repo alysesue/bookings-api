@@ -1,0 +1,94 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Notification SMS templates tests should create citizen sms for citizen cancelled booking 1`] = `
+"BookingSG cancellation: Career
+You have cancelled the following booking.
+
+Booking for: Career.
+
+Booking status: Pending Approval
+Date: 14 April 2021
+Time: 10:00am - 11:00am
+Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>
+Location: <b>Some street</b>"
+`;
+
+exports[`Notification SMS templates tests should create citizen sms for citizen created booking 1`] = `
+"
+BookingSG confirmation: Career
+
+Your booking request has been received.
+
+Booking for: Career.
+
+Below is a confirmation of your booking details.
+Booking status: Pending Approval
+Date: 14 April 2021
+Time: 10:00am - 11:00am
+Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>
+Location: <b>Some street</b>
+"
+`;
+
+exports[`Notification SMS templates tests should create citizen sms for citizen updated booking 1`] = `
+"
+BookingSG update: Career
+
+You have updated a booking.
+
+Booking for: Career.
+
+Below is a confirmation of your updated booking details.
+Booking status: Pending Approval
+Date: 14 April 2021
+Time: 10:00am - 11:00am
+Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>
+Location: <b>Some street</b>
+"
+`;
+
+exports[`Notification SMS templates tests should create citizen sms for service provider cancelled booking 1`] = `
+"BookingSG cancellation: Career
+The following booking has been cancelled by the other party.
+
+Booking for: Career.
+
+Booking status: Pending Approval
+Date: 14 April 2021
+Time: 10:00am - 11:00am
+Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>
+Location: <b>Some street</b>"
+`;
+
+exports[`Notification SMS templates tests should create citizen sms for service provider created booking 1`] = `
+"BookingSG confirmation: Career
+
+A booking has been made.
+
+Booking for: Career.
+
+Below is a confirmation of your booking details.
+Booking status: Pending Approval
+Date: 14 April 2021
+Time: 10:00am - 11:00am
+Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>
+Location: <b>Some street</b>
+"
+`;
+
+exports[`Notification SMS templates tests should create citizen sms for service provider updated booking 1`] = `
+"
+			BookingSG update: Career
+			
+There has been an update to your booking confirmation.
+
+Booking for: Career.
+
+Below is a confirmation of your updated booking details.
+Booking status: Pending Approval
+Date: 14 April 2021
+Time: 10:00am - 11:00am
+Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>
+Location: <b>Some street</b>
+"
+`;
