@@ -25,8 +25,7 @@ Booking status: ${status}
 Date: ${day}
 Time: ${time}
 ${videoConferenceUrl}
-${locationText}
-`;
+${locationText}`;
 	}
 
 	public UpdatedBookingSMS(data): SMSmessage {
@@ -45,8 +44,7 @@ Booking status: ${status}
 Date: ${day}
 Time: ${time}
 ${videoConferenceUrl}
-${locationText}
-`;
+${locationText}`;
 	}
 
 	public CancelledBookingSMS(data): SMSmessage {
@@ -85,7 +83,7 @@ Date: ${day}
 Time: ${time}
 ${videoConferenceUrl}
 ${locationText}
-`;
+test`;
 	}
 
 	public UpdatedBookingSMS(data): SMSmessage {
@@ -104,8 +102,7 @@ Booking status: ${status}
 Date: ${day}
 Time: ${time}
 ${videoConferenceUrl}
-${locationText}
-`;
+${locationText}`;
 	}
 
 	public CancelledBookingSMS(data): SMSmessage {

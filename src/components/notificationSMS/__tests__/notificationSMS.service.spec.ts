@@ -38,7 +38,7 @@ describe('Test of notification SMS', () => {
 	});
 
 	it('Should call post when sending an sms', async () => {
-		await Container.get(NotificationSMSService).send({ to: '8821 7161', message: '' });
+		await Container.get(NotificationSMSService).send({ phoneNumber: '8821 7161', message: '' });
 		expect(post).toHaveBeenCalledTimes(1);
 	});
 

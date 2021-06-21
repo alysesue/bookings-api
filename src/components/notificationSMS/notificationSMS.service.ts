@@ -8,7 +8,7 @@ import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 export type SMSmessage = string;
 
 export type SMS = {
-	to: string;
+	phoneNumber: string;
 	message: SMSmessage;
 };
 
@@ -17,9 +17,9 @@ export class NotificationSMSService {
 	private config = getConfig();
 
 	public async send(sms: SMS) {
-		const header = { 'mol-auth-type': 'SYSTEM', 'mol-token-bypass': true };
+		const header = { 'mol-auth-type': 'SYSTEM', 'mol-token-bypass': 'true' };
 		const path = this.config.molNotification.url + '/sms/api/v1/send-one';
-		await NotificationSMSService.validatePhone(sms.to);
+		await NotificationSMSService.validatePhone(sms.phoneNumber);
 		try {
 			await post(path, sms, header);
 		} catch (e) {
