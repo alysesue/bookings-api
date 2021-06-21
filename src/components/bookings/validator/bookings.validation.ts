@@ -57,6 +57,12 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 		}
 		if (!booking.citizenName) {
 			yield BookingBusinessValidations.CitizenNameNotProvided;
+		} else {
+			const nameWithWhiteSpaceRemoved = booking.citizenName.trim();
+			const regex = /^[^-\s]{1}[a-zA-Z0-9_,'\s-]+$/;
+			if (!regex.test(String(nameWithWhiteSpaceRemoved).toLowerCase())) {
+				yield BookingBusinessValidations.CitizenNameNotValid;
+			}
 		}
 		if (!booking.citizenEmail) {
 			yield BookingBusinessValidations.CitizenEmailNotProvided;
