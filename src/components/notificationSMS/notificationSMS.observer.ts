@@ -33,7 +33,7 @@ export class SMSObserver implements Observer {
 				: this.citizenSMSTemplateBookingActionByCitizen;
 			const sms = this.templateFactory(subject.booking, subject.bookingType, templates);
 
-			await this.notificationSMSService.send({ message: sms, to: subject.booking.citizenPhone });
+			await this.notificationSMSService.send({ message: sms, phoneNumber: subject.booking.citizenPhone });
 		}
 	}
 
