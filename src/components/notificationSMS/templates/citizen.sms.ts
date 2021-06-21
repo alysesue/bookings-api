@@ -83,7 +83,7 @@ Date: ${day}
 Time: ${time}
 ${videoConferenceUrl}
 ${locationText}
-test`;
+`;
 	}
 
 	public UpdatedBookingSMS(data): SMSmessage {
