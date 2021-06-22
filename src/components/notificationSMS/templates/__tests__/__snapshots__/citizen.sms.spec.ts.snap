@@ -2,6 +2,7 @@
 
 exports[`Notification SMS templates tests should create citizen sms for citizen cancelled booking 1`] = `
 "BookingSG cancellation: Career
+		
 You have cancelled the following booking.
 
 Booking for: Career.
@@ -47,6 +48,7 @@ Location: Some street"
 
 exports[`Notification SMS templates tests should create citizen sms for service provider cancelled booking 1`] = `
 "BookingSG cancellation: Career
+		
 The following booking has been cancelled by the other party.
 
 Booking for: Career.
