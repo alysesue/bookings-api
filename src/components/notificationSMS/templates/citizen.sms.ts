@@ -53,6 +53,7 @@ ${locationText}`;
 		);
 
 		return `BookingSG cancellation: ${serviceName}${serviceProviderText}
+		
 You have cancelled the following booking.
 
 Booking for: ${serviceName}${serviceProviderText}.
@@ -109,8 +110,8 @@ ${locationText}`;
 		const { serviceName, serviceProviderText, status, day, time, locationText, videoConferenceUrl } = emailMapper(
 			data,
 		);
-
 		return `BookingSG cancellation: ${serviceName}${serviceProviderText}
+		
 The following booking has been cancelled by the other party.
 
 Booking for: ${serviceName}${serviceProviderText}.
