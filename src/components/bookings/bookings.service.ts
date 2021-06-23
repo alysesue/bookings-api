@@ -20,7 +20,8 @@ import { BookingActionAuthVisitor } from './bookings.auth';
 import { BookingsValidatorFactory } from './validator/bookings.validation';
 import {
 	BookingAcceptRequest,
-	BookingDetailsRequest, BookingReject,
+	BookingDetailsRequest,
+	BookingReject,
 	BookingRequest,
 	BookingRequestExtraction,
 	BookingSearchRequest,

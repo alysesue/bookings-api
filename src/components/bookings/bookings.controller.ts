@@ -31,7 +31,7 @@ import {
 	BookingResponse,
 	BookingSearchRequest,
 	BookingUpdateRequest,
-    BookingReject,
+	BookingReject,
 } from './bookings.apicontract';
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
