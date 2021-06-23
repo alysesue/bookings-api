@@ -56,6 +56,7 @@ ${locationText}`;
 		);
 
 		return `BookingSG cancellation: ${serviceName}${serviceProviderText}
+		
 You have cancelled the following booking.
 
 Booking for: ${serviceName}${serviceProviderText}.
@@ -115,8 +116,8 @@ ${locationText}`;
 			data,
 			true,
 		);
-
 		return `BookingSG cancellation: ${serviceName}${serviceProviderText}
+		
 The following booking has been cancelled by the other party.
 
 Booking for: ${serviceName}${serviceProviderText}.
