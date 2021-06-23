@@ -10,6 +10,10 @@ export class BookingAcceptRequest {
 	public serviceProviderId: number;
 }
 
+export class BookingReject {
+	public reasonToReject?: string;
+}
+
 export class BookingDetailsRequest {
 	/**
 	 * An external reference Id for this booking (e.g. external Client Id or booking Id).

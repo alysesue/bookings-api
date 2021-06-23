@@ -20,7 +20,7 @@ import { BookingActionAuthVisitor } from './bookings.auth';
 import { BookingsValidatorFactory } from './validator/bookings.validation';
 import {
 	BookingAcceptRequest,
-	BookingDetailsRequest,
+	BookingDetailsRequest, BookingReject,
 	BookingRequest,
 	BookingRequestExtraction,
 	BookingSearchRequest,
@@ -158,8 +158,8 @@ export class BookingsService {
 		return booking;
 	}
 
-	public async rejectBooking(bookingId: number, reasonToReject?: string): Promise<Booking> {
-		const rejectAction = (_booking) => this.rejectBookingInternal(_booking, reasonToReject);
+	public async rejectBooking(bookingId: number, bookingReject: BookingReject): Promise<Booking> {
+		const rejectAction = (_booking) => this.rejectBookingInternal(_booking, bookingReject);
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
 			this.getBookingInternal.bind(this),
@@ -256,7 +256,7 @@ export class BookingsService {
 
 	private async rejectBookingInternal(
 		booking: Booking,
-		reasonToReject?: string,
+		bookingReject: BookingReject,
 	): Promise<[ChangeLogAction, Booking]> {
 		if (booking.status !== BookingStatus.PendingApproval) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
@@ -265,7 +265,7 @@ export class BookingsService {
 		}
 
 		booking.status = BookingStatus.Rejected;
-		booking.reasonToReject = reasonToReject;
+		booking.reasonToReject = bookingReject?.reasonToReject;
 
 		await this.loadBookingDependencies(booking);
 		await this.verifyActionPermission(booking, ChangeLogAction.Reject);
