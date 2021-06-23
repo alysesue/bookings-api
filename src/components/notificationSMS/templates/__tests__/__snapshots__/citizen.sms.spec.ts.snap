@@ -9,8 +9,8 @@ Booking for: Career.
 Booking status: Pending Approval
 Date: 14 April 2021
 Time: 10:00am - 11:00am
-Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>
-Location: <b>Some street</b>"
+Video Conference Link:http://www.zoom.us/1234567
+Location: Some street"
 `;
 
 exports[`Notification SMS templates tests should create citizen sms for citizen created booking 1`] = `
@@ -25,8 +25,8 @@ Below is a confirmation of your booking details.
 Booking status: Pending Approval
 Date: 14 April 2021
 Time: 10:00am - 11:00am
-Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>
-Location: <b>Some street</b>"
+Video Conference Link:http://www.zoom.us/1234567
+Location: Some street"
 `;
 
 exports[`Notification SMS templates tests should create citizen sms for citizen updated booking 1`] = `
@@ -41,8 +41,8 @@ Below is a confirmation of your updated booking details.
 Booking status: Pending Approval
 Date: 14 April 2021
 Time: 10:00am - 11:00am
-Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>
-Location: <b>Some street</b>"
+Video Conference Link:http://www.zoom.us/1234567
+Location: Some street"
 `;
 
 exports[`Notification SMS templates tests should create citizen sms for service provider cancelled booking 1`] = `
@@ -54,8 +54,8 @@ Booking for: Career.
 Booking status: Pending Approval
 Date: 14 April 2021
 Time: 10:00am - 11:00am
-Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>
-Location: <b>Some street</b>"
+Video Conference Link:http://www.zoom.us/1234567
+Location: Some street"
 `;
 
 exports[`Notification SMS templates tests should create citizen sms for service provider created booking 1`] = `
@@ -69,15 +69,15 @@ Below is a confirmation of your booking details.
 Booking status: Pending Approval
 Date: 14 April 2021
 Time: 10:00am - 11:00am
-Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>
-Location: <b>Some street</b>
+Video Conference Link:http://www.zoom.us/1234567
+Location: Some street
 "
 `;
 
 exports[`Notification SMS templates tests should create citizen sms for service provider updated booking 1`] = `
 "
 			BookingSG update: Career
-			
+
 There has been an update to your booking confirmation.
 
 Booking for: Career.
@@ -86,6 +86,6 @@ Below is a confirmation of your updated booking details.
 Booking status: Pending Approval
 Date: 14 April 2021
 Time: 10:00am - 11:00am
-Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>
-Location: <b>Some street</b>"
+Video Conference Link:http://www.zoom.us/1234567
+Location: Some street"
 `;
