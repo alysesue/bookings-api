@@ -158,11 +158,12 @@ export class BookingsService {
 		return booking;
 	}
 
-	public async rejectBooking(bookingId: number): Promise<Booking> {
+	public async rejectBooking(bookingId: number, reasonToReject?: string): Promise<Booking> {
+		const rejectAction = (_booking) => this.rejectBookingInternal(_booking, reasonToReject);
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
 			this.getBookingInternal.bind(this),
-			this.rejectBookingInternal.bind(this),
+			rejectAction,
 		);
 		this.bookingsSubject.notify({
 			booking,
@@ -253,7 +254,10 @@ export class BookingsService {
 		return [ChangeLogAction.Cancel, booking];
 	}
 
-	private async rejectBookingInternal(booking: Booking): Promise<[ChangeLogAction, Booking]> {
+	private async rejectBookingInternal(
+		booking: Booking,
+		reasonToReject?: string,
+	): Promise<[ChangeLogAction, Booking]> {
 		if (booking.status !== BookingStatus.PendingApproval) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Booking ${booking.id} is in invalid state for rejection`,
@@ -261,6 +265,7 @@ export class BookingsService {
 		}
 
 		booking.status = BookingStatus.Rejected;
+		booking.reasonToReject = reasonToReject;
 
 		await this.loadBookingDependencies(booking);
 		await this.verifyActionPermission(booking, ChangeLogAction.Reject);

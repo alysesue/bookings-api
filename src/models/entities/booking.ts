@@ -30,6 +30,7 @@ export class BookingBuilder {
 	public captchaToken: string;
 	public captchaOrigin: string;
 	public markOnHold: boolean;
+	public reasonToReject: string;
 
 	public withServiceId(serviceId: number): BookingBuilder {
 		this.serviceId = serviceId;
@@ -93,6 +94,11 @@ export class BookingBuilder {
 
 	public withCitizenEmail(citizenEmail: string): BookingBuilder {
 		this.citizenEmail = citizenEmail;
+		return this;
+	}
+
+	public withReasonToReject(reasonToReject: string): BookingBuilder {
+		this.reasonToReject = reasonToReject;
 		return this;
 	}
 
@@ -187,6 +193,9 @@ export class Booking {
 	@Column({ nullable: true })
 	private _videoConferenceUrl: string;
 
+	@Column({ nullable: true })
+	private _reasonToReject: string;
+
 	public get onHoldUntil(): Date {
 		return this._onHoldUntil;
 	}
@@ -246,6 +255,7 @@ export class Booking {
 		instance._citizenEmail = builder.citizenEmail;
 		instance._captchaToken = builder.captchaToken;
 		instance._captchaOrigin = builder.captchaOrigin;
+		instance._reasonToReject = builder.reasonToReject;
 
 		return instance;
 	}
@@ -356,6 +366,14 @@ export class Booking {
 
 	public set citizenEmail(citizenEmail: string) {
 		this._citizenEmail = citizenEmail;
+	}
+
+	public get reasonToReject(): string {
+		return this._reasonToReject;
+	}
+
+	public set reasonToReject(reasonToReject: string) {
+		this._reasonToReject = reasonToReject;
 	}
 
 	public get location(): string {

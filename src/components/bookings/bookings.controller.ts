@@ -376,8 +376,8 @@ export class BookingsController extends Controller {
 		agency: {},
 	})
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async rejectBooking(@Path() bookingId: number): Promise<void> {
-		await this.bookingsService.rejectBooking(bookingId);
+	public async rejectBooking(@Path() bookingId: number, reasonToReject?: string): Promise<void> {
+		await this.bookingsService.rejectBooking(bookingId, reasonToReject);
 	}
 
 	/**
