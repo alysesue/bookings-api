@@ -7,7 +7,7 @@ import {
 	BookingReject,
 	BookingRequest,
 	BookingResponse,
-	BookingUpdateRequest
+	BookingUpdateRequest,
 } from '../bookings.apicontract';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
@@ -313,7 +313,9 @@ describe('Bookings.Controller', () => {
 		const bookingId = 1;
 		BookingsServiceMock.mockRejectBooking = Promise.resolve(testBooking1);
 
-		await controller.rejectBooking(bookingId, {reasonToReject: "this is the reason i'm rejecting it"} as BookingReject);
+		await controller.rejectBooking(bookingId, {
+			reasonToReject: "this is the reason i'm rejecting it",
+		} as BookingReject);
 
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 	});
