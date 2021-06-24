@@ -2,7 +2,13 @@ import { Container } from 'typescript-ioc';
 import * as Koa from 'koa';
 import { Booking, BookingChangeLog, BookingStatus, Organisation, Service, User } from '../../../models';
 import { BookingsController } from '../bookings.controller';
-import { BookingAcceptRequest, BookingRequest, BookingResponse, BookingUpdateRequest } from '../bookings.apicontract';
+import {
+	BookingAcceptRequest,
+	BookingReject,
+	BookingRequest,
+	BookingResponse,
+	BookingUpdateRequest
+} from '../bookings.apicontract';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 import { KoaContextStore } from '../../../infrastructure/koaContextStore.middleware';
@@ -307,7 +313,7 @@ describe('Bookings.Controller', () => {
 		const bookingId = 1;
 		BookingsServiceMock.mockRejectBooking = Promise.resolve(testBooking1);
 
-		await controller.rejectBooking(bookingId);
+		await controller.rejectBooking(bookingId, {reasonToReject: "this is the reason i'm rejecting it"} as BookingReject);
 
 		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
 	});

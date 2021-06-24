@@ -12,7 +12,7 @@ import {
 	User,
 } from '../../../models';
 import {
-	BookingAcceptRequest,
+	BookingAcceptRequest, BookingReject,
 	BookingRequest,
 	BookingSearchRequest,
 	BookingUpdateRequest,
@@ -656,7 +656,7 @@ describe('Bookings.Service', () => {
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
 
-		const result = await bookingService.rejectBooking(1);
+		const result = await bookingService.rejectBooking(1, {reasonToReject: "this is the reason i'm rejecting it"} as BookingReject);
 
 		expect(result.status).toBe(BookingStatus.Rejected);
 	});
