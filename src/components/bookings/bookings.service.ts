@@ -31,6 +31,8 @@ import { BookingType } from '../../../src/models/bookingType';
 import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 import { logger } from 'mol-lib-common';
+import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
+import { Observer } from '../../infrastructure/observer';
 
 @InRequestScope
 export class BookingsService {
@@ -40,6 +42,8 @@ export class BookingsService {
 	private mailObserver: MailObserver;
 	@Inject
 	private lifeSGObserver: LifeSGObserver;
+	@Inject
+	private smsObserver: SMSObserver;
 	@Inject
 	public unavailabilitiesService: UnavailabilitiesService;
 	@Inject
@@ -64,10 +68,12 @@ export class BookingsService {
 	private bookingsMapper: BookingsMapper;
 
 	constructor() {
+		const observers: Observer[] = [this.mailObserver, this.smsObserver];
+
 		logger.debug(`====== lifeSG ======= ${getConfig().featureFlag.lifeSGSync}`);
-		this.bookingsSubject.attach(
-			getConfig().featureFlag.lifeSGSync ? [this.mailObserver, this.lifeSGObserver] : [this.mailObserver],
-		);
+		if (getConfig().featureFlag.lifeSGSync) observers.push(this.lifeSGObserver);
+
+		this.bookingsSubject.attach(observers);
 	}
 
 	private static canCreateOutOfSlot(user: User): boolean {

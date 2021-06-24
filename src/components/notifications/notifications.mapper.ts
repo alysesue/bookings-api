@@ -24,13 +24,13 @@ export interface MailOptions {
 	html: string;
 }
 
-export const emailMapper = (data: Booking): EmailData => {
+export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 	const status = BookingStatusDisplayedInEmails[data.status];
 	const serviceName = data.service?.name || '';
 	const serviceProviderName = data.serviceProvider?.name;
 	const serviceProviderText = serviceProviderName ? ` - ${serviceProviderName}` : '';
 	const location = data.location;
-	const locationText = location ? `Location: <b>${location}</b>` : '';
+	let locationText = location ? `Location: <b>${location}</b>` : '';
 	const day = DateHelper.getDateFormat(data.startDateTime);
 	const time = `${DateHelper.getTime12hFormatString(data.startDateTime)} - ${DateHelper.getTime12hFormatString(
 		data.endDateTime,
@@ -42,7 +42,14 @@ export const emailMapper = (data: Booking): EmailData => {
 	} else if (data.service.videoConferenceUrl) {
 		vcLink = data.service.videoConferenceUrl;
 	}
-	const videoConferenceUrl = vcLink ? `Video Conference Link: <a href='${vcLink}'>${vcLink}</a>` : '';
+	let videoConferenceUrl = vcLink ? `Video Conference Link: <a href='${vcLink}'>${vcLink}</a>` : '';
+
+	if (locationText.length && isSMS) {
+		locationText = `Location: ${location}`;
+	}
+	if (videoConferenceUrl && isSMS) {
+		videoConferenceUrl = `Video Conference Link:${vcLink}`;
+	}
 
 	return {
 		status,
