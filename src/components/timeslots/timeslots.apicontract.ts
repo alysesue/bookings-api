@@ -3,6 +3,7 @@ import { BookingResponse } from '../bookings/bookings.apicontract';
 import { LabelResponseModel } from '../labels/label.apicontract';
 
 export class AvailabilityEntryResponse {
+	//
 	/**
 	 * Start time of this timeslot
 	 */
@@ -96,6 +97,7 @@ export class TimeslotServiceProviderResponse {
 }
 
 export class TimeslotEntryResponse {
+	//
 	/**
 	 * Start time of this timeslot
 	 */

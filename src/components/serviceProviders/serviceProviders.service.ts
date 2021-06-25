@@ -142,6 +142,9 @@ export class ServiceProvidersService {
 		includeScheduleForm = false,
 		includeTimeslotsSchedule = false,
 	): Promise<ServiceProvider> {
+		const currentUser = await this.userContext.getCurrentUser();
+		const userIsAdmin = currentUser.isAdmin() || currentUser.isAgency();
+
 		const sp = await this.serviceProvidersRepository.getServiceProvider({
 			id,
 			includeScheduleForm,
@@ -150,7 +153,19 @@ export class ServiceProvidersService {
 		if (!sp) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Service provider with id ${id} not found`);
 		}
-		return sp;
+
+		if (!userIsAdmin) {
+			return ({
+				id: sp.id,
+				name: sp.name,
+				serviceId: sp.serviceId,
+				scheduleFormConfirmed: sp.scheduleFormConfirmed,
+				description: sp.description,
+				service: { isOnHold: sp.service.isOnHold },
+			} as unknown) as ServiceProvider;
+		} else {
+			return sp;
+		}
 	}
 	public async getServiceProvidersByName(searchKey: string, serviceId?: number): Promise<ServiceProvider[]> {
 		const spList = await this.serviceProvidersRepository.getServiceProvidersByName({
