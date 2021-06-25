@@ -18,6 +18,7 @@ describe('service/services.mapper', () => {
 		serviceData.emailSuffix = 'abc.com';
 		serviceData.isStandAlone = false;
 		serviceData.sendNotifications = true;
+		serviceData.sendSMSNotifications = true;
 
 		const labelResponse = new LabelResponseModel();
 		labelResponse.id = '1';
@@ -31,6 +32,8 @@ describe('service/services.mapper', () => {
 		expect(serviceResponse.emailSuffix).toBe('abc.com');
 		expect(serviceResponse.additionalSettings.isStandAlone).toBe(false);
 		expect(serviceResponse.additionalSettings.sendNotifications).toBe(true);
+		expect(serviceResponse.additionalSettings.sendNotificationsToServiceProviders).toBeUndefined();
+		expect(serviceResponse.additionalSettings.sendSMSNotifications).toBe(true);
 		expect(serviceResponse.labels[0].label).toBe('text');
 	});
 
@@ -42,12 +45,15 @@ describe('service/services.mapper', () => {
 		serviceRequest.additionalSettings = {} as AdditionalSettingsReq;
 		serviceRequest.additionalSettings.isStandAlone = false;
 		serviceRequest.additionalSettings.sendNotifications = true;
+		serviceRequest.additionalSettings.sendSMSNotifications = true;
 
 		ServicesMapper.mapFromServicePutRequest(serviceData, serviceRequest);
 		expect(serviceData.name).toBe('name');
 		expect(serviceData.emailSuffix).toBe('abc.com');
 		expect(serviceData.isStandAlone).toBe(false);
 		expect(serviceData.sendNotifications).toBe(true);
+		expect(serviceData.sendNotificationsToServiceProviders).toBeUndefined();
+		expect(serviceData.sendSMSNotifications).toBe(true);
 	});
 });
 

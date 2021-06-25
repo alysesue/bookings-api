@@ -1,6 +1,6 @@
 import { OrganisationAdminRequestEndpointSG } from '../utils/requestEndpointSG';
 import { ServiceProviderResponseModel } from '../../src/components/serviceProviders/serviceProviders.apicontract';
-import { ServiceResponse } from '../../src/components/services/service.apicontract';
+import { AdditionalSettingsReq, ServiceResponse } from '../../src/components/services/service.apicontract';
 import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslotItems.apicontract';
 import { OneOffTimeslotResponse } from '../../src/components/oneOffTimeslots/oneOffTimeslots.apicontract';
 import * as request from 'request';
@@ -31,13 +31,48 @@ export const populateService = async ({
 	return response.body.data;
 };
 
+export const populateServiceWithFields = async ({
+	organisation = 'localorg',
+	nameService = 'admin',
+	videoConferenceUrl,
+	additionalSettings,
+}: {
+	organisation?: string;
+	nameService?: string;
+	videoConferenceUrl?: string;
+	additionalSettings?: AdditionalSettingsReq;
+}): Promise<ServiceResponse> => {
+	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post('/services', {
+		body: { name: nameService, videoConferenceUrl, additionalSettings },
+	});
+	return response.body.data;
+};
+
+export const populateServiceWithAdditionalSettings = async ({
+	organisation = 'localorg',
+	nameService = 'admin',
+	additionalSettings = {
+		allowAnonymousBookings: false,
+		isOnHold: false,
+		isStandAlone: false,
+		sendNotifications: true,
+		sendNotificationsToServiceProviders: true,
+		sendSMSNotifications: false,
+	},
+}): Promise<ServiceResponse> => {
+	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post('/services', {
+		body: { name: nameService, additionalSettings },
+	});
+	return response.body.data;
+};
+
 export const populateServiceWithVC = async ({
 	organisation = 'localorg',
 	nameService = 'admin',
 	videoConferenceUrl = 'http://www.zoom.us/1234567',
 }): Promise<ServiceResponse> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post('/services', {
-		body: { name: nameService, videoConferenceUrl: videoConferenceUrl },
+		body: { name: nameService, videoConferenceUrl },
 	});
 	return response.body.data;
 };

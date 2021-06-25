@@ -24,4 +24,5 @@ export { LabelCategory1621479880832 } from './1621479880832-LabelCategory';
 export { SoftDeleteDynamicFields1623216158274 } from './1623216158274-SoftDeleteDynamicFields';
 export { ServiceDescription1623112179998 } from './1623112179998-ServiceDescription';
 export { ServiceProviderDescription1623113584184 } from './1623113584184-ServiceProviderDescription';
+export { ServiceFlagSendSMS1623916511199 } from './1623916511199-ServiceFlagSendSMS';
 export { ReasonToReject1624412487509 } from './1624412487509-ReasonToReject';
