@@ -25,3 +25,4 @@ export { SoftDeleteDynamicFields1623216158274 } from './1623216158274-SoftDelete
 export { ServiceDescription1623112179998 } from './1623112179998-ServiceDescription';
 export { ServiceProviderDescription1623113584184 } from './1623113584184-ServiceProviderDescription';
 export { ServiceFlagSendSMS1623916511199 } from './1623916511199-ServiceFlagSendSMS';
+export { ServiceProviderAliasName1624598751619 } from './1624598751619-ServiceProviderAliasName';
