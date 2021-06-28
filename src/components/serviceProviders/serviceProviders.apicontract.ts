@@ -9,7 +9,14 @@ export class ServiceProviderModel {
 	public description?: string | null;
 	public aliasName?: string;
 
-	constructor(name: string, email?: string, phone?: string, expiryDate?: Date, description?: string, aliasName?: string) {
+	constructor(
+		name: string,
+		email?: string,
+		phone?: string,
+		expiryDate?: Date,
+		description?: string,
+		aliasName?: string,
+	) {
 		this.name = name;
 		this.email = email;
 		this.phone = phone;
