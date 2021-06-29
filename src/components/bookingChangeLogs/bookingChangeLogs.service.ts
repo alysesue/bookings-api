@@ -55,6 +55,7 @@ export class BookingChangeLogsService {
 			jsonObj.serviceProviderName = serviceProvider.name;
 			jsonObj.serviceProviderEmail = serviceProvider.email;
 			jsonObj.serviceProviderPhone = serviceProvider.phone;
+			jsonObj.serviceProviderAliasName = serviceProvider.aliasName;
 		}
 
 		return jsonObj;
