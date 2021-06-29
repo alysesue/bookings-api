@@ -80,7 +80,6 @@ describe('ServiceProviders.Controller', () => {
 		const controller = Container.get(ServiceProvidersController);
 		await controller.getServiceProvidersByName('mon', 1);
 		expect(ServiceProvidersServiceMock.getServiceProvidersByNameMock).toHaveBeenCalled();
-		// expect(result).toBe('');
 	});
 
 	it('should get service providers with timeslots', async () => {
