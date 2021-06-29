@@ -3,15 +3,15 @@ import { emailMapper } from '../notifications.mapper';
 
 export class ServiceProviderEmailTemplateBookingActionByCitizen implements EmailBookingTemplate {
 	public CreatedBookingEmail(data) {
-		const { serviceName, serviceProviderText, status, day, time, locationText, videoConferenceUrl } = emailMapper(
+		const { serviceName, spNameDisplayedForServiceProvider, status, day, time, locationText, videoConferenceUrl } = emailMapper(
 			data,
 		);
 		return {
-			subject: `BookingSG request: ${serviceName}${serviceProviderText}`,
+			subject: `BookingSG request: ${serviceName}${spNameDisplayedForServiceProvider}`,
 			html: `<pre>
 You have received a new booking request.
 <br />
-Booking for: <b>${serviceName}${serviceProviderText}.</b>
+Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
 <br />
 Below is a summary of the booking request details.
 <br/>
@@ -25,15 +25,15 @@ ${locationText}
 	}
 
 	public UpdatedBookingEmail(data) {
-		const { serviceName, serviceProviderText, status, day, time, locationText, videoConferenceUrl } = emailMapper(
+		const { serviceName, spNameDisplayedForServiceProvider, status, day, time, locationText, videoConferenceUrl } = emailMapper(
 			data,
 		);
 		return {
-			subject: `BookingSG update: ${serviceName}${serviceProviderText}`,
+			subject: `BookingSG update: ${serviceName}${spNameDisplayedForServiceProvider}`,
 			html: `<pre>
 There has been an update to the following booking by the other party.
 <br />
-Booking for: <b>${serviceName}${serviceProviderText}.</b>
+Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
 <br />
 Below is a confirmation of the updated booking details.
 <br/>
@@ -47,15 +47,15 @@ ${locationText}
 	}
 
 	public CancelledBookingEmail(data) {
-		const { serviceName, serviceProviderText, status, day, time, locationText, videoConferenceUrl } = emailMapper(
+		const { serviceName, spNameDisplayedForServiceProvider, status, day, time, locationText, videoConferenceUrl } = emailMapper(
 			data,
 		);
 		return {
-			subject: `BookingSG cancellation: ${serviceName}${serviceProviderText}`,
+			subject: `BookingSG cancellation: ${serviceName}${spNameDisplayedForServiceProvider}`,
 			html: `<pre>
 The following booking has been cancelled by the other party.
 <br />
-Booking for: <b>${serviceName}${serviceProviderText}.</b>
+Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
 <br />
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>
@@ -69,15 +69,15 @@ ${locationText}
 
 export class ServiceProviderEmailTemplateBookingActionByServiceProvider implements EmailBookingTemplate {
 	public UpdatedBookingEmail(data) {
-		const { serviceName, serviceProviderText, status, day, time, locationText, videoConferenceUrl } = emailMapper(
+		const { serviceName, spNameDisplayedForServiceProvider, status, day, time, locationText, videoConferenceUrl } = emailMapper(
 			data,
 		);
 		return {
-			subject: `BookingSG update: ${serviceName}${serviceProviderText}`,
+			subject: `BookingSG update: ${serviceName}${spNameDisplayedForServiceProvider}`,
 			html: `<pre>
 You have updated a booking.
 <br />
-Booking for: <b>${serviceName}${serviceProviderText}.</b>
+Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
 <br />
 Below is a summary of your updated booking details.
 <br/>
@@ -91,15 +91,15 @@ ${locationText}
 	}
 
 	public CancelledBookingEmail(data): EmailTemplateBase {
-		const { serviceName, serviceProviderText, status, day, time, locationText, videoConferenceUrl } = emailMapper(
+		const { serviceName, spNameDisplayedForServiceProvider, status, day, time, locationText, videoConferenceUrl } = emailMapper(
 			data,
 		);
 		return {
-			subject: `BookingSG cancellation: ${serviceName}${serviceProviderText}`,
+			subject: `BookingSG cancellation: ${serviceName}${spNameDisplayedForServiceProvider}`,
 			html: `<pre>
 You have cancelled the following booking.
 <br />
-Booking for: <b>${serviceName}${serviceProviderText}.</b>
+Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
 <br />
 Booking status: <b>${status}</b>
 Date: <b>${day}</b>

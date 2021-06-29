@@ -6,7 +6,8 @@ class EmailData {
 	public status: string;
 	public serviceName: string;
 	public serviceProviderName: string;
-	public serviceProviderText: string;
+	public spNameDisplayedForServiceProvider: string;
+	public spNameDisplayedForCitizen: string;
 	public location: string;
 	public locationText: string;
 	public day: string;
@@ -28,7 +29,9 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 	const status = BookingStatusDisplayedInEmails[data.status];
 	const serviceName = data.service?.name || '';
 	const serviceProviderName = data.serviceProvider?.name;
-	const serviceProviderText = serviceProviderName ? ` - ${serviceProviderName}` : '';
+	const serviceProviderAliasName = data.serviceProvider?.aliasName;
+	const spNameDisplayedForCitizen = serviceProviderAliasName? ` - ${serviceProviderAliasName}` : serviceProviderName ? ` - ${serviceProviderName}` : '';
+	const spNameDisplayedForServiceProvider = serviceProviderName ? ` - ${serviceProviderName}` : '';
 	const location = data.location;
 	let locationText = location ? `Location: <b>${location}</b>` : '';
 	const day = DateHelper.getDateFormat(data.startDateTime);
@@ -55,7 +58,8 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 		status,
 		serviceName,
 		serviceProviderName,
-		serviceProviderText,
+		spNameDisplayedForCitizen,
+		spNameDisplayedForServiceProvider,
 		location,
 		locationText,
 		day,

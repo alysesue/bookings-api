@@ -239,7 +239,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		this._description = value;
 	}
 
-	@Column({ type: 'varchar', length: 100, nullable: true })
+	@Column({ type: 'varchar', length: 300, nullable: true })
 	private _aliasName: string;
 
 	public get aliasName(): string {

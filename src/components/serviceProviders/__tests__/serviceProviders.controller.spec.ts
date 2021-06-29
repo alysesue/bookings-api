@@ -83,7 +83,9 @@ describe('ServiceProviders.Controller', () => {
 	});
 
 	it('should get a service provider', async () => {
-		ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(ServiceProvider.create('Monica', 1, null, null, null, null, 'description', 'alias name'));
+		ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(
+			ServiceProvider.create('Monica', 1, null, null, null, null, 'description', 'alias name'),
+		);
 
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProvider(1);
