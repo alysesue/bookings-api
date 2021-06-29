@@ -146,16 +146,12 @@ describe('ServiceProviders.Service', () => {
 	});
 
 	it('should get service provider by Id', async () => {
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
-		serviceProviderMock.service = new Service();
-		serviceProviderMock.service.isOnHold = false;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		const result = await Container.get(ServiceProvidersService).getServiceProvider(1, true, true);
 		expect(result.name).toBe('Service Provider');
 	});
 
 	it('should throw error when service provider is not found', async () => {
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		ServiceProvidersRepositoryMock.getServiceProviderMock = null;
 		await expect(
 			async () => await Container.get(ServiceProvidersService).getServiceProvider(1, true, true),
@@ -236,7 +232,6 @@ describe('ServiceProviders.Service', () => {
 		UserContextMock.getAuthGroups.mockReturnValue(
 			Promise.resolve([new OrganisationAdminAuthGroup(adminMock, [organisation])]),
 		);
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		const serviceProviderData = ServiceProvider.create(
 			'Peter',
 			serviceMockWithTemplate.id,
@@ -270,14 +265,12 @@ describe('ServiceProviders.Service', () => {
 	it('should get provider schedule', async () => {
 		serviceProviderMock.scheduleForm = new ScheduleForm();
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 
 		const schedule = await Container.get(ServiceProvidersService).getProviderScheduleForm(1);
 		expect(schedule).toBeDefined();
 	});
 
 	it('should throw error when service provider schedule form is not found', async () => {
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		serviceProviderMock.scheduleForm = null;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 
@@ -289,7 +282,6 @@ describe('ServiceProviders.Service', () => {
 	});
 
 	it('should get timeslots schedule for service provider', async () => {
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMockWithTemplate;
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		const timeslotsScheduleResponse = await serviceProvidersService.getTimeslotItems(1);
@@ -299,7 +291,6 @@ describe('ServiceProviders.Service', () => {
 	});
 
 	it('should get timeslots schedule from service if no timeslots schedule provider', async () => {
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ServicesServiceMock.getServiceTimeslotsSchedule.mockReturnValue(serviceMockWithTemplate.timeslotsSchedule);
 		const serviceProvidersService = Container.get(ServiceProvidersService);
@@ -311,7 +302,6 @@ describe('ServiceProviders.Service', () => {
 
 	it('should add timeslots schedule for service provider', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMockWithTemplate;
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProvider)]),
 		);
@@ -342,7 +332,6 @@ describe('ServiceProviders.Service', () => {
 	});
 
 	it('should update timeslots schedule service provider', async () => {
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMockWithTemplate;
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
@@ -352,7 +341,6 @@ describe('ServiceProviders.Service', () => {
 	});
 
 	it('should copy timeslots schedule item for service to service provider and update', async () => {
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ServicesServiceMock.getServiceTimeslotsSchedule.mockReturnValue(serviceMockWithTemplate.timeslotsSchedule);
 
@@ -363,7 +351,6 @@ describe('ServiceProviders.Service', () => {
 	});
 
 	it('should delete timeslot item for service provider', async () => {
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMockWithTemplate;
 		const serviceProvidersService = Container.get(ServiceProvidersService);
 		await serviceProvidersService.deleteTimeslotItem(1, 4);
@@ -372,7 +359,6 @@ describe('ServiceProviders.Service', () => {
 	});
 
 	it('should copy timeslots of service  for service provider and not adding the target timeslots', async () => {
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ServicesServiceMock.getServiceTimeslotsSchedule.mockReturnValue(serviceMockWithTemplate.timeslotsSchedule);
 		const serviceProvidersService = Container.get(ServiceProvidersService);
