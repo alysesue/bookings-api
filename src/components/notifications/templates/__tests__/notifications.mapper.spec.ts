@@ -13,9 +13,15 @@ describe('Notification mapper tests', () => {
 	booking.videoConferenceUrl = 'http://www.zoom.us/1234567';
 
 	it('all fields should be defined', () => {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = emailMapper(
-			booking,
-		);
+		const {
+			serviceName,
+			spNameDisplayedForCitizen,
+			status,
+			day,
+			time,
+			locationText,
+			videoConferenceUrl,
+		} = emailMapper(booking);
 		expect(day).toEqual(`14 April 2021`);
 		expect(time).toEqual(`10:00am - 11:00am`);
 		expect(status).toEqual(`Pending Approval`);

@@ -9,10 +9,15 @@ export abstract class SMSBookingTemplate {
 
 export class CitizenSMSTemplateBookingActionByCitizen implements SMSBookingTemplate {
 	public CreatedBookingSMS(data): SMSmessage {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = emailMapper(
-			data,
-			true,
-		);
+		const {
+			serviceName,
+			spNameDisplayedForCitizen,
+			status,
+			day,
+			time,
+			locationText,
+			videoConferenceUrl,
+		} = emailMapper(data, true);
 
 		return `
 BookingSG confirmation: ${serviceName}${spNameDisplayedForCitizen}
@@ -30,10 +35,15 @@ ${locationText}`;
 	}
 
 	public UpdatedBookingSMS(data): SMSmessage {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = emailMapper(
-			data,
-			true,
-		);
+		const {
+			serviceName,
+			spNameDisplayedForCitizen,
+			status,
+			day,
+			time,
+			locationText,
+			videoConferenceUrl,
+		} = emailMapper(data, true);
 		return `
 BookingSG update: ${serviceName}${spNameDisplayedForCitizen}
 
@@ -50,10 +60,15 @@ ${locationText}`;
 	}
 
 	public CancelledBookingSMS(data): SMSmessage {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = emailMapper(
-			data,
-			true,
-		);
+		const {
+			serviceName,
+			spNameDisplayedForCitizen,
+			status,
+			day,
+			time,
+			locationText,
+			videoConferenceUrl,
+		} = emailMapper(data, true);
 
 		return `BookingSG cancellation: ${serviceName}${spNameDisplayedForCitizen}
 		
@@ -71,10 +86,15 @@ ${locationText}`;
 
 export class CitizenSMSTemplateBookingActionByServiceProvider implements SMSBookingTemplate {
 	public CreatedBookingSMS(data): SMSmessage {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = emailMapper(
-			data,
-			true,
-		);
+		const {
+			serviceName,
+			spNameDisplayedForCitizen,
+			status,
+			day,
+			time,
+			locationText,
+			videoConferenceUrl,
+		} = emailMapper(data, true);
 
 		return `BookingSG confirmation: ${serviceName}${spNameDisplayedForCitizen}
 
@@ -92,10 +112,15 @@ ${locationText}
 	}
 
 	public UpdatedBookingSMS(data): SMSmessage {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = emailMapper(
-			data,
-			true,
-		);
+		const {
+			serviceName,
+			spNameDisplayedForCitizen,
+			status,
+			day,
+			time,
+			locationText,
+			videoConferenceUrl,
+		} = emailMapper(data, true);
 		return `
 			BookingSG update: ${serviceName}${spNameDisplayedForCitizen}
 
@@ -112,10 +137,15 @@ ${locationText}`;
 	}
 
 	public CancelledBookingSMS(data): SMSmessage {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = emailMapper(
-			data,
-			true,
-		);
+		const {
+			serviceName,
+			spNameDisplayedForCitizen,
+			status,
+			day,
+			time,
+			locationText,
+			videoConferenceUrl,
+		} = emailMapper(data, true);
 		return `BookingSG cancellation: ${serviceName}${spNameDisplayedForCitizen}
 		
 The following booking has been cancelled by the other party.
