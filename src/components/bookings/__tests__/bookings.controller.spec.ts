@@ -308,7 +308,19 @@ describe('Bookings.Controller', () => {
 		expect(result).toBeDefined();
 	});
 
-	it('should reject booking', async () => {
+	it('should reject booking without reason', async () => {
+		const controller = Container.get(BookingsController);
+		const bookingId = 1;
+		BookingsServiceMock.mockRejectBooking = Promise.resolve(testBooking1);
+
+		await controller.rejectBooking(bookingId, {
+			reasonToReject: undefined,
+		} as BookingReject);
+
+		expect(BookingsServiceMock.mockBookingId).toBe(bookingId);
+	});
+
+	it('should reject booking with reason', async () => {
 		const controller = Container.get(BookingsController);
 		const bookingId = 1;
 		BookingsServiceMock.mockRejectBooking = Promise.resolve(testBooking1);

@@ -643,7 +643,28 @@ describe('Bookings.Service', () => {
 		expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Update);
 	});
 
-	it('should reject booking', async () => {
+	it('should reject booking without reason', async () => {
+		const bookingService = Container.get(BookingsService);
+		BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
+
+		const result = await bookingService.rejectBooking(1, {
+			reasonToReject: undefined,
+		} as BookingReject);
+
+		expect(result.status).toBe(BookingStatus.Rejected);
+	});
+
+	it('should reject booking with reason', async () => {
 		const bookingService = Container.get(BookingsService);
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(1)
