@@ -13,14 +13,14 @@ describe('Notification mapper tests', () => {
 	booking.videoConferenceUrl = 'http://www.zoom.us/1234567';
 
 	it('all fields should be defined', () => {
-		const { serviceName, serviceProviderText, status, day, time, locationText, videoConferenceUrl } = emailMapper(
+		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = emailMapper(
 			booking,
 		);
 		expect(day).toEqual(`14 April 2021`);
 		expect(time).toEqual(`10:00am - 11:00am`);
 		expect(status).toEqual(`Pending Approval`);
 		expect(serviceName).toEqual(`Career`);
-		expect(serviceProviderText).toEqual(` - armin`);
+		expect(spNameDisplayedForCitizen).toEqual(` - armin`);
 		expect(locationText).toEqual(`Location: <b>Some street</b>`);
 		expect(videoConferenceUrl).toEqual(
 			`Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>`,
@@ -37,8 +37,8 @@ describe('Notification mapper tests', () => {
 	it('booking service provider text should be empty', () => {
 		booking.serviceProvider = {} as ServiceProvider;
 
-		const { serviceProviderText } = emailMapper(booking);
-		expect(serviceProviderText).toEqual(``);
+		const { spNameDisplayedForCitizen } = emailMapper(booking);
+		expect(spNameDisplayedForCitizen).toEqual(``);
 	});
 
 	it('booking location text should be empty', () => {
