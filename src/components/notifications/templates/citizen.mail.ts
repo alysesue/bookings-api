@@ -13,9 +13,15 @@ export abstract class EmailBookingTemplate {
 
 export class CitizenEmailTemplateBookingActionByCitizen implements EmailBookingTemplate {
 	public CreatedBookingEmail(data): EmailTemplateBase {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = emailMapper(
-			data,
-		);
+		const {
+			serviceName,
+			spNameDisplayedForCitizen,
+			status,
+			day,
+			time,
+			locationText,
+			videoConferenceUrl,
+		} = emailMapper(data);
 
 		return {
 			subject: `BookingSG confirmation: ${serviceName}${spNameDisplayedForCitizen}`,
@@ -35,9 +41,15 @@ ${locationText}
 	}
 
 	public UpdatedBookingEmail(data): EmailTemplateBase {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = emailMapper(
-			data,
-		);
+		const {
+			serviceName,
+			spNameDisplayedForCitizen,
+			status,
+			day,
+			time,
+			locationText,
+			videoConferenceUrl,
+		} = emailMapper(data);
 
 		return {
 			subject: `BookingSG update: ${serviceName}${spNameDisplayedForCitizen}`,
@@ -57,9 +69,15 @@ ${locationText}
 	}
 
 	public CancelledBookingEmail(data): EmailTemplateBase {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = emailMapper(
-			data,
-		);
+		const {
+			serviceName,
+			spNameDisplayedForCitizen,
+			status,
+			day,
+			time,
+			locationText,
+			videoConferenceUrl,
+		} = emailMapper(data);
 
 		return {
 			subject: `BookingSG cancellation: ${serviceName}${spNameDisplayedForCitizen}`,
@@ -80,9 +98,15 @@ ${locationText}
 
 export class CitizenEmailTemplateBookingActionByServiceProvider implements EmailBookingTemplate {
 	public CreatedBookingEmail(data): EmailTemplateBase {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = emailMapper(
-			data,
-		);
+		const {
+			serviceName,
+			spNameDisplayedForCitizen,
+			status,
+			day,
+			time,
+			locationText,
+			videoConferenceUrl,
+		} = emailMapper(data);
 
 		return {
 			subject: `BookingSG confirmation: ${serviceName}${spNameDisplayedForCitizen}`,
@@ -102,9 +126,15 @@ ${locationText}
 	}
 
 	public UpdatedBookingEmail(data): EmailTemplateBase {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = emailMapper(
-			data,
-		);
+		const {
+			serviceName,
+			spNameDisplayedForCitizen,
+			status,
+			day,
+			time,
+			locationText,
+			videoConferenceUrl,
+		} = emailMapper(data);
 
 		return {
 			subject: `BookingSG update: ${serviceName}${spNameDisplayedForCitizen}`,
@@ -124,9 +154,15 @@ ${locationText}
 	}
 
 	public CancelledBookingEmail(data): EmailTemplateBase {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = emailMapper(
-			data,
-		);
+		const {
+			serviceName,
+			spNameDisplayedForCitizen,
+			status,
+			day,
+			time,
+			locationText,
+			videoConferenceUrl,
+		} = emailMapper(data);
 
 		return {
 			subject: `BookingSG cancellation: ${serviceName}${spNameDisplayedForCitizen}`,

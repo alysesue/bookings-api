@@ -30,7 +30,11 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 	const serviceName = data.service?.name || '';
 	const serviceProviderName = data.serviceProvider?.name;
 	const serviceProviderAliasName = data.serviceProvider?.aliasName;
-	const spNameDisplayedForCitizen = serviceProviderAliasName? ` - ${serviceProviderAliasName}` : serviceProviderName ? ` - ${serviceProviderName}` : '';
+	const spNameDisplayedForCitizen = serviceProviderAliasName
+		? ` - ${serviceProviderAliasName}`
+		: serviceProviderName
+		? ` - ${serviceProviderName}`
+		: '';
 	const spNameDisplayedForServiceProvider = serviceProviderName ? ` - ${serviceProviderName}` : '';
 	const location = data.location;
 	let locationText = location ? `Location: <b>${location}</b>` : '';
