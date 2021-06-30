@@ -139,8 +139,7 @@ ${locationText}
 			subject: `BookingSG cancellation: ${serviceName}${serviceProviderText}`,
 			html: `<pre>
 The following booking has been cancelled by the other party.
-<br />
-Reason: ${reasonToReject}.
+${reasonToReject}
 <br />
 Booking for: <b>${serviceName}${serviceProviderText}.</b>
 <br />

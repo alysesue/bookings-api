@@ -57,8 +57,7 @@ exports[`Notification templates tests should create citizen email for service pr
 Object {
   "html": "<pre>
 The following booking has been cancelled by the other party.
-<br />
-Reason: undefined.
+
 <br />
 Booking for: <b>Career.</b>
 <br />
