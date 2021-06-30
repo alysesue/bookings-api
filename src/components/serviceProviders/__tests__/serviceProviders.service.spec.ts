@@ -269,6 +269,7 @@ describe('ServiceProviders.Service', () => {
 		const schedule = await Container.get(ServiceProvidersService).getProviderScheduleForm(1);
 		expect(schedule).toBeDefined();
 	});
+
 	it('should throw error when service provider schedule form is not found', async () => {
 		serviceProviderMock.scheduleForm = null;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
@@ -301,7 +302,6 @@ describe('ServiceProviders.Service', () => {
 
 	it('should add timeslots schedule for service provider', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMockWithTemplate;
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProvider)]),
 		);

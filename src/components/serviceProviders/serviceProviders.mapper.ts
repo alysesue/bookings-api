@@ -1,4 +1,4 @@
-import { InRequestScope } from 'typescript-ioc';
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { Service, ServiceProvider, ServiceProviderGroupMap } from '../../models';
 import { mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
 import { mapToResponse as mapScheduleFormResponse } from '../scheduleForms/scheduleForms.mapper';
@@ -8,13 +8,20 @@ import {
 	ServiceProviderResponseModel,
 	ServiceProviderSummaryModel,
 } from './serviceProviders.apicontract';
+import { UserContext } from '../../infrastructure/auth/userContext';
 
 @InRequestScope
 export class ServiceProvidersMapper {
-	public mapDataModel(
+	@Inject
+	private userContext: UserContext;
+
+	public async mapDataModel(
 		spData: ServiceProvider,
 		options: { includeTimeslotsSchedule?: boolean; includeScheduleForm?: boolean },
-	): ServiceProviderResponseModel {
+	): Promise<ServiceProviderResponseModel> {
+		const currentUser = await this.userContext.getCurrentUser();
+		const userIsAdmin = currentUser.isAdmin() || currentUser.isAgency();
+
 		const response = new ServiceProviderResponseModel();
 		if (options.includeTimeslotsSchedule) {
 			response.timeslotsSchedule = mapToTimeslotsScheduleResponse(spData.timeslotsSchedule);
@@ -26,24 +33,31 @@ export class ServiceProvidersMapper {
 		response.id = spData.id;
 		response.name = spData.name;
 		response.serviceId = spData.serviceId;
-		response.email = spData.email;
-		response.phone = spData.phone;
-		response.expiryDate = spData.expiryDate;
 		response.scheduleFormConfirmed = spData.scheduleFormConfirmed;
-		response.agencyUserId = spData.agencyUserId;
 		response.description = spData?.description;
+		response.onHoldEnabled = spData.service?.isOnHold;
 		response.aliasName = spData.aliasName;
 
-		response.onHoldEnabled = spData.service?.isOnHold;
+		if (userIsAdmin) {
+			response.email = spData.email;
+			response.phone = spData.phone;
+			response.expiryDate = spData.expiryDate;
+			response.agencyUserId = spData.agencyUserId;
+		}
 
 		return response;
 	}
 
-	public mapDataModels(
+	public async mapDataModels(
 		spList: ServiceProvider[],
 		options: { includeTimeslotsSchedule?: boolean; includeScheduleForm?: boolean },
-	): ServiceProviderResponseModel[] {
-		return spList?.map((e) => this.mapDataModel(e, options));
+	): Promise<ServiceProviderResponseModel[]> {
+		const result = [];
+
+		for (const sp of spList) {
+			result.push(await this.mapDataModel(sp, options));
+		}
+		return result;
 	}
 
 	public mapSummaryDataModel(entry: ServiceProvider): ServiceProviderSummaryModel {
