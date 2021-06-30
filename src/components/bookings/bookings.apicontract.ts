@@ -89,6 +89,7 @@ export type BookingResponse = {
 	refId?: string;
 	videoConferenceUrl?: string;
 	dynamicValues?: DynamicValueContract[];
+	reasonToReject?: string;
 };
 
 export type BookingSearchRequest = {

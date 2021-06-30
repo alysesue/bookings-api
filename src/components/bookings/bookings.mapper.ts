@@ -92,6 +92,7 @@ export class BookingsMapper {
 			videoConferenceUrl: booking.videoConferenceUrl,
 			refId: booking.refId,
 			dynamicValues: this.dynamicValuesMapper.mapDynamicValuesModel(booking.dynamicValues),
+			reasonToReject: booking.reasonToReject,
 		} as BookingResponse;
 	}
 
