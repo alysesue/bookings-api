@@ -53,14 +53,15 @@ export class TimeslotsController extends Controller {
 	): Promise<ApiData<AvailabilityEntryResponse[]>> {
 		const labelIdsNumber = labelIds && labelIds.length > 0 ? labelIds.map((id) => this.idHasher.decode(id)) : [];
 
-		let timeslots = await this.timeslotsService.getAggregatedTimeslots(
-			startDate,
-			endDate,
+		let timeslots = await this.timeslotsService.getAggregatedTimeslots({
+			startDateTime: startDate,
+			endDateTime: endDate,
 			serviceId,
-			exactTimeslot,
-			serviceProviderId ? [serviceProviderId] : undefined,
-			labelIdsNumber,
-		);
+			includeBookings: exactTimeslot,
+			serviceProviderIds: serviceProviderId ? [serviceProviderId] : undefined,
+			labelIds: labelIdsNumber,
+			filterDaysInAdvance: true,
+		});
 
 		if (exactTimeslot) {
 			timeslots = timeslots.filter(
@@ -109,13 +110,14 @@ export class TimeslotsController extends Controller {
 		if (DateHelper.DiffInDays(endDate, startDate) > this.MAX_NUMBER_OF_DAYS_TO_FETCH_TIMESLOT) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Date Range cannot be more than 31 days');
 		}
-		const timeslots = await this.timeslotsService.getAggregatedTimeslots(
-			startDate,
-			endDate,
+		const timeslots = await this.timeslotsService.getAggregatedTimeslots({
+			startDateTime: startDate,
+			endDateTime: endDate,
 			serviceId,
-			false,
+			includeBookings: false,
 			serviceProviderIds,
-		);
+			filterDaysInAdvance: false,
+		});
 
 		const result = this.timeslotMapper.groupAvailabilityByDateResponse(timeslots);
 
@@ -159,14 +161,15 @@ export class TimeslotsController extends Controller {
 					: [0];
 		}
 
-		const timeslots = await this.timeslotsService.getAggregatedTimeslots(
-			startDate,
-			endDate,
+		const timeslots = await this.timeslotsService.getAggregatedTimeslots({
+			startDateTime: startDate,
+			endDateTime: endDate,
 			serviceId,
 			includeBookings,
-			spIdsFilter,
-			labelIdsNumber,
-		);
+			serviceProviderIds: spIdsFilter,
+			labelIds: labelIdsNumber,
+			filterDaysInAdvance: false,
+		});
 
 		const userContextSnapshot = await this.userContext.getSnapshot();
 		return ApiDataFactory.create(

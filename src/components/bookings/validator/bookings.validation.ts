@@ -143,7 +143,7 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 }
 
 @Scoped(Scope.Local)
-class OutOfSlotBookingValidator extends BookingsValidator {
+class AdminBookingValidator extends BookingsValidator {
 	@Inject
 	private bookingsRepository: BookingsRepository;
 	@Inject
@@ -167,13 +167,14 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 	}
 
 	protected async *validateAvailability(booking: Booking): AsyncIterable<BusinessValidation> {
-		const existingTimeslot = await this.timeslotsService.getAggregatedTimeslots(
-			booking.startDateTime,
-			booking.endDateTime,
-			booking.serviceId,
-			true,
-			booking.serviceProviderId ? [booking.serviceProviderId] : undefined,
-		);
+		const existingTimeslot = await this.timeslotsService.getAggregatedTimeslots({
+			startDateTime: booking.startDateTime,
+			endDateTime: booking.endDateTime,
+			serviceId: booking.serviceId,
+			includeBookings: true,
+			serviceProviderIds: booking.serviceProviderId ? [booking.serviceProviderId] : undefined,
+			filterDaysInAdvance: false,
+		});
 
 		const timeslotOrBoookingExists = existingTimeslot.some(
 			(i) => i.startTime === booking.startDateTime.getTime() && i.endTime === booking.endDateTime.getTime(),
@@ -252,30 +253,32 @@ class OutOfSlotBookingValidator extends BookingsValidator {
 }
 
 @Scoped(Scope.Local)
-class SlotBookingsValidator extends BookingsValidator {
+class CitizenBookingValidator extends BookingsValidator {
 	@Inject
 	private timeslotsService: TimeslotsService;
 
 	protected async *validateAvailability(booking: Booking): AsyncIterable<BusinessValidation> {
 		if (booking.serviceProviderId) {
-			const isProviderAvailable = await this.timeslotsService.isProviderAvailableForTimeslot(
-				booking.startDateTime,
-				booking.endDateTime,
-				booking.serviceId,
-				booking.serviceProviderId,
-				false,
-			);
+			const isProviderAvailable = await this.timeslotsService.isProviderAvailableForTimeslot({
+				startDateTime: booking.startDateTime,
+				endDateTime: booking.endDateTime,
+				serviceId: booking.serviceId,
+				serviceProviderId: booking.serviceProviderId,
+				skipUnassigned: false,
+				filterDaysInAdvance: true,
+			});
 
 			if (!isProviderAvailable) {
 				yield BookingBusinessValidations.ServiceProviderNotAvailable;
 			}
 		} else {
-			const providers = await this.timeslotsService.getAvailableProvidersForTimeslot(
-				booking.startDateTime,
-				booking.endDateTime,
-				booking.serviceId,
-				false,
-			);
+			const providers = await this.timeslotsService.getAvailableProvidersForTimeslot({
+				startDateTime: booking.startDateTime,
+				endDateTime: booking.endDateTime,
+				serviceId: booking.serviceId,
+				skipUnassigned: false,
+				filterDaysInAdvance: true,
+			});
 
 			if (providers.length === 0) {
 				yield BookingBusinessValidations.ServiceProvidersNotAvailable;
@@ -292,7 +295,7 @@ class SlotBookingsValidator extends BookingsValidator {
 }
 
 @Scoped(Scope.Local)
-class ConfirmOnHoldBookingValidator extends OutOfSlotBookingValidator {
+class ConfirmOnHoldBookingValidator extends AdminBookingValidator {
 	constructor() {
 		super(false);
 	}
@@ -303,11 +306,11 @@ export class BookingsValidatorFactory {
 	@Inject
 	private containerContext: ContainerContext;
 
-	public getValidator(outOfSlotBooking: boolean): IBookingsValidator {
-		if (outOfSlotBooking) {
-			return this.containerContext.resolve(OutOfSlotBookingValidator);
+	public getValidator(useAdminValidator: boolean): IBookingsValidator {
+		if (useAdminValidator) {
+			return this.containerContext.resolve(AdminBookingValidator);
 		} else {
-			return this.containerContext.resolve(SlotBookingsValidator);
+			return this.containerContext.resolve(CitizenBookingValidator);
 		}
 	}
 

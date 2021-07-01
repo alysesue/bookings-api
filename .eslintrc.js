@@ -17,13 +17,18 @@ module.exports = {
 		es6: true,
 		node: true,
 	},
-	extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'],
+	extends: [
+		'eslint:recommended',
+		'plugin:@typescript-eslint/eslint-recommended',
+		'plugin:@typescript-eslint/recommended',
+		'prettier',
+	],
 	parser: '@typescript-eslint/parser',
 	parserOptions: {
 		ecmaVersion: 2020,
 		sourceType: 'module',
 		emitWarning: true,
-		project: 'tsconfig.json',
+		project: './tsconfig.json',
 	},
 	plugins: [
 		'eslint-plugin-jsdoc',

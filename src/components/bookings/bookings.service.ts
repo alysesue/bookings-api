@@ -22,7 +22,6 @@ import {
 	BookingAcceptRequest,
 	BookingDetailsRequest,
 	BookingRequest,
-	BookingRequestExtraction,
 	BookingSearchRequest,
 	BookingUpdateRequest,
 } from './bookings.apicontract';
@@ -76,7 +75,7 @@ export class BookingsService {
 		this.bookingsSubject.attach(observers);
 	}
 
-	private static canCreateOutOfSlot(user: User): boolean {
+	private static useAdminValidator(user: User): boolean {
 		return user.isAdmin() || user.isAgency();
 	}
 
@@ -311,13 +310,14 @@ export class BookingsService {
 		}
 
 		if (booking.serviceProviderId !== acceptRequest.serviceProviderId) {
-			const isProviderAvailable = await this.timeslotsService.isProviderAvailableForTimeslot(
-				booking.startDateTime,
-				booking.endDateTime,
-				booking.serviceId,
-				acceptRequest.serviceProviderId,
-				true,
-			);
+			const isProviderAvailable = await this.timeslotsService.isProviderAvailableForTimeslot({
+				startDateTime: booking.startDateTime,
+				endDateTime: booking.endDateTime,
+				serviceId: booking.serviceId,
+				serviceProviderId: acceptRequest.serviceProviderId,
+				skipUnassigned: true,
+				filterDaysInAdvance: false,
+			});
 
 			if (!isProviderAvailable) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
@@ -343,7 +343,7 @@ export class BookingsService {
 	): Promise<[ChangeLogAction, Booking]> {
 		const updatedBooking = previousBooking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
-		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
+		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.useAdminValidator(currentUser));
 		validator.bypassCaptcha(getConfig().isAutomatedTest);
 
 		BookingsMapper.mapRequest(bookingRequest, updatedBooking, currentUser);
@@ -377,13 +377,14 @@ export class BookingsService {
 		}
 		return booking;
 	}
+
 	private async bookingRequestExtraction(
 		bookingRequest: BookingRequest,
 		serviceId: number,
 	): Promise<BookingRequestExtraction> {
 		const currentUser = await this.userContext.getCurrentUser();
-		const isAdminUser = currentUser.adminUser;
-		const isAgencyUser = currentUser.agencyUser;
+		const isAdminUser = currentUser.isAdmin();
+		const isAgencyUser = currentUser.isAgency();
 		const service: Service = await this.servicesService.getService(serviceId);
 		const isOnHold = service.isOnHold;
 		const isStandAlone = service.isStandAlone;
@@ -391,7 +392,7 @@ export class BookingsService {
 			? bookingRequest.videoConferenceUrl
 			: service.videoConferenceUrl;
 
-		return ({
+		return {
 			currentUser,
 			isAdminUser,
 			isAgencyUser,
@@ -399,7 +400,7 @@ export class BookingsService {
 			isOnHold,
 			isStandAlone,
 			videoConferenceUrl,
-		} as any) as BookingRequestExtraction;
+		} as BookingRequestExtraction;
 	}
 
 	private async saveInternal(
@@ -416,6 +417,7 @@ export class BookingsService {
 			isStandAlone,
 			videoConferenceUrl,
 		} = await this.bookingRequestExtraction(bookingRequest, serviceId);
+		const useAdminValidator = BookingsService.useAdminValidator(currentUser);
 
 		let serviceProvider: ServiceProvider | undefined;
 		if (bookingRequest.serviceProviderId) {
@@ -424,6 +426,7 @@ export class BookingsService {
 			const serviceProviders = await this.serviceProvidersService.getAvailableServiceProviders(
 				bookingRequest.startDateTime,
 				bookingRequest.endDateTime,
+				!useAdminValidator,
 				serviceId,
 			);
 			const random = randomIndex(serviceProviders);
@@ -457,7 +460,7 @@ export class BookingsService {
 			.withCaptchaOrigin(bookingRequest.captchaOrigin)
 			.build();
 
-		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.canCreateOutOfSlot(currentUser));
+		const validator = this.bookingsValidatorFactory.getValidator(useAdminValidator);
 		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || getConfig().isAutomatedTest);
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
@@ -526,3 +529,13 @@ export class BookingsService {
 		return booking;
 	}
 }
+
+export type BookingRequestExtraction = {
+	currentUser: User;
+	isAdminUser: Boolean;
+	isAgencyUser: Boolean;
+	service: Service;
+	isOnHold: boolean;
+	isStandAlone: boolean;
+	videoConferenceUrl: string;
+};

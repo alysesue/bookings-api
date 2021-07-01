@@ -6,6 +6,7 @@ import { concatIteratables } from '../../tools/asyncIterables';
 import { verifyUrl } from '../../tools/url';
 import { ServicesRepository } from './services.repository';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import * as _ from 'lodash';
 
 @Scoped(Scope.Local)
 export class ServicesValidation extends Validator<Service> {
@@ -18,10 +19,9 @@ export class ServicesValidation extends Validator<Service> {
 			ServicesValidation.validateName(name),
 			ServicesValidation.validateVideoConferenceUrl(videoConferenceUrl),
 			ServicesValidation.validateVideoConferenceUrlLength(videoConferenceUrl),
+			ServicesValidation.validateDaysInAdvance(service),
 		);
-		for await (const validation of allValidates) {
-			yield validation;
-		}
+		yield* allValidates;
 	}
 
 	private static async *validateName(name: string): AsyncIterable<BusinessValidation> {
@@ -45,6 +45,28 @@ export class ServicesValidation extends Validator<Service> {
 	): AsyncIterable<BusinessValidation> {
 		if (videoConferenceUrl && videoConferenceUrl.length > 2000) {
 			yield ServiceBusinessValidation.VideoConferenceInvalidUrlLength;
+		}
+	}
+
+	private static async *validateDaysInAdvance({
+		minDaysInAdvance,
+		maxDaysInAdvance,
+	}: {
+		minDaysInAdvance?: number;
+		maxDaysInAdvance?: number;
+	}): AsyncIterable<BusinessValidation> {
+		const nilMin = _.isNil(minDaysInAdvance);
+		const nilMax = _.isNil(maxDaysInAdvance);
+		if (!nilMin && minDaysInAdvance < 0) {
+			yield ServiceBusinessValidation.InvalidMinDaysInAdvance;
+		}
+
+		if (!nilMax && maxDaysInAdvance < 0) {
+			yield ServiceBusinessValidation.InvalidMaxDaysInAdvance;
+		}
+
+		if (!nilMax && !nilMax && maxDaysInAdvance <= minDaysInAdvance) {
+			yield ServiceBusinessValidation.InvalidMaxMinDaysInAdvance;
 		}
 	}
 
@@ -85,5 +107,20 @@ class ServiceBusinessValidation {
 	public static readonly VideoConferenceInvalidUrlLength = new BusinessValidation({
 		code: '10302',
 		message: `Invalid URL length`,
+	});
+
+	public static readonly InvalidMaxMinDaysInAdvance = new BusinessValidation({
+		code: '10303',
+		message: `'Max days in advance' value must be greater than 'min days in advance' value when present.`,
+	});
+
+	public static readonly InvalidMinDaysInAdvance = new BusinessValidation({
+		code: '10304',
+		message: `Invalid 'min days in advance' value.`,
+	});
+
+	public static readonly InvalidMaxDaysInAdvance = new BusinessValidation({
+		code: '10305',
+		message: `Invalid 'max days in advance' value.`,
 	});
 }

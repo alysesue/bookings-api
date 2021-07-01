@@ -20,6 +20,7 @@ import { DynamicValueTypeContract } from '../../../src/components/dynamicFields/
 import { IdHasherForFunctional } from '../../utils/idHashingUtil';
 import { BookingResponse } from '../../../src/components/bookings/bookings.apicontract';
 import { BookingChangeLogResponse } from '../../../src/components/bookingChangeLogs/bookingChangeLogs.apicontract';
+import { ServiceResponse } from '../../../src/components/services/service.apicontract';
 
 // tslint:disable-next-line: no-big-function
 describe('Bookings functional tests', () => {
@@ -34,6 +35,7 @@ describe('Bookings functional tests', () => {
 	const citizenEmail = 'jane@email.com';
 
 	let serviceProvider: ServiceProviderResponseModel;
+	let service: ServiceResponse;
 	let serviceId: number;
 	let serviceIdStr: string;
 
@@ -50,6 +52,12 @@ describe('Bookings functional tests', () => {
 		},
 	];
 
+	const today = new Date();
+
+	const getDateFromToday = ({ addDays, hours, minutes }: { addDays: number; hours: number; minutes: number }) => {
+		return new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate() + addDays, hours, minutes));
+	};
+
 	beforeEach(async (done) => {
 		await pgClient.cleanAllTables();
 
@@ -60,7 +68,8 @@ describe('Bookings functional tests', () => {
 		});
 		serviceProvider = result.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);
 
-		serviceId = result.services.find((item) => item.name === NAME_SERVICE_1).id;
+		service = result.services.find((item) => item.name === NAME_SERVICE_1);
+		serviceId = service.id;
 		serviceIdStr = `${serviceId}`;
 
 		await populateWeeklyTimesheet({
@@ -117,12 +126,14 @@ describe('Bookings functional tests', () => {
 		isOnHold: boolean,
 		isStandAlone: boolean,
 		serviceProviderId?: number,
+		start?: Date,
+		end?: Date,
 	): Promise<request.Response> => {
 		await pgClient.setServiceConfigurationOnHold(serviceId, isOnHold);
 		await pgClient.setServiceConfigurationStandAlone(serviceId, isStandAlone);
 
-		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
-		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+		const startDateTime = start ?? new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = end ?? new Date(Date.UTC(2051, 11, 10, 2, 0));
 
 		const endpoint = CitizenRequestEndpointSG.create({
 			citizenUinFin,
@@ -333,6 +344,52 @@ describe('Bookings functional tests', () => {
 				},
 			],
 		});
+	});
+
+	it('Citizen should make a booking when days in advance is setup', async () => {
+		await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceIdStr}`, {
+			body: { name: service.name, minDaysInAdvance: 7, maxDaysInAdvance: 15 },
+		});
+
+		const start = getDateFromToday({ addDays: 8, hours: 1, minutes: 0 });
+		const end = getDateFromToday({ addDays: 8, hours: 2, minutes: 0 });
+
+		const response = await postCitizenBookingWithStartEndDateOnly(false, true, undefined, start, end);
+		expect(response.statusCode).toBe(201);
+		expect(response.body).toBeDefined();
+		expect(response.body.data.status).toBe(BookingStatus.OnHold);
+	});
+
+	it(`Citizen should NOT make a booking when days in advance is setup and dates don't match (lower limit)`, async () => {
+		await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceIdStr}`, {
+			body: { name: service.name, minDaysInAdvance: 7, maxDaysInAdvance: 15 },
+		});
+
+		const start = getDateFromToday({ addDays: 0, hours: 1, minutes: 0 });
+		const end = getDateFromToday({ addDays: 0, hours: 2, minutes: 0 });
+
+		const response = await postCitizenBookingWithStartEndDateOnly(false, true, undefined, start, end);
+		expect(response.statusCode).toBe(400);
+		expect(response.body).toBeDefined();
+		expect(response.body.data).toEqual([
+			{ code: '10002', message: 'No available service providers in the selected time range' },
+		]);
+	});
+
+	it(`Citizen should NOT make a booking when days in advance is setup and dates don't match (upper limit)`, async () => {
+		await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceIdStr}`, {
+			body: { name: service.name, minDaysInAdvance: 7, maxDaysInAdvance: 15 },
+		});
+
+		const start = getDateFromToday({ addDays: 16, hours: 1, minutes: 0 });
+		const end = getDateFromToday({ addDays: 16, hours: 2, minutes: 0 });
+
+		const response = await postCitizenBookingWithStartEndDateOnly(false, true, undefined, start, end);
+		expect(response.statusCode).toBe(400);
+		expect(response.body).toBeDefined();
+		expect(response.body.data).toEqual([
+			{ code: '10002', message: 'No available service providers in the selected time range' },
+		]);
 	});
 
 	it('[On hold] Agency should validate SERVICE on hold booking', async () => {

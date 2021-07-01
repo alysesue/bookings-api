@@ -256,7 +256,7 @@ describe('Bookings.Controller', () => {
 		booking.service = new Service();
 		booking.service.organisation = new Organisation();
 
-		BookingsServiceMock.getBookingPromise = Promise.resolve(booking);
+		BookingsServiceMock.getBooking.mockReturnValue(Promise.resolve(booking));
 
 		const result = await controller.getBooking(1);
 
@@ -267,12 +267,18 @@ describe('Bookings.Controller', () => {
 
 	it('should get booking providers', async () => {
 		const controller = Container.get(BookingsController);
-		BookingsServiceMock.mockGetBooking = testBooking1;
+		BookingsServiceMock.getBooking.mockReturnValue(Promise.resolve(testBooking1));
 
 		const result = await controller.getBookingProviders(1);
 
 		expect(result).toBeDefined();
-		expect(TimeslotsServiceMock.getAvailableProvidersForTimeslot).toBeCalled();
+		expect(TimeslotsServiceMock.getAvailableProvidersForTimeslot).toHaveBeenCalledWith({
+			startDateTime: testBooking1.startDateTime,
+			endDateTime: testBooking1.endDateTime,
+			filterDaysInAdvance: false,
+			serviceId: 1,
+			skipUnassigned: true,
+		});
 	});
 
 	it('should post booking', async () => {
@@ -379,24 +385,23 @@ const TimeslotsServiceMock = {
 };
 
 class BookingsServiceMock implements Partial<BookingsService> {
+	public static getBooking = jest.fn<Promise<Booking>, any>();
+	public static searchBookings = jest.fn<Promise<IPagedEntities<Booking>>, any>();
+	public static mockSearchBookingsReturnAll = jest.fn<Promise<Booking[]>, any>();
+	public static mockCheckLimit = jest.fn<Promise<void>, any>();
+
 	public static mockBooking: Booking;
 	public static mockAcceptBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockCancelBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockRejectBooking = Promise.resolve(BookingsServiceMock.mockBooking);
-	public static mockGetBooking: Booking;
 	public static mockPostBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockBookings: Booking[] = [];
-	public static searchBookings = jest.fn<Promise<IPagedEntities<Booking>>, any>();
-	public static mockSearchBookingsReturnAll = jest.fn<Promise<Booking[]>, any>();
-	public static mockCheckLimit = jest.fn<Promise<void>, any>();
 	public static mockBookingId;
-	public static getBookingPromise = Promise.resolve(BookingsServiceMock.mockGetBooking);
 	public static mockUpdateBooking: Booking;
 	public static mockValidateOnHoldBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 
-	public async getBooking(bookingId: number): Promise<Booking> {
-		BookingsServiceMock.mockBookingId = bookingId;
-		return BookingsServiceMock.getBookingPromise;
+	public async getBooking(...params): Promise<any> {
+		return await BookingsServiceMock.getBooking(...params);
 	}
 
 	public async acceptBooking(bookingId: number): Promise<Booking> {

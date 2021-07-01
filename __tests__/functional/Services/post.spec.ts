@@ -90,7 +90,7 @@ describe('Tests endpoint and populate data', () => {
 		};
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
-			body: { name: SERVICE_NAME, additionalSettings: {} },
+			body: { name: SERVICE_NAME, additionalSettings: undefined },
 		});
 
 		expect(response.statusCode).toEqual(200);
@@ -160,5 +160,14 @@ describe('Tests endpoint and populate data', () => {
 		);
 		expect(responseData[`${responseKey}.sendSMSNotifications`].message).toBe('invalid boolean value');
 		expect(response.body.errorCode).toBe('SYS_INVALID_PARAM');
+	});
+
+	it(`Post service with 'days in advance' configuration`, async () => {
+		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
+			body: { name: SERVICE_NAME, minDaysInAdvance: 10, maxDaysInAdvance: 20 },
+		});
+		expect(response.statusCode).toEqual(200);
+		expect(response.body.data.minDaysInAdvance).toBe(10);
+		expect(response.body.data.maxDaysInAdvance).toBe(20);
 	});
 });

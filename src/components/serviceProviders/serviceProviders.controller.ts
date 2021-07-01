@@ -172,11 +172,13 @@ export class ServiceProvidersController extends Controller {
 	): Promise<ApiData<ServiceProviderResponseModel[]>> {
 		let result: ServiceProvider[] = [];
 		if (serviceId) {
-			result = await this.serviceProvidersService.getAvailableServiceProviders(from, to, serviceId);
+			result = await this.serviceProvidersService.getAvailableServiceProviders(from, to, false, serviceId);
 		} else {
 			const servicesList = await this.servicesService.getServices();
 			for (const service of servicesList) {
-				result.push(...(await this.serviceProvidersService.getAvailableServiceProviders(from, to, service.id)));
+				result.push(
+					...(await this.serviceProvidersService.getAvailableServiceProviders(from, to, false, service.id)),
+				);
 			}
 		}
 		return ApiDataFactory.create(await this.mapper.mapDataModels(result, {}));

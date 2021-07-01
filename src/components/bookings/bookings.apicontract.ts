@@ -1,7 +1,6 @@
 import { BookingStatus } from '../../models/bookingStatus';
 import { PagingRequest } from '../../apicontract';
 import { DynamicValueContract, PersistDynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
-import { User, Service } from '../../models';
 
 export class BookingAcceptRequest {
 	/**
@@ -104,14 +103,4 @@ export class BookingProviderResponse {
 	 */
 	public id: number;
 	public name: string;
-}
-
-export class BookingRequestExtraction {
-	public currentUser: User;
-	public isAdminUser: User;
-	public isAgencyUser: User;
-	public service: Service;
-	public isOnHold: boolean;
-	public isStandAlone: boolean;
-	public videoConferenceUrl: string;
 }

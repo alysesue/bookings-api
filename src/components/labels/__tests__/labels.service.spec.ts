@@ -78,7 +78,9 @@ describe('Test labels service', () => {
 		const label1 = Label.create('test', 1);
 		const label2 = Label.create('test', 2);
 		(LabelsRepositoryMock.saveMock as jest.Mock).mockReturnValue([label2]);
-		const service = Service.create('name', {} as Organisation, true, [label1]);
+		const service = Service.create('name', {} as Organisation, [label1]);
+		service.setIsSpAutoAssigned(true);
+
 		const resAllLabel = await Container.get(LabelsService).updateLabelToNoCategory([label2], service);
 		expect(LabelsRepositoryMock.saveMock).toBeCalledTimes(1);
 		expect(resAllLabel).toStrictEqual([label1, label2]);
