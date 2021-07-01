@@ -61,4 +61,14 @@ describe('Notification mapper tests', () => {
 		const { videoConferenceUrl } = emailMapper(booking);
 		expect(videoConferenceUrl).toEqual(``);
 	});
+
+	it('should map alias name', () => {
+		booking.serviceProvider.aliasName = "Orange";
+		const {
+			spNameDisplayedForCitizen,
+			spNameDisplayedForServiceProvider,
+		} = emailMapper(booking);
+		expect(spNameDisplayedForCitizen).toEqual(` - Orange`);
+		expect(spNameDisplayedForServiceProvider).toEqual(` - armin`);
+	});
 });
