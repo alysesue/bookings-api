@@ -63,9 +63,10 @@ describe('Notification mapper tests', () => {
 	});
 
 	it('should map alias name', () => {
+		booking.serviceProvider.name = 'armin';
 		booking.serviceProvider.aliasName = 'Orange';
 		const { spNameDisplayedForCitizen, spNameDisplayedForServiceProvider } = emailMapper(booking);
-		expect(spNameDisplayedForCitizen).toEqual(` - Orange`);
 		expect(spNameDisplayedForServiceProvider).toEqual(` - armin`);
+		expect(spNameDisplayedForCitizen).toEqual(` - Orange`);
 	});
 });
