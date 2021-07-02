@@ -124,14 +124,22 @@ ${locationText}
 	}
 
 	public CancelledBookingEmail(data): EmailTemplateBase {
-		const { serviceName, serviceProviderText, status, day, time, locationText, videoConferenceUrl } = emailMapper(
-			data,
-		);
+		const {
+			serviceName,
+			serviceProviderText,
+			status,
+			day,
+			time,
+			locationText,
+			videoConferenceUrl,
+			reasonToReject,
+		} = emailMapper(data);
 
 		return {
 			subject: `BookingSG cancellation: ${serviceName}${serviceProviderText}`,
 			html: `<pre>
 The following booking has been cancelled by the other party.
+${reasonToReject}
 <br />
 Booking for: <b>${serviceName}${serviceProviderText}.</b>
 <br />

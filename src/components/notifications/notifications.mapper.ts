@@ -12,6 +12,7 @@ class EmailData {
 	public day: string;
 	public time: string;
 	public videoConferenceUrl?: string;
+	public reasonToReject?: string;
 }
 
 export interface MailOptions {
@@ -30,6 +31,7 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 	const serviceProviderName = data.serviceProvider?.name;
 	const serviceProviderText = serviceProviderName ? ` - ${serviceProviderName}` : '';
 	const location = data.location;
+	const reasonToReject = data.reasonToReject ? `<br/>Reason: ${data.reasonToReject}.` : '';
 	let locationText = location ? `Location: <b>${location}</b>` : '';
 	const day = DateHelper.getDateFormat(data.startDateTime);
 	const time = `${DateHelper.getTime12hFormatString(data.startDateTime)} - ${DateHelper.getTime12hFormatString(
@@ -61,5 +63,6 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 		day,
 		time,
 		videoConferenceUrl,
+		reasonToReject,
 	};
 };
