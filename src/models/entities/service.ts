@@ -6,7 +6,7 @@ import { Organisation } from './organisation';
 import { ScheduleForm } from './scheduleForm';
 import { Label } from './label';
 import { LabelCategory } from './labelCategory';
-import { AdditionalSettingsReq } from '../../components/services/service.apicontract';
+import { DateHelper } from '../../infrastructure/dateHelper';
 
 @Entity()
 @Index(['_organisationId', '_name'], { unique: true })
@@ -119,43 +119,21 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._timeslotsSchedule;
 	}
 
-	public static create(
-		name: string,
-		orga: Organisation,
-		isSpAutoAssigned = false,
-		labels: Label[] = [],
-		categories: LabelCategory[] = [],
-		emailSuffix?: string,
-		noNric = false,
-		videoConferenceUrl?: string,
-		description?: string,
-		additionalSettings?: AdditionalSettingsReq,
-	) {
+	public static create(name: string, orga: Organisation, labels: Label[] = [], categories: LabelCategory[] = []) {
 		const service = new Service();
 		service._name = name.trim();
 		service._organisation = orga;
 		service._organisationId = orga.id;
-		service._isSpAutoAssigned = isSpAutoAssigned;
-		service._noNric = noNric;
 		service._serviceAdminGroupMap = ServiceAdminGroupMap.create(
 			ServiceAdminGroupMap.createServiceOrganisationRef(
 				service.getServiceRef(),
 				orga._organisationAdminGroupMap?.organisationRef,
 			),
 		);
+
 		service.labels = labels;
 		service.categories = categories;
-		service._emailSuffix = emailSuffix;
-		service._videoConferenceUrl = videoConferenceUrl;
-		service._description = description;
-		if (additionalSettings) {
-			service.allowAnonymousBookings = additionalSettings.allowAnonymousBookings;
-			service.isOnHold = additionalSettings.isOnHold;
-			service.isStandAlone = additionalSettings.isStandAlone;
-			service.sendNotifications = additionalSettings.sendNotifications;
-			service.sendNotificationsToServiceProviders = additionalSettings.sendNotificationsToServiceProviders;
-			service.sendSMSNotifications = additionalSettings.sendSMSNotifications;
-		}
+
 		return service;
 	}
 
@@ -203,8 +181,8 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._noNric;
 	}
 
-	public set noNric(value: boolean) {
-		this._noNric = value;
+	public setNoNric(value?: boolean) {
+		this._noNric = value || false;
 	}
 
 	@Column({ nullable: false, default: false })
@@ -214,8 +192,8 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._isSpAutoAssigned;
 	}
 
-	public set isSpAutoAssigned(value: boolean) {
-		this._isSpAutoAssigned = value;
+	public setIsSpAutoAssigned(value?: boolean) {
+		this._isSpAutoAssigned = value || false;
 	}
 
 	@OneToMany(() => Label, (label) => label.service, { cascade: true })
@@ -288,5 +266,43 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 
 	public set description(value: string) {
 		this._description = value;
+	}
+
+	@Column({ nullable: true })
+	public _minDaysInAdvance?: number;
+
+	public get minDaysInAdvance(): number {
+		return this._minDaysInAdvance;
+	}
+
+	public set minDaysInAdvance(value: number) {
+		this._minDaysInAdvance = value;
+	}
+
+	@Column({ nullable: true })
+	public _maxDaysInAdvance?: number;
+
+	public get maxDaysInAdvance(): number {
+		return this._maxDaysInAdvance;
+	}
+
+	public set maxDaysInAdvance(value: number) {
+		this._maxDaysInAdvance = value;
+	}
+
+	public filterDaysInAdvance(params: { now: Date; start: Date; end: Date }): { start: Date; end: Date } {
+		const lowerLimit = this.minDaysInAdvance ? DateHelper.addDays(params.now, this.minDaysInAdvance) : undefined;
+		const upperLimit = this.maxDaysInAdvance ? DateHelper.addDays(params.now, this.maxDaysInAdvance) : undefined;
+
+		let start = params.start;
+		let end = params.end;
+		if (lowerLimit && start < lowerLimit) {
+			start = lowerLimit;
+		}
+		if (upperLimit && end > upperLimit) {
+			end = upperLimit;
+		}
+
+		return { start, end };
 	}
 }

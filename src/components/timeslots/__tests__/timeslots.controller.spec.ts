@@ -64,12 +64,22 @@ describe('Timeslots Controller', () => {
 		});
 
 		const controller = Container.get(TimeslotsController);
-		const result = await controller.getAvailability(new Date(), new Date(), 1, 100);
+		const start = new Date();
+		const end = DateHelper.addHours(start, 12);
+		const result = await controller.getAvailability(start, end, 1, 100);
 
 		expect(result).toBeDefined();
 		// zero availabilityCount not returned
 		expect(result.data.length).toBe(0);
-		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalled();
+		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith({
+			startDateTime: start,
+			endDateTime: end,
+			filterDaysInAdvance: true,
+			includeBookings: false,
+			labelIds: [],
+			serviceId: 1,
+			serviceProviderIds: [100],
+		});
 	});
 
 	it('should get timeslots', async () => {
@@ -82,11 +92,21 @@ describe('Timeslots Controller', () => {
 		});
 
 		const controller = Container.get(TimeslotsController);
-		const result = await controller.getTimeslots(new Date(), new Date(), 1, false, [100]);
+		const start = new Date();
+		const end = DateHelper.addHours(start, 12);
+		const result = await controller.getTimeslots(start, end, 1, false, [100]);
 
 		expect(result).toBeDefined();
 		expect(result.data.length).toBe(1);
-		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalled();
+		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith({
+			startDateTime: start,
+			endDateTime: end,
+			filterDaysInAdvance: false,
+			includeBookings: false,
+			labelIds: [],
+			serviceId: 1,
+			serviceProviderIds: [100],
+		});
 	});
 
 	it('should get timeslots - as a service provider', async () => {
@@ -111,7 +131,15 @@ describe('Timeslots Controller', () => {
 
 		expect(result).toBeDefined();
 		expect(result.data.length).toBe(1);
-		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, [2], []);
+		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith({
+			startDateTime: startTime,
+			endDateTime: endTime,
+			serviceId: 1,
+			includeBookings: false,
+			serviceProviderIds: [2],
+			labelIds: [],
+			filterDaysInAdvance: false,
+		});
 	});
 
 	it('should allow fetching of availability for 31 days less 1 minute', async () => {
@@ -128,7 +156,14 @@ describe('Timeslots Controller', () => {
 		const endTime = new Date('2021-05-31T18:00:00.000Z');
 		await controller.getAvailabilityByDay(startTime, endTime, 1);
 
-		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, undefined);
+		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith({
+			startDateTime: startTime,
+			endDateTime: endTime,
+			serviceId: 1,
+			includeBookings: false,
+			serviceProviderIds: undefined,
+			filterDaysInAdvance: false,
+		});
 	});
 
 	it('should allow fetching of availability for exactly 31 days', async () => {
@@ -145,7 +180,14 @@ describe('Timeslots Controller', () => {
 		const endTime = new Date('2021-05-31T18:00:00.000Z');
 		await controller.getAvailabilityByDay(startTime, endTime, 1);
 
-		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, undefined);
+		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith({
+			startDateTime: startTime,
+			endDateTime: endTime,
+			serviceId: 1,
+			includeBookings: false,
+			serviceProviderIds: undefined,
+			filterDaysInAdvance: false,
+		});
 	});
 
 	it('should not allow fetching of availability for 31 days and 1 minute', async () => {
@@ -179,7 +221,14 @@ describe('Timeslots Controller', () => {
 		const endTime = DateHelper.addMinutes(new Date(), 30);
 		await controller.getAvailabilityByDay(startTime, endTime, 1);
 
-		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, undefined);
+		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith({
+			startDateTime: startTime,
+			endDateTime: endTime,
+			serviceId: 1,
+			includeBookings: false,
+			serviceProviderIds: undefined,
+			filterDaysInAdvance: false,
+		});
 	});
 
 	it('should filter out invalid id - as a service provider', async () => {
@@ -204,6 +253,14 @@ describe('Timeslots Controller', () => {
 
 		expect(result).toBeDefined();
 		expect(result.data.length).toBe(1);
-		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith(startTime, endTime, 1, false, [0], []);
+		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith({
+			startDateTime: startTime,
+			endDateTime: endTime,
+			serviceId: 1,
+			includeBookings: false,
+			serviceProviderIds: [0],
+			labelIds: [],
+			filterDaysInAdvance: false,
+		});
 	});
 });

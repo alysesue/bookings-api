@@ -17,11 +17,20 @@ export class ServiceResponse {
 	public emailSuffix?: string;
 	public videoConferenceUrl?: string;
 	public description?: string;
-	public additionalSettings: AdditionalSettingsRes;
+	public additionalSettings: AdditionalSettings;
 	/**
 	 * @deprecated use additionalSettings.isStandAlone
 	 */
 	public isStandAlone: boolean;
+	/**
+	 * @isInt (Optional) Citizens can only make a booking at least X days in advance. No less than this.
+	 */
+	public minDaysInAdvance?: number | null;
+
+	/**
+	 * @isInt (Optional) Citizens can only make a booking up to X days in advance. No more than this.
+	 */
+	public maxDaysInAdvance?: number | null;
 }
 
 export class ServiceRequest {
@@ -37,10 +46,19 @@ export class ServiceRequest {
 	public emailSuffix?: string | null;
 	public videoConferenceUrl?: string | null;
 	public description?: string | null;
-	public additionalSettings?: AdditionalSettingsReq;
+	public additionalSettings?: PartialAdditionalSettings;
+	/**
+	 * @isInt (Optional) Citizens can only make a booking at least X days in advance. No less than this.
+	 */
+	public minDaysInAdvance?: number | null;
+
+	/**
+	 * @isInt (Optional) Citizens can only make a booking up to X days in advance. No more than this.
+	 */
+	public maxDaysInAdvance?: number | null;
 }
 
-export class AdditionalSettingsReq {
+export class PartialAdditionalSettings {
 	public allowAnonymousBookings?: boolean;
 	public isOnHold?: boolean;
 	public isStandAlone?: boolean;
@@ -49,7 +67,7 @@ export class AdditionalSettingsReq {
 	public sendSMSNotifications?: boolean;
 }
 
-export class AdditionalSettingsRes {
+export class AdditionalSettings {
 	public allowAnonymousBookings: boolean;
 	public isOnHold: boolean;
 	public isStandAlone: boolean;

@@ -41,8 +41,13 @@ import { LabelsCategoriesServiceMock } from '../../labelsCategories/__mocks__/la
 import { AsyncFunction, TransactionManager } from '../../../core/transactionManager';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
+import { ServicesRepositoryMock } from '../__mocks__/services.repository.mock';
 
 jest.mock('../services.auth');
+jest.mock('../services.repository', () => {
+	class ServicesRepository {}
+	return { ServicesRepository };
+});
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -102,6 +107,14 @@ beforeEach(() => {
 		async <T extends unknown>(_isolationLevel: IsolationLevel, asyncFunction: AsyncFunction<T>): Promise<T> =>
 			await asyncFunction(),
 	);
+
+	let saved: Service;
+	ServicesRepositoryMock.save.mockImplementation(async (s: Service) => {
+		saved = s;
+		s.id = 2;
+		return s;
+	});
+	ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(saved));
 });
 
 const userMock = User.createAdminUser({
@@ -198,13 +211,14 @@ describe('Services service tests', () => {
 		expect(error).toEqual(`[10301] Invalid URL`);
 	});
 
-	it('should save service', async () => {
+	it('(a) should save service', async () => {
 		const request = new ServiceRequest();
 		request.name = 'John';
 		request.organisationId = 1;
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
 			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
 		);
+
 		request.labels = [{ label: 'label' }];
 		request.emailSuffix = 'abc.com';
 		request.videoConferenceUrl = 'http://www.zoom.us/123456';
@@ -214,6 +228,13 @@ describe('Services service tests', () => {
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].isSpAutoAssigned).toBe(false);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].emailSuffix).toBe('abc.com');
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].videoConferenceUrl).toBe('http://www.zoom.us/123456');
+		expect(ServicesRepositoryMock.getService).toBeCalledWith({
+			id: 2,
+			includeLabelCategories: true,
+			includeLabels: true,
+			includeScheduleForm: false,
+			includeTimeslotsSchedule: false,
+		});
 	});
 
 	it('should NOT save service without permission', async () => {
@@ -241,6 +262,7 @@ describe('Services service tests', () => {
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
 			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
 		);
+
 		request.labels = [{ label: 'label' }];
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].isSpAutoAssigned).toBe(true);
@@ -260,6 +282,7 @@ describe('Services service tests', () => {
 			isStandAlone: true,
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
+			sendSMSNotifications: true,
 		};
 
 		await Container.get(ServicesService).createService(request);
@@ -269,6 +292,7 @@ describe('Services service tests', () => {
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].isStandAlone).toBe(true);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].sendNotifications).toBe(true);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].sendNotificationsToServiceProviders).toBe(true);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].sendSMSNotifications).toBe(true);
 	});
 
 	it('should save service with EMPTY additional settings (optional settings)', async () => {
@@ -278,7 +302,6 @@ describe('Services service tests', () => {
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
 			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
 		);
-		request.additionalSettings = {};
 
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
@@ -347,6 +370,7 @@ describe('Services service tests', () => {
 			isStandAlone: true,
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
+			sendSMSNotifications: true,
 		};
 
 		await Container.get(ServicesService).updateService(1, request);
@@ -358,6 +382,7 @@ describe('Services service tests', () => {
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].isStandAlone).toBe(true);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].sendNotifications).toBe(true);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].sendNotificationsToServiceProviders).toBe(true);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].sendSMSNotifications).toBe(true);
 	});
 
 	it('should throw if service not found', async () => {
@@ -514,39 +539,6 @@ describe('Services service tests', () => {
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].labels).toHaveLength(1);
 	});
 });
-
-class ServicesRepositoryMock implements Partial<ServicesRepository> {
-	public static save = jest.fn();
-	public static getService = jest.fn();
-	public static get = jest.fn();
-	public static getAll = jest.fn();
-	public static getServicesByName = jest.fn();
-	public static saveMany = jest.fn();
-
-	public async getServicesByName(...params): Promise<Service[]> {
-		return ServicesRepositoryMock.getServicesByName(...params);
-	}
-
-	public async save(service: Service): Promise<Service> {
-		return ServicesRepositoryMock.save(service);
-	}
-
-	public async get(id: number): Promise<Service> {
-		return ServicesRepositoryMock.get(id);
-	}
-
-	public async getAll(): Promise<Service[]> {
-		return ServicesRepositoryMock.getAll();
-	}
-
-	public async getService(): Promise<Service> {
-		return ServicesRepositoryMock.getService();
-	}
-
-	public async saveMany(...params): Promise<Service[]> {
-		return ServicesRepositoryMock.saveMany(...params);
-	}
-}
 
 class ScheduleFormsServiceMock implements Partial<ScheduleFormsService> {
 	public static updateScheduleFormInEntity = jest.fn();

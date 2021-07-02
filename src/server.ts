@@ -30,6 +30,7 @@ import { AutomatedTestMiddleware } from './infrastructure/automatedTest.middlewa
 import { DbConnection } from './core/db.connection';
 import { CreateCsrfMiddleware, VerifyCsrfMiddleware, XSRF_HEADER_NAME } from './infrastructure/csrf.middleware';
 import { mailer } from './config/mailer';
+import { registerRequestClock } from './infrastructure/requestClock';
 
 class ApiDataResponseHandler {
 	private readonly _middleware: Koa.Middleware;
@@ -72,6 +73,7 @@ function setIOCBindings() {
 	Container.bind(MolUsersService)
 		.factory((buildContext) => buildContext.resolve(MolUsersServiceFactory).getService())
 		.scope(Scope.Request);
+	registerRequestClock();
 }
 
 function getOriginFromWhitelist(ctx: Koa.Context, originWhitelist: string[]) {
