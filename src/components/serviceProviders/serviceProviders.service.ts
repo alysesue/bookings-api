@@ -122,8 +122,19 @@ export class ServiceProvidersService {
 		});
 	}
 
-	public async getAvailableServiceProviders(from: Date, to: Date, serviceId?: number): Promise<ServiceProvider[]> {
-		const timeslots = await this.timeslotsService.getAggregatedTimeslots(from, to, serviceId, false);
+	public async getAvailableServiceProviders(
+		from: Date,
+		to: Date,
+		filterDaysInAdvance: boolean,
+		serviceId?: number,
+	): Promise<ServiceProvider[]> {
+		const timeslots = await this.timeslotsService.getAggregatedTimeslots({
+			startDateTime: from,
+			endDateTime: to,
+			serviceId,
+			includeBookings: false,
+			filterDaysInAdvance,
+		});
 
 		const availableServiceProviders = new Set<ServiceProvider>();
 
@@ -152,6 +163,7 @@ export class ServiceProvidersService {
 		}
 		return sp;
 	}
+
 	public async getServiceProvidersByName(searchKey: string, serviceId?: number): Promise<ServiceProvider[]> {
 		const spList = await this.serviceProvidersRepository.getServiceProvidersByName({
 			searchKey,

@@ -43,6 +43,7 @@ import { UsersService } from '../../users/users.service';
 import { ServicesServiceMock } from '../../services/__mocks__/services.service';
 import { ServiceProvidersActionAuthVisitor } from '../serviceProviders.auth';
 import { ServiceProvidersLookup } from '../../../components/timeslots/aggregatorTimeslotProviders';
+import { TimeslotsServiceMock } from '../../../components/bookings/__mocks__/bookings.mocks';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -269,6 +270,7 @@ describe('ServiceProviders.Service', () => {
 		const schedule = await Container.get(ServiceProvidersService).getProviderScheduleForm(1);
 		expect(schedule).toBeDefined();
 	});
+
 	it('should throw error when service provider schedule form is not found', async () => {
 		serviceProviderMock.scheduleForm = null;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
@@ -301,7 +303,6 @@ describe('ServiceProviders.Service', () => {
 
 	it('should add timeslots schedule for service provider', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMockWithTemplate;
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new ServiceProviderAuthGroup(adminMock, serviceProvider)]),
 		);
@@ -391,12 +392,22 @@ describe('ServiceProviders.Service', () => {
 		});
 
 		const serviceProvidersService = Container.get(ServiceProvidersService);
+		const start = new Date('2020-08-25T12:00');
+		const end = new Date('2020-08-26T12:00');
 		const availableServiceProviders = await serviceProvidersService.getAvailableServiceProviders(
-			new Date('2020-08-25T12:00'),
-			new Date('2020-08-26T12:00'),
+			start,
+			end,
+			true,
 			1,
 		);
 
+		expect(TimeslotsServiceMock.getAggregatedTimeslots).toBeCalledWith({
+			startDateTime: start,
+			endDateTime: end,
+			filterDaysInAdvance: true,
+			includeBookings: false,
+			serviceId: 1,
+		});
 		expect(availableServiceProviders).toHaveLength(2);
 	});
 
@@ -457,14 +468,6 @@ class ScheduleFormsServiceMock implements Partial<ScheduleFormsService> {
 
 	public async updateScheduleFormInEntity(...params): Promise<any> {
 		return await ScheduleFormsServiceMock.updateScheduleFormInEntity(...params);
-	}
-}
-
-class TimeslotsServiceMock implements Partial<TimeslotsService> {
-	public static getAggregatedTimeslots = jest.fn();
-
-	public async getAggregatedTimeslots(...params): Promise<AvailableTimeslotProviders[]> {
-		return await TimeslotsServiceMock.getAggregatedTimeslots(...params);
 	}
 }
 

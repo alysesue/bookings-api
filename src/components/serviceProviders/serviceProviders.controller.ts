@@ -134,7 +134,7 @@ export class ServiceProvidersController extends Controller {
 			page,
 		);
 		return ApiDataFactory.create(
-			this.mapper.mapDataModels(dataModels, { includeTimeslotsSchedule, includeScheduleForm }),
+			await this.mapper.mapDataModels(dataModels, { includeTimeslotsSchedule, includeScheduleForm }),
 		);
 	}
 
@@ -172,14 +172,16 @@ export class ServiceProvidersController extends Controller {
 	): Promise<ApiData<ServiceProviderResponseModel[]>> {
 		let result: ServiceProvider[] = [];
 		if (serviceId) {
-			result = await this.serviceProvidersService.getAvailableServiceProviders(from, to, serviceId);
+			result = await this.serviceProvidersService.getAvailableServiceProviders(from, to, false, serviceId);
 		} else {
 			const servicesList = await this.servicesService.getServices();
 			for (const service of servicesList) {
-				result.push(...(await this.serviceProvidersService.getAvailableServiceProviders(from, to, service.id)));
+				result.push(
+					...(await this.serviceProvidersService.getAvailableServiceProviders(from, to, false, service.id)),
+				);
 			}
 		}
-		return ApiDataFactory.create(this.mapper.mapDataModels(result, {}));
+		return ApiDataFactory.create(await this.mapper.mapDataModels(result, {}));
 	}
 
 	/**
@@ -198,7 +200,7 @@ export class ServiceProvidersController extends Controller {
 			options.includeScheduleForm,
 			options.includeTimeslotsSchedule,
 		);
-		return ApiDataFactory.create(this.mapper.mapDataModel(dataModel, options));
+		return ApiDataFactory.create(await this.mapper.mapDataModel(dataModel, options));
 	}
 
 	/**
@@ -215,7 +217,7 @@ export class ServiceProvidersController extends Controller {
 		@Header('x-api-service') serviceId?: number,
 	): Promise<ApiData<ServiceProviderResponseModel[]>> {
 		const dataModels = await this.serviceProvidersService.getServiceProvidersByName(searchKey, serviceId);
-		return ApiDataFactory.create(this.mapper.mapDataModels(dataModels, {}));
+		return ApiDataFactory.create(await this.mapper.mapDataModels(dataModels, {}));
 	}
 
 	/**
@@ -233,7 +235,7 @@ export class ServiceProvidersController extends Controller {
 		@Body() spRequest: ServiceProviderModel,
 	): Promise<ApiData<ServiceProviderResponseModel>> {
 		const result = await this.serviceProvidersService.updateSp(spRequest, spId);
-		return ApiDataFactory.create(this.mapper.mapDataModel(result, {}));
+		return ApiDataFactory.create(await this.mapper.mapDataModel(result, {}));
 	}
 
 	@Put('{spId}/scheduleForm')

@@ -24,7 +24,9 @@ describe('Test categoriesLabels service', () => {
 		const catego2 = LabelCategory.create('catego2', [label2]);
 		const originalCategories = [catego1] as LabelCategory[];
 		const updateCategories = [catego2] as LabelCategory[];
-		const service = Service.create('service', {} as Organisation, true, [label1], originalCategories);
+		const service = Service.create('service', {} as Organisation, [label1], originalCategories);
+		service.setIsSpAutoAssigned(true);
+
 		(LabelsServiceMock.sortLabelForDeleteCategoryMock as jest.Mock).mockReturnValue({
 			movedLabelsToNoCategory: {},
 			deleteLabels: {},

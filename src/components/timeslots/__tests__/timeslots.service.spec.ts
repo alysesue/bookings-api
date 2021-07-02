@@ -3,6 +3,7 @@ import {
 	Booking,
 	BookingStatus,
 	OneOffTimeslot,
+	Organisation,
 	Service,
 	ServiceProvider,
 	TimeOfDay,
@@ -23,6 +24,13 @@ import { OneOffTimeslotsRepository } from '../../../components/oneOffTimeslots/o
 import { TimeslotsScheduleRepository } from '../../../components/timeslotsSchedules/timeslotsSchedule.repository';
 import { IGroupRecordIterator } from '../../../components/timeslotsSchedules/groupRecordIterator';
 import { Weekday } from '../../../enums/weekday';
+import { ServicesRepositoryMock } from '../../services/__mocks__/services.repository.mock';
+import { RequestClock } from '../../../infrastructure/requestClock';
+
+jest.mock('../../services/services.repository', () => {
+	class ServicesRepository {}
+	return { ServicesRepository };
+});
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -30,12 +38,12 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
+const RequestClockMock = {
+	requestTime: jest.fn<Date, any>(),
+} as Partial<RequestClock>;
+
 const BookingsRepositoryMock = {
 	search: jest.fn<Promise<IPagedEntities<Booking>>, any>(),
-};
-
-const ServicesRepositoryMock = {
-	getServiceWithTimeslotsSchedule: jest.fn(),
 };
 
 const ServiceProvidersRepositoryMock = {
@@ -157,12 +165,14 @@ describe('Timeslots Service', () => {
 	unavailability2.end = DateHelper.setHours(date, 20, 0);
 
 	beforeAll(() => {
+		Container.bind(RequestClock).factory(() => {
+			return RequestClockMock;
+		});
 		Container.bind(BookingsRepository).factory(() => {
 			return BookingsRepositoryMock;
 		});
-		Container.bind(ServicesRepository).factory(() => {
-			return ServicesRepositoryMock;
-		});
+		Container.bind(ServicesRepository).to(ServicesRepositoryMock);
+
 		Container.bind(ServiceProvidersRepository).factory(() => {
 			return ServiceProvidersRepositoryMock;
 		});
@@ -180,6 +190,7 @@ describe('Timeslots Service', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
 
+		(RequestClockMock.requestTime as jest.Mock).mockReturnValue(new Date());
 		BookingsRepositoryMock.search.mockImplementation(() => {
 			return Promise.resolve({ entries: [pendingBookingMock, BookingMock] } as IPagedEntities<Booking>);
 		});
@@ -205,7 +216,12 @@ describe('Timeslots Service', () => {
 
 	it('should aggregate results', async () => {
 		const service = Container.get(TimeslotsService);
-		const result = await service.getAggregatedTimeslots(date, endDate, 1);
+		const result = await service.getAggregatedTimeslots({
+			startDateTime: date,
+			endDateTime: endDate,
+			serviceId: 1,
+			filterDaysInAdvance: false,
+		});
 		const filtered = result.filter((e) => e.getAvailabilityCount() > 0);
 
 		expect(result.length).toBe(3);
@@ -214,9 +230,64 @@ describe('Timeslots Service', () => {
 		expect(ServicesRepositoryMock.getServiceWithTimeslotsSchedule).toBeCalled();
 	});
 
+	it('should return empty result when endDateTime < startDateTime', async () => {
+		const service = Container.get(TimeslotsService);
+		const result = await service.getAggregatedTimeslots({
+			startDateTime: endDate,
+			endDateTime: date,
+			serviceId: 1,
+			filterDaysInAdvance: false,
+		});
+		expect(result.length).toBe(0);
+	});
+
+	it(`should apply 'days in advance' service config before aggregating timeslots`, async () => {
+		const svc = Service.create('svc', new Organisation());
+		svc.minDaysInAdvance = 1;
+		svc.maxDaysInAdvance = 15;
+		const fixedNow = new Date('2021-06-22T02:30:01Z');
+
+		ServicesRepositoryMock.getService.mockReturnValue(Promise.resolve(svc));
+
+		(RequestClockMock.requestTime as jest.Mock).mockReturnValue(fixedNow);
+
+		const service = Container.get(TimeslotsService);
+		const getAggregatedTimeslotsInternalMock = jest.fn(
+			(service as any).getAggregatedTimeslotsInternal.bind(service),
+		);
+		(service as any).getAggregatedTimeslotsInternal = getAggregatedTimeslotsInternalMock;
+
+		const originalDate = new Date('2021-05-01T00:00Z');
+		const originalEndDate = new Date('2021-08-01T00:00Z');
+
+		const result = await service.getAggregatedTimeslots({
+			startDateTime: originalDate,
+			endDateTime: originalEndDate,
+			serviceId: 1,
+			filterDaysInAdvance: true,
+		});
+
+		expect(result).toBeDefined();
+		expect(getAggregatedTimeslotsInternalMock).toHaveBeenCalledWith(
+			new Date('2021-06-23T02:30:01Z'),
+			new Date('2021-07-07T02:30:01Z'),
+			1,
+			false,
+			undefined,
+			undefined,
+		);
+	});
+
 	it('should aggregate results by service provider', async () => {
 		const service = Container.get(TimeslotsService);
-		const result = await service.getAggregatedTimeslots(date, endDate, 1, false, [101]);
+		const result = await service.getAggregatedTimeslots({
+			startDateTime: date,
+			endDateTime: endDate,
+			serviceId: 1,
+			includeBookings: false,
+			serviceProviderIds: [101],
+			filterDaysInAdvance: false,
+		});
 		expect(result.length).toBe(1);
 
 		expect(ServicesRepositoryMock.getServiceWithTimeslotsSchedule).toBeCalled();
@@ -233,7 +304,14 @@ describe('Timeslots Service', () => {
 		(OneOffTimeslotsRepositoryMock.search as jest.Mock).mockReturnValue(Promise.resolve([oneOffTimeslots]));
 
 		const service = Container.get(TimeslotsService);
-		const result = await service.getAggregatedTimeslots(date, endDate, 1, false, [ServiceProviderMock2.id]);
+		const result = await service.getAggregatedTimeslots({
+			startDateTime: date,
+			endDateTime: endDate,
+			serviceId: 1,
+			includeBookings: false,
+			serviceProviderIds: [ServiceProviderMock2.id],
+			filterDaysInAdvance: false,
+		});
 
 		expect(result.length).toBe(1);
 		expect(new Date(result[0].startTime)).toEqual(oneOffTimeslots.startDateTime);
@@ -250,11 +328,31 @@ describe('Timeslots Service', () => {
 		const startDateTime = DateHelper.setHours(date, 17, 0);
 		const endDateTime = DateHelper.setHours(date, 18, 0);
 
-		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, true);
+		const result = await service.getAvailableProvidersForTimeslot({
+			startDateTime,
+			endDateTime,
+			serviceId: 1,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
 		expect(result.length).toBe(1);
-		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100, true);
+		const result1 = await service.isProviderAvailableForTimeslot({
+			startDateTime,
+			endDateTime,
+			serviceId: 1,
+			serviceProviderId: 100,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
 		expect(result1).toBe(false);
-		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101, true);
+		const result2 = await service.isProviderAvailableForTimeslot({
+			startDateTime,
+			endDateTime,
+			serviceId: 1,
+			serviceProviderId: 101,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
 		expect(result2).toBe(true);
 	});
 
@@ -262,7 +360,12 @@ describe('Timeslots Service', () => {
 		const service = Container.get(TimeslotsService);
 		ServicesRepositoryMock.getServiceWithTimeslotsSchedule.mockImplementation(() => Promise.resolve(null));
 
-		const result = await service.getAggregatedTimeslots(date, endDate, 2);
+		const result = await service.getAggregatedTimeslots({
+			startDateTime: date,
+			endDateTime: endDate,
+			serviceId: 2,
+			filterDaysInAdvance: false,
+		});
 		expect(result.length).toBe(0);
 	});
 
@@ -270,7 +373,14 @@ describe('Timeslots Service', () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 17, 0);
 		const endDateTime = DateHelper.setHours(date, 18, 0);
-		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, true, 100);
+		const result = await service.getAvailableProvidersForTimeslot({
+			startDateTime,
+			endDateTime,
+			serviceId: 1,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+			serviceProviderId: 100,
+		});
 		expect(result.length).toBe(0);
 	});
 
@@ -278,7 +388,13 @@ describe('Timeslots Service', () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 16, 0);
 		const endDateTime = DateHelper.setHours(date, 17, 0);
-		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, true);
+		const result = await service.getAvailableProvidersForTimeslot({
+			startDateTime,
+			endDateTime,
+			serviceId: 1,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
 		expect(result.length).toBe(1);
 		expect(result[0].availabilityCount).toBe(1);
 	});
@@ -287,7 +403,14 @@ describe('Timeslots Service', () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 16, 0);
 		const endDateTime = DateHelper.setHours(date, 17, 0);
-		const result = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100, true);
+		const result = await service.isProviderAvailableForTimeslot({
+			startDateTime,
+			endDateTime,
+			serviceId: 1,
+			serviceProviderId: 100,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
 		expect(result).toBe(true);
 	});
 
@@ -295,9 +418,23 @@ describe('Timeslots Service', () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 17, 0);
 		const endDateTime = DateHelper.setHours(date, 18, 0);
-		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100, true);
+		const result1 = await service.isProviderAvailableForTimeslot({
+			startDateTime,
+			endDateTime,
+			serviceId: 1,
+			serviceProviderId: 100,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
 		expect(result1).toBe(false);
-		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101, true);
+		const result2 = await service.isProviderAvailableForTimeslot({
+			startDateTime,
+			endDateTime,
+			serviceId: 1,
+			serviceProviderId: 101,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
 		expect(result2).toBe(true);
 	});
 
@@ -311,7 +448,13 @@ describe('Timeslots Service', () => {
 			Promise.resolve({ entries: [testBooking1, testBooking2] } as IPagedEntities<Booking>),
 		);
 
-		const res = await service.getAggregatedTimeslots(date, endDate, 1, true);
+		const res = await service.getAggregatedTimeslots({
+			startDateTime: date,
+			endDateTime: endDate,
+			serviceId: 1,
+			includeBookings: true,
+			filterDaysInAdvance: false,
+		});
 
 		expect(res.length).toBe(4);
 
@@ -358,7 +501,13 @@ describe('Timeslots Service', () => {
 		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue([ServiceProviderMock2]);
 
 		const service = Container.get(TimeslotsService);
-		const timeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
+		const timeslots = await service.getAggregatedTimeslots({
+			startDateTime: date,
+			endDateTime: endDate,
+			serviceId: 1,
+			includeBookings: true,
+			filterDaysInAdvance: false,
+		});
 		expect(timeslots).toHaveLength(1);
 
 		const timeslotSPs = Array.from(timeslots[0].getTimeslotServiceProviders());
@@ -393,7 +542,13 @@ describe('Timeslots Service', () => {
 		});
 
 		const service = Container.get(TimeslotsService);
-		const timeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
+		const timeslots = await service.getAggregatedTimeslots({
+			startDateTime: date,
+			endDateTime: endDate,
+			serviceId: 1,
+			includeBookings: true,
+			filterDaysInAdvance: false,
+		});
 		expect(timeslots).toHaveLength(1);
 
 		const timeslotSPs = Array.from(timeslots[0].getTimeslotServiceProviders());
@@ -438,7 +593,13 @@ describe('Timeslots Service', () => {
 		});
 
 		const service = Container.get(TimeslotsService);
-		const timeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
+		const timeslots = await service.getAggregatedTimeslots({
+			startDateTime: date,
+			endDateTime: endDate,
+			serviceId: 1,
+			includeBookings: true,
+			filterDaysInAdvance: false,
+		});
 		expect(timeslots).toHaveLength(1);
 
 		const timeslotSPs = Array.from(timeslots[0].getTimeslotServiceProviders());
@@ -450,11 +611,31 @@ describe('Timeslots Service', () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 22, 0);
 		const endDateTime = DateHelper.setHours(date, 23, 0);
-		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, true);
+		const result = await service.getAvailableProvidersForTimeslot({
+			startDateTime,
+			endDateTime,
+			serviceId: 1,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
 		expect(result.length).toBe(0);
-		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100, true);
+		const result1 = await service.isProviderAvailableForTimeslot({
+			startDateTime,
+			endDateTime,
+			serviceId: 1,
+			serviceProviderId: 100,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
 		expect(result1).toBe(false);
-		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101, true);
+		const result2 = await service.isProviderAvailableForTimeslot({
+			startDateTime,
+			endDateTime,
+			serviceId: 1,
+			serviceProviderId: 101,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
 		expect(result2).toBe(false);
 	});
 
@@ -463,7 +644,13 @@ describe('Timeslots Service', () => {
 		ServiceProvidersRepositoryMock.getServiceProviders.mockImplementation(() =>
 			Promise.resolve([ServiceProviderMock, ServiceProviderMock2]),
 		);
-		const timeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
+		const timeslots = await service.getAggregatedTimeslots({
+			startDateTime: date,
+			endDateTime: endDate,
+			serviceId: 1,
+			includeBookings: true,
+			filterDaysInAdvance: false,
+		});
 		expect(timeslots.length).toBe(3);
 
 		const bookingStartTime = DateHelper.setHours(date, 15, 0);
@@ -481,7 +668,13 @@ describe('Timeslots Service', () => {
 			Promise.resolve({ entries: [bookingOos] } as IPagedEntities<Booking>),
 		);
 
-		const newTimeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
+		const newTimeslots = await service.getAggregatedTimeslots({
+			startDateTime: date,
+			endDateTime: endDate,
+			serviceId: 1,
+			includeBookings: true,
+			filterDaysInAdvance: false,
+		});
 		expect(newTimeslots.length).toBe(2);
 
 		const timeslotSps = Array.from(newTimeslots[0].getTimeslotServiceProviders());
@@ -493,11 +686,31 @@ describe('Timeslots Service', () => {
 		const service = Container.get(TimeslotsService);
 		const startDateTime = DateHelper.setHours(date, 22, 0);
 		const endDateTime = DateHelper.setHours(date, 23, 0);
-		const result = await service.getAvailableProvidersForTimeslot(startDateTime, endDateTime, 1, true);
+		const result = await service.getAvailableProvidersForTimeslot({
+			startDateTime,
+			endDateTime,
+			serviceId: 1,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
 		expect(result.length).toBe(0);
-		const result1 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 100, true);
+		const result1 = await service.isProviderAvailableForTimeslot({
+			startDateTime,
+			endDateTime,
+			serviceId: 1,
+			serviceProviderId: 100,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
 		expect(result1).toBe(false);
-		const result2 = await service.isProviderAvailableForTimeslot(startDateTime, endDateTime, 1, 101, true);
+		const result2 = await service.isProviderAvailableForTimeslot({
+			startDateTime,
+			endDateTime,
+			serviceId: 1,
+			serviceProviderId: 101,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
 		expect(result2).toBe(false);
 	});
 
@@ -566,9 +779,8 @@ describe('Timeslots Service Out Of Slot', () => {
 		Container.bind(BookingsRepository).factory(() => {
 			return BookingsRepositoryMock;
 		});
-		Container.bind(ServicesRepository).factory(() => {
-			return ServicesRepositoryMock;
-		});
+		Container.bind(ServicesRepository).to(ServicesRepositoryMock);
+
 		Container.bind(ServiceProvidersRepository).factory(() => {
 			return ServiceProvidersRepositoryMock;
 		});
@@ -613,7 +825,13 @@ describe('Timeslots Service Out Of Slot', () => {
 			Promise.resolve({ entries: [bookingOos] } as IPagedEntities<Booking>),
 		);
 
-		const timeslots = await service.getAggregatedTimeslots(date, endDate, 1, true);
+		const timeslots = await service.getAggregatedTimeslots({
+			startDateTime: date,
+			endDateTime: endDate,
+			serviceId: 1,
+			includeBookings: true,
+			filterDaysInAdvance: false,
+		});
 		expect(timeslots.length).toBe(1);
 		const spTimeslot = Array.from(timeslots[0].getTimeslotServiceProviders());
 		expect(spTimeslot[0].acceptedBookings.length).toBe(1);

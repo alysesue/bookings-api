@@ -1,11 +1,21 @@
 import { Container } from 'typescript-ioc';
-import { ScheduleForm, Service, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
+import {
+	ScheduleForm,
+	Service,
+	ServiceProvider,
+	TimeOfDay,
+	TimeslotItem,
+	TimeslotsSchedule,
+	User,
+} from '../../../models';
 import { ServiceProvidersController } from '../serviceProviders.controller';
 import { ServiceProvidersService } from '../serviceProviders.service';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
 import { ServicesService } from '../../services/services.service';
 import { ServiceProvidersServiceMock } from '../__mocks__/serviceProviders.service.mock';
+import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
+import { UserContext } from '../../../infrastructure/auth/userContext';
 
 jest.mock('../../services/services.service', () => {
 	class ServicesService {}
@@ -20,6 +30,7 @@ afterAll(() => {
 beforeAll(() => {
 	Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
 	Container.bind(ServicesService).to(ServicesServiceMock);
+	Container.bind(UserContext).to(UserContextMock);
 });
 
 // tslint:disable-next-line:no-big-function
@@ -29,21 +40,26 @@ describe('ServiceProviders.Controller', () => {
 
 	const mockItem = new TimeslotItem();
 	const request = new TimeslotItemRequest();
+	const adminMock = User.createAdminUser({
+		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+		userName: 'UserName',
+		email: 'test@email.com',
+		name: 'Name',
+	});
 
 	beforeEach(() => {
-		mockItem._id = 11;
+		jest.resetAllMocks();
+		jest.clearAllMocks();
 
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+
+		mockItem._id = 11;
 		mockItem._startTime = TimeOfDay.create({ hours: 8, minutes: 0 });
 		mockItem._endTime = TimeOfDay.create({ hours: 9, minutes: 0 });
 
 		request.weekDay = 4;
 		request.startTime = '08:00';
 		request.endTime = '09:00';
-	});
-
-	beforeEach(() => {
-		jest.resetAllMocks();
-		jest.clearAllMocks();
 	});
 
 	it('should get service providers', async () => {
@@ -58,7 +74,9 @@ describe('ServiceProviders.Controller', () => {
 		await controller.getTotalServiceProviders();
 		expect(ServiceProvidersServiceMock.getServiceProvidersCountMock).toHaveBeenCalled();
 	});
+
 	it('should search SP by name', async () => {
+		ServiceProvidersServiceMock.getServiceProvidersByNameMock.mockReturnValue([sp1]);
 		const controller = Container.get(ServiceProvidersController);
 		await controller.getServiceProvidersByName('mon', 1);
 		expect(ServiceProvidersServiceMock.getServiceProvidersByNameMock).toHaveBeenCalled();
@@ -121,10 +139,17 @@ describe('ServiceProviders.Controller', () => {
 		);
 		timeslots.timeslotItems = [timeslotItem];
 		sp1.timeslotsSchedule = timeslots;
-		ServiceProvidersServiceMock.getAvailableServiceProvidersMock.mockReturnValue([sp1]);
+		ServiceProvidersServiceMock.getAvailableServiceProvidersMock.mockReturnValue(Promise.resolve([sp1]));
 		const result = await Container.get(ServiceProvidersController).getAvailableServiceProviders(
 			startDate,
 			endDate,
+			1,
+		);
+
+		expect(ServiceProvidersServiceMock.getAvailableServiceProvidersMock).toBeCalledWith(
+			startDate,
+			endDate,
+			false,
 			1,
 		);
 
@@ -154,9 +179,17 @@ describe('ServiceProviders.Controller', () => {
 
 		ServicesServiceMock.getServices.mockReturnValue([svc1, svc2]);
 		ServiceProvidersServiceMock.getAvailableServiceProvidersMock
-			.mockImplementationOnce(() => [sp1])
-			.mockImplementationOnce(() => [sp3]);
+			.mockImplementationOnce(() => Promise.resolve([sp1]))
+			.mockImplementationOnce(() => Promise.resolve([sp3]));
 		const result = await Container.get(ServiceProvidersController).getAvailableServiceProviders(startDate, endDate);
+
+		expect(ServiceProvidersServiceMock.getAvailableServiceProvidersMock).toBeCalledTimes(2);
+		expect(ServiceProvidersServiceMock.getAvailableServiceProvidersMock.mock.calls[0]).toEqual([
+			startDate,
+			endDate,
+			false,
+			1,
+		]);
 
 		expect(result.data.length).toBe(2);
 		expect(result.data[0].serviceId).toBe(1);

@@ -20,6 +20,7 @@ import { generateTimeslotKey, generateTimeslotKeyNative, TimeslotKey, TimeslotMa
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
 import { AggregatorTimeslotProviders, ServiceProvidersLookup } from './aggregatorTimeslotProviders';
 import { TimeslotGenerator } from '../../models/timeslotGenerator';
+import { RequestClock } from '../../infrastructure/requestClock';
 
 export class AvailableTimeslotProcessor extends MapProcessor<TimeslotKey, AvailableTimeslotProviders> {}
 
@@ -27,21 +28,18 @@ export class AvailableTimeslotProcessor extends MapProcessor<TimeslotKey, Availa
 export class TimeslotsService {
 	@Inject
 	private bookingsRepository: BookingsRepository;
-
 	@Inject
 	private servicesRepository: ServicesRepository;
-
 	@Inject
 	private serviceProvidersRepo: ServiceProvidersRepository;
-
 	@Inject
 	private unavailabilitiesService: UnavailabilitiesService;
-
 	@Inject
 	private oneOffTimeslotsRepository: OneOffTimeslotsRepository;
-
 	@Inject
 	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
+	@Inject
+	private requestClock: RequestClock;
 
 	private static timeslotKeySelector = (startNative: number, endNative: number): TimeslotKey =>
 		generateTimeslotKeyNative(startNative, endNative);
@@ -82,45 +80,47 @@ export class TimeslotsService {
 		}
 	}
 
-	public async isProviderAvailableForTimeslot(
-		startDateTime: Date,
-		endDateTime: Date,
-		serviceId: number,
-		serviceProviderId: number,
-		skipUnassigned: boolean,
-	): Promise<boolean> {
-		const providers = await this.getAvailableProvidersForTimeslot(
-			startDateTime,
-			endDateTime,
-			serviceId,
-			skipUnassigned,
-			serviceProviderId,
-		);
-		const isProviderAvailable = providers.some((item) => item.serviceProvider.id === serviceProviderId);
-		return isProviderAvailable;
+	public async isProviderAvailableForTimeslot(params: {
+		startDateTime: Date;
+		endDateTime: Date;
+		serviceId: number;
+		serviceProviderId: number;
+		skipUnassigned: boolean;
+		filterDaysInAdvance: boolean;
+	}): Promise<boolean> {
+		const providers = await this.getAvailableProvidersForTimeslot({
+			...params,
+			serviceProviderId: params.serviceProviderId,
+		});
+
+		return providers.length > 0;
 	}
 
-	public async getAvailableProvidersForTimeslot(
-		startDateTime: Date,
-		endDateTime: Date,
-		serviceId: number,
-		skipUnassigned: boolean,
-		serviceProviderId?: number,
-	): Promise<TimeslotServiceProviderResult[]> {
-		const aggregatedEntries = await this.getAggregatedTimeslots(
+	public async getAvailableProvidersForTimeslot(params: {
+		startDateTime: Date;
+		endDateTime: Date;
+		serviceId: number;
+		skipUnassigned: boolean;
+		filterDaysInAdvance: boolean;
+		serviceProviderId?: number;
+	}): Promise<TimeslotServiceProviderResult[]> {
+		const { startDateTime, endDateTime, serviceId, filterDaysInAdvance, serviceProviderId } = params;
+
+		const aggregatedEntries = await this.getAggregatedTimeslots({
 			startDateTime,
 			endDateTime,
 			serviceId,
-			false,
-			serviceProviderId ? [serviceProviderId] : undefined,
-		);
+			includeBookings: false,
+			serviceProviderIds: serviceProviderId ? [serviceProviderId] : undefined,
+			filterDaysInAdvance,
+		});
 
 		const timeslotEntry = aggregatedEntries.find(
 			(e) => e.startTime === startDateTime.getTime() && e.endTime === endDateTime.getTime(),
 		);
-		let availableProviders = Array.from(timeslotEntry?.getTimeslotServiceProviders(skipUnassigned) || []).filter(
-			(e) => e.availabilityCount > 0,
-		);
+		let availableProviders = Array.from(
+			timeslotEntry?.getTimeslotServiceProviders(params.skipUnassigned) || [],
+		).filter((e) => e.availabilityCount > 0);
 		if (serviceProviderId) {
 			availableProviders = availableProviders.filter((e) => e.serviceProvider.id === serviceProviderId);
 		}
@@ -151,16 +151,54 @@ export class TimeslotsService {
 		});
 	}
 
-	public async getAggregatedTimeslots(
+	public async getAggregatedTimeslots(params: {
+		startDateTime: Date;
+		endDateTime: Date;
+		serviceId: number;
+		filterDaysInAdvance: boolean;
+		includeBookings?: boolean;
+		serviceProviderIds?: number[];
+		labelIds?: number[];
+	}): Promise<AvailableTimeslotProviders[]> {
+		const { serviceId, includeBookings, serviceProviderIds, labelIds, filterDaysInAdvance } = params;
+		let range = {
+			start: params.startDateTime,
+			end: params.endDateTime,
+		};
+
+		if (filterDaysInAdvance) {
+			const service = await this.servicesRepository.getService({ id: serviceId });
+			if (!service) {
+				return [];
+			}
+			const now = this.requestClock.requestTime();
+			range = service.filterDaysInAdvance({ now, ...range });
+		}
+
+		return this.getAggregatedTimeslotsInternal(
+			range.start,
+			range.end,
+			serviceId,
+			includeBookings || false,
+			serviceProviderIds,
+			labelIds,
+		);
+	}
+
+	private async getAggregatedTimeslotsInternal(
 		startDateTime: Date,
 		endDateTime: Date,
 		serviceId: number,
-		includeBookings = false,
+		includeBookings: boolean,
 		serviceProviderIds?: number[],
 		labelIds?: number[],
 	): Promise<AvailableTimeslotProviders[]> {
+		if (endDateTime < startDateTime) {
+			return [];
+		}
+
 		const getAggregatedTimeslotEntriesWatch = new StopWatch('getAggregatedTimeslotEntries');
-		const [serviceProviderLookup, aggregatedEntries] = await this.getAggregatedTimeslotEntries(
+		const [serviceProviderLookup, aggregatedEntries] = await this.generateTimeslotEntries(
 			startDateTime,
 			endDateTime,
 			serviceId,
@@ -185,7 +223,7 @@ export class TimeslotsService {
 		const pendingBookings = bookings.filter((booking) => booking.status === BookingStatus.PendingApproval);
 		const onHoldBookings = bookings.filter((booking) => {
 			const onHoldUntil = booking.onHoldUntil;
-			return booking.status === BookingStatus.OnHold && new Date() < onHoldUntil;
+			return booking.status === BookingStatus.OnHold && this.requestClock.requestTime() < onHoldUntil;
 		});
 		if (includeBookings) {
 			TimeslotsService.mergeAcceptedBookingsToTimeslots(
@@ -342,7 +380,7 @@ export class TimeslotsService {
 		}
 	}
 
-	private async getAggregatedTimeslotEntries(
+	private async generateTimeslotEntries(
 		minStartTime: Date,
 		maxEndTime: Date,
 		serviceId: number,

@@ -1,6 +1,6 @@
 import { Booking, Label, ServiceProvider } from '.';
 
-const EmptyBookingArray: readonly Booking[] = [];
+const EmptyBookingArray: readonly Booking[] = Object.freeze([]);
 
 export type TimeslotInputData = {
 	readonly capacity: number;
