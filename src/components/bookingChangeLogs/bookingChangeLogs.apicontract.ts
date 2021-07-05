@@ -50,6 +50,7 @@ export type BookingStateResponse = {
 	videoConferenceUrl?: string;
 	refId?: string;
 	dynamicValues?: DynamicValueContract[];
+	serviceProviderAliasName?: string;
 };
 
 export type ChangeLogSearchRequest = {};

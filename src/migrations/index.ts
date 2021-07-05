@@ -26,4 +26,5 @@ export { ServiceDescription1623112179998 } from './1623112179998-ServiceDescript
 export { ServiceProviderDescription1623113584184 } from './1623113584184-ServiceProviderDescription';
 export { ServiceFlagSendSMS1623916511199 } from './1623916511199-ServiceFlagSendSMS';
 export { DaysInAdvanceServiceConfig1623982696546 } from './1623982696546-DaysInAdvanceServiceConfig';
+export { ServiceProviderAliasName1624598751619 } from './1624598751619-ServiceProviderAliasName';
 export { ReasonToReject1624412487509 } from './1624412487509-ReasonToReject';

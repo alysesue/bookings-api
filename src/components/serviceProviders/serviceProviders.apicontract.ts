@@ -7,13 +7,22 @@ export class ServiceProviderModel {
 	public phone?: string;
 	public expiryDate?: Date | null;
 	public description?: string | null;
+	public aliasName?: string;
 
-	constructor(name: string, email?: string, phone?: string, expiryDate?: Date, description?: string) {
+	constructor(
+		name: string,
+		email?: string,
+		phone?: string,
+		expiryDate?: Date,
+		description?: string,
+		aliasName?: string,
+	) {
 		this.name = name;
 		this.email = email;
 		this.phone = phone;
 		this.expiryDate = expiryDate;
 		this.description = description;
+		this.aliasName = aliasName;
 	}
 }
 
@@ -55,6 +64,7 @@ export class ServiceProviderResponseModel {
 	public scheduleFormConfirmed: boolean;
 	public onHoldEnabled?: boolean;
 	public description?: string;
+	public aliasName?: string;
 }
 
 export class ServiceProviderListRequest {

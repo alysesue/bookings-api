@@ -156,4 +156,5 @@ export type BookingJsonSchemaV1 = {
 	videoConferenceUrl?: string;
 	refId?: string;
 	dynamicValues?: DynamicValueJsonModel[];
+	serviceProviderAliasName?: string;
 };

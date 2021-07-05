@@ -101,12 +101,16 @@ describe('ServiceProviders.Controller', () => {
 	});
 
 	it('should get a service provider', async () => {
-		ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(ServiceProvider.create('Monica', 1));
+		ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(
+			ServiceProvider.create('Monica', 1, null, null, null, null, 'description', 'alias name'),
+		);
 
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProvider(1);
 
 		expect(result.data.name).toEqual('Monica');
+		expect(result.data.description).toEqual('description');
+		expect(result.data.aliasName).toEqual('alias name');
 	});
 
 	it('should get provider scheduleForm', async () => {
@@ -240,7 +244,7 @@ describe('ServiceProviders.Controller', () => {
 
 	it('should update a service provider', async () => {
 		ServiceProvidersServiceMock.updateServiceProviderMock.mockReturnValue(
-			ServiceProvider.create('Test', 1, 'test@gmail.com'),
+			ServiceProvider.create('Test', 1, 'test@gmail.com', '123', null, null, 'updated desc', 'updated alias'),
 		);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.updateServiceProvider(1, {
@@ -248,7 +252,10 @@ describe('ServiceProviders.Controller', () => {
 			email: 'test@gmail.com',
 		});
 		expect(ServiceProvidersServiceMock.updateServiceProviderMock).toBeCalled();
-		expect(result.data.email).toBe('test@gmail.com');
+		expect(result.data.email).toEqual('test@gmail.com');
+		expect(result.data.phone).toEqual('123');
+		expect(result.data.description).toEqual('updated desc');
+		expect(result.data.aliasName).toBe('updated alias');
 	});
 
 	it('should set provider schedule timeslots', async () => {

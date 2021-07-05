@@ -117,6 +117,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		agencyUserId?: string,
 		autoAcceptBookings = DEFAULT_AUTO_ACCEPT_BOOKINGS,
 		description?: string,
+		aliasName?: string,
 	) {
 		const instance = new ServiceProvider();
 		instance._serviceId = serviceId;
@@ -128,6 +129,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		instance._autoAcceptBookings = autoAcceptBookings;
 		instance._scheduleFormConfirmed = DEFAULT_SCHEDULE_FORM_CONFIRMED;
 		instance._description = description;
+		instance._aliasName = aliasName;
 		return instance;
 	}
 
@@ -235,5 +237,16 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 
 	public set description(value: string) {
 		this._description = value;
+	}
+
+	@Column({ type: 'varchar', length: 100, nullable: true })
+	private _aliasName: string;
+
+	public get aliasName(): string {
+		return this._aliasName;
+	}
+
+	public set aliasName(value: string) {
+		this._aliasName = value;
 	}
 }
