@@ -7,22 +7,22 @@ describe('Validate NRIC', () => {
 	});
 
 	it('It should accept S series NRIC', () => {
-		const res = isSGUinfin('S9400291U');
+		const res = isSGUinfin('S9400291E');
 		expect(res.pass).toBe(true);
 	});
 
 	it('It should accept T series NRIC', () => {
-		const res = isSGUinfin('T9400291U');
+		const res = isSGUinfin('T9400291A');
 		expect(res.pass).toBe(true);
 	});
 
 	it('It should accept F series NRIC', () => {
-		const res = isSGUinfin('F9400291U');
+		const res = isSGUinfin('F9400291P');
 		expect(res.pass).toBe(true);
 	});
 
 	it('It should accept G series NRIC', () => {
-		const res = isSGUinfin('G9400291U');
+		const res = isSGUinfin('G9400291K');
 		expect(res.pass).toBe(true);
 	});
 

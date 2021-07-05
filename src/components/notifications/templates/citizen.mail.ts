@@ -162,12 +162,14 @@ ${locationText}
 			time,
 			locationText,
 			videoConferenceUrl,
+			reasonToReject,
 		} = emailMapper(data);
 
 		return {
 			subject: `BookingSG cancellation: ${serviceName}${spNameDisplayedForCitizen}`,
 			html: `<pre>
 The following booking has been cancelled by the other party.
+${reasonToReject}
 <br />
 Booking for: <b>${serviceName}${spNameDisplayedForCitizen}.</b>
 <br />
