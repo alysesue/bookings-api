@@ -36,6 +36,7 @@ export class ServiceProvidersMapper {
 		response.scheduleFormConfirmed = spData.scheduleFormConfirmed;
 		response.description = spData?.description;
 		response.onHoldEnabled = spData.service?.isOnHold;
+		response.aliasName = spData.aliasName;
 
 		if (userIsAdmin) {
 			response.email = spData.email;
@@ -110,6 +111,7 @@ export class ServiceProvidersMapper {
 		newSp.name = sp.name;
 		newSp.expiryDate = sp?.expiryDate ? new Date(sp.expiryDate) : null;
 		newSp.description = sp?.description;
+		newSp.aliasName = sp.aliasName;
 		return newSp;
 	}
 }
