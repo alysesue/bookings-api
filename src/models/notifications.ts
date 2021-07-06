@@ -1,14 +1,14 @@
 export enum EmailNotificationTemplateType {
-    CreatedByCitizenSentToCitizen = 1,
-    UpdatedByCitizenSentToCitizen,
-    CancelledByCitizenSentToCitizen,
-    CreatedByCitizenSentToServiceProvider ,
-    UpdatedByCitizenSentToServiceProvider,
-    CancelledByCitizenSentToServiceProvider,
-    CreatedByServiceProviderSentToCitizen,
-    UpdatedByServiceProviderSentToCitizen,
-    CancelledByServiceProviderSentToCitizen,
-    CreatedByServiceProviderSentToServiceProvider , // currently undefined
-    UpdatedByServiceProviderSentToServiceProvider,
-    CancelledByServiceProviderSentToServiceProvider,
+	CreatedByCitizenSentToCitizen = 1,
+	UpdatedByCitizenSentToCitizen,
+	CancelledByCitizenSentToCitizen,
+	CreatedByCitizenSentToServiceProvider,
+	UpdatedByCitizenSentToServiceProvider,
+	CancelledByCitizenSentToServiceProvider,
+	CreatedByServiceProviderSentToCitizen,
+	UpdatedByServiceProviderSentToCitizen,
+	CancelledByServiceProviderSentToCitizen,
+	CreatedByServiceProviderSentToServiceProvider, // currently undefined
+	UpdatedByServiceProviderSentToServiceProvider,
+	CancelledByServiceProviderSentToServiceProvider,
 }
