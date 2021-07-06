@@ -28,3 +28,4 @@ export { ServiceFlagSendSMS1623916511199 } from './1623916511199-ServiceFlagSend
 export { DaysInAdvanceServiceConfig1623982696546 } from './1623982696546-DaysInAdvanceServiceConfig';
 export { ServiceProviderAliasName1624598751619 } from './1624598751619-ServiceProviderAliasName';
 export { ReasonToReject1624412487509 } from './1624412487509-ReasonToReject';
+export { ServiceNotificationTemplate1625534887335 } from './1625534887335-ServiceNotificationTemplate';

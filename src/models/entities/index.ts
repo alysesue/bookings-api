@@ -22,3 +22,4 @@ export { OneOffTimeslot } from './oneOffTimeslot';
 export { DynamicField, SelectListDynamicField, TextDynamicField } from './dynamicField';
 export { Label } from './label';
 export { LabelCategory } from './labelCategory';
+export { ServiceNotificationTemplate } from './serviceNotificationTemplate';

@@ -1,4 +1,4 @@
-export enum EmailNotificationTemplates {
+export enum EmailNotificationTemplateType {
     CreatedByCitizenSentToCitizen = 1,
     UpdatedByCitizenSentToCitizen,
     CancelledByCitizenSentToCitizen,
