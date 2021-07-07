@@ -254,4 +254,11 @@ export class ServicesController extends Controller {
 		const data = await this.serviceNotificationsTemplatesService.addEmailTemplate(serviceId, request);
 		return ApiDataFactory.create(mapToNotificationTemplateResponse(data));
 	}
+
+	/**
+	 * Update an existing email notification template.
+	 *
+	 * @param @isInt serviceId The service id.
+	 * @param request
+	 */
 }

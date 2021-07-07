@@ -7,7 +7,6 @@ import { andWhere } from '../../tools/queryConditions';
 
 @InRequestScope
 export class NotificationTemplateRepository extends RepositoryBase<ServiceNotificationTemplate> {
-
 	constructor() {
 		super(ServiceNotificationTemplate);
 	}
@@ -25,7 +24,7 @@ export class NotificationTemplateRepository extends RepositoryBase<ServiceNotifi
 		const query = await this.createSelectQuery([serviceIdCondition], { enum: emailTemplateType });
 		const entry = await query.getOne();
 
-        return entry;
+		return entry;
 	}
 
 	private async createSelectQuery(
