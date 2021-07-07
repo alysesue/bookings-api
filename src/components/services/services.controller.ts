@@ -222,7 +222,6 @@ export class ServicesController extends Controller {
 	 * @param @isInt  emailTemplateType The enum type of email template.
 	 */
 	@Get('{serviceId}/email-notifications')
-	// @Security
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
@@ -250,8 +249,9 @@ export class ServicesController extends Controller {
 	public async createEmailNotificationTemplate(
 		@Path() serviceId: number,
 		@Body() request: ServiceNotificationTemplateRequest,
-	): Promise<number> {
+	): Promise<ApiData<ServiceNotificationTemplateResponse>> {
 		request = new ServiceNotificationTemplateRequest(request.emailTemplateType, request.htmlTemplate);
-		return await this.serviceNotificationsTemplatesService.addEmailTemplate(serviceId, request);
+		const data = await this.serviceNotificationsTemplatesService.addEmailTemplate(serviceId, request);
+		return ApiDataFactory.create(mapToNotificationTemplateResponse(data));
 	}
 }
