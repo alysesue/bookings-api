@@ -4,7 +4,7 @@ import { ServiceNotificationTemplateRequest } from '../serviceNotificationTempla
 import { ServiceNotificationTemplateRepository } from '../serviceNotificationTemplate/serviceNotificationTemplate.repository';
 import { EmailNotificationTemplateType } from '../../models/notifications';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import {ServiceNotificationTemplateMapper} from "./serviceNotificationTemplate.mapper";
+import { ServiceNotificationTemplateMapper } from './serviceNotificationTemplate.mapper';
 
 @InRequestScope
 export class ServiceNotificationsTemplatesService {
@@ -37,6 +37,15 @@ export class ServiceNotificationsTemplatesService {
 		serviceId: number,
 		request: ServiceNotificationTemplateRequest,
 	): Promise<ServiceNotificationTemplate> {
+		const existTemplate = await this.notificationTemplateRepository.getTemplate(
+			serviceId,
+			request.emailTemplateType,
+		);
+		if (existTemplate) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_GENERIC).setMessage(
+				`Template of type ${EmailNotificationTemplateType[request.emailTemplateType].toString()} already exists`,
+			);
+		}
 		const emailNotification = ServiceNotificationTemplate.create(
 			request.htmlTemplate,
 			serviceId,
@@ -49,8 +58,11 @@ export class ServiceNotificationsTemplatesService {
 		serviceId: number,
 		request: ServiceNotificationTemplateRequest,
 	): Promise<ServiceNotificationTemplate> {
-		const templateEntity = await this.notificationTemplateRepository.getTemplate(serviceId, request.emailTemplateType);
-		if(!templateEntity){
+		const templateEntity = await this.notificationTemplateRepository.getTemplate(
+			serviceId,
+			request.emailTemplateType,
+		);
+		if (!templateEntity) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(
 				`Template of type ${EmailNotificationTemplateType[request.emailTemplateType].toString()} not found`,
 			);
