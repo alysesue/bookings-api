@@ -1,6 +1,6 @@
 import { EmailNotificationTemplateType } from '../../models/notifications';
 
-export class ServiceNotificationTemplateModel {
+export class ServiceNotificationTemplateRequest {
 	public emailTemplateType: EmailNotificationTemplateType;
 	public htmlTemplate: string;
 
@@ -10,8 +10,8 @@ export class ServiceNotificationTemplateModel {
 	}
 }
 
-export class ServiceNotificationTemplateResponseModel {
-	public id: string;
+export class ServiceNotificationTemplateResponse {
+	public id: number;
 	public emailTemplateType: EmailNotificationTemplateType;
 	public htmlTemplate: string;
 	/**
