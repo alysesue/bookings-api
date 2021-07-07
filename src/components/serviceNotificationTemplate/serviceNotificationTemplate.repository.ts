@@ -6,7 +6,7 @@ import { SelectQueryBuilder } from 'typeorm';
 import { andWhere } from '../../tools/queryConditions';
 
 @InRequestScope
-export class NotificationTemplateRepository extends RepositoryBase<ServiceNotificationTemplate> {
+export class ServiceNotificationTemplateRepository extends RepositoryBase<ServiceNotificationTemplate> {
 	constructor() {
 		super(ServiceNotificationTemplate);
 	}

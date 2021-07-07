@@ -20,7 +20,7 @@ import {
 } from '../serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
 import { ServiceNotificationsTemplatesService } from '../serviceNotificationTemplate/serviceNotificationTemplate.service';
 import { EmailNotificationTemplateType } from '../../models/notifications';
-import { mapToNotificationTemplateResponse } from '../serviceNotificationTemplate/serviceNotificationTemplate.mapper';
+import { ServiceNotificationTemplateMapper } from '../serviceNotificationTemplate/serviceNotificationTemplate.mapper';
 
 @Route('v1/services')
 @Tags('Services')
@@ -33,6 +33,9 @@ export class ServicesController extends Controller {
 
 	@Inject
 	private serviceNotificationsTemplatesService: ServiceNotificationsTemplatesService;
+
+	@Inject
+	private notificationTemplateMapper: ServiceNotificationTemplateMapper;
 
 	/**
 	 * Creates a service for booking.
@@ -233,7 +236,7 @@ export class ServicesController extends Controller {
 			serviceId,
 			emailTemplateType,
 		);
-		return ApiDataFactory.create(mapToNotificationTemplateResponse(data));
+		return ApiDataFactory.create(this.notificationTemplateMapper.mapToNotificationTemplateResponse(data));
 	}
 
 	/**
@@ -252,7 +255,7 @@ export class ServicesController extends Controller {
 	): Promise<ApiData<ServiceNotificationTemplateResponse>> {
 		request = new ServiceNotificationTemplateRequest(request.emailTemplateType, request.htmlTemplate);
 		const data = await this.serviceNotificationsTemplatesService.addEmailTemplate(serviceId, request);
-		return ApiDataFactory.create(mapToNotificationTemplateResponse(data));
+		return ApiDataFactory.create(this.notificationTemplateMapper.mapToNotificationTemplateResponse(data));
 	}
 
 	/**
@@ -261,4 +264,16 @@ export class ServicesController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 * @param request
 	 */
+	@Put('{serviceId}/email-notifications')
+	@SuccessResponse(200, 'Ok')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async updateEmailNotificationTemplate(
+		@Path() serviceId: number,
+		@Body() request: ServiceNotificationTemplateRequest,
+	): Promise<ApiData<ServiceNotificationTemplateResponse>> {
+		request = new ServiceNotificationTemplateRequest(request.emailTemplateType, request.htmlTemplate);
+		const data = await this.serviceNotificationsTemplatesService.updateEmailTemplate(serviceId, request);
+		return ApiDataFactory.create(this.notificationTemplateMapper.mapToNotificationTemplateResponse(data));
+	}
 }
