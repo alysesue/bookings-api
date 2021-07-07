@@ -33,6 +33,7 @@ import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract
 import { logger } from 'mol-lib-common';
 import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
 import { Observer } from '../../infrastructure/observer';
+import { MyInfoService } from '../myInfo/myInfo.service';
 
 @InRequestScope
 export class BookingsService {
@@ -66,6 +67,8 @@ export class BookingsService {
 	private usersService: UsersService;
 	@Inject
 	private bookingsMapper: BookingsMapper;
+	@Inject
+	private myInfoService: MyInfoService;
 
 	constructor() {
 		const observers: Observer[] = [this.mailObserver, this.smsObserver];
@@ -444,6 +447,8 @@ export class BookingsService {
 			return isOnHold || isStandAlone;
 		};
 
+		const myInfo = isStandAlone ? await this.myInfoService.getMyInfo(currentUser) : undefined;
+
 		const booking = new BookingBuilder()
 			.withServiceId(serviceId)
 			.withStartDateTime(bookingRequest.startDateTime)
@@ -455,9 +460,9 @@ export class BookingsService {
 			.withVideoConferenceUrl(videoConferenceUrl)
 			.withCreator(currentUser)
 			.withCitizenUinFin(BookingsMapper.getCitizenUinFin(currentUser, bookingRequest))
-			.withCitizenName(bookingRequest.citizenName)
-			.withCitizenPhone(bookingRequest.citizenPhone)
-			.withCitizenEmail(bookingRequest.citizenEmail)
+			.withCitizenName(myInfo ? myInfo.data.name.value : bookingRequest.citizenName)
+			.withCitizenPhone(myInfo ? myInfo.data.mobileno.nbr.value : bookingRequest.citizenPhone)
+			.withCitizenEmail(myInfo ? myInfo.data.email.value : bookingRequest.citizenEmail)
 			.withAutoAccept(
 				BookingsService.shouldAutoAccept(currentUser, serviceProvider, shouldBypassCaptchaAndAutoAccept),
 			)
