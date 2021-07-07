@@ -43,7 +43,9 @@ export class ServiceNotificationsTemplatesService {
 		);
 		if (existTemplate) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_GENERIC).setMessage(
-				`Template of type ${EmailNotificationTemplateType[request.emailTemplateType].toString()} already exists`,
+				`Template of type ${EmailNotificationTemplateType[
+					request.emailTemplateType
+				].toString()} already exists`,
 			);
 		}
 		const emailNotification = ServiceNotificationTemplate.create(
