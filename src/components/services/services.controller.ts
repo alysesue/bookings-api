@@ -18,7 +18,7 @@ import {
 	ServiceNotificationTemplateRequest,
 	ServiceNotificationTemplateResponse,
 } from '../serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
-import { ServiceNotificationsTemplatesService } from '../serviceNotificationTemplate/serviceNotificationTemplate.service';
+import { ServiceNotificationTemplateService } from '../serviceNotificationTemplate/serviceNotificationTemplate.service';
 import { EmailNotificationTemplateType } from '../../models/notifications';
 import { ServiceNotificationTemplateMapper } from '../serviceNotificationTemplate/serviceNotificationTemplate.mapper';
 
@@ -32,7 +32,7 @@ export class ServicesController extends Controller {
 	private serviceMapper: ServicesMapper;
 
 	@Inject
-	private serviceNotificationsTemplatesService: ServiceNotificationsTemplatesService;
+	private serviceNotificationsTemplatesService: ServiceNotificationTemplateService;
 
 	@Inject
 	private notificationTemplateMapper: ServiceNotificationTemplateMapper;

@@ -7,7 +7,7 @@ import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { ServiceNotificationTemplateMapper } from './serviceNotificationTemplate.mapper';
 
 @InRequestScope
-export class ServiceNotificationsTemplatesService {
+export class ServiceNotificationTemplateService {
 	@Inject
 	private notificationTemplateRepository: ServiceNotificationTemplateRepository;
 	@Inject

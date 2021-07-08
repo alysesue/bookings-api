@@ -2,11 +2,23 @@ import { Container } from 'typescript-ioc';
 import { ServicesController } from '../services.controller';
 import { ServiceRequest } from '../service.apicontract';
 import { ServicesService } from '../services.service';
-import { ScheduleForm, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
+import {
+	ScheduleForm,
+	Service,
+	ServiceNotificationTemplate,
+	TimeOfDay,
+	TimeslotItem,
+	TimeslotsSchedule,
+} from '../../../models';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 import { Weekday } from '../../../enums/weekday';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
 import { LabelsMapper } from '../../labels/labels.mapper';
+import {
+	ServiceNotificationTemplateRequest,
+	ServiceNotificationTemplateResponse,
+} from '../../serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
+import { ServiceNotificationTemplateService } from '../../serviceNotificationTemplate/serviceNotificationTemplate.service';
 
 jest.mock('../services.service', () => {
 	class ServicesService {}
@@ -171,6 +183,49 @@ describe('Services controller tests', () => {
 		const response = await Container.get(ServicesController).updateTimeslotItem(1, 11, request);
 		expect(response).toBeDefined();
 	});
+
+	it('should get an email notification template', async () => {
+		Container.bind(ServiceNotificationTemplateService).to(ServiceNotificationTemplateServiceMockClass);
+		const mockItem = new ServiceNotificationTemplateResponse();
+		mockItem.id = 123;
+		mockItem.htmlTemplate = 'get template';
+		mockItem.emailTemplateType = 2;
+		mockItem.serviceId = 1;
+
+		NotificationServiceMock.getEmailNotificationTemplate.mockReturnValue(mockItem);
+		const response = await Container.get(ServicesController).getEmailNotificationTemplateByServiceId(1, 2);
+		expect(response.data).toEqual(mockItem);
+	});
+
+	it('should create an email notification template', async () => {
+		Container.bind(ServiceNotificationTemplateService).to(ServiceNotificationTemplateServiceMockClass);
+		const mockItem = new ServiceNotificationTemplateResponse();
+		mockItem.id = 123;
+		mockItem.htmlTemplate = 'get template';
+		mockItem.emailTemplateType = 2;
+		mockItem.serviceId = 1;
+
+		NotificationServiceMock.addEmailTemplate.mockReturnValue(mockItem);
+		const request = new ServiceNotificationTemplateRequest(2, 'irrelevant');
+		const response = await Container.get(ServicesController).createEmailNotificationTemplate(1, request);
+		expect(response).toBeDefined();
+		expect(response.data).toEqual(mockItem);
+	});
+
+	it('should update an existing email notification template', async () => {
+		Container.bind(ServiceNotificationTemplateService).to(ServiceNotificationTemplateServiceMockClass);
+		const mockItem = new ServiceNotificationTemplateResponse();
+		mockItem.id = 123;
+		mockItem.htmlTemplate = 'get template';
+		mockItem.emailTemplateType = 2;
+		mockItem.serviceId = 1;
+
+		NotificationServiceMock.updateEmailTemplate.mockReturnValue(mockItem);
+		const request = new ServiceNotificationTemplateRequest(2, 'irrelevant');
+		const response = await Container.get(ServicesController).updateEmailNotificationTemplate(1, request);
+		expect(response).toBeDefined();
+		expect(response.data).toEqual(mockItem);
+	});
 });
 
 const ServicesServiceMock = {
@@ -240,5 +295,24 @@ class LabelsMapperMock implements Partial<LabelsMapper> {
 	public static mapToLabelsResponse = jest.fn();
 	public mapToLabelsResponse(...params) {
 		return LabelsMapperMock.mapToLabelsResponse(...params);
+	}
+}
+
+const NotificationServiceMock = {
+	getEmailNotificationTemplate: jest.fn(),
+	addEmailTemplate: jest.fn(),
+	updateEmailTemplate: jest.fn(),
+};
+class ServiceNotificationTemplateServiceMockClass implements Partial<ServiceNotificationTemplateService> {
+	public async getEmailNotificationTemplate(): Promise<ServiceNotificationTemplate> {
+		return NotificationServiceMock.getEmailNotificationTemplate();
+	}
+
+	public async addEmailTemplate(): Promise<ServiceNotificationTemplate> {
+		return NotificationServiceMock.addEmailTemplate();
+	}
+
+	public async updateEmailTemplate(): Promise<ServiceNotificationTemplate> {
+		return NotificationServiceMock.updateEmailTemplate();
 	}
 }
