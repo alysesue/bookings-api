@@ -20,7 +20,7 @@ export class ServiceNotificationTemplateMapper {
 		return response;
 	};
 
-	public mapTemplateToEntity = (
+	public mapNotificationTemplateRequestToEntity = (
 		data: ServiceNotificationTemplateRequest,
 		entity: ServiceNotificationTemplate,
 	): ServiceNotificationTemplate => {

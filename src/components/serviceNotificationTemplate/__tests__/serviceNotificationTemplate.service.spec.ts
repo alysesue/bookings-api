@@ -1,8 +1,6 @@
 import { Container } from 'typescript-ioc';
-import { IdHasher } from '../../../infrastructure/idHasher';
 import { ServiceNotificationTemplate } from '../../../models';
 import { ServiceNotificationTemplateRepository } from '../serviceNotificationTemplate.repository';
-import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { ServiceNotificationTemplateService } from '../serviceNotificationTemplate.service';
 import { ServiceNotificationTemplateRequest } from '../serviceNotificationTemplate.apicontract';
 
@@ -10,14 +8,10 @@ describe('Test the service notification template service', () => {
 	beforeAll(() => {
 		jest.resetAllMocks();
 		Container.bind(ServiceNotificationTemplateRepository).to(ServiceNotificationTemplateRepositoryMock);
-		Container.bind(IdHasher).to(IdHasherMock);
 	});
 
 	beforeEach(() => {
 		jest.resetAllMocks();
-
-		IdHasherMock.encode.mockImplementation((value: number) => value.toString());
-		IdHasherMock.decode.mockImplementation((value: string) => Number.parseInt(value, 10));
 	});
 
 	const template = new ServiceNotificationTemplate();
