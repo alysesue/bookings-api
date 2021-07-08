@@ -294,3 +294,12 @@ resource "aws_ssm_parameter" "mol-sender-email" {
 
   overwrite = true
 }
+resource "aws_ssm_parameter" "mol-routes_myinfo" {
+  name  = "${local.path-prefix}/MOL_ROUTES_MYINFO"
+  type  = "SecureString"
+  key_id  = "${data.aws_kms_alias.kms-ssm-alias-app.name}"
+  value = "${data.external.static.result.MOL_ROUTES_MYINFO}"
+
+  overwrite = true
+}
+
