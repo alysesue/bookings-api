@@ -45,7 +45,7 @@ import { ServicesRepositoryMock } from '../__mocks__/services.repository.mock';
 
 jest.mock('../services.auth');
 jest.mock('../services.repository', () => {
-	class ServicesRepository {}
+	class ServicesRepository { }
 	return { ServicesRepository };
 });
 
@@ -237,6 +237,24 @@ describe('Services service tests', () => {
 		});
 	});
 
+	it('should not create a service with existing name', async () => {
+		const existingService = new ServiceRequest();
+		existingService.organisationId = 1;
+		existingService.labels = [];
+		existingService.name = "bookingsg"
+
+		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
+			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
+		);
+		await Container.get(ServicesService).createService(existingService);
+		const request = new ServiceRequest();
+		request.name = 'bookingsg';
+		request.organisationId = 1;
+
+		;
+		expect(async () => await Container.get(ServicesService).createService(request)).rejects.toThrowError();
+	});
+
 	it('should NOT save service without permission', async () => {
 		const request = new ServiceRequest();
 		request.name = 'John';
@@ -306,6 +324,8 @@ describe('Services service tests', () => {
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
 	});
+
+
 
 	it('should update service', async () => {
 		const newService = new Service();
