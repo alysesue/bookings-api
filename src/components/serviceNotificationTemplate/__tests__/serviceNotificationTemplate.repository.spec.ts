@@ -18,14 +18,6 @@ describe('Test the service notification template repository', () => {
 		UserContextMock.getAuthGroups.mockReturnValue(Promise.resolve([]));
 	});
 
-	// const userMock = User.createAdminUser({
-	//     molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
-	//     userName: 'UserName',
-	//     email: 'test@email.com',
-	//     name: 'Name',
-	//     agencyUserId: 'ABC12',
-	// });
-
 	const template = new ServiceNotificationTemplate();
 	template.emailTemplateType = 2;
 	template.htmlTemplate = 'testings notification template';
@@ -52,14 +44,14 @@ describe('Test the service notification template repository', () => {
 			where: jest.fn(),
 			getOne: jest.fn<Promise<ServiceNotificationTemplate>, any>(),
 		};
-        queryBuilderMock.where.mockImplementation(() => queryBuilderMock);
+		queryBuilderMock.where.mockImplementation(() => queryBuilderMock);
 		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(template));
-        TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const repository = Container.get(ServiceNotificationTemplateRepository);
-		const result = await repository.getTemplate(1, 2);
-        expect(queryBuilderMock.getOne).toBeCalled();
-        expect(result).toBeDefined();
-		expect(result.htmlTemplate).toEqual('testings notification template')
+		const result = await repository.getTemplateByType(1, 2);
+		expect(queryBuilderMock.getOne).toBeCalled();
+		expect(result).toBeDefined();
+		expect(result.htmlTemplate).toEqual('testings notification template');
 	});
 });

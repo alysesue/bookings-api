@@ -3,15 +3,33 @@ import { ServiceNotificationTemplate } from '../../../models';
 import { ServiceNotificationTemplateRepository } from '../serviceNotificationTemplate.repository';
 import { ServiceNotificationTemplateService } from '../serviceNotificationTemplate.service';
 import { ServiceNotificationTemplateRequest } from '../serviceNotificationTemplate.apicontract';
+import { NotificationTemplateActionAuthVisitor } from '../serviceNotificationTemplate.auth';
+import { UserContext } from '../../../infrastructure/auth/userContext';
+import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
+import { ServicesService } from '../../services/services.service';
+import { ServicesServiceMock } from '../../services/__mocks__/services.service';
+
+jest.mock('../ServiceNotificationTemplate.auth', () => {
+	return { NotificationTemplateActionAuthVisitor: jest.fn() };
+});
 
 describe('Test the service notification template service', () => {
+	const visitorMock = {
+		hasPermission: jest.fn(),
+	} as Partial<NotificationTemplateActionAuthVisitor>;
+
 	beforeAll(() => {
 		jest.resetAllMocks();
 		Container.bind(ServiceNotificationTemplateRepository).to(ServiceNotificationTemplateRepositoryMock);
+		Container.bind(ServicesService).to(ServicesServiceMock);
+		Container.bind(UserContext).to(UserContextMock);
 	});
 
 	beforeEach(() => {
 		jest.resetAllMocks();
+		UserContextMock.getAuthGroups.mockReturnValue(Promise.resolve([]));
+		(visitorMock.hasPermission as jest.Mock).mockReturnValue(true);
+		(NotificationTemplateActionAuthVisitor as jest.Mock).mockImplementation(() => visitorMock);
 	});
 
 	const template = new ServiceNotificationTemplate();
@@ -44,7 +62,7 @@ class ServiceNotificationTemplateRepositoryMock implements Partial<ServiceNotifi
 		return ServiceNotificationTemplateRepositoryMock.saveMock();
 	}
 
-	public async getTemplate() {
+	public async getTemplateByType() {
 		return ServiceNotificationTemplateRepositoryMock.getTemplateMock();
 	}
 }
