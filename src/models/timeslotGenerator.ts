@@ -50,10 +50,20 @@ export class TimeslotGenerator {
 				for (const timeslotTemplate of weekdayTimeslots) {
 					if (startTimeOfDay && TimeOfDay.compare(timeslotTemplate._startTime, startTimeOfDay) < 0) continue;
 					if (endTimeOfDay && TimeOfDay.compare(timeslotTemplate._endTime, endTimeOfDay) > 0) continue;
-
+					const startTimeNative = dateNative + timeslotTemplate._startTime.AsMilliseconds();
+					const endTimeNative = dateNative + timeslotTemplate._endTime.AsMilliseconds();
+					if (
+						timeslotTemplate._startDate &&
+						timeslotTemplate._endDate &&
+						!(
+							timeslotTemplate._startDate.getTime() <= startTimeNative &&
+							timeslotTemplate._endDate.getTime() >= endTimeNative
+						)
+					)
+						continue;
 					const timeslot: TimeslotWithCapacity = {
-						startTimeNative: dateNative + timeslotTemplate._startTime.AsMilliseconds(),
-						endTimeNative: dateNative + timeslotTemplate._endTime.AsMilliseconds(),
+						startTimeNative,
+						endTimeNative,
 						capacity: timeslotTemplate._capacity,
 						isRecurring: true,
 					};

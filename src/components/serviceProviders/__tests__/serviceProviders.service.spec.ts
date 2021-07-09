@@ -73,6 +73,8 @@ describe('ServiceProviders.Service', () => {
 			minutes: 0,
 		}),
 		TimeOfDay.create({ hours: 11, minutes: 30 }),
+		undefined,
+		undefined,
 	);
 	const timeslotsScheduleMock = new TimeslotsSchedule();
 	timeslotsScheduleMock._serviceProvider = serviceProviderMock;
