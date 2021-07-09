@@ -21,11 +21,14 @@ describe('Test the service notification template mapper', () => {
 	});
 
 	it('should map ServiceNotificationTemplateRequest to template data', () => {
-        const templateData = new ServiceNotificationTemplate();
+		const templateData = new ServiceNotificationTemplate();
 		const templateRequest = new ServiceNotificationTemplateRequest(2, 'testings notification template');
 		const mapper = Container.get(ServiceNotificationTemplateMapper);
 
-		const ServiceNotificationTemplateData = mapper.mapNotificationTemplateRequestToEntity(templateRequest, templateData);
+		const ServiceNotificationTemplateData = mapper.mapNotificationTemplateRequestToEntity(
+			templateRequest,
+			templateData,
+		);
 		expect(ServiceNotificationTemplateData.htmlTemplate).toEqual('testings notification template');
 	});
 });

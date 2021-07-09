@@ -69,7 +69,10 @@ export class ServiceNotificationTemplateService {
 				`Template of type ${EmailNotificationTemplateType[request.emailTemplateType].toString()} not found`,
 			);
 		}
-		const updatedTemplate = this.notificationTemplateMapper.mapNotificationTemplateRequestToEntity(request, templateEntity);
+		const updatedTemplate = this.notificationTemplateMapper.mapNotificationTemplateRequestToEntity(
+			request,
+			templateEntity,
+		);
 		return await this.notificationTemplateRepository.save(updatedTemplate);
 	}
 }
