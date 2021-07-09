@@ -6,6 +6,7 @@ import { OrganisationsService } from '../organisations.service';
 import { OrganisationAdminGroupMap } from '../../../models/entities/organisationAdminGroupMap';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
+import { OrganisationsRepositoryMock } from '../__mocks__/organisations.noauth.repository.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -62,19 +63,3 @@ describe('Organisations service', () => {
 		expect(result.length).toBeGreaterThan(0);
 	});
 });
-
-class OrganisationsRepositoryMock implements Partial<OrganisationsNoauthRepository> {
-	public static getOrganisationsForUserGroups = jest.fn();
-	public static sort = jest.fn();
-	public static save = jest.fn<Promise<Organisation>, any>();
-
-	public async getOrganisationsForUserGroups(...params): Promise<any> {
-		return await OrganisationsRepositoryMock.getOrganisationsForUserGroups(...params);
-	}
-	public async sort(...params): Promise<any> {
-		return await OrganisationsRepositoryMock.sort(...params);
-	}
-	public async save(...params): Promise<any> {
-		return await OrganisationsRepositoryMock.save(...params);
-	}
-}

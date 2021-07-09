@@ -5,6 +5,7 @@ export class ScheduleFormRequest {
 	 * @maximum 480
 	 */
 	public slotsDurationInMin: number;
+	public serviceProvidersEmailList: string[] = [];
 	public weekdaySchedules: WeekDayScheduleContract[];
 }
 

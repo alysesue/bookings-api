@@ -225,8 +225,48 @@ describe('ServiceProviders.Service', () => {
 			serviceProviderMock.scheduleForm = new ScheduleForm();
 			return Promise.resolve(serviceProviderMock);
 		});
-		await Container.get(ServiceProvidersService).setProvidersScheduleForm(1, {} as ScheduleFormRequest);
+		await Container.get(ServiceProvidersService).setProvidersScheduleForm(1, {
+			serviceProvidersEmailList: [],
+		} as ScheduleFormRequest);
 		expect(ScheduleFormsServiceMock.updateScheduleFormInEntity).toBeCalled();
+	});
+
+	it('Filter service providers without request email inputs', async () => {
+		const serviceProviderMock1 = ServiceProvider.create('sp1', 1, 'sp1@gmail.com');
+		const serviceProviderMock2 = ServiceProvider.create('sp2', 1, 'sp2@gmail.com');
+		const serviceProviderMock3 = ServiceProvider.create('sp3', 1, 'sp3@gmail.com');
+		const serviceProviders = [serviceProviderMock1, serviceProviderMock2, serviceProviderMock3];
+		const request = {
+			serviceProvidersEmailList: [],
+		} as ScheduleFormRequest;
+
+		const result = Container.get(ServiceProvidersService).getFilteredServiceProvidersByEmail(
+			request,
+			serviceProviders,
+		);
+
+		expect(result.length).toEqual(3);
+		expect(result).toEqual(serviceProviders);
+	});
+
+	it('Filter service providers with request email inputs', async () => {
+		const serviceProviderMock1 = ServiceProvider.create('sp1', 1, 'sp1@gmail.com');
+		const serviceProviderMock2 = ServiceProvider.create('sp2', 1, 'sp2@gmail.com');
+		const serviceProviderMock3 = ServiceProvider.create('sp3', 1, 'sp3@gmail.com');
+		const serviceProviders = [serviceProviderMock1, serviceProviderMock2, serviceProviderMock3];
+		const request = {
+			serviceProvidersEmailList: ['sp1@gmail.com', 'sp3@gmail.com'],
+		} as ScheduleFormRequest;
+
+		const result = Container.get(ServiceProvidersService).getFilteredServiceProvidersByEmail(
+			request,
+			serviceProviders,
+		);
+
+		const spEmails = [result[0], result[1]];
+		const expectedServiceProviders = [serviceProviderMock1, serviceProviderMock3];
+		expect(result.length).toEqual(2);
+		expect(spEmails).toEqual(expectedServiceProviders);
 	});
 
 	it('should set provider schedule', async () => {
