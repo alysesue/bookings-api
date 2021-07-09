@@ -42,6 +42,7 @@ export class ServiceNotificationTemplateRepository extends RepositoryBase<Servic
 			skipAuthorisation?: boolean;
 		},
 	): Promise<SelectQueryBuilder<ServiceNotificationTemplate>> {
+		if (options.skipAuthorisation){} //WIP
 		// const authGroups = await this.userContext.getAuthGroups();
 		// const { userCondition, userParams } = options.skipAuthorisation
 		// 	? { userCondition: '', userParams: {} }

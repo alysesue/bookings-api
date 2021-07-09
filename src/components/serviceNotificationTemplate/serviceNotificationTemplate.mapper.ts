@@ -1,7 +1,5 @@
 import { ServiceNotificationTemplate } from '../../models';
-import {
-	ServiceNotificationTemplateResponse,
-} from './serviceNotificationTemplate.apicontract';
+import { ServiceNotificationTemplateResponse } from './serviceNotificationTemplate.apicontract';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 export class ServiceNotificationTemplateMapper {

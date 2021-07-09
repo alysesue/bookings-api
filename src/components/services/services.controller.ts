@@ -253,7 +253,6 @@ export class ServicesController extends Controller {
 		@Path() serviceId: number,
 		@Body() request: ServiceNotificationTemplateRequest,
 	): Promise<ApiData<ServiceNotificationTemplateResponse>> {
-		request = new ServiceNotificationTemplateRequest(request.emailTemplateType, request.htmlTemplate);
 		const data = await this.serviceNotificationsTemplatesService.addEmailTemplate(serviceId, request);
 		return ApiDataFactory.create(this.notificationTemplateMapper.mapToNotificationTemplateResponse(data));
 	}
@@ -272,7 +271,6 @@ export class ServicesController extends Controller {
 		@Path() serviceId: number,
 		@Body() request: ServiceNotificationTemplateRequest,
 	): Promise<ApiData<ServiceNotificationTemplateResponse>> {
-		request = new ServiceNotificationTemplateRequest(request.emailTemplateType, request.htmlTemplate);
 		const data = await this.serviceNotificationsTemplatesService.updateEmailTemplate(serviceId, request);
 		return ApiDataFactory.create(this.notificationTemplateMapper.mapToNotificationTemplateResponse(data));
 	}

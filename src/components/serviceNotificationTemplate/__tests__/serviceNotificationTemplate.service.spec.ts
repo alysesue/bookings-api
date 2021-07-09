@@ -8,6 +8,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { ServicesService } from '../../services/services.service';
 import { ServicesServiceMock } from '../../services/__mocks__/services.service';
+import { ServiceNotificationTemplateRepositoryMock } from '../__mock__/serviceNotificationTemplate.service.mock';
 
 jest.mock('../ServiceNotificationTemplate.auth', () => {
 	return { NotificationTemplateActionAuthVisitor: jest.fn() };
@@ -53,16 +54,3 @@ describe('Test the service notification template service', () => {
 		expect(result).toStrictEqual(template);
 	});
 });
-
-class ServiceNotificationTemplateRepositoryMock implements Partial<ServiceNotificationTemplateRepository> {
-	public static saveMock = jest.fn();
-	public static getTemplateMock = jest.fn();
-
-	public async save() {
-		return ServiceNotificationTemplateRepositoryMock.saveMock();
-	}
-
-	public async getTemplateByType() {
-		return ServiceNotificationTemplateRepositoryMock.getTemplateMock();
-	}
-}
