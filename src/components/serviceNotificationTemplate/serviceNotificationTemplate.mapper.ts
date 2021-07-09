@@ -1,15 +1,15 @@
 import { ServiceNotificationTemplate } from '../../models';
 import {
-	ServiceNotificationTemplateRequest,
 	ServiceNotificationTemplateResponse,
 } from './serviceNotificationTemplate.apicontract';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 export class ServiceNotificationTemplateMapper {
 	public mapToNotificationTemplateResponse = (
 		data: ServiceNotificationTemplate,
 	): ServiceNotificationTemplateResponse => {
 		if (!data) {
-			return undefined;
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Data not found`);
 		}
 
 		const response = new ServiceNotificationTemplateResponse();
@@ -18,17 +18,5 @@ export class ServiceNotificationTemplateMapper {
 		response.htmlTemplate = data.htmlTemplate;
 		response.serviceId = data.serviceId;
 		return response;
-	};
-
-	public mapNotificationTemplateRequestToEntity = (
-		data: ServiceNotificationTemplateRequest,
-		entity: ServiceNotificationTemplate,
-	): ServiceNotificationTemplate => {
-		if (!data) {
-			return undefined;
-		}
-
-		entity.htmlTemplate = data.htmlTemplate;
-		return entity;
 	};
 }

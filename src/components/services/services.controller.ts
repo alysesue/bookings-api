@@ -224,7 +224,7 @@ export class ServicesController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 * @param @isInt  emailTemplateType The enum type of email template.
 	 */
-	@Get('{serviceId}/email-notifications')
+	@Get('{serviceId}/emailNotifications')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
@@ -245,7 +245,7 @@ export class ServicesController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 * @param request
 	 */
-	@Post('{serviceId}/email-notifications')
+	@Post('{serviceId}/emailNotifications')
 	@SuccessResponse(201, 'Created')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
@@ -264,7 +264,7 @@ export class ServicesController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 * @param request
 	 */
-	@Put('{serviceId}/email-notifications')
+	@Put('{serviceId}/emailNotifications')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')

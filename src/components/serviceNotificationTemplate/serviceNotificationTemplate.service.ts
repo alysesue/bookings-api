@@ -5,7 +5,6 @@ import { ServiceNotificationTemplateRepository } from '../serviceNotificationTem
 import { EmailNotificationTemplateType } from '../../models/notifications';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { ServiceNotificationTemplateMapper } from './serviceNotificationTemplate.mapper';
 import { CrudAction } from '../../enums/crudAction';
 import { ServicesService } from '../services/services.service';
 import { NotificationTemplateActionAuthVisitor } from './serviceNotificationTemplate.auth';
@@ -14,8 +13,6 @@ import { NotificationTemplateActionAuthVisitor } from './serviceNotificationTemp
 export class ServiceNotificationTemplateService {
 	@Inject
 	private notificationTemplateRepository: ServiceNotificationTemplateRepository;
-	@Inject
-	private notificationTemplateMapper: ServiceNotificationTemplateMapper;
 	@Inject
 	public servicesService: ServicesService;
 	@Inject
@@ -37,6 +34,9 @@ export class ServiceNotificationTemplateService {
 		const service = await this.servicesService.getService(serviceId);
 		await this.verifyActionPermission(service, CrudAction.Read);
 
+		if (!emailTemplateType) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
+		}
 		return await this.getNotificationTemplate(serviceId, emailTemplateType);
 	}
 
@@ -60,6 +60,9 @@ export class ServiceNotificationTemplateService {
 		const service = await this.servicesService.getService(serviceId);
 		await this.verifyActionPermission(service, CrudAction.Create);
 
+		if (!request) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
+		}
 		const emailTemplateType = request.emailTemplateType;
 		const existTemplate = await this.notificationTemplateRepository.getTemplateByType(serviceId, emailTemplateType);
 		if (existTemplate) {
@@ -84,6 +87,9 @@ export class ServiceNotificationTemplateService {
 		const service = await this.servicesService.getService(serviceId);
 		await this.verifyActionPermission(service, CrudAction.Update);
 
+		if (!request) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
+		}
 		const emailTemplateType = request.emailTemplateType;
 		const templateEntity = await this.notificationTemplateRepository.getTemplateByType(
 			serviceId,
@@ -94,10 +100,8 @@ export class ServiceNotificationTemplateService {
 				`Template of type ${EmailNotificationTemplateType[request.emailTemplateType].toString()} not found`,
 			);
 		}
-		const updatedTemplate = this.notificationTemplateMapper.mapNotificationTemplateRequestToEntity(
-			request,
-			templateEntity,
-		);
-		return await this.notificationTemplateRepository.save(updatedTemplate);
+
+		templateEntity.htmlTemplate = request.htmlTemplate;
+		return await this.notificationTemplateRepository.save(templateEntity);
 	}
 }
