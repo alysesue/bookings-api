@@ -389,6 +389,8 @@ export class ServiceProvidersService {
 				request.weekDay,
 				TimeOfDay.parse(request.startTime),
 				TimeOfDay.parse(request.endTime),
+				request.startDate,
+				request.endDate,
 			);
 			const serviceTimeslotsSchedule = await this.servicesService.getServiceTimeslotsSchedule(
 				serviceProvider.serviceId,
