@@ -127,7 +127,9 @@ export async function startServer(): Promise<Server> {
 	const byPassCSRF = new RegExp(`^(${CSRFPathsExpression})$`);
 	// tslint:disable-next-line: tsr-detect-non-literal-regexp
 	const byPassAuthPath = new RegExp(
-		`^(${basePath}/api/v1/usersessions/anonymous|${basePath}/api/v1/encryption/encrypt)$`,
+		`^(${basePath}/api/v1/usersessions/anonymous|
+			${basePath}/api/v1/usersessions/mobile/otp/send|
+			${basePath}/api/v1/encryption/encrypt)$`,
 	);
 	setIOCBindings();
 	let koaServer = new Koa()

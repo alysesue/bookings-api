@@ -1,3 +1,4 @@
+import { MobileOtpCookieHelper } from './../bookingSGCookieHelper';
 import { Container } from 'typescript-ioc';
 import { BookingSGCookieHelper, MolCookieHelper } from '../bookingSGCookieHelper';
 import { KoaContextStore } from '../koaContextStore.middleware';
@@ -131,6 +132,22 @@ describe('BookingSGCookieHelper tests', () => {
 		molCookieHelper.delete();
 
 		expect(KoaContextStoreMock.koaContext.cookies.set).toHaveBeenCalledWith('MOLToken', undefined, {
+			httpOnly: true,
+			overwrite: true,
+			sameSite: false,
+			secure: false,
+		});
+	});
+
+	it('should set mobile otp cookie value (when in dev)', async () => {
+		(getConfig as jest.Mock).mockReturnValue({
+			isLocal: true,
+		});
+		const cookieHelper = Container.get(MobileOtpCookieHelper);
+
+		cookieHelper.setCookieValue('testing');
+
+		expect(KoaContextStoreMock.koaContext.cookies.set).toHaveBeenCalledWith('OtpRequestId', 'testing', {
 			httpOnly: true,
 			overwrite: true,
 			sameSite: false,

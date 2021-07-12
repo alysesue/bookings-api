@@ -24,6 +24,7 @@ export class NotificationSMSService {
 			await post(path, sms, header);
 		} catch (e) {
 			smsLogger.error('Error sending sms', e);
+			throw new MOLErrorV2(ErrorCodeV2.SYS_GENERIC).setMessage('Error sending sms').setHttpStatusCode(503); // use 503 Service Unavailable instead of generic 500
 		}
 	}
 

@@ -127,7 +127,7 @@ export class DateHelper {
 	}
 
 	public static getStartOfDayNative(dateNative: number): number {
-		const minutesOffset = dateNative - (dateNative % this.MsPer15Minutes); //15min block is common to 30 min and 45 min TZ offsets
+		const minutesOffset = dateNative - (dateNative % this.MsPer15Minutes); // 15min block is common to 30 min and 45 min TZ offsets
 		let value = this._startOfDayNativeCache.get(minutesOffset);
 		if (!value) {
 			if (this._startOfDayNativeCache.size > 20000) {
