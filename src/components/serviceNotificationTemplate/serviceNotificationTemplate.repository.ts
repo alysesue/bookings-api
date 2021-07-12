@@ -34,7 +34,7 @@ export class ServiceNotificationTemplateRepository extends RepositoryBase<Servic
 		queryFilters: string[],
 		queryParams: {},
 	): Promise<SelectQueryBuilder<ServiceNotificationTemplate>> {
-		 // WIP
+		// WIP
 		// const authGroups = await this.userContext.getAuthGroups();
 		// const { userCondition, userParams } = options.skipAuthorisation
 		// 	? { userCondition: '', userParams: {} }

@@ -108,7 +108,9 @@ describe('Test the service notification template service', () => {
 		ServiceNotificationTemplateRepositoryMock.getTemplateMock.mockReturnValue(template);
 		const request = new ServiceNotificationTemplateRequest(2, 'irrelevant');
 		const result = async () => await Container.get(ServiceNotificationTemplateService).addEmailTemplate(1, request);
-		await expect(result).rejects.toThrowErrorMatchingInlineSnapshot('"Template of type UpdatedByCitizenSentToCitizen already exists"');
+		await expect(result).rejects.toThrowErrorMatchingInlineSnapshot(
+			'"Template of type UpdatedByCitizenSentToCitizen already exists"',
+		);
 	});
 
 	it('should throw error when trying to update a template with no emailTemplateType in the request', async () => {
@@ -126,5 +128,4 @@ describe('Test the service notification template service', () => {
 			'"Template of type CancelledByCitizenSentToCitizen not found"',
 		);
 	});
-
 });
