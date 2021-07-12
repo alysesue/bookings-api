@@ -8,7 +8,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { ServicesService } from '../../services/services.service';
 import { ServicesServiceMock } from '../../services/__mocks__/services.service';
-import { ServiceNotificationTemplateRepositoryMock } from '../__mock__/serviceNotificationTemplate.service.mock';
+import { ServiceNotificationTemplateRepositoryMock } from '../__mock__/serviceNotificationTemplate.repository.mock';
 
 jest.mock('../ServiceNotificationTemplate.auth', () => {
 	return { NotificationTemplateActionAuthVisitor: jest.fn() };
