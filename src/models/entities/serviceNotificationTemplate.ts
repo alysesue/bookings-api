@@ -47,10 +47,6 @@ export class ServiceNotificationTemplate {
 		return this._serviceId;
 	}
 
-	public set serviceId(value: number) {
-		this._serviceId = value;
-	}
-
 	@ManyToOne(() => Service)
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;

@@ -37,7 +37,6 @@ describe('Test the service notification template service', () => {
 	template.emailTemplateType = 2;
 	template.htmlTemplate = 'testings notification template';
 	template.id = 123;
-	template.serviceId = 1;
 
 	it('should get an email notification template', async () => {
 		ServiceNotificationTemplateRepositoryMock.getTemplateMock.mockReturnValue(template);

@@ -21,12 +21,10 @@ describe('Test the service notification template repository', () => {
 	const template = new ServiceNotificationTemplate();
 	template.emailTemplateType = 2;
 	template.htmlTemplate = 'testings notification template';
-	template.serviceId = 1;
 
 	const expectedTemplate = new ServiceNotificationTemplate();
 	expectedTemplate.emailTemplateType = 2;
 	expectedTemplate.htmlTemplate = 'testings notification template';
-	expectedTemplate.serviceId = 1;
 	expectedTemplate.id = 1;
 
 	it('should save an email notification template', async () => {

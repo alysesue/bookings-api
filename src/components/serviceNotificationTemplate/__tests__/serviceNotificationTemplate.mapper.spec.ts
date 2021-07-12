@@ -8,7 +8,6 @@ describe('Test the service notification template mapper', () => {
 		templateData.emailTemplateType = 2;
 		templateData.htmlTemplate = 'testings notification template';
 		templateData.id = 123;
-		templateData.serviceId = 1;
 		const mapper = Container.get(ServiceNotificationTemplateMapper);
 
 		const ServiceNotificationTemplateResponse = mapper.mapToNotificationTemplateResponse(templateData);
@@ -16,6 +15,5 @@ describe('Test the service notification template mapper', () => {
 		expect(ServiceNotificationTemplateResponse.emailTemplateType).toEqual(templateData.emailTemplateType);
 		expect(ServiceNotificationTemplateResponse.htmlTemplate).toEqual(templateData.htmlTemplate);
 		expect(ServiceNotificationTemplateResponse.id).toEqual(templateData.id);
-		expect(ServiceNotificationTemplateResponse.serviceId).toEqual(templateData.serviceId);
 	});
 });
