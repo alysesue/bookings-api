@@ -6,6 +6,7 @@ import './components/timeslots/timeslots.controller';
 import './components/organisations/organisations.controller';
 import './components/settings/settings.controller';
 import './components/services/services.controller';
+import './components/serviceNotificationTemplate/serviceNotificationTemplate.controller'
 import './components/encryption/encryption.controller';
 import './components/serviceProviders/serviceProviders.controller';
 import './components/users/users.controller';

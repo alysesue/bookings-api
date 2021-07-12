@@ -11,15 +11,13 @@ import { ServiceNotificationTemplateService } from '../serviceNotificationTempla
 import { EmailNotificationTemplateType } from '../../models/notifications';
 import { ServiceNotificationTemplateMapper } from '../serviceNotificationTemplate/serviceNotificationTemplate.mapper';
 
-
 @Route('v1/services')
-@Tags('Services')
+@Tags('Service Notification Template')
 export class ServicesNotificationTemplateController extends Controller {
 	@Inject
 	private serviceNotificationsTemplatesService: ServiceNotificationTemplateService;
 	@Inject
 	private notificationTemplateMapper: ServiceNotificationTemplateMapper;
-
 
 	/**
 	 * Get a single email notification template.
@@ -27,7 +25,7 @@ export class ServicesNotificationTemplateController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 * @param @isInt  emailTemplateType The enum type of email template.
 	 */
-	@Get('{serviceId}/emailNotifications')
+	@Get('{serviceId}/notificationTemplate/email')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
@@ -48,7 +46,7 @@ export class ServicesNotificationTemplateController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 * @param request
 	 */
-	@Post('{serviceId}/emailNotifications')
+	@Post('{serviceId}/notificationTemplate/email')
 	@SuccessResponse(201, 'Created')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
@@ -66,7 +64,7 @@ export class ServicesNotificationTemplateController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 * @param request
 	 */
-	@Put('{serviceId}/emailNotifications')
+	@Put('{serviceId}/notificationTemplate/email')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')

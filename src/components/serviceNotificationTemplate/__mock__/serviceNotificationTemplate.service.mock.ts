@@ -1,5 +1,5 @@
-import {ServiceNotificationTemplateService} from "../serviceNotificationTemplate.service";
-import {ServiceNotificationTemplate} from "../../../models";
+import { ServiceNotificationTemplateService } from '../serviceNotificationTemplate.service';
+import { ServiceNotificationTemplate } from '../../../models';
 
 export class ServiceNotificationTemplateServiceMock implements Partial<ServiceNotificationTemplateService> {
 	public static getEmailNotificationTemplate = jest.fn();
@@ -7,14 +7,14 @@ export class ServiceNotificationTemplateServiceMock implements Partial<ServiceNo
 	public static updateEmailTemplate = jest.fn();
 
 	public async getEmailNotificationTemplate(): Promise<ServiceNotificationTemplate> {
-			return ServiceNotificationTemplateServiceMock.getEmailNotificationTemplate();
-		}
+		return ServiceNotificationTemplateServiceMock.getEmailNotificationTemplate();
+	}
 
 	public async addEmailTemplate(): Promise<ServiceNotificationTemplate> {
-			return ServiceNotificationTemplateServiceMock.addEmailTemplate();
-		}
+		return ServiceNotificationTemplateServiceMock.addEmailTemplate();
+	}
 
 	public async updateEmailTemplate(): Promise<ServiceNotificationTemplate> {
-			return ServiceNotificationTemplateServiceMock.updateEmailTemplate();
-		}
+		return ServiceNotificationTemplateServiceMock.updateEmailTemplate();
 	}
+}

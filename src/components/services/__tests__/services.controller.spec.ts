@@ -2,13 +2,7 @@ import { Container } from 'typescript-ioc';
 import { ServicesController } from '../services.controller';
 import { ServiceRequest } from '../service.apicontract';
 import { ServicesService } from '../services.service';
-import {
-	ScheduleForm,
-	Service,
-	TimeOfDay,
-	TimeslotItem,
-	TimeslotsSchedule,
-} from '../../../models';
+import { ScheduleForm, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 import { Weekday } from '../../../enums/weekday';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
@@ -177,8 +171,6 @@ describe('Services controller tests', () => {
 		const response = await Container.get(ServicesController).updateTimeslotItem(1, 11, request);
 		expect(response).toBeDefined();
 	});
-
-
 });
 
 const ServicesServiceMock = {

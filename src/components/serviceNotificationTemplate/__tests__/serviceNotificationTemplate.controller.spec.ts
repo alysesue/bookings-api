@@ -12,11 +12,11 @@ describe('Services controller tests', () => {
 		Container.bind(ServiceNotificationTemplateService).to(ServiceNotificationTemplateServiceMock);
 	});
 
-    const mockItem = new ServiceNotificationTemplateResponse();
-    mockItem.id = 123;
-    mockItem.htmlTemplate = 'get template';
-    mockItem.emailTemplateType = 2;
-    mockItem.serviceId = 1;
+	const mockItem = new ServiceNotificationTemplateResponse();
+	mockItem.id = 123;
+	mockItem.htmlTemplate = 'get template';
+	mockItem.emailTemplateType = 2;
+	mockItem.serviceId = 1;
 
 	it('should get an email notification template', async () => {
 		ServiceNotificationTemplateServiceMock.getEmailNotificationTemplate.mockReturnValue(mockItem);
