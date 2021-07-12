@@ -54,6 +54,7 @@ export class ServiceNotificationTemplate {
 	public set service(service: Service) {
 		this._service = service;
 	}
+
 	public get service(): Service {
 		return this._service;
 	}

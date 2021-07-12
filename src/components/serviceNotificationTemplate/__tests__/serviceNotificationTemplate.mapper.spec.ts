@@ -4,16 +4,19 @@ import { ServiceNotificationTemplate } from '../../../models';
 
 describe('Test the service notification template mapper', () => {
 	it('should map template data to ServiceNotificationTemplateResponse', () => {
-		const templateData = new ServiceNotificationTemplate();
-		templateData.emailTemplateType = 2;
-		templateData.htmlTemplate = 'testings notification template';
-		templateData.id = 123;
+		const templateData = ServiceNotificationTemplate.create('testings notification template', 1, 2);
 		const mapper = Container.get(ServiceNotificationTemplateMapper);
-
 		const ServiceNotificationTemplateResponse = mapper.mapToNotificationTemplateResponse(templateData);
 		expect(ServiceNotificationTemplateResponse).toBeDefined();
 		expect(ServiceNotificationTemplateResponse.emailTemplateType).toEqual(templateData.emailTemplateType);
 		expect(ServiceNotificationTemplateResponse.htmlTemplate).toEqual(templateData.htmlTemplate);
 		expect(ServiceNotificationTemplateResponse.id).toEqual(templateData.id);
+	});
+
+	it('should throw error when calling ServiceNotificationTemplateResponse with no data', () => {
+		const templateData = new ServiceNotificationTemplate();
+		const mapper = Container.get(ServiceNotificationTemplateMapper);
+		const response = () => mapper.mapToNotificationTemplateResponse(templateData);
+		expect(response).toThrowErrorMatchingInlineSnapshot('"Data not found"');
 	});
 });

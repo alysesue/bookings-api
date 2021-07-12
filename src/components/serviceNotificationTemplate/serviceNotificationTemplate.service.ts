@@ -60,7 +60,7 @@ export class ServiceNotificationTemplateService {
 		const service = await this.servicesService.getService(serviceId);
 		await this.verifyActionPermission(service, CrudAction.Create);
 
-		if (!request) {
+		if (!request || !request.emailTemplateType) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
 		}
 		const emailTemplateType = request.emailTemplateType;
@@ -87,7 +87,7 @@ export class ServiceNotificationTemplateService {
 		const service = await this.servicesService.getService(serviceId);
 		await this.verifyActionPermission(service, CrudAction.Update);
 
-		if (!request) {
+		if (!request || !request.emailTemplateType) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
 		}
 		const emailTemplateType = request.emailTemplateType;

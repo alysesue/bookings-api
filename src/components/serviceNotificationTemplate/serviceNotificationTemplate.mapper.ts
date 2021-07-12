@@ -6,7 +6,7 @@ export class ServiceNotificationTemplateMapper {
 	public mapToNotificationTemplateResponse = (
 		data: ServiceNotificationTemplate,
 	): ServiceNotificationTemplateResponse => {
-		if (!data) {
+		if (!data || !data.emailTemplateType || !data.serviceId) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Data not found`);
 		}
 
