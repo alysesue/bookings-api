@@ -1,8 +1,13 @@
 import { EmailBookingTemplate, EmailTemplateBase } from './citizen.mail';
 import { emailMapper } from '../notifications.mapper';
+import {EmailNotificationTemplateType} from "../../../models/notifications";
+import {Inject} from "typescript-ioc";
+import {ServiceNotificationTemplateService} from "../../serviceNotificationTemplate/serviceNotificationTemplate.service";
 
 export class ServiceProviderEmailTemplateBookingActionByCitizen implements EmailBookingTemplate {
-	public CreatedBookingEmail(data) {
+	@Inject
+	public templateService: ServiceNotificationTemplateService;
+	public async CreatedBookingEmail(data): Promise<EmailTemplateBase> {
 		const {
 			serviceName,
 			spNameDisplayedForServiceProvider,
@@ -12,6 +17,10 @@ export class ServiceProviderEmailTemplateBookingActionByCitizen implements Email
 			locationText,
 			videoConferenceUrl,
 		} = emailMapper(data);
+
+		const templateType = EmailNotificationTemplateType.CreatedByCitizenSentToCitizen;
+		 await this.templateService.getEmailNotificationTemplate(data.serviceId, templateType);
+
 		return {
 			subject: `BookingSG request: ${serviceName}${spNameDisplayedForServiceProvider}`,
 			html: `<pre>
@@ -140,7 +149,7 @@ ${locationText}
 		};
 	}
 
-	public CreatedBookingEmail(_data): EmailTemplateBase {
+	public CreatedBookingEmail(_data): Promise<EmailTemplateBase> {
 		return undefined;
 	}
 }

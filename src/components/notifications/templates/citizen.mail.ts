@@ -1,4 +1,7 @@
 import { emailMapper } from '../notifications.mapper';
+import { ServiceNotificationTemplateService } from '../../serviceNotificationTemplate/serviceNotificationTemplate.service';
+import { EmailNotificationTemplateType } from '../../../models/notifications';
+import { Inject } from 'typescript-ioc';
 
 export abstract class EmailTemplateBase {
 	public subject: string;
@@ -6,13 +9,29 @@ export abstract class EmailTemplateBase {
 }
 
 export abstract class EmailBookingTemplate {
-	public abstract CreatedBookingEmail(data): EmailTemplateBase;
+	public abstract CreatedBookingEmail(data): Promise<EmailTemplateBase>;
 	public abstract UpdatedBookingEmail(data): EmailTemplateBase;
 	public abstract CancelledBookingEmail(data): EmailTemplateBase;
 }
 
+// CreatedByCitizenSentToCitizen = 1,
+// 	UpdatedByCitizenSentToCitizen,
+// 	CancelledByCitizenSentToCitizen,
+// 	CreatedByCitizenSentToServiceProvider,
+// 	UpdatedByCitizenSentToServiceProvider,
+// 	CancelledByCitizenSentToServiceProvider,
+// 	CreatedByServiceProviderSentToCitizen,
+// 	UpdatedByServiceProviderSentToCitizen,
+// 	CancelledByServiceProviderSentToCitizen,
+// 	CreatedByServiceProviderSentToServiceProvider, // currently undefined
+// 	UpdatedByServiceProviderSentToServiceProvider,
+// 	CancelledByServiceProviderSentToServiceProvider,
+
 export class CitizenEmailTemplateBookingActionByCitizen implements EmailBookingTemplate {
-	public CreatedBookingEmail(data): EmailTemplateBase {
+	@Inject
+	public templateService: ServiceNotificationTemplateService;
+
+	public async CreatedBookingEmail(data): Promise<EmailTemplateBase> {
 		const {
 			serviceName,
 			spNameDisplayedForCitizen,
@@ -23,9 +42,32 @@ export class CitizenEmailTemplateBookingActionByCitizen implements EmailBookingT
 			videoConferenceUrl,
 		} = emailMapper(data);
 
-		return {
-			subject: `BookingSG confirmation: ${serviceName}${spNameDisplayedForCitizen}`,
-			html: `<pre>
+		const templateType = EmailNotificationTemplateType.CreatedByCitizenSentToCitizen;
+		const serviceTemplate = await this.templateService.getEmailNotificationTemplate(data.serviceId, templateType);
+		if (serviceTemplate && serviceTemplate.htmlTemplate) {
+			const mapVariables = {
+				'{serviceName}': serviceName,
+				'{spNameDisplayedForCitizen}': spNameDisplayedForCitizen,
+				'{status}': status,
+				'{day}': day,
+				'{time}': time,
+				'{locationText}': locationText,
+				'{videoConferenceUrl}': videoConferenceUrl,
+			};
+
+			let template = serviceTemplate.htmlTemplate;
+			for (const key of Object.keys(mapVariables)) {
+				template = template.replace(new RegExp(key, 'g'), mapVariables[key]);
+			}
+
+			return {
+				subject: `Service Template 1880 confirmation: ${serviceName}${spNameDisplayedForCitizen}`,
+				html: template,
+			};
+		} else
+			return {
+				subject: `BookingSG confirmation: ${serviceName}${spNameDisplayedForCitizen}`,
+				html: `<pre>
 Your booking request has been received.
 <br />
 Booking for: <b>${serviceName}${spNameDisplayedForCitizen}.</b>
@@ -37,7 +79,7 @@ Time: <b>${time}</b>
 ${videoConferenceUrl}
 ${locationText}
 </pre>`,
-		};
+			};
 	}
 
 	public UpdatedBookingEmail(data): EmailTemplateBase {
@@ -97,7 +139,7 @@ ${locationText}
 }
 
 export class CitizenEmailTemplateBookingActionByServiceProvider implements EmailBookingTemplate {
-	public CreatedBookingEmail(data): EmailTemplateBase {
+	public async CreatedBookingEmail(data): Promise<EmailTemplateBase> {
 		const {
 			serviceName,
 			spNameDisplayedForCitizen,

@@ -31,8 +31,8 @@ export class ServiceNotificationTemplateService {
 		serviceId: number,
 		emailTemplateType: EmailNotificationTemplateType,
 	): Promise<ServiceNotificationTemplate> {
-		const service = await this.servicesService.getService(serviceId);
-		await this.verifyActionPermission(service, CrudAction.Read);
+		// const service = await this.servicesService.getService(serviceId);
+		// await this.verifyActionPermission(service, CrudAction.Read);
 
 		if (!emailTemplateType) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
