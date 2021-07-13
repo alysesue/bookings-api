@@ -290,10 +290,29 @@ export class ServiceProvidersService {
 	public async setProvidersScheduleForm(orgaId: number, request: ScheduleFormRequest): Promise<ServiceProvider[]> {
 		const serviceProviders = await this.serviceProvidersRepository.getServiceProviders({ organisationId: orgaId });
 		const serviceProvidersRes = [];
-		for await (const serviceProvider of this.putProviderScheduleForm(serviceProviders, request)) {
+
+		const filteredServiceProviders = this.getFilteredServiceProvidersByEmail(request, serviceProviders);
+
+		for await (const serviceProvider of this.putProviderScheduleForm(filteredServiceProviders, request)) {
 			serviceProvidersRes.push(serviceProvider);
 		}
+
 		return serviceProvidersRes;
+	}
+
+	public getFilteredServiceProvidersByEmail(
+		request: ScheduleFormRequest,
+		serviceProviders: ServiceProvider[],
+	): ServiceProvider[] {
+		const filteredServiceProviders: ServiceProvider[] = [];
+		if (!request.serviceProvidersEmailList.length) {
+			filteredServiceProviders.push(...serviceProviders);
+		} else {
+			return serviceProviders.filter((sp) =>
+				request.serviceProvidersEmailList.some((spEmail) => sp.email === spEmail),
+			);
+		}
+		return filteredServiceProviders;
 	}
 
 	private async *putProviderScheduleForm(
