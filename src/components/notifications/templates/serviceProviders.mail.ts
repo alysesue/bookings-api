@@ -1,12 +1,13 @@
 import { EmailBookingTemplate, EmailTemplateBase } from './citizen.mail';
 import { emailMapper } from '../notifications.mapper';
-import {EmailNotificationTemplateType} from "../../../models/notifications";
-import {Inject} from "typescript-ioc";
-import {ServiceNotificationTemplateService} from "../../serviceNotificationTemplate/serviceNotificationTemplate.service";
+import { EmailNotificationTemplateType } from '../../../models/notifications';
+import { Inject } from 'typescript-ioc';
+import { ServiceNotificationTemplateService } from '../../serviceNotificationTemplate/serviceNotificationTemplate.service';
 
 export class ServiceProviderEmailTemplateBookingActionByCitizen implements EmailBookingTemplate {
 	@Inject
 	public templateService: ServiceNotificationTemplateService;
+
 	public async CreatedBookingEmail(data): Promise<EmailTemplateBase> {
 		const {
 			serviceName,
@@ -19,7 +20,7 @@ export class ServiceProviderEmailTemplateBookingActionByCitizen implements Email
 		} = emailMapper(data);
 
 		const templateType = EmailNotificationTemplateType.CreatedByCitizenSentToCitizen;
-		 await this.templateService.getEmailNotificationTemplate(data.serviceId, templateType);
+		await this.templateService.getEmailNotificationTemplate(data.serviceId, templateType);
 
 		return {
 			subject: `BookingSG request: ${serviceName}${spNameDisplayedForServiceProvider}`,
@@ -39,7 +40,7 @@ ${locationText}
 		};
 	}
 
-	public UpdatedBookingEmail(data) {
+	public async UpdatedBookingEmail(data) {
 		const {
 			serviceName,
 			spNameDisplayedForServiceProvider,
@@ -67,7 +68,7 @@ ${locationText}
 		};
 	}
 
-	public CancelledBookingEmail(data) {
+	public async CancelledBookingEmail(data) {
 		const {
 			serviceName,
 			spNameDisplayedForServiceProvider,
@@ -95,7 +96,7 @@ ${locationText}
 }
 
 export class ServiceProviderEmailTemplateBookingActionByServiceProvider implements EmailBookingTemplate {
-	public UpdatedBookingEmail(data) {
+	public async UpdatedBookingEmail(data) {
 		const {
 			serviceName,
 			spNameDisplayedForServiceProvider,
@@ -123,7 +124,7 @@ ${locationText}
 		};
 	}
 
-	public CancelledBookingEmail(data): EmailTemplateBase {
+	public async CancelledBookingEmail(data): Promise<EmailTemplateBase> {
 		const {
 			serviceName,
 			spNameDisplayedForServiceProvider,
