@@ -56,8 +56,8 @@ export class TimeslotGenerator {
 						timeslotTemplate._startDate &&
 						timeslotTemplate._endDate &&
 						!(
-							timeslotTemplate._startDate.getTime() <= startTimeNative &&
-							timeslotTemplate._endDate.getTime() >= endTimeNative
+							DateHelper.getStartOfDay(timeslotTemplate._startDate).getTime() <= startTimeNative &&
+							DateHelper.getEndOfDay(timeslotTemplate._endDate).getTime() >= endTimeNative
 						)
 					)
 						continue;
