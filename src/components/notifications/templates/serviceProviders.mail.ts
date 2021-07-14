@@ -1,8 +1,8 @@
+import { emailMapper, mapVariablesValuesToServiceTemplate } from '../notifications.mapper';
 import { EmailBookingTemplate, EmailTemplateBase } from './citizen.mail';
-import { emailMapper } from '../notifications.mapper';
 import { EmailNotificationTemplateType } from '../../../models/notifications';
-import { Inject } from 'typescript-ioc';
 import { ServiceNotificationTemplateService } from '../../serviceNotificationTemplate/serviceNotificationTemplate.service';
+import { Inject } from 'typescript-ioc';
 
 export class ServiceProviderEmailTemplateBookingActionByCitizen implements EmailBookingTemplate {
 	@Inject
@@ -19,12 +19,21 @@ export class ServiceProviderEmailTemplateBookingActionByCitizen implements Email
 			videoConferenceUrl,
 		} = emailMapper(data);
 
-		const templateType = EmailNotificationTemplateType.CreatedByCitizenSentToCitizen;
-		await this.templateService.getEmailNotificationTemplate(data.serviceId, templateType);
+		let emailContent;
+		let serviceEmailTemplate = '';
+		const templateType = EmailNotificationTemplateType.CreatedByCitizenSentToServiceProvider;
+		try {
+			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
+				data.serviceId,
+				templateType,
+			);
+			serviceEmailTemplate = serviceTemplate.htmlTemplate;
+		} catch (e) {}
 
-		return {
-			subject: `BookingSG request: ${serviceName}${spNameDisplayedForServiceProvider}`,
-			html: `<pre>
+		if (serviceEmailTemplate) {
+			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
+		} else {
+			emailContent = `<pre>
 You have received a new booking request.
 <br />
 Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
@@ -36,7 +45,12 @@ Date: <b>${day}</b>
 Time: <b>${time}</b>
 ${videoConferenceUrl}
 ${locationText}
-</pre>`,
+</pre>`;
+		}
+
+		return {
+			subject: `BookingSG request: ${serviceName}${spNameDisplayedForServiceProvider}`,
+			html: emailContent,
 		};
 	}
 
@@ -50,9 +64,22 @@ ${locationText}
 			locationText,
 			videoConferenceUrl,
 		} = emailMapper(data);
-		return {
-			subject: `BookingSG update: ${serviceName}${spNameDisplayedForServiceProvider}`,
-			html: `<pre>
+
+		let emailContent;
+		let serviceEmailTemplate = '';
+		const templateType = EmailNotificationTemplateType.UpdatedByCitizenSentToServiceProvider;
+		try {
+			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
+				data.serviceId,
+				templateType,
+			);
+			serviceEmailTemplate = serviceTemplate.htmlTemplate;
+		} catch (e) {}
+
+		if (serviceEmailTemplate) {
+			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
+		} else {
+			emailContent = `<pre>
 There has been an update to the following booking by the other party.
 <br />
 Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
@@ -64,7 +91,12 @@ Date: <b>${day}</b>
 Time: <b>${time}</b>
 ${videoConferenceUrl}
 ${locationText}
-</pre>`,
+</pre>`;
+		}
+
+		return {
+			subject: `BookingSG update: ${serviceName}${spNameDisplayedForServiceProvider}`,
+			html: emailContent,
 		};
 	}
 
@@ -78,9 +110,22 @@ ${locationText}
 			locationText,
 			videoConferenceUrl,
 		} = emailMapper(data);
-		return {
-			subject: `BookingSG cancellation: ${serviceName}${spNameDisplayedForServiceProvider}`,
-			html: `<pre>
+
+		let emailContent;
+		let serviceEmailTemplate = '';
+		const templateType = EmailNotificationTemplateType.CancelledByCitizenSentToServiceProvider;
+		try {
+			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
+				data.serviceId,
+				templateType,
+			);
+			serviceEmailTemplate = serviceTemplate.htmlTemplate;
+		} catch (e) {}
+
+		if (serviceEmailTemplate) {
+			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
+		} else {
+			emailContent = `<pre>
 The following booking has been cancelled by the other party.
 <br />
 Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
@@ -90,12 +135,20 @@ Date: <b>${day}</b>
 Time: <b>${time}</b>
 ${videoConferenceUrl}
 ${locationText}
-</pre>`,
+</pre>`;
+		}
+
+		return {
+			subject: `BookingSG cancellation: ${serviceName}${spNameDisplayedForServiceProvider}`,
+			html: emailContent,
 		};
 	}
 }
 
 export class ServiceProviderEmailTemplateBookingActionByServiceProvider implements EmailBookingTemplate {
+	@Inject
+	public templateService: ServiceNotificationTemplateService;
+
 	public async UpdatedBookingEmail(data) {
 		const {
 			serviceName,
@@ -106,9 +159,22 @@ export class ServiceProviderEmailTemplateBookingActionByServiceProvider implemen
 			locationText,
 			videoConferenceUrl,
 		} = emailMapper(data);
-		return {
-			subject: `BookingSG update: ${serviceName}${spNameDisplayedForServiceProvider}`,
-			html: `<pre>
+
+		let emailContent;
+		let serviceEmailTemplate = '';
+		const templateType = EmailNotificationTemplateType.UpdatedByServiceProviderSentToServiceProvider;
+		try {
+			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
+				data.serviceId,
+				templateType,
+			);
+			serviceEmailTemplate = serviceTemplate.htmlTemplate;
+		} catch (e) {}
+
+		if (serviceEmailTemplate) {
+			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
+		} else {
+			emailContent = `<pre>
 You have updated a booking.
 <br />
 Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
@@ -120,7 +186,12 @@ Date: <b>${day}</b>
 Time: <b>${time}</b>
 ${videoConferenceUrl}
 ${locationText}
-</pre>`,
+</pre>`;
+		}
+
+		return {
+			subject: `BookingSG update: ${serviceName}${spNameDisplayedForServiceProvider}`,
+			html: emailContent,
 		};
 	}
 
@@ -134,9 +205,22 @@ ${locationText}
 			locationText,
 			videoConferenceUrl,
 		} = emailMapper(data);
-		return {
-			subject: `BookingSG cancellation: ${serviceName}${spNameDisplayedForServiceProvider}`,
-			html: `<pre>
+
+		let emailContent;
+		let serviceEmailTemplate = '';
+		const templateType = EmailNotificationTemplateType.CancelledByServiceProviderSentToServiceProvider;
+		try {
+			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
+				data.serviceId,
+				templateType,
+			);
+			serviceEmailTemplate = serviceTemplate.htmlTemplate;
+		} catch (e) {}
+
+		if (serviceEmailTemplate) {
+			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
+		} else {
+			emailContent = `<pre>
 You have cancelled the following booking.
 <br />
 Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
@@ -146,7 +230,12 @@ Date: <b>${day}</b>
 Time: <b>${time}</b>
 ${videoConferenceUrl}
 ${locationText}
-</pre>`,
+</pre>`;
+		}
+
+		return {
+			subject: `BookingSG cancellation: ${serviceName}${spNameDisplayedForServiceProvider}`,
+			html: emailContent,
 		};
 	}
 

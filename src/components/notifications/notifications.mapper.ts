@@ -14,6 +14,7 @@ class EmailData {
 	public time: string;
 	public videoConferenceUrl?: string;
 	public reasonToReject?: string;
+	public serviceProviderAliasName?: string;
 }
 
 export interface MailOptions {
@@ -72,5 +73,38 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 		time,
 		videoConferenceUrl,
 		reasonToReject,
+		serviceProviderAliasName,
 	};
+};
+
+export const mapVariablesValuesToServiceTemplate = (mapValues, template): string => {
+	const {
+		status,
+		serviceName,
+		serviceProviderName,
+		serviceProviderAliasName,
+		location,
+		day,
+		time,
+		videoConferenceUrl,
+		reasonToReject,
+	} = mapValues;
+
+	const mapVariables = {
+		'{status}': status,
+		'{serviceName}': serviceName,
+		'{serviceProviderName}': serviceProviderName,
+		'{serviceProviderAliasName}': serviceProviderAliasName,
+		'{location}': location,
+		'{day}': day,
+		'{time}': time,
+		'{videoConferenceUrl}': videoConferenceUrl,
+		'{reasonToReject}': reasonToReject
+	};
+
+	for (const key of Object.keys(mapVariables)) {
+		template = template.replace(new RegExp(key, 'g'), mapVariables[key]);
+	}
+
+	return template;
 };

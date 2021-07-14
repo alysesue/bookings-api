@@ -1,4 +1,4 @@
-import { emailMapper } from '../notifications.mapper';
+import { emailMapper, mapVariablesValuesToServiceTemplate } from '../notifications.mapper';
 import { ServiceNotificationTemplateService } from '../../serviceNotificationTemplate/serviceNotificationTemplate.service';
 import { EmailNotificationTemplateType } from '../../../models/notifications';
 import { Inject } from 'typescript-ioc';
@@ -13,26 +13,6 @@ export abstract class EmailBookingTemplate {
 	public abstract UpdatedBookingEmail(data): Promise<EmailTemplateBase>;
 	public abstract CancelledBookingEmail(data): Promise<EmailTemplateBase>;
 }
-
-const mapVariablesValuesToTemplate = (mapValues, template): string => {
-	const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } = mapValues;
-
-	const mapVariables = {
-		'{serviceName}': serviceName,
-		'{spNameDisplayedForCitizen}': spNameDisplayedForCitizen,
-		'{status}': status,
-		'{day}': day,
-		'{time}': time,
-		'{locationText}': locationText,
-		'{videoConferenceUrl}': videoConferenceUrl,
-	};
-
-	for (const key of Object.keys(mapVariables)) {
-		template = template.replace(new RegExp(key, 'g'), mapVariables[key]);
-	}
-
-	return template;
-};
 
 export class CitizenEmailTemplateBookingActionByCitizen implements EmailBookingTemplate {
 	@Inject
@@ -61,12 +41,12 @@ export class CitizenEmailTemplateBookingActionByCitizen implements EmailBookingT
 		} catch (e) {}
 
 		if (serviceEmailTemplate) {
-			emailContent = mapVariablesValuesToTemplate(emailMapper(data), serviceEmailTemplate);
+			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
-			emailContent = `<p>
+			emailContent = `<pre>
 Your booking request has been received.
 <br />
-Booking for <b>${serviceName}: </b>
+Booking for: <b>${serviceName}.</b>
 <br />
 Below is a confirmation of your booking details.
 Booking status: <b>${status}</b>
@@ -74,7 +54,7 @@ Date: <b>${day}</b>
 Time: <b>${time}</b>
 ${videoConferenceUrl}
 ${locationText}
-</p>`;
+</pre>`;
 		}
 
 		return {
@@ -106,7 +86,7 @@ ${locationText}
 		} catch (e) {}
 
 		if (serviceEmailTemplate) {
-			emailContent = mapVariablesValuesToTemplate(emailMapper(data), serviceEmailTemplate);
+			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
 			emailContent = `<pre>
 You have updated a booking.
@@ -151,7 +131,7 @@ ${locationText}
 		} catch (e) {}
 
 		if (serviceEmailTemplate) {
-			emailContent = mapVariablesValuesToTemplate(emailMapper(data), serviceEmailTemplate);
+			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
 			emailContent = `<pre>
 You have cancelled the following booking.
@@ -189,13 +169,18 @@ export class CitizenEmailTemplateBookingActionByServiceProvider implements Email
 		} = emailMapper(data);
 
 		let emailContent;
+		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CreatedByServiceProviderSentToCitizen;
-		const serviceEmailTemplate = await this.templateService.getEmailNotificationTemplate(
-			data.serviceId,
-			templateType,
-		);
-		if (serviceEmailTemplate && serviceEmailTemplate.htmlTemplate) {
-			emailContent = mapVariablesValuesToTemplate(emailMapper(data), serviceEmailTemplate.htmlTemplate);
+		try {
+			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
+				data.serviceId,
+				templateType,
+			);
+			serviceEmailTemplate = serviceTemplate.htmlTemplate;
+		} catch (e) {}
+
+		if (serviceEmailTemplate) {
+			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
 			emailContent = `<pre>
 A booking has been made.
@@ -229,13 +214,18 @@ ${locationText}
 		} = emailMapper(data);
 
 		let emailContent;
+		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.UpdatedByServiceProviderSentToCitizen;
-		const serviceEmailTemplate = await this.templateService.getEmailNotificationTemplate(
-			data.serviceId,
-			templateType,
-		);
-		if (serviceEmailTemplate && serviceEmailTemplate.htmlTemplate) {
-			emailContent = mapVariablesValuesToTemplate(emailMapper(data), serviceEmailTemplate.htmlTemplate);
+		try {
+			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
+				data.serviceId,
+				templateType,
+			);
+			serviceEmailTemplate = serviceTemplate.htmlTemplate;
+		} catch (e) {}
+
+		if (serviceEmailTemplate) {
+			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
 			emailContent = `<pre>
 There has been an update to your booking confirmation.
@@ -270,13 +260,18 @@ ${locationText}
 		} = emailMapper(data);
 
 		let emailContent;
+		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CancelledByServiceProviderSentToCitizen;
-		const serviceEmailTemplate = await this.templateService.getEmailNotificationTemplate(
-			data.serviceId,
-			templateType,
-		);
-		if (serviceEmailTemplate && serviceEmailTemplate.htmlTemplate) {
-			emailContent = mapVariablesValuesToTemplate(emailMapper(data), serviceEmailTemplate.htmlTemplate);
+		try {
+			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
+				data.serviceId,
+				templateType,
+			);
+			serviceEmailTemplate = serviceTemplate.htmlTemplate;
+		} catch (e) {}
+
+		if (serviceEmailTemplate) {
+			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
 			emailContent = `<pre>
 The following booking has been cancelled by the other party.

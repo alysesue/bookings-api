@@ -65,14 +65,14 @@ describe('Test the service notification template service', () => {
 		expect(result).toStrictEqual(updatedtemplate);
 	});
 
-	it('should throw error when trying to verifyActionPermission with no serviceId', async () => {
+	it('should throw error when user has no verifyActionPermission', async () => {
 		jest.resetAllMocks();
 		(NotificationTemplateActionAuthVisitor as jest.Mock).mockImplementation(() => visitorMock);
 
 		const result = async () =>
-			await Container.get(ServiceNotificationTemplateService).getEmailNotificationTemplate(null, 1);
+			await Container.get(ServiceNotificationTemplateService).addEmailTemplate(1, template);
 		await expect(result).rejects.toThrowErrorMatchingInlineSnapshot(
-			'"User cannot perform this action (Read) for service notification template."',
+			'"User cannot perform this action (Create) for service notification template."',
 		);
 	});
 
