@@ -1,9 +1,8 @@
 import { BookingsRepository } from '../bookings.repository';
-import { Booking, ChangeLogAction, ServiceProvider, User } from '../../../models';
+import { Booking, ChangeLogAction, User } from '../../../models';
 import { InsertResult } from 'typeorm';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
-import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { BookingChangeLogsService } from '../../bookingChangeLogs/bookingChangeLogs.service';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
@@ -57,14 +56,6 @@ export class TimeslotsServiceMock implements Partial<TimeslotsService> {
 
 	public async isProviderAvailableForTimeslot(...params): Promise<any> {
 		return await TimeslotsServiceMock.isProviderAvailableForTimeslot(...params);
-	}
-}
-
-export class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersRepository> {
-	public static getServiceProviderMock: ServiceProvider;
-
-	public async getServiceProvider(): Promise<ServiceProvider> {
-		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
 	}
 }
 

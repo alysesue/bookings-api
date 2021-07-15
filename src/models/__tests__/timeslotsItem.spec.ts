@@ -80,4 +80,13 @@ describe('Should test timeslots items', () => {
 		expect(timeslotItems[0]._startTime.toString()).toBe('08:20');
 		expect(timeslotItems[0]._endTime.toString()).toBe('08:30');
 	});
+
+	it('should generate timeslots with start date and end date', async () => {
+		weekdaySchedule.startDate = new Date('2021-06-07');
+		weekdaySchedule.endDate = new Date('2021-06-08');
+		scheduleFormRequestComplex.weekdaySchedules = [weekdaySchedule];
+		const timeslotItems = TimeslotItem.generateTimeslotsItems(scheduleFormRequestComplex, 1);
+		expect(timeslotItems[0]._startDate).toEqual(new Date('2021-06-07'));
+		expect(timeslotItems[0]._endDate).toEqual(new Date('2021-06-08'));
+	});
 });

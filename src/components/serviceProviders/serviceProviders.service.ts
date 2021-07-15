@@ -290,16 +290,7 @@ export class ServiceProvidersService {
 	}
 
 	public async setProvidersScheduleForm(orgaId: number, request: ScheduleFormRequest): Promise<ServiceProvider[]> {
-		if (request.endDate < request.startDate) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				'Schedule end date cannot be earlier than start date',
-			);
-		}
-		if (isXOR(request.startDate, request.endDate)) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				'Schedule start and end date must be both valid or empty',
-			);
-		}
+		this.verifyScheduleDates(request);
 		if (request.startDate && request.endDate) {
 			request.startDate = DateHelper.getDateOnly(request.startDate);
 			request.endDate = DateHelper.getDateOnly(request.endDate);
@@ -314,6 +305,19 @@ export class ServiceProvidersService {
 		}
 
 		return serviceProvidersRes;
+	}
+
+	private verifyScheduleDates(request: ScheduleFormRequest) {
+		if (request.endDate < request.startDate) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				'Schedule end date cannot be earlier than start date',
+			);
+		}
+		if (isXOR(request.startDate, request.endDate)) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				'Schedule start and end date must be both valid or empty',
+			);
+		}
 	}
 
 	public getFilteredServiceProvidersByEmail(

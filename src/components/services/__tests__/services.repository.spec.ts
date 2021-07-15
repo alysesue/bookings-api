@@ -8,6 +8,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup, CitizenAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { ServiceRefInfo, ServicesRepositoryNoAuth } from '../services.noauth.repository';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
+import { TimeslotsScheduleRepositoryMock } from '../../../components/timeslotsSchedules/__mocks__/timeslotsSchedule.repository.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -197,19 +198,6 @@ class ScheduleFormsRepositoryMock implements Partial<ScheduleFormsRepository> {
 
 	public async populateSingleEntryScheduleForm(...params): Promise<any> {
 		return await ScheduleFormsRepositoryMock.populateSingleEntryScheduleForm(...params);
-	}
-}
-
-class TimeslotsScheduleRepositoryMock implements Partial<TimeslotsScheduleRepository> {
-	public static getTimeslotsScheduleByIdMock = jest.fn();
-	public static populateTimeslotsSchedules = jest.fn();
-
-	public async getTimeslotsScheduleById(...params): Promise<TimeslotsSchedule> {
-		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock(...params);
-	}
-
-	public async populateTimeslotsSchedules(...params): Promise<any> {
-		return await TimeslotsScheduleRepositoryMock.populateTimeslotsSchedules(...params);
 	}
 }
 
