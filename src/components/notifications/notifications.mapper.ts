@@ -99,7 +99,7 @@ export const mapVariablesValuesToServiceTemplate = (mapValues, template): string
 		'{day}': day,
 		'{time}': time,
 		'{videoConferenceUrl}': videoConferenceUrl,
-		'{reasonToReject}': reasonToReject
+		'{reasonToReject}': reasonToReject,
 	};
 
 	for (const key of Object.keys(mapVariables)) {

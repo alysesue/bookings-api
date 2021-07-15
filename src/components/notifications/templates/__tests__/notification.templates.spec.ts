@@ -28,48 +28,52 @@ describe('Notification templates tests', () => {
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create citizen email for citizen cancelled booking', async() => {
+	it('should create citizen email for citizen cancelled booking', async () => {
 		const result = await new CitizenEmailTemplateBookingActionByCitizen().CancelledBookingEmail(booking);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create citizen email for service provider created booking', async() => {
+	it('should create citizen email for service provider created booking', async () => {
 		const result = await new CitizenEmailTemplateBookingActionByServiceProvider().CreatedBookingEmail(booking);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create citizen email for service provider updated booking', async() => {
+	it('should create citizen email for service provider updated booking', async () => {
 		const result = await new CitizenEmailTemplateBookingActionByServiceProvider().UpdatedBookingEmail(booking);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create citizen email for service provider cancelled booking', async() => {
+	it('should create citizen email for service provider cancelled booking', async () => {
 		const result = await new CitizenEmailTemplateBookingActionByServiceProvider().CancelledBookingEmail(booking);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create service provider email for citizen created booking', async() => {
+	it('should create service provider email for citizen created booking', async () => {
 		const result = await new ServiceProviderEmailTemplateBookingActionByCitizen().CreatedBookingEmail(booking);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create service provider email for citizen updated booking', async() => {
+	it('should create service provider email for citizen updated booking', async () => {
 		const result = await new ServiceProviderEmailTemplateBookingActionByCitizen().UpdatedBookingEmail(booking);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create service provider email for citizen cancelled booking', async() => {
+	it('should create service provider email for citizen cancelled booking', async () => {
 		const result = await new ServiceProviderEmailTemplateBookingActionByCitizen().CancelledBookingEmail(booking);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create service provider email for service provider updated booking', async() => {
-		const result = await new ServiceProviderEmailTemplateBookingActionByServiceProvider().UpdatedBookingEmail(booking);
+	it('should create service provider email for service provider updated booking', async () => {
+		const result = await new ServiceProviderEmailTemplateBookingActionByServiceProvider().UpdatedBookingEmail(
+			booking,
+		);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create service provider email for service provider cancelled booking', async() => {
-		const result = await new ServiceProviderEmailTemplateBookingActionByServiceProvider().CancelledBookingEmail(booking);
+	it('should create service provider email for service provider cancelled booking', async () => {
+		const result = await new ServiceProviderEmailTemplateBookingActionByServiceProvider().CancelledBookingEmail(
+			booking,
+		);
 		expect(result).toMatchSnapshot();
 	});
 });
