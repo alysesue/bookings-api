@@ -123,6 +123,8 @@ export const mapDayScheduleToResponse = (daySchedule: WeekDaySchedule): WeekDayS
 	dayContract.closeTime = daySchedule.closeTime?.toJSON();
 	dayContract.breaks = daySchedule.breaks?.map((e) => mapBreaksToResponse(e));
 	dayContract.capacity = daySchedule.capacity;
+	dayContract.startDate = daySchedule.startDate;
+	dayContract.endDate = daySchedule.endDate;
 
 	return dayContract;
 };

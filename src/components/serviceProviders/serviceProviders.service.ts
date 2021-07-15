@@ -288,6 +288,11 @@ export class ServiceProvidersService {
 	}
 
 	public async setProvidersScheduleForm(orgaId: number, request: ScheduleFormRequest): Promise<ServiceProvider[]> {
+		if (request.endDate < request.startDate) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				'Schedule end date cannot be earlier than start date',
+			);
+		}
 		const serviceProviders = await this.serviceProvidersRepository.getServiceProviders({ organisationId: orgaId });
 		const serviceProvidersRes = [];
 
