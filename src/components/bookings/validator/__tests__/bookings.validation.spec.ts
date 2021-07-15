@@ -11,7 +11,6 @@ import { BusinessValidation, Service, User } from '../../../../models';
 import { BookingsValidatorFactory } from '../bookings.validation';
 import {
 	BookingRepositoryMock,
-	ServiceProvidersRepositoryMock,
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
 } from '../../__mocks__/bookings.mocks';
@@ -24,6 +23,7 @@ import { IPagedEntities } from '../../../../core/pagedEntities';
 import { ContainerContext, ContainerContextHolder } from '../../../../infrastructure/containerContext';
 import { ServiceProvidersLookup } from '../../../../components/timeslots/aggregatorTimeslotProviders';
 import { TimeslotServiceProviderResult } from '../../../../models/timeslotServiceProvider';
+import { ServiceProvidersRepositoryMock } from '../../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
 
 const createTimeslotNative = (startTime: number, endTime: number, capacity?: number) => {
 	return {

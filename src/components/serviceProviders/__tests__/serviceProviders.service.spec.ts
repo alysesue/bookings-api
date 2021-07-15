@@ -1,6 +1,5 @@
 import { Container } from 'typescript-ioc';
 import { cloneDeep } from 'lodash';
-import { DeleteResult } from 'typeorm';
 import { ServiceProvidersService } from '../serviceProviders.service';
 import { ServiceProvidersRepository } from '../serviceProviders.repository';
 import {
@@ -30,7 +29,6 @@ import {
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
-import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.repository';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
 import { MolUsersService } from '../../users/molUsers/molUsers.service';
 import { IMolCognitoUserResponse } from '../../users/molUsers/molUsers.apicontract';
@@ -44,6 +42,11 @@ import { ServicesServiceMock } from '../../services/__mocks__/services.service';
 import { ServiceProvidersActionAuthVisitor } from '../serviceProviders.auth';
 import { ServiceProvidersLookup } from '../../../components/timeslots/aggregatorTimeslotProviders';
 import { TimeslotsServiceMock } from '../../../components/bookings/__mocks__/bookings.mocks';
+import { ServiceProvidersRepositoryMock } from '../__mocks__/serviceProviders.repository.mock';
+import { TimeslotItemsServiceMock } from '../../../components/timeslotItems/__mocks__/timeslotItems.service.mock';
+import { ScheduleFormsServiceMock } from '../../../components/scheduleForms/__mocks__/scheduleForms.service.mock';
+import { TimeslotsScheduleRepositoryMock } from '../../../components/timeslotsSchedules/__mocks__/timeslotsSchedule.repository.mock';
+import { OrganisationsRepositoryMock } from '../../../components/organisations/__mocks__/organisations.noauth.repository.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -221,16 +224,72 @@ describe('ServiceProviders.Service', () => {
 		expect(ServiceProvidersRepositoryMock.save).toBeCalledTimes(0);
 	});
 
-	it('Set scheduleFrom for serviceProviders', async () => {
-		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([serviceProviderMock]));
-		ScheduleFormsServiceMock.updateScheduleFormInEntity.mockImplementation(() => {
-			serviceProviderMock.scheduleForm = new ScheduleForm();
-			return Promise.resolve(serviceProviderMock);
+	describe('Set scheduleForm', () => {
+		it('Set scheduleFrom for serviceProviders (schedule dates empty)', async () => {
+			ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([serviceProviderMock]));
+			ScheduleFormsServiceMock.updateScheduleFormInEntity.mockImplementation(() => {
+				serviceProviderMock.scheduleForm = new ScheduleForm();
+				return Promise.resolve(serviceProviderMock);
+			});
+			await Container.get(ServiceProvidersService).setProvidersScheduleForm(1, {
+				serviceProvidersEmailList: [],
+			} as ScheduleFormRequest);
+			expect(ScheduleFormsServiceMock.updateScheduleFormInEntity).toBeCalled();
 		});
-		await Container.get(ServiceProvidersService).setProvidersScheduleForm(1, {
-			serviceProvidersEmailList: [],
-		} as ScheduleFormRequest);
-		expect(ScheduleFormsServiceMock.updateScheduleFormInEntity).toBeCalled();
+
+		it('Set scheduleFrom for serviceProviders should pass (schedul dates valid))', async () => {
+			ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([serviceProviderMock]));
+			ScheduleFormsServiceMock.updateScheduleFormInEntity.mockImplementation(() => {
+				serviceProviderMock.scheduleForm = new ScheduleForm();
+				return Promise.resolve(serviceProviderMock);
+			});
+			await Container.get(ServiceProvidersService).setProvidersScheduleForm(1, {
+				serviceProvidersEmailList: [],
+				startDate: new Date('2021-07-07'),
+				endDate: new Date('2021-07-08'),
+			} as ScheduleFormRequest);
+			expect(ScheduleFormsServiceMock.updateScheduleFormInEntity).toBeCalled();
+		});
+
+		it('Set scheduleForm should throw error if schedule end date is earlier than start date', async () => {
+			let error;
+			try {
+				await Container.get(ServiceProvidersService).setProvidersScheduleForm(1, {
+					serviceProvidersEmailList: [],
+					startDate: new Date('2021-07-08'),
+					endDate: new Date('2021-07-07'),
+				} as ScheduleFormRequest);
+			} catch (e) {
+				error = e;
+			}
+			expect(error.code).toBe('SYS_INVALID_PARAM');
+			expect(error.message).toBe('End date cannot be earlier than start date');
+		});
+
+		it('Set scheduleForm should throw error if one of the schedule dates are missing', async () => {
+			let errorStart;
+			let errorEnd;
+			try {
+				await Container.get(ServiceProvidersService).setProvidersScheduleForm(1, {
+					serviceProvidersEmailList: [],
+					startDate: new Date('2021-07-08'),
+				} as ScheduleFormRequest);
+			} catch (e) {
+				errorStart = e;
+			}
+			try {
+				await Container.get(ServiceProvidersService).setProvidersScheduleForm(1, {
+					serviceProvidersEmailList: [],
+					endDate: new Date('2021-07-08'),
+				} as ScheduleFormRequest);
+			} catch (e) {
+				errorEnd = e;
+			}
+			expect(errorStart.code).toBe('SYS_INVALID_PARAM');
+			expect(errorStart.message).toBe('Both the start date and end date must be selected or empty');
+			expect(errorEnd.code).toBe('SYS_INVALID_PARAM');
+			expect(errorEnd.message).toBe('Both the start date and end date must be selected or empty');
+		});
 	});
 
 	it('Filter service providers without request email inputs', async () => {
@@ -470,87 +529,3 @@ describe('ServiceProviders.Service', () => {
 		expect(result.length).toBe(1);
 	});
 });
-
-class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersRepository> {
-	public static sp: ServiceProvider;
-	public static getServiceProviders = jest.fn();
-	public static getServiceProviderMock: ServiceProvider;
-	public static getServiceProvidersCountMock: number;
-	public static getServiceProvidersByName = jest.fn();
-	public static save = jest.fn();
-	public static saveMany = jest.fn();
-
-	public async getServiceProviders(...params): Promise<ServiceProvider[]> {
-		return await ServiceProvidersRepositoryMock.getServiceProviders(...params);
-	}
-
-	public async getServiceProvider(): Promise<ServiceProvider> {
-		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
-	}
-
-	public async getServiceProvidersCount(): Promise<number> {
-		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProvidersCountMock);
-	}
-
-	public async getServiceProvidersByName(...params): Promise<ServiceProvider[]> {
-		return await ServiceProvidersRepositoryMock.getServiceProvidersByName(...params);
-	}
-
-	public async save(...params): Promise<ServiceProvider> {
-		return await ServiceProvidersRepositoryMock.save(...params);
-	}
-
-	public async saveMany(...params): Promise<ServiceProvider[]> {
-		return await ServiceProvidersRepositoryMock.saveMany(...params);
-	}
-}
-
-class ScheduleFormsServiceMock implements Partial<ScheduleFormsService> {
-	public static updateScheduleFormInEntity = jest.fn();
-
-	public async updateScheduleFormInEntity(...params): Promise<any> {
-		return await ScheduleFormsServiceMock.updateScheduleFormInEntity(...params);
-	}
-}
-
-class TimeslotItemsServiceMock implements Partial<TimeslotItemsService> {
-	public static mapAndSaveTimeslotItemsToTimeslotsSchedule = jest.fn();
-	public static deleteTimeslot = jest.fn();
-	public static mapAndSaveTimeslotItem = jest.fn();
-	public static createTimeslotItem = jest.fn();
-
-	public async mapAndSaveTimeslotItem(
-		timeslotsSchedule: TimeslotsSchedule,
-		request: TimeslotItemRequest,
-		entity: TimeslotItem,
-	): Promise<TimeslotItem> {
-		return await TimeslotItemsServiceMock.mapAndSaveTimeslotItem(timeslotsSchedule, request, entity);
-	}
-
-	public async deleteTimeslot(request: TimeslotItemsSearchRequest): Promise<DeleteResult> {
-		return await TimeslotItemsServiceMock.deleteTimeslot({ id: request.id });
-	}
-	public async createTimeslotItem(...params): Promise<any> {
-		return await TimeslotItemsServiceMock.createTimeslotItem(...params);
-	}
-}
-
-class TimeslotsScheduleRepositoryMock implements Partial<TimeslotsScheduleRepository> {
-	public static getTimeslotsScheduleByIdMock = jest.fn();
-	public static createTimeslotsScheduleMock: TimeslotsSchedule;
-
-	public async getTimeslotsScheduleById(request: TimeslotItemsSearchRequest): Promise<TimeslotsSchedule> {
-		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleByIdMock({ id: request.id });
-	}
-	public async createTimeslotsSchedule(): Promise<TimeslotsSchedule> {
-		return Promise.resolve(TimeslotsScheduleRepositoryMock.createTimeslotsScheduleMock);
-	}
-}
-
-class OrganisationsRepositoryMock implements Partial<OrganisationsNoauthRepository> {
-	public static getOrganisationById = jest.fn();
-
-	public async getOrganisationById(orgaId: number): Promise<Organisation> {
-		return await OrganisationsRepositoryMock.getOrganisationById(orgaId);
-	}
-}

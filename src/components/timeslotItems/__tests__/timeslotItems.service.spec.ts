@@ -9,6 +9,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TimeslotItemsActionAuthVisitor } from '../timeslotItems.auth';
+import { TimeslotsScheduleRepositoryMock } from '../../../components/timeslotsSchedules/__mocks__/timeslotsSchedule.repository.mock';
 
 jest.mock('../timeslotItems.auth');
 
@@ -276,13 +277,5 @@ export class UserContextMock implements Partial<UserContext> {
 
 	public async getAuthGroups(...params): Promise<any> {
 		return await UserContextMock.getAuthGroups(...params);
-	}
-}
-
-export class TimeslotsScheduleRepositoryMock implements Partial<TimeslotsScheduleRepository> {
-	public static getTimeslotsScheduleById = jest.fn<Promise<TimeslotsSchedule>, any>();
-
-	public async getTimeslotsScheduleById(...params): Promise<any> {
-		return await TimeslotsScheduleRepositoryMock.getTimeslotsScheduleById(...params);
 	}
 }

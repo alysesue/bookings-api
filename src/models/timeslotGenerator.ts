@@ -42,7 +42,6 @@ export class TimeslotGenerator {
 
 		for (let day = 0; day < daysCount; day++) {
 			const weekdayTimeslots: TimeslotItem[] = validWeekDays.get(dayOfWeek);
-
 			if (weekdayTimeslots && weekdayTimeslots.length > 0) {
 				const startTimeOfDay = day === 0 ? firstDayStartTime : null;
 				const endTimeOfDay = day === lastDayIndex ? lastDayEndTime : null;
@@ -71,7 +70,6 @@ export class TimeslotGenerator {
 					yield timeslot;
 				}
 			}
-
 			dateNative = dateNative + TIME_PER_DAY;
 			dayOfWeek = (dayOfWeek + 1) % 7;
 		}

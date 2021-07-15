@@ -3,6 +3,8 @@ export class DateHelper {
 	private static MsPerMinute = 60000;
 	private static MsPerHour = 3600000;
 	private static MsPerDay = 86400000;
+	private static tz = new Date(1970, 1, 1).getTime();
+
 	private static monthNames = [
 		'January',
 		'February',
@@ -121,5 +123,20 @@ export class DateHelper {
 			date.getUTCSeconds(),
 			date.getUTCMilliseconds(),
 		);
+	}
+
+	// KIV
+	public static getStartOfDayNative(dateNative: number): number {
+		const startOfDayNative =
+			DateHelper.tz + Math.floor((dateNative - DateHelper.tz) / DateHelper.MsPerDay) * DateHelper.MsPerDay;
+		return startOfDayNative;
+	}
+
+	public static getEndOfDayNative(dateNative: number): number {
+		const startOfDayNative =
+			DateHelper.tz +
+			(Math.floor((dateNative - DateHelper.tz) / DateHelper.MsPerDay) + 1) * DateHelper.MsPerDay -
+			1;
+		return startOfDayNative;
 	}
 }

@@ -41,10 +41,10 @@ export class TimeslotItem implements ITimeSpan {
 	public _capacity: number;
 
 	@Column({ type: 'date', nullable: true, default: null })
-	public _startDate: Date;
+	public _startDate?: Date;
 
 	@Column({ type: 'date', nullable: true, default: null })
-	public _endDate: Date;
+	public _endDate?: Date;
 
 	public static create(
 		timeslotScheduleId: number,

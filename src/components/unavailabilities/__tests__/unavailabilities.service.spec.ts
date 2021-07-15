@@ -9,6 +9,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { UnavailabilitiesActionAuthVisitor } from '../unavailabilities.auth';
 import { ServicesRepository } from '../../../components/services/services.repository';
+import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
 
 jest.mock('../unavailabilities.auth');
 
@@ -232,14 +233,6 @@ class UnavailabilitiesRepositoryMock implements Partial<UnavailabilitiesReposito
 
 	public async delete(id): Promise<any> {
 		return await UnavailabilitiesRepositoryMock.delete(id);
-	}
-}
-
-class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersRepository> {
-	public static getServiceProviders = jest.fn();
-
-	public async getServiceProviders(...params): Promise<any> {
-		return await ServiceProvidersRepositoryMock.getServiceProviders(...params);
 	}
 }
 class ServicesRepositoryMock implements Partial<ServicesRepository> {

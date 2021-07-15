@@ -31,10 +31,10 @@ export class ScheduleForm implements IScheduleForm {
 	 * This could change in future stories where start and end date can be pegged to individual timeslots.
 	 */
 	@Column({ type: 'date', nullable: true, default: null })
-	public startDate: Date;
+	public startDate?: Date;
 
 	@Column({ type: 'date', nullable: true, default: null })
-	public endDate: Date;
+	public endDate?: Date;
 
 	constructor() {}
 
