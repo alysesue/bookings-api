@@ -20,3 +20,7 @@ export const isSGUinfin = (uinFinString?: string): { pass: boolean; message?: st
 
 	return { pass: true };
 };
+
+export const isXOR = (a: any, b: any): boolean => {
+	return (a || b) && !(a && b);
+};

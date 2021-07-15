@@ -22,6 +22,8 @@ import {
 	ServiceProviderModel,
 } from './serviceProviders.apicontract';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
+import { isXOR } from '../../tools/validator';
+import { DateHelper } from '../../infrastructure/dateHelper';
 
 const DEFAULT_PHONE_NUMBER = '+6580000000';
 
@@ -292,6 +294,15 @@ export class ServiceProvidersService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				'Schedule end date cannot be earlier than start date',
 			);
+		}
+		if (isXOR(request.startDate, request.endDate)) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				'Schedule start and end date must be both valid or empty',
+			);
+		}
+		if (request.startDate && request.endDate) {
+			request.startDate = DateHelper.getDateOnly(request.startDate);
+			request.endDate = DateHelper.getDateOnly(request.endDate);
 		}
 		const serviceProviders = await this.serviceProvidersRepository.getServiceProviders({ organisationId: orgaId });
 		const serviceProvidersRes = [];
