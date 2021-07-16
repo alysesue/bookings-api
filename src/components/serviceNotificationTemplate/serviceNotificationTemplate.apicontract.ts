@@ -18,4 +18,5 @@ export class ServiceNotificationTemplateResponse {
 	 * @isInt
 	 */
 	public serviceId: number;
+	public isDefaultTemplate?: boolean;
 }

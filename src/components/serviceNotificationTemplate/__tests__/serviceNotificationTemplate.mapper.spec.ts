@@ -1,6 +1,7 @@
 import { Container } from 'typescript-ioc';
 import { ServiceNotificationTemplateMapper } from '../serviceNotificationTemplate.mapper';
 import { ServiceNotificationTemplate } from '../../../models';
+// import { ServiceNotificationTemplateResponse } from '../serviceNotificationTemplate.apicontract';
 
 describe('Test the service notification template mapper', () => {
 	it('should map template data to ServiceNotificationTemplateResponse', () => {
@@ -19,4 +20,15 @@ describe('Test the service notification template mapper', () => {
 		const response = () => mapper.mapToNotificationTemplateResponse(templateData);
 		expect(response).toThrowErrorMatchingInlineSnapshot('"Data not found"');
 	});
+
+	// it('should map template response to ServiceNotificationTemplateResponse', () => {
+	// 	const templateData = new ServiceNotificationTemplateResponse();
+	// 	templateData.isDefaultTemplate = false;
+	// 	templateData.htmlTemplate = 'testings notification template';
+	// 	templateData.emailTemplateType = 1;
+	// 	const mapper = Container.get(ServiceNotificationTemplateMapper);
+	// 	const ServiceNotificationTemplateResponse = mapper.mapGetResponseToNotifTemplateResponse(templateData);
+	// 	expect(ServiceNotificationTemplateResponse).toBeDefined();
+	// 	expect(ServiceNotificationTemplateResponse.isDefaultTemplate).toEqual(templateData.isDefaultTemplate);
+	// });
 });

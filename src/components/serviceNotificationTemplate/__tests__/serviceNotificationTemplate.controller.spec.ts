@@ -19,15 +19,13 @@ describe('Services controller tests', () => {
 	mockItem.serviceId = 1;
 
 	it('should get an email notification template', async () => {
-		ServiceNotificationTemplateServiceMock.getEmailNotificationTemplate.mockReturnValue(mockItem);
-		const response = await Container.get(
-			ServicesNotificationTemplateController,
-		).getEmailNotificationTemplateByServiceId(1, 2);
+		ServiceNotificationTemplateServiceMock.getEmailMock.mockReturnValue(mockItem);
+		const response = await Container.get(ServicesNotificationTemplateController).getEmailNotificationTemplate(1, 2);
 		expect(response.data).toEqual(mockItem);
 	});
 
 	it('should create an email notification template', async () => {
-		ServiceNotificationTemplateServiceMock.addEmailTemplate.mockReturnValue(mockItem);
+		ServiceNotificationTemplateServiceMock.addEmailMock.mockReturnValue(mockItem);
 		const request = new ServiceNotificationTemplateRequest(2, 'irrelevant');
 		const response = await Container.get(ServicesNotificationTemplateController).createEmailNotificationTemplate(
 			1,
@@ -38,7 +36,7 @@ describe('Services controller tests', () => {
 	});
 
 	it('should update an existing email notification template', async () => {
-		ServiceNotificationTemplateServiceMock.updateEmailTemplate.mockReturnValue(mockItem);
+		ServiceNotificationTemplateServiceMock.updateEmailMock.mockReturnValue(mockItem);
 		const request = new ServiceNotificationTemplateRequest(2, 'irrelevant');
 		const response = await Container.get(ServicesNotificationTemplateController).updateEmailNotificationTemplate(
 			1,

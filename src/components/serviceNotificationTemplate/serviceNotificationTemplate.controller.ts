@@ -10,7 +10,6 @@ import {
 import { ServiceNotificationTemplateService } from '../serviceNotificationTemplate/serviceNotificationTemplate.service';
 import { EmailNotificationTemplateType } from '../../models/notifications';
 import { ServiceNotificationTemplateMapper } from '../serviceNotificationTemplate/serviceNotificationTemplate.mapper';
-import { NotificationsService } from '../notifications/notifications.service';
 
 @Route('v1/services')
 @Tags('Service Notification Template')
@@ -19,11 +18,10 @@ export class ServicesNotificationTemplateController extends Controller {
 	private serviceNotificationsTemplatesService: ServiceNotificationTemplateService;
 	@Inject
 	private notificationTemplateMapper: ServiceNotificationTemplateMapper;
-	@Inject
-	private notificationsService: NotificationsService;
 
 	/**
-	 * Get a single email notification template.
+	 * Get a single email notification template of a service.
+	 * If service template does not exist, then get the default template.
 	 *
 	 * @param @isInt serviceId The service id.
 	 * @param @isInt  emailTemplateType The enum type of email template.
@@ -32,19 +30,19 @@ export class ServicesNotificationTemplateController extends Controller {
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async getEmailNotificationTemplateByServiceId(
+	public async getEmailNotificationTemplate(
 		@Path() serviceId: number,
 		@Query() emailTemplateType: EmailNotificationTemplateType,
 	): Promise<ApiData<ServiceNotificationTemplateResponse>> {
-		const data = await this.serviceNotificationsTemplatesService.getEmailNotificationTemplate(
+		const data = await this.serviceNotificationsTemplatesService.getEmailNotificationTemplateByType(
 			serviceId,
 			emailTemplateType,
 		);
-		return ApiDataFactory.create(this.notificationTemplateMapper.mapToNotificationTemplateResponse(data));
+		return ApiDataFactory.create(this.notificationTemplateMapper.mapGetResponseToNotifTemplateResponse(data));
 	}
 
 	/**
-	 * Creates a single email notification template.
+	 * Creates a single email notification template of a service.
 	 *
 	 * @param @isInt serviceId The service id.
 	 * @param request
@@ -57,12 +55,15 @@ export class ServicesNotificationTemplateController extends Controller {
 		@Path() serviceId: number,
 		@Body() request: ServiceNotificationTemplateRequest,
 	): Promise<ApiData<ServiceNotificationTemplateResponse>> {
-		const data = await this.serviceNotificationsTemplatesService.addEmailTemplate(serviceId, request);
+		const data = await this.serviceNotificationsTemplatesService.addEmailServiceNotificationTemplateByType(
+			serviceId,
+			request,
+		);
 		return ApiDataFactory.create(this.notificationTemplateMapper.mapToNotificationTemplateResponse(data));
 	}
 
 	/**
-	 * Update an existing email notification template.
+	 * Update an existing email notification template of a service.
 	 *
 	 * @param @isInt serviceId The service id.
 	 * @param request
@@ -75,28 +76,10 @@ export class ServicesNotificationTemplateController extends Controller {
 		@Path() serviceId: number,
 		@Body() request: ServiceNotificationTemplateRequest,
 	): Promise<ApiData<ServiceNotificationTemplateResponse>> {
-		const data = await this.serviceNotificationsTemplatesService.updateEmailTemplate(serviceId, request);
-		return ApiDataFactory.create(this.notificationTemplateMapper.mapToNotificationTemplateResponse(data));
-	}
-
-	/**
-	 * Get a single default email notification template.
-	 *
-	 * @param @isInt serviceId The service id.
-	 * @param @isInt  emailTemplateType The enum type of email template.
-	 */
-	@Get('{serviceId}/notificationTemplate/emailDefault')
-	@SuccessResponse(200, 'Ok')
-	@MOLAuth({ admin: {}, agency: {} })
-	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async getDefaultEmailNotificationTemplateByType(
-		@Path() serviceId: number,
-		@Query() emailTemplateType: EmailNotificationTemplateType,
-	): Promise<string> {
-		const data = await this.notificationsService.getDefaultEmailNotificationTemplateByType(
+		const data = await this.serviceNotificationsTemplatesService.updateEmailServiceNotificationTemplateByType(
 			serviceId,
-			emailTemplateType,
+			request,
 		);
-		return data;
+		return ApiDataFactory.create(this.notificationTemplateMapper.mapToNotificationTemplateResponse(data));
 	}
 }

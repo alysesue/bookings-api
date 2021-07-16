@@ -33,10 +33,7 @@ export class CitizenEmailTemplateBookingActionByCitizen implements EmailBookingT
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CreatedByCitizenSentToCitizen;
 		try {
-			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
-				data.serviceId,
-				templateType,
-			);
+			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
 		} catch (e) {}
 
@@ -78,10 +75,7 @@ ${locationText}
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.UpdatedByCitizenSentToCitizen;
 		try {
-			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
-				data.serviceId,
-				templateType,
-			);
+			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
 		} catch (e) {}
 
@@ -123,10 +117,7 @@ ${locationText}
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CancelledByCitizenSentToCitizen;
 		try {
-			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
-				data.serviceId,
-				templateType,
-			);
+			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
 		} catch (e) {}
 
@@ -172,10 +163,7 @@ export class CitizenEmailTemplateBookingActionByServiceProvider implements Email
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CreatedByServiceProviderSentToCitizen;
 		try {
-			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
-				data.serviceId,
-				templateType,
-			);
+			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
 		} catch (e) {}
 
@@ -217,10 +205,7 @@ ${locationText}
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.UpdatedByServiceProviderSentToCitizen;
 		try {
-			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
-				data.serviceId,
-				templateType,
-			);
+			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
 		} catch (e) {}
 
@@ -263,10 +248,7 @@ ${locationText}
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CancelledByServiceProviderSentToCitizen;
 		try {
-			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
-				data.serviceId,
-				templateType,
-			);
+			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
 		} catch (e) {}
 

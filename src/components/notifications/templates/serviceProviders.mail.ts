@@ -23,10 +23,7 @@ export class ServiceProviderEmailTemplateBookingActionByCitizen implements Email
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CreatedByCitizenSentToServiceProvider;
 		try {
-			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
-				data.serviceId,
-				templateType,
-			);
+			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
 		} catch (e) {}
 
@@ -69,10 +66,7 @@ ${locationText}
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.UpdatedByCitizenSentToServiceProvider;
 		try {
-			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
-				data.serviceId,
-				templateType,
-			);
+			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
 		} catch (e) {}
 
@@ -115,10 +109,7 @@ ${locationText}
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CancelledByCitizenSentToServiceProvider;
 		try {
-			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
-				data.serviceId,
-				templateType,
-			);
+			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
 		} catch (e) {}
 
@@ -164,10 +155,7 @@ export class ServiceProviderEmailTemplateBookingActionByServiceProvider implemen
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.UpdatedByServiceProviderSentToServiceProvider;
 		try {
-			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
-				data.serviceId,
-				templateType,
-			);
+			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
 		} catch (e) {}
 
@@ -210,10 +198,7 @@ ${locationText}
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CancelledByServiceProviderSentToServiceProvider;
 		try {
-			const serviceTemplate = await this.templateService.getEmailNotificationTemplate(
-				data.serviceId,
-				templateType,
-			);
+			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
 		} catch (e) {}
 

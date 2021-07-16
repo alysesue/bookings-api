@@ -6,8 +6,6 @@ import { mailer } from '../../config/mailer';
 import { emailLogger } from '../../config/logger';
 import { MailOptions } from './notifications.mapper';
 import { isEmail } from 'mol-lib-api-contract/utils';
-import { EmailNotificationTemplateType } from '../../models/notifications';
-import * as defaultTemplate from './templates/defaultNotificationTemplate.json';
 
 @InRequestScope
 export class NotificationsService {
@@ -63,18 +61,4 @@ export class NotificationsService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Invalid email address');
 		}
 	};
-
-	public async getDefaultEmailNotificationTemplateByType(
-		serviceId: number,
-		emailTemplateType: EmailNotificationTemplateType,
-	): Promise<string> {
-		// const service = await this.servicesService.getService(serviceId);
-		// await this.verifyActionPermission(service, CrudAction.Read);
-
-		if (!emailTemplateType) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
-		}
-		const type = EmailNotificationTemplateType[emailTemplateType].toString();
-		return defaultTemplate.email[type];
-	}
 }
