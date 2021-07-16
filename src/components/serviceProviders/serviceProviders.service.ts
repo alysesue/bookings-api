@@ -310,12 +310,12 @@ export class ServiceProvidersService {
 	private verifyScheduleDates(request: ScheduleFormRequest) {
 		if (request.endDate < request.startDate) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				'Schedule end date cannot be earlier than start date',
+				'End date cannot be earlier than start date',
 			);
 		}
 		if (isXOR(request.startDate, request.endDate)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				'Schedule start and end date must be both valid or empty',
+				'Both the start date and end date must be selected or empty',
 			);
 		}
 	}

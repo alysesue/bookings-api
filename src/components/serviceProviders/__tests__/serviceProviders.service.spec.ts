@@ -263,7 +263,7 @@ describe('ServiceProviders.Service', () => {
 				error = e;
 			}
 			expect(error.code).toBe('SYS_INVALID_PARAM');
-			expect(error.message).toBe('Schedule end date cannot be earlier than start date');
+			expect(error.message).toBe('End date cannot be earlier than start date');
 		});
 
 		it('Set scheduleForm should throw error if one of the schedule dates are missing', async () => {
@@ -286,9 +286,9 @@ describe('ServiceProviders.Service', () => {
 				errorEnd = e;
 			}
 			expect(errorStart.code).toBe('SYS_INVALID_PARAM');
-			expect(errorStart.message).toBe('Schedule start and end date must be both valid or empty');
+			expect(errorStart.message).toBe('Both the start date and end date must be selected or empty');
 			expect(errorEnd.code).toBe('SYS_INVALID_PARAM');
-			expect(errorEnd.message).toBe('Schedule start and end date must be both valid or empty');
+			expect(errorEnd.message).toBe('Both the start date and end date must be selected or empty');
 		});
 	});
 
