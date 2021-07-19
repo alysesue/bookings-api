@@ -2,19 +2,19 @@ import { Booking } from '../../models';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { BookingStatusDisplayedInEmails } from '../../models/bookingStatus';
 
-class EmailData {
-	public status: string;
-	public serviceName: string;
-	public serviceProviderName: string;
-	public spNameDisplayedForServiceProvider: string;
-	public spNameDisplayedForCitizen: string;
-	public location: string;
-	public locationText: string;
-	public day: string;
-	public time: string;
-	public videoConferenceUrl?: string;
-	public reasonToReject?: string;
-	public serviceProviderAliasName?: string;
+export interface EmailData {
+	status: string;
+	serviceName: string;
+	serviceProviderName: string;
+	spNameDisplayedForServiceProvider: string;
+	spNameDisplayedForCitizen: string;
+	location: string;
+	locationText: string;
+	day: string;
+	time: string;
+	videoConferenceUrl?: string;
+	reasonToReject?: string;
+	serviceProviderAliasName?: string;
 }
 
 export interface MailOptions {
@@ -77,7 +77,7 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 	};
 };
 
-export const mapVariablesValuesToServiceTemplate = (mapValues, template): string => {
+export const mapVariablesValuesToServiceTemplate = (mapValues: EmailData, template:string): string => {
 	const {
 		status,
 		serviceName,

@@ -19,7 +19,7 @@ jest.mock('../ServiceNotificationTemplate.auth', () => {
 	return { NotificationTemplateActionAuthVisitor: jest.fn() };
 });
 
-describe('Test the service notification template service', () => {
+describe('Services Notification Template service test', () => {
 	const visitorMock = {
 		hasPermission: jest.fn(),
 	} as Partial<NotificationTemplateActionAuthVisitor>;

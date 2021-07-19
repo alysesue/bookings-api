@@ -6,7 +6,7 @@ import { TransactionManagerMock } from '../../../core/__mocks__/transactionManag
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 
-describe('Test the service notification template repository', () => {
+describe('Services Notification Template repository test', () => {
 	beforeAll(() => {
 		jest.resetAllMocks();
 		Container.bind(TransactionManager).to(TransactionManagerMock);

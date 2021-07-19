@@ -1,6 +1,3 @@
-import { Service } from '../../models';
-import { PermissionAwareAuthGroupVisitor } from '../../infrastructure/auth/queryAuthGroupVisitor';
-import { CrudAction } from '../../enums/crudAction';
 import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,
@@ -8,6 +5,12 @@ import {
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
+import {
+	PermissionAwareAuthGroupVisitor,
+	QueryAuthGroupVisitor,
+} from '../../infrastructure/auth/queryAuthGroupVisitor';
+import { Service } from '../../models';
+import { CrudAction } from '../../enums/crudAction';
 
 export class NotificationTemplateActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 	private readonly _service: Service;
@@ -15,16 +18,20 @@ export class NotificationTemplateActionAuthVisitor extends PermissionAwareAuthGr
 
 	constructor(service: Service, action: CrudAction) {
 		super();
+		this._service = service;
+		this._action = action;
+
 		if (!service) {
 			throw new Error('NotificationTemplateActionAuthVisitor - Service cannot be null or undefined');
+		}
+
+		if (!service.organisationId) {
+			throw new Error('NotificationTemplateActionAuthVisitor - Organisation ID cannot be null or undefined');
 		}
 
 		if (!action) {
 			throw new Error('NotificationTemplateActionAuthVisitor - Action cannot be null or undefined');
 		}
-
-		this._service = service;
-		this._action = action;
 	}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
@@ -42,14 +49,55 @@ export class NotificationTemplateActionAuthVisitor extends PermissionAwareAuthGr
 		const serviceId = this._service.id;
 		switch (this._action) {
 			case CrudAction.Create:
-			case CrudAction.Read:
+			case CrudAction.Delete:
+				return;
 			case CrudAction.Update:
 				if (_userGroup.hasServiceId(serviceId)) {
 					this.markWithPermission();
 				}
 				return;
+			default:
+				return;
 		}
 	}
 
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {}
+}
+
+export class NotificationTemplateQueryAuthVisitor extends QueryAuthGroupVisitor {
+	private _alias: string;
+
+	constructor(alias: string) {
+		super();
+		this._alias = alias;
+	}
+
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
+		this.addAuthCondition(`${this._alias}."_allowAnonymousBookings" = true`, {});
+	}
+
+	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
+		this.addAsTrue();
+	}
+
+	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
+		const authorisedOrganisationIds = _userGroup.authorisedOrganisations.map((org) => org.id);
+		this.addAuthCondition(`${this._alias}."_organisationId" IN (:...authorisedOrganisationIds)`, {
+			authorisedOrganisationIds,
+		});
+	}
+
+	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
+		const authorisedServiceIds = _userGroup.authorisedServices.map((s) => s.id);
+		this.addAuthCondition(`${this._alias}._id IN (:...authorisedServiceIds)`, {
+			authorisedServiceIds,
+		});
+	}
+
+	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
+		const serviceProviderServiceId = _userGroup.authorisedServiceProvider.serviceId;
+		this.addAuthCondition(`${this._alias}._id = :serviceProviderServiceId`, {
+			serviceProviderServiceId,
+		});
+	}
 }

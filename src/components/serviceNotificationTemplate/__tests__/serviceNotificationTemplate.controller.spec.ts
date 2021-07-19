@@ -7,7 +7,7 @@ import {
 } from '../serviceNotificationTemplate.apicontract';
 import { ServiceNotificationTemplateServiceMock } from '../__mock__/serviceNotificationTemplate.service.mock';
 
-describe('Services controller tests', () => {
+describe('Services Notification Template controller tests', () => {
 	beforeAll(() => {
 		Container.bind(ServiceNotificationTemplateService).to(ServiceNotificationTemplateServiceMock);
 	});
