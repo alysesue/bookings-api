@@ -50,10 +50,10 @@ export class NotificationTemplateActionAuthVisitor extends PermissionAwareAuthGr
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		const serviceId = this._service.id;
 		switch (this._action) {
-			//ToDo: ask sam if SA should be able to create a template
-			case CrudAction.Create:
+			// ToDo: ask sam if SA should be able to create a template. currently it can.
 			case CrudAction.Delete:
 				return;
+			case CrudAction.Create:
 			case CrudAction.Update:
 				if (_userGroup.hasServiceId(serviceId)) {
 					this.markWithPermission();
@@ -67,10 +67,12 @@ export class NotificationTemplateActionAuthVisitor extends PermissionAwareAuthGr
 
 export class NotificationTemplateQueryAuthVisitor extends QueryAuthGroupVisitor {
 	private _alias: string;
+	private readonly _serviceAlias: string;
 
-	constructor(alias: string) {
+	constructor(alias: string, serviceAlias: string) {
 		super();
 		this._alias = alias;
+		this._serviceAlias = serviceAlias;
 	}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
@@ -79,7 +81,7 @@ export class NotificationTemplateQueryAuthVisitor extends QueryAuthGroupVisitor 
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		const authorisedOrganisationIds = _userGroup.authorisedOrganisations.map((org) => org.id);
-		this.addAuthCondition(`${this._alias}."_organisationId" IN (:...authorisedOrganisationIds)`, {
+		this.addAuthCondition(`${this._serviceAlias}."_organisationId" IN (:...authorisedOrganisationIds)`, {
 			authorisedOrganisationIds,
 		});
 	}
@@ -91,7 +93,7 @@ export class NotificationTemplateQueryAuthVisitor extends QueryAuthGroupVisitor 
 		});
 	}
 
-	//ToDo: ask sam if sp should have permission to read
+	// ToDo: ask sam if sp should have permission to read
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
 		const serviceProviderServiceId = _userGroup.authorisedServiceProvider.serviceId;
 		this.addAuthCondition(`${this._alias}._serviceId = :serviceProviderServiceId`, {

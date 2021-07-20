@@ -74,6 +74,20 @@ describe('Services Notification Template auth tests - action', () => {
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 	});
 
+	it('should create a service template as service admin', () => {
+		const service = new Service();
+		service.organisationId = 1;
+		service.id = 1;
+
+		const userGroup = new ServiceAdminAuthGroup(
+			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
+			[service],
+		);
+		const authVisitor = new NotificationTemplateActionAuthVisitor(service, CrudAction.Create);
+
+		expect(authVisitor.hasPermission([userGroup])).toBe(true);
+	});
+
 	it('should update service template as service admin', () => {
 		const service = new Service();
 		service.organisationId = 1;
@@ -220,4 +234,13 @@ describe('Services Notification Template auth tests - action', () => {
 			false,
 		);
 	});
+
+	it('should throw error when trying to commit any action without service.organisationId', () => {
+		const service = new Service();
+		service.id = 1;
+
+		const authVisitor = () => new NotificationTemplateActionAuthVisitor(service, CrudAction.Read);
+		expect(authVisitor).toThrowErrorMatchingInlineSnapshot('"NotificationTemplateActionAuthVisitor - Organisation ID cannot be null or undefined"');
+	});
+
 });

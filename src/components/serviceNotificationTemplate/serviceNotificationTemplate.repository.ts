@@ -25,8 +25,8 @@ export class ServiceNotificationTemplateRepository extends RepositoryBase<Servic
 		serviceId: number,
 		emailTemplateType: EmailNotificationTemplateType,
 	): Promise<ServiceNotificationTemplate> {
-		const serviceIdCondition = 'service_notification_template._emailTemplateType = :enum';
-		const query = await this.createSelectQuery([serviceIdCondition], { enum: emailTemplateType });
+		const emailTemplateTypeCondition = 'service_notification_template._emailTemplateType = :enum';
+		const query = await this.createSelectQuery([emailTemplateTypeCondition], { enum: emailTemplateType });
 		const entry = await query.getOne();
 
 		return entry;
@@ -37,17 +37,13 @@ export class ServiceNotificationTemplateRepository extends RepositoryBase<Servic
 		queryParams: {},
 	): Promise<SelectQueryBuilder<ServiceNotificationTemplate>> {
 		const authGroups = await this.userContext.getAuthGroups();
-		// const { userCondition, userParams } = options.skipAuthorisation
-		// 	? { userCondition: '', userParams: {} }
-		await new NotificationTemplateQueryAuthVisitor('service_notification_template').createUserVisibilityCondition(
+		await new NotificationTemplateQueryAuthVisitor('service_notification_template', 'service').createUserVisibilityCondition(
 			authGroups,
 		);
 
 		const repository = await this.getRepository();
-		return (
-			repository
-				.createQueryBuilder('service_notification_template')
-				.where(andWhere([...queryFilters]), { ...queryParams })
-		);
+		return repository
+			.createQueryBuilder('service_notification_template')
+			.where(andWhere([...queryFilters]), { ...queryParams });
 	}
 }
