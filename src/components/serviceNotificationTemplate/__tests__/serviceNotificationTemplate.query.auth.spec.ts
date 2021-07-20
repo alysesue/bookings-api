@@ -103,7 +103,9 @@ describe('Services Notification Template auth tests - query', () => {
 			'service',
 		).createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('(service_notification_template._serviceId = :serviceProviderServiceId)');
+		expect(result.userCondition).toStrictEqual(
+			'(service_notification_template._serviceId = :serviceProviderServiceId)',
+		);
 		expect(result.userParams).toStrictEqual({
 			serviceProviderServiceId: 3,
 		});

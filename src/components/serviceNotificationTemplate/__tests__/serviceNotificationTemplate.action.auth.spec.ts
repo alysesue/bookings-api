@@ -240,7 +240,8 @@ describe('Services Notification Template auth tests - action', () => {
 		service.id = 1;
 
 		const authVisitor = () => new NotificationTemplateActionAuthVisitor(service, CrudAction.Read);
-		expect(authVisitor).toThrowErrorMatchingInlineSnapshot('"NotificationTemplateActionAuthVisitor - Organisation ID cannot be null or undefined"');
+		expect(authVisitor).toThrowErrorMatchingInlineSnapshot(
+			'"NotificationTemplateActionAuthVisitor - Organisation ID cannot be null or undefined"',
+		);
 	});
-
 });

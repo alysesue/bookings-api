@@ -5,6 +5,7 @@ export class ServiceNotificationTemplateServiceMock implements Partial<ServiceNo
 	public static getEmailMock = jest.fn();
 	public static addEmailMock = jest.fn();
 	public static updateEmailMock = jest.fn();
+	public static getNotificationTemplateMock = jest.fn();
 
 	public async getEmailNotificationTemplateByType(): Promise<ServiceNotificationTemplate> {
 		return ServiceNotificationTemplateServiceMock.getEmailMock();
@@ -16,5 +17,9 @@ export class ServiceNotificationTemplateServiceMock implements Partial<ServiceNo
 
 	public async updateEmailServiceNotificationTemplateByType(): Promise<ServiceNotificationTemplate> {
 		return ServiceNotificationTemplateServiceMock.updateEmailMock();
+	}
+
+	public async getNotificationTemplate(): Promise<ServiceNotificationTemplate> {
+		return ServiceNotificationTemplateServiceMock.getNotificationTemplateMock();
 	}
 }

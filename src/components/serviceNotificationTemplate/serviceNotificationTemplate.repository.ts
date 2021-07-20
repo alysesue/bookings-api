@@ -37,9 +37,10 @@ export class ServiceNotificationTemplateRepository extends RepositoryBase<Servic
 		queryParams: {},
 	): Promise<SelectQueryBuilder<ServiceNotificationTemplate>> {
 		const authGroups = await this.userContext.getAuthGroups();
-		await new NotificationTemplateQueryAuthVisitor('service_notification_template', 'service').createUserVisibilityCondition(
-			authGroups,
-		);
+		await new NotificationTemplateQueryAuthVisitor(
+			'service_notification_template',
+			'service',
+		).createUserVisibilityCondition(authGroups);
 
 		const repository = await this.getRepository();
 		return repository
