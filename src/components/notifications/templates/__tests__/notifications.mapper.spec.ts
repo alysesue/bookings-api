@@ -3,7 +3,7 @@ import { emailMapper, mapVariablesValuesToServiceTemplate } from '../../notifica
 
 describe('Notification mapper tests', () => {
 	const booking = new Booking();
-	beforeEach(() =>{
+	beforeEach(() => {
 		booking.startDateTime = new Date(2021, 3, 14, 10);
 		booking.endDateTime = new Date(2021, 3, 14, 11);
 		booking.service = Service.create('Career', new Organisation());
@@ -12,7 +12,7 @@ describe('Notification mapper tests', () => {
 		booking.serviceProviderId = 1;
 		booking.serviceProvider = { name: 'armin' } as ServiceProvider;
 		booking.videoConferenceUrl = 'http://www.zoom.us/1234567';
-	})
+	});
 
 	it('all fields should be defined', () => {
 		const {

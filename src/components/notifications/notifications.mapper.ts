@@ -77,7 +77,7 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 	};
 };
 
-export const mapVariablesValuesToServiceTemplate = (mapValues: EmailData, template:string): string => {
+export const mapVariablesValuesToServiceTemplate = (mapValues: EmailData, template: string): string => {
 	const {
 		status,
 		serviceName,

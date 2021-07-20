@@ -1,58 +1,62 @@
 export const defaultTemplates = {
 	email: {
 		CreatedByCitizenSentToCitizen:
-			'<pre>\nYour booking request has been received.\n<br />\nBooking for: <b>${serviceName}.</b>\n' +
-			'<br />\nBelow is a confirmation of your booking details.\nBooking status: <b>${status}</b>\nDate:' +
-			' <b>${day}</b>\nTime: <b>${time}</b>\n${videoConferenceUrl}\n${locationText}\n</pre>',
+			'<p>Your booking request has been received.</p>\n' +
+			'<p>Booking for: <strong>{serviceName}</strong>.</p>\n' +
+			'<p>Below is a confirmation of your booking details.<br>Booking status: <strong>{status}<br></strong>Date: ' +
+			'<strong>{day}<br></strong>Time: <strong>{time}<br></strong>{videoConferenceUrl}<br>{locationText}</p>\n' +
+			'<p><br>&nbsp;</p>',
 		UpdatedByCitizenSentToCitizen:
-			'<pre>\nYou have updated a booking.\n<br />\nBooking for: <b>${serviceName}${spNameDisplayedForCitizen}.' +
-			'</b>\n<br />\nBelow is a confirmation of your updated booking details.\nBooking status: <b>${status}</b>' +
-			'\nDate: <b>${day}</b>\nTime: <b>${time}</b>\n${videoConferenceUrl}\n${locationText}\n</pre>',
+			'<p>You have updated a booking.</p>\n' +
+			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForCitizen}</strong>.</p>\n' +
+			'<p>Below is a confirmation of your updated booking details.<br>Booking status: <strong>{status}</strong><br>Date: ' +
+			'<strong>{day}</strong><br>Time: <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}&nbsp;</p>',
 		CancelledByCitizenSentToCitizen:
-			'<pre>\nYou have cancelled the following booking.\n<br />\nBooking for: ' +
-			'<b>${serviceName}${spNameDisplayedForCitizen}.</b>\n<br />\nBooking status: <b>${status}</b>\nDate: ' +
-			'<b>${day}</b>\nTime: <b>${time}</b>\n${videoConferenceUrl}\n${locationText}\n</pre>',
+			'<p>You have cancelled the following booking.</p>\n' +
+			'<p>Booking for: <strong>{serviceName} {spNameDisplayedForCitizen}</strong>.</p>\n' +
+			'<p>Booking status: <strong>{status}</strong><br>Date: <strong>{day}</strong><br>Time:' +
+			' <strong>{time}<br></strong>{videoConferenceUrl}<br>{locationText}</p>',
 		CreatedByCitizenSentToServiceProvider:
-			'<pre>\nYou have received a new booking request.\n<br />\nBooking for: ' +
-			'<b>${serviceName}${spNameDisplayedForServiceProvider}.</b>\n<br />' +
-			'\nBelow is a summary of the booking request details.\n<br/>\nBooking status:' +
-			' <b>${status}</b>\nDate: <b>${day}</b>\nTime: <b>${time}</b>\n${videoConferenceUrl}\n${locationText}' +
-			'\n</pre>',
+			'<p>You have received a new booking request.</p>\n' +
+			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForServiceProvider}</strong>.</p>\n' +
+			'<p>Below is a summary of the booking request details.<br>Booking status: <strong>{status}</strong><br>Date:' +
+			' <strong>{day}</strong><br>Time: <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}&nbsp;</p>',
 		UpdatedByCitizenSentToServiceProvider:
-			'<pre>\nThere has been an update to the following booking by the other party.\n<br />\nBooking for:' +
-			' <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>\n<br />\nBelow is a confirmation of the' +
-			' updated booking details.\n<br/>\nBooking status: <b>${status}</b>\nDate: <b>${day}</b>\nTime:' +
-			' <b>${time}</b>\n${videoConferenceUrl}\n${locationText}\n</pre>',
+			'<p>There has been an update to the following booking by the other party.</p>\n' +
+			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForServiceProvider}</strong>.</p>\n' +
+			'<p>Below is a confirmation of the updated booking details.<br>Booking status: <strong>{status}</strong><br>Date: ' +
+			'<strong>{day}</strong><br>Time: <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}&nbsp;</p>',
 		CancelledByCitizenSentToServiceProvider:
-			'<pre>\nThe following booking has been cancelled by the other party.\n<br />\nBooking for:' +
-			' <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>\n<br />\nBooking status:' +
-			' <b>${status}</b>\nDate: <b>${day}</b>\nTime: <b>${time}</b>\n${videoConferenceUrl}\n${locationText}' +
-			'\n</pre>',
+			'<p>The following booking has been cancelled by the other party.</p>\n' +
+			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForServiceProvider}</strong>.</p>\n' +
+			'<p>Booking status: <strong>{status}</strong><br>Date: <strong>{day}</strong><br>Time:' +
+			' <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}&nbsp;</p>',
 		CreatedByServiceProviderSentToCitizen:
-			'<pre>\nA booking has been made.\n<br />\nBooking for: <b>${serviceName}${spNameDisplayedForCitizen}.' +
-			'</b>\n<br />\nBelow is a confirmation of your booking details.\nBooking status: <b>${status}</b>\nDate:' +
-			' <b>${day}</b>\nTime: <b>${time}</b>\n${videoConferenceUrl}\n${locationText}\n</pre>',
+			'<p>A booking has been made.</p>\n' +
+			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForCitizen}</strong>.</p>\n' +
+			'<p>Below is a confirmation of your booking details.<br>Booking status: <strong>{status}</strong><br>Date: <strong>{day}</strong><br>Time:' +
+			' <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}&nbsp;</p>',
 		UpdatedByServiceProviderSentToCitizen:
-			'<pre>\nThere has been an update to your booking confirmation.\n<br />\nBooking for:' +
-			' <b>${serviceName}${spNameDisplayedForCitizen}.</b>\n<br />\nBelow is a confirmation of your updated' +
-			' booking details.\nBooking status: <b>${status}</b>\nDate: <b>${day}</b>\nTime: ' +
-			'<b>${time}</b>\n${videoConferenceUrl}\n${locationText}\n</pre>',
+			'<p>There has been an update to your booking confirmation.</p>\n' +
+			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForCitizen}</strong>.</p>\n' +
+			'<p>Below is a confirmation of your updated booking details.<br>Booking status: <strong>{status}</strong><br>Date: <strong>{day}</strong><br>Time:' +
+			' <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}&nbsp;</p>',
 		CancelledByServiceProviderSentToCitizen:
-			'<pre>\nThe following booking has been cancelled by the other party.\n${reasonToReject}\n' +
-			'<br />\nBooking for: <b>${serviceName}${spNameDisplayedForCitizen}.</b>\n<br />\nBooking status: ' +
-			'<b>${status}</b>\nDate: <b>${day}</b>\nTime: <b>${time}</b>\n${videoConferenceUrl}\n${locationText}' +
-			'\n</pre>',
+			'<p>The following booking has been cancelled by the other party.<br>{reasonToReject}</p>\n' +
+			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForCitizen}</strong>.</p>\n' +
+			'<p>Booking status: <strong>{status}</strong><br>Date: <strong>{day}</strong><br>Time: ' +
+			'<strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}&nbsp;</p>',
 		CreatedByServiceProviderSentToServiceProvider: 'Undefined',
 		UpdatedByServiceProviderSentToServiceProvider:
-			'<pre>\nYou have updated a booking.\n<br />\nBooking for:' +
-			' <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>\n<br />\nBelow is a summary of your updated' +
-			' booking details.\n<br/>\nBooking status: <b>${status}</b>\nDate: <b>${day}</b>\nTime:' +
-			' <b>${time}</b>\n${videoConferenceUrl}\n${locationText}\n</pre>',
+			'<p>You have updated a booking.</p>\n' +
+			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForServiceProvider}</strong>.</p>\n' +
+			'<p>Below is a summery of your updated booking details.<br>Booking status: <strong>{status}</strong><br>Date: <strong>{day}</strong><br>Time:' +
+			' <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}&nbsp;</p>',
 		CancelledByServiceProviderSentToServiceProvider:
-			'<pre>\nYou have cancelled the following booking.\n<br />\nBooking for:' +
-			' <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>\n<br />\nBooking status:' +
-			' <b>${status}</b>\nDate: <b>${day}</b>\nTime: <b>${time}</b>\n${videoConferenceUrl}\n${locationText}' +
-			'\n</pre>',
+			'<p>You have cancelled the following booking.</p>\n' +
+			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForServiceProvider}</strong>.</p>\n' +
+			'<p>Booking status: <strong>{status}</strong><br>Date: <strong>{day}</strong><br>Time: ' +
+			'<strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}&nbsp;</p>',
 	},
 
 	sms: {},

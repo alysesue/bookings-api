@@ -11,7 +11,7 @@ import { CrudAction } from '../../../enums/crudAction';
 import * as uuid from 'uuid';
 
 // tslint:disable-next-line: no-big-function
-describe('Services Notification Template auth tests', () => {
+describe('Services Notification Template auth tests - action', () => {
 	it('should create a service template as organisation admin', () => {
 		const organisation = new Organisation();
 		organisation.id = 1;

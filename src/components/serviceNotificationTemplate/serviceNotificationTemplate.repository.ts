@@ -1,14 +1,16 @@
-import { InRequestScope } from 'typescript-ioc';
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { RepositoryBase } from '../../core/repository';
 import { ServiceNotificationTemplate } from '../../models';
 import { EmailNotificationTemplateType } from '../../models/notifications';
 import { SelectQueryBuilder } from 'typeorm';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { NotificationTemplateQueryAuthVisitor } from './serviceNotificationTemplate.auth';
 import { andWhere } from '../../tools/queryConditions';
 
 @InRequestScope
 export class ServiceNotificationTemplateRepository extends RepositoryBase<ServiceNotificationTemplate> {
-	// @Inject
-	// private userContext: UserContext;
+	@Inject
+	private userContext: UserContext;
 
 	constructor() {
 		super(ServiceNotificationTemplate);
@@ -34,17 +36,17 @@ export class ServiceNotificationTemplateRepository extends RepositoryBase<Servic
 		queryFilters: string[],
 		queryParams: {},
 	): Promise<SelectQueryBuilder<ServiceNotificationTemplate>> {
-		// WIP
-		// const authGroups = await this.userContext.getAuthGroups();
+		const authGroups = await this.userContext.getAuthGroups();
 		// const { userCondition, userParams } = options.skipAuthorisation
 		// 	? { userCondition: '', userParams: {} }
-		// 	: await new ServicesQueryAuthVisitor('').createUserVisibilityCondition(authGroups);
+		await new NotificationTemplateQueryAuthVisitor('service_notification_template').createUserVisibilityCondition(
+			authGroups,
+		);
 
 		const repository = await this.getRepository();
 		return (
 			repository
 				.createQueryBuilder('service_notification_template')
-				// .where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams });
 				.where(andWhere([...queryFilters]), { ...queryParams })
 		);
 	}

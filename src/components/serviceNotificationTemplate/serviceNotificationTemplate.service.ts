@@ -40,9 +40,6 @@ export class ServiceNotificationTemplateService {
 		// Get an email notification template of a service, by type.
 		// If service template does not exist, then get the default template.
 
-		// const service = await this.servicesService.getService(serviceId);
-		// await this.verifyActionPermission(service, CrudAction.Read);
-
 		if (!emailTemplateType) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
 		}

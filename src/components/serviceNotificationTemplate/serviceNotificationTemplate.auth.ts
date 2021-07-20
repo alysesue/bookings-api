@@ -38,6 +38,8 @@ export class NotificationTemplateActionAuthVisitor extends PermissionAwareAuthGr
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 
+	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {}
+
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		const organisationId = this._service.organisationId;
 		if (_userGroup.hasOrganisationId(organisationId)) {
@@ -48,6 +50,7 @@ export class NotificationTemplateActionAuthVisitor extends PermissionAwareAuthGr
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		const serviceId = this._service.id;
 		switch (this._action) {
+			//ToDo: ask sam if SA should be able to create a template
 			case CrudAction.Create:
 			case CrudAction.Delete:
 				return;
@@ -60,8 +63,6 @@ export class NotificationTemplateActionAuthVisitor extends PermissionAwareAuthGr
 				return;
 		}
 	}
-
-	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {}
 }
 
 export class NotificationTemplateQueryAuthVisitor extends QueryAuthGroupVisitor {
@@ -72,13 +73,9 @@ export class NotificationTemplateQueryAuthVisitor extends QueryAuthGroupVisitor 
 		this._alias = alias;
 	}
 
-	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
-		this.addAuthCondition(`${this._alias}."_allowAnonymousBookings" = true`, {});
-	}
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 
-	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
-		this.addAsTrue();
-	}
+	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		const authorisedOrganisationIds = _userGroup.authorisedOrganisations.map((org) => org.id);
@@ -89,14 +86,15 @@ export class NotificationTemplateQueryAuthVisitor extends QueryAuthGroupVisitor 
 
 	public visitServiceAdmin(_userGroup: ServiceAdminAuthGroup): void {
 		const authorisedServiceIds = _userGroup.authorisedServices.map((s) => s.id);
-		this.addAuthCondition(`${this._alias}._id IN (:...authorisedServiceIds)`, {
+		this.addAuthCondition(`${this._alias}._serviceId IN (:...authorisedServiceIds)`, {
 			authorisedServiceIds,
 		});
 	}
 
+	//ToDo: ask sam if sp should have permission to read
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
 		const serviceProviderServiceId = _userGroup.authorisedServiceProvider.serviceId;
-		this.addAuthCondition(`${this._alias}._id = :serviceProviderServiceId`, {
+		this.addAuthCondition(`${this._alias}._serviceId = :serviceProviderServiceId`, {
 			serviceProviderServiceId,
 		});
 	}
