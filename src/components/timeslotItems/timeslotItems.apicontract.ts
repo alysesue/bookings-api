@@ -32,13 +32,13 @@ export class TimeslotItemResponse {
 	 *
 	 * @isDate
 	 */
-	public startDate: Date;
+	public startDate?: Date;
 	/**
 	 * Schedule End Date
 	 *
 	 * @isDate
 	 */
-	public endDate: Date;
+	public endDate?: Date;
 }
 
 export class TimeslotItemRequest {

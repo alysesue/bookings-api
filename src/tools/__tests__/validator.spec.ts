@@ -1,4 +1,4 @@
-import { isSGUinfin, isXOR } from '../validator';
+import { isSGUinfin } from '../validator';
 
 describe('Validators', () => {
 	describe('Validate NRIC', () => {
@@ -40,28 +40,6 @@ describe('Validators', () => {
 		it('It should return validation error when string is null', () => {
 			const res = isSGUinfin(null);
 			expect(res.pass).toBe(false);
-		});
-	});
-
-	describe('Validate XOR', () => {
-		it('Both true should return false', () => {
-			const res = isXOR(true, true);
-			expect(res).toBe(false);
-		});
-
-		it('Both false should return false', () => {
-			const res = isXOR(false, false);
-			expect(res).toBe(false);
-		});
-
-		it('a is false, b is true should return true', () => {
-			const res = isXOR(false, true);
-			expect(res).toBe(true);
-		});
-
-		it('a is true, b is false should return true', () => {
-			const res = isXOR(true, false);
-			expect(res).toBe(true);
 		});
 	});
 });

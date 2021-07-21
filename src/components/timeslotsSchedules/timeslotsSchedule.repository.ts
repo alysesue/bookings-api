@@ -22,8 +22,8 @@ export type TimeslotItemDBQuery = {
 	item__weekDay: number;
 	item__timeslotsScheduleId: number;
 	item__capacity: number;
-	item__startDate: Date;
-	item__endDate: Date;
+	item__startDate?: Date;
+	item__endDate?: Date;
 };
 
 const STREAM_BATCH_SIZE = 500;

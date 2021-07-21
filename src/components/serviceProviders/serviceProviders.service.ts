@@ -22,7 +22,6 @@ import {
 	ServiceProviderModel,
 } from './serviceProviders.apicontract';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
-import { isXOR } from '../../tools/validator';
 import { DateHelper } from '../../infrastructure/dateHelper';
 
 const DEFAULT_PHONE_NUMBER = '+6580000000';
@@ -313,7 +312,7 @@ export class ServiceProvidersService {
 				'End date cannot be earlier than start date',
 			);
 		}
-		if (isXOR(request.startDate, request.endDate)) {
+		if ((request.startDate || request.endDate) && (!request.startDate || !request.endDate)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				'Both the start date and end date must be selected or empty',
 			);
