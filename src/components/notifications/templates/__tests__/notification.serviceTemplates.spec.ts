@@ -9,8 +9,8 @@ import { ServiceNotificationTemplateServiceMock } from '../../../serviceNotifica
 import { EmailNotificationTemplateType } from '../../../../models/notifications';
 import {
 	ServiceProviderEmailTemplateBookingActionByCitizen,
-	ServiceProviderEmailTemplateBookingActionByServiceProvider
-} from "../serviceProviders.mail";
+	ServiceProviderEmailTemplateBookingActionByServiceProvider,
+} from '../serviceProviders.mail';
 
 describe('Services Notification Templates test', () => {
 	beforeAll(() => {
@@ -125,18 +125,18 @@ describe('Services Notification Templates test', () => {
 	it('should create service provider email with service template for service provider updated booking', async () => {
 		template.emailTemplateType = EmailNotificationTemplateType.UpdatedByServiceProviderSentToServiceProvider;
 		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
-		const email = await Container.get(ServiceProviderEmailTemplateBookingActionByServiceProvider).UpdatedBookingEmail(
-			booking,
-		);
+		const email = await Container.get(
+			ServiceProviderEmailTemplateBookingActionByServiceProvider,
+		).UpdatedBookingEmail(booking);
 		expect(email.html).toEqual(expectedEmail);
 	});
 
 	it('should create service provider email with service template for service provider cancelled booking', async () => {
 		template.emailTemplateType = EmailNotificationTemplateType.CancelledByServiceProviderSentToServiceProvider;
 		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
-		const email = await Container.get(ServiceProviderEmailTemplateBookingActionByServiceProvider).CancelledBookingEmail(
-			booking,
-		);
+		const email = await Container.get(
+			ServiceProviderEmailTemplateBookingActionByServiceProvider,
+		).CancelledBookingEmail(booking);
 		expect(email.html).toEqual(expectedEmail);
 	});
 });

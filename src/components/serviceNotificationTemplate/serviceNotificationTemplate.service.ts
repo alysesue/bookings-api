@@ -95,7 +95,7 @@ export class ServiceNotificationTemplateService {
 			emailTemplateType,
 		);
 		if (existTemplate) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_GENERIC).setMessage(
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Template of type ${EmailNotificationTemplateType[
 					request.emailTemplateType
 				].toString()} already exists`,
