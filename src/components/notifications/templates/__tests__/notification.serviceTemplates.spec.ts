@@ -6,7 +6,7 @@ import { Booking, Service, ServiceNotificationTemplate } from '../../../../model
 import { Container } from 'typescript-ioc';
 import { ServiceNotificationTemplateService } from '../../../serviceNotificationTemplate/serviceNotificationTemplate.service';
 import { ServiceNotificationTemplateServiceMock } from '../../../serviceNotificationTemplate/__mock__/serviceNotificationTemplate.service.mock';
-import { EmailNotificationTemplateType } from '../../../../models/notifications';
+import { EmailNotificationTemplateType } from '../../../../enums/notifications';
 import {
 	ServiceProviderEmailTemplateBookingActionByCitizen,
 	ServiceProviderEmailTemplateBookingActionByServiceProvider,

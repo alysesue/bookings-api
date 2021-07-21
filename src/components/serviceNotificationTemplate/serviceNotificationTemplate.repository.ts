@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { RepositoryBase } from '../../core/repository';
 import { ServiceNotificationTemplate } from '../../models';
-import { EmailNotificationTemplateType } from '../../models/notifications';
+import { EmailNotificationTemplateType } from '../../enums/notifications';
 import { SelectQueryBuilder } from 'typeorm';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { NotificationTemplateQueryAuthVisitor } from './serviceNotificationTemplate.auth';

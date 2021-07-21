@@ -8,7 +8,7 @@ import {
 	ServiceNotificationTemplateResponse,
 } from '../serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
 import { ServiceNotificationTemplateService } from '../serviceNotificationTemplate/serviceNotificationTemplate.service';
-import { EmailNotificationTemplateType } from '../../models/notifications';
+import { EmailNotificationTemplateType } from '../../enums/notifications';
 import { ServiceNotificationTemplateMapper } from '../serviceNotificationTemplate/serviceNotificationTemplate.mapper';
 
 @Route('v1/services')

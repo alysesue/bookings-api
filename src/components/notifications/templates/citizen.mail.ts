@@ -1,6 +1,6 @@
 import { emailMapper, mapVariablesValuesToServiceTemplate } from '../notifications.mapper';
 import { ServiceNotificationTemplateService } from '../../serviceNotificationTemplate/serviceNotificationTemplate.service';
-import { EmailNotificationTemplateType } from '../../../models/notifications';
+import { EmailNotificationTemplateType } from '../../../enums/notifications';
 import { Inject } from 'typescript-ioc';
 
 export abstract class EmailTemplateBase {

@@ -12,7 +12,7 @@ import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userCont
 import { ServicesService } from '../../services/services.service';
 import { ServicesServiceMock } from '../../services/__mocks__/services.service';
 import { ServiceNotificationTemplateRepositoryMock } from '../__mock__/serviceNotificationTemplate.repository.mock';
-import { EmailNotificationTemplateType } from '../../../models/notifications';
+import { EmailNotificationTemplateType } from '../../../enums/notifications';
 import { defaultTemplates } from '../../notifications/templates/defaultNotificationTemplate';
 
 jest.mock('../ServiceNotificationTemplate.auth', () => {

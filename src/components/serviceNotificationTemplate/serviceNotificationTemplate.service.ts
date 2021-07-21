@@ -5,7 +5,7 @@ import {
 	ServiceNotificationTemplateResponse,
 } from '../serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
 import { ServiceNotificationTemplateRepository } from '../serviceNotificationTemplate/serviceNotificationTemplate.repository';
-import { EmailNotificationTemplateType } from '../../models/notifications';
+import { EmailNotificationTemplateType } from '../../enums/notifications';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { CrudAction } from '../../enums/crudAction';
