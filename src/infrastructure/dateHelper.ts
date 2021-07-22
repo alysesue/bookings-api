@@ -1,9 +1,12 @@
+// const DATEHELPER_TZ = new Date(1970, 0, 1, 0, 0, 0, 0).getTime();
+// const TICKS_PER_DAY = 1000 * 60 * 60 * 24;
+
 export class DateHelper {
 	private static MsPerSecond = 1000;
 	private static MsPerMinute = 60000;
 	private static MsPerHour = 3600000;
 	private static MsPerDay = 86400000;
-	private static tz = new Date(1970, 1, 1).getTime();
+	private static tz = new Date(1970, 0, 1, 0, 0, 0, 0).getTime();
 
 	private static monthNames = [
 		'January',
@@ -125,18 +128,11 @@ export class DateHelper {
 		);
 	}
 
-	// KIV
 	public static getStartOfDayNative(dateNative: number): number {
-		const startOfDayNative =
-			DateHelper.tz + Math.floor((dateNative - DateHelper.tz) / DateHelper.MsPerDay) * DateHelper.MsPerDay;
-		return startOfDayNative;
+		return dateNative - ((dateNative - DateHelper.tz) % DateHelper.MsPerDay);
 	}
 
 	public static getEndOfDayNative(dateNative: number): number {
-		const startOfDayNative =
-			DateHelper.tz +
-			(Math.floor((dateNative - DateHelper.tz) / DateHelper.MsPerDay) + 1) * DateHelper.MsPerDay -
-			1;
-		return startOfDayNative;
+		return DateHelper.getStartOfDayNative(dateNative) + DateHelper.MsPerDay - 1;
 	}
 }

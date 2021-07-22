@@ -52,12 +52,10 @@ export class TimeslotGenerator {
 					const startTimeNative = dateNative + timeslotTemplate._startTime.AsMilliseconds();
 					const endTimeNative = dateNative + timeslotTemplate._endTime.AsMilliseconds();
 					if (
-						timeslotTemplate._startDate &&
-						timeslotTemplate._endDate &&
-						!(
-							DateHelper.getStartOfDay(timeslotTemplate._startDate).getTime() <= startTimeNative &&
-							DateHelper.getEndOfDay(timeslotTemplate._endDate).getTime() >= endTimeNative
-						)
+						(timeslotTemplate._startDate &&
+							startTimeNative < DateHelper.getStartOfDayNative(timeslotTemplate._startDate.getTime())) ||
+						(timeslotTemplate._endDate &&
+							endTimeNative > DateHelper.getEndOfDayNative(timeslotTemplate._endDate.getTime()))
 					)
 						continue;
 					const timeslot: TimeslotWithCapacity = {
