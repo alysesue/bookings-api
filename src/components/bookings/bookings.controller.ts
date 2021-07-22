@@ -276,11 +276,6 @@ export class BookingsController extends Controller {
 	@Get('')
 	@SuccessResponse(200, 'Ok')
 	@Security('optional-service')
-	@MOLAuth({
-		admin: {},
-		agency: {},
-		user: { minLevel: MOLUserAuthLevel.L2 },
-	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	// tslint:disable-next-line: parameters-max-number
 	public async getBookings(

@@ -69,6 +69,9 @@ class AuthGroupResponseVisitor implements IAuthGroupVisitor {
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
 		this._mappedGroups.push({
 			authGroupType: AuthGroupTypeContract.anonymous,
+			anonymous: {
+				bookingUUID: _anonymousGroup.bookingInfo?.bookingUUID,
+			},
 		});
 	}
 
