@@ -1,7 +1,7 @@
 import { ServiceNotificationTemplate } from '../../models';
 import { ServiceNotificationTemplateResponse } from './serviceNotificationTemplate.apicontract';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { EmailNotificationTemplateType } from '../../enums/notifications';
+import { EmailNotificationTemplateType } from '../notifications/notifications.enum';
 
 export class ServiceNotificationTemplateMapper {
 	public mapToNotificationTemplateResponse = (

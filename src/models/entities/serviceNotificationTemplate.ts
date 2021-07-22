@@ -1,5 +1,5 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { EmailNotificationTemplateType } from '../../enums/notifications';
+import { EmailNotificationTemplateType } from '../../components/notifications/notifications.enum';
 import { Service } from './service';
 
 @Entity()

@@ -1,4 +1,4 @@
-import { EmailNotificationTemplateType } from '../../enums/notifications';
+import { EmailNotificationTemplateType } from './notifications.enum';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { defaultTemplates } from './templates/defaultNotificationTemplate';
 import { InRequestScope } from 'typescript-ioc';

@@ -2,7 +2,7 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { Service, ServiceNotificationTemplate } from '../../models';
 import { ServiceNotificationTemplateRequest } from '../serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
 import { ServiceNotificationTemplateRepository } from '../serviceNotificationTemplate/serviceNotificationTemplate.repository';
-import { EmailNotificationTemplateType } from '../../enums/notifications';
+import { EmailNotificationTemplateType } from '../notifications/notifications.enum';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { CrudAction } from '../../enums/crudAction';

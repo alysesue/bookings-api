@@ -1,6 +1,6 @@
 import { emailMapper, mapVariablesValuesToServiceTemplate } from '../notifications.mapper';
 import { EmailBookingTemplate, EmailTemplateBase } from './citizen.mail';
-import { EmailNotificationTemplateType } from '../../../enums/notifications';
+import { EmailNotificationTemplateType } from '../notifications.enum';
 import { ServiceNotificationTemplateService } from '../../serviceNotificationTemplate/serviceNotificationTemplate.service';
 import { Inject } from 'typescript-ioc';
 

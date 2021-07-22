@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { RepositoryBase } from '../../core/repository';
 import { ServiceNotificationTemplate } from '../../models';
-import { EmailNotificationTemplateType } from '../../enums/notifications';
+import { EmailNotificationTemplateType } from '../notifications/notifications.enum';
 import { SelectQueryBuilder } from 'typeorm';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { NotificationTemplateQueryAuthVisitor } from './serviceNotificationTemplate.auth';
@@ -27,7 +27,10 @@ export class ServiceNotificationTemplateRepository extends RepositoryBase<Servic
 	): Promise<ServiceNotificationTemplate> {
 		const serviceCondition = 'service_notification_template._serviceId = :serviceId';
 		const emailTemplateTypeCondition = 'service_notification_template._emailTemplateType = :enum';
-		const query = await this.createSelectQuery([serviceCondition, emailTemplateTypeCondition], { serviceId: serviceId, enum: emailTemplateType });
+		const query = await this.createSelectQuery([serviceCondition, emailTemplateTypeCondition], {
+			serviceId,
+			enum: emailTemplateType,
+		});
 		const entry = await query.getOne();
 
 		return entry;

@@ -1,4 +1,4 @@
-import { EmailNotificationTemplateType } from '../../enums/notifications';
+import { EmailNotificationTemplateType } from '../notifications/notifications.enum';
 
 export class ServiceNotificationTemplateRequest {
 	public emailTemplateType: EmailNotificationTemplateType;
