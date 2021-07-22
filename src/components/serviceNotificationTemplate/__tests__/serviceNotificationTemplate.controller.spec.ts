@@ -2,10 +2,11 @@ import { Container } from 'typescript-ioc';
 import { ServicesNotificationTemplateController } from '../serviceNotificationTemplate.controller';
 import { ServiceNotificationTemplateService } from '../serviceNotificationTemplate.service';
 import {
-	ServiceNotificationTemplateRequest, ServiceNotificationTemplateResponse,
+	ServiceNotificationTemplateRequest,
+	ServiceNotificationTemplateResponse,
 } from '../serviceNotificationTemplate.apicontract';
 import { ServiceNotificationTemplateServiceMock } from '../__mock__/serviceNotificationTemplate.service.mock';
-import {ServiceNotificationTemplate} from "../../../models";
+import { ServiceNotificationTemplate } from '../../../models';
 
 describe('Services Notification Template controller tests', () => {
 	beforeAll(() => {
@@ -20,7 +21,7 @@ describe('Services Notification Template controller tests', () => {
 	expectedResponse.serviceId = 1;
 
 	it('should get an email notification template', async () => {
-		const expectedGetResponse = {...expectedResponse};
+		const expectedGetResponse = { ...expectedResponse };
 		expectedGetResponse.isDefaultTemplate = true;
 		ServiceNotificationTemplateServiceMock.getEmailMock.mockReturnValue(mockItem);
 		const response = await Container.get(ServicesNotificationTemplateController).getEmailNotificationTemplate(1, 2);

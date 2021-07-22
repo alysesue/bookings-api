@@ -25,8 +25,9 @@ export class ServiceNotificationTemplateRepository extends RepositoryBase<Servic
 		serviceId: number,
 		emailTemplateType: EmailNotificationTemplateType,
 	): Promise<ServiceNotificationTemplate> {
+		const serviceCondition = 'service_notification_template._serviceId = :serviceId';
 		const emailTemplateTypeCondition = 'service_notification_template._emailTemplateType = :enum';
-		const query = await this.createSelectQuery([emailTemplateTypeCondition], { enum: emailTemplateType });
+		const query = await this.createSelectQuery([serviceCondition, emailTemplateTypeCondition], { serviceId: serviceId, enum: emailTemplateType });
 		const entry = await query.getOne();
 
 		return entry;

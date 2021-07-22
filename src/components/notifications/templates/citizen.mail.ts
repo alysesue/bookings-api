@@ -2,6 +2,7 @@ import { emailMapper, mapVariablesValuesToServiceTemplate } from '../notificatio
 import { ServiceNotificationTemplateService } from '../../serviceNotificationTemplate/serviceNotificationTemplate.service';
 import { EmailNotificationTemplateType } from '../../../enums/notifications';
 import { Inject } from 'typescript-ioc';
+import {Booking} from "../../../models";
 
 export abstract class EmailTemplateBase {
 	public subject: string;
@@ -13,6 +14,25 @@ export abstract class EmailBookingTemplate {
 	public abstract UpdatedBookingEmail(data): Promise<EmailTemplateBase>;
 	public abstract CancelledBookingEmail(data): Promise<EmailTemplateBase>;
 }
+
+export const getEmailContentFromServiceTemplate = async (
+	serviceId: number,
+	templateType: EmailNotificationTemplateType,
+	data: Booking,
+	templateService: ServiceNotificationTemplateService
+): Promise<string> => {
+	const serviceTemplate = await templateService.getEmailServiceNotificationTemplateByType(
+		serviceId,
+		templateType,
+	);
+	if (serviceTemplate) {
+		if (serviceTemplate.htmlTemplate) {
+			const emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceTemplate.htmlTemplate);
+			return emailContent;
+		}
+	}
+	return null;
+};
 
 export class CitizenEmailTemplateBookingActionByCitizen implements EmailBookingTemplate {
 	@Inject

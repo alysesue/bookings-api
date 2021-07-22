@@ -19,7 +19,7 @@ export class ServiceNotificationTemplateMapper {
 	): ServiceNotificationTemplateResponse => {
 		const response = this.mapToNotificationTemplateResponse(data);
 		response.isDefaultTemplate = false;
-		if (!response.id){
+		if (!response.id) {
 			response.isDefaultTemplate = true;
 		}
 		return response;
