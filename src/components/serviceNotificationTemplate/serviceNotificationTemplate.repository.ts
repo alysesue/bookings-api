@@ -21,7 +21,7 @@ export class ServiceNotificationTemplateRepository extends RepositoryBase<Servic
 		return repository.save(data);
 	}
 
-	public async getEmailServiceNotificationTemplateByType(
+	public async getServiceTemplate(
 		serviceId: number,
 		emailTemplateType: EmailNotificationTemplateType,
 	): Promise<ServiceNotificationTemplate> {

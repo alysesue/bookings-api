@@ -32,11 +32,10 @@ export class CitizenEmailTemplateBookingActionByCitizen implements EmailBookingT
 		let emailContent;
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CreatedByCitizenSentToCitizen;
-		try {
-			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
+		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(data.serviceId, templateType);
+		if (serviceTemplate){
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		} catch (e) {}
-
+		}
 		if (serviceEmailTemplate) {
 			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
@@ -74,11 +73,10 @@ ${locationText}
 		let emailContent;
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.UpdatedByCitizenSentToCitizen;
-		try {
-			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
+		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(data.serviceId, templateType);
+		if (serviceTemplate){
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		} catch (e) {}
-
+		}
 		if (serviceEmailTemplate) {
 			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
@@ -116,11 +114,10 @@ ${locationText}
 		let emailContent;
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CancelledByCitizenSentToCitizen;
-		try {
-			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
+		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(data.serviceId, templateType);
+		if (serviceTemplate){
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		} catch (e) {}
-
+		}
 		if (serviceEmailTemplate) {
 			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
@@ -162,11 +159,10 @@ export class CitizenEmailTemplateBookingActionByServiceProvider implements Email
 		let emailContent;
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CreatedByServiceProviderSentToCitizen;
-		try {
-			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
+		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(data.serviceId, templateType);
+		if (serviceTemplate){
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		} catch (e) {}
-
+		}
 		if (serviceEmailTemplate) {
 			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
@@ -204,11 +200,10 @@ ${locationText}
 		let emailContent;
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.UpdatedByServiceProviderSentToCitizen;
-		try {
-			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
+		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(data.serviceId, templateType);
+		if (serviceTemplate){
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		} catch (e) {}
-
+		}
 		if (serviceEmailTemplate) {
 			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
@@ -247,11 +242,10 @@ ${locationText}
 		let emailContent;
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CancelledByServiceProviderSentToCitizen;
-		try {
-			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
+		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(data.serviceId, templateType);
+		if (serviceTemplate){
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		} catch (e) {}
-
+		}
 		if (serviceEmailTemplate) {
 			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {

@@ -2,26 +2,29 @@ import { Container } from 'typescript-ioc';
 import { ServicesNotificationTemplateController } from '../serviceNotificationTemplate.controller';
 import { ServiceNotificationTemplateService } from '../serviceNotificationTemplate.service';
 import {
-	ServiceNotificationTemplateRequest,
-	ServiceNotificationTemplateResponse,
+	ServiceNotificationTemplateRequest, ServiceNotificationTemplateResponse,
 } from '../serviceNotificationTemplate.apicontract';
 import { ServiceNotificationTemplateServiceMock } from '../__mock__/serviceNotificationTemplate.service.mock';
+import {ServiceNotificationTemplate} from "../../../models";
 
 describe('Services Notification Template controller tests', () => {
 	beforeAll(() => {
 		Container.bind(ServiceNotificationTemplateService).to(ServiceNotificationTemplateServiceMock);
 	});
 
-	const mockItem = new ServiceNotificationTemplateResponse();
-	mockItem.id = 123;
-	mockItem.htmlTemplate = 'get template';
-	mockItem.emailTemplateType = 2;
-	mockItem.serviceId = 1;
+	const mockItem = ServiceNotificationTemplate.create('get template', 1, 2);
+	const expectedResponse = new ServiceNotificationTemplateResponse();
+	expectedResponse.id = mockItem.id;
+	expectedResponse.htmlTemplate = mockItem.htmlTemplate;
+	expectedResponse.emailTemplateType = mockItem.emailTemplateType;
+	expectedResponse.serviceId = 1;
 
 	it('should get an email notification template', async () => {
+		const expectedGetResponse = {...expectedResponse};
+		expectedGetResponse.isDefaultTemplate = true;
 		ServiceNotificationTemplateServiceMock.getEmailMock.mockReturnValue(mockItem);
 		const response = await Container.get(ServicesNotificationTemplateController).getEmailNotificationTemplate(1, 2);
-		expect(response.data).toEqual(mockItem);
+		expect(response.data).toEqual(expectedGetResponse);
 	});
 
 	it('should create an email notification template', async () => {
@@ -32,7 +35,7 @@ describe('Services Notification Template controller tests', () => {
 			request,
 		);
 		expect(response).toBeDefined();
-		expect(response.data).toEqual(mockItem);
+		expect(response.data).toEqual(expectedResponse);
 	});
 
 	it('should update an existing email notification template', async () => {
@@ -43,6 +46,6 @@ describe('Services Notification Template controller tests', () => {
 			request,
 		);
 		expect(response).toBeDefined();
-		expect(response.data).toEqual(mockItem);
+		expect(response.data).toEqual(expectedResponse);
 	});
 });

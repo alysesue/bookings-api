@@ -1,9 +1,6 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Service, ServiceNotificationTemplate } from '../../models';
-import {
-	ServiceNotificationTemplateRequest,
-	ServiceNotificationTemplateResponse,
-} from '../serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
+import { ServiceNotificationTemplateRequest } from '../serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
 import { ServiceNotificationTemplateRepository } from '../serviceNotificationTemplate/serviceNotificationTemplate.repository';
 import { EmailNotificationTemplateType } from '../../enums/notifications';
 import { UserContext } from '../../infrastructure/auth/userContext';
@@ -36,7 +33,7 @@ export class ServiceNotificationTemplateService {
 	public async getEmailNotificationTemplateByType(
 		serviceId: number,
 		emailTemplateType: EmailNotificationTemplateType,
-	): Promise<ServiceNotificationTemplateResponse> {
+	): Promise<ServiceNotificationTemplate> {
 		// Get an email notification template of a service, by type.
 		// If service template does not exist, then get the default template.
 
@@ -44,38 +41,24 @@ export class ServiceNotificationTemplateService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
 		}
 
-		const responseTemplate = new ServiceNotificationTemplateResponse();
-		responseTemplate.id = null;
-		responseTemplate.serviceId = serviceId;
-		responseTemplate.emailTemplateType = emailTemplateType;
-		responseTemplate.isDefaultTemplate = true;
-		responseTemplate.htmlTemplate = this.notificationsRepository.getDefaultEmailNotificationTemplateByType(
-			emailTemplateType,
-		);
-
-		try {
-			const serviceTemplateData = await this.getNotificationTemplate(serviceId, emailTemplateType);
-			responseTemplate.id = serviceTemplateData.id;
-			responseTemplate.htmlTemplate = serviceTemplateData.htmlTemplate;
-			responseTemplate.isDefaultTemplate = false;
-		} catch (e) {}
-
+		let responseTemplate;
+		responseTemplate = await this.getEmailServiceNotificationTemplateByType(serviceId, emailTemplateType);
+		if (!responseTemplate) {
+			responseTemplate = new ServiceNotificationTemplate();
+			responseTemplate.id = null;
+			responseTemplate.emailTemplateType = emailTemplateType;
+			responseTemplate.htmlTemplate = this.notificationsRepository.getDefaultEmailNotificationTemplateByType(
+				emailTemplateType,
+			);
+		}
 		return responseTemplate;
 	}
 
-	public async getNotificationTemplate(
+	public async getEmailServiceNotificationTemplateByType(
 		serviceId: number,
 		emailTemplateType: EmailNotificationTemplateType,
 	): Promise<ServiceNotificationTemplate> {
-		const templateData = await this.notificationTemplateRepository.getEmailServiceNotificationTemplateByType(
-			serviceId,
-			emailTemplateType,
-		);
-		if (!templateData) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(
-				`Template of type ${EmailNotificationTemplateType[emailTemplateType].toString()} not found`,
-			);
-		}
+		const templateData = await this.notificationTemplateRepository.getServiceTemplate(serviceId, emailTemplateType);
 		return templateData;
 	}
 
@@ -90,7 +73,7 @@ export class ServiceNotificationTemplateService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
 		}
 		const emailTemplateType = request.emailTemplateType;
-		const existTemplate = await this.notificationTemplateRepository.getEmailServiceNotificationTemplateByType(
+		const existTemplate = await this.notificationTemplateRepository.getServiceTemplate(
 			serviceId,
 			emailTemplateType,
 		);
@@ -120,7 +103,7 @@ export class ServiceNotificationTemplateService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
 		}
 		const emailTemplateType = request.emailTemplateType;
-		const templateEntity = await this.notificationTemplateRepository.getEmailServiceNotificationTemplateByType(
+		const templateEntity = await this.notificationTemplateRepository.getServiceTemplate(
 			serviceId,
 			emailTemplateType,
 		);

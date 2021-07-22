@@ -8,7 +8,7 @@ export class ServiceNotificationTemplateRepositoryMock implements Partial<Servic
 		return ServiceNotificationTemplateRepositoryMock.saveTemplateMock();
 	}
 
-	public async getEmailServiceNotificationTemplateByType() {
+	public async getServiceTemplate() {
 		return ServiceNotificationTemplateRepositoryMock.getTemplateMock();
 	}
 }

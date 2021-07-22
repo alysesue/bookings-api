@@ -47,7 +47,7 @@ describe('Services Notification Template repository test', () => {
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const repository = Container.get(ServiceNotificationTemplateRepository);
-		const result = await repository.getEmailServiceNotificationTemplateByType(1, 2);
+		const result = await repository.getServiceTemplate(1, 2);
 		expect(queryBuilderMock.getOne).toBeCalled();
 		expect(result).toBeDefined();
 		expect(result.htmlTemplate).toEqual('testings notification template');

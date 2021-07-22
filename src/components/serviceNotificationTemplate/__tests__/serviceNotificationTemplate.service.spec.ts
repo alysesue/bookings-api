@@ -2,10 +2,7 @@ import { Container } from 'typescript-ioc';
 import { ServiceNotificationTemplate } from '../../../models';
 import { ServiceNotificationTemplateRepository } from '../serviceNotificationTemplate.repository';
 import { ServiceNotificationTemplateService } from '../serviceNotificationTemplate.service';
-import {
-	ServiceNotificationTemplateRequest,
-	ServiceNotificationTemplateResponse,
-} from '../serviceNotificationTemplate.apicontract';
+import { ServiceNotificationTemplateRequest } from '../serviceNotificationTemplate.apicontract';
 import { NotificationTemplateActionAuthVisitor } from '../serviceNotificationTemplate.auth';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
@@ -46,28 +43,20 @@ describe('Services Notification Template service test', () => {
 	template.htmlTemplate = 'testings notification template';
 	template.id = 123;
 
-	const defaultTemplate = new ServiceNotificationTemplateResponse();
+	const defaultTemplate = new ServiceNotificationTemplate();
 	defaultTemplate.emailTemplateType = 9;
 	defaultTemplate.htmlTemplate =
 		defaultTemplates.email[EmailNotificationTemplateType[defaultTemplate.emailTemplateType].toString()];
-	defaultTemplate.serviceId = serviceId;
 	defaultTemplate.id = null;
-	defaultTemplate.isDefaultTemplate = true;
 
-	it('should get an email notification template response', async () => {
-		const expectedResponse = new ServiceNotificationTemplateResponse();
-		expectedResponse.id = 123;
-		expectedResponse.serviceId = serviceId;
-		expectedResponse.emailTemplateType = template.emailTemplateType;
-		expectedResponse.htmlTemplate = template.htmlTemplate;
-		expectedResponse.isDefaultTemplate = false;
+	it('should get an email notification template by type', async () => {
 		ServiceNotificationTemplateRepositoryMock.getTemplateMock.mockReturnValue(template);
 		const result = await Container.get(ServiceNotificationTemplateService).getEmailNotificationTemplateByType(
 			serviceId,
 			templateType,
 		);
 
-		expect(result).toStrictEqual(expectedResponse);
+		expect(result).toStrictEqual(template);
 	});
 
 	it('should add an email notification template', async () => {
@@ -81,10 +70,8 @@ describe('Services Notification Template service test', () => {
 	});
 
 	it('should update an email notification template', async () => {
-		const updatedtemplate = new ServiceNotificationTemplate();
-		updatedtemplate.emailTemplateType = templateType;
+		const updatedtemplate = template;
 		updatedtemplate.htmlTemplate = 'updated';
-		updatedtemplate.id = 123;
 		ServiceNotificationTemplateRepositoryMock.getTemplateMock.mockReturnValue(template);
 		ServiceNotificationTemplateRepositoryMock.saveTemplateMock.mockReturnValue(template);
 		const updateRequest = new ServiceNotificationTemplateRequest(templateType, 'updated');

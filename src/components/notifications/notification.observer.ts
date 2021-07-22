@@ -87,9 +87,9 @@ export class MailObserver implements Observer {
 			case BookingType.Created:
 				return await templates.CreatedBookingEmail(data);
 			case BookingType.Updated:
-				return templates.UpdatedBookingEmail(data);
+				return await templates.UpdatedBookingEmail(data);
 			case BookingType.CancelledOrRejected:
-				return templates.CancelledBookingEmail(data);
+				return await templates.CancelledBookingEmail(data);
 			default:
 				return;
 		}

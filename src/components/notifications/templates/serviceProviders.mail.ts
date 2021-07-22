@@ -22,11 +22,10 @@ export class ServiceProviderEmailTemplateBookingActionByCitizen implements Email
 		let emailContent;
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CreatedByCitizenSentToServiceProvider;
-		try {
-			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
+		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(data.serviceId, templateType);
+		if (serviceTemplate){
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		} catch (e) {}
-
+		}
 		if (serviceEmailTemplate) {
 			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
@@ -51,7 +50,7 @@ ${locationText}
 		};
 	}
 
-	public async UpdatedBookingEmail(data) {
+	public async UpdatedBookingEmail(data): Promise<EmailTemplateBase> {
 		const {
 			serviceName,
 			spNameDisplayedForServiceProvider,
@@ -65,11 +64,10 @@ ${locationText}
 		let emailContent;
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.UpdatedByCitizenSentToServiceProvider;
-		try {
-			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
+		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(data.serviceId, templateType);
+		if (serviceTemplate){
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		} catch (e) {}
-
+		}
 		if (serviceEmailTemplate) {
 			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
@@ -94,7 +92,7 @@ ${locationText}
 		};
 	}
 
-	public async CancelledBookingEmail(data) {
+	public async CancelledBookingEmail(data): Promise<EmailTemplateBase> {
 		const {
 			serviceName,
 			spNameDisplayedForServiceProvider,
@@ -108,11 +106,10 @@ ${locationText}
 		let emailContent;
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CancelledByCitizenSentToServiceProvider;
-		try {
-			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
+		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(data.serviceId, templateType);
+		if (serviceTemplate){
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		} catch (e) {}
-
+		}
 		if (serviceEmailTemplate) {
 			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
@@ -140,7 +137,7 @@ export class ServiceProviderEmailTemplateBookingActionByServiceProvider implemen
 	@Inject
 	public templateService: ServiceNotificationTemplateService;
 
-	public async UpdatedBookingEmail(data) {
+	public async UpdatedBookingEmail(data): Promise<EmailTemplateBase> {
 		const {
 			serviceName,
 			spNameDisplayedForServiceProvider,
@@ -154,11 +151,10 @@ export class ServiceProviderEmailTemplateBookingActionByServiceProvider implemen
 		let emailContent;
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.UpdatedByServiceProviderSentToServiceProvider;
-		try {
-			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
+		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(data.serviceId, templateType);
+		if (serviceTemplate){
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		} catch (e) {}
-
+		}
 		if (serviceEmailTemplate) {
 			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {
@@ -197,11 +193,10 @@ ${locationText}
 		let emailContent;
 		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CancelledByServiceProviderSentToServiceProvider;
-		try {
-			const serviceTemplate = await this.templateService.getNotificationTemplate(data.serviceId, templateType);
+		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(data.serviceId, templateType);
+		if (serviceTemplate){
 			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		} catch (e) {}
-
+		}
 		if (serviceEmailTemplate) {
 			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
 		} else {

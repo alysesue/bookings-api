@@ -7,25 +7,21 @@ export class ServiceNotificationTemplateMapper {
 	public mapToNotificationTemplateResponse = (
 		data: ServiceNotificationTemplate,
 	): ServiceNotificationTemplateResponse => {
-		if (!data || !data.emailTemplateType || !data.serviceId) {
+		if (!data || !data.emailTemplateType) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Data not found`);
 		}
-
 		const response = new ServiceNotificationTemplateResponse();
 		return this.mapData(data.id, data.emailTemplateType, data.htmlTemplate, data.serviceId, response);
 	};
 
 	public mapGetResponseToNotifTemplateResponse = (
-		data: ServiceNotificationTemplateResponse,
+		data: ServiceNotificationTemplate,
 	): ServiceNotificationTemplateResponse => {
-		if (!data || !data.emailTemplateType || !data.serviceId) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Data not found`);
+		const response = this.mapToNotificationTemplateResponse(data);
+		response.isDefaultTemplate = false;
+		if (!response.id){
+			response.isDefaultTemplate = true;
 		}
-
-		let response = new ServiceNotificationTemplateResponse();
-		response = this.mapData(data.id, data.emailTemplateType, data.htmlTemplate, data.serviceId, response);
-		response.isDefaultTemplate = data.isDefaultTemplate;
-
 		return response;
 	};
 

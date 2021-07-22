@@ -16,6 +16,7 @@ describe('Services Notification Templates test', () => {
 	beforeAll(() => {
 		jest.resetAllMocks();
 		Container.bind(ServiceNotificationTemplateService).to(ServiceNotificationTemplateServiceMock);
+		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
 	});
 
 	const template = new ServiceNotificationTemplate();
@@ -49,28 +50,24 @@ describe('Services Notification Templates test', () => {
 
 	it('should create citizen email with service template for citizen created booking', async () => {
 		template.emailTemplateType = EmailNotificationTemplateType.CreatedByCitizenSentToCitizen;
-		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
 		const email = await Container.get(CitizenEmailTemplateBookingActionByCitizen).CreatedBookingEmail(booking);
 		expect(email.html).toEqual(expectedEmail);
 	});
 
 	it('should create citizen email with service template for citizen updated booking', async () => {
 		template.emailTemplateType = EmailNotificationTemplateType.UpdatedByCitizenSentToCitizen;
-		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
 		const email = await Container.get(CitizenEmailTemplateBookingActionByCitizen).UpdatedBookingEmail(booking);
 		expect(email.html).toEqual(expectedEmail);
 	});
 
 	it('should create citizen email with service template for citizen cancelled booking', async () => {
 		template.emailTemplateType = EmailNotificationTemplateType.CancelledByCitizenSentToCitizen;
-		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
 		const email = await Container.get(CitizenEmailTemplateBookingActionByCitizen).CancelledBookingEmail(booking);
 		expect(email.html).toEqual(expectedEmail);
 	});
 
 	it('should create citizen email with service template for service provider created booking', async () => {
 		template.emailTemplateType = EmailNotificationTemplateType.CreatedByServiceProviderSentToCitizen;
-		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
 		const email = await Container.get(CitizenEmailTemplateBookingActionByServiceProvider).CreatedBookingEmail(
 			booking,
 		);
@@ -79,7 +76,6 @@ describe('Services Notification Templates test', () => {
 
 	it('should create citizen email with service template for service provider updated booking', async () => {
 		template.emailTemplateType = EmailNotificationTemplateType.UpdatedByServiceProviderSentToCitizen;
-		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
 		const email = await Container.get(CitizenEmailTemplateBookingActionByServiceProvider).UpdatedBookingEmail(
 			booking,
 		);
@@ -88,7 +84,6 @@ describe('Services Notification Templates test', () => {
 
 	it('should create citizen email with service template for service provider cancelled booking', async () => {
 		template.emailTemplateType = EmailNotificationTemplateType.CancelledByServiceProviderSentToCitizen;
-		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
 		const email = await Container.get(CitizenEmailTemplateBookingActionByServiceProvider).CancelledBookingEmail(
 			booking,
 		);
@@ -97,7 +92,6 @@ describe('Services Notification Templates test', () => {
 
 	it('should create service provider email with service template for citizen created booking', async () => {
 		template.emailTemplateType = EmailNotificationTemplateType.CreatedByCitizenSentToServiceProvider;
-		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
 		const email = await Container.get(ServiceProviderEmailTemplateBookingActionByCitizen).CreatedBookingEmail(
 			booking,
 		);
@@ -106,7 +100,6 @@ describe('Services Notification Templates test', () => {
 
 	it('should create service provider email with service template for citizen updated booking', async () => {
 		template.emailTemplateType = EmailNotificationTemplateType.UpdatedByCitizenSentToServiceProvider;
-		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
 		const email = await Container.get(ServiceProviderEmailTemplateBookingActionByCitizen).UpdatedBookingEmail(
 			booking,
 		);
@@ -115,7 +108,6 @@ describe('Services Notification Templates test', () => {
 
 	it('should create service provider email with service template for citizen cancelled booking', async () => {
 		template.emailTemplateType = EmailNotificationTemplateType.CancelledByCitizenSentToServiceProvider;
-		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
 		const email = await Container.get(ServiceProviderEmailTemplateBookingActionByCitizen).CancelledBookingEmail(
 			booking,
 		);
@@ -124,7 +116,6 @@ describe('Services Notification Templates test', () => {
 
 	it('should create service provider email with service template for service provider updated booking', async () => {
 		template.emailTemplateType = EmailNotificationTemplateType.UpdatedByServiceProviderSentToServiceProvider;
-		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
 		const email = await Container.get(
 			ServiceProviderEmailTemplateBookingActionByServiceProvider,
 		).UpdatedBookingEmail(booking);
@@ -133,7 +124,6 @@ describe('Services Notification Templates test', () => {
 
 	it('should create service provider email with service template for service provider cancelled booking', async () => {
 		template.emailTemplateType = EmailNotificationTemplateType.CancelledByServiceProviderSentToServiceProvider;
-		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
 		const email = await Container.get(
 			ServiceProviderEmailTemplateBookingActionByServiceProvider,
 		).CancelledBookingEmail(booking);
