@@ -37,12 +37,8 @@ export class ServiceNotificationTemplateService {
 		// Get an email notification template of a service, by type.
 		// If service template does not exist, then get the default template.
 
-		if (!emailTemplateType) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
-		}
+		let responseTemplate = await this.getEmailServiceNotificationTemplateByType(serviceId, emailTemplateType);
 
-		let responseTemplate;
-		responseTemplate = await this.getEmailServiceNotificationTemplateByType(serviceId, emailTemplateType);
 		if (!responseTemplate) {
 			responseTemplate = new ServiceNotificationTemplate();
 			responseTemplate.id = null;
@@ -58,8 +54,10 @@ export class ServiceNotificationTemplateService {
 		serviceId: number,
 		emailTemplateType: EmailNotificationTemplateType,
 	): Promise<ServiceNotificationTemplate> {
-		const templateData = await this.notificationTemplateRepository.getServiceTemplate(serviceId, emailTemplateType);
-		return templateData;
+		if (!emailTemplateType) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
+		}
+		return await this.notificationTemplateRepository.getServiceTemplate(serviceId, emailTemplateType);
 	}
 
 	public async addEmailServiceNotificationTemplateByType(
@@ -68,15 +66,8 @@ export class ServiceNotificationTemplateService {
 	): Promise<ServiceNotificationTemplate> {
 		const service = await this.servicesService.getService(serviceId);
 		await this.verifyActionPermission(service, CrudAction.Create);
+		const existTemplate = await this.getEmailServiceNotificationTemplateByType(serviceId, request.emailTemplateType);
 
-		if (!request.emailTemplateType) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
-		}
-		const emailTemplateType = request.emailTemplateType;
-		const existTemplate = await this.notificationTemplateRepository.getServiceTemplate(
-			serviceId,
-			emailTemplateType,
-		);
 		if (existTemplate) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Template of type ${EmailNotificationTemplateType[
@@ -98,22 +89,15 @@ export class ServiceNotificationTemplateService {
 	): Promise<ServiceNotificationTemplate> {
 		const service = await this.servicesService.getService(serviceId);
 		await this.verifyActionPermission(service, CrudAction.Update);
+		const existTemplate = await this.getEmailServiceNotificationTemplateByType(serviceId, request.emailTemplateType);
 
-		if (!request.emailTemplateType) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
-		}
-		const emailTemplateType = request.emailTemplateType;
-		const templateEntity = await this.notificationTemplateRepository.getServiceTemplate(
-			serviceId,
-			emailTemplateType,
-		);
-		if (!templateEntity) {
+		if (!existTemplate) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(
 				`Template of type ${EmailNotificationTemplateType[request.emailTemplateType].toString()} not found`,
 			);
 		}
 
-		templateEntity.htmlTemplate = request.htmlTemplate;
-		return await this.notificationTemplateRepository.save(templateEntity);
+		existTemplate.htmlTemplate = request.htmlTemplate;
+		return await this.notificationTemplateRepository.save(existTemplate);
 	}
 }
