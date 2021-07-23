@@ -11,6 +11,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { UsersRepository } from '../../users/users.repository';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
+import { TimeslotsScheduleRepositoryMock } from '../../../components/timeslotsSchedules/__mocks__/timeslotsSchedule.repository.mock';
 
 jest.mock('../serviceProviders.auth');
 
@@ -372,14 +373,6 @@ class ScheduleFormsRepositoryMock implements Partial<ScheduleFormsRepository> {
 
 	public async populateSingleEntryScheduleForm<T extends IEntityWithScheduleForm>(entry: T): Promise<T> {
 		return await ScheduleFormsRepositoryMock.populateSingleEntryScheduleFormMock(entry);
-	}
-}
-
-class TimeslotsScheduleRepositoryMock implements Partial<TimeslotsScheduleRepository> {
-	public static populateTimeslotsSchedules = jest.fn<Promise<any>, any>();
-
-	public async populateTimeslotsSchedules(...params): Promise<any> {
-		return await TimeslotsScheduleRepositoryMock.populateTimeslotsSchedules(...params);
 	}
 }
 

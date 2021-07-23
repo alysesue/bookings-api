@@ -26,6 +26,7 @@ import { IGroupRecordIterator } from '../../../components/timeslotsSchedules/gro
 import { Weekday } from '../../../enums/weekday';
 import { ServicesRepositoryMock } from '../../services/__mocks__/services.repository.mock';
 import { RequestClock } from '../../../infrastructure/requestClock';
+import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
 
 jest.mock('../../services/services.repository', () => {
 	class ServicesRepository {}
@@ -44,10 +45,6 @@ const RequestClockMock = {
 
 const BookingsRepositoryMock = {
 	search: jest.fn<Promise<IPagedEntities<Booking>>, any>(),
-};
-
-const ServiceProvidersRepositoryMock = {
-	getServiceProviders: jest.fn(),
 };
 
 const TimeslotsScheduleMock = {

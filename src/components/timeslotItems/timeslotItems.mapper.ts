@@ -9,6 +9,8 @@ const mapTimeslotItems = (data: TimeslotItem[]): TimeslotItemResponse[] => {
 		item.startTime = i._startTime.toString();
 		item.endTime = i._endTime.toString();
 		item.capacity = i._capacity;
+		item.startDate = i._startDate;
+		item.endDate = i._endDate;
 		return item;
 	});
 };

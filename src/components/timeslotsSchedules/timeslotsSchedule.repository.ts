@@ -22,6 +22,8 @@ export type TimeslotItemDBQuery = {
 	item__weekDay: number;
 	item__timeslotsScheduleId: number;
 	item__capacity: number;
+	item__startDate?: Date;
+	item__endDate?: Date;
 };
 
 const STREAM_BATCH_SIZE = 500;
@@ -76,6 +78,8 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 		entity._weekDay = entry.item__weekDay;
 		entity._timeslotsScheduleId = entry.item__timeslotsScheduleId;
 		entity._capacity = entry.item__capacity;
+		entity._startDate = entry.item__startDate;
+		entity._endDate = entry.item__endDate;
 		return entity;
 	}
 

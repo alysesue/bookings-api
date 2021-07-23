@@ -27,6 +27,18 @@ export class TimeslotItemResponse {
 	 * @isInt
 	 */
 	public capacity: number;
+	/**
+	 * Schedule Start Date
+	 *
+	 * @isDate
+	 */
+	public startDate?: Date;
+	/**
+	 * Schedule End Date
+	 *
+	 * @isDate
+	 */
+	public endDate?: Date;
 }
 
 export class TimeslotItemRequest {
@@ -50,4 +62,16 @@ export class TimeslotItemRequest {
 	 * @isInt
 	 */
 	public capacity = 1;
+	/**
+	 * Schedule Start Date
+	 *
+	 * @isDate
+	 */
+	public startDate?: Date;
+	/**
+	 * Schedule End Date
+	 *
+	 * @isDate
+	 */
+	public endDate?: Date;
 }

@@ -1,4 +1,3 @@
-import { DeleteResult } from 'typeorm';
 import { Container } from 'typescript-ioc';
 import { ServicesService } from '../services.service';
 import { ServiceRequest } from '../service.apicontract';
@@ -23,7 +22,6 @@ import { Weekday } from '../../../enums/weekday';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { ServicesActionAuthVisitor } from '../services.auth';
-import { TimeslotItemsSearchRequest } from '../../timeslotItems/timeslotItems.repository';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
 import { OrganisationsNoauthRepository } from '../../organisations/organisations.noauth.repository';
 import { MolUsersService } from '../../users/molUsers/molUsers.service';
@@ -42,10 +40,13 @@ import { AsyncFunction, TransactionManager } from '../../../core/transactionMana
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { ServicesRepositoryMock } from '../__mocks__/services.repository.mock';
+import { TimeslotItemsServiceMock } from '../../../components/timeslotItems/__mocks__/timeslotItems.service.mock';
+import { ScheduleFormsServiceMock } from '../../../components/scheduleForms/__mocks__/scheduleForms.service.mock';
+import { OrganisationsRepositoryMock } from '../../../components/organisations/__mocks__/organisations.noauth.repository.mock';
 
 jest.mock('../services.auth');
 jest.mock('../services.repository', () => {
-	class ServicesRepository { }
+	class ServicesRepository {}
 	return { ServicesRepository };
 });
 
@@ -241,7 +242,7 @@ describe('Services service tests', () => {
 		const existingService = new ServiceRequest();
 		existingService.organisationId = 1;
 		existingService.labels = [];
-		existingService.name = "bookingsg"
+		existingService.name = 'bookingsg';
 
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
 			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
@@ -251,7 +252,6 @@ describe('Services service tests', () => {
 		request.name = 'bookingsg';
 		request.organisationId = 1;
 
-		;
 		expect(async () => await Container.get(ServicesService).createService(request)).rejects.toThrowError();
 	});
 
@@ -324,8 +324,6 @@ describe('Services service tests', () => {
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
 	});
-
-
 
 	it('should update service', async () => {
 		const newService = new Service();
@@ -560,49 +558,6 @@ describe('Services service tests', () => {
 	});
 });
 
-class ScheduleFormsServiceMock implements Partial<ScheduleFormsService> {
-	public static updateScheduleFormInEntity = jest.fn();
-
-	public async updateScheduleFormInEntity(...params): Promise<any> {
-		return await ScheduleFormsServiceMock.updateScheduleFormInEntity(...params);
-	}
-}
-
-class TimeslotItemsServiceMock implements Partial<TimeslotItemsService> {
-	public static mapAndSaveTimeslotItemsToTimeslotsSchedule = jest.fn();
-	public static deleteTimeslot = jest.fn();
-	public static mapAndSaveTimeslotItem = jest.fn();
-	public static createTimeslotItem = jest.fn();
-	public static updateTimeslotItem = jest.fn();
-
-	public async mapAndSaveTimeslotItem(
-		timeslotsSchedule: TimeslotsSchedule,
-		request: TimeslotItemRequest,
-		entity: TimeslotItem,
-	): Promise<TimeslotItem> {
-		return await TimeslotItemsServiceMock.mapAndSaveTimeslotItem(timeslotsSchedule, request, entity);
-	}
-
-	public async createTimeslotItem(
-		timeslotsSchedule: TimeslotsSchedule,
-		request: TimeslotItemRequest,
-	): Promise<TimeslotItem> {
-		return await TimeslotItemsServiceMock.createTimeslotItem(timeslotsSchedule, request);
-	}
-
-	public async deleteTimeslot(request: TimeslotItemsSearchRequest): Promise<DeleteResult> {
-		return await TimeslotItemsServiceMock.deleteTimeslot({ id: request.id });
-	}
-
-	public async updateTimeslotItem(
-		timeslotsSchedule: TimeslotsSchedule,
-		timeslotId: number,
-		request: TimeslotItemRequest,
-	): Promise<TimeslotItem> {
-		return await TimeslotItemsServiceMock.updateTimeslotItem(timeslotsSchedule, timeslotId, request);
-	}
-}
-
 class TimeslotsScheduleMockClass implements Partial<TimeslotsScheduleService> {
 	public static getTimeslotsScheduleById = jest.fn();
 
@@ -616,13 +571,5 @@ class MolUsersServiceMock implements Partial<MolUsersService> {
 
 	public async molUpsertUser(...args): Promise<MolUpsertUsersResult> {
 		return await MolUsersServiceMock.molUpsertUser(...args);
-	}
-}
-
-class OrganisationsRepositoryMock implements Partial<OrganisationsNoauthRepository> {
-	public static getOrganisationById = jest.fn();
-
-	public async getOrganisationById(orgaId: number): Promise<Organisation> {
-		return await OrganisationsRepositoryMock.getOrganisationById(orgaId);
 	}
 }
