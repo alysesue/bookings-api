@@ -6,7 +6,8 @@ export class DateHelper {
 	private static MsPerMinute = 60000;
 	private static MsPerHour = 3600000;
 	private static MsPerDay = 86400000;
-	private static tz = new Date(1970, 0, 1, 0, 0, 0, 0).getTime();
+	// Singapore Standard Time used to be GMT +7:30 before 1 Jan 1982 - https://en.wikipedia.org/wiki/Singapore_Standard_Time
+	private static tz = new Date(1969, 11, 31, 23, 30, 0, 0).getTime();
 
 	private static monthNames = [
 		'January',
