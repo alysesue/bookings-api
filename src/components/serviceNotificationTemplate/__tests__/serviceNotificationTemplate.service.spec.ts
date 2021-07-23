@@ -109,15 +109,6 @@ describe('Services Notification Template service test', () => {
 		await expect(result).toStrictEqual(defaultTemplate);
 	});
 
-	it('should throw error when trying to add a template with no request', async () => {
-		const result = async () =>
-			await Container.get(ServiceNotificationTemplateService).addEmailServiceNotificationTemplateByType(
-				serviceId,
-				null,
-			);
-		await expect(result).rejects.toThrowErrorMatchingInlineSnapshot('"Invalid request"');
-	});
-
 	it('should throw error when trying to add a template with no emailTemplateType in the request', async () => {
 		const result = async () =>
 			await Container.get(ServiceNotificationTemplateService).addEmailServiceNotificationTemplateByType(

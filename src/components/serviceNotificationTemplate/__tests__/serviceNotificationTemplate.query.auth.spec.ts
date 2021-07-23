@@ -66,7 +66,31 @@ describe('Services Notification Template auth tests - query', () => {
 		expect(result.userParams).toStrictEqual({});
 	});
 
-	it(`should filter by organisation id`, async () => {
+	it(`should return FALSE query for service provider`, async () => {
+		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
+		serviceProvider.id = 5;
+		const groups = [new ServiceProviderAuthGroup(adminMock, serviceProvider)];
+		const result = await new NotificationTemplateQueryAuthVisitor(
+			'service_notification_template',
+			'service',
+		).createUserVisibilityCondition(groups);
+
+		expect(result.userCondition).toStrictEqual('FALSE');
+		expect(result.userParams).toStrictEqual({});
+	});
+
+	it(`should return FALSE query for service admin`, async () => {
+		const groups = [new ServiceAdminAuthGroup(adminMock, [service])];
+		const result = await new NotificationTemplateQueryAuthVisitor(
+			'service_notification_template',
+			'service',
+		).createUserVisibilityCondition(groups);
+
+		expect(result.userCondition).toStrictEqual('FALSE');
+		expect(result.userParams).toStrictEqual({});
+	});
+
+	it(`should filter by organisation id query for organisation admin`, async () => {
 		const groups = [new OrganisationAdminAuthGroup(adminMock, [organisation])];
 		const result = await new NotificationTemplateQueryAuthVisitor(
 			'service_notification_template',
@@ -76,59 +100,6 @@ describe('Services Notification Template auth tests - query', () => {
 		expect(result.userCondition).toStrictEqual('(service."_organisationId" IN (:...authorisedOrganisationIds))');
 		expect(result.userParams).toStrictEqual({
 			authorisedOrganisationIds: [2],
-		});
-	});
-
-	it(`should filter by service id`, async () => {
-		const groups = [new ServiceAdminAuthGroup(adminMock, [service])];
-		const result = await new NotificationTemplateQueryAuthVisitor(
-			'service_notification_template',
-			'service',
-		).createUserVisibilityCondition(groups);
-
-		expect(result.userCondition).toStrictEqual(
-			'(service_notification_template._serviceId IN (:...authorisedServiceIds))',
-		);
-		expect(result.userParams).toStrictEqual({
-			authorisedServiceIds: [3],
-		});
-	});
-
-	it(`should filter by service related to service provider`, async () => {
-		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
-		serviceProvider.id = 5;
-		const groups = [new ServiceProviderAuthGroup(adminMock, serviceProvider)];
-		const result = await new NotificationTemplateQueryAuthVisitor(
-			'service_notification_template',
-			'service',
-		).createUserVisibilityCondition(groups);
-
-		expect(result.userCondition).toStrictEqual(
-			'(service_notification_template._serviceId = :serviceProviderServiceId)',
-		);
-		expect(result.userParams).toStrictEqual({
-			serviceProviderServiceId: 3,
-		});
-	});
-
-	it(`should combine user groups' permission (union)`, async () => {
-		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
-		serviceProvider.id = 5;
-		const groups = [
-			new OrganisationAdminAuthGroup(adminMock, [organisation]),
-			new ServiceAdminAuthGroup(adminMock, [service]),
-		];
-		const result = await new NotificationTemplateQueryAuthVisitor(
-			'service_notification_template',
-			'service',
-		).createUserVisibilityCondition(groups);
-
-		expect(result.userCondition).toStrictEqual(
-			'((service."_organisationId" IN (:...authorisedOrganisationIds)) OR (service_notification_template._serviceId IN (:...authorisedServiceIds)))',
-		);
-		expect(result.userParams).toStrictEqual({
-			authorisedOrganisationIds: [2],
-			authorisedServiceIds: [3],
 		});
 	});
 });

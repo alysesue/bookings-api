@@ -74,7 +74,7 @@ describe('Services Notification Template auth tests - action', () => {
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 	});
 
-	it('should create a service template as service admin', () => {
+	it('should not create a service template as service admin', () => {
 		const service = new Service();
 		service.organisationId = 1;
 		service.id = 1;
@@ -85,10 +85,10 @@ describe('Services Notification Template auth tests - action', () => {
 		);
 		const authVisitor = new NotificationTemplateActionAuthVisitor(service, CrudAction.Create);
 
-		expect(authVisitor.hasPermission([userGroup])).toBe(true);
+		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
 
-	it('should update service template as service admin', () => {
+	it('should not update service template as service admin', () => {
 		const service = new Service();
 		service.organisationId = 1;
 		service.id = 1;
@@ -99,7 +99,7 @@ describe('Services Notification Template auth tests - action', () => {
 		);
 		const authVisitor = new NotificationTemplateActionAuthVisitor(service, CrudAction.Update);
 
-		expect(authVisitor.hasPermission([userGroup])).toBe(true);
+		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
 
 	it('should not update service template as organisation admin for another organisation', () => {
