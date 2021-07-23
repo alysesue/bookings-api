@@ -160,10 +160,6 @@ export class BookingsService {
 
 	public async update(bookingId: number, bookingRequest: BookingUpdateRequest): Promise<Booking> {
 		const updateAction = (_booking) => {
-			if (!bookingRequest.citizenUinFinUpdated) {
-				bookingRequest.citizenUinFin = _booking.citizenUinFin;
-			}
-
 			return this.updateInternal(_booking, bookingRequest, () => {});
 		};
 		const booking = await this.changeLogsService.executeAndLogAction(
@@ -298,7 +294,7 @@ export class BookingsService {
 
 	private async rescheduleInternal(
 		previousBooking: Booking,
-		rescheduleRequest: BookingRequest,
+		rescheduleRequest: BookingUpdateRequest,
 	): Promise<[ChangeLogAction, Booking]> {
 		if (!previousBooking.isValidForRescheduling()) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Booking in invalid state for rescheduling');
@@ -360,9 +356,13 @@ export class BookingsService {
 
 	private async updateInternal(
 		previousBooking: Booking,
-		bookingRequest: BookingRequest,
+		bookingRequest: BookingUpdateRequest,
 		afterMap: (updatedBooking: Booking, serviceProvider: ServiceProvider) => void | Promise<void>,
 	): Promise<[ChangeLogAction, Booking]> {
+		if (!bookingRequest.citizenUinFinUpdated) {
+			bookingRequest.citizenUinFin = previousBooking.citizenUinFin;
+		}
+
 		const updatedBooking = previousBooking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
 		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.useAdminValidator(currentUser));

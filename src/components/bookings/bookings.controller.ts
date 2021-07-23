@@ -134,7 +134,7 @@ export class BookingsController extends Controller {
 	@Response(401, 'Unauthorized')
 	public async reschedule(
 		@Path() bookingId: number,
-		@Body() rescheduleRequest: BookingRequest,
+		@Body() rescheduleRequest: BookingUpdateRequest,
 	): Promise<ApiData<BookingResponse>> {
 		const koaContext = this._koaContextStore.koaContext;
 		rescheduleRequest.captchaOrigin = koaContext.header.origin;
