@@ -77,6 +77,38 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 	};
 };
 
+export const mapVariablesValuesToDefaultTemplate = (mapValues: EmailData, template: string): string => {
+	const {
+		serviceName,
+		spNameDisplayedForCitizen,
+		spNameDisplayedForServiceProvider,
+		status,
+		day,
+		time,
+		locationText,
+		videoConferenceUrl,
+		reasonToReject,
+	} = mapValues;
+
+	const mapVariables = {
+		'{serviceName}': serviceName,
+		'{spNameDisplayedForCitizen}': spNameDisplayedForCitizen,
+		'{spNameDisplayedForServiceProvider}': spNameDisplayedForServiceProvider,
+		'{status}': status,
+		'{day}': day,
+		'{time}': time,
+		'{locationText}': locationText,
+		'{videoConferenceUrl}': videoConferenceUrl,
+		'{reasonToReject}': reasonToReject,
+	};
+
+	for (const key of Object.keys(mapVariables)) {
+		template = template.replace(new RegExp(key, 'g'), mapVariables[key]);
+	}
+
+	return template;
+};
+
 export const mapVariablesValuesToServiceTemplate = (mapValues: EmailData, template: string): string => {
 	const {
 		status,

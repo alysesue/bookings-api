@@ -1,10 +1,10 @@
 export const defaultTemplates = {
 	email: {
 		CreatedByCitizenSentToCitizen:
-			'<p>Your booking request has been received.</p>\n' +
+			'<p> Your booking request has been received.</p>\n' +
 			'<p>Booking for: <strong>{serviceName}</strong>.</p>\n' +
-			'<p>Below is a confirmation of your booking details.<br>Booking status: <strong>{status}<br></strong>Date: ' +
-			'<strong>{day}<br></strong>Time: <strong>{time}<br></strong>{videoConferenceUrl}<br>{locationText}</p>\n' +
+			'<p>Below is a confirmation of your booking details.<br>Booking status: <strong>{status}</strong><br>Date: ' +
+			'<strong>{day}</strong><br>Time: <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}</p>\n' +
 			'<p><br>&nbsp;</p>',
 		UpdatedByCitizenSentToCitizen:
 			'<p>You have updated a booking.</p>\n' +
@@ -15,7 +15,7 @@ export const defaultTemplates = {
 			'<p>You have cancelled the following booking.</p>\n' +
 			'<p>Booking for: <strong>{serviceName} {spNameDisplayedForCitizen}</strong>.</p>\n' +
 			'<p>Booking status: <strong>{status}</strong><br>Date: <strong>{day}</strong><br>Time:' +
-			' <strong>{time}<br></strong>{videoConferenceUrl}<br>{locationText}</p>',
+			' <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}</p>',
 		CreatedByCitizenSentToServiceProvider:
 			'<p>You have received a new booking request.</p>\n' +
 			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForServiceProvider}</strong>.</p>\n' +
