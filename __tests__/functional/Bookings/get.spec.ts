@@ -15,7 +15,8 @@ describe('Bookings functional tests', () => {
 	const location = 'Singapore';
 	const videoConferenceLink = 'www.google.com';
 	const description =
-		'Lorem ipsum dolor sit amet, !@#$%^&*()-+? adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
+		// eslint-disable-next-line max-len
+		'Lorem ipsum dolor sit amet !@#$%^&*()-+? adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim id est laborum.';
 	const NAME_SERVICE_1 = 'service1';
 	const SERVICE_PROVIDER_NAME_1 = 'SP1';
 	let serviceProviderId: number;
@@ -102,21 +103,50 @@ describe('Bookings functional tests', () => {
 		});
 	};
 
-	it('should get bookings as csv', async () => {
-		await createInSlotBooking();
-		await createInSlotBooking();
+	describe('bookings/csv', () => {
+		it('should get bookings as csv', async () => {
+			await createInSlotBooking();
+			await createInSlotBooking();
 
-		const response = await OrganisationAdminRequestEndpointSG.create({
-			serviceId: `${serviceId}`,
-		}).get(`/bookings/csv`, {});
+			const response = await OrganisationAdminRequestEndpointSG.create({
+				serviceId: `${serviceId}`,
+			}).get(`/bookings/csv`, {});
 
-		const bodyLength = response.body.split(`\n`).length;
-		const contentDisposition = response.headers['content-disposition'];
-		const contentType = response.headers['content-type'];
+			const bodyLength = response.body.split('\n').length;
+			const contentDisposition = response.headers['content-disposition'];
+			const contentType = response.headers['content-type'];
 
-		expect(bodyLength).toEqual(4);
-		expect(contentDisposition).toEqual(`attachment; filename="exported-bookings.csv"`);
-		expect(contentType).toEqual(`text/csv`);
+			expect(bodyLength).toEqual(4);
+			expect(contentDisposition).toEqual(`attachment; filename="exported-bookings.csv"`);
+			expect(contentType).toEqual(`text/csv`);
+		});
+
+		it('should return correct informations in csv', async () => {
+			await createInSlotBooking();
+
+			const response = await OrganisationAdminRequestEndpointSG.create({
+				serviceId: `${serviceId}`,
+			}).get(`/bookings/csv`, {});
+
+			const body = response.body.split('\n');
+			const csvHeaders = body[0];
+			const fields = body[1].split(',');
+
+			expect(csvHeaders).toEqual(
+				`Booking ID,Booking Status,Booking creation date,Booking service start date/time,Booking service end date/time,Booking location,Booking description,Booking reference,Dynamic Fields,Citizen FIN number,Citizen Name,Citizen Email address,Citizen Phone number,Service Name,Service Provider Name,Service Provider Email address,Service Provider Phone number`,
+			);
+			expect(fields[1]).toEqual('Accepted');
+			expect(fields[3]).toEqual(startDateTime.toString());
+			expect(fields[4]).toEqual(endDateTime.toString());
+			expect(fields[5]).toEqual(location);
+			expect(fields[6]).toEqual(description);
+			expect(fields[9]).toEqual('S****377H');
+			expect(fields[10]).toEqual(citizenName);
+			expect(fields[11]).toEqual(citizenEmail);
+			expect(fields[13]).toEqual(NAME_SERVICE_1);
+			expect(fields[14]).toEqual(SERVICE_PROVIDER_NAME_1);
+			expect(fields[16]).toEqual('+6580000000');
+		});
 	});
 
 	it('should get all bookings with limit', async () => {

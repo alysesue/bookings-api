@@ -1,10 +1,12 @@
 import {
 	Booking,
+	BookingChangeLog,
 	BusinessValidation,
 	Organisation,
 	SelectListDynamicField,
 	SelectListOption,
 	Service,
+	ServiceProvider,
 	User,
 } from '../../../models';
 import { BookingsMapper } from '../bookings.mapper';
@@ -19,16 +21,24 @@ import { DynamicFieldsServiceMock } from '../../../components/dynamicFields/__mo
 import { bookingStatusArray } from '../../../models/bookingStatus';
 import { IBookingsValidator } from '../validator/bookings.validation';
 import {
+	DynamicValuesMapper,
 	DynamicValuesRequestMapper,
 	MapRequestOptionalResult,
 } from '../../../components/dynamicFields/dynamicValues.mapper';
+import { UserContext, UserContextSnapshot } from '../../../infrastructure/auth/userContext';
+import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
+import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { DynamicValuesRequestMapperMock } from '../../../components/dynamicFields/__mocks__/dynamicValues.mapper.mock';
+import { DynamicValuesMapperMock } from '../../../components/dynamicFields/__mocks__/dynamicValues.mapper.mock';
 
 jest.mock('../../../models/uinFinConfiguration');
 jest.mock('../../../components/dynamicFields/dynamicValues.mapper');
 
 beforeAll(() => {
 	Container.bind(IdHasher).to(IdHasherMock);
+	Container.bind(UserContext).to(UserContextMock);
 	Container.bind(DynamicValuesRequestMapper).to(DynamicValuesRequestMapperMock);
+	Container.bind(DynamicValuesMapper).to(DynamicValuesMapperMock);
 });
 
 describe('Bookings mapper tests', () => {
@@ -46,12 +56,66 @@ describe('Bookings mapper tests', () => {
 		name: 'Name',
 	});
 
+	const getOrganisationAdminContext = (organisation: Organisation): UserContextSnapshot => {
+		const adminMock = User.createAdminUser({
+			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+			userName: 'UserName',
+			email: 'test@email.com',
+			name: 'Name',
+		});
+		const authGroupsMock = [new OrganisationAdminAuthGroup(adminMock, [organisation])];
+		return { user: adminMock, authGroups: authGroupsMock };
+	};
+
 	const listOptions = {
 		key: 1,
 		value: 'English',
 	} as SelectListOption;
 	const dynamicFieldEntity = SelectListDynamicField.create(1, 'testDynamic', [listOptions]);
 	dynamicFieldEntity.id = 1;
+
+	const organisation = new Organisation();
+	organisation.name = 'agency1';
+	organisation.id = 2;
+
+	const getFullBookingInformation = () => {
+		const booking = new Booking();
+		const service = new Service();
+		service.id = 1;
+		service.name = `armin service`;
+		service.organisation = organisation;
+		const serviceProvider = new ServiceProvider();
+		serviceProvider.name = `armin`;
+		serviceProvider.email = `armin-sp@gmail.com`;
+		serviceProvider.phone = `81181188`;
+		const createdLog = new BookingChangeLog();
+		createdLog.timestamp = new Date(2021, 2, 1);
+		booking.id = 1;
+		booking.status = 2;
+		booking.createdLog = createdLog;
+		booking.startDateTime = new Date(2021, 2, 1);
+		booking.endDateTime = new Date(2021, 2, 1);
+		booking.location = `somewhere`;
+		booking.description = `description`;
+		booking.refId = `123`;
+		booking.dynamicValues = [
+			{
+				fieldId: 1,
+				fieldName: 'testDynamic',
+				type: 'SingleSelection' as DynamicValueType,
+				singleSelectionKey: 1,
+				singleSelectionValue: 'English',
+			} as DynamicValueJsonModel,
+		];
+		booking.citizenName = `armin`;
+		booking.citizenUinFin = `S1234567D`;
+		booking.citizenEmail = `armin@gmail.com`;
+		booking.citizenPhone = `81101234`;
+		booking.service = service;
+		booking.serviceProvider = serviceProvider;
+
+		return booking;
+	};
 
 	it('should throw if organisation not loaded', async () => {
 		const booking = new Booking();
@@ -190,19 +254,37 @@ describe('Bookings mapper tests', () => {
 
 		expect(statuses).toEqual(bookingStatusArray.map((value) => value));
 	});
+
+	it('should map data to csv', async () => {
+		DynamicValuesMapperMock.getValueAsString.mockReturnValue('English');
+
+		const mapper = Container.get(BookingsMapper);
+		const result = mapper.mapDataCSV(getFullBookingInformation(), getOrganisationAdminContext(organisation));
+		expect(result).toStrictEqual({
+			'Booking ID': '1',
+			'Booking Status': 'Accepted',
+			'Booking creation date': 'Mon Mar 01 2021 00:00:00 GMT+0800 (Singapore Standard Time)',
+			'Booking service start date/time': 'Mon Mar 01 2021 00:00:00 GMT+0800 (Singapore Standard Time)',
+			'Booking service end date/time': 'Mon Mar 01 2021 00:00:00 GMT+0800 (Singapore Standard Time)',
+			'Booking location': 'somewhere',
+			'Booking description': 'description',
+			'Booking reference': '123',
+			'Dynamic Fields': 'testDynamic:English',
+			'Citizen FIN number': 'S****567D',
+			'Citizen Name': 'armin',
+			'Citizen Email address': 'armin@gmail.com',
+			'Citizen Phone number': '81101234',
+			'Service Name': 'armin service',
+			'Service Provider Name': 'armin',
+			'Service Provider Email address': 'armin-sp@gmail.com',
+			'Service Provider Phone number': '81181188',
+		});
+	});
 });
 
 class UinFinConfigurationMock implements Partial<UinFinConfiguration> {
 	public static canViewPlainUinFin = jest.fn<boolean, any>();
 	public canViewPlainUinFin(...params): any {
 		return UinFinConfigurationMock.canViewPlainUinFin(...params);
-	}
-}
-
-class DynamicValuesRequestMapperMock implements Partial<DynamicValuesRequestMapper> {
-	public static mapDynamicValuesRequest = jest.fn<Promise<MapRequestOptionalResult>, any>();
-
-	public async mapDynamicValuesRequest(...params): Promise<MapRequestOptionalResult> {
-		return await DynamicValuesRequestMapperMock.mapDynamicValuesRequest(...params);
 	}
 }
