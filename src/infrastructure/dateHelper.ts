@@ -1,13 +1,10 @@
-// const DATEHELPER_TZ = new Date(1970, 0, 1, 0, 0, 0, 0).getTime();
-// const TICKS_PER_DAY = 1000 * 60 * 60 * 24;
-
 export class DateHelper {
 	private static MsPerSecond = 1000;
 	private static MsPerMinute = 60000;
 	private static MsPerHour = 3600000;
 	private static MsPerDay = 86400000;
-	// Singapore Standard Time used to be GMT +7:30 before 1 Jan 1982 - https://en.wikipedia.org/wiki/Singapore_Standard_Time
-	private static tz = new Date(1969, 11, 31, 23, 30, 0, 0).getTime();
+	private static MsPer15Minutes = DateHelper.MsPerMinute * 15;
+	private static readonly _startOfDayNativeCache = new Map<number, number>();
 
 	private static monthNames = [
 		'January',
@@ -130,7 +127,17 @@ export class DateHelper {
 	}
 
 	public static getStartOfDayNative(dateNative: number): number {
-		return dateNative - ((dateNative - DateHelper.tz) % DateHelper.MsPerDay);
+		const minutesOffset = dateNative - (dateNative % this.MsPer15Minutes); //15min block is common to 30 min and 45 min TZ offsets
+		let value = this._startOfDayNativeCache.get(minutesOffset);
+		if (!value) {
+			if (this._startOfDayNativeCache.size > 20000) {
+				this._startOfDayNativeCache.clear();
+			}
+			value = this.getStartOfDay(new Date(dateNative)).getTime();
+			this._startOfDayNativeCache.set(minutesOffset, value);
+		}
+
+		return value;
 	}
 
 	public static getEndOfDayNative(dateNative: number): number {

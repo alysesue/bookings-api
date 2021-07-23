@@ -194,6 +194,55 @@ describe('date helper tests', () => {
 		}
 	});
 
+	it('[exact date and time] should get start of day native', () => {
+		const time = new Date(2021, 6, 23, 18, 30, 11, 962);
+		const start = DateHelper.getStartOfDay(time);
+		const startNative = DateHelper.getStartOfDayNative(time.getTime());
+
+		expect(start.getTime()).toEqual(startNative);
+	});
+
+	it('[exact date and time 2] should get start of day native', () => {
+		const differentYears = [];
+		for (let year = 1970; year < 2050; year++) {
+			const time = new Date(year, 0, 1, 23, 30, 11, 962);
+			const start = DateHelper.getStartOfDay(time);
+			const startNative = DateHelper.getStartOfDayNative(time.getTime());
+			if (start.getTime() !== startNative) {
+				differentYears.push(year);
+			}
+		}
+
+		expect(differentYears).toEqual([]);
+	});
+
+	it('[exact date and time 3] should get start of day native', () => {
+		const time = new Date(2050, 1, 1, 18, 30, 11, 962);
+		const start = DateHelper.getStartOfDay(time);
+		const startNative = DateHelper.getStartOfDayNative(time.getTime());
+
+		expect(start.getTime()).toEqual(startNative);
+	});
+
+	it('[exact date] should get start of day native', () => {
+		const time = new Date(2021, 6, 23, 0, 0, 0, 0);
+		const start = DateHelper.getStartOfDay(time);
+		const startNative = DateHelper.getStartOfDayNative(time.getTime());
+
+		expect(start.getTime()).toEqual(startNative);
+	});
+
+	it('[days] should get start of day native', () => {
+		const now = new Date();
+		for (let day = 0; day <= 366 * 20; day++) {
+			const time = DateHelper.addDays(now, day);
+
+			const start = DateHelper.getStartOfDay(time);
+			const startNative = DateHelper.getStartOfDayNative(time.getTime());
+			expect(start.getTime()).toEqual(startNative);
+		}
+	});
+
 	it('should get end of day native', () => {
 		const now = new Date();
 		for (let hour = 0; hour <= 48; hour++) {
