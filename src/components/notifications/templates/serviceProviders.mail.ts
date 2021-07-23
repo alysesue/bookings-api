@@ -1,5 +1,5 @@
-import { emailMapper, mapVariablesValuesToServiceTemplate } from '../notifications.mapper';
-import { EmailBookingTemplate, EmailTemplateBase } from './citizen.mail';
+import { emailMapper } from '../notifications.mapper';
+import {EmailBookingTemplate, EmailTemplateBase, getEmailContentFromServiceTemplate} from './citizen.mail';
 import { EmailNotificationTemplateType } from '../notifications.enum';
 import { ServiceNotificationTemplateService } from '../../serviceNotificationTemplate/serviceNotificationTemplate.service';
 import { Inject } from 'typescript-ioc';
@@ -19,19 +19,9 @@ export class ServiceProviderEmailTemplateBookingActionByCitizen implements Email
 			videoConferenceUrl,
 		} = emailMapper(data);
 
-		let emailContent;
-		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CreatedByCitizenSentToServiceProvider;
-		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(
-			data.serviceId,
-			templateType,
-		);
-		if (serviceTemplate) {
-			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		}
-		if (serviceEmailTemplate) {
-			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
-		} else {
+		let emailContent = await getEmailContentFromServiceTemplate(data.serviceId, templateType, data, this.templateService);
+		if (!emailContent){
 			emailContent = `<pre>
 You have received a new booking request.
 <br />
@@ -64,19 +54,9 @@ ${locationText}
 			videoConferenceUrl,
 		} = emailMapper(data);
 
-		let emailContent;
-		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.UpdatedByCitizenSentToServiceProvider;
-		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(
-			data.serviceId,
-			templateType,
-		);
-		if (serviceTemplate) {
-			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		}
-		if (serviceEmailTemplate) {
-			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
-		} else {
+		let emailContent = await getEmailContentFromServiceTemplate(data.serviceId, templateType, data, this.templateService);
+		if (!emailContent){
 			emailContent = `<pre>
 There has been an update to the following booking by the other party.
 <br />
@@ -109,19 +89,9 @@ ${locationText}
 			videoConferenceUrl,
 		} = emailMapper(data);
 
-		let emailContent;
-		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CancelledByCitizenSentToServiceProvider;
-		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(
-			data.serviceId,
-			templateType,
-		);
-		if (serviceTemplate) {
-			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		}
-		if (serviceEmailTemplate) {
-			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
-		} else {
+		let emailContent = await getEmailContentFromServiceTemplate(data.serviceId, templateType, data, this.templateService);
+		if (!emailContent){
 			emailContent = `<pre>
 The following booking has been cancelled by the other party.
 <br />
@@ -157,19 +127,9 @@ export class ServiceProviderEmailTemplateBookingActionByServiceProvider implemen
 			videoConferenceUrl,
 		} = emailMapper(data);
 
-		let emailContent;
-		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.UpdatedByServiceProviderSentToServiceProvider;
-		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(
-			data.serviceId,
-			templateType,
-		);
-		if (serviceTemplate) {
-			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		}
-		if (serviceEmailTemplate) {
-			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
-		} else {
+		let emailContent = await getEmailContentFromServiceTemplate(data.serviceId, templateType, data, this.templateService);
+		if (!emailContent){
 			emailContent = `<pre>
 You have updated a booking.
 <br />
@@ -202,19 +162,9 @@ ${locationText}
 			videoConferenceUrl,
 		} = emailMapper(data);
 
-		let emailContent;
-		let serviceEmailTemplate = '';
 		const templateType = EmailNotificationTemplateType.CancelledByServiceProviderSentToServiceProvider;
-		const serviceTemplate = await this.templateService.getEmailServiceNotificationTemplateByType(
-			data.serviceId,
-			templateType,
-		);
-		if (serviceTemplate) {
-			serviceEmailTemplate = serviceTemplate.htmlTemplate;
-		}
-		if (serviceEmailTemplate) {
-			emailContent = mapVariablesValuesToServiceTemplate(emailMapper(data), serviceEmailTemplate);
-		} else {
+		let emailContent = await getEmailContentFromServiceTemplate(data.serviceId, templateType, data, this.templateService);
+		if (!emailContent){
 			emailContent = `<pre>
 You have cancelled the following booking.
 <br />

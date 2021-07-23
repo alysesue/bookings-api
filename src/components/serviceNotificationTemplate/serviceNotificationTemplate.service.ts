@@ -66,7 +66,10 @@ export class ServiceNotificationTemplateService {
 	): Promise<ServiceNotificationTemplate> {
 		const service = await this.servicesService.getService(serviceId);
 		await this.verifyActionPermission(service, CrudAction.Create);
-		const existTemplate = await this.getEmailServiceNotificationTemplateByType(serviceId, request.emailTemplateType);
+		const existTemplate = await this.getEmailServiceNotificationTemplateByType(
+			serviceId,
+			request.emailTemplateType,
+		);
 
 		if (existTemplate) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
@@ -89,7 +92,10 @@ export class ServiceNotificationTemplateService {
 	): Promise<ServiceNotificationTemplate> {
 		const service = await this.servicesService.getService(serviceId);
 		await this.verifyActionPermission(service, CrudAction.Update);
-		const existTemplate = await this.getEmailServiceNotificationTemplateByType(serviceId, request.emailTemplateType);
+		const existTemplate = await this.getEmailServiceNotificationTemplateByType(
+			serviceId,
+			request.emailTemplateType,
+		);
 
 		if (!existTemplate) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(
