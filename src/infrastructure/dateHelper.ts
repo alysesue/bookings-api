@@ -1,3 +1,6 @@
+// const DATEHELPER_TZ = new Date(1970, 0, 1, 0, 0, 0, 0).getTime();
+// const TICKS_PER_DAY = 1000 * 60 * 60 * 24;
+
 export class DateHelper {
 	private static MsPerSecond = 1000;
 	private static MsPerMinute = 60000;
