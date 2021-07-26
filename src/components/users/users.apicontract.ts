@@ -40,6 +40,7 @@ export class AuthGroupResponse {
 	public organisations?: OrganisationAdminGroupContract[];
 	public services?: ServiceAdminGroupContract[];
 	public serviceProvider?: ServiceProviderContract;
+	public anonymous?: AnonymousGroupContract;
 }
 
 export class OrganisationAdminGroupContract {
@@ -64,6 +65,10 @@ export class ServiceProviderContract {
 	 */
 	public id: number;
 	public name: string;
+}
+
+export class AnonymousGroupContract {
+	public bookingUUID?: string;
 }
 
 export enum AuthGroupTypeContract {

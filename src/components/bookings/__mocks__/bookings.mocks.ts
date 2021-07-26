@@ -1,5 +1,5 @@
 import { BookingsRepository } from '../bookings.repository';
-import { Booking, ChangeLogAction, User } from '../../../models';
+import { Booking, BookingUUIDInfo, ChangeLogAction, User } from '../../../models';
 import { InsertResult } from 'typeorm';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
@@ -8,6 +8,7 @@ import { BookingChangeLogsService } from '../../bookingChangeLogs/bookingChangeL
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 import { UsersService } from '../../users/users.service';
 import { IPagedEntities } from '../../../core/pagedEntities';
+import { BookingsNoAuthRepository } from '../bookings.noauth.repository';
 
 export class BookingRepositoryMock implements Partial<BookingsRepository> {
 	public static booking: Booking;
@@ -38,6 +39,22 @@ export class BookingRepositoryMock implements Partial<BookingsRepository> {
 
 	public async searchReturnAll(...params): Promise<Booking[]> {
 		return await BookingRepositoryMock.searchReturnAll(...params);
+	}
+
+	public async getBookingByUUID(bookingUUID: string): Promise<Booking> {
+		if (bookingUUID === BookingRepositoryMock.booking.uuid) {
+			return Promise.resolve(BookingRepositoryMock.booking);
+		}
+
+		return null;
+	}
+}
+
+export class BookingsNoAuthRepositoryMock implements Partial<BookingsNoAuthRepository> {
+	public static getBookingInfoByUUID = jest.fn<Promise<BookingUUIDInfo>, any>();
+
+	public async getBookingInfoByUUID(...params): Promise<BookingUUIDInfo> {
+		return await BookingsNoAuthRepositoryMock.getBookingInfoByUUID(...params);
 	}
 }
 

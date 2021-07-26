@@ -1,5 +1,10 @@
 import { Booking, Organisation, Service, ServiceProvider } from '../../../../models';
 import { emailMapper } from '../../notifications.mapper';
+import { getConfig } from '../../../../config/app-config';
+
+jest.mock('../../../../config/app-config', () => ({
+	getConfig: jest.fn(),
+}));
 
 describe('Notification mapper tests', () => {
 	const booking = new Booking();
@@ -11,6 +16,10 @@ describe('Notification mapper tests', () => {
 	booking.serviceProviderId = 1;
 	booking.serviceProvider = { name: 'armin' } as ServiceProvider;
 	booking.videoConferenceUrl = 'http://www.zoom.us/1234567';
+	booking.uuid = 'f4533bed-da08-473a-8641-7aef918fe0db';
+	(getConfig as jest.Mock).mockReturnValue({
+		appURL: 'http://www.local.booking.gov.sg:3000',
+	});
 
 	it('all fields should be defined', () => {
 		const {
@@ -21,6 +30,7 @@ describe('Notification mapper tests', () => {
 			time,
 			locationText,
 			videoConferenceUrl,
+			manageBookingURL,
 		} = emailMapper(booking);
 		expect(day).toEqual(`14 April 2021`);
 		expect(time).toEqual(`10:00am - 11:00am`);
@@ -31,6 +41,7 @@ describe('Notification mapper tests', () => {
 		expect(videoConferenceUrl).toEqual(
 			`Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>`,
 		);
+		expect(manageBookingURL).toEqual(`http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db`)
 	});
 
 	it('booking service name should be empty', () => {

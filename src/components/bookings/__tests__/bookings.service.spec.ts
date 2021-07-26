@@ -642,6 +642,40 @@ describe('Bookings.Service', () => {
 		);
 	});
 
+	it('should get booking by uuid as an anonymous user', async () => {
+		const bookingService = Container.get(BookingsService);
+		const bookingUUID = uuid.v4();
+		const bookingMock = (BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(service.id)
+			.withCitizenEmail('test@mail.com')
+			.withStartDateTime(new Date('2020-02-02T11:00'))
+			.withEndDateTime(new Date('2020-02-02T12:00'))
+			.build());
+		bookingMock.uuid = bookingUUID;
+		bookingMock.id = 10;
+
+		const resultBooking = await bookingService.getBookingByUUID(bookingUUID);
+		expect(resultBooking.uuid).toBe(bookingUUID);
+		expect(resultBooking.id).toBe(10);
+	});
+
+	it('should throw an exception when booking not found by uuid as an anonymous user', async () => {
+		const bookingService = Container.get(BookingsService);
+		const bookingUUID = uuid.v4();
+		const bookingMock = (BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(service.id)
+			.withCitizenEmail('test@mail.com')
+			.withStartDateTime(new Date('2020-02-02T11:00'))
+			.withEndDateTime(new Date('2020-02-02T12:00'))
+			.build());
+		bookingMock.uuid = bookingUUID;
+
+		const testBookingUUID = uuid.v4();
+		await expect(async () => await bookingService.getBookingByUUID(testBookingUUID)).rejects.toStrictEqual(
+			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Booking ' + testBookingUUID + ' not found'),
+		);
+	});
+
 	it('should update booking except NRIC', async () => {
 		const bookingService = Container.get(BookingsService);
 

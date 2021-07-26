@@ -26,6 +26,7 @@ import { MOLAuthType, MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth';
 import { BookingsService } from '../bookings.service';
 import { CaptchaService } from '../../captcha/captcha.service';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
+import * as uuid from 'uuid';
 
 jest.mock('../../../models/uinFinConfiguration');
 
@@ -271,6 +272,30 @@ describe('Bookings.Controller', () => {
 		expect(result.data.status).toBe(BookingStatus.PendingApproval);
 	});
 
+	it('should return one booking by uuid', async () => {
+		const controller = Container.get(BookingsController);
+		const startTime = new Date('2020-10-01T01:00:00');
+		const endTime = new Date('2020-10-01T02:00:00');
+		const bookingUUID = uuid.v4();
+
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(startTime)
+			.withEndDateTime(endTime)
+			.build();
+		booking.service = new Service();
+		booking.service.organisation = new Organisation();
+		booking.uuid = bookingUUID;
+
+		BookingsServiceMock.getBookingPromise = Promise.resolve(booking);
+
+		const result = await controller.getBookingByUUID(bookingUUID);
+
+		expect(result.data.startDateTime).toBe(startTime);
+		expect(result.data.endDateTime).toBe(endTime);
+		expect(result.data.status).toBe(BookingStatus.PendingApproval);
+	});
+
 	it('should get booking providers', async () => {
 		const controller = Container.get(BookingsController);
 		BookingsServiceMock.getBooking.mockReturnValue(Promise.resolve(testBooking1));
@@ -417,11 +442,19 @@ class BookingsServiceMock implements Partial<BookingsService> {
 	public static mockPostBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockBookings: Booking[] = [];
 	public static mockBookingId;
+	public static mockBookingUUID;
+	public static getBookingPromise = Promise.resolve(BookingsServiceMock.mockBooking);
+	public static getBookingByUUIDPromise = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockUpdateBooking: Booking;
 	public static mockValidateOnHoldBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 
 	public async getBooking(...params): Promise<any> {
 		return await BookingsServiceMock.getBooking(...params);
+	}
+
+	public async getBookingByUUID(bookingUUID: string): Promise<Booking> {
+		BookingsServiceMock.mockBookingUUID = bookingUUID;
+		return BookingsServiceMock.getBookingPromise;
 	}
 
 	public async acceptBooking(bookingId: number): Promise<Booking> {

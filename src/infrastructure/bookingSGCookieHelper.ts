@@ -6,6 +6,7 @@ import { KoaContextStore } from './koaContextStore.middleware';
 export type AnonymousCookieData = {
 	createdAt: Date;
 	trackingId: string;
+	booking?: string;
 };
 
 @InRequestScope

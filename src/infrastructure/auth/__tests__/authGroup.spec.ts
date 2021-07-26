@@ -55,6 +55,27 @@ describe('auth group tests', () => {
 		expect(authGroup).toBeDefined();
 	});
 
+	it('should create anonymous group (with booking info)', async () => {
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const authGroup = new AnonymousAuthGroup(anonymous, {
+			bookingUUID: '81baeb3f-d930-4f48-9808-3ee4debc3d8a',
+			bookingId: 1,
+			serviceId: 2,
+			organisationId: 3,
+			serviceProviderId: 4,
+		});
+
+		expect(authGroup).toBeDefined();
+
+		expect(authGroup.bookingInfo).toEqual({
+			bookingUUID: '81baeb3f-d930-4f48-9808-3ee4debc3d8a',
+			bookingId: 1,
+			serviceId: 2,
+			organisationId: 3,
+			serviceProviderId: 4,
+		});
+	});
+
 	it('should create citizen group', async () => {
 		const authGroup = new CitizenAuthGroup(singpassMock);
 		expect(authGroup).toBeDefined();

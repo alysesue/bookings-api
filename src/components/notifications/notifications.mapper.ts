@@ -1,6 +1,7 @@
 import { Booking } from '../../models';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { BookingStatusDisplayedInEmails } from '../../models/bookingStatus';
+import { getConfig } from '../../config/app-config';
 
 class EmailData {
 	public status: string;
@@ -14,6 +15,7 @@ class EmailData {
 	public time: string;
 	public videoConferenceUrl?: string;
 	public reasonToReject?: string;
+	public manageBookingURL?: string;
 }
 
 export interface MailOptions {
@@ -59,6 +61,8 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 	if (videoConferenceUrl && isSMS) {
 		videoConferenceUrl = `Video Conference Link:${vcLink}`;
 	}
+	const config = getConfig();
+	const manageBookingURL = `${config.appURL}/public/my-bookings/?bookingToken=${data.uuid}`;
 
 	return {
 		status,
@@ -72,5 +76,6 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 		time,
 		videoConferenceUrl,
 		reasonToReject,
+		manageBookingURL
 	};
 };

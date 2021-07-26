@@ -38,11 +38,17 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 				if (this._booking.service.allowAnonymousBookings) {
 					this.markWithPermission();
 				}
+				break;
 			case ChangeLogAction.Update:
 			case ChangeLogAction.Reschedule:
-				if (this._booking.createdLog && _anonymousGroup.user.id === this._booking.createdLog.userId) {
+			case ChangeLogAction.Cancel:
+				if (
+					(this._booking.createdLog && _anonymousGroup.user.id === this._booking.createdLog.userId) ||
+					_anonymousGroup.user.anonymousUser.bookingUUID === this._booking._uuid
+				) {
 					this.markWithPermission();
 				}
+				break;
 		}
 	}
 
@@ -95,10 +101,17 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 	}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
-		const userId = _anonymousGroup.user.id;
-		this.addAuthCondition(`${this._createdLogAlias}."_userId" = :userId`, {
-			userId,
-		});
+		if (_anonymousGroup.bookingInfo) {
+			const authorisedBookingUUID = _anonymousGroup.bookingInfo.bookingUUID;
+			this.addAuthCondition(`${this._alias}."_uuid" = :authorisedBookingUUID`, {
+				authorisedBookingUUID,
+			});
+		} else {
+			const userId = _anonymousGroup.user.id;
+			this.addAuthCondition(`${this._createdLogAlias}."_userId" = :userId`, {
+				userId,
+			});
+		}
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {

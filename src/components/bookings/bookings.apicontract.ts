@@ -51,7 +51,7 @@ export class BookingUpdateRequest extends BookingRequest {
 		super();
 	}
 
-	public citizenUinFinUpdated: boolean;
+	public citizenUinFinUpdated?: boolean;
 }
 
 export type BookingResponse = {

@@ -30,9 +30,7 @@ import { BookingsRepository } from './bookings.repository';
 import { BookingType } from '../../../src/models/bookingType';
 import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
-import { logger } from 'mol-lib-common';
 import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
-import { Observer } from '../../infrastructure/observer';
 import { MyInfoService } from '../myInfo/myInfo.service';
 
 @InRequestScope
@@ -71,12 +69,11 @@ export class BookingsService {
 	private myInfoService: MyInfoService;
 
 	constructor() {
-		const observers: Observer[] = [this.mailObserver, this.smsObserver];
-
-		logger.debug(`====== lifeSG ======= ${getConfig().featureFlag.lifeSGSync}`);
-		if (getConfig().featureFlag.lifeSGSync) observers.push(this.lifeSGObserver);
-
-		this.bookingsSubject.attach(observers);
+		this.bookingsSubject.attach(
+			getConfig().featureFlag.lifeSGSync
+				? [this.mailObserver, this.lifeSGObserver, this.smsObserver]
+				: [this.mailObserver, this.smsObserver],
+		);
 	}
 
 	private static useAdminValidator(user: User): boolean {
@@ -117,14 +114,29 @@ export class BookingsService {
 	}
 
 	public async getBooking(bookingId: number): Promise<Booking> {
-		return this.getBookingInternal(bookingId, {});
+		return this.getBookingInternal(bookingId);
 	}
 
-	private async getBookingInternal(bookingId: number, options: { byPassAuth?: boolean }): Promise<Booking> {
+	public async getBookingByUUID(bookingUUID: string): Promise<Booking> {
+		return this.getBookingInternalByUUID(bookingUUID);
+	}
+
+	private async getBookingInternalByUUID(bookingUUID: string): Promise<Booking> {
+		if (!bookingUUID) {
+			return null;
+		}
+		const booking = await this.bookingsRepository.getBookingByUUID(bookingUUID);
+		if (!booking) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingUUID} not found`);
+		}
+		return booking;
+	}
+
+	private async getBookingInternal(bookingId: number): Promise<Booking> {
 		if (!bookingId) {
 			return null;
 		}
-		const booking = await this.bookingsRepository.getBooking(bookingId, options);
+		const booking = await this.bookingsRepository.getBooking(bookingId);
 		if (!booking) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingId} not found`);
 		}
@@ -148,10 +160,6 @@ export class BookingsService {
 
 	public async update(bookingId: number, bookingRequest: BookingUpdateRequest): Promise<Booking> {
 		const updateAction = (_booking) => {
-			if (!bookingRequest.citizenUinFinUpdated) {
-				bookingRequest.citizenUinFin = _booking.citizenUinFin;
-			}
-
 			return this.updateInternal(_booking, bookingRequest, () => {});
 		};
 		const booking = await this.changeLogsService.executeAndLogAction(
@@ -259,6 +267,7 @@ export class BookingsService {
 		await this.loadBookingDependencies(booking);
 		await this.verifyActionPermission(booking, ChangeLogAction.Cancel);
 		await this.bookingsRepository.update(booking);
+		booking.creator = await this.usersService.persistUserIfRequired(await this.userContext.getCurrentUser());
 
 		return [ChangeLogAction.Cancel, booking];
 	}
@@ -285,7 +294,7 @@ export class BookingsService {
 
 	private async rescheduleInternal(
 		previousBooking: Booking,
-		rescheduleRequest: BookingRequest,
+		rescheduleRequest: BookingUpdateRequest,
 	): Promise<[ChangeLogAction, Booking]> {
 		if (!previousBooking.isValidForRescheduling()) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Booking in invalid state for rescheduling');
@@ -347,9 +356,13 @@ export class BookingsService {
 
 	private async updateInternal(
 		previousBooking: Booking,
-		bookingRequest: BookingRequest,
+		bookingRequest: BookingUpdateRequest,
 		afterMap: (updatedBooking: Booking, serviceProvider: ServiceProvider) => void | Promise<void>,
 	): Promise<[ChangeLogAction, Booking]> {
+		if (!bookingRequest.citizenUinFinUpdated) {
+			bookingRequest.citizenUinFin = previousBooking.citizenUinFin;
+		}
+
 		const updatedBooking = previousBooking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
 		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.useAdminValidator(currentUser));
@@ -367,6 +380,7 @@ export class BookingsService {
 		await this.loadBookingDependencies(updatedBooking);
 		await this.verifyActionPermission(updatedBooking, changeLogAction);
 		await this.bookingsRepository.update(updatedBooking);
+		updatedBooking.creator = await this.usersService.persistUserIfRequired(currentUser);
 
 		return [changeLogAction, updatedBooking];
 	}

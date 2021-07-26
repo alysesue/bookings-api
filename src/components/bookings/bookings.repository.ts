@@ -75,6 +75,18 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return entry;
 	}
 
+	public async getBookingByUUID(bookingUUID: string, options: { byPassAuth?: boolean } = {}): Promise<Booking> {
+		const uuidCondition = 'booking."_uuid" = :bookingUUID';
+
+		const query = await this.createSelectQuery([uuidCondition], { bookingUUID }, options);
+		const entry = await query.getOne();
+		if (entry) {
+			await this.includeServiceProviders([entry]);
+		}
+
+		return entry;
+	}
+
 	public async insert(booking: Booking): Promise<InsertResult> {
 		const repository = await this.getRepository();
 		return await repository.insert(booking);
