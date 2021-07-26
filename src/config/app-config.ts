@@ -43,6 +43,7 @@ export const getConfig = () => ({
 	recaptchaSiteKey: ConfigUtils.getValueFromEnv('RECAPTCHA_SITE_KEY_BOOKINGSG_APP'),
 	hashIdSalt: ConfigUtils.getValueFromEnv('BOOKINGSG_HASHID_SALT'),
 	accessControlAllowOrigin: ConfigUtils.getValueFromEnv('ACCESS_CONTROL_ALLOW_ORIGIN'),
+	appURL: ConfigUtils.getValueFromEnv('APP_URL'),
 	mailer: {
 		smtpHost: ConfigUtils.getValueFromEnv('SMTP_HOST', ''),
 		smtpPort: ConfigUtils.getValueFromEnv('SMTP_PORT', ''),

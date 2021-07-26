@@ -21,6 +21,7 @@ export class CitizenEmailTemplateBookingActionByCitizen implements EmailBookingT
 			time,
 			locationText,
 			videoConferenceUrl,
+			manageBookingURL,
 		} = emailMapper(data);
 
 		return {
@@ -36,6 +37,7 @@ Date: <b>${day}</b>
 Time: <b>${time}</b>
 ${videoConferenceUrl}
 ${locationText}
+<a href='${manageBookingURL}'>Reschedule / Cancel Booking</a>
 </pre>`,
 		};
 	}
@@ -49,6 +51,7 @@ ${locationText}
 			time,
 			locationText,
 			videoConferenceUrl,
+			manageBookingURL,
 		} = emailMapper(data);
 
 		return {
@@ -64,6 +67,7 @@ Date: <b>${day}</b>
 Time: <b>${time}</b>
 ${videoConferenceUrl}
 ${locationText}
+<a href='${manageBookingURL}'>Reschedule / Cancel Booking</a>
 </pre>`,
 		};
 	}
@@ -106,6 +110,7 @@ export class CitizenEmailTemplateBookingActionByServiceProvider implements Email
 			time,
 			locationText,
 			videoConferenceUrl,
+			manageBookingURL,
 		} = emailMapper(data);
 
 		return {
@@ -121,6 +126,7 @@ Date: <b>${day}</b>
 Time: <b>${time}</b>
 ${videoConferenceUrl}
 ${locationText}
+<a href='${manageBookingURL}'>Reschedule / Cancel Booking</a>
 </pre>`,
 		};
 	}
@@ -134,6 +140,7 @@ ${locationText}
 			time,
 			locationText,
 			videoConferenceUrl,
+			manageBookingURL,
 		} = emailMapper(data);
 
 		return {
@@ -149,6 +156,7 @@ Date: <b>${day}</b>
 Time: <b>${time}</b>
 ${videoConferenceUrl}
 ${locationText}
+<a href='${manageBookingURL}'>Reschedule / Cancel Booking</a>
 </pre>`,
 		};
 	}
