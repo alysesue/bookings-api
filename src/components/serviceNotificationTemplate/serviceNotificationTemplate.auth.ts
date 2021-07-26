@@ -14,12 +14,10 @@ import { CrudAction } from '../../enums/crudAction';
 
 export class NotificationTemplateActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 	private readonly _service: Service;
-	// private readonly _action: CrudAction;
 
 	constructor(service: Service, action: CrudAction) {
 		super();
 		this._service = service;
-		// this._action = action;
 
 		if (!service) {
 			throw new Error('NotificationTemplateActionAuthVisitor - Service cannot be null or undefined');
@@ -51,12 +49,10 @@ export class NotificationTemplateActionAuthVisitor extends PermissionAwareAuthGr
 }
 
 export class NotificationTemplateQueryAuthVisitor extends QueryAuthGroupVisitor {
-	// private _alias: string;
 	private readonly _serviceAlias: string;
 
 	constructor(alias: string, serviceAlias: string) {
 		super();
-		// this._alias = alias;
 		this._serviceAlias = serviceAlias;
 	}
 

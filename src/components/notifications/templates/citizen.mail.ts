@@ -33,15 +33,15 @@ export abstract class EmailBookingTemplate {
 			serviceId,
 			templateType,
 		);
-		if (serviceTemplate) {
-			if (serviceTemplate.htmlTemplate) {
-				const emailContent = mapVariablesValuesToServiceTemplate(
-					emailMapper(bookingData),
-					serviceTemplate.htmlTemplate,
-				);
-				return emailContent;
-			}
+
+		if (serviceTemplate?.htmlTemplate) {
+			const emailContent = mapVariablesValuesToServiceTemplate(
+				emailMapper(bookingData),
+				serviceTemplate.htmlTemplate,
+			);
+			return emailContent;
 		}
+
 		return null;
 	};
 
