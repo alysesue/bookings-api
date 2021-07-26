@@ -11,6 +11,7 @@ import { PagingHelper } from '../../../core/paging';
 import { IPagedEntities } from '../../../core/pagedEntities';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 import * as uuid from 'uuid';
+import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
 
 jest.mock('../../../core/paging');
 
@@ -302,12 +303,5 @@ class UserContextMock implements Partial<UserContext> {
 
 	public async getAuthGroups(...params): Promise<any> {
 		return await UserContextMock.getAuthGroups(...params);
-	}
-}
-
-class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersRepository> {
-	public static getServiceProviders = jest.fn<Promise<ServiceProvider[]>, any>();
-	public async getServiceProviders(...params): Promise<any> {
-		return await ServiceProvidersRepositoryMock.getServiceProviders(...params);
 	}
 }

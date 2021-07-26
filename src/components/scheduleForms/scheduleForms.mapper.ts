@@ -13,8 +13,10 @@ export const mapToEntity = (
 	entity: ScheduleForm,
 ): OptionalResult<ScheduleForm, string[]> => {
 	entity.slotsDurationInMin = contract.slotsDurationInMin;
-	const errors: string[] = [];
+	entity.startDate = contract.startDate;
+	entity.endDate = contract.endDate;
 
+	const errors: string[] = [];
 	const weekDaysContract = groupByKeyLastValue(contract.weekdaySchedules || [], (w) => w.weekday);
 
 	entity.initWeekdaySchedules();
@@ -22,7 +24,8 @@ export const mapToEntity = (
 	for (const daySchedule of entity.weekdaySchedules) {
 		if (weekDaysContract.has(daySchedule.weekDay)) {
 			const dayContract = weekDaysContract.get(daySchedule.weekDay);
-
+			dayContract.startDate = contract.startDate;
+			dayContract.endDate = contract.endDate;
 			const dayResult = setDayContractEntity(dayContract, daySchedule);
 			if (isErrorResult(dayResult)) {
 				errors.push(...getErrorResult(dayResult));
@@ -39,6 +42,9 @@ const setDayContractEntity = (
 ): OptionalResult<WeekDaySchedule, string[]> => {
 	entity.hasScheduleForm = contract.hasScheduleForm;
 	entity.capacity = contract.capacity;
+	entity.startDate = contract.startDate;
+	entity.endDate = contract.endDate;
+
 	const errors: string[] = [];
 
 	try {
@@ -104,7 +110,8 @@ export const mapToResponse = (template: ScheduleForm): ScheduleFormResponse => {
 	response.id = template.id;
 	response.slotsDurationInMin = template.slotsDurationInMin;
 	response.weekdaySchedules = template.weekdaySchedules?.map((w) => mapDayScheduleToResponse(w)) || [];
-
+	response.startDate = template.startDate;
+	response.endDate = template.endDate;
 	return response;
 };
 
@@ -116,6 +123,8 @@ export const mapDayScheduleToResponse = (daySchedule: WeekDaySchedule): WeekDayS
 	dayContract.closeTime = daySchedule.closeTime?.toJSON();
 	dayContract.breaks = daySchedule.breaks?.map((e) => mapBreaksToResponse(e));
 	dayContract.capacity = daySchedule.capacity;
+	dayContract.startDate = daySchedule.startDate;
+	dayContract.endDate = daySchedule.endDate;
 
 	return dayContract;
 };

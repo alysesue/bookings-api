@@ -14,60 +14,84 @@ describe('schedule mapper tests', () => {
 		jest.clearAllMocks();
 	});
 
-	it('should throw error because open and close times have wrong format', async () => {
-		const scheduleFormsRequest: ScheduleFormRequest = {
-			slotsDurationInMin: 5,
-			weekdaySchedules: [
-				{
-					weekday: Weekday.Monday,
-					hasScheduleForm: true,
-					openTime: '2323',
-					closeTime: '25:25',
-				} as WeekDayScheduleContract,
-			],
-		} as ScheduleFormRequest;
+	describe('mapToEntity tests', () => {
+		it('should throw error because open and close times have wrong format', async () => {
+			const scheduleFormsRequest: ScheduleFormRequest = {
+				slotsDurationInMin: 5,
+				weekdaySchedules: [
+					{
+						weekday: Weekday.Monday,
+						hasScheduleForm: true,
+						openTime: '2323',
+						closeTime: '25:25',
+					} as WeekDayScheduleContract,
+				],
+			} as ScheduleFormRequest;
 
-		const result = mapToEntity(scheduleFormsRequest, new ScheduleForm());
-		expect(result).toStrictEqual({
-			errorResult: ['Value 2323 is not a valid time.', 'Value 25:25 is not a valid time.'],
+			const result = mapToEntity(scheduleFormsRequest, new ScheduleForm());
+			expect(result).toStrictEqual({
+				errorResult: ['Value 2323 is not a valid time.', 'Value 25:25 is not a valid time.'],
+			});
 		});
-	});
 
-	it('should throw error because close time have wrong format', async () => {
-		const scheduleFormsRequest: ScheduleFormRequest = {
-			slotsDurationInMin: 5,
-			weekdaySchedules: [
-				{
-					weekday: Weekday.Monday,
-					hasScheduleForm: true,
-					openTime: '23:23',
-					closeTime: '11:73',
-				} as WeekDayScheduleContract,
-			],
-		} as ScheduleFormRequest;
+		it('should throw error because close time have wrong format', async () => {
+			const scheduleFormsRequest: ScheduleFormRequest = {
+				slotsDurationInMin: 5,
+				weekdaySchedules: [
+					{
+						weekday: Weekday.Monday,
+						hasScheduleForm: true,
+						openTime: '23:23',
+						closeTime: '11:73',
+					} as WeekDayScheduleContract,
+				],
+			} as ScheduleFormRequest;
 
-		const result = mapToEntity(scheduleFormsRequest, new ScheduleForm());
-		expect(result).toStrictEqual({
-			errorResult: ['Value 11:73 is not a valid time.'],
+			const result = mapToEntity(scheduleFormsRequest, new ScheduleForm());
+			expect(result).toStrictEqual({
+				errorResult: ['Value 11:73 is not a valid time.'],
+			});
 		});
-	});
 
-	it('should map day schedule correctly with capacity value set', async () => {
-		const scheduleFormsRequest: ScheduleFormRequest = {
-			slotsDurationInMin: 5,
-			weekdaySchedules: [
-				{
-					weekday: Weekday.Monday,
-					hasScheduleForm: true,
-					openTime: '23:23',
-					closeTime: '11:23',
-					capacity: 2,
-				} as WeekDayScheduleContract,
-			],
-		} as ScheduleFormRequest;
-		const result = mapToEntity(scheduleFormsRequest, new ScheduleForm());
-		if (result instanceof ScheduleForm) {
-			expect(result.weekdaySchedules[0].capacity).toEqual(2);
-		}
+		it('should map day schedule correctly with capacity value set', async () => {
+			const scheduleFormsRequest: ScheduleFormRequest = {
+				slotsDurationInMin: 5,
+				weekdaySchedules: [
+					{
+						weekday: Weekday.Monday,
+						hasScheduleForm: true,
+						openTime: '23:23',
+						closeTime: '11:23',
+						capacity: 2,
+					} as WeekDayScheduleContract,
+				],
+			} as ScheduleFormRequest;
+			const result = mapToEntity(scheduleFormsRequest, new ScheduleForm());
+			if (result instanceof ScheduleForm) {
+				expect(result.weekdaySchedules[0].capacity).toEqual(2);
+			}
+		});
+
+		it('should map day schedule correctly with schedule start and end date', async () => {
+			const scheduleFormsRequest: ScheduleFormRequest = {
+				slotsDurationInMin: 5,
+				startDate: new Date('2021-06-07'),
+				endDate: new Date('2021-06-08'),
+				weekdaySchedules: [
+					{
+						weekday: Weekday.Monday,
+						hasScheduleForm: true,
+						openTime: '23:23',
+						closeTime: '11:23',
+						capacity: 2,
+					} as WeekDayScheduleContract,
+				],
+			} as ScheduleFormRequest;
+			const result = mapToEntity(scheduleFormsRequest, new ScheduleForm());
+			if (result instanceof ScheduleForm) {
+				expect(result.startDate).toEqual(new Date('2021-06-07'));
+				expect(result.endDate).toEqual(new Date('2021-06-08'));
+			}
+		});
 	});
 });

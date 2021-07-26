@@ -22,6 +22,7 @@ import {
 	ServiceProviderModel,
 } from './serviceProviders.apicontract';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
+import { DateHelper } from '../../infrastructure/dateHelper';
 
 const DEFAULT_PHONE_NUMBER = '+6580000000';
 
@@ -288,6 +289,11 @@ export class ServiceProvidersService {
 	}
 
 	public async setProvidersScheduleForm(orgaId: number, request: ScheduleFormRequest): Promise<ServiceProvider[]> {
+		this.verifyScheduleDates(request);
+		if (request.startDate && request.endDate) {
+			request.startDate = DateHelper.getDateOnly(request.startDate);
+			request.endDate = DateHelper.getDateOnly(request.endDate);
+		}
 		const serviceProviders = await this.serviceProvidersRepository.getServiceProviders({ organisationId: orgaId });
 		const serviceProvidersRes = [];
 
@@ -298,6 +304,19 @@ export class ServiceProvidersService {
 		}
 
 		return serviceProvidersRes;
+	}
+
+	private verifyScheduleDates(request: ScheduleFormRequest) {
+		if (request.endDate < request.startDate) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				'End date cannot be earlier than start date',
+			);
+		}
+		if ((request.startDate || request.endDate) && (!request.startDate || !request.endDate)) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				'Both the start date and end date must be selected or empty',
+			);
+		}
 	}
 
 	public getFilteredServiceProvidersByEmail(
@@ -389,6 +408,8 @@ export class ServiceProvidersService {
 				request.weekDay,
 				TimeOfDay.parse(request.startTime),
 				TimeOfDay.parse(request.endTime),
+				request.startDate,
+				request.endDate,
 			);
 			const serviceTimeslotsSchedule = await this.servicesService.getServiceTimeslotsSchedule(
 				serviceProvider.serviceId,

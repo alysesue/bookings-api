@@ -26,6 +26,16 @@ export class ScheduleForm implements IScheduleForm {
 	@OneToOne('Service', '_scheduleForm', { nullable: true })
 	public service: IService;
 
+	/**
+	 * Currently setting start and end date assuming the service provider schedule is following the same start and end date.
+	 * This could change in future stories where start and end date can be pegged to individual timeslots.
+	 */
+	@Column({ type: 'date', nullable: true, default: null })
+	public startDate?: Date;
+
+	@Column({ type: 'date', nullable: true, default: null })
+	public endDate?: Date;
+
 	constructor() {}
 
 	public initWeekdaySchedules(): void {

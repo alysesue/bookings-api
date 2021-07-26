@@ -134,6 +134,7 @@ export class BookingsMapper {
 			['Citizen Name']: `${booking.citizenName}`,
 			['Citizen Email address']: `${booking.citizenEmail}`,
 			['Citizen Phone number']: `${booking.citizenPhone}`,
+			['Service Name']: `${booking.service.name}`,
 			['Service Provider Name']: `${booking.serviceProvider?.name}`,
 			['Service Provider Email address']: `${booking.serviceProvider?.email}`,
 			['Service Provider Phone number']: `${booking.serviceProvider?.phone}`,

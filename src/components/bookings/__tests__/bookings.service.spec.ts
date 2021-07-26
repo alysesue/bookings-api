@@ -40,7 +40,6 @@ import {
 import {
 	BookingChangeLogsServiceMock,
 	BookingRepositoryMock,
-	ServiceProvidersRepositoryMock,
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
 	UsersServiceMock,
@@ -62,6 +61,7 @@ import { TimeslotServiceProviderResult } from '../../../models/timeslotServicePr
 import { MyInfoService } from '../../myInfo/myInfo.service';
 import { MyInfoServiceeMock } from '../../myInfo/__mocks__/myInfo.service.mock';
 import * as uuid from 'uuid';
+import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
 
 jest.mock('../../../tools/arrays');
 

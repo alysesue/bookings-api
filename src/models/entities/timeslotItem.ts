@@ -40,11 +40,19 @@ export class TimeslotItem implements ITimeSpan {
 	@Column({ nullable: false, default: 1 })
 	public _capacity: number;
 
+	@Column({ type: 'date', nullable: true, default: null })
+	public _startDate?: Date;
+
+	@Column({ type: 'date', nullable: true, default: null })
+	public _endDate?: Date;
+
 	public static create(
 		timeslotScheduleId: number,
 		weekDay: Weekday,
 		startTime: TimeOfDay,
 		endTime: TimeOfDay,
+		startDate: Date = undefined,
+		endDate: Date = undefined,
 		capacity = 1,
 	): TimeslotItem {
 		const instance = new TimeslotItem();
@@ -53,6 +61,8 @@ export class TimeslotItem implements ITimeSpan {
 		instance._endTime = endTime;
 		instance._weekDay = weekDay;
 		instance._capacity = capacity;
+		instance._startDate = startDate;
+		instance._endDate = endDate;
 		return instance;
 	}
 
@@ -89,6 +99,8 @@ export class TimeslotItem implements ITimeSpan {
 						weekDay.weekDay,
 						startTimeslotItem,
 						endTimeslotItem,
+						weekDay.startDate,
+						weekDay.endDate,
 						weekDay.capacity,
 					);
 					timeslotItems.push(timeslotItem);

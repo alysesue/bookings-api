@@ -42,7 +42,6 @@ export class TimeslotGenerator {
 
 		for (let day = 0; day < daysCount; day++) {
 			const weekdayTimeslots: TimeslotItem[] = validWeekDays.get(dayOfWeek);
-
 			if (weekdayTimeslots && weekdayTimeslots.length > 0) {
 				const startTimeOfDay = day === 0 ? firstDayStartTime : null;
 				const endTimeOfDay = day === lastDayIndex ? lastDayEndTime : null;
@@ -50,10 +49,18 @@ export class TimeslotGenerator {
 				for (const timeslotTemplate of weekdayTimeslots) {
 					if (startTimeOfDay && TimeOfDay.compare(timeslotTemplate._startTime, startTimeOfDay) < 0) continue;
 					if (endTimeOfDay && TimeOfDay.compare(timeslotTemplate._endTime, endTimeOfDay) > 0) continue;
-
+					const startTimeNative = dateNative + timeslotTemplate._startTime.AsMilliseconds();
+					const endTimeNative = dateNative + timeslotTemplate._endTime.AsMilliseconds();
+					if (
+						(timeslotTemplate._startDate &&
+							startTimeNative < DateHelper.getStartOfDayNative(timeslotTemplate._startDate.getTime())) ||
+						(timeslotTemplate._endDate &&
+							endTimeNative > DateHelper.getEndOfDayNative(timeslotTemplate._endDate.getTime()))
+					)
+						continue;
 					const timeslot: TimeslotWithCapacity = {
-						startTimeNative: dateNative + timeslotTemplate._startTime.AsMilliseconds(),
-						endTimeNative: dateNative + timeslotTemplate._endTime.AsMilliseconds(),
+						startTimeNative,
+						endTimeNative,
 						capacity: timeslotTemplate._capacity,
 						isRecurring: true,
 					};
@@ -61,7 +68,6 @@ export class TimeslotGenerator {
 					yield timeslot;
 				}
 			}
-
 			dateNative = dateNative + TIME_PER_DAY;
 			dayOfWeek = (dayOfWeek + 1) % 7;
 		}
