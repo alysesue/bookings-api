@@ -10,6 +10,11 @@ import { Booking, Service, ServiceProvider, User } from '../../../models';
 import { BookingType } from '../../../models/bookingType';
 import { SMSObserver } from '../notificationSMS.observer';
 import { SMSBookingTemplateMock } from '../templates/__mocks__/citizen.sms.mock';
+import { getConfig } from '../../../config/app-config';
+
+jest.mock('../../../config/app-config', () => ({
+	getConfig: jest.fn(),
+}));
 
 const adminMock = User.createAdminUser({
 	molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
@@ -47,6 +52,10 @@ describe('Test notificationSMS observer', () => {
 			sendSMSNotifications: true,
 		} as unknown) as Service;
 		booking.serviceProvider = { email: 'test' } as ServiceProvider;
+		booking.uuid = 'f4533bed-da08-473a-8641-7aef918fe0db';
+		(getConfig as jest.Mock).mockReturnValue({
+			appURL: 'http://www.local.booking.gov.sg:3000',
+		});
 	});
 
 	it('should not call send sms if no phone', async () => {
