@@ -20,7 +20,7 @@ describe('Tests endpoint and populate data for POST request', () => {
 		done();
 	});
 
-	it('Post a single email notification template of a service', async () => {
+	it('Post a single service email notification template', async () => {
 		const service = await populateService({ nameService: SERVICE_NAME });
 		const serviceId = service.id;
 

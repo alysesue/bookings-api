@@ -14,12 +14,6 @@ describe('Services Notification Template mapper test', () => {
 		expect(notificationTemplateResponse.emailTemplateType).toEqual(templateData.emailTemplateType);
 	});
 
-	it('should throw error when calling mapToNotificationTemplateResponse with no data', () => {
-		const templateData = new ServiceNotificationTemplate();
-		const response = () => mapper.mapToNotificationTemplateResponse(templateData);
-		expect(response).toThrowErrorMatchingInlineSnapshot('"Data not found"');
-	});
-
 	it('should map template response with isDefaultTemplate value equals to true', () => {
 		const templateData = new ServiceNotificationTemplate();
 		templateData.htmlTemplate = 'testing mapGetResponseToNotifTemplateResponse';
@@ -46,9 +40,4 @@ describe('Services Notification Template mapper test', () => {
 		expect(notificationTemplateResponse.emailTemplateType).toEqual(templateData.emailTemplateType);
 	});
 
-	it('should throw error when calling mapGetResponseToNotifTemplateResponse with no data', () => {
-		const templateData = new ServiceNotificationTemplate();
-		const response = () => mapper.mapGetResponseToNotifTemplateResponse(templateData);
-		expect(response).toThrowErrorMatchingInlineSnapshot('"Data not found"');
-	});
 });

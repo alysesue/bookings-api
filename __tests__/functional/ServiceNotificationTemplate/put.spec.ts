@@ -2,15 +2,14 @@ import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointS
 import { PgClient } from '../../utils/pgClient';
 import { populateService, populateServiceNotificationTemplate } from '../../populate/basic';
 import { EmailNotificationTemplateType } from '../../../src/components/notifications/notifications.enum';
-import {ServiceNotificationTemplateResponse} from "../../../src/components/serviceNotificationTemplate/serviceNotificationTemplate.apicontract";
+import { ServiceNotificationTemplateResponse } from '../../../src/components/serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
 
-describe('Tests endpoint and populate data for GET request', () => {
+describe('Tests endpoint and populate data for PUT request', () => {
 	const pgClient = new PgClient();
 	const SERVICE_NAME = 'Service';
 	const TEMPLATE_TYPE = EmailNotificationTemplateType.CreatedByCitizenSentToCitizen;
 	const HTML_TEMPLATE = 'test service notification template';
 	const HTML_TEMPLATE_UPDATED = 'update this test service notification template';
-
 
 	beforeEach(async (done) => {
 		await pgClient.cleanAllTables();
@@ -22,7 +21,7 @@ describe('Tests endpoint and populate data for GET request', () => {
 		done();
 	});
 
-	it('Get a single email notification template of a service', async () => {
+	it('PUT a single service email notification template', async () => {
 		const service = await populateService({ nameService: SERVICE_NAME });
 		const serviceId = service.id;
 		await populateServiceNotificationTemplate({

@@ -40,12 +40,13 @@ export class ServiceNotificationTemplateService {
 		let responseTemplate = await this.getEmailServiceNotificationTemplateByType(serviceId, emailTemplateType);
 
 		if (!responseTemplate) {
-			responseTemplate = new ServiceNotificationTemplate();
-			responseTemplate.id = null;
-			responseTemplate.emailTemplateType = emailTemplateType;
-			responseTemplate.htmlTemplate = this.notificationsRepository.getDefaultEmailNotificationTemplateByType(
-				emailTemplateType,
-			);
+			responseTemplate = this.createResponseDefaultTemplateByType(emailTemplateType);
+			// responseTemplate = new ServiceNotificationTemplate();
+			// responseTemplate.id = null;
+			// responseTemplate.emailTemplateType = emailTemplateType;
+			// responseTemplate.htmlTemplate = this.notificationsRepository.getDefaultEmailNotificationTemplateByType(
+			// 	emailTemplateType,
+			// );
 		}
 		return responseTemplate;
 	}
@@ -105,5 +106,18 @@ export class ServiceNotificationTemplateService {
 
 		existTemplate.htmlTemplate = request.htmlTemplate;
 		return await this.notificationTemplateRepository.save(existTemplate);
+	}
+
+	public  createResponseDefaultTemplateByType(
+		emailTemplateType: EmailNotificationTemplateType,
+	): ServiceNotificationTemplate {
+		const defaultTemplate = new ServiceNotificationTemplate();
+		defaultTemplate.id = null;
+		defaultTemplate.emailTemplateType = emailTemplateType;
+		defaultTemplate.htmlTemplate = this.notificationsRepository.getDefaultEmailNotificationTemplateByType(
+			emailTemplateType,
+		);
+
+		return defaultTemplate;
 	}
 }
