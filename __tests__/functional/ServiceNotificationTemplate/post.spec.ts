@@ -1,10 +1,10 @@
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { PgClient } from '../../utils/pgClient';
-import { populateService, populateServiceNotificationTemplate } from '../../populate/basic';
+import { populateService } from '../../populate/basic';
 import { EmailNotificationTemplateType } from '../../../src/components/notifications/notifications.enum';
-import {ServiceNotificationTemplateResponse} from "../../../src/components/serviceNotificationTemplate/serviceNotificationTemplate.apicontract";
+import { ServiceNotificationTemplateResponse } from '../../../src/components/serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
 
-describe('Tests endpoint and populate data for GET request', () => {
+describe('Tests endpoint and populate data for POST request', () => {
 	const pgClient = new PgClient();
 	const SERVICE_NAME = 'Service';
 	const TEMPLATE_TYPE = EmailNotificationTemplateType.CreatedByCitizenSentToCitizen;
@@ -20,24 +20,21 @@ describe('Tests endpoint and populate data for GET request', () => {
 		done();
 	});
 
-	it('Get a single email notification template of a service', async () => {
+	it('Post a single email notification template of a service', async () => {
 		const service = await populateService({ nameService: SERVICE_NAME });
 		const serviceId = service.id;
-		await populateServiceNotificationTemplate({
-			serviceId: serviceId,
-			emailTemplateType: TEMPLATE_TYPE,
-			htmlTemplate: HTML_TEMPLATE,
-		});
 
-		const response = await OrganisationAdminRequestEndpointSG.create({}).get(
+		const response = await OrganisationAdminRequestEndpointSG.create({}).post(
 			`/services/${serviceId}/notificationTemplate/email`,
 			{
-				params: { serviceId: serviceId, emailTemplateType: TEMPLATE_TYPE },
+				params: { serviceId: serviceId },
+				body: { emailTemplateType: TEMPLATE_TYPE, htmlTemplate: HTML_TEMPLATE },
 			},
 		);
 
 		expect(response.statusCode).toEqual(200);
 		expect((response.body.data as ServiceNotificationTemplateResponse).htmlTemplate).toEqual(HTML_TEMPLATE);
-		expect((response.body.data as ServiceNotificationTemplateResponse).isDefaultTemplate).toEqual(false);
+		expect((response.body.data as ServiceNotificationTemplateResponse).id).not.toBeNull();
+		expect((response.body.data as ServiceNotificationTemplateResponse).isDefaultTemplate).toEqual(undefined);
 	});
 });
