@@ -32,6 +32,7 @@ import {
 } from '../../bookingChangeLogs/bookingChangeLogs.service';
 import { ServicesService } from '../../services/services.service';
 import {
+	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
@@ -58,6 +59,9 @@ import { MockObserver } from '../../../infrastructure/__mocks__/observer.mock';
 import { ServiceProvidersServiceMock } from '../../serviceProviders/__mocks__/serviceProviders.service.mock';
 import { randomIndex } from '../../../tools/arrays';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
+import { MyInfoService } from '../../myInfo/myInfo.service';
+import { MyInfoServiceeMock } from '../../myInfo/__mocks__/myInfo.service.mock';
+import * as uuid from 'uuid';
 
 jest.mock('../../../tools/arrays');
 
@@ -84,6 +88,7 @@ function getUpdateBookingRequest() {
 describe('Bookings.Service', () => {
 	const service = new Service();
 	service.id = 1;
+
 	const serviceProvider = ServiceProvider.create('provider', 1);
 	serviceProvider.id = 1;
 
@@ -98,6 +103,7 @@ describe('Bookings.Service', () => {
 		name: 'Name',
 	});
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+	const anonymousMock = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
 
 	const validatorMock = {
 		bypassCaptcha: jest.fn(),
@@ -136,6 +142,7 @@ describe('Bookings.Service', () => {
 		Container.bind(UsersService).to(UsersServiceMock);
 		Container.bind(BookingsSubject).to(BookingsSubjectMock);
 		Container.bind(MailObserver).to(MockObserver);
+		Container.bind(MyInfoService).to(MyInfoServiceeMock);
 	});
 
 	beforeEach(() => {
@@ -170,6 +177,8 @@ describe('Bookings.Service', () => {
 		BookingRepositoryMock.searchReturnAll.mockImplementation(() => Promise.resolve([]));
 
 		UsersServiceMock.persistUserIfRequired.mockImplementation((u) => Promise.resolve(u));
+
+		MyInfoServiceeMock.getMyInfo.mockImplementation(() => Promise.resolve(undefined));
 	});
 
 	afterAll(() => {
@@ -235,11 +244,75 @@ describe('Bookings.Service', () => {
 		expect(error.message).toEqual(`Maximum rows for export: 1`);
 	});
 
-	it('should save booking from booking request', async () => {
+	it('should save booking from booking request (anonymous user)', async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.citizenName = 'this should be the name';
+		bookingRequest.citizenEmail = 'correctemail@gmail.com';
+		bookingRequest.citizenPhone = '93328223';
 
+		const anonymousService = new Service();
+		anonymousService.id = 1;
+		anonymousService.allowAnonymousBookings = true;
+		anonymousService.isStandAlone = false;
+
+		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(anonymousService));
+		TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
+			return Promise.resolve([
+				{
+					serviceProvider,
+					capacity: 1,
+					acceptedBookings: [],
+					pendingBookings: [],
+					availabilityCount: 1,
+				} as TimeslotServiceProviderResult,
+			]);
+		});
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(anonymousMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new AnonymousAuthGroup(anonymousMock)]),
+		);
+
+		await Container.get(BookingsService).save(bookingRequest, 1);
+
+		const booking = BookingRepositoryMock.booking;
+		expect(booking).not.toBe(undefined);
+		expect(booking.status).toBe(BookingStatus.PendingApproval);
+		expect(booking.citizenName).toBe(bookingRequest.citizenName);
+		expect(booking.citizenEmail).toBe(bookingRequest.citizenEmail);
+		expect(booking.citizenPhone).toBe(bookingRequest.citizenPhone);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+	});
+	it('should save booking from booking request (singpass user)', async () => {
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.citizenName = 'this should be the name';
+		bookingRequest.citizenEmail = 'correctemail@gmail.com';
+		bookingRequest.citizenPhone = '93328223';
+		const myInfo = {
+			data: {
+				name: {
+					value: 'Armin the great',
+				},
+				email: {
+					value: 'armin@gmail.com',
+				},
+				mobileno: {
+					nbr: {
+						value: '92228333',
+					},
+				},
+			},
+		};
+		const standaloneService = new Service();
+		standaloneService.id = 1;
+		standaloneService.allowAnonymousBookings = false;
+		standaloneService.isStandAlone = true;
+
+		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(standaloneService));
 		TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
 			return Promise.resolve([
 				{
@@ -254,12 +327,16 @@ describe('Bookings.Service', () => {
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
+		MyInfoServiceeMock.getMyInfo.mockImplementation(() => Promise.resolve(myInfo));
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
 
 		const booking = BookingRepositoryMock.booking;
 		expect(booking).not.toBe(undefined);
-		expect(booking.status).toBe(BookingStatus.PendingApproval);
+		expect(booking.status).toBe(BookingStatus.OnHold);
+		expect(booking.citizenName).toBe(myInfo.data.name.value);
+		expect(booking.citizenEmail).toBe(myInfo.data.email.value);
+		expect(booking.citizenPhone).toBe(myInfo.data.mobileno.nbr.value);
 		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 

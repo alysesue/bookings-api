@@ -19,6 +19,7 @@ export class ServiceProvidersServiceMock implements Partial<ServiceProvidersServ
 	public static deleteTimeslotForServiceProviderMock = jest.fn();
 	public static createServiceProvidersMock = jest.fn();
 	public static getServiceProvidersByNameMock = jest.fn();
+	public static getFilteredServiceProvidersByEmailMock = jest.fn();
 
 	public async getServiceProvider(...params): Promise<ServiceProvider> {
 		return ServiceProvidersServiceMock.getServiceProviderMock(...params);
@@ -79,5 +80,9 @@ export class ServiceProvidersServiceMock implements Partial<ServiceProvidersServ
 
 	public async deleteTimeslotItem(serviceProviderId: number, timeslotsScheduleId: number): Promise<void> {
 		return ServiceProvidersServiceMock.deleteTimeslotForServiceProviderMock(serviceProviderId, timeslotsScheduleId);
+	}
+
+	public getFilteredServiceProvidersByEmail(...params): ServiceProvider[] {
+		return ServiceProvidersServiceMock.getFilteredServiceProvidersByEmailMock(...params);
 	}
 }

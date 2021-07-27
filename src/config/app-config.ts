@@ -27,6 +27,9 @@ export const getConfig = () => ({
 	molNotification: {
 		url: ConfigUtils.getValueFromEnv('MOL_NOTIFICATION_URL', ''),
 	},
+	molRouteMyInfo: {
+		url: ConfigUtils.getValueFromEnv('MOL_ROUTES_MYINFO', ''),
+	},
 	mqConfig: {
 		hosts: Object.values(ConfigUtils.getValueObjectFromEnv('MQ_HOST')),
 		port: ConfigUtils.getIntValueFromEnv('MQ_PORT'),
