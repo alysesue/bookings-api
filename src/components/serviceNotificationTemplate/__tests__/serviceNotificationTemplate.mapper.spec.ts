@@ -39,5 +39,4 @@ describe('Services Notification Template mapper test', () => {
 		expect(notificationTemplateResponse.htmlTemplate).toEqual(templateData.htmlTemplate);
 		expect(notificationTemplateResponse.emailTemplateType).toEqual(templateData.emailTemplateType);
 	});
-
 });

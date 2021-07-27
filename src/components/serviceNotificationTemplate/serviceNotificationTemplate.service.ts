@@ -41,12 +41,6 @@ export class ServiceNotificationTemplateService {
 
 		if (!responseTemplate) {
 			responseTemplate = this.createResponseDefaultTemplateByType(emailTemplateType);
-			// responseTemplate = new ServiceNotificationTemplate();
-			// responseTemplate.id = null;
-			// responseTemplate.emailTemplateType = emailTemplateType;
-			// responseTemplate.htmlTemplate = this.notificationsRepository.getDefaultEmailNotificationTemplateByType(
-			// 	emailTemplateType,
-			// );
 		}
 		return responseTemplate;
 	}
@@ -108,7 +102,7 @@ export class ServiceNotificationTemplateService {
 		return await this.notificationTemplateRepository.save(existTemplate);
 	}
 
-	public  createResponseDefaultTemplateByType(
+	public createResponseDefaultTemplateByType(
 		emailTemplateType: EmailNotificationTemplateType,
 	): ServiceNotificationTemplate {
 		const defaultTemplate = new ServiceNotificationTemplate();
