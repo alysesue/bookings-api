@@ -32,8 +32,11 @@ export class SMSObserver implements Observer {
 				? this.citizenSMSTemplateBookingActionByServiceProvider
 				: this.citizenSMSTemplateBookingActionByCitizen;
 			const sms = this.templateFactory(subject.booking, subject.bookingType, templates);
-
-			await this.notificationSMSService.send({ message: sms, phoneNumber: subject.booking.citizenPhone });
+			try {
+				await this.notificationSMSService.send({ message: sms, phoneNumber: subject.booking.citizenPhone });
+			} catch (error) {
+				// No need to do anything for now
+			}
 		}
 	}
 

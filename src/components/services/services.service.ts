@@ -128,14 +128,11 @@ export class ServicesService {
 		await this.verifyActionPermission(service, CrudAction.Create);
 		try {
 			await this.servicesRepository.save(service);
-		}
-		catch (e) {
+		} catch (e) {
 			if (e.message.startsWith('duplicate key value violates unique constraint')) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Service name is already present');
 			}
 		}
-
-
 
 		return await this.getService(service.id, { includeLabels: true, includeLabelCategories: true });
 	}

@@ -13,3 +13,4 @@ import './components/usersessions/usersessions.controller';
 import './components/unavailabilities/unavailabilities.controller';
 import './components/oneOffTimeslots/oneOffTimeslots.controller';
 import './components/dynamicFields/dynamicFields.controller';
+import './components/otp/otp.controller';

@@ -259,13 +259,14 @@ describe('Bookings mapper tests', () => {
 		DynamicValuesMapperMock.getValueAsString.mockReturnValue('English');
 
 		const mapper = Container.get(BookingsMapper);
-		const result = mapper.mapDataCSV(getFullBookingInformation(), getOrganisationAdminContext(organisation));
+		const booking = getFullBookingInformation();
+		const result = mapper.mapDataCSV(booking, getOrganisationAdminContext(organisation));
 		expect(result).toStrictEqual({
 			'Booking ID': '1',
 			'Booking Status': 'Accepted',
-			'Booking creation date': 'Mon Mar 01 2021 00:00:00 GMT+0800 (Singapore Standard Time)',
-			'Booking service start date/time': 'Mon Mar 01 2021 00:00:00 GMT+0800 (Singapore Standard Time)',
-			'Booking service end date/time': 'Mon Mar 01 2021 00:00:00 GMT+0800 (Singapore Standard Time)',
+			'Booking creation date': booking.createdLog?.timestamp.toString(),
+			'Booking service start date/time': booking.startDateTime.toString(),
+			'Booking service end date/time': booking.endDateTime.toString(),
 			'Booking location': 'somewhere',
 			'Booking description': 'description',
 			'Booking reference': '123',
