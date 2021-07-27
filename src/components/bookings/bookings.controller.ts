@@ -68,8 +68,6 @@ export class BookingsController extends Controller {
 		@Body() bookingRequest: BookingRequest,
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<BookingResponse>> {
-		const koaContext = this._koaContextStore.koaContext;
-		bookingRequest.captchaOrigin = koaContext.header.origin;
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
 		return ApiDataFactory.create(this.bookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
@@ -136,9 +134,6 @@ export class BookingsController extends Controller {
 		@Path() bookingId: number,
 		@Body() rescheduleRequest: BookingUpdateRequest,
 	): Promise<ApiData<BookingResponse>> {
-		const koaContext = this._koaContextStore.koaContext;
-		rescheduleRequest.captchaOrigin = koaContext.header.origin;
-
 		const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest);
 		return ApiDataFactory.create(
 			this.bookingsMapper.mapDataModel(rescheduledBooking, await this.userContext.getSnapshot()),
@@ -330,6 +325,7 @@ export class BookingsController extends Controller {
 
 	/**
 	 * Retrieves a single booking by UUID
+	 *
 	 * @param bookingUUID Booking UUID
 	 * @returns A single booking
 	 */

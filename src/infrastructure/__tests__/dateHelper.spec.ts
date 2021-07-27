@@ -1,6 +1,6 @@
 import { DateHelper } from '../dateHelper';
 import { StopWatch } from '../stopWatch';
-import { logger } from 'mol-lib-common';
+// import { logger } from 'mol-lib-common';
 
 jest.mock('mol-lib-common', () => {
 	const decoratorMock = () => {
@@ -254,9 +254,9 @@ describe('date helper tests', () => {
 	});
 
 	it('[perf] should get start of day native', () => {
-		(logger.info as jest.Mock).mockImplementation((msg, obj) => {
-			console.log(msg, obj);
-		});
+		// (logger.info as jest.Mock).mockImplementation((msg, obj) => {
+		// 	console.log(msg, obj);
+		// });
 
 		const now = new Date();
 		const stopWatch1 = new StopWatch('StartOfDay');
@@ -274,9 +274,9 @@ describe('date helper tests', () => {
 	});
 
 	it('[perf] should get end of day native', () => {
-		(logger.info as jest.Mock).mockImplementation((msg, obj) => {
-			console.log(msg, obj);
-		});
+		// (logger.info as jest.Mock).mockImplementation((msg, obj) => {
+		// 	console.log(msg, obj);
+		// });
 
 		const now = new Date();
 		const stopWatch1 = new StopWatch('EndOfDay');

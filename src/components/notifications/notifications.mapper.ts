@@ -76,6 +76,6 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 		time,
 		videoConferenceUrl,
 		reasonToReject,
-		manageBookingURL
+		manageBookingURL,
 	};
 };

@@ -366,7 +366,6 @@ export class BookingsService {
 		const updatedBooking = previousBooking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
 		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.useAdminValidator(currentUser));
-		validator.bypassCaptcha(getConfig().isAutomatedTest);
 
 		BookingsMapper.mapRequest(bookingRequest, updatedBooking, currentUser);
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
@@ -482,11 +481,10 @@ export class BookingsService {
 			)
 			.withMarkOnHold(isServiceOnHold())
 			.withCaptchaToken(bookingRequest.captchaToken)
-			.withCaptchaOrigin(bookingRequest.captchaOrigin)
 			.build();
 
 		const validator = this.bookingsValidatorFactory.getValidator(useAdminValidator);
-		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || getConfig().isAutomatedTest);
+		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept);
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
 		booking.serviceProvider = serviceProvider;
@@ -515,7 +513,6 @@ export class BookingsService {
 			BookingsMapper.mapBookingDetails(bookingRequest, updatedBooking, currentUser);
 
 			const validator = this.bookingsValidatorFactory.getOnHoldValidator();
-			validator.bypassCaptcha(getConfig().isAutomatedTest);
 			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
 
 			if (serviceProvider && serviceProvider.autoAcceptBookings) {

@@ -3,12 +3,9 @@ export class OtpSendRequest {
 
 	public captchaToken?: string;
 
-	public captchaOrigin?: string;
-
-	constructor(mobileNo: string, captchaToken?: string, captchaOrigin?: string) {
+	constructor(mobileNo: string, captchaToken?: string) {
 		this.mobileNo = mobileNo;
 		this.captchaToken = captchaToken;
-		this.captchaOrigin = captchaOrigin;
 	}
 }
 

@@ -1,17 +1,28 @@
-import { InRequestScope } from 'typescript-ioc';
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { logger } from 'mol-lib-common';
 import { getConfig } from '../../config/app-config';
 import { post } from '../../tools/fetch';
 import { GoogleVerifyApiRequest, GoogleVerifyApiRequestHeader, GoogleVerifyApiResponse } from './captcha.apicontract';
+import { KoaContextStore } from '../../infrastructure/koaContextStore.middleware';
 
 const RECATPCHA_URL = 'https://recaptchaenterprise.googleapis.com';
 const RECAPTCHA_THRESHOLD = 0.5;
 
 @InRequestScope
 export class CaptchaService {
-	public static async verify(token: string, origin: string): Promise<boolean> {
+	@Inject
+	private _koaContextStore: KoaContextStore;
+
+	public async verify(token: string): Promise<boolean> {
+		const config = getConfig();
+		if (config.isAutomatedTest) {
+			return true;
+		}
+
+		const koaContext = this._koaContextStore.koaContext;
+		const origin = koaContext.header.origin;
+
 		if (token) {
-			const config = getConfig();
 			const apiKey = config.recaptchaApiKey;
 			const siteKey = config.recaptchaSiteKey;
 			const projectId = config.recaptchaProjectId;
@@ -20,7 +31,7 @@ export class CaptchaService {
 				new GoogleVerifyApiRequest(token, siteKey),
 				new GoogleVerifyApiRequestHeader(origin),
 			);
-			const result = res.tokenProperties.valid && res.score >= RECAPTCHA_THRESHOLD;
+			const result = res.tokenProperties.valid && res.score && res.score >= RECAPTCHA_THRESHOLD;
 			if (!result) {
 				logger.warn(`Captcha failed:`, res);
 			}

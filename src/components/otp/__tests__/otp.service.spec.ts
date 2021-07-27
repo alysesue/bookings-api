@@ -8,16 +8,19 @@ import { BookingBusinessValidations } from '../../bookings/validator/bookingBusi
 import { Otp } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { NotificationSMSService } from '../../../components/notificationSMS/notificationSMS.service';
+import { CaptchaServiceMock } from '../../../components/captcha/__mocks__/captcha.service.mock';
 
 describe('sendOtp()', () => {
 	let configSpy: jest.SpyInstance;
-	let captchaServiceVerifySpy: jest.SpyInstance;
 	let otpRepoSaveSpy: jest.SpyInstance;
 	let notificationSMSSvcSpy: jest.SpyInstance;
 
+	beforeAll(() => {
+		Container.bind(CaptchaService).to(CaptchaServiceMock);
+	});
+
 	beforeEach(() => {
 		configSpy = jest.spyOn(appConfig, 'getConfig');
-		captchaServiceVerifySpy = jest.spyOn(CaptchaService, 'verify');
 		otpRepoSaveSpy = jest.spyOn(OtpRepository.prototype, 'save');
 		otpRepoSaveSpy.mockImplementation(
 			(otp): Promise<Otp> => {
@@ -35,62 +38,37 @@ describe('sendOtp()', () => {
 
 	afterEach(() => {
 		configSpy.mockRestore();
-		captchaServiceVerifySpy.mockRestore();
+		CaptchaServiceMock.verify.mockReset();
 		otpRepoSaveSpy.mockRestore();
 		notificationSMSSvcSpy.mockRestore();
 	});
 
-	describe('when IS_AUTOMATED_TEST=false', () => {
-		beforeEach(() => {
-			configSpy.mockReturnValue({ ...appConfig.getConfig(), isAutomatedTest: false });
-		});
-
-		it('should verify recaptcha, not throw error when recaptcha passes and send otp', async () => {
-			captchaServiceVerifySpy.mockImplementation(
-				(): Promise<boolean> => {
-					return Promise.resolve(true);
-				},
-			);
-
-			const userSessionSvc = Container.get(OtpService);
-			await userSessionSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken', 'captchaOrigin'));
-
-			expect(async () =>
-				userSessionSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken', 'captchaOrigin')),
-			).not.toThrow();
-			expect(captchaServiceVerifySpy).toBeCalledWith('captchaToken', 'captchaOrigin');
-			expect(notificationSMSSvcSpy).toBeCalledTimes(1);
-			expect(otpRepoSaveSpy).toBeCalledTimes(1);
-		});
-
-		it('should throw error when recaptcha failed and NOT send otp', async () => {
-			captchaServiceVerifySpy.mockImplementation(
-				(): Promise<boolean> => {
-					return Promise.resolve(false);
-				},
-			);
-
-			const userSessionSvc = Container.get(OtpService);
-
-			await expect(async () =>
-				userSessionSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken', 'captchaOrigin')),
-			).rejects.toThrow(BusinessError.create([BookingBusinessValidations.InvalidCaptchaToken]));
-			expect(captchaServiceVerifySpy).toBeCalledWith('captchaToken', 'captchaOrigin');
-			expect(notificationSMSSvcSpy).not.toBeCalled();
-			expect(otpRepoSaveSpy).not.toBeCalled();
-		});
+	beforeEach(() => {
+		configSpy.mockReturnValue({ otpEnabled: true });
 	});
 
-	describe('when IS_AUTOMATED_TEST=true', () => {
-		it('should not verify recaptcha and send otp', async () => {
-			configSpy.mockReturnValue({ ...appConfig.getConfig(), isAutomatedTest: true });
+	it('should verify recaptcha, not throw error when recaptcha passes and send otp', async () => {
+		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(true));
 
-			const userSessionSvc = Container.get(OtpService);
-			await userSessionSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken', 'captchaOrigin'));
+		const userSessionSvc = Container.get(OtpService);
+		await userSessionSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken'));
 
-			expect(captchaServiceVerifySpy).toBeCalledTimes(0);
-			expect(notificationSMSSvcSpy).toBeCalledTimes(1);
-			expect(otpRepoSaveSpy).toBeCalledTimes(1);
-		});
+		expect(async () => userSessionSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken'))).not.toThrow();
+		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
+		expect(notificationSMSSvcSpy).toBeCalledTimes(1);
+		expect(otpRepoSaveSpy).toBeCalledTimes(1);
+	});
+
+	it('should throw error when recaptcha failed and NOT send otp', async () => {
+		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(false));
+
+		const userSessionSvc = Container.get(OtpService);
+
+		await expect(async () =>
+			userSessionSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken')),
+		).rejects.toThrow(BusinessError.create([BookingBusinessValidations.InvalidCaptchaToken]));
+		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
+		expect(notificationSMSSvcSpy).not.toBeCalled();
+		expect(otpRepoSaveSpy).not.toBeCalled();
 	});
 });

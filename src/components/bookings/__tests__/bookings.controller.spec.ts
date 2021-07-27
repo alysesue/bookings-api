@@ -27,6 +27,7 @@ import { BookingsService } from '../bookings.service';
 import { CaptchaService } from '../../captcha/captcha.service';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import * as uuid from 'uuid';
+import { CaptchaServiceMock } from '../../../components/captcha/__mocks__/captcha.service.mock';
 
 jest.mock('../../../models/uinFinConfiguration');
 
@@ -105,7 +106,6 @@ describe('Bookings.Controller', () => {
 			}),
 		);
 
-		KoaContextStoreMock.koaContext.header = { origin: 'local.booking.gov.sg' };
 		KoaContextStoreMock.manualContext = false;
 		KoaContextStoreMock.koaContext.body = undefined;
 		KoaContextStoreMock.koaContext.remove('Content-Type');
@@ -327,7 +327,6 @@ describe('Bookings.Controller', () => {
 		const result = await controller.postBooking(req, 1);
 
 		expect(result).toBeDefined();
-		expect(req.captchaOrigin).toBe('local.booking.gov.sg');
 	});
 
 	it('should post out of timeslot booking', async () => {
@@ -498,14 +497,6 @@ class BookingsServiceMock implements Partial<BookingsService> {
 	public async validateOnHoldBooking(bookingId: number, bookingRequest: BookingRequest): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
 		return BookingsServiceMock.mockValidateOnHoldBooking;
-	}
-}
-
-export class CaptchaServiceMock implements Partial<CaptchaService> {
-	public static verify = jest.fn<Promise<boolean>, any>();
-
-	public async verify(...params): Promise<any> {
-		return await CaptchaServiceMock.verify(...params);
 	}
 }
 

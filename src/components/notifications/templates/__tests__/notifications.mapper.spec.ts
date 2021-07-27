@@ -41,7 +41,9 @@ describe('Notification mapper tests', () => {
 		expect(videoConferenceUrl).toEqual(
 			`Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>`,
 		);
-		expect(manageBookingURL).toEqual(`http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db`)
+		expect(manageBookingURL).toEqual(
+			`http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db`,
+		);
 	});
 
 	it('booking service name should be empty', () => {

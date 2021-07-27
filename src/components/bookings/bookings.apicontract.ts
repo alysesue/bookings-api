@@ -40,10 +40,6 @@ export class BookingRequest extends BookingDetailsRequest {
 	 */
 	public serviceProviderId?: number;
 	public captchaToken?: string | null;
-	/**
-	 * @ignore
-	 */
-	public captchaOrigin?: string | null;
 }
 
 export class BookingUpdateRequest extends BookingRequest {
