@@ -1,6 +1,7 @@
+import { NotificationSMSServiceMock } from './../../notificationSMS/__mocks__/notificationSMS.service.mock';
 import { OtpRepository } from '../otp.repository';
 import { BusinessError } from '../../../errors/businessError';
-import { OtpSendRequest } from '../otp.apicontract';
+import { OtpSendRequest, OtpVerifyRequest } from '../otp.apicontract';
 import { OtpService } from '../otp.service';
 import { CaptchaService } from '../../captcha/captcha.service';
 import * as appConfig from '../../../config/app-config';
@@ -9,6 +10,8 @@ import { Otp } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { NotificationSMSService } from '../../../components/notificationSMS/notificationSMS.service';
 import { CaptchaServiceMock } from '../../../components/captcha/__mocks__/captcha.service.mock';
+import { OtpRepositoryMock } from '../__mocks__/otp.repository.mock';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 describe('sendOtp()', () => {
 	let configSpy: jest.SpyInstance;
@@ -50,10 +53,10 @@ describe('sendOtp()', () => {
 	it('should verify recaptcha, not throw error when recaptcha passes and send otp', async () => {
 		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(true));
 
-		const userSessionSvc = Container.get(OtpService);
-		await userSessionSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken'));
+		const otpSvc = Container.get(OtpService);
+		await otpSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken'));
 
-		expect(async () => userSessionSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken'))).not.toThrow();
+		expect(async () => otpSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken'))).not.toThrow();
 		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
 		expect(notificationSMSSvcSpy).toBeCalledTimes(1);
 		expect(otpRepoSaveSpy).toBeCalledTimes(1);
@@ -62,13 +65,91 @@ describe('sendOtp()', () => {
 	it('should throw error when recaptcha failed and NOT send otp', async () => {
 		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(false));
 
-		const userSessionSvc = Container.get(OtpService);
+		const otpSvc = Container.get(OtpService);
 
-		await expect(async () =>
-			userSessionSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken')),
-		).rejects.toThrow(BusinessError.create([BookingBusinessValidations.InvalidCaptchaToken]));
+		await expect(async () => otpSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken'))).rejects.toThrow(
+			BusinessError.create([BookingBusinessValidations.InvalidCaptchaToken]),
+		);
 		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
 		expect(notificationSMSSvcSpy).not.toBeCalled();
 		expect(otpRepoSaveSpy).not.toBeCalled();
+	});
+});
+
+describe('verifyOtp()', () => {
+	let configSpy: jest.SpyInstance;
+
+	beforeAll(() => {
+		Container.bind(CaptchaService).to(CaptchaServiceMock);
+		Container.bind(OtpRepository).to(OtpRepositoryMock);
+		Container.bind(NotificationSMSService).to(NotificationSMSServiceMock);
+	});
+
+	beforeEach(() => {
+		configSpy = jest.spyOn(appConfig, 'getConfig');
+		configSpy.mockReturnValue({ otpEnabled: true });
+	});
+
+	afterEach(() => {
+		configSpy.mockRestore();
+		CaptchaServiceMock.verify.mockReset();
+		OtpRepositoryMock.getNonExpiredOtpMock.mockReset();
+	});
+
+	it('should throw error when recaptcha failed and NOT verify otp', async () => {
+		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(false));
+
+		const otpSvc = Container.get(OtpService);
+
+		await expect(async () => otpSvc.verifyOtp(new OtpVerifyRequest('xxx', 111111, 'captchaToken'))).rejects.toThrow(
+			BusinessError.create([BookingBusinessValidations.InvalidCaptchaToken]),
+		);
+
+		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
+		expect(OtpRepositoryMock.getNonExpiredOtpMock).not.toBeCalled();
+	});
+
+	it('when recaptcha passes, it should throw error when there is no existingOtp', async () => {
+		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(true));
+		OtpRepositoryMock.getNonExpiredOtpMock.mockReturnValue(undefined);
+		const otpSvc = Container.get(OtpService);
+
+		await expect(
+			async () => await otpSvc.verifyOtp(new OtpVerifyRequest('xxx', 111111, 'captchaToken')),
+		).rejects.toThrow(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION));
+
+		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
+		expect(OtpRepositoryMock.getNonExpiredOtpMock).toBeCalledTimes(1);
+	});
+
+	it('when recaptcha passes, it should throw error when otp mismatch', async () => {
+		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(true));
+		const otp = Otp.create('+6588884444');
+		otp._requestId = 'xxx';
+		otp._value = '111111';
+		OtpRepositoryMock.getNonExpiredOtpMock.mockReturnValue(Promise.resolve(otp));
+		const otpSvc = Container.get(OtpService);
+
+		await expect(
+			async () => await otpSvc.verifyOtp(new OtpVerifyRequest('xxx', 111112, 'captchaToken')),
+		).rejects.toThrow(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION));
+
+		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
+		expect(OtpRepositoryMock.getNonExpiredOtpMock).toBeCalledTimes(1);
+	});
+
+	it('when recaptcha passes, it does not throw error when otp matches', async () => {
+		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(true));
+		const otp = Otp.create('+6588884444');
+		otp._requestId = 'xxx';
+		otp._value = '111111';
+		OtpRepositoryMock.getNonExpiredOtpMock.mockReturnValue(Promise.resolve(otp));
+		const otpSvc = Container.get(OtpService);
+
+		expect(async () => {
+			await otpSvc.verifyOtp(new OtpVerifyRequest('xxx', 111111, 'captchaToken'));
+			expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
+			expect(OtpRepositoryMock.getNonExpiredOtpMock).toBeCalledTimes(1);
+		}).not.toThrowError();
 	});
 });

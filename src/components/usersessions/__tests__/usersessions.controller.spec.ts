@@ -5,7 +5,7 @@ import {
 	MolCookieHelper,
 	MobileOtpCookieHelper,
 } from '../../../infrastructure/bookingSGCookieHelper';
-import { OtpService } from '../../otp/otp.service';
+import { OtpService } from './../../otp/otp.service';
 
 afterAll(() => {
 	jest.resetAllMocks();

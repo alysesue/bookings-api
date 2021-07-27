@@ -128,7 +128,8 @@ export async function startServer(): Promise<Server> {
 	// tslint:disable-next-line: tsr-detect-non-literal-regexp
 	const byPassAuthPath = new RegExp(
 		`^(${basePath}/api/v1/usersessions/anonymous|
-			${basePath}/api/v1/usersessions/mobile/otp/send|
+			${basePath}/api/v1/otp/send|
+			${basePath}/api/v1/otp/verify|
 			${basePath}/api/v1/encryption/encrypt)$`,
 	);
 	setIOCBindings();
