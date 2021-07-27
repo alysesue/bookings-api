@@ -174,7 +174,6 @@ export class BookingsMapper {
 		booking.endDateTime = request.endDateTime;
 		booking.serviceProviderId = request.serviceProviderId;
 		booking.captchaToken = request.captchaToken;
-		booking.captchaOrigin = request.captchaOrigin;
 	}
 
 	public mapStatuses(): number[] {

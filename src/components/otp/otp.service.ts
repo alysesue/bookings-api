@@ -2,24 +2,22 @@ import { NotificationSMSService } from '../notificationSMS/notificationSMS.servi
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Otp } from '../../models/entities/otp';
 import { OtpRepository } from './otp.repository';
-import { getConfig } from '../../config/app-config';
 import { OtpSendRequest } from './otp.apicontract';
 import { CaptchaService } from '../captcha/captcha.service';
 import { BusinessError } from '../../errors/businessError';
 import { BookingBusinessValidations } from '../bookings/validator/bookingBusinessValidations';
-// import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 @InRequestScope
 export class OtpService {
 	@Inject
 	private otpRepository: OtpRepository;
+	@Inject
+	private captchaService: CaptchaService;
 
 	public async sendOtp(request: OtpSendRequest): Promise<string> {
-		if (!getConfig().isAutomatedTest) {
-			const res = await CaptchaService.verify(request.captchaToken, request.captchaOrigin);
-			if (!res) {
-				BusinessError.throw([BookingBusinessValidations.InvalidCaptchaToken]);
-			}
+		const res = await this.captchaService.verify(request.captchaToken);
+		if (!res) {
+			BusinessError.throw([BookingBusinessValidations.InvalidCaptchaToken]);
 		}
 
 		const otp = Otp.create(request.mobileNo);

@@ -136,8 +136,8 @@ describe('Bookings functional tests', () => {
 				`Booking ID,Booking Status,Booking creation date,Booking service start date/time,Booking service end date/time,Booking location,Booking description,Booking reference,Dynamic Fields,Citizen FIN number,Citizen Name,Citizen Email address,Citizen Phone number,Service Name,Service Provider Name,Service Provider Email address,Service Provider Phone number`,
 			);
 			expect(fields[1]).toEqual('Accepted');
-			expect(fields[3]).toEqual(startDateTime.toString());
-			expect(fields[4]).toEqual(endDateTime.toString());
+			expect(new Date(fields[3])).toEqual(startDateTime);
+			expect(new Date(fields[4])).toEqual(endDateTime);
 			expect(fields[5]).toEqual(location);
 			expect(fields[6]).toEqual(description);
 			expect(fields[9]).toEqual('S****377H');

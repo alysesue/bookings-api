@@ -256,6 +256,8 @@ class AdminBookingValidator extends BookingsValidator {
 class CitizenBookingValidator extends BookingsValidator {
 	@Inject
 	private timeslotsService: TimeslotsService;
+	@Inject
+	private captchaService: CaptchaService;
 
 	protected async *validateAvailability(booking: Booking): AsyncIterable<BusinessValidation> {
 		if (booking.serviceProviderId) {
@@ -287,7 +289,7 @@ class CitizenBookingValidator extends BookingsValidator {
 	}
 
 	protected async *validateToken(booking: Booking): AsyncIterable<BusinessValidation> {
-		const res = await CaptchaService.verify(booking.captchaToken, booking.captchaOrigin);
+		const res = await this.captchaService.verify(booking.captchaToken);
 		if (!res) {
 			yield BookingBusinessValidations.InvalidCaptchaToken;
 		}
