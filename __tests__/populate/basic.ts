@@ -4,6 +4,7 @@ import { PartialAdditionalSettings, ServiceResponse } from '../../src/components
 import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslotItems.apicontract';
 import { OneOffTimeslotResponse } from '../../src/components/oneOffTimeslots/oneOffTimeslots.apicontract';
 import * as request from 'request';
+import {ServiceNotificationTemplateResponse} from "../../src/components/serviceNotificationTemplate/serviceNotificationTemplate.apicontract";
 
 export const populateServiceLabel = async ({
 	serviceId,
@@ -319,4 +320,21 @@ export const updateOneOffTimeslot = async ({
 
 export const deleteOneOffTimeslot = async (idSigned: string): Promise<any> => {
 	return await OrganisationAdminRequestEndpointSG.create({}).delete(`/oneOffTimeslots/${idSigned}`);
+};
+
+export const populateServiceNotificationTemplate = async ({
+	serviceId,
+	emailTemplateType,
+	htmlTemplate,
+}): Promise<ServiceNotificationTemplateResponse> => {
+	const response = await OrganisationAdminRequestEndpointSG.create({}).post(
+		`/services/${serviceId}/notificationTemplate/email`,
+		{
+			body: {
+				emailTemplateType,
+				htmlTemplate,
+			},
+		},
+	);
+	return response.body.data;
 };
