@@ -10,7 +10,7 @@ import {
 import { ServiceNotificationTemplateService } from '../serviceNotificationTemplate/serviceNotificationTemplate.service';
 import { EmailNotificationTemplateType } from '../notifications/notifications.enum';
 import { ServiceNotificationTemplateMapper } from '../serviceNotificationTemplate/serviceNotificationTemplate.mapper';
-import {IdHasher} from "../../infrastructure/idHasher";
+import { IdHasher } from '../../infrastructure/idHasher';
 
 @Route('v1/services')
 @Tags('Service Notification Template')

@@ -28,13 +28,12 @@ describe('Services Notification Template controller tests', () => {
 
 	const mockServiceTemplate = ServiceNotificationTemplate.create(htmlTemplate, serviceId, templateType);
 	mockServiceTemplate.id = templateId;
-	const mockedItemHashedId = (mockServiceTemplate.id).toString();
+	const mockedItemHashedId = mockServiceTemplate.id.toString();
 	const expectedResponse = new ServiceNotificationTemplateResponse();
 	expectedResponse.id = mockedItemHashedId;
 	expectedResponse.htmlTemplate = htmlTemplate;
 	expectedResponse.emailTemplateType = templateType;
 	expectedResponse.serviceId = serviceId;
-
 
 	it('should get a default email notification template', async () => {
 		jest.resetAllMocks();
@@ -56,7 +55,7 @@ describe('Services Notification Template controller tests', () => {
 	});
 
 	it('should get a service email notification template', async () => {
-		const expectedGetResponse = {...expectedResponse};
+		const expectedGetResponse = { ...expectedResponse };
 		expectedGetResponse.isDefaultTemplate = false;
 		ServiceNotificationTemplateServiceMock.getEmailMock.mockReturnValue(mockServiceTemplate);
 		const response = await Container.get(ServicesNotificationTemplateController).getEmailNotificationTemplate(

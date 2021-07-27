@@ -2,22 +2,22 @@ import { Container } from 'typescript-ioc';
 import { ServiceNotificationTemplateMapper } from '../serviceNotificationTemplate.mapper';
 import { ServiceNotificationTemplate } from '../../../models';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
-import {IdHasher} from "../../../infrastructure/idHasher";
+import { IdHasher } from '../../../infrastructure/idHasher';
 
 describe('Services Notification Template mapper test', () => {
 	const mapper = Container.get(ServiceNotificationTemplateMapper);
 	const serviceId = 1;
 	const templateId = 123;
 	const templateType = 9;
-	const htmlTemplate = "This is a test";
+	const htmlTemplate = 'This is a test';
 
 	beforeAll(() => {
 		Container.bind(IdHasher).to(IdHasherMock);
-	})
+	});
 
 	beforeEach(() => {
 		jest.resetAllMocks();
-	})
+	});
 
 	it('should map template data to NotificationTemplateResponse', () => {
 		IdHasherMock.encode.mockImplementation((id: number) => id.toString());

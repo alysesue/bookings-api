@@ -95,7 +95,9 @@ export class ServiceNotificationTemplateService {
 
 		if (!existTemplate || existTemplate.id !== id) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(
-				`Template of type ${EmailNotificationTemplateType[request.emailTemplateType].toString()} not found or does not match the template id`,
+				`Template of type ${EmailNotificationTemplateType[
+					request.emailTemplateType
+				].toString()} not found or does not match the template id`,
 			);
 		}
 

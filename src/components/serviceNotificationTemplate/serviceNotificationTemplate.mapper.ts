@@ -1,8 +1,8 @@
 import { ServiceNotificationTemplate } from '../../models';
 import { ServiceNotificationTemplateResponse } from './serviceNotificationTemplate.apicontract';
 import { EmailNotificationTemplateType } from '../notifications/notifications.enum';
-import {Inject} from "typescript-ioc";
-import {IdHasher} from "../../infrastructure/idHasher";
+import { Inject } from 'typescript-ioc';
+import { IdHasher } from '../../infrastructure/idHasher';
 
 export class ServiceNotificationTemplateMapper {
 	@Inject
