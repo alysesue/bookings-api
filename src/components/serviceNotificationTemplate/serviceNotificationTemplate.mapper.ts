@@ -1,8 +1,13 @@
 import { ServiceNotificationTemplate } from '../../models';
 import { ServiceNotificationTemplateResponse } from './serviceNotificationTemplate.apicontract';
 import { EmailNotificationTemplateType } from '../notifications/notifications.enum';
+import {Inject} from "typescript-ioc";
+import {IdHasher} from "../../infrastructure/idHasher";
 
 export class ServiceNotificationTemplateMapper {
+	@Inject
+	private idHasher: IdHasher;
+
 	public mapToNotificationTemplateResponse = (
 		data: ServiceNotificationTemplate,
 	): ServiceNotificationTemplateResponse => {
@@ -28,7 +33,7 @@ export class ServiceNotificationTemplateMapper {
 		serviceId: number,
 		response: ServiceNotificationTemplateResponse,
 	): ServiceNotificationTemplateResponse => {
-		response.id = id;
+		response.id = this.idHasher.encode(id);
 		response.emailTemplateType = emailTemplateType;
 		response.htmlTemplate = htmlTemplate;
 		response.serviceId = serviceId;

@@ -36,12 +36,13 @@ describe('Services Notification Template service test', () => {
 	});
 
 	const serviceId = 1;
+	const templateId = 123;
 	const templateType = 2;
 
 	const template = new ServiceNotificationTemplate();
 	template.emailTemplateType = templateType;
 	template.htmlTemplate = 'testings notification template';
-	template.id = 123;
+	template.id = templateId;
 
 	const defaultTemplate = new ServiceNotificationTemplate();
 	defaultTemplate.emailTemplateType = 9;
@@ -75,9 +76,11 @@ describe('Services Notification Template service test', () => {
 		ServiceNotificationTemplateRepositoryMock.getTemplateMock.mockReturnValue(template);
 		ServiceNotificationTemplateRepositoryMock.saveTemplateMock.mockReturnValue(template);
 		const updateRequest = new ServiceNotificationTemplateRequest(templateType, 'updated');
-		const result = await Container.get(
-			ServiceNotificationTemplateService,
-		).updateEmailServiceNotificationTemplateByType(serviceId, updateRequest);
+		const result = await Container.get(ServiceNotificationTemplateService).updateEmailServiceNotificationTemplate(
+			serviceId,
+			templateId,
+			updateRequest,
+		);
 		expect(result).toStrictEqual(updatedtemplate);
 	});
 
@@ -137,22 +140,24 @@ describe('Services Notification Template service test', () => {
 	it('should throw error when trying to update a template with no emailTemplateType in the request', async () => {
 		const updateRequest = new ServiceNotificationTemplateRequest(null, 'updated');
 		const result = async () =>
-			await Container.get(ServiceNotificationTemplateService).updateEmailServiceNotificationTemplateByType(
+			await Container.get(ServiceNotificationTemplateService).updateEmailServiceNotificationTemplate(
 				serviceId,
+				templateId,
 				updateRequest,
 			);
 		await expect(result).rejects.toThrowErrorMatchingInlineSnapshot('"Invalid request"');
 	});
 
 	it('should throw error when trying to update a template that is not exists', async () => {
-		const updateRequest = new ServiceNotificationTemplateRequest(3, 'updated');
+		const updateRequest = new ServiceNotificationTemplateRequest(templateType, 'updated');
 		const result = async () =>
-			await Container.get(ServiceNotificationTemplateService).updateEmailServiceNotificationTemplateByType(
+			await Container.get(ServiceNotificationTemplateService).updateEmailServiceNotificationTemplate(
 				serviceId,
+				templateId,
 				updateRequest,
 			);
 		await expect(result).rejects.toThrowErrorMatchingInlineSnapshot(
-			'"Template of type CancelledByCitizenSentToCitizen not found"',
+			'"Template of type UpdatedByCitizenSentToCitizen not found or does not match the template id"',
 		);
 	});
 });

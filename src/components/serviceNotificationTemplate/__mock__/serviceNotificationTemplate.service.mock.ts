@@ -15,7 +15,7 @@ export class ServiceNotificationTemplateServiceMock implements Partial<ServiceNo
 		return ServiceNotificationTemplateServiceMock.addEmailMock();
 	}
 
-	public async updateEmailServiceNotificationTemplateByType(): Promise<ServiceNotificationTemplate> {
+	public async updateEmailServiceNotificationTemplate(): Promise<ServiceNotificationTemplate> {
 		return ServiceNotificationTemplateServiceMock.updateEmailMock();
 	}
 

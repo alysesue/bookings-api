@@ -11,7 +11,7 @@ export class ServiceNotificationTemplateRequest {
 }
 
 export class ServiceNotificationTemplateResponse {
-	public id: number;
+	public id: string;
 	public emailTemplateType: EmailNotificationTemplateType;
 	public htmlTemplate: string;
 	/**

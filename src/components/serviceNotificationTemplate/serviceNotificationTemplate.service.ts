@@ -81,8 +81,9 @@ export class ServiceNotificationTemplateService {
 		return await this.notificationTemplateRepository.save(emailNotification);
 	}
 
-	public async updateEmailServiceNotificationTemplateByType(
+	public async updateEmailServiceNotificationTemplate(
 		serviceId: number,
+		id: number,
 		request: ServiceNotificationTemplateRequest,
 	): Promise<ServiceNotificationTemplate> {
 		const service = await this.servicesService.getService(serviceId);
@@ -92,9 +93,9 @@ export class ServiceNotificationTemplateService {
 			request.emailTemplateType,
 		);
 
-		if (!existTemplate) {
+		if (!existTemplate || existTemplate.id !== id) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(
-				`Template of type ${EmailNotificationTemplateType[request.emailTemplateType].toString()} not found`,
+				`Template of type ${EmailNotificationTemplateType[request.emailTemplateType].toString()} not found or does not match the template id`,
 			);
 		}
 

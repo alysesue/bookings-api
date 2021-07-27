@@ -10,6 +10,7 @@ import {
 import { ServiceNotificationTemplateService } from '../serviceNotificationTemplate/serviceNotificationTemplate.service';
 import { EmailNotificationTemplateType } from '../notifications/notifications.enum';
 import { ServiceNotificationTemplateMapper } from '../serviceNotificationTemplate/serviceNotificationTemplate.mapper';
+import {IdHasher} from "../../infrastructure/idHasher";
 
 @Route('v1/services')
 @Tags('Service Notification Template')
@@ -18,6 +19,8 @@ export class ServicesNotificationTemplateController extends Controller {
 	private serviceNotificationsTemplatesService: ServiceNotificationTemplateService;
 	@Inject
 	private notificationTemplateMapper: ServiceNotificationTemplateMapper;
+	@Inject
+	private idHasher: IdHasher;
 
 	/**
 	 * Get a single email notification template of a service.
@@ -68,16 +71,19 @@ export class ServicesNotificationTemplateController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 * @param request
 	 */
-	@Put('{serviceId}/notificationTemplate/email')
+	@Put('{serviceId}/notificationTemplate/email/{id}')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async updateEmailNotificationTemplate(
 		@Path() serviceId: number,
+		@Path() id: string,
 		@Body() request: ServiceNotificationTemplateRequest,
 	): Promise<ApiData<ServiceNotificationTemplateResponse>> {
-		const data = await this.serviceNotificationsTemplatesService.updateEmailServiceNotificationTemplateByType(
+		const idNumber = this.idHasher.decode(id);
+		const data = await this.serviceNotificationsTemplatesService.updateEmailServiceNotificationTemplate(
 			serviceId,
+			idNumber,
 			request,
 		);
 		return ApiDataFactory.create(this.notificationTemplateMapper.mapToNotificationTemplateResponse(data));

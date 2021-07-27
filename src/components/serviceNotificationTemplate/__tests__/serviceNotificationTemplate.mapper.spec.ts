@@ -1,12 +1,29 @@
 import { Container } from 'typescript-ioc';
 import { ServiceNotificationTemplateMapper } from '../serviceNotificationTemplate.mapper';
 import { ServiceNotificationTemplate } from '../../../models';
+import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
+import {IdHasher} from "../../../infrastructure/idHasher";
 
 describe('Services Notification Template mapper test', () => {
 	const mapper = Container.get(ServiceNotificationTemplateMapper);
+	const serviceId = 1;
+	const templateId = 123;
+	const templateType = 9;
+	const htmlTemplate = "This is a test";
 
-	it('should map template data to ServiceNotificationTemplateResponse', () => {
-		const templateData = ServiceNotificationTemplate.create('testings mapToNotificationTemplateResponse', 1, 2);
+	beforeAll(() => {
+		Container.bind(IdHasher).to(IdHasherMock);
+	})
+
+	beforeEach(() => {
+		jest.resetAllMocks();
+	})
+
+	it('should map template data to NotificationTemplateResponse', () => {
+		IdHasherMock.encode.mockImplementation((id: number) => id.toString());
+		const templateData = ServiceNotificationTemplate.create(htmlTemplate, serviceId, templateType);
+		templateData.id = templateId;
+
 		const notificationTemplateResponse = mapper.mapToNotificationTemplateResponse(templateData);
 		expect(notificationTemplateResponse).toBeDefined();
 		expect(notificationTemplateResponse.htmlTemplate).toEqual(templateData.htmlTemplate);
@@ -14,10 +31,10 @@ describe('Services Notification Template mapper test', () => {
 		expect(notificationTemplateResponse.emailTemplateType).toEqual(templateData.emailTemplateType);
 	});
 
-	it('should map template response with isDefaultTemplate value equals to true', () => {
+	it('should map template GET response with isDefaultTemplate value equals to true', () => {
 		const templateData = new ServiceNotificationTemplate();
-		templateData.htmlTemplate = 'testing mapGetResponseToNotifTemplateResponse';
-		templateData.emailTemplateType = 9;
+		templateData.htmlTemplate = htmlTemplate;
+		templateData.emailTemplateType = templateType;
 
 		const notificationTemplateResponse = mapper.mapGetResponseToNotifTemplateResponse(templateData);
 		expect(notificationTemplateResponse).toBeDefined();
@@ -27,11 +44,12 @@ describe('Services Notification Template mapper test', () => {
 		expect(notificationTemplateResponse.emailTemplateType).toEqual(templateData.emailTemplateType);
 	});
 
-	it('should map template response with isDefaultTemplate value equals to false', () => {
+	it('should map template GET response with isDefaultTemplate value equals to false', () => {
+		IdHasherMock.encode.mockImplementation((id: number) => id.toString());
 		const templateData = new ServiceNotificationTemplate();
-		templateData.htmlTemplate = 'testing mapGetResponseToNotifTemplateResponse';
-		templateData.emailTemplateType = 9;
-		templateData.id = 123;
+		templateData.htmlTemplate = htmlTemplate;
+		templateData.emailTemplateType = templateType;
+		templateData.id = templateId;
 
 		const notificationTemplateResponse = mapper.mapGetResponseToNotifTemplateResponse(templateData);
 		expect(notificationTemplateResponse).toBeDefined();
