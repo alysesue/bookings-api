@@ -1,14 +1,14 @@
 import { BookingsRepository } from '../bookings.repository';
-import { Booking, ChangeLogAction, ServiceProvider, User } from '../../../models';
+import { Booking, BookingUUIDInfo, ChangeLogAction, User } from '../../../models';
 import { InsertResult } from 'typeorm';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
-import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { BookingChangeLogsService } from '../../bookingChangeLogs/bookingChangeLogs.service';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 import { UsersService } from '../../users/users.service';
 import { IPagedEntities } from '../../../core/pagedEntities';
+import { BookingsNoAuthRepository } from '../bookings.noauth.repository';
 
 export class BookingRepositoryMock implements Partial<BookingsRepository> {
 	public static booking: Booking;
@@ -40,6 +40,22 @@ export class BookingRepositoryMock implements Partial<BookingsRepository> {
 	public async searchReturnAll(...params): Promise<Booking[]> {
 		return await BookingRepositoryMock.searchReturnAll(...params);
 	}
+
+	public async getBookingByUUID(bookingUUID: string): Promise<Booking> {
+		if (bookingUUID === BookingRepositoryMock.booking.uuid) {
+			return Promise.resolve(BookingRepositoryMock.booking);
+		}
+
+		return null;
+	}
+}
+
+export class BookingsNoAuthRepositoryMock implements Partial<BookingsNoAuthRepository> {
+	public static getBookingInfoByUUID = jest.fn<Promise<BookingUUIDInfo>, any>();
+
+	public async getBookingInfoByUUID(...params): Promise<BookingUUIDInfo> {
+		return await BookingsNoAuthRepositoryMock.getBookingInfoByUUID(...params);
+	}
 }
 
 export class TimeslotsServiceMock implements Partial<TimeslotsService> {
@@ -57,14 +73,6 @@ export class TimeslotsServiceMock implements Partial<TimeslotsService> {
 
 	public async isProviderAvailableForTimeslot(...params): Promise<any> {
 		return await TimeslotsServiceMock.isProviderAvailableForTimeslot(...params);
-	}
-}
-
-export class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersRepository> {
-	public static getServiceProviderMock: ServiceProvider;
-
-	public async getServiceProvider(): Promise<ServiceProvider> {
-		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
 	}
 }
 

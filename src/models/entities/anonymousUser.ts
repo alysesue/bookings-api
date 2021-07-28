@@ -40,12 +40,21 @@ export class AnonymousUser {
 		return this._trackingId;
 	}
 
+	@Column({ type: 'uuid', nullable: true })
+	private _bookingUUID: string;
+
+	public get bookingUUID(): string {
+		return this._bookingUUID;
+	}
+
 	public static create({
 		createdAt,
 		trackingId,
+		booking,
 	}: {
 		createdAt: Date;
 		trackingId: string;
+		booking?: string;
 	}): AnonymousUser | undefined {
 		if (!createdAt || !trackingId || !uuid.validate(trackingId)) {
 			return null;
@@ -53,6 +62,7 @@ export class AnonymousUser {
 		const instance = new AnonymousUser();
 		instance._createdAt = createdAt;
 		instance._trackingId = trackingId || uuid.v4();
+		instance._bookingUUID = booking;
 		return instance;
 	}
 }

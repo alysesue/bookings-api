@@ -1,4 +1,4 @@
-import { Organisation, Service, ServiceProvider, User } from '../../../models';
+import { BookingUUIDInfo, Organisation, Service, ServiceProvider, User } from '../../../models';
 import { ServicesQueryAuthVisitor } from '../services.auth';
 import {
 	AnonymousAuthGroup,
@@ -47,6 +47,24 @@ describe('Services query auth', () => {
 
 		expect(result.userCondition).toStrictEqual('(svc."_allowAnonymousBookings" = true)');
 		expect(result.userParams).toStrictEqual({});
+	});
+
+	it(`should filter services for anonymous user (with booking info)`, async () => {
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const bookingInfo: BookingUUIDInfo = {
+			bookingUUID: '81baeb3f-d930-4f48-9808-3ee4debc3d8a',
+			bookingId: 1,
+			serviceId: 2,
+			organisationId: 3,
+			serviceProviderId: 4,
+		};
+
+		const groups = [new AnonymousAuthGroup(anonymous, bookingInfo)];
+
+		const result = await new ServicesQueryAuthVisitor('svc').createUserVisibilityCondition(groups);
+
+		expect(result.userCondition).toStrictEqual('(svc."_id" = :serviceId)');
+		expect(result.userParams).toStrictEqual({ serviceId: 2 });
 	});
 
 	it(`should return no filter for citizen (all services visible)`, async () => {

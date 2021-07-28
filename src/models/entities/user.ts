@@ -118,7 +118,7 @@ export class User implements IUser {
 		return instance;
 	}
 
-	public static createAnonymousUser(data: { createdAt: Date; trackingId: string }): User {
+	public static createAnonymousUser(data: { createdAt: Date; trackingId: string; booking?: string }): User {
 		const anonymousUser = AnonymousUser.create(data);
 		if (!anonymousUser) {
 			return null;

@@ -28,4 +28,7 @@ export { ServiceFlagSendSMS1623916511199 } from './1623916511199-ServiceFlagSend
 export { DaysInAdvanceServiceConfig1623982696546 } from './1623982696546-DaysInAdvanceServiceConfig';
 export { ServiceProviderAliasName1624598751619 } from './1624598751619-ServiceProviderAliasName';
 export { ReasonToReject1624412487509 } from './1624412487509-ReasonToReject';
+export { BookingUUID1626059559828 } from './1626059559828-BookingUUID';
+export { ServiceProviderScheduleStartEndDate1626827851656 } from './1626827851656-ServiceProviderScheduleStartEndDate';
+export { OtpTable1626098005671 } from './1626098005671-OtpTable';
 export { ServiceNotificationTemplate1625534887335 } from './1625534887335-ServiceNotificationTemplate';

@@ -10,6 +10,8 @@ import { ServiceProvidersRepository } from '../../../components/serviceProviders
 import { PagingHelper } from '../../../core/paging';
 import { IPagedEntities } from '../../../core/pagedEntities';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
+import * as uuid from 'uuid';
+import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
 
 jest.mock('../../../core/paging');
 
@@ -249,6 +251,24 @@ describe('Bookings repository', () => {
 		expect(result).toStrictEqual(booking);
 	});
 
+	it('should get booking by uuid', async () => {
+		const bookingUUID = uuid.v4();
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		booking.id = 1;
+		booking.uuid = bookingUUID;
+
+		queryBuilderMock.getOne.mockImplementation(() => Promise.resolve(booking));
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const bookingsRepository = Container.get(BookingsRepository);
+		const result = await bookingsRepository.getBookingByUUID(bookingUUID);
+		expect(result).toStrictEqual(booking);
+	});
+
 	it('should get booking with service provider', async () => {
 		const booking = new BookingBuilder()
 			.withServiceId(1)
@@ -283,12 +303,5 @@ class UserContextMock implements Partial<UserContext> {
 
 	public async getAuthGroups(...params): Promise<any> {
 		return await UserContextMock.getAuthGroups(...params);
-	}
-}
-
-class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersRepository> {
-	public static getServiceProviders = jest.fn<Promise<ServiceProvider[]>, any>();
-	public async getServiceProviders(...params): Promise<any> {
-		return await ServiceProvidersRepositoryMock.getServiceProviders(...params);
 	}
 }

@@ -40,10 +40,6 @@ export class BookingRequest extends BookingDetailsRequest {
 	 */
 	public serviceProviderId?: number;
 	public captchaToken?: string | null;
-	/**
-	 * @ignore
-	 */
-	public captchaOrigin?: string | null;
 }
 
 export class BookingUpdateRequest extends BookingRequest {
@@ -51,7 +47,7 @@ export class BookingUpdateRequest extends BookingRequest {
 		super();
 	}
 
-	public citizenUinFinUpdated: boolean;
+	public citizenUinFinUpdated?: boolean;
 }
 
 export type BookingResponse = {

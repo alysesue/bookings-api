@@ -40,7 +40,6 @@ import {
 import {
 	BookingChangeLogsServiceMock,
 	BookingRepositoryMock,
-	ServiceProvidersRepositoryMock,
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
 	UsersServiceMock,
@@ -62,6 +61,7 @@ import { TimeslotServiceProviderResult } from '../../../models/timeslotServicePr
 import { MyInfoService } from '../../myInfo/myInfo.service';
 import { MyInfoServiceeMock } from '../../myInfo/__mocks__/myInfo.service.mock';
 import * as uuid from 'uuid';
+import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
 
 jest.mock('../../../tools/arrays');
 
@@ -639,6 +639,40 @@ describe('Bookings.Service', () => {
 		BookingRepositoryMock.booking = undefined;
 		await expect(async () => await bookingService.getBooking(1)).rejects.toStrictEqual(
 			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Booking 1 not found'),
+		);
+	});
+
+	it('should get booking by uuid as an anonymous user', async () => {
+		const bookingService = Container.get(BookingsService);
+		const bookingUUID = uuid.v4();
+		const bookingMock = (BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(service.id)
+			.withCitizenEmail('test@mail.com')
+			.withStartDateTime(new Date('2020-02-02T11:00'))
+			.withEndDateTime(new Date('2020-02-02T12:00'))
+			.build());
+		bookingMock.uuid = bookingUUID;
+		bookingMock.id = 10;
+
+		const resultBooking = await bookingService.getBookingByUUID(bookingUUID);
+		expect(resultBooking.uuid).toBe(bookingUUID);
+		expect(resultBooking.id).toBe(10);
+	});
+
+	it('should throw an exception when booking not found by uuid as an anonymous user', async () => {
+		const bookingService = Container.get(BookingsService);
+		const bookingUUID = uuid.v4();
+		const bookingMock = (BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(service.id)
+			.withCitizenEmail('test@mail.com')
+			.withStartDateTime(new Date('2020-02-02T11:00'))
+			.withEndDateTime(new Date('2020-02-02T12:00'))
+			.build());
+		bookingMock.uuid = bookingUUID;
+
+		const testBookingUUID = uuid.v4();
+		await expect(async () => await bookingService.getBookingByUUID(testBookingUUID)).rejects.toStrictEqual(
+			new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Booking ' + testBookingUUID + ' not found'),
 		);
 	});
 

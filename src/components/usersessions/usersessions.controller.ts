@@ -1,4 +1,4 @@
-import { Controller, Post, Response, Route, Tags } from 'tsoa';
+import { Controller, Post, Response, Route, Tags, Header } from 'tsoa';
 import * as uuid from 'uuid';
 import { Inject } from 'typescript-ioc';
 import { BookingSGCookieHelper, MolCookieHelper } from '../../infrastructure/bookingSGCookieHelper';
@@ -13,9 +13,10 @@ export class UserSessionsController extends Controller {
 
 	@Post('anonymous')
 	@Response(204, 'Success')
-	public async createAnonymous(): Promise<void> {
+	public async createAnonymous(@Header('x-booking-uuid') bookingUUID?: string): Promise<void> {
 		const trackingId = uuid.v4();
 		this.cookieHelper.setCookieValue({
+			booking: bookingUUID,
 			createdAt: new Date(),
 			trackingId,
 		});

@@ -10,6 +10,11 @@ import { Booking, Service } from '../../../../models';
 import { Container } from 'typescript-ioc';
 import { ServiceNotificationTemplateService } from '../../../serviceNotificationTemplate/serviceNotificationTemplate.service';
 import { ServiceNotificationTemplateServiceMock } from '../../../serviceNotificationTemplate/__mock__/serviceNotificationTemplate.service.mock';
+import { getConfig } from '../../../../config/app-config';
+
+jest.mock('../../../../config/app-config', () => ({
+	getConfig: jest.fn(),
+}));
 
 describe('Notification templates tests', () => {
 	beforeAll(() => {
@@ -26,6 +31,10 @@ describe('Notification templates tests', () => {
 	booking.location = 'Some street';
 	booking.serviceProviderId = 1;
 	booking.videoConferenceUrl = 'http://www.zoom.us/1234567';
+	booking.uuid = 'f4533bed-da08-473a-8641-7aef918fe0db';
+	(getConfig as jest.Mock).mockReturnValue({
+		appURL: 'http://www.local.booking.gov.sg:3000',
+	});
 
 	it('should create citizen email for citizen created booking', async () => {
 		const result = await Container.get(CitizenEmailTemplateBookingActionByCitizen).CreatedBookingEmail(booking);

@@ -6,8 +6,9 @@ import { Container } from 'typescript-ioc';
 import { UsersService } from '../../components/users/users.service';
 import { User } from '../../models';
 import { UserContext } from '../auth/userContext';
-import { AuthGroup } from '../auth/authGroup';
 import { AnonymousCookieData, BookingSGCookieHelper } from '../bookingSGCookieHelper';
+import { UsersServiceMock } from '../../components/users/__mocks__/users.service';
+import { AnonymousAuthGroup } from '../auth/authGroup';
 
 // We need jest.requireActual(...) because userContext is mocked globally in globalmocks.ts
 // Here, we need the actual implementation to test
@@ -34,6 +35,10 @@ function buildSampleKoaContext(path: string): Koa.Context {
 }
 
 describe('user Context middleware tests', () => {
+	beforeEach(() => {
+		jest.resetAllMocks();
+	});
+
 	it('should get current user', async () => {
 		const containerMiddleware = new ContainerContextMiddleware().build();
 		const userContextMiddleware = new UserContextMiddleware().build();
@@ -72,6 +77,8 @@ describe('user Context middleware tests', () => {
 		BookingSGCookieHelperMock.getCookieValue.mockReturnValue(cookieData);
 		UsersServiceMock.createAnonymousUserFromCookie.mockImplementation(() => Promise.resolve(anonymous));
 
+		UsersServiceMock.getAnonymousUserRoles.mockReturnValue(Promise.resolve([new AnonymousAuthGroup(anonymous)]));
+
 		const nextMiddleware = jest.fn().mockImplementation(async (ctx: Koa.Context, next: Koa.Next) => {
 			const container = ContainerContextMiddleware.getContainerContext(ctx);
 			const userContext = container.resolve(UserContext);
@@ -79,6 +86,7 @@ describe('user Context middleware tests', () => {
 			const another = await userContext.getCurrentUser();
 
 			expect(UsersServiceMock.getOrSaveUserFromHeaders).toBeCalledTimes(1);
+			expect(UsersServiceMock.getAnonymousUserRoles).toBeCalled();
 			expect(user).toBeDefined();
 			expect(user).toBe(another);
 			expect(user.isAnonymous()).toBe(true);
@@ -87,9 +95,9 @@ describe('user Context middleware tests', () => {
 		});
 
 		const context = buildSampleKoaContext(`${basePath}/somepath`);
-		await containerMiddleware(context, () => {
-			return userContextMiddleware(context, () => {
-				return nextMiddleware(context, () => {});
+		await containerMiddleware(context, async () => {
+			return await userContextMiddleware(context, async () => {
+				return await nextMiddleware(context, () => {});
 			});
 		});
 
@@ -156,24 +164,6 @@ describe('user Context middleware tests', () => {
 		await expect(asyncTest).rejects.toThrowError();
 	});
 });
-
-class UsersServiceMock implements Partial<UsersService> {
-	public static createAnonymousUserFromCookie = jest.fn<Promise<User>, any>();
-	public static getOrSaveUserFromHeaders = jest.fn<Promise<User>, any>();
-	public static getUserGroupsFromHeaders = jest.fn<Promise<AuthGroup[]>, any>();
-
-	public async createAnonymousUserFromCookie(...params): Promise<any> {
-		return await UsersServiceMock.createAnonymousUserFromCookie(...params);
-	}
-
-	public async getOrSaveUserFromHeaders(...params): Promise<any> {
-		return await UsersServiceMock.getOrSaveUserFromHeaders(...params);
-	}
-
-	public async getUserGroupsFromHeaders(...params): Promise<any> {
-		return await UsersServiceMock.getUserGroupsFromHeaders(...params);
-	}
-}
 
 class BookingSGCookieHelperMock implements Partial<BookingSGCookieHelper> {
 	public static getCookieValue = jest.fn<AnonymousCookieData | undefined, any>();

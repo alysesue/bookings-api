@@ -49,6 +49,7 @@ describe('labels/labels.repository', () => {
 		queryBuilderMock = ({
 			where: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve(labelsToSave)),
 		} as unknown) as SelectQueryBuilder<Label>;
 		(ServicesQueryAuthVisitor as jest.Mock).mockImplementation(() => QueryAuthVisitorMock);

@@ -3,6 +3,9 @@ export class DateHelper {
 	private static MsPerMinute = 60000;
 	private static MsPerHour = 3600000;
 	private static MsPerDay = 86400000;
+	private static MsPer15Minutes = DateHelper.MsPerMinute * 15;
+	private static readonly _startOfDayNativeCache = new Map<number, number>();
+
 	private static monthNames = [
 		'January',
 		'February',
@@ -121,5 +124,23 @@ export class DateHelper {
 			date.getUTCSeconds(),
 			date.getUTCMilliseconds(),
 		);
+	}
+
+	public static getStartOfDayNative(dateNative: number): number {
+		const minutesOffset = dateNative - (dateNative % this.MsPer15Minutes); // 15min block is common to 30 min and 45 min TZ offsets
+		let value = this._startOfDayNativeCache.get(minutesOffset);
+		if (!value) {
+			if (this._startOfDayNativeCache.size > 20000) {
+				this._startOfDayNativeCache.clear();
+			}
+			value = this.getStartOfDay(new Date(dateNative)).getTime();
+			this._startOfDayNativeCache.set(minutesOffset, value);
+		}
+
+		return value;
+	}
+
+	public static getEndOfDayNative(dateNative: number): number {
+		return DateHelper.getStartOfDayNative(dateNative) + DateHelper.MsPerDay - 1;
 	}
 }

@@ -20,6 +20,13 @@ describe('Users mapper', () => {
 		const group = new AnonymousAuthGroup(anonymous);
 
 		const response = UserProfileMapper.mapGroupsToResponse([group]);
-		expect(response).toEqual([{ authGroupType: 'anonymous' }]);
+		expect(response).toEqual([
+			{
+				authGroupType: 'anonymous',
+				anonymous: {
+					bookingUUID: undefined,
+				},
+			},
+		]);
 	});
 });

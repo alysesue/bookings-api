@@ -1,6 +1,7 @@
 import { Booking } from '../../models';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { BookingStatusDisplayedInEmails } from '../../models/bookingStatus';
+import { getConfig } from '../../config/app-config';
 
 export interface EmailData {
 	status: string;
@@ -15,6 +16,7 @@ export interface EmailData {
 	videoConferenceUrl?: string;
 	reasonToReject?: string;
 	serviceProviderAliasName?: string;
+	manageBookingText?: string;
 }
 
 export interface MailOptions {
@@ -60,6 +62,9 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 	if (videoConferenceUrl && isSMS) {
 		videoConferenceUrl = `Video Conference Link:${vcLink}`;
 	}
+	const config = getConfig();
+	const manageBookingURL = `${config.appURL}/public/my-bookings/?bookingToken=${data.uuid}`;
+	const manageBookingText = manageBookingURL ? `<a href='${manageBookingURL}'>Reschedule / Cancel Booking</a>` : '';
 
 	return {
 		status,
@@ -74,6 +79,7 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 		videoConferenceUrl,
 		reasonToReject,
 		serviceProviderAliasName,
+		manageBookingText,
 	};
 };
 
@@ -88,6 +94,7 @@ export const mapVariablesValuesToDefaultTemplate = (mapValues: EmailData, templa
 		locationText,
 		videoConferenceUrl,
 		reasonToReject,
+		manageBookingText,
 	} = mapValues;
 
 	const mapVariables = {
@@ -100,6 +107,7 @@ export const mapVariablesValuesToDefaultTemplate = (mapValues: EmailData, templa
 		'{locationText}': locationText,
 		'{videoConferenceUrl}': videoConferenceUrl,
 		'{reasonToReject}': reasonToReject,
+		'{manageBookingText}': manageBookingText,
 	};
 
 	for (const key of Object.keys(mapVariables)) {

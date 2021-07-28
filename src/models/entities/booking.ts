@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Generated, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { BookingStatus } from '../bookingStatus';
 import * as timeSpan from '../../tools/timeSpan';
@@ -28,7 +28,6 @@ export class BookingBuilder {
 	public citizenEmail: string;
 	public autoAccept: boolean;
 	public captchaToken: string;
-	public captchaOrigin: string;
 	public markOnHold: boolean;
 	public reasonToReject: string;
 
@@ -110,10 +109,6 @@ export class BookingBuilder {
 		this.captchaToken = captchaToken;
 		return this;
 	}
-	public withCaptchaOrigin(captchaOrigin: string): BookingBuilder {
-		this.captchaOrigin = captchaOrigin;
-		return this;
-	}
 
 	public withMarkOnHold(markOnHold: boolean): BookingBuilder {
 		this.markOnHold = markOnHold;
@@ -130,6 +125,11 @@ export class Booking {
 	// _version is updated in an atomic DB operation (see repository)
 	@Column({ update: false })
 	public _version: number;
+
+	@Column({ type: 'uuid' })
+	@Index({ unique: true })
+	@Generated('uuid')
+	public _uuid: string;
 
 	@PrimaryGeneratedColumn()
 	private _id: number;
@@ -195,6 +195,13 @@ export class Booking {
 
 	@Column({ nullable: true })
 	private _reasonToReject: string;
+	public get uuid(): string {
+		return this._uuid;
+	}
+
+	public set uuid(value: string) {
+		this._uuid = value;
+	}
 
 	public get onHoldUntil(): Date {
 		return this._onHoldUntil;
@@ -254,7 +261,6 @@ export class Booking {
 		instance._citizenName = builder.citizenName;
 		instance._citizenEmail = builder.citizenEmail;
 		instance._captchaToken = builder.captchaToken;
-		instance._captchaOrigin = builder.captchaOrigin;
 		instance._reasonToReject = builder.reasonToReject;
 
 		return instance;
@@ -391,15 +397,6 @@ export class Booking {
 	}
 	public set captchaToken(value: string) {
 		this._captchaToken = value;
-	}
-
-	private _captchaOrigin: string;
-
-	public get captchaOrigin(): string {
-		return this._captchaOrigin;
-	}
-	public set captchaOrigin(value: string) {
-		this._captchaOrigin = value;
 	}
 
 	public get videoConferenceUrl(): string {

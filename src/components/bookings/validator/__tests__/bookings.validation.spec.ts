@@ -11,7 +11,6 @@ import { BusinessValidation, Service, User } from '../../../../models';
 import { BookingsValidatorFactory } from '../bookings.validation';
 import {
 	BookingRepositoryMock,
-	ServiceProvidersRepositoryMock,
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
 } from '../../__mocks__/bookings.mocks';
@@ -24,6 +23,8 @@ import { IPagedEntities } from '../../../../core/pagedEntities';
 import { ContainerContext, ContainerContextHolder } from '../../../../infrastructure/containerContext';
 import { ServiceProvidersLookup } from '../../../../components/timeslots/aggregatorTimeslotProviders';
 import { TimeslotServiceProviderResult } from '../../../../models/timeslotServiceProvider';
+import { ServiceProvidersRepositoryMock } from '../../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
+import { CaptchaServiceMock } from '../../../../components/captcha/__mocks__/captcha.service.mock';
 
 const createTimeslotNative = (startTime: number, endTime: number, capacity?: number) => {
 	return {
@@ -61,6 +62,7 @@ describe('Booking validation tests', () => {
 		Container.bind(UnavailabilitiesService).to(UnavailabilitiesServiceMock);
 		Container.bind(ServiceProvidersRepository).to(ServiceProvidersRepositoryMock);
 		Container.bind(UserContext).to(UserContextMock);
+		Container.bind(CaptchaService).to(CaptchaServiceMock);
 	});
 
 	beforeEach(() => {
@@ -74,9 +76,7 @@ describe('Booking validation tests', () => {
 		serviceProvider.id = 1;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = undefined;
 
-		const mockVerify = jest.fn();
-		mockVerify.mockReturnValue(Promise.resolve(true));
-		CaptchaService.verify = mockVerify;
+		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(true));
 		(getConfig as jest.Mock).mockReturnValue({
 			isAutomatedTest: false,
 		});
@@ -267,7 +267,7 @@ describe('Booking validation tests', () => {
 	});
 
 	it('should validate token', async () => {
-		(CaptchaService.verify as jest.Mock).mockRestore();
+		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(false));
 		const booking = new BookingBuilder()
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))

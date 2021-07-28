@@ -1,4 +1,4 @@
-import { Organisation, Service, ServiceProvider, User } from '../../../models';
+import { BookingUUIDInfo, Organisation, Service, ServiceProvider, User } from '../../../models';
 import { BookingQueryAuthVisitor, BookingQueryVisitorFactory } from '../bookings.auth';
 import {
 	AnonymousAuthGroup,
@@ -41,7 +41,7 @@ describe('Bookings query auth', () => {
 		expect(result.userParams).toStrictEqual({});
 	});
 
-	it('should return FALSE for anonymous user', async () => {
+	it('should return filter for anonymous user', async () => {
 		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
 		const groups = [new AnonymousAuthGroup(anonymous)];
 
@@ -49,8 +49,26 @@ describe('Bookings query auth', () => {
 
 		expect(result.userCondition).toStrictEqual('(c."_userId" = :userId)');
 		expect(result.userParams).toStrictEqual({
-			userId: undefined,
+			userId: undefined, // TODO : fix this
 		});
+	});
+
+	it('should return filter for anonymous user (with booking info)', async () => {
+		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		const bookingInfo: BookingUUIDInfo = {
+			bookingUUID: '81baeb3f-d930-4f48-9808-3ee4debc3d8a',
+			bookingId: 1,
+			serviceId: 2,
+			organisationId: 3,
+			serviceProviderId: 4,
+		};
+
+		const groups = [new AnonymousAuthGroup(anonymous, bookingInfo)];
+
+		const result = await new BookingQueryAuthVisitor('b', 's', 'c').createUserVisibilityCondition(groups);
+
+		expect(result.userCondition).toStrictEqual('(b."_uuid" = :authorisedBookingUUID)');
+		expect(result.userParams).toStrictEqual({ authorisedBookingUUID: '81baeb3f-d930-4f48-9808-3ee4debc3d8a' });
 	});
 
 	it(`should filter by citizen's uinfin`, async () => {

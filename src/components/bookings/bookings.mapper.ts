@@ -70,7 +70,7 @@ export class BookingsMapper {
 
 	// TODO: no need to pass in userContext, Inject it instead
 	public mapDataModel(booking: Booking, userContext: UserContextSnapshot): BookingResponse {
-		return {
+		const response: BookingResponse = {
 			id: booking.id,
 			status: booking.status,
 			createdDateTime: booking.createdLog?.timestamp,
@@ -94,7 +94,8 @@ export class BookingsMapper {
 			dynamicValues: this.dynamicValuesMapper.mapDynamicValuesModel(booking.dynamicValues),
 			serviceProviderAliasName: booking.serviceProvider?.aliasName,
 			reasonToReject: booking.reasonToReject,
-		} as BookingResponse;
+		};
+		return response;
 	}
 
 	public async mapBookingsCSV(bookings: Booking[], userContext: UserContextSnapshot): Promise<string> {
@@ -133,6 +134,7 @@ export class BookingsMapper {
 			['Citizen Name']: `${booking.citizenName}`,
 			['Citizen Email address']: `${booking.citizenEmail}`,
 			['Citizen Phone number']: `${booking.citizenPhone}`,
+			['Service Name']: `${booking.service.name}`,
 			['Service Provider Name']: `${booking.serviceProvider?.name}`,
 			['Service Provider Email address']: `${booking.serviceProvider?.email}`,
 			['Service Provider Phone number']: `${booking.serviceProvider?.phone}`,
@@ -172,7 +174,6 @@ export class BookingsMapper {
 		booking.endDateTime = request.endDateTime;
 		booking.serviceProviderId = request.serviceProviderId;
 		booking.captchaToken = request.captchaToken;
-		booking.captchaOrigin = request.captchaOrigin;
 	}
 
 	public mapStatuses(): number[] {

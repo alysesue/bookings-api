@@ -1,4 +1,28 @@
 import { DateHelper } from '../dateHelper';
+import { StopWatch } from '../stopWatch';
+// import { logger } from 'mol-lib-common';
+
+jest.mock('mol-lib-common', () => {
+	const decoratorMock = () => {
+		return (target: any, key: string | symbol, descriptor: any) => descriptor;
+	};
+
+	const logger = {
+		create: () => logger,
+		setLoggerParams: jest.fn(),
+		warn: jest.fn(),
+		info: jest.fn(),
+		debug: jest.fn(),
+		error: jest.fn(),
+		log: jest.fn(),
+		fatal: jest.fn(),
+	};
+	return {
+		MOLAuth: decoratorMock,
+		logger,
+		LoggerV2: logger,
+	};
+});
 
 describe('date helper tests', () => {
 	const originalDate = new Date(2020, 4, 27, 11, 30, 1, 1);
@@ -158,5 +182,114 @@ describe('date helper tests', () => {
 	it('should format date dd/mm/yyyy', () => {
 		const result = DateHelper.getDateFormat(originalDate);
 		expect(result).toBe('27 May 2020');
+	});
+
+	it('should get start of day native', () => {
+		const now = new Date();
+		for (let hour = 0; hour <= 48; hour++) {
+			const time = DateHelper.addHours(now, hour);
+			const start = DateHelper.getStartOfDay(time);
+			const startNative = DateHelper.getStartOfDayNative(time.getTime());
+			expect(start.getTime()).toEqual(startNative);
+		}
+	});
+
+	it('[exact date and time] should get start of day native', () => {
+		const time = new Date(2021, 6, 23, 18, 30, 11, 962);
+		const start = DateHelper.getStartOfDay(time);
+		const startNative = DateHelper.getStartOfDayNative(time.getTime());
+
+		expect(start.getTime()).toEqual(startNative);
+	});
+
+	it('[exact date and time 2] should get start of day native', () => {
+		const differentYears = [];
+		for (let year = 1970; year < 2050; year++) {
+			const time = new Date(year, 0, 1, 23, 30, 11, 962);
+			const start = DateHelper.getStartOfDay(time);
+			const startNative = DateHelper.getStartOfDayNative(time.getTime());
+			if (start.getTime() !== startNative) {
+				differentYears.push(year);
+			}
+		}
+
+		expect(differentYears).toEqual([]);
+	});
+
+	it('[exact date and time 3] should get start of day native', () => {
+		const time = new Date(2050, 1, 1, 18, 30, 11, 962);
+		const start = DateHelper.getStartOfDay(time);
+		const startNative = DateHelper.getStartOfDayNative(time.getTime());
+
+		expect(start.getTime()).toEqual(startNative);
+	});
+
+	it('[exact date] should get start of day native', () => {
+		const time = new Date(2021, 6, 23, 0, 0, 0, 0);
+		const start = DateHelper.getStartOfDay(time);
+		const startNative = DateHelper.getStartOfDayNative(time.getTime());
+
+		expect(start.getTime()).toEqual(startNative);
+	});
+
+	it('[days] should get start of day native', () => {
+		const now = new Date();
+		for (let day = 0; day <= 366 * 20; day++) {
+			const time = DateHelper.addDays(now, day);
+
+			const start = DateHelper.getStartOfDay(time);
+			const startNative = DateHelper.getStartOfDayNative(time.getTime());
+			expect(start.getTime()).toEqual(startNative);
+		}
+	});
+
+	it('should get end of day native', () => {
+		const now = new Date();
+		for (let hour = 0; hour <= 48; hour++) {
+			const time = DateHelper.addHours(now, hour);
+			const end = DateHelper.getEndOfDay(time);
+			const endNative = DateHelper.getEndOfDayNative(time.getTime());
+			expect(end.getTime()).toEqual(endNative);
+		}
+	});
+
+	it('[perf] should get start of day native', () => {
+		// (logger.info as jest.Mock).mockImplementation((msg, obj) => {
+		// 	console.log(msg, obj);
+		// });
+
+		const now = new Date();
+		const stopWatch1 = new StopWatch('StartOfDay');
+		for (let i = 0; i <= 500000; i++) {
+			DateHelper.getStartOfDay(now);
+		}
+		stopWatch1.stop();
+
+		const stopWatch2 = new StopWatch('StartOfDayNative');
+		for (let i = 0; i <= 500000; i++) {
+			DateHelper.getStartOfDayNative(now.getTime());
+		}
+
+		stopWatch2.stop();
+	});
+
+	it('[perf] should get end of day native', () => {
+		// (logger.info as jest.Mock).mockImplementation((msg, obj) => {
+		// 	console.log(msg, obj);
+		// });
+
+		const now = new Date();
+		const stopWatch1 = new StopWatch('EndOfDay');
+		for (let i = 0; i <= 500000; i++) {
+			DateHelper.getEndOfDay(now);
+		}
+		stopWatch1.stop();
+
+		const stopWatch2 = new StopWatch('EndOfDayNative');
+		for (let i = 0; i <= 500000; i++) {
+			DateHelper.getEndOfDayNative(now.getTime());
+		}
+
+		stopWatch2.stop();
 	});
 });

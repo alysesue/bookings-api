@@ -303,3 +303,11 @@ resource "aws_ssm_parameter" "mol-routes_myinfo" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "otp-enabled" {
+  name  = "${local.path-prefix}/OTP_ENABLED"
+  type  = "String"
+  value = "${data.external.static.result.OTP_ENABLED}"
+
+  overwrite = true
+}
+

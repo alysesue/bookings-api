@@ -6,6 +6,7 @@ import { KoaContextStore } from './koaContextStore.middleware';
 export type AnonymousCookieData = {
 	createdAt: Date;
 	trackingId: string;
+	booking?: string;
 };
 
 @InRequestScope
@@ -62,6 +63,25 @@ export class MolCookieHelper {
 		const config = getConfig();
 
 		koaContext.cookies.set(MolCookieHelper.CookieName, undefined, {
+			httpOnly: true,
+			sameSite: config.isLocal ? false : 'lax',
+			overwrite: true,
+			secure: !config.isLocal,
+		});
+	}
+}
+
+@InRequestScope
+export class MobileOtpCookieHelper {
+	private static readonly CookieName = 'OtpRequestId';
+	@Inject
+	private _koaContextStore: KoaContextStore;
+
+	public setCookieValue(otpReqId: string) {
+		const config = getConfig();
+
+		const koaContext = this._koaContextStore.koaContext;
+		koaContext.cookies.set(MobileOtpCookieHelper.CookieName, otpReqId, {
 			httpOnly: true,
 			sameSite: config.isLocal ? false : 'lax',
 			overwrite: true,

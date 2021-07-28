@@ -17,6 +17,7 @@ const config = {
 		'!**/*{M,m}igration{*,*/**/*}',
 		'!**/*{E,e}ntity{*,*/**/*}',
 		'!**/{I,i}ndex.*',
+		'!<rootDir>/src/models/index.ts',
 		'!<rootDir>/src/routes.ts',
 		'!<rootDir>/src/server.ts',
 		'!<rootDir>/src/config/**/*',

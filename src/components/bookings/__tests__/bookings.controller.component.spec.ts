@@ -22,6 +22,7 @@ import { MockObserver } from '../../../infrastructure/__mocks__/observer.mock';
 import { LifeSGObserver } from '../../lifesg/lifesg.observer';
 import { getConfig } from '../../../config/app-config';
 import { TimeslotsServiceMock } from '../__mocks__/bookings.mocks';
+import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -127,14 +128,6 @@ class BookingRepositoryMock implements Partial<BookingsRepository> {
 
 	public async update(...params): Promise<Booking> {
 		return await BookingRepositoryMock.update(...params);
-	}
-}
-
-class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersRepository> {
-	public static getServiceProviderMock: ServiceProvider;
-
-	public async getServiceProvider(): Promise<ServiceProvider> {
-		return Promise.resolve(ServiceProvidersRepositoryMock.getServiceProviderMock);
 	}
 }
 

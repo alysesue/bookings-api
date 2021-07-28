@@ -6,6 +6,18 @@ export class ScheduleFormRequest {
 	 */
 	public slotsDurationInMin: number;
 	public serviceProvidersEmailList: string[] = [];
+	/**
+	 * Propagated to WeekDayScheduleContract
+	 *
+	 * @isDate
+	 */
+	public startDate?: Date;
+	/**
+	 * Propagated to WeekDayScheduleContract
+	 *
+	 * @isDate
+	 */
+	public endDate?: Date;
 	public weekdaySchedules: WeekDayScheduleContract[];
 }
 
@@ -41,6 +53,18 @@ export class WeekDayScheduleContract {
 	 * @isInt
 	 */
 	public capacity = 1;
+	/**
+	 * Propagated from ScheduleFormRequest
+	 *
+	 * @isDate
+	 */
+	public startDate?: Date;
+	/**
+	 * Propagated from ScheduleFormRequest
+	 *
+	 * @isDate
+	 */
+	public endDate?: Date;
 }
 
 export class ScheduleFormResponse {
@@ -52,5 +76,17 @@ export class ScheduleFormResponse {
 	 * @isInt
 	 */
 	public slotsDurationInMin: number;
+	/**
+	 * Schedule Start Date
+	 *
+	 * @isDate
+	 */
+	public startDate?: Date;
+	/**
+	 * Schedule End Date
+	 *
+	 * @isDate
+	 */
+	public endDate?: Date;
 	public weekdaySchedules: WeekDayScheduleContract[];
 }
