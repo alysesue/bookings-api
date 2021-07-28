@@ -44,4 +44,8 @@ export class OtpService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION);
 		}
 	}
+
+	async getMobileNo(otpReqId: string): Promise<string> {
+		return await this.otpRepository.getMobileNo(otpReqId);
+	}
 }

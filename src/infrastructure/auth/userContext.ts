@@ -1,9 +1,10 @@
+import { OtpService } from './../../components/otp/otp.service';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Organisation, User } from '../../models';
 import { UsersService } from '../../components/users/users.service';
 import { AsyncLazy } from '../../tools/asyncLazy';
-import { AnonymousCookieData } from '../bookingSGCookieHelper';
+import { AnonymousCookieData, MobileOtpAddOnCookieData } from '../bookingSGCookieHelper';
 import { AuthGroup, CitizenAuthGroup, OrganisationAdminAuthGroup } from './authGroup';
 import { ContainerContext } from '../containerContext';
 
@@ -20,6 +21,8 @@ export class UserContext {
 	private _anonymousCookieData: AnonymousCookieData;
 	private _currentUser: AsyncLazy<User>;
 	private _authGroups: AsyncLazy<AuthGroup[]>;
+
+	private _mobileNo: string;
 
 	constructor() {
 		this.init({ requestHeaders: {} });
@@ -52,6 +55,15 @@ export class UserContext {
 			user: await this.getCurrentUser(),
 			authGroups: await this.getAuthGroups(),
 		};
+	}
+
+	public async otpAddOn(cookieData: MobileOtpAddOnCookieData) {
+		const otp = this.containerContext.resolve(OtpService);
+		this._mobileNo = await otp.getMobileNo(cookieData.otpReqId);
+	}
+
+	public getOtpAddOnMobileNo(): string | undefined {
+		return this._mobileNo;
 	}
 
 	private async getCurrentUserInternal(): Promise<User> {

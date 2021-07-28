@@ -1,7 +1,7 @@
 import * as Koa from 'koa';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { UserContext } from './auth/userContext';
-import { BookingSGCookieHelper } from './bookingSGCookieHelper';
+import { BookingSGCookieHelper, MobileOtpCookieHelper } from './bookingSGCookieHelper';
 import { ContainerContextMiddleware } from './containerContext.middleware';
 
 export class UserContextMiddleware {
@@ -14,9 +14,26 @@ export class UserContextMiddleware {
 
 			const user = await userContext.getCurrentUser();
 			if (!user) {
-				const cookieHelper = containerContext.resolve(BookingSGCookieHelper);
-				const anonymousData = cookieHelper.getCookieValue();
-				userContext.setAnonymousUser(anonymousData);
+				const anonymousCookieHelper = containerContext.resolve(BookingSGCookieHelper);
+				const anonymousData = anonymousCookieHelper.getCookieValue();
+				if (anonymousData) {
+					userContext.setAnonymousUser(anonymousData);
+					const mobileOtpCookieHelper = containerContext.resolve(MobileOtpCookieHelper);
+					const mobileOtpCookie = mobileOtpCookieHelper.getCookieValue();
+					if (mobileOtpCookie === undefined) {
+						throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
+							'User is not authenticated with mobile otp',
+						);
+					}
+
+					userContext.otpAddOn(mobileOtpCookie);
+					const otpAddOnMobileNo = userContext.getOtpAddOnMobileNo();
+					if (otpAddOnMobileNo === undefined) {
+						throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
+							'User is not authenticated with mobile otp',
+						);
+					}
+				}
 			}
 
 			const userGroups = await userContext.getAuthGroups();
