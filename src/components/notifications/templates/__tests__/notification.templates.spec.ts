@@ -21,6 +21,9 @@ describe('Notification templates tests', () => {
 		jest.resetAllMocks();
 		Container.bind(ServiceNotificationTemplateService).to(ServiceNotificationTemplateServiceMock);
 		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(undefined);
+		(getConfig as jest.Mock).mockReturnValue({
+			appURL: 'http://www.local.booking.gov.sg:3000',
+		});
 	});
 
 	const booking = new Booking();
@@ -32,9 +35,6 @@ describe('Notification templates tests', () => {
 	booking.serviceProviderId = 1;
 	booking.videoConferenceUrl = 'http://www.zoom.us/1234567';
 	booking.uuid = 'f4533bed-da08-473a-8641-7aef918fe0db';
-	(getConfig as jest.Mock).mockReturnValue({
-		appURL: 'http://www.local.booking.gov.sg:3000',
-	});
 
 	it('should create citizen email for citizen created booking', async () => {
 		const result = await Container.get(CitizenEmailTemplateBookingActionByCitizen).CreatedBookingEmail(booking);

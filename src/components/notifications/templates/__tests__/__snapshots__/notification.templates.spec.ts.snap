@@ -13,7 +13,7 @@ exports[`Notification templates tests should create citizen email for citizen cr
 Object {
   "html": "<p>Your booking request has been received.</p>
 <p>Booking for: <strong>Career</strong>.</p>
-<p>Below is a confirmation of your booking details.<br>Booking status: <strong>Pending Approval</strong><br>Date: <strong>14 April 2021</strong><br>Time: <strong>10:00am - 11:00am</strong><br>Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a><br>Location: <b>Some street</b></p>
+<p>Below is a confirmation of your booking details.<br>Booking status: <strong>Pending Approval</strong><br>Date: <strong>14 April 2021</strong><br>Time: <strong>10:00am - 11:00am</strong><br>Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a><br>Location: <b>Some street</b><br><a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a></p>
 <p><br></p>",
   "subject": "BookingSG confirmation: Career",
 }
@@ -23,7 +23,7 @@ exports[`Notification templates tests should create citizen email for citizen up
 Object {
   "html": "<p>You have updated a booking.</p>
 <p>Booking for: <strong>Career</strong> <strong></strong>.</p>
-<p>Below is a confirmation of your updated booking details.<br>Booking status: <strong>Pending Approval</strong><br>Date: <strong>14 April 2021</strong><br>Time: <strong>10:00am - 11:00am</strong><br>Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a><br>Location: <b>Some street</b></p>",
+<p>Below is a confirmation of your updated booking details.<br>Booking status: <strong>Pending Approval</strong><br>Date: <strong>14 April 2021</strong><br>Time: <strong>10:00am - 11:00am</strong><br>Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a><br>Location: <b>Some street</b><br><a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a></p>",
   "subject": "BookingSG update: Career",
 }
 `;
@@ -41,7 +41,7 @@ exports[`Notification templates tests should create citizen email for service pr
 Object {
   "html": "<p>A booking has been made.</p>
 <p>Booking for: <strong>Career</strong> <strong></strong>.</p>
-<p>Below is a confirmation of your booking details.<br>Booking status: <strong>Pending Approval</strong><br>Date: <strong>14 April 2021</strong><br>Time: <strong>10:00am - 11:00am</strong><br>Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a><br>Location: <b>Some street</b></p>",
+<p>Below is a confirmation of your booking details.<br>Booking status: <strong>Pending Approval</strong><br>Date: <strong>14 April 2021</strong><br>Time: <strong>10:00am - 11:00am</strong><br>Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a><br>Location: <b>Some street</b><br><a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a></p>",
   "subject": "BookingSG confirmation: Career",
 }
 `;
@@ -50,7 +50,7 @@ exports[`Notification templates tests should create citizen email for service pr
 Object {
   "html": "<p>There has been an update to your booking confirmation.</p>
 <p>Booking for: <strong>Career</strong> <strong></strong>.</p>
-<p>Below is a confirmation of your updated booking details.<br>Booking status: <strong>Pending Approval</strong><br>Date: <strong>14 April 2021</strong><br>Time: <strong>10:00am - 11:00am</strong><br>Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a><br>Location: <b>Some street</b></p>",
+<p>Below is a confirmation of your updated booking details.<br>Booking status: <strong>Pending Approval</strong><br>Date: <strong>14 April 2021</strong><br>Time: <strong>10:00am - 11:00am</strong><br>Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a><br>Location: <b>Some street</b><br><a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a></p>",
   "subject": "BookingSG update: Career",
 }
 `;

@@ -11,12 +11,21 @@ import {
 	ServiceProviderEmailTemplateBookingActionByCitizen,
 	ServiceProviderEmailTemplateBookingActionByServiceProvider,
 } from '../serviceProviders.mail';
+import { getConfig } from '../../../../config/app-config';
+
+jest.mock('../../../../config/app-config', () => ({
+	getConfig: jest.fn(),
+}));
+
 
 describe('Services Notification Templates test', () => {
 	beforeAll(() => {
 		jest.resetAllMocks();
 		Container.bind(ServiceNotificationTemplateService).to(ServiceNotificationTemplateServiceMock);
 		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(template);
+		(getConfig as jest.Mock).mockReturnValue({
+			appURL: 'http://www.local.booking.gov.sg:3000',
+		});
 	});
 
 	const template = new ServiceNotificationTemplate();
@@ -47,6 +56,7 @@ describe('Services Notification Templates test', () => {
 	booking.location = 'Some street';
 	booking.serviceProviderId = 1;
 	booking.videoConferenceUrl = 'http://www.zoom.us/1234567';
+	booking.uuid = 'f4533bed-da08-473a-8641-7aef918fe0db';
 
 	it('should create citizen email with service template for citizen created booking', async () => {
 		template.emailTemplateType = EmailNotificationTemplateType.CreatedByCitizenSentToCitizen;

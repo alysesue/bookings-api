@@ -1,7 +1,6 @@
 import { Booking } from '../../models';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { BookingStatusDisplayedInEmails } from '../../models/bookingStatus';
-import { getConfig } from '../../config/app-config';
 
 export interface EmailData {
 	status: string;
@@ -29,7 +28,7 @@ export interface MailOptions {
 	html: string;
 }
 
-export const emailMapper = (data: Booking, isSMS = false): EmailData => {
+export const emailMapper = (data: Booking, isSMS = false, appURL?: string): EmailData => {
 	const status = BookingStatusDisplayedInEmails[data.status];
 	const serviceName = data.service?.name || '';
 	const serviceProviderName = data.serviceProvider?.name;
@@ -37,8 +36,8 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 	const spNameDisplayedForCitizen = serviceProviderAliasName
 		? ` - ${serviceProviderAliasName}`
 		: serviceProviderName
-		? ` - ${serviceProviderName}`
-		: '';
+			? ` - ${serviceProviderName}`
+			: '';
 	const spNameDisplayedForServiceProvider = serviceProviderName ? ` - ${serviceProviderName}` : '';
 	const location = data.location;
 	const reasonToReject = data.reasonToReject ? `<br/>Reason: ${data.reasonToReject}.` : '';
@@ -62,8 +61,7 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 	if (videoConferenceUrl && isSMS) {
 		videoConferenceUrl = `Video Conference Link:${vcLink}`;
 	}
-	const config = getConfig();
-	const manageBookingURL = `${config.appURL}/public/my-bookings/?bookingToken=${data.uuid}`;
+	const manageBookingURL = `${appURL}/public/my-bookings/?bookingToken=${data.uuid}`;
 	const manageBookingText = manageBookingURL ? `<a href='${manageBookingURL}'>Reschedule / Cancel Booking</a>` : '';
 
 	return {

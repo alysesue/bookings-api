@@ -33,7 +33,7 @@ describe('Notification mapper tests', () => {
 			locationText,
 			videoConferenceUrl,
 			manageBookingText,
-		} = emailMapper(booking);
+		} = emailMapper(booking, false, 'http://www.local.booking.gov.sg:3000');
 		expect(day).toEqual(`14 April 2021`);
 		expect(time).toEqual(`10:00am - 11:00am`);
 		expect(status).toEqual(`Pending Approval`);
