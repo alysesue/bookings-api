@@ -15,7 +15,7 @@ describe('Notification mapper tests', () => {
 		booking.status = 1;
 		booking.location = 'Some street';
 		booking.serviceProviderId = 1;
-		booking.serviceProvider = {name: 'armin'} as ServiceProvider;
+		booking.serviceProvider = { name: 'armin' } as ServiceProvider;
 		booking.videoConferenceUrl = 'http://www.zoom.us/1234567';
 		booking.uuid = 'f4533bed-da08-473a-8641-7aef918fe0db';
 		(getConfig as jest.Mock).mockReturnValue({
