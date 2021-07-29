@@ -1,146 +1,66 @@
-import { EmailBookingTemplate, EmailTemplateBase } from './citizen.mail';
 import { emailMapper } from '../notifications.mapper';
+import { EmailBookingTemplate, EmailTemplateBase } from './citizen.mail';
+import { EmailNotificationTemplateType } from '../notifications.enum';
 
-export class ServiceProviderEmailTemplateBookingActionByCitizen implements EmailBookingTemplate {
-	public CreatedBookingEmail(data) {
-		const {
-			serviceName,
-			spNameDisplayedForServiceProvider,
-			status,
-			day,
-			time,
-			locationText,
-			videoConferenceUrl,
-		} = emailMapper(data);
+export class ServiceProviderEmailTemplateBookingActionByCitizen extends EmailBookingTemplate {
+	public async CreatedBookingEmail(data): Promise<EmailTemplateBase> {
+		const { serviceName, spNameDisplayedForServiceProvider } = emailMapper(data);
+		const templateType = EmailNotificationTemplateType.CreatedByCitizenSentToServiceProvider;
+		const emailContent = await this.getEmailContent(data.serviceId, templateType, data);
+
 		return {
 			subject: `BookingSG request: ${serviceName}${spNameDisplayedForServiceProvider}`,
-			html: `<pre>
-You have received a new booking request.
-<br />
-Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
-<br />
-Below is a summary of the booking request details.
-<br/>
-Booking status: <b>${status}</b>
-Date: <b>${day}</b>
-Time: <b>${time}</b>
-${videoConferenceUrl}
-${locationText}
-</pre>`,
+			html: emailContent,
 		};
 	}
 
-	public UpdatedBookingEmail(data) {
-		const {
-			serviceName,
-			spNameDisplayedForServiceProvider,
-			status,
-			day,
-			time,
-			locationText,
-			videoConferenceUrl,
-		} = emailMapper(data);
+	public async UpdatedBookingEmail(data): Promise<EmailTemplateBase> {
+		const { serviceName, spNameDisplayedForServiceProvider } = emailMapper(data);
+		const templateType = EmailNotificationTemplateType.UpdatedByCitizenSentToServiceProvider;
+		const emailContent = await this.getEmailContent(data.serviceId, templateType, data);
+
 		return {
 			subject: `BookingSG update: ${serviceName}${spNameDisplayedForServiceProvider}`,
-			html: `<pre>
-There has been an update to the following booking by the other party.
-<br />
-Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
-<br />
-Below is a confirmation of the updated booking details.
-<br/>
-Booking status: <b>${status}</b>
-Date: <b>${day}</b>
-Time: <b>${time}</b>
-${videoConferenceUrl}
-${locationText}
-</pre>`,
+			html: emailContent,
 		};
 	}
 
-	public CancelledBookingEmail(data) {
-		const {
-			serviceName,
-			spNameDisplayedForServiceProvider,
-			status,
-			day,
-			time,
-			locationText,
-			videoConferenceUrl,
-		} = emailMapper(data);
+	public async CancelledBookingEmail(data): Promise<EmailTemplateBase> {
+		const { serviceName, spNameDisplayedForServiceProvider } = emailMapper(data);
+		const templateType = EmailNotificationTemplateType.CancelledByCitizenSentToServiceProvider;
+		const emailContent = await this.getEmailContent(data.serviceId, templateType, data);
+
 		return {
 			subject: `BookingSG cancellation: ${serviceName}${spNameDisplayedForServiceProvider}`,
-			html: `<pre>
-The following booking has been cancelled by the other party.
-<br />
-Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
-<br />
-Booking status: <b>${status}</b>
-Date: <b>${day}</b>
-Time: <b>${time}</b>
-${videoConferenceUrl}
-${locationText}
-</pre>`,
+			html: emailContent,
 		};
 	}
 }
 
-export class ServiceProviderEmailTemplateBookingActionByServiceProvider implements EmailBookingTemplate {
-	public UpdatedBookingEmail(data) {
-		const {
-			serviceName,
-			spNameDisplayedForServiceProvider,
-			status,
-			day,
-			time,
-			locationText,
-			videoConferenceUrl,
-		} = emailMapper(data);
+export class ServiceProviderEmailTemplateBookingActionByServiceProvider extends EmailBookingTemplate {
+	public async UpdatedBookingEmail(data): Promise<EmailTemplateBase> {
+		const { serviceName, spNameDisplayedForServiceProvider } = emailMapper(data);
+		const templateType = EmailNotificationTemplateType.UpdatedByServiceProviderSentToServiceProvider;
+		const emailContent = await this.getEmailContent(data.serviceId, templateType, data);
+
 		return {
 			subject: `BookingSG update: ${serviceName}${spNameDisplayedForServiceProvider}`,
-			html: `<pre>
-You have updated a booking.
-<br />
-Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
-<br />
-Below is a summary of your updated booking details.
-<br/>
-Booking status: <b>${status}</b>
-Date: <b>${day}</b>
-Time: <b>${time}</b>
-${videoConferenceUrl}
-${locationText}
-</pre>`,
+			html: emailContent,
 		};
 	}
 
-	public CancelledBookingEmail(data): EmailTemplateBase {
-		const {
-			serviceName,
-			spNameDisplayedForServiceProvider,
-			status,
-			day,
-			time,
-			locationText,
-			videoConferenceUrl,
-		} = emailMapper(data);
+	public async CancelledBookingEmail(data): Promise<EmailTemplateBase> {
+		const { serviceName, spNameDisplayedForServiceProvider } = emailMapper(data);
+		const templateType = EmailNotificationTemplateType.CancelledByServiceProviderSentToServiceProvider;
+		const emailContent = await this.getEmailContent(data.serviceId, templateType, data);
+
 		return {
 			subject: `BookingSG cancellation: ${serviceName}${spNameDisplayedForServiceProvider}`,
-			html: `<pre>
-You have cancelled the following booking.
-<br />
-Booking for: <b>${serviceName}${spNameDisplayedForServiceProvider}.</b>
-<br />
-Booking status: <b>${status}</b>
-Date: <b>${day}</b>
-Time: <b>${time}</b>
-${videoConferenceUrl}
-${locationText}
-</pre>`,
+			html: emailContent,
 		};
 	}
 
-	public CreatedBookingEmail(_data): EmailTemplateBase {
+	public CreatedBookingEmail(_data): Promise<EmailTemplateBase> {
 		return undefined;
 	}
 }

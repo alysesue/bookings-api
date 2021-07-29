@@ -78,18 +78,18 @@ export class MailObserver implements Observer {
 		return this.templateFactory(booking, bookingType, templates);
 	}
 
-	private templateFactory(
+	private async templateFactory(
 		data: Booking,
 		bookingType: BookingType,
 		templates: EmailBookingTemplate,
-	): EmailTemplateBase | undefined {
+	): Promise<EmailTemplateBase | undefined> {
 		switch (bookingType) {
 			case BookingType.Created:
-				return templates.CreatedBookingEmail(data);
+				return await templates.CreatedBookingEmail(data);
 			case BookingType.Updated:
-				return templates.UpdatedBookingEmail(data);
+				return await templates.UpdatedBookingEmail(data);
 			case BookingType.CancelledOrRejected:
-				return templates.CancelledBookingEmail(data);
+				return await templates.CancelledBookingEmail(data);
 			default:
 				return;
 		}

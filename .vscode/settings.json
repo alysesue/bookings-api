@@ -1,12 +1,24 @@
-// This file is a copy of the original found in mol-lib-config
+// This file is a copy of the original found in mol-lib-config, please make modifications there instead
 // =============================================================================
 // The settings in this file will overwrite default and user settings for a project.
 // =============================================================================
 {
-	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"editor.formatOnPaste": false,
-	"editor.formatOnSave": true,
+	"[handlebars]": {
+		"editor.formatOnSave": false
+	},
+	"[sql]": {
+		"editor.formatOnSave": false
+	},
+	"auto-close-tag.activationOnLanguage": [
+		"html",
+		"javascriptreact",
+		"typescriptreact"
+	],
+	"editor.codeActionsOnSave": {
+		"source.fixAll.tslint": true
+	},
 	"editor.detectIndentation": false,
+	"editor.formatOnSave": true,
 	"editor.insertSpaces": false,
 	"files.associations": {
 		"*.tsconfig.json": "jsonc",
@@ -15,6 +27,9 @@
 	"files.insertFinalNewline": true,
 	"files.trimTrailingWhitespace": true,
 	"search.useIgnoreFiles": true,
+	"sequencediagrams.diagram.style": "simple",
+	"tslint.jsEnable": true,
 	"typescript.tsdk": "./node_modules/typescript/lib",
-	"files.autoSave": "onFocusChange"
+	"typescriptHero.imports.multiLineWrapThreshold": 120,
+	"typescriptHero.imports.stringQuoteStyle": "\""
 }

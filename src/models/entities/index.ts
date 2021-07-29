@@ -23,3 +23,4 @@ export { DynamicField, SelectListDynamicField, TextDynamicField } from './dynami
 export { Label } from './label';
 export { LabelCategory } from './labelCategory';
 export { Otp } from './otp';
+export { ServiceNotificationTemplate } from './serviceNotificationTemplate';

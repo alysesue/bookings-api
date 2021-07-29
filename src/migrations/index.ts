@@ -31,3 +31,4 @@ export { ReasonToReject1624412487509 } from './1624412487509-ReasonToReject';
 export { BookingUUID1626059559828 } from './1626059559828-BookingUUID';
 export { ServiceProviderScheduleStartEndDate1626827851656 } from './1626827851656-ServiceProviderScheduleStartEndDate';
 export { OtpTable1626098005671 } from './1626098005671-OtpTable';
+export { ServiceNotificationTemplate1625534887335 } from './1625534887335-ServiceNotificationTemplate';

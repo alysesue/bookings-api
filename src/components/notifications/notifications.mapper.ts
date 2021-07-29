@@ -1,21 +1,21 @@
 import { Booking } from '../../models';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { BookingStatusDisplayedInEmails } from '../../models/bookingStatus';
-import { getConfig } from '../../config/app-config';
 
-class EmailData {
-	public status: string;
-	public serviceName: string;
-	public serviceProviderName: string;
-	public spNameDisplayedForServiceProvider: string;
-	public spNameDisplayedForCitizen: string;
-	public location: string;
-	public locationText: string;
-	public day: string;
-	public time: string;
-	public videoConferenceUrl?: string;
-	public reasonToReject?: string;
-	public manageBookingURL?: string;
+export interface EmailData {
+	status: string;
+	serviceName: string;
+	serviceProviderName: string;
+	spNameDisplayedForServiceProvider: string;
+	spNameDisplayedForCitizen: string;
+	location: string;
+	locationText: string;
+	day: string;
+	time: string;
+	videoConferenceUrl?: string;
+	reasonToReject?: string;
+	serviceProviderAliasName?: string;
+	manageBookingText?: string;
 }
 
 export interface MailOptions {
@@ -28,7 +28,7 @@ export interface MailOptions {
 	html: string;
 }
 
-export const emailMapper = (data: Booking, isSMS = false): EmailData => {
+export const emailMapper = (data: Booking, isSMS = false, appURL?: string): EmailData => {
 	const status = BookingStatusDisplayedInEmails[data.status];
 	const serviceName = data.service?.name || '';
 	const serviceProviderName = data.serviceProvider?.name;
@@ -36,8 +36,8 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 	const spNameDisplayedForCitizen = serviceProviderAliasName
 		? ` - ${serviceProviderAliasName}`
 		: serviceProviderName
-		? ` - ${serviceProviderName}`
-		: '';
+			? ` - ${serviceProviderName}`
+			: '';
 	const spNameDisplayedForServiceProvider = serviceProviderName ? ` - ${serviceProviderName}` : '';
 	const location = data.location;
 	const reasonToReject = data.reasonToReject ? `<br/>Reason: ${data.reasonToReject}.` : '';
@@ -61,8 +61,8 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 	if (videoConferenceUrl && isSMS) {
 		videoConferenceUrl = `Video Conference Link:${vcLink}`;
 	}
-	const config = getConfig();
-	const manageBookingURL = `${config.appURL}/public/my-bookings/?bookingToken=${data.uuid}`;
+	const manageBookingURL = `${appURL}/public/my-bookings/?bookingToken=${data.uuid}`;
+	const manageBookingText = manageBookingURL ? `<a href='${manageBookingURL}'>Reschedule / Cancel Booking</a>` : '';
 
 	return {
 		status,
@@ -76,6 +76,73 @@ export const emailMapper = (data: Booking, isSMS = false): EmailData => {
 		time,
 		videoConferenceUrl,
 		reasonToReject,
-		manageBookingURL,
+		serviceProviderAliasName,
+		manageBookingText,
 	};
+};
+
+export const mapVariablesValuesToDefaultTemplate = (mapValues: EmailData, template: string): string => {
+	const {
+		serviceName,
+		spNameDisplayedForCitizen,
+		spNameDisplayedForServiceProvider,
+		status,
+		day,
+		time,
+		locationText,
+		videoConferenceUrl,
+		reasonToReject,
+		manageBookingText,
+	} = mapValues;
+
+	const mapVariables = {
+		'{serviceName}': serviceName,
+		'{spNameDisplayedForCitizen}': spNameDisplayedForCitizen,
+		'{spNameDisplayedForServiceProvider}': spNameDisplayedForServiceProvider,
+		'{status}': status,
+		'{day}': day,
+		'{time}': time,
+		'{locationText}': locationText,
+		'{videoConferenceUrl}': videoConferenceUrl,
+		'{reasonToReject}': reasonToReject,
+		'{manageBookingText}': manageBookingText,
+	};
+
+	for (const key of Object.keys(mapVariables)) {
+		template = template.replace(new RegExp(key, 'g'), mapVariables[key]);
+	}
+
+	return template;
+};
+
+export const mapVariablesValuesToServiceTemplate = (mapValues: EmailData, template: string): string => {
+	const {
+		status,
+		serviceName,
+		serviceProviderName,
+		serviceProviderAliasName,
+		location,
+		day,
+		time,
+		videoConferenceUrl,
+		reasonToReject,
+	} = mapValues;
+
+	const mapVariables = {
+		'{status}': status,
+		'{serviceName}': serviceName,
+		'{serviceProviderName}': serviceProviderName,
+		'{serviceProviderAliasName}': serviceProviderAliasName,
+		'{location}': location,
+		'{day}': day,
+		'{time}': time,
+		'{videoConferenceUrl}': videoConferenceUrl,
+		'{reasonToReject}': reasonToReject,
+	};
+
+	for (const key of Object.keys(mapVariables)) {
+		template = template.replace(new RegExp(key, 'g'), mapVariables[key]);
+	}
+
+	return template;
 };

@@ -7,6 +7,9 @@ import {
 	ServiceProviderEmailTemplateBookingActionByServiceProvider,
 } from '../serviceProviders.mail';
 import { Booking, Service } from '../../../../models';
+import { Container } from 'typescript-ioc';
+import { ServiceNotificationTemplateService } from '../../../serviceNotificationTemplate/serviceNotificationTemplate.service';
+import { ServiceNotificationTemplateServiceMock } from '../../../serviceNotificationTemplate/__mock__/serviceNotificationTemplate.service.mock';
 import { getConfig } from '../../../../config/app-config';
 
 jest.mock('../../../../config/app-config', () => ({
@@ -14,6 +17,15 @@ jest.mock('../../../../config/app-config', () => ({
 }));
 
 describe('Notification templates tests', () => {
+	beforeAll(() => {
+		jest.resetAllMocks();
+		Container.bind(ServiceNotificationTemplateService).to(ServiceNotificationTemplateServiceMock);
+		ServiceNotificationTemplateServiceMock.getNotificationTemplateMock.mockReturnValue(undefined);
+		(getConfig as jest.Mock).mockReturnValue({
+			appURL: 'http://www.local.booking.gov.sg:3000',
+		});
+	});
+
 	const booking = new Booking();
 	booking.startDateTime = new Date(2021, 3, 14, 10);
 	booking.endDateTime = new Date(2021, 3, 14, 11);
@@ -23,62 +35,75 @@ describe('Notification templates tests', () => {
 	booking.serviceProviderId = 1;
 	booking.videoConferenceUrl = 'http://www.zoom.us/1234567';
 	booking.uuid = 'f4533bed-da08-473a-8641-7aef918fe0db';
-	(getConfig as jest.Mock).mockReturnValue({
-		appURL: 'http://www.local.booking.gov.sg:3000',
-	});
 
-	it('should create citizen email for citizen created booking', () => {
-		const result = new CitizenEmailTemplateBookingActionByCitizen().CreatedBookingEmail(booking);
+	it('should create citizen email for citizen created booking', async () => {
+		const result = await Container.get(CitizenEmailTemplateBookingActionByCitizen).CreatedBookingEmail(booking);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create citizen email for citizen updated booking', () => {
-		const result = new CitizenEmailTemplateBookingActionByCitizen().UpdatedBookingEmail(booking);
+	it('should create citizen email for citizen updated booking', async () => {
+		const result = await Container.get(CitizenEmailTemplateBookingActionByCitizen).UpdatedBookingEmail(booking);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create citizen email for citizen cancelled booking', () => {
-		const result = new CitizenEmailTemplateBookingActionByCitizen().CancelledBookingEmail(booking);
+	it('should create citizen email for citizen cancelled booking', async () => {
+		const result = await Container.get(CitizenEmailTemplateBookingActionByCitizen).CancelledBookingEmail(booking);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create citizen email for service provider created booking', () => {
-		const result = new CitizenEmailTemplateBookingActionByServiceProvider().CreatedBookingEmail(booking);
+	it('should create citizen email for service provider created booking', async () => {
+		const result = await Container.get(CitizenEmailTemplateBookingActionByServiceProvider).CreatedBookingEmail(
+			booking,
+		);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create citizen email for service provider updated booking', () => {
-		const result = new CitizenEmailTemplateBookingActionByServiceProvider().UpdatedBookingEmail(booking);
+	it('should create citizen email for service provider updated booking', async () => {
+		const result = await Container.get(CitizenEmailTemplateBookingActionByServiceProvider).UpdatedBookingEmail(
+			booking,
+		);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create citizen email for service provider cancelled booking', () => {
-		const result = new CitizenEmailTemplateBookingActionByServiceProvider().CancelledBookingEmail(booking);
+	it('should create citizen email for service provider cancelled booking', async () => {
+		const result = await Container.get(CitizenEmailTemplateBookingActionByServiceProvider).CancelledBookingEmail(
+			booking,
+		);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create service provider email for citizen created booking', () => {
-		const result = new ServiceProviderEmailTemplateBookingActionByCitizen().CreatedBookingEmail(booking);
+	it('should create service provider email for citizen created booking', async () => {
+		const result = await Container.get(ServiceProviderEmailTemplateBookingActionByCitizen).CreatedBookingEmail(
+			booking,
+		);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create service provider email for citizen updated booking', () => {
-		const result = new ServiceProviderEmailTemplateBookingActionByCitizen().UpdatedBookingEmail(booking);
+	it('should create service provider email for citizen updated booking', async () => {
+		const result = await Container.get(ServiceProviderEmailTemplateBookingActionByCitizen).UpdatedBookingEmail(
+			booking,
+		);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create service provider email for citizen cancelled booking', () => {
-		const result = new ServiceProviderEmailTemplateBookingActionByCitizen().CancelledBookingEmail(booking);
+	it('should create service provider email for citizen cancelled booking', async () => {
+		const result = await Container.get(ServiceProviderEmailTemplateBookingActionByCitizen).CancelledBookingEmail(
+			booking,
+		);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create service provider email for service provider updated booking', () => {
-		const result = new ServiceProviderEmailTemplateBookingActionByServiceProvider().UpdatedBookingEmail(booking);
+	it('should create service provider email for service provider updated booking', async () => {
+		const result = await Container.get(
+			ServiceProviderEmailTemplateBookingActionByServiceProvider,
+		).UpdatedBookingEmail(booking);
 		expect(result).toMatchSnapshot();
 	});
 
-	it('should create service provider email for service provider cancelled booking', () => {
-		const result = new ServiceProviderEmailTemplateBookingActionByServiceProvider().CancelledBookingEmail(booking);
+	it('should create service provider email for service provider cancelled booking', async () => {
+		const result = await Container.get(
+			ServiceProviderEmailTemplateBookingActionByServiceProvider,
+		).CancelledBookingEmail(booking);
 		expect(result).toMatchSnapshot();
 	});
 });
