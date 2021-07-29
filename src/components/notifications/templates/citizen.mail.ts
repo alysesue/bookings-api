@@ -50,7 +50,10 @@ export abstract class EmailBookingTemplate {
 		bookingData: Booking,
 	): string => {
 		const defaultTemplate = this.notificationsRepository.getDefaultEmailNotificationTemplateByType(templateType);
-		const emailContent = mapVariablesValuesToDefaultTemplate(emailMapper(bookingData, false, getConfig().appURL), defaultTemplate);
+		const emailContent = mapVariablesValuesToDefaultTemplate(
+			emailMapper(bookingData, false, getConfig().appURL),
+			defaultTemplate,
+		);
 		return emailContent;
 	};
 
@@ -108,7 +111,7 @@ export class CitizenEmailTemplateBookingActionByCitizen extends EmailBookingTemp
 
 export class CitizenEmailTemplateBookingActionByServiceProvider extends EmailBookingTemplate {
 	public async CreatedBookingEmail(data): Promise<EmailTemplateBase> {
-		const { serviceName, spNameDisplayedForCitizen } = emailMapper(data, false, getConfig().appURL);;
+		const { serviceName, spNameDisplayedForCitizen } = emailMapper(data, false, getConfig().appURL);
 		const templateType = EmailNotificationTemplateType.CreatedByServiceProviderSentToCitizen;
 		const emailContent = await this.getEmailContent(data.serviceId, templateType, data);
 

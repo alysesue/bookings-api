@@ -36,8 +36,8 @@ export const emailMapper = (data: Booking, isSMS = false, appURL?: string): Emai
 	const spNameDisplayedForCitizen = serviceProviderAliasName
 		? ` - ${serviceProviderAliasName}`
 		: serviceProviderName
-			? ` - ${serviceProviderName}`
-			: '';
+		? ` - ${serviceProviderName}`
+		: '';
 	const spNameDisplayedForServiceProvider = serviceProviderName ? ` - ${serviceProviderName}` : '';
 	const location = data.location;
 	const reasonToReject = data.reasonToReject ? `<br/>Reason: ${data.reasonToReject}.` : '';
