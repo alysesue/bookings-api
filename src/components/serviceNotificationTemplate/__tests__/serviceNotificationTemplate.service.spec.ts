@@ -12,7 +12,7 @@ import { ServiceNotificationTemplateRepositoryMock } from '../__mock__/serviceNo
 import { EmailNotificationTemplateType } from '../../notifications/notifications.enum';
 import { defaultTemplates } from '../../notifications/templates/defaultNotificationTemplate';
 
-jest.mock('../ServiceNotificationTemplate.auth', () => {
+jest.mock('../serviceNotificationTemplate.auth', () => {
 	return { NotificationTemplateActionAuthVisitor: jest.fn() };
 });
 
