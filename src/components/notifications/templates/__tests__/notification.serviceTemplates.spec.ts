@@ -17,7 +17,6 @@ jest.mock('../../../../config/app-config', () => ({
 	getConfig: jest.fn(),
 }));
 
-
 describe('Services Notification Templates test', () => {
 	beforeAll(() => {
 		jest.resetAllMocks();
