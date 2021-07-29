@@ -16,6 +16,8 @@ export class OtpService {
 	private otpRepository: OtpRepository;
 	@Inject
 	private captchaService: CaptchaService;
+	@Inject
+	private notificationSMSService: NotificationSMSService;
 
 	async sendOtp(request: OtpSendRequest): Promise<string> {
 		const res = await this.captchaService.verify(request.captchaToken);
@@ -24,7 +26,7 @@ export class OtpService {
 		}
 
 		const otp = Otp.create(request.mobileNo);
-		await new NotificationSMSService().send({
+		await this.notificationSMSService.send({
 			phoneNumber: request.mobileNo,
 			message: `Your authentication code is ${otp._value}`,
 		});
@@ -41,7 +43,7 @@ export class OtpService {
 
 		const existingOtp = await this.otpRepository.getNonExpiredOtp(request.otpRequestId, OTP_EXPIRY_IN_SECONDS);
 		if (existingOtp === undefined || +existingOtp._value !== request.otpCode) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION);
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid otp code.`);
 		}
 	}
 

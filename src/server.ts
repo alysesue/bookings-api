@@ -31,6 +31,10 @@ import { DbConnection } from './core/db.connection';
 import { CreateCsrfMiddleware, VerifyCsrfMiddleware, XSRF_HEADER_NAME } from './infrastructure/csrf.middleware';
 import { mailer } from './config/mailer';
 import { registerRequestClock } from './infrastructure/requestClock';
+import {
+	NotificationSMSService,
+	NotificationSMSServiceFactory,
+} from './components/notificationSMS/notificationSMS.service';
 
 class ApiDataResponseHandler {
 	private readonly _middleware: Koa.Middleware;
@@ -59,6 +63,8 @@ class ApiDataResponseHandler {
 
 function bypassMiddleware(regexp: RegExp, target: Koa.Middleware): Koa.Middleware {
 	async function bypass(this: any, ctx, next) {
+		console.log('regex', regexp);
+		console.log('ctx.path', ctx.path);
 		if (regexp.test(ctx.path)) {
 			await next();
 		} else {
@@ -73,6 +79,11 @@ function setIOCBindings() {
 	Container.bind(MolUsersService)
 		.factory((buildContext) => buildContext.resolve(MolUsersServiceFactory).getService())
 		.scope(Scope.Request);
+
+	Container.bind(NotificationSMSService)
+		.factory((buildContext) => buildContext.resolve(NotificationSMSServiceFactory).getService())
+		.scope(Scope.Request);
+
 	registerRequestClock();
 }
 
@@ -127,10 +138,7 @@ export async function startServer(): Promise<Server> {
 	const byPassCSRF = new RegExp(`^(${CSRFPathsExpression})$`);
 	// tslint:disable-next-line: tsr-detect-non-literal-regexp
 	const byPassAuthPath = new RegExp(
-		`^(${basePath}/api/v1/usersessions/anonymous|
-			${basePath}/api/v1/otp/send|
-			${basePath}/api/v1/otp/verify|
-			${basePath}/api/v1/encryption/encrypt)$`,
+		`^(${basePath}/api/v1/usersessions/anonymous|${basePath}/api/v1/otp/send|${basePath}/api/v1/otp/verify|${basePath}/api/v1/encryption/encrypt)$`,
 	);
 	setIOCBindings();
 	let koaServer = new Koa()

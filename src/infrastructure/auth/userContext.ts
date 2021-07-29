@@ -57,7 +57,10 @@ export class UserContext {
 		};
 	}
 
-	public async otpAddOn(cookieData: MobileOtpAddOnCookieData) {
+	public async otpAddOn(cookieData: MobileOtpAddOnCookieData): Promise<void> {
+		if (!cookieData) {
+			return;
+		}
 		const otp = this.containerContext.resolve(OtpService);
 		this._mobileNo = await otp.getMobileNo(cookieData.otpReqId);
 	}

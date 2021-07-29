@@ -11,18 +11,19 @@ import { Container } from 'typescript-ioc';
 import { NotificationSMSService } from '../../../components/notificationSMS/notificationSMS.service';
 import { CaptchaServiceMock } from '../../../components/captcha/__mocks__/captcha.service.mock';
 import { OtpRepositoryMock } from '../__mocks__/otp.repository.mock';
-import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 describe('sendOtp()', () => {
 	let configSpy: jest.SpyInstance;
 	let otpRepoSaveSpy: jest.SpyInstance;
-	let notificationSMSSvcSpy: jest.SpyInstance;
 
 	beforeAll(() => {
 		Container.bind(CaptchaService).to(CaptchaServiceMock);
+		Container.bind(NotificationSMSService).to(NotificationSMSServiceMock);
 	});
 
 	beforeEach(() => {
+		jest.resetAllMocks();
+
 		configSpy = jest.spyOn(appConfig, 'getConfig');
 		otpRepoSaveSpy = jest.spyOn(OtpRepository.prototype, 'save');
 		otpRepoSaveSpy.mockImplementation(
@@ -31,22 +32,7 @@ describe('sendOtp()', () => {
 			},
 		);
 
-		notificationSMSSvcSpy = jest.spyOn(NotificationSMSService.prototype, 'send');
-		notificationSMSSvcSpy.mockImplementation(
-			(): Promise<void> => {
-				return Promise.resolve();
-			},
-		);
-	});
-
-	afterEach(() => {
-		configSpy.mockRestore();
-		CaptchaServiceMock.verify.mockReset();
-		otpRepoSaveSpy.mockRestore();
-		notificationSMSSvcSpy.mockRestore();
-	});
-
-	beforeEach(() => {
+		NotificationSMSServiceMock.sendMock.mockResolvedValue();
 		configSpy.mockReturnValue({ otpEnabled: true });
 	});
 
@@ -58,7 +44,7 @@ describe('sendOtp()', () => {
 
 		expect(async () => otpSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken'))).not.toThrow();
 		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
-		expect(notificationSMSSvcSpy).toBeCalledTimes(1);
+		expect(NotificationSMSServiceMock.sendMock).toBeCalledTimes(1);
 		expect(otpRepoSaveSpy).toBeCalledTimes(1);
 	});
 
@@ -71,7 +57,7 @@ describe('sendOtp()', () => {
 			BusinessError.create([BookingBusinessValidations.InvalidCaptchaToken]),
 		);
 		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
-		expect(notificationSMSSvcSpy).not.toBeCalled();
+		expect(NotificationSMSServiceMock.sendMock).not.toBeCalled();
 		expect(otpRepoSaveSpy).not.toBeCalled();
 	});
 });
@@ -86,14 +72,10 @@ describe('verifyOtp()', () => {
 	});
 
 	beforeEach(() => {
+		jest.resetAllMocks();
+
 		configSpy = jest.spyOn(appConfig, 'getConfig');
 		configSpy.mockReturnValue({ otpEnabled: true });
-	});
-
-	afterEach(() => {
-		configSpy.mockRestore();
-		CaptchaServiceMock.verify.mockReset();
-		OtpRepositoryMock.getNonExpiredOtpMock.mockReset();
 	});
 
 	it('should throw error when recaptcha failed and NOT verify otp', async () => {
@@ -116,7 +98,7 @@ describe('verifyOtp()', () => {
 
 		await expect(
 			async () => await otpSvc.verifyOtp(new OtpVerifyRequest('xxx', 111111, 'captchaToken')),
-		).rejects.toThrow(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION));
+		).rejects.toThrowErrorMatchingInlineSnapshot(`"Invalid otp code."`);
 
 		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
 		expect(OtpRepositoryMock.getNonExpiredOtpMock).toBeCalledTimes(1);
@@ -132,7 +114,7 @@ describe('verifyOtp()', () => {
 
 		await expect(
 			async () => await otpSvc.verifyOtp(new OtpVerifyRequest('xxx', 111112, 'captchaToken')),
-		).rejects.toThrow(new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION));
+		).rejects.toThrowErrorMatchingInlineSnapshot(`"Invalid otp code."`);
 
 		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
 		expect(OtpRepositoryMock.getNonExpiredOtpMock).toBeCalledTimes(1);

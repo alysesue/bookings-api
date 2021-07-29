@@ -20,15 +20,10 @@ export class UserContextMiddleware {
 					userContext.setAnonymousUser(anonymousData);
 					const mobileOtpCookieHelper = containerContext.resolve(MobileOtpCookieHelper);
 					const mobileOtpCookie = mobileOtpCookieHelper.getCookieValue();
-					if (mobileOtpCookie === undefined) {
-						throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
-							'User is not authenticated with mobile otp',
-						);
-					}
+					await userContext.otpAddOn(mobileOtpCookie);
 
-					userContext.otpAddOn(mobileOtpCookie);
 					const otpAddOnMobileNo = userContext.getOtpAddOnMobileNo();
-					if (otpAddOnMobileNo === undefined) {
+					if (!otpAddOnMobileNo) {
 						throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
 							'User is not authenticated with mobile otp',
 						);
