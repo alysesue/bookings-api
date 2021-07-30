@@ -4,13 +4,13 @@ export const defaultTemplates = {
 			'<p>Your booking request has been received.</p>\n' +
 			'<p>Booking for: <strong>{serviceName}</strong>.</p>\n' +
 			'<p>Below is a confirmation of your booking details.<br>Booking status: <strong>{status}</strong><br>Date: ' +
-			'<strong>{day}</strong><br>Time: <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}<br>{manageBookingText}</p>\n' +
+			'<strong>{day}</strong><br>Time: <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}<br>{manageBookingLink}</p>\n' +
 			'<p><br></p>',
 		UpdatedByCitizenSentToCitizen:
 			'<p>You have updated a booking.</p>\n' +
 			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForCitizen}</strong>.</p>\n' +
 			'<p>Below is a confirmation of your updated booking details.<br>Booking status: <strong>{status}</strong><br>Date: ' +
-			'<strong>{day}</strong><br>Time: <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}<br>{manageBookingText}</p>',
+			'<strong>{day}</strong><br>Time: <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}<br>{manageBookingLink}</p>',
 		CancelledByCitizenSentToCitizen:
 			'<p>You have cancelled the following booking.</p>\n' +
 			'<p>Booking for: <strong>{serviceName} {spNameDisplayedForCitizen}</strong>.</p>\n' +
@@ -35,12 +35,12 @@ export const defaultTemplates = {
 			'<p>A booking has been made.</p>\n' +
 			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForCitizen}</strong>.</p>\n' +
 			'<p>Below is a confirmation of your booking details.<br>Booking status: <strong>{status}</strong><br>Date: <strong>{day}</strong><br>Time:' +
-			' <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}<br>{manageBookingText}</p>',
+			' <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}<br>{manageBookingLink}</p>',
 		UpdatedByServiceProviderSentToCitizen:
 			'<p>There has been an update to your booking confirmation.</p>\n' +
 			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForCitizen}</strong>.</p>\n' +
 			'<p>Below is a confirmation of your updated booking details.<br>Booking status: <strong>{status}</strong><br>Date: <strong>{day}</strong><br>Time:' +
-			' <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}<br>{manageBookingText}</p>',
+			' <strong>{time}</strong><br>{videoConferenceUrl}<br>{locationText}<br>{manageBookingLink}</p>',
 		CancelledByServiceProviderSentToCitizen:
 			'<p>The following booking has been cancelled by the other party.<br>{reasonToReject}</p>\n' +
 			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForCitizen}</strong>.</p>\n' +

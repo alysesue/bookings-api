@@ -15,7 +15,7 @@ export interface EmailData {
 	videoConferenceUrl?: string;
 	reasonToReject?: string;
 	serviceProviderAliasName?: string;
-	manageBookingText?: string;
+	manageBookingLink?: string;
 }
 
 export interface MailOptions {
@@ -62,7 +62,7 @@ export const emailMapper = (data: Booking, isSMS = false, appURL?: string): Emai
 		videoConferenceUrl = `Video Conference Link:${vcLink}`;
 	}
 	const manageBookingURL = `${appURL}/public/my-bookings/?bookingToken=${data.uuid}`;
-	const manageBookingText = manageBookingURL ? `<a href='${manageBookingURL}'>Reschedule / Cancel Booking</a>` : '';
+	const manageBookingLink = manageBookingURL ? `<a href='${manageBookingURL}'>Reschedule / Cancel Booking</a>` : '';
 
 	return {
 		status,
@@ -77,7 +77,7 @@ export const emailMapper = (data: Booking, isSMS = false, appURL?: string): Emai
 		videoConferenceUrl,
 		reasonToReject,
 		serviceProviderAliasName,
-		manageBookingText,
+		manageBookingLink,
 	};
 };
 
@@ -92,7 +92,7 @@ export const mapVariablesValuesToDefaultTemplate = (mapValues: EmailData, templa
 		locationText,
 		videoConferenceUrl,
 		reasonToReject,
-		manageBookingText,
+		manageBookingLink,
 	} = mapValues;
 
 	const mapVariables = {
@@ -105,7 +105,7 @@ export const mapVariablesValuesToDefaultTemplate = (mapValues: EmailData, templa
 		'{locationText}': locationText,
 		'{videoConferenceUrl}': videoConferenceUrl,
 		'{reasonToReject}': reasonToReject,
-		'{manageBookingText}': manageBookingText,
+		'{manageBookingLink}': manageBookingLink,
 	};
 
 	for (const key of Object.keys(mapVariables)) {
@@ -126,6 +126,7 @@ export const mapVariablesValuesToServiceTemplate = (mapValues: EmailData, templa
 		time,
 		videoConferenceUrl,
 		reasonToReject,
+		manageBookingLink,
 	} = mapValues;
 
 	const mapVariables = {
@@ -138,6 +139,7 @@ export const mapVariablesValuesToServiceTemplate = (mapValues: EmailData, templa
 		'{time}': time,
 		'{videoConferenceUrl}': videoConferenceUrl,
 		'{reasonToReject}': reasonToReject,
+		'{manageBookingLink}': manageBookingLink,
 	};
 
 	for (const key of Object.keys(mapVariables)) {
