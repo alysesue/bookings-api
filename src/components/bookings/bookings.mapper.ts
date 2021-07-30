@@ -94,7 +94,10 @@ export class BookingsMapper {
 			dynamicValues: this.dynamicValuesMapper.mapDynamicValuesModel(booking.dynamicValues),
 			serviceProviderAliasName: booking.serviceProvider?.aliasName,
 			reasonToReject: booking.reasonToReject,
-		};
+			sendNotifications: booking.service?.sendNotifications,
+			sendSMSNotifications: booking.service?.sendSMSNotifications,
+		} as BookingResponse;
+
 		return response;
 	}
 

@@ -68,6 +68,11 @@ export type BookingResponse = {
 	serviceId: number;
 	serviceName: string;
 	/**
+	 * For rendering different booking confirmation messages
+	 */
+	sendNotifications: boolean;
+	sendSMSNotifications: boolean;
+	/**
 	 * @isInt
 	 */
 	serviceProviderId?: number;
