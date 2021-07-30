@@ -67,9 +67,11 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 	}
 
 	public mapFieldValueToJson(field: DynamicField, fieldValue: PersistDynamicValueContract): void {
+		// Skip checks if no value input and mark error if only it is a mandatory field
 		if (!fieldValue) {
-			// All field values are required for now
-			this.markFieldNotProvided(field);
+			if (field.isMandatory) {
+				this.markFieldNotProvided(field);
+			}
 			return;
 		}
 
