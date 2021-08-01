@@ -120,7 +120,7 @@ describe('Notification mapper tests', () => {
 			'reasonToReject: <br/>Reason: rejected.\n' +
 			"manageBookingLink: <a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a>"
 
-		const returnedTemplate = mapVariablesValuesToServiceTemplate(emailMapper(booking), template);
+		const returnedTemplate = mapVariablesValuesToServiceTemplate(emailMapper(booking, false, getConfig().appURL), template);
 		expect(returnedTemplate).toEqual(expectedReturnedTemplate);
 	});
 });
