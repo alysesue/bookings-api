@@ -118,9 +118,12 @@ describe('Notification mapper tests', () => {
 			'time: 10:00am - 11:00am\n' +
 			"videoConferenceUrl: Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>\n" +
 			'reasonToReject: <br/>Reason: rejected.\n' +
-			"manageBookingLink: <a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a>"
+			"manageBookingLink: <a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a>";
 
-		const returnedTemplate = mapVariablesValuesToServiceTemplate(emailMapper(booking, false, getConfig().appURL), template);
+		const returnedTemplate = mapVariablesValuesToServiceTemplate(
+			emailMapper(booking, false, getConfig().appURL),
+			template,
+		);
 		expect(returnedTemplate).toEqual(expectedReturnedTemplate);
 	});
 });
