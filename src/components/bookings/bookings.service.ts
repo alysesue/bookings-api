@@ -32,6 +32,7 @@ import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
 import { MyInfoService } from '../myInfo/myInfo.service';
+import { BookingValidationType } from '../../models/bookingValidationType';
 
 @InRequestScope
 export class BookingsService {
@@ -76,27 +77,21 @@ export class BookingsService {
 		);
 	}
 
-	private static useAdminValidator(user: User): boolean {
-		return user.isAdmin() || user.isAgency();
+	private static useAdminValidator(user: User, validationType?: string): boolean {
+		return user.isAdmin() || (user.isAgency() && validationType === BookingValidationType.Admin);
 	}
 
 	public static shouldAutoAccept(
 		currentUser: User,
 		serviceProvider?: ServiceProvider,
-		skipAgencyCheck = false,
+		shouldAutoAccept = false,
+		validationType?: string
 	): boolean {
 		if (!serviceProvider) {
 			return false;
 		}
 
-		if (!skipAgencyCheck) {
-			// tslint:disable-next-line: no-collapsible-if
-			if (currentUser.isAdmin() || currentUser.isAgency()) {
-				return true;
-			}
-		}
-
-		return serviceProvider.autoAcceptBookings;
+		return (shouldAutoAccept || currentUser.isAdmin() || (currentUser.isAgency() && validationType === BookingValidationType.Admin)) ? true : serviceProvider.autoAcceptBookings;
 	}
 
 	public async cancelBooking(bookingId: number): Promise<Booking> {
@@ -160,7 +155,7 @@ export class BookingsService {
 
 	public async update(bookingId: number, bookingRequest: BookingUpdateRequest): Promise<Booking> {
 		const updateAction = (_booking) => {
-			return this.updateInternal(_booking, bookingRequest, () => {});
+			return this.updateInternal(_booking, bookingRequest, () => { });
 		};
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
@@ -449,7 +444,7 @@ export class BookingsService {
 			isStandAlone,
 			videoConferenceUrl,
 		} = await this.bookingRequestExtraction(bookingRequest, serviceId);
-		const useAdminValidator = BookingsService.useAdminValidator(currentUser);
+		const useAdminValidator = BookingsService.useAdminValidator(currentUser, bookingRequest.validationType);
 
 		let serviceProvider: ServiceProvider | undefined;
 		if (bookingRequest.serviceProviderId) {
@@ -487,7 +482,7 @@ export class BookingsService {
 			.withCitizenPhone(myInfo ? myInfo.data.mobileno.nbr.value : bookingRequest.citizenPhone)
 			.withCitizenEmail(myInfo ? myInfo.data.email.value : bookingRequest.citizenEmail)
 			.withAutoAccept(
-				BookingsService.shouldAutoAccept(currentUser, serviceProvider, shouldBypassCaptchaAndAutoAccept),
+				BookingsService.shouldAutoAccept(currentUser, serviceProvider, shouldBypassCaptchaAndAutoAccept, bookingRequest.validationType),
 			)
 			.withMarkOnHold(isServiceOnHold())
 			.withCaptchaToken(bookingRequest.captchaToken)
