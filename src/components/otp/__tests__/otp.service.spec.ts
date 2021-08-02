@@ -135,3 +135,20 @@ describe('verifyOtp()', () => {
 		}).not.toThrowError();
 	});
 });
+
+describe('getMobileNo', () => {
+	beforeAll(() => {
+		Container.bind(OtpRepository).to(OtpRepositoryMock);
+	});
+
+	beforeEach(() => {
+		jest.resetAllMocks();
+	});
+
+	it('should call otpRepository', async () => {
+		OtpRepositoryMock.getMobileNoMock.mockReturnValue(Promise.resolve('xxx'));
+		const mobileNo = await Container.get(OtpService).getMobileNo('yyy');
+		expect(mobileNo).toEqual('xxx');
+		expect(OtpRepositoryMock.getMobileNoMock).toBeCalledTimes(1);
+	});
+});

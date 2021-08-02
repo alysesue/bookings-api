@@ -76,4 +76,30 @@ describe('otp repository', () => {
 			jest.spyOn(global, 'Date').mockRestore();
 		});
 	});
+
+	describe('getMobileNo', () => {
+		it('should return undefined when otp not in database', async () => {
+			TransactionManagerMock.findOne.mockReturnValue(undefined);
+			const otpRepo = Container.get(OtpRepository);
+
+			const mobileNo = await otpRepo.getMobileNo('xxx');
+
+			expect(TransactionManagerMock.findOne).toBeCalledTimes(1);
+			expect(mobileNo).toBeUndefined();
+		});
+
+		it('should return mobile number when otp found in database', async () => {
+			const otpReqId = '6dd2513a-9679-49d2-b305-94a390d151ad';
+			const validOtp = Otp.create('+6588884444');
+			validOtp._createdAt = new Date(2020, 3, 27);
+			validOtp._requestId = otpReqId;
+			TransactionManagerMock.findOne.mockReturnValue(validOtp);
+			const otpRepo = Container.get(OtpRepository);
+
+			const mobileNo = await otpRepo.getMobileNo(otpReqId);
+
+			expect(TransactionManagerMock.findOne).toBeCalledTimes(1);
+			expect(mobileNo).toEqual('+6588884444');
+		});
+	});
 });

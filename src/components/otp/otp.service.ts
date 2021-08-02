@@ -47,7 +47,7 @@ export class OtpService {
 		}
 	}
 
-	async getMobileNo(otpReqId: string): Promise<string> {
+	async getMobileNo(otpReqId: string): Promise<string | undefined> {
 		return await this.otpRepository.getMobileNo(otpReqId);
 	}
 }

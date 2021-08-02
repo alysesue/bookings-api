@@ -1,3 +1,5 @@
+import { MobileOtpCookieHelperMock } from './../../../infrastructure/__tests__/userContext.middleware.spec';
+import { OtpServiceMock } from './../__mocks__/otp.service.mock';
 import { MobileOtpCookieHelper } from './../../../infrastructure/bookingSGCookieHelper';
 import { OtpVerifyRequest } from './../otp.apicontract';
 import { OtpController } from '../otp.controller';
@@ -6,22 +8,13 @@ import { OtpSendRequest } from '../otp.apicontract';
 import { OtpService } from '../otp.service';
 import * as uuid from 'uuid';
 
-const OtpServiceMock = {
-	sendOtp: jest.fn(),
-	verifyOtp: jest.fn(),
-};
-
-const MobileOtpCookieHelperMock = {
-	setCookieValue: jest.fn(),
-};
-
 beforeAll(() => {
-	Container.bind(OtpService).factory(() => OtpServiceMock);
-	Container.bind(MobileOtpCookieHelper).factory(() => MobileOtpCookieHelperMock);
+	Container.bind(OtpService).to(OtpServiceMock);
+	Container.bind(MobileOtpCookieHelper).to(MobileOtpCookieHelperMock);
 });
 
 beforeEach(() => {
-	OtpServiceMock.sendOtp.mockImplementation(
+	OtpServiceMock.sendOtpMock.mockImplementation(
 		async (): Promise<string> => {
 			return Promise.resolve(uuid.v4());
 		},
@@ -37,7 +30,7 @@ describe('OTP controller', () => {
 		const controller = Container.get(OtpController);
 
 		const otpSendResponse = await controller.sendOtp(new OtpSendRequest('+6588884444'));
-		expect(OtpServiceMock.sendOtp).toBeCalledTimes(1);
+		expect(OtpServiceMock.sendOtpMock).toBeCalledTimes(1);
 		expect(uuid.validate(otpSendResponse.data.otpRequestId)).toBeTruthy();
 	});
 
@@ -45,7 +38,7 @@ describe('OTP controller', () => {
 		const controller = Container.get(OtpController);
 
 		await controller.verifyOtp(new OtpVerifyRequest('6dd2513a-9679-49d2-b305-94a390d151ad', 111111));
-		expect(OtpServiceMock.verifyOtp).toBeCalledTimes(1);
+		expect(OtpServiceMock.verifyOtpMock).toBeCalledTimes(1);
 		expect(MobileOtpCookieHelperMock.setCookieValue).toBeCalledTimes(1);
 	});
 });

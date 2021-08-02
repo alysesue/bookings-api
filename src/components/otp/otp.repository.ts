@@ -22,7 +22,7 @@ export class OtpRepository extends RepositoryBase<Otp> {
 		return undefined;
 	}
 
-	async getMobileNo(otpReqId): Promise<string | undefined> {
+	async getMobileNo(otpReqId: string): Promise<string | undefined> {
 		const otp = await (await this.getRepository()).findOne({ where: { _requestId: otpReqId } });
 		if (otp) {
 			return otp._mobileNo;

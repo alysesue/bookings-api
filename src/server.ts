@@ -63,8 +63,6 @@ class ApiDataResponseHandler {
 
 function bypassMiddleware(regexp: RegExp, target: Koa.Middleware): Koa.Middleware {
 	async function bypass(this: any, ctx, next) {
-		console.log('regex', regexp);
-		console.log('ctx.path', ctx.path);
 		if (regexp.test(ctx.path)) {
 			await next();
 		} else {
