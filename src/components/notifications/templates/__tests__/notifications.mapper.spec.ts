@@ -32,7 +32,7 @@ describe('Notification mapper tests', () => {
 			time,
 			locationText,
 			videoConferenceUrl,
-			manageBookingText,
+			manageBookingLink,
 		} = emailMapper(booking, false, 'http://www.local.booking.gov.sg:3000');
 		expect(day).toEqual(`14 April 2021`);
 		expect(time).toEqual(`10:00am - 11:00am`);
@@ -43,7 +43,7 @@ describe('Notification mapper tests', () => {
 		expect(videoConferenceUrl).toEqual(
 			`Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>`,
 		);
-		expect(manageBookingText).toEqual(
+		expect(manageBookingLink).toEqual(
 			`<a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a>`,
 		);
 	});
@@ -105,7 +105,8 @@ describe('Notification mapper tests', () => {
 			'day: {day}\n' +
 			'time: {time}\n' +
 			'videoConferenceUrl: {videoConferenceUrl}\n' +
-			'reasonToReject: {reasonToReject}';
+			'reasonToReject: {reasonToReject}\n' +
+			'manageBookingLink: {manageBookingLink}';
 
 		const expectedReturnedTemplate =
 			'status: Pending Approval\n' +
@@ -116,9 +117,13 @@ describe('Notification mapper tests', () => {
 			'day: 14 April 2021\n' +
 			'time: 10:00am - 11:00am\n' +
 			"videoConferenceUrl: Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>\n" +
-			'reasonToReject: <br/>Reason: rejected.';
+			'reasonToReject: <br/>Reason: rejected.\n' +
+			"manageBookingLink: <a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a>";
 
-		const returnedTemplate = mapVariablesValuesToServiceTemplate(emailMapper(booking), template);
+		const returnedTemplate = mapVariablesValuesToServiceTemplate(
+			emailMapper(booking, false, getConfig().appURL),
+			template,
+		);
 		expect(returnedTemplate).toEqual(expectedReturnedTemplate);
 	});
 });
