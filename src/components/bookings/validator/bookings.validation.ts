@@ -72,6 +72,11 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 		if (booking.videoConferenceUrl && !(await BookingsValidator.validateUrl(booking.videoConferenceUrl))) {
 			yield BookingBusinessValidations.VideoConferenceUrlIsInvalid;
 		}
+		const phoneUtil = require("google-libphonenumber").PhoneNumberUtil.getInstance();
+		const phoneNumber = phoneUtil.parse(booking.citizenPhone);
+		if (!phoneUtil.isPossibleNumber(phoneNumber) || !phoneUtil.isValidNumber(phoneNumber)){
+			yield BookingBusinessValidations.PhoneNumberNotValid;
+		}
 
 		if (this._customCitizenValidations.length > 0) {
 			yield* this._customCitizenValidations;

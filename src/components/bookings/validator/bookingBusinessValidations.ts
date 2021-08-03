@@ -79,4 +79,9 @@ export class BookingBusinessValidations {
 		code: '10015',
 		message: `Citizen name is not valid`,
 	});
+
+	public static readonly PhoneNumberNotValid = new BusinessValidation({
+		code: '10016',
+		message: `Citizen email not valid`,
+	});
 }

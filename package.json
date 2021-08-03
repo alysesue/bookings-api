@@ -113,6 +113,7 @@
 		"glob": "^7.1.6",
 		"glob-parent": "^6.0.0",
 		"globby": "^11.0.4",
+		"google-libphonenumber": "^3.2.22",
 		"googleapis": "^49.0.0",
 		"hashids": "^2.2.8",
 		"juice": "^8.0.0",
