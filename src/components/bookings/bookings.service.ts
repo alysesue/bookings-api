@@ -302,7 +302,17 @@ export class BookingsService {
 		const currentUser = await this.userContext.getCurrentUser();
 
 		const afterMap = (updatedBooking: Booking, serviceProvider: ServiceProvider) => {
-			if (serviceProvider) {
+			const isServiceOnHold = () => {
+				if (currentUser.isAdmin() || currentUser.isAgency()) return false;
+				return updatedBooking.service.isOnHold || updatedBooking.service.isStandAlone;
+			};
+
+			if (isServiceOnHold()) {
+				const HOLD_DURATION_IN_MINS = 10;
+				updatedBooking.status = BookingStatus.OnHold;
+				updatedBooking.onHoldUntil = new Date();
+				updatedBooking.onHoldUntil.setMinutes(updatedBooking.onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
+			} else if (serviceProvider) {
 				updatedBooking.status = BookingsService.getBookingCreationStatus(currentUser, serviceProvider);
 			}
 		};
