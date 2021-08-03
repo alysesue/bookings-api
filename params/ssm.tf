@@ -311,3 +311,11 @@ resource "aws_ssm_parameter" "otp-enabled" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "app-url" {
+  name  = "${local.path-prefix}/APP_URL"
+  type  = "String"
+  value = "${data.external.static.result.APP_URL}"
+
+  overwrite = true
+}
+
