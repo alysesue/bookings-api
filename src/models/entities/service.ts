@@ -62,7 +62,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		this._serviceAdminGroupMap = value;
 	}
 
-	@Column({ type: 'varchar', length: 100, nullable: false })
+	@Column({ type: 'varchar', length: 500, nullable: false })
 	private _name: string;
 
 	public set name(name: string) {
@@ -257,7 +257,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		this._videoConferenceUrl = value;
 	}
 
-	@Column({ type: 'varchar', length: 100, nullable: true })
+	@Column({ type: 'varchar', length: 500, nullable: true })
 	private _description: string;
 
 	public get description(): string {
