@@ -1029,6 +1029,9 @@ describe('Bookings.Service', () => {
 	});
 
 	describe('Reschedule', () => {
+		service.isOnHold = false;
+		service.isStandAlone = false;
+
 		it('should reschedule booking', async () => {
 			const bookingService = Container.get(BookingsService);
 			BookingRepositoryMock.booking = new BookingBuilder()
@@ -1037,6 +1040,7 @@ describe('Bookings.Service', () => {
 				.withEndDateTime(new Date('2020-10-01T02:00:00'))
 				.withServiceProviderId(1)
 				.build();
+			BookingRepositoryMock.booking.service = service;
 
 			const rescheduleRequest = {
 				startDateTime: new Date('2020-10-01T05:00:00'),
@@ -1076,6 +1080,33 @@ describe('Bookings.Service', () => {
 			);
 
 			await expect(async () => await bookingService.reschedule(1, rescheduleRequest)).rejects.toThrowError();
+		});
+
+		it('should set booking on hold when rescheduling booking and isStandAlone is true', async () => {
+			service.isStandAlone = true;
+			const bookingService = Container.get(BookingsService);
+			BookingRepositoryMock.booking = new BookingBuilder()
+				.withServiceId(service.id)
+				.withStartDateTime(new Date('2020-10-01T01:00:00'))
+				.withEndDateTime(new Date('2020-10-01T02:00:00'))
+				.withServiceProviderId(1)
+				.build();
+			BookingRepositoryMock.booking.service = service;
+
+			const rescheduleRequest = {
+				startDateTime: new Date('2020-10-01T05:00:00'),
+				endDateTime: new Date('2020-10-01T06:00:00'),
+			} as BookingRequest;
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
+			);
+
+			const result = await bookingService.reschedule(1, rescheduleRequest);
+			expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Reschedule);
+			expect(result.status).toStrictEqual(BookingStatus.OnHold);
+			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 		});
 	});
 
