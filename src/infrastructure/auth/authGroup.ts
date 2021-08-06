@@ -117,7 +117,7 @@ export class ServiceProviderAuthGroup extends AuthGroup {
 
 	constructor(user: User, serviceProvider: ServiceProvider) {
 		super(user);
-		if (!user.isAdmin()) {
+		if (!(user.isAdmin() || user.isAgency())) {
 			throw new Error('ServiceProviderAuthGroup must be created with an admin User.');
 		}
 		if (!serviceProvider) {

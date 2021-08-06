@@ -62,6 +62,7 @@ import { MyInfoService } from '../../myInfo/myInfo.service';
 import { MyInfoServiceeMock } from '../../myInfo/__mocks__/myInfo.service.mock';
 import * as uuid from 'uuid';
 import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
+import { BookingValidationType } from '../../../models/bookingValidationType';
 
 jest.mock('../../../tools/arrays');
 
@@ -104,6 +105,10 @@ describe('Bookings.Service', () => {
 	});
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 	const anonymousMock = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+	const agencyMock = User.createAgencyUser({
+		agencyAppId: 'some-app',
+		agencyName: 'some',
+	});
 
 	const validatorMock = {
 		bypassCaptcha: jest.fn(),
@@ -337,6 +342,122 @@ describe('Bookings.Service', () => {
 		expect(booking.citizenName).toBe(myInfo.data.name.value);
 		expect(booking.citizenEmail).toBe(myInfo.data.email.value);
 		expect(booking.citizenPhone).toBe(myInfo.data.mobileno.nbr.value);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+	});
+
+	it('should be able to make a booking as an agency, with no validationType specified - default citizen', async () => {
+		const customProvider = ServiceProvider.create('provider', 1);
+		customProvider.id = 200;
+		customProvider.autoAcceptBookings = false;
+
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 200;
+
+		TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
+			return Promise.resolve([
+				{
+					serviceProvider: customProvider,
+					capacity: 1,
+					acceptedBookings: [],
+					pendingBookings: [],
+					availabilityCount: 1,
+				} as TimeslotServiceProviderResult,
+			]);
+		});
+
+		ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(Promise.resolve(customProvider));
+		ServiceProvidersRepositoryMock.getServiceProviderMock = customProvider;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(agencyMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceProviderAuthGroup(agencyMock, customProvider)]),
+		);
+
+		await Container.get(BookingsService).save(bookingRequest, 1);
+
+		const booking = BookingRepositoryMock.booking;
+		expect(booking).not.toBe(undefined);
+		expect(booking.status).toBe(BookingStatus.PendingApproval);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+	});
+
+	it('should auto-accept booking when a booking is made directly via API, as an agency with validationType equals to admin', async () => {
+		const customProvider = ServiceProvider.create('provider', 1);
+		customProvider.id = 200;
+		customProvider.autoAcceptBookings = false;
+
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 200;
+		bookingRequest.validationType = BookingValidationType.Admin;
+
+		TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
+			return Promise.resolve([
+				{
+					serviceProvider: customProvider,
+					capacity: 1,
+					acceptedBookings: [],
+					pendingBookings: [],
+					availabilityCount: 1,
+				} as TimeslotServiceProviderResult,
+			]);
+		});
+
+		ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(Promise.resolve(customProvider));
+		ServiceProvidersRepositoryMock.getServiceProviderMock = customProvider;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(agencyMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceProviderAuthGroup(agencyMock, customProvider)]),
+		);
+
+		await Container.get(BookingsService).save(bookingRequest, 1);
+
+		const booking = BookingRepositoryMock.booking;
+		expect(booking).not.toBe(undefined);
+		expect(booking.status).toBe(BookingStatus.Accepted);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+	});
+
+	it('should fall back to service provider auto-accept configuration booking, as an agency when a booking is made directly via API with validationType equals to citizen', async () => {
+		const customProvider = ServiceProvider.create('provider', 1);
+		customProvider.id = 200;
+		customProvider.autoAcceptBookings = false;
+
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 200;
+		bookingRequest.validationType = BookingValidationType.Citizen;
+
+		TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
+			return Promise.resolve([
+				{
+					serviceProvider: customProvider,
+					capacity: 1,
+					acceptedBookings: [],
+					pendingBookings: [],
+					availabilityCount: 1,
+				} as TimeslotServiceProviderResult,
+			]);
+		});
+
+		ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(Promise.resolve(customProvider));
+		ServiceProvidersRepositoryMock.getServiceProviderMock = customProvider;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(agencyMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceProviderAuthGroup(agencyMock, customProvider)]),
+		);
+
+		await Container.get(BookingsService).save(bookingRequest, 1);
+
+		const booking = BookingRepositoryMock.booking;
+		expect(booking).not.toBe(undefined);
+		expect(booking.status).toBe(BookingStatus.PendingApproval);
 		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 

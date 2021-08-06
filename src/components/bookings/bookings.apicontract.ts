@@ -40,6 +40,8 @@ export class BookingRequest extends BookingDetailsRequest {
 	 */
 	public serviceProviderId?: number;
 	public captchaToken?: string | null;
+	// default validation type: citizen
+	public validationType?: string | null;
 }
 
 export class BookingUpdateRequest extends BookingRequest {
