@@ -9,6 +9,7 @@ import { CrudAction } from '../../enums/crudAction';
 import { ServicesService } from '../services/services.service';
 import { NotificationTemplateActionAuthVisitor } from './serviceNotificationTemplate.auth';
 import { NotificationsRepository } from '../notifications/notifications.repository';
+import * as sanitizeHtml from 'sanitize-html';
 
 @InRequestScope
 export class ServiceNotificationTemplateService {
@@ -100,8 +101,8 @@ export class ServiceNotificationTemplateService {
 				].toString()} not found or does not match the template id`,
 			);
 		}
-
-		existTemplate.htmlTemplate = request.htmlTemplate;
+		existTemplate.htmlTemplate = sanitizeHtml(request.htmlTemplate);
+		// existTemplate.htmlTemplate = request.htmlTemplate;
 		return await this.notificationTemplateRepository.save(existTemplate);
 	}
 
