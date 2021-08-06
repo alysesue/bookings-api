@@ -85,13 +85,17 @@ export class BookingsService {
 		currentUser: User,
 		serviceProvider?: ServiceProvider,
 		shouldAutoAccept = false,
-		validationType?: string
+		validationType?: string,
 	): boolean {
 		if (!serviceProvider) {
 			return false;
 		}
 
-		return (shouldAutoAccept || currentUser.isAdmin() || (currentUser.isAgency() && validationType === BookingValidationType.Admin)) ? true : serviceProvider.autoAcceptBookings;
+		return shouldAutoAccept ||
+			currentUser.isAdmin() ||
+			(currentUser.isAgency() && validationType === BookingValidationType.Admin)
+			? true
+			: serviceProvider.autoAcceptBookings;
 	}
 
 	public async cancelBooking(bookingId: number): Promise<Booking> {
@@ -155,7 +159,7 @@ export class BookingsService {
 
 	public async update(bookingId: number, bookingRequest: BookingUpdateRequest): Promise<Booking> {
 		const updateAction = (_booking) => {
-			return this.updateInternal(_booking, bookingRequest, () => { });
+			return this.updateInternal(_booking, bookingRequest, () => {});
 		};
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
@@ -482,7 +486,12 @@ export class BookingsService {
 			.withCitizenPhone(myInfo ? myInfo.data.mobileno.nbr.value : bookingRequest.citizenPhone)
 			.withCitizenEmail(myInfo ? myInfo.data.email.value : bookingRequest.citizenEmail)
 			.withAutoAccept(
-				BookingsService.shouldAutoAccept(currentUser, serviceProvider, shouldBypassCaptchaAndAutoAccept, bookingRequest.validationType),
+				BookingsService.shouldAutoAccept(
+					currentUser,
+					serviceProvider,
+					shouldBypassCaptchaAndAutoAccept,
+					bookingRequest.validationType,
+				),
 			)
 			.withMarkOnHold(isServiceOnHold())
 			.withCaptchaToken(bookingRequest.captchaToken)

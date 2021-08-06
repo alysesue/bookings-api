@@ -106,8 +106,8 @@ describe('Bookings.Service', () => {
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 	const anonymousMock = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
 	const agencyMock = User.createAgencyUser({
-		agencyAppId: "some-app",
-		agencyName: "some"
+		agencyAppId: 'some-app',
+		agencyName: 'some',
 	});
 
 	const validatorMock = {
@@ -345,7 +345,7 @@ describe('Bookings.Service', () => {
 		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 
-	it('should be able to make a booking as an agency, with no validationType specified - default citizen', async() => {
+	it('should be able to make a booking as an agency, with no validationType specified - default citizen', async () => {
 		const customProvider = ServiceProvider.create('provider', 1);
 		customProvider.id = 200;
 		customProvider.autoAcceptBookings = false;
@@ -383,7 +383,7 @@ describe('Bookings.Service', () => {
 		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 
-	it('should auto-accept booking when a booking is made directly via API, as an agency with validationType equals to admin', async() => {
+	it('should auto-accept booking when a booking is made directly via API, as an agency with validationType equals to admin', async () => {
 		const customProvider = ServiceProvider.create('provider', 1);
 		customProvider.id = 200;
 		customProvider.autoAcceptBookings = false;
@@ -422,7 +422,7 @@ describe('Bookings.Service', () => {
 		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 
-	it('should fall back to service provider auto-accept configuration booking, as an agency when a booking is made directly via API with validationType equals to citizen', async() => {
+	it('should fall back to service provider auto-accept configuration booking, as an agency when a booking is made directly via API with validationType equals to citizen', async () => {
 		const customProvider = ServiceProvider.create('provider', 1);
 		customProvider.id = 200;
 		customProvider.autoAcceptBookings = false;
