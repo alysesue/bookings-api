@@ -63,10 +63,10 @@ describe('otp repository', () => {
 			const otpReqId = '6dd2513a-9679-49d2-b305-94a390d151ad';
 			const otpRepo = Container.get(OtpRepository);
 			const validOtp = Otp.create('+6588884444');
-			validOtp._createdAt = new Date(2020, 3, 27);
+			validOtp._createdAt = new Date(2020, 3, 27, 0, 0, 0, 0);
 			validOtp._requestId = otpReqId;
 			TransactionManagerMock.findOne.mockReturnValue(validOtp);
-			jest.spyOn(Date, 'now').mockReturnValueOnce(1587916980000); // unix time for 2020-04-27, 00:03:00
+			jest.spyOn(Date, 'now').mockReturnValueOnce(new Date(2020, 3, 27, 0, 3, 0, 0).getTime());
 
 			const otp = await otpRepo.getNonExpiredOtp(otpReqId, 3 * 60);
 

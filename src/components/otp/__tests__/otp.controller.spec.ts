@@ -1,4 +1,3 @@
-import { MobileOtpCookieHelperMock } from './../../../infrastructure/__tests__/userContext.middleware.spec';
 import { OtpServiceMock } from './../__mocks__/otp.service.mock';
 import { MobileOtpCookieHelper } from './../../../infrastructure/bookingSGCookieHelper';
 import { OtpVerifyRequest } from './../otp.apicontract';
@@ -7,6 +6,7 @@ import { Container } from 'typescript-ioc';
 import { OtpSendRequest } from '../otp.apicontract';
 import { OtpService } from '../otp.service';
 import * as uuid from 'uuid';
+import { MobileOtpCookieHelperMock } from '../../../infrastructure/__mocks__/mobileOtpCookieHelper.mock';
 
 beforeAll(() => {
 	Container.bind(OtpService).to(OtpServiceMock);
