@@ -139,19 +139,36 @@ describe('BookingSGCookieHelper tests', () => {
 		});
 	});
 
-	it('should set mobile otp cookie value (when in dev)', async () => {
-		(getConfig as jest.Mock).mockReturnValue({
-			isLocal: true,
-		});
+	it('should set mobile otp add on cookie', async () => {
 		const cookieHelper = Container.get(MobileOtpCookieHelper);
-
-		cookieHelper.setCookieValue('testing');
-
-		expect(KoaContextStoreMock.koaContext.cookies.set).toHaveBeenCalledWith('OtpRequestId', 'testing', {
-			httpOnly: true,
-			overwrite: true,
-			sameSite: false,
-			secure: false,
+		const data = { cookieCreatedAt: new Date(0), otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f' };
+		(AesEncryptionMock.encrypt as jest.Mock).mockImplementation(() => {
+			return 'Some Encrypted Value';
 		});
+
+		cookieHelper.setCookieValue(data);
+
+		expect(KoaContextStoreMock.koaContext.cookies.set).toHaveBeenCalledWith(
+			'MobileOtpAddOn',
+			'Some Encrypted Value',
+			{ httpOnly: true, overwrite: true, sameSite: 'lax', secure: true },
+		);
+	});
+
+	it('should get mobile otp add on cookie value', async () => {
+		const cookieHelper = Container.get(MobileOtpCookieHelper);
+		const data = { cookieCreatedAt: new Date(0), otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f' };
+		const json = JSON.stringify(data);
+		(AesEncryptionMock.decrypt as jest.Mock).mockImplementation(() => {
+			return json;
+		});
+
+		(KoaContextStoreMock.koaContext.cookies.get as jest.Mock).mockReturnValue('cookie value');
+
+		const result = cookieHelper.getCookieValue();
+		expect(KoaContextStoreMock.koaContext.cookies.get).toHaveBeenCalled();
+		expect(AesEncryptionMock.decrypt).toHaveBeenCalledWith('cookie value');
+
+		expect(result).toStrictEqual(JSON.parse(json));
 	});
 });

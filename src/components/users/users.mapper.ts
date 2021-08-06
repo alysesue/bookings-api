@@ -14,6 +14,7 @@ import {
 	AuthGroupResponse,
 	AuthGroupTypeContract,
 	OrganisationAdminGroupContract,
+	OtpAddOn,
 	ServiceAdminGroupContract,
 	SingPassUserContract,
 	UserProfileResponse,
@@ -22,10 +23,24 @@ import {
 } from './users.apicontract';
 
 export class UserProfileMapper {
-	public static mapToResponse({ user, groups }: { user: User; groups: AuthGroup[] }): UserProfileResponse {
+	public static mapToResponse({
+		user,
+		groups,
+		otpAddOnMobileNo,
+	}: {
+		user: User;
+		groups: AuthGroup[];
+		otpAddOnMobileNo?: string;
+	}): UserProfileResponse {
 		const response = new UserProfileResponse();
 		response.user = UserProfileMapper.mapUserToResponse(user);
 		response.groups = UserProfileMapper.mapGroupsToResponse(groups);
+		if (otpAddOnMobileNo) {
+			const otpAddOn = new OtpAddOn();
+			otpAddOn.mobileNo = otpAddOnMobileNo;
+			response.otpAddon = otpAddOn;
+		}
+
 		return response;
 	}
 

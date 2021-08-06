@@ -1,3 +1,5 @@
+import { OtpService } from './../../../components/otp/otp.service';
+import { OtpServiceMock } from './../../../components/otp/__mocks__/otp.service.mock';
 import { ContainerContextHolder } from '../../containerContext';
 import { Container } from 'typescript-ioc';
 import { UsersService } from '../../../components/users/users.service';
@@ -15,7 +17,7 @@ jest.mock('../../auth/userContext', () => {
 
 beforeAll(() => {
 	Container.bind(UsersService).to(UsersServiceMock);
-
+	Container.bind(OtpService).to(OtpServiceMock);
 	ContainerContextHolder.registerInContainer();
 });
 
@@ -93,5 +95,25 @@ describe('User Context tests', () => {
 		expect(UsersServiceMock.getAnonymousUserRoles).toBeCalled();
 		expect(user).toStrictEqual(anonymous);
 		expect(groups).toStrictEqual([new AnonymousAuthGroup(anonymous)]);
+	});
+
+	describe('otpAddOn()', () => {
+		it('should not set mobileNo when no cookieData is present', async () => {
+			const userContext = ContainerContextHolder.create().resolve(UserContext);
+			await userContext.otpAddOn(undefined);
+			expect(userContext.getOtpAddOnMobileNo()).toBe(undefined);
+		});
+
+		it('should set mobileNo when valid cookieData is present', async () => {
+			const userContext = ContainerContextHolder.create().resolve(UserContext);
+			OtpServiceMock.getMobileNoMock.mockReturnValue(Promise.resolve('+6588884444'));
+
+			await userContext.otpAddOn({
+				cookieCreatedAt: new Date(),
+				otpReqId: 'xxx',
+			});
+
+			expect(userContext.getOtpAddOnMobileNo()).toBe('+6588884444');
+		});
 	});
 });

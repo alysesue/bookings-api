@@ -1,6 +1,11 @@
 export class UserProfileResponse {
 	public user: UserTypeResponse;
 	public groups: AuthGroupResponse[];
+	public otpAddon?: OtpAddOn;
+}
+
+export class OtpAddOn {
+	public mobileNo: string;
 }
 
 export class UserTypeResponse {
