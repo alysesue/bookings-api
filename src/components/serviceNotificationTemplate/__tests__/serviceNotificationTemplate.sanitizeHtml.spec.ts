@@ -1,7 +1,7 @@
 import { cleanHtml } from '../serviceNotificationTemplate.sanitizeHtml';
 
 describe('sanitizeHtml of Services Notification Template service - test', () => {
-	it('should sanitize script tag from string', async () => {
+	it('should sanitize script tag from string',  () => {
 		const clean = cleanHtml('<script>alert(1)</script>');
 		expect(clean).toStrictEqual('');
 	});
@@ -16,12 +16,12 @@ describe('sanitizeHtml of Services Notification Template service - test', () => 
 		expect(clean).toStrictEqual('<img />"&gt;');
 	});
 
-	it('should sanitize javascript commands from string', async () => {
+	it('should sanitize javascript commands from string',  () => {
 		const clean = cleanHtml('<IMG SRC="javascript:alert(\'XSS\');">');
 		expect(clean).toStrictEqual('<img />');
 	});
 
-	it('should sanitize javascript commands from string - no quotes and no semicolon', async () => {
+	it('should sanitize javascript commands from string - no quotes and no semicolon',  () => {
 		const clean = cleanHtml("<IMG SRC=javascript:alert('XSS')>");
 		expect(clean).toStrictEqual('<img />');
 	});
@@ -69,13 +69,6 @@ describe('sanitizeHtml of Services Notification Template service - test', () => 
 		expect(clean).toStrictEqual('');
 	});
 
-	it('should sanitize javascript commands in style tag from string', () => {
-		const clean = cleanHtml(
-			'<STYLE>li {list-style-image: url("javascript:alert(\'XSS\')");}</STYLE><UL><LI>XSS</br>',
-		);
-		expect(clean).toStrictEqual('<ul><li>XSS<br /></li></ul>');
-	});
-
 	it('should not remove typographical related tags: strong, em, ins, del, code, sup, sub', () => {
 		const validString =
 			'<p><strong>TEST</strong></p>\n' +
@@ -89,7 +82,7 @@ describe('sanitizeHtml of Services Notification Template service - test', () => 
 		expect(clean).toStrictEqual(validString);
 	});
 
-	it('should not remove headings related tags: h, blockquote', async () => {
+	it('should not remove headings related tags: h, blockquote',  () => {
 		const validString =
 			'<h1>TEST</h1>\n' +
 			'<h2>TEST</h2>\n' +
@@ -103,7 +96,7 @@ describe('sanitizeHtml of Services Notification Template service - test', () => 
 		expect(clean).toStrictEqual(validString);
 	});
 
-	it('should not remove font related tags', async () => {
+	it('should not remove font related tags',  () => {
 		const validString =
 			'<p><span style="font-family:Arial">TEST</span></p>\n' +
 			'<p><span style="font-family:Georgia">TEST</span></p>\n' +
@@ -116,7 +109,7 @@ describe('sanitizeHtml of Services Notification Template service - test', () => 
 		expect(clean).toStrictEqual(validString);
 	});
 
-	it('should not remove text-size related tags', async () => {
+	it('should not remove text-size related tags',  () => {
 		const validString =
 			'<p><span style="font-size:10px">TEST</span></p>\n' +
 			'<p><span style="font-size:12px">TEST</span></p>\n' +
@@ -129,7 +122,7 @@ describe('sanitizeHtml of Services Notification Template service - test', () => 
 		expect(clean).toStrictEqual(validString);
 	});
 
-	it('should not remove list related tags', async () => {
+	it('should not remove list related tags',  () => {
 		const validString =
 			'<ul>\n' +
 			'<li>Test List 1</li>\n' +
@@ -143,7 +136,7 @@ describe('sanitizeHtml of Services Notification Template service - test', () => 
 		expect(clean).toStrictEqual(validString);
 	});
 
-	it('should not remove location related tags', async () => {
+	it('should not remove location related tags',  () => {
 		const validString =
 			'<p>TEST</p>\n' +
 			'<p style="text-align:center">TEST</p>\n' +
@@ -153,7 +146,7 @@ describe('sanitizeHtml of Services Notification Template service - test', () => 
 		expect(clean).toStrictEqual(validString);
 	});
 
-	it('should not remove url, images, colours and emojis related tags: a href, iframe, img, style, EXCEPT from frameBorder', async () => {
+	it('should not remove url, images, colours and emojis related tags: a href, iframe, img, style, EXCEPT from frameBorder',  () => {
 		const validString =
 			'<p><a href="https://www.palo-it.com/en/" target="_blank">Click here</a></p>\n' +
 			'<p>Embedded Link:</p>\n' +
