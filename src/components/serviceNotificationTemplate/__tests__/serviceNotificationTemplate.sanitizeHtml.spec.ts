@@ -1,8 +1,6 @@
-import * as sanitizeHtml from 'sanitize-html';
-import { cleanHtml } from "../serviceNotificationTemplate.sanitizeHtml";
+import { cleanHtml } from '../serviceNotificationTemplate.sanitizeHtml';
 
 describe('sanitizeHtml of Services Notification Template service - test', () => {
-
 	it('should sanitize script tag from string', async () => {
 		const clean = cleanHtml('<script>alert(1)</script>');
 		expect(clean).toStrictEqual('');
@@ -14,7 +12,7 @@ describe('sanitizeHtml of Services Notification Template service - test', () => 
 	});
 
 	it('should sanitize script tag after malformed IMG tags from string', () => {
-		const clean = cleanHtml('<IMG """><SCRIPT>alert(\"XSS\")</SCRIPT>"\>');
+		const clean = cleanHtml('<IMG """><SCRIPT>alert("XSS")</SCRIPT>">');
 		expect(clean).toStrictEqual('<img />"&gt;');
 	});
 
@@ -34,7 +32,7 @@ describe('sanitizeHtml of Services Notification Template service - test', () => 
 	});
 
 	it('should sanitize javascript commands from string - HTML entities', () => {
-		const clean = cleanHtml("<IMG SRC=javascript:alert(&quot;XSS&quot;)>");
+		const clean = cleanHtml('<IMG SRC=javascript:alert(&quot;XSS&quot;)>');
 		expect(clean).toStrictEqual('<img />');
 	});
 
@@ -49,18 +47,20 @@ describe('sanitizeHtml of Services Notification Template service - test', () => 
 	});
 
 	it('should sanitize event handler even with malformed A tags, from string', () => {
-		const clean = sanitizeHtml("\<a onmouseover='alert(document.cookie)'\>xxs link</a\>");
+		const clean = cleanHtml("<a onmouseover='alert(document.cookie)'>xxs link</a>");
 		expect(clean).toStrictEqual('<a>xxs link</a>');
 	});
 
 	it('should sanitize decimal HTML character references from string', () => {
-		const clean = cleanHtml('<IMG SRC=&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;' +
-			'&#58;&#97;&#108;&#101;&#114;&#116;&#40;&#39;&#88;&#83;&#83;&#39;&#41;>');
+		const clean = cleanHtml(
+			'<IMG SRC=&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;' +
+				'&#58;&#97;&#108;&#101;&#114;&#116;&#40;&#39;&#88;&#83;&#83;&#39;&#41;>',
+		);
 		expect(clean).toStrictEqual('<img />');
 	});
 
 	it('should sanitize iframe from string', () => {
-		const clean = cleanHtml("<iframe src=http://xss.rocks/scriptlet.html <");
+		const clean = cleanHtml('<iframe src=http://xss.rocks/scriptlet.html <');
 		expect(clean).toStrictEqual('');
 	});
 
@@ -70,11 +70,13 @@ describe('sanitizeHtml of Services Notification Template service - test', () => 
 	});
 
 	it('should sanitize javascript commands in style tag from string', () => {
-		const clean = cleanHtml('<STYLE>li {list-style-image: url("javascript:alert(\'XSS\')");}</STYLE><UL><LI>XSS</br>');
+		const clean = cleanHtml(
+			'<STYLE>li {list-style-image: url("javascript:alert(\'XSS\')");}</STYLE><UL><LI>XSS</br>',
+		);
 		expect(clean).toStrictEqual('<ul><li>XSS<br /></li></ul>');
 	});
 
-	it('should not remove typographical related tags: strong, em, ins, del, code, sup, sub',  () => {
+	it('should not remove typographical related tags: strong, em, ins, del, code, sup, sub', () => {
 		const validString =
 			'<p><strong>TEST</strong></p>\n' +
 			'<p><em>TEST</em></p>\n' +
