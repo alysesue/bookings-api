@@ -35,9 +35,6 @@ const createTimeslotNative = (startTime: number, endTime: number, capacity?: num
 };
 
 jest.mock('../../../captcha/captcha.service');
-jest.mock('../../../../config/app-config', () => ({
-	getConfig: jest.fn(),
-}));
 
 beforeAll(() => {
 	ContainerContextHolder.registerInContainer();
@@ -938,5 +935,26 @@ describe('Booking validation tests', () => {
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
 		).rejects.toMatchInlineSnapshot('[BusinessError: [10005] Citizen UIN/FIN not found]');
+	});
+	it('It should validate phone number', async () => {
+		const start = new Date();
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenUinFin('G3382058K')
+			.withCitizenName('Andy')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.withServiceId(service.id)
+			.withCitizenPhone('234598')
+			.build();
+		booking.service = service;
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10016] Citizen phone number not valid]');
 	});
 });

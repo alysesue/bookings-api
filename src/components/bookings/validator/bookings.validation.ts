@@ -13,6 +13,7 @@ import { MAX_PAGING_LIMIT } from '../../../core/pagedEntities';
 import { IValidator, Validator } from '../../../infrastructure/validator';
 import { BookingBusinessValidations } from './bookingBusinessValidations';
 import { ContainerContext } from '../../../infrastructure/containerContext';
+import { PhoneNumberUtil } from 'google-libphonenumber';
 
 export interface IBookingsValidator extends IValidator<Booking> {
 	bypassCaptcha(shouldBypassCaptcha: boolean): void;
@@ -72,10 +73,16 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 		if (booking.videoConferenceUrl && !(await BookingsValidator.validateUrl(booking.videoConferenceUrl))) {
 			yield BookingBusinessValidations.VideoConferenceUrlIsInvalid;
 		}
-		const phoneUtil = require("google-libphonenumber").PhoneNumberUtil.getInstance();
-		const phoneNumber = phoneUtil.parse(booking.citizenPhone);
-		if (!phoneUtil.isPossibleNumber(phoneNumber) || !phoneUtil.isValidNumber(phoneNumber)){
-			yield BookingBusinessValidations.PhoneNumberNotValid;
+		if (booking.citizenPhone) {
+			const phoneUtil = PhoneNumberUtil.getInstance();
+			try {
+				const phoneNumber = phoneUtil.parse(booking.citizenPhone);
+				if (!phoneUtil.isPossibleNumber(phoneNumber) || !phoneUtil.isValidNumber(phoneNumber)) {
+					yield BookingBusinessValidations.PhoneNumberNotValid;
+				}
+			} catch (e) {
+				yield BookingBusinessValidations.PhoneNumberNotValid;
+			}
 		}
 
 		if (this._customCitizenValidations.length > 0) {
