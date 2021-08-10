@@ -1,6 +1,7 @@
 import { BookingStatus } from '../../models/bookingStatus';
 import { PagingRequest } from '../../apicontract';
 import { DynamicValueContract, PersistDynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
+import { BookingValidationType } from "../../models/bookingValidationType";
 
 export class BookingAcceptRequest {
 	/**
@@ -41,7 +42,7 @@ export class BookingRequest extends BookingDetailsRequest {
 	public serviceProviderId?: number;
 	public captchaToken?: string | null;
 	// default validation type: citizen
-	public validationType?: string | null;
+	public validationType?: BookingValidationType | null;
 }
 
 export class BookingUpdateRequest extends BookingRequest {

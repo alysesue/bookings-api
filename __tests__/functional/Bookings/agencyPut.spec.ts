@@ -3,6 +3,7 @@ import { AgencyRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { populateIndividualTimeslot, populateUserServiceProvider } from '../../populate/basic';
 import { BookingStatus } from '../../../src/models';
 import * as request from 'request';
+import { BookingValidationType } from "../../../src/models/bookingValidationType";
 
 describe('Bookings functional tests as agency for PUT request', () => {
 	const pgClient = new PgClient();
@@ -15,7 +16,7 @@ describe('Bookings functional tests as agency for PUT request', () => {
 	const SERVICE_PROVIDER_NAME_1 = 'SP1';
 	let serviceProviderId: number;
 	let serviceId: number;
-	const validationType = 'admin';
+	const validationType = BookingValidationType.Admin;
 
 	afterAll(async (done) => {
 		await pgClient.cleanAllTables();
