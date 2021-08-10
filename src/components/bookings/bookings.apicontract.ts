@@ -1,7 +1,7 @@
 import { BookingStatus } from '../../models/bookingStatus';
 import { PagingRequest } from '../../apicontract';
 import { DynamicValueContract, PersistDynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
-import { BookingValidationType } from "../../models/bookingValidationType";
+import { BookingValidationType } from '../../models/bookingValidationType';
 
 export class BookingAcceptRequest {
 	/**

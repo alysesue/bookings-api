@@ -395,8 +395,12 @@ export class BookingsService {
 		return [changeLogAction, updatedBooking];
 	}
 
-	private static getBookingCreationStatus(currentUser: User, serviceProvider?: ServiceProvider, validationType?: BookingValidationType): BookingStatus {
-		return this.shouldAutoAccept(currentUser, serviceProvider, undefined, validationType )
+	private static getBookingCreationStatus(
+		currentUser: User,
+		serviceProvider?: ServiceProvider,
+		validationType?: BookingValidationType,
+	): BookingStatus {
+		return this.shouldAutoAccept(currentUser, serviceProvider, undefined, validationType)
 			? BookingStatus.Accepted
 			: BookingStatus.PendingApproval;
 	}
