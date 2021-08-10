@@ -1,4 +1,8 @@
-import { OrganisationAdminRequestEndpointSG } from '../utils/requestEndpointSG';
+import {
+	OrganisationAdminRequestEndpointSG,
+	ServiceAdminRequestEndpointSG,
+	ServiceProviderRequestEndpointSG,
+} from '../utils/requestEndpointSG';
 import { ServiceProviderResponseModel } from '../../src/components/serviceProviders/serviceProviders.apicontract';
 import { PartialAdditionalSettings, ServiceResponse } from '../../src/components/services/service.apicontract';
 import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslotItems.apicontract';
@@ -262,6 +266,8 @@ export const populateOneOffTimeslot = async ({
 	labelIds,
 	title,
 	description,
+	role,
+	requestDetails,
 }: {
 	serviceProviderId: number;
 	startTime: Date;
@@ -270,8 +276,31 @@ export const populateOneOffTimeslot = async ({
 	labelIds?: string[];
 	title?: string;
 	description?: string;
+	role?: Roles;
+	requestDetails?: {
+		nameService: string;
+		serviceId: string;
+		molAdminId?: string;
+	};
 }): Promise<[request.Response, OneOffTimeslotResponse]> => {
-	const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/oneOffTimeslots`, {
+	let endpoint;
+	switch (role) {
+		case Roles.ServiceProvider:
+			endpoint = ServiceProviderRequestEndpointSG.create({
+				...requestDetails,
+			});
+			break;
+		case Roles.ServiceAdmin:
+			endpoint = ServiceAdminRequestEndpointSG.create({
+				...requestDetails,
+			});
+			break;
+		case Roles.OrganisationAdmin:
+		default:
+			endpoint = OrganisationAdminRequestEndpointSG.create({});
+	}
+
+	const response = await endpoint.post(`/oneOffTimeslots`, {
 		body: {
 			startDateTime: startTime,
 			endDateTime: endTime,
@@ -282,6 +311,17 @@ export const populateOneOffTimeslot = async ({
 			labelIds,
 		},
 	});
+	// const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/oneOffTimeslots`, {
+	// 	body: {
+	// 		startDateTime: startTime,
+	// 		endDateTime: endTime,
+	// 		capacity,
+	// 		serviceProviderId,
+	// 		title,
+	// 		description,
+	// 		labelIds,
+	// 	},
+	// });
 	return [response, response.body.data];
 };
 

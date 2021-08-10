@@ -15,6 +15,7 @@ describe('Bookings functional tests as admin', () => {
 	const location = 'Singapore';
 	const videoConferenceLink = 'www.google.com';
 	const description =
+		// eslint-disable-next-line max-len
 		'Lorem ipsum dolor sit amet, !@#$%^&*()-+? adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
 	const NAME_SERVICE_1 = 'service1';
 	const SERVICE_PROVIDER_NAME_1 = 'SP1';
