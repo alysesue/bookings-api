@@ -90,7 +90,7 @@ export class OneOffTimeslotsActionAuthVisitor extends PermissionAwareAuthGroupVi
 	}
 
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
-		const serviceProviderId = this._oneOffTimeslot.serviceProviderId;
+		const serviceProviderId = this._oneOffTimeslot.serviceProvider.id;
 		// tslint:disable-next-line: tsr-detect-possible-timing-attacks
 		if (_userGroup.authorisedServiceProvider.id === serviceProviderId) {
 			this.markWithPermission();

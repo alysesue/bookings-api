@@ -7,6 +7,7 @@ import {
 } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import { ServiceResponse } from '../../../src/components/services/service.apicontract';
+import { Roles } from '../../utils/enums';
 
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
@@ -46,27 +47,81 @@ describe('Timeslots functional tests', () => {
 		done();
 	});
 
-	it('should add one off timeslots with labels', async () => {
-		const [, data] = await populateOneOffTimeslot({
-			serviceProviderId: serviceProvider1.id,
-			startTime: START_TIME_1,
-			endTime: END_TIME_1,
-			capacity: 1,
-			labelIds: [service.labels[0].id],
+	describe('populating one off timeslots', () => {
+		it('should add one off timeslots with labels (org admin)', async () => {
+			const [, data] = await populateOneOffTimeslot({
+				serviceProviderId: serviceProvider1.id,
+				startTime: START_TIME_1,
+				endTime: END_TIME_1,
+				capacity: 1,
+				labelIds: [service.labels[0].id],
+			});
+
+			expect(data.labels[0].id).toEqual(service.labels[0].id);
+			expect(data.labels[0].label).toEqual(service.labels[0].label);
 		});
 
-		expect(data.labels[0].id).toEqual(service.labels[0].id);
-		expect(data.labels[0].label).toEqual(service.labels[0].label);
+		it('should add one off timeslots with labels (service admin)', async () => {
+			const role = Roles.ServiceAdmin;
+			const [, data] = await populateOneOffTimeslot({
+				serviceProviderId: serviceProvider1.id,
+				startTime: START_TIME_1,
+				endTime: END_TIME_1,
+				capacity: 1,
+				labelIds: [service.labels[0].id],
+				role,
+				requestDetails: { nameService: NAME_SERVICE_1, serviceId: service.id.toString() },
+			});
+
+			expect(data.labels[0].id).toEqual(service.labels[0].id);
+			expect(data.labels[0].label).toEqual(service.labels[0].label);
+		});
+
+		it('should add one off timeslots with labels (service provider)', async () => {
+			const molAdminId = await pgClient.getAdminIdForServiceProvider({
+				serviceProviderId: serviceProvider1.id,
+			});
+			const role = Roles.ServiceProvider;
+			const [, data] = await populateOneOffTimeslot({
+				serviceProviderId: serviceProvider1.id,
+				startTime: START_TIME_1,
+				endTime: END_TIME_1,
+				capacity: 1,
+				labelIds: [service.labels[0].id],
+				role,
+				requestDetails: { nameService: NAME_SERVICE_1, serviceId: service.id.toString(), molAdminId },
+			});
+
+			expect(data.labels[0].id).toEqual(service.labels[0].id);
+			expect(data.labels[0].label).toEqual(service.labels[0].label);
+		});
+
+		it('should not add one off timeslots with labels (citizen)', async () => {
+			const role = Roles.Citizen;
+			const [response] = await populateOneOffTimeslot({
+				serviceProviderId: serviceProvider1.id,
+				startTime: START_TIME_1,
+				endTime: END_TIME_1,
+				capacity: 1,
+				labelIds: [service.labels[0].id],
+				role,
+				requestDetails: { serviceId: service.id.toString() },
+			});
+			expect(response.body.errorCode).toBe('SYS_INVALID_AUTHORIZATION');
+			expect(response.body.errorMessage).toBe('Invalid authorization.');
+		});
 	});
 
 	it('should add oneOffTimeslots', async () => {
-		const [,service1TimeslotsResponse] = await populateOneOffTimeslot({
+		const [, service1TimeslotsResponse] = await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
 			capacity: 1,
 		});
 		const { idSigned, ...obj } = service1TimeslotsResponse;
+
+		expect(idSigned).toBeDefined();
 		expect(obj).toEqual({
 			capacity: 1,
 			startDateTime: '2021-03-05T01:00:00.000Z',
@@ -76,7 +131,7 @@ describe('Timeslots functional tests', () => {
 	});
 
 	it('should add oneOffTimeslots with title/description', async () => {
-		const [,service1TimeslotsResponse] = await populateOneOffTimeslot({
+		const [, service1TimeslotsResponse] = await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,
@@ -85,6 +140,8 @@ describe('Timeslots functional tests', () => {
 			description: 'Description',
 		});
 		const { idSigned, ...obj } = service1TimeslotsResponse;
+
+		expect(idSigned).toBeDefined();
 		expect(obj).toEqual({
 			capacity: 1,
 			startDateTime: '2021-03-05T01:00:00.000Z',
@@ -106,7 +163,10 @@ describe('Timeslots functional tests', () => {
 			description: 'Description',
 		});
 
-		expect(response.body.data).toEqual([{"code": "10101", "message": "Title word limit is 100 characters"}, {"code": "10102", "message": "Start time must be less than end time"}]);
+		expect(response.body.data).toEqual([
+			{ code: '10101', message: 'Title word limit is 100 characters' },
+			{ code: '10102', message: 'Start time must be less than end time' },
+		]);
 	});
 	it('should return error when oneOffTimeslots booked overlapping', async () => {
 		await populateOneOffTimeslot({
@@ -128,8 +188,8 @@ describe('Timeslots functional tests', () => {
 
 		expect(response.statusCode).toEqual(400);
 		expect(response.body).toEqual({
-			"errorCode": "SYS_INVALID_PARAM",
-			"errorMessage": "Slot cannot be created as it overlaps with an existing slot.",
+			errorCode: 'SYS_INVALID_PARAM',
+			errorMessage: 'Slot cannot be created as it overlaps with an existing slot.',
 		});
 	});
 	it('should return error when oneOffTimeslots updated overlapping', async () => {
@@ -141,7 +201,7 @@ describe('Timeslots functional tests', () => {
 			title: 'title1',
 			description: 'Description',
 		});
-		const [,service2TimeslotsResponse] = await populateOneOffTimeslot({
+		const [, service2TimeslotsResponse] = await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_2,
 			endTime: END_TIME_2,
@@ -157,10 +217,13 @@ describe('Timeslots functional tests', () => {
 			capacity: 1,
 			title: 'title2',
 			description: 'Description',
-			idSigned: idSigned,
+			idSigned,
 		});
 
 		expect(response.statusCode).toEqual(400);
-		expect(response.body).toEqual({"errorCode":"SYS_INVALID_PARAM","errorMessage":"Slot cannot be created as it overlaps with an existing slot."})
+		expect(response.body).toEqual({
+			errorCode: 'SYS_INVALID_PARAM',
+			errorMessage: 'Slot cannot be created as it overlaps with an existing slot.',
+		});
 	});
 });
