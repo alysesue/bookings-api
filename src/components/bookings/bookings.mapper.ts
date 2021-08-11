@@ -1,4 +1,4 @@
-import { Booking, ServiceProvider, User } from '../../models/entities';
+import { Booking, Service, ServiceProvider } from '../../models/entities';
 import {
 	BookingDetailsRequest,
 	BookingProviderResponse,
@@ -6,7 +6,7 @@ import {
 	BookingResponse,
 } from './bookings.apicontract';
 import { UinFinConfiguration } from '../../models/uinFinConfiguration';
-import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
+import { UserContext, UserContextSnapshot } from '../../infrastructure/auth/userContext';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { DynamicValuesMapper, DynamicValuesRequestMapper } from '../dynamicFields/dynamicValues.mapper';
 import { isErrorResult } from '../../errors';
@@ -24,6 +24,8 @@ export class BookingsMapper {
 	private dynamicValuesMapper: DynamicValuesMapper;
 	@Inject
 	private dynamicValuesRequestMapper: DynamicValuesRequestMapper;
+	@Inject
+	private userContext: UserContext;
 
 	public async mapDynamicValuesRequest(
 		bookingRequest: BookingDetailsRequest,
@@ -146,33 +148,68 @@ export class BookingsMapper {
 		return bookingDetails;
 	}
 
-	public static mapProvider(provider: ServiceProvider): BookingProviderResponse {
+	public mapProvider(provider: ServiceProvider): BookingProviderResponse {
 		return {
 			id: provider.id,
 			name: provider.name,
 		} as BookingProviderResponse;
 	}
 
-	public static getCitizenUinFin(currentUser: User, bookingRequest: BookingDetailsRequest): string {
+	private async getCitizenUinFin(bookingRequest: BookingDetailsRequest): Promise<string> {
+		const currentUser = await this.userContext.getCurrentUser();
 		if (currentUser && currentUser.isCitizen()) {
 			return currentUser.singPassUser.UinFin;
 		}
 		return bookingRequest.citizenUinFin;
 	}
 
-	public static mapBookingDetails(request: BookingDetailsRequest, booking: Booking, user: User) {
+	public async mapBookingDetails({
+		request,
+		booking,
+		service,
+	}: {
+		service: Service;
+		request: BookingDetailsRequest;
+		booking: Booking;
+	}): Promise<void> {
+		const isNew = !booking.id;
+		if (isNew) {
+			booking.serviceId = service.id;
+		}
+
 		booking.refId = request.refId;
-		booking.citizenUinFin = this.getCitizenUinFin(user, request);
+		booking.citizenUinFin = await this.getCitizenUinFin(request);
 		booking.citizenName = request.citizenName;
 		booking.citizenEmail = request.citizenEmail;
 		booking.citizenPhone = request.citizenPhone;
 		booking.location = request.location;
 		booking.description = request.description;
-		booking.videoConferenceUrl = request.videoConferenceUrl;
+
+		booking.videoConferenceUrl = request.videoConferenceUrl || service.videoConferenceUrl;
+
+		const myInfo = service.isStandAlone ? await this.userContext.getMyInfo() : undefined;
+		if (myInfo) {
+			booking.citizenName = myInfo.data.name.value;
+			booking.citizenEmail = request.citizenEmail || myInfo.data.email.value;
+			booking.citizenPhone = request.citizenPhone || myInfo.data.mobileno.nbr.value;
+		}
+
+		const mobileNo = this.userContext.getOtpAddOnMobileNo();
+		if (mobileNo) {
+			booking.citizenPhone = mobileNo;
+		}
 	}
 
-	public static mapRequest(request: BookingRequest, booking: Booking, user: User) {
-		this.mapBookingDetails(request, booking, user);
+	public async mapRequest({
+		request,
+		booking,
+		service,
+	}: {
+		request: BookingRequest;
+		booking: Booking;
+		service: Service;
+	}): Promise<void> {
+		await this.mapBookingDetails({ request, booking, service });
 		booking.startDateTime = request.startDateTime;
 		booking.endDateTime = request.endDateTime;
 		booking.serviceProviderId = request.serviceProviderId;

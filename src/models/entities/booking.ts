@@ -12,6 +12,7 @@ import { DynamicValueJsonModel } from './jsonModels';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
+const HOLD_DURATION_IN_MINS = 10;
 export class BookingBuilder {
 	public serviceId: number;
 	public startDateTime: Date;
@@ -231,20 +232,23 @@ export class Booking {
 		this._version = 1;
 	}
 
+	public markOnHold(): void {
+		this._status = BookingStatus.OnHold;
+		this._onHoldUntil = new Date();
+		this._onHoldUntil.setMinutes(this._onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
+	}
+
+	public setAutoAccept({ autoAccept }: { autoAccept: boolean }): void {
+		this._status = autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
+	}
+
 	public static create(builder: BookingBuilder): Booking {
-		const HOLD_DURATION_IN_MINS = 10;
 		const instance = new Booking();
 
 		if (builder.markOnHold) {
-			instance._status = BookingStatus.OnHold;
-			instance._onHoldUntil = new Date();
-			instance._onHoldUntil.setMinutes(instance._onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
+			instance.markOnHold();
 		} else {
-			if (builder.serviceProviderId) {
-				instance._status = builder.autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
-			} else {
-				instance._status = BookingStatus.PendingApproval;
-			}
+			instance.setAutoAccept({ autoAccept: !!builder.serviceProviderId && builder.autoAccept });
 		}
 
 		instance._serviceId = builder.serviceId;
@@ -262,6 +266,13 @@ export class Booking {
 		instance._citizenEmail = builder.citizenEmail;
 		instance._captchaToken = builder.captchaToken;
 		instance._reasonToReject = builder.reasonToReject;
+
+		return instance;
+	}
+
+	public static createNew({ creator }: { creator: User }): Booking {
+		const instance = new Booking();
+		instance._creator = creator;
 
 		return instance;
 	}
@@ -284,6 +295,10 @@ export class Booking {
 
 	public get serviceId(): number {
 		return this._serviceId;
+	}
+
+	public set serviceId(value: number) {
+		this._serviceId = value;
 	}
 
 	public get service(): Service {

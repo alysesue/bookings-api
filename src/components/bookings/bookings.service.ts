@@ -4,7 +4,6 @@ import { Booking, BookingStatus, ChangeLogAction, Service, ServiceProvider, User
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
-import { BookingBuilder } from '../../models/entities/booking';
 import { ServicesService } from '../services/services.service';
 import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs.service';
 import { UserContext } from '../../infrastructure/auth/userContext';
@@ -31,7 +30,6 @@ import { BookingType } from '../../../src/models/bookingType';
 import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
-import { MyInfoService } from '../myInfo/myInfo.service';
 import { BookingValidationType } from '../../models/bookingValidationType';
 
 @InRequestScope
@@ -66,8 +64,6 @@ export class BookingsService {
 	private usersService: UsersService;
 	@Inject
 	private bookingsMapper: BookingsMapper;
-	@Inject
-	private myInfoService: MyInfoService;
 
 	constructor() {
 		this.bookingsSubject.attach(
@@ -371,6 +367,7 @@ export class BookingsService {
 		if (!bookingRequest.citizenUinFinUpdated) {
 			bookingRequest.citizenUinFin = previousBooking.citizenUinFin;
 		}
+		const { service } = await this.bookingRequestExtraction(previousBooking.serviceId);
 
 		const updatedBooking = previousBooking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
@@ -378,7 +375,7 @@ export class BookingsService {
 			BookingsService.useAdminValidator(currentUser, bookingRequest.validationType),
 		);
 
-		BookingsMapper.mapRequest(bookingRequest, updatedBooking, currentUser);
+		await this.bookingsMapper.mapRequest({ request: bookingRequest, booking: updatedBooking, service });
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
 
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
@@ -415,19 +412,13 @@ export class BookingsService {
 		return booking;
 	}
 
-	private async bookingRequestExtraction(
-		bookingRequest: BookingRequest,
-		serviceId: number,
-	): Promise<BookingRequestExtraction> {
+	private async bookingRequestExtraction(serviceId: number): Promise<BookingRequestExtraction> {
 		const currentUser = await this.userContext.getCurrentUser();
 		const isAdminUser = currentUser.isAdmin();
 		const isAgencyUser = currentUser.isAgency();
 		const service: Service = await this.servicesService.getService(serviceId);
 		const isOnHold = service.isOnHold;
 		const isStandAlone = service.isStandAlone;
-		const videoConferenceUrl = bookingRequest.videoConferenceUrl?.length
-			? bookingRequest.videoConferenceUrl
-			: service.videoConferenceUrl;
 
 		return {
 			currentUser,
@@ -436,7 +427,6 @@ export class BookingsService {
 			service,
 			isOnHold,
 			isStandAlone,
-			videoConferenceUrl,
 		} as BookingRequestExtraction;
 	}
 
@@ -452,8 +442,7 @@ export class BookingsService {
 			service,
 			isOnHold,
 			isStandAlone,
-			videoConferenceUrl,
-		} = await this.bookingRequestExtraction(bookingRequest, serviceId);
+		} = await this.bookingRequestExtraction(serviceId);
 		const useAdminValidator = BookingsService.useAdminValidator(currentUser, bookingRequest.validationType);
 
 		let serviceProvider: ServiceProvider | undefined;
@@ -475,33 +464,20 @@ export class BookingsService {
 			return isOnHold || isStandAlone;
 		};
 
-		const myInfo = isStandAlone ? await this.myInfoService.getMyInfo(currentUser) : undefined;
+		const booking = Booking.createNew({ creator: currentUser });
+		await this.bookingsMapper.mapRequest({ request: bookingRequest, booking, service });
 
-		const booking = new BookingBuilder()
-			.withServiceId(serviceId)
-			.withStartDateTime(bookingRequest.startDateTime)
-			.withEndDateTime(bookingRequest.endDateTime)
-			.withServiceProviderId(serviceProvider?.id)
-			.withRefId(bookingRequest.refId)
-			.withLocation(bookingRequest.location)
-			.withDescription(bookingRequest.description)
-			.withVideoConferenceUrl(videoConferenceUrl)
-			.withCreator(currentUser)
-			.withCitizenUinFin(BookingsMapper.getCitizenUinFin(currentUser, bookingRequest))
-			.withCitizenName(myInfo ? myInfo.data.name.value : bookingRequest.citizenName)
-			.withCitizenPhone(myInfo ? myInfo.data.mobileno.nbr.value : bookingRequest.citizenPhone)
-			.withCitizenEmail(myInfo ? myInfo.data.email.value : bookingRequest.citizenEmail)
-			.withAutoAccept(
-				BookingsService.shouldAutoAccept(
-					currentUser,
-					serviceProvider,
-					shouldBypassCaptchaAndAutoAccept,
-					bookingRequest.validationType,
-				),
-			)
-			.withMarkOnHold(isServiceOnHold())
-			.withCaptchaToken(bookingRequest.captchaToken)
-			.build();
+		if (isServiceOnHold()) {
+			booking.markOnHold();
+		} else {
+			const autoAccept = BookingsService.shouldAutoAccept(
+				currentUser,
+				serviceProvider,
+				shouldBypassCaptchaAndAutoAccept,
+				bookingRequest.validationType
+			);
+			booking.setAutoAccept({ autoAccept });
+		}
 
 		const validator = this.bookingsValidatorFactory.getValidator(useAdminValidator);
 		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept);
@@ -528,9 +504,9 @@ export class BookingsService {
 		});
 
 		if (previousBooking.isValidOnHoldBooking()) {
-			const currentUser = await this.userContext.getCurrentUser();
 			const updatedBooking = previousBooking.clone();
-			BookingsMapper.mapBookingDetails(bookingRequest, updatedBooking, currentUser);
+			const { service } = await this.bookingRequestExtraction(previousBooking.serviceId);
+			await this.bookingsMapper.mapBookingDetails({ request: bookingRequest, booking: updatedBooking, service });
 
 			const validator = this.bookingsValidatorFactory.getOnHoldValidator();
 			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
@@ -579,5 +555,4 @@ export type BookingRequestExtraction = {
 	service: Service;
 	isOnHold: boolean;
 	isStandAlone: boolean;
-	videoConferenceUrl: string;
 };
