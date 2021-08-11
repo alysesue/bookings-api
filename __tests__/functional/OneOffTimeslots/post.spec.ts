@@ -3,11 +3,11 @@ import {
 	populateOneOffTimeslot,
 	populateServiceLabel,
 	populateUserServiceProvider,
-	Roles,
 	updateOneOffTimeslot,
 } from '../../populate/basic';
 import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import { ServiceResponse } from '../../../src/components/services/service.apicontract';
+import { Roles } from '../../utils/enums';
 
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
@@ -94,6 +94,21 @@ describe('Timeslots functional tests', () => {
 
 			expect(data.labels[0].id).toEqual(service.labels[0].id);
 			expect(data.labels[0].label).toEqual(service.labels[0].label);
+		});
+
+		it('should not add one off timeslots with labels (citizen)', async () => {
+			const role = Roles.Citizen;
+			const [response] = await populateOneOffTimeslot({
+				serviceProviderId: serviceProvider1.id,
+				startTime: START_TIME_1,
+				endTime: END_TIME_1,
+				capacity: 1,
+				labelIds: [service.labels[0].id],
+				role,
+				requestDetails: { serviceId: service.id.toString() },
+			});
+			expect(response.body.errorCode).toBe('SYS_INVALID_AUTHORIZATION');
+			expect(response.body.errorMessage).toBe('Invalid authorization.');
 		});
 	});
 

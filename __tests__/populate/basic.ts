@@ -1,4 +1,5 @@
 import {
+	CitizenRequestEndpointSG,
 	OrganisationAdminRequestEndpointSG,
 	ServiceAdminRequestEndpointSG,
 	ServiceProviderRequestEndpointSG,
@@ -9,6 +10,7 @@ import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslo
 import { OneOffTimeslotResponse } from '../../src/components/oneOffTimeslots/oneOffTimeslots.apicontract';
 import * as request from 'request';
 import { ServiceNotificationTemplateResponse } from '../../src/components/serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
+import { Roles } from '../utils/enums';
 
 export const populateServiceLabel = async ({
 	serviceId,
@@ -278,13 +280,16 @@ export const populateOneOffTimeslot = async ({
 	description?: string;
 	role?: Roles;
 	requestDetails?: {
-		nameService: string;
 		serviceId: string;
+		nameService?: string;
 		molAdminId?: string;
 	};
 }): Promise<[request.Response, OneOffTimeslotResponse]> => {
 	let endpoint;
 	switch (role) {
+		case Roles.Citizen:
+			endpoint = CitizenRequestEndpointSG.create({ ...requestDetails });
+			break;
 		case Roles.ServiceProvider:
 			endpoint = ServiceProviderRequestEndpointSG.create({
 				...requestDetails,
@@ -311,17 +316,7 @@ export const populateOneOffTimeslot = async ({
 			labelIds,
 		},
 	});
-	// const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/oneOffTimeslots`, {
-	// 	body: {
-	// 		startDateTime: startTime,
-	// 		endDateTime: endTime,
-	// 		capacity,
-	// 		serviceProviderId,
-	// 		title,
-	// 		description,
-	// 		labelIds,
-	// 	},
-	// });
+
 	return [response, response.body.data];
 };
 
