@@ -38,7 +38,7 @@ describe('sanitizeHtml of Services Notification Template service - test', () => 
 
 	it('should replace Grave Accent character with single quote character - Grave Accent Obfuscation', () => {
 		const clean = cleanHtml("<IMG SRC=`javascript:alert('RSnakesays,'XSS'')`>");
-		expect(clean).toStrictEqual("<img />");
+		expect(clean).toStrictEqual('<img />');
 	});
 
 	it('should sanitize javascript commands from string - with embedded tab', () => {

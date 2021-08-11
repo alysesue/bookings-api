@@ -1,9 +1,9 @@
 import * as sanitizeHtml from 'sanitize-html';
 
 export const cleanHtml = (dirtyString: string): string => {
-	//First replace Grave Accent character with single quote character, to cover the scenario of Grave Accent Obfuscation XSS attack.
-	//This way it will be caught in the sanitizing process.
-	const cleanString = dirtyString.replace(/\`/g,"'");
+	// First replace Grave Accent character with single quote character, to cover the scenario of Grave Accent Obfuscation XSS attack.
+	// This way it will be caught in the sanitizing process.
+	const newString = dirtyString.replace(/\`/g, "'");
 
 	const allowedTags = ['ins', 'del', 'img', 'br', 'iframe'];
 	const allowedAttributes = {
@@ -14,7 +14,7 @@ export const cleanHtml = (dirtyString: string): string => {
 		iframe: ['width', 'height', 'src', 'frameBorder'],
 	};
 
-	const sanitizedString = sanitizeHtml(cleanString, {
+	const sanitizedString = sanitizeHtml(newString, {
 		allowedTags: sanitizeHtml.defaults.allowedTags.concat(allowedTags),
 		allowedAttributes,
 	});
