@@ -4,7 +4,7 @@ import { PartialAdditionalSettings, ServiceResponse } from '../../src/components
 import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslotItems.apicontract';
 import { OneOffTimeslotResponse } from '../../src/components/oneOffTimeslots/oneOffTimeslots.apicontract';
 import * as request from 'request';
-import {ServiceNotificationTemplateResponse} from "../../src/components/serviceNotificationTemplate/serviceNotificationTemplate.apicontract";
+import { ServiceNotificationTemplateResponse } from '../../src/components/serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
 
 export const populateServiceLabel = async ({
 	serviceId,
