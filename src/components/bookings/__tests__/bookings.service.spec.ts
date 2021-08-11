@@ -58,8 +58,6 @@ import { MockObserver } from '../../../infrastructure/__mocks__/observer.mock';
 import { ServiceProvidersServiceMock } from '../../serviceProviders/__mocks__/serviceProviders.service.mock';
 import { randomIndex } from '../../../tools/arrays';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
-import { MyInfoService } from '../../myInfo/myInfo.service';
-import { MyInfoServiceeMock } from '../../myInfo/__mocks__/myInfo.service.mock';
 import * as uuid from 'uuid';
 import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
 import { BookingValidationType } from '../../../models/bookingValidationType';
@@ -147,7 +145,6 @@ describe('Bookings.Service', () => {
 		Container.bind(UsersService).to(UsersServiceMock);
 		Container.bind(BookingsSubject).to(BookingsSubjectMock);
 		Container.bind(MailObserver).to(MockObserver);
-		Container.bind(MyInfoService).to(MyInfoServiceeMock);
 	});
 
 	beforeEach(() => {
@@ -183,7 +180,8 @@ describe('Bookings.Service', () => {
 
 		UsersServiceMock.persistUserIfRequired.mockImplementation((u) => Promise.resolve(u));
 
-		MyInfoServiceeMock.getMyInfo.mockImplementation(() => Promise.resolve(undefined));
+		UserContextMock.getOtpAddOnMobileNo.mockReturnValue(undefined);
+		UserContextMock.getMyInfo.mockReturnValue(Promise.resolve(undefined));
 	});
 
 	afterAll(() => {
@@ -297,21 +295,7 @@ describe('Bookings.Service', () => {
 		bookingRequest.citizenName = 'this should be the name';
 		bookingRequest.citizenEmail = 'correctemail@gmail.com';
 		bookingRequest.citizenPhone = '93328223';
-		const myInfo = {
-			data: {
-				name: {
-					value: 'Armin the great',
-				},
-				email: {
-					value: 'armin@gmail.com',
-				},
-				mobileno: {
-					nbr: {
-						value: '92228333',
-					},
-				},
-			},
-		};
+
 		const standaloneService = new Service();
 		standaloneService.id = 1;
 		standaloneService.allowAnonymousBookings = false;
@@ -332,16 +316,15 @@ describe('Bookings.Service', () => {
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
-		MyInfoServiceeMock.getMyInfo.mockImplementation(() => Promise.resolve(myInfo));
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
 
 		const booking = BookingRepositoryMock.booking;
 		expect(booking).not.toBe(undefined);
 		expect(booking.status).toBe(BookingStatus.OnHold);
-		expect(booking.citizenName).toBe(myInfo.data.name.value);
-		expect(booking.citizenEmail).toBe(myInfo.data.email.value);
-		expect(booking.citizenPhone).toBe(myInfo.data.mobileno.nbr.value);
+		expect(booking.citizenName).toBe('this should be the name');
+		expect(booking.citizenEmail).toBe('correctemail@gmail.com');
+		expect(booking.citizenPhone).toBe('93328223');
 		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 

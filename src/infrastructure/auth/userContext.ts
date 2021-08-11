@@ -7,9 +7,14 @@ import { AsyncLazy } from '../../tools/asyncLazy';
 import { AnonymousCookieData, MobileOtpAddOnCookieData } from '../bookingSGCookieHelper';
 import { AuthGroup, CitizenAuthGroup, OrganisationAdminAuthGroup } from './authGroup';
 import { ContainerContext } from '../containerContext';
+import { MyInfoService } from '../../components/myInfo/myInfo.service';
+import { MyInfoResponse } from '../../models/myInfoTypes';
 
 export type UserContextSnapshot = {
 	user: User;
+	otpAddon?: {
+		mobileNo: string;
+	};
 	authGroups: AuthGroup[];
 };
 
@@ -21,25 +26,29 @@ export class UserContext {
 	private _anonymousCookieData: AnonymousCookieData;
 	private _currentUser: AsyncLazy<User>;
 	private _authGroups: AsyncLazy<AuthGroup[]>;
-
+	private _myInfo: AsyncLazy<MyInfoResponse | undefined>;
 	private _mobileNo: string;
 
 	constructor() {
 		this.init({ requestHeaders: {} });
 	}
 
-	public init({ requestHeaders }: { requestHeaders: any }) {
-		this._requestHeaders = requestHeaders || {};
+	private resetAsyncLazy(): void {
 		this._currentUser = new AsyncLazy(this.getCurrentUserInternal.bind(this));
 		this._authGroups = new AsyncLazy(this.getAuthGroupsInternal.bind(this));
+		this._myInfo = new AsyncLazy(this.getMyInfoInternal.bind(this));
+	}
+
+	public init({ requestHeaders }: { requestHeaders: any }) {
+		this._requestHeaders = requestHeaders || {};
+		this.resetAsyncLazy();
 	}
 
 	public setAnonymousUser(anonymousCookieData: AnonymousCookieData): void {
 		if (!anonymousCookieData) return;
 
 		this._anonymousCookieData = anonymousCookieData;
-		this._currentUser = new AsyncLazy(this.getCurrentUserInternal.bind(this));
-		this._authGroups = new AsyncLazy(this.getAuthGroupsInternal.bind(this));
+		this.resetAsyncLazy();
 	}
 
 	public async getCurrentUser(): Promise<User> {
@@ -50,10 +59,19 @@ export class UserContext {
 		return await this._authGroups.getValue();
 	}
 
+	public async getMyInfo(): Promise<MyInfoResponse> {
+		return await this._myInfo.getValue();
+	}
+
 	public async getSnapshot(): Promise<UserContextSnapshot> {
 		return {
 			user: await this.getCurrentUser(),
 			authGroups: await this.getAuthGroups(),
+			otpAddon: this._mobileNo
+				? {
+						mobileNo: this._mobileNo,
+				  }
+				: undefined,
 		};
 	}
 
@@ -93,6 +111,15 @@ export class UserContext {
 			const usersService = this.containerContext.resolve(UsersService);
 			return await usersService.getUserGroupsFromHeaders(user, this._requestHeaders);
 		}
+	}
+
+	private async getMyInfoInternal(): Promise<MyInfoResponse | undefined> {
+		const myInfoService = this.containerContext.resolve(MyInfoService);
+		const user = await this.getCurrentUser();
+		if (!user) {
+			return undefined;
+		}
+		return myInfoService.getMyInfo(user);
 	}
 
 	public async verifyAndGetFirstAuthorisedOrganisation(errorMessage?: string): Promise<Organisation> {

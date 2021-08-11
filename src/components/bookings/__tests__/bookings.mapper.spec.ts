@@ -16,7 +16,7 @@ import { Container } from 'typescript-ioc';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { PersistDynamicValueContract } from '../../../components/dynamicFields/dynamicValues.apicontract';
-import { BookingDetailsRequest } from '../bookings.apicontract';
+import { BookingDetailsRequest, BookingRequest } from '../bookings.apicontract';
 import { DynamicFieldsServiceMock } from '../../../components/dynamicFields/__mocks__/dynamicFields.service.mock';
 import { bookingStatusArray } from '../../../models/bookingStatus';
 import { IBookingsValidator } from '../validator/bookings.validation';
@@ -30,6 +30,8 @@ import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userCont
 import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { DynamicValuesRequestMapperMock } from '../../../components/dynamicFields/__mocks__/dynamicValues.mapper.mock';
 import { DynamicValuesMapperMock } from '../../../components/dynamicFields/__mocks__/dynamicValues.mapper.mock';
+import { DateHelper } from '../../../infrastructure/dateHelper';
+import { MyInfoResponse } from '../../../models/myInfoTypes';
 
 jest.mock('../../../models/uinFinConfiguration');
 jest.mock('../../../components/dynamicFields/dynamicValues.mapper');
@@ -47,6 +49,9 @@ describe('Bookings mapper tests', () => {
 		(UinFinConfiguration as jest.Mock).mockImplementation(() => new UinFinConfigurationMock());
 		IdHasherMock.encode.mockImplementation((id: number) => id.toString());
 		IdHasherMock.decode.mockImplementation((id: string) => Number.parseInt(id, 10));
+
+		UserContextMock.getOtpAddOnMobileNo.mockReturnValue(undefined);
+		UserContextMock.getMyInfo.mockReturnValue(Promise.resolve(undefined));
 	});
 
 	const userMock = User.createAdminUser({
@@ -280,6 +285,103 @@ describe('Bookings mapper tests', () => {
 			'Service Provider Email address': 'armin-sp@gmail.com',
 			'Service Provider Phone number': '81181188',
 		});
+	});
+
+	it('should map booking details', async () => {
+		const request: BookingRequest = new BookingRequest();
+		request.startDateTime = new Date();
+		request.endDateTime = DateHelper.addMinutes(request.startDateTime, 45);
+		request.citizenName = 'this should be the name';
+		request.citizenEmail = 'correctemail@gmail.com';
+		request.citizenPhone = '93328223';
+		request.videoConferenceUrl = 'https://localhost';
+		const service = new Service();
+		service.id = 1;
+
+		const mapper = Container.get(BookingsMapper);
+		const booking = Booking.createNew({ creator: userMock });
+		await mapper.mapBookingDetails({ request, booking, service });
+
+		expect(booking.citizenName).toEqual('this should be the name');
+		expect(booking.citizenEmail).toEqual('correctemail@gmail.com');
+		expect(booking.citizenPhone).toEqual('93328223');
+		expect(booking.videoConferenceUrl).toEqual('https://localhost');
+	});
+
+	it('should map booking details from MyInfo when standalone', async () => {
+		const MyInfoResponse: MyInfoResponse = {
+			data: {
+				name: { value: 'Armin the great' },
+				email: { value: 'armin@gmail.com' },
+				mobileno: { nbr: { value: '84123456' } },
+			},
+		};
+
+		UserContextMock.getMyInfo.mockResolvedValue(MyInfoResponse);
+
+		const request: BookingRequest = new BookingRequest();
+		request.startDateTime = new Date();
+		request.endDateTime = DateHelper.addMinutes(request.startDateTime, 45);
+		request.citizenName = 'this should be the name';
+		const service = new Service();
+		service.id = 1;
+		service.isStandAlone = true;
+
+		const mapper = Container.get(BookingsMapper);
+		const booking = Booking.createNew({ creator: userMock });
+		await mapper.mapBookingDetails({ request, booking, service });
+
+		expect(booking.citizenName).toEqual('Armin the great');
+		expect(booking.citizenEmail).toEqual('armin@gmail.com');
+		expect(booking.citizenPhone).toEqual('84123456');
+	});
+
+	it('should map booking details from MyInfo when standalone (no email/phone override)', async () => {
+		const MyInfoResponse: MyInfoResponse = {
+			data: {
+				name: { value: 'Armin the great' },
+				email: { value: 'armin@gmail.com' },
+				mobileno: { nbr: { value: '84123456' } },
+			},
+		};
+
+		UserContextMock.getMyInfo.mockResolvedValue(MyInfoResponse);
+
+		const request: BookingRequest = new BookingRequest();
+		request.startDateTime = new Date();
+		request.endDateTime = DateHelper.addMinutes(request.startDateTime, 45);
+		request.citizenName = 'this should be the name';
+		request.citizenEmail = 'correctemail@gmail.com';
+		request.citizenPhone = '93328223';
+		const service = new Service();
+		service.id = 1;
+		service.isStandAlone = true;
+
+		const mapper = Container.get(BookingsMapper);
+		const booking = Booking.createNew({ creator: userMock });
+		await mapper.mapBookingDetails({ request, booking, service });
+
+		expect(booking.citizenName).toEqual('Armin the great');
+		expect(booking.citizenEmail).toEqual('correctemail@gmail.com');
+		expect(booking.citizenPhone).toEqual('93328223');
+	});
+
+	it('should map phone number from OTP auth', async () => {
+		const request: BookingRequest = new BookingRequest();
+		request.startDateTime = new Date();
+		request.endDateTime = DateHelper.addMinutes(request.startDateTime, 45);
+		request.citizenPhone = '111111';
+		const service = new Service();
+		service.id = 1;
+		service.isStandAlone = true;
+
+		UserContextMock.getOtpAddOnMobileNo.mockReturnValue('84123456');
+
+		const mapper = Container.get(BookingsMapper);
+		const booking = Booking.createNew({ creator: userMock });
+		await mapper.mapBookingDetails({ request, booking, service });
+
+		expect(booking.citizenPhone).toEqual('84123456');
 	});
 });
 

@@ -361,7 +361,7 @@ export class BookingsController extends Controller {
 			filterDaysInAdvance: false,
 		});
 
-		return ApiDataFactory.create(providers.map((e) => BookingsMapper.mapProvider(e.serviceProvider)));
+		return ApiDataFactory.create(providers.map((e) => this.bookingsMapper.mapProvider(e.serviceProvider)));
 	}
 
 	/**
