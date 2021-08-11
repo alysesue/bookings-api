@@ -9,6 +9,7 @@ export class DynamicFieldModel {
 	public type: DynamicFieldType;
 	public selectList?: SelectListModel;
 	public textField?: TextFieldModel;
+	public isMandatory: boolean;
 }
 
 export class PersistDynamicFieldModel {
@@ -24,6 +25,10 @@ export class PersistDynamicFieldModel {
 	public type: DynamicFieldType;
 	public selectList?: SelectListModel;
 	public textField?: TextFieldModel;
+	/**
+	 * default is false
+	 */
+	public isMandatory?: boolean = false;
 }
 
 // Classes that represent the metadata (definition) of a dynamic field

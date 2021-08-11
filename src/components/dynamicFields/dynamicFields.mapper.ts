@@ -53,7 +53,7 @@ export class DynamicFieldsMapper {
 			return entity;
 		}
 
-		return SelectListDynamicField.create(model.serviceId, model.name, options);
+		return SelectListDynamicField.create(model.serviceId, model.name, options, model.isMandatory);
 	}
 
 	private mapToTextField(model: PersistDynamicFieldModel, entity: TextDynamicField | null): DynamicField {
@@ -67,7 +67,7 @@ export class DynamicFieldsMapper {
 			return entity;
 		}
 
-		return TextDynamicField.create(model.serviceId, model.name, model.textField.charLimit);
+		return TextDynamicField.create(model.serviceId, model.name, model.textField.charLimit, model.isMandatory);
 	}
 
 	public mapToEntity(model: PersistDynamicFieldModel, entity: DynamicField | null): DynamicField {
@@ -124,6 +124,7 @@ class DynamicFieldMapperVisitor implements IDynamicFieldVisitor {
 		this._result = new DynamicFieldModel();
 		this._result.idSigned = this._idHasher.encode(field.id);
 		this._result.name = field.name;
+		this._result.isMandatory = field.isMandatory;
 
 		field.acceptVisitor(this);
 

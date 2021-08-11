@@ -24,7 +24,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			key: 1,
 			value: 'English',
 		} as SelectListOption;
-		const field = SelectListDynamicField.create(1, 'testDynamic', [listOptions]);
+		const field = SelectListDynamicField.create(1, 'testDynamic', [listOptions], true);
 		field.id = 1;
 		return field;
 	};
@@ -47,6 +47,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 				options: [{ key: 1, value: 'English' }],
 			},
 			idSigned: '1',
+			isMandatory: true,
 			name: 'testDynamic',
 			type: 'SelectList',
 		} as DynamicFieldModel);
@@ -83,6 +84,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 					options: [{ key: 1, value: 'English' }],
 				},
 				idSigned: '1',
+				isMandatory: true,
 				name: 'testDynamic',
 				type: 'SelectList',
 			} as DynamicFieldModel,
@@ -128,7 +130,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		request.selectList.options = [{ key: 1, value: 'option A' }];
 
 		const instance = Container.get(DynamicFieldsMapper);
-		const entity = SelectListDynamicField.create(1, 'field', []);
+		const entity = SelectListDynamicField.create(1, 'field', [], true);
 		entity.id = 11;
 
 		const mapped = instance.mapToEntity(request, entity);
@@ -136,6 +138,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		expect(mapped).toEqual({
 			_id: 11,
 			_name: 'options',
+			_isMandatory: true,
 			_options: [
 				{
 					key: 1,
@@ -167,7 +170,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		request.selectList.options = [{ key: 1, value: 'option A' }];
 
 		const instance = Container.get(DynamicFieldsMapper);
-		const entity = TextDynamicField.create(1, 'notes', 10);
+		const entity = TextDynamicField.create(1, 'notes', 10, true);
 		entity.id = 11;
 
 		const _test = () => instance.mapToEntity(request, entity);
@@ -200,7 +203,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		request.textField.charLimit = 15;
 
 		const instance = Container.get(DynamicFieldsMapper);
-		const entity = TextDynamicField.create(1, 'field', 20);
+		const entity = TextDynamicField.create(1, 'field', 20, true);
 		entity.id = 11;
 
 		const mapped = instance.mapToEntity(request, entity);
@@ -208,6 +211,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		expect(mapped).toEqual({
 			_id: 11,
 			_name: 'notes',
+			_isMandatory: true,
 			_charLimit: 15,
 			_serviceId: 1,
 		});
@@ -222,7 +226,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		request.textField.charLimit = 15;
 
 		const instance = Container.get(DynamicFieldsMapper);
-		const entity = SelectListDynamicField.create(1, 'options', []);
+		const entity = SelectListDynamicField.create(1, 'options', [], true);
 		entity.id = 11;
 
 		const _test = () => instance.mapToEntity(request, entity);

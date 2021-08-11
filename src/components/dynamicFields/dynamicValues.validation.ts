@@ -27,7 +27,7 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 
 		const selectedOption = _selectListField.options.find((o) => o.key === this._fieldValue.singleSelectionKey);
 		if (!selectedOption) {
-			this.markFieldNotProvided(_selectListField);
+			this.checkMandatoryField(_selectListField);
 			return;
 		}
 
@@ -46,6 +46,14 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 		return;
 	}
 
+	private checkMandatoryField(field: DynamicField): boolean {
+		if (field.isMandatory) {
+			this.markFieldNotProvided(field);
+		}
+
+		return field.isMandatory;
+	}
+
 	visitTextField(_textField: TextDynamicField) {
 		if (this._fieldValue.type !== DynamicValueTypeContract.Text) {
 			this.addValidation(DynamicValueBusinessValidations.IncorrectFieldValueType.create(_textField));
@@ -54,7 +62,7 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 		this._fieldValue.textValue = this._fieldValue.textValue?.trim();
 
 		if (!this._fieldValue.textValue) {
-			this.markFieldNotProvided(_textField);
+			this.checkMandatoryField(_textField);
 			return;
 		}
 
@@ -67,9 +75,9 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 	}
 
 	public mapFieldValueToJson(field: DynamicField, fieldValue: PersistDynamicValueContract): void {
+		// Skip checks if no value input and mark error if only it is a mandatory field
 		if (!fieldValue) {
-			// All field values are required for now
-			this.markFieldNotProvided(field);
+			this.checkMandatoryField(field);
 			return;
 		}
 
