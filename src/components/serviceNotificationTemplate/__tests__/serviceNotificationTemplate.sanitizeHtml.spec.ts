@@ -36,9 +36,9 @@ describe('sanitizeHtml of Services Notification Template service - test', () => 
 		expect(clean).toStrictEqual('<img />');
 	});
 
-	it('should replace the word "javascript" with "JS" in un-sanitized commands - Grave Accent Obfuscation', () => {
+	it('should replace Grave Accent character with single quote character - Grave Accent Obfuscation', () => {
 		const clean = cleanHtml("<IMG SRC=`javascript:alert('RSnakesays,'XSS'')`>");
-		expect(clean).toStrictEqual("<img src=\"`JS:alert('RSnakesays,'XSS'')`\" />");
+		expect(clean).toStrictEqual("<img />");
 	});
 
 	it('should sanitize javascript commands from string - with embedded tab', () => {
