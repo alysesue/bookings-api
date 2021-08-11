@@ -77,7 +77,7 @@ export class BookingsService {
 		);
 	}
 
-	private static useAdminValidator(user: User, validationType?: string): boolean {
+	private static useAdminValidator(user: User, validationType?: BookingValidationType): boolean {
 		return user.isAdmin() || (user.isAgency() && validationType === BookingValidationType.Admin);
 	}
 
@@ -85,7 +85,7 @@ export class BookingsService {
 		currentUser: User,
 		serviceProvider?: ServiceProvider,
 		shouldAutoAccept = false,
-		validationType?: string,
+		validationType?: BookingValidationType,
 	): boolean {
 		if (!serviceProvider) {
 			return false;
@@ -374,7 +374,9 @@ export class BookingsService {
 
 		const updatedBooking = previousBooking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
-		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.useAdminValidator(currentUser));
+		const validator = this.bookingsValidatorFactory.getValidator(
+			BookingsService.useAdminValidator(currentUser, bookingRequest.validationType),
+		);
 
 		BookingsMapper.mapRequest(bookingRequest, updatedBooking, currentUser);
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
@@ -393,8 +395,12 @@ export class BookingsService {
 		return [changeLogAction, updatedBooking];
 	}
 
-	private static getBookingCreationStatus(currentUser: User, serviceProvider?: ServiceProvider): BookingStatus {
-		return this.shouldAutoAccept(currentUser, serviceProvider)
+	private static getBookingCreationStatus(
+		currentUser: User,
+		serviceProvider?: ServiceProvider,
+		validationType?: BookingValidationType,
+	): BookingStatus {
+		return this.shouldAutoAccept(currentUser, serviceProvider, undefined, validationType)
 			? BookingStatus.Accepted
 			: BookingStatus.PendingApproval;
 	}

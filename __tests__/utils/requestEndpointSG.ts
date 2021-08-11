@@ -211,6 +211,7 @@ export class ServiceAdminRequestEndpointSG extends RequestEndpointSG {
 		});
 	}
 }
+
 export class ServiceProviderRequestEndpointSG extends RequestEndpointSG {
 	public static create = ({
 		organisation = 'localorg',
