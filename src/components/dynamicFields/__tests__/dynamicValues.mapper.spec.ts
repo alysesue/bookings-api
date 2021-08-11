@@ -33,7 +33,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 			key: 1,
 			value: 'English',
 		} as SelectListOption;
-		const field = SelectListDynamicField.create(1, 'testDynamic', [listOptions]);
+		const field = SelectListDynamicField.create(1, 'testDynamic', [listOptions], true);
 		field.id = 1;
 		return field;
 	};
@@ -43,7 +43,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		textField.id = 2;
 		textField.name = 'Sample text';
 		textField.charLimit = 15;
-
+		textField.isMandatory = true;
 		return textField;
 	};
 

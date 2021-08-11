@@ -34,6 +34,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		textField.id = 2;
 		textField.name = 'Sample text';
 		textField.charLimit = 15;
+		textField.isMandatory = true;
 
 		return textField;
 	};
@@ -64,6 +65,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			idSigned: '2',
 			name: 'Sample text',
 			type: 'TextField',
+			isMandatory: true,
 		} as DynamicFieldModel);
 	});
 
@@ -95,6 +97,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 				idSigned: '2',
 				name: 'Sample text',
 				type: 'TextField',
+				isMandatory: true,
 			} as DynamicFieldModel,
 		]);
 	});
@@ -106,10 +109,12 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		request.type = DynamicFieldType.SelectList;
 		request.selectList = new SelectListModel();
 		request.selectList.options = [{ key: 1, value: 'option A' }];
+		request.isMandatory = true;
 
 		const instance = Container.get(DynamicFieldsMapper);
 		const mapped = instance.mapToEntity(request, null);
 		expect(mapped).toEqual({
+			_isMandatory: true,
 			_name: 'options',
 			_options: [
 				{
@@ -184,10 +189,12 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		request.type = DynamicFieldType.TextField;
 		request.textField = new TextFieldModel();
 		request.textField.charLimit = 15;
+		request.isMandatory = true;
 
 		const instance = Container.get(DynamicFieldsMapper);
 		const mapped = instance.mapToEntity(request, null);
 		expect(mapped).toEqual({
+			_isMandatory: true,
 			_name: 'notes',
 			_charLimit: 15,
 			_serviceId: 1,

@@ -76,7 +76,7 @@ describe('Bookings mapper tests', () => {
 		key: 1,
 		value: 'English',
 	} as SelectListOption;
-	const dynamicFieldEntity = SelectListDynamicField.create(1, 'testDynamic', [listOptions]);
+	const dynamicFieldEntity = SelectListDynamicField.create(1, 'testDynamic', [listOptions], false);
 	dynamicFieldEntity.id = 1;
 
 	const organisation = new Organisation();
