@@ -475,7 +475,7 @@ export class BookingsService {
 				currentUser,
 				serviceProvider,
 				shouldBypassCaptchaAndAutoAccept,
-				bookingRequest.validationType
+				bookingRequest.validationType,
 			);
 			booking.setAutoAccept({ autoAccept });
 		}
