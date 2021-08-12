@@ -367,13 +367,14 @@ export class BookingsService {
 		if (!bookingRequest.citizenUinFinUpdated) {
 			bookingRequest.citizenUinFin = previousBooking.citizenUinFin;
 		}
-		const { service } = await this.bookingRequestExtraction(previousBooking.serviceId);
+		const { service, isAgencyUser } = await this.bookingRequestExtraction(previousBooking.serviceId);
 
 		const updatedBooking = previousBooking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
 		const validator = this.bookingsValidatorFactory.getValidator(
 			BookingsService.useAdminValidator(currentUser, bookingRequest.validationType),
 		);
+		validator.bypassCaptcha(isAgencyUser);
 
 		await this.bookingsMapper.mapRequest({ request: bookingRequest, booking: updatedBooking, service });
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
@@ -478,9 +479,8 @@ export class BookingsService {
 			);
 			booking.setAutoAccept({ autoAccept });
 		}
-
 		const validator = this.bookingsValidatorFactory.getValidator(useAdminValidator);
-		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept);
+		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || isAgencyUser);
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
 		booking.serviceProvider = serviceProvider;
@@ -550,8 +550,8 @@ export class BookingsService {
 
 export type BookingRequestExtraction = {
 	currentUser: User;
-	isAdminUser: Boolean;
-	isAgencyUser: Boolean;
+	isAdminUser: boolean;
+	isAgencyUser: boolean;
 	service: Service;
 	isOnHold: boolean;
 	isStandAlone: boolean;
