@@ -43,6 +43,7 @@ describe('users controller', () => {
 		const userMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
 		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(userMock)]));
+		UserContextMock.getOtpAddOnMobileNo.mockImplementation(() => '+6588884444');
 
 		const controller = Container.get(UsersController);
 		(controller as any).context = {
@@ -56,6 +57,9 @@ describe('users controller', () => {
 			user: {
 				singpass: { uinfin: 'ABC1234' },
 				userType: 'singpass',
+			},
+			otpAddon: {
+				mobileNo: '+6588884444',
 			},
 		} as UserProfileResponse);
 	});
@@ -206,6 +210,7 @@ describe('users controller', () => {
 class UserContextMock implements Partial<UserContext> {
 	public static getCurrentUser = jest.fn<Promise<User>, any>();
 	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
+	public static getOtpAddOnMobileNo = jest.fn<string, any>();
 
 	public init() {}
 	public async getCurrentUser(...params): Promise<any> {
@@ -214,6 +219,10 @@ class UserContextMock implements Partial<UserContext> {
 
 	public async getAuthGroups(...params): Promise<any> {
 		return await UserContextMock.getAuthGroups(...params);
+	}
+
+	public getOtpAddOnMobileNo(...params): string {
+		return UserContextMock.getOtpAddOnMobileNo(...params);
 	}
 }
 

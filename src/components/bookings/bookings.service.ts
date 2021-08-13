@@ -4,7 +4,6 @@ import { Booking, BookingStatus, ChangeLogAction, Service, ServiceProvider, User
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
-import { BookingBuilder } from '../../models/entities/booking';
 import { ServicesService } from '../services/services.service';
 import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs.service';
 import { UserContext } from '../../infrastructure/auth/userContext';
@@ -31,7 +30,7 @@ import { BookingType } from '../../../src/models/bookingType';
 import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
-import { MyInfoService } from '../myInfo/myInfo.service';
+import { BookingValidationType } from '../../models/bookingValidationType';
 
 @InRequestScope
 export class BookingsService {
@@ -65,8 +64,6 @@ export class BookingsService {
 	private usersService: UsersService;
 	@Inject
 	private bookingsMapper: BookingsMapper;
-	@Inject
-	private myInfoService: MyInfoService;
 
 	constructor() {
 		this.bookingsSubject.attach(
@@ -76,27 +73,25 @@ export class BookingsService {
 		);
 	}
 
-	private static useAdminValidator(user: User): boolean {
-		return user.isAdmin() || user.isAgency();
+	private static useAdminValidator(user: User, validationType?: BookingValidationType): boolean {
+		return user.isAdmin() || (user.isAgency() && validationType === BookingValidationType.Admin);
 	}
 
 	public static shouldAutoAccept(
 		currentUser: User,
 		serviceProvider?: ServiceProvider,
-		skipAgencyCheck = false,
+		shouldAutoAccept = false,
+		validationType?: BookingValidationType,
 	): boolean {
 		if (!serviceProvider) {
 			return false;
 		}
 
-		if (!skipAgencyCheck) {
-			// tslint:disable-next-line: no-collapsible-if
-			if (currentUser.isAdmin() || currentUser.isAgency()) {
-				return true;
-			}
-		}
-
-		return serviceProvider.autoAcceptBookings;
+		return shouldAutoAccept ||
+			currentUser.isAdmin() ||
+			(currentUser.isAgency() && validationType === BookingValidationType.Admin)
+			? true
+			: serviceProvider.autoAcceptBookings;
 	}
 
 	public async cancelBooking(bookingId: number): Promise<Booking> {
@@ -302,7 +297,17 @@ export class BookingsService {
 		const currentUser = await this.userContext.getCurrentUser();
 
 		const afterMap = (updatedBooking: Booking, serviceProvider: ServiceProvider) => {
-			if (serviceProvider) {
+			const isServiceOnHold = () => {
+				if (currentUser.isAdmin() || currentUser.isAgency()) return false;
+				return updatedBooking.service.isOnHold || updatedBooking.service.isStandAlone;
+			};
+
+			if (isServiceOnHold()) {
+				const HOLD_DURATION_IN_MINS = 10;
+				updatedBooking.status = BookingStatus.OnHold;
+				updatedBooking.onHoldUntil = new Date();
+				updatedBooking.onHoldUntil.setMinutes(updatedBooking.onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
+			} else if (serviceProvider) {
 				updatedBooking.status = BookingsService.getBookingCreationStatus(currentUser, serviceProvider);
 			}
 		};
@@ -362,12 +367,16 @@ export class BookingsService {
 		if (!bookingRequest.citizenUinFinUpdated) {
 			bookingRequest.citizenUinFin = previousBooking.citizenUinFin;
 		}
+		const { service, isAgencyUser } = await this.bookingRequestExtraction(previousBooking.serviceId);
 
 		const updatedBooking = previousBooking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
-		const validator = this.bookingsValidatorFactory.getValidator(BookingsService.useAdminValidator(currentUser));
+		const validator = this.bookingsValidatorFactory.getValidator(
+			BookingsService.useAdminValidator(currentUser, bookingRequest.validationType),
+		);
+		validator.bypassCaptcha(isAgencyUser);
 
-		BookingsMapper.mapRequest(bookingRequest, updatedBooking, currentUser);
+		await this.bookingsMapper.mapRequest({ request: bookingRequest, booking: updatedBooking, service });
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
 
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
@@ -384,8 +393,12 @@ export class BookingsService {
 		return [changeLogAction, updatedBooking];
 	}
 
-	private static getBookingCreationStatus(currentUser: User, serviceProvider?: ServiceProvider): BookingStatus {
-		return this.shouldAutoAccept(currentUser, serviceProvider)
+	private static getBookingCreationStatus(
+		currentUser: User,
+		serviceProvider?: ServiceProvider,
+		validationType?: BookingValidationType,
+	): BookingStatus {
+		return this.shouldAutoAccept(currentUser, serviceProvider, undefined, validationType)
 			? BookingStatus.Accepted
 			: BookingStatus.PendingApproval;
 	}
@@ -400,19 +413,13 @@ export class BookingsService {
 		return booking;
 	}
 
-	private async bookingRequestExtraction(
-		bookingRequest: BookingRequest,
-		serviceId: number,
-	): Promise<BookingRequestExtraction> {
+	private async bookingRequestExtraction(serviceId: number): Promise<BookingRequestExtraction> {
 		const currentUser = await this.userContext.getCurrentUser();
 		const isAdminUser = currentUser.isAdmin();
 		const isAgencyUser = currentUser.isAgency();
 		const service: Service = await this.servicesService.getService(serviceId);
 		const isOnHold = service.isOnHold;
 		const isStandAlone = service.isStandAlone;
-		const videoConferenceUrl = bookingRequest.videoConferenceUrl?.length
-			? bookingRequest.videoConferenceUrl
-			: service.videoConferenceUrl;
 
 		return {
 			currentUser,
@@ -421,7 +428,6 @@ export class BookingsService {
 			service,
 			isOnHold,
 			isStandAlone,
-			videoConferenceUrl,
 		} as BookingRequestExtraction;
 	}
 
@@ -437,9 +443,8 @@ export class BookingsService {
 			service,
 			isOnHold,
 			isStandAlone,
-			videoConferenceUrl,
-		} = await this.bookingRequestExtraction(bookingRequest, serviceId);
-		const useAdminValidator = BookingsService.useAdminValidator(currentUser);
+		} = await this.bookingRequestExtraction(serviceId);
+		const useAdminValidator = BookingsService.useAdminValidator(currentUser, bookingRequest.validationType);
 
 		let serviceProvider: ServiceProvider | undefined;
 		if (bookingRequest.serviceProviderId) {
@@ -460,31 +465,22 @@ export class BookingsService {
 			return isOnHold || isStandAlone;
 		};
 
-		const myInfo = isStandAlone ? await this.myInfoService.getMyInfo(currentUser) : undefined;
+		const booking = Booking.createNew({ creator: currentUser });
+		await this.bookingsMapper.mapRequest({ request: bookingRequest, booking, service });
 
-		const booking = new BookingBuilder()
-			.withServiceId(serviceId)
-			.withStartDateTime(bookingRequest.startDateTime)
-			.withEndDateTime(bookingRequest.endDateTime)
-			.withServiceProviderId(serviceProvider?.id)
-			.withRefId(bookingRequest.refId)
-			.withLocation(bookingRequest.location)
-			.withDescription(bookingRequest.description)
-			.withVideoConferenceUrl(videoConferenceUrl)
-			.withCreator(currentUser)
-			.withCitizenUinFin(BookingsMapper.getCitizenUinFin(currentUser, bookingRequest))
-			.withCitizenName(myInfo ? myInfo.data.name.value : bookingRequest.citizenName)
-			.withCitizenPhone(myInfo ? myInfo.data.mobileno.nbr.value : bookingRequest.citizenPhone)
-			.withCitizenEmail(myInfo ? myInfo.data.email.value : bookingRequest.citizenEmail)
-			.withAutoAccept(
-				BookingsService.shouldAutoAccept(currentUser, serviceProvider, shouldBypassCaptchaAndAutoAccept),
-			)
-			.withMarkOnHold(isServiceOnHold())
-			.withCaptchaToken(bookingRequest.captchaToken)
-			.build();
-
+		if (isServiceOnHold()) {
+			booking.markOnHold();
+		} else {
+			const autoAccept = BookingsService.shouldAutoAccept(
+				currentUser,
+				serviceProvider,
+				shouldBypassCaptchaAndAutoAccept,
+				bookingRequest.validationType,
+			);
+			booking.setAutoAccept({ autoAccept });
+		}
 		const validator = this.bookingsValidatorFactory.getValidator(useAdminValidator);
-		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept);
+		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || isAgencyUser);
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
 		booking.serviceProvider = serviceProvider;
@@ -508,9 +504,9 @@ export class BookingsService {
 		});
 
 		if (previousBooking.isValidOnHoldBooking()) {
-			const currentUser = await this.userContext.getCurrentUser();
 			const updatedBooking = previousBooking.clone();
-			BookingsMapper.mapBookingDetails(bookingRequest, updatedBooking, currentUser);
+			const { service } = await this.bookingRequestExtraction(previousBooking.serviceId);
+			await this.bookingsMapper.mapBookingDetails({ request: bookingRequest, booking: updatedBooking, service });
 
 			const validator = this.bookingsValidatorFactory.getOnHoldValidator();
 			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
@@ -554,10 +550,9 @@ export class BookingsService {
 
 export type BookingRequestExtraction = {
 	currentUser: User;
-	isAdminUser: Boolean;
-	isAgencyUser: Boolean;
+	isAdminUser: boolean;
+	isAgencyUser: boolean;
 	service: Service;
 	isOnHold: boolean;
 	isStandAlone: boolean;
-	videoConferenceUrl: string;
 };

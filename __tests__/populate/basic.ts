@@ -1,10 +1,16 @@
-import { OrganisationAdminRequestEndpointSG } from '../utils/requestEndpointSG';
+import {
+	CitizenRequestEndpointSG,
+	OrganisationAdminRequestEndpointSG,
+	ServiceAdminRequestEndpointSG,
+	ServiceProviderRequestEndpointSG,
+} from '../utils/requestEndpointSG';
 import { ServiceProviderResponseModel } from '../../src/components/serviceProviders/serviceProviders.apicontract';
 import { PartialAdditionalSettings, ServiceResponse } from '../../src/components/services/service.apicontract';
 import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslotItems.apicontract';
 import { OneOffTimeslotResponse } from '../../src/components/oneOffTimeslots/oneOffTimeslots.apicontract';
 import * as request from 'request';
-import {ServiceNotificationTemplateResponse} from "../../src/components/serviceNotificationTemplate/serviceNotificationTemplate.apicontract";
+import { ServiceNotificationTemplateResponse } from '../../src/components/serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
+import { Roles } from '../utils/enums';
 
 export const populateServiceLabel = async ({
 	serviceId,
@@ -262,6 +268,8 @@ export const populateOneOffTimeslot = async ({
 	labelIds,
 	title,
 	description,
+	role,
+	requestDetails,
 }: {
 	serviceProviderId: number;
 	startTime: Date;
@@ -270,8 +278,34 @@ export const populateOneOffTimeslot = async ({
 	labelIds?: string[];
 	title?: string;
 	description?: string;
+	role?: Roles;
+	requestDetails?: {
+		serviceId: string;
+		nameService?: string;
+		molAdminId?: string;
+	};
 }): Promise<[request.Response, OneOffTimeslotResponse]> => {
-	const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/oneOffTimeslots`, {
+	let endpoint;
+	switch (role) {
+		case Roles.Citizen:
+			endpoint = CitizenRequestEndpointSG.create({ ...requestDetails });
+			break;
+		case Roles.ServiceProvider:
+			endpoint = ServiceProviderRequestEndpointSG.create({
+				...requestDetails,
+			});
+			break;
+		case Roles.ServiceAdmin:
+			endpoint = ServiceAdminRequestEndpointSG.create({
+				...requestDetails,
+			});
+			break;
+		case Roles.OrganisationAdmin:
+		default:
+			endpoint = OrganisationAdminRequestEndpointSG.create({});
+	}
+
+	const response = await endpoint.post(`/oneOffTimeslots`, {
 		body: {
 			startDateTime: startTime,
 			endDateTime: endTime,
@@ -282,6 +316,7 @@ export const populateOneOffTimeslot = async ({
 			labelIds,
 		},
 	});
+
 	return [response, response.body.data];
 };
 

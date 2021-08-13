@@ -38,6 +38,7 @@ describe('Dynamic Fields functional tests', () => {
 		const field = response.body.data as DynamicFieldModel;
 		expect(field).toEqual({
 			idSigned: field.idSigned,
+			isMandatory: true,
 			name: 'notes',
 			textField: {
 				charLimit: 15,
@@ -53,6 +54,7 @@ describe('Dynamic Fields functional tests', () => {
 		const field = response.body.data as DynamicFieldModel;
 		expect(field).toEqual({
 			idSigned: field.idSigned,
+			isMandatory: true,
 			name: 'options',
 			selectList: {
 				options: [

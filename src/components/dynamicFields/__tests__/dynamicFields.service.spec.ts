@@ -72,6 +72,10 @@ describe('dynamicFields/dynamicFields.service', () => {
 		return request;
 	};
 
+	const createTextDynamicField = () => {
+		return TextDynamicField.create(1, 'notes', 50, true);
+	};
+
 	beforeEach(() => {
 		jest.resetAllMocks();
 
@@ -85,7 +89,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 
 	it('should save dynamic field', async () => {
 		const request = createTextFieldRequest();
-		const entity = TextDynamicField.create(1, 'notes', 50);
+		const entity = createTextDynamicField();
 
 		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(service));
 		DynamicFieldsMapperMock.mapToEntity.mockReturnValue(entity);
@@ -102,7 +106,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 
 	it('should NOT save dynamic field - without permission', async () => {
 		const request = createTextFieldRequest();
-		const entity = TextDynamicField.create(1, 'notes', 50);
+		const entity = createTextDynamicField();
 
 		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(service));
 		DynamicFieldsMapperMock.mapToEntity.mockReturnValue(entity);
@@ -123,7 +127,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 
 	it('should update dynamic field', async () => {
 		const request = createTextFieldRequest();
-		const entity = TextDynamicField.create(1, 'notes', 50);
+		const entity = createTextDynamicField();
 		entity.id = 11;
 
 		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(service));
@@ -143,7 +147,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 
 	it('should NOT update dynamic field - without permission', async () => {
 		const request = createTextFieldRequest('11');
-		const entity = TextDynamicField.create(1, 'notes', 50);
+		const entity = createTextDynamicField();
 		entity.id = 11;
 
 		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(service));
@@ -166,7 +170,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 
 	it('should throw if dynamic field not found for Update', async () => {
 		const request = createTextFieldRequest('11');
-		const entity = TextDynamicField.create(1, 'notes', 50);
+		const entity = createTextDynamicField();
 		entity.id = 11;
 
 		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(service));
@@ -186,7 +190,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 			key: 1,
 			value: 'English',
 		} as SelectListOption;
-		const dynamicFieldEntity = SelectListDynamicField.create(1, 'testDynamic', [listOptions]);
+		const dynamicFieldEntity = SelectListDynamicField.create(1, 'testDynamic', [listOptions], true);
 		dynamicFieldEntity.id = 1;
 
 		const container = Container.get(DynamicFieldsService);
@@ -197,7 +201,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 	});
 
 	it('should delete dynamic field', async () => {
-		const entity = TextDynamicField.create(1, 'notes', 50);
+		const entity = createTextDynamicField();
 		entity.id = 11;
 
 		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(service));
@@ -213,7 +217,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 	});
 
 	it('should throw if dynamic field not found for Delete', async () => {
-		const entity = TextDynamicField.create(1, 'notes', 50);
+		const entity = createTextDynamicField();
 		entity.id = 11;
 
 		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(service));
@@ -228,7 +232,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 	});
 
 	it('should NOT delete dynamic field - without permission', async () => {
-		const entity = TextDynamicField.create(1, 'notes', 50);
+		const entity = createTextDynamicField();
 		entity.id = 11;
 
 		ServicesServiceMock.getService.mockReturnValue(Promise.resolve(service));

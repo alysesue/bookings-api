@@ -81,6 +81,17 @@ export abstract class DynamicField {
 		this._name = value;
 	}
 
+	@Column({ nullable: false, default: false })
+	private _isMandatory: boolean;
+
+	public get isMandatory(): boolean {
+		return this._isMandatory;
+	}
+
+	public set isMandatory(value: boolean) {
+		this._isMandatory = value;
+	}
+
 	public abstract acceptVisitor(visitor: IDynamicFieldVisitor): void;
 }
 
@@ -90,11 +101,17 @@ export class SelectListDynamicField extends DynamicField {
 		super();
 	}
 
-	public static create(serviceId: number, name: string, options: SelectListOption[]): DynamicField {
+	public static create(
+		serviceId: number,
+		name: string,
+		options: SelectListOption[],
+		isMandatory: boolean,
+	): DynamicField {
 		const dynamicField = new SelectListDynamicField();
 		dynamicField.serviceId = serviceId;
 		dynamicField.name = name;
 		dynamicField.options = options;
+		dynamicField.isMandatory = isMandatory;
 		return dynamicField;
 	}
 
@@ -124,11 +141,12 @@ export class TextDynamicField extends DynamicField {
 		super();
 	}
 
-	public static create(serviceId: number, name: string, charLimit: number): DynamicField {
+	public static create(serviceId: number, name: string, charLimit: number, isMandatory: boolean): DynamicField {
 		const dynamicField = new TextDynamicField();
 		dynamicField.serviceId = serviceId;
 		dynamicField.name = name;
 		dynamicField.charLimit = charLimit;
+		dynamicField.isMandatory = isMandatory;
 		return dynamicField;
 	}
 

@@ -7,6 +7,7 @@ export const postTextDynamicField = async ({ serviceId }: { serviceId: number })
 		name: 'notes',
 		type: 'TextField',
 		textField: { charLimit: 15 },
+		isMandatory: true,
 	};
 
 	const endpoint = OrganisationAdminRequestEndpointSG.create({
@@ -20,6 +21,7 @@ export const postSelectListDynamicField = async ({ serviceId }: { serviceId: num
 	const body = {
 		name: 'options',
 		type: 'SelectList',
+		isMandatory: true,
 		selectList: {
 			options: [
 				{ key: 1, value: 'A' },

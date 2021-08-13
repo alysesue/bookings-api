@@ -32,6 +32,10 @@ describe('dynamicFields/dynamicFields.controller', () => {
 		jest.resetAllMocks();
 	});
 
+	const createTextDynamicField = () => {
+		return TextDynamicField.create(1, 'notes', 50, true);
+	};
+
 	it('should create dynamic field', async () => {
 		const request = new PersistDynamicFieldModel();
 		request.name = 'field';
@@ -40,7 +44,7 @@ describe('dynamicFields/dynamicFields.controller', () => {
 
 		const model = new DynamicFieldModel();
 		model.idSigned = '11';
-		const entity = TextDynamicField.create(1, 'notes', 50);
+		const entity = createTextDynamicField();
 
 		DynamicFieldsMapperMock.mapDataModel.mockReturnValue(model);
 		DynamicFieldsServiceMock.save.mockReturnValue(Promise.resolve(entity));
@@ -61,7 +65,7 @@ describe('dynamicFields/dynamicFields.controller', () => {
 
 		const model = new DynamicFieldModel();
 		model.idSigned = '11';
-		const entity = TextDynamicField.create(1, 'notes', 50);
+		const entity = createTextDynamicField();
 
 		DynamicFieldsMapperMock.mapDataModel.mockReturnValue(model);
 		DynamicFieldsServiceMock.update.mockReturnValue(Promise.resolve(entity));

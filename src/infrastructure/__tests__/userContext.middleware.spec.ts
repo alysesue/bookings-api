@@ -1,3 +1,5 @@
+import { OtpServiceMock } from './../../components/otp/__mocks__/otp.service.mock';
+import { OtpService } from './../../components/otp/otp.service';
 import { basePath } from '../../config/app-config';
 import * as Koa from 'koa';
 import { UserContextMiddleware } from '../userContext.middleware';
@@ -6,9 +8,10 @@ import { Container } from 'typescript-ioc';
 import { UsersService } from '../../components/users/users.service';
 import { User } from '../../models';
 import { UserContext } from '../auth/userContext';
-import { AnonymousCookieData, BookingSGCookieHelper } from '../bookingSGCookieHelper';
+import { AnonymousCookieData, BookingSGCookieHelper, MobileOtpCookieHelper } from '../bookingSGCookieHelper';
 import { UsersServiceMock } from '../../components/users/__mocks__/users.service';
 import { AnonymousAuthGroup } from '../auth/authGroup';
+import { MobileOtpCookieHelperMock } from '../__mocks__/mobileOtpCookieHelper.mock';
 
 // We need jest.requireActual(...) because userContext is mocked globally in globalmocks.ts
 // Here, we need the actual implementation to test
@@ -19,6 +22,8 @@ jest.mock('../auth/userContext', () => {
 beforeAll(() => {
 	Container.bind(UsersService).to(UsersServiceMock);
 	Container.bind(BookingSGCookieHelper).to(BookingSGCookieHelperMock);
+	Container.bind(MobileOtpCookieHelper).to(MobileOtpCookieHelperMock);
+	Container.bind(OtpService).to(OtpServiceMock);
 });
 
 afterEach(() => {
@@ -75,8 +80,14 @@ describe('user Context middleware tests', () => {
 		const cookieData = { createdAt: new Date(0), trackingId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f' };
 		const anonymous = User.createAnonymousUser({ ...cookieData });
 		BookingSGCookieHelperMock.getCookieValue.mockReturnValue(cookieData);
-		UsersServiceMock.createAnonymousUserFromCookie.mockImplementation(() => Promise.resolve(anonymous));
+		const mobileOtpAddOnCookieData = {
+			cookieCreatedAt: new Date(0),
+			otpReqId: 'f08c64ae-6d97-4d36-92a8-c6c1f190a676',
+		};
+		MobileOtpCookieHelperMock.getCookieValue.mockReturnValue(mobileOtpAddOnCookieData);
+		OtpServiceMock.getMobileNoMock.mockReturnValue(Promise.resolve('+6588884444'));
 
+		UsersServiceMock.createAnonymousUserFromCookie.mockImplementation(() => Promise.resolve(anonymous));
 		UsersServiceMock.getAnonymousUserRoles.mockReturnValue(Promise.resolve([new AnonymousAuthGroup(anonymous)]));
 
 		const nextMiddleware = jest.fn().mockImplementation(async (ctx: Koa.Context, next: Koa.Next) => {
@@ -84,12 +95,14 @@ describe('user Context middleware tests', () => {
 			const userContext = container.resolve(UserContext);
 			const user = await userContext.getCurrentUser();
 			const another = await userContext.getCurrentUser();
+			const otpAddOnMobileNo = userContext.getOtpAddOnMobileNo();
 
 			expect(UsersServiceMock.getOrSaveUserFromHeaders).toBeCalledTimes(1);
 			expect(UsersServiceMock.getAnonymousUserRoles).toBeCalled();
 			expect(user).toBeDefined();
 			expect(user).toBe(another);
 			expect(user.isAnonymous()).toBe(true);
+			expect(otpAddOnMobileNo).toBe('+6588884444');
 
 			return await next();
 		});
@@ -104,7 +117,50 @@ describe('user Context middleware tests', () => {
 		expect(nextMiddleware).toBeCalled();
 	});
 
-	it('should throw for user without groups', async () => {
+	// TODO: enable test
+	// it('should throw error for anonymous user without OtpAddOn cookie', async () => {
+	// 	const containerMiddleware = new ContainerContextMiddleware().build();
+	// 	const userContextMiddleware = new UserContextMiddleware().build();
+
+	// 	const cookieData = { createdAt: new Date(0), trackingId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f' };
+	// 	const anonymous = User.createAnonymousUser({ ...cookieData });
+	// 	BookingSGCookieHelperMock.getCookieValue.mockReturnValue(cookieData);
+	// 	MobileOtpCookieHelperMock.getCookieValue.mockReturnValue(undefined);
+
+	// 	UsersServiceMock.createAnonymousUserFromCookie.mockImplementation(() => Promise.resolve(anonymous));
+	// 	UsersServiceMock.getAnonymousUserRoles.mockReturnValue(Promise.resolve([new AnonymousAuthGroup(anonymous)]));
+
+	// 	const nextMiddleware = jest.fn().mockImplementation(async (ctx: Koa.Context, next: Koa.Next) => {
+	// 		const container = ContainerContextMiddleware.getContainerContext(ctx);
+	// 		const userContext = container.resolve(UserContext);
+	// 		const user = await userContext.getCurrentUser();
+	// 		const another = await userContext.getCurrentUser();
+
+	// 		expect(UsersServiceMock.getOrSaveUserFromHeaders).toBeCalledTimes(1);
+	// 		expect(UsersServiceMock.getAnonymousUserRoles).toBeCalled();
+	// 		expect(user).toBeDefined();
+	// 		expect(user).toBe(another);
+	// 		expect(user.isAnonymous()).toBe(true);
+
+	// 		return await next();
+	// 	});
+
+	// 	const context = buildSampleKoaContext(`${basePath}/somepath`);
+	// 	const asyncTest = async () => {
+	// 		await containerMiddleware(context, () => {
+	// 			return userContextMiddleware(context, () => {
+	// 				return nextMiddleware(context, () => {});
+	// 			});
+	// 		});
+	// 	};
+
+	// 	await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(
+	// 		'"User is not authenticated with mobile otp"',
+	// 	);
+	// 	expect(nextMiddleware).not.toBeCalled();
+	// });
+
+	it('should throw error for user without groups', async () => {
 		const containerMiddleware = new ContainerContextMiddleware().build();
 		const userContextMiddleware = new UserContextMiddleware().build();
 		const adminMock = User.createAdminUser({
@@ -161,7 +217,9 @@ describe('user Context middleware tests', () => {
 			});
 		};
 
-		await expect(asyncTest).rejects.toThrowError();
+		await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(
+			'"ContainerContextHolder not found in koa context. [ContainerContextMiddleware] needs to be registered in Koa pipeline."',
+		);
 	});
 });
 

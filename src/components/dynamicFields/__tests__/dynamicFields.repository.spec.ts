@@ -35,7 +35,7 @@ describe('dynamicFields/dynamicFields.repository', () => {
 	});
 
 	it('should save dynamic field', async () => {
-		const field = TextDynamicField.create(2, 'Notes', 50);
+		const field = TextDynamicField.create(2, 'Notes', 50, true);
 		TransactionManagerMock.entityManager.save.mockReturnValue(Promise.resolve({}));
 
 		const container = Container.get(DynamicFieldsRepository);
@@ -46,7 +46,7 @@ describe('dynamicFields/dynamicFields.repository', () => {
 	});
 
 	it('should get dynamic field', async () => {
-		const entity = TextDynamicField.create(1, 'notes', 50);
+		const entity = TextDynamicField.create(1, 'notes', 50, true);
 		entity.id = 11;
 
 		const queryBuilderMock = ({
@@ -73,7 +73,7 @@ describe('dynamicFields/dynamicFields.repository', () => {
 	});
 
 	it('should delete dynamic field', async () => {
-		const field = TextDynamicField.create(2, 'Notes', 50);
+		const field = TextDynamicField.create(2, 'Notes', 50, true);
 		field.id = 11;
 
 		TransactionManagerMock.softDelete.mockReturnValue(Promise.resolve());

@@ -9,6 +9,11 @@ export type AnonymousCookieData = {
 	booking?: string;
 };
 
+export type MobileOtpAddOnCookieData = {
+	cookieCreatedAt: Date;
+	otpReqId: string;
+};
+
 @InRequestScope
 export class BookingSGCookieHelper {
 	private static readonly CookieName = 'BookingSGToken';
@@ -73,19 +78,42 @@ export class MolCookieHelper {
 
 @InRequestScope
 export class MobileOtpCookieHelper {
-	private static readonly CookieName = 'OtpRequestId';
+	private static readonly CookieName = 'MobileOtpAddOn';
+	private static readonly stringEncoding = 'utf8';
+	private _encryptor: AesEncryption;
+
 	@Inject
 	private _koaContextStore: KoaContextStore;
 
-	public setCookieValue(otpReqId: string) {
+	constructor() {
+		const config = getConfig();
+		const key = Buffer.from(config.encryptionKey, 'base64');
+		this._encryptor = new AesEncryption(key);
+	}
+
+	public setCookieValue(value: MobileOtpAddOnCookieData) {
+		const json = JSON.stringify(value);
+		const encrypted = this._encryptor.encrypt(Buffer.from(json, MobileOtpCookieHelper.stringEncoding));
 		const config = getConfig();
 
 		const koaContext = this._koaContextStore.koaContext;
-		koaContext.cookies.set(MobileOtpCookieHelper.CookieName, otpReqId, {
+		koaContext.cookies.set(MobileOtpCookieHelper.CookieName, encrypted, {
 			httpOnly: true,
 			sameSite: config.isLocal ? false : 'lax',
 			overwrite: true,
 			secure: !config.isLocal,
 		});
+	}
+
+	public getCookieValue(): MobileOtpAddOnCookieData | undefined {
+		const koaContext = this._koaContextStore.koaContext;
+		const encrypted = koaContext.cookies.get(MobileOtpCookieHelper.CookieName);
+		if (!encrypted) {
+			return undefined;
+		}
+
+		const decrypted = this._encryptor.decrypt(encrypted);
+		const json = decrypted.toString(MobileOtpCookieHelper.stringEncoding);
+		return JSON.parse(json);
 	}
 }

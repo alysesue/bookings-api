@@ -91,7 +91,7 @@ class RequestEndpointSG {
 	private async csrfHandler(
 		path: string,
 		data?: {
-			params?: object,
+			params?: object;
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			body?: any;
 		},
@@ -100,7 +100,7 @@ class RequestEndpointSG {
 		let cookie = this.getHeader().cookie ?? this.getHeader().Cookie ?? '';
 		cookie += `; ${res.headers['set-cookie']}`;
 		const csrf = res.headers['x-xsrf-token'] as string;
-		this.setHeaders({ ['x-xsrf-token']: csrf, cookie});
+		this.setHeaders({ ['x-xsrf-token']: csrf, cookie });
 	}
 }
 
@@ -125,14 +125,18 @@ export class AgencyRequestEndpointSG extends RequestEndpointSG {
 	public static create = ({
 		agencyAppId = 'agency-first-app',
 		agencyName = 'localorg',
+		serviceId,
 	}: {
 		agencyAppId?: string;
 		agencyName?: string;
 		organisation?: string;
+		serviceId?: string;
 	}): AgencyRequestEndpointSG => {
+		const apiService = serviceId ? { 'x-api-service': serviceId.toString() } : {};
 		const headers = {
 			'mol-agency-app-id': agencyAppId,
 			'mol-agency-name': agencyName,
+			...apiService,
 		};
 		return new AgencyRequestEndpointSG(headers);
 	};
@@ -207,6 +211,7 @@ export class ServiceAdminRequestEndpointSG extends RequestEndpointSG {
 		});
 	}
 }
+
 export class ServiceProviderRequestEndpointSG extends RequestEndpointSG {
 	public static create = ({
 		organisation = 'localorg',

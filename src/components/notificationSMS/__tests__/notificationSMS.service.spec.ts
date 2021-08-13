@@ -1,4 +1,4 @@
-import { NotificationSMSService } from '../notificationSMS.service';
+import { NotificationSMSService, NotificationSMSServiceMol } from '../notificationSMS.service';
 import { Container } from 'typescript-ioc';
 import { post } from '../../../tools/fetch';
 import '../../../infrastructure/tests/mockConfig';
@@ -38,7 +38,7 @@ describe('Test of notification SMS', () => {
 	});
 
 	it('Should call post when sending an sms', async () => {
-		await Container.get(NotificationSMSService).send({ phoneNumber: '8821 7161', message: '' });
+		await Container.get(NotificationSMSServiceMol).send({ phoneNumber: '8821 7161', message: '' });
 		expect(post).toHaveBeenCalledTimes(1);
 	});
 

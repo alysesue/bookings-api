@@ -35,7 +35,8 @@ export class UsersController extends Controller {
 	public async getProfile(): Promise<ApiData<UserProfileResponse>> {
 		const user = await this._userContext.getCurrentUser();
 		const groups = await this._userContext.getAuthGroups();
-		return ApiDataFactory.create(UserProfileMapper.mapToResponse({ user, groups }));
+		const otpAddOnMobileNo = this._userContext.getOtpAddOnMobileNo();
+		return ApiDataFactory.create(UserProfileMapper.mapToResponse({ user, groups, otpAddOnMobileNo }));
 	}
 
 	/**
