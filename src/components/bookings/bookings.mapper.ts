@@ -135,7 +135,7 @@ export class BookingsMapper {
 			['Booking description']: `${booking.description}`,
 			['Booking reference']: `${booking.refId}`,
 			['Dynamic Fields']: `${dynamicValues?.join('; ')}`,
-			['Citizen FIN number']: `${this.maskUinFin(booking, userContext)}`,
+			['Citizen NRIC / FIN number']: `${this.maskUinFin(booking, userContext)}`,
 			['Citizen Name']: `${booking.citizenName}`,
 			['Citizen Email address']: `${booking.citizenEmail}`,
 			['Citizen Phone number']: `${booking.citizenPhone}`,
