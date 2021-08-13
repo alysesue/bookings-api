@@ -1024,8 +1024,7 @@ describe('Bookings.Service', () => {
 		);
 		try {
 			await Container.get(BookingsService).save(bookingRequest, 1);
-		}
-		catch (e){};
+		} catch (e) {}
 		expect(validatorMock.bypassCaptcha).toBeCalledWith(false);
 	});
 
