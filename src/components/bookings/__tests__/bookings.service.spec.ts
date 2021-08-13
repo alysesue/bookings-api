@@ -288,6 +288,7 @@ describe('Bookings.Service', () => {
 		expect(booking.citizenPhone).toBe(bookingRequest.citizenPhone);
 		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
+
 	it('should save booking from booking request (singpass user)', async () => {
 		const bookingRequest: BookingRequest = new BookingRequest();
 		bookingRequest.startDateTime = new Date();
@@ -328,7 +329,7 @@ describe('Bookings.Service', () => {
 		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 
-	it('should be able to make a booking as an agency, with no validationType specified - default citizen', async () => {
+	it('should be able to bypass captcha and make a booking as an agency, with no validationType specified - default citizen', async () => {
 		const customProvider = ServiceProvider.create('provider', 1);
 		customProvider.id = 200;
 		customProvider.autoAcceptBookings = false;
@@ -364,6 +365,7 @@ describe('Bookings.Service', () => {
 		expect(booking).not.toBe(undefined);
 		expect(booking.status).toBe(BookingStatus.PendingApproval);
 		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+		expect(validatorMock.bypassCaptcha).toBeCalledWith(true);
 	});
 
 	it('should auto-accept booking when a booking is made directly via API, as an agency with validationType equals to admin', async () => {
@@ -957,6 +959,73 @@ describe('Bookings.Service', () => {
 		} as BookingReject);
 
 		expect(result.status).toBe(BookingStatus.Rejected);
+	});
+
+	it('should be able to bypass captcha as an agency when creating a new booking even if bypassCaptchaAndAutoAccept is equal to false', async () => {
+		const customProvider = ServiceProvider.create('provider', 1);
+		customProvider.id = 200;
+		customProvider.autoAcceptBookings = false;
+
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 200;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(agencyMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceProviderAuthGroup(agencyMock, customProvider)]),
+		);
+
+		await Container.get(BookingsService).save(bookingRequest, 1, false);
+		expect(validatorMock.bypassCaptcha).toBeCalledWith(true);
+	});
+
+	it('should be able to bypass captcha when updating a booking as an agency', async () => {
+		const customProvider = ServiceProvider.create('provider', 1);
+		customProvider.id = 200;
+		customProvider.autoAcceptBookings = false;
+
+		const start = new Date('2020-02-02T11:00');
+		const end = new Date('2020-02-02T12:00');
+		BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(1)
+			.withCitizenEmail('test@mail.com')
+			.withStartDateTime(start)
+			.withEndDateTime(end)
+			.build();
+
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 200;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(agencyMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceProviderAuthGroup(agencyMock, customProvider)]),
+		);
+
+		await Container.get(BookingsService).update(1, bookingRequest);
+		expect(validatorMock.bypassCaptcha).toBeCalledWith(true);
+	});
+
+	it('should be NOT able to bypass captcha as an anonymous user when creating a new booking', async () => {
+		const customProvider = ServiceProvider.create('provider', 1);
+		customProvider.id = 200;
+		customProvider.autoAcceptBookings = false;
+
+		const bookingRequest: BookingRequest = new BookingRequest();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 200;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(anonymousMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new AnonymousAuthGroup(anonymousMock)]),
+		);
+		try {
+			await Container.get(BookingsService).save(bookingRequest, 1);
+		} catch (e) {}
+		expect(validatorMock.bypassCaptcha).toBeCalledWith(false);
 	});
 
 	describe('Validate on hold booking', () => {
