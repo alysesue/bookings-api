@@ -133,7 +133,7 @@ describe('Bookings functional tests', () => {
 			const fields = body[1].split(',');
 
 			expect(csvHeaders).toEqual(
-				`Booking ID,Booking Status,Booking creation date,Booking service start date/time,Booking service end date/time,Booking location,Booking description,Booking reference,Dynamic Fields,Citizen FIN number,Citizen Name,Citizen Email address,Citizen Phone number,Service Name,Service Provider Name,Service Provider Email address,Service Provider Phone number`,
+				`Booking ID,Booking Status,Booking creation date,Booking service start date/time,Booking service end date/time,Booking location,Booking description,Booking reference,Dynamic Fields,Citizen NRIC / FIN number,Citizen Name,Citizen Email address,Citizen Phone number,Service Name,Service Provider Name,Service Provider Email address,Service Provider Phone number`,
 			);
 			expect(fields[1]).toEqual('Accepted');
 			expect(new Date(fields[3])).toEqual(startDateTime);

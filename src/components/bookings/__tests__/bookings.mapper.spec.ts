@@ -276,7 +276,7 @@ describe('Bookings mapper tests', () => {
 			'Booking description': 'description',
 			'Booking reference': '123',
 			'Dynamic Fields': 'testDynamic:English',
-			'Citizen FIN number': 'S****567D',
+			'Citizen NRIC / FIN number': 'S****567D',
 			'Citizen Name': 'armin',
 			'Citizen Email address': 'armin@gmail.com',
 			'Citizen Phone number': '81101234',
