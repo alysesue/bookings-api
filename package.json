@@ -101,6 +101,7 @@
 	"dependencies": {
 		"@js-joda/core": "^3.2.0",
 		"@types/sanitize-html": "^2.3.2",
+		"@types/google-libphonenumber": "^7.4.21",
 		"axios": "^0.21.1",
 		"cheerio": "^1.0.0-rc.10",
 		"cpy": "^8.1.2",
@@ -114,6 +115,7 @@
 		"glob": "^7.1.6",
 		"glob-parent": "^6.0.0",
 		"globby": "^11.0.4",
+		"google-libphonenumber": "^3.2.22",
 		"googleapis": "^49.0.0",
 		"hashids": "^2.2.8",
 		"juice": "^8.0.0",

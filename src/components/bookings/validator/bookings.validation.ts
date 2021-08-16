@@ -13,6 +13,7 @@ import { MAX_PAGING_LIMIT } from '../../../core/pagedEntities';
 import { IValidator, Validator } from '../../../infrastructure/validator';
 import { BookingBusinessValidations } from './bookingBusinessValidations';
 import { ContainerContext } from '../../../infrastructure/containerContext';
+import { isVerifiedPhoneNumber } from '../../../tools/phoneNumber';
 
 export interface IBookingsValidator extends IValidator<Booking> {
 	bypassCaptcha(shouldBypassCaptcha: boolean): void;
@@ -71,6 +72,11 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 		}
 		if (booking.videoConferenceUrl && !(await BookingsValidator.validateUrl(booking.videoConferenceUrl))) {
 			yield BookingBusinessValidations.VideoConferenceUrlIsInvalid;
+		}
+		if (booking.citizenPhone) {
+			if (!isVerifiedPhoneNumber(booking.citizenPhone)) {
+				yield BookingBusinessValidations.PhoneNumberNotValid;
+			}
 		}
 
 		if (this._customCitizenValidations.length > 0) {
