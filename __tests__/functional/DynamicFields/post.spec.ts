@@ -31,14 +31,14 @@ describe('Dynamic Fields functional tests', () => {
 		done();
 	});
 
-	it('should add text dynamic field', async () => {
-		const response = await postTextDynamicField({ serviceId: service.id });
+	it('should add text dynamic field with isMandatory = undefined set to default false', async () => {
+		const response = await postTextDynamicField({ serviceId: service.id }, undefined);
 		expect(response.statusCode).toBe(201);
 
 		const field = response.body.data as DynamicFieldModel;
 		expect(field).toEqual({
 			idSigned: field.idSigned,
-			isMandatory: true,
+			isMandatory: false,
 			name: 'notes',
 			textField: {
 				charLimit: 15,
@@ -47,14 +47,14 @@ describe('Dynamic Fields functional tests', () => {
 		});
 	});
 
-	it('should add select list dynamic field', async () => {
-		const response = await postSelectListDynamicField({ serviceId: service.id });
+	it('should add select list dynamic field with isMandatory = null set to default false', async () => {
+		const response = await postSelectListDynamicField({ serviceId: service.id }, null);
 		expect(response.statusCode).toBe(201);
 
 		const field = response.body.data as DynamicFieldModel;
 		expect(field).toEqual({
 			idSigned: field.idSigned,
-			isMandatory: true,
+			isMandatory: false,
 			name: 'options',
 			selectList: {
 				options: [
@@ -68,10 +68,10 @@ describe('Dynamic Fields functional tests', () => {
 
 	it('should add fields to different services', async () => {
 		//service 1
-		await postTextDynamicField({ serviceId: service.id });
-		await postSelectListDynamicField({ serviceId: service.id });
+		await postTextDynamicField({ serviceId: service.id }, true);
+		await postSelectListDynamicField({ serviceId: service.id }, true);
 		//service 2
-		await postTextDynamicField({ serviceId: service2.id });
+		await postTextDynamicField({ serviceId: service2.id }, true);
 
 		expect((await getDynamicFields({ serviceId: service.id })).length).toEqual(2);
 		expect((await getDynamicFields({ serviceId: service2.id })).length).toEqual(1);

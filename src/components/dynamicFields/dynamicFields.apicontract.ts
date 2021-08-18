@@ -28,7 +28,7 @@ export class PersistDynamicFieldModel {
 	/**
 	 * default is false
 	 */
-	public isMandatory?: boolean = false;
+	public isMandatory?: boolean;
 }
 
 // Classes that represent the metadata (definition) of a dynamic field

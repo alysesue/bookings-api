@@ -133,6 +133,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		request.type = DynamicFieldType.SelectList;
 		request.selectList = new SelectListModel();
 		request.selectList.options = [{ key: 1, value: 'option A' }];
+		request.isMandatory = true;
 
 		const instance = Container.get(DynamicFieldsMapper);
 		const entity = SelectListDynamicField.create(1, 'field', [], true);
@@ -208,6 +209,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		request.type = DynamicFieldType.TextField;
 		request.textField = new TextFieldModel();
 		request.textField.charLimit = 15;
+		request.isMandatory = true;
 
 		const instance = Container.get(DynamicFieldsMapper);
 		const entity = TextDynamicField.create(1, 'field', 20, true);
