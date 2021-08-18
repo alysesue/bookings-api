@@ -31,7 +31,7 @@ describe('Dynamic Fields functional tests', () => {
 		done();
 	});
 
-	it('should add text dynamic field with default isMandatory equals to false', async () => {
+	it('should add text dynamic field with isMandatory = undefined set to default false', async () => {
 		const response = await postTextDynamicField({ serviceId: service.id }, undefined);
 		expect(response.statusCode).toBe(201);
 
@@ -47,14 +47,14 @@ describe('Dynamic Fields functional tests', () => {
 		});
 	});
 
-	it('should add select list dynamic field', async () => {
-		const response = await postSelectListDynamicField({ serviceId: service.id }, true);
+	it('should add select list dynamic field with isMandatory = null set to default false', async () => {
+		const response = await postSelectListDynamicField({ serviceId: service.id }, null);
 		expect(response.statusCode).toBe(201);
 
 		const field = response.body.data as DynamicFieldModel;
 		expect(field).toEqual({
 			idSigned: field.idSigned,
-			isMandatory: true,
+			isMandatory: false,
 			name: 'options',
 			selectList: {
 				options: [
