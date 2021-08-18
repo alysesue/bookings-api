@@ -50,6 +50,7 @@ export class DynamicFieldsMapper {
 		if (entity) {
 			entity.name = model.name;
 			entity.options = options;
+			entity.isMandatory = model.isMandatory;
 			return entity;
 		}
 
@@ -64,6 +65,7 @@ export class DynamicFieldsMapper {
 		if (entity) {
 			entity.name = model.name;
 			entity.charLimit = model.textField.charLimit;
+			entity.isMandatory = model.isMandatory;
 			return entity;
 		}
 
