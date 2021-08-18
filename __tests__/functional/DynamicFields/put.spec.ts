@@ -38,7 +38,7 @@ describe('Dynamic Fields functional tests', () => {
 					name: 'notes 2',
 					type: 'TextField',
 					textField: { charLimit: 20 },
-					isMandatory: false,
+					isMandatory: true,
 				},
 			},
 		});
@@ -48,7 +48,7 @@ describe('Dynamic Fields functional tests', () => {
 		const updatedField = response.body.data as DynamicFieldModel;
 		expect(updatedField).toEqual({
 			idSigned: field.idSigned,
-			isMandatory: false,
+			isMandatory: true,
 			name: 'notes 2',
 			textField: {
 				charLimit: 20,
@@ -74,7 +74,7 @@ describe('Dynamic Fields functional tests', () => {
 						],
 					},
 					type: 'SelectList',
-					isMandatory: false,
+					// isMandatory: false,
 				},
 			},
 		});
