@@ -2,7 +2,11 @@ import { PgClient } from '../../utils/pgClient';
 import { populateService } from '../../populate/basic';
 import { ServiceResponse } from '../../../src/components/services/service.apicontract';
 import { DynamicFieldModel } from '../../../src/components/dynamicFields/dynamicFields.apicontract';
-import { postSelectListDynamicField, postTextDynamicField, putDynamicField } from './common';
+import {
+	postSelectListDynamicField,
+	postTextDynamicField,
+	putDynamicField
+} from './common';
 
 describe('Dynamic Fields functional tests', () => {
 	const pgClient = new PgClient();
@@ -26,8 +30,8 @@ describe('Dynamic Fields functional tests', () => {
 		done();
 	});
 
-	it('should update text dynamic field', async () => {
-		const addedResponse = await postTextDynamicField({ serviceId: service.id });
+	it('should update text dynamic field (including change to the default value of isMandatory)', async () => {
+		const addedResponse = await postTextDynamicField({ serviceId: service.id }, undefined);
 		const field = addedResponse.body.data as DynamicFieldModel;
 
 		const response = await putDynamicField({
@@ -57,8 +61,8 @@ describe('Dynamic Fields functional tests', () => {
 		});
 	});
 
-	it('should update select list dynamic field', async () => {
-		const addedResponse = await postSelectListDynamicField({ serviceId: service.id });
+	it('should update select list dynamic field (no change to the default value of isMandatory)', async () => {
+		const addedResponse = await postSelectListDynamicField({ serviceId: service.id }, undefined);
 		const field = addedResponse.body.data as DynamicFieldModel;
 
 		const response = await putDynamicField({
@@ -74,7 +78,6 @@ describe('Dynamic Fields functional tests', () => {
 						],
 					},
 					type: 'SelectList',
-					// isMandatory: false,
 				},
 			},
 		});

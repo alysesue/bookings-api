@@ -2,12 +2,12 @@ import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointS
 import * as request from 'request';
 import { DynamicFieldModel } from '../../../src/components/dynamicFields/dynamicFields.apicontract';
 
-export const postTextDynamicField = async ({ serviceId }: { serviceId: number }): Promise<request.Response> => {
+export const postTextDynamicField = async ({ serviceId }: { serviceId: number }, isMandatory: boolean): Promise<request.Response> => {
 	const body = {
 		name: 'notes',
 		type: 'TextField',
 		textField: { charLimit: 15 },
-		isMandatory: true,
+		isMandatory: isMandatory,
 	};
 
 	const endpoint = OrganisationAdminRequestEndpointSG.create({
@@ -17,11 +17,11 @@ export const postTextDynamicField = async ({ serviceId }: { serviceId: number })
 	return await endpoint.post('/dynamicFields', { body });
 };
 
-export const postSelectListDynamicField = async ({ serviceId }: { serviceId: number }): Promise<request.Response> => {
+export const postSelectListDynamicField = async ({ serviceId }: { serviceId: number }, isMandatory: boolean): Promise<request.Response> => {
 	const body = {
 		name: 'options',
 		type: 'SelectList',
-		isMandatory: true,
+		isMandatory: isMandatory,
 		selectList: {
 			options: [
 				{ key: 1, value: 'A' },

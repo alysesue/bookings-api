@@ -28,7 +28,7 @@ describe('Dynamic Fields functional tests', () => {
 	});
 
 	it('should delete text dynamic field', async () => {
-		const addedResponse = await postTextDynamicField({ serviceId: service.id });
+		const addedResponse = await postTextDynamicField({ serviceId: service.id }, undefined);
 		expect((await getDynamicFields({ serviceId })).length).toEqual(1);
 
 		const field = addedResponse.body.data as DynamicFieldModel;
@@ -43,7 +43,7 @@ describe('Dynamic Fields functional tests', () => {
 	});
 
 	it('should delete select list dynamic field', async () => {
-		const addedResponse = await postSelectListDynamicField({ serviceId: service.id });
+		const addedResponse = await postSelectListDynamicField({ serviceId: service.id }, undefined);
 		expect((await getDynamicFields({ serviceId })).length).toEqual(1);
 
 		const field = addedResponse.body.data as DynamicFieldModel;
@@ -58,8 +58,8 @@ describe('Dynamic Fields functional tests', () => {
 	});
 
 	it('should only delete specified field', async () => {
-		const textResponse = await postTextDynamicField({ serviceId: service.id });
-		const selectListResponse = await postSelectListDynamicField({ serviceId: service.id });
+		const textResponse = await postTextDynamicField({ serviceId: service.id }, undefined);
+		const selectListResponse = await postSelectListDynamicField({ serviceId: service.id }, undefined);
 		const textField = textResponse.body.data as DynamicFieldModel;
 		const selectListField = selectListResponse.body.data as DynamicFieldModel;
 
