@@ -91,13 +91,11 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IBookingQueryVisitor {
 	private readonly _alias: string;
 	private readonly _serviceAlias: string;
-	private readonly _createdLogAlias: string;
 
-	constructor(alias: string, serviceAlias: string, createdLogAlias: string) {
+	constructor(alias: string, serviceAlias: string) {
 		super();
 		this._alias = alias;
 		this._serviceAlias = serviceAlias;
-		this._createdLogAlias = createdLogAlias;
 	}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
@@ -108,7 +106,7 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 			});
 		} else {
 			const userId = _anonymousGroup.user.id;
-			this.addAuthCondition(`${this._createdLogAlias}."_userId" = :userId`, {
+			this.addAuthCondition(`${this._alias}."_creatorId" = :userId`, {
 				userId,
 			});
 		}
@@ -161,6 +159,6 @@ export class BookingQueryVisitorFactory {
 		if (byPassAuth) {
 			return new BookingQueryNoAuthVisitor();
 		}
-		return new BookingQueryAuthVisitor('booking', 'service_relation', 'createdLog');
+		return new BookingQueryAuthVisitor('booking', 'service_relation');
 	}
 }

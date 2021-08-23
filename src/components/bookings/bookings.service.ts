@@ -19,6 +19,7 @@ import { BookingActionAuthVisitor } from './bookings.auth';
 import { BookingsValidatorFactory } from './validator/bookings.validation';
 import {
 	BookingAcceptRequestV1,
+	BookingChangeUser,
 	BookingDetailsRequest,
 	BookingReject,
 	BookingRequestV1,
@@ -30,7 +31,7 @@ import { BookingType } from '../../models/bookingType';
 import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
-import { BookingValidationType } from '../../models/bookingValidationType';
+import { BookingValidationType, BookingWorkflowType } from '../../models/bookingValidationType';
 
 @InRequestScope
 export class BookingsService {
@@ -80,16 +81,13 @@ export class BookingsService {
 	public static shouldAutoAccept(
 		currentUser: User,
 		serviceProvider?: ServiceProvider,
-		shouldAutoAccept = false,
 		validationType?: BookingValidationType,
 	): boolean {
 		if (!serviceProvider) {
 			return false;
 		}
 
-		return shouldAutoAccept ||
-			currentUser.isAdmin() ||
-			(currentUser.isAgency() && validationType === BookingValidationType.Admin)
+		return currentUser.isAdmin() || (currentUser.isAgency() && validationType === BookingValidationType.Admin)
 			? true
 			: serviceProvider.autoAcceptBookings;
 	}
@@ -109,29 +107,32 @@ export class BookingsService {
 	}
 
 	public async getBooking(bookingId: number): Promise<Booking> {
-		return this.getBookingInternal(bookingId);
+		return this.getBookingInternal(bookingId, {});
 	}
 
 	public async getBookingByUUID(bookingUUID: string): Promise<Booking> {
 		return this.getBookingInternalByUUID(bookingUUID);
 	}
 
-	private async getBookingInternalByUUID(bookingUUID: string): Promise<Booking> {
+	private async getBookingInternalByUUID(
+		bookingUUID: string,
+		options: { byPassAuth?: boolean } = {},
+	): Promise<Booking> {
 		if (!bookingUUID) {
 			return null;
 		}
-		const booking = await this.bookingsRepository.getBookingByUUID(bookingUUID);
+		const booking = await this.bookingsRepository.getBookingByUUID(bookingUUID, options);
 		if (!booking) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingUUID} not found`);
 		}
 		return booking;
 	}
 
-	private async getBookingInternal(bookingId: number): Promise<Booking> {
+	private async getBookingInternal(bookingId: number, options: { byPassAuth?: boolean }): Promise<Booking> {
 		if (!bookingId) {
 			return null;
 		}
-		const booking = await this.bookingsRepository.getBooking(bookingId);
+		const booking = await this.bookingsRepository.getBooking(bookingId, options);
 		if (!booking) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${bookingId} not found`);
 		}
@@ -287,6 +288,38 @@ export class BookingsService {
 		return [ChangeLogAction.Reject, booking];
 	}
 
+	private static shouldMarkOnHold(request: BookingRequestV1, service: Service, user: User): boolean {
+		if (request.workflowType === BookingWorkflowType.OnHold) return true;
+		if (user.isAdmin() || user.isAgency()) return false;
+		return service.isOnHold || service.isStandAlone;
+	}
+
+	private async updateBookingStatus({
+		request,
+		booking,
+		service,
+		serviceProvider,
+	}: {
+		request: BookingRequestV1;
+		booking: Booking;
+		service: Service;
+		serviceProvider: ServiceProvider;
+	}): Promise<void> {
+		const currentUser = await this.userContext.getCurrentUser();
+		const shouldMarkOnHold = BookingsService.shouldMarkOnHold(request, service, currentUser);
+
+		if (booking.serviceProviderId && !serviceProvider) {
+			throw new Error('Service provided not loaded');
+		}
+
+		if (shouldMarkOnHold) {
+			booking.markOnHold();
+		} else {
+			const autoAccept = BookingsService.shouldAutoAccept(currentUser, serviceProvider, request.validationType);
+			booking.setAutoAccept({ autoAccept });
+		}
+	}
+
 	private async rescheduleInternal(
 		previousBooking: Booking,
 		rescheduleRequest: BookingUpdateRequestV1,
@@ -294,22 +327,14 @@ export class BookingsService {
 		if (!previousBooking.isValidForRescheduling()) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Booking in invalid state for rescheduling');
 		}
-		const currentUser = await this.userContext.getCurrentUser();
 
-		const afterMap = (updatedBooking: Booking, serviceProvider: ServiceProvider) => {
-			const isServiceOnHold = () => {
-				if (currentUser.isAdmin() || currentUser.isAgency()) return false;
-				return updatedBooking.service.isOnHold || updatedBooking.service.isStandAlone;
-			};
-
-			if (isServiceOnHold()) {
-				const HOLD_DURATION_IN_MINS = 10;
-				updatedBooking.status = BookingStatus.OnHold;
-				updatedBooking.onHoldUntil = new Date();
-				updatedBooking.onHoldUntil.setMinutes(updatedBooking.onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
-			} else if (serviceProvider) {
-				updatedBooking.status = BookingsService.getBookingCreationStatus(currentUser, serviceProvider);
-			}
+		const afterMap = async (updatedBooking: Booking): Promise<void> => {
+			await this.updateBookingStatus({
+				booking: updatedBooking,
+				service: updatedBooking.service,
+				serviceProvider: updatedBooking.serviceProvider,
+				request: rescheduleRequest,
+			});
 		};
 
 		return this.updateInternal(previousBooking, rescheduleRequest, afterMap);
@@ -362,7 +387,7 @@ export class BookingsService {
 	private async updateInternal(
 		previousBooking: Booking,
 		bookingRequest: BookingUpdateRequestV1,
-		afterMap: (updatedBooking: Booking, serviceProvider: ServiceProvider) => void | Promise<void>,
+		afterMap: (updatedBooking: Booking) => void | Promise<void>,
 	): Promise<[ChangeLogAction, Booking]> {
 		if (!bookingRequest.citizenUinFinUpdated) {
 			bookingRequest.citizenUinFin = previousBooking.citizenUinFin;
@@ -382,7 +407,7 @@ export class BookingsService {
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
 		});
-		await afterMap(updatedBooking, updatedBooking.serviceProvider);
+		await afterMap(updatedBooking);
 		await validator.validate(updatedBooking);
 		const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
 		await this.loadBookingDependencies(updatedBooking);
@@ -391,16 +416,6 @@ export class BookingsService {
 		updatedBooking.creator = await this.usersService.persistUserIfRequired(currentUser);
 
 		return [changeLogAction, updatedBooking];
-	}
-
-	private static getBookingCreationStatus(
-		currentUser: User,
-		serviceProvider?: ServiceProvider,
-		validationType?: BookingValidationType,
-	): BookingStatus {
-		return this.shouldAutoAccept(currentUser, serviceProvider, undefined, validationType)
-			? BookingStatus.Accepted
-			: BookingStatus.PendingApproval;
 	}
 
 	private async loadBookingDependencies(booking: Booking): Promise<Booking> {
@@ -436,14 +451,7 @@ export class BookingsService {
 		serviceId: number,
 		shouldBypassCaptchaAndAutoAccept = false,
 	): Promise<[ChangeLogAction, Booking]> {
-		const {
-			currentUser,
-			isAdminUser,
-			isAgencyUser,
-			service,
-			isOnHold,
-			isStandAlone,
-		} = await this.bookingRequestExtraction(serviceId);
+		const { currentUser, isAgencyUser, service } = await this.bookingRequestExtraction(serviceId);
 		const useAdminValidator = BookingsService.useAdminValidator(currentUser, bookingRequest.validationType);
 
 		let serviceProvider: ServiceProvider | undefined;
@@ -460,30 +468,26 @@ export class BookingsService {
 			serviceProvider = serviceProviders.length ? serviceProviders[random] : undefined;
 		}
 
-		const isServiceOnHold = () => {
-			if (isAdminUser || isAgencyUser) return false;
-			return isOnHold || isStandAlone;
-		};
-
 		const booking = Booking.createNew({ creator: currentUser });
 		await this.bookingsMapper.mapRequest({ request: bookingRequest, booking, service });
+		booking.serviceProviderId = serviceProvider?.id;
+		booking.serviceProvider = serviceProvider;
 
-		if (isServiceOnHold()) {
-			booking.markOnHold();
+		if (shouldBypassCaptchaAndAutoAccept) {
+			booking.setAutoAccept({ autoAccept: true });
 		} else {
-			const autoAccept = BookingsService.shouldAutoAccept(
-				currentUser,
+			await this.updateBookingStatus({
+				request: bookingRequest,
+				booking,
+				service,
 				serviceProvider,
-				shouldBypassCaptchaAndAutoAccept,
-				bookingRequest.validationType,
-			);
-			booking.setAutoAccept({ autoAccept });
+			});
 		}
+
 		const validator = this.bookingsValidatorFactory.getValidator(useAdminValidator);
 		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || isAgencyUser);
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
-		booking.serviceProvider = serviceProvider;
 		await this.loadBookingDependencies(booking);
 		await validator.validate(booking);
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
@@ -546,6 +550,43 @@ export class BookingsService {
 			action: ExternalAgencyAppointmentJobAction.UPDATE,
 		});
 		return booking;
+	}
+
+	public async changeUser(request: BookingChangeUser): Promise<Booking> {
+		const getBooking = async (): Promise<Booking> => {
+			const booking = await this.bookingsRepository.getBookingByUUID(request.bookingUUID, { byPassAuth: true });
+
+			if (!booking || booking.id !== request.bookingId) {
+				throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Booking ${request.bookingId} not found`);
+			}
+
+			return booking;
+		};
+
+		return await this.changeLogsService.executeAndLogAction(
+			request.bookingId,
+			getBooking,
+			this.changeUserInternal.bind(this),
+		);
+	}
+
+	private async changeUserInternal(booking: Booking): Promise<[ChangeLogAction, Booking]> {
+		const currentUser = await this.userContext.getCurrentUser();
+		const newBooking = booking.clone();
+		if (newBooking.creatorId !== currentUser.id) {
+			if (!newBooking.isValidOnHoldBooking()) {
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+					`Booking ${booking.id} is in invalid state for user change.`,
+				);
+			}
+
+			const user = await this.usersService.persistUserIfRequired(currentUser);
+			newBooking.creator = user;
+			newBooking.creatorId = user.id;
+		}
+
+		await this.bookingsRepository.update(newBooking);
+		return [ChangeLogAction.UpdateUser, newBooking];
 	}
 }
 

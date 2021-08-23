@@ -46,6 +46,8 @@ import { IdHasher } from '../../infrastructure/idHasher';
 import { ServiceProviderResponseModelV1 } from './serviceProviders.apicontract';
 import { TimeslotItemsMapper } from '../timeslotItems/timeslotItems.mapper';
 import { ScheduleFormsMapper } from '../scheduleForms/scheduleForms.mapper';
+import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth';
+import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
 
 @InRequestScope
 @Route('v1/service-providers')
@@ -128,8 +130,8 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Get('')
 	@Security('optional-service')
-	@MOLAuth({ admin: {}, agency: {} })
-	@Response(401, 'Valid authentication types: [admin,agency]')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getServiceProviders(
 		@Header('x-api-service') serviceId?: number,
 		@Query() includeTimeslotsSchedule = false,
@@ -159,8 +161,8 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Get('/count')
 	@Security('optional-service')
-	@MOLAuth({ admin: {}, agency: {} })
-	@Response(401, 'Valid authentication types: [admin,agency]')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getTotalServiceProviders(
 		@Header('x-api-service') serviceId?: number,
 	): Promise<ApiData<TotalServiceProviderResponse>> {
@@ -206,7 +208,8 @@ export class ServiceProvidersController extends Controller {
 	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
 	 */
 	@Get('{spId}')
-	@Response(401, 'Unauthorized')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getServiceProvider(@Path() spId: number): Promise<ApiData<ServiceProviderResponseModelV1>> {
 		const options = { includeTimeslotsSchedule: true, includeScheduleForm: true };
 		const dataModel = await this.serviceProvidersService.getServiceProvider(
@@ -386,8 +389,8 @@ export class ServiceProvidersControllerV2 extends Controller {
 	 */
 	@Get('')
 	@Security('optional-service')
-	@MOLAuth({ admin: {}, agency: {} })
-	@Response(401, 'Valid authentication types: [admin,agency]')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getServiceProviders(
 		@Header('x-api-service') serviceId?: string,
 		@Query() includeTimeslotsSchedule = false,
@@ -418,8 +421,8 @@ export class ServiceProvidersControllerV2 extends Controller {
 	 */
 	@Get('/count')
 	@Security('optional-service')
-	@MOLAuth({ admin: {}, agency: {} })
-	@Response(401, 'Valid authentication types: [admin,agency]')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getTotalServiceProviders(
 		@Header('x-api-service') serviceId?: string,
 	): Promise<ApiData<TotalServiceProviderResponse>> {
@@ -472,7 +475,8 @@ export class ServiceProvidersControllerV2 extends Controller {
 	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
 	 */
 	@Get('{spId}')
-	@Response(401, 'Unauthorized')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getServiceProvider(@Path() spId: string): Promise<ApiData<ServiceProviderResponseModelV2>> {
 		const unsignedSpId = this.idHasher.decode(spId);
 		const options = { includeTimeslotsSchedule: true, includeScheduleForm: true };

@@ -15,6 +15,13 @@ jest.mock('../src/infrastructure/auth/userContext', () => {
 	return { UserContext };
 });
 
+jest.mock('../src/infrastructure/decorators/bookingSGAuth', () => {
+	const decoratorMock = () => {
+		return (target: any, key: string | symbol, descriptor: any) => descriptor;
+	};
+	return { BookingSGAuth: decoratorMock };
+});
+
 jest.mock('../src/core/transactionManager', () => {
 	class TransactionManager {}
 	return { TransactionManager };

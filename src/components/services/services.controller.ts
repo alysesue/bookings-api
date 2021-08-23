@@ -21,6 +21,7 @@ import { ServicesMapper } from './services.mapper';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { TimeslotItemsMapper } from '../timeslotItems/timeslotItems.mapper';
 import { ScheduleFormsMapper } from '../scheduleForms/scheduleForms.mapper';
+import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
 
 @Route('v1/services')
 @Tags('Services')
@@ -79,10 +80,11 @@ export class ServicesController extends Controller {
 	 */
 	@Get()
 	@SuccessResponse(200, 'Ok')
-	@MOLAuth({
+	@BookingSGAuth({
 		admin: {},
 		agency: {},
 		user: { minLevel: MOLUserAuthLevel.L2 },
+		anonymous: { requireOtp: true },
 	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getServices(
@@ -133,8 +135,9 @@ export class ServicesController extends Controller {
 	 * @param includeLabelCategories (Optional) Whether to include categories with labels in the response.
 	 */
 	@Get('{serviceId}')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
 	@SuccessResponse(200, 'Ok')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getService(
 		serviceId: number,
 		@Query() includeTimeslotsSchedule = false,
@@ -285,10 +288,11 @@ export class ServicesControllerV2 extends Controller {
 	 */
 	@Get()
 	@SuccessResponse(200, 'Ok')
-	@MOLAuth({
+	@BookingSGAuth({
 		admin: {},
 		agency: {},
 		user: { minLevel: MOLUserAuthLevel.L2 },
+		anonymous: { requireOtp: true },
 	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
 	public async getServices(
@@ -345,8 +349,9 @@ export class ServicesControllerV2 extends Controller {
 	 * @param includeLabelCategories (Optional) Whether to include categories with labels in the response.
 	 */
 	@Get('{serviceId}')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
 	@SuccessResponse(200, 'Ok')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getService(
 		serviceId: string,
 		@Query() includeTimeslotsSchedule = false,

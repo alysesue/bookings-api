@@ -1,7 +1,9 @@
-import { Body, Controller, Header, Post, Route, SuccessResponse, Tags } from 'tsoa';
+import { Body, Controller, Header, Post, Response, Route, SuccessResponse, Tags } from 'tsoa';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { EncryptionService } from './encryption.service';
+import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
+import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth';
 
 @InRequestScope
 @Route('v1/encryption')
@@ -19,6 +21,7 @@ export class EncryptionController extends Controller {
 	 * e.g. "signature-singpass-user": "true"
 	 */
 	@Post('encrypt')
+	@BookingSGAuth({ bypassAuth: true })
 	@SuccessResponse(200, 'Ok')
 	public async encrypt(
 		@Body() request: any,
@@ -34,7 +37,9 @@ export class EncryptionController extends Controller {
 	 * @param request
 	 */
 	@Post('decrypt')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
 	@SuccessResponse(200, 'Ok')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async decrypt(@Body() request: { data: string }): Promise<ApiData<string>> {
 		return ApiDataFactory.create(await this.encryptionService.decrypt(request.data));
 	}

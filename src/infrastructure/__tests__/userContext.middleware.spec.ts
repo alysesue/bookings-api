@@ -117,49 +117,6 @@ describe('user Context middleware tests', () => {
 		expect(nextMiddleware).toBeCalled();
 	});
 
-	// TODO: enable test
-	// it('should throw error for anonymous user without OtpAddOn cookie', async () => {
-	// 	const containerMiddleware = new ContainerContextMiddleware().build();
-	// 	const userContextMiddleware = new UserContextMiddleware().build();
-
-	// 	const cookieData = { createdAt: new Date(0), trackingId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f' };
-	// 	const anonymous = User.createAnonymousUser({ ...cookieData });
-	// 	BookingSGCookieHelperMock.getCookieValue.mockReturnValue(cookieData);
-	// 	MobileOtpCookieHelperMock.getCookieValue.mockReturnValue(undefined);
-
-	// 	UsersServiceMock.createAnonymousUserFromCookie.mockImplementation(() => Promise.resolve(anonymous));
-	// 	UsersServiceMock.getAnonymousUserRoles.mockReturnValue(Promise.resolve([new AnonymousAuthGroup(anonymous)]));
-
-	// 	const nextMiddleware = jest.fn().mockImplementation(async (ctx: Koa.Context, next: Koa.Next) => {
-	// 		const container = ContainerContextMiddleware.getContainerContext(ctx);
-	// 		const userContext = container.resolve(UserContext);
-	// 		const user = await userContext.getCurrentUser();
-	// 		const another = await userContext.getCurrentUser();
-
-	// 		expect(UsersServiceMock.getOrSaveUserFromHeaders).toBeCalledTimes(1);
-	// 		expect(UsersServiceMock.getAnonymousUserRoles).toBeCalled();
-	// 		expect(user).toBeDefined();
-	// 		expect(user).toBe(another);
-	// 		expect(user.isAnonymous()).toBe(true);
-
-	// 		return await next();
-	// 	});
-
-	// 	const context = buildSampleKoaContext(`${basePath}/somepath`);
-	// 	const asyncTest = async () => {
-	// 		await containerMiddleware(context, () => {
-	// 			return userContextMiddleware(context, () => {
-	// 				return nextMiddleware(context, () => {});
-	// 			});
-	// 		});
-	// 	};
-
-	// 	await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(
-	// 		'"User is not authenticated with mobile otp"',
-	// 	);
-	// 	expect(nextMiddleware).not.toBeCalled();
-	// });
-
 	it('should throw error for user without groups', async () => {
 		const containerMiddleware = new ContainerContextMiddleware().build();
 		const userContextMiddleware = new UserContextMiddleware().build();

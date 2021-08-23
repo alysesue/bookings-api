@@ -18,6 +18,8 @@ import {
 import { StopWatch } from '../../infrastructure/stopWatch';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { LabelOperationFiltering } from '../labels/label.enum';
+import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth';
+import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
 
 @Route('v1/timeslots')
 @Tags('Timeslots')
@@ -50,8 +52,9 @@ export class TimeslotsController extends Controller {
 	 * @param labelTypeOfFiltering (Optional) type of filtering "union" or "intersection" (default: intersection)
 	 */
 	@Get('availability')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
 	@Security('service')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getAvailability(
 		@Query() startDate: Date,
 		@Query() endDate: Date,
@@ -224,8 +227,9 @@ export class TimeslotsControllerV2 extends Controller {
 	 * @param labelIds (Optional) to filter by label
 	 */
 	@Get('availability')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
 	@Security('service')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getAvailability(
 		@Query() startDate: Date,
 		@Query() endDate: Date,

@@ -44,8 +44,10 @@ import {
 	BookingResponseV1,
 	BookingProviderResponseV1,
 	BookingProviderResponseV2,
+	BookingChangeUser,
 } from './bookings.apicontract';
 import { IdHasher } from '../../infrastructure/idHasher';
+import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
 const EXPORT_LIMIT = 5000;
@@ -75,15 +77,16 @@ export class BookingsController extends Controller {
 	 */
 	@Post()
 	@SuccessResponse(201, 'Created')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
 	@Security('service')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async postBooking(
 		@Body() bookingRequest: BookingRequestV1,
 		@Header('x-api-service') serviceId: number,
 	): Promise<ApiData<BookingResponseV1>> {
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
-		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking));
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking, { mapUUID: true }));
 	}
 
 	@Post('bulk')
@@ -120,7 +123,7 @@ export class BookingsController extends Controller {
 	@Post('admin')
 	@SuccessResponse(201, 'Created')
 	@Security('service')
-	@MOLAuth({ admin: {}, agency: {} })
+	@BookingSGAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async postBookingOutOfSlot(
 		@Body() bookingRequest: BookingRequestV1,
@@ -128,7 +131,7 @@ export class BookingsController extends Controller {
 	): Promise<ApiData<BookingResponseV1>> {
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
-		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking));
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking, { mapUUID: true }));
 	}
 
 	/**
@@ -138,14 +141,15 @@ export class BookingsController extends Controller {
 	 * @param rescheduleRequest A new booking request for reschedule
 	 */
 	@Post('{bookingId}/reschedule')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
 	@SuccessResponse(200, 'Accepted')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async reschedule(
 		@Path() bookingId: number,
 		@Body() rescheduleRequest: BookingUpdateRequestV1,
 	): Promise<ApiData<BookingResponseV1>> {
 		const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest);
-		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(rescheduledBooking));
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(rescheduledBooking, { mapUUID: true }));
 	}
 
 	/**
@@ -171,10 +175,29 @@ export class BookingsController extends Controller {
 	 * @param @isInt bookingId The booking id.
 	 */
 	@Post('{bookingId}/cancel')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
 	@SuccessResponse(204, 'Cancelled')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async cancelBooking(@Path() bookingId: number): Promise<void> {
 		await this.bookingsService.cancelBooking(bookingId);
+	}
+
+	/**
+	 * Updates the booking user with the current user. It requires a Booking UUID
+	 *
+	 * @param @isInt bookingId The booking id.
+	 */
+	@Post('{bookingId}/user')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@SuccessResponse(200, 'Ok')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
+	public async changeUser(
+		@Path() bookingId: number,
+		@Body() request: BookingChangeUser,
+	): Promise<ApiData<BookingResponseV1>> {
+		request.bookingId = bookingId;
+		const booking = await this.bookingsService.changeUser(request);
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking, { mapUUID: true }));
 	}
 
 	/**
@@ -279,9 +302,10 @@ export class BookingsController extends Controller {
 	 * @param maxId
 	 */
 	@Get('')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
 	@SuccessResponse(200, 'Ok')
 	@Security('optional-service')
-	@Response(401, 'Valid authentication types: [admin,agency,user]')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	// tslint:disable-next-line: parameters-max-number
 	public async getBookings(
 		@Query() from?: Date,
@@ -325,8 +349,9 @@ export class BookingsController extends Controller {
 	 * @param @isInt bookingId The booking id.
 	 */
 	@Get('{bookingId}')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
 	@SuccessResponse(200, 'Ok')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async getBooking(@Path() bookingId: number): Promise<ApiData<BookingResponseV1>> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking));
@@ -339,8 +364,9 @@ export class BookingsController extends Controller {
 	 * @returns A single booking
 	 */
 	@Get('uuid/{bookingUUID}')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
 	@SuccessResponse(200, 'Ok')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async getBookingByUUID(@Path() bookingUUID: string): Promise<ApiData<BookingResponseV1>> {
 		const booking = await this.bookingsService.getBookingByUUID(bookingUUID);
 		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking));
@@ -397,8 +423,9 @@ export class BookingsController extends Controller {
 	 * @param @isInt bookingId The booking id.
 	 */
 	@Post('{bookingId}/validateOnHold')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
 	@SuccessResponse(200, 'Validated')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async validateOnHoldBooking(
 		@Body() bookingRequest: BookingDetailsRequest,
 		@Path() bookingId: number,
@@ -435,8 +462,9 @@ export class BookingsControllerV2 extends Controller {
 	 */
 	@Post()
 	@SuccessResponse(201, 'Created')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
 	@Security('service')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async postBooking(
 		@Body() bookingRequest: BookingRequestV2,
 		@Header('x-api-service') serviceId: string,
@@ -447,7 +475,7 @@ export class BookingsControllerV2 extends Controller {
 
 		const booking = await this.bookingsService.save(request, unsignedServiceId);
 		this.setStatus(201);
-		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking));
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking, { mapUUID: true }));
 	}
 
 	@Post('bulk')
@@ -488,7 +516,7 @@ export class BookingsControllerV2 extends Controller {
 	@Post('admin')
 	@SuccessResponse(201, 'Created')
 	@Security('service')
-	@MOLAuth({ admin: {}, agency: {} })
+	@BookingSGAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async postBookingOutOfSlot(
 		@Body() bookingRequest: BookingRequestV2,
@@ -500,7 +528,7 @@ export class BookingsControllerV2 extends Controller {
 
 		const booking = await this.bookingsService.save(request, unsignedServiceId);
 		this.setStatus(201);
-		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking));
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking, { mapUUID: true }));
 	}
 
 	/**
@@ -510,9 +538,9 @@ export class BookingsControllerV2 extends Controller {
 	 * @param rescheduleRequest A new booking request for reschedule
 	 */
 	@Post('{bookingId}/reschedule')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
 	@SuccessResponse(200, 'Accepted')
-	@MOLAuth({ user: { minLevel: MOLUserAuthLevel.L2 } })
-	@Response(401, 'Valid authentication types: [citizen]')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async reschedule(
 		@Path() bookingId: string,
 		@Body() rescheduleRequest: BookingUpdateRequestV2,
@@ -522,7 +550,7 @@ export class BookingsControllerV2 extends Controller {
 		const request: BookingUpdateRequestV1 = { ...rescheduleRequest, serviceProviderId: unsignedServiceProviderId };
 
 		const rescheduledBooking = await this.bookingsService.reschedule(unsignedBookingId, request);
-		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(rescheduledBooking));
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(rescheduledBooking, { mapUUID: true }));
 	}
 
 	/**
@@ -551,13 +579,9 @@ export class BookingsControllerV2 extends Controller {
 	 * @param bookingId The booking id.
 	 */
 	@Post('{bookingId}/cancel')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
 	@SuccessResponse(204, 'Cancelled')
-	@MOLAuth({
-		admin: {},
-		agency: {},
-		user: { minLevel: MOLUserAuthLevel.L2 },
-	})
-	@Response(401, 'Valid authentication types: [admin,agency,user]')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async cancelBooking(@Path() bookingId: string): Promise<void> {
 		const unsignedBookingId = this.idHasher.decode(bookingId);
 		await this.bookingsService.cancelBooking(unsignedBookingId);
@@ -674,14 +698,10 @@ export class BookingsControllerV2 extends Controller {
 	 * @param maxId
 	 */
 	@Get('')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
 	@SuccessResponse(200, 'Ok')
 	@Security('optional-service')
-	@MOLAuth({
-		admin: {},
-		agency: {},
-		user: { minLevel: MOLUserAuthLevel.L2 },
-	})
-	@Response(401, 'Valid authentication types: [admin,agency,user]')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	// tslint:disable-next-line: parameters-max-number
 	public async getBookings(
 		@Query() from?: Date,
@@ -732,8 +752,9 @@ export class BookingsControllerV2 extends Controller {
 	 * @param bookingId The booking id.
 	 */
 	@Get('{bookingId}')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
 	@SuccessResponse(200, 'Ok')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async getBooking(@Path() bookingId: string): Promise<ApiData<BookingResponseV2>> {
 		const unsignedBookingId = this.idHasher.decode(bookingId);
 		const booking = await this.bookingsService.getBooking(unsignedBookingId);
@@ -747,8 +768,9 @@ export class BookingsControllerV2 extends Controller {
 	 * @returns A single booking
 	 */
 	@Get('uuid/{bookingUUID}')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
 	@SuccessResponse(200, 'Ok')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async getBookingByUUID(@Path() bookingUUID: string): Promise<ApiData<BookingResponseV2>> {
 		const booking = await this.bookingsService.getBookingByUUID(bookingUUID);
 		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking));
@@ -808,8 +830,9 @@ export class BookingsControllerV2 extends Controller {
 	 * @param bookingId The booking id.
 	 */
 	@Post('{bookingId}/validateOnHold')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
 	@SuccessResponse(200, 'Validated')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async validateOnHoldBooking(
 		@Body() bookingRequest: BookingDetailsRequest,
 		@Path() bookingId: string,

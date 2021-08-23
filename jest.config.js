@@ -34,6 +34,7 @@ const config = {
 		'!**/koaContextStore.middleware.ts',
 		'!**/citizenUserValidation.middleware.ts',
 		'!**/ormconfig.ts',
+		'!**/bookingSGAuth.ts',
 	],
 	coverageDirectory: '<rootDir>/coverage',
 	coverageReporters: ['text'],

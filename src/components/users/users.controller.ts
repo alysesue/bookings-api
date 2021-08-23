@@ -14,6 +14,8 @@ import {
 	MolServiceAdminUserCSV,
 	MolUpsertUsersResult,
 } from './molUsers/molUsers.apicontract';
+import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth';
+import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
 
 @Route('v1/users')
 @Tags('Users')
@@ -30,8 +32,9 @@ export class UsersController extends Controller {
 	 * It returns Unauthorized (401) status code if the user is not logged in.
 	 */
 	@Get('me')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
 	@SuccessResponse(200, 'Ok')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getProfile(): Promise<ApiData<UserProfileResponseV1>> {
 		const user = await this._userContext.getCurrentUser();
 		const groups = await this._userContext.getAuthGroups();
@@ -139,8 +142,9 @@ export class UsersControllerV2 extends Controller {
 	 * It returns Unauthorized (401) status code if the user is not logged in.
 	 */
 	@Get('me')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
 	@SuccessResponse(200, 'Ok')
-	@Response(401, 'Unauthorized')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getProfile(): Promise<ApiData<UserProfileResponseV2>> {
 		const user = await this._userContext.getCurrentUser();
 		const groups = await this._userContext.getAuthGroups();

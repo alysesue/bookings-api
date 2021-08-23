@@ -1,4 +1,4 @@
-import { AnonmymousEndpointSG } from '../../utils/requestEndpointSG';
+import { AnonmymousEndpointSG, TOKEN_COOKIE } from '../../utils/requestEndpointSG';
 import { PgClient } from '../../utils/pgClient';
 
 describe('User Session endpoints', () => {
@@ -21,7 +21,7 @@ describe('User Session endpoints', () => {
 		expect(response.statusCode).toEqual(204);
 		expect(cookie && cookie.length > 0).toBeTruthy();
 
-		const token = AnonmymousEndpointSG.parseBookingSGCookie(response);
+		const token = AnonmymousEndpointSG.parseBookingSGCookie(response, TOKEN_COOKIE);
 		expect(token).toBeDefined();
 	});
 });

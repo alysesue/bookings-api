@@ -1,7 +1,7 @@
 import { BookingStatus } from '../../models';
 import { PagingRequest } from '../../apicontract';
 import { DynamicValueContract, PersistDynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
-import { BookingValidationType } from '../../models/bookingValidationType';
+import { BookingValidationType, BookingWorkflowType } from '../../models/bookingValidationType';
 
 export class BookingAcceptRequestV1 {
 	/**
@@ -40,6 +40,7 @@ export class BookingRequestBase extends BookingDetailsRequest {
 	public captchaToken?: string | null;
 	// default validation type: citizen
 	public validationType?: BookingValidationType | null;
+	public workflowType?: BookingWorkflowType | null;
 }
 
 export class BookingRequestV1 extends BookingRequestBase {
@@ -95,6 +96,11 @@ export class BookingResponseBase {
 	 */
 	sendNotifications: boolean;
 	sendSMSNotifications: boolean;
+
+	/**
+	 * (optional) Retrieves the booking UUID, only when creating or rescheduling a booking.
+	 */
+	public uuid?: string;
 }
 
 export class BookingResponseV1 extends BookingResponseBase {
@@ -140,4 +146,12 @@ export class BookingProviderResponseV1 {
 export class BookingProviderResponseV2 {
 	public id: string;
 	public name: string;
+}
+
+export class BookingChangeUser {
+	/**
+	 * @ignore Value provided in the endpoint path
+	 */
+	public bookingId: number;
+	public bookingUUID: string;
 }

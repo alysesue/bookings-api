@@ -4,6 +4,7 @@ import { OtpSendRequest, OtpSendResponse, OtpVerifyRequest } from './otp.apicont
 import { Controller, Post, Route, Tags, SuccessResponse, Body, Response } from 'tsoa';
 import { Inject } from 'typescript-ioc';
 import { OtpService } from '../otp/otp.service';
+import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
 
 @Route('v1/otp')
 @Tags('Otp')
@@ -14,6 +15,7 @@ export class OtpController extends Controller {
 	private mobileOtpCookieHelper: MobileOtpCookieHelper;
 
 	@Post('send')
+	@BookingSGAuth({ bypassAuth: true })
 	@SuccessResponse(200, 'Success')
 	public async sendOtp(@Body() otpReqBody: OtpSendRequest): Promise<ApiData<OtpSendResponse>> {
 		const otpReqId = await this.otpService.sendOtp(otpReqBody);
@@ -21,6 +23,7 @@ export class OtpController extends Controller {
 	}
 
 	@Post('verify')
+	@BookingSGAuth({ bypassAuth: true })
 	@Response(204, 'Success')
 	public async verifyOtp(@Body() otpVerifyBody: OtpVerifyRequest): Promise<void> {
 		await this.otpService.verifyOtp(otpVerifyBody);

@@ -88,16 +88,16 @@ export class BookingsMapper {
 		return bookingsResult;
 	}
 
-	public async mapDataModelV1(booking: Booking): Promise<BookingResponseV1> {
-		const bookingResponse = await this.mapDataModelBase(booking);
+	public async mapDataModelV1(booking: Booking, { mapUUID }: { mapUUID?: boolean } = {}): Promise<BookingResponseV1> {
+		const bookingResponse = await this.mapDataModelBase(booking, { mapUUID });
 		const bookingId = booking.id;
 		const serviceId = booking.serviceId;
 		const serviceProviderId = booking.serviceProviderId;
 		return { ...bookingResponse, id: bookingId, serviceId, serviceProviderId };
 	}
 
-	public async mapDataModelV2(booking: Booking): Promise<BookingResponseV2> {
-		const bookingResponse = await this.mapDataModelBase(booking);
+	public async mapDataModelV2(booking: Booking, { mapUUID }: { mapUUID?: boolean } = {}): Promise<BookingResponseV2> {
+		const bookingResponse = await this.mapDataModelBase(booking, { mapUUID });
 		const signedBookingId = this.idHasher.encode(booking.id);
 		const signedServiceId = this.idHasher.encode(booking.serviceId);
 		const signedServiceProviderId = this.idHasher.encode(booking.serviceProviderId);
@@ -109,8 +109,8 @@ export class BookingsMapper {
 		};
 	}
 
-	private async mapDataModelBase(booking: Booking): Promise<BookingResponseBase> {
-		return {
+	private async mapDataModelBase(booking: Booking, { mapUUID }: { mapUUID?: boolean }): Promise<BookingResponseBase> {
+		const response: BookingResponseBase = {
 			status: booking.status,
 			createdDateTime: booking.createdLog?.timestamp,
 			startDateTime: booking.startDateTime,
@@ -134,6 +134,11 @@ export class BookingsMapper {
 			sendNotifications: booking.service?.sendNotifications,
 			sendSMSNotifications: booking.service?.sendSMSNotifications,
 		};
+
+		if (mapUUID) {
+			response.uuid = booking.uuid;
+		}
+		return response;
 	}
 
 	public async mapBookingsCSV(bookings: Booking[]): Promise<string> {

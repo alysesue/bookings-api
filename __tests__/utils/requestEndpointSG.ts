@@ -119,7 +119,8 @@ const CITIZEN_HEADERS = {
 	'mol-auth-type': 'USER',
 };
 
-const TOKEN_COOKIE = 'BookingSGToken';
+export const TOKEN_COOKIE = 'BookingSGToken';
+export const OTP_COOKIE = 'MobileOtpAddOn';
 
 export class AgencyRequestEndpointSG extends RequestEndpointSG {
 	public static create = ({
@@ -277,7 +278,7 @@ export class AnonmymousEndpointSG extends RequestEndpointSG {
 	public static create = async ({ serviceId }: { serviceId?: string } = {}): Promise<AnonmymousEndpointSG> => {
 		const apiService = serviceId ? { 'x-api-service': serviceId } : {};
 		const sessionResponse = await AnonmymousEndpointSG.postAnonymousSession();
-		const cookieValue = AnonmymousEndpointSG.parseBookingSGCookie(sessionResponse);
+		const cookieValue = AnonmymousEndpointSG.parseBookingSGCookie(sessionResponse, TOKEN_COOKIE);
 
 		const headers = {
 			...apiService,
@@ -291,7 +292,7 @@ export class AnonmymousEndpointSG extends RequestEndpointSG {
 		return await anonymousSessionRequest.post('/usersessions/anonymous');
 	}
 
-	public static parseBookingSGCookie(response: request.Response): string {
+	public static parseBookingSGCookie(response: request.Response, cookieName: string): string {
 		for (const cookieString of response.headers['set-cookie']) {
 			const splitCookieHeaders = setCookieParser.splitCookiesString(cookieString);
 			const parsedCookies = setCookieParser.parse(splitCookieHeaders, {
@@ -299,14 +300,51 @@ export class AnonmymousEndpointSG extends RequestEndpointSG {
 			});
 
 			// tslint:disable-next-line: tsr-detect-possible-timing-attacks
-			if (parsedCookies.length > 0 && parsedCookies[0].name === TOKEN_COOKIE) {
+			if (parsedCookies.length > 0 && parsedCookies[0].name === cookieName) {
 				return parsedCookies[0].value;
 			}
 		}
+
+		return undefined;
+	}
+
+	public static async sendOTP(): Promise<string | undefined> {
+		const endpoint = new RequestEndpointSG();
+		const request = { mobileNo: '84000000', captchaToken: '' };
+
+		const response = await endpoint.post('/otp/send', { body: request });
+		return response.body?.data?.otpRequestId as string;
+	}
+
+	public static async verifyOTP(params: { otpRequestId: string; otpCode: string }): Promise<request.Response> {
+		const endpoint = new RequestEndpointSG();
+		const request = { ...params, captchaToken: '' };
+
+		return await endpoint.post('/otp/verify', { body: request });
 	}
 
 	private constructor(headers: { [e: string]: string }) {
 		super();
+		this.setHeaders(headers);
+	}
+
+	public async sendAndVerifyOTP(): Promise<void> {
+		const otpRequestId = await AnonmymousEndpointSG.sendOTP();
+		if (!otpRequestId) {
+			throw new Error('[AnonmymousEndpointSG]: Could not send otp');
+		}
+		const verifyResponse = await AnonmymousEndpointSG.verifyOTP({ otpRequestId, otpCode: '111111' });
+		const cookieValue = AnonmymousEndpointSG.parseBookingSGCookie(verifyResponse, OTP_COOKIE);
+		if (!cookieValue) {
+			throw new Error('[AnonmymousEndpointSG]: Could not verify otp');
+		}
+
+		let headers = this.getHeader();
+		headers = {
+			...headers,
+			cookie: `${headers['cookie']};${OTP_COOKIE}=${cookieValue}`,
+		};
+
 		this.setHeaders(headers);
 	}
 }
