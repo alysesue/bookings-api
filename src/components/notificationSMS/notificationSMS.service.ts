@@ -43,7 +43,8 @@ export class NotificationSMSServiceMol extends NotificationSMSService {
 
 @InRequestScope
 export class NotificationSMSServiceLocal extends NotificationSMSService {
-	public send(_sms: SMS): Promise<void> {
+	public send(sms: SMS): Promise<void> {
+		smsLogger.info(`Sending SMS: ${JSON.stringify(sms)}`);
 		return Promise.resolve();
 	}
 }
