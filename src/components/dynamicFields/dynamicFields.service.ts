@@ -36,7 +36,7 @@ export class DynamicFieldsService {
 		const service = await this.servicesService.getService(model.serviceId);
 		await this.verifyActionPermission(service, VisitorCrudAction.Create);
 
-		if (model.isMandatory === undefined || model.isMandatory ===  null) {
+		if (model.isMandatory === undefined || model.isMandatory === null) {
 			model.isMandatory = false;
 		}
 		const entity = this.mapper.mapToEntity(model, null);
