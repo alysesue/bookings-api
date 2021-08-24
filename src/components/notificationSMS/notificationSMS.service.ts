@@ -28,10 +28,12 @@ export class NotificationSMSServiceMol extends NotificationSMSService {
 
 	public async send(sms: SMS): Promise<void> {
 		const header = { 'mol-auth-type': 'SYSTEM', 'mol-token-bypass': 'true' };
-		const path = this.config.molNotification.url + '/sms/api/v1/send-one';
+		// Because this is a hidden API from mol-notification service, there's no public documentation to link to
+		// Link to the controller code is here: https://bitbucket.ship.gov.sg/projects/PUSH/repos/mol-notification/browse/src/sms/sms-controller.ts
+		const path = this.config.molNotification.url + '/sms/api/v2/send-batch';
 		await NotificationSMSService.validatePhone(sms.phoneNumber);
 		try {
-			await post(path, sms, header);
+			await post(path, { sms: [sms] }, header);
 		} catch (e) {
 			smsLogger.error('Error sending sms', e);
 			throw new MOLErrorV2(ErrorCodeV2.SYS_GENERIC).setMessage('Error sending sms').setHttpStatusCode(503); // use 503 Service Unavailable instead of generic 500
