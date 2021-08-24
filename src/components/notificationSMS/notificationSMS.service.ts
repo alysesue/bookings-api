@@ -54,6 +54,6 @@ export class NotificationSMSServiceFactory {
 	private _localService: NotificationSMSServiceLocal;
 
 	public getService(): NotificationSMSService {
-		return getConfig().isLocal ? this._localService : this._molService;
+		return getConfig().smsEnabled ? this._molService : this._localService;
 	}
 }
