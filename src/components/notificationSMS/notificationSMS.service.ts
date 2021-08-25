@@ -2,7 +2,7 @@ import { post } from '../../tools/fetch';
 import { getConfig } from '../../config/app-config';
 import { smsLogger } from '../../config/logger';
 import { InRequestScope, Inject } from 'typescript-ioc';
-import { isSGPhoneNumber } from 'mol-lib-api-contract/utils';
+import { isPhoneNumberWithPrefix } from 'mol-lib-api-contract/utils';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 export type SMSmessage = string;
@@ -16,7 +16,7 @@ export abstract class NotificationSMSService {
 	public abstract send(sms: SMS): Promise<void>;
 
 	public static async validatePhone(phone: string): Promise<void> {
-		if (!(await isSGPhoneNumber(phone)).pass) {
+		if (!(await isPhoneNumberWithPrefix(phone)).pass) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Invalid phone number');
 		}
 	}
