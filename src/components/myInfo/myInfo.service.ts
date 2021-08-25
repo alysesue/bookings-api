@@ -4,6 +4,7 @@ import { User } from '../../models/entities';
 import { logger } from 'mol-lib-common';
 import { getConfig } from '../../config/app-config';
 import { MyInfoResponse } from '../../models/myInfoTypes';
+import { MOLAuthType, MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth';
 
 @InRequestScope
 export class MyInfoService {
@@ -11,7 +12,9 @@ export class MyInfoService {
 		if (!user.isCitizen()) {
 			return undefined;
 		}
-		const header = { 'mol-auth-type': 'SYSTEM' };
+		const header = {
+			[MOLSecurityHeaderKeys.AUTH_TYPE]: MOLAuthType.SYSTEM,
+		};
 		const config = getConfig();
 		const path = config.molRouteMyInfo.url + `/api/v1/info-raw?nric=${user._singPassUser.UinFin}`;
 
