@@ -10,6 +10,7 @@ export const getConfig = () => ({
 	logQueries: ConfigUtils.getValueFromEnv('LOG_QUERIES', 'false') === 'true',
 	isLocal: ConfigUtils.getValueFromEnv('IS_LOCAL', 'false') === 'true',
 	otpEnabled: ConfigUtils.getValueFromEnv('OTP_ENABLED', 'true') === 'true',
+	smsEnabled: ConfigUtils.getValueFromEnv('SMS_ENABLED', 'true') === 'true',
 	isAutomatedTest: ConfigUtils.getValueFromEnv('IS_AUTOMATED_TEST', 'false') === 'true',
 	env: ConfigUtils.getValueFromEnv('NODE_ENV', 'production'),
 	bookingEnv: ConfigUtils.getValueFromEnv('BOOKING_ENV', 'production'),

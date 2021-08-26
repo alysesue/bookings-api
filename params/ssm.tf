@@ -319,3 +319,11 @@ resource "aws_ssm_parameter" "app-url" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "sms-enabled" {
+  name  = "${local.path-prefix}/SMS_ENABLED"
+  type  = "String"
+  value = "${data.external.static.result.SMS_ENABLED}"
+
+  overwrite = true
+}
+
