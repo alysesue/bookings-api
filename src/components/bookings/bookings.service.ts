@@ -484,10 +484,10 @@ export class BookingsService {
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
 		booking.serviceProvider = serviceProvider;
-		booking.serviceProviderId = serviceProvider.id;
 		await this.loadBookingDependencies(booking);
 		await validator.validate(booking);
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
+		booking.serviceProviderId = serviceProvider?.id;
 
 		// Persists in memory user only after validating booking.
 		booking.creator = await this.usersService.persistUserIfRequired(currentUser);
