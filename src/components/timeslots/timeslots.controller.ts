@@ -8,9 +8,11 @@ import { ServiceProviderAuthGroup } from '../../infrastructure/auth/authGroup';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { TimeslotsMapper } from './timeslots.mapper';
 import { TimeslotsService } from './timeslots.service';
-import { AvailabilityEntryResponse, TimeslotEntryResponse, AvailabilityByDayResponse } from './timeslots.apicontract';
+import { AvailabilityByDayResponse, AvailabilityEntryResponse, TimeslotEntryResponse } from './timeslots.apicontract';
 import { StopWatch } from '../../infrastructure/stopWatch';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { LabelOperationFiltering } from '../labels/label.enum';
+
 @Route('v1/timeslots')
 @Tags('Timeslots')
 export class TimeslotsController extends Controller {
@@ -39,6 +41,7 @@ export class TimeslotsController extends Controller {
 	 * @param @isInt serviceProviderId (Optional) Filters timeslots for a specific service provider.
 	 * @param exactTimeslot (Optional) to filter timeslots for the given dates.
 	 * @param labelIds (Optional) to filter by label
+	 * @param labelTypeOfFiltering (Optional) type of filtering "union" or "intersection" (default: intersection)
 	 */
 	@Get('availability')
 	@Security('service')
@@ -50,6 +53,7 @@ export class TimeslotsController extends Controller {
 		@Query() serviceProviderId?: number,
 		@Query() exactTimeslot = false,
 		@Query() labelIds?: string[],
+		@Query() labelOperationFiltering?: LabelOperationFiltering,
 	): Promise<ApiData<AvailabilityEntryResponse[]>> {
 		const labelIdsNumber = labelIds && labelIds.length > 0 ? labelIds.map((id) => this.idHasher.decode(id)) : [];
 
@@ -61,6 +65,7 @@ export class TimeslotsController extends Controller {
 			serviceProviderIds: serviceProviderId ? [serviceProviderId] : undefined,
 			labelIds: labelIdsNumber,
 			filterDaysInAdvance: true,
+			labelOperationFiltering,
 		});
 
 		if (exactTimeslot) {
