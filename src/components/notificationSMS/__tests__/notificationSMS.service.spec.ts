@@ -38,17 +38,17 @@ describe('Test of notification SMS', () => {
 	});
 
 	it('Should call post when sending an sms', async () => {
-		await Container.get(NotificationSMSServiceMol).send({ phoneNumber: '8821 7161', message: '' });
+		await Container.get(NotificationSMSServiceMol).send({ phoneNumber: '+6588217161', message: '' });
 		expect(post).toHaveBeenCalledTimes(1);
 	});
 
-	it('Should failed if international number', async () => {
-		const res = async () => await NotificationSMSService.validatePhone('+44 8821 7160');
+	it("Should fail if there's no country code", async () => {
+		const res = async () => await NotificationSMSService.validatePhone('88217161');
 		await expect(res).rejects.toThrowErrorMatchingInlineSnapshot('"Invalid phone number"');
 	});
 
-	it('Should succeed if Singapore number', async () => {
-		await NotificationSMSService.validatePhone('8821 7161');
-		await NotificationSMSService.validatePhone('+65 8821 7160');
+	it('Should succeed if Singapore or international number', async () => {
+		await NotificationSMSService.validatePhone('+4488217160');
+		await NotificationSMSService.validatePhone('+6588217160');
 	});
 });
