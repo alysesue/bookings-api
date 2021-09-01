@@ -37,16 +37,43 @@ ASSERT_VAR_SCRIPT="${PROJECT_DIR}/node_modules/mol-lib-config/shared-scripts/hel
 export ENV=$1					# Injected by terraform
 source ${ASSERT_VAR_SCRIPT} ENV
 
-export SERVICE_NAME="bookingsg"
+export PROJECT_NAME=${PROJECT_NAME:="bsg"}
+source ${ASSERT_VAR_SCRIPT} PROJECT_NAME
+
+export AWS_DEFAULT_REGION="ap-southeast-1"
+export SERVICE_NAME="api"
 
 # ==============================================================================
 # Script
 # ==============================================================================
 
 # Sync env file from AWS param store
-echo "Generating service env"
-${PROJECT_DIR}/node_modules/mol-lib-config/shared-scripts/aws/aws-sm-sync-env.sh ${ENV}
-sleep 1
+echo "Setting up .env file for ${ENV} environment"
+
+path_prefix=/${PROJECT_NAME}/${ENV}/service/${SERVICE_NAME}/app/
+echo "Fetching parameters for $path_prefix from AWS"
+aws_params=$(aws ssm get-parameters-by-path --with-decryption --recursive --region ap-southeast-1 --path $path_prefix)
+truncate -s 0 .env
+
+# Write parameters into an .env file
+echo "Writing parameters into a .env file"
+for k in $(jq '.Parameters | keys | .[]' <<< "${aws_params}"); do
+    parameter=$(jq -r ".Parameters[$k]" <<< "${aws_params}");
+    key=$(jq -r '.Name' <<< "$parameter");
+    result=$(jq -r '.Value' <<< "$parameter");
+	echo "$key" "=" ${#result} | sed -e s,${path_prefix},,
+    printf "%s=%s\n" "$key" "$result" | sed -e s,${path_prefix},, >> .env
+done
+
+echo ".env file for ${ENV} environment is ready"
+
+# Generate APM config file
+# echo "Generating APM config file"
+# source ${PROJECT_DIR}/node_modules/mol-lib-config/shared-scripts/apm/index.sh ${PROJECT_DIR}/elastic-apm-config.js ${PROJECT_DIR}/.env
+# source ${ASSERT_VAR_SCRIPT} ELASTIC_APM_CONFIG_FILE
+
+echo "Env from terraform"
+echo ${ENV}
 
 # Start node server
 echo "Starting server up"
