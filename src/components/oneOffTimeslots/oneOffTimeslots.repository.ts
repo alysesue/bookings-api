@@ -3,8 +3,9 @@ import { SelectQueryBuilder } from 'typeorm';
 import { RepositoryBase } from '../../core/repository';
 import { OneOffTimeslot } from '../../models';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { andWhere } from '../../tools/queryConditions';
+import { andWhere, orWhere } from '../../tools/queryConditions';
 import { OneOffTimeslotsQueryAuthVisitor } from './oneOffTimeslots.auth';
+import { LabelOperationFiltering } from '../labels/label.enum';
 
 @InRequestScope
 export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
@@ -26,9 +27,12 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 		queryParams: {},
 		options: {
 			byPassAuth?: boolean;
+			queryORFilters?: string[];
+			queryORParams?: {};
 		},
 	): Promise<SelectQueryBuilder<OneOffTimeslot>> {
 		const authGroups = await this.userContext.getAuthGroups();
+		const { queryORFilters = [], queryORParams = {} } = options;
 		const { userCondition, userParams } = options.byPassAuth
 			? { userCondition: '', userParams: {} }
 			: await new OneOffTimeslotsQueryAuthVisitor('serviceProvider', 'SPservice').createUserVisibilityCondition(
@@ -36,9 +40,13 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 			  );
 		const repository = await this.getRepository();
 
+		let whereConditions = andWhere([userCondition, ...queryFilters]);
+		whereConditions += orWhere(queryORFilters).length ? ' AND ' + orWhere(queryORFilters) : '';
+		const whereParam = { ...userParams, ...queryParams, ...queryORParams };
+
 		return repository
 			.createQueryBuilder('timeslot')
-			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
+			.where(whereConditions, whereParam)
 			.leftJoin('timeslot._serviceProvider', 'serviceProvider')
 			.leftJoin('serviceProvider._service', 'SPservice')
 			.leftJoinAndSelect('timeslot._labels', 'label');
@@ -58,8 +66,16 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 		startDateTime?: Date;
 		endDateTime?: Date;
 		labelIds?: number[];
+		labelOperationFiltering?: LabelOperationFiltering;
 	}): Promise<OneOffTimeslot[]> {
-		const { serviceId, serviceProviderIds, startDateTime, endDateTime, labelIds } = request;
+		const {
+			serviceId,
+			serviceProviderIds,
+			startDateTime,
+			endDateTime,
+			labelIds,
+			labelOperationFiltering,
+		} = request;
 
 		const serviceCondition = serviceId ? '"serviceProvider"."_serviceId" = :serviceId' : '';
 		const spCondition =
@@ -80,11 +96,23 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 		if (labelIds && labelIds.length > 0) {
 			labelIds.forEach((labelId, index) => (labelsParam[`label_${index}`] = labelId));
 		}
+		let labelsANDConditions = [];
+		let labelsORConditions = [];
+		let labelsORParams = {};
+		let labelsANDParams = {};
+
+		if (labelOperationFiltering === LabelOperationFiltering.UNION) {
+			labelsORConditions = labelsCondition;
+			labelsORParams = labelsParam;
+		} else {
+			labelsANDConditions = labelsCondition;
+			labelsANDParams = labelsParam;
+		}
 
 		const query = await this.createSelectQuery(
-			[serviceCondition, spCondition, startDateCondition, endDateCondition, ...labelsCondition],
-			{ serviceId, serviceProviderIds, startDateTime, endDateTime, ...labelsParam },
-			request,
+			[serviceCondition, spCondition, startDateCondition, endDateCondition, ...labelsANDConditions],
+			{ serviceId, serviceProviderIds, startDateTime, endDateTime, ...labelsANDParams },
+			{ ...request, queryORFilters: labelsORConditions, queryORParams: labelsORParams },
 		);
 
 		return await query.getMany();

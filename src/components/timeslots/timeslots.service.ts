@@ -21,6 +21,7 @@ import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSche
 import { AggregatorTimeslotProviders, ServiceProvidersLookup } from './aggregatorTimeslotProviders';
 import { TimeslotGenerator } from '../../models/timeslotGenerator';
 import { RequestClock } from '../../infrastructure/requestClock';
+import { LabelOperationFiltering } from '../labels/label.enum';
 
 export class AvailableTimeslotProcessor extends MapProcessor<TimeslotKey, AvailableTimeslotProviders> {}
 
@@ -159,8 +160,16 @@ export class TimeslotsService {
 		includeBookings?: boolean;
 		serviceProviderIds?: number[];
 		labelIds?: number[];
+		labelOperationFiltering?: LabelOperationFiltering;
 	}): Promise<AvailableTimeslotProviders[]> {
-		const { serviceId, includeBookings, serviceProviderIds, labelIds, filterDaysInAdvance } = params;
+		const {
+			serviceId,
+			includeBookings,
+			serviceProviderIds,
+			labelIds,
+			filterDaysInAdvance,
+			labelOperationFiltering,
+		} = params;
 		let range = {
 			start: params.startDateTime,
 			end: params.endDateTime,
@@ -182,6 +191,7 @@ export class TimeslotsService {
 			includeBookings || false,
 			serviceProviderIds,
 			labelIds,
+			labelOperationFiltering,
 		);
 	}
 
@@ -192,6 +202,7 @@ export class TimeslotsService {
 		includeBookings: boolean,
 		serviceProviderIds?: number[],
 		labelIds?: number[],
+		labelOperationFiltering?: LabelOperationFiltering,
 	): Promise<AvailableTimeslotProviders[]> {
 		if (endDateTime < startDateTime) {
 			return [];
@@ -204,6 +215,7 @@ export class TimeslotsService {
 			serviceId,
 			serviceProviderIds,
 			labelIds,
+			labelOperationFiltering,
 		);
 		getAggregatedTimeslotEntriesWatch.stop();
 
@@ -386,6 +398,7 @@ export class TimeslotsService {
 		serviceId: number,
 		serviceProviderIds?: number[],
 		labelIds?: number[],
+		labelOperationFiltering?: LabelOperationFiltering,
 	): Promise<[ServiceProvidersLookup, TimeslotMap<AvailableTimeslotProviders>]> {
 		const serviceProviderLookup = new ServiceProvidersLookup();
 		const aggregator = new AggregatorTimeslotProviders(serviceProviderLookup);
@@ -413,6 +426,7 @@ export class TimeslotsService {
 			endDateTime: maxEndTime,
 			byPassAuth: true,
 			labelIds,
+			labelOperationFiltering,
 		});
 
 		const oneOffTimeslotsLookup = groupByKey(oneOffTimeslots, (e) => e.serviceProviderId);

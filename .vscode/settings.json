@@ -3,14 +3,17 @@
 // The settings in this file will overwrite default and user settings for a project.
 // =============================================================================
 {
-	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"[handlebars]": {
 		"editor.formatOnSave": false
 	},
 	"[sql]": {
 		"editor.formatOnSave": false
 	},
-	"auto-close-tag.activationOnLanguage": ["html", "javascriptreact", "typescriptreact"],
+	"auto-close-tag.activationOnLanguage": [
+		"html",
+		"javascriptreact",
+		"typescriptreact"
+	],
 	"editor.codeActionsOnSave": {
 		"source.fixAll.tslint": true
 	},

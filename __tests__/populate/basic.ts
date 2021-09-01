@@ -31,9 +31,10 @@ export const populateServiceLabel = async ({
 export const populateService = async ({
 	organisation = 'localorg',
 	nameService = 'admin',
+	                                      labels = [],
 }): Promise<ServiceResponse> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post('/services', {
-		body: { name: nameService },
+		body: { name: nameService, labels },
 	});
 	return response.body.data;
 };
@@ -95,16 +96,14 @@ export const setServiceProviderAutoAssigned = async ({
 	return response.body.data;
 };
 
-/**
- * @deprecated Please use populateUserServiceProvider
- *
- */
 export const populateServiceAndServiceProvider = async ({
 	organisation = 'localorg',
 	nameService = 'admin',
 	serviceProviderName = 'sp',
+	labels = [],
+
 }): Promise<{ service: ServiceResponse; serviceProvider: ServiceProviderResponseModel }> => {
-	const service = await populateService({ organisation, nameService });
+	const service = await populateService({ organisation, nameService, labels });
 	await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id.toString() }).post('/service-providers', {
 		body: {
 			serviceProviders: [
