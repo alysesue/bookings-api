@@ -39,7 +39,7 @@ export class SelectListModel {
 
 export class SelectListOptionModel {
 	/**
-	 * @isInt
+	 * @isInt key should not be zero
 	 */
 	public key: number;
 	public value: string;
