@@ -44,7 +44,7 @@ export class DynamicFieldsMapper {
 			);
 		}
 
-		if(model.selectList.options.find((o: SelectListOptionModel) => o.key === 0)) {
+		if (model.selectList.options.find((o: SelectListOptionModel) => o.key === 0)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Select list field must not contain option with key 0.`,
 			);

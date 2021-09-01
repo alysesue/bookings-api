@@ -161,7 +161,10 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		request.name = 'options';
 		request.type = DynamicFieldType.SelectList;
 		request.selectList = new SelectListModel();
-		request.selectList.options = [{ key: 0, value: 'option A' }, { key: 1, value: 'option B' }];
+		request.selectList.options = [
+			{ key: 0, value: 'option A' },
+			{ key: 1, value: 'option B' },
+		];
 		request.isMandatory = true;
 
 		const instance = Container.get(DynamicFieldsMapper);
@@ -176,7 +179,10 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		request.name = 'options';
 		request.type = DynamicFieldType.SelectList;
 		request.selectList = new SelectListModel();
-		request.selectList.options = [{ key: 1, value: 'option A' }, { key: 2, value: 'option B' }];
+		request.selectList.options = [
+			{ key: 1, value: 'option A' },
+			{ key: 2, value: 'option B' },
+		];
 		request.isMandatory = true;
 
 		const instance = Container.get(DynamicFieldsMapper);
