@@ -37,7 +37,7 @@ describe('OTP controller', () => {
 	it('verify OTP for mobile login', async () => {
 		const controller = Container.get(OtpController);
 
-		await controller.verifyOtp(new OtpVerifyRequest('6dd2513a-9679-49d2-b305-94a390d151ad', 111111));
+		await controller.verifyOtp(new OtpVerifyRequest('6dd2513a-9679-49d2-b305-94a390d151ad', '011111'));
 		expect(OtpServiceMock.verifyOtpMock).toBeCalledTimes(1);
 		expect(MobileOtpCookieHelperMock.setCookieValue).toBeCalledTimes(1);
 	});

@@ -83,9 +83,9 @@ describe('verifyOtp()', () => {
 
 		const otpSvc = Container.get(OtpService);
 
-		await expect(async () => otpSvc.verifyOtp(new OtpVerifyRequest('xxx', 111111, 'captchaToken'))).rejects.toThrow(
-			BusinessError.create([BookingBusinessValidations.InvalidCaptchaToken]),
-		);
+		await expect(async () =>
+			otpSvc.verifyOtp(new OtpVerifyRequest('xxx', '111111', 'captchaToken')),
+		).rejects.toThrow(BusinessError.create([BookingBusinessValidations.InvalidCaptchaToken]));
 
 		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
 		expect(OtpRepositoryMock.getNonExpiredOtpMock).not.toBeCalled();
@@ -97,7 +97,7 @@ describe('verifyOtp()', () => {
 		const otpSvc = Container.get(OtpService);
 
 		await expect(
-			async () => await otpSvc.verifyOtp(new OtpVerifyRequest('xxx', 111111, 'captchaToken')),
+			async () => await otpSvc.verifyOtp(new OtpVerifyRequest('xxx', '111111', 'captchaToken')),
 		).rejects.toThrowErrorMatchingInlineSnapshot(`"Invalid otp code."`);
 
 		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
@@ -113,7 +113,7 @@ describe('verifyOtp()', () => {
 		const otpSvc = Container.get(OtpService);
 
 		await expect(
-			async () => await otpSvc.verifyOtp(new OtpVerifyRequest('xxx', 111112, 'captchaToken')),
+			async () => await otpSvc.verifyOtp(new OtpVerifyRequest('xxx', '111112', 'captchaToken')),
 		).rejects.toThrowErrorMatchingInlineSnapshot(`"Invalid otp code."`);
 
 		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
@@ -129,7 +129,7 @@ describe('verifyOtp()', () => {
 		const otpSvc = Container.get(OtpService);
 
 		expect(async () => {
-			await otpSvc.verifyOtp(new OtpVerifyRequest('xxx', 111111, 'captchaToken'));
+			await otpSvc.verifyOtp(new OtpVerifyRequest('xxx', '111111', 'captchaToken'));
 			expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
 			expect(OtpRepositoryMock.getNonExpiredOtpMock).toBeCalledTimes(1);
 		}).not.toThrowError();
