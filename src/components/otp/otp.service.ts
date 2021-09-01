@@ -42,7 +42,7 @@ export class OtpService {
 		}
 
 		const existingOtp = await this.otpRepository.getNonExpiredOtp(request.otpRequestId, OTP_EXPIRY_IN_SECONDS);
-		if (existingOtp === undefined || +existingOtp._value !== request.otpCode) {
+		if (existingOtp === undefined || existingOtp._value !== request.otpCode) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid otp code.`);
 		}
 	}

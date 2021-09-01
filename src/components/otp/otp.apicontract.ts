@@ -17,10 +17,10 @@ export class OtpSendResponse {
 }
 export class OtpVerifyRequest {
 	public otpRequestId: string;
-	public otpCode: number;
+	public otpCode: string;
 	public captchaToken?: string;
 
-	constructor(otpRequestId: string, otpCode: number, captchaToken?: string) {
+	constructor(otpRequestId: string, otpCode: string, captchaToken?: string) {
 		this.otpRequestId = otpRequestId;
 		this.otpCode = otpCode;
 		this.captchaToken = captchaToken;
