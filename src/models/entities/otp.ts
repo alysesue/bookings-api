@@ -24,12 +24,12 @@ export class Otp {
 	@Column()
 	_createdAt: Date;
 
-	static create(mobileNo: string): Otp {
+	static create(mobileNo: string, byPassConfig?: boolean): Otp {
 		const otp = new Otp();
 		otp._requestId = uuid.v4();
 		otp._mobileNo = mobileNo;
 		let otpCode = '';
-		if (getConfig().otpEnabled) {
+		if (!byPassConfig && getConfig().otpEnabled) {
 			for (let i = 0; i < OTP_LENGTH; i++) {
 				const index = Math.floor(Math.random() * OTP_DIGITS.length);
 				otpCode += OTP_DIGITS[index];

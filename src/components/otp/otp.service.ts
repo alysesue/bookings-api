@@ -63,13 +63,13 @@ export class OtpService {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request token.`);
 		}
 
-		if (
-			Date.now() >
-			DateHelper.addMinutes(
-				new Date(cookie.cookieRefreshedAt),
-				this.mobileOtpCookieHelper.getCookieExpiry(),
-			).getTime()
-		) {
+		const now = Date.now();
+		const refreshedDate = DateHelper.addMinutes(
+			new Date(cookie.cookieRefreshedAt),
+			this.mobileOtpCookieHelper.getCookieExpiry(),
+		).getTime();
+
+		if (now > refreshedDate) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request, token expired.`);
 		}
 
