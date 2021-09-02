@@ -1,14 +1,15 @@
 import { Container } from 'typescript-ioc';
 import { UnavailabilitiesRepository } from '../unavailabilities.repository';
 import { UnavailabilitiesService } from '../unavailabilities.service';
-import { UnavailabilityRequest } from '../unavailabilities.apicontract';
+import { UnavailabilityRequestV1 } from '../unavailabilities.apicontract';
 import { Service, ServiceProvider, Unavailability, User } from '../../../models';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { UserContext } from '../../../infrastructure/auth/userContext';
-import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { UnavailabilitiesActionAuthVisitor } from '../unavailabilities.auth';
-import { ServicesRepository } from '../../../components/services/services.repository';
+import { ServicesRepository } from '../../services/services.repository';
+import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
 
 jest.mock('../unavailabilities.auth');
@@ -82,7 +83,7 @@ describe('Unavailabilities service tests', () => {
 		entity.id = 1;
 		UnavailabilitiesRepositoryMock.save.mockReturnValue(Promise.resolve(entity));
 
-		const request = new UnavailabilityRequest();
+		const request = new UnavailabilityRequestV1();
 		request.serviceId = service.id;
 		request.startTime = new Date('2020-01-01');
 		request.endTime = new Date('2020-01-02');
@@ -98,7 +99,7 @@ describe('Unavailabilities service tests', () => {
 		entity.id = 1;
 		UnavailabilitiesRepositoryMock.save.mockReturnValue(Promise.resolve(entity));
 
-		const request = new UnavailabilityRequest();
+		const request = new UnavailabilityRequestV1();
 		request.serviceId = 1;
 		request.startTime = new Date('2020-01-02');
 		request.endTime = new Date('2020-01-01');
@@ -118,7 +119,7 @@ describe('Unavailabilities service tests', () => {
 		entity.id = 1;
 		UnavailabilitiesRepositoryMock.save.mockReturnValue(Promise.resolve(entity));
 
-		const request = new UnavailabilityRequest();
+		const request = new UnavailabilityRequestV1();
 		request.serviceId = 1;
 		request.startTime = new Date('2020-01-01');
 		request.endTime = new Date('2020-01-02');
@@ -143,7 +144,7 @@ describe('Unavailabilities service tests', () => {
 		spB.id = 2;
 		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([spA, spB]));
 
-		const request = new UnavailabilityRequest();
+		const request = new UnavailabilityRequestV1();
 		request.serviceId = 1;
 		request.startTime = new Date('2020-01-01');
 		request.endTime = new Date('2020-01-02');
@@ -240,19 +241,5 @@ class ServicesRepositoryMock implements Partial<ServicesRepository> {
 
 	public async getService(...params): Promise<any> {
 		return await ServicesRepositoryMock.getService(...params);
-	}
-}
-
-export class UserContextMock implements Partial<UserContext> {
-	public static getCurrentUser = jest.fn<Promise<User>, any>();
-	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
-
-	public init() {}
-	public async getCurrentUser(...params): Promise<any> {
-		return await UserContextMock.getCurrentUser(...params);
-	}
-
-	public async getAuthGroups(...params): Promise<any> {
-		return await UserContextMock.getAuthGroups(...params);
 	}
 }

@@ -4,11 +4,7 @@ import {
 	LabelCategoryResponseModel,
 } from '../labelsCategories/labelsCategories.apicontract';
 
-export class ServiceResponse {
-	/**
-	 * @isInt
-	 */
-	public id: number;
+export class ServiceResponseBase {
 	public name: string;
 	public isSpAutoAssigned: boolean;
 	public noNric: boolean;
@@ -33,14 +29,21 @@ export class ServiceResponse {
 	public maxDaysInAdvance?: number | null;
 }
 
-export class ServiceRequest {
-	public name: string;
-	public isSpAutoAssigned?: boolean;
-	public noNric?: boolean;
+export class ServiceResponseV1 extends ServiceResponseBase {
 	/**
 	 * @isInt
 	 */
-	public organisationId?: number;
+	public id: number;
+}
+
+export class ServiceResponseV2 extends ServiceResponseBase {
+	public id: string;
+}
+
+export class ServiceRequestBase {
+	public name: string;
+	public isSpAutoAssigned?: boolean;
+	public noNric?: boolean;
 	public labels?: LabelRequestModel[];
 	public categories?: LabelCategoryRequestModel[];
 	public emailSuffix?: string | null;
@@ -56,6 +59,17 @@ export class ServiceRequest {
 	 * @isInt (Optional) Citizens can only make a booking up to X days in advance. No more than this.
 	 */
 	public maxDaysInAdvance?: number | null;
+}
+
+export class ServiceRequestV1 extends ServiceRequestBase {
+	/**
+	 * @isInt
+	 */
+	public organisationId?: number;
+}
+
+export class ServiceRequestV2 extends ServiceRequestBase {
+	public organisationId?: string;
 }
 
 export class PartialAdditionalSettings {

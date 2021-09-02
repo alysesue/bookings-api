@@ -135,26 +135,35 @@ type BookingJsonVersion = {
 	schemaVersion: number;
 };
 
-export type BookingJsonSchemaV1 = {
-	id?: number;
-	status?: number;
-	startDateTime?: Date;
-	endDateTime?: Date;
-	serviceId?: number;
-	serviceName?: string;
-	serviceProviderId?: number;
-	serviceProviderAgencyUserId?: string;
-	serviceProviderName?: string;
-	serviceProviderEmail?: string;
-	serviceProviderPhone?: string;
-	citizenUinFin?: string;
-	citizenName?: string;
-	citizenEmail?: string;
-	citizenPhone?: string;
-	location?: string;
-	description?: string;
-	videoConferenceUrl?: string;
-	refId?: string;
-	dynamicValues?: DynamicValueJsonModel[];
-	serviceProviderAliasName?: string;
-};
+class BookingJsonSchemaBase {
+	public status?: number;
+	public startDateTime?: Date;
+	public endDateTime?: Date;
+	public serviceName?: string;
+	public serviceProviderAgencyUserId?: string;
+	public serviceProviderName?: string;
+	public serviceProviderEmail?: string;
+	public serviceProviderPhone?: string;
+	public citizenUinFin?: string;
+	public citizenName?: string;
+	public citizenEmail?: string;
+	public citizenPhone?: string;
+	public location?: string;
+	public description?: string;
+	public videoConferenceUrl?: string;
+	public refId?: string;
+	public dynamicValues?: DynamicValueJsonModel[];
+	public serviceProviderAliasName?: string;
+}
+
+export class BookingJsonSchemaV1 extends BookingJsonSchemaBase {
+	public id?: number;
+	public serviceId?: number;
+	public serviceProviderId?: number;
+}
+
+export class BookingJsonSchemaV2 extends BookingJsonSchemaBase {
+	public id?: string;
+	public serviceId?: string;
+	public serviceProviderId?: string;
+}

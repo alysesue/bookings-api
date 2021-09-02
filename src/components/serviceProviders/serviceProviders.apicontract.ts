@@ -1,5 +1,5 @@
-import { TimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.apicontract';
-import { ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
+import { TimeslotsScheduleResponseV1, TimeslotsScheduleResponseV2 } from '../timeslotItems/timeslotItems.apicontract';
+import { ScheduleFormResponseV1, ScheduleFormResponseV2 } from '../scheduleForms/scheduleForms.apicontract';
 
 export class ServiceProviderModel {
 	public name: string;
@@ -26,37 +26,27 @@ export class ServiceProviderModel {
 	}
 }
 
-export type MolServiceProviderOnboardContract = {
-	name: string;
-	email?: string;
-	phoneNumber?: string;
-	agencyUserId?: string;
-	uinfin?: string;
-	serviceName: string;
-	autoAcceptBookings?: boolean;
-};
-
-export type MolServiceProviderWithGroups = MolServiceProviderOnboardContract & {
-	groups: string[];
-};
-
-export type MolServiceProviderOnboard = MolServiceProviderWithGroups & {
-	username: string;
-	molAdminId: string;
-};
-
-export class ServiceProviderResponseModel {
-	/**
-	 * @isInt
-	 */
-	public id: number;
+export class MolServiceProviderOnboardContract {
 	public name: string;
-	/**
-	 * @isInt
-	 */
-	public serviceId: number;
-	public timeslotsSchedule?: TimeslotsScheduleResponse;
-	public scheduleForm?: ScheduleFormResponse;
+	public email?: string;
+	public phoneNumber?: string;
+	public agencyUserId?: string;
+	public uinfin?: string;
+	public serviceName: string;
+	public autoAcceptBookings?: boolean;
+}
+
+export class MolServiceProviderWithGroups extends MolServiceProviderOnboardContract {
+	public groups: string[];
+}
+
+export class MolServiceProviderOnboard extends MolServiceProviderWithGroups {
+	public username: string;
+	public molAdminId: string;
+}
+
+export class ServiceProviderResponseModelBase {
+	public name: string;
 	public email?: string;
 	public phone?: string;
 	public agencyUserId?: string;
@@ -67,6 +57,26 @@ export class ServiceProviderResponseModel {
 	public aliasName?: string;
 }
 
+export class ServiceProviderResponseModelV1 extends ServiceProviderResponseModelBase {
+	/**
+	 * @isInt
+	 */
+	public id: number;
+	/**
+	 * @isInt
+	 */
+	public serviceId: number;
+	public timeslotsSchedule?: TimeslotsScheduleResponseV1;
+	public scheduleForm?: ScheduleFormResponseV1;
+}
+
+export class ServiceProviderResponseModelV2 extends ServiceProviderResponseModelBase {
+	public id: string;
+	public serviceId: string;
+	public timeslotsSchedule?: TimeslotsScheduleResponseV2;
+	public scheduleForm?: ScheduleFormResponseV2;
+}
+
 export class ServiceProviderListRequest {
 	public serviceProviders: ServiceProviderModel[];
 }
@@ -75,14 +85,28 @@ export class TotalServiceProviderResponse {
 	public total: number;
 }
 
-export class ServiceProviderSummaryModel {
+export class ServiceProviderSummaryModelBase {
+	public name: string;
+}
+
+export class ServiceProviderSummaryModelV1 extends ServiceProviderSummaryModelBase {
 	/**
 	 * @isInt
 	 */
 	public id: number;
-	public name: string;
 
 	constructor(id: number, name: string) {
+		super();
+		this.id = id;
+		this.name = name;
+	}
+}
+
+export class ServiceProviderSummaryModelV2 extends ServiceProviderSummaryModelBase {
+	public id: string;
+
+	constructor(id: string, name: string) {
+		super();
 		this.id = id;
 		this.name = name;
 	}

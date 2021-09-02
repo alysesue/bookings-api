@@ -1,9 +1,9 @@
 import { OrganisationsNoauthRepository } from '../organisations.noauth.repository';
 import { Container } from 'typescript-ioc';
 import { AsyncFunction, TransactionManager } from '../../../core/transactionManager';
-import { Organisation } from '../../../models/entities/organisation';
+import { Organisation } from '../../../models/entities';
 import { OrganisationsService } from '../organisations.service';
-import { OrganisationAdminGroupMap } from '../../../models/entities/organisationAdminGroupMap';
+import { OrganisationAdminGroupMap } from '../../../models/entities';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 import { OrganisationsRepositoryMock } from '../__mocks__/organisations.noauth.repository.mock';

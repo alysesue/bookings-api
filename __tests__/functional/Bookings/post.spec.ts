@@ -12,15 +12,15 @@ import {
 	populateWeeklyTimesheet,
 	setServiceProviderAutoAssigned,
 } from '../../populate/basic';
-import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import * as request from 'request';
 import { BookingStatus } from '../../../src/models';
 import { PersistDynamicValueContract } from '../../../src/components/dynamicFields/dynamicValues.apicontract';
 import { DynamicValueTypeContract } from '../../../src/components/dynamicFields/dynamicValues.apicontract';
 import { IdHasherForFunctional } from '../../utils/idHashingUtil';
-import { BookingResponse } from '../../../src/components/bookings/bookings.apicontract';
-import { BookingChangeLogResponse } from '../../../src/components/bookingChangeLogs/bookingChangeLogs.apicontract';
-import { ServiceResponse } from '../../../src/components/services/service.apicontract';
+import {ServiceProviderResponseModelV1} from "../../../src/components/serviceProviders/serviceProviders.apicontract";
+import {ServiceResponseV1} from "../../../src/components/services/service.apicontract";
+import {BookingResponseV1} from "../../../src/components/bookings/bookings.apicontract";
+import {BookingChangeLogResponseV1} from "../../../src/components/bookingChangeLogs/bookingChangeLogs.apicontract";
 
 // tslint:disable-next-line: no-big-function
 describe('Bookings functional tests', () => {
@@ -34,8 +34,8 @@ describe('Bookings functional tests', () => {
 	const citizenName = 'Jane';
 	const citizenEmail = 'jane@email.com';
 
-	let serviceProvider: ServiceProviderResponseModel;
-	let service: ServiceResponse;
+	let serviceProvider: ServiceProviderResponseModelV1;
+	let service: ServiceResponseV1;
 	let serviceId: number;
 	let serviceIdStr: string;
 
@@ -268,7 +268,7 @@ describe('Bookings functional tests', () => {
 		});
 		const response = await postCitizenBookingWithStartEndDateOnly(true, false);
 		expect(response.statusCode).toEqual(201);
-		const booking = response.body.data as BookingResponse;
+		const booking = response.body.data as BookingResponseV1;
 		expect(booking.videoConferenceUrl).toEqual('http://www.zoom.us/7654321');
 	});
 
@@ -278,14 +278,14 @@ describe('Bookings functional tests', () => {
 		});
 		const response = await postCitizenBookingWithVideoConferenceURL();
 		expect(response.statusCode).toEqual(201);
-		const booking = response.body.data as BookingResponse;
+		const booking = response.body.data as BookingResponseV1;
 		expect(booking.videoConferenceUrl).toEqual('http://www.zoom.us/1234567');
 	});
 
 	it('should make a booking with dynamic values', async () => {
 		const response = await postCitizenBookingWithDynamicFields();
 		expect(response.statusCode).toEqual(201);
-		const booking = response.body.data as BookingResponse;
+		const booking = response.body.data as BookingResponseV1;
 		expect(booking?.dynamicValues?.length).toEqual(1);
 		expect(booking.dynamicValues[0].fieldIdSigned).toEqual(dynamicFieldId);
 	});
@@ -293,7 +293,7 @@ describe('Bookings functional tests', () => {
 	it('should create a booking log with dynamic values', async () => {
 		const response = await postCitizenBookingWithDynamicFields();
 		expect(response.statusCode).toEqual(201);
-		const booking = response.body.data as BookingResponse;
+		const booking = response.body.data as BookingResponseV1;
 
 		const changedUntil = new Date(new Date(booking.createdDateTime).getTime() + 1000 * 60);
 		const changeLogResponse = await getChangeLogs({
@@ -303,7 +303,7 @@ describe('Bookings functional tests', () => {
 		});
 		expect(changeLogResponse.statusCode).toEqual(200);
 
-		const changeLogs = changeLogResponse.body.data as BookingChangeLogResponse[];
+		const changeLogs = changeLogResponse.body.data as BookingChangeLogResponseV1[];
 		expect(changeLogs.length).toEqual(1);
 		expect(changeLogs[0]).toEqual({
 			bookingId: booking.id,

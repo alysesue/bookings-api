@@ -23,7 +23,7 @@ import { LabelsMapper } from '../labels/labels.mapper';
 import { LabelsCategoriesMapper } from '../labelsCategories/labelsCategories.mapper';
 import { ServicesMapper } from './services.mapper';
 import { ServicesActionAuthVisitor } from './services.auth';
-import { ServiceRequest } from './service.apicontract';
+import { ServiceRequestV1 } from './service.apicontract';
 import { ServicesRepository } from './services.repository';
 import { ContainerContext } from '../../infrastructure/containerContext';
 import { ServicesValidation } from './services.validation';
@@ -54,6 +54,8 @@ export class ServicesService {
 	private containerContext: ContainerContext;
 	@Inject
 	private categoriesMapper: LabelsCategoriesMapper;
+	@Inject
+	private servicesMapper: ServicesMapper;
 
 	private getValidator(): ServicesValidation {
 		return this.containerContext.resolve(ServicesValidation);
@@ -111,7 +113,7 @@ export class ServicesService {
 		return res;
 	}
 
-	public async createService(request: ServiceRequest): Promise<Service> {
+	public async createService(request: ServiceRequestV1): Promise<Service> {
 		const validator = this.getValidator();
 		request.name = request.name?.trim();
 
@@ -122,7 +124,7 @@ export class ServicesService {
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
 		const mapToCategories = this.categoriesMapper.mapToCategories(request.categories);
 		const service = Service.create(request.name, orga, transformedLabels, mapToCategories);
-		ServicesMapper.mapToEntity(service, request);
+		this.servicesMapper.mapToEntityV1(service, request);
 
 		await validator.validate(service);
 		await this.verifyActionPermission(service, CrudAction.Create);
@@ -137,7 +139,7 @@ export class ServicesService {
 		return await this.getService(service.id, { includeLabels: true, includeLabelCategories: true });
 	}
 
-	public async updateService(id: number, request: ServiceRequest): Promise<Service> {
+	public async updateService(id: number, request: ServiceRequestV1): Promise<Service> {
 		const validator = this.getValidator();
 		const service = await this.servicesRepository.getService({
 			id,
@@ -146,7 +148,7 @@ export class ServicesService {
 		});
 
 		await validator.validateServiceFound(service);
-		ServicesMapper.mapToEntity(service, request);
+		this.servicesMapper.mapToEntityV1(service, request);
 
 		await validator.validate(service);
 		await this.verifyActionPermission(service, CrudAction.Update);

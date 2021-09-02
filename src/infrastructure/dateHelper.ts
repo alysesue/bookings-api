@@ -26,8 +26,7 @@ export class DateHelper {
 	}
 
 	public static addHours(date: Date, hours: number): Date {
-		const newDate = new Date(date.getTime() + hours * DateHelper.MsPerHour);
-		return newDate;
+		return new Date(date.getTime() + hours * DateHelper.MsPerHour);
 	}
 
 	public static addDays(date: Date, days: number) {

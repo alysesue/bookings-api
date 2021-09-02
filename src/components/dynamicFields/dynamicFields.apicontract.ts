@@ -12,15 +12,11 @@ export class DynamicFieldModel {
 	public isMandatory: boolean;
 }
 
-export class PersistDynamicFieldModel {
+export class PersistDynamicFieldModelBase {
 	/**
 	 * @ignore
 	 */
 	public idSigned?: string;
-	/**
-	 * @ignore
-	 */
-	public serviceId?: number;
 	public name: string;
 	public type: DynamicFieldType;
 	public selectList?: SelectListModel;
@@ -29,6 +25,20 @@ export class PersistDynamicFieldModel {
 	 * default is false
 	 */
 	public isMandatory?: boolean;
+}
+
+export class PersistDynamicFieldModelV1 extends PersistDynamicFieldModelBase {
+	/**
+	 * @ignore
+	 */
+	public serviceId?: number;
+}
+
+export class PersistDynamicFieldModelV2 extends PersistDynamicFieldModelBase {
+	/**
+	 * @ignore
+	 */
+	public serviceId?: string;
 }
 
 // Classes that represent the metadata (definition) of a dynamic field

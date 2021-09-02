@@ -3,7 +3,7 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import {
 	DynamicFieldModel,
 	DynamicFieldType,
-	PersistDynamicFieldModel,
+	PersistDynamicFieldModelV1,
 	SelectListModel,
 	SelectListOptionModel,
 	TextFieldModel,
@@ -37,7 +37,10 @@ export class DynamicFieldsMapper {
 		}
 	}
 
-	private mapToSelectListField(model: PersistDynamicFieldModel, entity: SelectListDynamicField | null): DynamicField {
+	private mapToSelectListField(
+		model: PersistDynamicFieldModelV1,
+		entity: SelectListDynamicField | null,
+	): DynamicField {
 		if (!model.selectList?.options?.length) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Select list field must contain at least one option.`,
@@ -57,7 +60,7 @@ export class DynamicFieldsMapper {
 		return SelectListDynamicField.create(model.serviceId, model.name, options, model.isMandatory);
 	}
 
-	private mapToTextField(model: PersistDynamicFieldModel, entity: TextDynamicField | null): DynamicField {
+	private mapToTextField(model: PersistDynamicFieldModelV1, entity: TextDynamicField | null): DynamicField {
 		if (!model.textField?.charLimit) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Text field char limit must be at least 1.`);
 		}
@@ -72,7 +75,7 @@ export class DynamicFieldsMapper {
 		return TextDynamicField.create(model.serviceId, model.name, model.textField.charLimit, model.isMandatory);
 	}
 
-	public mapToEntity(model: PersistDynamicFieldModel, entity: DynamicField | null): DynamicField {
+	public mapToEntity(model: PersistDynamicFieldModelV1, entity: DynamicField | null): DynamicField {
 		if (entity) {
 			const valid = this.checkExpectedEntityType(model.type, entity);
 			if (!valid) {

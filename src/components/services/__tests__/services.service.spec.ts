@@ -1,6 +1,6 @@
 import { Container } from 'typescript-ioc';
 import { ServicesService } from '../services.service';
-import { ServiceRequest } from '../service.apicontract';
+import { ServiceRequestV1 } from '../service.apicontract';
 import {
 	Label,
 	Organisation,
@@ -40,9 +40,9 @@ import { AsyncFunction, TransactionManager } from '../../../core/transactionMana
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { ServicesRepositoryMock } from '../__mocks__/services.repository.mock';
-import { TimeslotItemsServiceMock } from '../../../components/timeslotItems/__mocks__/timeslotItems.service.mock';
-import { ScheduleFormsServiceMock } from '../../../components/scheduleForms/__mocks__/scheduleForms.service.mock';
-import { OrganisationsRepositoryMock } from '../../../components/organisations/__mocks__/organisations.noauth.repository.mock';
+import { TimeslotItemsServiceMock } from '../../timeslotItems/__mocks__/timeslotItems.service.mock';
+import { ScheduleFormsServiceMock } from '../../scheduleForms/__mocks__/scheduleForms.service.mock';
+import { OrganisationsRepositoryMock } from '../../organisations/__mocks__/organisations.noauth.repository.mock';
 
 jest.mock('../services.auth');
 jest.mock('../services.repository', () => {
@@ -193,7 +193,7 @@ describe('Services service tests', () => {
 	});
 
 	it('should throw invalid URL error', async () => {
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		request.name = 'John';
 		request.organisationId = 1;
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
@@ -213,7 +213,7 @@ describe('Services service tests', () => {
 	});
 
 	it('(a) should save service', async () => {
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		request.name = 'John';
 		request.organisationId = 1;
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
@@ -239,7 +239,7 @@ describe('Services service tests', () => {
 	});
 
 	it('should not create a service with existing name', async () => {
-		const existingService = new ServiceRequest();
+		const existingService = new ServiceRequestV1();
 		existingService.organisationId = 1;
 		existingService.labels = [];
 		existingService.name = 'bookingsg';
@@ -248,7 +248,7 @@ describe('Services service tests', () => {
 			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
 		);
 		await Container.get(ServicesService).createService(existingService);
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		request.name = 'bookingsg';
 		request.organisationId = 1;
 
@@ -256,7 +256,7 @@ describe('Services service tests', () => {
 	});
 
 	it('should NOT save service without permission', async () => {
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		request.name = 'John';
 		request.organisationId = 1;
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
@@ -273,7 +273,7 @@ describe('Services service tests', () => {
 	});
 
 	it('should save service & set SpAutoAssigned', async () => {
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		request.name = 'John';
 		request.organisationId = 1;
 		request.isSpAutoAssigned = true;
@@ -288,7 +288,7 @@ describe('Services service tests', () => {
 	});
 
 	it('should save service with additional settings (optional settings)', async () => {
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		request.name = 'John';
 		request.organisationId = 1;
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
@@ -314,7 +314,7 @@ describe('Services service tests', () => {
 	});
 
 	it('should save service with EMPTY additional settings (optional settings)', async () => {
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		request.name = 'John';
 		request.organisationId = 1;
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
@@ -334,7 +334,7 @@ describe('Services service tests', () => {
 		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(newService));
 		ServicesRepositoryMock.save.mockImplementation(() => Promise.resolve(newService));
 
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		request.name = 'John';
 		request.organisationId = 1;
 		request.isSpAutoAssigned = true;
@@ -358,7 +358,7 @@ describe('Services service tests', () => {
 		ServicesRepositoryMock.save.mockImplementation(() => Promise.resolve(newService));
 		visitorObject.hasPermission.mockReturnValue(false);
 
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		request.name = 'John';
 		request.organisationId = 1;
 		request.isSpAutoAssigned = true;
@@ -378,7 +378,7 @@ describe('Services service tests', () => {
 		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(newService));
 		ServicesRepositoryMock.save.mockImplementation(() => Promise.resolve(newService));
 
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		request.name = 'John';
 		request.organisationId = 1;
 		request.emailSuffix = 'def.com';
@@ -405,7 +405,7 @@ describe('Services service tests', () => {
 
 	it('should throw if service not found', async () => {
 		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(undefined));
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		request.name = 'John';
 
 		await expect(async () => await Container.get(ServicesService).updateService(1, request)).rejects.toThrowError();
@@ -504,7 +504,7 @@ describe('Services service tests', () => {
 	});
 
 	it('should throw Service name is empty', async () => {
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		request.name = '   ';
 		await expect(async () => await Container.get(ServicesService).createService(request)).rejects.toThrowError();
 	});
@@ -526,7 +526,7 @@ describe('Services service tests', () => {
 	});
 
 	it('should create labels', async () => {
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		request.name = 'John';
 		request.organisationId = 1;
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
@@ -549,7 +549,7 @@ describe('Services service tests', () => {
 		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(newService));
 		ServicesRepositoryMock.save.mockImplementation(() => Promise.resolve(newService));
 
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		request.name = 'Service A';
 		request.labels = [{ label: 'Tamil' }];
 		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(newService));

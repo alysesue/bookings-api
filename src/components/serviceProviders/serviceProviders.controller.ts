@@ -19,12 +19,17 @@ import {
 import { MOLAuth } from 'mol-lib-common';
 import {
 	TimeslotItemRequest,
-	TimeslotItemResponse,
-	TimeslotsScheduleResponse,
+	TimeslotItemResponseV1,
+	TimeslotItemResponseV2,
+	TimeslotsScheduleResponseV1,
+	TimeslotsScheduleResponseV2,
 } from '../timeslotItems/timeslotItems.apicontract';
-import { mapToTimeslotItemResponse, mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
-import { ScheduleFormRequest, ScheduleFormResponse } from '../scheduleForms/scheduleForms.apicontract';
-import { mapToResponse as mapScheduleToResponse } from '../scheduleForms/scheduleForms.mapper';
+import {
+	ScheduleFormRequest,
+	ScheduleFormResponseV1,
+	ScheduleFormResponseV2,
+} from '../scheduleForms/scheduleForms.apicontract';
+// import { mapToResponse as mapScheduleToResponse } from '../scheduleForms/scheduleForms.mapper';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { parseCsv } from '../../tools/csvParser';
 import { ServicesService } from '../services/services.service';
@@ -34,9 +39,13 @@ import { ServiceProvidersService } from './serviceProviders.service';
 import {
 	ServiceProviderListRequest,
 	ServiceProviderModel,
-	ServiceProviderResponseModel,
+	ServiceProviderResponseModelV2,
 	TotalServiceProviderResponse,
 } from './serviceProviders.apicontract';
+import { IdHasher } from '../../infrastructure/idHasher';
+import { ServiceProviderResponseModelV1 } from './serviceProviders.apicontract';
+import { TimeslotItemsMapper } from '../timeslotItems/timeslotItems.mapper';
+import { ScheduleFormsMapper } from '../scheduleForms/scheduleForms.mapper';
 
 @InRequestScope
 @Route('v1/service-providers')
@@ -46,11 +55,13 @@ export class ServiceProvidersController extends Controller {
 	private servicesService: ServicesService;
 	@Inject
 	private serviceProvidersService: ServiceProvidersService;
-
 	@Inject
-	private mapper: ServiceProvidersMapper;
+	private serviceProvidersMapper: ServiceProvidersMapper;
+	@Inject
+	private timeslotItemsMapper: TimeslotItemsMapper;
+	@Inject
+	private scheduleFormsMapper: ScheduleFormsMapper;
 
-	// TODO: write test for this one
 	/**
 	 * @deprecated use onboard atm
 	 */
@@ -125,7 +136,7 @@ export class ServiceProvidersController extends Controller {
 		@Query() includeScheduleForm = false,
 		@Query() limit?: number,
 		@Query() page?: number,
-	): Promise<ApiData<ServiceProviderResponseModel[]>> {
+	): Promise<ApiData<ServiceProviderResponseModelV1[]>> {
 		const dataModels = await this.serviceProvidersService.getServiceProviders(
 			serviceId,
 			includeScheduleForm,
@@ -134,7 +145,10 @@ export class ServiceProvidersController extends Controller {
 			page,
 		);
 		return ApiDataFactory.create(
-			await this.mapper.mapDataModels(dataModels, { includeTimeslotsSchedule, includeScheduleForm }),
+			await this.serviceProvidersMapper.mapDataModelsV1(dataModels, {
+				includeTimeslotsSchedule,
+				includeScheduleForm,
+			}),
 		);
 	}
 
@@ -169,7 +183,7 @@ export class ServiceProvidersController extends Controller {
 		@Query() from: Date,
 		@Query() to: Date,
 		@Header('x-api-service') serviceId?: number,
-	): Promise<ApiData<ServiceProviderResponseModel[]>> {
+	): Promise<ApiData<ServiceProviderResponseModelV1[]>> {
 		let result: ServiceProvider[] = [];
 		if (serviceId) {
 			result = await this.serviceProvidersService.getAvailableServiceProviders(from, to, false, serviceId);
@@ -181,7 +195,7 @@ export class ServiceProvidersController extends Controller {
 				);
 			}
 		}
-		return ApiDataFactory.create(await this.mapper.mapDataModels(result, {}));
+		return ApiDataFactory.create(await this.serviceProvidersMapper.mapDataModelsV1(result, {}));
 	}
 
 	/**
@@ -193,14 +207,14 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Get('{spId}')
 	@Response(401, 'Unauthorized')
-	public async getServiceProvider(@Path() spId: number): Promise<ApiData<ServiceProviderResponseModel>> {
+	public async getServiceProvider(@Path() spId: number): Promise<ApiData<ServiceProviderResponseModelV1>> {
 		const options = { includeTimeslotsSchedule: true, includeScheduleForm: true };
 		const dataModel = await this.serviceProvidersService.getServiceProvider(
 			spId,
 			options.includeScheduleForm,
 			options.includeTimeslotsSchedule,
 		);
-		return ApiDataFactory.create(await this.mapper.mapDataModel(dataModel, options));
+		return ApiDataFactory.create(await this.serviceProvidersMapper.mapDataModelV1(dataModel, options));
 	}
 
 	/**
@@ -215,9 +229,9 @@ export class ServiceProvidersController extends Controller {
 	public async getServiceProvidersByName(
 		@Path() searchKey: string,
 		@Header('x-api-service') serviceId?: number,
-	): Promise<ApiData<ServiceProviderResponseModel[]>> {
+	): Promise<ApiData<ServiceProviderResponseModelV1[]>> {
 		const dataModels = await this.serviceProvidersService.getServiceProvidersByName(searchKey, serviceId);
-		return ApiDataFactory.create(await this.mapper.mapDataModels(dataModels, {}));
+		return ApiDataFactory.create(await this.serviceProvidersMapper.mapDataModelsV1(dataModels, {}));
 	}
 
 	/**
@@ -233,11 +247,17 @@ export class ServiceProvidersController extends Controller {
 	public async updateServiceProvider(
 		@Path() spId: number,
 		@Body() spRequest: ServiceProviderModel,
-	): Promise<ApiData<ServiceProviderResponseModel>> {
+	): Promise<ApiData<ServiceProviderResponseModelV1>> {
 		const result = await this.serviceProvidersService.updateSp(spRequest, spId);
-		return ApiDataFactory.create(await this.mapper.mapDataModel(result, {}));
+		return ApiDataFactory.create(await this.serviceProvidersMapper.mapDataModelV1(result, {}));
 	}
 
+	/**
+	 * Sets a service's schedule form which becomes the schedule form for every service provider under that service
+	 *
+	 * @param @isInt spId The service provider id.
+	 * @param request The schedule form request
+	 */
 	@Put('{spId}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
@@ -245,19 +265,26 @@ export class ServiceProvidersController extends Controller {
 	public async setServiceScheduleForm(
 		@Path() spId: number,
 		@Body() request: ScheduleFormRequest,
-	): Promise<ApiData<ScheduleFormResponse>> {
+	): Promise<ApiData<ScheduleFormResponseV1>> {
 		return ApiDataFactory.create(
-			mapScheduleToResponse(await this.serviceProvidersService.setProviderScheduleForm(spId, request)),
+			this.scheduleFormsMapper.mapToResponseV1(
+				await this.serviceProvidersService.setProviderScheduleForm(spId, request),
+			),
 		);
 	}
 
+	/**
+	 * Retrieves a service's schedule form
+	 *
+	 * @param @isInt spId The service provider id.
+	 */
 	@Get('{spId}/scheduleForm')
 	@SuccessResponse(200, 'Ok')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async getServiceScheduleForm(@Path() spId: number): Promise<ApiData<ScheduleFormResponse>> {
+	public async getServiceScheduleForm(@Path() spId: number): Promise<ApiData<ScheduleFormResponseV1>> {
 		return ApiDataFactory.create(
-			mapScheduleToResponse(await this.serviceProvidersService.getProviderScheduleForm(spId)),
+			this.scheduleFormsMapper.mapToResponseV1(await this.serviceProvidersService.getProviderScheduleForm(spId)),
 		);
 	}
 
@@ -272,9 +299,9 @@ export class ServiceProvidersController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getTimeslotsScheduleByServiceProviderId(
 		@Path() spId: number,
-	): Promise<ApiData<TimeslotsScheduleResponse>> {
+	): Promise<ApiData<TimeslotsScheduleResponseV1>> {
 		const data = await this.serviceProvidersService.getTimeslotItems(spId);
-		return ApiDataFactory.create(mapToTimeslotsScheduleResponse(data));
+		return ApiDataFactory.create(this.timeslotItemsMapper.mapToTimeslotsScheduleResponseV1(data));
 	}
 
 	/**
@@ -290,10 +317,10 @@ export class ServiceProvidersController extends Controller {
 	public async createTimeslotItem(
 		@Path() spId: number,
 		@Body() request: TimeslotItemRequest,
-	): Promise<ApiData<TimeslotItemResponse>> {
+	): Promise<ApiData<TimeslotItemResponseV1>> {
 		const data = await this.serviceProvidersService.addTimeslotItem(spId, request);
 		this.setStatus(201);
-		return ApiDataFactory.create(mapToTimeslotItemResponse(data));
+		return ApiDataFactory.create(this.timeslotItemsMapper.mapToTimeslotItemResponseV1(data));
 	}
 
 	/**
@@ -311,9 +338,9 @@ export class ServiceProvidersController extends Controller {
 		@Path() spId: number,
 		@Path() timeslotId: number,
 		@Body() request: TimeslotItemRequest,
-	): Promise<ApiData<TimeslotItemResponse>> {
+	): Promise<ApiData<TimeslotItemResponseV1>> {
 		const data = await this.serviceProvidersService.updateTimeslotItem(spId, timeslotId, request);
-		return ApiDataFactory.create(mapToTimeslotItemResponse(data));
+		return ApiDataFactory.create(this.timeslotItemsMapper.mapToTimeslotItemResponseV1(data));
 	}
 
 	/**
@@ -328,5 +355,285 @@ export class ServiceProvidersController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async deleteTimeslotItem(@Path() spId: number, @Path() timeslotId: number): Promise<void> {
 		await this.serviceProvidersService.deleteTimeslotItem(spId, timeslotId);
+	}
+}
+
+@InRequestScope
+@Route('v2/service-providers')
+@Tags('Service Providers')
+export class ServiceProvidersControllerV2 extends Controller {
+	@Inject
+	private servicesService: ServicesService;
+	@Inject
+	private serviceProvidersService: ServiceProvidersService;
+	@Inject
+	private serviceProvidersMapper: ServiceProvidersMapper;
+	@Inject
+	private timeslotsItemsMapper: TimeslotItemsMapper;
+	@Inject
+	private scheduleFormsMapper: ScheduleFormsMapper;
+	@Inject
+	private idHasher: IdHasher;
+
+	/**
+	 * Retrieves service providers.
+	 *
+	 * @param serviceId (Optional) Filters by a service (id).
+	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
+	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
+	 * @param @isInt limit (Optional) the total number of records required.
+	 * @param @isInt page (Optional) the page number currently requested.
+	 */
+	@Get('')
+	@Security('optional-service')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async getServiceProviders(
+		@Header('x-api-service') serviceId?: string,
+		@Query() includeTimeslotsSchedule = false,
+		@Query() includeScheduleForm = false,
+		@Query() limit?: number,
+		@Query() page?: number,
+	): Promise<ApiData<ServiceProviderResponseModelV2[]>> {
+		const unsignedServiceId = this.idHasher.decode(serviceId);
+		const dataModels = await this.serviceProvidersService.getServiceProviders(
+			unsignedServiceId,
+			includeScheduleForm,
+			includeTimeslotsSchedule,
+			limit,
+			page,
+		);
+		return ApiDataFactory.create(
+			await this.serviceProvidersMapper.mapDataModelsV2(dataModels, {
+				includeTimeslotsSchedule,
+				includeScheduleForm,
+			}),
+		);
+	}
+
+	/**
+	 * Retrieves the total number of service providers.
+	 *
+	 * @param serviceId (Optional) Filters by a service (id).
+	 */
+	@Get('/count')
+	@Security('optional-service')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async getTotalServiceProviders(
+		@Header('x-api-service') serviceId?: string,
+	): Promise<ApiData<TotalServiceProviderResponse>> {
+		const unsignedServiceId = this.idHasher.decode(serviceId);
+		const total = await this.serviceProvidersService.getServiceProvidersCount(unsignedServiceId);
+		return ApiDataFactory.create({ total });
+	}
+
+	/**
+	 * Retrieves available service providers in the specified datetime range.
+	 *
+	 * @param from The lower bound limit for service providers' availability.
+	 * @param to The upper bound limit for service providers' availability.
+	 * @param serviceId The service id.
+	 */
+	@Get('available')
+	@Security('optional-service')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async getAvailableServiceProviders(
+		@Query() from: Date,
+		@Query() to: Date,
+		@Header('x-api-service') serviceId?: string,
+	): Promise<ApiData<ServiceProviderResponseModelV2[]>> {
+		const unsignedServiceId = this.idHasher.decode(serviceId);
+		let result: ServiceProvider[] = [];
+		if (serviceId) {
+			result = await this.serviceProvidersService.getAvailableServiceProviders(
+				from,
+				to,
+				false,
+				unsignedServiceId,
+			);
+		} else {
+			const servicesList = await this.servicesService.getServices();
+			for (const service of servicesList) {
+				result.push(
+					...(await this.serviceProvidersService.getAvailableServiceProviders(from, to, false, service.id)),
+				);
+			}
+		}
+		return ApiDataFactory.create(await this.serviceProvidersMapper.mapDataModelsV2(result, {}));
+	}
+
+	/**
+	 * Retrieves a single service provider.
+	 *
+	 * @param spId The service provider id.
+	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
+	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
+	 */
+	@Get('{spId}')
+	@Response(401, 'Unauthorized')
+	public async getServiceProvider(@Path() spId: string): Promise<ApiData<ServiceProviderResponseModelV2>> {
+		const unsignedSpId = this.idHasher.decode(spId);
+		const options = { includeTimeslotsSchedule: true, includeScheduleForm: true };
+		const dataModel = await this.serviceProvidersService.getServiceProvider(
+			unsignedSpId,
+			options.includeScheduleForm,
+			options.includeTimeslotsSchedule,
+		);
+		return ApiDataFactory.create(await this.serviceProvidersMapper.mapDataModelV2(dataModel, options));
+	}
+
+	/**
+	 * Retrieves service providers whose name contains the searchKey, mainly for autocomplete feature.
+	 *
+	 * @param searchKey The search keyword.
+	 * @param serviceId The service id.
+	 */
+	@Get('search/{searchKey}')
+	@Security('optional-service')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async getServiceProvidersByName(
+		@Path() searchKey: string,
+		@Header('x-api-service') serviceId?: string,
+	): Promise<ApiData<ServiceProviderResponseModelV2[]>> {
+		const unsignedServiceId = this.idHasher.decode(serviceId);
+		const dataModels = await this.serviceProvidersService.getServiceProvidersByName(searchKey, unsignedServiceId);
+		return ApiDataFactory.create(await this.serviceProvidersMapper.mapDataModelsV2(dataModels, {}));
+	}
+
+	/**
+	 * Updates a single service provider.
+	 *
+	 * @param spId The service provider id.
+	 * @param spRequest
+	 */
+	@Put('{spId}')
+	@SuccessResponse(200, 'Ok')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async updateServiceProvider(
+		@Path() spId: string,
+		@Body() spRequest: ServiceProviderModel,
+	): Promise<ApiData<ServiceProviderResponseModelV2>> {
+		const unsignedSpId = this.idHasher.decode(spId);
+		const result = await this.serviceProvidersService.updateSp(spRequest, unsignedSpId);
+		return ApiDataFactory.create(await this.serviceProvidersMapper.mapDataModelV2(result, {}));
+	}
+
+	/**
+	 * Sets a service's schedule form which becomes the schedule form for every service provider under that service
+	 *
+	 * @param spId The service provider id.
+	 * @param request The schedule form request
+	 */
+	@Put('{spId}/scheduleForm')
+	@SuccessResponse(200, 'Ok')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async setServiceScheduleForm(
+		@Path() spId: string,
+		@Body() request: ScheduleFormRequest,
+	): Promise<ApiData<ScheduleFormResponseV2>> {
+		const unsignedSpId = this.idHasher.decode(spId);
+		return ApiDataFactory.create(
+			this.scheduleFormsMapper.mapToResponseV2(
+				await this.serviceProvidersService.setProviderScheduleForm(unsignedSpId, request),
+			),
+		);
+	}
+
+	/**
+	 * Retrieves a service's schedule form
+	 *
+	 * @param spId The service provider id.
+	 */
+	@Get('{spId}/scheduleForm')
+	@SuccessResponse(200, 'Ok')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async getServiceScheduleForm(@Path() spId: string): Promise<ApiData<ScheduleFormResponseV2>> {
+		const unsignedSpId = this.idHasher.decode(spId);
+		return ApiDataFactory.create(
+			this.scheduleFormsMapper.mapToResponseV2(
+				await this.serviceProvidersService.getProviderScheduleForm(unsignedSpId),
+			),
+		);
+	}
+
+	/**
+	 * Retrieves all weekly recurring timeslots for a service provider.
+	 *
+	 * @param spId The service provider id.
+	 */
+	@Get('{spId}/timeslotSchedule')
+	@SuccessResponse(200, 'Ok')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async getTimeslotsScheduleByServiceProviderId(
+		@Path() spId: string,
+	): Promise<ApiData<TimeslotsScheduleResponseV2>> {
+		const unsignedSpId = this.idHasher.decode(spId);
+		const data = await this.serviceProvidersService.getTimeslotItems(unsignedSpId);
+		return ApiDataFactory.create(this.timeslotsItemsMapper.mapToTimeslotsScheduleResponseV2(data));
+	}
+
+	/**
+	 * Creates a new weekly recurring timeslot for a service provider.
+	 *
+	 * @param spId The service provider id.
+	 * @param request
+	 */
+	@Post('{spId}/timeslotSchedule/timeslots')
+	@SuccessResponse(201, 'Created')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async createTimeslotItem(
+		@Path() spId: string,
+		@Body() request: TimeslotItemRequest,
+	): Promise<ApiData<TimeslotItemResponseV2>> {
+		const unsignedSpId = this.idHasher.decode(spId);
+		const data = await this.serviceProvidersService.addTimeslotItem(unsignedSpId, request);
+		this.setStatus(201);
+		return ApiDataFactory.create(this.timeslotsItemsMapper.mapToTimeslotItemResponseV2(data));
+	}
+
+	/**
+	 * Updates a weekly recurring timeslot for a service provider. Existing bookings are not affected.
+	 *
+	 * @param spId The service provider id.
+	 * @param timeslotId The weekly timeslot id.
+	 * @param request
+	 */
+	@Put('{spId}/timeslotSchedule/timeslots/{timeslotId}')
+	@SuccessResponse(200, 'Ok')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async updateTimeslotItem(
+		@Path() spId: string,
+		@Path() timeslotId: string,
+		@Body() request: TimeslotItemRequest,
+	): Promise<ApiData<TimeslotItemResponseV2>> {
+		const unsignedSpId = this.idHasher.decode(spId);
+		const unsignedTimeslotId = this.idHasher.decode(timeslotId);
+		const data = await this.serviceProvidersService.updateTimeslotItem(unsignedSpId, unsignedTimeslotId, request);
+		return ApiDataFactory.create(this.timeslotsItemsMapper.mapToTimeslotItemResponseV2(data));
+	}
+
+	/**
+	 * Deletes a weekly recurring timeslot for a service provider. Existing bookings are not affected.
+	 *
+	 * @param spId The service provider id.
+	 * @param timeslotId The weekly timeslot id.
+	 */
+	@Delete('{spId}/timeslotSchedule/timeslots/{timeslotId}')
+	@SuccessResponse(204, 'No Content')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async deleteTimeslotItem(@Path() spId: string, @Path() timeslotId: string): Promise<void> {
+		const unsignedSpId = this.idHasher.decode(spId);
+		const unsignedTimeslotId = this.idHasher.decode(timeslotId);
+		await this.serviceProvidersService.deleteTimeslotItem(unsignedSpId, unsignedTimeslotId);
 	}
 }

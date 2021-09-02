@@ -4,13 +4,13 @@ import {
 	ServiceAdminRequestEndpointSG,
 	ServiceProviderRequestEndpointSG,
 } from '../utils/requestEndpointSG';
-import { ServiceProviderResponseModel } from '../../src/components/serviceProviders/serviceProviders.apicontract';
-import { PartialAdditionalSettings, ServiceResponse } from '../../src/components/services/service.apicontract';
-import { TimeslotItemResponse } from '../../src/components/timeslotItems/timeslotItems.apicontract';
 import { OneOffTimeslotResponse } from '../../src/components/oneOffTimeslots/oneOffTimeslots.apicontract';
 import * as request from 'request';
 import { ServiceNotificationTemplateResponse } from '../../src/components/serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
 import { Roles } from '../utils/enums';
+import {PartialAdditionalSettings, ServiceResponseV1} from "../../src/components/services/service.apicontract";
+import {ServiceProviderResponseModelV1} from "../../src/components/serviceProviders/serviceProviders.apicontract";
+import {TimeslotItemResponseV1} from "../../src/components/timeslotItems/timeslotItems.apicontract";
 
 export const populateServiceLabel = async ({
 	serviceId,
@@ -20,7 +20,7 @@ export const populateServiceLabel = async ({
 	serviceId: any;
 	serviceName: any;
 	labels: string[];
-}): Promise<ServiceResponse> => {
+}): Promise<ServiceResponseV1> => {
 	const labelsMap = labels.map((label) => ({ label }));
 	const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceId}`, {
 		body: { name: serviceName, labels: labelsMap },
@@ -30,9 +30,8 @@ export const populateServiceLabel = async ({
 
 export const populateService = async ({
 	organisation = 'localorg',
-	nameService = 'admin',
-	                                      labels = [],
-}): Promise<ServiceResponse> => {
+	nameService = 'admin',   labels = [],
+}): Promise<ServiceResponseV1> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post('/services', {
 		body: { name: nameService, labels },
 	});
@@ -49,7 +48,7 @@ export const populateServiceWithFields = async ({
 	nameService?: string;
 	videoConferenceUrl?: string;
 	additionalSettings?: PartialAdditionalSettings;
-}): Promise<ServiceResponse> => {
+}): Promise<ServiceResponseV1> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post('/services', {
 		body: { name: nameService, videoConferenceUrl, additionalSettings },
 	});
@@ -67,7 +66,7 @@ export const populateServiceWithAdditionalSettings = async ({
 		sendNotificationsToServiceProviders: true,
 		sendSMSNotifications: false,
 	},
-}): Promise<ServiceResponse> => {
+}): Promise<ServiceResponseV1> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post('/services', {
 		body: { name: nameService, additionalSettings },
 	});
@@ -78,7 +77,7 @@ export const populateServiceWithVC = async ({
 	organisation = 'localorg',
 	nameService = 'admin',
 	videoConferenceUrl = 'http://www.zoom.us/1234567',
-}): Promise<ServiceResponse> => {
+}): Promise<ServiceResponseV1> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post('/services', {
 		body: { name: nameService, videoConferenceUrl },
 	});
@@ -89,7 +88,7 @@ export const setServiceProviderAutoAssigned = async ({
 	nameService = 'admin',
 	serviceId,
 	isSpAutoAssigned = false,
-}): Promise<ServiceResponse> => {
+}): Promise<ServiceResponseV1> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceId}`, {
 		body: { name: nameService, isSpAutoAssigned },
 	});
@@ -99,11 +98,9 @@ export const setServiceProviderAutoAssigned = async ({
 export const populateServiceAndServiceProvider = async ({
 	organisation = 'localorg',
 	nameService = 'admin',
-	serviceProviderName = 'sp',
-	labels = [],
-
-}): Promise<{ service: ServiceResponse; serviceProvider: ServiceProviderResponseModel }> => {
-	const service = await populateService({ organisation, nameService, labels });
+	serviceProviderName = 'sp', labels = [],
+}): Promise<{ service: ServiceResponseV1; serviceProvider: ServiceProviderResponseModelV1 }> => {
+	const service = await populateService({ organisation, nameService });
 	await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id.toString() }).post('/service-providers', {
 		body: {
 			serviceProviders: [
@@ -132,7 +129,7 @@ export const populateUserServiceProvider = async ({
 	uinfin?: string;
 	agencyUserId: string; // making this required, so we can identify the service provider user
 	email?: string;
-}): Promise<{ services: ServiceResponse[]; serviceProviders: ServiceProviderResponseModel[] }> => {
+}): Promise<{ services: ServiceResponseV1[]; serviceProviders: ServiceProviderResponseModelV1[] }> => {
 	await OrganisationAdminRequestEndpointSG.create({ organisation }).post('/users/service-providers/upsert', {
 		body: [
 			{
@@ -180,7 +177,7 @@ export const populateIndividualTimeslot = async ({
 	startTime,
 	endTime,
 	capacity,
-}): Promise<TimeslotItemResponse> => {
+}): Promise<TimeslotItemResponseV1> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({}).post(
 		`/service-providers/${serviceProviderId}/timeslotSchedule/timeslots`,
 		{

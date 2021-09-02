@@ -28,4 +28,16 @@ describe('IdHasher tests', () => {
 		const result = hasher.decode('OdVKn9JK');
 		expect(result).toBe(123);
 	});
+
+	it('should NOT encode undefined or null', () => {
+		const hasher = Container.get(IdHasher);
+		expect(hasher.encode(undefined)).toBe(undefined);
+		expect(hasher.encode(null)).toBe(null);
+	});
+
+	it('should NOT decode undefined or null', () => {
+		const hasher = Container.get(IdHasher);
+		expect(hasher.decode(undefined)).toBe(undefined);
+		expect(hasher.decode(null)).toBe(null);
+	});
 });

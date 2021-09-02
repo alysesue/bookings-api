@@ -12,11 +12,11 @@ import {
 	User,
 } from '../../../models';
 import {
-	BookingAcceptRequest,
+	BookingAcceptRequestV1,
 	BookingReject,
-	BookingRequest,
+	BookingRequestV1,
 	BookingSearchRequest,
-	BookingUpdateRequest,
+	BookingUpdateRequestV1,
 } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
@@ -80,7 +80,7 @@ function getUpdateBookingRequest() {
 		citizenName: 'Jake',
 		citizenUinFin: 'S6979208A',
 		citizenUinFinUpdated: true,
-	} as BookingUpdateRequest;
+	} as BookingUpdateRequestV1;
 }
 
 // tslint:disable-next-line: no-big-function
@@ -248,7 +248,7 @@ describe('Bookings.Service', () => {
 	});
 
 	it('should save booking from booking request (anonymous user)', async () => {
-		const bookingRequest: BookingRequest = new BookingRequest();
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.citizenName = 'this should be the name';
@@ -290,7 +290,7 @@ describe('Bookings.Service', () => {
 	});
 
 	it('should save booking from booking request (singpass user)', async () => {
-		const bookingRequest: BookingRequest = new BookingRequest();
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.citizenName = 'this should be the name';
@@ -334,7 +334,7 @@ describe('Bookings.Service', () => {
 		customProvider.id = 200;
 		customProvider.autoAcceptBookings = false;
 
-		const bookingRequest: BookingRequest = new BookingRequest();
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 200;
@@ -373,7 +373,7 @@ describe('Bookings.Service', () => {
 		customProvider.id = 200;
 		customProvider.autoAcceptBookings = false;
 
-		const bookingRequest: BookingRequest = new BookingRequest();
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 200;
@@ -412,7 +412,7 @@ describe('Bookings.Service', () => {
 		customProvider.id = 200;
 		customProvider.autoAcceptBookings = false;
 
-		const bookingRequest: BookingRequest = new BookingRequest();
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 200;
@@ -451,7 +451,7 @@ describe('Bookings.Service', () => {
 		customProvider.id = 200;
 		customProvider.autoAcceptBookings = true;
 
-		const bookingRequest: BookingRequest = new BookingRequest();
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 200;
@@ -487,7 +487,7 @@ describe('Bookings.Service', () => {
 		customProvider.id = 200;
 		customProvider.autoAcceptBookings = false;
 
-		const bookingRequest: BookingRequest = new BookingRequest();
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 200;
@@ -523,7 +523,7 @@ describe('Bookings.Service', () => {
 		customProvider.id = 200;
 		customProvider.autoAcceptBookings = false;
 
-		const bookingRequest: BookingRequest = new BookingRequest();
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 200;
@@ -557,7 +557,7 @@ describe('Bookings.Service', () => {
 	});
 
 	it('should save direct booking', async () => {
-		const bookingRequest: BookingRequest = new BookingRequest();
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 1;
@@ -588,7 +588,7 @@ describe('Bookings.Service', () => {
 	});
 
 	it('should allow booking out of timeslots for admin', async () => {
-		const bookingRequest: BookingRequest = new BookingRequest();
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 1;
@@ -613,7 +613,7 @@ describe('Bookings.Service', () => {
 	});
 
 	it('should not allow booking out of timeslots for citizen', async () => {
-		const bookingRequest: BookingRequest = new BookingRequest();
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.citizenUinFin = 'NRIC1234';
@@ -671,7 +671,7 @@ describe('Bookings.Service', () => {
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
 
-		const acceptRequest = new BookingAcceptRequest();
+		const acceptRequest = new BookingAcceptRequestV1();
 		acceptRequest.serviceProviderId = 1;
 		const result = await bookingService.acceptBooking(1, acceptRequest);
 
@@ -694,7 +694,7 @@ describe('Bookings.Service', () => {
 			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 		);
 
-		const acceptRequest = new BookingAcceptRequest();
+		const acceptRequest = new BookingAcceptRequestV1();
 		acceptRequest.serviceProviderId = 1;
 		const result = await bookingService.acceptBooking(1, acceptRequest);
 
@@ -795,7 +795,7 @@ describe('Bookings.Service', () => {
 			citizenName: 'Jake',
 			citizenUinFin: 'S****208A',
 			citizenUinFinUpdated: false,
-		} as BookingUpdateRequest;
+		} as BookingUpdateRequestV1;
 
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(service.id)
@@ -830,7 +830,7 @@ describe('Bookings.Service', () => {
 			citizenName: 'Jake',
 			citizenUinFin: 'S6979208A',
 			citizenUinFinUpdated: true,
-		} as BookingUpdateRequest;
+		} as BookingUpdateRequestV1;
 
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(service.id)
@@ -966,7 +966,7 @@ describe('Bookings.Service', () => {
 		customProvider.id = 200;
 		customProvider.autoAcceptBookings = false;
 
-		const bookingRequest: BookingRequest = new BookingRequest();
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 200;
@@ -994,7 +994,7 @@ describe('Bookings.Service', () => {
 			.withEndDateTime(end)
 			.build();
 
-		const bookingRequest: BookingRequest = new BookingRequest();
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 200;
@@ -1013,7 +1013,7 @@ describe('Bookings.Service', () => {
 		customProvider.id = 200;
 		customProvider.autoAcceptBookings = false;
 
-		const bookingRequest: BookingRequest = new BookingRequest();
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 		bookingRequest.startDateTime = new Date();
 		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 		bookingRequest.serviceProviderId = 200;
@@ -1044,7 +1044,7 @@ describe('Bookings.Service', () => {
 				citizenName: 'Jake',
 				citizenUinFin: 'S6979208A',
 				serviceProviderId: 1,
-			} as BookingRequest;
+			} as BookingRequestV1;
 
 			BookingRepositoryMock.booking = new BookingBuilder()
 				.withServiceId(1)
@@ -1081,7 +1081,7 @@ describe('Bookings.Service', () => {
 				citizenName: 'Jake',
 				citizenUinFin: 'S6979208A',
 				serviceProviderId: 1,
-			} as BookingRequest;
+			} as BookingRequestV1;
 
 			BookingRepositoryMock.booking = new BookingBuilder()
 				.withServiceId(1)
@@ -1117,7 +1117,7 @@ describe('Bookings.Service', () => {
 				citizenName: 'Jake',
 				citizenUinFin: 'S6979208A',
 				serviceProviderId: 1,
-			} as BookingRequest;
+			} as BookingRequestV1;
 
 			BookingRepositoryMock.booking = new BookingBuilder()
 				.withServiceId(1)
@@ -1139,7 +1139,7 @@ describe('Bookings.Service', () => {
 		});
 
 		it('should save a new booking with a valid video conference url from booking request', async () => {
-			const bookingRequest: BookingRequest = new BookingRequest();
+			const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 			bookingRequest.startDateTime = new Date();
 			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 			bookingRequest.videoConferenceUrl = 'www.google.com';
@@ -1180,7 +1180,7 @@ describe('Bookings.Service', () => {
 				endDateTime: end,
 				citizenEmail: 'test@mail.com',
 				videoConferenceUrl: 'www.google.com',
-			} as BookingUpdateRequest;
+			} as BookingUpdateRequestV1;
 
 			BookingRepositoryMock.booking = new BookingBuilder()
 				.withServiceId(service.id)
@@ -1218,7 +1218,7 @@ describe('Bookings.Service', () => {
 			const rescheduleRequest = {
 				startDateTime: new Date('2020-10-01T05:00:00'),
 				endDateTime: new Date('2020-10-01T06:00:00'),
-			} as BookingRequest;
+			} as BookingRequestV1;
 
 			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 			UserContextMock.getAuthGroups.mockImplementation(() =>
@@ -1245,7 +1245,7 @@ describe('Bookings.Service', () => {
 			const rescheduleRequest = {
 				startDateTime: new Date('2020-10-01T05:00:00'),
 				endDateTime: new Date('2020-10-01T06:00:00'),
-			} as BookingRequest;
+			} as BookingRequestV1;
 
 			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 			UserContextMock.getAuthGroups.mockImplementation(() =>
@@ -1269,7 +1269,7 @@ describe('Bookings.Service', () => {
 			const rescheduleRequest = {
 				startDateTime: new Date('2020-10-01T05:00:00'),
 				endDateTime: new Date('2020-10-01T06:00:00'),
-			} as BookingRequest;
+			} as BookingRequestV1;
 
 			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
 			UserContextMock.getAuthGroups.mockImplementation(() =>
@@ -1290,7 +1290,7 @@ describe('Bookings.Service', () => {
 		const onHoldServiceProvider = ServiceProvider.create('provider', 2);
 		onHoldServiceProvider.id = 2;
 		it('should mark booking as onhold and set the onhold current timestamp', async () => {
-			const bookingRequest: BookingRequest = new BookingRequest();
+			const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 			bookingRequest.startDateTime = new Date();
 			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 			bookingRequest.serviceProviderId = 2;
@@ -1337,7 +1337,7 @@ describe('Bookings.Service', () => {
 			standAloneService.isStandAlone = true;
 			standAloneService.isOnHold = false;
 
-			const bookingRequest: BookingRequest = new BookingRequest();
+			const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 			bookingRequest.startDateTime = new Date();
 			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 			bookingRequest.serviceProviderId = 1;
@@ -1377,7 +1377,7 @@ describe('Bookings.Service', () => {
 			standAloneService.isStandAlone = false;
 			standAloneService.isOnHold = false;
 
-			const bookingRequest: BookingRequest = new BookingRequest();
+			const bookingRequest: BookingRequestV1 = new BookingRequestV1();
 			bookingRequest.startDateTime = new Date();
 			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 			bookingRequest.serviceProviderId = 1;
@@ -1416,7 +1416,7 @@ describe('Bookings.Service', () => {
 		const customProvider = ServiceProvider.create('provider', 1);
 		customProvider.id = 200;
 
-		let bookingRequest: BookingRequest;
+		let bookingRequest: BookingRequestV1;
 
 		beforeEach(() => {
 			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(spAutoAssignedService));
@@ -1424,7 +1424,7 @@ describe('Bookings.Service', () => {
 			UserContextMock.getAuthGroups.mockImplementation(() =>
 				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
 			);
-			bookingRequest = new BookingRequest();
+			bookingRequest = new BookingRequestV1();
 			bookingRequest.startDateTime = new Date();
 			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
 			(randomIndex as jest.Mock).mockReturnValue(0);

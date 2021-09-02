@@ -5,10 +5,10 @@ import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSche
 import { TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServicesRepository } from '../services/services.repository';
-import { mapTimeslotItemToEntity } from './timeslotItems.mapper';
 import { TimeslotItemRequest } from './timeslotItems.apicontract';
 import { TimeslotItemsRepository } from './timeslotItems.repository';
 import { TimeslotItemsActionAuthVisitor } from './timeslotItems.auth';
+import { TimeslotItemsMapper } from './timeslotItems.mapper';
 
 @InRequestScope
 export class TimeslotItemsService {
@@ -20,6 +20,8 @@ export class TimeslotItemsService {
 	private servicesRepository: ServicesRepository;
 	@Inject
 	private userContext: UserContext;
+	@Inject
+	private timeslotItemsMapper: TimeslotItemsMapper;
 
 	private async verifyActionPermission(timeslotSchedule: TimeslotsSchedule): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
@@ -42,14 +44,14 @@ export class TimeslotItemsService {
 		}
 	}
 
-	private static mapItemAndValidate(
+	private mapItemAndValidate(
 		timeslotsSchedule: TimeslotsSchedule,
 		request: TimeslotItemRequest,
 		entity: TimeslotItem,
 	): TimeslotItem {
 		entity._timeslotsScheduleId = timeslotsSchedule._id;
 		try {
-			mapTimeslotItemToEntity(request, entity);
+			this.timeslotItemsMapper.mapTimeslotItemToEntity(request, entity);
 		} catch (err) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage((err as Error).message);
 		}
@@ -72,7 +74,7 @@ export class TimeslotItemsService {
 		request: TimeslotItemRequest,
 		entity: TimeslotItem,
 	): Promise<TimeslotItem> {
-		const item = TimeslotItemsService.mapItemAndValidate(timeslotsSchedule, request, entity);
+		const item = this.mapItemAndValidate(timeslotsSchedule, request, entity);
 		return await this.timeslotItemsRepository.saveTimeslotItem(item);
 	}
 

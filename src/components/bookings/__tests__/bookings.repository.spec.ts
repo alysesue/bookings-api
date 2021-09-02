@@ -6,7 +6,7 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { TransactionManager } from '../../../core/transactionManager';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { AuthGroup, CitizenAuthGroup } from '../../../infrastructure/auth/authGroup';
-import { ServiceProvidersRepository } from '../../../components/serviceProviders/serviceProviders.repository';
+import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { PagingHelper } from '../../../core/paging';
 import { IPagedEntities } from '../../../core/pagedEntities';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';

@@ -1,11 +1,11 @@
-import { OtpService } from './../../../components/otp/otp.service';
-import { OtpServiceMock } from './../../../components/otp/__mocks__/otp.service.mock';
+import { OtpService } from '../../../components/otp/otp.service';
+import { OtpServiceMock } from '../../../components/otp/__mocks__/otp.service.mock';
 import { ContainerContextHolder } from '../../containerContext';
 import { Container } from 'typescript-ioc';
 import { UsersService } from '../../../components/users/users.service';
 import { User } from '../../../models';
-import { UserContext } from '../../auth/userContext';
-import { AnonymousAuthGroup, CitizenAuthGroup } from '../../auth/authGroup';
+import { UserContext } from '../userContext';
+import { AnonymousAuthGroup, CitizenAuthGroup } from '../authGroup';
 import * as uuid from 'uuid';
 import { UsersServiceMock } from '../../../components/users/__mocks__/users.service';
 

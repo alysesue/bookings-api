@@ -67,11 +67,7 @@ export class WeekDayScheduleContract {
 	public endDate?: Date;
 }
 
-export class ScheduleFormResponse {
-	/**
-	 * @isInt
-	 */
-	public id: number;
+export class ScheduleFormResponseBase {
 	/**
 	 * @isInt
 	 */
@@ -89,4 +85,15 @@ export class ScheduleFormResponse {
 	 */
 	public endDate?: Date;
 	public weekdaySchedules: WeekDayScheduleContract[];
+}
+
+export class ScheduleFormResponseV1 extends ScheduleFormResponseBase {
+	/**
+	 * @isInt
+	 */
+	public id: number;
+}
+
+export class ScheduleFormResponseV2 extends ScheduleFormResponseBase {
+	public id: string;
 }

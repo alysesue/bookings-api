@@ -1,16 +1,16 @@
 import { PgClient } from '../../utils/pgClient';
 import { populateService } from '../../populate/basic';
-import { ServiceResponse } from '../../../src/components/services/service.apicontract';
 import { DynamicFieldModel } from '../../../src/components/dynamicFields/dynamicFields.apicontract';
 import { getDynamicFields, postSelectListDynamicField, postTextDynamicField } from './common';
+import {ServiceResponseV1} from "../../../src/components/services/service.apicontract";
 
 describe('Dynamic Fields functional tests', () => {
 	const pgClient = new PgClient();
 	const NAME_SERVICE_1 = 'service1';
 	const NAME_SERVICE_2 = 'service2';
 
-	let service: ServiceResponse;
-	let service2: ServiceResponse;
+	let service: ServiceResponseV1;
+	let service2: ServiceResponseV1;
 
 	afterAll(async (done) => {
 		await pgClient.cleanAllTables();

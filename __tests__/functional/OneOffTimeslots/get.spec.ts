@@ -6,9 +6,12 @@ import {
 	ServiceProviderRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
 import { populateOneOffTimeslot, populateServiceLabel, populateUserServiceProvider } from '../../populate/basic';
-import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
-import { ServiceResponse } from '../../../src/components/services/service.apicontract';
-import { TimeslotEntryResponse } from '../../../src/components/timeslots/timeslots.apicontract';
+import {ServiceProviderResponseModelV1} from "../../../src/components/serviceProviders/serviceProviders.apicontract";
+import {ServiceResponseV1} from "../../../src/components/services/service.apicontract";
+import {TimeslotEntryResponseV1} from "../../../src/components/timeslots/timeslots.apicontract";
+// import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
+// import { ServiceResponse } from '../../../src/components/services/service.apicontract';
+// import { TimeslotEntryResponse } from '../../../src/components/timeslots/timeslots.apicontract';
 
 // tslint:disable-next-line: no-big-function
 describe('Timeslots functional tests', () => {
@@ -28,14 +31,14 @@ describe('Timeslots functional tests', () => {
 	const overallStartDate = new Date('2021-03-01T00:00:00Z');
 	const overallEndDate = new Date('2021-04-01T00:00:00Z');
 
-	let serviceProvider1: ServiceProviderResponseModel;
-	let serviceProvider2: ServiceProviderResponseModel;
-	let serviceProvider3: ServiceProviderResponseModel;
+	let serviceProvider1: ServiceProviderResponseModelV1;
+	let serviceProvider2: ServiceProviderResponseModelV1;
+	let serviceProvider3: ServiceProviderResponseModelV1;
 	let serviceId1: string;
 	let serviceId2: string;
 	let serviceId3: string;
 
-	let service1Results: ServiceResponse;
+	let service1Results: ServiceResponseV1;
 
 	afterAll(async (done) => {
 		await pgClient.cleanAllTables();
@@ -136,7 +139,7 @@ describe('Timeslots functional tests', () => {
 			`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}&labelIds=${labelId0}&labelIds=${labelId1}`,
 		);
 
-		const data = service1TimeslotsResponse.body.data as TimeslotEntryResponse[];
+		const data = service1TimeslotsResponse.body.data as TimeslotEntryResponseV1[];
 
 		expect(service1TimeslotsResponse.statusCode).toEqual(200);
 		expect(data[0].timeslotServiceProviders[0].eventTitle).toBe('my event');
@@ -177,7 +180,7 @@ describe('Timeslots functional tests', () => {
 		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders.length).toBe(1);
 		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].capacity).toBe(1);
 
-		const data2 = service2TimeslotsResponse.body.data as TimeslotEntryResponse[];
+		const data2 = service2TimeslotsResponse.body.data as TimeslotEntryResponseV1[];
 
 		expect(service2TimeslotsResponse.statusCode).toEqual(200);
 		expect(data2[0].timeslotServiceProviders[0].eventTitle).toBe(undefined);

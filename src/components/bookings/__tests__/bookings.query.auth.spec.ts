@@ -49,7 +49,7 @@ describe('Bookings query auth', () => {
 
 		expect(result.userCondition).toStrictEqual('(c."_userId" = :userId)');
 		expect(result.userParams).toStrictEqual({
-			userId: undefined, // TODO : fix this
+			userId: undefined,
 		});
 	});
 

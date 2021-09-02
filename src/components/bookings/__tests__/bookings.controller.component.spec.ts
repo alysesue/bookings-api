@@ -2,7 +2,7 @@ import { Container } from 'typescript-ioc';
 import { BookingsController } from '../index';
 import { BookingsRepository } from '../bookings.repository';
 import { Booking, BookingStatus, Service, ServiceProvider, User } from '../../../models';
-import { BookingAcceptRequest } from '../bookings.apicontract';
+import { BookingAcceptRequestV1 } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
 import { ServicesService } from '../../services/services.service';
@@ -109,7 +109,7 @@ describe('Booking Integration tests', () => {
 
 		const controller = Container.get(BookingsController);
 
-		await controller.acceptBooking(1, { serviceProviderId: 11 } as BookingAcceptRequest);
+		await controller.acceptBooking(1, { serviceProviderId: 11 } as BookingAcceptRequestV1);
 
 		expect(BookingRepositoryMock.update).toBeCalledTimes(1);
 		const booking = BookingRepositoryMock.update.mock.calls[0][0] as Booking;

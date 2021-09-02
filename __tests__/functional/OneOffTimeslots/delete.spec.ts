@@ -1,6 +1,6 @@
 import { PgClient } from '../../utils/pgClient';
 import { deleteOneOffTimeslot, populateOneOffTimeslot, populateUserServiceProvider } from '../../populate/basic';
-import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
+import {ServiceProviderResponseModelV1} from "../../../src/components/serviceProviders/serviceProviders.apicontract";
 
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
@@ -9,7 +9,7 @@ describe('Timeslots functional tests', () => {
 	const START_TIME_1 = new Date('2021-03-05T01:00:00Z');
 	const END_TIME_1 = new Date('2021-03-05T02:00:00Z');
 
-	let serviceProvider1: ServiceProviderResponseModel;
+	let serviceProvider1: ServiceProviderResponseModelV1;
 
 	afterAll(async (done) => {
 		await pgClient.cleanAllTables();

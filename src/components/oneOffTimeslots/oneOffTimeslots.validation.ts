@@ -2,7 +2,7 @@ import { OneOffTimeslot } from '../../models/entities';
 import { Validator } from '../../infrastructure/validator';
 import { BusinessValidation } from '../../models';
 import { concatIteratables } from '../../tools/asyncIterables';
-import { OneOffTimeslotRequest } from './oneOffTimeslots.apicontract';
+import { OneOffTimeslotRequestV1 } from './oneOffTimeslots.apicontract';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { OneOffTimeslotsRepository } from './oneOffTimeslots.repository';
 import { Inject, Scope, Scoped } from 'typescript-ioc';
@@ -24,7 +24,7 @@ export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 		}
 	}
 
-	public async validateOneOffTimeslotsAvailability(request: OneOffTimeslotRequest, updateSlotId?: number) {
+	public async validateOneOffTimeslotsAvailability(request: OneOffTimeslotRequestV1, updateSlotId?: number) {
 		const searchRequest = {
 			serviceProviderIds: [request.serviceProviderId],
 			startDateTime: request.startDateTime,

@@ -5,9 +5,9 @@ import {
 	populateUserServiceProvider,
 	updateOneOffTimeslot,
 } from '../../populate/basic';
-import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
-import { ServiceResponse } from '../../../src/components/services/service.apicontract';
 import { Roles } from '../../utils/enums';
+import {ServiceProviderResponseModelV1} from "../../../src/components/serviceProviders/serviceProviders.apicontract";
+import {ServiceResponseV1} from "../../../src/components/services/service.apicontract";
 
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
@@ -18,8 +18,8 @@ describe('Timeslots functional tests', () => {
 	const START_TIME_2 = new Date('2021-03-05T03:00:00Z');
 	const END_TIME_2 = new Date('2021-03-05T04:00:00Z');
 
-	let serviceProvider1: ServiceProviderResponseModel;
-	let service: ServiceResponse;
+	let serviceProvider1: ServiceProviderResponseModelV1;
+	let service: ServiceResponseV1;
 
 	afterAll(async (done) => {
 		await pgClient.cleanAllTables();

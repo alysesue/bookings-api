@@ -1,7 +1,7 @@
 import { CitizenRequestEndpointSG } from '../../utils/requestEndpointSG';
-import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import { populateUserServiceProvider, populateWeeklyTimesheet } from '../../populate/basic';
 import { PgClient } from '../../utils/pgClient';
+import {ServiceProviderResponseModelV1} from "../../../src/components/serviceProviders/serviceProviders.apicontract";
 
 describe('Dynamic Fields functional tests', () => {
 	const pgClient = new PgClient();
@@ -16,8 +16,8 @@ describe('Dynamic Fields functional tests', () => {
 
 	const citizenUinFin = 'S7429377H';
 
-	let serviceProvider1: ServiceProviderResponseModel;
-	let serviceProvider2: ServiceProviderResponseModel;
+	let serviceProvider1: ServiceProviderResponseModelV1;
+	let serviceProvider2: ServiceProviderResponseModelV1;
 	let serviceId1;
 	let serviceId2;
 

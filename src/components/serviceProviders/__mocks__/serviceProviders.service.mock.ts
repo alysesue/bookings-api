@@ -1,6 +1,6 @@
 import { ServiceProvidersService } from '../serviceProviders.service';
 import { ScheduleForm, ServiceProvider, TimeslotItem, TimeslotsSchedule } from '../../../models/entities';
-import { MolServiceProviderOnboardContract, ServiceProviderModel } from '../serviceProviders.apicontract';
+import { ServiceProviderModel } from '../serviceProviders.apicontract';
 import { MolUpsertUsersResult } from '../../users/molUsers/molUsers.apicontract';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 
@@ -24,10 +24,8 @@ export class ServiceProvidersServiceMock implements Partial<ServiceProvidersServ
 	public async getServiceProvider(...params): Promise<ServiceProvider> {
 		return ServiceProvidersServiceMock.getServiceProviderMock(...params);
 	}
-	public async createServiceProviders(
-		serviceProviderOnboardContracts: MolServiceProviderOnboardContract[],
-	): Promise<MolUpsertUsersResult> {
-		return ServiceProvidersServiceMock.createServiceProvidersMock(serviceProviderOnboardContracts);
+	public async createServiceProviders(...params): Promise<MolUpsertUsersResult> {
+		return ServiceProvidersServiceMock.createServiceProvidersMock(...params);
 	}
 	public async getServiceProvidersCount(): Promise<number> {
 		return ServiceProvidersServiceMock.getServiceProvidersCountMock();

@@ -4,7 +4,7 @@ import { OneOffTimeslot } from '../../models';
 import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { LabelsService } from '../labels/labels.service';
-import { OneOffTimeslotRequest } from './oneOffTimeslots.apicontract';
+import { OneOffTimeslotRequestV1 } from './oneOffTimeslots.apicontract';
 import { OneOffTimeslotsRepository } from './oneOffTimeslots.repository';
 import { OneOffTimeslotsActionAuthVisitor } from './oneOffTimeslots.auth';
 import { OneOffTimeslotsMapper } from './oneOffTimeslots.mapper';
@@ -54,7 +54,7 @@ export class OneOffTimeslotsService {
 		return oneOffTimeslot;
 	}
 
-	public async save(request: OneOffTimeslotRequest): Promise<OneOffTimeslot> {
+	public async save(request: OneOffTimeslotRequestV1): Promise<OneOffTimeslot> {
 		const validator = this.getValidator();
 		await validator.validateOneOffTimeslotsAvailability(request);
 		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
@@ -70,7 +70,7 @@ export class OneOffTimeslotsService {
 		return entity;
 	}
 
-	public async update(request: OneOffTimeslotRequest, idSigned: string): Promise<OneOffTimeslot> {
+	public async update(request: OneOffTimeslotRequestV1, idSigned: string): Promise<OneOffTimeslot> {
 		const id = this.idHasher.decode(idSigned);
 		const entity = await this.oneOffTimeslotsRepo.getById({ id });
 		if (!entity) {

@@ -6,7 +6,7 @@ import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import {
 	DynamicFieldModel,
 	DynamicFieldType,
-	PersistDynamicFieldModel,
+	PersistDynamicFieldModelV1,
 	SelectListModel,
 	TextFieldModel,
 } from '../dynamicFields.apicontract';
@@ -102,8 +102,8 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		]);
 	});
 
-	it('[Select List] should map to new entity', () => {
-		const request = new PersistDynamicFieldModel();
+	it('[Select List] should map to new entity V1', () => {
+		const request = new PersistDynamicFieldModelV1();
 		request.serviceId = 1;
 		request.name = 'options';
 		request.type = DynamicFieldType.SelectList;
@@ -127,7 +127,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 	});
 
 	it('[Select List] should map to existing entity', () => {
-		const request = new PersistDynamicFieldModel();
+		const request = new PersistDynamicFieldModelV1();
 		request.serviceId = 1;
 		request.name = 'options';
 		request.type = DynamicFieldType.SelectList;
@@ -156,7 +156,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 	});
 
 	it('[Select List] should NOT map to with missing information', () => {
-		const request = new PersistDynamicFieldModel();
+		const request = new PersistDynamicFieldModelV1();
 		request.serviceId = 1;
 		request.name = 'options';
 		request.type = DynamicFieldType.SelectList;
@@ -168,7 +168,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 	});
 
 	it('[Select List] should NOT map to existing entity - mapping to TextField', () => {
-		const request = new PersistDynamicFieldModel();
+		const request = new PersistDynamicFieldModelV1();
 		request.serviceId = 1;
 		request.name = 'options';
 		request.type = DynamicFieldType.SelectList;
@@ -184,7 +184,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 	});
 
 	it('[Text field] should map to new entity', () => {
-		const request = new PersistDynamicFieldModel();
+		const request = new PersistDynamicFieldModelV1();
 		request.serviceId = 1;
 		request.name = 'notes';
 		request.type = DynamicFieldType.TextField;
@@ -203,7 +203,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 	});
 
 	it('[Text field] should map to existing entity', () => {
-		const request = new PersistDynamicFieldModel();
+		const request = new PersistDynamicFieldModelV1();
 		request.serviceId = 1;
 		request.name = 'notes';
 		request.type = DynamicFieldType.TextField;
@@ -227,7 +227,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 	});
 
 	it('[Text field] should NOT map to existing entity - mapping to Select List', () => {
-		const request = new PersistDynamicFieldModel();
+		const request = new PersistDynamicFieldModelV1();
 		request.serviceId = 1;
 		request.name = 'notes';
 		request.type = DynamicFieldType.TextField;
@@ -243,7 +243,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 	});
 
 	it('[Text field] should NOT map to with missing information', () => {
-		const request = new PersistDynamicFieldModel();
+		const request = new PersistDynamicFieldModelV1();
 		request.serviceId = 1;
 		request.name = 'notes';
 		request.type = DynamicFieldType.TextField;

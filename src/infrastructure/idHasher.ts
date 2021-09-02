@@ -19,11 +19,27 @@ export class IdHasher {
 		this._hashIds = new Hashids(config.hashIdSalt, MIN_ID_LENGTH);
 	}
 
-	public encode(id: number): string {
+	public encode(id?: number): string | undefined {
+		if (id === undefined) {
+			return undefined;
+		}
+
+		if (id === null) {
+			return null;
+		}
+
 		return this._hashIds.encode([id]);
 	}
 
-	public decode(value: string): number {
+	public decode(value?: string): number | undefined {
+		if (value === undefined) {
+			return undefined;
+		}
+
+		if (value === null) {
+			return null;
+		}
+
 		const decoded = this._hashIds.decode(value);
 		return decoded.length > 0 ? decoded[0] : null;
 	}

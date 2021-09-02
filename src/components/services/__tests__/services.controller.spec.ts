@@ -1,12 +1,14 @@
 import { Container } from 'typescript-ioc';
-import { ServicesController } from '../services.controller';
-import { ServiceRequest } from '../service.apicontract';
+import { ServicesController, ServicesControllerV2 } from '../services.controller';
+import { ServiceRequestV1, ServiceRequestV2 } from '../service.apicontract';
 import { ServicesService } from '../services.service';
 import { ScheduleForm, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 import { Weekday } from '../../../enums/weekday';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
 import { LabelsMapper } from '../../labels/labels.mapper';
+import { IdHasher } from '../../../infrastructure/idHasher';
+import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 
 jest.mock('../services.service', () => {
 	class ServicesService {}
@@ -22,7 +24,7 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
-describe('Services controller tests', () => {
+describe('Services controller tests V1', () => {
 	beforeAll(() => {
 		Container.bind(ServicesService).to(ServicesServiceMockClass);
 		Container.bind(LabelsMapper).to(LabelsMapperMock);
@@ -32,7 +34,7 @@ describe('Services controller tests', () => {
 		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
 
 		const controller = Container.get(ServicesController);
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		const result = await controller.createService(request);
 
 		expect(result.data.name).toBe('John');
@@ -43,7 +45,7 @@ describe('Services controller tests', () => {
 		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([{ id: '1', label: 'label' }]);
 
 		const controller = Container.get(ServicesController);
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		const result = await controller.createService(request);
 
 		expect(result.data.name).toBe('John');
@@ -55,7 +57,7 @@ describe('Services controller tests', () => {
 		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([]);
 
 		const controller = Container.get(ServicesController);
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		const result = await controller.createService(request);
 
 		expect(result.data.labels).toHaveLength(0);
@@ -65,7 +67,7 @@ describe('Services controller tests', () => {
 		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
 
 		const controller = Container.get(ServicesController);
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		const result = await controller.createService(request);
 
 		expect(result.data.labels).toHaveLength(0);
@@ -75,7 +77,7 @@ describe('Services controller tests', () => {
 		ServicesServiceMock.updateService.mockReturnValue({ name: 'John' });
 
 		const controller = Container.get(ServicesController);
-		const request = new ServiceRequest();
+		const request = new ServiceRequestV1();
 		const result = await controller.updateService(1, request);
 
 		expect(result.data.name).toBe('John');
@@ -169,6 +171,160 @@ describe('Services controller tests', () => {
 		request.startTime = '08:00';
 		request.endTime = '09:00';
 		const response = await Container.get(ServicesController).updateTimeslotItem(1, 11, request);
+		expect(response).toBeDefined();
+	});
+});
+
+describe('Services controller tests V2', () => {
+	beforeAll(() => {
+		Container.bind(ServicesService).to(ServicesServiceMockClass);
+		Container.bind(LabelsMapper).to(LabelsMapperMock);
+		Container.bind(IdHasher).to(IdHasherMock);
+	});
+
+	it('should save a new service', async () => {
+		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
+
+		const controller = Container.get(ServicesControllerV2);
+		const request = new ServiceRequestV2();
+		const result = await controller.createService(request);
+
+		expect(result.data.name).toBe('John');
+	});
+
+	it('should save a new service with labels', async () => {
+		ServicesServiceMock.createService.mockReturnValue({ name: 'John', labels: [{ id: 1, labelText: 'label' }] });
+		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([{ id: '1', label: 'label' }]);
+
+		const controller = Container.get(ServicesControllerV2);
+		const request = new ServiceRequestV2();
+		const result = await controller.createService(request);
+
+		expect(result.data.name).toBe('John');
+		expect(result.data.labels[0].label).toBe('label');
+	});
+
+	it('should return empty label when none provided', async () => {
+		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
+		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([]);
+
+		const controller = Container.get(ServicesControllerV2);
+		const request = new ServiceRequestV2();
+		const result = await controller.createService(request);
+
+		expect(result.data.labels).toHaveLength(0);
+	});
+
+	it('should return empty label when none provided', async () => {
+		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
+
+		const controller = Container.get(ServicesControllerV2);
+		const request = new ServiceRequestV2();
+		const result = await controller.createService(request);
+
+		expect(result.data.labels).toHaveLength(0);
+	});
+
+	it('should update a service', async () => {
+		ServicesServiceMock.updateService.mockReturnValue({ name: 'John' });
+
+		const controller = Container.get(ServicesControllerV2);
+		const request = new ServiceRequestV2();
+		const result = await controller.updateService('39t2m', request);
+
+		expect(result.data.name).toBe('John');
+	});
+
+	it('should get all services', async () => {
+		ServicesServiceMock.getServices.mockReturnValue([{ name: 'John' }, { name: 'Mary' }]);
+		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([]);
+
+		const response = await Container.get(ServicesControllerV2).getServices();
+		expect(response.data).toHaveLength(2);
+	});
+
+	it('should set service ScheduleForm', async () => {
+		ServicesServiceMock.setServiceScheduleForm.mockReturnValue(Promise.resolve(new ScheduleForm()));
+		const request = new ScheduleFormRequest();
+
+		await Container.get(ServicesControllerV2).setServiceScheduleForm('39t2m', request);
+
+		expect(ServicesServiceMock.setServiceScheduleForm).toBeCalled();
+	});
+
+	it('should get service ScheduleForm', async () => {
+		ServicesServiceMock.getServiceScheduleForm.mockReturnValue(Promise.resolve(new ScheduleForm()));
+		await Container.get(ServicesControllerV2).getServiceScheduleForm('39t2m');
+
+		expect(ServicesServiceMock.getServiceScheduleForm).toBeCalled();
+	});
+
+	it('should get a service', async () => {
+		ServicesServiceMock.getService.mockReturnValue({ name: 'John' });
+		const response = await Container.get(ServicesControllerV2).getService('39t2m');
+		expect(response.data.name).toEqual('John');
+	});
+
+	it('should get a timeslotsSchedule', async () => {
+		const mockItemId = 11;
+		const mockResult = new TimeslotsSchedule();
+		const mockItem = TimeslotItem.create(
+			1,
+			Weekday.Monday,
+			TimeOfDay.create({
+				hours: 8,
+				minutes: 0,
+			}),
+			TimeOfDay.create({ hours: 9, minutes: 0 }),
+		);
+		mockItem._id = mockItemId;
+		mockResult.timeslotItems = [mockItem];
+		ServicesServiceMock.getServiceTimeslotsSchedule.mockReturnValue(mockResult);
+
+		IdHasherMock.encode.mockImplementation((id: number) => String(id));
+		const response = await Container.get(ServicesControllerV2).getTimeslotsScheduleByServiceId('39t2m');
+		expect(response.data.timeslots.length).toEqual(1);
+		expect(response.data.timeslots[0].id).toEqual('11');
+	});
+
+	it('should create a timeslot item', async () => {
+		const mockItem = TimeslotItem.create(
+			1,
+			Weekday.Monday,
+			TimeOfDay.create({
+				hours: 8,
+				minutes: 0,
+			}),
+			TimeOfDay.create({ hours: 9, minutes: 0 }),
+		);
+		ServicesServiceMock.addTimeslotItem.mockReturnValue(mockItem);
+
+		const request = new TimeslotItemRequest();
+		request.weekDay = 4;
+		request.startTime = '08:00';
+		request.endTime = '09:00';
+		const response = await Container.get(ServicesControllerV2).createTimeslotItem('39t2m', request);
+		expect(response).toBeDefined();
+		expect(response.data.startTime).toEqual('08:00');
+	});
+
+	it('should update a timeslot item', async () => {
+		const mockItem = TimeslotItem.create(
+			1,
+			Weekday.Monday,
+			TimeOfDay.create({
+				hours: 8,
+				minutes: 0,
+			}),
+			TimeOfDay.create({ hours: 9, minutes: 0 }),
+		);
+		ServicesServiceMock.updateTimeslotItem.mockReturnValue(mockItem);
+
+		const request = new TimeslotItemRequest();
+		request.weekDay = 4;
+		request.startTime = '08:00';
+		request.endTime = '09:00';
+		const response = await Container.get(ServicesControllerV2).updateTimeslotItem('39t2m', '11', request);
 		expect(response).toBeDefined();
 	});
 });

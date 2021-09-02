@@ -1,12 +1,12 @@
-export class TimeslotsScheduleResponse {
-	public timeslots: TimeslotItemResponse[];
+export class TimeslotsScheduleResponseV1 {
+	public timeslots: TimeslotItemResponseV1[];
 }
 
-export class TimeslotItemResponse {
-	/**
-	 * @isInt
-	 */
-	public id: number;
+export class TimeslotsScheduleResponseV2 {
+	public timeslots: TimeslotItemResponseV2[];
+}
+
+export class TimeslotItemResponseBase {
 	/**
 	 * The day of the week: [0, 6] starting from Sunday.
 	 *
@@ -39,6 +39,17 @@ export class TimeslotItemResponse {
 	 * @isDate
 	 */
 	public endDate?: Date;
+}
+
+export class TimeslotItemResponseV1 extends TimeslotItemResponseBase {
+	/**
+	 * @isInt
+	 */
+	public id: number;
+}
+
+export class TimeslotItemResponseV2 extends TimeslotItemResponseBase {
+	public id: string;
 }
 
 export class TimeslotItemRequest {

@@ -121,7 +121,7 @@ describe('Bookings functional tests', () => {
 			expect(contentType).toEqual(`text/csv`);
 		});
 
-		it('should return correct informations in csv', async () => {
+		it('should return correct information in csv', async () => {
 			await createInSlotBooking();
 
 			const response = await OrganisationAdminRequestEndpointSG.create({

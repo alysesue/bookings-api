@@ -1,18 +1,22 @@
 import { Booking, Service, ServiceProvider } from '../../models/entities';
 import {
 	BookingDetailsRequest,
-	BookingProviderResponse,
-	BookingRequest,
-	BookingResponse,
+	BookingProviderResponseV1,
+	BookingProviderResponseV2,
+	BookingRequestV1,
+	BookingResponseBase,
+	BookingResponseV1,
+	BookingResponseV2,
 } from './bookings.apicontract';
 import { UinFinConfiguration } from '../../models/uinFinConfiguration';
-import { UserContext, UserContextSnapshot } from '../../infrastructure/auth/userContext';
+import { UserContext } from '../../infrastructure/auth/userContext';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { DynamicValuesMapper, DynamicValuesRequestMapper } from '../dynamicFields/dynamicValues.mapper';
 import { isErrorResult } from '../../errors';
 import { IBookingsValidator } from './validator/bookings.validation';
 import * as stringify from 'csv-stringify';
 import { BookingStatus, bookingStatusArray } from '../../models/bookingStatus';
+import { IdHasher } from '../../infrastructure/idHasher';
 
 // tslint:disable-next-line: tsr-detect-unsafe-regexp
 const MASK_UINFIN_REGEX = /(?<=^.{1}).{4}/;
@@ -24,6 +28,8 @@ export class BookingsMapper {
 	private dynamicValuesMapper: DynamicValuesMapper;
 	@Inject
 	private dynamicValuesRequestMapper: DynamicValuesRequestMapper;
+	@Inject
+	private idHasher: IdHasher;
 	@Inject
 	private userContext: UserContext;
 
@@ -47,7 +53,7 @@ export class BookingsMapper {
 		}
 	}
 
-	public maskUinFin(booking: Booking, userContext: UserContextSnapshot): string {
+	public async maskUinFin(booking: Booking): Promise<string> {
 		if (!booking.service?.organisation) {
 			throw new Error('Booking -> service -> organisation not loaded. BookingsMapper requires it.');
 		}
@@ -57,35 +63,64 @@ export class BookingsMapper {
 		}
 
 		const uinFinConfig = new UinFinConfiguration(booking.service.organisation);
-		if (uinFinConfig.canViewPlainUinFin(userContext)) {
+		if (uinFinConfig.canViewPlainUinFin(await this.userContext.getSnapshot())) {
 			return booking.citizenUinFin;
 		}
 
 		return booking.citizenUinFin.replace(MASK_UINFIN_REGEX, MASK_REPLACE_VALUE);
 	}
 
-	public mapDataModels(bookings: Booking[], userContext: UserContextSnapshot): BookingResponse[] {
-		return bookings?.map((booking) => {
-			return this.mapDataModel(booking, userContext);
-		});
+	public async mapDataModelsV1(bookings: Booking[]): Promise<BookingResponseV1[]> {
+		const bookingsResult = [];
+		for (const booking of bookings) {
+			await this.mapDataModelV1(booking);
+			bookingsResult.push(booking);
+		}
+		return bookingsResult;
 	}
 
-	// TODO: no need to pass in userContext, Inject it instead
-	public mapDataModel(booking: Booking, userContext: UserContextSnapshot): BookingResponse {
-		const response: BookingResponse = {
-			id: booking.id,
+	public async mapDataModelsV2(bookings: Booking[]): Promise<BookingResponseV2[]> {
+		const bookingsResult = [];
+		for (const booking of bookings) {
+			await this.mapDataModelV2(booking);
+			bookingsResult.push(booking);
+		}
+		return bookingsResult;
+	}
+
+	public async mapDataModelV1(booking: Booking): Promise<BookingResponseV1> {
+		const bookingResponse = await this.mapDataModelBase(booking);
+		const bookingId = booking.id;
+		const serviceId = booking.serviceId;
+		const serviceProviderId = booking.serviceProviderId;
+		return { ...bookingResponse, id: bookingId, serviceId, serviceProviderId };
+	}
+
+	public async mapDataModelV2(booking: Booking): Promise<BookingResponseV2> {
+		const bookingResponse = await this.mapDataModelBase(booking);
+		const signedBookingId = this.idHasher.encode(booking.id);
+		const signedServiceId = this.idHasher.encode(booking.serviceId);
+		const signedServiceProviderId = this.idHasher.encode(booking.serviceProviderId);
+		return {
+			...bookingResponse,
+			id: signedBookingId,
+			serviceId: signedServiceId,
+			serviceProviderId: signedServiceProviderId,
+		};
+	}
+
+	private async mapDataModelBase(booking: Booking): Promise<BookingResponseBase> {
+		return {
 			status: booking.status,
 			createdDateTime: booking.createdLog?.timestamp,
 			startDateTime: booking.startDateTime,
 			endDateTime: booking.endDateTime,
-			serviceId: booking.serviceId,
 			serviceName: booking.service?.name,
-			serviceProviderId: booking.serviceProviderId,
 			serviceProviderAgencyUserId: booking.serviceProvider?.agencyUserId,
 			serviceProviderName: booking.serviceProvider?.name,
 			serviceProviderEmail: booking.serviceProvider?.email,
 			serviceProviderPhone: booking.serviceProvider?.phone,
-			citizenUinFin: this.maskUinFin(booking, userContext),
+			citizenUinFin: await this.maskUinFin(booking),
 			citizenName: booking.citizenName,
 			citizenEmail: booking.citizenEmail,
 			citizenPhone: booking.citizenPhone,
@@ -98,13 +133,15 @@ export class BookingsMapper {
 			reasonToReject: booking.reasonToReject,
 			sendNotifications: booking.service?.sendNotifications,
 			sendSMSNotifications: booking.service?.sendSMSNotifications,
-		} as BookingResponse;
-
-		return response;
+		};
 	}
 
-	public async mapBookingsCSV(bookings: Booking[], userContext: UserContextSnapshot): Promise<string> {
-		const bookingsCSV = bookings.map((booking) => this.mapDataCSV(booking, userContext));
+	public async mapBookingsCSV(bookings: Booking[]): Promise<string> {
+		const bookingsCSV = [];
+		for (const booking of bookings) {
+			const mappedBooking = await this.mapDataCSV(booking);
+			bookingsCSV.push(mappedBooking);
+		}
 		return new Promise<string>((resolve, reject) => {
 			stringify(
 				bookingsCSV,
@@ -121,11 +158,11 @@ export class BookingsMapper {
 		});
 	}
 
-	public mapDataCSV(booking: Booking, userContext: UserContextSnapshot): {} {
+	public async mapDataCSV(booking: Booking): Promise<{}> {
 		const dynamicValues = booking.dynamicValues?.map(
 			(item) => `${item.fieldName}:${this.dynamicValuesMapper.getValueAsString(item)}`,
 		);
-		const bookingDetails = {
+		return {
 			['Booking ID']: `${booking.id.toString()}`,
 			['Booking Status']: `${BookingStatus[booking.status]}`,
 			['Booking creation date']: `${booking.createdLog?.timestamp.toString()}`,
@@ -135,7 +172,7 @@ export class BookingsMapper {
 			['Booking description']: `${booking.description}`,
 			['Booking reference']: `${booking.refId}`,
 			['Dynamic Fields']: `${dynamicValues?.join('; ')}`,
-			['Citizen NRIC / FIN number']: `${this.maskUinFin(booking, userContext)}`,
+			['Citizen NRIC / FIN number']: `${await this.maskUinFin(booking)}`,
 			['Citizen Name']: `${booking.citizenName}`,
 			['Citizen Email address']: `${booking.citizenEmail}`,
 			['Citizen Phone number']: `${booking.citizenPhone}`,
@@ -144,15 +181,21 @@ export class BookingsMapper {
 			['Service Provider Email address']: `${booking.serviceProvider?.email}`,
 			['Service Provider Phone number']: `${booking.serviceProvider?.phone}`,
 		};
-
-		return bookingDetails;
 	}
 
-	public mapProvider(provider: ServiceProvider): BookingProviderResponse {
+	public mapProviderV1(provider: ServiceProvider): BookingProviderResponseV1 {
 		return {
 			id: provider.id,
 			name: provider.name,
-		} as BookingProviderResponse;
+		};
+	}
+
+	public mapProviderV2(provider: ServiceProvider): BookingProviderResponseV2 {
+		const signedId = this.idHasher.encode(provider.id);
+		return {
+			id: signedId,
+			name: provider.name,
+		};
 	}
 
 	private async getCitizenUinFin(bookingRequest: BookingDetailsRequest): Promise<string> {
@@ -205,7 +248,7 @@ export class BookingsMapper {
 		booking,
 		service,
 	}: {
-		request: BookingRequest;
+		request: BookingRequestV1;
 		booking: Booking;
 		service: Service;
 	}): Promise<void> {

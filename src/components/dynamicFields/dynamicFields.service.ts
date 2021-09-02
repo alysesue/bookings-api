@@ -1,7 +1,7 @@
 import { DynamicField, Service } from '../../models';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { DynamicFieldsRepository } from './dynamicFields.repository';
-import { PersistDynamicFieldModel } from './dynamicFields.apicontract';
+import { PersistDynamicFieldModelV1 } from './dynamicFields.apicontract';
 import { DynamicFieldsMapper } from './dynamicFields.mapper';
 import { ServicesService } from '../services/services.service';
 import { VisitorCrudAction } from '../../enums/crudAction';
@@ -32,7 +32,7 @@ export class DynamicFieldsService {
 		}
 	}
 
-	public async save(model: PersistDynamicFieldModel): Promise<DynamicField> {
+	public async save(model: PersistDynamicFieldModelV1): Promise<DynamicField> {
 		const service = await this.servicesService.getService(model.serviceId);
 		await this.verifyActionPermission(service, VisitorCrudAction.Create);
 
@@ -43,7 +43,7 @@ export class DynamicFieldsService {
 		return await this.repository.save(entity);
 	}
 
-	public async update(model: PersistDynamicFieldModel): Promise<DynamicField> {
+	public async update(model: PersistDynamicFieldModelV1): Promise<DynamicField> {
 		const id = this.idHasher.decode(model.idSigned);
 		const field = await this.repository.get({ id });
 		if (!field) {

@@ -1,13 +1,17 @@
-import { BookingStatus } from '../../models/bookingStatus';
+import { BookingStatus } from '../../models';
 import { PagingRequest } from '../../apicontract';
 import { DynamicValueContract, PersistDynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
 import { BookingValidationType } from '../../models/bookingValidationType';
 
-export class BookingAcceptRequest {
+export class BookingAcceptRequestV1 {
 	/**
 	 * @isInt
 	 */
 	public serviceProviderId: number;
+}
+
+export class BookingAcceptRequestV2 {
+	public serviceProviderId: string;
 }
 
 export class BookingReject {
@@ -30,87 +34,110 @@ export class BookingDetailsRequest {
 	public dynamicValues?: PersistDynamicValueContract[];
 }
 
-export class BookingRequest extends BookingDetailsRequest {
-	constructor() {
-		super();
-	}
+export class BookingRequestBase extends BookingDetailsRequest {
 	public startDateTime: Date;
 	public endDateTime: Date;
-	/**
-	 * @isInt
-	 */
-	public serviceProviderId?: number;
 	public captchaToken?: string | null;
 	// default validation type: citizen
 	public validationType?: BookingValidationType | null;
 }
 
-export class BookingUpdateRequest extends BookingRequest {
-	constructor() {
-		super();
-	}
-
-	public citizenUinFinUpdated?: boolean;
+export class BookingRequestV1 extends BookingRequestBase {
+	/**
+	 * @isInt
+	 */
+	public serviceProviderId?: number;
 }
 
-export type BookingResponse = {
+export class BookingRequestV2 extends BookingRequestBase {
+	public serviceProviderId?: string;
+}
+
+export class BookingUpdateRequestV1 extends BookingRequestBase {
+	public citizenUinFinUpdated?: boolean;
 	/**
 	 * @isInt
 	 */
-	id: number;
+	public serviceProviderId?: number;
+}
+
+export class BookingUpdateRequestV2 extends BookingRequestBase {
+	public citizenUinFinUpdated?: boolean;
+	public serviceProviderId?: string;
+}
+
+export class BookingResponseBase {
 	/**
 	 * @isInt
 	 */
-	status: number;
-	createdDateTime: Date;
-	startDateTime: Date;
-	endDateTime: Date;
-	/**
-	 * @isInt
-	 */
-	serviceId: number;
-	serviceName: string;
+	public status: number;
+	public createdDateTime: Date;
+	public startDateTime: Date;
+	public endDateTime: Date;
+	public serviceName: string;
+	public serviceProviderName?: string;
+	public serviceProviderEmail?: string;
+	public serviceProviderPhone?: string;
+	public serviceProviderAgencyUserId?: string;
+	public citizenUinFin?: string;
+	public citizenName?: string;
+	public citizenEmail?: string;
+	public citizenPhone?: string;
+	public location?: string;
+	public description?: string;
+	public refId?: string;
+	public videoConferenceUrl?: string;
+	public dynamicValues?: DynamicValueContract[];
+	public serviceProviderAliasName?: string;
+	public reasonToReject?: string;
 	/**
 	 * For rendering different booking confirmation messages
 	 */
 	sendNotifications: boolean;
 	sendSMSNotifications: boolean;
-	/**
-	 * @isInt
-	 */
-	serviceProviderId?: number;
-	serviceProviderName?: string;
-	serviceProviderEmail?: string;
-	serviceProviderPhone?: string;
-	serviceProviderAgencyUserId?: string;
-	citizenUinFin?: string;
-	citizenName?: string;
-	citizenEmail?: string;
-	citizenPhone?: string;
-	location?: string;
-	description?: string;
-	refId?: string;
-	videoConferenceUrl?: string;
-	dynamicValues?: DynamicValueContract[];
-	serviceProviderAliasName?: string;
-	reasonToReject?: string;
-};
+}
 
-export type BookingSearchRequest = {
-	from?: Date;
-	to?: Date;
-	fromCreatedDate?: Date;
-	toCreatedDate?: Date;
-	statuses?: BookingStatus[];
-	serviceId?: number;
-	serviceProviderIds?: number[];
-	citizenUinFins?: string[];
-} & PagingRequest;
-
-export class BookingProviderResponse {
+export class BookingResponseV1 extends BookingResponseBase {
 	/**
 	 * @isInt
 	 */
 	public id: number;
+	/**
+	 * @isInt
+	 */
+	public serviceId: number;
+	/**
+	 * @isInt
+	 */
+	public serviceProviderId?: number;
+}
+
+export class BookingResponseV2 extends BookingResponseBase {
+	public id: string;
+	public serviceId: string;
+	public serviceProviderId?: string;
+}
+
+export class BookingSearchRequest extends PagingRequest {
+	public from?: Date;
+	public to?: Date;
+	public fromCreatedDate?: Date;
+	public toCreatedDate?: Date;
+	public statuses?: BookingStatus[];
+	public serviceId?: number;
+	public serviceProviderIds?: number[];
+	public citizenUinFins?: string[];
+}
+
+export class BookingProviderResponseV1 {
+	/**
+	 * @isInt
+	 */
+	public id: number;
+	public name: string;
+}
+
+export class BookingProviderResponseV2 {
+	public id: string;
 	public name: string;
 }

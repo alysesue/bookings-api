@@ -17,22 +17,35 @@ import {
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import { TimeslotsService } from '../timeslots/timeslots.service';
-import { ApiData, ApiDataBulk, ApiDataFactory, ApiPagedData, FailedRecord } from '../../apicontract';
+import {
+	ApiData,
+	ApiDataBulk,
+	ApiDataFactory,
+	ApiPagedData,
+	ApiPagedDataV2,
+	ApiPagingFactory,
+	FailedRecord,
+} from '../../apicontract';
 import { KoaContextStore } from '../../infrastructure/koaContextStore.middleware';
-import { UserContext } from '../../infrastructure/auth/userContext';
 import { Booking } from '../../models/entities';
 import { BookingsMapper } from './bookings.mapper';
 import { BookingsService } from './bookings.service';
 import {
-	BookingAcceptRequest,
 	BookingDetailsRequest,
-	BookingProviderResponse,
-	BookingRequest,
-	BookingResponse,
-	BookingSearchRequest,
-	BookingUpdateRequest,
 	BookingReject,
+	BookingRequestV2,
+	BookingResponseV2,
+	BookingRequestV1,
+	BookingAcceptRequestV2,
+	BookingAcceptRequestV1,
+	BookingUpdateRequestV2,
+	BookingUpdateRequestV1,
+	BookingSearchRequest,
+	BookingResponseV1,
+	BookingProviderResponseV1,
+	BookingProviderResponseV2,
 } from './bookings.apicontract';
+import { IdHasher } from '../../infrastructure/idHasher';
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
 const EXPORT_LIMIT = 5000;
@@ -47,9 +60,9 @@ export class BookingsController extends Controller {
 	@Inject
 	private _koaContextStore: KoaContextStore;
 	@Inject
-	private userContext: UserContext;
-	@Inject
 	private bookingsMapper: BookingsMapper;
+	@Inject
+	private apiPagingFactory: ApiPagingFactory;
 
 	/**
 	 * Creates a new booking.
@@ -65,12 +78,12 @@ export class BookingsController extends Controller {
 	@Security('service')
 	@Response(401, 'Unauthorized')
 	public async postBooking(
-		@Body() bookingRequest: BookingRequest,
+		@Body() bookingRequest: BookingRequestV1,
 		@Header('x-api-service') serviceId: number,
-	): Promise<ApiData<BookingResponse>> {
+	): Promise<ApiData<BookingResponseV1>> {
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
-		return ApiDataFactory.create(this.bookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking));
 	}
 
 	@Post('bulk')
@@ -78,10 +91,10 @@ export class BookingsController extends Controller {
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async postBookings(
-		@Body() bookingRequests: BookingRequest[],
+		@Body() bookingRequests: BookingRequestV1[],
 		@Header('x-api-service') serviceId: number,
-	): Promise<ApiDataBulk<BookingResponse[], any[]>> {
-		const failedBookings: FailedRecord<BookingRequest, any>[] = [];
+	): Promise<ApiDataBulk<BookingResponseV1[], any[]>> {
+		const failedBookings: FailedRecord<BookingRequestV1, any>[] = [];
 		const bookings: Booking[] = [];
 
 		for (const bookingRequest of bookingRequests) {
@@ -93,10 +106,7 @@ export class BookingsController extends Controller {
 		}
 
 		this.setStatus(201);
-		return ApiDataFactory.createBulk(
-			this.bookingsMapper.mapDataModels(bookings, await this.userContext.getSnapshot()),
-			failedBookings,
-		);
+		return ApiDataFactory.createBulk(await this.bookingsMapper.mapDataModelsV1(bookings), failedBookings);
 	}
 
 	/**
@@ -113,12 +123,12 @@ export class BookingsController extends Controller {
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async postBookingOutOfSlot(
-		@Body() bookingRequest: BookingRequest,
+		@Body() bookingRequest: BookingRequestV1,
 		@Header('x-api-service') serviceId: number,
-	): Promise<ApiData<BookingResponse>> {
+	): Promise<ApiData<BookingResponseV1>> {
 		const booking = await this.bookingsService.save(bookingRequest, serviceId);
 		this.setStatus(201);
-		return ApiDataFactory.create(this.bookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking));
 	}
 
 	/**
@@ -132,12 +142,10 @@ export class BookingsController extends Controller {
 	@Response(401, 'Unauthorized')
 	public async reschedule(
 		@Path() bookingId: number,
-		@Body() rescheduleRequest: BookingUpdateRequest,
-	): Promise<ApiData<BookingResponse>> {
+		@Body() rescheduleRequest: BookingUpdateRequestV1,
+	): Promise<ApiData<BookingResponseV1>> {
 		const rescheduledBooking = await this.bookingsService.reschedule(bookingId, rescheduleRequest);
-		return ApiDataFactory.create(
-			this.bookingsMapper.mapDataModel(rescheduledBooking, await this.userContext.getSnapshot()),
-		);
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(rescheduledBooking));
 	}
 
 	/**
@@ -150,7 +158,10 @@ export class BookingsController extends Controller {
 	@SuccessResponse(204, 'Accepted')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async acceptBooking(@Path() bookingId: number, @Body() acceptRequest: BookingAcceptRequest): Promise<void> {
+	public async acceptBooking(
+		@Path() bookingId: number,
+		@Body() acceptRequest: BookingAcceptRequestV1,
+	): Promise<void> {
 		await this.bookingsService.acceptBooking(bookingId, acceptRequest);
 	}
 
@@ -180,10 +191,10 @@ export class BookingsController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async updateBooking(
 		@Path() bookingId: number,
-		@Body() bookingRequest: BookingUpdateRequest,
-	): Promise<ApiData<BookingResponse>> {
+		@Body() bookingRequest: BookingUpdateRequestV1,
+	): Promise<ApiData<BookingResponseV1>> {
 		const booking = await this.bookingsService.update(bookingId, bookingRequest);
-		return ApiDataFactory.create(this.bookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking));
 	}
 
 	/**
@@ -242,9 +253,8 @@ export class BookingsController extends Controller {
 		};
 
 		const bookings = await this.bookingsService.searchBookingsReturnAll(searchQuery);
-		const userContextSnapshot = await this.userContext.getSnapshot();
 
-		const bookingsCSVContent = await this.bookingsMapper.mapBookingsCSV(bookings, userContextSnapshot);
+		const bookingsCSVContent = await this.bookingsMapper.mapBookingsCSV(bookings);
 		const koaContext = this._koaContextStore.koaContext;
 		koaContext.body = bookingsCSVContent;
 
@@ -285,7 +295,7 @@ export class BookingsController extends Controller {
 		@Query() limit?: number,
 		@Query() maxId?: number,
 		@Header('x-api-service') serviceId?: number,
-	): Promise<ApiPagedData<BookingResponse>> {
+	): Promise<ApiPagedData<BookingResponseV1>> {
 		if (!status) {
 			status = this.bookingsMapper.mapStatuses();
 		}
@@ -304,9 +314,8 @@ export class BookingsController extends Controller {
 		};
 
 		const pagedBookings = await this.bookingsService.searchBookings(searchQuery);
-		const userContextSnapshot = await this.userContext.getSnapshot();
-		return ApiDataFactory.createPaged(pagedBookings, (booking: Booking) => {
-			return this.bookingsMapper.mapDataModel(booking, userContextSnapshot);
+		return this.apiPagingFactory.createPagedAsync(pagedBookings, async (booking: Booking) => {
+			return await this.bookingsMapper.mapDataModelV1(booking);
 		});
 	}
 
@@ -318,9 +327,9 @@ export class BookingsController extends Controller {
 	@Get('{bookingId}')
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Unauthorized')
-	public async getBooking(@Path() bookingId: number): Promise<ApiData<BookingResponse>> {
+	public async getBooking(@Path() bookingId: number): Promise<ApiData<BookingResponseV1>> {
 		const booking = await this.bookingsService.getBooking(bookingId);
-		return ApiDataFactory.create(this.bookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking));
 	}
 
 	/**
@@ -332,9 +341,9 @@ export class BookingsController extends Controller {
 	@Get('uuid/{bookingUUID}')
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Unauthorized')
-	public async getBookingByUUID(@Path() bookingUUID: string): Promise<ApiData<BookingResponse>> {
+	public async getBookingByUUID(@Path() bookingUUID: string): Promise<ApiData<BookingResponseV1>> {
 		const booking = await this.bookingsService.getBookingByUUID(bookingUUID);
-		return ApiDataFactory.create(this.bookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking));
 	}
 
 	/**
@@ -350,7 +359,7 @@ export class BookingsController extends Controller {
 		user: { minLevel: MOLUserAuthLevel.L2 },
 	})
 	@Response(401, 'Valid authentication types: [admin,agency,user]')
-	public async getBookingProviders(@Path() bookingId: number): Promise<ApiData<BookingProviderResponse[]>> {
+	public async getBookingProviders(@Path() bookingId: number): Promise<ApiData<BookingProviderResponseV1[]>> {
 		const booking = await this.bookingsService.getBooking(bookingId);
 
 		const providers = await this.timeslotService.getAvailableProvidersForTimeslot({
@@ -361,7 +370,7 @@ export class BookingsController extends Controller {
 			filterDaysInAdvance: false,
 		});
 
-		return ApiDataFactory.create(providers.map((e) => this.bookingsMapper.mapProvider(e.serviceProvider)));
+		return ApiDataFactory.create(providers.map((e) => this.bookingsMapper.mapProviderV1(e.serviceProvider)));
 	}
 
 	/**
@@ -393,8 +402,420 @@ export class BookingsController extends Controller {
 	public async validateOnHoldBooking(
 		@Body() bookingRequest: BookingDetailsRequest,
 		@Path() bookingId: number,
-	): Promise<ApiData<BookingResponse>> {
+	): Promise<ApiData<BookingResponseV1>> {
 		const booking = await this.bookingsService.validateOnHoldBooking(bookingId, bookingRequest);
-		return ApiDataFactory.create(this.bookingsMapper.mapDataModel(booking, await this.userContext.getSnapshot()));
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking));
+	}
+}
+
+@Route('v2/bookings')
+@Tags('Bookings')
+export class BookingsControllerV2 extends Controller {
+	@Inject
+	private bookingsService: BookingsService;
+	@Inject
+	private timeslotService: TimeslotsService;
+	@Inject
+	private _koaContextStore: KoaContextStore;
+	@Inject
+	private bookingsMapper: BookingsMapper;
+	@Inject
+	private idHasher: IdHasher;
+	@Inject
+	private apiPagingFactory: ApiPagingFactory;
+
+	/**
+	 * Creates a new booking.
+	 * [startDateTime, endDateTime] pair needs to match an available timeslot for the service or service provider.
+	 * If serviceProviderId is specified, the booking status will be Accepted (2),
+	 * otherwise the status will be Pending (1) and will require approval by an admin.
+	 *
+	 * @param bookingRequest
+	 * @param serviceId The service (id) to be booked.
+	 */
+	@Post()
+	@SuccessResponse(201, 'Created')
+	@Security('service')
+	@Response(401, 'Unauthorized')
+	public async postBooking(
+		@Body() bookingRequest: BookingRequestV2,
+		@Header('x-api-service') serviceId: string,
+	): Promise<ApiData<BookingResponseV2>> {
+		const unsignedServiceId = this.idHasher.decode(serviceId);
+		const unsignedServiceProviderId = this.idHasher.decode(bookingRequest.serviceProviderId);
+		const request: BookingRequestV1 = { ...bookingRequest, serviceProviderId: unsignedServiceProviderId };
+
+		const booking = await this.bookingsService.save(request, unsignedServiceId);
+		this.setStatus(201);
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking));
+	}
+
+	@Post('bulk')
+	@SuccessResponse(201, 'Created')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async postBookings(
+		@Body() bookingRequests: BookingRequestV2[],
+		@Header('x-api-service') serviceId: string,
+	): Promise<ApiDataBulk<BookingResponseV2[], any[]>> {
+		const failedBookings: FailedRecord<BookingRequestV2, any>[] = [];
+		const bookings: Booking[] = [];
+
+		const unsignedServiceId = this.idHasher.decode(serviceId);
+
+		for (const bookingRequest of bookingRequests) {
+			const unsignedServiceProviderId = this.idHasher.decode(bookingRequest.serviceProviderId);
+			const request: BookingRequestV1 = { ...bookingRequest, serviceProviderId: unsignedServiceProviderId };
+			try {
+				bookings.push(await this.bookingsService.save(request, unsignedServiceId, true));
+			} catch (error) {
+				failedBookings.push(new FailedRecord(bookingRequest, error.message));
+			}
+		}
+
+		this.setStatus(201);
+		return ApiDataFactory.createBulk(await this.bookingsMapper.mapDataModelsV2(bookings), failedBookings);
+	}
+
+	/**
+	 * Creates a new booking. Any startDateTime and endDateTime are allowed.
+	 * If serviceProviderId is specified, the booking status will be Accepted (2),
+	 * otherwise the status will be Pending (1) and will require approval by an admin.
+	 *
+	 * @param bookingRequest
+	 * @param serviceId The service (id) to be booked.
+	 */
+	@Post('admin')
+	@SuccessResponse(201, 'Created')
+	@Security('service')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async postBookingOutOfSlot(
+		@Body() bookingRequest: BookingRequestV2,
+		@Header('x-api-service') serviceId: string,
+	): Promise<ApiData<BookingResponseV2>> {
+		const unsignedServiceId = this.idHasher.decode(serviceId);
+		const unsignedServiceProviderId = this.idHasher.decode(bookingRequest.serviceProviderId);
+		const request: BookingRequestV1 = { ...bookingRequest, serviceProviderId: unsignedServiceProviderId };
+
+		const booking = await this.bookingsService.save(request, unsignedServiceId);
+		this.setStatus(201);
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking));
+	}
+
+	/**
+	 * Approves a booking and allocates a service provider to it. The booking must have Pending (1) status and the service provider (serviceProviderId) must be available for this booking timeslot otherwise the request will fail.
+	 *
+	 * @param bookingId The booking id.
+	 * @param rescheduleRequest A new booking request for reschedule
+	 */
+	@Post('{bookingId}/reschedule')
+	@SuccessResponse(200, 'Accepted')
+	@MOLAuth({ user: { minLevel: MOLUserAuthLevel.L2 } })
+	@Response(401, 'Valid authentication types: [citizen]')
+	public async reschedule(
+		@Path() bookingId: string,
+		@Body() rescheduleRequest: BookingUpdateRequestV2,
+	): Promise<ApiData<BookingResponseV2>> {
+		const unsignedBookingId = this.idHasher.decode(bookingId);
+		const unsignedServiceProviderId = this.idHasher.decode(rescheduleRequest.serviceProviderId);
+		const request: BookingUpdateRequestV1 = { ...rescheduleRequest, serviceProviderId: unsignedServiceProviderId };
+
+		const rescheduledBooking = await this.bookingsService.reschedule(unsignedBookingId, request);
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(rescheduledBooking));
+	}
+
+	/**
+	 * Approves a booking and allocates a service provider to it. The booking must have Pending (1) status and the service provider (serviceProviderId) must be available for this booking timeslot otherwise the request will fail.
+	 *
+	 * @param bookingId The booking id.
+	 * @param acceptRequest
+	 */
+	@Post('{bookingId}/accept')
+	@SuccessResponse(204, 'Accepted')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async acceptBooking(
+		@Path() bookingId: string,
+		@Body() acceptRequest: BookingAcceptRequestV2,
+	): Promise<void> {
+		const unsignedBookingId = this.idHasher.decode(bookingId);
+		const unsignedServiceProviderId = this.idHasher.decode(acceptRequest.serviceProviderId);
+		const request: BookingAcceptRequestV1 = { ...acceptRequest, serviceProviderId: unsignedServiceProviderId };
+		await this.bookingsService.acceptBooking(unsignedBookingId, request);
+	}
+
+	/**
+	 * Cancels a booking. Only future bookings that have Pending (1) or Accepted (2) status can be cancelled.
+	 *
+	 * @param bookingId The booking id.
+	 */
+	@Post('{bookingId}/cancel')
+	@SuccessResponse(204, 'Cancelled')
+	@MOLAuth({
+		admin: {},
+		agency: {},
+		user: { minLevel: MOLUserAuthLevel.L2 },
+	})
+	@Response(401, 'Valid authentication types: [admin,agency,user]')
+	public async cancelBooking(@Path() bookingId: string): Promise<void> {
+		const unsignedBookingId = this.idHasher.decode(bookingId);
+		await this.bookingsService.cancelBooking(unsignedBookingId);
+	}
+
+	/**
+	 * Updates an existing booking.
+	 * It will delete the exisitng booking and re-create a new booking based on request data.
+	 *
+	 * @param bookingId The booking id.
+	 * @param bookingRequest
+	 */
+	@Put('{bookingId}')
+	@SuccessResponse(200, 'Updated')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async updateBooking(
+		@Path() bookingId: string,
+		@Body() bookingRequest: BookingUpdateRequestV2,
+	): Promise<ApiData<BookingResponseV2>> {
+		const unsignedBookingId = this.idHasher.decode(bookingId);
+		const unsignedServiceProviderId = this.idHasher.decode(bookingRequest.serviceProviderId);
+		const request: BookingUpdateRequestV1 = { ...bookingRequest, serviceProviderId: unsignedServiceProviderId };
+		const booking = await this.bookingsService.update(unsignedBookingId, request);
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking));
+	}
+
+	/**
+	 * Retrieves all booking according to filter and returns booking results as CSV.
+	 *
+	 * @param from (Optional) The lower bound datetime limit (inclusive) for booking's end time.
+	 * @param to (Optional) The upper bound datetime limit (inclusive) for booking's start time.
+	 * @param fromCreatedDate (Optional)
+	 * @param toCreatedDate (Optional)
+	 * @param @isInt status (Optional) filters by a list of status: Pending (1), Accepted (2), Cancelled (3).
+	 * @param citizenUinFins (Optional) filters by a list of citizen ids
+	 * @param serviceProviderIds (Optional)
+	 * @param serviceId (Optional) filters by a service (id).
+	 * @param @isInt page (Optional)
+	 * @param @isInt limit (Optional)
+	 * @param maxId (Optional)
+	 */
+	@Get('csv')
+	@SuccessResponse(200, 'Ok')
+	@Security('optional-service')
+	@MOLAuth({
+		admin: {},
+		agency: {},
+	})
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	// tslint:disable-next-line: parameters-max-number
+	public async getBookingsCSV(
+		@Query() from?: Date,
+		@Query() to?: Date,
+		@Query() fromCreatedDate?: Date,
+		@Query() toCreatedDate?: Date,
+		@Query() status?: number[],
+		@Query() citizenUinFins?: string[],
+		@Query() serviceProviderIds?: string[],
+		@Query() page?: number,
+		@Query() limit?: number,
+		@Query() maxId?: string,
+		@Header('x-api-service') serviceId?: string,
+	): Promise<void> {
+		if (!status) {
+			status = this.bookingsMapper.mapStatuses();
+		}
+		await this.bookingsService.checkLimit(limit, EXPORT_LIMIT);
+
+		const unsignedServiceId = this.idHasher.decode(serviceId);
+		const spIds = [];
+		for (const spId of serviceProviderIds) {
+			const unsignedSpId = this.idHasher.decode(spId);
+			spIds.push(unsignedSpId);
+		}
+		const searchQuery: BookingSearchRequest = {
+			from,
+			to,
+			fromCreatedDate,
+			toCreatedDate,
+			statuses: status,
+			serviceId: unsignedServiceId,
+			citizenUinFins,
+			serviceProviderIds: spIds,
+			page: page || DEFAULT_PAGE,
+			limit,
+			maxId: this.idHasher.decode(maxId),
+		};
+
+		const bookings = await this.bookingsService.searchBookingsReturnAll(searchQuery);
+
+		const bookingsCSVContent = await this.bookingsMapper.mapBookingsCSV(bookings);
+		const koaContext = this._koaContextStore.koaContext;
+		koaContext.body = bookingsCSVContent;
+
+		koaContext.set('Content-Type', 'text/csv');
+		koaContext.set('Content-Disposition', `attachment; filename="exported-bookings.csv"`);
+		this._koaContextStore.manualContext = true;
+	}
+
+	/**
+	 * Retrieves all bookings that intercept the datetime range provided [from, to].
+	 *
+	 * @param from The lower bound datetime limit (inclusive) for booking's end time.
+	 * @param to  The upper bound datetime limit (inclusive) for booking's start time.
+	 * @param fromCreatedDate
+	 * @param toCreatedDate
+	 * @param @isInt status (Optional) filters by a list of status: Pending (1), Accepted (2), Cancelled (3).
+	 * @param citizenUinFins (Optional) filters by a list of citizen ids
+	 * @param serviceProviderIds
+	 * @param serviceId (Optional) filters by a service (id).
+	 * @param @isInt page
+	 * @param @isInt limit
+	 * @param maxId
+	 */
+	@Get('')
+	@SuccessResponse(200, 'Ok')
+	@Security('optional-service')
+	@MOLAuth({
+		admin: {},
+		agency: {},
+		user: { minLevel: MOLUserAuthLevel.L2 },
+	})
+	@Response(401, 'Valid authentication types: [admin,agency,user]')
+	// tslint:disable-next-line: parameters-max-number
+	public async getBookings(
+		@Query() from?: Date,
+		@Query() to?: Date,
+		@Query() fromCreatedDate?: Date,
+		@Query() toCreatedDate?: Date,
+		@Query() status?: number[],
+		@Query() citizenUinFins?: string[],
+		@Query() serviceProviderIds?: string[],
+		@Query() page?: number,
+		@Query() limit?: number,
+		@Query() maxId?: string,
+		@Header('x-api-service') serviceId?: string,
+	): Promise<ApiPagedDataV2<BookingResponseV2>> {
+		if (!status) {
+			status = this.bookingsMapper.mapStatuses();
+		}
+
+		const unsignedServiceId = this.idHasher.decode(serviceId);
+		const spIds = [];
+		for (const spId of serviceProviderIds) {
+			const unsignedSpId = this.idHasher.decode(spId);
+			spIds.push(unsignedSpId);
+		}
+		const searchQuery: BookingSearchRequest = {
+			from,
+			to,
+			fromCreatedDate,
+			toCreatedDate,
+			statuses: status,
+			serviceId: unsignedServiceId,
+			citizenUinFins,
+			serviceProviderIds: spIds,
+			page: page || DEFAULT_PAGE,
+			limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
+			maxId: this.idHasher.decode(maxId),
+		};
+
+		const pagedBookings = await this.bookingsService.searchBookings(searchQuery);
+		return this.apiPagingFactory.createPagedV2Async(pagedBookings, async (booking: Booking) => {
+			return await this.bookingsMapper.mapDataModelV2(booking);
+		});
+	}
+
+	/**
+	 * Retrieves a single booking.
+	 *
+	 * @param bookingId The booking id.
+	 */
+	@Get('{bookingId}')
+	@SuccessResponse(200, 'Ok')
+	@Response(401, 'Unauthorized')
+	public async getBooking(@Path() bookingId: string): Promise<ApiData<BookingResponseV2>> {
+		const unsignedBookingId = this.idHasher.decode(bookingId);
+		const booking = await this.bookingsService.getBooking(unsignedBookingId);
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking));
+	}
+
+	/**
+	 * Retrieves a single booking by UUID
+	 *
+	 * @param bookingUUID Booking UUID
+	 * @returns A single booking
+	 */
+	@Get('uuid/{bookingUUID}')
+	@SuccessResponse(200, 'Ok')
+	@Response(401, 'Unauthorized')
+	public async getBookingByUUID(@Path() bookingUUID: string): Promise<ApiData<BookingResponseV2>> {
+		const booking = await this.bookingsService.getBookingByUUID(bookingUUID);
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking));
+	}
+
+	/**
+	 * Retrieves a list of available service providers for this booking timeslot.
+	 *
+	 * @param bookingId The booking id.
+	 */
+	@Get('{bookingId}/providers')
+	@SuccessResponse(200, 'Ok')
+	@MOLAuth({
+		admin: {},
+		agency: {},
+		user: { minLevel: MOLUserAuthLevel.L2 },
+	})
+	@Response(401, 'Valid authentication types: [admin,agency,user]')
+	public async getBookingProviders(@Path() bookingId: string): Promise<ApiData<BookingProviderResponseV2[]>> {
+		const unsignedBookingId = this.idHasher.decode(bookingId);
+		const booking = await this.bookingsService.getBooking(unsignedBookingId);
+
+		const providers = await this.timeslotService.getAvailableProvidersForTimeslot({
+			startDateTime: booking.startDateTime,
+			endDateTime: booking.endDateTime,
+			serviceId: booking.serviceId,
+			skipUnassigned: true,
+			filterDaysInAdvance: false,
+		});
+
+		return ApiDataFactory.create(providers.map((e) => this.bookingsMapper.mapProviderV2(e.serviceProvider)));
+	}
+
+	/**
+	 * Reject a booking request. Only Pending (1) bookings that can be rejected.
+	 *
+	 * @param bookingId The booking id.
+	 * @param bookingReject The reason for rejecting booking.
+	 */
+	@Post('{bookingId}/reject')
+	@SuccessResponse(200, 'Rejected')
+	@MOLAuth({
+		admin: {},
+		agency: {},
+	})
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async rejectBooking(@Path() bookingId: string, @Body() bookingReject: BookingReject): Promise<void> {
+		const unsignedBookingId = this.idHasher.decode(bookingId);
+		await this.bookingsService.rejectBooking(unsignedBookingId, bookingReject);
+	}
+
+	/**
+	 * Validates an on hold booking.
+	 * It will add additional booking information to an existing booking and change the status of the booking
+	 *
+	 * @param bookingRequest
+	 * @param bookingId The booking id.
+	 */
+	@Post('{bookingId}/validateOnHold')
+	@SuccessResponse(200, 'Validated')
+	@Response(401, 'Unauthorized')
+	public async validateOnHoldBooking(
+		@Body() bookingRequest: BookingDetailsRequest,
+		@Path() bookingId: string,
+	): Promise<ApiData<BookingResponseV2>> {
+		const unsignedBookingId = this.idHasher.decode(bookingId);
+		const booking = await this.bookingsService.validateOnHoldBooking(unsignedBookingId, bookingRequest);
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking));
 	}
 }

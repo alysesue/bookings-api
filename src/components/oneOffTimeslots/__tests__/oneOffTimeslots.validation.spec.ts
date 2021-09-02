@@ -1,7 +1,7 @@
 import { OneOffTimeslotsValidation } from '../oneOffTimeslots.validation';
 import { Container } from 'typescript-ioc';
 import { OneOffTimeslot } from '../../../models';
-import { OneOffTimeslotRequest } from '../oneOffTimeslots.apicontract';
+import { OneOffTimeslotRequestV1 } from '../oneOffTimeslots.apicontract';
 import { DateHelper } from '../../../infrastructure/dateHelper';
 import { OneOffTimeslotsRepository } from '../oneOffTimeslots.repository';
 import { OneOffTimeslotsRepositoryMock } from '../__mocks__/oneOffTimeslots.mock';
@@ -46,7 +46,7 @@ describe('Validation of oneOffTimeslots', () => {
 	});
 
 	it('should return true when requested timeslot does not overlap with another oneOffTimeslot', async () => {
-		const request = new OneOffTimeslotRequest();
+		const request = new OneOffTimeslotRequestV1();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
 		request.endDateTime = DateHelper.addHours(request.startDateTime, 1);
 		request.capacity = 2;
@@ -57,7 +57,7 @@ describe('Validation of oneOffTimeslots', () => {
 	});
 
 	it('should throw error when requested timeslot overlaps with another oneOffTimeslot', async () => {
-		const request = new OneOffTimeslotRequest();
+		const request = new OneOffTimeslotRequestV1();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
 		request.endDateTime = new Date('2021-03-02T01:00:00Z');
 		request.capacity = 2;

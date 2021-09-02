@@ -1,7 +1,7 @@
 import { PgClient } from '../../utils/pgClient';
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
-import { ServiceResponse } from '../../../src/components/services/service.apicontract';
 import { LabelCategoryRequestModel } from '../../../src/components/labelsCategories/labelsCategories.apicontract';
+import {ServiceResponseV1} from "../../../src/components/services/service.apicontract";
 
 describe('Tests endpoint', () => {
 	const SERVICE_NAME = 'Service1';
@@ -29,7 +29,7 @@ describe('Tests endpoint', () => {
 		response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
 			body: { name: SERVICE_NAME, labels, categories },
 		});
-		serviceCreated = response.body.data as ServiceResponse;
+		serviceCreated = response.body.data as ServiceResponseV1;
 		expect(response.statusCode).toEqual(200);
 		expect(serviceCreated.labels[0].label).toBe('labelNoCategory');
 		expect(serviceCreated.categories[0].categoryName).toBe('category');
@@ -45,7 +45,7 @@ describe('Tests endpoint', () => {
 		response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceCreated.id}`, {
 			body: { name: SERVICE_NAME, labels, categories: newCategories },
 		});
-		const service = response.body.data as ServiceResponse;
+		const service = response.body.data as ServiceResponseV1;
 		expect(response.statusCode).toEqual(200);
 		expect(service.categories.length).toBe(2);
 	});
@@ -56,7 +56,7 @@ describe('Tests endpoint', () => {
 		response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceCreated.id}`, {
 			body: { name: SERVICE_NAME, labels, categories: newCategories },
 		});
-		const service = response.body.data as ServiceResponse;
+		const service = response.body.data as ServiceResponseV1;
 		expect(response.statusCode).toEqual(200);
 		expect(service.categories.length).toBe(1);
 		expect(service.categories[0].labels[0].label).toBe('heho');
@@ -67,7 +67,7 @@ describe('Tests endpoint', () => {
 		response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceCreated.id}`, {
 			body: { name: SERVICE_NAME, labels, categories: newCategories },
 		});
-		const service = response.body.data as ServiceResponse;
+		const service = response.body.data as ServiceResponseV1;
 		expect(response.statusCode).toEqual(200);
 		expect(service.labels[0].label).toBe('labelNoCategory');
 		expect(service.categories.length).toBe(1);
@@ -78,7 +78,7 @@ describe('Tests endpoint', () => {
 		response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceCreated.id}`, {
 			body: { name: SERVICE_NAME, labels, categories: [] },
 		});
-		const service = response.body.data as ServiceResponse;
+		const service = response.body.data as ServiceResponseV1;
 		expect(response.statusCode).toEqual(200);
 		expect(service.labels[0].label).toBe('labelNoCategory');
 		expect(service.categories.length).toBe(0);
@@ -89,7 +89,7 @@ describe('Tests endpoint', () => {
 		response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceCreated.id}`, {
 			body: { name: SERVICE_NAME, labels: [...allLabels], categories: [] },
 		});
-		const service = response.body.data as ServiceResponse;
+		const service = response.body.data as ServiceResponseV1;
 		expect(response.statusCode).toEqual(200);
 		expect(service.labels.length).toBe(2);
 		expect(service.labels[0].label).toBe('labelNoCategory');
@@ -102,7 +102,7 @@ describe('Tests endpoint', () => {
 		response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceCreated.id}`, {
 			body: { name: SERVICE_NAME, categories },
 		});
-		const service = response.body.data as ServiceResponse;
+		const service = response.body.data as ServiceResponseV1;
 		expect(response.statusCode).toEqual(200);
 		expect(service.categories.length).toBe(1);
 		expect(service.categories[0].labels.length).toBe(1);
@@ -113,14 +113,14 @@ describe('Tests endpoint', () => {
 		response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceCreated.id}`, {
 			body: { name: SERVICE_NAME, labels: [...allLabels], categories },
 		});
-		let service = response.body.data as ServiceResponse;
+		let service = response.body.data as ServiceResponseV1;
 		expect(response.statusCode).toEqual(200);
 		allLabels = [...service.labels, ...categories[0].labels];
 
 		response = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${serviceCreated.id}`, {
 			body: { name: SERVICE_NAME, labels: [...allLabels], categories: [] },
 		});
-		service = response.body.data as ServiceResponse;
+		service = response.body.data as ServiceResponseV1;
 		expect(response.statusCode).toEqual(200);
 		expect(service.labels.length).toBe(3);
 
