@@ -7,6 +7,8 @@ import { CaptchaService } from '../captcha/captcha.service';
 import { BusinessError } from '../../errors/businessError';
 import { BookingBusinessValidations } from '../bookings/validator/bookingBusinessValidations';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
+import { MobileOtpCookieHelper } from '../../infrastructure/bookingSGCookieHelper';
+import { DateHelper } from '../../infrastructure/dateHelper';
 
 const OTP_EXPIRY_IN_SECONDS = 3 * 60;
 
@@ -18,6 +20,8 @@ export class OtpService {
 	private captchaService: CaptchaService;
 	@Inject
 	private notificationSMSService: NotificationSMSService;
+	@Inject
+	private mobileOtpCookieHelper: MobileOtpCookieHelper;
 
 	async sendOtp(request: OtpSendRequest): Promise<string> {
 		const res = await this.captchaService.verify(request.captchaToken);
@@ -49,5 +53,30 @@ export class OtpService {
 
 	async getMobileNo(otpReqId: string): Promise<string | undefined> {
 		return await this.otpRepository.getMobileNo(otpReqId);
+	}
+
+	async verifyAndRefreshToken(): Promise<void> {
+		const cookie = this.mobileOtpCookieHelper.getCookieValue();
+		const otp = await this.otpRepository.getByOtpReqId(cookie.otpReqId);
+
+		if (!otp) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request token.`);
+		}
+
+		if (
+			Date.now() >
+			DateHelper.addMinutes(
+				new Date(cookie.cookieRefreshedAt),
+				this.mobileOtpCookieHelper.getCookieExpiry(),
+			).getTime()
+		) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request, token expired.`);
+		}
+
+		this.mobileOtpCookieHelper.setCookieValue({
+			cookieCreatedAt: otp._createdAt,
+			cookieRefreshedAt: new Date(),
+			otpReqId: otp._requestId,
+		});
 	}
 }

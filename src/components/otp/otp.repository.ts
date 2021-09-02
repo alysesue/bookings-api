@@ -29,4 +29,8 @@ export class OtpRepository extends RepositoryBase<Otp> {
 		}
 		return undefined;
 	}
+
+	async getByOtpReqId(otpReqId: string): Promise<Otp> {
+		return await (await this.getRepository()).findOne({ where: { _requestId: otpReqId } });
+	}
 }
