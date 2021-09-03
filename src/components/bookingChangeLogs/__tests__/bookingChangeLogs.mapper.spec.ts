@@ -38,14 +38,17 @@ describe('BookingChangeLog mapper tests', () => {
 	booking.id = 1;
 	booking.serviceProvider = ServiceProvider.create('name', 1, 'ad@as.com', '800 120 7163');
 
-	it('should map ChangeLog with dynamic fields', async () => {
+	it('should map ChangeLog with dynamic fields V1', async () => {
 		const log = BookingChangeLog.create({
 			booking,
 			user: adminMock,
 			action: ChangeLogAction.Create,
 			previousState: {
+				id: 123,
 				citizenName: 'a',
 				citizenEmail: 'b@email.com',
+				serviceId: 1,
+				serviceProviderId: 8,
 				dynamicValues: [
 					{
 						fieldId: 1,
@@ -62,8 +65,11 @@ describe('BookingChangeLog mapper tests', () => {
 				],
 			},
 			newState: {
+				id: 123,
 				citizenName: 'a',
 				citizenEmail: 'b@email.com',
+				serviceId: 1,
+				serviceProviderId: 8,
 				dynamicValues: [
 					{
 						fieldId: 1,
@@ -83,11 +89,14 @@ describe('BookingChangeLog mapper tests', () => {
 		log.timestamp = new Date(Date.UTC(2020, 0, 1, 14, 0));
 
 		const mapper = Container.get(BookingChangeLogsMapper);
-		const result = mapper.mapChangeLog(log);
+		const result = mapper.mapChangeLogV1(log);
 		expect(result.previousBooking).toEqual({
 			schemaVersion: 1,
+			id: 123,
 			citizenName: 'a',
 			citizenEmail: 'b@email.com',
+			serviceId: 1,
+			serviceProviderId: 8,
 			dynamicValues: [
 				{
 					fieldIdSigned: '1',
@@ -121,14 +130,17 @@ describe('BookingChangeLog mapper tests', () => {
 		});
 	});
 
-	it('(2) should map ChangeLog with dynamic fields - when not modified', async () => {
+	it('should map ChangeLog with dynamic fields V2', async () => {
 		const log = BookingChangeLog.create({
 			booking,
 			user: adminMock,
 			action: ChangeLogAction.Create,
 			previousState: {
+				id: 123,
 				citizenName: 'a',
 				citizenEmail: 'b@email.com',
+				serviceId: 1,
+				serviceProviderId: 8,
 				dynamicValues: [
 					{
 						fieldId: 1,
@@ -145,8 +157,103 @@ describe('BookingChangeLog mapper tests', () => {
 				],
 			},
 			newState: {
+				id: 123,
+				citizenName: 'a',
+				citizenEmail: 'b@email.com',
+				serviceId: 1,
+				serviceProviderId: 8,
+				dynamicValues: [
+					{
+						fieldId: 1,
+						fieldName: 'new',
+						type: DynamicValueType.Text,
+						textValue: 'some text',
+					} as DynamicValueJsonModel,
+					{
+						fieldId: 2,
+						fieldName: 'another',
+						type: DynamicValueType.Text,
+						textValue: 'changed value',
+					} as DynamicValueJsonModel,
+				],
+			},
+		});
+		log.timestamp = new Date(Date.UTC(2020, 0, 1, 14, 0));
+
+		const mapper = Container.get(BookingChangeLogsMapper);
+		const result = mapper.mapChangeLogV2(log);
+		expect(result.previousBooking).toEqual({
+			schemaVersion: 1,
+			id: '123',
+			citizenName: 'a',
+			citizenEmail: 'b@email.com',
+			serviceId: '1',
+			serviceProviderId: '8',
+			dynamicValues: [
+				{
+					fieldIdSigned: '1',
+					fieldName: 'new',
+					type: DynamicValueTypeContract.Text,
+					textValue: 'some text',
+				} as DynamicValueContract,
+				{
+					fieldIdSigned: '2',
+					fieldName: 'another',
+					type: DynamicValueTypeContract.Text,
+					textValue: 'another value',
+				} as DynamicValueContract,
+			],
+		});
+		expect(result.changes).toEqual({
+			dynamicValues: [
+				{
+					fieldIdSigned: '1',
+					fieldName: 'new',
+					type: DynamicValueTypeContract.Text,
+					textValue: 'some text',
+				} as DynamicValueContract,
+				{
+					fieldIdSigned: '2',
+					fieldName: 'another',
+					type: DynamicValueTypeContract.Text,
+					textValue: 'changed value',
+				} as DynamicValueContract,
+			],
+		});
+	});
+
+	it('(2) should map ChangeLog with dynamic fields - when not modified V1', async () => {
+		const log = BookingChangeLog.create({
+			booking,
+			user: adminMock,
+			action: ChangeLogAction.Create,
+			previousState: {
+				id: 123,
+				citizenName: 'a',
+				citizenEmail: 'b@email.com',
+				serviceId: 1,
+				serviceProviderId: 8,
+				dynamicValues: [
+					{
+						fieldId: 1,
+						fieldName: 'new',
+						type: DynamicValueType.Text,
+						textValue: 'some text',
+					} as DynamicValueJsonModel,
+					{
+						fieldId: 2,
+						fieldName: 'another',
+						type: DynamicValueType.Text,
+						textValue: 'another value',
+					} as DynamicValueJsonModel,
+				],
+			},
+			newState: {
+				id: 123,
 				citizenName: 'b',
 				citizenEmail: 'b@email.com',
+				serviceId: 1,
+				serviceProviderId: 8,
 				dynamicValues: [
 					{
 						fieldId: 1,
@@ -166,9 +273,91 @@ describe('BookingChangeLog mapper tests', () => {
 		log.timestamp = new Date(Date.UTC(2020, 0, 1, 14, 0));
 
 		const mapper = Container.get(BookingChangeLogsMapper);
-		const result = mapper.mapChangeLog(log);
+		const result = mapper.mapChangeLogV1(log);
 		expect(result.previousBooking).toEqual({
 			schemaVersion: 1,
+			id: 123,
+			serviceId: 1,
+			serviceProviderId: 8,
+			citizenName: 'a',
+			citizenEmail: 'b@email.com',
+			dynamicValues: [
+				{
+					fieldIdSigned: '1',
+					fieldName: 'new',
+					type: DynamicValueTypeContract.Text,
+					textValue: 'some text',
+				} as DynamicValueContract,
+				{
+					fieldIdSigned: '2',
+					fieldName: 'another',
+					type: DynamicValueTypeContract.Text,
+					textValue: 'another value',
+				} as DynamicValueContract,
+			],
+		});
+		expect(result.changes).toEqual({
+			citizenName: 'b',
+		});
+	});
+
+	it('(2) should map ChangeLog with dynamic fields - when not modified V2', async () => {
+		const log = BookingChangeLog.create({
+			booking,
+			user: adminMock,
+			action: ChangeLogAction.Create,
+			previousState: {
+				id: 123,
+				citizenName: 'a',
+				citizenEmail: 'b@email.com',
+				serviceId: 1,
+				serviceProviderId: 8,
+				dynamicValues: [
+					{
+						fieldId: 1,
+						fieldName: 'new',
+						type: DynamicValueType.Text,
+						textValue: 'some text',
+					} as DynamicValueJsonModel,
+					{
+						fieldId: 2,
+						fieldName: 'another',
+						type: DynamicValueType.Text,
+						textValue: 'another value',
+					} as DynamicValueJsonModel,
+				],
+			},
+			newState: {
+				id: 123,
+				citizenName: 'b',
+				citizenEmail: 'b@email.com',
+				serviceId: 1,
+				serviceProviderId: 8,
+				dynamicValues: [
+					{
+						fieldId: 1,
+						fieldName: 'new',
+						type: DynamicValueType.Text,
+						textValue: 'some text',
+					} as DynamicValueJsonModel,
+					{
+						fieldId: 2,
+						fieldName: 'another',
+						type: DynamicValueType.Text,
+						textValue: 'another value',
+					} as DynamicValueJsonModel,
+				],
+			},
+		});
+		log.timestamp = new Date(Date.UTC(2020, 0, 1, 14, 0));
+
+		const mapper = Container.get(BookingChangeLogsMapper);
+		const result = mapper.mapChangeLogV2(log);
+		expect(result.previousBooking).toEqual({
+			schemaVersion: 1,
+			id: '123',
+			serviceId: '1',
+			serviceProviderId: '8',
 			citizenName: 'a',
 			citizenEmail: 'b@email.com',
 			dynamicValues: [

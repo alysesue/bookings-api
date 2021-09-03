@@ -1,6 +1,6 @@
 import { DateHelper } from '../infrastructure/dateHelper';
 import { groupByKey } from '../tools/collections';
-import { TimeslotItem } from './entities/timeslotItem';
+import { TimeslotItem } from './entities';
 import { TimeOfDay } from './timeOfDay';
 import { TimeslotWithCapacity } from './timeslotWithCapacity';
 

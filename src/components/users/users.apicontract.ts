@@ -1,6 +1,12 @@
-export class UserProfileResponse {
+export class UserProfileResponseV1 {
 	public user: UserTypeResponse;
-	public groups: AuthGroupResponse[];
+	public groups: AuthGroupResponseV1[];
+	public otpAddon?: OtpAddOn;
+}
+
+export class UserProfileResponseV2 {
+	public user: UserTypeResponse;
+	public groups: AuthGroupResponseV2[];
 	public otpAddon?: OtpAddOn;
 }
 
@@ -40,46 +46,69 @@ export enum UserTypeContract {
 	anonymous = 'anonymous',
 }
 
-export class AuthGroupResponse {
-	public authGroupType: AuthGroupTypeContract;
-	public organisations?: OrganisationAdminGroupContract[];
-	public services?: ServiceAdminGroupContract[];
-	public serviceProvider?: ServiceProviderContract;
-	public anonymous?: AnonymousGroupContract;
-}
-
-export class OrganisationAdminGroupContract {
-	/**
-	 * @isInt
-	 */
-	public id: number;
-	public name: string;
-}
-
-export class ServiceAdminGroupContract {
-	/**
-	 * @isInt
-	 */
-	public id: number;
-	public name: string;
-}
-
-export class ServiceProviderContract {
-	/**
-	 * @isInt
-	 */
-	public id: number;
-	public name: string;
-}
-
-export class AnonymousGroupContract {
-	public bookingUUID?: string;
-}
-
 export enum AuthGroupTypeContract {
 	citizen = 'citizen',
 	organisationAdmin = 'organisation-admin',
 	serviceAdmin = 'service-admin',
 	serviceProvider = 'service-provider',
 	anonymous = 'anonymous',
+}
+
+export class AuthGroupResponseV1 {
+	public authGroupType: AuthGroupTypeContract;
+	public organisations?: OrganisationAdminGroupContractV1[];
+	public services?: ServiceAdminGroupContractV1[];
+	public serviceProvider?: ServiceProviderContractV1;
+	public anonymous?: AnonymousGroupContract;
+}
+
+export class AuthGroupResponseV2 {
+	public authGroupType: AuthGroupTypeContract;
+	public organisations?: OrganisationAdminGroupContractV2[];
+	public services?: ServiceAdminGroupContractV2[];
+	public serviceProvider?: ServiceProviderContractV2;
+	public anonymous?: AnonymousGroupContract;
+}
+
+export class OrganisationAdminGroupContractV1 {
+	/**
+	 * @isInt
+	 */
+	public id: number;
+	public name: string;
+}
+
+export class OrganisationAdminGroupContractV2 {
+	public id: string;
+	public name: string;
+}
+
+export class ServiceAdminGroupContractV1 {
+	/**
+	 * @isInt
+	 */
+	public id: number;
+	public name: string;
+}
+
+export class ServiceAdminGroupContractV2 {
+	public id: string;
+	public name: string;
+}
+
+export class ServiceProviderContractV1 {
+	/**
+	 * @isInt
+	 */
+	public id: number;
+	public name: string;
+}
+
+export class ServiceProviderContractV2 {
+	public id: string;
+	public name: string;
+}
+
+export class AnonymousGroupContract {
+	public bookingUUID?: string;
 }

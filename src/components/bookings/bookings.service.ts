@@ -18,15 +18,15 @@ import { BookingsMapper } from './bookings.mapper';
 import { BookingActionAuthVisitor } from './bookings.auth';
 import { BookingsValidatorFactory } from './validator/bookings.validation';
 import {
-	BookingAcceptRequest,
+	BookingAcceptRequestV1,
 	BookingDetailsRequest,
 	BookingReject,
-	BookingRequest,
+	BookingRequestV1,
 	BookingSearchRequest,
-	BookingUpdateRequest,
+	BookingUpdateRequestV1,
 } from './bookings.apicontract';
 import { BookingsRepository } from './bookings.repository';
-import { BookingType } from '../../../src/models/bookingType';
+import { BookingType } from '../../models/bookingType';
 import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
@@ -138,7 +138,7 @@ export class BookingsService {
 		return booking;
 	}
 
-	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequest): Promise<Booking> {
+	public async acceptBooking(bookingId: number, acceptRequest: BookingAcceptRequestV1): Promise<Booking> {
 		const acceptAction = (_booking) => this.acceptBookingInternal(_booking, acceptRequest);
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
@@ -153,7 +153,7 @@ export class BookingsService {
 		return booking;
 	}
 
-	public async update(bookingId: number, bookingRequest: BookingUpdateRequest): Promise<Booking> {
+	public async update(bookingId: number, bookingRequest: BookingUpdateRequestV1): Promise<Booking> {
 		const updateAction = (_booking) => {
 			return this.updateInternal(_booking, bookingRequest, () => {});
 		};
@@ -185,7 +185,7 @@ export class BookingsService {
 		return booking;
 	}
 
-	public async reschedule(bookingId: number, rescheduleRequest: BookingRequest): Promise<Booking> {
+	public async reschedule(bookingId: number, rescheduleRequest: BookingUpdateRequestV1): Promise<Booking> {
 		const rescheduleAction = (_booking) => this.rescheduleInternal(_booking, rescheduleRequest);
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
@@ -209,7 +209,7 @@ export class BookingsService {
 	}
 
 	public async save(
-		bookingRequest: BookingRequest,
+		bookingRequest: BookingRequestV1,
 		serviceId: number,
 		bypassCaptchaAndAutoAccept = false,
 	): Promise<Booking> {
@@ -289,7 +289,7 @@ export class BookingsService {
 
 	private async rescheduleInternal(
 		previousBooking: Booking,
-		rescheduleRequest: BookingUpdateRequest,
+		rescheduleRequest: BookingUpdateRequestV1,
 	): Promise<[ChangeLogAction, Booking]> {
 		if (!previousBooking.isValidForRescheduling()) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Booking in invalid state for rescheduling');
@@ -317,7 +317,7 @@ export class BookingsService {
 
 	private async acceptBookingInternal(
 		booking: Booking,
-		acceptRequest: BookingAcceptRequest,
+		acceptRequest: BookingAcceptRequestV1,
 	): Promise<[ChangeLogAction, Booking]> {
 		if (booking.status !== BookingStatus.PendingApproval && booking.status !== BookingStatus.OnHold) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
@@ -361,7 +361,7 @@ export class BookingsService {
 
 	private async updateInternal(
 		previousBooking: Booking,
-		bookingRequest: BookingUpdateRequest,
+		bookingRequest: BookingUpdateRequestV1,
 		afterMap: (updatedBooking: Booking, serviceProvider: ServiceProvider) => void | Promise<void>,
 	): Promise<[ChangeLogAction, Booking]> {
 		if (!bookingRequest.citizenUinFinUpdated) {
@@ -432,7 +432,7 @@ export class BookingsService {
 	}
 
 	private async saveInternal(
-		bookingRequest: BookingRequest,
+		bookingRequest: BookingRequestV1,
 		serviceId: number,
 		shouldBypassCaptchaAndAutoAccept = false,
 	): Promise<[ChangeLogAction, Booking]> {

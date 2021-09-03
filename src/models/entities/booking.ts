@@ -103,7 +103,7 @@ export class BookingBuilder {
 	}
 
 	public withAutoAccept(autoAccept: boolean): BookingBuilder {
-		this.autoAccept = !!autoAccept;
+		this.autoAccept = autoAccept;
 		return this;
 	}
 	public withCaptchaToken(captchaToken: string): BookingBuilder {

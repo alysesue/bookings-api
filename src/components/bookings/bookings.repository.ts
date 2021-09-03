@@ -204,9 +204,3 @@ export type BookingSearchQuery = {
 	limit: number;
 	maxId?: number;
 };
-
-export type PagedEntities<T> = {
-	data: T[];
-	total: number;
-	page: number;
-};

@@ -6,9 +6,10 @@ import { TimeslotItemsRepository } from '../timeslotItems.repository';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Weekday } from '../../../enums/weekday';
 import { UserContext } from '../../../infrastructure/auth/userContext';
-import { AuthGroup, ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { ServiceAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { TimeslotItemsActionAuthVisitor } from '../timeslotItems.auth';
+import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { TimeslotsScheduleRepositoryMock } from '../../../components/timeslotsSchedules/__mocks__/timeslotsSchedule.repository.mock';
 
 jest.mock('../timeslotItems.auth');
@@ -265,17 +266,3 @@ describe('TimeslotsItem services ', () => {
 		expect(visitorObj.hasPermission).toBeCalled();
 	});
 });
-
-export class UserContextMock implements Partial<UserContext> {
-	public static getCurrentUser = jest.fn<Promise<User>, any>();
-	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
-
-	public init() {}
-	public async getCurrentUser(...params): Promise<any> {
-		return await UserContextMock.getCurrentUser(...params);
-	}
-
-	public async getAuthGroups(...params): Promise<any> {
-		return await UserContextMock.getAuthGroups(...params);
-	}
-}

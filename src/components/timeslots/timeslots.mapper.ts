@@ -1,22 +1,28 @@
-import { DateHelper } from './../../infrastructure/dateHelper';
+import { DateHelper } from '../../infrastructure/dateHelper';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
 import {
 	AvailabilityByDayResponse,
-	AvailabilityEntryResponse,
-	CitizenTimeslotServiceProviderResponse,
-	TimeslotEntryResponse,
-	TimeslotServiceProviderResponse,
+	AvailabilityEntryResponseV1,
+	AvailabilityEntryResponseV2,
+	CitizenTimeslotServiceProviderResponseV1,
+	CitizenTimeslotServiceProviderResponseV2,
+	TimeslotEntryResponseV1,
+	TimeslotEntryResponseV2,
+	TimeslotServiceProviderResponseV1,
+	TimeslotServiceProviderResponseV2,
 } from './timeslots.apicontract';
 import { BookingsMapper } from '../bookings/bookings.mapper';
 import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
-import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
-import { UserContextSnapshot } from '../../infrastructure/auth/userContext';
-import { LabelsMapper } from '../../components/labels/labels.mapper';
+import { LabelsMapper } from '../labels/labels.mapper';
 import { IdHasher } from '../../infrastructure/idHasher';
+import {
+	ServiceProviderSummaryModelV1,
+	ServiceProviderSummaryModelV2,
+} from '../serviceProviders/serviceProviders.apicontract';
 
 @InRequestScope
-export class TimeslotsMapper {
+export class TimeslotsMapperV1 {
 	@Inject
 	private bookingsMapper: BookingsMapper;
 
@@ -26,29 +32,29 @@ export class TimeslotsMapper {
 	@Inject
 	public idHasher: IdHasher;
 
-	public mapAvailabilityToResponse(
+	public mapAvailabilityToResponseV1(
 		entries: AvailableTimeslotProviders[],
 		options: { skipUnavailable?: boolean; exactTimeslot?: boolean },
-	): AvailabilityEntryResponse[] {
-		return entries.map((e) => this.mapAvailabilityItem(e, options)).filter((e) => !!e);
+	): AvailabilityEntryResponseV1[] {
+		return entries.map((e) => this.mapAvailabilityItemV1(e, options)).filter((e) => !!e);
 	}
 
-	private mapAvailabilityItem(
+	private mapAvailabilityItemV1(
 		entry: AvailableTimeslotProviders,
 		options: { skipUnavailable?: boolean; exactTimeslot?: boolean },
-	): AvailabilityEntryResponse | undefined {
+	): AvailabilityEntryResponseV1 | undefined {
 		const availabilityCount = entry.getAvailabilityCount();
 		if (availabilityCount <= 0 && options.skipUnavailable) {
 			return undefined;
 		}
 
-		const response = new AvailabilityEntryResponse();
+		const response = new AvailabilityEntryResponseV1();
 		response.startTime = new Date(entry.startTime);
 		response.endTime = new Date(entry.endTime);
 		response.availabilityCount = availabilityCount;
 
 		if (options.exactTimeslot) {
-			response.timeslotServiceProviders = this.mapCitizenTimeslotServiceProviders(
+			response.timeslotServiceProviders = this.mapCitizenTimeslotServiceProvidersV1(
 				Array.from(entry.getTimeslotServiceProviders()),
 			);
 		}
@@ -56,15 +62,13 @@ export class TimeslotsMapper {
 		return response;
 	}
 
-	public mapTimeslotEntry(
-		entry: AvailableTimeslotProviders,
-		userContext: UserContextSnapshot,
-	): TimeslotEntryResponse {
-		const [timeslotServiceProviders, totalCapacity, totalAssignedBookings] = this.mapTimeslotServiceProviders(
-			Array.from(entry.getTimeslotServiceProviders()),
-			userContext,
-		);
-		const response = new TimeslotEntryResponse();
+	public async mapTimeslotEntryV1(entry: AvailableTimeslotProviders): Promise<TimeslotEntryResponseV1> {
+		const [
+			timeslotServiceProviders,
+			totalCapacity,
+			totalAssignedBookings,
+		] = await this.mapTimeslotServiceProvidersV1(Array.from(entry.getTimeslotServiceProviders()));
+		const response = new TimeslotEntryResponseV1();
 		response.startTime = new Date(entry.startTime);
 		response.endTime = new Date(entry.endTime);
 		response.timeslotServiceProviders = timeslotServiceProviders;
@@ -75,20 +79,20 @@ export class TimeslotsMapper {
 		return response;
 	}
 
-	public mapTimeslotServiceProviders(
+	public async mapTimeslotServiceProvidersV1(
 		entries: TimeslotServiceProviderResult[],
-		userContext: UserContextSnapshot,
-	): [TimeslotServiceProviderResponse[], number, number] {
+	): Promise<[TimeslotServiceProviderResponseV1[], number, number]> {
 		let totalCapacity = 0;
 		let totalAssignedBookings = 0;
-		const res = entries.map((entry) => {
-			const item = this.mapServiceProviderTimeslot(entry, userContext);
+		const mappedTimeslots = [];
+		for (const entry of entries) {
+			const item = await this.mapServiceProviderTimeslotV1(entry);
+			mappedTimeslots.push(item);
 			totalCapacity += item.capacity;
 			totalAssignedBookings += item.assignedBookingCount;
-			return item;
-		});
+		}
 
-		return [res, totalCapacity, totalAssignedBookings];
+		return [mappedTimeslots, totalCapacity, totalAssignedBookings];
 	}
 
 	public groupAvailabilityByDateResponse(entries: AvailableTimeslotProviders[]): AvailabilityByDayResponse[] {
@@ -110,40 +114,171 @@ export class TimeslotsMapper {
 		return result;
 	}
 
-	public mapCitizenTimeslotServiceProviders(
+	public mapCitizenTimeslotServiceProvidersV1(
 		entries: TimeslotServiceProviderResult[],
-	): CitizenTimeslotServiceProviderResponse[] {
+	): CitizenTimeslotServiceProviderResponseV1[] {
 		return entries.map((entry) => {
-			const item = this.mapCitizenServiceProviderTimeslot(entry);
+			const item = this.mapCitizenServiceProviderTimeslotV1(entry);
 			return item;
 		});
 	}
 
-	private mapCitizenServiceProviderTimeslot(
+	private mapCitizenServiceProviderTimeslotV1(
 		entry: TimeslotServiceProviderResult,
-	): CitizenTimeslotServiceProviderResponse {
-		const item = new CitizenTimeslotServiceProviderResponse();
-		item.serviceProvider = new ServiceProviderSummaryModel(entry.serviceProvider.id, entry.serviceProvider.name);
+	): CitizenTimeslotServiceProviderResponseV1 {
+		const item = new CitizenTimeslotServiceProviderResponseV1();
+		item.serviceProvider = new ServiceProviderSummaryModelV1(entry.serviceProvider.id, entry.serviceProvider.name);
 		item.eventTitle = entry.title ?? undefined;
 		item.eventDescription = entry.description ?? undefined;
 		return item;
 	}
 
-	private mapServiceProviderTimeslot(
+	private async mapServiceProviderTimeslotV1(
 		entry: TimeslotServiceProviderResult,
-		userContext: UserContextSnapshot,
-	): TimeslotServiceProviderResponse {
-		const item = new TimeslotServiceProviderResponse();
+	): Promise<TimeslotServiceProviderResponseV1> {
+		const item = new TimeslotServiceProviderResponseV1();
+		const acceptedBookings = [];
+		const pendingBookings = [];
+		for (const booking of entry.acceptedBookings) {
+			const mappedBooking = await this.bookingsMapper.mapDataModelV1(booking);
+			acceptedBookings.push(mappedBooking);
+		}
+		for (const booking of entry.pendingBookings) {
+			const mappedBooking = await this.bookingsMapper.mapDataModelV1(booking);
+			pendingBookings.push(mappedBooking);
+		}
+		item.acceptedBookings = acceptedBookings;
+		item.pendingBookings = pendingBookings;
 		item.capacity = entry.capacity;
-		item.serviceProvider = new ServiceProviderSummaryModel(entry.serviceProvider.id, entry.serviceProvider.name);
+		item.serviceProvider = new ServiceProviderSummaryModelV1(entry.serviceProvider.id, entry.serviceProvider.name);
 		item.assignedBookingCount = entry.acceptedBookings.length + entry.pendingBookings.length;
 		item.availabilityCount = entry.availabilityCount;
-		item.acceptedBookings = entry.acceptedBookings.map((booking) => {
-			return this.bookingsMapper.mapDataModel(booking, userContext);
+		if (entry.oneOffTimeslotId) {
+			item.oneOffTimeslotId = this.idHasher.encode(entry.oneOffTimeslotId);
+		}
+		item.labels = this.labelsMapper.mapToLabelsResponse(entry.labels);
+		item.eventTitle = entry.title ?? undefined;
+		item.eventDescription = entry.description ?? undefined;
+		item.isRecurring = entry.isRecurring ?? false;
+		return item;
+	}
+}
+
+@InRequestScope
+export class TimeslotsMapperV2 {
+	@Inject
+	private bookingsMapper: BookingsMapper;
+
+	@Inject
+	public labelsMapper: LabelsMapper;
+
+	@Inject
+	public idHasher: IdHasher;
+
+	public mapAvailabilityToResponseV2(
+		entries: AvailableTimeslotProviders[],
+		options: { skipUnavailable?: boolean; exactTimeslot?: boolean },
+	): AvailabilityEntryResponseV2[] {
+		return entries.map((e) => this.mapAvailabilityItemV2(e, options)).filter((e) => !!e);
+	}
+
+	private mapAvailabilityItemV2(
+		entry: AvailableTimeslotProviders,
+		options: { skipUnavailable?: boolean; exactTimeslot?: boolean },
+	): AvailabilityEntryResponseV2 | undefined {
+		const availabilityCount = entry.getAvailabilityCount();
+		if (availabilityCount <= 0 && options.skipUnavailable) {
+			return undefined;
+		}
+
+		const response = new AvailabilityEntryResponseV2();
+		response.startTime = new Date(entry.startTime);
+		response.endTime = new Date(entry.endTime);
+		response.availabilityCount = availabilityCount;
+
+		if (options.exactTimeslot) {
+			response.timeslotServiceProviders = this.mapCitizenTimeslotServiceProvidersV2(
+				Array.from(entry.getTimeslotServiceProviders()),
+			);
+		}
+
+		return response;
+	}
+
+	public async mapTimeslotEntryV2(entry: AvailableTimeslotProviders): Promise<TimeslotEntryResponseV2> {
+		const [
+			timeslotServiceProviders,
+			totalCapacity,
+			totalAssignedBookings,
+		] = await this.mapTimeslotServiceProvidersV2(Array.from(entry.getTimeslotServiceProviders()));
+		const response = new TimeslotEntryResponseV2();
+		response.startTime = new Date(entry.startTime);
+		response.endTime = new Date(entry.endTime);
+		response.timeslotServiceProviders = timeslotServiceProviders;
+		response.totalAssignedBookingCount = totalAssignedBookings;
+		response.totalUnassignedBookingCount = entry.unassignedPendingBookingCount;
+		response.totalAvailabilityCount = entry.getAvailabilityCount();
+		response.totalCapacity = totalCapacity;
+		return response;
+	}
+
+	public async mapTimeslotServiceProvidersV2(
+		entries: TimeslotServiceProviderResult[],
+	): Promise<[TimeslotServiceProviderResponseV2[], number, number]> {
+		let totalCapacity = 0;
+		let totalAssignedBookings = 0;
+		const mappedTimeslots = [];
+		for (const entry of entries) {
+			const item = await this.mapServiceProviderTimeslotV2(entry);
+			mappedTimeslots.push(item);
+			totalCapacity += item.capacity;
+			totalAssignedBookings += item.assignedBookingCount;
+		}
+
+		return [mappedTimeslots, totalCapacity, totalAssignedBookings];
+	}
+
+	public mapCitizenTimeslotServiceProvidersV2(
+		entries: TimeslotServiceProviderResult[],
+	): CitizenTimeslotServiceProviderResponseV2[] {
+		return entries.map((entry) => {
+			const item = this.mapCitizenServiceProviderTimeslotV2(entry);
+			return item;
 		});
-		item.pendingBookings = entry.pendingBookings.map((booking) => {
-			return this.bookingsMapper.mapDataModel(booking, userContext);
-		});
+	}
+
+	private mapCitizenServiceProviderTimeslotV2(
+		entry: TimeslotServiceProviderResult,
+	): CitizenTimeslotServiceProviderResponseV2 {
+		const item = new CitizenTimeslotServiceProviderResponseV2();
+		const signedServiceProviderId = this.idHasher.encode(entry.serviceProvider.id);
+		item.serviceProvider = new ServiceProviderSummaryModelV2(signedServiceProviderId, entry.serviceProvider.name);
+		item.eventTitle = entry.title ?? undefined;
+		item.eventDescription = entry.description ?? undefined;
+		return item;
+	}
+
+	private async mapServiceProviderTimeslotV2(
+		entry: TimeslotServiceProviderResult,
+	): Promise<TimeslotServiceProviderResponseV2> {
+		const signedServiceProviderId = this.idHasher.encode(entry.serviceProvider.id);
+		const item = new TimeslotServiceProviderResponseV2();
+		const acceptedBookings = [];
+		const pendingBookings = [];
+		for (const booking of entry.acceptedBookings) {
+			const mappedBooking = await this.bookingsMapper.mapDataModelV2(booking);
+			acceptedBookings.push(mappedBooking);
+		}
+		for (const booking of entry.pendingBookings) {
+			const mappedBooking = await this.bookingsMapper.mapDataModelV2(booking);
+			pendingBookings.push(mappedBooking);
+		}
+		item.acceptedBookings = acceptedBookings;
+		item.pendingBookings = pendingBookings;
+		item.capacity = entry.capacity;
+		item.serviceProvider = new ServiceProviderSummaryModelV2(signedServiceProviderId, entry.serviceProvider.name);
+		item.assignedBookingCount = entry.acceptedBookings.length + entry.pendingBookings.length;
+		item.availabilityCount = entry.availabilityCount;
 		if (entry.oneOffTimeslotId) {
 			item.oneOffTimeslotId = this.idHasher.encode(entry.oneOffTimeslotId);
 		}

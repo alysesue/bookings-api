@@ -2,17 +2,37 @@ import { Inject } from 'typescript-ioc';
 import { Service } from '../../models/entities';
 import { LabelsMapper } from '../labels/labels.mapper';
 import { LabelsCategoriesMapper } from '../labelsCategories/labelsCategories.mapper';
-import { AdditionalSettings, PartialAdditionalSettings, ServiceRequest, ServiceResponse } from './service.apicontract';
+import {
+	AdditionalSettings,
+	PartialAdditionalSettings,
+	ServiceRequestV1,
+	ServiceResponseBase,
+	ServiceResponseV1,
+	ServiceResponseV2,
+} from './service.apicontract';
+import { IdHasher } from '../../infrastructure/idHasher';
 
 export class ServicesMapper {
 	@Inject
 	private labelsMapper: LabelsMapper;
 	@Inject
 	private categoriesMapper: LabelsCategoriesMapper;
+	@Inject
+	private idHasher: IdHasher;
 
-	public mapToServiceResponse(service: Service) {
-		const serviceResponse = new ServiceResponse();
-		serviceResponse.id = service.id;
+	public mapToServiceResponseV1(service: Service): ServiceResponseV1 {
+		const serviceResponse = this.mapToServiceResponseBase(service);
+		return { ...serviceResponse, id: service.id };
+	}
+
+	public mapToServiceResponseV2(service: Service): ServiceResponseV2 {
+		const signedServiceId = this.idHasher.encode(service.id);
+		const serviceResponse = this.mapToServiceResponseBase(service);
+		return { ...serviceResponse, id: signedServiceId };
+	}
+
+	private mapToServiceResponseBase(service: Service): ServiceResponseBase {
+		const serviceResponse = new ServiceResponseBase();
 		serviceResponse.name = service.name;
 		serviceResponse.isSpAutoAssigned = service.isSpAutoAssigned;
 		serviceResponse.noNric = service.noNric;
@@ -24,7 +44,6 @@ export class ServicesMapper {
 		serviceResponse.isStandAlone = service.isStandAlone;
 		serviceResponse.minDaysInAdvance = service.minDaysInAdvance;
 		serviceResponse.maxDaysInAdvance = service.maxDaysInAdvance;
-
 		serviceResponse.additionalSettings = this.mapToSettingsResponse(service);
 		return serviceResponse;
 	}
@@ -40,9 +59,8 @@ export class ServicesMapper {
 		return additionalSettings;
 	}
 
-	public static mapToEntity(service: Service, request: ServiceRequest) {
+	public mapToEntityV1(service: Service, request: ServiceRequestV1) {
 		// Categories and labels are mapped separately
-
 		service.name = request.name.trim();
 		service.setIsSpAutoAssigned(request.isSpAutoAssigned);
 		service.setNoNric(request.noNric);
@@ -57,7 +75,7 @@ export class ServicesMapper {
 		}
 	}
 
-	private static additionalSettingsMapper(service: Service, settings: PartialAdditionalSettings) {
+	private additionalSettingsMapper(service: Service, settings: PartialAdditionalSettings) {
 		const {
 			allowAnonymousBookings,
 			isOnHold,

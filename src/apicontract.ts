@@ -1,4 +1,6 @@
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { IPagedEntities } from './core/pagedEntities';
+import { IdHasher } from './infrastructure/idHasher';
 
 export class ApiData<T> {
 	public data: T;
@@ -24,11 +26,11 @@ export class ApiDataBulk<T, FailedRecords> {
 	}
 }
 
-export type PagingRequest = {
-	page: number;
-	limit: number;
-	maxId?: number;
-};
+export class PagingRequest {
+	public page: number;
+	public limit: number;
+	public maxId?: number;
+}
 
 export class ApiPagingInfo {
 	public page: number;
@@ -44,7 +46,24 @@ export class ApiPagedData<T> {
 	public paging: ApiPagingInfo;
 }
 
+export class ApiPagingInfoV2 {
+	public page: number;
+	public limit: number;
+	public total: number;
+	public maxId: string;
+	public outdatedMaxId: boolean;
+	public hasMore: boolean;
+}
+
+export class ApiPagedDataV2<T> {
+	public data: T[];
+	public paging: ApiPagingInfoV2;
+}
+
 export type MapFunction<TInput, TOutput> = (input: TInput) => TOutput;
+
+export type MapFunctionAsync<TInput, TOutput> = (input: TInput) => Promise<TOutput>;
+
 export class ApiDataFactory {
 	private constructor() {}
 	public static create<T>(data: T): ApiData<T> {
@@ -54,8 +73,14 @@ export class ApiDataFactory {
 	public static createBulk<T, F>(created: T, failedBookings: F): ApiDataBulk<T, F> {
 		return new ApiDataBulk(created, failedBookings);
 	}
+}
 
-	private static createPagingInfo(pagedEntities: IPagedEntities<any>): ApiPagingInfo {
+@InRequestScope
+export class ApiPagingFactory {
+	@Inject
+	private idHasher: IdHasher;
+
+	private createPagingInfo(pagedEntities: IPagedEntities<any>): ApiPagingInfo {
 		const info = new ApiPagingInfo();
 		info.page = pagedEntities.page;
 		info.limit = pagedEntities.limit;
@@ -66,13 +91,42 @@ export class ApiDataFactory {
 		return info;
 	}
 
-	public static createPaged<TInput, TOutput>(
+	private createPagingInfoV2(pagedEntities: IPagedEntities<any>): ApiPagingInfoV2 {
+		const info = new ApiPagingInfoV2();
+		info.page = pagedEntities.page;
+		info.limit = pagedEntities.limit;
+		info.total = pagedEntities.total;
+		info.maxId = this.idHasher.encode(pagedEntities.maxId);
+		info.outdatedMaxId = pagedEntities.outdatedMaxId;
+		info.hasMore = pagedEntities.hasMore;
+		return info;
+	}
+
+	public async createPagedAsync<TInput, TOutput>(
 		pagedEntities: IPagedEntities<TInput>,
-		mapFunction: MapFunction<TInput, TOutput>,
-	): ApiPagedData<TOutput> {
+		mapFunction: MapFunctionAsync<TInput, TOutput> | MapFunction<TInput, TOutput>,
+	): Promise<ApiPagedData<TOutput>> {
 		const pagedData = new ApiPagedData<TOutput>();
-		pagedData.data = pagedEntities.entries.map(mapFunction);
-		pagedData.paging = ApiDataFactory.createPagingInfo(pagedEntities);
+		pagedData.data = [];
+		for (const entry of pagedEntities.entries) {
+			const mappedResult = await mapFunction(entry);
+			pagedData.data.push(mappedResult);
+		}
+		pagedData.paging = this.createPagingInfo(pagedEntities);
+		return pagedData;
+	}
+
+	public async createPagedV2Async<TInput, TOutput>(
+		pagedEntities: IPagedEntities<TInput>,
+		mapFunction: MapFunctionAsync<TInput, TOutput> | MapFunction<TInput, TOutput>,
+	): Promise<ApiPagedDataV2<TOutput>> {
+		const pagedData = new ApiPagedDataV2<TOutput>();
+		pagedData.data = [];
+		for (const entry of pagedEntities.entries) {
+			const mappedResult = await mapFunction(entry);
+			pagedData.data.push(mappedResult);
+		}
+		pagedData.paging = this.createPagingInfoV2(pagedEntities);
 		return pagedData;
 	}
 }

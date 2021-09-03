@@ -1,7 +1,8 @@
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { PgClient } from '../../utils/pgClient';
 import { populateService, populateServiceWithFields } from '../../populate/basic';
-import { ServiceResponse } from '../../../src/components/services/service.apicontract';
+import {ServiceResponseV1} from "../../../src/components/services/service.apicontract";
+// import { ServiceResponse } from '../../../src/components/services/service.apicontract';
 
 describe('Tests endpoint and populate data', () => {
 	const SERVICE_NAME = 'Service';
@@ -67,7 +68,7 @@ describe('Tests endpoint and populate data', () => {
 			body: { name: SERVICE_NAME, labels: [{ label: 'name' }] },
 		});
 
-		const update1Service = update1.body.data as ServiceResponse;
+		const update1Service = update1.body.data as ServiceResponseV1;
 		expect(update1.statusCode).toEqual(200);
 		expect(update1Service.labels.length).toEqual(1);
 		expect(update1Service.labels[0].label).toEqual('name');
@@ -76,7 +77,7 @@ describe('Tests endpoint and populate data', () => {
 		const update2 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
 			body: { name: SERVICE_NAME, labels: [{ id: update1LabelId, label: 'name2' }] },
 		});
-		const update2Service = update2.body.data as ServiceResponse;
+		const update2Service = update2.body.data as ServiceResponseV1;
 
 		expect(update2.statusCode).toEqual(200);
 		expect(update1Service.labels.length).toEqual(1);
@@ -92,7 +93,7 @@ describe('Tests endpoint and populate data', () => {
 				labels: [{ label: 'labelA' }, { label: 'labelB' }],
 			},
 		});
-		const update1Service = update1.body.data as ServiceResponse;
+		const update1Service = update1.body.data as ServiceResponseV1;
 		expect(update1.statusCode).toEqual(200);
 		expect(update1Service.labels.length).toEqual(2);
 		expect(update1Service.labels[0].label).toEqual('labelA');
@@ -103,7 +104,7 @@ describe('Tests endpoint and populate data', () => {
 				labels: [{ id: update1Service.labels[0].id, label: 'labelA_' }],
 			},
 		});
-		const update2Service = update2.body.data as ServiceResponse;
+		const update2Service = update2.body.data as ServiceResponseV1;
 
 		// Should define an explicit order for labels in the api
 

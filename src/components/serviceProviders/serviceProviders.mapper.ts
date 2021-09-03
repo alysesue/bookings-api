@@ -1,38 +1,36 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { Service, ServiceProvider, ServiceProviderGroupMap } from '../../models';
-import { mapToTimeslotsScheduleResponse } from '../timeslotItems/timeslotItems.mapper';
-import { mapToResponse as mapScheduleFormResponse } from '../scheduleForms/scheduleForms.mapper';
 import {
 	MolServiceProviderOnboard,
 	ServiceProviderModel,
-	ServiceProviderResponseModel,
-	ServiceProviderSummaryModel,
+	ServiceProviderResponseModelBase,
+	ServiceProviderResponseModelV1,
+	ServiceProviderResponseModelV2,
+	ServiceProviderSummaryModelV1,
+	ServiceProviderSummaryModelV2,
 } from './serviceProviders.apicontract';
 import { UserContext } from '../../infrastructure/auth/userContext';
+import { IdHasher } from '../../infrastructure/idHasher';
+import { TimeslotItemsMapper } from '../timeslotItems/timeslotItems.mapper';
+import { ScheduleFormsMapper } from '../scheduleForms/scheduleForms.mapper';
 
 @InRequestScope
 export class ServiceProvidersMapper {
 	@Inject
 	private userContext: UserContext;
+	@Inject
+	private idHasher: IdHasher;
+	@Inject
+	private timeslotItemsMapper: TimeslotItemsMapper;
+	@Inject
+	private scheduleFormsMapper: ScheduleFormsMapper;
 
-	public async mapDataModel(
-		spData: ServiceProvider,
-		options: { includeTimeslotsSchedule?: boolean; includeScheduleForm?: boolean },
-	): Promise<ServiceProviderResponseModel> {
+	private async mapDataModelBase(spData: ServiceProvider): Promise<ServiceProviderResponseModelBase> {
 		const currentUser = await this.userContext.getCurrentUser();
 		const userIsAdmin = currentUser.isAdmin() || currentUser.isAgency();
 
-		const response = new ServiceProviderResponseModel();
-		if (options.includeTimeslotsSchedule) {
-			response.timeslotsSchedule = mapToTimeslotsScheduleResponse(spData.timeslotsSchedule);
-		}
-		if (options.includeScheduleForm) {
-			response.scheduleForm = mapScheduleFormResponse(spData.scheduleForm);
-		}
-
-		response.id = spData.id;
+		const response = new ServiceProviderResponseModelBase();
 		response.name = spData.name;
-		response.serviceId = spData.serviceId;
 		response.scheduleFormConfirmed = spData.scheduleFormConfirmed;
 		response.description = spData?.description;
 		response.onHoldEnabled = spData.service?.isOnHold;
@@ -48,24 +46,81 @@ export class ServiceProvidersMapper {
 		return response;
 	}
 
-	public async mapDataModels(
+	public async mapDataModelV1(
+		spData: ServiceProvider,
+		options: { includeTimeslotsSchedule?: boolean; includeScheduleForm?: boolean },
+	): Promise<ServiceProviderResponseModelV1> {
+		const serviceProviderResponse = await this.mapDataModelBase(spData);
+		let timeslotsSchedule;
+		if (options.includeTimeslotsSchedule) {
+			timeslotsSchedule = this.timeslotItemsMapper.mapToTimeslotsScheduleResponseV1(spData.timeslotsSchedule);
+		}
+		let scheduleForm;
+		if (options.includeScheduleForm) {
+			scheduleForm = this.scheduleFormsMapper.mapToResponseV1(spData.scheduleForm);
+		}
+		const serviceProviderId = spData.id;
+		const serviceId = spData.serviceId;
+		return { ...serviceProviderResponse, id: serviceProviderId, serviceId, timeslotsSchedule, scheduleForm };
+	}
+
+	public async mapDataModelV2(
+		spData: ServiceProvider,
+		options: { includeTimeslotsSchedule?: boolean; includeScheduleForm?: boolean },
+	): Promise<ServiceProviderResponseModelV2> {
+		const serviceProviderResponse = await this.mapDataModelBase(spData);
+		let timeslotsSchedule;
+		if (options.includeTimeslotsSchedule) {
+			timeslotsSchedule = this.timeslotItemsMapper.mapToTimeslotsScheduleResponseV2(spData.timeslotsSchedule);
+		}
+		let scheduleForm;
+		if (options.includeScheduleForm) {
+			scheduleForm = this.scheduleFormsMapper.mapToResponseV2(spData.scheduleForm);
+		}
+		const serviceProviderId = this.idHasher.encode(spData.id);
+		const serviceId = this.idHasher.encode(spData.serviceId);
+		return { ...serviceProviderResponse, id: serviceProviderId, serviceId, timeslotsSchedule, scheduleForm };
+	}
+
+	public async mapDataModelsV1(
 		spList: ServiceProvider[],
 		options: { includeTimeslotsSchedule?: boolean; includeScheduleForm?: boolean },
-	): Promise<ServiceProviderResponseModel[]> {
+	): Promise<ServiceProviderResponseModelV1[]> {
 		const result = [];
 
 		for (const sp of spList) {
-			result.push(await this.mapDataModel(sp, options));
+			result.push(await this.mapDataModelV1(sp, options));
 		}
 		return result;
 	}
 
-	public mapSummaryDataModel(entry: ServiceProvider): ServiceProviderSummaryModel {
-		return new ServiceProviderSummaryModel(entry.id, entry.name);
+	public async mapDataModelsV2(
+		spList: ServiceProvider[],
+		options: { includeTimeslotsSchedule?: boolean; includeScheduleForm?: boolean },
+	): Promise<ServiceProviderResponseModelV2[]> {
+		const result = [];
+
+		for (const sp of spList) {
+			result.push(await this.mapDataModelV2(sp, options));
+		}
+		return result;
 	}
 
-	public mapSummaryDataModels(entries: ServiceProvider[]): ServiceProviderSummaryModel[] {
-		return entries?.map((e) => this.mapSummaryDataModel(e));
+	private mapSummaryDataModelV1(entry: ServiceProvider): ServiceProviderSummaryModelV1 {
+		return new ServiceProviderSummaryModelV1(entry.id, entry.name);
+	}
+
+	public mapSummaryDataModelsV1(entries: ServiceProvider[]): ServiceProviderSummaryModelV1[] {
+		return entries?.map((e) => this.mapSummaryDataModelV1(e));
+	}
+
+	private mapSummaryDataModelV2(entry: ServiceProvider): ServiceProviderSummaryModelV2 {
+		const signedServiceProviderId = this.idHasher.encode(entry.id);
+		return new ServiceProviderSummaryModelV2(signedServiceProviderId, entry.name);
+	}
+
+	public mapSummaryDataModelsV2(entries: ServiceProvider[]): ServiceProviderSummaryModelV2[] {
+		return entries?.map((e) => this.mapSummaryDataModelV2(e));
 	}
 
 	public mapToEntity(

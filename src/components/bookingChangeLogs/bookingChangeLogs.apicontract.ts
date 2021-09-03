@@ -1,57 +1,79 @@
 import { DynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
 import { UserTypeResponse } from '../users/users.apicontract';
 
-export class BookingChangeLogResponse {
+export class BookingChangeLogResponseV1 {
 	/**
 	 * @isInt
 	 */
 	public bookingId: number;
-	public changeLogs: ChangeLogEntryResponse[];
+	public changeLogs: ChangeLogEntryResponseV1[];
 }
 
-export class ChangeLogEntryResponse {
+export class BookingChangeLogResponseV2 {
+	public bookingId: string;
+	public changeLogs: ChangeLogEntryResponseV2[];
+}
+
+export class ChangeLogEntryResponseBase {
 	public timestamp: Date;
 	public user: UserTypeResponse;
 	public action: ChangeLogActionContract;
-	public previousBooking: BookingStateResponse;
-	public changes: BookingStateResponse;
 }
 
-export type BookingStateResponse = {
+export class ChangeLogEntryResponseV1 extends ChangeLogEntryResponseBase {
+	public previousBooking: BookingStateResponseV1;
+	public changes: BookingStateResponseV1;
+}
+
+export class ChangeLogEntryResponseV2 extends ChangeLogEntryResponseBase {
+	public previousBooking: BookingStateResponseV2;
+	public changes: BookingStateResponseV2;
+}
+
+export class BookingStateResponseBase {
 	/**
 	 * @isInt
 	 */
-	id?: number;
+	public status?: number;
+	public startDateTime?: Date;
+	public endDateTime?: Date;
+	public serviceName?: string;
+	public serviceProviderAgencyUserId?: string;
+	public serviceProviderName?: string;
+	public serviceProviderEmail?: string;
+	public serviceProviderPhone?: string;
+	public citizenUinFin?: string;
+	public citizenName?: string;
+	public citizenEmail?: string;
+	public citizenPhone?: string;
+	public location?: string;
+	public description?: string;
+	public videoConferenceUrl?: string;
+	public refId?: string;
+	public dynamicValues?: DynamicValueContract[];
+	public serviceProviderAliasName?: string;
+}
+
+export class BookingStateResponseV1 extends BookingStateResponseBase {
 	/**
 	 * @isInt
 	 */
-	status?: number;
-	startDateTime?: Date;
-	endDateTime?: Date;
+	public id?: number;
 	/**
 	 * @isInt
 	 */
-	serviceId?: number;
-	serviceName?: string;
+	public serviceId?: number;
 	/**
 	 * @isInt
 	 */
-	serviceProviderId?: number;
-	serviceProviderAgencyUserId?: string;
-	serviceProviderName?: string;
-	serviceProviderEmail?: string;
-	serviceProviderPhone?: string;
-	citizenUinFin?: string;
-	citizenName?: string;
-	citizenEmail?: string;
-	citizenPhone?: string;
-	location?: string;
-	description?: string;
-	videoConferenceUrl?: string;
-	refId?: string;
-	dynamicValues?: DynamicValueContract[];
-	serviceProviderAliasName?: string;
-};
+	public serviceProviderId?: number;
+}
+
+export class BookingStateResponseV2 extends BookingStateResponseBase {
+	public id?: string;
+	public serviceId?: string;
+	public serviceProviderId?: string;
+}
 
 export type ChangeLogSearchRequest = {};
 

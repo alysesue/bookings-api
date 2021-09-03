@@ -15,23 +15,23 @@ import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entitie
 import { Container } from 'typescript-ioc';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
-import { PersistDynamicValueContract } from '../../../components/dynamicFields/dynamicValues.apicontract';
-import { BookingDetailsRequest, BookingRequest } from '../bookings.apicontract';
-import { DynamicFieldsServiceMock } from '../../../components/dynamicFields/__mocks__/dynamicFields.service.mock';
+import { PersistDynamicValueContract } from '../../dynamicFields/dynamicValues.apicontract';
+import { DynamicFieldsServiceMock } from '../../dynamicFields/__mocks__/dynamicFields.service.mock';
+import { BookingDetailsRequest } from '../bookings.apicontract';
 import { bookingStatusArray } from '../../../models/bookingStatus';
 import { IBookingsValidator } from '../validator/bookings.validation';
+import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
+import { BookingBuilder } from '../../../models/entities/booking';
 import {
 	DynamicValuesMapper,
 	DynamicValuesRequestMapper,
 	MapRequestOptionalResult,
-} from '../../../components/dynamicFields/dynamicValues.mapper';
-import { UserContext, UserContextSnapshot } from '../../../infrastructure/auth/userContext';
-import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
-import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
-import { DynamicValuesRequestMapperMock } from '../../../components/dynamicFields/__mocks__/dynamicValues.mapper.mock';
-import { DynamicValuesMapperMock } from '../../../components/dynamicFields/__mocks__/dynamicValues.mapper.mock';
-import { DateHelper } from '../../../infrastructure/dateHelper';
+} from '../../dynamicFields/dynamicValues.mapper';
+import { UserContext } from '../../../infrastructure/auth/userContext';
+import { DynamicValuesRequestMapperMock } from '../../dynamicFields/__mocks__/dynamicValues.mapper.mock';
+import { DynamicValuesMapperMock } from '../../dynamicFields/__mocks__/dynamicValues.mapper.mock';
 import { MyInfoResponse } from '../../../models/myInfoTypes';
+import { UinFinConfigurationMock } from '../../../models/__mocks__/uinFinConfiguration.mock';
 
 jest.mock('../../../models/uinFinConfiguration');
 jest.mock('../../../components/dynamicFields/dynamicValues.mapper');
@@ -47,8 +47,6 @@ describe('Bookings mapper tests', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
 		(UinFinConfiguration as jest.Mock).mockImplementation(() => new UinFinConfigurationMock());
-		IdHasherMock.encode.mockImplementation((id: number) => id.toString());
-		IdHasherMock.decode.mockImplementation((id: string) => Number.parseInt(id, 10));
 
 		UserContextMock.getOtpAddOnMobileNo.mockReturnValue(undefined);
 		UserContextMock.getMyInfo.mockReturnValue(Promise.resolve(undefined));
@@ -60,17 +58,6 @@ describe('Bookings mapper tests', () => {
 		email: 'test@email.com',
 		name: 'Name',
 	});
-
-	const getOrganisationAdminContext = (organisation: Organisation): UserContextSnapshot => {
-		const adminMock = User.createAdminUser({
-			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
-			userName: 'UserName',
-			email: 'test@email.com',
-			name: 'Name',
-		});
-		const authGroupsMock = [new OrganisationAdminAuthGroup(adminMock, [organisation])];
-		return { user: adminMock, authGroups: authGroupsMock };
-	};
 
 	const listOptions = {
 		key: 1,
@@ -122,14 +109,154 @@ describe('Bookings mapper tests', () => {
 		return booking;
 	};
 
+	it('should map booking response V1', async () => {
+		const bookingsMapper = Container.get(BookingsMapper);
+		const bookingBuilder = new BookingBuilder();
+		bookingBuilder.citizenName = 'Citizen1';
+		bookingBuilder.citizenEmail = 'citizen1@email.com';
+		bookingBuilder.serviceId = 10;
+		bookingBuilder.serviceProviderId = 100;
+		const booking = Booking.create(bookingBuilder);
+		booking.id = 1;
+		booking.service = new Service();
+		booking.service.organisation = new Organisation();
+
+		const bookingResponse = await bookingsMapper.mapDataModelV1(booking);
+
+		expect(bookingResponse).toEqual({
+			citizenEmail: 'citizen1@email.com',
+			citizenName: 'Citizen1',
+			id: 1,
+			serviceId: 10,
+			serviceProviderId: 100,
+			status: 1,
+		});
+	});
+
+	it('should map array of booking responses V1', async () => {
+		const bookingsMapper = Container.get(BookingsMapper);
+		const bookingBuilder = new BookingBuilder();
+		bookingBuilder.citizenName = 'Citizen1';
+		bookingBuilder.citizenEmail = 'citizen1@email.com';
+		bookingBuilder.serviceId = 10;
+		bookingBuilder.serviceProviderId = 100;
+		const booking = Booking.create(bookingBuilder);
+		booking.id = 1;
+		booking.service = new Service();
+		booking.service.organisation = new Organisation();
+
+		const bookingResponse = await bookingsMapper.mapDataModelsV1([booking]);
+
+		expect(bookingResponse).toEqual([
+			{
+				_citizenEmail: 'citizen1@email.com',
+				_citizenName: 'Citizen1',
+				_id: 1,
+				_service: {
+					_organisation: {
+						_configuration: {
+							schemaVersion: 1,
+						},
+					},
+				},
+				_serviceId: 10,
+				_serviceProviderId: 100,
+				_status: 1,
+				_version: 1,
+			},
+		]);
+	});
+
+	it('should map booking response V2', async () => {
+		const bookingsMapper = Container.get(BookingsMapper);
+		const bookingBuilder = new BookingBuilder();
+		bookingBuilder.citizenName = 'Citizen1';
+		bookingBuilder.citizenEmail = 'citizen1@email.com';
+		bookingBuilder.serviceId = 10;
+		bookingBuilder.serviceProviderId = 100;
+		const booking = Booking.create(bookingBuilder);
+		booking.id = 1;
+		booking.service = new Service();
+		booking.service.organisation = new Organisation();
+
+		IdHasherMock.encode.mockImplementation((id: number) => String(id));
+
+		const bookingResponse = await bookingsMapper.mapDataModelV2(booking);
+
+		expect(bookingResponse).toEqual({
+			citizenEmail: 'citizen1@email.com',
+			citizenName: 'Citizen1',
+			id: '1',
+			serviceId: '10',
+			serviceProviderId: '100',
+			status: 1,
+		});
+	});
+
+	it('should map array of booking responses V2', async () => {
+		const bookingsMapper = Container.get(BookingsMapper);
+		const bookingBuilder = new BookingBuilder();
+		bookingBuilder.citizenName = 'Citizen1';
+		bookingBuilder.citizenEmail = 'citizen1@email.com';
+		bookingBuilder.serviceId = 10;
+		bookingBuilder.serviceProviderId = 100;
+		const booking = Booking.create(bookingBuilder);
+		booking.id = 1;
+		booking.service = new Service();
+		booking.service.organisation = new Organisation();
+
+		IdHasherMock.encode.mockImplementation((id: number) => String(id));
+
+		const bookingResponse = await bookingsMapper.mapDataModelsV2([booking]);
+
+		expect(bookingResponse).toEqual([
+			{
+				_citizenEmail: 'citizen1@email.com',
+				_citizenName: 'Citizen1',
+				_id: 1,
+				_service: {
+					_organisation: {
+						_configuration: {
+							schemaVersion: 1,
+						},
+					},
+				},
+				_serviceId: 10,
+				_serviceProviderId: 100,
+				_status: 1,
+				_version: 1,
+			},
+		]);
+	});
+
+	it('should map booking provider V1', () => {
+		const serviceProvider = ServiceProvider.create('SPI', 1, 'sp1@email.com');
+		serviceProvider.id = 1;
+
+		const bookingMapper = Container.get(BookingsMapper);
+		const result = bookingMapper.mapProviderV1(serviceProvider);
+		expect(result).toEqual({ id: 1, name: 'SPI' });
+	});
+
+	it('should map booking provider V2', () => {
+		const serviceProvider = ServiceProvider.create('SPI', 1, 'sp1@email.com');
+		serviceProvider.id = 1;
+
+		IdHasherMock.encode.mockImplementation((id: number) => String(id));
+
+		const bookingMapper = Container.get(BookingsMapper);
+		const result = bookingMapper.mapProviderV2(serviceProvider);
+		expect(result).toEqual({ id: '1', name: 'SPI' });
+	});
+
 	it('should throw if organisation not loaded', async () => {
 		const booking = new Booking();
 		const bookingMapper = Container.get(BookingsMapper);
 		booking.citizenUinFin = 'S9269634J';
 
-		const testCase = () => bookingMapper.maskUinFin(booking, { user: userMock, authGroups: [] });
-		expect(testCase).toThrowErrorMatchingInlineSnapshot(
-			'"Booking -> service -> organisation not loaded. BookingsMapper requires it."',
+		const testCase = async () => await bookingMapper.maskUinFin(booking);
+		await expect(testCase).rejects.toThrow(
+			'Booking -> service -> organisation not loaded. BookingsMapper requires it.',
 		);
 	});
 
@@ -142,7 +269,7 @@ describe('Bookings mapper tests', () => {
 
 		UinFinConfigurationMock.canViewPlainUinFin.mockReturnValue(false);
 
-		const result = bookingMapper.maskUinFin(booking, { user: userMock, authGroups: [] });
+		const result = await bookingMapper.maskUinFin(booking);
 		expect(result).toEqual('S****634J');
 	});
 
@@ -154,7 +281,7 @@ describe('Bookings mapper tests', () => {
 		booking.service.organisation = new Organisation();
 		UinFinConfigurationMock.canViewPlainUinFin.mockReturnValue(true);
 
-		const result = bookingMapper.maskUinFin(booking, { user: userMock, authGroups: [] });
+		const result = await bookingMapper.maskUinFin(booking);
 		expect(result).toEqual('S9269634J');
 	});
 
@@ -253,7 +380,7 @@ describe('Bookings mapper tests', () => {
 		expect(validator.addCustomCitizenValidations).toBeCalledWith(validationError);
 	});
 
-	it('should return all booking statuses in numbers', async () => {
+	it('should return all booking statuses in numbers', () => {
 		const mapper = Container.get(BookingsMapper);
 		const statuses = mapper.mapStatuses();
 
@@ -265,7 +392,7 @@ describe('Bookings mapper tests', () => {
 
 		const mapper = Container.get(BookingsMapper);
 		const booking = getFullBookingInformation();
-		const result = mapper.mapDataCSV(booking, getOrganisationAdminContext(organisation));
+		const result = await mapper.mapDataCSV(booking);
 		expect(result).toStrictEqual({
 			'Booking ID': '1',
 			'Booking Status': 'Accepted',
@@ -288,9 +415,7 @@ describe('Bookings mapper tests', () => {
 	});
 
 	it('should map booking details', async () => {
-		const request: BookingRequest = new BookingRequest();
-		request.startDateTime = new Date();
-		request.endDateTime = DateHelper.addMinutes(request.startDateTime, 45);
+		const request: BookingDetailsRequest = new BookingDetailsRequest();
 		request.citizenName = 'this should be the name';
 		request.citizenEmail = 'correctemail@gmail.com';
 		request.citizenPhone = '93328223';
@@ -319,9 +444,7 @@ describe('Bookings mapper tests', () => {
 
 		UserContextMock.getMyInfo.mockResolvedValue(MyInfoResponse);
 
-		const request: BookingRequest = new BookingRequest();
-		request.startDateTime = new Date();
-		request.endDateTime = DateHelper.addMinutes(request.startDateTime, 45);
+		const request: BookingDetailsRequest = new BookingDetailsRequest();
 		request.citizenName = 'this should be the name';
 		const service = new Service();
 		service.id = 1;
@@ -347,9 +470,7 @@ describe('Bookings mapper tests', () => {
 
 		UserContextMock.getMyInfo.mockResolvedValue(MyInfoResponse);
 
-		const request: BookingRequest = new BookingRequest();
-		request.startDateTime = new Date();
-		request.endDateTime = DateHelper.addMinutes(request.startDateTime, 45);
+		const request: BookingDetailsRequest = new BookingDetailsRequest();
 		request.citizenName = 'this should be the name';
 		request.citizenEmail = 'correctemail@gmail.com';
 		request.citizenPhone = '93328223';
@@ -367,9 +488,7 @@ describe('Bookings mapper tests', () => {
 	});
 
 	it('should map phone number from OTP auth', async () => {
-		const request: BookingRequest = new BookingRequest();
-		request.startDateTime = new Date();
-		request.endDateTime = DateHelper.addMinutes(request.startDateTime, 45);
+		const request: BookingDetailsRequest = new BookingDetailsRequest();
 		request.citizenPhone = '111111';
 		const service = new Service();
 		service.id = 1;
@@ -384,10 +503,3 @@ describe('Bookings mapper tests', () => {
 		expect(booking.citizenPhone).toEqual('84123456');
 	});
 });
-
-class UinFinConfigurationMock implements Partial<UinFinConfiguration> {
-	public static canViewPlainUinFin = jest.fn<boolean, any>();
-	public canViewPlainUinFin(...params): any {
-		return UinFinConfigurationMock.canViewPlainUinFin(...params);
-	}
-}

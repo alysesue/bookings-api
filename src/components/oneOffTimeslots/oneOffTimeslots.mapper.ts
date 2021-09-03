@@ -2,7 +2,7 @@ import { Inject } from 'typescript-ioc';
 import { Label, OneOffTimeslot, ServiceProvider } from '../../models';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { LabelsMapper } from '../labels/labels.mapper';
-import { OneOffTimeslotRequest, OneOffTimeslotResponse } from './oneOffTimeslots.apicontract';
+import { OneOffTimeslotRequestV1, OneOffTimeslotResponse } from './oneOffTimeslots.apicontract';
 
 export class OneOffTimeslotsMapper {
 	@Inject
@@ -11,7 +11,7 @@ export class OneOffTimeslotsMapper {
 	private labelMapper: LabelsMapper;
 
 	public mapToOneOffTimeslots(
-		request: OneOffTimeslotRequest,
+		request: OneOffTimeslotRequestV1,
 		serviceProvider: ServiceProvider,
 		labels?: Label[],
 	): OneOffTimeslot {
@@ -22,7 +22,7 @@ export class OneOffTimeslotsMapper {
 	}
 
 	public updateMapToOneOffTimeslots(
-		request: OneOffTimeslotRequest,
+		request: OneOffTimeslotRequestV1,
 		entity: OneOffTimeslot,
 		serviceProvider: ServiceProvider,
 		labels?: Label[],

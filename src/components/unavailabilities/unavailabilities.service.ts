@@ -6,7 +6,7 @@ import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServicesRepository } from '../services/services.repository';
 import { CrudAction } from '../../enums/crudAction';
 import { UnavailabilitiesActionAuthVisitor } from './unavailabilities.auth';
-import { UnavailabilityRequest } from './unavailabilities.apicontract';
+import { UnavailabilityRequestV1 } from './unavailabilities.apicontract';
 import { UnavailabilitiesRepository } from './unavailabilities.repository';
 
 @InRequestScope
@@ -29,13 +29,13 @@ export class UnavailabilitiesService {
 		}
 	}
 
-	public async create(request: UnavailabilityRequest): Promise<Unavailability> {
+	public async create(request: UnavailabilityRequestV1): Promise<Unavailability> {
 		const entity = await this.mapToEntity(request, Unavailability.create());
 		await this.verifyActionPermission(entity, CrudAction.Create);
 		return await this.unavailabilitiesRepository.save(entity);
 	}
 
-	private async mapToEntity(request: UnavailabilityRequest, entity: Unavailability): Promise<Unavailability> {
+	private async mapToEntity(request: UnavailabilityRequestV1, entity: Unavailability): Promise<Unavailability> {
 		if (request.startTime.getTime() >= request.endTime.getTime()) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				'Unavailability start time must be less than end time.',

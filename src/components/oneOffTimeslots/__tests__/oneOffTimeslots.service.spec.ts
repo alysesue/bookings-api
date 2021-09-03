@@ -1,6 +1,6 @@
 import { DateHelper } from '../../../infrastructure/dateHelper';
 import { Container } from 'typescript-ioc';
-import { OneOffTimeslotRequest } from '../oneOffTimeslots.apicontract';
+import { OneOffTimeslotRequestV1 } from '../oneOffTimeslots.apicontract';
 import { OneOffTimeslotsService } from '../oneOffTimeslots.service';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { Label, OneOffTimeslot, Service, ServiceProvider, User } from '../../../models';
@@ -62,7 +62,7 @@ describe('OneOffTimeslots Service Tests', () => {
 		OneOffTimeslotsRepositoryMock.search.mockImplementation(() => []);
 		LabelServiceMock.verifyLabels.mockReturnValue(Promise.resolve([Label.create('Chinese')]));
 
-		const request = new OneOffTimeslotRequest();
+		const request = new OneOffTimeslotRequestV1();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
 		request.endDateTime = DateHelper.addHours(request.startDateTime, 1);
 		request.capacity = 2;
@@ -87,7 +87,7 @@ describe('OneOffTimeslots Service Tests', () => {
 		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
 		OneOffTimeslotsRepositoryMock.search.mockImplementation(() => []);
 
-		const request = new OneOffTimeslotRequest();
+		const request = new OneOffTimeslotRequestV1();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
 		request.endDateTime = DateHelper.addHours(request.startDateTime, 1);
 		request.capacity = 2;
@@ -112,7 +112,7 @@ describe('OneOffTimeslots Service Tests', () => {
 		OneOffTimeslotsRepositoryMock.save.mockReturnValue({});
 		OneOffTimeslotsRepositoryMock.search.mockImplementation(() => []);
 
-		const request = new OneOffTimeslotRequest();
+		const request = new OneOffTimeslotRequestV1();
 		request.startDateTime = new Date('2021-03-02T00:00:00Z');
 		request.endDateTime = DateHelper.addHours(request.startDateTime, 1);
 		request.capacity = 2;

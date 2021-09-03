@@ -7,7 +7,7 @@ import { DynamicField, SelectListDynamicField, TextDynamicField, User } from '..
 import { TransactionManager } from '../../../core/transactionManager';
 import { SelectQueryBuilder } from 'typeorm';
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
-import { ServicesQueryAuthVisitor } from '../../../components/services/services.auth';
+import { ServicesQueryAuthVisitor } from '../../services/services.auth';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 
 jest.mock('../../../components/services/services.auth');

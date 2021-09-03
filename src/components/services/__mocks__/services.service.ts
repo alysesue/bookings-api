@@ -1,5 +1,6 @@
 import { ServicesService } from '../services.service';
 import { Service } from '../../../models/entities';
+import { MolUpsertUsersResult } from '../../users/molUsers/molUsers.apicontract';
 
 export class ServicesServiceMock implements Partial<ServicesService> {
 	public static getService = jest.fn();
@@ -7,6 +8,7 @@ export class ServicesServiceMock implements Partial<ServicesService> {
 	public static createServices = jest.fn();
 	public static createService = jest.fn();
 	public static getServiceTimeslotsSchedule = jest.fn();
+	public static createServicesAdmins = jest.fn();
 
 	public init() {}
 
@@ -28,5 +30,9 @@ export class ServicesServiceMock implements Partial<ServicesService> {
 
 	public async getServiceTimeslotsSchedule(...params): Promise<any> {
 		return await ServicesServiceMock.getServiceTimeslotsSchedule(...params);
+	}
+
+	public async createServicesAdmins(...params): Promise<MolUpsertUsersResult> {
+		return await ServicesServiceMock.createServicesAdmins(...params);
 	}
 }

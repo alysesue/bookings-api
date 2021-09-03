@@ -5,14 +5,14 @@ import { DynamicFieldsService } from '../dynamicFields.service';
 import { DynamicFieldsRepositoryMock } from '../__mocks__/dynamicFields.repository.mock';
 import { DynamicFieldsMapper } from '../dynamicFields.mapper';
 import { DynamicFieldsMapperMock } from '../__mocks__/dynamicFields.mapper.mock';
-import { ServicesServiceMock } from '../../../components/services/__mocks__/services.service';
-import { ServicesService } from '../../../components/services/services.service';
+import { ServicesServiceMock } from '../../services/__mocks__/services.service';
+import { ServicesService } from '../../services/services.service';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { DynamicFieldsActionAuthVisitor } from '../dynamicFields.auth';
-import { DynamicFieldType, PersistDynamicFieldModel } from '../dynamicFields.apicontract';
+import { DynamicFieldType, PersistDynamicFieldModelV1 } from '../dynamicFields.apicontract';
 
 jest.mock('../dynamicFields.auth', () => {
 	return { DynamicFieldsActionAuthVisitor: jest.fn() };
@@ -61,7 +61,7 @@ describe('dynamicFields/dynamicFields.service', () => {
 	service.name = 'svc';
 
 	const createTextFieldRequest = (idSigned?: string) => {
-		const request = new PersistDynamicFieldModel();
+		const request = new PersistDynamicFieldModelV1();
 		if (idSigned) {
 			request.idSigned = idSigned;
 		}

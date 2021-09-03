@@ -40,13 +40,13 @@ import { UsersServiceMock } from '../../users/__mocks__/users.service';
 import { UsersService } from '../../users/users.service';
 import { ServicesServiceMock } from '../../services/__mocks__/services.service';
 import { ServiceProvidersActionAuthVisitor } from '../serviceProviders.auth';
-import { ServiceProvidersLookup } from '../../../components/timeslots/aggregatorTimeslotProviders';
-import { TimeslotsServiceMock } from '../../../components/bookings/__mocks__/bookings.mocks';
+import { ServiceProvidersLookup } from '../../timeslots/aggregatorTimeslotProviders';
+import { TimeslotsServiceMock } from '../../bookings/__mocks__/bookings.mocks';
 import { ServiceProvidersRepositoryMock } from '../__mocks__/serviceProviders.repository.mock';
-import { TimeslotItemsServiceMock } from '../../../components/timeslotItems/__mocks__/timeslotItems.service.mock';
-import { ScheduleFormsServiceMock } from '../../../components/scheduleForms/__mocks__/scheduleForms.service.mock';
-import { TimeslotsScheduleRepositoryMock } from '../../../components/timeslotsSchedules/__mocks__/timeslotsSchedule.repository.mock';
-import { OrganisationsRepositoryMock } from '../../../components/organisations/__mocks__/organisations.noauth.repository.mock';
+import { TimeslotItemsServiceMock } from '../../timeslotItems/__mocks__/timeslotItems.service.mock';
+import { ScheduleFormsServiceMock } from '../../scheduleForms/__mocks__/scheduleForms.service.mock';
+import { TimeslotsScheduleRepositoryMock } from '../../timeslotsSchedules/__mocks__/timeslotsSchedule.repository.mock';
+import { OrganisationsRepositoryMock } from '../../organisations/__mocks__/organisations.noauth.repository.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();

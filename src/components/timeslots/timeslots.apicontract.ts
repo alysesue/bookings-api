@@ -1,8 +1,11 @@
-import { ServiceProviderSummaryModel } from '../serviceProviders/serviceProviders.apicontract';
-import { BookingResponse } from '../bookings/bookings.apicontract';
+import {
+	ServiceProviderSummaryModelV1,
+	ServiceProviderSummaryModelV2,
+} from '../serviceProviders/serviceProviders.apicontract';
+import { BookingResponseV1, BookingResponseV2 } from '../bookings/bookings.apicontract';
 import { LabelResponseModel } from '../labels/label.apicontract';
 
-export class AvailabilityEntryResponse {
+export class AvailabilityEntryResponseBase {
 	/**
 	 * Start time of this timeslot
 	 */
@@ -17,18 +20,25 @@ export class AvailabilityEntryResponse {
 	 * @isInt
 	 */
 	public availabilityCount: number;
+}
+
+export class AvailabilityEntryResponseV1 extends AvailabilityEntryResponseBase {
 	/**
 	 * The detail of service Providers information at this specific timeslot.
 	 * This is only returned when exactTimeslot=true in the parameters
 	 */
-	public timeslotServiceProviders?: CitizenTimeslotServiceProviderResponse[];
+	public timeslotServiceProviders?: CitizenTimeslotServiceProviderResponseV1[];
 }
 
-export class CitizenTimeslotServiceProviderResponse {
+export class AvailabilityEntryResponseV2 extends AvailabilityEntryResponseBase {
 	/**
-	 * The detail of the service provider
+	 * The detail of service Providers information at this specific timeslot.
+	 * This is only returned when exactTimeslot=true in the parameters
 	 */
-	public serviceProvider: ServiceProviderSummaryModel;
+	public timeslotServiceProviders?: CitizenTimeslotServiceProviderResponseV2[];
+}
+
+export class CitizenTimeslotServiceProviderResponseBase {
 	/**
 	 * The event title of the slot
 	 */
@@ -39,7 +49,21 @@ export class CitizenTimeslotServiceProviderResponse {
 	public eventDescription?: string;
 }
 
-export class TimeslotServiceProviderResponse {
+export class CitizenTimeslotServiceProviderResponseV1 extends CitizenTimeslotServiceProviderResponseBase {
+	/**
+	 * The detail of the service provider
+	 */
+	public serviceProvider: ServiceProviderSummaryModelV1;
+}
+
+export class CitizenTimeslotServiceProviderResponseV2 extends CitizenTimeslotServiceProviderResponseBase {
+	/**
+	 * The detail of the service provider
+	 */
+	public serviceProvider: ServiceProviderSummaryModelV2;
+}
+
+export class TimeslotServiceProviderResponseBase {
 	/**
 	 * The capacity value for this specific timeslot and service provider
 	 *
@@ -58,19 +82,6 @@ export class TimeslotServiceProviderResponse {
 	 * @isInt
 	 */
 	public availabilityCount: number;
-	/**
-	 * The detail of the service provider
-	 */
-	public serviceProvider: ServiceProviderSummaryModel;
-	/**
-	 * All accepted bookings assigned to this service provider
-	 */
-	public acceptedBookings: BookingResponse[];
-	/**
-	 * All pending bookings assigned to this service provider
-	 */
-	public pendingBookings: BookingResponse[];
-
 	/**
 	 * The one off timeslot id
 	 */
@@ -95,7 +106,37 @@ export class TimeslotServiceProviderResponse {
 	public isRecurring: boolean;
 }
 
-export class TimeslotEntryResponse {
+export class TimeslotServiceProviderResponseV1 extends TimeslotServiceProviderResponseBase {
+	/**
+	 * The detail of the service provider
+	 */
+	public serviceProvider: ServiceProviderSummaryModelV1;
+	/**
+	 * All accepted bookings assigned to this service provider
+	 */
+	public acceptedBookings: BookingResponseV1[];
+	/**
+	 * All pending bookings assigned to this service provider
+	 */
+	public pendingBookings: BookingResponseV1[];
+}
+
+export class TimeslotServiceProviderResponseV2 extends TimeslotServiceProviderResponseBase {
+	/**
+	 * The detail of the service provider
+	 */
+	public serviceProvider: ServiceProviderSummaryModelV2;
+	/**
+	 * All accepted bookings assigned to this service provider
+	 */
+	public acceptedBookings: BookingResponseV2[];
+	/**
+	 * All pending bookings assigned to this service provider
+	 */
+	public pendingBookings: BookingResponseV2[];
+}
+
+export class TimeslotEntryResponseBase {
 	/**
 	 * Start time of this timeslot
 	 */
@@ -104,10 +145,6 @@ export class TimeslotEntryResponse {
 	 * End time of this timeslot
 	 */
 	public endTime: Date;
-	/**
-	 * The detail of service Providers information at this specific timeslot
-	 */
-	public timeslotServiceProviders: TimeslotServiceProviderResponse[];
 	/**
 	 * The total number of bookings assigned to a service provider
 	 *
@@ -132,6 +169,20 @@ export class TimeslotEntryResponse {
 	 * @isInt
 	 */
 	public totalCapacity: number;
+}
+
+export class TimeslotEntryResponseV1 extends TimeslotEntryResponseBase {
+	/**
+	 * The detail of service Providers information at this specific timeslot
+	 */
+	public timeslotServiceProviders: TimeslotServiceProviderResponseV1[];
+}
+
+export class TimeslotEntryResponseV2 extends TimeslotEntryResponseBase {
+	/**
+	 * The detail of service Providers information at this specific timeslot
+	 */
+	public timeslotServiceProviders: TimeslotServiceProviderResponseV2[];
 }
 
 export class AvailabilityByDayResponse {

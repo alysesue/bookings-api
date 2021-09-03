@@ -15,13 +15,13 @@ import {
 	UnavailabilitiesServiceMock,
 } from '../../__mocks__/bookings.mocks';
 import { TimeslotWithCapacity } from '../../../../models/timeslotWithCapacity';
-import { AvailableTimeslotProviders } from '../../../../components/timeslots/availableTimeslotProviders';
+import { AvailableTimeslotProviders } from '../../../timeslots/availableTimeslotProviders';
 import { CaptchaService } from '../../../captcha/captcha.service';
 import { UserContextMock } from '../../../../infrastructure/auth/__mocks__/userContext';
 import { getConfig } from '../../../../config/app-config';
 import { IPagedEntities } from '../../../../core/pagedEntities';
 import { ContainerContext, ContainerContextHolder } from '../../../../infrastructure/containerContext';
-import { ServiceProvidersLookup } from '../../../../components/timeslots/aggregatorTimeslotProviders';
+import { ServiceProvidersLookup } from '../../../timeslots/aggregatorTimeslotProviders';
 import { TimeslotServiceProviderResult } from '../../../../models/timeslotServiceProvider';
 import { ServiceProvidersRepositoryMock } from '../../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
 import { CaptchaServiceMock } from '../../../../components/captcha/__mocks__/captcha.service.mock';

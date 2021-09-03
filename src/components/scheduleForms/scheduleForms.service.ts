@@ -10,8 +10,8 @@ import { TransactionManager } from '../../core/transactionManager';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
 import { ScheduleFormsRepository } from './scheduleForms.repository';
 import { ScheduleFormsActionAuthVisitor } from './scheduleForms.auth';
-import { mapToEntity } from './scheduleForms.mapper';
 import { ScheduleFormRequest } from './scheduleForms.apicontract';
+import { ScheduleFormsMapper } from './scheduleForms.mapper';
 
 const FormIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
@@ -25,6 +25,8 @@ export class ScheduleFormsService {
 	private transactionManager: TransactionManager;
 	@Inject
 	private userContext: UserContext;
+	@Inject
+	private scheduleFormsMapper: ScheduleFormsMapper;
 
 	private async verifyActionPermission(serviceProvider: ServiceProvider, action: CrudAction): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
@@ -83,7 +85,7 @@ export class ScheduleFormsService {
 	}
 
 	private mapToEntityAndValidate(template: ScheduleFormRequest, schedule: ScheduleForm) {
-		const mapped = mapToEntity(template, schedule);
+		const mapped = this.scheduleFormsMapper.mapToEntity(template, schedule);
 		if (isErrorResult(mapped)) {
 			const errorResult = getErrorResult(mapped);
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setResponseData(errorResult);
