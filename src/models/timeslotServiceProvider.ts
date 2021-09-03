@@ -301,7 +301,9 @@ class ReadonlyTimeslotServiceProvider implements Readonly<ITimeslotServiceProvid
 	}
 
 	public makeWritable(): ITimeslotServiceProvider {
-		return new TimeslotServiceProvider(this._capacity);
+		const writable = new TimeslotServiceProvider(this._capacity);
+		writable.setIsVisibleByUser(this._isVisibleByUser);
+		return writable;
 	}
 
 	public getAvailabilityCount(maxAvailability?: number): number {
