@@ -156,7 +156,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 	});
 
 	it('[Select List] should NOT accept options with key as zero', () => {
-		const request = new PersistDynamicFieldModel();
+		const request = new PersistDynamicFieldModelV1();
 		request.serviceId = 1;
 		request.name = 'options';
 		request.type = DynamicFieldType.SelectList;
@@ -174,7 +174,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 	});
 
 	it('[Select List] should accept options with keys other than zero', () => {
-		const request = new PersistDynamicFieldModel();
+		const request = new PersistDynamicFieldModelV1();
 		request.serviceId = 1;
 		request.name = 'options';
 		request.type = DynamicFieldType.SelectList;
