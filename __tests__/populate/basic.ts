@@ -100,7 +100,7 @@ export const populateServiceAndServiceProvider = async ({
 	nameService = 'admin',
 	serviceProviderName = 'sp', labels = [],
 }): Promise<{ service: ServiceResponseV1; serviceProvider: ServiceProviderResponseModelV1 }> => {
-	const service = await populateService({ organisation, nameService });
+	const service = await populateService({ organisation, nameService, labels });
 	await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id.toString() }).post('/service-providers', {
 		body: {
 			serviceProviders: [
