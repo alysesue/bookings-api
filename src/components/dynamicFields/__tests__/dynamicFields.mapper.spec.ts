@@ -155,6 +155,60 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		});
 	});
 
+	it('[Select List] should NOT accept options with key as zero', () => {
+		const request = new PersistDynamicFieldModel();
+		request.serviceId = 1;
+		request.name = 'options';
+		request.type = DynamicFieldType.SelectList;
+		request.selectList = new SelectListModel();
+		request.selectList.options = [
+			{ key: 0, value: 'option A' },
+			{ key: 1, value: 'option B' },
+		];
+		request.isMandatory = true;
+
+		const instance = Container.get(DynamicFieldsMapper);
+
+		const _test = () => instance.mapToEntity(request, null);
+		expect(_test).toThrowErrorMatchingInlineSnapshot('"Select list field must not contain option with key 0."');
+	});
+
+	it('[Select List] should accept options with keys other than zero', () => {
+		const request = new PersistDynamicFieldModel();
+		request.serviceId = 1;
+		request.name = 'options';
+		request.type = DynamicFieldType.SelectList;
+		request.selectList = new SelectListModel();
+		request.selectList.options = [
+			{ key: 1, value: 'option A' },
+			{ key: 2, value: 'option B' },
+		];
+		request.isMandatory = true;
+
+		const instance = Container.get(DynamicFieldsMapper);
+		const entity = SelectListDynamicField.create(1, 'field', [], true);
+		entity.id = 11;
+
+		const mapped = instance.mapToEntity(request, entity);
+		expect(mapped).toBe(entity);
+		expect(mapped).toEqual({
+			_id: 11,
+			_name: 'options',
+			_isMandatory: true,
+			_options: [
+				{
+					key: 1,
+					value: 'option A',
+				},
+				{
+					key: 2,
+					value: 'option B',
+				},
+			],
+			_serviceId: 1,
+		});
+	});
+
 	it('[Select List] should NOT map to with missing information', () => {
 		const request = new PersistDynamicFieldModelV1();
 		request.serviceId = 1;

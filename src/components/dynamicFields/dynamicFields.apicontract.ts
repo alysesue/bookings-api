@@ -50,6 +50,7 @@ export class SelectListModel {
 export class SelectListOptionModel {
 	/**
 	 * @isInt
+	 * @minimum 1
 	 */
 	public key: number;
 	public value: string;
