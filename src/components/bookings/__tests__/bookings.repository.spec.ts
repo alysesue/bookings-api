@@ -12,6 +12,8 @@ import { IPagedEntities } from '../../../core/pagedEntities';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
 import * as uuid from 'uuid';
 import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
+import { BookingQueryVisitorFactory, IBookingQueryVisitor } from '../bookings.auth';
+import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
 
 jest.mock('../../../core/paging');
 
@@ -40,6 +42,10 @@ describe('Bookings repository', () => {
 	};
 
 	PagingHelper.getManyWithPaging = jest.fn();
+	BookingQueryVisitorFactory.getBookingQueryVisitor = jest.fn();
+	const queryVisitor: IBookingQueryVisitor = {
+		createUserVisibilityCondition: jest.fn(),
+	};
 
 	beforeEach(() => {
 		jest.resetAllMocks();
@@ -59,6 +65,11 @@ describe('Bookings repository', () => {
 		);
 
 		ServiceProvidersRepositoryMock.getServiceProviders.mockImplementation(() => Promise.resolve([]));
+		(BookingQueryVisitorFactory.getBookingQueryVisitor as jest.Mock).mockReturnValue(queryVisitor);
+		(queryVisitor.createUserVisibilityCondition as jest.Mock).mockResolvedValue({
+			userCondition: '',
+			userParams: {},
+		} as UserConditionParams);
 	});
 
 	it('should search bookings with date range and access type', async () => {
@@ -82,11 +93,9 @@ describe('Bookings repository', () => {
 
 		expect(result.entries).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalledWith(
-			`((booking."_citizenUinFin" = :authorisedUinFin)) AND \
-(booking."_serviceId" = :serviceId) AND (booking."_serviceProviderId" IN (:...serviceProviderIds)) AND \
+			`(booking."_serviceId" = :serviceId) AND (booking."_serviceProviderId" IN (:...serviceProviderIds)) AND \
 (booking."_endDateTime" > :from) AND (booking."_startDateTime" < :to)`,
 			{
-				authorisedUinFin: 'ABC1234',
 				from: new Date('2020-01-01T14:00:00.000Z'),
 				to: new Date('2020-01-01T15:00:00.000Z'),
 				serviceId: 1,
@@ -117,9 +126,8 @@ describe('Bookings repository', () => {
 
 		expect(result.entries).toStrictEqual([bookingMock]);
 		expect(queryBuilderMock.where).toBeCalledWith(
-			`((booking."_citizenUinFin" = :authorisedUinFin)) AND (createdlog."_timestamp" > :fromCreatedDate) AND (createdlog."_timestamp" < :toCreatedDate)`,
+			`(createdlog."_timestamp" > :fromCreatedDate) AND (createdlog."_timestamp" < :toCreatedDate)`,
 			{
-				authorisedUinFin: 'ABC1234',
 				fromCreatedDate: new Date('2020-01-01T14:00:00.000Z'),
 				toCreatedDate: new Date('2020-01-01T15:00:00.000Z'),
 			},

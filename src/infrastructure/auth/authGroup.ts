@@ -22,8 +22,10 @@ export interface IAuthGroupVisitor {
 	visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void | Promise<void>;
 }
 
+export type OtpGroupInfo = { mobileNo: string };
+
 export class AnonymousAuthGroup extends AuthGroup {
-	constructor(user: User, bookingInfo?: BookingUUIDInfo) {
+	constructor(user: User, bookingInfo?: BookingUUIDInfo, otpGroupInfo?: OtpGroupInfo) {
 		super(user);
 
 		if (!user.isAnonymous()) {
@@ -31,9 +33,11 @@ export class AnonymousAuthGroup extends AuthGroup {
 		}
 
 		this.bookingInfo = bookingInfo;
+		this.otpGroupInfo = otpGroupInfo;
 	}
 
 	public bookingInfo?: BookingUUIDInfo;
+	public otpGroupInfo?: OtpGroupInfo;
 
 	public acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void> {
 		return visitor.visitAnonymous(this);

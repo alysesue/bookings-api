@@ -15,6 +15,7 @@ afterAll(() => {
 });
 
 const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+singpassMock.id = 123;
 
 // tslint:disable-next-line: no-big-function
 describe('Bookings query auth', () => {
@@ -75,9 +76,12 @@ describe('Bookings query auth', () => {
 		const groups = [new CitizenAuthGroup(singpassMock)];
 		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('(b."_citizenUinFin" = :authorisedUinFin)');
+		expect(result.userCondition).toStrictEqual(
+			'(b."_citizenUinFin" = :authorisedUinFin OR b."_creatorId" = :userId)',
+		);
 		expect(result.userParams).toStrictEqual({
 			authorisedUinFin: 'ABC1234',
+			userId: 123,
 		});
 	});
 

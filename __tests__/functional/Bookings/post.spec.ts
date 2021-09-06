@@ -17,10 +17,10 @@ import { BookingStatus } from '../../../src/models';
 import { PersistDynamicValueContract } from '../../../src/components/dynamicFields/dynamicValues.apicontract';
 import { DynamicValueTypeContract } from '../../../src/components/dynamicFields/dynamicValues.apicontract';
 import { IdHasherForFunctional } from '../../utils/idHashingUtil';
-import {ServiceProviderResponseModelV1} from "../../../src/components/serviceProviders/serviceProviders.apicontract";
-import {ServiceResponseV1} from "../../../src/components/services/service.apicontract";
-import {BookingResponseV1} from "../../../src/components/bookings/bookings.apicontract";
-import {BookingChangeLogResponseV1} from "../../../src/components/bookingChangeLogs/bookingChangeLogs.apicontract";
+import { ServiceProviderResponseModelV1 } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
+import { ServiceResponseV1 } from '../../../src/components/services/service.apicontract';
+import { BookingResponseV1 } from '../../../src/components/bookings/bookings.apicontract';
+import { BookingChangeLogResponseV1 } from '../../../src/components/bookingChangeLogs/bookingChangeLogs.apicontract';
 
 // tslint:disable-next-line: no-big-function
 describe('Bookings functional tests', () => {
@@ -585,7 +585,9 @@ describe('Bookings functional tests', () => {
 		expect(response.body.data.status).toBe(BookingStatus.PendingApproval);
 	});
 
-	it('should NOT create in-slot booking as anonymous (when service is not configured)', async () => {
+	it('should NOT create in-slot booking as anonymous (when status is not OnHold)', async () => {
+		await pgClient.configureServiceAllowAnonymous({ serviceId });
+
 		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
 		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
 
@@ -603,18 +605,40 @@ describe('Bookings functional tests', () => {
 				citizenEmail,
 			},
 		});
-		expect(response.statusCode).toBe(404);
+		expect(response.statusCode).toBe(403);
 	});
 
-	it('should create in-slot booking as anonymous (when service is configured)', async () => {
-		await pgClient.configureServiceAllowAnonymous({ serviceId });
-
+	it('should create in-slot booking as anonymous (when status is OnHold)', async () => {
 		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
 		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
 
 		const endpoint = await AnonmymousEndpointSG.create({
 			serviceId: serviceIdStr,
 		});
+
+		const response = await endpoint.post('/bookings', {
+			body: {
+				startDateTime,
+				endDateTime,
+				serviceProviderId: serviceProvider.id,
+				citizenUinFin,
+				citizenName,
+				citizenEmail,
+				workflowType: 'onhold',
+			},
+		});
+		expect(response.statusCode).toBe(201);
+	});
+
+	it('should create in-slot booking as anonymous (when status is NOT OnHold, but is user is OTP verified)', async () => {
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+
+		const endpoint = await AnonmymousEndpointSG.create({
+			serviceId: serviceIdStr,
+		});
+
+		await endpoint.sendAndVerifyOTP();
 		const response = await endpoint.post('/bookings', {
 			body: {
 				startDateTime,

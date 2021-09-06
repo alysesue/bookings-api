@@ -103,8 +103,9 @@ export class UserContext {
 		}
 
 		if (user.isAnonymous()) {
+			const otpInfo = this._mobileNo ? { mobileNo: this._mobileNo } : undefined;
 			const usersService = this.containerContext.resolve(UsersService);
-			return await usersService.getAnonymousUserRoles(user);
+			return await usersService.getAnonymousUserRoles(user, otpInfo);
 		} else if (user.isCitizen()) {
 			return [new CitizenAuthGroup(user)];
 		} else {
