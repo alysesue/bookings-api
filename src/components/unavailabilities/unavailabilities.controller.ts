@@ -168,4 +168,18 @@ export class UnavailabilitiesControllerV2 extends Controller {
 		});
 		return ApiDataFactory.create(entries.map((e) => this.unavailabilitiesMapperV2.mapToResponse(e)));
 	}
+
+	/**
+	 * Deletes an unavailability for a service provider
+	 *
+	 * @param id The ID of the unavailability.
+	 */
+	@Delete('{id}')
+	@SuccessResponse(204, 'Deleted')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async deleteUnavailability(@Path() id: string): Promise<void> {
+		const unsignedUnavilabilityId = this.idHasher.decode(id);
+		await this.unavailabilitiesService.deleteUnavailability(unsignedUnavilabilityId);
+	}
 }

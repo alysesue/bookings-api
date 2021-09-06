@@ -55,9 +55,6 @@ export class ServiceProvidersService {
 	@Inject
 	private molUsersService: MolUsersService;
 
-	/**
-	 * @deprecated please use createServiceProviders
-	 */
 	private static async validateServiceProvider(sp: ServiceProviderModel): Promise<string[]> {
 		const errors: string[] = [];
 		if (sp.phone && !(await isSGPhoneNumber(sp.phone)).pass)
@@ -69,9 +66,6 @@ export class ServiceProvidersService {
 		return errors;
 	}
 
-	/**
-	 * @deprecated please use createServiceProviders
-	 */
 	private static async validateServiceProviders(sps: ServiceProviderModel[]) {
 		const errorsPromises = sps.map((e) => ServiceProvidersService.validateServiceProvider(e));
 		await Promise.all(errorsPromises).then((errors) => {
@@ -253,9 +247,6 @@ export class ServiceProvidersService {
 		return res;
 	}
 
-	/**
-	 * @deprecated please use createServiceProviders
-	 */
 	public async saveServiceProviders(listRequest: ServiceProviderModel[], serviceId: number) {
 		await ServiceProvidersService.validateServiceProviders(listRequest);
 		// tslint:disable-next-line:prefer-for-of
@@ -264,9 +255,6 @@ export class ServiceProvidersService {
 		}
 	}
 
-	/**
-	 * @deprecated please use createServiceProviders
-	 */
 	public async saveServiceProvider(item: ServiceProviderModel, serviceId: number) {
 		const serviceProvider = ServiceProvider.create(item.name, serviceId, item.email, item.phone);
 		serviceProvider.service = await this.servicesService.getService(serviceId);

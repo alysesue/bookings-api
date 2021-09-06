@@ -315,6 +315,41 @@ describe('ServiceProviders.Controller.V2', () => {
 		IdHasherMock.encode.mockImplementation((id: number) => String(id));
 	});
 
+	it('should save multiple service providers', async () => {
+		ServiceProvidersServiceMock.saveMock.mockReturnValue([
+			ServiceProvider.create('Monica', 1),
+			ServiceProvider.create('Timmy', 1),
+		]);
+		const controller = Container.get(ServiceProvidersControllerV2);
+		await controller.addServiceProviders(
+			{
+				serviceProviders: [
+					{
+						name: 'Test',
+					},
+				],
+			},
+			'1',
+		);
+		const listRequest = ServiceProvidersServiceMock.saveMock.mock.calls[0][0] as ServiceProvider[];
+
+		expect(listRequest.length).toBe(1);
+	});
+
+	it('should save multiple service providers as text', async () => {
+		ServiceProvidersServiceMock.saveMock.mockReturnValue([
+			ServiceProvider.create('Monica', 1),
+			ServiceProvider.create('Timmy', 1),
+		]);
+		const controller = Container.get(ServiceProvidersControllerV2);
+
+		await controller.addServiceProvidersText('name\nJohn\nMary\nJuliet\n', '1');
+
+		const listRequest = ServiceProvidersServiceMock.saveMock.mock.calls[0][0] as ServiceProvider[];
+
+		expect(listRequest.length).toBe(3);
+	});
+
 	it('should get service providers', async () => {
 		ServiceProvidersServiceMock.getServiceProvidersMock.mockReturnValue([sp1, sp2]);
 		const serviceId = '1';
