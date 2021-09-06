@@ -55,9 +55,6 @@ export class ServiceProvidersService {
 	@Inject
 	private molUsersService: MolUsersService;
 
-	/**
-	 * @deprecated please use createServiceProviders
-	 */
 	private static async validateServiceProvider(sp: ServiceProviderModel): Promise<string[]> {
 		const errors: string[] = [];
 		if (sp.phone && !(await isSGPhoneNumber(sp.phone)).pass)
@@ -258,9 +255,6 @@ export class ServiceProvidersService {
 		}
 	}
 
-	/**
-	 * @deprecated please use createServiceProviders
-	 */
 	public async saveServiceProvider(item: ServiceProviderModel, serviceId: number) {
 		const serviceProvider = ServiceProvider.create(item.name, serviceId, item.email, item.phone);
 		serviceProvider.service = await this.servicesService.getService(serviceId);
