@@ -120,6 +120,16 @@ describe('Unavailabilities Controller V2', () => {
 
 		expect(result).toBeDefined();
 	});
+
+	it('should delete unavailability', async () => {
+		UnavailabilitiesServiceMock.deleteUnavailability.mockReturnValue(Promise.resolve());
+
+		const controller = Container.get(UnavailabilitiesControllerV2);
+		const idInput = '1';
+		await controller.deleteUnavailability(idInput);
+
+		expect(UnavailabilitiesServiceMock.deleteUnavailability).toHaveBeenCalledWith(1);
+	});
 });
 
 const UnavailabilitiesServiceMock = {

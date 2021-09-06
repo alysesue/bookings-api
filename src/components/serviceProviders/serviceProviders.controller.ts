@@ -29,7 +29,6 @@ import {
 	ScheduleFormResponseV1,
 	ScheduleFormResponseV2,
 } from '../scheduleForms/scheduleForms.apicontract';
-// import { mapToResponse as mapScheduleToResponse } from '../scheduleForms/scheduleForms.mapper';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { parseCsv } from '../../tools/csvParser';
 import { ServicesService } from '../services/services.service';
@@ -64,9 +63,6 @@ export class ServiceProvidersController extends Controller {
 	@Inject
 	private scheduleFormsMapper: ScheduleFormsMapper;
 
-	/**
-	 * @deprecated use onboard atm
-	 */
 	private static parseCsvModelToServiceProviders(csvModels: any[]) {
 		try {
 			const serviceProvidersRequest = csvModels as ServiceProviderModel[];
@@ -81,8 +77,8 @@ export class ServiceProvidersController extends Controller {
 	}
 
 	/**
-	 * @deprecated
 	 * Creates multiple service providers (json format).
+	 *
 	 * @param spRequest
 	 * @param @isInt serviceId The service id.
 	 */
@@ -100,8 +96,8 @@ export class ServiceProvidersController extends Controller {
 	}
 
 	/**
-	 * @deprecated
 	 * Creates multiple service providers (CSV format). The csv content must contain a single header called name.
+	 *
 	 * @param spRequest
 	 * @param @isInt serviceId The service id.
 	 */
@@ -377,6 +373,60 @@ export class ServiceProvidersControllerV2 extends Controller {
 	private scheduleFormsMapper: ScheduleFormsMapper;
 	@Inject
 	private idHasher: IdHasher;
+
+	private static parseCsvModelToServiceProviders(csvModels: any[]) {
+		try {
+			const serviceProvidersRequest = csvModels as ServiceProviderModel[];
+
+			if (serviceProvidersRequest.length !== csvModels.length) {
+				throw new Error('Invalid model format');
+			}
+			return serviceProvidersRequest;
+		} catch (e) {
+			throw new Error('Invalid model format');
+		}
+	}
+
+	/**
+	 * Creates multiple service providers (json format).
+	 *
+	 * @param spRequest
+	 * @param serviceId The service id.
+	 */
+	@Post('')
+	@Security('service')
+	@SuccessResponse(204, 'Created')
+	@Deprecated()
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async addServiceProviders(
+		@Body() spRequest: ServiceProviderListRequest,
+		@Header('x-api-service') serviceId: string,
+	): Promise<void> {
+		const unsignedServiceId = this.idHasher.decode(serviceId);
+		await this.serviceProvidersService.saveServiceProviders(spRequest.serviceProviders, unsignedServiceId);
+	}
+
+	/**
+	 * Creates multiple service providers (CSV format). The csv content must contain a single header called name.
+	 *
+	 * @param spRequest
+	 * @param serviceId The service id.
+	 */
+	@Post('/csv')
+	@Deprecated()
+	@Security('service')
+	@SuccessResponse(204, 'Created')
+	@MOLAuth({ admin: {}, agency: {} })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async addServiceProvidersText(
+		@Body() spRequest: string,
+		@Header('x-api-service') serviceId: string,
+	): Promise<void> {
+		const unsignedServiceId = this.idHasher.decode(serviceId);
+		const request = ServiceProvidersControllerV2.parseCsvModelToServiceProviders(parseCsv(spRequest));
+		await this.serviceProvidersService.saveServiceProviders(request, unsignedServiceId);
+	}
 
 	/**
 	 * Retrieves service providers.

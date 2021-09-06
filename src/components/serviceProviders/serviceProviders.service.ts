@@ -69,9 +69,6 @@ export class ServiceProvidersService {
 		return errors;
 	}
 
-	/**
-	 * @deprecated please use createServiceProviders
-	 */
 	private static async validateServiceProviders(sps: ServiceProviderModel[]) {
 		const errorsPromises = sps.map((e) => ServiceProvidersService.validateServiceProvider(e));
 		await Promise.all(errorsPromises).then((errors) => {
@@ -253,9 +250,6 @@ export class ServiceProvidersService {
 		return res;
 	}
 
-	/**
-	 * @deprecated please use createServiceProviders
-	 */
 	public async saveServiceProviders(listRequest: ServiceProviderModel[], serviceId: number) {
 		await ServiceProvidersService.validateServiceProviders(listRequest);
 		// tslint:disable-next-line:prefer-for-of
