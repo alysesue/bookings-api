@@ -15,6 +15,8 @@ export class BookingRepositoryMock implements Partial<BookingsRepository> {
 	public static searchBookings = jest.fn<Promise<IPagedEntities<Booking>>, any>();
 	public static searchReturnAll = jest.fn<Promise<Booking[]>, any>();
 	public static saveMock: Promise<InsertResult>;
+	public static getBookingByUUID = jest.fn<Promise<Booking>, any>();
+	public static update = jest.fn<Promise<Booking>, [Booking]>();
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public async getBooking(id: number): Promise<Booking> {
@@ -30,7 +32,7 @@ export class BookingRepositoryMock implements Partial<BookingsRepository> {
 	}
 
 	public async update(booking: Booking): Promise<Booking> {
-		return Promise.resolve(booking);
+		return await BookingRepositoryMock.update(booking);
 	}
 
 	public async search(...params): Promise<any> {
@@ -41,12 +43,8 @@ export class BookingRepositoryMock implements Partial<BookingsRepository> {
 		return await BookingRepositoryMock.searchReturnAll(...params);
 	}
 
-	public async getBookingByUUID(bookingUUID: string): Promise<Booking> {
-		if (bookingUUID === BookingRepositoryMock.booking.uuid) {
-			return Promise.resolve(BookingRepositoryMock.booking);
-		}
-
-		return null;
+	public async getBookingByUUID(...params): Promise<Booking> {
+		return await BookingRepositoryMock.getBookingByUUID(...params);
 	}
 }
 

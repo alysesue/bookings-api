@@ -139,6 +139,9 @@ export class Booking {
 	@Index()
 	private _serviceId: number;
 
+	@Column({ nullable: false })
+	private _creatorId: number;
+
 	@ManyToOne(() => Service)
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
@@ -291,6 +294,14 @@ export class Booking {
 
 	public set id(value: number) {
 		this._id = value;
+	}
+
+	public get creatorId(): number {
+		return this._creatorId;
+	}
+
+	public set creatorId(value: number) {
+		this._creatorId = value;
 	}
 
 	public get serviceId(): number {

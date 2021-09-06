@@ -19,6 +19,8 @@ import { ApiData, ApiDataFactory } from '../../apicontract';
 import { DynamicFieldModel, PersistDynamicFieldModelV1, PersistDynamicFieldModelV2 } from './dynamicFields.apicontract';
 import { DynamicFieldsService } from './dynamicFields.service';
 import { MOLAuth } from 'mol-lib-common';
+import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth';
+import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
 import { IdHasher } from '../../infrastructure/idHasher';
 
 @InRequestScope
@@ -78,7 +80,9 @@ export class DynamicFieldsController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 */
 	@Get('')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
 	@Security('service')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getDynamicFields(@Header('x-api-service') serviceId: number): Promise<ApiData<DynamicFieldModel[]>> {
 		const entries = await this.dynamicFieldsService.getServiceFields(serviceId);
 		return ApiDataFactory.create(this.mapper.mapDataModels(entries));
@@ -161,7 +165,9 @@ export class DynamicFieldsControllerV2 extends Controller {
 	 * @param serviceId The service id.
 	 */
 	@Get('')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
 	@Security('service')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getDynamicFields(@Header('x-api-service') serviceId: string): Promise<ApiData<DynamicFieldModel[]>> {
 		const unsignedServiceId = this.idHasher.decode(serviceId);
 		const entries = await this.dynamicFieldsService.getServiceFields(unsignedServiceId);

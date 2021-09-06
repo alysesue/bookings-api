@@ -5,6 +5,7 @@ import { BookingsController, BookingsControllerV2 } from '../bookings.controller
 import {
 	BookingAcceptRequestV1,
 	BookingAcceptRequestV2,
+	BookingChangeUser,
 	BookingReject,
 	BookingRequestV1,
 	BookingRequestV2,
@@ -71,6 +72,7 @@ describe('Bookings.Controller', () => {
 	testBooking1.createdLog.timestamp = new Date('2020-01-01T01:01:01Z');
 	testBooking1.service = new Service();
 	testBooking1.service.organisation = organisation;
+	testBooking1.uuid = '3e813466-c2ee-4b25-ae6e-77cc7dbe8878';
 
 	const testBooking2 = new BookingBuilder()
 		.withServiceId(1)
@@ -335,6 +337,7 @@ describe('Bookings.Controller', () => {
 		const result = await controller.postBooking(req, 1);
 
 		expect(result).toBeDefined();
+		expect(result.data.uuid).toEqual('3e813466-c2ee-4b25-ae6e-77cc7dbe8878');
 	});
 
 	it('should post out of timeslot booking', async () => {
@@ -460,6 +463,7 @@ describe('Bookings.Controller.V2', () => {
 	testBooking1.createdLog.timestamp = new Date('2020-01-01T01:01:01Z');
 	testBooking1.service = new Service();
 	testBooking1.service.organisation = organisation;
+	testBooking1.uuid = '3e813466-c2ee-4b25-ae6e-77cc7dbe8878';
 
 	const testBooking2 = new BookingBuilder()
 		.withServiceId(1)
@@ -838,6 +842,18 @@ describe('Bookings.Controller.V2', () => {
 
 		expect(KoaContextStoreMock.koaContext.body).toBeDefined();
 		expect(typeof KoaContextStoreMock.koaContext.body).toBe('string');
+	});
+
+	it('should change booking user', async () => {
+		const bookingUUID = uuid.v4();
+		BookingsServiceMock.changeUser.mockResolvedValue(testBooking1);
+
+		const controller = Container.get(BookingsController);
+		const result = await controller.changeUser(2, { bookingUUID } as BookingChangeUser);
+
+		expect(result).toBeDefined();
+		expect(result.data.uuid).toEqual('3e813466-c2ee-4b25-ae6e-77cc7dbe8878');
+		expect(BookingsServiceMock.changeUser).toBeCalledWith({ bookingId: 2, bookingUUID });
 	});
 });
 

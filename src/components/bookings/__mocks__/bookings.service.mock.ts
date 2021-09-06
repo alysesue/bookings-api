@@ -8,6 +8,7 @@ export class BookingsServiceMock implements Partial<BookingsService> {
 	public static searchBookings = jest.fn<Promise<IPagedEntities<Booking>>, any>();
 	public static mockSearchBookingsReturnAll = jest.fn<Promise<Booking[]>, any>();
 	public static mockCheckLimit = jest.fn<Promise<void>, any>();
+	public static changeUser = jest.fn<Promise<Booking>, any>();
 
 	public static mockBooking: Booking;
 	public static mockAcceptBooking = Promise.resolve(BookingsServiceMock.mockBooking);
@@ -72,5 +73,9 @@ export class BookingsServiceMock implements Partial<BookingsService> {
 	public async validateOnHoldBooking(bookingId: number, bookingRequest: BookingRequestV1): Promise<Booking> {
 		BookingsServiceMock.mockBookingId = bookingId;
 		return BookingsServiceMock.mockValidateOnHoldBooking;
+	}
+
+	public async changeUser(...params): Promise<Booking> {
+		return await BookingsServiceMock.changeUser(...params);
 	}
 }

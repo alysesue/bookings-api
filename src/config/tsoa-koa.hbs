@@ -97,6 +97,14 @@ export function RegisterRoutes(router: KoaRouter) {
             const controller = containerContext.resolve({{../name}});
         {{/if}}
 
+		// =============================================================================
+		// MOL: To ensure that the MOLAuth decorator was set
+		const authLevelSet = (controller.{{name}} as any).mol_authLevelSet;
+		const bookingsgAuthSet = (controller.{{name}} as any)._bookingSGAuthSet;
+		if (!authLevelSet && !bookingsgAuthSet) {
+			throw new Error("Please ensure that {{method}} {{fullPath}} has BookingSGAuth or MOLAuth decorator set");
+		}
+
         // =============================================================================
         // MOL: To support disable action
         // @ts-ignore
@@ -201,8 +209,8 @@ export function RegisterRoutes(router: KoaRouter) {
             return Promise.resolve(promise)
             .then((data: any) => {
 			if (Boolean(context['_manualContextResponse'])) { return next(); }
-			
-            if (data || data === false) {		
+
+            if (data || data === false) {
             context.body = data;
             context.status = 200;
             } else {

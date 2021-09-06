@@ -6,6 +6,7 @@ import {
 	Booking,
 	BookingStatus,
 	ChangeLogAction,
+	Organisation,
 	Service,
 	ServiceProvider,
 	TimeslotsSchedule,
@@ -34,6 +35,7 @@ import { ServicesService } from '../../services/services.service';
 import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,
+	OrganisationAdminAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
@@ -60,7 +62,7 @@ import { randomIndex } from '../../../tools/arrays';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 import * as uuid from 'uuid';
 import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
-import { BookingValidationType } from '../../../models/bookingValidationType';
+import { BookingValidationType, BookingWorkflowType } from '../../../models/bookingValidationType';
 
 jest.mock('../../../tools/arrays');
 
@@ -85,8 +87,14 @@ function getUpdateBookingRequest() {
 
 // tslint:disable-next-line: no-big-function
 describe('Bookings.Service', () => {
+	const organisation = new Organisation();
+	organisation.id = 123;
+
 	const service = new Service();
 	service.id = 1;
+	service.organisation = organisation;
+	service.organisationId = organisation.id;
+	service.allowAnonymousBookings = true;
 
 	const serviceProvider = ServiceProvider.create('provider', 1);
 	serviceProvider.id = 1;
@@ -102,6 +110,7 @@ describe('Bookings.Service', () => {
 		name: 'Name',
 	});
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+	singpassMock.id = 45;
 	const anonymousMock = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
 	const agencyMock = User.createAgencyUser({
 		agencyAppId: 'some-app',
@@ -150,6 +159,7 @@ describe('Bookings.Service', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
 
+		BookingChangeLogsServiceMock.action = undefined;
 		BookingChangeLogsServiceMock.executeAndLogAction.mockImplementation(
 			async (
 				bookingId: number,
@@ -177,6 +187,10 @@ describe('Bookings.Service', () => {
 			Promise.resolve({ entries: [] } as IPagedEntities<Booking>),
 		);
 		BookingRepositoryMock.searchReturnAll.mockImplementation(() => Promise.resolve([]));
+
+		BookingRepositoryMock.update.mockImplementation(async (b) => {
+			return b;
+		});
 
 		UsersServiceMock.persistUserIfRequired.mockImplementation((u) => Promise.resolve(u));
 
@@ -261,18 +275,6 @@ describe('Bookings.Service', () => {
 		anonymousService.isStandAlone = false;
 
 		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(anonymousService));
-		TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
-			return Promise.resolve([
-				{
-					serviceProvider,
-					capacity: 1,
-					acceptedBookings: [],
-					pendingBookings: [],
-					availabilityCount: 1,
-				} as TimeslotServiceProviderResult,
-			]);
-		});
-
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(anonymousMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new AnonymousAuthGroup(anonymousMock)]),
@@ -356,7 +358,7 @@ describe('Bookings.Service', () => {
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(agencyMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
-			Promise.resolve([new ServiceProviderAuthGroup(agencyMock, customProvider)]),
+			Promise.resolve([new OrganisationAdminAuthGroup(agencyMock, [organisation])]),
 		);
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
@@ -396,7 +398,7 @@ describe('Bookings.Service', () => {
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(agencyMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
-			Promise.resolve([new ServiceProviderAuthGroup(agencyMock, customProvider)]),
+			Promise.resolve([new OrganisationAdminAuthGroup(agencyMock, [organisation])]),
 		);
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
@@ -435,7 +437,7 @@ describe('Bookings.Service', () => {
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(agencyMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
-			Promise.resolve([new ServiceProviderAuthGroup(agencyMock, customProvider)]),
+			Promise.resolve([new OrganisationAdminAuthGroup(agencyMock, [organisation])]),
 		);
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
@@ -479,6 +481,43 @@ describe('Bookings.Service', () => {
 		const booking = BookingRepositoryMock.booking;
 		expect(booking).not.toBe(undefined);
 		expect(booking.status).toBe(BookingStatus.Accepted);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+	});
+
+	it('should create onHold booking for citizen (when workflowType = OnHold)', async () => {
+		const customProvider = ServiceProvider.create('provider', 1);
+		customProvider.id = 200;
+		customProvider.autoAcceptBookings = true;
+
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.serviceProviderId = 200;
+		bookingRequest.workflowType = BookingWorkflowType.OnHold;
+
+		TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
+			return Promise.resolve([
+				{
+					serviceProvider: customProvider,
+					capacity: 1,
+					acceptedBookings: [],
+					pendingBookings: [],
+					availabilityCount: 1,
+				} as TimeslotServiceProviderResult,
+			]);
+		});
+
+		ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(Promise.resolve(customProvider));
+		ServiceProvidersRepositoryMock.getServiceProviderMock = customProvider;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
+
+		await Container.get(BookingsService).save(bookingRequest, 1);
+
+		const booking = BookingRepositoryMock.booking;
+		expect(booking).not.toBe(undefined);
+		expect(booking.status).toBe(BookingStatus.OnHold);
 		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 	});
 
@@ -751,14 +790,15 @@ describe('Bookings.Service', () => {
 	it('should get booking by uuid as an anonymous user', async () => {
 		const bookingService = Container.get(BookingsService);
 		const bookingUUID = uuid.v4();
-		const bookingMock = (BookingRepositoryMock.booking = new BookingBuilder()
+		const bookingMock = new BookingBuilder()
 			.withServiceId(service.id)
 			.withCitizenEmail('test@mail.com')
 			.withStartDateTime(new Date('2020-02-02T11:00'))
 			.withEndDateTime(new Date('2020-02-02T12:00'))
-			.build());
+			.build();
 		bookingMock.uuid = bookingUUID;
 		bookingMock.id = 10;
+		BookingRepositoryMock.getBookingByUUID.mockResolvedValue(bookingMock);
 
 		const resultBooking = await bookingService.getBookingByUUID(bookingUUID);
 		expect(resultBooking.uuid).toBe(bookingUUID);
@@ -767,14 +807,7 @@ describe('Bookings.Service', () => {
 
 	it('should throw an exception when booking not found by uuid as an anonymous user', async () => {
 		const bookingService = Container.get(BookingsService);
-		const bookingUUID = uuid.v4();
-		const bookingMock = (BookingRepositoryMock.booking = new BookingBuilder()
-			.withServiceId(service.id)
-			.withCitizenEmail('test@mail.com')
-			.withStartDateTime(new Date('2020-02-02T11:00'))
-			.withEndDateTime(new Date('2020-02-02T12:00'))
-			.build());
-		bookingMock.uuid = bookingUUID;
+		BookingRepositoryMock.getBookingByUUID.mockResolvedValue(null);
 
 		const testBookingUUID = uuid.v4();
 		await expect(async () => await bookingService.getBookingByUUID(testBookingUUID)).rejects.toStrictEqual(
@@ -973,7 +1006,7 @@ describe('Bookings.Service', () => {
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(agencyMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
-			Promise.resolve([new ServiceProviderAuthGroup(agencyMock, customProvider)]),
+			Promise.resolve([new OrganisationAdminAuthGroup(agencyMock, [organisation])]),
 		);
 
 		await Container.get(BookingsService).save(bookingRequest, 1, false);
@@ -1001,7 +1034,7 @@ describe('Bookings.Service', () => {
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(agencyMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
-			Promise.resolve([new ServiceProviderAuthGroup(agencyMock, customProvider)]),
+			Promise.resolve([new OrganisationAdminAuthGroup(agencyMock, [organisation])]),
 		);
 
 		await Container.get(BookingsService).update(1, bookingRequest);
@@ -1022,10 +1055,111 @@ describe('Bookings.Service', () => {
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new AnonymousAuthGroup(anonymousMock)]),
 		);
-		try {
-			await Container.get(BookingsService).save(bookingRequest, 1);
-		} catch (e) {}
+
+		await Container.get(BookingsService).save(bookingRequest, 1);
+
 		expect(validatorMock.bypassCaptcha).toBeCalledWith(false);
+	});
+
+	it('should change booking user', async () => {
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
+
+		let booking = new Booking();
+		booking.startDateTime = new Date('2020-02-02T11:00Z');
+		booking.endDateTime = new Date('2020-02-02T12:00Z');
+		booking.id = 2;
+		booking.uuid = '70ea8f89-2b68-404c-bab9-43af02579f46';
+		booking.creatorId = 3;
+		booking.markOnHold();
+
+		BookingRepositoryMock.getBookingByUUID.mockResolvedValue(booking);
+		BookingRepositoryMock.update.mockImplementation(async (b) => {
+			booking = b;
+			return b;
+		});
+
+		const service = Container.get(BookingsService);
+		const result = await service.changeUser({ bookingId: 2, bookingUUID: '70ea8f89-2b68-404c-bab9-43af02579f46' });
+
+		expect(result).toBeDefined();
+		expect(result.creatorId).toEqual(singpassMock.id);
+		expect(BookingChangeLogsServiceMock.executeAndLogAction).toBeCalled();
+		expect(BookingChangeLogsServiceMock.action).toEqual(ChangeLogAction.UpdateUser);
+	});
+
+	it('should NOT change booking user when uuid matches but id does not', async () => {
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
+
+		let booking = new Booking();
+		booking.startDateTime = new Date('2020-02-02T11:00Z');
+		booking.endDateTime = new Date('2020-02-02T12:00Z');
+		booking.id = 15;
+		booking.uuid = '70ea8f89-2b68-404c-bab9-43af02579f46';
+		booking.creatorId = 3;
+		booking.markOnHold();
+
+		BookingRepositoryMock.getBookingByUUID.mockResolvedValue(booking);
+		BookingRepositoryMock.update.mockImplementation(async (b) => {
+			booking = b;
+			return b;
+		});
+
+		const service = Container.get(BookingsService);
+		const testCase = async () =>
+			await service.changeUser({
+				bookingId: 2,
+				bookingUUID: '70ea8f89-2b68-404c-bab9-43af02579f46',
+			});
+
+		await expect(testCase).rejects.toMatchInlineSnapshot('[SYS_NOT_FOUND (404): Booking 2 not found]');
+	});
+
+	it('should NOT change booking user when booking is not onHold', async () => {
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
+
+		let booking = new Booking();
+		booking.startDateTime = new Date('2020-02-02T11:00Z');
+		booking.endDateTime = new Date('2020-02-02T12:00Z');
+		booking.id = 2;
+		booking.uuid = '70ea8f89-2b68-404c-bab9-43af02579f46';
+		booking.creatorId = 3;
+		booking.status = BookingStatus.Accepted;
+
+		BookingRepositoryMock.getBookingByUUID.mockResolvedValue(booking);
+		BookingRepositoryMock.update.mockImplementation(async (b) => {
+			booking = b;
+			return b;
+		});
+
+		const service = Container.get(BookingsService);
+		const testCase = async () =>
+			await service.changeUser({
+				bookingId: 2,
+				bookingUUID: '70ea8f89-2b68-404c-bab9-43af02579f46',
+			});
+
+		await expect(testCase).rejects.toMatchInlineSnapshot(
+			'[SYS_INVALID_PARAM (400): Booking 2 is in invalid state for user change.]',
+		);
+	});
+
+	it('should NOT change booking user when booking is not found', async () => {
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
+
+		BookingRepositoryMock.getBookingByUUID.mockResolvedValue(null);
+
+		const service = Container.get(BookingsService);
+		const testCase = async () =>
+			await service.changeUser({
+				bookingId: 2,
+				bookingUUID: '70ea8f89-2b68-404c-bab9-43af02579f46',
+			});
+
+		await expect(testCase).rejects.toMatchInlineSnapshot('[SYS_NOT_FOUND (404): Booking 2 not found]');
 	});
 
 	describe('Validate on hold booking', () => {

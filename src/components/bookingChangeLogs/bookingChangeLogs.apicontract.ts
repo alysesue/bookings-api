@@ -84,4 +84,5 @@ export enum ChangeLogActionContract {
 	Cancel = 'cancel',
 	Update = 'update',
 	Reschedule = 'reschedule',
+	UpdateUser = 'update-user',
 }

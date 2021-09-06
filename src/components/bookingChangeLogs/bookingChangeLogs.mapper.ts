@@ -37,6 +37,7 @@ export class BookingChangeLogsMapper {
 		map[ChangeLogAction.Cancel] = ChangeLogActionContract.Cancel;
 		map[ChangeLogAction.Update] = ChangeLogActionContract.Update;
 		map[ChangeLogAction.Reschedule] = ChangeLogActionContract.Reschedule;
+		map[ChangeLogAction.UpdateUser] = ChangeLogActionContract.UpdateUser;
 
 		BookingChangeLogsMapper._actionMap = map;
 	}

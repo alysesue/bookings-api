@@ -1,7 +1,9 @@
 import { Inject } from 'typescript-ioc';
-import { Controller, Get, Query, Route, SuccessResponse, Tags } from 'tsoa';
+import { Controller, Get, Query, Response, Route, SuccessResponse, Tags } from 'tsoa';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { SettingsService } from './settings.service';
+import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth';
+import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
 
 @Route('v1/settings')
 @Tags('Settings')
@@ -15,7 +17,9 @@ export class SettingsController extends Controller {
 	 * @param url
 	 */
 	@Get('isValidRedirectUrl')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
 	@SuccessResponse(200, 'Ok')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async verifyUrl(@Query() url): Promise<ApiData<boolean>> {
 		const res = await this.settingsService.verifyUrlRedirection(url);
 		return ApiDataFactory.create(res);

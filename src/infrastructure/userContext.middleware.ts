@@ -21,14 +21,6 @@ export class UserContextMiddleware {
 					const mobileOtpCookieHelper = containerContext.resolve(MobileOtpCookieHelper);
 					const mobileOtpCookie = mobileOtpCookieHelper.getCookieValue();
 					await userContext.otpAddOn(mobileOtpCookie);
-
-					// TODO: require OTP later
-					// const otpAddOnMobileNo = userContext.getOtpAddOnMobileNo();
-					// if (!otpAddOnMobileNo) {
-					// 	throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
-					// 		'User is not authenticated with mobile otp',
-					// 	);
-					// }
 				}
 			}
 

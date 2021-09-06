@@ -3,6 +3,7 @@
 // The settings in this file will overwrite default and user settings for a project.
 // =============================================================================
 {
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"[handlebars]": {
 		"editor.formatOnSave": false
 	},

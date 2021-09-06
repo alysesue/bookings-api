@@ -83,6 +83,7 @@ describe('Bookings mapper tests', () => {
 		const createdLog = new BookingChangeLog();
 		createdLog.timestamp = new Date(2021, 2, 1);
 		booking.id = 1;
+		booking.uuid = '35703724-c99a-4fac-9546-d2b54c50b6fe';
 		booking.status = 2;
 		booking.createdLog = createdLog;
 		booking.startDateTime = new Date(2021, 2, 1);
@@ -412,6 +413,22 @@ describe('Bookings mapper tests', () => {
 			'Service Provider Email address': 'armin-sp@gmail.com',
 			'Service Provider Phone number': '81181188',
 		});
+	});
+
+	it('should NOT map uuid ', async () => {
+		const mapper = Container.get(BookingsMapper);
+		const booking = getFullBookingInformation();
+
+		const mapped = await mapper.mapDataModelV1(booking);
+		expect(mapped.uuid).toBe(undefined);
+	});
+
+	it('should map uuid ', async () => {
+		const mapper = Container.get(BookingsMapper);
+		const booking = getFullBookingInformation();
+
+		const mapped = await mapper.mapDataModelV1(booking, { mapUUID: true });
+		expect(mapped.uuid).toBe('35703724-c99a-4fac-9546-d2b54c50b6fe');
 	});
 
 	it('should map booking details', async () => {
