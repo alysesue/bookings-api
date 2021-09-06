@@ -85,7 +85,8 @@ describe('user Context middleware tests', () => {
 			cookieRefreshedAt: new Date(0),
 			otpReqId: 'f08c64ae-6d97-4d36-92a8-c6c1f190a676',
 		};
-		MobileOtpCookieHelperMock.getCookieValue.mockReturnValue(mobileOtpAddOnCookieData);
+
+		MobileOtpCookieHelperMock.getValidCookieValue.mockReturnValue(Promise.resolve(mobileOtpAddOnCookieData));
 		OtpServiceMock.getMobileNoMock.mockReturnValue(Promise.resolve('+6588884444'));
 
 		UsersServiceMock.createAnonymousUserFromCookie.mockImplementation(() => Promise.resolve(anonymous));

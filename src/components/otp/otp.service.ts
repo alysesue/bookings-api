@@ -8,7 +8,6 @@ import { BusinessError } from '../../errors/businessError';
 import { BookingBusinessValidations } from '../bookings/validator/bookingBusinessValidations';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { MobileOtpCookieHelper } from '../../infrastructure/bookingSGCookieHelper';
-import { DateHelper } from '../../infrastructure/dateHelper';
 
 const OTP_EXPIRY_IN_SECONDS = 3 * 60;
 
@@ -56,27 +55,12 @@ export class OtpService {
 	}
 
 	async verifyAndRefreshToken(): Promise<void> {
-		const cookie = this.mobileOtpCookieHelper.getCookieValue();
-		const otp = await this.otpRepository.getByOtpReqId(cookie.otpReqId);
-
-		if (!otp) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request token.`);
-		}
-
-		const now = Date.now();
-		const refreshedDate = DateHelper.addMinutes(
-			new Date(cookie.cookieRefreshedAt),
-			this.mobileOtpCookieHelper.getCookieExpiry(),
-		).getTime();
-
-		if (now > refreshedDate) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request, token expired.`);
-		}
+		const cookie = await this.mobileOtpCookieHelper.getValidCookieValue();
 
 		this.mobileOtpCookieHelper.setCookieValue({
-			cookieCreatedAt: otp._createdAt,
+			cookieCreatedAt: cookie.cookieCreatedAt,
 			cookieRefreshedAt: new Date(),
-			otpReqId: otp._requestId,
+			otpReqId: cookie.otpReqId,
 		});
 	}
 }

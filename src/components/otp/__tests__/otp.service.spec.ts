@@ -12,9 +12,12 @@ import { NotificationSMSService } from '../../../components/notificationSMS/noti
 import { CaptchaServiceMock } from '../../../components/captcha/__mocks__/captcha.service.mock';
 import { OtpRepositoryMock } from '../__mocks__/otp.repository.mock';
 import { MobileOtpCookieHelperMock } from '../../../infrastructure/__mocks__/mobileOtpCookieHelper.mock';
-import { MobileOtpAddOnCookieData, MobileOtpCookieHelper } from '../../../infrastructure/bookingSGCookieHelper';
-import { DateHelper } from '../../../infrastructure/dateHelper';
+import { MobileOtpCookieHelper } from '../../../infrastructure/bookingSGCookieHelper';
+import { getConfig } from '../../../config/app-config';
 
+jest.mock('../../../config/app-config', () => ({
+	getConfig: jest.fn(),
+}));
 describe('sendOtp()', () => {
 	let configSpy: jest.SpyInstance;
 	let otpRepoSaveSpy: jest.SpyInstance;
@@ -166,77 +169,20 @@ describe('verifyAndRefreshToken', () => {
 		jest.resetAllMocks();
 	});
 
-	it('invalid request', async () => {
-		const container = Container.get(OtpService);
-		const cookie = {
-			cookieCreatedAt: new Date(),
-			cookieRefreshedAt: new Date(),
-			otpReqId: 'abc',
-		} as MobileOtpAddOnCookieData;
-		MobileOtpCookieHelperMock.getCookieValue.mockReturnValue(cookie);
-		OtpRepositoryMock.getByOtpReqIdMock.mockReturnValue(Promise.resolve(undefined));
-
-		let error;
-		try {
-			await container.verifyAndRefreshToken();
-		} catch (e) {
-			error = e;
-		}
-
-		expect(MobileOtpCookieHelperMock.getCookieValue).toBeCalledTimes(1);
-		expect(OtpRepositoryMock.getByOtpReqIdMock).toBeCalledTimes(1);
-		expect(error.code).toBe(`SYS_INVALID_PARAM`);
-		expect(error.httpStatusCode).toBe(400);
-		expect(error.message).toBe(`Invalid request token.`);
-		expect(MobileOtpCookieHelperMock.setCookieValue).not.toBeCalled();
-	});
-
-	it('token expire', async () => {
-		const container = Container.get(OtpService);
-		const cookie = {
-			cookieCreatedAt: new Date(),
-			cookieRefreshedAt: DateHelper.addMinutes(new Date(), -21),
-			otpReqId: 'abc',
-		} as MobileOtpAddOnCookieData;
-
-		const otp = Otp.create('+6581118222', true);
-		MobileOtpCookieHelperMock.getCookieValue.mockReturnValue(cookie);
-		OtpRepositoryMock.getByOtpReqIdMock.mockReturnValue(Promise.resolve(otp));
-		MobileOtpCookieHelperMock.getCookieExpiry.mockReturnValue(20);
-
-		let error;
-		try {
-			await container.verifyAndRefreshToken();
-		} catch (e) {
-			error = e;
-		}
-
-		expect(MobileOtpCookieHelperMock.getCookieValue).toBeCalledTimes(1);
-		expect(OtpRepositoryMock.getByOtpReqIdMock).toBeCalledTimes(1);
-		expect(MobileOtpCookieHelperMock.getCookieExpiry).toBeCalledTimes(1);
-		expect(error.code).toBe(`SYS_INVALID_PARAM`);
-		expect(error.httpStatusCode).toBe(400);
-		expect(error.message).toBe(`Invalid request, token expired.`);
-		expect(MobileOtpCookieHelperMock.setCookieValue).not.toBeCalled();
-	});
-
 	it('token refreshed', async () => {
 		const container = Container.get(OtpService);
-		const cookie = {
-			cookieCreatedAt: new Date(),
-			cookieRefreshedAt: new Date(),
-			otpReqId: 'abc',
-		} as MobileOtpAddOnCookieData;
-
-		const otp = Otp.create('+6581118222', true);
-		MobileOtpCookieHelperMock.getCookieValue.mockReturnValue(cookie);
-		OtpRepositoryMock.getByOtpReqIdMock.mockReturnValue(Promise.resolve(otp));
-		MobileOtpCookieHelperMock.getCookieExpiry.mockReturnValue(20);
+		(getConfig as jest.Mock).mockReturnValue({
+			otpEnabled: false,
+		});
+		MobileOtpCookieHelperMock.getValidCookieValue.mockReturnValue(
+			Promise.resolve({
+				cookieCreatedAt: new Date(),
+				cookieRefreshedAt: new Date(),
+				otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f',
+			}),
+		);
 		await container.verifyAndRefreshToken();
 
-		expect(MobileOtpCookieHelperMock.getCookieValue).toBeCalledTimes(1);
-		expect(OtpRepositoryMock.getByOtpReqIdMock).toBeCalledTimes(1);
-		expect(MobileOtpCookieHelperMock.getCookieExpiry).toBeCalledTimes(1);
-		expect(MobileOtpCookieHelperMock.setCookieValue).toBeCalledTimes(1);
+		expect(MobileOtpCookieHelperMock.getValidCookieValue).toBeCalledTimes(1);
 	});
 });
