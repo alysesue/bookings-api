@@ -1,6 +1,6 @@
 {
 	"name": "bookingsg",
-	"version": "1.5.0",
+	"version": "2.0.0",
 	"main": "index.js",
 	"scripts": {
 		"use:local-env": "node node_modules/cpy-cli/cli ./params/secrets/local.env ./ --rename=.env",
