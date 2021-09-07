@@ -38,11 +38,11 @@ import { ServiceProvidersService } from './serviceProviders.service';
 import {
 	ServiceProviderListRequest,
 	ServiceProviderModel,
+	ServiceProviderResponseModelV1,
 	ServiceProviderResponseModelV2,
 	TotalServiceProviderResponse,
 } from './serviceProviders.apicontract';
 import { IdHasher } from '../../infrastructure/idHasher';
-import { ServiceProviderResponseModelV1 } from './serviceProviders.apicontract';
 import { TimeslotItemsMapper } from '../timeslotItems/timeslotItems.mapper';
 import { ScheduleFormsMapper } from '../scheduleForms/scheduleForms.mapper';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth';

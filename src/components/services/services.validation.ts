@@ -84,7 +84,7 @@ export class ServicesValidation extends Validator<Service> {
 		}
 	}
 
-	public async validateServiceFound(service: Service): Promise<any> {
+	public async validateServiceFound(service: Service): Promise<void> {
 		if (!service) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('Service not found');
 		}

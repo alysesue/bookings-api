@@ -68,7 +68,7 @@ export class BookingUpdateRequestV2 extends BookingRequestBase {
 }
 
 export class ValidateOnHoldRequest extends BookingDetailsRequest {
-	public citizenUinFinUpdated?: boolean = true; //for backwards compatibility
+	public citizenUinFinUpdated?: boolean = true; // for backwards compatibility
 }
 
 export class BookingResponseBase {
