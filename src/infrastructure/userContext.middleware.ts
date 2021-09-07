@@ -19,7 +19,7 @@ export class UserContextMiddleware {
 				if (anonymousData) {
 					userContext.setAnonymousUser(anonymousData);
 					const mobileOtpCookieHelper = containerContext.resolve(MobileOtpCookieHelper);
-					const mobileOtpCookie = await mobileOtpCookieHelper.getValidCookieValue();
+					const mobileOtpCookie = await mobileOtpCookieHelper.getCookieValue();
 					await userContext.otpAddOn(mobileOtpCookie);
 				}
 			}

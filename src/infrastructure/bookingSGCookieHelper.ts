@@ -1,9 +1,7 @@
-import { OtpRepository } from '../components/otp/otp.repository';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { getConfig } from '../config/app-config';
 import { AesEncryption } from './aesencryption';
 import { KoaContextStore } from './koaContextStore.middleware';
-import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { DateHelper } from './dateHelper';
 
 export type AnonymousCookieData = {
@@ -93,8 +91,6 @@ export class MobileOtpCookieHelper {
 
 	@Inject
 	private _koaContextStore: KoaContextStore;
-	@Inject
-	private otpRepository: OtpRepository;
 
 	constructor() {
 		const config = getConfig();
@@ -121,27 +117,15 @@ export class MobileOtpCookieHelper {
 		});
 	}
 
-	public async getValidCookieValue(): Promise<MobileOtpAddOnCookieData | undefined> {
-		const cookie = this.getCookieValue();
-		if (!cookie) return;
-		const otp = await this.otpRepository.getByOtpReqId(cookie.otpReqId);
-
-		if (!otp) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request token.`);
-		}
-
-		this.isCookieValid(cookie);
-
-		return cookie;
-	}
-
-	public isCookieValid(cookie: MobileOtpAddOnCookieData): void {
+	public isCookieValid(cookie: MobileOtpAddOnCookieData): boolean {
 		const now = Date.now();
 		const expiryDate = DateHelper.addMinutes(new Date(cookie.cookieRefreshedAt), this.getCookieExpiry()).getTime();
 
 		if (now > expiryDate) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request, token expired.`);
+			return false;
 		}
+
+		return true;
 	}
 
 	public getCookieValue(): MobileOtpAddOnCookieData | undefined {

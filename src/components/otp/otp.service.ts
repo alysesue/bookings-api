@@ -55,13 +55,19 @@ export class OtpService {
 	}
 
 	async verifyAndRefreshToken(): Promise<void> {
-		const cookie = await this.mobileOtpCookieHelper.getValidCookieValue();
+		const cookie = this.mobileOtpCookieHelper.getCookieValue();
+		const otp = await this.otpRepository.getByOtpReqId(cookie.otpReqId);
 
-		if (cookie)
+		if (!otp) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request token.`);
+		}
+
+		if (this.mobileOtpCookieHelper.isCookieValid(cookie)) {
 			this.mobileOtpCookieHelper.setCookieValue({
 				cookieCreatedAt: cookie.cookieCreatedAt,
 				cookieRefreshedAt: new Date(),
 				otpReqId: cookie.otpReqId,
 			});
+		}
 	}
 }

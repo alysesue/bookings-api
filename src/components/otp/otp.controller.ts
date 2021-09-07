@@ -36,6 +36,7 @@ export class OtpController extends Controller {
 	}
 
 	@Post('refresh-token')
+	@BookingSGAuth({ bypassAuth: true })
 	@Response(204, 'Success')
 	public async refreshOtpToken(): Promise<void> {
 		await this.otpService.verifyAndRefreshToken();

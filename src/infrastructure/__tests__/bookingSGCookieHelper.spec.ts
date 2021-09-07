@@ -6,9 +6,6 @@ import * as Koa from 'koa';
 import * as Cookies from 'cookies';
 import { AesEncryption } from '../aesencryption';
 import { getConfig } from '../../config/app-config';
-import { OtpRepository } from '../../components/otp/otp.repository';
-import { OtpRepositoryMock } from '../../components/otp/__mocks__/otp.repository.mock';
-import { Otp } from '../../models';
 import { DateHelper } from '../dateHelper';
 
 jest.mock('../../config/app-config');
@@ -180,58 +177,6 @@ describe('BookingSGCookieHelper tests', () => {
 		expect(result).toStrictEqual(JSON.parse(json));
 	});
 
-	describe('getValidCookieValue', () => {
-		beforeAll(() => {
-			Container.bind(OtpRepository).to(OtpRepositoryMock);
-		});
-
-		it('invalid request id token', async () => {
-			const cookieHelper = Container.get(MobileOtpCookieHelper);
-
-			const data = { cookieCreatedAt: new Date(0), otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f' };
-			const json = JSON.stringify(data);
-			(AesEncryptionMock.decrypt as jest.Mock).mockImplementation(() => {
-				return json;
-			});
-
-			(KoaContextStoreMock.koaContext.cookies.get as jest.Mock).mockReturnValue('cookie value');
-			OtpRepositoryMock.getByOtpReqIdMock.mockReturnValue(Promise.resolve(undefined));
-
-			let error;
-			try {
-				await cookieHelper.getValidCookieValue();
-			} catch (e) {
-				error = e;
-			}
-
-			expect(error.code).toBe(`SYS_INVALID_PARAM`);
-			expect(error.httpStatusCode).toBe(400);
-			expect(error.message).toBe(`Invalid request token.`);
-		});
-
-		it('token refreshed', async () => {
-			const cookieHelper = Container.get(MobileOtpCookieHelper);
-
-			const data = {
-				cookieCreatedAt: new Date(0),
-				cookieRefreshedAt: new Date(),
-				otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f',
-			};
-			const json = JSON.stringify(data);
-			(AesEncryptionMock.decrypt as jest.Mock).mockImplementation(() => {
-				return json;
-			});
-
-			(KoaContextStoreMock.koaContext.cookies.get as jest.Mock).mockReturnValue('cookie value');
-			OtpRepositoryMock.getByOtpReqIdMock.mockReturnValue(Promise.resolve(Otp.create(`+6581118222`)));
-
-			const result = await cookieHelper.getValidCookieValue();
-
-			expect(OtpRepositoryMock.getByOtpReqIdMock).toBeCalledTimes(1);
-			expect(result).toBeDefined();
-		});
-	});
-
 	describe('isCookieValid', () => {
 		it('cookie refresh date expired', () => {
 			const cookieHelper = Container.get(MobileOtpCookieHelper);
@@ -241,16 +186,22 @@ describe('BookingSGCookieHelper tests', () => {
 				otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f',
 			};
 
-			let error;
-			try {
-				cookieHelper.isCookieValid(data);
-			} catch (e) {
-				error = e;
-			}
+			const result = cookieHelper.isCookieValid(data);
 
-			expect(error.code).toBe(`SYS_INVALID_PARAM`);
-			expect(error.httpStatusCode).toBe(400);
-			expect(error.message).toBe(`Invalid request, token expired.`);
+			expect(result).toBe(false);
+		});
+
+		it('cookie refresh date valid', () => {
+			const cookieHelper = Container.get(MobileOtpCookieHelper);
+			const data = {
+				cookieCreatedAt: new Date(0),
+				cookieRefreshedAt: new Date(),
+				otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f',
+			};
+
+			const result = cookieHelper.isCookieValid(data);
+
+			expect(result).toBe(true);
 		});
 	});
 });

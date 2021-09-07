@@ -169,20 +169,74 @@ describe('verifyAndRefreshToken', () => {
 		jest.resetAllMocks();
 	});
 
+	it('token request invalid', async () => {
+		const container = Container.get(OtpService);
+		(getConfig as jest.Mock).mockReturnValue({
+			otpEnabled: false,
+		});
+
+		MobileOtpCookieHelperMock.getCookieValue.mockReturnValue({
+			cookieCreatedAt: new Date(),
+			cookieRefreshedAt: new Date(),
+			otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f',
+		});
+		OtpRepositoryMock.getByOtpReqIdMock.mockReturnValue(Promise.resolve(undefined));
+
+		let error;
+		try {
+			await container.verifyAndRefreshToken();
+		} catch (e) {
+			error = e;
+		}
+
+		expect(MobileOtpCookieHelperMock.getCookieValue).toBeCalledTimes(1);
+		expect(OtpRepositoryMock.getByOtpReqIdMock).toBeCalledTimes(1);
+		expect(error.code).toBe(`SYS_INVALID_PARAM`);
+		expect(error.httpStatusCode).toBe(400);
+		expect(error.message).toBe(`Invalid request token.`);
+	});
+
+	it('token expired, no refresh', async () => {
+		const container = Container.get(OtpService);
+		(getConfig as jest.Mock).mockReturnValue({
+			otpEnabled: false,
+		});
+
+		MobileOtpCookieHelperMock.getCookieValue.mockReturnValue({
+			cookieCreatedAt: new Date(),
+			cookieRefreshedAt: new Date(),
+			otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f',
+		});
+		OtpRepositoryMock.getByOtpReqIdMock.mockReturnValue(Promise.resolve(Otp.create(`+6581118222`)));
+		MobileOtpCookieHelperMock.isCookieValid.mockReturnValue(false);
+
+		await container.verifyAndRefreshToken();
+
+		expect(MobileOtpCookieHelperMock.getCookieValue).toBeCalledTimes(1);
+		expect(OtpRepositoryMock.getByOtpReqIdMock).toBeCalledTimes(1);
+		expect(MobileOtpCookieHelperMock.isCookieValid).toBeCalledTimes(1);
+		expect(MobileOtpCookieHelperMock.setCookieValue).not.toBeCalled();
+	});
+
 	it('token refreshed', async () => {
 		const container = Container.get(OtpService);
 		(getConfig as jest.Mock).mockReturnValue({
 			otpEnabled: false,
 		});
-		MobileOtpCookieHelperMock.getValidCookieValue.mockReturnValue(
-			Promise.resolve({
-				cookieCreatedAt: new Date(),
-				cookieRefreshedAt: new Date(),
-				otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f',
-			}),
-		);
+
+		MobileOtpCookieHelperMock.getCookieValue.mockReturnValue({
+			cookieCreatedAt: new Date(),
+			cookieRefreshedAt: new Date(),
+			otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f',
+		});
+		OtpRepositoryMock.getByOtpReqIdMock.mockReturnValue(Promise.resolve(Otp.create(`+6581118222`)));
+		MobileOtpCookieHelperMock.isCookieValid.mockReturnValue(true);
+
 		await container.verifyAndRefreshToken();
 
-		expect(MobileOtpCookieHelperMock.getValidCookieValue).toBeCalledTimes(1);
+		expect(MobileOtpCookieHelperMock.getCookieValue).toBeCalledTimes(1);
+		expect(OtpRepositoryMock.getByOtpReqIdMock).toBeCalledTimes(1);
+		expect(MobileOtpCookieHelperMock.isCookieValid).toBeCalledTimes(1);
+		expect(MobileOtpCookieHelperMock.setCookieValue).toBeCalledTimes(1);
 	});
 });
