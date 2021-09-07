@@ -123,6 +123,7 @@ export class MobileOtpCookieHelper {
 
 	public async getValidCookieValue(): Promise<MobileOtpAddOnCookieData | undefined> {
 		const cookie = this.getCookieValue();
+		if (!cookie) return;
 		const otp = await this.otpRepository.getByOtpReqId(cookie.otpReqId);
 
 		if (!otp) {

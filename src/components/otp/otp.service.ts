@@ -57,10 +57,11 @@ export class OtpService {
 	async verifyAndRefreshToken(): Promise<void> {
 		const cookie = await this.mobileOtpCookieHelper.getValidCookieValue();
 
-		this.mobileOtpCookieHelper.setCookieValue({
-			cookieCreatedAt: cookie.cookieCreatedAt,
-			cookieRefreshedAt: new Date(),
-			otpReqId: cookie.otpReqId,
-		});
+		if (cookie)
+			this.mobileOtpCookieHelper.setCookieValue({
+				cookieCreatedAt: cookie.cookieCreatedAt,
+				cookieRefreshedAt: new Date(),
+				otpReqId: cookie.otpReqId,
+			});
 	}
 }
