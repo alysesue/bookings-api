@@ -33,7 +33,7 @@ export class ServiceProvidersQueryAuthVisitor extends QueryAuthGroupVisitor {
 			const { serviceId } = _anonymousGroup.bookingInfo;
 			this.addAuthCondition(`${this._serviceAlias}."_id" = :serviceId`, { serviceId });
 		} else {
-			this.addAuthCondition(`${this._serviceAlias}."_allowAnonymousBookings" = true`, {});
+			this.addAsTrue();
 		}
 	}
 

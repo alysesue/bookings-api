@@ -48,6 +48,7 @@ import {
 } from './bookings.apicontract';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
+
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
 const EXPORT_LIMIT = 5000;

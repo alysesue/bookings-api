@@ -1,5 +1,5 @@
 import { BookingBuilder } from '../../../models/entities/booking';
-import { ChangeLogAction, Organisation, Service, ServiceProvider, User } from '../../../models';
+import { BookingStatus, ChangeLogAction, Organisation, Service, ServiceProvider, User } from '../../../models';
 import { BookingActionAuthVisitor } from '../bookings.auth';
 import {
 	AnonymousAuthGroup,
@@ -48,11 +48,10 @@ describe('Bookings action auth', () => {
 		expect(() => new BookingActionAuthVisitor(booking, null)).toThrowError();
 	});
 
-	it('should validate anonymous user action permission - when service allows anonymous booking', async () => {
+	it('should validate anonymous user action permission - without otp', async () => {
 		const serviceA = new Service();
 		serviceA.id = 2;
 		serviceA.name = 'service';
-		serviceA.allowAnonymousBookings = true;
 
 		const booking = new BookingBuilder()
 			.withServiceId(serviceA.id)
@@ -60,8 +59,16 @@ describe('Bookings action auth', () => {
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.build();
-
 		booking.service = serviceA;
+
+		const onHoldBooking = new BookingBuilder()
+			.withServiceId(serviceA.id)
+			.withCitizenUinFin('ABC1234')
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		onHoldBooking.service = serviceA;
+		onHoldBooking.status = BookingStatus.OnHold;
 
 		const bookingUUID = uuid.v4();
 		const anonymous = User.createAnonymousUser({
@@ -71,47 +78,57 @@ describe('Bookings action auth', () => {
 		});
 		const groups = [new AnonymousAuthGroup(anonymous)];
 
-		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Create).hasPermission(groups)).toBe(true);
-		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Update).hasPermission(groups)).toBe(false);
-		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Cancel).hasPermission(groups)).toBe(false);
-		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reschedule).hasPermission(groups)).toBe(false);
-
-		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Accept).hasPermission(groups)).toBe(false);
-		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reject).hasPermission(groups)).toBe(false);
-	});
-
-	it('should validate anonymous user action permission - when service DOES NOT allow anonymous booking', async () => {
-		const serviceA = new Service();
-		serviceA.id = 2;
-		serviceA.name = 'service';
-		serviceA.allowAnonymousBookings = false;
-
-		const booking = new BookingBuilder()
-			.withServiceId(serviceA.id)
-			.withCitizenUinFin('ABC1234')
-			.withStartDateTime(new Date('2020-10-01T01:00:00'))
-			.withEndDateTime(new Date('2020-10-01T02:00:00'))
-			.build();
-
-		booking.service = serviceA;
-
-		const bookingUUID = uuid.v4();
-		const anonymous = User.createAnonymousUser({
-			createdAt: new Date(),
-			trackingId: uuid.v4(),
-			booking: bookingUUID,
-		});
-		const groups = [new AnonymousAuthGroup(anonymous)];
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Create).hasPermission(groups)).toBe(false);
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Update).hasPermission(groups)).toBe(false);
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Cancel).hasPermission(groups)).toBe(false);
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reschedule).hasPermission(groups)).toBe(false);
-
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Accept).hasPermission(groups)).toBe(false);
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reject).hasPermission(groups)).toBe(false);
+
+		expect(new BookingActionAuthVisitor(onHoldBooking, ChangeLogAction.Create).hasPermission(groups)).toBe(true);
 	});
 
-	it('should validate anonymous user reschedule, cancel and update action if user has a valid booking uuid', async () => {
+	it('should validate anonymous user action permission - otp verified', async () => {
+		const serviceA = new Service();
+		serviceA.id = 2;
+		serviceA.name = 'service';
+
+		const booking = new BookingBuilder()
+			.withServiceId(serviceA.id)
+			.withCitizenUinFin('ABC1234')
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		booking.service = serviceA;
+
+		const onHoldBooking = new BookingBuilder()
+			.withServiceId(serviceA.id)
+			.withCitizenUinFin('ABC1234')
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		onHoldBooking.status = BookingStatus.OnHold;
+		onHoldBooking.service = serviceA;
+
+		const bookingUUID = uuid.v4();
+		const anonymous = User.createAnonymousUser({
+			createdAt: new Date(),
+			trackingId: uuid.v4(),
+			booking: bookingUUID,
+		});
+		const groups = [new AnonymousAuthGroup(anonymous, undefined, { mobileNo: '+6584000000' })];
+
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Create).hasPermission(groups)).toBe(true);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Update).hasPermission(groups)).toBe(true);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Cancel).hasPermission(groups)).toBe(true);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reschedule).hasPermission(groups)).toBe(true);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Accept).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reject).hasPermission(groups)).toBe(false);
+
+		expect(new BookingActionAuthVisitor(onHoldBooking, ChangeLogAction.Create).hasPermission(groups)).toBe(true);
+	});
+
+	it('should validate anonymous user reschedule, cancel and update action if user has a valid booking uuid (without otp)', async () => {
 		const serviceA = new Service();
 		const bookingUUID = uuid.v4();
 		serviceA.id = 4;
@@ -124,7 +141,7 @@ describe('Bookings action auth', () => {
 			.withStartDateTime(new Date('2020-10-02T01:00:00'))
 			.withEndDateTime(new Date('2020-10-02T02:00:00'))
 			.build();
-
+		booking.id = 10;
 		booking.service = serviceA;
 		booking.uuid = bookingUUID;
 
@@ -133,9 +150,58 @@ describe('Bookings action auth', () => {
 			trackingId: uuid.v4(),
 			booking: bookingUUID,
 		});
-		const groups = [new AnonymousAuthGroup(anonymous)];
+		const groups = [
+			new AnonymousAuthGroup(anonymous, {
+				bookingUUID,
+				bookingId: booking.id,
+				organisationId: 1,
+				serviceId: serviceA.id,
+			}),
+		];
 
-		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Create).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Update).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Cancel).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reschedule).hasPermission(groups)).toBe(false);
+
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Accept).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reject).hasPermission(groups)).toBe(false);
+	});
+
+	it('should validate anonymous user reschedule, cancel and update action if user has a valid booking uuid (otp verified)', async () => {
+		const serviceA = new Service();
+		const bookingUUID = uuid.v4();
+		serviceA.id = 4;
+		serviceA.name = 'service';
+		serviceA.allowAnonymousBookings = false;
+
+		const booking = new BookingBuilder()
+			.withServiceId(serviceA.id)
+			.withCitizenUinFin('ABC1234')
+			.withStartDateTime(new Date('2020-10-02T01:00:00'))
+			.withEndDateTime(new Date('2020-10-02T02:00:00'))
+			.build();
+		booking.id = 10;
+		booking.service = serviceA;
+		booking.uuid = bookingUUID;
+
+		const anonymous = User.createAnonymousUser({
+			createdAt: new Date(),
+			trackingId: uuid.v4(),
+			booking: bookingUUID,
+		});
+		const groups = [
+			new AnonymousAuthGroup(
+				anonymous,
+				{
+					bookingUUID,
+					bookingId: booking.id,
+					organisationId: 1,
+					serviceId: serviceA.id,
+				},
+				{ mobileNo: '+6584000000' },
+			),
+		];
+
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Update).hasPermission(groups)).toBe(true);
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Cancel).hasPermission(groups)).toBe(true);
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reschedule).hasPermission(groups)).toBe(true);

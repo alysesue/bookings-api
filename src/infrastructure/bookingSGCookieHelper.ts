@@ -44,15 +44,19 @@ export class BookingSGCookieHelper {
 	}
 
 	public getCookieValue(): AnonymousCookieData | undefined {
-		const koaContext = this._koaContextStore.koaContext;
-		const encrypted = koaContext.cookies.get(BookingSGCookieHelper.CookieName);
-		if (!encrypted) {
+		try {
+			const koaContext = this._koaContextStore.koaContext;
+			const encrypted = koaContext.cookies.get(BookingSGCookieHelper.CookieName);
+			if (!encrypted) {
+				return undefined;
+			}
+
+			const decrypted = this._encryptor.decrypt(encrypted);
+			const json = decrypted.toString(BookingSGCookieHelper.stringEncoding);
+			return JSON.parse(json);
+		} catch {
 			return undefined;
 		}
-
-		const decrypted = this._encryptor.decrypt(encrypted);
-		const json = decrypted.toString(BookingSGCookieHelper.stringEncoding);
-		return JSON.parse(json);
 	}
 }
 
@@ -106,14 +110,18 @@ export class MobileOtpCookieHelper {
 	}
 
 	public getCookieValue(): MobileOtpAddOnCookieData | undefined {
-		const koaContext = this._koaContextStore.koaContext;
-		const encrypted = koaContext.cookies.get(MobileOtpCookieHelper.CookieName);
-		if (!encrypted) {
+		try {
+			const koaContext = this._koaContextStore.koaContext;
+			const encrypted = koaContext.cookies.get(MobileOtpCookieHelper.CookieName);
+			if (!encrypted) {
+				return undefined;
+			}
+
+			const decrypted = this._encryptor.decrypt(encrypted);
+			const json = decrypted.toString(MobileOtpCookieHelper.stringEncoding);
+			return JSON.parse(json);
+		} catch {
 			return undefined;
 		}
-
-		const decrypted = this._encryptor.decrypt(encrypted);
-		const json = decrypted.toString(MobileOtpCookieHelper.stringEncoding);
-		return JSON.parse(json);
 	}
 }

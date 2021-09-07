@@ -241,7 +241,7 @@ export class UsersService {
 		return User.createAnonymousUser(data);
 	}
 
-	public async getAnonymousUserRoles(user: User): Promise<AuthGroup[]> {
+	public async getAnonymousUserRoles(user: User, otp?: { mobileNo: string }): Promise<AuthGroup[]> {
 		if (!user.isAnonymous()) return [];
 
 		if (user.anonymousUser.bookingUUID) {
@@ -249,11 +249,11 @@ export class UsersService {
 			if (!bookingInfo) {
 				return [];
 			} else {
-				return [new AnonymousAuthGroup(user, bookingInfo)];
+				return [new AnonymousAuthGroup(user, bookingInfo, otp)];
 			}
 		}
 
-		return [new AnonymousAuthGroup(user)];
+		return [new AnonymousAuthGroup(user, undefined, otp)];
 	}
 
 	public async persistUserIfRequired(user: User): Promise<User> {

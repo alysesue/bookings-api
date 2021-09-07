@@ -1,4 +1,4 @@
-import { Booking, ChangeLogAction } from '../../models';
+import { Booking, BookingStatus, ChangeLogAction } from '../../models';
 import {
 	AnonymousAuthGroup,
 	AuthGroup,
@@ -32,18 +32,24 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 	}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
+		const userId = _anonymousGroup.user.id;
 		// tslint:disable-next-line: no-small-switch
 		switch (this._changeLogAction) {
 			case ChangeLogAction.Create:
-				if (this._booking.service.allowAnonymousBookings) {
+				if (this._booking.status === BookingStatus.OnHold || _anonymousGroup.otpGroupInfo?.mobileNo) {
 					this.markWithPermission();
 				}
 				break;
 			case ChangeLogAction.Update:
 			case ChangeLogAction.Reschedule:
 			case ChangeLogAction.Cancel:
+				if (!_anonymousGroup.otpGroupInfo?.mobileNo) {
+					break;
+				}
+
 				if (
 					(this._booking.createdLog && _anonymousGroup.user.id === this._booking.createdLog.userId) ||
+					this._booking.creatorId === userId ||
 					_anonymousGroup.user.anonymousUser.bookingUUID === this._booking._uuid
 				) {
 					this.markWithPermission();
@@ -114,9 +120,15 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
 		const authorisedUinFin = _citizenGroup.user.singPassUser.UinFin;
-		this.addAuthCondition(`${this._alias}."_citizenUinFin" = :authorisedUinFin`, {
-			authorisedUinFin,
-		});
+		const userId = _citizenGroup.user.id;
+
+		this.addAuthCondition(
+			`${this._alias}."_citizenUinFin" = :authorisedUinFin OR ${this._alias}."_creatorId" = :userId`,
+			{
+				authorisedUinFin,
+				userId,
+			},
+		);
 	}
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {

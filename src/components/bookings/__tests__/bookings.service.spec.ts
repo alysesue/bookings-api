@@ -277,7 +277,7 @@ describe('Bookings.Service', () => {
 		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(anonymousService));
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(anonymousMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
-			Promise.resolve([new AnonymousAuthGroup(anonymousMock)]),
+			Promise.resolve([new AnonymousAuthGroup(anonymousMock, undefined, { mobileNo: '+6584000000' })]),
 		);
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
@@ -1053,7 +1053,7 @@ describe('Bookings.Service', () => {
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(anonymousMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
-			Promise.resolve([new AnonymousAuthGroup(anonymousMock)]),
+			Promise.resolve([new AnonymousAuthGroup(anonymousMock, undefined, { mobileNo: '+6584000000' })]),
 		);
 
 		await Container.get(BookingsService).save(bookingRequest, 1);
