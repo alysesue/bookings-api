@@ -87,6 +87,7 @@ describe('user Context middleware tests', () => {
 		};
 
 		MobileOtpCookieHelperMock.getCookieValue.mockReturnValue(mobileOtpAddOnCookieData);
+		MobileOtpCookieHelperMock.isCookieValid.mockReturnValue(true);
 		OtpServiceMock.getMobileNoMock.mockReturnValue(Promise.resolve('+6588884444'));
 
 		UsersServiceMock.createAnonymousUserFromCookie.mockImplementation(() => Promise.resolve(anonymous));
