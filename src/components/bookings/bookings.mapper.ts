@@ -22,6 +22,8 @@ import { IdHasher } from '../../infrastructure/idHasher';
 const MASK_UINFIN_REGEX = /(?<=^.{1}).{4}/;
 const MASK_REPLACE_VALUE = '*'.repeat(4);
 
+export type BookingMapDetails = BookingDetailsRequest & { citizenUinFinUpdated: boolean };
+
 @InRequestScope
 export class BookingsMapper {
 	@Inject
@@ -203,12 +205,13 @@ export class BookingsMapper {
 		};
 	}
 
-	private async getCitizenUinFin(bookingRequest: BookingDetailsRequest): Promise<string> {
+	private async setCitizenUinFin(request: BookingMapDetails, booking: Booking): Promise<void> {
 		const currentUser = await this.userContext.getCurrentUser();
 		if (currentUser && currentUser.isCitizen()) {
-			return currentUser.singPassUser.UinFin;
+			booking.citizenUinFin = currentUser.singPassUser.UinFin;
+		} else if (request.citizenUinFinUpdated) {
+			booking.citizenUinFin = request.citizenUinFin;
 		}
-		return bookingRequest.citizenUinFin;
 	}
 
 	public async mapBookingDetails({
@@ -217,7 +220,7 @@ export class BookingsMapper {
 		service,
 	}: {
 		service: Service;
-		request: BookingDetailsRequest;
+		request: BookingMapDetails;
 		booking: Booking;
 	}): Promise<void> {
 		const isNew = !booking.id;
@@ -226,7 +229,8 @@ export class BookingsMapper {
 		}
 
 		booking.refId = request.refId;
-		booking.citizenUinFin = await this.getCitizenUinFin(request);
+		await this.setCitizenUinFin(request, booking);
+
 		booking.citizenName = request.citizenName;
 		booking.citizenEmail = request.citizenEmail;
 		booking.citizenPhone = request.citizenPhone;
@@ -253,7 +257,7 @@ export class BookingsMapper {
 		booking,
 		service,
 	}: {
-		request: BookingRequestV1;
+		request: BookingRequestV1 & { citizenUinFinUpdated: boolean };
 		booking: Booking;
 		service: Service;
 	}): Promise<void> {

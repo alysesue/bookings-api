@@ -67,6 +67,10 @@ export class BookingUpdateRequestV2 extends BookingRequestBase {
 	public serviceProviderId?: string;
 }
 
+export class ValidateOnHoldRequest extends BookingDetailsRequest {
+	public citizenUinFinUpdated?: boolean = true; //for backwards compatibility
+}
+
 export class BookingResponseBase {
 	/**
 	 * @isInt
