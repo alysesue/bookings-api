@@ -9,7 +9,7 @@ import {
 	ServiceProvider,
 	User,
 } from '../../../models';
-import { BookingsMapper } from '../bookings.mapper';
+import { BookingMapDetails, BookingsMapper } from '../bookings.mapper';
 import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
 import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entities/jsonModels';
 import { Container } from 'typescript-ioc';
@@ -32,6 +32,7 @@ import { DynamicValuesRequestMapperMock } from '../../dynamicFields/__mocks__/dy
 import { DynamicValuesMapperMock } from '../../dynamicFields/__mocks__/dynamicValues.mapper.mock';
 import { MyInfoResponse } from '../../../models/myInfoTypes';
 import { UinFinConfigurationMock } from '../../../models/__mocks__/uinFinConfiguration.mock';
+import { CitizenAuthGroup } from '../../../infrastructure/auth/authGroup';
 
 jest.mock('../../../models/uinFinConfiguration');
 jest.mock('../../../components/dynamicFields/dynamicValues.mapper');
@@ -51,6 +52,9 @@ describe('Bookings mapper tests', () => {
 		UserContextMock.getOtpAddOnMobileNo.mockReturnValue(undefined);
 		UserContextMock.getMyInfo.mockReturnValue(Promise.resolve(undefined));
 	});
+
+	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+	singpassMock.id = 45;
 
 	const userMock = User.createAdminUser({
 		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
@@ -432,7 +436,7 @@ describe('Bookings mapper tests', () => {
 	});
 
 	it('should map booking details', async () => {
-		const request: BookingDetailsRequest = new BookingDetailsRequest();
+		const request: BookingMapDetails = { citizenUinFinUpdated: true };
 		request.citizenName = 'this should be the name';
 		request.citizenEmail = 'correctemail@gmail.com';
 		request.citizenPhone = '93328223';
@@ -461,7 +465,7 @@ describe('Bookings mapper tests', () => {
 
 		UserContextMock.getMyInfo.mockResolvedValue(MyInfoResponse);
 
-		const request: BookingDetailsRequest = new BookingDetailsRequest();
+		const request: BookingMapDetails = { citizenUinFinUpdated: true };
 		request.citizenName = 'this should be the name';
 		const service = new Service();
 		service.id = 1;
@@ -487,7 +491,7 @@ describe('Bookings mapper tests', () => {
 
 		UserContextMock.getMyInfo.mockResolvedValue(MyInfoResponse);
 
-		const request: BookingDetailsRequest = new BookingDetailsRequest();
+		const request: BookingMapDetails = { citizenUinFinUpdated: true };
 		request.citizenName = 'this should be the name';
 		request.citizenEmail = 'correctemail@gmail.com';
 		request.citizenPhone = '93328223';
@@ -505,7 +509,7 @@ describe('Bookings mapper tests', () => {
 	});
 
 	it('should map phone number from OTP auth', async () => {
-		const request: BookingDetailsRequest = new BookingDetailsRequest();
+		const request: BookingMapDetails = { citizenUinFinUpdated: true };
 		request.citizenPhone = '111111';
 		const service = new Service();
 		service.id = 1;
@@ -518,5 +522,50 @@ describe('Bookings mapper tests', () => {
 		await mapper.mapBookingDetails({ request, booking, service });
 
 		expect(booking.citizenPhone).toEqual('84123456');
+	});
+
+	it('should map uinfin from request (citizenUinFinUpdated = true)', async () => {
+		const request: BookingMapDetails = { citizenUinFinUpdated: true };
+		request.citizenUinFin = 'S2057430E';
+		const service = new Service();
+		service.id = 1;
+
+		const mapper = Container.get(BookingsMapper);
+		const booking = Booking.createNew({ creator: userMock });
+		booking.citizenUinFin = '';
+		await mapper.mapBookingDetails({ request, booking, service });
+
+		expect(booking.citizenUinFin).toEqual('S2057430E');
+	});
+
+	it('should NOT map uinfin from request (citizenUinFinUpdated = false)', async () => {
+		const request: BookingMapDetails = { citizenUinFinUpdated: false };
+		request.citizenUinFin = 'S2057430E';
+		const service = new Service();
+		service.id = 1;
+
+		const mapper = Container.get(BookingsMapper);
+		const booking = Booking.createNew({ creator: userMock });
+		booking.citizenUinFin = 'S5619086D';
+		await mapper.mapBookingDetails({ request, booking, service });
+
+		expect(booking.citizenUinFin).toEqual('S5619086D'); //old value
+	});
+
+	it('should map uinfin from user, instead of request', async () => {
+		const request: BookingMapDetails = { citizenUinFinUpdated: true };
+		request.citizenUinFin = 'S2057430E';
+		const service = new Service();
+		service.id = 1;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
+
+		const mapper = Container.get(BookingsMapper);
+		const booking = Booking.createNew({ creator: userMock });
+		booking.citizenUinFin = '';
+		await mapper.mapBookingDetails({ request, booking, service });
+
+		expect(booking.citizenUinFin).toEqual('ABC1234');
 	});
 });

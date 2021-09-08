@@ -20,11 +20,11 @@ import { BookingsValidatorFactory } from './validator/bookings.validation';
 import {
 	BookingAcceptRequestV1,
 	BookingChangeUser,
-	BookingDetailsRequest,
 	BookingReject,
 	BookingRequestV1,
 	BookingSearchRequest,
 	BookingUpdateRequestV1,
+	ValidateOnHoldRequest,
 } from './bookings.apicontract';
 import { BookingsRepository } from './bookings.repository';
 import { BookingType } from '../../models/bookingType';
@@ -389,9 +389,6 @@ export class BookingsService {
 		bookingRequest: BookingUpdateRequestV1,
 		afterMap: (updatedBooking: Booking) => void | Promise<void>,
 	): Promise<[ChangeLogAction, Booking]> {
-		if (!bookingRequest.citizenUinFinUpdated) {
-			bookingRequest.citizenUinFin = previousBooking.citizenUinFin;
-		}
 		const { service, isAgencyUser } = await this.bookingRequestExtraction(previousBooking.serviceId);
 
 		const updatedBooking = previousBooking.clone();
@@ -401,7 +398,11 @@ export class BookingsService {
 		);
 		validator.bypassCaptcha(isAgencyUser);
 
-		await this.bookingsMapper.mapRequest({ request: bookingRequest, booking: updatedBooking, service });
+		await this.bookingsMapper.mapRequest({
+			request: { ...bookingRequest, citizenUinFinUpdated: bookingRequest.citizenUinFinUpdated || false },
+			booking: updatedBooking,
+			service,
+		});
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
 
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
@@ -469,7 +470,11 @@ export class BookingsService {
 		}
 
 		const booking = Booking.createNew({ creator: currentUser });
-		await this.bookingsMapper.mapRequest({ request: bookingRequest, booking, service });
+		await this.bookingsMapper.mapRequest({
+			request: { ...bookingRequest, citizenUinFinUpdated: true },
+			booking,
+			service,
+		});
 		booking.serviceProviderId = serviceProvider?.id;
 		booking.serviceProvider = serviceProvider;
 
@@ -502,7 +507,7 @@ export class BookingsService {
 
 	private async validateOnHoldBookingInternal(
 		previousBooking: Booking,
-		bookingRequest: BookingDetailsRequest,
+		bookingRequest: ValidateOnHoldRequest,
 	): Promise<[ChangeLogAction, Booking]> {
 		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: previousBooking.serviceProviderId,
@@ -511,7 +516,11 @@ export class BookingsService {
 		if (previousBooking.isValidOnHoldBooking()) {
 			const updatedBooking = previousBooking.clone();
 			const { service } = await this.bookingRequestExtraction(previousBooking.serviceId);
-			await this.bookingsMapper.mapBookingDetails({ request: bookingRequest, booking: updatedBooking, service });
+			await this.bookingsMapper.mapBookingDetails({
+				request: { ...bookingRequest, citizenUinFinUpdated: bookingRequest.citizenUinFinUpdated || false },
+				booking: updatedBooking,
+				service,
+			});
 
 			const validator = this.bookingsValidatorFactory.getOnHoldValidator();
 			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
@@ -537,7 +546,7 @@ export class BookingsService {
 		}
 	}
 
-	public async validateOnHoldBooking(bookingId: number, bookingRequest: BookingDetailsRequest): Promise<Booking> {
+	public async validateOnHoldBooking(bookingId: number, bookingRequest: ValidateOnHoldRequest): Promise<Booking> {
 		const validateAction = (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest);
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,

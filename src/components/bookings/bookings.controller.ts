@@ -31,7 +31,6 @@ import { Booking } from '../../models/entities';
 import { BookingsMapper } from './bookings.mapper';
 import { BookingsService } from './bookings.service';
 import {
-	BookingDetailsRequest,
 	BookingReject,
 	BookingRequestV2,
 	BookingResponseV2,
@@ -45,6 +44,7 @@ import {
 	BookingProviderResponseV1,
 	BookingProviderResponseV2,
 	BookingChangeUser,
+	ValidateOnHoldRequest,
 } from './bookings.apicontract';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
@@ -428,7 +428,7 @@ export class BookingsController extends Controller {
 	@SuccessResponse(200, 'Validated')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async validateOnHoldBooking(
-		@Body() bookingRequest: BookingDetailsRequest,
+		@Body() bookingRequest: ValidateOnHoldRequest,
 		@Path() bookingId: number,
 	): Promise<ApiData<BookingResponseV1>> {
 		const booking = await this.bookingsService.validateOnHoldBooking(bookingId, bookingRequest);
@@ -835,7 +835,7 @@ export class BookingsControllerV2 extends Controller {
 	@SuccessResponse(200, 'Validated')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async validateOnHoldBooking(
-		@Body() bookingRequest: BookingDetailsRequest,
+		@Body() bookingRequest: ValidateOnHoldRequest,
 		@Path() bookingId: string,
 	): Promise<ApiData<BookingResponseV2>> {
 		const unsignedBookingId = this.idHasher.decode(bookingId);
