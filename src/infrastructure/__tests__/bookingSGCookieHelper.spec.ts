@@ -6,6 +6,7 @@ import * as Koa from 'koa';
 import * as Cookies from 'cookies';
 import { AesEncryption } from '../aesencryption';
 import { getConfig } from '../../config/app-config';
+import { DateHelper } from '../dateHelper';
 
 jest.mock('../../config/app-config');
 
@@ -141,7 +142,11 @@ describe('BookingSGCookieHelper tests', () => {
 
 	it('should set mobile otp add on cookie', async () => {
 		const cookieHelper = Container.get(MobileOtpCookieHelper);
-		const data = { cookieCreatedAt: new Date(0), otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f' };
+		const data = {
+			cookieCreatedAt: new Date(0),
+			cookieRefreshedAt: new Date(0),
+			otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f',
+		};
 		(AesEncryptionMock.encrypt as jest.Mock).mockImplementation(() => {
 			return 'Some Encrypted Value';
 		});
@@ -151,7 +156,7 @@ describe('BookingSGCookieHelper tests', () => {
 		expect(KoaContextStoreMock.koaContext.cookies.set).toHaveBeenCalledWith(
 			'MobileOtpAddOn',
 			'Some Encrypted Value',
-			{ httpOnly: true, overwrite: true, sameSite: 'lax', secure: true },
+			{ httpOnly: true, overwrite: true, sameSite: 'lax', secure: true, maxAge: 1200000 },
 		);
 	});
 
@@ -170,5 +175,33 @@ describe('BookingSGCookieHelper tests', () => {
 		expect(AesEncryptionMock.decrypt).toHaveBeenCalledWith('cookie value');
 
 		expect(result).toStrictEqual(JSON.parse(json));
+	});
+
+	describe('isCookieValid', () => {
+		it('cookie refresh date expired', () => {
+			const cookieHelper = Container.get(MobileOtpCookieHelper);
+			const data = {
+				cookieCreatedAt: new Date(0),
+				cookieRefreshedAt: DateHelper.addMinutes(new Date(), -(cookieHelper.getCookieExpiry() + 1)),
+				otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f',
+			};
+
+			const result = cookieHelper.isCookieValid(data);
+
+			expect(result).toBe(false);
+		});
+
+		it('cookie refresh date valid', () => {
+			const cookieHelper = Container.get(MobileOtpCookieHelper);
+			const data = {
+				cookieCreatedAt: new Date(0),
+				cookieRefreshedAt: new Date(),
+				otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f',
+			};
+
+			const result = cookieHelper.isCookieValid(data);
+
+			expect(result).toBe(true);
+		});
 	});
 });

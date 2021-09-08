@@ -11,7 +11,13 @@ import { Container } from 'typescript-ioc';
 import { NotificationSMSService } from '../../../components/notificationSMS/notificationSMS.service';
 import { CaptchaServiceMock } from '../../../components/captcha/__mocks__/captcha.service.mock';
 import { OtpRepositoryMock } from '../__mocks__/otp.repository.mock';
+import { MobileOtpCookieHelperMock } from '../../../infrastructure/__mocks__/mobileOtpCookieHelper.mock';
+import { MobileOtpCookieHelper } from '../../../infrastructure/bookingSGCookieHelper';
+import { getConfig } from '../../../config/app-config';
 
+jest.mock('../../../config/app-config', () => ({
+	getConfig: jest.fn(),
+}));
 describe('sendOtp()', () => {
 	let configSpy: jest.SpyInstance;
 	let otpRepoSaveSpy: jest.SpyInstance;
@@ -150,5 +156,87 @@ describe('getMobileNo', () => {
 		const mobileNo = await Container.get(OtpService).getMobileNo('yyy');
 		expect(mobileNo).toEqual('xxx');
 		expect(OtpRepositoryMock.getMobileNoMock).toBeCalledTimes(1);
+	});
+});
+
+describe('verifyAndRefreshToken', () => {
+	beforeAll(() => {
+		Container.bind(OtpRepository).to(OtpRepositoryMock);
+		Container.bind(MobileOtpCookieHelper).to(MobileOtpCookieHelperMock);
+	});
+
+	beforeEach(() => {
+		jest.resetAllMocks();
+	});
+
+	it('token request invalid', async () => {
+		const container = Container.get(OtpService);
+		(getConfig as jest.Mock).mockReturnValue({
+			otpEnabled: false,
+		});
+
+		MobileOtpCookieHelperMock.getCookieValue.mockReturnValue({
+			cookieCreatedAt: new Date(),
+			cookieRefreshedAt: new Date(),
+			otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f',
+		});
+		OtpRepositoryMock.getByOtpReqIdMock.mockReturnValue(Promise.resolve(undefined));
+
+		let error;
+		try {
+			await container.verifyAndRefreshToken();
+		} catch (e) {
+			error = e;
+		}
+
+		expect(MobileOtpCookieHelperMock.getCookieValue).toBeCalledTimes(1);
+		expect(OtpRepositoryMock.getByOtpReqIdMock).toBeCalledTimes(1);
+		expect(error.code).toBe(`SYS_INVALID_PARAM`);
+		expect(error.httpStatusCode).toBe(400);
+		expect(error.message).toBe(`Invalid request token.`);
+	});
+
+	it('token expired, no refresh', async () => {
+		const container = Container.get(OtpService);
+		(getConfig as jest.Mock).mockReturnValue({
+			otpEnabled: false,
+		});
+
+		MobileOtpCookieHelperMock.getCookieValue.mockReturnValue({
+			cookieCreatedAt: new Date(),
+			cookieRefreshedAt: new Date(),
+			otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f',
+		});
+		OtpRepositoryMock.getByOtpReqIdMock.mockReturnValue(Promise.resolve(Otp.create(`+6581118222`)));
+		MobileOtpCookieHelperMock.isCookieValid.mockReturnValue(false);
+
+		await container.verifyAndRefreshToken();
+
+		expect(MobileOtpCookieHelperMock.getCookieValue).toBeCalledTimes(1);
+		expect(OtpRepositoryMock.getByOtpReqIdMock).toBeCalledTimes(1);
+		expect(MobileOtpCookieHelperMock.isCookieValid).toBeCalledTimes(1);
+		expect(MobileOtpCookieHelperMock.setCookieValue).not.toBeCalled();
+	});
+
+	it('token refreshed', async () => {
+		const container = Container.get(OtpService);
+		(getConfig as jest.Mock).mockReturnValue({
+			otpEnabled: false,
+		});
+
+		MobileOtpCookieHelperMock.getCookieValue.mockReturnValue({
+			cookieCreatedAt: new Date(),
+			cookieRefreshedAt: new Date(),
+			otpReqId: '8db0ef50-2e3d-4eb8-83bf-16a8c9ea545f',
+		});
+		OtpRepositoryMock.getByOtpReqIdMock.mockReturnValue(Promise.resolve(Otp.create(`+6581118222`)));
+		MobileOtpCookieHelperMock.isCookieValid.mockReturnValue(true);
+
+		await container.verifyAndRefreshToken();
+
+		expect(MobileOtpCookieHelperMock.getCookieValue).toBeCalledTimes(1);
+		expect(OtpRepositoryMock.getByOtpReqIdMock).toBeCalledTimes(1);
+		expect(MobileOtpCookieHelperMock.isCookieValid).toBeCalledTimes(1);
+		expect(MobileOtpCookieHelperMock.setCookieValue).toBeCalledTimes(1);
 	});
 });

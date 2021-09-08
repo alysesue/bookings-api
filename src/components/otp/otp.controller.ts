@@ -29,8 +29,17 @@ export class OtpController extends Controller {
 		await this.otpService.verifyOtp(otpVerifyBody);
 		this.mobileOtpCookieHelper.setCookieValue({
 			cookieCreatedAt: new Date(),
+			cookieRefreshedAt: new Date(),
 			otpReqId: otpVerifyBody.otpRequestId,
 		});
+		this.setStatus(204);
+	}
+
+	@Post('refresh-token')
+	@BookingSGAuth({ bypassAuth: true })
+	@Response(204, 'Success')
+	public async refreshOtpToken(): Promise<void> {
+		await this.otpService.verifyAndRefreshToken();
 		this.setStatus(204);
 	}
 }

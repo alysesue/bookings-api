@@ -110,6 +110,7 @@ describe('User Context tests', () => {
 
 			await userContext.otpAddOn({
 				cookieCreatedAt: new Date(),
+				cookieRefreshedAt: new Date(),
 				otpReqId: 'xxx',
 			});
 

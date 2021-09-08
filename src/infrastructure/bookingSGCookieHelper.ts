@@ -2,6 +2,7 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { getConfig } from '../config/app-config';
 import { AesEncryption } from './aesencryption';
 import { KoaContextStore } from './koaContextStore.middleware';
+import { DateHelper } from './dateHelper';
 
 export type AnonymousCookieData = {
 	createdAt: Date;
@@ -11,6 +12,7 @@ export type AnonymousCookieData = {
 
 export type MobileOtpAddOnCookieData = {
 	cookieCreatedAt: Date;
+	cookieRefreshedAt: Date;
 	otpReqId: string;
 };
 
@@ -84,6 +86,7 @@ export class MolCookieHelper {
 export class MobileOtpCookieHelper {
 	private static readonly CookieName = 'MobileOtpAddOn';
 	private static readonly stringEncoding = 'utf8';
+	private static readonly CookieExpiryInMinutes = 20;
 	private _encryptor: AesEncryption;
 
 	@Inject
@@ -93,6 +96,10 @@ export class MobileOtpCookieHelper {
 		const config = getConfig();
 		const key = Buffer.from(config.encryptionKey, 'base64');
 		this._encryptor = new AesEncryption(key);
+	}
+
+	public getCookieExpiry(): number {
+		return MobileOtpCookieHelper.CookieExpiryInMinutes;
 	}
 
 	public setCookieValue(value: MobileOtpAddOnCookieData) {
@@ -106,7 +113,19 @@ export class MobileOtpCookieHelper {
 			sameSite: config.isLocal ? false : 'lax',
 			overwrite: true,
 			secure: !config.isLocal,
+			maxAge: MobileOtpCookieHelper.CookieExpiryInMinutes * 60 * 1000,
 		});
+	}
+
+	public isCookieValid(cookie: MobileOtpAddOnCookieData): boolean {
+		const now = Date.now();
+		const expiryDate = DateHelper.addMinutes(new Date(cookie.cookieRefreshedAt), this.getCookieExpiry()).getTime();
+
+		if (now > expiryDate) {
+			return false;
+		}
+
+		return true;
 	}
 
 	public getCookieValue(): MobileOtpAddOnCookieData | undefined {

@@ -41,4 +41,11 @@ describe('OTP controller', () => {
 		expect(OtpServiceMock.verifyOtpMock).toBeCalledTimes(1);
 		expect(MobileOtpCookieHelperMock.setCookieValue).toBeCalledTimes(1);
 	});
+
+	it('verify OTP and refresh token', async () => {
+		const controller = Container.get(OtpController);
+
+		await controller.refreshOtpToken();
+		expect(OtpServiceMock.verifyAndRefreshTokenMock).toBeCalledTimes(1);
+	});
 });

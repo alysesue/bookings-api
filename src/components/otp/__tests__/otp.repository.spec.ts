@@ -31,6 +31,13 @@ describe('otp repository', () => {
 		expect(TransactionManagerMock.save).toBeCalledTimes(1);
 	});
 
+	it('should get otp by reqId', async () => {
+		const otpRepo = Container.get(OtpRepository);
+
+		await otpRepo.getByOtpReqId('abc');
+		expect(TransactionManagerMock.findOne).toBeCalledTimes(1);
+	});
+
 	describe('getNonExpiredOtp', () => {
 		it('should return undefined when otpReqId is not found in database', async () => {
 			const otpRepo = Container.get(OtpRepository);
