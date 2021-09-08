@@ -1,20 +1,27 @@
 import * as request from 'request';
 import * as requestPromise from 'request-promise-native';
 import * as setCookieParser from 'set-cookie-parser';
+
 class RequestEndpointSG {
 	private _headers: { [e: string]: string };
+	private BASE_URL = {
+		V1: process.env['FUNCTIONAL_TEST_BASE_URL_V1'],
+		V2: process.env['FUNCTIONAL_TEST_BASE_URL_V2'],
+	};
 
 	constructor() {
 		this._headers = {};
 	}
 
-	private async apiRequest(options: { method: string; uri: string; body: any; qs: any }): Promise<request.Response> {
-		const BASE_URL = process.env['FUNCTIONAL_TEST_BASE_URL'];
+	private async apiRequest(
+		options: { method: string; uri: string; body: any; qs: any },
+		baseUrl: string,
+	): Promise<request.Response> {
 		let response: request.Response;
 
 		try {
 			await requestPromise({
-				baseUrl: BASE_URL,
+				baseUrl,
 				json: true,
 				headers: this._headers,
 				...options,
@@ -51,8 +58,12 @@ class RequestEndpointSG {
 			params?: object;
 			body?: any;
 		},
+		version?: string,
 	): Promise<request.Response> {
-		return await this.apiRequest({ method: 'GET', uri: path, qs: data?.params, body: data?.body });
+		return await this.apiRequest(
+			{ method: 'GET', uri: path, qs: data?.params, body: data?.body },
+			this.BASE_URL[version ?? 'V1'],
+		);
 	}
 
 	public async post(
@@ -61,9 +72,13 @@ class RequestEndpointSG {
 			params?: object;
 			body?: any;
 		},
+		version?: string,
 	): Promise<request.Response> {
-		await this.csrfHandler(path, data);
-		return await this.apiRequest({ method: 'POST', uri: path, qs: data?.params, body: data?.body });
+		await this.csrfHandler(this.BASE_URL[version ?? 'V1'], path, data);
+		return await this.apiRequest(
+			{ method: 'POST', uri: path, qs: data?.params, body: data?.body },
+			this.BASE_URL[version ?? 'V1'],
+		);
 	}
 
 	public async put(
@@ -72,9 +87,13 @@ class RequestEndpointSG {
 			params?: object;
 			body?: any;
 		},
+		version?: string,
 	): Promise<request.Response> {
-		await this.csrfHandler(path, data);
-		return await this.apiRequest({ method: 'PUT', uri: path, qs: data?.params, body: data?.body });
+		await this.csrfHandler(this.BASE_URL[version ?? 'V1'], path, data);
+		return await this.apiRequest(
+			{ method: 'PUT', uri: path, qs: data?.params, body: data?.body },
+			this.BASE_URL[version ?? 'V1'],
+		);
 	}
 
 	public async delete(
@@ -83,12 +102,16 @@ class RequestEndpointSG {
 			params?: object;
 			body?: any;
 		},
+		version?: string,
 	): Promise<request.Response> {
-		await this.csrfHandler(path, data);
-		return await this.apiRequest({ method: 'DELETE', uri: path, qs: data?.params, body: data?.body });
+		return await this.apiRequest(
+			{ method: 'DELETE', uri: path, qs: data?.params, body: data?.body },
+			this.BASE_URL[version ?? 'V1'],
+		);
 	}
 
 	private async csrfHandler(
+		baseUrl: string,
 		path: string,
 		data?: {
 			params?: object;
@@ -96,7 +119,7 @@ class RequestEndpointSG {
 			body?: any;
 		},
 	) {
-		const res = await this.apiRequest({ method: 'HEAD', uri: path, qs: data?.params, body: undefined });
+		const res = await this.apiRequest({ method: 'HEAD', uri: path, qs: data?.params, body: undefined }, baseUrl);
 		let cookie = this.getHeader().cookie ?? this.getHeader().Cookie ?? '';
 		cookie += `; ${res.headers['set-cookie']}`;
 		const csrf = res.headers['x-xsrf-token'] as string;
