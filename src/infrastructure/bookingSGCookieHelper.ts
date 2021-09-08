@@ -118,6 +118,8 @@ export class MobileOtpCookieHelper {
 	}
 
 	public isCookieValid(cookie: MobileOtpAddOnCookieData): boolean {
+		if (!cookie) return false;
+
 		const now = Date.now();
 		const expiryDate = DateHelper.addMinutes(new Date(cookie.cookieRefreshedAt), this.getCookieExpiry()).getTime();
 
