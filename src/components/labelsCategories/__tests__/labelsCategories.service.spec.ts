@@ -1,15 +1,19 @@
 import { Container } from 'typescript-ioc';
 import { LabelsCategoriesService } from '../labelsCategories.service';
-import { Label, LabelCategory, Organisation, Service } from '../../../models';
+import { Label, LabelCategory, Organisation, Service, ServiceProviderLabelCategory } from '../../../models';
 import { LabelsCategoriesRepository } from '../labelsCategories.repository';
 import { LabelsCategoriesRepositoryMock } from '../__mocks__/labelsCategories.repository.mock';
 import { LabelsService } from '../../labels/labels.service';
 import { LabelsServiceMock } from '../../labels/__mocks__/labels.service.mock';
+import { ServiceProviderLabelsCategoriesRepository } from '../../../components/serviceProvidersLabels/serviceProvidersLabels.repository';
+import { ServiceProviderLabelsCategoriesRepositoryMock } from '../../../components/serviceProvidersLabels/__mock__/serviceProvidersLabels.repository.mock';
+import { LabelResponse } from '../../../components/labels/label.enum';
 
 describe('Test categoriesLabels service', () => {
 	beforeAll(() => {
 		jest.resetAllMocks();
 		Container.bind(LabelsCategoriesRepository).to(LabelsCategoriesRepositoryMock);
+		Container.bind(ServiceProviderLabelsCategoriesRepository).to(ServiceProviderLabelsCategoriesRepositoryMock);
 		Container.bind(LabelsService).to(LabelsServiceMock);
 	});
 
@@ -70,5 +74,28 @@ describe('Test categoriesLabels service', () => {
 		expect(updateListOfCategories.newCategories).toStrictEqual([]);
 		expect(updateListOfCategories.updateOrKeepCategories).toStrictEqual([catego2]);
 		expect(updateListOfCategories.deleteCategories).toStrictEqual([]);
+	});
+
+	describe('delete API', () => {
+		const labelCategory = LabelCategory.create('Language');
+		const spLabelCategory = ServiceProviderLabelCategory.create('Language');
+
+		it('should delete service label category', async () => {
+			await Container.get(LabelsCategoriesService).delete([labelCategory]);
+			expect(LabelsCategoriesRepositoryMock.deleteMock).toBeCalledTimes(1);
+			expect(ServiceProviderLabelsCategoriesRepositoryMock.deleteMock).not.toBeCalled();
+		});
+
+		it('should delete service provider label category', async () => {
+			await Container.get(LabelsCategoriesService).delete([spLabelCategory], LabelResponse.SERVICE_PROVIDER);
+			expect(ServiceProviderLabelsCategoriesRepositoryMock.deleteMock).toBeCalledTimes(1);
+			expect(LabelsCategoriesRepositoryMock.deleteMock).not.toBeCalled();
+		});
+
+		it('should not call delete when categories are empty', async () => {
+			await Container.get(LabelsCategoriesService).delete([]);
+			expect(ServiceProviderLabelsCategoriesRepositoryMock.deleteMock).not.toBeCalled();
+			expect(LabelsCategoriesRepositoryMock.deleteMock).not.toBeCalled();
+		});
 	});
 });

@@ -41,3 +41,4 @@ export { IsMandatoryDynamicFields1627545990317 } from './1627545990317-IsMandato
 export { CustomUpdateAllExistingDynamicFields1628820298859 } from './1628820298859-CustomUpdateAllExistingDynamicFields';
 export { IncreaseCharCount1628766321061 } from './1628766321061-IncreaseCharCount';
 export { AllowedServiceAuthentication1631253669914 } from './1631253669914-AllowedServiceAuthentication';
+export { OrgServiceProviderLabels1631674237169 } from './1631674237169-OrgServiceProviderLabels';

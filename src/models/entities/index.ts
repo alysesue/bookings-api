@@ -26,3 +26,5 @@ export { Otp } from './otp';
 export { ServiceNotificationTemplate } from './serviceNotificationTemplate';
 export { Event } from './event';
 export { BookedSlot } from './bookedSlot';
+export { ServiceProviderLabel } from './serviceProviderLabel';
+export { ServiceProviderLabelCategory } from './serviceProviderLabelCategory';

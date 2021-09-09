@@ -5,6 +5,7 @@ export class LabelsServiceMock implements Partial<LabelsService> {
 	public static deleteMock = jest.fn();
 	public static updateMock = jest.fn();
 	public static sortLabelForDeleteCategoryMock = jest.fn();
+	public static genericSortLabelForDeleteCategory = jest.fn();
 	public static updateLabelToNoCategoryMock = jest.fn();
 	public static verifyLabelsMock = jest.fn();
 
@@ -15,8 +16,13 @@ export class LabelsServiceMock implements Partial<LabelsService> {
 	public async update(...param): Promise<Label[]> {
 		return LabelsServiceMock.updateMock(...param);
 	}
+
 	public sortLabelForDeleteCategory(...param): { movedLabelsToNoCategory: Label[]; deleteLabels: Label[] } {
 		return LabelsServiceMock.sortLabelForDeleteCategoryMock(...param);
+	}
+
+	public genericSortLabelForDeleteCategory(...param) {
+		return LabelsServiceMock.genericSortLabelForDeleteCategory(...param);
 	}
 
 	public async updateLabelToNoCategory(...param): Promise<Label[]> {

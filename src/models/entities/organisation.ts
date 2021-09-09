@@ -1,7 +1,9 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import * as _ from 'lodash';
 import { IOrganisation } from '../interfaces';
 import { OrganisationAdminGroupMap } from './organisationAdminGroupMap';
+import { ServiceProviderLabel } from './serviceProviderLabel';
+import { ServiceProviderLabelCategory } from './serviceProviderLabelCategory';
 
 @Entity()
 export class Organisation implements IOrganisation {
@@ -33,6 +35,20 @@ export class Organisation implements IOrganisation {
 	public get name() {
 		return this._name;
 	}
+
+	public static create(name: string, id?: number): Organisation {
+		const instance = new Organisation();
+		instance._name = name;
+		instance._id = id;
+
+		return instance;
+	}
+
+	@OneToMany(() => ServiceProviderLabel, (label) => label.organisation, { cascade: true })
+	public labels: ServiceProviderLabel[];
+
+	@OneToMany(() => ServiceProviderLabelCategory, (category) => category.organisation, { cascade: true })
+	public categories: ServiceProviderLabelCategory[];
 
 	@Column({ type: 'jsonb', nullable: false, default: '{}' })
 	private _configuration: OrgConfigurationJsonVersion & OrgConfigurationJsonSchema;
