@@ -9,6 +9,7 @@ import {
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
 import * as uuid from 'uuid';
+import { CitizenAuthenticationType } from '../../../models/citizenAuthenticationType';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -20,11 +21,9 @@ describe('Bookings action auth', () => {
 	const organisation = new Organisation();
 	organisation.id = 2;
 
-	const service = new Service();
+	const service = Service.create('service', organisation);
 	service.id = 3;
 	service.name = 'service';
-	service.organisationId = organisation.id;
-	service.organisation = organisation;
 
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 	const adminMock = User.createAdminUser({
@@ -49,9 +48,8 @@ describe('Bookings action auth', () => {
 	});
 
 	it('should validate anonymous user action permission - without otp', async () => {
-		const serviceA = new Service();
+		const serviceA = Service.create('service', organisation);
 		serviceA.id = 2;
-		serviceA.name = 'service';
 
 		const booking = new BookingBuilder()
 			.withServiceId(serviceA.id)
@@ -88,10 +86,49 @@ describe('Bookings action auth', () => {
 		expect(new BookingActionAuthVisitor(onHoldBooking, ChangeLogAction.Create).hasPermission(groups)).toBe(true);
 	});
 
-	it('should validate anonymous user action permission - otp verified', async () => {
-		const serviceA = new Service();
+	it('should validate anonymous user action permission - otp verified and service NOT setup', async () => {
+		const serviceA = Service.create('service', organisation);
 		serviceA.id = 2;
-		serviceA.name = 'service';
+
+		const booking = new BookingBuilder()
+			.withServiceId(serviceA.id)
+			.withCitizenUinFin('ABC1234')
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		booking.service = serviceA;
+
+		const onHoldBooking = new BookingBuilder()
+			.withServiceId(serviceA.id)
+			.withCitizenUinFin('ABC1234')
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		onHoldBooking.status = BookingStatus.OnHold;
+		onHoldBooking.service = serviceA;
+
+		const bookingUUID = uuid.v4();
+		const anonymous = User.createAnonymousUser({
+			createdAt: new Date(),
+			trackingId: uuid.v4(),
+			booking: bookingUUID,
+		});
+		const groups = [new AnonymousAuthGroup(anonymous, undefined, { mobileNo: '+6584000000' })];
+
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Create).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Update).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Cancel).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reschedule).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Accept).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reject).hasPermission(groups)).toBe(false);
+
+		expect(new BookingActionAuthVisitor(onHoldBooking, ChangeLogAction.Create).hasPermission(groups)).toBe(true);
+	});
+
+	it('should validate anonymous user action permission - otp verified and service setup', async () => {
+		const serviceA = Service.create('service', organisation);
+		serviceA.id = 2;
+		serviceA.citizenAuthentication = [CitizenAuthenticationType.Singpass, CitizenAuthenticationType.Otp];
 
 		const booking = new BookingBuilder()
 			.withServiceId(serviceA.id)
@@ -129,11 +166,9 @@ describe('Bookings action auth', () => {
 	});
 
 	it('should validate anonymous user reschedule, cancel and update action if user has a valid booking uuid (without otp)', async () => {
-		const serviceA = new Service();
+		const serviceA = Service.create('service', organisation);
 		const bookingUUID = uuid.v4();
 		serviceA.id = 4;
-		serviceA.name = 'service';
-		serviceA.allowAnonymousBookings = false;
 
 		const booking = new BookingBuilder()
 			.withServiceId(serviceA.id)
@@ -168,11 +203,10 @@ describe('Bookings action auth', () => {
 	});
 
 	it('should validate anonymous user reschedule, cancel and update action if user has a valid booking uuid (otp verified)', async () => {
-		const serviceA = new Service();
+		const serviceA = Service.create('service', organisation);
 		const bookingUUID = uuid.v4();
 		serviceA.id = 4;
 		serviceA.name = 'service';
-		serviceA.allowAnonymousBookings = false;
 
 		const booking = new BookingBuilder()
 			.withServiceId(serviceA.id)
@@ -211,11 +245,10 @@ describe('Bookings action auth', () => {
 	});
 
 	it('should validate anonymous user reschedule, cancel and update action - should not allow user to edit any other booking other than his own valid uuid', async () => {
-		const serviceA = new Service();
+		const serviceA = Service.create('service', organisation);
 		const bookingUUID = uuid.v4();
 		serviceA.id = 4;
 		serviceA.name = 'service';
-		serviceA.allowAnonymousBookings = false;
 
 		const booking = new BookingBuilder()
 			.withServiceId(serviceA.id)
@@ -259,6 +292,30 @@ describe('Bookings action auth', () => {
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Update).hasPermission(groups)).toBe(true);
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Cancel).hasPermission(groups)).toBe(true);
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reschedule).hasPermission(groups)).toBe(true);
+
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Accept).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reject).hasPermission(groups)).toBe(false);
+	});
+
+	it('should validate citizen action permission - singpass NOT set up', async () => {
+		const serviceA = Service.create('service', organisation);
+		serviceA.citizenAuthentication = [CitizenAuthenticationType.Otp];
+
+		const booking = new BookingBuilder()
+			.withServiceId(service.id)
+			.withCitizenUinFin('ABC1234')
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+
+		booking.service = serviceA;
+
+		const groups = [new CitizenAuthGroup(singpassMock)];
+
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Create).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Update).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Cancel).hasPermission(groups)).toBe(false);
+		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reschedule).hasPermission(groups)).toBe(false);
 
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Accept).hasPermission(groups)).toBe(false);
 		expect(new BookingActionAuthVisitor(booking, ChangeLogAction.Reject).hasPermission(groups)).toBe(false);
@@ -358,7 +415,7 @@ describe('Bookings action auth', () => {
 
 		booking.service = service;
 
-		const serviceB = new Service();
+		const serviceB = Service.create('service 4', organisation);
 		serviceB.id = 4;
 
 		const groups = [new ServiceAdminAuthGroup(adminMock, [serviceB])];

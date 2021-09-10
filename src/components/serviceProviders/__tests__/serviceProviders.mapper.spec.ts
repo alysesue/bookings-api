@@ -154,21 +154,9 @@ describe('Service providers mapper tests', () => {
 
 		const mapper = Container.get(ServiceProvidersMapper);
 		const result = mapper.mapToEntity(molServiceProviderOnboard, service, serviceProvider);
-		expect(result.service).toEqual({
-			_name: 'Service1',
-			_organisation: {
-				_configuration: {
-					schemaVersion: 1,
-				},
-				_id: 1,
-			},
-			_organisationId: 1,
-			_serviceAdminGroupMap: {
-				_serviceOrganisationRef: 'service1:undefined',
-			},
-			categories: [],
-			labels: [],
-		});
+		expect(result.service).toBe(service);
+		expect(result.serviceId).toBe(service.id);
+
 		expect(result.serviceProviderGroupMap).toEqual({
 			_molAdminId: '123',
 		});

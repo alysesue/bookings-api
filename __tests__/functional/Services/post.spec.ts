@@ -76,7 +76,10 @@ describe('Tests endpoint and populate data', () => {
 		});
 
 		expect(response.statusCode).toEqual(200);
-		expect(response.body.data.additionalSettings).toEqual(additionalSettingsDefaultValues);
+		expect(response.body.data.additionalSettings).toEqual({
+			...additionalSettingsDefaultValues,
+			citizenAuthentication: ['singpass'],
+		});
 	});
 
 	it('should return additionalSettings default values in response when it is set to empty in Post request', async () => {
@@ -94,7 +97,10 @@ describe('Tests endpoint and populate data', () => {
 		});
 
 		expect(response.statusCode).toEqual(200);
-		expect(response.body.data.additionalSettings).toEqual(additionalSettingsDefaultValues);
+		expect(response.body.data.additionalSettings).toEqual({
+			...additionalSettingsDefaultValues,
+			citizenAuthentication: ['singpass'],
+		});
 	});
 
 	it('should post ALL additionalSettings values and return them in response', async () => {
@@ -112,7 +118,31 @@ describe('Tests endpoint and populate data', () => {
 		});
 
 		expect(response.statusCode).toEqual(200);
-		expect(response.body.data.additionalSettings).toEqual(additionalSettingsValues);
+		expect(response.body.data.additionalSettings).toEqual({
+			...additionalSettingsValues,
+			citizenAuthentication: ['singpass', 'otp'],
+		});
+	});
+
+	it('(new contract) should post ALL additionalSettings values and return them in response', async () => {
+		const additionalSettingsValues = {
+			citizenAuthentication: ['otp'],
+			isOnHold: true,
+			isStandAlone: true,
+			sendNotifications: true,
+			sendNotificationsToServiceProviders: true,
+			sendSMSNotifications: true,
+		};
+
+		const response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
+			body: { name: SERVICE_NAME, additionalSettings: additionalSettingsValues },
+		});
+
+		expect(response.statusCode).toEqual(200);
+		expect(response.body.data.additionalSettings).toEqual({
+			...additionalSettingsValues,
+			allowAnonymousBookings: true,
+		});
 	});
 
 	it('should post part of the additionalSettings values and return ALL of them in response', async () => {
@@ -126,6 +156,7 @@ describe('Tests endpoint and populate data', () => {
 		expect(response.statusCode).toEqual(200);
 		expect(response.body.data.additionalSettings).toEqual({
 			allowAnonymousBookings: false,
+			citizenAuthentication: ['singpass'],
 			isOnHold: false,
 			isStandAlone: false,
 			sendNotifications: true,

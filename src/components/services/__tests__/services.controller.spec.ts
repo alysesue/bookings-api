@@ -2,7 +2,15 @@ import { Container } from 'typescript-ioc';
 import { ServicesController, ServicesControllerV2 } from '../services.controller';
 import { ServiceRequestV1, ServiceRequestV2 } from '../service.apicontract';
 import { ServicesService } from '../services.service';
-import { ScheduleForm, Service, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../../models';
+import {
+	Label,
+	Organisation,
+	ScheduleForm,
+	Service,
+	TimeOfDay,
+	TimeslotItem,
+	TimeslotsSchedule,
+} from '../../../models';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
 import { Weekday } from '../../../enums/weekday';
 import { ScheduleFormRequest } from '../../scheduleForms/scheduleForms.apicontract';
@@ -25,13 +33,18 @@ afterAll(() => {
 });
 
 describe('Services controller tests V1', () => {
+	const organisation = new Organisation();
+	organisation.id = 2;
+	organisation.name = 'org';
+
 	beforeAll(() => {
 		Container.bind(ServicesService).to(ServicesServiceMockClass);
 		Container.bind(LabelsMapper).to(LabelsMapperMock);
 	});
 
 	it('should save a new service', async () => {
-		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
+		const service = Service.create('John', organisation);
+		ServicesServiceMock.createService.mockReturnValue(service);
 
 		const controller = Container.get(ServicesController);
 		const request = new ServiceRequestV1();
@@ -41,7 +54,9 @@ describe('Services controller tests V1', () => {
 	});
 
 	it('should save a new service with labels', async () => {
-		ServicesServiceMock.createService.mockReturnValue({ name: 'John', labels: [{ id: 1, labelText: 'label' }] });
+		const service = Service.create('John', organisation);
+		service.labels = [Label.create('label', 1)];
+		ServicesServiceMock.createService.mockReturnValue(service);
 		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([{ id: '1', label: 'label' }]);
 
 		const controller = Container.get(ServicesController);
@@ -53,7 +68,8 @@ describe('Services controller tests V1', () => {
 	});
 
 	it('should return empty label when none provided', async () => {
-		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
+		const service = Service.create('John', organisation);
+		ServicesServiceMock.createService.mockReturnValue(service);
 		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([]);
 
 		const controller = Container.get(ServicesController);
@@ -64,7 +80,8 @@ describe('Services controller tests V1', () => {
 	});
 
 	it('should return empty label when none provided', async () => {
-		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
+		const service = Service.create('John', organisation);
+		ServicesServiceMock.createService.mockReturnValue(service);
 
 		const controller = Container.get(ServicesController);
 		const request = new ServiceRequestV1();
@@ -74,7 +91,8 @@ describe('Services controller tests V1', () => {
 	});
 
 	it('should update a service', async () => {
-		ServicesServiceMock.updateService.mockReturnValue({ name: 'John' });
+		const service = Service.create('John', organisation);
+		ServicesServiceMock.updateService.mockReturnValue(service);
 
 		const controller = Container.get(ServicesController);
 		const request = new ServiceRequestV1();
@@ -84,7 +102,9 @@ describe('Services controller tests V1', () => {
 	});
 
 	it('should get all services', async () => {
-		ServicesServiceMock.getServices.mockReturnValue([{ name: 'John' }, { name: 'Mary' }]);
+		const serviceA = Service.create('John', organisation);
+		const serviceB = Service.create('Mary', organisation);
+		ServicesServiceMock.getServices.mockReturnValue([serviceA, serviceB]);
 		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([]);
 
 		const response = await Container.get(ServicesController).getServices();
@@ -108,7 +128,8 @@ describe('Services controller tests V1', () => {
 	});
 
 	it('should get a service', async () => {
-		ServicesServiceMock.getService.mockReturnValue({ name: 'John' });
+		const service = Service.create('John', organisation);
+		ServicesServiceMock.getService.mockReturnValue(service);
 		const response = await Container.get(ServicesController).getService(1);
 		expect(response.data.name).toEqual('John');
 	});
@@ -176,6 +197,10 @@ describe('Services controller tests V1', () => {
 });
 
 describe('Services controller tests V2', () => {
+	const organisation = new Organisation();
+	organisation.id = 2;
+	organisation.name = 'org';
+
 	beforeAll(() => {
 		Container.bind(ServicesService).to(ServicesServiceMockClass);
 		Container.bind(LabelsMapper).to(LabelsMapperMock);
@@ -183,7 +208,8 @@ describe('Services controller tests V2', () => {
 	});
 
 	it('should save a new service', async () => {
-		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
+		const service = Service.create('John', organisation);
+		ServicesServiceMock.createService.mockReturnValue(service);
 
 		const controller = Container.get(ServicesControllerV2);
 		const request = new ServiceRequestV2();
@@ -193,7 +219,10 @@ describe('Services controller tests V2', () => {
 	});
 
 	it('should save a new service with labels', async () => {
-		ServicesServiceMock.createService.mockReturnValue({ name: 'John', labels: [{ id: 1, labelText: 'label' }] });
+		const service = Service.create('John', organisation);
+		service.labels = [Label.create('label', 1)];
+
+		ServicesServiceMock.createService.mockReturnValue(service);
 		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([{ id: '1', label: 'label' }]);
 
 		const controller = Container.get(ServicesControllerV2);
@@ -205,7 +234,8 @@ describe('Services controller tests V2', () => {
 	});
 
 	it('should return empty label when none provided', async () => {
-		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
+		const service = Service.create('John', organisation);
+		ServicesServiceMock.createService.mockReturnValue(service);
 		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([]);
 
 		const controller = Container.get(ServicesControllerV2);
@@ -216,7 +246,8 @@ describe('Services controller tests V2', () => {
 	});
 
 	it('should return empty label when none provided', async () => {
-		ServicesServiceMock.createService.mockReturnValue({ name: 'John' });
+		const service = Service.create('John', organisation);
+		ServicesServiceMock.createService.mockReturnValue(service);
 
 		const controller = Container.get(ServicesControllerV2);
 		const request = new ServiceRequestV2();
@@ -226,7 +257,8 @@ describe('Services controller tests V2', () => {
 	});
 
 	it('should update a service', async () => {
-		ServicesServiceMock.updateService.mockReturnValue({ name: 'John' });
+		const service = Service.create('John', organisation);
+		ServicesServiceMock.updateService.mockReturnValue(service);
 
 		const controller = Container.get(ServicesControllerV2);
 		const request = new ServiceRequestV2();
@@ -236,7 +268,9 @@ describe('Services controller tests V2', () => {
 	});
 
 	it('should get all services', async () => {
-		ServicesServiceMock.getServices.mockReturnValue([{ name: 'John' }, { name: 'Mary' }]);
+		const serviceA = Service.create('John', organisation);
+		const serviceB = Service.create('Mary', organisation);
+		ServicesServiceMock.getServices.mockReturnValue([serviceA, serviceB]);
 		LabelsMapperMock.mapToLabelsResponse.mockReturnValue([]);
 
 		const response = await Container.get(ServicesControllerV2).getServices();
@@ -260,7 +294,8 @@ describe('Services controller tests V2', () => {
 	});
 
 	it('should get a service', async () => {
-		ServicesServiceMock.getService.mockReturnValue({ name: 'John' });
+		const service = Service.create('John', organisation);
+		ServicesServiceMock.getService.mockReturnValue(service);
 		const response = await Container.get(ServicesControllerV2).getService('39t2m');
 		expect(response.data.name).toEqual('John');
 	});

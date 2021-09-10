@@ -68,7 +68,7 @@ export class PgClient {
 
 	public async configureServiceAllowAnonymous({ serviceId }: { serviceId: number }): Promise<void> {
 		await this.pool.query({
-			text: `UPDATE public.service set "_allowAnonymousBookings" = true where _id = $1`,
+			text: `UPDATE public.service set "_citizenAuthentication" = '{otp}' where _id = $1`,
 			values: [serviceId],
 		});
 	}

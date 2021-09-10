@@ -39,6 +39,10 @@ export class AnonymousAuthGroup extends AuthGroup {
 	public bookingInfo?: BookingUUIDInfo;
 	public otpGroupInfo?: OtpGroupInfo;
 
+	public hasOTPUser(): boolean {
+		return !!this.otpGroupInfo?.mobileNo;
+	}
+
 	public acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void> {
 		return visitor.visitAnonymous(this);
 	}

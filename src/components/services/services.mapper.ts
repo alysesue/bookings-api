@@ -13,6 +13,7 @@ import {
 } from './service.apicontract';
 import { IService } from '../../models/interfaces';
 import { IdHasher } from '../../infrastructure/idHasher';
+import { CitizenAuthenticationType } from '../../models/citizenAuthenticationType';
 
 export class ServicesMapper {
 	@Inject
@@ -52,7 +53,8 @@ export class ServicesMapper {
 
 	private mapToSettingsResponse(service: Service): AdditionalSettings {
 		const additionalSettings = new AdditionalSettings();
-		additionalSettings.allowAnonymousBookings = service.allowAnonymousBookings;
+		additionalSettings.allowAnonymousBookings = service.hasCitizenAuthentication(CitizenAuthenticationType.Otp);
+		additionalSettings.citizenAuthentication = service.citizenAuthentication;
 		additionalSettings.isOnHold = service.isOnHold;
 		additionalSettings.isStandAlone = service.isStandAlone;
 		additionalSettings.sendNotifications = service.sendNotifications;
@@ -80,6 +82,7 @@ export class ServicesMapper {
 	private additionalSettingsMapper(service: Service, settings: PartialAdditionalSettings) {
 		const {
 			allowAnonymousBookings,
+			citizenAuthentication,
 			isOnHold,
 			isStandAlone,
 			sendNotifications,
@@ -88,8 +91,22 @@ export class ServicesMapper {
 		} = settings;
 
 		if (allowAnonymousBookings !== undefined) {
-			service.allowAnonymousBookings = allowAnonymousBookings;
+			if (allowAnonymousBookings && !service.hasCitizenAuthentication(CitizenAuthenticationType.Otp)) {
+				service.citizenAuthentication = [
+					...(service.citizenAuthentication || []),
+					CitizenAuthenticationType.Otp,
+				];
+			}
+			if (!allowAnonymousBookings && service.hasCitizenAuthentication(CitizenAuthenticationType.Otp)) {
+				service.citizenAuthentication = service.citizenAuthentication.filter(
+					(a) => a !== CitizenAuthenticationType.Otp,
+				);
+			}
 		}
+		if (citizenAuthentication !== undefined) {
+			service.citizenAuthentication = citizenAuthentication;
+		}
+
 		if (isOnHold !== undefined) {
 			service.isOnHold = isOnHold;
 		}
