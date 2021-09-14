@@ -549,7 +549,7 @@ describe('Bookings mapper tests', () => {
 		booking.citizenUinFin = 'S5619086D';
 		await mapper.mapBookingDetails({ request, booking, service });
 
-		expect(booking.citizenUinFin).toEqual('S5619086D'); //old value
+		expect(booking.citizenUinFin).toEqual('S5619086D'); // old value
 	});
 
 	it('should map uinfin from user, instead of request', async () => {

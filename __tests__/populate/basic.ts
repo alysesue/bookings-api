@@ -8,9 +8,9 @@ import { OneOffTimeslotResponse } from '../../src/components/oneOffTimeslots/one
 import * as request from 'request';
 import { ServiceNotificationTemplateResponse } from '../../src/components/serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
 import { Roles } from '../utils/enums';
-import {PartialAdditionalSettings, ServiceResponseV1} from "../../src/components/services/service.apicontract";
-import {ServiceProviderResponseModelV1} from "../../src/components/serviceProviders/serviceProviders.apicontract";
-import {TimeslotItemResponseV1} from "../../src/components/timeslotItems/timeslotItems.apicontract";
+import { PartialAdditionalSettings, ServiceResponseV1 } from '../../src/components/services/service.apicontract';
+import { ServiceProviderResponseModelV1 } from '../../src/components/serviceProviders/serviceProviders.apicontract';
+import { TimeslotItemResponseV1 } from '../../src/components/timeslotItems/timeslotItems.apicontract';
 
 export const populateServiceLabel = async ({
 	serviceId,
@@ -30,7 +30,8 @@ export const populateServiceLabel = async ({
 
 export const populateService = async ({
 	organisation = 'localorg',
-	nameService = 'admin',   labels = [],
+	nameService = 'admin',
+	labels = [],
 }): Promise<ServiceResponseV1> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post('/services', {
 		body: { name: nameService, labels },
@@ -98,7 +99,8 @@ export const setServiceProviderAutoAssigned = async ({
 export const populateServiceAndServiceProvider = async ({
 	organisation = 'localorg',
 	nameService = 'admin',
-	serviceProviderName = 'sp', labels = [],
+	serviceProviderName = 'sp',
+	labels = [],
 }): Promise<{ service: ServiceResponseV1; serviceProvider: ServiceProviderResponseModelV1 }> => {
 	const service = await populateService({ organisation, nameService, labels });
 	await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id.toString() }).post('/service-providers', {

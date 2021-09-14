@@ -13,3 +13,7 @@ export function tryParseInt(value: string): number | undefined {
 		return undefined;
 	}
 }
+
+export const isNumeric = (value: string): boolean => {
+	return /^-?\d+$/.test(value);
+};
