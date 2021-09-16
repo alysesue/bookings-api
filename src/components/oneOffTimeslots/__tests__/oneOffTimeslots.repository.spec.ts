@@ -53,7 +53,7 @@ describe('oneOffTimeslots repository tests', () => {
 
 	it('should save timeslot', async () => {
 		const repository = Container.get(OneOffTimeslotsRepository);
-		await repository.save(new OneOffTimeslot());
+		await repository.save([new OneOffTimeslot()]);
 		expect(TransactionManagerMock.save).toBeCalled();
 	});
 
@@ -125,9 +125,9 @@ describe('oneOffTimeslots repository tests', () => {
 		expect(queryBuilderMock.getMany).toBeCalled();
 	});
 
-	it('should delete timeslot', async () => {
+	it('should delete timeslots', async () => {
 		const repository = Container.get(OneOffTimeslotsRepository);
-		await repository.delete(new OneOffTimeslot());
+		await repository.delete([new OneOffTimeslot()]);
 		expect(TransactionManagerMock.delete).toBeCalled();
 	});
 });

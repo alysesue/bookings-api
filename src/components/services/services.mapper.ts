@@ -5,11 +5,13 @@ import { LabelsCategoriesMapper } from '../labelsCategories/labelsCategories.map
 import {
 	AdditionalSettings,
 	PartialAdditionalSettings,
+	ServiceSummaryModel,
 	ServiceRequestV1,
 	ServiceResponseBase,
 	ServiceResponseV1,
 	ServiceResponseV2,
 } from './service.apicontract';
+import { IService } from '../../models/interfaces';
 import { IdHasher } from '../../infrastructure/idHasher';
 
 export class ServicesMapper {
@@ -103,5 +105,9 @@ export class ServicesMapper {
 		if (sendSMSNotifications !== undefined) {
 			service.sendSMSNotifications = sendSMSNotifications;
 		}
+	}
+
+	public static modelToServiceSummaryModel(srv: IService) {
+		return new ServiceSummaryModel(srv.id, srv.name);
 	}
 }

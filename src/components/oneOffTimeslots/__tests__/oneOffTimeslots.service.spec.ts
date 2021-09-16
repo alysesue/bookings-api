@@ -3,7 +3,7 @@ import { Container } from 'typescript-ioc';
 import { OneOffTimeslotRequestV1 } from '../oneOffTimeslots.apicontract';
 import { OneOffTimeslotsService } from '../oneOffTimeslots.service';
 import { UserContext } from '../../../infrastructure/auth/userContext';
-import { Label, OneOffTimeslot, Service, ServiceProvider, User } from '../../../models';
+import { Event, Label, OneOffTimeslot, Service, ServiceProvider, User } from '../../../models';
 import { AuthGroup } from '../../../infrastructure/auth/authGroup';
 import { OneOffTimeslotsRepository } from '../oneOffTimeslots.repository';
 import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
@@ -14,6 +14,9 @@ import { IdHasher } from '../../../infrastructure/idHasher';
 import { ContainerContextHolder } from '../../../infrastructure/containerContext';
 import { ServicesService } from '../../services/services.service';
 import { ServicesServiceMock } from '../../services/__mocks__/services.service';
+import { EventsServiceMock } from '../../events/__mocks__/events.service.mock';
+import { EventsService } from '../../events/events.service';
+import { EventOneOffTimeslotRequest } from '../../events/events.apicontract';
 
 jest.mock('../oneOffTimeslots.auth');
 
@@ -38,6 +41,7 @@ describe('OneOffTimeslots Service Tests', () => {
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
 		Container.bind(ServicesService).to(ServicesServiceMock);
 		Container.bind(LabelsService).to(LabelServiceMock);
+		Container.bind(EventsService).to(EventsServiceMock);
 	});
 
 	beforeEach(() => {
@@ -57,8 +61,8 @@ describe('OneOffTimeslots Service Tests', () => {
 		LabelServiceMock.verifyLabels.mockReturnValue(Promise.resolve([]));
 	});
 
-	it('should save using repository', async () => {
-		OneOffTimeslotsRepositoryMock.save.mockImplementation(() => {});
+	it('should save using event service', async () => {
+		EventsServiceMock.saveOneOffTimeslot.mockReturnValue(() => {});
 		OneOffTimeslotsRepositoryMock.search.mockImplementation(() => []);
 		LabelServiceMock.verifyLabels.mockReturnValue(Promise.resolve([Label.create('Chinese')]));
 
@@ -72,12 +76,12 @@ describe('OneOffTimeslots Service Tests', () => {
 		const service = Container.get(OneOffTimeslotsService);
 		await service.save(request);
 
-		expect(OneOffTimeslotsRepositoryMock.save).toBeCalled();
-		const parameter0 = OneOffTimeslotsRepositoryMock.save.mock.calls[0][0] as OneOffTimeslot;
-		expect(parameter0.startDateTime).toEqual(new Date('2021-03-02T00:00:00Z'));
-		expect(parameter0.endDateTime).toEqual(new Date('2021-03-02T01:00:00Z'));
+		expect(EventsServiceMock.saveOneOffTimeslot).toBeCalled();
+		const parameter0 = EventsServiceMock.saveOneOffTimeslot.mock.calls[0][0] as EventOneOffTimeslotRequest;
+		expect(parameter0.timeslot.startDateTime).toEqual(new Date('2021-03-02T00:00:00Z'));
+		expect(parameter0.timeslot.endDateTime).toEqual(new Date('2021-03-02T01:00:00Z'));
 		expect(parameter0.capacity).toBe(2);
-		expect(parameter0.labels[0].labelText).toEqual(request.labelIds[0]);
+		expect(parameter0.labelIds[0]).toEqual(request.labelIds[0]);
 
 		expect(ServiceProvidersServiceMock.getServiceProvider).toBeCalled();
 	});
@@ -106,9 +110,12 @@ describe('OneOffTimeslots Service Tests', () => {
 		oneOffTimeslots.id = 1;
 		oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
 		oneOffTimeslots.endDateTime = DateHelper.addHours(oneOffTimeslots.startDateTime, 1);
-		oneOffTimeslots.capacity = 2;
 		oneOffTimeslots.serviceProviderId = 1;
-		OneOffTimeslotsRepositoryMock.getById.mockReturnValue(oneOffTimeslots);
+		const event = new Event();
+		event.id = 1;
+		event.oneOffTimeslots = [oneOffTimeslots];
+		event.capacity = 2;
+		EventsServiceMock.getById.mockReturnValue(event);
 		OneOffTimeslotsRepositoryMock.save.mockReturnValue({});
 		OneOffTimeslotsRepositoryMock.search.mockImplementation(() => []);
 
@@ -121,8 +128,8 @@ describe('OneOffTimeslots Service Tests', () => {
 		const service = Container.get(OneOffTimeslotsService);
 		await service.update(request, '1');
 
-		expect(OneOffTimeslotsRepositoryMock.getById).toBeCalled();
-		expect(OneOffTimeslotsRepositoryMock.save).toBeCalled();
+		expect(EventsServiceMock.getById).toBeCalled();
+		expect(EventsServiceMock.updateOneOffTimeslot).toBeCalled();
 	});
 
 	it('should delete one off timeslots', async () => {
@@ -130,20 +137,28 @@ describe('OneOffTimeslots Service Tests', () => {
 		oneOffTimeslots.id = 1;
 		oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
 		oneOffTimeslots.endDateTime = new Date('2021-03-02T02:00:00Z');
-		oneOffTimeslots.capacity = 1;
-		OneOffTimeslotsRepositoryMock.getById.mockReturnValue(oneOffTimeslots);
-		OneOffTimeslotsRepositoryMock.delete.mockReturnValue(Promise.resolve());
+		const event = new Event();
+		event.id = 1;
+		event.oneOffTimeslots = [oneOffTimeslots];
+		event.capacity = 2;
+		EventsServiceMock.getById.mockReturnValue(event);
 		IdHasherMock.decode.mockReturnValue(1);
 
+		OneOffTimeslotsRepositoryMock.delete.mockReturnValue(Promise.resolve());
 		const service = Container.get(OneOffTimeslotsService);
 		await service.delete('1');
 
-		expect(OneOffTimeslotsRepositoryMock.getById).toBeCalled();
-		expect(OneOffTimeslotsRepositoryMock.delete).toBeCalledWith({
-			_capacity: 1,
-			_endDateTime: new Date('2021-03-02T02:00:00.000Z'),
+		expect(EventsServiceMock.getById).toBeCalled();
+		expect(EventsServiceMock.delete).toBeCalledWith({
+			_capacity: 2,
 			_id: 1,
-			_startDateTime: new Date('2021-03-02T00:00:00.000Z'),
+			_oneOffTimeslots: [
+				{
+					_endDateTime: new Date('2021-03-02T02:00:00.000Z'),
+					_id: 1,
+					_startDateTime: new Date('2021-03-02T00:00:00.000Z'),
+				},
+			],
 		});
 	});
 });

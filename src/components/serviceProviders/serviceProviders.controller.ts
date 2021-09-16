@@ -135,13 +135,13 @@ export class ServiceProvidersController extends Controller {
 		@Query() limit?: number,
 		@Query() page?: number,
 	): Promise<ApiData<ServiceProviderResponseModelV1[]>> {
-		const dataModels = await this.serviceProvidersService.getServiceProviders(
+		const dataModels = await this.serviceProvidersService.getServiceProviders({
 			serviceId,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
 			limit,
-			page,
-		);
+			pageNumber: page,
+		});
 		return ApiDataFactory.create(
 			await this.serviceProvidersMapper.mapDataModelsV1(dataModels, {
 				includeTimeslotsSchedule,
@@ -449,13 +449,13 @@ export class ServiceProvidersControllerV2 extends Controller {
 		@Query() page?: number,
 	): Promise<ApiData<ServiceProviderResponseModelV2[]>> {
 		const unsignedServiceId = this.idHasher.decode(serviceId);
-		const dataModels = await this.serviceProvidersService.getServiceProviders(
-			unsignedServiceId,
+		const dataModels = await this.serviceProvidersService.getServiceProviders({
+			serviceId: unsignedServiceId,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
 			limit,
-			page,
-		);
+			pageNumber: page,
+		});
 		return ApiDataFactory.create(
 			await this.serviceProvidersMapper.mapDataModelsV2(dataModels, {
 				includeTimeslotsSchedule,

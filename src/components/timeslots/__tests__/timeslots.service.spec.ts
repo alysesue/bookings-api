@@ -10,6 +10,7 @@ import {
 	TimeslotItem,
 	TimeslotsSchedule,
 	Unavailability,
+	Event,
 } from '../../../models';
 import { TimeslotsService } from '../timeslots.service';
 import { BookingsRepository } from '../../bookings/bookings.repository';
@@ -24,14 +25,11 @@ import { OneOffTimeslotsRepository } from '../../oneOffTimeslots/oneOffTimeslots
 import { TimeslotsScheduleRepository } from '../../timeslotsSchedules/timeslotsSchedule.repository';
 import { IGroupRecordIterator } from '../../timeslotsSchedules/groupRecordIterator';
 import { Weekday } from '../../../enums/weekday';
+import { EventsRepository } from '../../events/events.repository';
+import { EventsRepositoryMock } from '../../events/__mocks__/events.repository.mock';
 import { ServicesRepositoryMock } from '../../services/__mocks__/services.repository.mock';
 import { RequestClock } from '../../../infrastructure/requestClock';
 import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
-
-jest.mock('../../services/services.repository', () => {
-	class ServicesRepository {}
-	return { ServicesRepository };
-});
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -182,6 +180,7 @@ describe('Timeslots Service', () => {
 		Container.bind(TimeslotsScheduleRepository).factory(() => {
 			return TimeslotsScheduleRepositoryMock;
 		});
+		Container.bind(EventsRepository).to(EventsRepositoryMock);
 	});
 
 	beforeEach(() => {
@@ -209,6 +208,7 @@ describe('Timeslots Service', () => {
 		);
 
 		(OneOffTimeslotsRepositoryMock.search as jest.Mock).mockReturnValue(Promise.resolve([]));
+		(EventsRepositoryMock.searchReturnAllMock as jest.Mock).mockReturnValue(Promise.resolve([]));
 	});
 
 	it('should aggregate results', async () => {
@@ -292,14 +292,16 @@ describe('Timeslots Service', () => {
 	});
 
 	it('should override schedule timeslots with one off timeslots', async () => {
-		const oneOffTimeslots = new OneOffTimeslot();
-		oneOffTimeslots.startDateTime = DateHelper.setHours(date, 16, 30);
-		oneOffTimeslots.endDateTime = DateHelper.setHours(date, 20, 30);
-		oneOffTimeslots.capacity = 5;
-		oneOffTimeslots.serviceProvider = ServiceProviderMock2;
-		oneOffTimeslots.serviceProviderId = ServiceProviderMock2.id;
+		const oneOffTimeslot = new OneOffTimeslot();
+		oneOffTimeslot.startDateTime = DateHelper.setHours(date, 16, 30);
+		oneOffTimeslot.endDateTime = DateHelper.setHours(date, 20, 30);
+		oneOffTimeslot.serviceProvider = ServiceProviderMock2;
+		oneOffTimeslot.serviceProviderId = ServiceProviderMock2.id;
+		const event = new Event();
+		event.capacity = 5;
+		event.oneOffTimeslots = [oneOffTimeslot];
 
-		(OneOffTimeslotsRepositoryMock.search as jest.Mock).mockReturnValue(Promise.resolve([oneOffTimeslots]));
+		(EventsRepositoryMock.searchReturnAllMock as jest.Mock).mockReturnValue(Promise.resolve([event]));
 
 		const service = Container.get(TimeslotsService);
 		const result = await service.getAggregatedTimeslots({
@@ -312,8 +314,8 @@ describe('Timeslots Service', () => {
 		});
 
 		expect(result.length).toBe(1);
-		expect(new Date(result[0].startTime)).toEqual(oneOffTimeslots.startDateTime);
-		expect(new Date(result[0].endTime)).toEqual(oneOffTimeslots.endDateTime);
+		expect(new Date(result[0].startTime)).toEqual(oneOffTimeslot.startDateTime);
+		expect(new Date(result[0].endTime)).toEqual(oneOffTimeslot.endDateTime);
 
 		const providers = Array.from(result[0].getTimeslotServiceProviders());
 		expect(providers.length).toBe(1);
@@ -567,24 +569,29 @@ describe('Timeslots Service', () => {
 		const oneOffTimeslotsA = new OneOffTimeslot();
 		oneOffTimeslotsA.startDateTime = DateHelper.setHours(date, 17, 0);
 		oneOffTimeslotsA.endDateTime = DateHelper.setHours(date, 18, 0);
-		oneOffTimeslotsA.capacity = 1;
 		oneOffTimeslotsA.serviceProvider = availableSp;
 		oneOffTimeslotsA.serviceProviderId = availableSp.id;
 
 		const oneOffTimeslotsB = new OneOffTimeslot();
 		oneOffTimeslotsB.startDateTime = DateHelper.setHours(date, 17, 0);
 		oneOffTimeslotsB.endDateTime = DateHelper.setHours(date, 18, 0);
-		oneOffTimeslotsB.capacity = 1;
 		oneOffTimeslotsB.serviceProvider = expiredSP;
 		oneOffTimeslotsB.serviceProviderId = expiredSP.id;
+
+		const eventA = new Event();
+		eventA.capacity = 1;
+		eventA.oneOffTimeslots = [oneOffTimeslotsA];
+
+		const eventB = new Event();
+		eventB.capacity = 1;
+		eventB.oneOffTimeslots = [oneOffTimeslotsB];
+
+		(EventsRepositoryMock.searchReturnAllMock as jest.Mock).mockReturnValue(Promise.resolve([eventA, eventB]));
 
 		ServicesRepositoryMock.getServiceWithTimeslotsSchedule.mockImplementation(() => Promise.resolve(service1Mock));
 		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve({ entries: [] } as IPagedEntities<Booking>));
 
 		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue([availableSp, expiredSP]);
-		(OneOffTimeslotsRepositoryMock.search as jest.Mock).mockReturnValue(
-			Promise.resolve([oneOffTimeslotsA, oneOffTimeslotsB]),
-		);
 
 		TimeslotsScheduleRepositoryMock.getTimeslotsForServiceProviders.mockImplementation(async () => {
 			return new GroupRecordIteratorMock(new Map<number, TimeslotItem[]>());
@@ -603,6 +610,66 @@ describe('Timeslots Service', () => {
 		const timeslotSPs = Array.from(timeslots[0].getTimeslotServiceProviders());
 		expect(timeslotSPs).toHaveLength(1);
 		expect(timeslotSPs[0].serviceProvider.id).toBe(availableSp.id);
+	});
+
+	it(' should filter ignore event with more than oneTimeslot', async () => {
+		const service1Mock = new Service();
+		service1Mock.id = 1;
+
+		const availableSp = ServiceProvider.create('Available SP', service1Mock.id);
+		availableSp.id = 200;
+
+		const oneOffTimeslotsA = new OneOffTimeslot();
+		oneOffTimeslotsA.startDateTime = DateHelper.setHours(date, 17, 0);
+		oneOffTimeslotsA.endDateTime = DateHelper.setHours(date, 18, 0);
+		oneOffTimeslotsA.serviceProvider = availableSp;
+		oneOffTimeslotsA.serviceProviderId = availableSp.id;
+
+		const oneOffTimeslotsB = new OneOffTimeslot();
+		oneOffTimeslotsB.startDateTime = DateHelper.setHours(date, 17, 0);
+		oneOffTimeslotsB.endDateTime = DateHelper.setHours(date, 18, 0);
+		oneOffTimeslotsB.serviceProvider = availableSp;
+		oneOffTimeslotsB.serviceProviderId = availableSp.id;
+
+		const oneOffTimeslotsC = new OneOffTimeslot();
+		oneOffTimeslotsC.startDateTime = DateHelper.setHours(date, 17, 0);
+		oneOffTimeslotsC.endDateTime = DateHelper.setHours(date, 18, 0);
+		oneOffTimeslotsC.serviceProvider = availableSp;
+		oneOffTimeslotsC.serviceProviderId = availableSp.id;
+
+		const eventA = new Event();
+		eventA.capacity = 1;
+		eventA.oneOffTimeslots = [oneOffTimeslotsA, oneOffTimeslotsB];
+
+		const eventB = new Event();
+		eventB.id = 4;
+		eventB.capacity = 1;
+		eventB.oneOffTimeslots = [oneOffTimeslotsC];
+
+		(EventsRepositoryMock.searchReturnAllMock as jest.Mock).mockReturnValue(Promise.resolve([eventA, eventB]));
+
+		ServicesRepositoryMock.getServiceWithTimeslotsSchedule.mockImplementation(() => Promise.resolve(service1Mock));
+		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve({ entries: [] } as IPagedEntities<Booking>));
+
+		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue([availableSp]);
+
+		TimeslotsScheduleRepositoryMock.getTimeslotsForServiceProviders.mockImplementation(async () => {
+			return new GroupRecordIteratorMock(new Map<number, TimeslotItem[]>());
+		});
+
+		const service = Container.get(TimeslotsService);
+		const timeslots = await service.getAggregatedTimeslots({
+			startDateTime: date,
+			endDateTime: endDate,
+			serviceId: 1,
+			includeBookings: true,
+			filterDaysInAdvance: false,
+		});
+		expect(timeslots).toHaveLength(1);
+
+		const timeslotSPs = Array.from(timeslots[0].getTimeslotServiceProviders());
+		expect(timeslotSPs).toHaveLength(1);
+		expect(timeslotSPs[0].oneOffTimeslotId).toBe(4);
 	});
 
 	it('should get no available service providers because all sp are unavailable', async () => {

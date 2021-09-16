@@ -18,6 +18,7 @@ export class PgClient {
 		await this.pool.query('DELETE FROM public.dynamic_field');
 		await this.pool.query('DELETE FROM public.label');
 		await this.pool.query('DELETE FROM public.one_off_timeslot;');
+		await this.pool.query('DELETE FROM public.booked_slot');
 		await this.pool.query('DELETE FROM public.setting;');
 		await this.pool.query('DELETE FROM public.label_category;');
 		await this.pool.query('DELETE FROM public.service_admin_group_map');
@@ -25,6 +26,7 @@ export class PgClient {
 		await this.pool.query('DELETE FROM public.unavailability;');
 		await this.pool.query('DELETE FROM public.booking_change_log;');
 		await this.pool.query('DELETE FROM public.booking;');
+		await this.pool.query('DELETE FROM public.event');
 		await this.pool.query('DELETE FROM public.timeslot_item;');
 		await this.pool.query('DELETE FROM public.week_day_break;');
 		await this.pool.query('DELETE FROM public.week_day_schedule;');

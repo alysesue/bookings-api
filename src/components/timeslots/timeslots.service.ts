@@ -12,7 +12,6 @@ import { nextImmediateTick } from '../../infrastructure/immediateHelper';
 import { MAX_PAGING_LIMIT } from '../../core/pagedEntities';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { Weekday } from '../../enums/weekday';
-import { OneOffTimeslotsRepository } from '../oneOffTimeslots/oneOffTimeslots.repository';
 import { intersectsDateTimeNative } from '../../tools/timeSpan';
 import { MapProcessor } from './mapProcessor';
 import { AvailableTimeslotProviders } from './availableTimeslotProviders';
@@ -21,6 +20,8 @@ import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSche
 import { AggregatorTimeslotProviders, ServiceProvidersLookup } from './aggregatorTimeslotProviders';
 import { TimeslotGenerator } from '../../models/timeslotGenerator';
 import { RequestClock } from '../../infrastructure/requestClock';
+import { EventsRepository } from '../events/events.repository';
+import { TimeslotsMapperV2 } from './timeslots.mapper';
 import { LabelOperationFiltering } from '../labels/label.enum';
 
 export class AvailableTimeslotProcessor extends MapProcessor<TimeslotKey, AvailableTimeslotProviders> {}
@@ -29,6 +30,10 @@ export class AvailableTimeslotProcessor extends MapProcessor<TimeslotKey, Availa
 export class TimeslotsService {
 	@Inject
 	private bookingsRepository: BookingsRepository;
+
+	@Inject
+	private eventsRepository: EventsRepository;
+
 	@Inject
 	private servicesRepository: ServicesRepository;
 	@Inject
@@ -36,11 +41,11 @@ export class TimeslotsService {
 	@Inject
 	private unavailabilitiesService: UnavailabilitiesService;
 	@Inject
-	private oneOffTimeslotsRepository: OneOffTimeslotsRepository;
-	@Inject
 	private timeslotsScheduleRepository: TimeslotsScheduleRepository;
 	@Inject
 	private requestClock: RequestClock;
+	@Inject
+	private timeslotsMapperV2: TimeslotsMapperV2;
 
 	private static timeslotKeySelector = (startNative: number, endNative: number): TimeslotKey =>
 		generateTimeslotKeyNative(startNative, endNative);
@@ -419,15 +424,19 @@ export class TimeslotsService {
 		});
 		serviceProviderLookup.addMany(serviceProviders);
 
-		const oneOffTimeslots = await this.oneOffTimeslotsRepository.search({
+		const events = await this.eventsRepository.searchReturnAll({
 			serviceId,
 			serviceProviderIds,
 			startDateTime: minStartTime,
 			endDateTime: maxEndTime,
 			byPassAuth: true,
 			labelIds,
+			isOneOffTimeslot: true,
 			labelOperationFiltering,
 		});
+		const oneOffTimeslots = events.map<TimeslotWithCapacity>((e) =>
+			this.timeslotsMapperV2.mapEventWithOneTimeslotToTimeslotWithCapacity(e),
+		);
 
 		const oneOffTimeslotsLookup = groupByKey(oneOffTimeslots, (e) => e.serviceProviderId);
 

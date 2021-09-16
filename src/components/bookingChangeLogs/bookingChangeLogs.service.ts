@@ -43,6 +43,7 @@ export class BookingChangeLogsService {
 			videoConferenceUrl: booking.videoConferenceUrl,
 			refId: booking.refId,
 			dynamicValues: _.cloneDeep(booking.dynamicValues),
+			bookedSlots: _.cloneDeep(booking.bookedSlots),
 		} as BookingJsonSchemaV1;
 
 		if (booking.serviceProviderId) {

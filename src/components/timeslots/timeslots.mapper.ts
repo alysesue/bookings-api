@@ -16,6 +16,8 @@ import { BookingsMapper } from '../bookings/bookings.mapper';
 import { TimeslotServiceProviderResult } from '../../models/timeslotServiceProvider';
 import { LabelsMapper } from '../labels/labels.mapper';
 import { IdHasher } from '../../infrastructure/idHasher';
+import { TimeslotWithCapacity } from '../../models/timeslotWithCapacity';
+import { Event } from '../../models';
 import {
 	ServiceProviderSummaryModelV1,
 	ServiceProviderSummaryModelV2,
@@ -287,5 +289,19 @@ export class TimeslotsMapperV2 {
 		item.eventDescription = entry.description ?? undefined;
 		item.isRecurring = entry.isRecurring ?? false;
 		return item;
+	}
+
+	public mapEventWithOneTimeslotToTimeslotWithCapacity(e: Event): TimeslotWithCapacity {
+		return {
+			oneOffTimeslotId: e.id,
+			serviceProviderId: e.oneOffTimeslots[0].serviceProviderId,
+			title: e.title,
+			capacity: e.capacity,
+			description: e.description,
+			startTimeNative: e.oneOffTimeslots[0].startTimeNative,
+			endTimeNative: e.oneOffTimeslots[0].endTimeNative,
+			isRecurring: false,
+			labels: e.labels,
+		};
 	}
 }

@@ -314,6 +314,10 @@ describe('Bookings functional tests', () => {
 						citizenEmail: 'jane@email.com',
 						citizenName: 'Jane',
 						citizenUinFin: 'S7429377H',
+						citizenPhone: null,
+						description: null,
+						location: null,
+						refId: null,
 						dynamicValues: [
 							{
 								fieldIdSigned: dynamicFieldId,
@@ -330,6 +334,7 @@ describe('Bookings functional tests', () => {
 						serviceName: 'service1',
 						status: 1,
 						videoConferenceUrl: null,
+						bookedSlots: [],
 					},
 					previousBooking: {
 						schemaVersion: 1,

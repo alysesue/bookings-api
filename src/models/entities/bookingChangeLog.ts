@@ -4,6 +4,7 @@ import { IBooking } from '../interfaces';
 import { User } from './user';
 import { Service } from './service';
 import { DynamicValueJsonModel } from './jsonModels';
+import { BookedSlot } from './bookedSlot';
 
 @Entity()
 export class BookingChangeLog {
@@ -154,6 +155,7 @@ class BookingJsonSchemaBase {
 	public refId?: string;
 	public dynamicValues?: DynamicValueJsonModel[];
 	public serviceProviderAliasName?: string;
+	public bookedSlots?: BookedSlot[];
 }
 
 export class BookingJsonSchemaV1 extends BookingJsonSchemaBase {

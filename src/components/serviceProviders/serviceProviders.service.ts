@@ -89,14 +89,24 @@ export class ServiceProvidersService {
 		});
 	}
 
-	public async getServiceProviders(
-		serviceId?: number,
-		includeScheduleForm = false,
-		includeTimeslotsSchedule = false,
-		limit?: number,
-		pageNumber?: number,
-	): Promise<ServiceProvider[]> {
+	public async getServiceProviders(options: {
+		serviceId?: number;
+		includeScheduleForm?: boolean;
+		includeTimeslotsSchedule?: boolean;
+		limit?: number;
+		pageNumber?: number;
+		ids?: number[];
+	}): Promise<ServiceProvider[]> {
+		const {
+			serviceId,
+			includeTimeslotsSchedule = false,
+			includeScheduleForm = false,
+			limit,
+			pageNumber,
+			ids = [],
+		} = options;
 		return await this.serviceProvidersRepository.getServiceProviders({
+			ids,
 			serviceId,
 			includeScheduleForm,
 			includeTimeslotsSchedule,

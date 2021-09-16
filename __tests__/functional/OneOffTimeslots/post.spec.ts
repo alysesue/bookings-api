@@ -6,8 +6,8 @@ import {
 	updateOneOffTimeslot,
 } from '../../populate/basic';
 import { Roles } from '../../utils/enums';
-import {ServiceProviderResponseModelV1} from "../../../src/components/serviceProviders/serviceProviders.apicontract";
-import {ServiceResponseV1} from "../../../src/components/services/service.apicontract";
+import { ServiceProviderResponseModelV1 } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
+import { ServiceResponseV1 } from '../../../src/components/services/service.apicontract';
 
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
@@ -71,25 +71,6 @@ describe('Timeslots functional tests', () => {
 				labelIds: [service.labels[0].id],
 				role,
 				requestDetails: { nameService: NAME_SERVICE_1, serviceId: service.id.toString() },
-			});
-
-			expect(data.labels[0].id).toEqual(service.labels[0].id);
-			expect(data.labels[0].label).toEqual(service.labels[0].label);
-		});
-
-		it('should add one off timeslots with labels (service provider)', async () => {
-			const molAdminId = await pgClient.getAdminIdForServiceProvider({
-				serviceProviderId: serviceProvider1.id,
-			});
-			const role = Roles.ServiceProvider;
-			const [, data] = await populateOneOffTimeslot({
-				serviceProviderId: serviceProvider1.id,
-				startTime: START_TIME_1,
-				endTime: END_TIME_1,
-				capacity: 1,
-				labelIds: [service.labels[0].id],
-				role,
-				requestDetails: { nameService: NAME_SERVICE_1, serviceId: service.id.toString(), molAdminId },
 			});
 
 			expect(data.labels[0].id).toEqual(service.labels[0].id);

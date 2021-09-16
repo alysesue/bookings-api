@@ -89,3 +89,16 @@ export class AdditionalSettings {
 	public sendNotificationsToServiceProviders: boolean;
 	public sendSMSNotifications: boolean;
 }
+
+export class ServiceSummaryModel {
+	/**
+	 * @isInt
+	 */
+	public id: number;
+	public name: string;
+
+	constructor(id: number, name: string) {
+		this.id = id;
+		this.name = name;
+	}
+}

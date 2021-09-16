@@ -7,6 +7,7 @@ import { verifyUrl } from '../../tools/url';
 import { ServicesRepository } from './services.repository';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import * as _ from 'lodash';
+import { ErrorsRef } from '../../errors/errors.ref';
 
 @Scoped(Scope.Local)
 export class ServicesValidation extends Validator<Service> {
@@ -77,7 +78,6 @@ export class ServicesValidation extends Validator<Service> {
 				includeScheduleForm: false,
 				includeTimeslotsSchedule: false,
 			});
-
 			return this.validateServiceFound(service);
 		} else if (!isOptional) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('no service id provided');
@@ -92,35 +92,29 @@ export class ServicesValidation extends Validator<Service> {
 }
 
 class ServiceBusinessValidation {
-	private constructor() {}
+	public static errors = ErrorsRef().service;
 
-	public static readonly ServiceWithoutName = new BusinessValidation({
-		code: '10300',
-		message: `Service name is empty`,
-	});
+	public static readonly ServiceWithoutName = new BusinessValidation(
+		ServiceBusinessValidation.errors.ServiceWithoutName,
+	);
 
-	public static readonly VideoConferenceInvalidUrl = new BusinessValidation({
-		code: '10301',
-		message: `Invalid URL`,
-	});
+	public static readonly VideoConferenceInvalidUrl = new BusinessValidation(
+		ServiceBusinessValidation.errors.VideoConferenceInvalidUrl,
+	);
 
-	public static readonly VideoConferenceInvalidUrlLength = new BusinessValidation({
-		code: '10302',
-		message: `Invalid URL length`,
-	});
+	public static readonly VideoConferenceInvalidUrlLength = new BusinessValidation(
+		ServiceBusinessValidation.errors.VideoConferenceInvalidUrlLength,
+	);
 
-	public static readonly InvalidMaxMinDaysInAdvance = new BusinessValidation({
-		code: '10303',
-		message: `'Max days in advance' value must be greater than 'min days in advance' value when present.`,
-	});
+	public static readonly InvalidMaxMinDaysInAdvance = new BusinessValidation(
+		ServiceBusinessValidation.errors.InvalidMaxMinDaysInAdvance,
+	);
 
-	public static readonly InvalidMinDaysInAdvance = new BusinessValidation({
-		code: '10304',
-		message: `Invalid 'min days in advance' value.`,
-	});
+	public static readonly InvalidMinDaysInAdvance = new BusinessValidation(
+		ServiceBusinessValidation.errors.InvalidMinDaysInAdvance,
+	);
 
-	public static readonly InvalidMaxDaysInAdvance = new BusinessValidation({
-		code: '10305',
-		message: `Invalid 'max days in advance' value.`,
-	});
+	public static readonly InvalidMaxDaysInAdvance = new BusinessValidation(
+		ServiceBusinessValidation.errors.InvalidMaxDaysInAdvance,
+	);
 }

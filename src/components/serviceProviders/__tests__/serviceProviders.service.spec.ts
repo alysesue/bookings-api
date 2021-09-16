@@ -147,7 +147,7 @@ describe('ServiceProviders.Service', () => {
 
 	it('should get all service providers', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([serviceProviderMock]));
-		const result = await Container.get(ServiceProvidersService).getServiceProviders();
+		const result = await Container.get(ServiceProvidersService).getServiceProviders({});
 		expect(result.length).toBe(1);
 	});
 

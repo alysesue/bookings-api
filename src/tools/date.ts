@@ -39,3 +39,9 @@ export const parseHHmm = (time: string): { hours: number; minutes: number } => {
 
 	return { hours, minutes };
 };
+
+export const sortDate = (dates: Date[]) => {
+	return dates.sort((a, b) => {
+		return a.getTime() - b.getTime();
+	});
+};

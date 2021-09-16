@@ -8,3 +8,12 @@ export const pushIfNotPresent = (array: string[], newItem: string) => {
 };
 
 export const randomIndex = (array: any[]) => Math.floor(Math.random() * array.length);
+
+export const uniqBy = <T = unknown>(a: T[], key: (a: T) => any) => {
+	const seen = {};
+	return a.filter(function (item) {
+		const k = key(item);
+		// eslint-disable-next-line no-prototype-builtins
+		return seen.hasOwnProperty(k) ? false : (seen[k] = true);
+	});
+};

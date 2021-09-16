@@ -15,8 +15,11 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 	constructor() {
 		super(OneOffTimeslot);
 	}
+	public async create(data: OneOffTimeslot[]): Promise<OneOffTimeslot[]> {
+		return (await this.getRepository()).create(data);
+	}
 
-	public async save(data: OneOffTimeslot): Promise<OneOffTimeslot> {
+	public async save(data: OneOffTimeslot[]): Promise<OneOffTimeslot[]> {
 		if (!data) return null;
 		const repository = await this.getRepository();
 		return await repository.save(data);
@@ -48,8 +51,7 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 			.createQueryBuilder('timeslot')
 			.where(whereConditions, whereParam)
 			.leftJoin('timeslot._serviceProvider', 'serviceProvider')
-			.leftJoin('serviceProvider._service', 'SPservice')
-			.leftJoinAndSelect('timeslot._labels', 'label');
+			.leftJoin('serviceProvider._service', 'SPservice');
 	}
 
 	public async getById(request: { id: number; byPassAuth?: boolean }): Promise<OneOffTimeslot> {
@@ -82,6 +84,7 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 			serviceProviderIds && serviceProviderIds.length > 0
 				? 'timeslot."_serviceProviderId" IN (:...serviceProviderIds)'
 				: '';
+
 		const startDateCondition = startDateTime ? 'timeslot."_endDateTime" > :startDateTime' : '';
 		const endDateCondition = endDateTime ? 'timeslot."_startDateTime" < :endDateTime' : '';
 		const labelsCondition =
@@ -118,8 +121,8 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 		return await query.getMany();
 	}
 
-	public async delete(timeslot: OneOffTimeslot): Promise<void> {
+	public async delete(timeslots: OneOffTimeslot[]): Promise<void> {
 		const repository = await this.getRepository();
-		await repository.delete(timeslot.id);
+		await timeslots.map((slot) => repository.delete(slot.id));
 	}
 }

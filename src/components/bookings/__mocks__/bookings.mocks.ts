@@ -1,6 +1,5 @@
 import { BookingsRepository } from '../bookings.repository';
 import { Booking, BookingUUIDInfo, ChangeLogAction, User } from '../../../models';
-import { InsertResult } from 'typeorm';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
@@ -14,7 +13,7 @@ export class BookingRepositoryMock implements Partial<BookingsRepository> {
 	public static booking: Booking;
 	public static searchBookings = jest.fn<Promise<IPagedEntities<Booking>>, any>();
 	public static searchReturnAll = jest.fn<Promise<Booking[]>, any>();
-	public static saveMock: Promise<InsertResult>;
+	public static saveMock: Promise<Booking>;
 	public static getBookingByUUID = jest.fn<Promise<Booking>, any>();
 	public static update = jest.fn<Promise<Booking>, [Booking]>();
 
@@ -23,12 +22,18 @@ export class BookingRepositoryMock implements Partial<BookingsRepository> {
 		return Promise.resolve(BookingRepositoryMock.booking);
 	}
 
-	public async insert(booking: Booking): Promise<InsertResult> {
+	public async insert(booking: Booking): Promise<Booking> {
 		if (BookingRepositoryMock.saveMock) {
 			return BookingRepositoryMock.saveMock;
 		}
 		BookingRepositoryMock.booking = booking;
-		return Promise.resolve({} as InsertResult);
+		return Promise.resolve(({
+			identifiers: [
+				{
+					_id: 1,
+				},
+			],
+		} as unknown) as Booking);
 	}
 
 	public async update(booking: Booking): Promise<Booking> {

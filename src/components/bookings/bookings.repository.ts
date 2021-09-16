@@ -1,5 +1,5 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { InsertResult, SelectQueryBuilder } from 'typeorm';
+import { SelectQueryBuilder } from 'typeorm';
 import { Booking, BookingStatus } from '../../models';
 import { RepositoryBase } from '../../core/repository';
 import { ConcurrencyError } from '../../errors/concurrencyError';
@@ -10,6 +10,7 @@ import { andWhere } from '../../tools/queryConditions';
 import { PagingHelper } from '../../core/paging';
 import { IPagedEntities } from '../../core/pagedEntities';
 import { BookingQueryVisitorFactory } from './bookings.auth';
+import { BookedSlotRepository } from './bookedSlot.repository';
 
 @InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {
@@ -17,6 +18,8 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 	private userContext: UserContext;
 	@Inject
 	private serviceProvidersRepostiory: ServiceProvidersRepository;
+	@Inject
+	private bookedSlotRepository: BookedSlotRepository;
 
 	constructor() {
 		super(Booking);
@@ -69,6 +72,8 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		const query = await this.createSelectQuery([idCondition], { id: bookingId }, options);
 		const entry = await query.getOne();
 		if (entry) {
+			const bookedSlots = await this.bookedSlotRepository.getBookedSlotByBooking(bookingId);
+			entry.bookedSlots = bookedSlots ? bookedSlots : [];
 			await this.includeServiceProviders([entry]);
 		}
 
@@ -87,9 +92,11 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return entry;
 	}
 
-	public async insert(booking: Booking): Promise<InsertResult> {
+	public async insert(booking: Booking): Promise<Booking> {
 		const repository = await this.getRepository();
-		return await repository.insert(booking);
+		const bookingPromise = await repository.save(booking);
+
+		return bookingPromise;
 	}
 
 	public async update(booking: Booking): Promise<Booking> {
@@ -124,6 +131,9 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		const query = await this.searchQueryFormulation(request);
 
 		const result = await PagingHelper.getManyWithPaging(query, 'booking._id', request);
+		result.entries.map(async (booking) => {
+			booking.bookedSlots = await this.bookedSlotRepository.getBookedSlotByBooking(booking.id);
+		});
 
 		await this.includeServiceProviders(result.entries);
 		return result;
@@ -140,6 +150,8 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 
 	private async searchQueryFormulation(request: BookingSearchQuery): Promise<SelectQueryBuilder<Booking>> {
 		const serviceCondition = request.serviceId ? 'booking."_serviceId" = :serviceId' : '';
+
+		const eventCondition = request.eventId ? 'booking."_eventId" = :eventId' : '';
 
 		const serviceProviderCondition =
 			request.serviceProviderIds && request.serviceProviderIds.length > 0
@@ -171,6 +183,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 					createdToCondition,
 					statusesCondition,
 					citizenUinFinsCondition,
+					eventCondition,
 				],
 				{
 					serviceId: request.serviceId,
@@ -181,6 +194,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 					toCreatedDate: request.toCreatedDate,
 					statuses: request.statuses,
 					citizenUinFins: request.citizenUinFins,
+					eventId: request.eventId,
 				},
 				request,
 			)
@@ -203,4 +217,11 @@ export type BookingSearchQuery = {
 	page: number;
 	limit: number;
 	maxId?: number;
+	eventId?: number;
+};
+
+export type PagedEntities<T> = {
+	data: T[];
+	total: number;
+	page: number;
 };

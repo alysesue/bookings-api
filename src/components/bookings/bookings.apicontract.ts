@@ -1,6 +1,7 @@
 import { BookingStatus } from '../../models';
 import { PagingRequest } from '../../apicontract';
 import { DynamicValueContract, PersistDynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
+import { BookedSlot } from '../../models';
 import { BookingValidationType, BookingWorkflowType } from '../../models/bookingValidationType';
 
 export class BookingAcceptRequestV1 {
@@ -32,15 +33,15 @@ export class BookingDetailsRequest {
 	public videoConferenceUrl?: string | null;
 	public dynamicValuesUpdated?: boolean;
 	public dynamicValues?: PersistDynamicValueContract[];
+	// default validation type: citizen
+	public validationType?: BookingValidationType | null;
+	public workflowType?: BookingWorkflowType | null;
 }
 
 export class BookingRequestBase extends BookingDetailsRequest {
 	public startDateTime: Date;
 	public endDateTime: Date;
 	public captchaToken?: string | null;
-	// default validation type: citizen
-	public validationType?: BookingValidationType | null;
-	public workflowType?: BookingWorkflowType | null;
 }
 
 export class BookingRequestV1 extends BookingRequestBase {
@@ -77,13 +78,7 @@ export class BookingResponseBase {
 	 */
 	public status: number;
 	public createdDateTime: Date;
-	public startDateTime: Date;
-	public endDateTime: Date;
 	public serviceName: string;
-	public serviceProviderName?: string;
-	public serviceProviderEmail?: string;
-	public serviceProviderPhone?: string;
-	public serviceProviderAgencyUserId?: string;
 	public citizenUinFin?: string;
 	public citizenName?: string;
 	public citizenEmail?: string;
@@ -120,12 +115,24 @@ export class BookingResponseV1 extends BookingResponseBase {
 	 * @isInt
 	 */
 	public serviceProviderId?: number;
+	public startDateTime: Date;
+	public endDateTime: Date;
+	public serviceProviderName?: string;
+	public serviceProviderEmail?: string;
+	public serviceProviderPhone?: string;
+	public serviceProviderAgencyUserId?: string;
 }
 
 export class BookingResponseV2 extends BookingResponseBase {
 	public id: string;
 	public serviceId: string;
 	public serviceProviderId?: string;
+	public startDateTime: Date;
+	public endDateTime: Date;
+	public serviceProviderName?: string;
+	public serviceProviderEmail?: string;
+	public serviceProviderPhone?: string;
+	public serviceProviderAgencyUserId?: string;
 }
 
 export class BookingSearchRequest extends PagingRequest {
@@ -137,6 +144,7 @@ export class BookingSearchRequest extends PagingRequest {
 	public serviceId?: number;
 	public serviceProviderIds?: number[];
 	public citizenUinFins?: string[];
+	public eventId?: number;
 }
 
 export class BookingProviderResponseV1 {
@@ -147,6 +155,18 @@ export class BookingProviderResponseV1 {
 	public name: string;
 }
 
+export class EventBookingRequest extends BookingDetailsRequest {
+	public captchaToken?: string | null;
+	// default validation type: citizen
+	public validationType?: BookingValidationType | null;
+	public citizenUinFinUpdated?: boolean;
+}
+
+export class EventBookingResponse extends BookingResponseBase {
+	public eventId: string;
+	public bookingId: string;
+	public bookedSlots?: BookedSlot[];
+}
 export class BookingProviderResponseV2 {
 	public id: string;
 	public name: string;

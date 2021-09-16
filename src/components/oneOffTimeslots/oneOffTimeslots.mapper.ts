@@ -1,5 +1,5 @@
 import { Inject } from 'typescript-ioc';
-import { Label, OneOffTimeslot, ServiceProvider } from '../../models';
+import { Event, OneOffTimeslot, ServiceProvider } from '../../models';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { LabelsMapper } from '../labels/labels.mapper';
 import { OneOffTimeslotRequestV1, OneOffTimeslotResponse } from './oneOffTimeslots.apicontract';
@@ -12,39 +12,32 @@ export class OneOffTimeslotsMapper {
 
 	public mapToOneOffTimeslots(
 		request: OneOffTimeslotRequestV1,
+		entity = new OneOffTimeslot(),
 		serviceProvider: ServiceProvider,
-		labels?: Label[],
 	): OneOffTimeslot {
-		const entity = new OneOffTimeslot();
-		this.updateMapToOneOffTimeslots(request, entity, serviceProvider, labels);
-
+		entity.startDateTime = new Date(request.startDateTime);
+		entity.endDateTime = new Date(request.endDateTime);
+		entity.serviceProvider = serviceProvider;
 		return entity;
 	}
 
-	public updateMapToOneOffTimeslots(
-		request: OneOffTimeslotRequestV1,
-		entity: OneOffTimeslot,
+	public mapDependenciesToOneOffTimeslots(
+		oneOffTimeslot: OneOffTimeslot,
 		serviceProvider: ServiceProvider,
-		labels?: Label[],
-	) {
-		entity.serviceProvider = serviceProvider;
-		entity.startDateTime = request.startDateTime;
-		entity.endDateTime = request.endDateTime;
-		entity.capacity = request.capacity;
-		entity.labels = labels;
-		entity.title = request.title ?? undefined;
-		entity.description = request.description ?? undefined;
+	): OneOffTimeslot {
+		oneOffTimeslot.serviceProvider = serviceProvider;
+		return oneOffTimeslot;
 	}
 
-	public mapDataModel(timeslot: OneOffTimeslot): OneOffTimeslotResponse {
+	public mapDataModel(event: Event): OneOffTimeslotResponse {
 		const response = new OneOffTimeslotResponse();
-		response.idSigned = this.idHasher.encode(timeslot.id);
-		response.startDateTime = timeslot.startDateTime;
-		response.endDateTime = timeslot.endDateTime;
-		response.capacity = timeslot.capacity;
-		response.labels = this.labelMapper.mapToLabelsResponse(timeslot.labels);
-		response.title = timeslot.title ?? undefined;
-		response.description = timeslot.description ?? undefined;
+		response.idSigned = this.idHasher.encode(event.id);
+		response.startDateTime = event.oneOffTimeslots[0].startDateTime;
+		response.endDateTime = event.oneOffTimeslots[0].endDateTime;
+		response.capacity = event.capacity;
+		response.labels = this.labelMapper.mapToLabelsResponse(event.labels);
+		response.title = event.title ?? undefined;
+		response.description = event.description ?? undefined;
 
 		return response;
 	}

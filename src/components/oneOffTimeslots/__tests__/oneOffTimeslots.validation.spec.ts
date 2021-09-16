@@ -4,8 +4,8 @@ import { OneOffTimeslot } from '../../../models';
 import { OneOffTimeslotRequestV1 } from '../oneOffTimeslots.apicontract';
 import { DateHelper } from '../../../infrastructure/dateHelper';
 import { OneOffTimeslotsRepository } from '../oneOffTimeslots.repository';
-import { OneOffTimeslotsRepositoryMock } from '../__mocks__/oneOffTimeslots.mock';
 import { ContainerContext, ContainerContextHolder } from '../../../infrastructure/containerContext';
+import { OneOffTimeslotsRepositoryMock } from '../__mocks__/oneOffTimeslots.repository.mock';
 
 beforeAll(() => {
 	ContainerContextHolder.registerInContainer();
@@ -27,22 +27,13 @@ describe('Validation of oneOffTimeslots', () => {
 		expect(factory() === factory()).toBe(false);
 	});
 
-	it('Should return multiple errors due to validation ', async () => {
+	it('Should return error due to validation ', async () => {
 		const oneOffTimeslot = new OneOffTimeslot();
 		oneOffTimeslot.startDateTime = new Date('2021-03-02T00:00:00Z');
 		oneOffTimeslot.endDateTime = new Date('2021-03-02T00:00:00Z');
-		let longStr = '';
-		while (longStr.length < 4001) {
-			longStr += 'tttttttttttttttttttttttttttttttttttttttt';
-		}
-		oneOffTimeslot.title =
-			'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii';
-		oneOffTimeslot.description = longStr;
 		const oneOffTimeslotsValidation = Container.get(OneOffTimeslotsValidation);
 		const validate = async () => await oneOffTimeslotsValidation.validate(oneOffTimeslot);
 		await expect(validate).rejects.toThrow('Start time must be less than end time');
-		await expect(validate).rejects.toThrow('[10101] Title word limit is 100 characters');
-		await expect(validate).rejects.toThrow('[10103] Description word limit is 4000 characters');
 	});
 
 	it('should return true when requested timeslot does not overlap with another oneOffTimeslot', async () => {
@@ -69,7 +60,6 @@ describe('Validation of oneOffTimeslots', () => {
 					id: 5,
 					startDateTime: new Date('2021-03-02T00:00:00Z'),
 					endDateTime: new Date('2021-03-02T01:00:00Z'),
-					capacity: 1,
 				} as OneOffTimeslot,
 			]),
 		);
