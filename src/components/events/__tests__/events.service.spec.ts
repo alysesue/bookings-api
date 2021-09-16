@@ -86,9 +86,18 @@ describe('Tests events services', () => {
 			]),
 		);
 	});
+
 	it('Should call save when create an oneOffTimeslot event', async () => {
 		const eventRequest = getSimpleEventOneOffTimeslotRequest({});
 		await Container.get(EventsService).saveOneOffTimeslot(eventRequest);
+		expect(ServicesServiceMock.getService).toHaveBeenCalledTimes(1);
+		expect(LabelsServiceMock.verifyLabelsMock).toHaveBeenCalledTimes(1);
+		expect(EventsRepositoryMock.saveMock).toHaveBeenCalledTimes(1);
+	});
+
+	it('Should call save when updating an oneOffTimeslot event', async () => {
+		const eventRequest = getSimpleEventOneOffTimeslotRequest({});
+		await Container.get(EventsService).updateOneOffTimeslot(eventRequest, new Event());
 		expect(ServicesServiceMock.getService).toHaveBeenCalledTimes(1);
 		expect(LabelsServiceMock.verifyLabelsMock).toHaveBeenCalledTimes(1);
 		expect(EventsRepositoryMock.saveMock).toHaveBeenCalledTimes(1);
@@ -107,6 +116,20 @@ describe('Tests events services', () => {
 		expect(ServicesServiceMock.getService).toHaveBeenCalledTimes(1);
 		expect(LabelsServiceMock.verifyLabelsMock).toHaveBeenCalledTimes(1);
 		expect(ServiceProvidersServiceMock.getServiceProvidersMock).toHaveBeenCalledTimes(1);
+		expect(EventsRepositoryMock.saveMock).toHaveBeenCalledTimes(1);
+	});
+
+	it('Should call save when updating an event', async () => {
+		const oneOffTimeslotRequest = getSimpleOneOffTimeslotRequest({ serviceProviderId: 1 });
+		const oneOffTimeslotRequest2 = getSimpleOneOffTimeslotRequest({ serviceProviderId: 2 });
+		const sp1 = getServiceProviderMock({ id: 1 });
+		const sp2 = getServiceProviderMock({ id: 2 });
+		ServiceProvidersServiceMock.getServiceProvidersMock.mockReturnValue([sp1, sp2]);
+		const eventRequest = getSimpleEventRequest({
+			oneOffTimeslots: [oneOffTimeslotRequest, oneOffTimeslotRequest2],
+		});
+		EventsRepositoryMock.getByIdMock.mockReturnValue({});
+		await Container.get(EventsService).updateEvent(eventRequest, '1');
 		expect(EventsRepositoryMock.saveMock).toHaveBeenCalledTimes(1);
 	});
 

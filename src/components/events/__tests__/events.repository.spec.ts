@@ -4,13 +4,16 @@ import { TransactionManagerMock } from '../../../core/__mocks__/transactionManag
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { EventsRepository } from '../events.repository';
-import { Event, OneOffTimeslot, Organisation, User } from '../../../models';
+import { Booking, Event, OneOffTimeslot, Organisation, User } from '../../../models';
 import { SelectQueryBuilder } from 'typeorm';
 import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { EventQueryAuthVisitor } from '../events.auth';
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
+import { PagingHelper } from '../../../core/paging';
+import { IPagedEntities } from '../../../core/pagedEntities';
 
 jest.mock('../events.auth');
+jest.mock('../../../core/paging');
 
 beforeAll(() => {
 	Container.bind(TransactionManager).to(TransactionManagerMock);
@@ -49,6 +52,9 @@ describe('Test event repository', () => {
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminUserMock));
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new OrganisationAdminAuthGroup(adminUserMock, [organisation])]),
+		);
+		(PagingHelper.getManyWithPaging as jest.Mock).mockImplementation(() =>
+			Promise.resolve({ entries: [] } as IPagedEntities<Booking>),
 		);
 
 		queryBuilderMock = ({
@@ -113,5 +119,27 @@ describe('Test event repository', () => {
 			{ serviceId: 2, serviceProviderIds: [10, 11], isOneOffTimeslot: false },
 		);
 		expect(queryBuilderMock.getMany).toBeCalled();
+	});
+
+	it('should filter events by labelIds', async () => {
+		const repository = Container.get(EventsRepository);
+		await repository.searchReturnAll({
+			serviceId: 2,
+			serviceProviderIds: [10, 11],
+			labelIds: [1],
+		});
+		expect(
+			queryBuilderMock.where,
+		).toBeCalledWith(
+			'("serviceProvider"."_serviceId" = :serviceId) AND ("oneOffTimeslots"."_serviceProviderId" IN (:...serviceProviderIds)) AND (event."_id" IN (SELECT "event_id" FROM event_label WHERE "label_id" = :label_0))',
+			{ serviceId: 2, serviceProviderIds: [10, 11], label_0: 1 },
+		);
+		expect(queryBuilderMock.getMany).toBeCalled();
+	});
+
+	it('should search and return with paging', async () => {
+		const repository = Container.get(EventsRepository);
+		await repository.search({ serviceId: 2, serviceProviderIds: [10, 11], page: 1, limit: 1 });
+		expect(PagingHelper.getManyWithPaging as jest.Mock).toHaveBeenCalledTimes(1);
 	});
 });
