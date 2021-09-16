@@ -1,10 +1,7 @@
 import { NotificationSMSService, NotificationSMSServiceMol } from '../notificationSMS.service';
 import { Container } from 'typescript-ioc';
 import { post } from '../../../tools/fetch';
-import '../../../infrastructure/tests/mockConfig';
-import { mockConfig } from '../../../infrastructure/tests/mockConfig';
 
-mockConfig();
 jest.mock('../../../tools/fetch');
 
 afterAll(() => {

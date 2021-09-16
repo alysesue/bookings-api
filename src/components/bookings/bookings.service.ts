@@ -579,15 +579,22 @@ export class BookingsService {
 		);
 	}
 
-	private async changeUserInternal(booking: Booking): Promise<[ChangeLogAction, Booking]> {
+	private async changeUserInternal(_booking: Booking): Promise<[ChangeLogAction, Booking]> {
 		const currentUser = await this.userContext.getCurrentUser();
-		const newBooking = booking.clone();
+		await this.loadBookingDependencies(_booking);
+
+		const newBooking = _booking.clone();
 		if (newBooking.creatorId !== currentUser.id) {
 			if (!newBooking.isValidOnHoldBooking()) {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-					`Booking ${booking.id} is in invalid state for user change.`,
+					`Booking ${newBooking.id} is in invalid state for user change.`,
 				);
 			}
+
+			await this.bookingsMapper.updateDetailsFromUser({
+				booking: newBooking,
+				service: newBooking.service,
+			});
 
 			const user = await this.usersService.persistUserIfRequired(currentUser);
 			newBooking.creator = user;

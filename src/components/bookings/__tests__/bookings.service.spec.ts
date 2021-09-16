@@ -1084,6 +1084,7 @@ describe('Bookings.Service', () => {
 
 		expect(result).toBeDefined();
 		expect(result.creatorId).toEqual(singpassMock.id);
+		expect(result.citizenUinFin).toEqual(singpassMock._singPassUser.UinFin);
 		expect(BookingChangeLogsServiceMock.executeAndLogAction).toBeCalled();
 		expect(BookingChangeLogsServiceMock.action).toEqual(ChangeLogAction.UpdateUser);
 	});
