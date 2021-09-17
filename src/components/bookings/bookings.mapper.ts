@@ -205,15 +205,6 @@ export class BookingsMapper {
 		};
 	}
 
-	private async setCitizenUinFin(request: BookingMapDetails, booking: Booking): Promise<void> {
-		const currentUser = await this.userContext.getCurrentUser();
-		if (currentUser && currentUser.isCitizen()) {
-			booking.citizenUinFin = currentUser.singPassUser.UinFin;
-		} else if (request.citizenUinFinUpdated) {
-			booking.citizenUinFin = request.citizenUinFin;
-		}
-	}
-
 	public async mapBookingDetails({
 		request,
 		booking,
@@ -229,7 +220,9 @@ export class BookingsMapper {
 		}
 
 		booking.refId = request.refId;
-		await this.setCitizenUinFin(request, booking);
+		if (request.citizenUinFinUpdated) {
+			booking.citizenUinFin = request.citizenUinFin;
+		}
 
 		booking.citizenName = request.citizenName;
 		booking.citizenEmail = request.citizenEmail;
@@ -239,11 +232,22 @@ export class BookingsMapper {
 
 		booking.videoConferenceUrl = request.videoConferenceUrl || service.videoConferenceUrl;
 
+		await this.updateDetailsFromUser({ booking, service });
+	}
+
+	public async updateDetailsFromUser({ booking, service }: { service: Service; booking: Booking }): Promise<void> {
+		// Place all logic to update booking details from user context information here.
+
+		const currentUser = await this.userContext.getCurrentUser();
+		if (currentUser && currentUser.isCitizen()) {
+			booking.citizenUinFin = currentUser.singPassUser.UinFin;
+		}
+
 		const myInfo = service.isStandAlone ? await this.userContext.getMyInfo() : undefined;
 		if (myInfo) {
 			booking.citizenName = myInfo.data.name.value;
-			booking.citizenEmail = request.citizenEmail || myInfo.data.email.value;
-			booking.citizenPhone = request.citizenPhone || myInfo.data.mobileno.nbr.value;
+			booking.citizenEmail = booking.citizenEmail || myInfo.data.email.value;
+			booking.citizenPhone = booking.citizenPhone || myInfo.data.mobileno.nbr.value;
 		}
 
 		const mobileNo = this.userContext.getOtpAddOnMobileNo();
