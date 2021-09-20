@@ -28,20 +28,16 @@ export class EventsRepository extends RepositoryBase<Event> {
 		queryParams: {},
 		options: {
 			byPassAuth?: boolean;
-			queryORFilters?: string[];
-			queryORParams?: {};
 		},
 	): Promise<SelectQueryBuilder<Event>> {
 		const authGroups = await this.userContext.getAuthGroups();
-		const { queryORFilters = [], queryORParams = {} } = options;
 		const { userCondition, userParams } = options.byPassAuth
 			? { userCondition: '', userParams: {} }
 			: await new EventQueryAuthVisitor('serviceProvider', 'SPservice').createUserVisibilityCondition(authGroups);
 		const repository = await this.getRepository();
 
-		let whereConditions = andWhere([userCondition, ...queryFilters]);
-		whereConditions += orWhere(queryORFilters).length ? ' AND ' + orWhere(queryORFilters) : '';
-		const whereParam = { ...userParams, ...queryParams, ...queryORParams };
+		const whereConditions = andWhere([userCondition, ...queryFilters]);
+		const whereParam = { ...userParams, ...queryParams };
 
 		return repository
 			.createQueryBuilder('event')
@@ -129,17 +125,11 @@ export class EventsRepository extends RepositoryBase<Event> {
 			labelIds.forEach((labelId, index) => (labelsParam[`label_${index}`] = labelId));
 		}
 
-		let labelsANDConditions = [];
-		let labelsORConditions = [];
-		let labelsORParams = {};
-		let labelsANDParams = {};
-
+		let labelsConditionsString;
 		if (labelOperationFiltering === LabelOperationFiltering.UNION) {
-			labelsORConditions = labelsCondition;
-			labelsORParams = labelsParam;
+			labelsConditionsString = labelsCondition.length ? orWhere(labelsCondition) : '';
 		} else {
-			labelsANDConditions = labelsCondition;
-			labelsANDParams = labelsParam;
+			labelsConditionsString = labelsCondition.length ? andWhere(labelsCondition) : '';
 		}
 
 		const query = await this.createSelectQuery(
@@ -149,10 +139,10 @@ export class EventsRepository extends RepositoryBase<Event> {
 				startDateCondition,
 				endDateCondition,
 				isOneOffTimeslotCondition,
-				...labelsANDConditions,
+				labelsConditionsString,
 			],
-			{ serviceId, serviceProviderIds, startDateTime, endDateTime, isOneOffTimeslot, ...labelsANDParams },
-			{ ...request, queryORFilters: labelsORConditions, queryORParams: labelsORParams },
+			{ serviceId, serviceProviderIds, startDateTime, endDateTime, isOneOffTimeslot, ...labelsParam },
+			{ ...request },
 		);
 
 		return query.orderBy('oneOffTimeslots._startDateTime', 'ASC');

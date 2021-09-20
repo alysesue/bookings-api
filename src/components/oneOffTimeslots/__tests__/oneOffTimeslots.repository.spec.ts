@@ -8,6 +8,7 @@ import { UserConditionParams } from '../../../infrastructure/auth/authConditionC
 import { AuthGroup, OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { SelectQueryBuilder } from 'typeorm';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
+import { LabelOperationFiltering } from '../../labels/label.enum';
 
 jest.mock('../oneOffTimeslots.auth');
 
@@ -121,6 +122,52 @@ describe('oneOffTimeslots repository tests', () => {
 		).toBeCalledWith(
 			'("serviceProvider"."_serviceId" = :serviceId) AND (timeslot."_serviceProviderId" IN (:...serviceProviderIds))',
 			{ serviceId: 2, serviceProviderIds: [10, 11] },
+		);
+		expect(queryBuilderMock.getMany).toBeCalled();
+	});
+
+	it('should search timeslots with labelId', async () => {
+		const queryBuilderMock = ({
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			leftJoin: jest.fn(() => queryBuilderMock),
+			getMany: jest.fn(() => Promise.resolve([])),
+		} as unknown) as SelectQueryBuilder<OneOffTimeslot>;
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const repository = Container.get(OneOffTimeslotsRepository);
+		await repository.search({ serviceId: 2, labelIds: [1, 2] });
+		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
+		expect(queryBuilderMock.where).toBeCalledWith(
+			'("serviceProvider"."_serviceId" = :serviceId) AND ' +
+				'((timeslot."_id" IN (SELECT "oneOffTimeslot_id" FROM oneofftimeslot_label WHERE "label_id" = :label_0)) AND ' +
+				'(timeslot."_id" IN (SELECT "oneOffTimeslot_id" FROM oneofftimeslot_label WHERE "label_id" = :label_1)))',
+			{ serviceId: 2, label_0: 1, label_1: 2 },
+		);
+		expect(queryBuilderMock.getMany).toBeCalled();
+	});
+
+	it('should search timeslots with labelId with union filter (OR)', async () => {
+		const queryBuilderMock = ({
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			leftJoin: jest.fn(() => queryBuilderMock),
+			getMany: jest.fn(() => Promise.resolve([])),
+		} as unknown) as SelectQueryBuilder<OneOffTimeslot>;
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const repository = Container.get(OneOffTimeslotsRepository);
+		await repository.search({
+			serviceId: 2,
+			labelIds: [1, 2],
+			labelOperationFiltering: LabelOperationFiltering.UNION,
+		});
+		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
+		expect(queryBuilderMock.where).toBeCalledWith(
+			'("serviceProvider"."_serviceId" = :serviceId) AND ' +
+				'((timeslot."_id" IN (SELECT "oneOffTimeslot_id" FROM oneofftimeslot_label WHERE "label_id" = :label_0)) OR ' +
+				'(timeslot."_id" IN (SELECT "oneOffTimeslot_id" FROM oneofftimeslot_label WHERE "label_id" = :label_1)))',
+			{ serviceId: 2, label_0: 1, label_1: 2 },
 		);
 		expect(queryBuilderMock.getMany).toBeCalled();
 	});

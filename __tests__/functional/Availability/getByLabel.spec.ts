@@ -44,7 +44,6 @@ describe('Timeslot availability filter by label', () => {
 			capacity: 3,
 		});
 
-
 		done();
 	});
 
