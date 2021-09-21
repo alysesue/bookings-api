@@ -177,7 +177,10 @@ export class ServiceProvidersService {
 		result.sort((a, b) => {
 			return a.id - b.id;
 		});
-		const culledResult = result.splice((page - 1) * limit, limit);
+		let culledResult = result;
+		if (limit) {
+			culledResult = result.splice((page - 1) * limit, limit);
+		}
 		const maxPage = Math.ceil(result.length / limit);
 
 		const response: IPagedEntities<ServiceProvider> = {

@@ -151,6 +151,60 @@ describe('ServiceProviders.Service', () => {
 		expect(result.length).toBe(1);
 	});
 
+	it('should get service providers', async () => {
+		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([serviceProviderMock]));
+		const result = await Container.get(ServiceProvidersService).getPagedServiceProviders(
+			undefined,
+			undefined,
+			false,
+			false,
+			false,
+			undefined,
+			undefined,
+			1,
+		);
+		expect(result.entries.length).toBe(1);
+	});
+
+	it('should get service providers with Date', async () => {
+		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
+			const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
+			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
+			entry.endTime = new Date(2020, 8, 26, 8, 30).getTime();
+
+			const serviceProvider1 = ServiceProvider.create('Juku', 1);
+			serviceProvider1.id = 1;
+			const serviceProvider2 = ServiceProvider.create('Andi', 1);
+			serviceProvider2.id = 2;
+
+			entry.addServiceProvider(
+				serviceProvider1,
+				createTimeslot(new Date(entry.startTime), new Date(entry.endTime), 1),
+			);
+			entry.addServiceProvider(
+				serviceProvider2,
+				createTimeslot(new Date(entry.startTime), new Date(entry.endTime), 1),
+			);
+
+			return Promise.resolve([entry]);
+		});
+
+		const start = new Date('2020-08-25T12:00');
+		const end = new Date('2020-08-26T12:00');
+		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([serviceProviderMock]));
+		const result = await Container.get(ServiceProvidersService).getPagedServiceProviders(
+			start,
+			end,
+			false,
+			false,
+			false,
+			undefined,
+			undefined,
+			1,
+		);
+		expect(result.entries.length).toBe(2);
+	});
+
 	it('should get service provider by Id', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		const result = await Container.get(ServiceProvidersService).getServiceProvider(1, true, true);
