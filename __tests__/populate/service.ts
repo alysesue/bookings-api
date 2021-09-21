@@ -27,10 +27,14 @@ export const populateService = async ({
 	nameService = 'admin',
 	labels = [],
 	categories = [],
+	requestOptions = undefined,
 }): Promise<ServiceResponseV1> => {
 	const labelsMap = labels.map((label) => ({ label }));
-	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post(`/services`, {
-		body: { name: nameService, labels: labelsMap, categories: categories },
+	const response = await OrganisationAdminRequestEndpointSG.create(
+		{ organisation, nameService },
+		requestOptions,
+	).post(`/services`, {
+		body: { name: nameService, labels: labelsMap, categories },
 	});
 	return response.body.data;
 };
@@ -43,7 +47,7 @@ export const populateServiceV2 = async ({
 }): Promise<ServiceResponseV2> => {
 	const labelsMap = labels.map((label) => ({ label }));
 	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post(`/services`, {
-		body: { name: nameService, labels: labelsMap, categories: categories },
+		body: { name: nameService, labels: labelsMap, categories },
 	});
 	return response.body.data;
 };

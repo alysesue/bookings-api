@@ -124,7 +124,7 @@ export class ServicesMapper {
 		}
 	}
 
-	public static modelToServiceSummaryModel(srv: IService) {
-		return new ServiceSummaryModel(srv.id, srv.name);
+	public modelToServiceSummaryModel(srv: IService) {
+		return new ServiceSummaryModel(this.idHasher.encode(srv.id), srv.name);
 	}
 }

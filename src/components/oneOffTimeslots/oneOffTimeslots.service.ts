@@ -63,7 +63,7 @@ export class OneOffTimeslotsService {
 		);
 		oneOffTimeslots = this.oneOffTimeslotsMapper.mapDependenciesToOneOffTimeslots(oneOffTimeslots, serviceProvider);
 		const event = this.eventsMapper.mapOneOffTimeslotsRequestToEventOneOffTimeslotRequest(request, oneOffTimeslots);
-		event.serviceId = serviceProvider.serviceId;
+		event.serviceId = this.idHasher.encode(serviceProvider.serviceId);
 
 		await this.verifyActionPermission(oneOffTimeslots);
 
@@ -93,7 +93,7 @@ export class OneOffTimeslotsService {
 			oneOffTimeslots,
 			event,
 		);
-		eventRequest.serviceId = serviceProvider.serviceId;
+		eventRequest.serviceId = this.idHasher.encode(serviceProvider.serviceId);
 
 		await this.verifyActionPermission(oneOffTimeslots);
 

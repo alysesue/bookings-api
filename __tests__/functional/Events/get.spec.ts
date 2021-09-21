@@ -4,6 +4,7 @@ import { getEventRequest, getOneOffTimeslotRequest, populateEvent } from '../../
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { EventResponse } from '../../../src/components/events/events.apicontract';
 import { populateOneOffTimeslot } from '../../populate/oneOffTimeslot';
+import { API_VERSION } from '../../../src/config/api-version';
 
 describe('Get events functional tests', () => {
 	const pgClient = new PgClient();
@@ -12,7 +13,9 @@ describe('Get events functional tests', () => {
 
 	beforeEach(async (done) => {
 		await pgClient.cleanAllTables();
-		const { service: srv, serviceProvider: sp } = await populateServiceAndServiceProvider({});
+		const { service: srv, serviceProvider: sp } = await populateServiceAndServiceProvider({
+			requestOptions: { version: API_VERSION.V2 },
+		});
 		service = srv;
 		serviceProvider = sp;
 		const oneOffTimeslotRequest = getOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });

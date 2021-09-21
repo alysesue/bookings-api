@@ -8,7 +8,7 @@ import {
 	EventTimeslotResponse,
 	IEventRequest,
 } from './events.apicontract';
-import { Event } from '../../models/entities/event';
+import { Event } from '../../models';
 import { Label, OneOffTimeslot, Service } from '../../models';
 import { OneOffTimeslotRequestV1 } from '../oneOffTimeslots/oneOffTimeslots.apicontract';
 import { LabelsMapper } from '../labels/labels.mapper';
@@ -21,11 +21,13 @@ export class EventsMapper {
 	private idHasher: IdHasher;
 	@Inject
 	private labelsMapper: LabelsMapper;
+	@Inject
+	private servicesMapper: ServicesMapper;
 
 	public mapToModel(request: IEventRequest): Event {
 		const { serviceId, title, description, capacity } = request;
 		const event = new Event();
-		event.serviceId = serviceId;
+		event.serviceId = this.idHasher.decode(serviceId);
 		event.title = title;
 		event.capacity = capacity;
 		event.description = description;
@@ -58,12 +60,12 @@ export class EventsMapper {
 	}
 
 	public mapEventTimeslotToOneOffTimeslot(request: EventTimeslotRequest): OneOffTimeslot {
-		const { startDateTime, endDateTime, idSigned, serviceProviderId } = request;
+		const { startDateTime, endDateTime, id, serviceProviderId } = request;
 		const oneOffTimeslot = new OneOffTimeslot();
 		oneOffTimeslot.endDateTime = endDateTime;
 		oneOffTimeslot.startDateTime = startDateTime;
-		oneOffTimeslot.serviceProviderId = serviceProviderId;
-		oneOffTimeslot.id = this.idHasher.decode(idSigned);
+		oneOffTimeslot.serviceProviderId = this.idHasher.decode(serviceProviderId);
+		oneOffTimeslot.id = this.idHasher.decode(id);
 		return oneOffTimeslot;
 	}
 
@@ -77,7 +79,7 @@ export class EventsMapper {
 		return timeslot.map(
 			({ id, startDateTime, endDateTime, serviceProvider }) =>
 				({
-					idSigned: this.idHasher.encode(id),
+					id: this.idHasher.encode(id),
 					startDateTime,
 					endDateTime,
 					serviceProvider: { id: this.idHasher.encode(serviceProvider.id), name: serviceProvider.name },
@@ -92,7 +94,7 @@ export class EventsMapper {
 		const sortEndDate = sortDate(oneOffTimeslots.map((slot) => slot.endDateTime));
 		return {
 			id: this.idHasher.encode(id),
-			service: ServicesMapper.modelToServiceSummaryModel(service),
+			service: this.servicesMapper.modelToServiceSummaryModel(service),
 			title,
 			description,
 			capacity,

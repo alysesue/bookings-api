@@ -3,6 +3,7 @@ import { PgClient } from '../../utils/pgClient';
 import { getEventRequest, getOneOffTimeslotRequest, populateEvent } from '../../populate/events';
 import { populateServiceAndServiceProvider } from '../../populate/serviceProvider';
 import { DateHelper } from '../../../src/infrastructure/dateHelper';
+import { API_VERSION } from '../../../src/config/api-version';
 
 describe('Event post functional tests', () => {
 	const pgClient = new PgClient();
@@ -14,10 +15,14 @@ describe('Event post functional tests', () => {
 		const { service: srv, serviceProvider: sp } = await populateServiceAndServiceProvider({
 			categories: [
 				{ categoryName: 'Location', labels: [{ label: 'Toa Payoh' }, { label: 'Sydney' }] },
-				{ categoryName: 'Language', labels: [{ label: 'Chinese' }, { label: 'English' }, { label: 'Malay' }] },
+				{
+					categoryName: 'Language',
+					labels: [{ label: 'Chinese' }, { label: 'English' }, { label: 'Malay' }],
+				},
 				{ categoryName: 'Program Type', labels: [{ label: 'Virtual' }, { label: 'On-site' }] },
 			],
 			labels: ['Marriage', 'Singapore'],
+			requestOptions: { version: API_VERSION.V2 },
 		});
 		service = srv;
 		serviceProvider = sp;
@@ -85,13 +90,13 @@ describe('Event post functional tests', () => {
 		while (x < 20) {
 			tempStartDateTime = DateHelper.subtractMinutes(tempStartDateTime, 20);
 			tempEndDateTime = DateHelper.subtractMinutes(tempEndDateTime, 10);
-			let oneOffTimeslotRequest = getOneOffTimeslotRequest({
+			const oneOffTimeslotRequest = getOneOffTimeslotRequest({
 				serviceProviderId: serviceProvider.id,
 				startDateTime: tempStartDateTime,
 				endDateTime: tempEndDateTime,
 			});
 			x = x + 1;
-			let event = getEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest]);
+			const event = getEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest]);
 			await populateEvent(event);
 		}
 	});

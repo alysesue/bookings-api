@@ -60,13 +60,13 @@ export class EventsController extends Controller {
 	@MOLAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 } })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async search(
-		@Header('x-api-service') serviceId: number,
+		@Header('x-api-service') serviceId: string,
 		@Query() page?: number,
 		@Query() limit?: number,
 		@Query() maxId?: number,
 	): Promise<ApiPagedData<EventResponse>> {
 		const pagedEvents = await this.eventsService.search({
-			serviceId,
+			serviceId: this.idHasher.decode(serviceId),
 			page: page || DEFAULT_PAGE,
 			limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
 			maxId,
@@ -159,7 +159,6 @@ export class EventsController extends Controller {
 			limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
 			maxId,
 		};
-		// BookingSearchRequest
 		const pagedBookings = await this.bookingsService.searchBookings(searchRequest);
 		await this.userContext.getSnapshot();
 		return this.apiPagingFactory.createPagedAsync(pagedBookings, async (booking: Booking) => {

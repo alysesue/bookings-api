@@ -1,20 +1,30 @@
 import * as request from 'request';
 import * as requestPromise from 'request-promise-native';
 import * as setCookieParser from 'set-cookie-parser';
+import { API_VERSION } from '../../src/config/api-version';
+
+export type RequestEndpointOptions = { version?: API_VERSION };
 class RequestEndpointSG {
 	private _headers: { [e: string]: string };
+	private BASE_URL = process.env['FUNCTIONAL_TEST_BASE_URL'];
 
-	constructor() {
+	constructor(options?: RequestEndpointOptions) {
 		this._headers = {};
+		this.BASE_URL = this.getBaseUrlVersion(options?.version);
+	}
+
+	private getBaseUrlVersion(version: API_VERSION): string {
+		const apiBaseUrlWithV1 = this.BASE_URL;
+		if (!version || version === API_VERSION.V1) return apiBaseUrlWithV1;
+		return apiBaseUrlWithV1?.replace('/v1', '/v2');
 	}
 
 	private async apiRequest(options: { method: string; uri: string; body: any; qs: any }): Promise<request.Response> {
-		const BASE_URL = process.env['FUNCTIONAL_TEST_BASE_URL'];
 		let response: request.Response;
 
 		try {
 			await requestPromise({
-				baseUrl: BASE_URL,
+				baseUrl: this.BASE_URL,
 				json: true,
 				headers: this._headers,
 				...options,
@@ -142,8 +152,8 @@ export class AgencyRequestEndpointSG extends RequestEndpointSG {
 		return new AgencyRequestEndpointSG(headers);
 	};
 
-	private constructor(headers: { [e: string]: string }) {
-		super();
+	private constructor(headers: { [e: string]: string }, options?: RequestEndpointOptions) {
+		super(options);
 		this.setHeaders({
 			...AGENCY_HEADERS,
 			...headers,
@@ -152,15 +162,18 @@ export class AgencyRequestEndpointSG extends RequestEndpointSG {
 }
 
 export class OrganisationAdminRequestEndpointSG extends RequestEndpointSG {
-	public static create = ({
-		organisation = 'localorg',
-		nameService = 'admin',
-		serviceId,
-	}: {
-		organisation?: string;
-		nameService?: string;
-		serviceId?: string;
-	}): OrganisationAdminRequestEndpointSG => {
+	public static create = (
+		{
+			organisation = 'localorg',
+			nameService = 'admin',
+			serviceId,
+		}: {
+			organisation?: string;
+			nameService?: string;
+			serviceId?: string;
+		},
+		requestOptions?: RequestEndpointOptions,
+	): OrganisationAdminRequestEndpointSG => {
 		const apiService = serviceId ? { 'x-api-service': serviceId } : {};
 		const headers = {
 			'mol-admin-email': `${nameService}@palo-it.com`,
@@ -171,11 +184,11 @@ export class OrganisationAdminRequestEndpointSG extends RequestEndpointSG {
 			cookie: '',
 			...apiService,
 		};
-		return new OrganisationAdminRequestEndpointSG(headers);
+		return new OrganisationAdminRequestEndpointSG(headers, requestOptions);
 	};
 
-	private constructor(headers: { [e: string]: string }) {
-		super();
+	private constructor(headers: { [e: string]: string }, options?: RequestEndpointOptions) {
+		super(options);
 		this.setHeaders({
 			...ADMIN_HEADERS,
 			...headers,
@@ -204,8 +217,8 @@ export class ServiceAdminRequestEndpointSG extends RequestEndpointSG {
 		};
 		return new ServiceAdminRequestEndpointSG(headers);
 	};
-	private constructor(headers: { [e: string]: string }) {
-		super();
+	private constructor(headers: { [e: string]: string }, options?: RequestEndpointOptions) {
+		super(options);
 		this.setHeaders({
 			...ADMIN_HEADERS,
 			...headers,
@@ -237,8 +250,8 @@ export class ServiceProviderRequestEndpointSG extends RequestEndpointSG {
 		return new ServiceProviderRequestEndpointSG(headers);
 	};
 
-	private constructor(headers: { [e: string]: string }) {
-		super();
+	private constructor(headers: { [e: string]: string }, options?: RequestEndpointOptions) {
+		super(options);
 		this.setHeaders({
 			...ADMIN_HEADERS,
 			...headers,
@@ -265,8 +278,8 @@ export class CitizenRequestEndpointSG extends RequestEndpointSG {
 		return new CitizenRequestEndpointSG(headers);
 	};
 
-	private constructor(headers: { [e: string]: string }) {
-		super();
+	private constructor(headers: { [e: string]: string }, options?: RequestEndpointOptions) {
+		super(options);
 		this.setHeaders({
 			...CITIZEN_HEADERS,
 			...headers,

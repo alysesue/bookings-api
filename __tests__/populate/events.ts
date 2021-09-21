@@ -7,7 +7,7 @@ export const getOneOffTimeslotRequest = ({
 	endDateTime,
 	idSigned,
 }: {
-	serviceProviderId: number;
+	serviceProviderId: string;
 	startDateTime?: Date;
 	endDateTime?: Date;
 	idSigned?: string;
@@ -36,6 +36,7 @@ export const populateEvent = async (eventRequest: Partial<EventRequest>): Promis
 	);
 
 	const event = getEventRequest(eventRequest, oneOffTimeslotRequests);
+
 	const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/events/`, {
 		body: { ...event },
 	});
