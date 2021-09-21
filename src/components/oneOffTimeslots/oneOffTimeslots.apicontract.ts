@@ -23,6 +23,10 @@ export class OneOffTimeslotRequestV2 extends OneOffTimeslotRequestBase {
 	public serviceProviderId: string;
 }
 
+export class UpsertOneOffTimeslotRequest extends OneOffTimeslotRequestV1 {
+	public idSigned?: string;
+}
+
 export class OneOffTimeslotResponse {
 	public idSigned: string;
 	public startDateTime: Date;

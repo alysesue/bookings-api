@@ -1,6 +1,6 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Booking, BookingStatus, ChangeLogAction, Service, ServiceProvider, User } from '../../models';
+import { Booking, BookingStatus, ChangeLogAction, Service, ServiceProvider, User, Event } from '../../models';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
@@ -23,15 +23,21 @@ import {
 	BookingReject,
 	BookingRequestV1,
 	BookingSearchRequest,
+	EventBookingRequest,
 	BookingUpdateRequestV1,
 	ValidateOnHoldRequest,
+	BookingDetailsRequest,
 } from './bookings.apicontract';
 import { BookingsRepository } from './bookings.repository';
 import { BookingType } from '../../models/bookingType';
 import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
+import { MyInfoService } from '../myInfo/myInfo.service';
+import { BookedSlotRepository } from './bookedSlot.repository';
+import { EventsService } from '../events/events.service';
 import { BookingValidationType, BookingWorkflowType } from '../../models/bookingValidationType';
+import { BookingsEventValidatorFactory } from './validator/bookings.event.validation';
 
 @InRequestScope
 export class BookingsService {
@@ -58,6 +64,8 @@ export class BookingsService {
 	@Inject
 	private bookingsValidatorFactory: BookingsValidatorFactory;
 	@Inject
+	private bookingsEventValidatorFactory: BookingsEventValidatorFactory;
+	@Inject
 	private servicesService: ServicesService;
 	@Inject
 	private changeLogsService: BookingChangeLogsService;
@@ -65,6 +73,12 @@ export class BookingsService {
 	private usersService: UsersService;
 	@Inject
 	private bookingsMapper: BookingsMapper;
+	@Inject
+	private myInfoService: MyInfoService;
+	@Inject
+	private bookedSlotRepository: BookedSlotRepository;
+	@Inject
+	private eventService: EventsService;
 
 	constructor() {
 		this.bookingsSubject.attach(
@@ -209,6 +223,32 @@ export class BookingsService {
 		return await this.bookingsRepository.searchReturnAll(searchRequest);
 	}
 
+	public async bookAnEvent(
+		eventBookingRequest: EventBookingRequest,
+		eventId: number,
+		bypassCaptchaAndAutoAccept = false,
+	): Promise<Booking> {
+		const eventDetails = await this.eventService.getById(eventId);
+		const saveAction = () =>
+			this.bookEventInternal(
+				eventBookingRequest,
+				eventDetails,
+				eventDetails.serviceId,
+				bypassCaptchaAndAutoAccept,
+			);
+		const booking = await this.changeLogsService.executeAndLogAction(
+			null,
+			this.getBookingInternal.bind(this),
+			saveAction,
+		);
+		// this.bookingsSubject.notify({
+		// 	booking,
+		// 	bookingType: BookingType.Created,
+		// 	action: ExternalAgencyAppointmentJobAction.CREATE,
+		// });
+		return booking;
+	}
+
 	public async save(
 		bookingRequest: BookingRequestV1,
 		serviceId: number,
@@ -288,7 +328,7 @@ export class BookingsService {
 		return [ChangeLogAction.Reject, booking];
 	}
 
-	private static shouldMarkOnHold(request: BookingRequestV1, service: Service, user: User): boolean {
+	private static shouldMarkOnHold(request: BookingDetailsRequest, service: Service, user: User): boolean {
 		if (request.workflowType === BookingWorkflowType.OnHold) return true;
 		if (user.isAdmin() || user.isAgency()) return false;
 		return service.isOnHold || service.isStandAlone;
@@ -298,7 +338,7 @@ export class BookingsService {
 		request,
 		booking,
 		service,
-		serviceProvider,
+		serviceProvider = null,
 	}: {
 		request: BookingRequestV1;
 		booking: Booking;
@@ -447,6 +487,45 @@ export class BookingsService {
 		} as BookingRequestExtraction;
 	}
 
+	private async bookEventInternal(
+		eventBookingRequest: EventBookingRequest,
+		event: Event,
+		serviceId: number,
+		shouldBypassCaptchaAndAutoAccept = false,
+	): Promise<[ChangeLogAction, Booking]> {
+		const { currentUser, isAgencyUser, service } = await this.bookingRequestExtraction(serviceId);
+		const useAdminValidator = BookingsService.useAdminValidator(currentUser, eventBookingRequest.validationType);
+		const booking = Booking.createNew({ creator: currentUser });
+		await this.bookingsMapper.mapEventBookingRequests({
+			request: { ...eventBookingRequest, citizenUinFinUpdated: true },
+			booking,
+			service,
+			event,
+		});
+
+		const shouldMarkOnHold = BookingsService.shouldMarkOnHold(eventBookingRequest, service, currentUser);
+		if (shouldMarkOnHold) {
+			booking.markOnHold();
+		} else {
+			booking.setAutoAccept({
+				autoAccept: true,
+			});
+		}
+
+		const validator = this.bookingsEventValidatorFactory.getValidator(useAdminValidator);
+		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || isAgencyUser);
+		await this.bookingsMapper.mapDynamicValuesRequest(eventBookingRequest, booking, validator);
+
+		await this.loadBookingDependencies(booking);
+		await validator.validate(booking);
+		await this.verifyActionPermission(booking, ChangeLogAction.Create);
+
+		// Persists in memory user only after validating booking.
+		booking.creator = await this.usersService.persistUserIfRequired(currentUser);
+		await this.bookingsRepository.insert(booking);
+		return [ChangeLogAction.Create, booking];
+	}
+
 	private async saveInternal(
 		bookingRequest: BookingRequestV1,
 		serviceId: number,
@@ -496,12 +575,11 @@ export class BookingsService {
 		await this.loadBookingDependencies(booking);
 		await validator.validate(booking);
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
-		booking.serviceProviderId = serviceProvider?.id;
 
 		// Persists in memory user only after validating booking.
 		booking.creator = await this.usersService.persistUserIfRequired(currentUser);
 		await this.bookingsRepository.insert(booking);
-
+		booking.bookedSlots = [];
 		return [ChangeLogAction.Create, booking];
 	}
 

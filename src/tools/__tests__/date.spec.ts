@@ -1,4 +1,4 @@
-import { isValidFormatHHmm, parseHHmm } from '../date';
+import { isValidFormatHHmm, parseHHmm, sortDate } from '../date';
 
 describe('Test dates', () => {
 	it('Should have a valid format time', () => {
@@ -39,5 +39,16 @@ describe('Test dates', () => {
 		expect(() => {
 			parseHHmm('0362');
 		}).toThrowError();
+	});
+
+	it('Should return sort date array', () => {
+		const date1 = new Date(Date.now() + 24 * 60 * 60 * 1000);
+		const date2 = new Date(Date.now() + 25 * 60 * 60 * 1000);
+		const date3 = new Date(Date.now() + 26 * 60 * 60 * 1000);
+		const dates = [date2, date1, date3];
+		const res = sortDate(dates);
+		expect(res[0]).toEqual(date1);
+		expect(res[1]).toEqual(date2);
+		expect(res[2]).toEqual(date3);
 	});
 });

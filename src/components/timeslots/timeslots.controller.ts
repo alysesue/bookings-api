@@ -295,7 +295,7 @@ export class TimeslotsControllerV2 extends Controller {
 		@Query() startDate: Date,
 		@Query() endDate: Date,
 		@Header('x-api-service') serviceId: string,
-		@Query() serviceProviderIds?: string[],
+		@Query() serviceProviderIds: string[] = [],
 	): Promise<ApiData<AvailabilityByDayResponse[]>> {
 		if (DateHelper.DiffInDays(endDate, startDate) > this.MAX_NUMBER_OF_DAYS_TO_FETCH_TIMESLOT) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Date Range cannot be more than 31 days');
@@ -344,7 +344,7 @@ export class TimeslotsControllerV2 extends Controller {
 		@Query() endDate: Date,
 		@Header('x-api-service') serviceId: string,
 		@Query() includeBookings = false,
-		@Query() serviceProviderIds?: string[],
+		@Query() serviceProviderIds: string[] = [],
 		@Query() labelIds?: string[],
 	): Promise<ApiData<TimeslotEntryResponseV2[]>> {
 		const labelIdsNumber = labelIds && labelIds.length > 0 ? labelIds.map((id) => this.idHasher.decode(id)) : [];

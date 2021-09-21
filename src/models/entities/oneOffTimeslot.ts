@@ -1,9 +1,10 @@
-import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IServiceProvider } from '../interfaces';
-import { TimeslotWithCapacity } from '../timeslotWithCapacity';
-import { Label } from './label';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { IEvent, IServiceProvider } from '../interfaces';
+import { Timeslot } from '../timeslot';
+import { ServiceProvider } from './serviceProvider';
+
 @Entity()
-export class OneOffTimeslot implements TimeslotWithCapacity {
+export class OneOffTimeslot implements Timeslot {
 	constructor() {}
 
 	@PrimaryGeneratedColumn()
@@ -17,9 +18,6 @@ export class OneOffTimeslot implements TimeslotWithCapacity {
 	@Index()
 	private _endDateTime: Date;
 
-	@Column({ default: 1 })
-	private _capacity: number;
-
 	@ManyToOne('ServiceProvider')
 	@JoinColumn({ name: '_serviceProviderId' })
 	private _serviceProvider: IServiceProvider;
@@ -28,11 +26,23 @@ export class OneOffTimeslot implements TimeslotWithCapacity {
 	@Index()
 	private _serviceProviderId: number;
 
-	@Column({ type: 'varchar', length: 5000, nullable: true })
-	private _title: string;
+	@ManyToOne('Event', { orphanedRowAction: 'delete' })
+	@JoinColumn({ name: '_eventId' })
+	public _event: IEvent;
 
-	@Column({ type: 'varchar', length: 5000, nullable: true })
-	private _description: string;
+	@Column({ nullable: true })
+	private _eventId: number;
+
+	public static create(arg: CreateOneOffTimeslot): OneOffTimeslot {
+		const { startDateTime, endDateTime, id, serviceProvider } = arg;
+		const slot = new OneOffTimeslot();
+		slot.serviceProvider = serviceProvider;
+		slot.serviceProviderId = serviceProvider.id;
+		slot.startDateTime = startDateTime;
+		slot.endDateTime = endDateTime;
+		slot.id = id;
+		return slot;
+	}
 
 	public get id(): number {
 		return this._id;
@@ -58,14 +68,6 @@ export class OneOffTimeslot implements TimeslotWithCapacity {
 		this._endDateTime = value;
 	}
 
-	public get capacity(): number {
-		return this._capacity;
-	}
-
-	public set capacity(value: number) {
-		this._capacity = value;
-	}
-
 	public get serviceProvider(): IServiceProvider {
 		return this._serviceProvider;
 	}
@@ -82,46 +84,30 @@ export class OneOffTimeslot implements TimeslotWithCapacity {
 		return this._serviceProviderId;
 	}
 
-	public get title(): string {
-		return this._title;
-	}
-
-	public set title(value: string) {
-		this._title = value;
-	}
-
-	public get description(): string {
-		return this._description;
-	}
-
-	public set description(value: string) {
-		this._description = value;
-	}
-
 	public get startTimeNative(): number {
 		return this._startDateTime.getTime();
 	}
+
 	public get endTimeNative(): number {
 		return this._endDateTime.getTime();
-	}
-
-	@ManyToMany(() => Label, { cascade: true })
-	@JoinTable({
-		name: 'oneofftimeslot_label',
-		joinColumn: { name: 'oneOffTimeslot_id' },
-		inverseJoinColumn: { name: 'label_id' },
-	})
-	private _labels: Label[];
-
-	public set labels(value: Label[]) {
-		this._labels = value;
-	}
-
-	public get labels(): Label[] {
-		return this._labels;
 	}
 
 	public get oneOffTimeslotId(): number {
 		return this._id;
 	}
+
+	public get eventId(): number {
+		return this._eventId;
+	}
+
+	public set eventId(value: number) {
+		this._eventId = value;
+	}
 }
+
+type CreateOneOffTimeslot = {
+	serviceProvider: ServiceProvider;
+	startDateTime: Date;
+	endDateTime: Date;
+	id?: number;
+};

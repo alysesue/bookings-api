@@ -226,7 +226,6 @@ describe('Booking validation tests', () => {
 			.withCitizenEmail('email@gmail.com')
 			.withServiceProviderId(1)
 			.build();
-
 		booking.service = {
 			noNric: false,
 		} as Service;

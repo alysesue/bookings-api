@@ -11,6 +11,9 @@ import {
 	ServiceProvider,
 	TimeslotsSchedule,
 	User,
+	Event,
+	OneOffTimeslot,
+	BookedSlot,
 } from '../../../models';
 import {
 	BookingAcceptRequestV1,
@@ -18,6 +21,7 @@ import {
 	BookingRequestV1,
 	BookingSearchRequest,
 	BookingUpdateRequestV1,
+	EventBookingRequest,
 } from '../bookings.apicontract';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../../serviceProviders/serviceProviders.repository';
@@ -26,6 +30,7 @@ import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { BookingsValidatorFactory, IBookingsValidator } from '../validator/bookings.validation';
+import { BookingsEventValidatorFactory } from '../validator/bookings.event.validation';
 import {
 	BookingActionFunction,
 	BookingChangeLogsService,
@@ -62,7 +67,13 @@ import { randomIndex } from '../../../tools/arrays';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
 import * as uuid from 'uuid';
 import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
+import { BookedSlotRepository } from '../bookedSlot.repository';
+import { BookedSlotRepositoryMock } from '../__mocks__/bookedSlot.repository.mock';
 import { BookingValidationType, BookingWorkflowType } from '../../../models/bookingValidationType';
+import { MyInfoService } from '../../myInfo/myInfo.service';
+import { MyInfoServiceeMock } from '../../myInfo/__mocks__/myInfo.service.mock';
+import { EventsService } from '../../events/events.service';
+import { EventsServiceMock } from '../../events/__mocks__/events.service.mock';
 
 jest.mock('../../../tools/arrays');
 
@@ -138,6 +149,15 @@ describe('Bookings.Service', () => {
 		}
 	}
 
+	class BookingEventValidatorFactoryMock implements Partial<BookingsEventValidatorFactory> {
+		public getValidator(): IBookingsValidator {
+			return validatorMock;
+		}
+		public getOnHoldValidator(): IBookingsValidator {
+			return onHolValidatorMock;
+		}
+	}
+
 	let snapshot;
 
 	beforeAll(() => {
@@ -149,11 +169,15 @@ describe('Bookings.Service', () => {
 		Container.bind(ServiceProvidersService).to(ServiceProvidersServiceMock);
 		Container.bind(UserContext).to(UserContextMock);
 		Container.bind(BookingsValidatorFactory).to(BookingValidatorFactoryMock);
+		Container.bind(BookingsEventValidatorFactory).to(BookingEventValidatorFactoryMock);
 		Container.bind(BookingChangeLogsService).to(BookingChangeLogsServiceMock);
 		Container.bind(ServicesService).to(ServicesServiceMock);
 		Container.bind(UsersService).to(UsersServiceMock);
 		Container.bind(BookingsSubject).to(BookingsSubjectMock);
 		Container.bind(MailObserver).to(MockObserver);
+		Container.bind(MyInfoService).to(MyInfoServiceeMock);
+		Container.bind(BookedSlotRepository).to(BookedSlotRepositoryMock);
+		Container.bind(EventsService).to(EventsServiceMock);
 	});
 
 	beforeEach(() => {
@@ -893,6 +917,7 @@ describe('Bookings.Service', () => {
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(service.id)
 			.withCitizenEmail('test@mail.com')
+			.withSlots([[new Date('2020-09-01'), new Date('2020-09-02'), null]])
 			.withStartDateTime(new Date('2020-09-01'))
 			.withEndDateTime(new Date('2020-09-02'))
 			.build();
@@ -1592,6 +1617,169 @@ describe('Bookings.Service', () => {
 			expect(randomIndex as jest.Mock).toHaveBeenCalledTimes(0);
 			const booking = BookingRepositoryMock.booking;
 			expect(booking.serviceProvider).toBe(undefined);
+		});
+	});
+
+	describe('Event booking', () => {
+		const mockEvent = new Event();
+
+		beforeEach(() => {
+			mockEvent.serviceId = service.id;
+			mockEvent.title = 'Mock Event';
+			mockEvent.id = 10;
+
+			const slot1 = new OneOffTimeslot();
+			slot1.eventId = 10;
+			slot1.startDateTime = new Date();
+			slot1.endDateTime = DateHelper.addMinutes(slot1.startDateTime, 45);
+			slot1.serviceProviderId = 90;
+
+			const slot2 = new OneOffTimeslot();
+			slot2.eventId = 10;
+			slot2.startDateTime = DateHelper.addMinutes(slot1.startDateTime, 60);
+			slot2.endDateTime = DateHelper.addMinutes(slot2.startDateTime, 45);
+			slot2.serviceProviderId = 91;
+			mockEvent.oneOffTimeslots = [slot1, slot2];
+
+			EventsServiceMock.getById.mockImplementation(() => Promise.resolve(mockEvent));
+		});
+
+		it('should be able to book an event as a citizen', async () => {
+			const eventBookingRequest: EventBookingRequest = new EventBookingRequest();
+			eventBookingRequest.citizenName = 'this should be the name';
+			eventBookingRequest.citizenEmail = 'correctemail@gmail.com';
+			eventBookingRequest.citizenPhone = '93328223';
+
+			service.isStandAlone = false;
+			service.isOnHold = false;
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(service));
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
+			);
+
+			await Container.get(BookingsService).bookAnEvent(eventBookingRequest, 10);
+
+			const booking = BookingRepositoryMock.booking;
+			expect(booking).not.toBe(undefined);
+			expect(booking.eventId).not.toBe(undefined || null);
+			expect(booking.status).toBe(BookingStatus.Accepted);
+			expect(booking.citizenName).toBe('this should be the name');
+			expect(booking.citizenEmail).toBe('correctemail@gmail.com');
+			expect(booking.citizenPhone).toBe('93328223');
+			const bookedSlots = mockEvent.oneOffTimeslots.map((slot) => {
+				const bookedSlot = new BookedSlot();
+				bookedSlot.startDateTime = slot.startDateTime;
+				bookedSlot.endDateTime = slot.endDateTime;
+				bookedSlot.serviceProviderId = slot.serviceProviderId;
+				return bookedSlot;
+			});
+			expect(booking.bookedSlots).toStrictEqual(bookedSlots);
+		});
+
+		it('should be able to book an event as a citizen with standalone enabled', async () => {
+			const eventBookingRequest: EventBookingRequest = new EventBookingRequest();
+			eventBookingRequest.citizenName = 'this should be the name';
+			eventBookingRequest.citizenEmail = 'correctemail@gmail.com';
+			eventBookingRequest.citizenPhone = '93328223';
+
+			const standaloneService = new Service();
+			standaloneService.id = 1;
+			standaloneService.allowAnonymousBookings = false;
+			standaloneService.isStandAlone = true;
+			mockEvent.serviceId = standaloneService.id;
+
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(standaloneService));
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
+			);
+
+			await Container.get(BookingsService).bookAnEvent(eventBookingRequest, 10);
+
+			const booking = BookingRepositoryMock.booking;
+			expect(booking).not.toBe(undefined);
+			expect(booking.eventId).not.toBe(undefined || null);
+			expect(booking.status).toBe(BookingStatus.OnHold);
+			expect(booking.citizenName).toBe('this should be the name');
+			expect(booking.citizenEmail).toBe('correctemail@gmail.com');
+			expect(booking.citizenPhone).toBe('93328223');
+			const bookedSlots = mockEvent.oneOffTimeslots.map((slot) => {
+				const bookedSlot = new BookedSlot();
+				bookedSlot.startDateTime = slot.startDateTime;
+				bookedSlot.endDateTime = slot.endDateTime;
+				bookedSlot.serviceProviderId = slot.serviceProviderId;
+				return bookedSlot;
+			});
+			expect(booking.bookedSlots).toStrictEqual(bookedSlots);
+		});
+
+		it('should be able to book an event as an anonymous user', async () => {
+			const eventBookingRequest: EventBookingRequest = new EventBookingRequest();
+			eventBookingRequest.citizenName = 'this should be the name';
+			eventBookingRequest.citizenEmail = 'correctemail@gmail.com';
+			eventBookingRequest.citizenPhone = '93328223';
+
+			const anonymousService = new Service();
+			anonymousService.id = 1;
+			anonymousService.allowAnonymousBookings = true;
+			anonymousService.isStandAlone = false;
+			mockEvent.serviceId = anonymousService.id;
+
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(anonymousService));
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(anonymousMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new AnonymousAuthGroup(anonymousMock, undefined, { mobileNo: '+6584000000' })]),
+			);
+
+			await Container.get(BookingsService).bookAnEvent(eventBookingRequest, 10);
+
+			const booking = BookingRepositoryMock.booking;
+			expect(booking).not.toBe(undefined);
+			expect(booking.eventId).not.toBe(undefined || null);
+			expect(booking.status).toBe(BookingStatus.Accepted);
+			expect(booking.citizenName).toBe('this should be the name');
+			expect(booking.citizenEmail).toBe('correctemail@gmail.com');
+			expect(booking.citizenPhone).toBe('93328223');
+			const bookedSlots = mockEvent.oneOffTimeslots.map((slot) => {
+				const bookedSlot = new BookedSlot();
+				bookedSlot.startDateTime = slot.startDateTime;
+				bookedSlot.endDateTime = slot.endDateTime;
+				bookedSlot.serviceProviderId = slot.serviceProviderId;
+				return bookedSlot;
+			});
+			expect(booking.bookedSlots).toStrictEqual(bookedSlots);
+		});
+
+		it('should be able to book an event as an org admin', async () => {
+			const eventBookingRequest: EventBookingRequest = new EventBookingRequest();
+			eventBookingRequest.citizenName = 'this should be the name';
+			eventBookingRequest.citizenEmail = 'correctemail@gmail.com';
+			eventBookingRequest.citizenPhone = '93328223';
+
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(service));
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(agencyMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new OrganisationAdminAuthGroup(agencyMock, [organisation])]),
+			);
+
+			await Container.get(BookingsService).bookAnEvent(eventBookingRequest, 10);
+
+			const booking = BookingRepositoryMock.booking;
+			expect(booking).not.toBe(undefined);
+			expect(booking.eventId).not.toBe(undefined || null);
+			expect(booking.status).toBe(BookingStatus.Accepted);
+			expect(booking.citizenName).toBe('this should be the name');
+			expect(booking.citizenEmail).toBe('correctemail@gmail.com');
+			expect(booking.citizenPhone).toBe('93328223');
+			const bookedSlots = mockEvent.oneOffTimeslots.map((slot) => {
+				const bookedSlot = new BookedSlot();
+				bookedSlot.startDateTime = slot.startDateTime;
+				bookedSlot.endDateTime = slot.endDateTime;
+				bookedSlot.serviceProviderId = slot.serviceProviderId;
+				return bookedSlot;
+			});
+			expect(booking.bookedSlots).toStrictEqual(bookedSlots);
 		});
 	});
 });

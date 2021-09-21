@@ -1,4 +1,4 @@
-import { Column, Entity, Generated, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Generated, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { BookingStatus } from '../bookingStatus';
 import * as timeSpan from '../../tools/timeSpan';
@@ -7,14 +7,18 @@ import { DateHelper } from '../../infrastructure/dateHelper';
 import { ServiceProvider } from './serviceProvider';
 import { Service } from './service';
 import { User } from './user';
+import { Event } from './event';
 import { BookingChangeLog } from './bookingChangeLog';
 import { DynamicValueJsonModel } from './jsonModels';
+import { BookedSlot } from './bookedSlot';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
 const HOLD_DURATION_IN_MINS = 10;
 export class BookingBuilder {
 	public serviceId: number;
+	public eventId: number;
+	public slots: BookedSlot[] = [];
 	public startDateTime: Date;
 	public endDateTime: Date;
 	public refId: string;
@@ -34,6 +38,22 @@ export class BookingBuilder {
 
 	public withServiceId(serviceId: number): BookingBuilder {
 		this.serviceId = serviceId;
+		return this;
+	}
+
+	public withEventId(eventId: number): BookingBuilder {
+		this.eventId = eventId;
+		return this;
+	}
+
+	public withSlots(slots: [Date, Date, number][]): BookingBuilder {
+		slots.forEach((slot) => {
+			const newSlot = new BookedSlot();
+			newSlot.startDateTime = slot[0];
+			newSlot.endDateTime = slot[1];
+			newSlot.serviceProviderId = slot[2];
+			this.slots.push(newSlot);
+		});
 		return this;
 	}
 
@@ -146,8 +166,19 @@ export class Booking {
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
+	@Column({ nullable: true })
+	@Index()
+	private _eventId: number;
+
+	@ManyToOne(() => Event, { nullable: true })
+	@JoinColumn({ name: '_eventId' })
+	private _event: Event;
+
 	@Column()
 	private _status: BookingStatus;
+
+	@OneToMany(() => BookedSlot, (bookedSlot) => bookedSlot.booking, { cascade: true })
+	public bookedSlots: BookedSlot[];
 
 	@Column()
 	@Index()
@@ -251,10 +282,13 @@ export class Booking {
 		if (builder.markOnHold) {
 			instance.markOnHold();
 		} else {
-			instance.setAutoAccept({ autoAccept: !!builder.serviceProviderId && builder.autoAccept });
+			instance.setAutoAccept({
+				autoAccept: !!builder.serviceProviderId && (builder.autoAccept || !!builder.eventId),
+			});
 		}
 
 		instance._serviceId = builder.serviceId;
+		instance._eventId = builder.eventId;
 		instance._serviceProviderId = builder.serviceProviderId;
 		instance._startDateTime = builder.startDateTime;
 		instance._endDateTime = builder.endDateTime;
@@ -269,6 +303,7 @@ export class Booking {
 		instance._citizenEmail = builder.citizenEmail;
 		instance._captchaToken = builder.captchaToken;
 		instance._reasonToReject = builder.reasonToReject;
+		instance.bookedSlots = builder.slots;
 
 		return instance;
 	}
@@ -318,6 +353,22 @@ export class Booking {
 
 	public set service(value: Service) {
 		this._service = value;
+	}
+
+	public get eventId() {
+		return this._eventId;
+	}
+
+	public set eventId(eventId: number) {
+		this._eventId = eventId;
+	}
+
+	public get event() {
+		return this._event;
+	}
+
+	public set event(value: Event) {
+		this._event = value;
 	}
 
 	public get status(): BookingStatus {

@@ -38,11 +38,11 @@ import { ServiceProvidersService } from './serviceProviders.service';
 import {
 	ServiceProviderListRequest,
 	ServiceProviderModel,
+	ServiceProviderResponseModelV1,
 	ServiceProviderResponseModelV2,
 	TotalServiceProviderResponse,
 } from './serviceProviders.apicontract';
 import { IdHasher } from '../../infrastructure/idHasher';
-import { ServiceProviderResponseModelV1 } from './serviceProviders.apicontract';
 import { TimeslotItemsMapper } from '../timeslotItems/timeslotItems.mapper';
 import { ScheduleFormsMapper } from '../scheduleForms/scheduleForms.mapper';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth';
@@ -469,13 +469,13 @@ export class ServiceProvidersControllerV2 extends Controller {
 		@Query() page?: number,
 	): Promise<ApiData<ServiceProviderResponseModelV2[]>> {
 		const unsignedServiceId = this.idHasher.decode(serviceId);
-		const dataModels = await this.serviceProvidersService.getServiceProviders(
-			unsignedServiceId,
+		const dataModels = await this.serviceProvidersService.getServiceProviders({
+			serviceId: unsignedServiceId,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
 			limit,
-			page,
-		);
+			pageNumber: page,
+		});
 		return ApiDataFactory.create(
 			await this.serviceProvidersMapper.mapDataModelsV2(dataModels, {
 				includeTimeslotsSchedule,

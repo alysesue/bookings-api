@@ -38,9 +38,14 @@ export interface IOrganisation {
 export interface IService {
 	id: number;
 	organisationId: number;
+	name: string;
 }
 
 export interface ILabelCategory {
+	id: number;
+}
+
+export interface IEvent {
 	id: number;
 }
 
@@ -48,6 +53,7 @@ export interface IServiceProvider {
 	id: number;
 	serviceId: number;
 	service: IService;
+	name: string;
 }
 
 export interface ITimeSpan {

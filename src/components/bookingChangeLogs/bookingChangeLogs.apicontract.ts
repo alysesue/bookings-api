@@ -1,3 +1,4 @@
+import { BookedSlot } from '../../models';
 import { DynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
 import { UserTypeResponse } from '../users/users.apicontract';
 
@@ -52,6 +53,7 @@ export class BookingStateResponseBase {
 	public refId?: string;
 	public dynamicValues?: DynamicValueContract[];
 	public serviceProviderAliasName?: string;
+	public bookedSlots?: BookedSlot[];
 }
 
 export class BookingStateResponseV1 extends BookingStateResponseBase {

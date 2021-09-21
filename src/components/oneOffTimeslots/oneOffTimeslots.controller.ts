@@ -17,7 +17,7 @@ export class OneOffTimeslotsController extends Controller {
 	@Inject
 	private oneOffTimeslotsService: OneOffTimeslotsService;
 	@Inject
-	private mapper: OneOffTimeslotsMapper;
+	private oneOffTimeslotsMapper: OneOffTimeslotsMapper;
 
 	/**
 	 * Creates a one-off timeslot
@@ -29,9 +29,9 @@ export class OneOffTimeslotsController extends Controller {
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async create(@Body() request: OneOffTimeslotRequestV1): Promise<ApiData<OneOffTimeslotResponse>> {
-		const timeslot = await this.oneOffTimeslotsService.save(request);
+		const event = await this.oneOffTimeslotsService.save(request);
 		this.setStatus(201);
-		return ApiDataFactory.create(this.mapper.mapDataModel(timeslot));
+		return ApiDataFactory.create(this.oneOffTimeslotsMapper.mapDataModel(event));
 	}
 
 	@Put('{id}')
@@ -42,9 +42,9 @@ export class OneOffTimeslotsController extends Controller {
 		@Path() id: string,
 		@Body() request: OneOffTimeslotRequestV1,
 	): Promise<ApiData<OneOffTimeslotResponse>> {
-		const timeslot = await this.oneOffTimeslotsService.update(request, id);
+		const event = await this.oneOffTimeslotsService.update(request, id);
 		this.setStatus(201);
-		return ApiDataFactory.create(this.mapper.mapDataModel(timeslot));
+		return ApiDataFactory.create(this.oneOffTimeslotsMapper.mapDataModel(event));
 	}
 
 	/**

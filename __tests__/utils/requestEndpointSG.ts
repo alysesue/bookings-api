@@ -1,7 +1,6 @@
 import * as request from 'request';
 import * as requestPromise from 'request-promise-native';
 import * as setCookieParser from 'set-cookie-parser';
-
 class RequestEndpointSG {
 	private _headers: { [e: string]: string };
 
@@ -85,6 +84,7 @@ class RequestEndpointSG {
 			body?: any;
 		},
 	): Promise<request.Response> {
+		await this.csrfHandler(path, data);
 		return await this.apiRequest({ method: 'DELETE', uri: path, qs: data?.params, body: data?.body });
 	}
 

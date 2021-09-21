@@ -1,4 +1,5 @@
 import {
+	BookedSlot,
 	Booking,
 	BookingChangeLog,
 	BookingStatus,
@@ -57,6 +58,7 @@ describe('BookingChangeLogs service', () => {
 		service.name = 'service';
 		const booking = new BookingBuilder()
 			.withServiceId(1)
+			.withSlots([[new Date('2020-10-01T01:00:00Z'), new Date('2020-10-01T02:00:00Z'), null]])
 			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 			.build();
@@ -79,6 +81,10 @@ describe('BookingChangeLogs service', () => {
 		expect(BookingChangeLogsRepositoryMock.save).toBeCalledTimes(1);
 
 		const changeLogParam = BookingChangeLogsRepositoryMock.save.mock.calls[0][0] as BookingChangeLog;
+		const bookedSlot = new BookedSlot();
+		bookedSlot.startDateTime = new Date('2020-10-01T01:00:00Z');
+		bookedSlot.endDateTime = new Date('2020-10-01T02:00:00Z');
+		bookedSlot.serviceProviderId = null;
 		expect(changeLogParam.previousState).toEqual({
 			startDateTime: new Date('2020-10-01T01:00:00Z'),
 			endDateTime: new Date('2020-10-01T02:00:00Z'),
@@ -93,6 +99,10 @@ describe('BookingChangeLogs service', () => {
 			serviceId: 1,
 			serviceName: 'service',
 			status: 1,
+			dynamicValues: undefined,
+			refId: undefined,
+			videoConferenceUrl: undefined,
+			bookedSlots: [bookedSlot],
 		});
 		expect(changeLogParam.newState).toEqual({
 			startDateTime: new Date('2020-10-01T01:00:00Z'),
@@ -108,6 +118,10 @@ describe('BookingChangeLogs service', () => {
 			serviceId: 1,
 			serviceName: 'service',
 			status: 1,
+			dynamicValues: undefined,
+			refId: undefined,
+			videoConferenceUrl: undefined,
+			bookedSlots: [bookedSlot],
 		});
 	});
 
@@ -117,6 +131,7 @@ describe('BookingChangeLogs service', () => {
 		service.name = 'service';
 		const booking = new BookingBuilder()
 			.withServiceId(1)
+			.withSlots([[new Date('2020-10-01T01:00:00Z'), new Date('2020-10-01T02:00:00Z'), null]])
 			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 			.build();
@@ -146,6 +161,10 @@ describe('BookingChangeLogs service', () => {
 		expect(BookingChangeLogsRepositoryMock.save).toBeCalledTimes(1);
 
 		const changeLogParam = BookingChangeLogsRepositoryMock.save.mock.calls[0][0] as BookingChangeLog;
+		const bookedSlot = new BookedSlot();
+		bookedSlot.serviceProviderId = null;
+		bookedSlot.startDateTime = new Date('2020-10-01T01:00:00Z');
+		bookedSlot.endDateTime = new Date('2020-10-01T02:00:00Z');
 		expect(changeLogParam.previousState).toEqual({
 			startDateTime: new Date('2020-10-01T01:00:00Z'),
 			endDateTime: new Date('2020-10-01T02:00:00Z'),
@@ -160,6 +179,10 @@ describe('BookingChangeLogs service', () => {
 			serviceId: 1,
 			serviceName: 'service',
 			status: 1,
+			dynamicValues: undefined,
+			refId: undefined,
+			videoConferenceUrl: undefined,
+			bookedSlots: [bookedSlot],
 		});
 		expect(changeLogParam.newState).toEqual({
 			startDateTime: new Date('2020-10-01T01:00:00Z'),
@@ -183,6 +206,9 @@ describe('BookingChangeLogs service', () => {
 					textValue: 'some text',
 				},
 			],
+			refId: undefined,
+			videoConferenceUrl: undefined,
+			bookedSlots: [bookedSlot],
 		});
 	});
 
@@ -192,6 +218,7 @@ describe('BookingChangeLogs service', () => {
 		service.name = 'service';
 		const booking = new BookingBuilder()
 			.withServiceId(1)
+			.withSlots([[new Date('2020-10-01T01:00:00Z'), new Date('2020-10-01T02:00:00Z'), null]])
 			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 			.build();
@@ -218,6 +245,11 @@ describe('BookingChangeLogs service', () => {
 		expect(BookingChangeLogsRepositoryMock.save).toBeCalledTimes(1);
 
 		const changeLogParam = BookingChangeLogsRepositoryMock.save.mock.calls[0][0] as BookingChangeLog;
+		const bookedSlot = new BookedSlot();
+		// new BookedSlot(new Date('2020-10-01T01:00:00Z'), new Date('2020-10-01T02:00:00Z'), null)
+		bookedSlot.serviceProviderId = null;
+		bookedSlot.startDateTime = new Date('2020-10-01T01:00:00Z');
+		bookedSlot.endDateTime = new Date('2020-10-01T02:00:00Z');
 		expect(changeLogParam.previousState).toEqual({
 			startDateTime: new Date('2020-10-01T01:00:00Z'),
 			endDateTime: new Date('2020-10-01T02:00:00Z'),
@@ -232,6 +264,10 @@ describe('BookingChangeLogs service', () => {
 			serviceId: 1,
 			serviceName: 'service',
 			status: 1,
+			dynamicValues: undefined,
+			refId: undefined,
+			videoConferenceUrl: undefined,
+			bookedSlots: [bookedSlot],
 		});
 		expect(changeLogParam.newState).toEqual({
 			startDateTime: new Date('2020-10-01T01:00:00Z'),
@@ -252,6 +288,10 @@ describe('BookingChangeLogs service', () => {
 			serviceProviderId: 1,
 			serviceProviderName: 'J',
 			serviceProviderPhone: '010000000',
+			dynamicValues: undefined,
+			refId: undefined,
+			videoConferenceUrl: undefined,
+			bookedSlots: [bookedSlot],
 		});
 	});
 

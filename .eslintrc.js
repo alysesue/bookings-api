@@ -36,19 +36,11 @@ module.exports = {
 		'eslint-plugin-import',
 		'@typescript-eslint',
 		'@typescript-eslint/tslint',
-		// 'plugin:prettier/recommended',
 		'prettier',
 	],
 	ignorePatterns: [
 		'**/node_modules/*',
 		'.eslintrc.js',
-		// "**/__tests__/*",
-		// "**/__mocks__/*",
-		// "src/**/*.unit.ts",
-		// "src/**/*.test.ts",
-		// "src/**/*.spec.ts",
-		// "src/**/*.apispec.ts",
-		// "src/**/*.bench.ts"
 	],
 	overrides: [
 		{

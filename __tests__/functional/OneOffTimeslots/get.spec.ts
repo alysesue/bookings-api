@@ -6,12 +6,9 @@ import {
 	ServiceProviderRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
 import { populateOneOffTimeslot, populateServiceLabel, populateUserServiceProvider } from '../../populate/basic';
-import {ServiceProviderResponseModelV1} from "../../../src/components/serviceProviders/serviceProviders.apicontract";
-import {ServiceResponseV1} from "../../../src/components/services/service.apicontract";
-import {TimeslotEntryResponseV1} from "../../../src/components/timeslots/timeslots.apicontract";
-// import { ServiceProviderResponseModel } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
-// import { ServiceResponse } from '../../../src/components/services/service.apicontract';
-// import { TimeslotEntryResponse } from '../../../src/components/timeslots/timeslots.apicontract';
+import { ServiceProviderResponseModelV1 } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
+import { ServiceResponseV1 } from '../../../src/components/services/service.apicontract';
+import { TimeslotEntryResponseV1 } from '../../../src/components/timeslots/timeslots.apicontract';
 
 // tslint:disable-next-line: no-big-function
 describe('Timeslots functional tests', () => {
@@ -294,7 +291,7 @@ describe('Timeslots functional tests', () => {
 			{
 				availabilityCount: 1,
 				startTime: '2021-03-05T01:00:00.000Z',
-				endTime: '2021-03-05T02:00:00.000Z'
+				endTime: '2021-03-05T02:00:00.000Z',
 			},
 		]);
 
@@ -303,7 +300,7 @@ describe('Timeslots functional tests', () => {
 			{
 				availabilityCount: 2,
 				startTime: '2021-03-06T06:00:00.000Z',
-				endTime: '2021-03-06T07:00:00.000Z'
+				endTime: '2021-03-06T07:00:00.000Z',
 			},
 		]);
 
@@ -312,16 +309,14 @@ describe('Timeslots functional tests', () => {
 			{
 				availabilityCount: 3,
 				startTime: '2021-03-07T07:00:00.000Z',
-				endTime: '2021-03-07T08:00:00.000Z'
+				endTime: '2021-03-07T08:00:00.000Z',
 			},
 		]);
 	});
 
 	it('citizen should get availability for exact timeslot', async () => {
 		const availability1Response = await CitizenRequestEndpointSG.create({ serviceId: serviceId1 }).get(
-			`/timeslots/availability?serviceProviderId=${
-				serviceProvider1.id
-			}&startDate=2021-03-05T01:00:00.000Z&endDate=2021-03-05T02:00:00.000Z&exactTimeslot=true`,
+			`/timeslots/availability?serviceProviderId=${serviceProvider1.id}&startDate=2021-03-05T01:00:00.000Z&endDate=2021-03-05T02:00:00.000Z&exactTimeslot=true`,
 		);
 
 		expect(availability1Response.statusCode).toEqual(200);

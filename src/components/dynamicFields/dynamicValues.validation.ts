@@ -3,6 +3,7 @@ import { BusinessValidation, BusinessValidationTemplate, DynamicField, SelectLis
 import { IDynamicFieldVisitor, TextDynamicField } from '../../models/entities/dynamicField';
 import { DynamicValueTypeContract, PersistDynamicValueContract } from './dynamicValues.apicontract';
 import { DynamicValueJsonModel, DynamicValueType } from '../../models/entities/jsonModels';
+import { ErrorsRef } from '../../errors/errors.ref';
 
 export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
 	private _fieldValue: PersistDynamicValueContract;
@@ -115,19 +116,17 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitor {
  */
 class DynamicValueBusinessValidations {
 	private constructor() {}
+	public static errors = ErrorsRef().dynamicValue;
 
-	public static readonly IncorrectFieldValueType = new BusinessValidationTemplate<{ name: string }>({
-		code: '10201',
-		templateMessage: ({ name }) => `Value type mismatch for ${name} field.`,
-	});
+	public static readonly IncorrectFieldValueType = new BusinessValidationTemplate<{ name: string }>(
+		DynamicValueBusinessValidations.errors.IncorrectFieldValueType,
+	);
 
-	public static readonly FieldValueIsRequired = new BusinessValidationTemplate<{ name: string }>({
-		code: '10202',
-		templateMessage: ({ name }) => `${name} field is required.`,
-	});
+	public static readonly FieldValueIsRequired = new BusinessValidationTemplate<{ name: string }>(
+		DynamicValueBusinessValidations.errors.FieldValueIsRequired,
+	);
 
-	public static readonly TextFieldLimit = new BusinessValidationTemplate<{ name: string; charLimit: number }>({
-		code: '10250',
-		templateMessage: ({ name, charLimit }) => `${name} word limit is ${charLimit} characters.`,
-	});
+	public static readonly TextFieldLimit = new BusinessValidationTemplate<{ name: string; charLimit: number }>(
+		DynamicValueBusinessValidations.errors.TextFieldLimit,
+	);
 }
