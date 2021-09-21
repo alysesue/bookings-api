@@ -171,7 +171,7 @@ export class ServiceProvidersService {
 				}
 			}
 		} else {
-			result = await this.getServiceProviders({serviceId, includeScheduleForm, includeTimeslotsSchedule});
+			result = await this.getServiceProviders({ serviceId, includeScheduleForm, includeTimeslotsSchedule });
 		}
 		const resultLength = result.length;
 		result.sort((a, b) => {
