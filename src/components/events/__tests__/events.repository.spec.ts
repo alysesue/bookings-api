@@ -11,6 +11,8 @@ import { EventQueryAuthVisitor } from '../events.auth';
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
 import { PagingHelper } from '../../../core/paging';
 import { IPagedEntities } from '../../../core/pagedEntities';
+import { OneOffTimeslotsRepository } from '../../oneOffTimeslots/oneOffTimeslots.repository';
+import { LabelOperationFiltering } from '../../labels/label.enum';
 
 jest.mock('../events.auth');
 jest.mock('../../../core/paging');
@@ -131,8 +133,40 @@ describe('Test event repository', () => {
 		expect(
 			queryBuilderMock.where,
 		).toBeCalledWith(
-			'("serviceProvider"."_serviceId" = :serviceId) AND ("oneOffTimeslots"."_serviceProviderId" IN (:...serviceProviderIds)) AND (event."_id" IN (SELECT "event_id" FROM event_label WHERE "label_id" = :label_0))',
+			'("serviceProvider"."_serviceId" = :serviceId) AND ("oneOffTimeslots"."_serviceProviderId" IN (:...serviceProviderIds)) AND ((event."_id" IN (SELECT "event_id" FROM event_label WHERE "label_id" = :label_0)))',
 			{ serviceId: 2, serviceProviderIds: [10, 11], label_0: 1 },
+		);
+		expect(queryBuilderMock.getMany).toBeCalled();
+	});
+
+	it('should search timeslots with labelId with union filter (OR)', async () => {
+		const queryBuilderMock = ({
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			leftJoin: jest.fn(() => queryBuilderMock),
+			getMany: jest.fn(() => Promise.resolve([])),
+		} as unknown) as SelectQueryBuilder<OneOffTimeslot>;
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const repository = Container.get(OneOffTimeslotsRepository);
+		await repository.search({
+			serviceId: 2,
+			labelIds: [1, 2],
+			labelOperationFiltering: LabelOperationFiltering.UNION,
+		});
+		expect(queryBuilderMock.where).toBeCalledWith(
+			'((SPservice._organisationId IN (:...authorisedOrganisationIds))) AND ("serviceProvider"."_serviceId" = :serviceId) AND ' +
+				'((timeslot."_id" IN (SELECT "oneOffTimeslot_id" FROM oneofftimeslot_label WHERE "label_id" = :label_0)) OR ' +
+				'(timeslot."_id" IN (SELECT "oneOffTimeslot_id" FROM oneofftimeslot_label WHERE "label_id" = :label_1)))',
+			{
+				authorisedOrganisationIds: [1],
+				startDateTime: undefined,
+				endDateTime: undefined,
+				serviceProviderIds: undefined,
+				serviceId: 2,
+				label_0: 1,
+				label_1: 2,
+			},
 		);
 		expect(queryBuilderMock.getMany).toBeCalled();
 	});
