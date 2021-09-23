@@ -53,9 +53,6 @@ export class EventsService {
 
 	public async saveEvent(eventRequest: EventRequest): Promise<Event> {
 		let event = this.eventsMapper.mapToModel(eventRequest);
-		event.oneOffTimeslots = eventRequest.timeslots.map((e) =>
-			this.eventsMapper.mapEventTimeslotToOneOffTimeslot(e),
-		);
 		event.isOneOffTimeslot = false;
 		const { service, labels } = await this.fetchDependencies(eventRequest);
 		event = this.eventsMapper.mapDependenciesToModel(event, { service, labels });
@@ -122,14 +119,15 @@ export class EventsService {
 		const oneOffTimeslots = [];
 		const fKeyServiceProviderId = ({ serviceProviderId }) => serviceProviderId;
 		const ids = uniqBy(timeslots, fKeyServiceProviderId).map(fKeyServiceProviderId);
+		const idsString = ids.map((id) => this.idHasher.decode(id));
 		const serviceProviders = await this.serviceProvidersService.getServiceProviders({
-			ids,
+			ids: idsString,
 		});
+
 		timeslots.forEach((timeslot) => {
 			const { startDateTime, endDateTime, id, serviceProviderId } = timeslot;
 			const idNotSigned = this.idHasher.decode(id);
 			const serviceProviderIdNotSigned = this.idHasher.decode(serviceProviderId);
-
 			const serviceProvider = serviceProviders.find((sp) => sp.id === serviceProviderIdNotSigned);
 			oneOffTimeslots.push(
 				OneOffTimeslot.create({ serviceProvider, startDateTime, endDateTime, id: idNotSigned }),

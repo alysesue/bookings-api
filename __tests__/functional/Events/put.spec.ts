@@ -30,20 +30,17 @@ describe('Event update functional tests', () => {
 		oneOffTimeslotRequest2 = getOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
 		eventRequest = getEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest1, oneOffTimeslotRequest2]);
 		event = await populateEvent(eventRequest);
-		console.log('-------------------------');
-		console.log(require('util').inspect(event, false, null, true /* enable colors */));
-		console.log('=============================');
 
 		done();
 	});
 
 	afterAll(async (done) => {
-		// await pgClient.cleanAllTables();
+		await pgClient.cleanAllTables();
 		await pgClient.close();
 		done();
 	});
 
-	xit('Should update a simple event', async () => {
+	it('Should update a simple event', async () => {
 		eventRequest.id = event.id;
 		eventRequest.title = 'newTitle';
 
@@ -71,17 +68,11 @@ describe('Event update functional tests', () => {
 		oneOffTimeslotRequest1.endDateTime = newEndDate;
 		eventRequest.timeslots = [oneOffTimeslotRequest1];
 
-		console.log('=============================');
-		console.log(require('util').inspect(eventRequest, false, null, true /* enable colors */));
-		console.log('=============================');
 		const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/events/${event.id}`, {
 			body: { ...eventRequest },
 		});
 		expect(response.statusCode).toEqual(201);
 		const eventResponse = response.body.data as EventResponse;
-		console.log('ddddddddddddddddddddddd');
-		console.log(require('util').inspect(eventResponse, false, null, true /* enable colors */));
-		console.log('dddddddddddddd');
 
 		expect(eventResponse.id).toEqual(eventRequest.id);
 		expect(eventResponse.timeslots.length).toBe(1);
@@ -89,7 +80,7 @@ describe('Event update functional tests', () => {
 		expect(new Date(eventResponse.timeslots[0].endDateTime)).toEqual(newEndDate);
 	});
 
-	xit('Should be able to add one timeslot', async () => {
+	it('Should be able to add one timeslot', async () => {
 		eventRequest.id = event.id;
 		const timelost3 = (oneOffTimeslotRequest2 = getOneOffTimeslotRequest({
 			serviceProviderId: serviceProvider.id,
