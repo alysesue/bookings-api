@@ -33,8 +33,6 @@ import { BookingType } from '../../models/bookingType';
 import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
-import { MyInfoService } from '../myInfo/myInfo.service';
-import { BookedSlotRepository } from './bookedSlot.repository';
 import { EventsService } from '../events/events.service';
 import { BookingValidationType, BookingWorkflowType } from '../../models/bookingValidationType';
 import { BookingsEventValidatorFactory } from './validator/bookings.event.validation';
@@ -73,10 +71,6 @@ export class BookingsService {
 	private usersService: UsersService;
 	@Inject
 	private bookingsMapper: BookingsMapper;
-	@Inject
-	private myInfoService: MyInfoService;
-	@Inject
-	private bookedSlotRepository: BookedSlotRepository;
 	@Inject
 	private eventService: EventsService;
 

@@ -11,9 +11,9 @@ export class ServiceProviderLabelRequestModel {
 export class ServiceProviderLabelResponseModel {
 	public id: string;
 	public name: string;
-	public organisationId: number;
+	public organisationId: string;
 
-	constructor(name?: string, id?: string, organisationId?: number) {
+	constructor(name?: string, id?: string, organisationId?: string) {
 		this.name = name;
 		this.id = id;
 		this.organisationId = organisationId;
@@ -36,13 +36,13 @@ export class ServiceProviderLabelCategoryResponseModel {
 	public categoryName: string;
 	public labels: ServiceProviderLabelResponseModel[];
 	public id: string;
-	public organisationId: number;
+	public organisationId: string;
 
 	constructor(
 		categoryName?: string,
 		labels?: ServiceProviderLabelResponseModel[],
 		id?: string,
-		organisationId?: number,
+		organisationId?: string,
 	) {
 		this.categoryName = categoryName;
 		this.labels = labels;

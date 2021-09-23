@@ -21,8 +21,13 @@ describe('Organisations mapper', () => {
 	});
 
 	it('return organisation settings response', () => {
-		const labels = new ServiceProviderLabelResponseModel('English', 'hashLabelId', 1);
-		const categories = new ServiceProviderLabelCategoryResponseModel('Language', [labels], 'hashCategoryId', 1);
+		const labels = new ServiceProviderLabelResponseModel('English', 'hashLabelId', 'orgId');
+		const categories = new ServiceProviderLabelCategoryResponseModel(
+			'Language',
+			[labels],
+			'hashCategoryId',
+			'orgId',
+		);
 		const organisationSettings = new OrganisationSettingsResponse();
 		const labelSettings = new ServiceProviderLabelResponse();
 		labelSettings.labels = [labels];

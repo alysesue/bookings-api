@@ -5,7 +5,6 @@ import { UserContext } from '../../infrastructure/auth/userContext';
 import { andWhere } from '../../tools/queryConditions';
 import { ServicesQueryAuthVisitor } from '../services/services.auth';
 import { groupByKey } from '../../tools/collections';
-// import { OrganisationsQueryAuthVisitor } from '../organisations/organisations.auth';
 
 @InRequestScope
 export class LabelsRepository extends RepositoryBase<Label> {

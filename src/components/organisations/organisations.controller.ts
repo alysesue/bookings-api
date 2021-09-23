@@ -5,9 +5,9 @@ import { ScheduleFormRequest } from '../scheduleForms/scheduleForms.apicontract'
 import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { OrganisationSettingsRequest, OrganisationSettingsResponse } from './organisations.apicontract';
-import { OrganisationSPLabelsService } from '../serviceProvidersLabels/serviceProvidersLabels.service';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { OrganisationsMapper } from './organisations.mapper';
+import { OrganisationSettingsService } from '../organisationSettings/organisationSettings.service';
 
 @InRequestScope
 @Route('v1/organisations')
@@ -40,7 +40,7 @@ export class OrganisationsControllerV2 extends Controller {
 	@Inject
 	private idHasher: IdHasher;
 	@Inject
-	private orgSPLabelsService: OrganisationSPLabelsService;
+	private organisationSettingsService: OrganisationSettingsService;
 	@Inject
 	private organisationsMapper: OrganisationsMapper;
 
@@ -71,7 +71,7 @@ export class OrganisationsControllerV2 extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async getOrganisationSettings(@Path() orgId: string): Promise<ApiData<OrganisationSettingsResponse>> {
 		const unsignedOrgId = this.idHasher.decode(orgId);
-		const settings = await this.orgSPLabelsService.getOrgServiceProviderLabels(unsignedOrgId);
+		const settings = await this.organisationSettingsService.getOrgSettings(unsignedOrgId);
 		return ApiDataFactory.create(this.organisationsMapper.mapToOrganisationSettings(settings));
 	}
 
@@ -90,10 +90,7 @@ export class OrganisationsControllerV2 extends Controller {
 		@Body() request: OrganisationSettingsRequest,
 	): Promise<ApiData<OrganisationSettingsResponse>> {
 		const unsignedOrgId = this.idHasher.decode(orgId);
-		const settings = await this.orgSPLabelsService.updateOrgServiceProviderLabels(
-			unsignedOrgId,
-			request.labelSettings,
-		);
+		const settings = await this.organisationSettingsService.updateOrgSettings(unsignedOrgId, request);
 		return ApiDataFactory.create(this.organisationsMapper.mapToOrganisationSettings(settings));
 	}
 }

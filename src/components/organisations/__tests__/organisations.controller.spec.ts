@@ -5,12 +5,12 @@ import { ServiceProvidersController } from '../../serviceProviders/serviceProvid
 import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
-import { OrganisationSPLabelsService } from '../../../components/serviceProvidersLabels/serviceProvidersLabels.service';
-import { OrganisationSPLabelsServiceMock } from '../../../components/serviceProvidersLabels/__mock__/serviceProvidersLabels.service.mock';
 import { OrganisationsMapper } from '../organisations.mapper';
 import { OrganisationsMapperMock } from '../__mocks__/organisations.mapper.mock';
 import { OrganisationSettingsRequest, OrganisationSettingsResponse } from '../organisations.apicontract';
 import { OrganisationsControllerV2 } from '../organisations.controller';
+import { OrganisationSettingsServiceMock } from '../../../components/organisationSettings/__mocks__/organisationSettings.service.mock';
+import { OrganisationSettingsService } from '../../../components/organisationSettings/organisationSettings.service';
 
 describe('Organisations.controller', () => {
 	beforeAll(() => {
@@ -23,7 +23,7 @@ describe('Organisations.controller', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
 		Container.bind(IdHasher).to(IdHasherMock);
-		Container.bind(OrganisationSPLabelsService).to(OrganisationSPLabelsServiceMock);
+		Container.bind(OrganisationSettingsService).to(OrganisationSettingsServiceMock);
 		Container.bind(OrganisationsMapper).to(OrganisationsMapperMock);
 
 		IdHasherMock.decode.mockImplementation(() => 1);
@@ -37,20 +37,18 @@ describe('Organisations.controller', () => {
 	});
 
 	it('should get organisation settings', async () => {
-		OrganisationSPLabelsServiceMock.getOrgServiceProviderLabels.mockReturnValue(
-			Promise.resolve(Organisation.create('org1', 1)),
-		);
+		OrganisationSettingsServiceMock.getOrgSettings.mockReturnValue(Promise.resolve(Organisation.create('org1', 1)));
 		OrganisationsMapperMock.mapToOrganisationSettings.mockImplementation(() => new OrganisationSettingsResponse());
 
 		const response = await Container.get(OrganisationsControllerV2).getOrganisationSettings('hashId');
 		expect(IdHasherMock.decode).toBeCalledTimes(1);
-		expect(OrganisationSPLabelsServiceMock.getOrgServiceProviderLabels).toBeCalledTimes(1);
+		expect(OrganisationSettingsServiceMock.getOrgSettings).toBeCalledTimes(1);
 		expect(OrganisationsMapperMock.mapToOrganisationSettings).toBeCalledTimes(1);
 		expect(response).toBeDefined();
 	});
 
 	it('should update organisation settings', async () => {
-		OrganisationSPLabelsServiceMock.updateOrgServiceProviderLabels.mockReturnValue(
+		OrganisationSettingsServiceMock.updateOrgSettings.mockReturnValue(
 			Promise.resolve(Organisation.create('org1', 1)),
 		);
 		OrganisationsMapperMock.mapToOrganisationSettings.mockImplementation(() => new OrganisationSettingsResponse());
@@ -61,7 +59,7 @@ describe('Organisations.controller', () => {
 		);
 
 		expect(IdHasherMock.decode).toBeCalledTimes(1);
-		expect(OrganisationSPLabelsServiceMock.updateOrgServiceProviderLabels).toBeCalledTimes(1);
+		expect(OrganisationSettingsServiceMock.updateOrgSettings).toBeCalledTimes(1);
 		expect(OrganisationsMapperMock.mapToOrganisationSettings).toBeCalledTimes(1);
 		expect(response).toBeDefined();
 	});

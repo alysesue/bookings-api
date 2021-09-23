@@ -22,7 +22,7 @@ export class SPLabelsCategoriesMapper {
 			const labelData = new ServiceProviderLabelResponseModel();
 			labelData.id = this.idHasher.encode(i.id);
 			labelData.name = i.labelText;
-			labelData.organisationId = i.organisationId;
+			labelData.organisationId = this.idHasher.encode(i.organisationId);
 			return labelData;
 		});
 	}
@@ -46,7 +46,7 @@ export class SPLabelsCategoriesMapper {
 			categoryData.id = this.idHasher.encode(i.id);
 			categoryData.categoryName = i.name;
 			categoryData.labels = this.mapToServiceProviderLabelsResponse(i.labels);
-			categoryData.organisationId = i.organisationId;
+			categoryData.organisationId = this.idHasher.encode(i.organisationId);
 			return categoryData;
 		});
 	}

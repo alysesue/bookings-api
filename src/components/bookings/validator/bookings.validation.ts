@@ -265,8 +265,6 @@ class CitizenBookingValidator extends BookingsValidator {
 	private timeslotsService: TimeslotsService;
 	@Inject
 	private captchaService: CaptchaService;
-	@Inject
-	private bookingsRepository: BookingsRepository;
 
 	protected async *validateAvailability(booking: Booking): AsyncIterable<BusinessValidation> {
 		if (booking.serviceProviderId) {
