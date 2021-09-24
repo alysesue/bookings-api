@@ -1,10 +1,7 @@
-import {
-	ServiceProviderResponseModelV1,
-	ServiceProviderResponseModelV2,
-} from '../../src/components/serviceProviders/serviceProviders.apicontract';
+import { ServiceProviderResponseModelV1 } from '../../src/components/serviceProviders/serviceProviders.apicontract';
 import { OrganisationAdminRequestEndpointSG } from '../utils/requestEndpointSG';
-import { ServiceResponseV1, ServiceResponseV2 } from '../../src/components/services/service.apicontract';
-import { populateService, populateServiceV2 } from './service';
+import { ServiceResponseV1 } from '../../src/components/services/service.apicontract';
+import { populateService } from './service';
 
 export const getServiceProviders = async (): Promise<ServiceProviderResponseModelV1[]> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({}).get('/service-providers');

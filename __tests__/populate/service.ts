@@ -7,10 +7,10 @@ import {
 import { OrganisationAdminRequestEndpointSG } from '../utils/requestEndpointSG';
 
 export const populateServiceLabel = async ({
-	serviceId,
-	serviceName,
-	labels,
-}: {
+											   serviceId,
+											   serviceName,
+											   labels,
+										   }: {
 	serviceId: any;
 	serviceName: any;
 	labels: string[];
@@ -23,11 +23,11 @@ export const populateServiceLabel = async ({
 };
 
 export const populateService = async ({
-	organisation = 'e2e',
-	nameService = 'admin',
-	labels = [],
-	categories = [],
-}): Promise<ServiceResponseV1> => {
+										  organisation = 'e2e',
+										  nameService = 'admin',
+										  labels = [],
+										  categories = [],
+									  }): Promise<ServiceResponseV1> => {
 	const labelsMap = labels.map((label) => ({ label }));
 	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post(`/services`, {
 		body: { name: nameService, labels: labelsMap, categories: categories },
@@ -36,11 +36,11 @@ export const populateService = async ({
 };
 
 export const populateServiceV2 = async ({
-	organisation = 'e2e',
-	nameService = 'admin',
-	labels = [],
-	categories = [],
-}): Promise<ServiceResponseV2> => {
+											organisation = 'e2e',
+											nameService = 'admin',
+											labels = [],
+											categories = [],
+										}): Promise<ServiceResponseV2> => {
 	const labelsMap = labels.map((label) => ({ label }));
 	const response = await OrganisationAdminRequestEndpointSG.create({ organisation, nameService }).post(`/services`, {
 		body: { name: nameService, labels: labelsMap, categories: categories },
@@ -49,11 +49,11 @@ export const populateServiceV2 = async ({
 };
 
 export const populateServiceWithFields = async ({
-	organisation = 'e2e',
-	nameService = 'admin',
-	videoConferenceUrl,
-	additionalSettings,
-}: {
+													organisation = 'e2e',
+													nameService = 'admin',
+													videoConferenceUrl,
+													additionalSettings,
+												}: {
 	organisation?: string;
 	nameService?: string;
 	videoConferenceUrl?: string;

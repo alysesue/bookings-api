@@ -5,23 +5,23 @@ export const getOneOffTimeslotRequest = ({
 	serviceProviderId,
 	startDateTime,
 	endDateTime,
-	idSigned,
+	id,
 }: {
-	serviceProviderId: number;
+	serviceProviderId: string;
 	startDateTime?: Date;
 	endDateTime?: Date;
-	idSigned?: string;
+	id?: string;
 }): EventTimeslotRequest =>
 	({
 		startDateTime: startDateTime || new Date(Date.now() + 24 * 60 * 60 * 1000),
 		endDateTime: endDateTime || new Date(Date.now() + 25 * 60 * 60 * 1000),
-		idSigned,
+		id,
 		serviceProviderId,
 	} as EventTimeslotRequest);
 
 export const getEventRequest = (eventRequest: Partial<EventRequest>, oneOffTimeslotRequest: EventTimeslotRequest[]) =>
 	({
-		serviceId: eventRequest.serviceId || 1,
+		serviceId: eventRequest.serviceId || '1',
 		title: eventRequest.title || 'title',
 		description: eventRequest.description || 'description',
 		capacity: eventRequest.capacity || 1,
@@ -29,17 +29,18 @@ export const getEventRequest = (eventRequest: Partial<EventRequest>, oneOffTimes
 		timeslots: oneOffTimeslotRequest,
 	} as EventRequest);
 
-export const populateEvent = async (eventRequest: Partial<EventRequest>): Promise<EventResponse> => {
-	const oneOffTimeslotRequests = eventRequest.timeslots.map(
-		({ serviceProviderId, startDateTime, endDateTime, idSigned }) =>
-			getOneOffTimeslotRequest({ serviceProviderId, startDateTime, endDateTime, idSigned }),
-	);
-
-	const event = getEventRequest(eventRequest, oneOffTimeslotRequests);
-	const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/events/`, {
-		body: { ...event },
-	});
-	expect(response.statusCode).toEqual(201);
-
-	return response.body.data as EventResponse;
-};
+// export const populateEvent = async (eventRequest: Partial<EventRequest>): Promise<EventResponse> => {
+// 	const oneOffTimeslotRequests = eventRequest.timeslots.map(
+// 		({ serviceProviderId, startDateTime, endDateTime, id }) =>
+// 			getOneOffTimeslotRequest({ serviceProviderId, startDateTime, endDateTime, id }),
+// 	);
+//
+// 	const event = getEventRequest(eventRequest, oneOffTimeslotRequests);
+//
+// 	const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/events/`, {
+// 		body: { ...event },
+// 	});
+// 	expect(response.statusCode).toEqual(201);
+//
+// 	return response.body.data as EventResponse;
+// };

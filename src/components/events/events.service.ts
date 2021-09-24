@@ -7,10 +7,9 @@ import {
 	IEventRequest,
 } from './events.apicontract';
 import { EventsMapper } from './events.mapper';
-import { Event } from '../../models';
+import { Event, Label, OneOffTimeslot, Service } from '../../models';
 import { LabelsService } from '../labels/labels.service';
 import { ServicesService } from '../services/services.service';
-import { Label, OneOffTimeslot, Service } from '../../models';
 import { EventsRepository } from './events.repository';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { UserContext } from '../../infrastructure/auth/userContext';
@@ -54,14 +53,11 @@ export class EventsService {
 
 	public async saveEvent(eventRequest: EventRequest): Promise<Event> {
 		let event = this.eventsMapper.mapToModel(eventRequest);
-		event.oneOffTimeslots = eventRequest.timeslots.map((e) =>
-			this.eventsMapper.mapEventTimeslotToOneOffTimeslot(e),
-		);
 		event.isOneOffTimeslot = false;
 		const { service, labels } = await this.fetchDependencies(eventRequest);
 		event = this.eventsMapper.mapDependenciesToModel(event, { service, labels });
 
-		event.oneOffTimeslots = await this.fetchTimeslotDependencies(eventRequest);
+		event.oneOffTimeslots = await this.fetchTimeslotDependencies(eventRequest.timeslots);
 		return this.save(event);
 	}
 
@@ -87,10 +83,12 @@ export class EventsService {
 
 	public async updateEvent(request: EventRequest, idSigned: string): Promise<Event> {
 		const id = this.idHasher.decode(idSigned);
-		const entity = await this.eventsRepository.getById({ id });
+		let entity = await this.eventsRepository.getById({ id });
 		entity.isOneOffTimeslot = false;
 		this.eventsMapper.mapUpdateModel(entity, request);
-		entity.oneOffTimeslots = await this.fetchTimeslotDependencies(request);
+		const { service, labels } = await this.fetchDependencies(request);
+		entity.oneOffTimeslots = await this.fetchTimeslotDependencies(request.timeslots);
+		entity = this.eventsMapper.mapDependenciesToModel(entity, { service, labels });
 		return this.save(entity);
 	}
 
@@ -117,24 +115,29 @@ export class EventsService {
 		return events;
 	}
 
-	private async fetchTimeslotDependencies(request: EventRequest): Promise<OneOffTimeslot[]> {
+	private async fetchTimeslotDependencies(timeslots: EventTimeslotRequest[]): Promise<OneOffTimeslot[]> {
 		const oneOffTimeslots = [];
-		const fKeyServiceProviderId = ({ serviceProviderId }: EventTimeslotRequest) => serviceProviderId;
-		const ids = uniqBy(request.timeslots, fKeyServiceProviderId).map(fKeyServiceProviderId);
+		const fKeyServiceProviderId = ({ serviceProviderId }) => serviceProviderId;
+		const ids = uniqBy(timeslots, fKeyServiceProviderId).map(fKeyServiceProviderId);
+		const idsString = ids.map((id) => this.idHasher.decode(id));
 		const serviceProviders = await this.serviceProvidersService.getServiceProviders({
-			ids,
+			ids: idsString,
 		});
-		request.timeslots.forEach((timeslot) => {
-			const { startDateTime, endDateTime, idSigned } = timeslot;
-			const id = this.idHasher.decode(idSigned);
-			const serviceProvider = serviceProviders.find((sp) => sp.id === timeslot.serviceProviderId);
-			oneOffTimeslots.push(OneOffTimeslot.create({ serviceProvider, startDateTime, endDateTime, id }));
+
+		timeslots.forEach((timeslot) => {
+			const { startDateTime, endDateTime, id, serviceProviderId } = timeslot;
+			const idNotSigned = this.idHasher.decode(id);
+			const serviceProviderIdNotSigned = this.idHasher.decode(serviceProviderId);
+			const serviceProvider = serviceProviders.find((sp) => sp.id === serviceProviderIdNotSigned);
+			oneOffTimeslots.push(
+				OneOffTimeslot.create({ serviceProvider, startDateTime, endDateTime, id: idNotSigned }),
+			);
 		});
 		return oneOffTimeslots;
 	}
 
 	private async fetchDependencies(request: IEventRequest): Promise<{ service: Service; labels: Label[] }> {
-		const service = await this.servicesService.getService(request.serviceId, {
+		const service = await this.servicesService.getService(this.idHasher.decode(request.serviceId), {
 			includeLabelCategories: true,
 			includeLabels: true,
 		});

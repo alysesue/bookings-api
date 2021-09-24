@@ -1,4 +1,4 @@
-import { OneOffTimeslotRequestV1 } from '../../oneOffTimeslots/oneOffTimeslots.apicontract';
+import { OneOffTimeslotRequestV2 } from '../../oneOffTimeslots/oneOffTimeslots.apicontract';
 import { EventOneOffTimeslotRequest, EventRequest } from '../events.apicontract';
 import { Container } from 'typescript-ioc';
 import { EventsService } from '../events.service';
@@ -41,17 +41,17 @@ describe('Tests events services', () => {
 			startDateTime: new Date('2022-01-01T14:00:00.000Z'),
 			endDateTime: new Date('2022-01-01T14:10:00.000Z'),
 			serviceProviderId: serviceProviderId || 1,
-		} as OneOffTimeslotRequestV1);
+		} as OneOffTimeslotRequestV2);
 
-	const getSimpleEventRequest = ({ oneOffTimeslots }: { oneOffTimeslots: OneOffTimeslotRequestV1[] }) =>
+	const getSimpleEventRequest = ({ oneOffTimeslots }: { oneOffTimeslots: OneOffTimeslotRequestV2[] }) =>
 		({
-			serviceId: 1,
+			serviceId: '1',
 			timeslots: oneOffTimeslots,
 		} as EventRequest);
 
 	const getSimpleEventOneOffTimeslotRequest = ({ oneOffTimeslot }: { oneOffTimeslot?: OneOffTimeslot }) =>
 		({
-			serviceId: 10,
+			serviceId: '10',
 			timeslot: oneOffTimeslot || getOneOffTimeslotMock({}),
 		} as EventOneOffTimeslotRequest);
 
@@ -73,6 +73,7 @@ describe('Tests events services', () => {
 		jest.resetAllMocks();
 		(EventsAuthVisitor as jest.Mock).mockImplementation(() => authVisitorMock);
 		(authVisitorMock.hasPermission as jest.Mock).mockReturnValue(true);
+		(IdHasherMock.decode as jest.Mock).mockImplementation((s) => parseInt(s, 10));
 		TransactionManagerMock.runInTransaction.mockImplementation(
 			async <T extends unknown>(_isolationLevel: IsolationLevel, asyncFunction: AsyncFunction<T>): Promise<T> =>
 				await asyncFunction(),

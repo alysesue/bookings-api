@@ -124,10 +124,10 @@ export const OTP_COOKIE = 'MobileOtpAddOn';
 
 export class AgencyRequestEndpointSG extends RequestEndpointSG {
 	public static create = ({
-		agencyAppId = 'agency-first-app',
-		agencyName = 'localorg',
-		serviceId,
-	}: {
+								agencyAppId = 'agency-first-app',
+								agencyName = 'localorg',
+								serviceId,
+							}: {
 		agencyAppId?: string;
 		agencyName?: string;
 		organisation?: string;
@@ -153,10 +153,10 @@ export class AgencyRequestEndpointSG extends RequestEndpointSG {
 
 export class OrganisationAdminRequestEndpointSG extends RequestEndpointSG {
 	public static create = ({
-		organisation = 'localorg',
-		nameService = 'admin',
-		serviceId,
-	}: {
+								organisation = 'localorg',
+								nameService = 'admin',
+								serviceId,
+							}: {
 		organisation?: string;
 		nameService?: string;
 		serviceId?: string;
@@ -185,10 +185,10 @@ export class OrganisationAdminRequestEndpointSG extends RequestEndpointSG {
 
 export class ServiceAdminRequestEndpointSG extends RequestEndpointSG {
 	public static create = ({
-		organisation = 'localorg',
-		nameService = 'admin',
-		serviceId,
-	}: {
+								organisation = 'localorg',
+								nameService = 'admin',
+								serviceId,
+							}: {
 		organisation?: string;
 		nameService?: string;
 		serviceId?: string;
@@ -215,11 +215,11 @@ export class ServiceAdminRequestEndpointSG extends RequestEndpointSG {
 
 export class ServiceProviderRequestEndpointSG extends RequestEndpointSG {
 	public static create = ({
-		organisation = 'localorg',
-		nameService = 'admin',
-		serviceId,
-		molAdminId = 'e20a41ba-390f-11eb-adc1-0242ac120002',
-	}: {
+								organisation = 'localorg',
+								nameService = 'admin',
+								serviceId,
+								molAdminId = 'e20a41ba-390f-11eb-adc1-0242ac120002',
+							}: {
 		organisation?: string;
 		nameService?: string;
 		serviceId?: string;
@@ -248,9 +248,9 @@ export class ServiceProviderRequestEndpointSG extends RequestEndpointSG {
 
 export class CitizenRequestEndpointSG extends RequestEndpointSG {
 	public static create = ({
-		citizenUinFin,
-		serviceId,
-	}: {
+								citizenUinFin,
+								serviceId,
+							}: {
 		citizenUinFin?: string;
 		serviceId?: string;
 	}): CitizenRequestEndpointSG => {

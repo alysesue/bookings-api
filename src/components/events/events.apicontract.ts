@@ -16,26 +16,26 @@ export interface IEventTimeslot {
 	/**
 	 * @isInt
 	 */
-	serviceProviderId: number;
+	serviceProviderId: string;
 }
 
 export class EventTimeslotRequest implements IEventTimeslot {
-	public idSigned?: string;
+	public id?: string;
 	public startDateTime: Date;
 	public endDateTime: Date;
-	public serviceProviderId: number;
+	public serviceProviderId: string;
 }
 
 export class EventTimeslotResponse {
-	public idSigned: string;
+	public id: string;
 	public startDateTime: Date;
 	public endDateTime: Date;
 	public serviceProvider: ServiceProviderSummaryModelV2;
 }
 
 export interface IEventRequest {
-	idSigned?: string;
-	serviceId: number;
+	id?: string;
+	serviceId: string;
 	title?: string;
 	description?: string;
 	capacity?: number;
@@ -43,8 +43,8 @@ export interface IEventRequest {
 }
 
 export class EventRequest implements IEventRequest {
-	public idSigned?: string;
-	public serviceId: number;
+	public id?: string;
+	public serviceId: string;
 	public title?: string;
 	public description?: string;
 	public capacity?: number;
@@ -53,8 +53,8 @@ export class EventRequest implements IEventRequest {
 }
 
 export class EventOneOffTimeslotRequest implements IEventRequest {
-	public idSigned?: string;
-	public serviceId: number;
+	public id?: string;
+	public serviceId: string;
 	public title?: string;
 	public description?: string;
 	public capacity?: number;
