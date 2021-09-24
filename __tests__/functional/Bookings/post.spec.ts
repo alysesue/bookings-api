@@ -636,6 +636,7 @@ describe('Bookings functional tests', () => {
 	});
 
 	it('should create in-slot booking as anonymous (when status is NOT OnHold, but is user is OTP verified)', async () => {
+		await pgClient.configureServiceAllowAnonymous({ serviceId });
 		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
 		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
 
@@ -656,6 +657,29 @@ describe('Bookings functional tests', () => {
 		});
 
 		expect(response.statusCode).toBe(201);
+	});
+
+	it('should NOT create in-slot booking as anonymous if service is not setup (when status is NOT OnHold, but is user is OTP verified)', async () => {
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+
+		const endpoint = await AnonmymousEndpointSG.create({
+			serviceId: serviceIdStr,
+		});
+
+		await endpoint.sendAndVerifyOTP();
+		const response = await endpoint.post('/bookings', {
+			body: {
+				startDateTime,
+				endDateTime,
+				serviceProviderId: serviceProvider.id,
+				citizenUinFin,
+				citizenName,
+				citizenEmail,
+			},
+		});
+
+		expect(response.statusCode).toBe(403);
 	});
 
 	it('should create standalone booking as an Anonymous user (when service is configured)', async () => {
@@ -726,5 +750,39 @@ describe('Bookings functional tests', () => {
 
 		expect(bookingResponse.statusCode).toBe(201);
 		expect(validateResponse.statusCode).toBe(401);
+	});
+
+	it('should NOT create standalone booking as an Anonymous user (when service is NOT configured)', async () => {
+		await pgClient.setServiceConfigurationStandAlone(serviceId, true);
+
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+
+		const endpoint = await AnonmymousEndpointSG.create({
+			serviceId: serviceIdStr,
+		});
+
+		const bookingResponse = await endpoint.post('/bookings', {
+			body: {
+				startDateTime,
+				endDateTime,
+				serviceProviderId: serviceProvider.id,
+			},
+		});
+
+		const bookingId = bookingResponse.body.data.id;
+
+		await endpoint.sendAndVerifyOTP();
+		const validateResponse = await endpoint.post(`/bookings/${bookingId}/validateOnHold`, {
+			body: {
+				citizenUinFin: 'S2312382G',
+				citizenName: 'Janiece',
+				citizenEmail: 'janiece@gmail.com',
+				citizenPhone: '98728473',
+			},
+		});
+
+		expect(bookingResponse.statusCode).toBe(201);
+		expect(validateResponse.statusCode).toBe(403);
 	});
 });

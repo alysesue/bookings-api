@@ -1,7 +1,7 @@
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { PgClient } from '../../utils/pgClient';
 import { populateService, populateServiceWithFields } from '../../populate/basic';
-import {ServiceResponseV1} from "../../../src/components/services/service.apicontract";
+import { ServiceResponseV1 } from '../../../src/components/services/service.apicontract';
 // import { ServiceResponse } from '../../../src/components/services/service.apicontract';
 
 describe('Tests endpoint and populate data', () => {
@@ -168,7 +168,10 @@ describe('Tests endpoint and populate data', () => {
 		});
 
 		expect(putResponse.statusCode).toEqual(200);
-		expect(putResponse.body.data.additionalSettings).toEqual(additionalSettingsDefaultValues);
+		expect(putResponse.body.data.additionalSettings).toEqual({
+			...additionalSettingsDefaultValues,
+			citizenAuthentication: ['singpass'],
+		});
 	});
 
 	it('should return additionalSettings default values in response when it is set to empty in Put request', async () => {
@@ -188,7 +191,10 @@ describe('Tests endpoint and populate data', () => {
 		});
 
 		expect(putResponse.statusCode).toEqual(200);
-		expect(putResponse.body.data.additionalSettings).toEqual(additionalSettingsDefaultValues);
+		expect(putResponse.body.data.additionalSettings).toEqual({
+			...additionalSettingsDefaultValues,
+			citizenAuthentication: ['singpass'],
+		});
 	});
 
 	it('should update ALL additionalSettings values and return them in response', async () => {
@@ -208,7 +214,33 @@ describe('Tests endpoint and populate data', () => {
 		});
 
 		expect(putResponse.statusCode).toEqual(200);
-		expect(putResponse.body.data.additionalSettings).toEqual(additionalSettingsUpdated);
+		expect(putResponse.body.data.additionalSettings).toEqual({
+			...additionalSettingsUpdated,
+			citizenAuthentication: ['singpass', 'otp'],
+		});
+	});
+
+	it('(new contract) should update ALL additionalSettings values and return them in response', async () => {
+		const additionalSettingsUpdated = {
+			citizenAuthentication: ['otp'],
+			isOnHold: true,
+			isStandAlone: true,
+			sendNotifications: true,
+			sendNotificationsToServiceProviders: true,
+			sendSMSNotifications: false,
+		};
+
+		const service = await populateService({ nameService: SERVICE_NAME });
+
+		const putResponse = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
+			body: { name: SERVICE_NAME_UPDATED, additionalSettings: additionalSettingsUpdated },
+		});
+
+		expect(putResponse.statusCode).toEqual(200);
+		expect(putResponse.body.data.additionalSettings).toEqual({
+			...additionalSettingsUpdated,
+			allowAnonymousBookings: true,
+		});
 	});
 
 	it('should update part of the additionalSettings values and return ALL of them in response', async () => {
@@ -228,7 +260,10 @@ describe('Tests endpoint and populate data', () => {
 		});
 
 		expect(putResponse.statusCode).toEqual(200);
-		expect(putResponse.body.data.additionalSettings).toEqual(expectedAdditionalSettings);
+		expect(putResponse.body.data.additionalSettings).toEqual({
+			...expectedAdditionalSettings,
+			citizenAuthentication: ['singpass', 'otp'],
+		});
 	});
 
 	it('should update additionalSettings values from true to false', async () => {
@@ -256,7 +291,10 @@ describe('Tests endpoint and populate data', () => {
 		});
 
 		expect(putResponse.statusCode).toEqual(200);
-		expect(putResponse.body.data.additionalSettings).toEqual(additionalSettingsTrue);
+		expect(putResponse.body.data.additionalSettings).toEqual({
+			...additionalSettingsTrue,
+			citizenAuthentication: ['singpass', 'otp'],
+		});
 
 		const putResponse2 = await OrganisationAdminRequestEndpointSG.create({}).put(`/services/${service.id}`, {
 			body: { name: SERVICE_NAME_UPDATED, additionalSettings: additionalSettingsFalse },
@@ -265,6 +303,7 @@ describe('Tests endpoint and populate data', () => {
 		expect(putResponse2.statusCode).toEqual(200);
 		expect(putResponse2.body.data.additionalSettings).toEqual({
 			allowAnonymousBookings: false,
+			citizenAuthentication: ['singpass'],
 			isOnHold: false,
 			isStandAlone: false,
 			sendNotifications: false,

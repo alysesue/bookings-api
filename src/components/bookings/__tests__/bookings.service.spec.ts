@@ -74,8 +74,11 @@ import { MyInfoService } from '../../myInfo/myInfo.service';
 import { MyInfoServiceeMock } from '../../myInfo/__mocks__/myInfo.service.mock';
 import { EventsService } from '../../events/events.service';
 import { EventsServiceMock } from '../../events/__mocks__/events.service.mock';
+import { CitizenAuthenticationType } from '../../../models/citizenAuthenticationType';
+import { BookingActionAuthVisitor } from '../bookings.auth';
 
 jest.mock('../../../tools/arrays');
+jest.mock('../bookings.auth', () => ({ BookingActionAuthVisitor: jest.fn() }));
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -105,7 +108,7 @@ describe('Bookings.Service', () => {
 	service.id = 1;
 	service.organisation = organisation;
 	service.organisationId = organisation.id;
-	service.allowAnonymousBookings = true;
+	service.citizenAuthentication = [CitizenAuthenticationType.Singpass, CitizenAuthenticationType.Otp];
 
 	const serviceProvider = ServiceProvider.create('provider', 1);
 	serviceProvider.id = 1;
@@ -158,8 +161,11 @@ describe('Bookings.Service', () => {
 		}
 	}
 
-	let snapshot;
+	const bookingActionVisitorMock: Partial<BookingActionAuthVisitor> = {
+		hasPermission: jest.fn(),
+	};
 
+	let snapshot;
 	beforeAll(() => {
 		snapshot = Container.snapshot();
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
@@ -182,6 +188,9 @@ describe('Bookings.Service', () => {
 
 	beforeEach(() => {
 		jest.resetAllMocks();
+
+		(bookingActionVisitorMock.hasPermission as jest.Mock).mockReturnValue(true);
+		(BookingActionAuthVisitor as jest.Mock).mockReturnValue(bookingActionVisitorMock);
 
 		BookingChangeLogsServiceMock.action = undefined;
 		BookingChangeLogsServiceMock.executeAndLogAction.mockImplementation(
@@ -295,7 +304,7 @@ describe('Bookings.Service', () => {
 
 		const anonymousService = new Service();
 		anonymousService.id = 1;
-		anonymousService.allowAnonymousBookings = true;
+		anonymousService.citizenAuthentication = [CitizenAuthenticationType.Otp];
 		anonymousService.isStandAlone = false;
 
 		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(anonymousService));
@@ -313,6 +322,36 @@ describe('Bookings.Service', () => {
 		expect(booking.citizenEmail).toBe(bookingRequest.citizenEmail);
 		expect(booking.citizenPhone).toBe(bookingRequest.citizenPhone);
 		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+		expect(bookingActionVisitorMock.hasPermission).toBeCalled();
+	});
+
+	it('should NOT save booking from booking request (when not authorised)', async () => {
+		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
+		bookingRequest.startDateTime = new Date();
+		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+		bookingRequest.citizenName = 'this should be the name';
+		bookingRequest.citizenEmail = 'correctemail@gmail.com';
+		bookingRequest.citizenPhone = '93328223';
+
+		const anonymousService = new Service();
+		anonymousService.id = 1;
+		anonymousService.citizenAuthentication = [CitizenAuthenticationType.Otp];
+		anonymousService.isStandAlone = false;
+
+		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(anonymousService));
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(anonymousMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new AnonymousAuthGroup(anonymousMock, undefined, { mobileNo: '+6584000000' })]),
+		);
+
+		(bookingActionVisitorMock.hasPermission as jest.Mock).mockReturnValue(false);
+
+		const asyncTest = async () => await Container.get(BookingsService).save(bookingRequest, 1);
+
+		await expect(asyncTest).rejects.toMatchInlineSnapshot(
+			'[SYS_INVALID_AUTHORIZATION (403): User cannot perform this booking action (1) for this service.]',
+		);
+		expect(bookingActionVisitorMock.hasPermission).toBeCalled();
 	});
 
 	it('should save booking from booking request (singpass user)', async () => {
@@ -325,7 +364,7 @@ describe('Bookings.Service', () => {
 
 		const standaloneService = new Service();
 		standaloneService.id = 1;
-		standaloneService.allowAnonymousBookings = false;
+		standaloneService.citizenAuthentication = [CitizenAuthenticationType.Singpass];
 		standaloneService.isStandAlone = true;
 
 		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(standaloneService));
@@ -353,6 +392,7 @@ describe('Bookings.Service', () => {
 		expect(booking.citizenEmail).toBe('correctemail@gmail.com');
 		expect(booking.citizenPhone).toBe('93328223');
 		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+		expect(bookingActionVisitorMock.hasPermission).toBeCalled();
 	});
 
 	it('should be able to bypass captcha and make a booking as an agency, with no validationType specified - default citizen', async () => {
@@ -872,6 +912,7 @@ describe('Bookings.Service', () => {
 		expect(booking.citizenEmail).toBe('test@mail.com');
 		expect(booking.citizenName).toBe('Jake');
 		expect(booking.citizenUinFin).not.toBe('S6979208A');
+		expect(bookingActionVisitorMock.hasPermission).toBeCalled();
 	});
 
 	it('should update booking', async () => {
@@ -1223,6 +1264,7 @@ describe('Bookings.Service', () => {
 
 			expect(result.status).toBe(BookingStatus.Accepted);
 			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+			expect(bookingActionVisitorMock.hasPermission).toBeCalled();
 		});
 
 		it('should validate on hold booking and change status to pending', async () => {
@@ -1388,6 +1430,7 @@ describe('Bookings.Service', () => {
 			expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Reschedule);
 			expect(result.status).toStrictEqual(BookingStatus.PendingApproval);
 			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+			expect(bookingActionVisitorMock.hasPermission).toBeCalled();
 		});
 
 		it('should not reschedule rejected booking', async () => {
@@ -1685,7 +1728,7 @@ describe('Bookings.Service', () => {
 
 			const standaloneService = new Service();
 			standaloneService.id = 1;
-			standaloneService.allowAnonymousBookings = false;
+			standaloneService.citizenAuthentication = [CitizenAuthenticationType.Singpass];
 			standaloneService.isStandAlone = true;
 			mockEvent.serviceId = standaloneService.id;
 
@@ -1722,7 +1765,7 @@ describe('Bookings.Service', () => {
 
 			const anonymousService = new Service();
 			anonymousService.id = 1;
-			anonymousService.allowAnonymousBookings = true;
+			anonymousService.citizenAuthentication = [CitizenAuthenticationType.Otp];
 			anonymousService.isStandAlone = false;
 			mockEvent.serviceId = anonymousService.id;
 

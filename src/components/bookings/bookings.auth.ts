@@ -12,6 +12,7 @@ import {
 	QueryAuthGroupVisitor,
 } from '../../infrastructure/auth/queryAuthGroupVisitor';
 import { UserConditionParams } from '../../infrastructure/auth/authConditionCollection';
+import { CitizenAuthenticationType } from '../../models/citizenAuthenticationType';
 
 export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 	private _booking: Booking;
@@ -31,34 +32,53 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 		this._changeLogAction = changeLogAction;
 	}
 
+	private isValidOTPServiceAndUser(_anonymousGroup: AnonymousAuthGroup) {
+		const service = this._booking.service;
+
+		return service.hasCitizenAuthentication(CitizenAuthenticationType.Otp) && _anonymousGroup.hasOTPUser();
+	}
+
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
 		const userId = _anonymousGroup.user.id;
+
 		// tslint:disable-next-line: no-small-switch
 		switch (this._changeLogAction) {
 			case ChangeLogAction.Create:
-				if (this._booking.status === BookingStatus.OnHold || _anonymousGroup.otpGroupInfo?.mobileNo) {
+				if (this._booking.status === BookingStatus.OnHold || this.isValidOTPServiceAndUser(_anonymousGroup)) {
 					this.markWithPermission();
 				}
+
 				break;
 			case ChangeLogAction.Update:
 			case ChangeLogAction.Reschedule:
 			case ChangeLogAction.Cancel:
-				if (!_anonymousGroup.otpGroupInfo?.mobileNo) {
-					break;
-				}
-
 				if (
-					(this._booking.createdLog && _anonymousGroup.user.id === this._booking.createdLog.userId) ||
-					this._booking.creatorId === userId ||
+					_anonymousGroup.hasOTPUser() &&
 					_anonymousGroup.user.anonymousUser.bookingUUID === this._booking._uuid
 				) {
 					this.markWithPermission();
+					break;
+				}
+
+				if (this.isValidOTPServiceAndUser(_anonymousGroup)) {
+					if (
+						(this._booking.createdLog && _anonymousGroup.user.id === this._booking.createdLog.userId) ||
+						this._booking.creatorId === userId
+					) {
+						this.markWithPermission();
+						break;
+					}
 				}
 				break;
 		}
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
+		const service = this._booking.service;
+		if (!service.hasCitizenAuthentication(CitizenAuthenticationType.Singpass)) {
+			return;
+		}
+
 		const uinFin = _citizenGroup.user.singPassUser.UinFin;
 		if (this._booking.citizenUinFin === uinFin) {
 			switch (this._changeLogAction) {

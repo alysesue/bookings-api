@@ -40,3 +40,4 @@ export { EventBooking1628595250677 } from './1628595250677-EventBooking';
 export { IsMandatoryDynamicFields1627545990317 } from './1627545990317-IsMandatoryDynamicFields';
 export { CustomUpdateAllExistingDynamicFields1628820298859 } from './1628820298859-CustomUpdateAllExistingDynamicFields';
 export { IncreaseCharCount1628766321061 } from './1628766321061-IncreaseCharCount';
+export { AllowedServiceAuthentication1631253669914 } from './1631253669914-AllowedServiceAuthentication';

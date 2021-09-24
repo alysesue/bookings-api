@@ -1,3 +1,4 @@
+import { CitizenAuthenticationType } from '../../models/citizenAuthenticationType';
 import { LabelRequestModel, LabelResponseModel } from '../labels/label.apicontract';
 import {
 	LabelCategoryRequestModel,
@@ -73,7 +74,11 @@ export class ServiceRequestV2 extends ServiceRequestBase {
 }
 
 export class PartialAdditionalSettings {
+	/**
+	 * @deprecated use citizenAuthentication value
+	 */
 	public allowAnonymousBookings?: boolean;
+	public citizenAuthentication?: CitizenAuthenticationType[];
 	public isOnHold?: boolean;
 	public isStandAlone?: boolean;
 	public sendNotifications?: boolean;
@@ -82,7 +87,11 @@ export class PartialAdditionalSettings {
 }
 
 export class AdditionalSettings {
+	/**
+	 * @deprecated use citizenAuthentication value
+	 */
 	public allowAnonymousBookings: boolean;
+	public citizenAuthentication: CitizenAuthenticationType[];
 	public isOnHold: boolean;
 	public isStandAlone: boolean;
 	public sendNotifications: boolean;

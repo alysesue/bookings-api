@@ -9,6 +9,7 @@ import { Organisation, Service, ServiceProvider, User } from '../../../models';
 import { DynamicFieldsActionAuthVisitor } from '../dynamicFields.auth';
 import { VisitorCrudAction } from '../../../enums/crudAction';
 import * as uuid from 'uuid';
+import { CitizenAuthenticationType } from '../../../models/citizenAuthenticationType';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -46,7 +47,7 @@ describe('DynamicFields action auth', () => {
 		const serviceA = new Service();
 		serviceA.id = 2;
 		serviceA.name = 'service';
-		serviceA.allowAnonymousBookings = true; // This still shouldn't allow editing.
+		serviceA.citizenAuthentication = [CitizenAuthenticationType.Otp];
 
 		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
 		const groups = [new AnonymousAuthGroup(anonymous)];
@@ -66,7 +67,7 @@ describe('DynamicFields action auth', () => {
 		const serviceA = new Service();
 		serviceA.id = 2;
 		serviceA.name = 'service';
-		serviceA.allowAnonymousBookings = false;
+		serviceA.citizenAuthentication = [CitizenAuthenticationType.Singpass];
 
 		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
 		const groups = [new AnonymousAuthGroup(anonymous)];

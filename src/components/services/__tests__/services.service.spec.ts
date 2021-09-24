@@ -55,8 +55,12 @@ afterAll(() => {
 	if (global.gc) global.gc();
 });
 
+const organisation = new Organisation();
+organisation.id = 1;
+organisation._organisationAdminGroupMap = { organisationRef: 'orga', organisationId: 1 } as OrganisationAdminGroupMap;
+
 const timeslotItemRequest = new TimeslotItemRequest();
-const serviceMockWithTemplate = new Service();
+const serviceMockWithTemplate = Service.create('serviceMockWithTemplate', organisation);
 const timeslotsScheduleMock = new TimeslotsSchedule();
 const timeslotItemMock = TimeslotItem.create(
 	1,
@@ -125,10 +129,6 @@ const userMock = User.createAdminUser({
 	name: 'Name',
 });
 
-const organisation = new Organisation();
-organisation.id = 1;
-organisation._organisationAdminGroupMap = { organisationRef: 'orga', organisationId: 1 } as OrganisationAdminGroupMap;
-
 // tslint:disable-next-line:no-big-function
 describe('Services service tests', () => {
 	it('should create admin service and service', async () => {
@@ -173,9 +173,8 @@ describe('Services service tests', () => {
 			groups: ['bookingsg:svc-admin-service1:orga'],
 		} as IMolCognitoUserResponse;
 
-		const service = new Service();
+		const service = Service.create('service1', organisation);
 		service.id = 1;
-		service.name = 'service1';
 		service.serviceAdminGroupMap = ServiceAdminGroupMap.create('service-abc:orga');
 
 		MolUsersServiceMock.molUpsertUser.mockImplementation(() => Promise.resolve({ created: [molUser] }));
@@ -247,12 +246,19 @@ describe('Services service tests', () => {
 		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
 			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
 		);
-		await Container.get(ServicesService).createService(existingService);
+		ServicesRepositoryMock.save.mockImplementation(() =>
+			Promise.reject(new Error('duplicate key value violates unique constraint')),
+		);
+
 		const request = new ServiceRequestV1();
 		request.name = 'bookingsg';
 		request.organisationId = 1;
 
-		expect(async () => await Container.get(ServicesService).createService(request)).rejects.toThrowError();
+		const instance = Container.get(ServicesService);
+		const asyncTest = async () => await instance.createService(request);
+		await expect(asyncTest).rejects.toMatchInlineSnapshot(
+			'[SYS_INVALID_PARAM (400): Service name is already present]',
+		);
 	});
 
 	it('should NOT save service without permission', async () => {
@@ -305,7 +311,7 @@ describe('Services service tests', () => {
 
 		await Container.get(ServicesService).createService(request);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
-		expect(ServicesRepositoryMock.save.mock.calls[0][0].allowAnonymousBookings).toBe(true);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].citizenAuthentication).toEqual(['singpass', 'otp']);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].isOnHold).toBe(true);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].isStandAlone).toBe(true);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].sendNotifications).toBe(true);
@@ -326,7 +332,7 @@ describe('Services service tests', () => {
 	});
 
 	it('should update service', async () => {
-		const newService = new Service();
+		const newService = Service.create('service1', organisation);
 		newService.id = 1;
 		newService.organisationId = 1;
 		newService.labels = [];
@@ -349,7 +355,7 @@ describe('Services service tests', () => {
 	});
 
 	it('should NOT update service without permission', async () => {
-		const newService = new Service();
+		const newService = Service.create('service1', organisation);
 		newService.id = 1;
 		newService.organisationId = 1;
 		newService.labels = [];
@@ -370,7 +376,7 @@ describe('Services service tests', () => {
 	});
 
 	it('should update service with additional settings (optional settings)', async () => {
-		const newService = new Service();
+		const newService = Service.create('service1', organisation);
 		newService.id = 1;
 		newService.organisationId = 1;
 		newService.labels = [];
@@ -395,7 +401,7 @@ describe('Services service tests', () => {
 		expect(ServicesRepositoryMock.save).toBeCalled();
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].name).toBe('John');
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].emailSuffix).toBe('def.com');
-		expect(ServicesRepositoryMock.save.mock.calls[0][0].allowAnonymousBookings).toBe(true);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].citizenAuthentication).toEqual(['singpass', 'otp']);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].isOnHold).toBe(true);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].isStandAlone).toBe(true);
 		expect(ServicesRepositoryMock.save.mock.calls[0][0].sendNotifications).toBe(true);
@@ -412,7 +418,7 @@ describe('Services service tests', () => {
 	});
 
 	it('should set service scheduleForm', async () => {
-		const newService = new Service();
+		const newService = Service.create('service1', organisation);
 		newService.organisationId = 1;
 		newService.id = 1;
 		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(newService));
@@ -430,7 +436,7 @@ describe('Services service tests', () => {
 	});
 
 	it('should get service scheduleForm', async () => {
-		const newService = new Service();
+		const newService = Service.create('service1', organisation);
 		newService.scheduleFormId = 2;
 		newService.scheduleForm = new ScheduleForm();
 		newService.scheduleForm.id = 2;
@@ -473,7 +479,7 @@ describe('Services service tests', () => {
 	});
 
 	it(`should create timeslots schedule if it doesn't exist`, async () => {
-		const service = new Service();
+		const service = Service.create('service1', organisation);
 		service.id = 1;
 		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(service));
 
@@ -540,10 +546,9 @@ describe('Services service tests', () => {
 	});
 
 	it('should update labels', async () => {
-		const newService = new Service();
+		const newService = Service.create('Service A', organisation);
 		newService.id = 1;
 		newService.organisationId = 1;
-		newService.name = 'Service A';
 		newService.labels = [Label.create('Chinese', 1), Label.create('English', 2)];
 
 		ServicesRepositoryMock.getService.mockImplementation(() => Promise.resolve(newService));
