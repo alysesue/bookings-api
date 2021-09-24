@@ -1,6 +1,6 @@
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Booking, BookingStatus, ChangeLogAction, Service, ServiceProvider, User } from '../../models';
+import { Booking, BookingStatus, BookingWorkflow, ChangeLogAction, Service, ServiceProvider, User } from '../../models';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { UnavailabilitiesService } from '../unavailabilities/unavailabilities.service';
@@ -32,6 +32,7 @@ import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
 import { BookingValidationType, BookingWorkflowType } from '../../models/bookingValidationType';
+import { BookingWorkflowsRepository } from '../bookingWorkflows/bookingWorkflows.repository';
 
 @InRequestScope
 export class BookingsService {
@@ -65,6 +66,8 @@ export class BookingsService {
 	private usersService: UsersService;
 	@Inject
 	private bookingsMapper: BookingsMapper;
+	@Inject
+	private bookingWorkflowsRepo: BookingWorkflowsRepository;
 
 	constructor() {
 		this.bookingsSubject.attach(
@@ -187,6 +190,22 @@ export class BookingsService {
 	}
 
 	public async reschedule(bookingId: number, rescheduleRequest: BookingUpdateRequestV1): Promise<Booking> {
+		const currentUser = await this.userContext.getCurrentUser();
+		const booking = await this.getBookingInternal(bookingId, {});
+		this.loadBookingDependencies(booking);
+
+		const isOnHoldReschedule = BookingsService.shouldMarkOnHold(rescheduleRequest, booking.service, currentUser);
+		if (isOnHoldReschedule) {
+			return this.rescheduleOnHoldFlow(booking, rescheduleRequest);
+		} else {
+			return this.rescheduleDefaultFlow(bookingId, rescheduleRequest);
+		}
+	}
+
+	private async rescheduleDefaultFlow(
+		bookingId: number,
+		rescheduleRequest: BookingUpdateRequestV1,
+	): Promise<Booking> {
 		const rescheduleAction = (_booking) => this.rescheduleInternal(_booking, rescheduleRequest);
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
@@ -199,6 +218,17 @@ export class BookingsService {
 			action: ExternalAgencyAppointmentJobAction.UPDATE,
 		});
 		return booking;
+	}
+
+	private async rescheduleOnHoldFlow(_booking: Booking, rescheduleRequest: BookingUpdateRequestV1): Promise<Booking> {
+		const newBooking = await this.save({ ...rescheduleRequest }, _booking.serviceId);
+		const onHoldReschedule = BookingWorkflow.createOnHoldReschedule({
+			target: _booking,
+			onHoldReschedule: newBooking,
+		});
+
+		await this.bookingWorkflowsRepo.save(onHoldReschedule);
+		return newBooking;
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<IPagedEntities<Booking>> {
@@ -220,6 +250,7 @@ export class BookingsService {
 			this.getBookingInternal.bind(this),
 			saveAction,
 		);
+
 		this.bookingsSubject.notify({
 			booking,
 			bookingType: BookingType.Created,
@@ -420,7 +451,7 @@ export class BookingsService {
 	}
 
 	private async loadBookingDependencies(booking: Booking): Promise<Booking> {
-		if (!booking.service) {
+		if (!booking.service || !booking.service.organisation) {
 			booking.service = await this.servicesService.getService(booking.serviceId);
 		}
 		if (booking.serviceProviderId && !booking.serviceProvider) {
@@ -508,57 +539,71 @@ export class BookingsService {
 	private async validateOnHoldBookingInternal(
 		previousBooking: Booking,
 		bookingRequest: ValidateOnHoldRequest,
+		beforeMap: (updatedBooking: Booking) => Promise<void> = async () => {},
 	): Promise<[ChangeLogAction, Booking]> {
-		const serviceProvider = await this.serviceProviderRepo.getServiceProvider({
-			id: previousBooking.serviceProviderId,
+		const updatedBooking = previousBooking.clone();
+		await beforeMap(updatedBooking);
+		const { service } = await this.bookingRequestExtraction(updatedBooking.serviceId);
+
+		await this.bookingsMapper.mapBookingDetails({
+			request: { ...bookingRequest, citizenUinFinUpdated: bookingRequest.citizenUinFinUpdated || false },
+			booking: updatedBooking,
+			service,
 		});
 
-		if (previousBooking.isValidOnHoldBooking()) {
-			const updatedBooking = previousBooking.clone();
-			const { service } = await this.bookingRequestExtraction(previousBooking.serviceId);
-			await this.bookingsMapper.mapBookingDetails({
-				request: { ...bookingRequest, citizenUinFinUpdated: bookingRequest.citizenUinFinUpdated || false },
-				booking: updatedBooking,
-				service,
-			});
+		const validator = this.bookingsValidatorFactory.getOnHoldValidator();
+		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
+		await this.loadBookingDependencies(updatedBooking);
+		const serviceProvider = updatedBooking.serviceProvider;
 
-			const validator = this.bookingsValidatorFactory.getOnHoldValidator();
-			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
-
-			if (serviceProvider && serviceProvider.autoAcceptBookings) {
-				updatedBooking.status = BookingStatus.Accepted;
-			} else {
-				updatedBooking.status = BookingStatus.PendingApproval;
-			}
-
-			await validator.validate(updatedBooking);
-
-			const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
-			await this.loadBookingDependencies(updatedBooking);
-			await this.verifyActionPermission(updatedBooking, changeLogAction);
-			await this.bookingsRepository.update(updatedBooking);
-
-			return [changeLogAction, updatedBooking];
+		if (serviceProvider && serviceProvider.autoAcceptBookings) {
+			updatedBooking.status = BookingStatus.Accepted;
 		} else {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				`Booking ${previousBooking.id} is not on hold or has expired`,
-			);
+			updatedBooking.status = BookingStatus.PendingApproval;
 		}
+
+		await validator.validate(updatedBooking);
+		const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
+		await this.verifyActionPermission(updatedBooking, changeLogAction);
+
+		await this.bookingsRepository.update(updatedBooking);
+		return [changeLogAction, updatedBooking];
 	}
 
-	public async validateOnHoldBooking(bookingId: number, bookingRequest: ValidateOnHoldRequest): Promise<Booking> {
-		const validateAction = (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest);
-		const booking = await this.changeLogsService.executeAndLogAction(
-			bookingId,
+	public async validateOnHoldBooking(_bookingId: number, bookingRequest: ValidateOnHoldRequest): Promise<Booking> {
+		const onHoldBooking = await this.getBookingInternal(_bookingId, {});
+		if (!onHoldBooking.isValidOnHoldBooking()) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Booking ${onHoldBooking.id} is not on hold or has expired`,
+			);
+		}
+
+		let targetId = _bookingId;
+		let beforeMap = async (_updatedBooking: Booking) => {};
+
+		if (onHoldBooking.onHoldRescheduleWorkflow) {
+			targetId = onHoldBooking.onHoldRescheduleWorkflow.targetId;
+
+			beforeMap = async (updatedBooking: Booking) => {
+				onHoldBooking.copyOnHoldInformation(updatedBooking);
+
+				onHoldBooking.expireOnHold();
+				await this.bookingsRepository.update(onHoldBooking);
+			};
+		}
+
+		const validateAction = (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest, beforeMap);
+		const targetBooking = await this.changeLogsService.executeAndLogAction(
+			targetId,
 			this.getBookingInternal.bind(this),
 			validateAction,
 		);
 		this.bookingsSubject.notify({
-			booking,
+			booking: targetBooking,
 			bookingType: BookingType.Created,
 			action: ExternalAgencyAppointmentJobAction.UPDATE,
 		});
-		return booking;
+		return targetBooking;
 	}
 
 	public async changeUser(request: BookingChangeUser): Promise<Booking> {

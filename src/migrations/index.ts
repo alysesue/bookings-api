@@ -35,3 +35,4 @@ export { ServiceNotificationTemplate1625534887335 } from './1625534887335-Servic
 export { IsMandatoryDynamicFields1627545990317 } from './1627545990317-IsMandatoryDynamicFields';
 export { CustomUpdateAllExistingDynamicFields1628820298859 } from './1628820298859-CustomUpdateAllExistingDynamicFields';
 export { IncreaseCharCount1628766321061 } from './1628766321061-IncreaseCharCount';
+export { OnHoldReschedule1632718251210 } from './1632718251210-OnHoldReschedule';

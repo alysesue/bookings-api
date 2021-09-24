@@ -63,6 +63,8 @@ import { TimeslotServiceProviderResult } from '../../../models/timeslotServicePr
 import * as uuid from 'uuid';
 import { ServiceProvidersRepositoryMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
 import { BookingValidationType, BookingWorkflowType } from '../../../models/bookingValidationType';
+import { BookingWorkflowsRepository } from '../../../components/bookingWorkflows/bookingWorkflows.repository';
+import { BookingWorkflowsRepositoryMock } from '../../../components/bookingWorkflows/__mocks__/bookingWorkflows.repository.mock';
 
 jest.mock('../../../tools/arrays');
 
@@ -154,6 +156,7 @@ describe('Bookings.Service', () => {
 		Container.bind(UsersService).to(UsersServiceMock);
 		Container.bind(BookingsSubject).to(BookingsSubjectMock);
 		Container.bind(MailObserver).to(MockObserver);
+		Container.bind(BookingWorkflowsRepository).to(BookingWorkflowsRepositoryMock);
 	});
 
 	beforeEach(() => {
@@ -1391,15 +1394,20 @@ describe('Bookings.Service', () => {
 		});
 
 		it('should set booking on hold when rescheduling booking and isStandAlone is true', async () => {
-			service.isStandAlone = true;
+			const standAloneService = new Service();
+			standAloneService.id = 1;
+			standAloneService.organisation = organisation;
+			standAloneService.organisationId = organisation.id;
+			standAloneService.isStandAlone = true;
+
 			const bookingService = Container.get(BookingsService);
 			BookingRepositoryMock.booking = new BookingBuilder()
-				.withServiceId(service.id)
+				.withServiceId(standAloneService.id)
 				.withStartDateTime(new Date('2020-10-01T01:00:00'))
 				.withEndDateTime(new Date('2020-10-01T02:00:00'))
 				.withServiceProviderId(1)
 				.build();
-			BookingRepositoryMock.booking.service = service;
+			BookingRepositoryMock.booking.service = standAloneService;
 
 			const rescheduleRequest = {
 				startDateTime: new Date('2020-10-01T05:00:00'),
@@ -1410,9 +1418,11 @@ describe('Bookings.Service', () => {
 			UserContextMock.getAuthGroups.mockImplementation(() =>
 				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
 			);
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(standAloneService));
 
 			const result = await bookingService.reschedule(1, rescheduleRequest);
-			expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Reschedule);
+			//Create OnHold
+			expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Create);
 			expect(result.status).toStrictEqual(BookingStatus.OnHold);
 			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 		});

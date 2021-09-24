@@ -12,6 +12,7 @@ import {
 	QueryAuthGroupVisitor,
 } from '../../infrastructure/auth/queryAuthGroupVisitor';
 import { UserConditionParams } from '../../infrastructure/auth/authConditionCollection';
+import { orWhere } from '../../tools/queryConditions';
 
 export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 	private _booking: Booking;
@@ -105,17 +106,17 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 	}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
+		const orConditions = [];
+		const orParams = {};
+		orParams['anonUserId'] = _anonymousGroup.user.id;
+		orConditions.push(`${this._alias}."_creatorId" = :anonUserId`);
+
 		if (_anonymousGroup.bookingInfo) {
-			const authorisedBookingUUID = _anonymousGroup.bookingInfo.bookingUUID;
-			this.addAuthCondition(`${this._alias}."_uuid" = :authorisedBookingUUID`, {
-				authorisedBookingUUID,
-			});
-		} else {
-			const userId = _anonymousGroup.user.id;
-			this.addAuthCondition(`${this._alias}."_creatorId" = :userId`, {
-				userId,
-			});
+			orParams['authorisedBookingUUID'] = _anonymousGroup.bookingInfo.bookingUUID;
+			orConditions.push(`${this._alias}."_uuid" = :authorisedBookingUUID`);
 		}
+
+		this.addAuthCondition(orWhere(orConditions), orParams);
 	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {

@@ -1,6 +1,6 @@
 import { BookingBuilder } from '../../../models/entities/booking';
 import { AvailableTimeslotProviders } from '../availableTimeslotProviders';
-import { Booking, ServiceProvider } from '../../../models';
+import { ServiceProvider } from '../../../models';
 import { TimeslotsMapperV1, TimeslotsMapperV2 } from '../timeslots.mapper';
 import { TimeslotWithCapacity } from '../../../models/timeslotWithCapacity';
 import { Container } from 'typescript-ioc';
@@ -465,7 +465,7 @@ describe('mapAvailabilityToDateResponse function', () => {
 		bookingBuilder.serviceProviderId = spId;
 		bookingBuilder.startDateTime = startTime;
 		bookingBuilder.endDateTime = endTime;
-		entry1.setBookedServiceProviders([Booking.create(bookingBuilder)]);
+		entry1.setBookedServiceProviders([bookingBuilder.build()]);
 
 		entries.push(entry1);
 

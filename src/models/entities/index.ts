@@ -24,3 +24,4 @@ export { Label } from './label';
 export { LabelCategory } from './labelCategory';
 export { Otp } from './otp';
 export { ServiceNotificationTemplate } from './serviceNotificationTemplate';
+export { BookingWorkflow } from './bookingWorkflow';

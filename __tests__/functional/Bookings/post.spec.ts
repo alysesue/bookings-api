@@ -454,6 +454,104 @@ describe('Bookings functional tests', () => {
 		expect(response.body.data.status).toBe(BookingStatus.OnHold);
 	});
 
+	const citizenMakeStandAloneBookingAndValidate = async (): Promise<{
+		onHoldResponse: request.Response;
+		validateResponse: request.Response;
+	}> => {
+		const onHoldResponse = await postCitizenBookingWithStartEndDateOnly(false, true, serviceProvider.id);
+		const bookingId = onHoldResponse.body.data.id;
+		const validateResponse = await CitizenRequestEndpointSG.create({}).post(
+			`/bookings/${bookingId}/validateOnHold`,
+			{
+				body: {
+					citizenName,
+					citizenEmail,
+					citizenUinFin,
+				},
+			},
+		);
+		return {
+			onHoldResponse,
+			validateResponse,
+		};
+	};
+
+	const citizenRescheduleStandAloneAndValidate = async (
+		bookingId: number,
+	): Promise<{
+		onHoldReschedule: request.Response;
+		bookingBeforeValidate: request.Response;
+		validateReschedule: request.Response;
+	}> => {
+		await pgClient.setServiceConfigurationStandAlone(serviceId, true);
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 3, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 4, 0));
+
+		const endpoint = CitizenRequestEndpointSG.create({
+			citizenUinFin,
+			serviceId: serviceIdStr,
+		});
+
+		const onHoldReschedule = await endpoint.post(`/bookings/${bookingId}/reschedule`, {
+			body: {
+				startDateTime,
+				endDateTime,
+				serviceProviderId: serviceProvider.id,
+				citizenName,
+				citizenEmail,
+			},
+		});
+
+		const bookingBeforeValidate = await endpoint.get(`/bookings/${bookingId}`, {});
+
+		const onHoldRescheduleId = onHoldReschedule.body.data.id;
+		const validateReschedule = await CitizenRequestEndpointSG.create({}).post(
+			`/bookings/${onHoldRescheduleId}/validateOnHold`,
+			{
+				body: {
+					citizenName,
+					citizenEmail,
+					citizenUinFin,
+				},
+			},
+		);
+		return {
+			onHoldReschedule,
+			bookingBeforeValidate,
+			validateReschedule,
+		};
+	};
+
+	it('[Stand alone] Citizen should make a stand alone SERVICE PROVIDER booking, validate and reschedule', async () => {
+		const { onHoldResponse, validateResponse } = await citizenMakeStandAloneBookingAndValidate();
+		const validatedBookingId = validateResponse.body.data.id;
+		expect(onHoldResponse.statusCode).toBe(201);
+		expect(onHoldResponse.body.data.status).toBe(BookingStatus.OnHold);
+		expect(validateResponse.statusCode).toBe(200);
+		expect(validateResponse.body.data.status).toBe(BookingStatus.Accepted);
+		expect(validatedBookingId).toBeDefined();
+
+		const {
+			onHoldReschedule,
+			bookingBeforeValidate,
+			validateReschedule,
+		} = await citizenRescheduleStandAloneAndValidate(validatedBookingId);
+
+		//makes sure original booking hasn't changed yet (before Reschedule standalone validation)
+		expect(bookingBeforeValidate.body.data.startDateTime).toEqual('2051-12-10T01:00:00.000Z');
+		expect(bookingBeforeValidate.body.data.endDateTime).toEqual('2051-12-10T02:00:00.000Z');
+		expect(bookingBeforeValidate.body.data.status).toBe(BookingStatus.Accepted);
+
+		expect(onHoldReschedule.statusCode).toBe(200);
+		expect(onHoldReschedule.body.data.status).toBe(BookingStatus.OnHold);
+		expect(validateReschedule.statusCode).toBe(200);
+		expect(validateReschedule.body.data.status).toBe(BookingStatus.Accepted);
+		//Booking id should be the same, after validation, even though there's a temporary on hold booking.
+		expect(validateReschedule.body.data.id).toEqual(validatedBookingId);
+		expect(validateReschedule.body.data.startDateTime).toEqual('2051-12-10T03:00:00.000Z');
+		expect(validateReschedule.body.data.endDateTime).toEqual('2051-12-10T04:00:00.000Z');
+	});
+
 	it('[Stand alone] Admin should NOT make a SERVICE stand alone booking when stand alone flag is true', async () => {
 		const response = await postAdminBookingWithStartEndTimeOnly(false, true);
 		expect(response.statusCode).toBe(400);

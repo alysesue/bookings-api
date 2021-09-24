@@ -1,7 +1,6 @@
-import { BookingStatus } from '../../models';
+import { BookingStatus, BookingValidationType, BookingWorkflowType } from '../../models/enums';
 import { PagingRequest } from '../../apicontract';
 import { DynamicValueContract, PersistDynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
-import { BookingValidationType, BookingWorkflowType } from '../../models/bookingValidationType';
 
 export class BookingAcceptRequestV1 {
 	/**
@@ -68,7 +67,7 @@ export class BookingUpdateRequestV2 extends BookingRequestBase {
 }
 
 export class ValidateOnHoldRequest extends BookingDetailsRequest {
-	public citizenUinFinUpdated?: boolean = true; //for backwards compatibility
+	public citizenUinFinUpdated?: boolean = true; // for backwards compatibility
 }
 
 export class BookingResponseBase {

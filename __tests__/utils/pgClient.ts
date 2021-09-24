@@ -23,6 +23,7 @@ export class PgClient {
 		await this.pool.query('DELETE FROM public.service_admin_group_map');
 		await this.pool.query('DELETE FROM public.unavailable_service_provider;');
 		await this.pool.query('DELETE FROM public.unavailability;');
+		await this.pool.query('DELETE FROM public.booking_workflow;');
 		await this.pool.query('DELETE FROM public.booking_change_log;');
 		await this.pool.query('DELETE FROM public.booking;');
 		await this.pool.query('DELETE FROM public.timeslot_item;');
