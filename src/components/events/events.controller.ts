@@ -85,7 +85,7 @@ export class EventsController extends Controller {
 	@Security('service')
 	@MOLAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 } })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async search(
+	public async searchById(
 		@Header('x-api-service') serviceId: string,
 		@Query() id?: string,
 	): Promise<ApiData<EventResponse>> {
