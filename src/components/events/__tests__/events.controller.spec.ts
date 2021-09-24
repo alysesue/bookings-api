@@ -56,7 +56,7 @@ describe('Test events controller', () => {
 
 	it('Should call search service', () => {
 		(EventsServiceMock.search as jest.Mock).mockReturnValue([]);
-		Container.get(EventsController).search(1);
+		Container.get(EventsController).search('1');
 		expect(EventsServiceMock.search).toHaveBeenCalledTimes(1);
 	});
 
