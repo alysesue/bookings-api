@@ -15,22 +15,18 @@ export const populateServiceAndServiceProvider = async ({
 	serviceProviderName = 'sp',
 	labels = [],
 	categories = [],
-	requestOptions = undefined,
 }): Promise<{ service: ServiceResponseV1; serviceProvider: ServiceProviderResponseModelV1 }> => {
-	const service = await populateService({ organisation, nameService, labels, categories, requestOptions });
-	await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id.toString() }, requestOptions).post(
-		'/service-providers',
-		{
-			body: {
-				serviceProviders: [
-					{
-						name: serviceProviderName,
-					},
-				],
-			},
+	const service = await populateService({ organisation, nameService, labels, categories });
+	await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id.toString() }).post('/service-providers', {
+		body: {
+			serviceProviders: [
+				{
+					name: serviceProviderName,
+				},
+			],
 		},
-	);
-	const response = await OrganisationAdminRequestEndpointSG.create({}, requestOptions).get('/service-providers');
+	});
+	const response = await OrganisationAdminRequestEndpointSG.create({}).get('/service-providers');
 	const serviceProvider = response.body.data[0];
 	return { service, serviceProvider };
 };
