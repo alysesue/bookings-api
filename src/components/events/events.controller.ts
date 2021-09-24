@@ -77,6 +77,23 @@ export class EventsController extends Controller {
 	}
 
 	/**
+	 * Retrieves specific event
+	 *
+	 * @param serviceId
+	 */
+	@Get('')
+	@Security('service')
+	@MOLAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 } })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async search(
+		@Header('x-api-service') serviceId: string,
+		@Query() id?: string,
+	): Promise<ApiData<EventResponse>> {
+		const idUnsigned = this.idHasher.decode(id);
+		const event = await this.eventsService.getById(idUnsigned);
+		return ApiDataFactory.create(this.eventsMapper.mapToResponse(event));
+	}
+	/**
 	 * Create an event
 	 *
 	 * @param request Details of the event to be created.
