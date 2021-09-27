@@ -9,7 +9,7 @@ import {
 import { PermissionAwareAuthGroupVisitor } from '../../infrastructure/auth/queryAuthGroupVisitor';
 import { Organisation } from '../../models';
 
-export class OrganisationSettingsActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
+export class OrganisationsActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 	private readonly _organisation: Organisation;
 	private readonly _action: CrudAction;
 

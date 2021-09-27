@@ -1,11 +1,9 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { Label, Service, ServiceProviderLabel } from '../../models';
+import { Label, Service } from '../../models';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { LabelsRepository } from './labels.repository';
-import { LabelResponse } from './label.enum';
-import { ServiceProviderLabelsRepository } from '../serviceProvidersLabels/serviceProvidersLabels.repository';
 
 @InRequestScope
 export class LabelsService {
@@ -13,58 +11,26 @@ export class LabelsService {
 	private labelsRepository: LabelsRepository;
 	@Inject
 	private idHasher: IdHasher;
-	@Inject
-	private serviceProviderLabelRepository: ServiceProviderLabelsRepository;
 
-	public async delete(
-		labels: Label[] | ServiceProviderLabel[],
-		response: LabelResponse = LabelResponse.SERVICE,
-	): Promise<void> {
+	public async delete(labels: Label[]): Promise<void> {
 		if (!labels.length) return;
-		switch (response) {
-			case LabelResponse.SERVICE:
-				return await this.labelsRepository.delete(labels as Label[]);
-			case LabelResponse.SERVICE_PROVIDER:
-				return await this.serviceProviderLabelRepository.delete(labels as ServiceProviderLabel[]);
-		}
+		return await this.labelsRepository.delete(labels);
 	}
 
-	public async update(
-		labels: Label[] | ServiceProviderLabel[],
-		response: LabelResponse = LabelResponse.SERVICE,
-	): Promise<Label[] | ServiceProviderLabel[]> {
+	public async update(labels: Label[]): Promise<Label[]> {
 		if (!labels.length) return [];
-		switch (response) {
-			case LabelResponse.SERVICE:
-				return await this.labelsRepository.save(labels as Label[]);
-			case LabelResponse.SERVICE_PROVIDER:
-				return await this.serviceProviderLabelRepository.save(labels as ServiceProviderLabel[]);
-		}
+		return await this.labelsRepository.save(labels);
 	}
 
 	public sortLabelForDeleteCategory(
 		labelsNoCategory: Label[],
 		labelsCategory: Label[],
 	): { movedLabelsToNoCategory: Label[]; deleteLabels: Label[] } {
-		return this.genericSortLabelForDeleteCategory(labelsNoCategory, labelsCategory) as {
-			movedLabelsToNoCategory: Label[];
-			deleteLabels: Label[];
-		};
-	}
-
-	public genericSortLabelForDeleteCategory(
-		labelsNoCategory: any,
-		labelsCategory: any,
-	): {
-		movedLabelsToNoCategory: Label[] | ServiceProviderLabel[];
-		deleteLabels: Label[] | ServiceProviderLabel[];
-	} {
 		const movedLabelsToNoCategory = labelsCategory.filter((labelCat) =>
-			labelsNoCategory.some((labelNoCat: Label | ServiceProviderLabel) => labelCat.id === labelNoCat.id),
+			labelsNoCategory.some((labelNoCat) => labelCat.id === labelNoCat.id),
 		);
 		const deleteLabels = labelsCategory.filter(
-			(labelCat: Label | ServiceProviderLabel) =>
-				!labelsNoCategory.some((labelNoCat: Label | ServiceProviderLabel) => labelCat.id === labelNoCat.id),
+			(labelCat) => !labelsNoCategory.some((labelNoCat) => labelCat.id === labelNoCat.id),
 		);
 		return { movedLabelsToNoCategory, deleteLabels };
 	}
@@ -75,7 +41,7 @@ export class LabelsService {
 			label.serviceId = service.id;
 		});
 
-		const updateLabel = (await this.update(labels)) as Label[];
+		const updateLabel = await this.update(labels);
 		return [...service.labels, ...updateLabel];
 	}
 

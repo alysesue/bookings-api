@@ -1,5 +1,3 @@
-import { LabelsMapper } from '../../../components/labels/labels.mapper';
-import { LabelsMapperMock } from '../../../components/labels/__mocks__/labels.mapper.mock';
 import { Container } from 'typescript-ioc';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
@@ -18,10 +16,9 @@ describe('Test categoriesLabels mapper', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
 		Container.bind(IdHasher).to(IdHasherMock);
-		Container.bind(LabelsMapper).to(LabelsMapperMock);
 
 		IdHasherMock.encode.mockImplementation(() => {});
-		IdHasherMock.decode.mockImplementation(() => {});
+		IdHasherMock.decode.mockImplementation(() => 1);
 	});
 
 	describe('mapToServiceProviderLabelsResponse API', () => {
@@ -44,10 +41,9 @@ describe('Test categoriesLabels mapper', () => {
 	describe('mapToServiceProviderLabels API', () => {
 		it('return service provider labels', () => {
 			const labels = new ServiceProviderLabelRequestModel('English', 'hashId');
-			LabelsMapperMock.genericMappingLabels.mockImplementation(() => [ServiceProviderLabel.create('English', 1)]);
+
 			const response = Container.get(SPLabelsCategoriesMapper).mapToServiceProviderLabels([labels]);
 
-			expect(LabelsMapperMock.genericMappingLabels).toBeCalledTimes(1);
 			expect(response[0].labelText).toBe('English');
 			expect(response[0].id).toBe(1);
 		});
@@ -55,9 +51,11 @@ describe('Test categoriesLabels mapper', () => {
 
 	describe('mergeAllLabels API', () => {
 		it('return service provider labels', () => {
-			LabelsMapperMock.mergeAllLabels.mockReturnValue([ServiceProviderLabel.create('English', 1)]);
-			const response = Container.get(SPLabelsCategoriesMapper).mergeAllLabels([], []);
-			expect(LabelsMapperMock.mergeAllLabels).toBeCalledTimes(1);
+			const response = Container.get(SPLabelsCategoriesMapper).mergeAllLabels(
+				[ServiceProviderLabel.create('English', 1)],
+				[ServiceProviderLabel.create('English', 1), ServiceProviderLabel.create('Malay', 2)],
+			);
+
 			expect(response[0].labelText).toBe('English');
 			expect(response[0].id).toBe(1);
 		});
@@ -87,8 +85,6 @@ describe('Test categoriesLabels mapper', () => {
 
 		it('(hashId is provided) should return mapped category', () => {
 			const label = ServiceProviderLabel.create('English', 1);
-			IdHasherMock.decode.mockReturnValue(1);
-			LabelsMapperMock.genericMappingLabels.mockReturnValue([label]);
 
 			const result = Container.get(SPLabelsCategoriesMapper).mapToServiceProviderCategories([request]);
 
@@ -101,7 +97,6 @@ describe('Test categoriesLabels mapper', () => {
 		it('(hashId is not provided) should return mapped category', () => {
 			const label = ServiceProviderLabel.create('English', 1);
 			request.id = undefined;
-			LabelsMapperMock.genericMappingLabels.mockReturnValue([label]);
 
 			const result = Container.get(SPLabelsCategoriesMapper).mapToServiceProviderCategories([request]);
 

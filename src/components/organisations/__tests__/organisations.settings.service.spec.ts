@@ -1,6 +1,6 @@
 import { OrganisationsRepositoryMock } from '../../../components/organisations/__mocks__/organisations.noauth.repository.mock';
 import { Container } from 'typescript-ioc';
-import { OrganisationSettingsService } from '../organisationSettings.service';
+import { OrganisationSettingsService } from '../organisations.settings.service';
 import { UsersServiceMock } from '../../../components/bookings/__mocks__/bookings.mocks';
 import { OrganisationsNoauthRepository } from '../../../components/organisations/organisations.noauth.repository';
 import { SPLabelsCategoriesMapper } from '../../../components/serviceProvidersLabels/serviceProvidersLabels.mapper';
@@ -23,11 +23,11 @@ import {
 	ServiceProviderLabelCategory,
 } from '../../../models';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
-import { OrganisationSettingsActionAuthVisitor } from '../organisationSettings.auth';
 import { OrganisationSettingsRequest } from '../../../components/organisations/organisations.apicontract';
 import { ServiceProviderLabelRequest } from '../../../components/serviceProvidersLabels/serviceProvidersLabels.apicontract';
+import { OrganisationsActionAuthVisitor } from '../organisations.auth';
 
-jest.mock('../organisationSettings.auth');
+jest.mock('../organisations.auth');
 
 describe('Organisation Settings API', () => {
 	describe('Organisation Service Provider Labels Service', () => {
@@ -71,7 +71,7 @@ describe('Organisation Settings API', () => {
 			jest.resetAllMocks();
 
 			visitorObject.hasPermission.mockReturnValue(true);
-			(OrganisationSettingsActionAuthVisitor as jest.Mock).mockImplementation(() => visitorObject);
+			(OrganisationsActionAuthVisitor as jest.Mock).mockImplementation(() => visitorObject);
 			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(userMock));
 			UserContextMock.getAuthGroups.mockImplementation(() =>
 				Promise.resolve([new OrganisationAdminAuthGroup(userMock, [organisation])]),

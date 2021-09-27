@@ -7,7 +7,7 @@ import { IdHasher } from '../../infrastructure/idHasher';
 import { OrganisationSettingsRequest, OrganisationSettingsResponse } from './organisations.apicontract';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { OrganisationsMapper } from './organisations.mapper';
-import { OrganisationSettingsService } from '../organisationSettings/organisationSettings.service';
+import { OrganisationSettingsService } from './organisations.settings.service';
 
 @InRequestScope
 @Route('v1/organisations')

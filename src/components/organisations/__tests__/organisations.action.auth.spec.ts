@@ -8,18 +8,18 @@ import {
 import { CrudAction } from '../../../enums/crudAction';
 import { Organisation, Service, ServiceProvider, User } from '../../../models/entities';
 import * as uuid from 'uuid';
-import { OrganisationSettingsActionAuthVisitor } from '../organisationSettings.auth';
+import { OrganisationsActionAuthVisitor } from '../organisations.auth';
 
 describe('Service providers Labels Auth', () => {
 	it('should throw errors', () => {
-		expect(() => new OrganisationSettingsActionAuthVisitor(null, CrudAction.Create)).toThrowError();
+		expect(() => new OrganisationsActionAuthVisitor(null, CrudAction.Create)).toThrowError();
 		const organisation = Organisation.create('org1');
-		expect(() => new OrganisationSettingsActionAuthVisitor(organisation, CrudAction.Create)).toThrowError();
+		expect(() => new OrganisationsActionAuthVisitor(organisation, CrudAction.Create)).toThrowError();
 	});
 
 	it('should not throw error when organisation is valid', () => {
 		const organisation = Organisation.create('org1', 1);
-		expect(() => new OrganisationSettingsActionAuthVisitor(organisation, CrudAction.Create)).toBeDefined();
+		expect(() => new OrganisationsActionAuthVisitor(organisation, CrudAction.Create)).toBeDefined();
 	});
 
 	it('should be able to update/read as org admin', () => {
@@ -29,8 +29,8 @@ describe('Service providers Labels Auth', () => {
 			[organisation],
 		);
 
-		const authVisitorUpdate = new OrganisationSettingsActionAuthVisitor(organisation, CrudAction.Update);
-		const authVisitorRead = new OrganisationSettingsActionAuthVisitor(organisation, CrudAction.Read);
+		const authVisitorUpdate = new OrganisationsActionAuthVisitor(organisation, CrudAction.Update);
+		const authVisitorRead = new OrganisationsActionAuthVisitor(organisation, CrudAction.Read);
 		expect(authVisitorUpdate.hasPermission([userGroup])).toBe(true);
 		expect(authVisitorRead.hasPermission([userGroup])).toBe(true);
 	});
@@ -44,7 +44,7 @@ describe('Service providers Labels Auth', () => {
 
 		const organisation = Organisation.create('org1', 1);
 
-		const authVisitor = new OrganisationSettingsActionAuthVisitor(organisation, CrudAction.Update);
+		const authVisitor = new OrganisationsActionAuthVisitor(organisation, CrudAction.Update);
 		expect(authVisitor.hasPermission([userGroup])).toBe(false);
 	});
 
@@ -58,7 +58,7 @@ describe('Service providers Labels Auth', () => {
 		const organisation = Organisation.create('org1', 1);
 		userGroup.authorisedServices[0].organisation = organisation;
 
-		const authVisitor = new OrganisationSettingsActionAuthVisitor(organisation, CrudAction.Read);
+		const authVisitor = new OrganisationsActionAuthVisitor(organisation, CrudAction.Read);
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
 	});
 
@@ -67,8 +67,8 @@ describe('Service providers Labels Auth', () => {
 		const groups = [new AnonymousAuthGroup(anonymous)];
 		const organisation = Organisation.create('org1', 1);
 
-		const authVisitorUpdate = new OrganisationSettingsActionAuthVisitor(organisation, CrudAction.Update);
-		const authVisitorRead = new OrganisationSettingsActionAuthVisitor(organisation, CrudAction.Read);
+		const authVisitorUpdate = new OrganisationsActionAuthVisitor(organisation, CrudAction.Update);
+		const authVisitorRead = new OrganisationsActionAuthVisitor(organisation, CrudAction.Read);
 
 		expect(authVisitorUpdate.hasPermission(groups)).toBe(false);
 		expect(authVisitorRead.hasPermission(groups)).toBe(false);
@@ -85,8 +85,8 @@ describe('Service providers Labels Auth', () => {
 		serviceProvider.service = service;
 
 		const organisation = Organisation.create('org1', 1);
-		const authVisitorUpdate = new OrganisationSettingsActionAuthVisitor(organisation, CrudAction.Update);
-		const authVisitorRead = new OrganisationSettingsActionAuthVisitor(organisation, CrudAction.Read);
+		const authVisitorUpdate = new OrganisationsActionAuthVisitor(organisation, CrudAction.Update);
+		const authVisitorRead = new OrganisationsActionAuthVisitor(organisation, CrudAction.Read);
 
 		expect(authVisitorUpdate.hasPermission([userGroup])).toBe(false);
 		expect(authVisitorRead.hasPermission([userGroup])).toBe(false);
@@ -97,8 +97,8 @@ describe('Service providers Labels Auth', () => {
 		const userGroups = [new CitizenAuthGroup(singpassMock)];
 
 		const organisation = Organisation.create('org1', 1);
-		const authVisitorUpdate = new OrganisationSettingsActionAuthVisitor(organisation, CrudAction.Update);
-		const authVisitorRead = new OrganisationSettingsActionAuthVisitor(organisation, CrudAction.Read);
+		const authVisitorUpdate = new OrganisationsActionAuthVisitor(organisation, CrudAction.Update);
+		const authVisitorRead = new OrganisationsActionAuthVisitor(organisation, CrudAction.Read);
 
 		expect(authVisitorUpdate.hasPermission(userGroups)).toBe(false);
 		expect(authVisitorRead.hasPermission(userGroups)).toBe(false);

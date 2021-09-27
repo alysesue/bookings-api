@@ -9,8 +9,8 @@ import { OrganisationsMapper } from '../organisations.mapper';
 import { OrganisationsMapperMock } from '../__mocks__/organisations.mapper.mock';
 import { OrganisationSettingsRequest, OrganisationSettingsResponse } from '../organisations.apicontract';
 import { OrganisationsControllerV2 } from '../organisations.controller';
-import { OrganisationSettingsServiceMock } from '../../../components/organisationSettings/__mocks__/organisationSettings.service.mock';
-import { OrganisationSettingsService } from '../../../components/organisationSettings/organisationSettings.service';
+import { OrganisationSettingsServiceMock } from '../__mocks__/organisations.settings.service.mock';
+import { OrganisationSettingsService } from '../organisations.settings.service';
 
 describe('Organisations.controller', () => {
 	beforeAll(() => {

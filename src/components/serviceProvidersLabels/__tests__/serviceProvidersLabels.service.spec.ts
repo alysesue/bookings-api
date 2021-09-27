@@ -1,9 +1,15 @@
 import { LabelsServiceMock } from '../../../components/labels/__mocks__/labels.service.mock';
 import { Container } from 'typescript-ioc';
 import { Organisation, ServiceProviderLabel, ServiceProviderLabelCategory } from '../../../models/entities';
-import { ServiceProviderLabelsRepository } from '../serviceProvidersLabels.repository';
+import {
+	ServiceProviderLabelsCategoriesRepository,
+	ServiceProviderLabelsRepository,
+} from '../serviceProvidersLabels.repository';
 import { SPLabelsCategoriesService } from '../serviceProvidersLabels.service';
-import { ServiceProviderLabelsRepositoryMock } from '../__mock__/serviceProvidersLabels.repository.mock';
+import {
+	ServiceProviderLabelsCategoriesRepositoryMock,
+	ServiceProviderLabelsRepositoryMock,
+} from '../__mock__/serviceProvidersLabels.repository.mock';
 import { LabelsService } from '../../../components/labels/labels.service';
 import { LabelsCategoriesServiceMock } from '../../../components/labelsCategories/__mocks__/labelsCategories.service.mock';
 import { LabelsCategoriesService } from '../../../components/labelsCategories/labelsCategories.service';
@@ -12,6 +18,7 @@ describe('Service Provider Labels and Categories Services', () => {
 	beforeAll(() => {
 		jest.resetAllMocks();
 		Container.bind(ServiceProviderLabelsRepository).to(ServiceProviderLabelsRepositoryMock);
+		Container.bind(ServiceProviderLabelsCategoriesRepository).to(ServiceProviderLabelsCategoriesRepositoryMock);
 	});
 
 	beforeEach(() => {
@@ -78,15 +85,15 @@ describe('Service Provider Labels and Categories Services', () => {
 			const organisation = Organisation.create('org1', 1);
 			organisation.labels = [label1];
 			organisation.categories = originalCategories;
-			(LabelsServiceMock.genericSortLabelForDeleteCategory as jest.Mock).mockReturnValue({
-				movedLabelsToNoCategory: [],
-				deleteLabels: [],
-			});
-			(LabelsServiceMock.updateMock as jest.Mock).mockReturnValue([label1]);
+
+			(ServiceProviderLabelsRepositoryMock.saveMock as jest.Mock).mockReturnValue([label1]);
+			(ServiceProviderLabelsCategoriesRepositoryMock.deleteMock as jest.Mock).mockReturnValue({});
+			(ServiceProviderLabelsCategoriesRepositoryMock.saveMock as jest.Mock).mockReturnValue({});
+
 			await Container.get(SPLabelsCategoriesService).updateSPLabel(organisation, updateCategories, [label2]);
-			expect(LabelsServiceMock.deleteMock).toBeCalledTimes(1);
-			expect(LabelsCategoriesServiceMock.deleteMock).toBeCalledTimes(1);
-			expect(LabelsCategoriesServiceMock.saveMock).toBeCalledTimes(1);
+			expect(ServiceProviderLabelsRepositoryMock.saveMock).toBeCalledTimes(1);
+			expect(ServiceProviderLabelsCategoriesRepositoryMock.deleteMock).toBeCalledTimes(1);
+			expect(ServiceProviderLabelsCategoriesRepositoryMock.saveMock).toBeCalledTimes(1);
 		});
 	});
 });

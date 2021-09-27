@@ -1,43 +1,22 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { LabelCategory, Label, Service, ServiceProviderLabelCategory } from '../../models';
+import { LabelCategory, Label, Service } from '../../models';
 import { LabelsCategoriesRepository } from './labelsCategories.repository';
 import { LabelsService } from '../labels/labels.service';
-import { LabelResponse } from '../labels/label.enum';
-import { ServiceProviderLabelsCategoriesRepository } from '../serviceProvidersLabels/serviceProvidersLabels.repository';
-
 @InRequestScope
 export class LabelsCategoriesService {
 	@Inject
 	private categoriesRepository: LabelsCategoriesRepository;
 	@Inject
 	private labelsService: LabelsService;
-	@Inject
-	private spCategoriesRepository: ServiceProviderLabelsCategoriesRepository;
 
-	public async save(
-		categories: LabelCategory[] | ServiceProviderLabelCategory[],
-		response: LabelResponse = LabelResponse.SERVICE,
-	): Promise<LabelCategory[] | ServiceProviderLabelCategory[]> {
+	public async save(categories: LabelCategory[]): Promise<LabelCategory[]> {
 		if (!categories.length) return;
-		switch (response) {
-			case LabelResponse.SERVICE:
-				return await this.categoriesRepository.save(categories as LabelCategory[]);
-			case LabelResponse.SERVICE_PROVIDER:
-				return await this.spCategoriesRepository.save(categories as ServiceProviderLabelCategory[]);
-		}
+		return await this.categoriesRepository.save(categories);
 	}
 
-	public async delete(
-		categories: LabelCategory[] | ServiceProviderLabelCategory[],
-		response: LabelResponse = LabelResponse.SERVICE,
-	): Promise<void> {
+	public async delete(categories: LabelCategory[]): Promise<void> {
 		if (!categories.length) return;
-		switch (response) {
-			case LabelResponse.SERVICE:
-				return await this.categoriesRepository.delete(categories as LabelCategory[]);
-			case LabelResponse.SERVICE_PROVIDER:
-				return await this.spCategoriesRepository.delete(categories as ServiceProviderLabelCategory[]);
-		}
+		return await this.categoriesRepository.delete(categories);
 	}
 
 	public async update(
@@ -58,7 +37,7 @@ export class LabelsCategoriesService {
 		service.labels = await this.labelsService.updateLabelToNoCategory(movedLabelsToNoCategory, service);
 		await this.labelsService.delete(deleteLabels);
 		await this.delete(deleteCategories);
-		return (await this.save([...newCategories, ...updateOrKeepCategories])) as LabelCategory[];
+		return await this.save([...newCategories, ...updateOrKeepCategories]);
 	}
 
 	public sortUpdateCategories(

@@ -1,24 +1,30 @@
 import { Organisation, ServiceProviderLabel, ServiceProviderLabelCategory } from '../../models';
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { LabelsService } from '../labels/labels.service';
-import { LabelResponse } from '../labels/label.enum';
-import { LabelsCategoriesService } from '../labelsCategories/labelsCategories.service';
+import {
+	ServiceProviderLabelsCategoriesRepository,
+	ServiceProviderLabelsRepository,
+} from './serviceProvidersLabels.repository';
 
 @InRequestScope
 export class SPLabelsCategoriesService {
 	@Inject
-	private labelsService: LabelsService;
+	private serviceProviderLabelRepository: ServiceProviderLabelsRepository;
 	@Inject
-	private labelsCategoriesService: LabelsCategoriesService;
+	private spCategoriesRepository: ServiceProviderLabelsCategoriesRepository;
 
 	public sortSPLabelForDeleteCategory(
 		labelsNoCategory: ServiceProviderLabel[],
 		labelsCategory: ServiceProviderLabel[],
 	): { movedLabelsToNoCategory: ServiceProviderLabel[]; deleteLabels: ServiceProviderLabel[] } {
-		return this.labelsService.genericSortLabelForDeleteCategory(labelsNoCategory, labelsCategory) as {
-			movedLabelsToNoCategory: ServiceProviderLabel[];
-			deleteLabels: ServiceProviderLabel[];
-		};
+		const movedLabelsToNoCategory = labelsCategory.filter((labelCat) =>
+			labelsNoCategory.some((labelNoCat: ServiceProviderLabel) => labelCat.id === labelNoCat.id),
+		);
+		const deleteLabels = labelsCategory.filter(
+			(labelCat: ServiceProviderLabel) =>
+				!labelsNoCategory.some((labelNoCat: ServiceProviderLabel) => labelCat.id === labelNoCat.id),
+		);
+
+		return { movedLabelsToNoCategory, deleteLabels };
 	}
 
 	public async updateSPLabelToNoCategory(
@@ -29,11 +35,8 @@ export class SPLabelsCategoriesService {
 			label.categoryId = null;
 			label.organisationId = organisation.id;
 		});
+		const updateLabel = await this.serviceProviderLabelRepository.save(labels as ServiceProviderLabel[]);
 
-		const updateLabel = (await this.labelsService.update(
-			labels,
-			LabelResponse.SERVICE_PROVIDER,
-		)) as ServiceProviderLabel[];
 		return [...organisation.labels, ...updateLabel];
 	}
 
@@ -54,12 +57,10 @@ export class SPLabelsCategoriesService {
 			allLabelsOfDeleteCategories,
 		);
 		organisation.labels = await this.updateSPLabelToNoCategory(movedLabelsToNoCategory, organisation);
-		await this.labelsService.delete(deleteLabels, LabelResponse.SERVICE_PROVIDER);
-		await this.labelsCategoriesService.delete(deleteCategories, LabelResponse.SERVICE_PROVIDER);
-		return (await this.labelsCategoriesService.save(
-			[...newCategories, ...updateOrKeepCategories],
-			LabelResponse.SERVICE_PROVIDER,
-		)) as ServiceProviderLabelCategory[];
+
+		await this.serviceProviderLabelRepository.delete(deleteLabels);
+		await this.spCategoriesRepository.delete(deleteCategories);
+		return await this.spCategoriesRepository.save([...newCategories, ...updateOrKeepCategories]);
 	}
 
 	private sortUpdateSPCategories(

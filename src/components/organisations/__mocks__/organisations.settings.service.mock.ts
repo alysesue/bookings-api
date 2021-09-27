@@ -1,5 +1,5 @@
 import { Organisation } from '../../../models';
-import { OrganisationSettingsService } from '../organisationSettings.service';
+import { OrganisationSettingsService } from '../organisations.settings.service';
 
 export class OrganisationSettingsServiceMock implements Partial<OrganisationSettingsService> {
 	public static getOrgSettings = jest.fn<Promise<Organisation>, any>();

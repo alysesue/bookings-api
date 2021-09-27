@@ -1,11 +1,9 @@
 import { Container } from 'typescript-ioc';
 import { LabelsRepository } from '../labels.repository';
 import { LabelsRepositoryMock } from '../__mocks__/labels.repository.mock';
-import { Label, Organisation, Service, ServiceProviderLabel } from '../../../models/entities';
+import { Label, Organisation, Service } from '../../../models/entities';
 import { LabelsService } from '../labels.service';
 import { IdHasher } from '../../../infrastructure/idHasher';
-import { LabelResponse } from '../label.enum';
-import { ServiceProviderLabelsRepository } from '../../../components/serviceProvidersLabels/serviceProvidersLabels.repository';
 import { ServiceProviderLabelsRepositoryMock } from '../../../components/serviceProvidersLabels/__mock__/serviceProvidersLabels.repository.mock';
 
 describe('Test labels service', () => {
@@ -13,7 +11,6 @@ describe('Test labels service', () => {
 		jest.resetAllMocks();
 		Container.bind(LabelsRepository).to(LabelsRepositoryMock);
 		Container.bind(IdHasher).to(IdHasherMock);
-		Container.bind(ServiceProviderLabelsRepository).to(ServiceProviderLabelsRepositoryMock);
 	});
 
 	beforeEach(() => {
@@ -105,19 +102,6 @@ describe('Test labels service', () => {
 			expect(LabelsRepositoryMock.deleteMock).toBeCalledTimes(1);
 			expect(ServiceProviderLabelsRepositoryMock.deleteMock).not.toBeCalled();
 		});
-
-		it('delete service provider label', async () => {
-			const label = ServiceProviderLabel.create('English', 1);
-			await Container.get(LabelsService).delete([label], LabelResponse.SERVICE_PROVIDER);
-			expect(ServiceProviderLabelsRepositoryMock.deleteMock).toBeCalledTimes(1);
-			expect(LabelsRepositoryMock.deleteMock).not.toBeCalled();
-		});
-
-		it('no labels are being passed', async () => {
-			await Container.get(LabelsService).delete([]);
-			expect(LabelsRepositoryMock.deleteMock).not.toBeCalled();
-			expect(ServiceProviderLabelsRepositoryMock.deleteMock).not.toBeCalled();
-		});
 	});
 
 	describe('update API', () => {
@@ -125,19 +109,6 @@ describe('Test labels service', () => {
 			const label = Label.create('English', 1);
 			await Container.get(LabelsService).update([label]);
 			expect(LabelsRepositoryMock.saveMock).toBeCalledTimes(1);
-			expect(ServiceProviderLabelsRepositoryMock.saveMock).not.toBeCalled();
-		});
-
-		it('update service provider label', async () => {
-			const label = ServiceProviderLabel.create('English', 1);
-			await Container.get(LabelsService).update([label], LabelResponse.SERVICE_PROVIDER);
-			expect(ServiceProviderLabelsRepositoryMock.saveMock).toBeCalledTimes(1);
-			expect(LabelsRepositoryMock.saveMock).not.toBeCalled();
-		});
-
-		it('no labels are being passed', async () => {
-			await Container.get(LabelsService).update([]);
-			expect(LabelsRepositoryMock.saveMock).not.toBeCalled();
 			expect(ServiceProviderLabelsRepositoryMock.saveMock).not.toBeCalled();
 		});
 	});

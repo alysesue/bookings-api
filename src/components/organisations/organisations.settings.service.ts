@@ -8,7 +8,7 @@ import { OrganisationsNoauthRepository } from '../organisations/organisations.no
 import { SPLabelsCategoriesMapper } from '../serviceProvidersLabels/serviceProvidersLabels.mapper';
 import { SPLabelsCategoriesService } from '../serviceProvidersLabels/serviceProvidersLabels.service';
 import { OrganisationSettingsRequest } from '../organisations/organisations.apicontract';
-import { OrganisationSettingsActionAuthVisitor } from './organisationSettings.auth';
+import { OrganisationsActionAuthVisitor } from './organisations.auth';
 
 @InRequestScope
 export class OrganisationSettingsService {
@@ -80,7 +80,7 @@ export class OrganisationSettingsService {
 
 	private async verifyActionPermission(organisation: Organisation, action: CrudAction): Promise<void> {
 		const authGroups = await this.userContext.getAuthGroups();
-		if (!new OrganisationSettingsActionAuthVisitor(organisation, action).hasPermission(authGroups)) {
+		if (!new OrganisationsActionAuthVisitor(organisation, action).hasPermission(authGroups)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
 				`User cannot perform this organisation action (${action}) for this org. Organisation: ${organisation.name}`,
 			);

@@ -1,8 +1,6 @@
 import { ServiceProviderLabel, ServiceProviderLabelCategory } from '../../models';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { IdHasher } from '../../infrastructure/idHasher';
-import { LabelsMapper } from '../labels/labels.mapper';
-import { LabelResponse } from '../labels/label.enum';
 import {
 	ServiceProviderLabelRequestModel,
 	ServiceProviderLabelCategoryRequestModel,
@@ -12,8 +10,6 @@ import {
 
 @InRequestScope
 export class SPLabelsCategoriesMapper {
-	@Inject
-	private labelsMapper: LabelsMapper;
 	@Inject
 	private idHasher: IdHasher;
 
@@ -28,14 +24,56 @@ export class SPLabelsCategoriesMapper {
 	}
 
 	public mapToServiceProviderLabels(labels: ServiceProviderLabelRequestModel[] = []): ServiceProviderLabel[] {
-		return this.labelsMapper.genericMappingLabels(labels, LabelResponse.SERVICE_PROVIDER) as ServiceProviderLabel[];
+		// Remove duplicate labelText
+		const labelNoDeepDuplicate = labels.filter(
+			(label, index, self) => self.findIndex((t) => t.name === label.name && t.id === label.id) === index,
+		);
+		const labelNoDuplicate = SPLabelsCategoriesMapper.removeDuplicateLabels(labelNoDeepDuplicate);
+
+		return labelNoDuplicate.map((i) => {
+			const entity = new ServiceProviderLabel();
+			if (i.id) {
+				entity.id = this.idHasher.decode(i.id);
+			}
+			entity.labelText = i.name;
+			return entity;
+		});
+	}
+
+	// Keep duplication if id different as we have to update timeslot before deleting one (Delete Category scenario).
+	private static removeDuplicateLabels(
+		labels: ServiceProviderLabelRequestModel[] = [],
+	): ServiceProviderLabelRequestModel[] {
+		const res = labels;
+		for (let i = 0; i < labels.length; i++) {
+			for (let j = i + 1; j < labels.length; j++) {
+				if (labels[i].name === labels[j].name) {
+					if (!labels[i].id) res.splice(i, 1);
+					else if (!labels[j].id) res.splice(j, 1);
+				}
+			}
+		}
+		return res;
 	}
 
 	public mergeAllLabels(
 		originalList: ServiceProviderLabel[],
 		updatedList: ServiceProviderLabel[],
 	): ServiceProviderLabel[] {
-		return this.labelsMapper.mergeAllLabels(originalList, updatedList) as ServiceProviderLabel[];
+		for (let index = 0; index < originalList.length; ) {
+			const originalLabel = originalList[index];
+			const foundUpdatedLabel = updatedList.find((label) => !!label.id && label.id === originalLabel.id);
+			if (foundUpdatedLabel) {
+				originalLabel.labelText = foundUpdatedLabel.labelText;
+				index++;
+			} else {
+				originalList.splice(index, 1);
+			}
+		}
+
+		originalList.push(...updatedList.filter((label) => !label.id));
+
+		return originalList;
 	}
 
 	public mapToCategoriesResponse(
