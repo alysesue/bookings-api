@@ -169,20 +169,9 @@ export class ServiceProvidersController extends Controller {
 	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getTotalServiceProviders(
-		@Query() fromAvailableDate?: Date,
-		@Query() toAvailableDate?: Date,
 		@Header('x-api-service') serviceId?: number,
 	): Promise<ApiData<TotalServiceProviderResponse>> {
-		let total;
-		if (fromAvailableDate && toAvailableDate) {
-			total = await this.serviceProvidersService.getAvailableServiceProvidersCount(
-				serviceId,
-				fromAvailableDate,
-				toAvailableDate,
-			);
-			return ApiDataFactory.create({ total });
-		}
-		total = await this.serviceProvidersService.getServiceProvidersCount(serviceId);
+		const total = await this.serviceProvidersService.getServiceProvidersCount(serviceId);
 		return ApiDataFactory.create({ total });
 	}
 

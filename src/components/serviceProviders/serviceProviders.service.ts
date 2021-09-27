@@ -128,26 +128,6 @@ export class ServiceProvidersService {
 		});
 	}
 
-	public async getAvailableServiceProvidersCount(serviceId?: number, from?: Date, to?: Date): Promise<number> {
-		const timeslots = await this.timeslotsService.getAggregatedTimeslots({
-			startDateTime: from,
-			endDateTime: to,
-			serviceId,
-			includeBookings: false,
-			filterDaysInAdvance: false,
-		});
-		const availableServiceProviders = new Set<ServiceProvider>();
-
-		timeslots.forEach((timeslot) => {
-			for (const spTimeslotItem of timeslot.getTimeslotServiceProviders()) {
-				if (spTimeslotItem.availabilityCount > 0) {
-					availableServiceProviders.add(spTimeslotItem.serviceProvider);
-				}
-			}
-		});
-		return Array.from(availableServiceProviders).length;
-	}
-
 	public async getPagedServiceProviders(
 		from: Date,
 		to: Date,
