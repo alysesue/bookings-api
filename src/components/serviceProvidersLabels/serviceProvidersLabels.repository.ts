@@ -12,8 +12,8 @@ export class ServiceProviderLabelsRepository extends RepositoryBase<ServiceProvi
 	}
 
 	public async delete(data: ServiceProviderLabel[]) {
-		const repository = await this.getRepository();
 		if (!data.length) return;
+		const repository = await this.getRepository();
 		await repository.delete(data.map((label) => label.id));
 	}
 

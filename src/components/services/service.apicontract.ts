@@ -39,6 +39,7 @@ export class ServiceResponseV1 extends ServiceResponseBase {
 
 export class ServiceResponseV2 extends ServiceResponseBase {
 	public id: string;
+	public orgId?: string;
 }
 
 export class ServiceRequestBase {

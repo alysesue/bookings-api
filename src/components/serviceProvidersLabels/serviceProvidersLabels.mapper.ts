@@ -42,7 +42,7 @@ export class SPLabelsCategoriesMapper {
 
 	// Keep duplication if id different as we have to update timeslot before deleting one (Delete Category scenario).
 	private static removeDuplicateLabels(
-		labels: ServiceProviderLabelRequestModel[] = [],
+		labels: ServiceProviderLabelRequestModel[],
 	): ServiceProviderLabelRequestModel[] {
 		const res = labels;
 		for (let i = 0; i < labels.length; i++) {

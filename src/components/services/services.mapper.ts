@@ -28,10 +28,11 @@ export class ServicesMapper {
 		return { ...serviceResponse, id: service.id };
 	}
 
-	public mapToServiceResponseV2(service: Service): ServiceResponseV2 {
+	public mapToServiceResponseV2(service: Service, includeOrganisationId = false): ServiceResponseV2 {
 		const signedServiceId = this.idHasher.encode(service.id);
 		const serviceResponse = this.mapToServiceResponseBase(service);
-		return { ...serviceResponse, id: signedServiceId };
+		const signedOrgId = includeOrganisationId ? this.idHasher.encode(service.organisationId) : undefined;
+		return { ...serviceResponse, id: signedServiceId, orgId: signedOrgId };
 	}
 
 	private mapToServiceResponseBase(service: Service): ServiceResponseBase {
