@@ -139,7 +139,7 @@ export class ServiceProvidersService {
 		serviceId?: number,
 	): Promise<IPagedEntities<ServiceProvider>> {
 		let result: ServiceProvider[] = [];
-		if (from && to) {
+		if (from && to && from < to) {
 			if (serviceId) {
 				result = await this.getAvailableServiceProviders(from, to, filterDaysInAdvance, serviceId);
 			} else {
