@@ -5,6 +5,7 @@ import { LabelsCategoriesRepository } from '../labelsCategories.repository';
 import { LabelsCategoriesRepositoryMock } from '../__mocks__/labelsCategories.repository.mock';
 import { LabelsService } from '../../labels/labels.service';
 import { LabelsServiceMock } from '../../labels/__mocks__/labels.service.mock';
+import { ServiceProviderLabelsCategoriesRepositoryMock } from '../../../components/serviceProvidersLabels/__mock__/serviceProvidersLabels.repository.mock';
 
 describe('Test categoriesLabels service', () => {
 	beforeAll(() => {
@@ -70,5 +71,15 @@ describe('Test categoriesLabels service', () => {
 		expect(updateListOfCategories.newCategories).toStrictEqual([]);
 		expect(updateListOfCategories.updateOrKeepCategories).toStrictEqual([catego2]);
 		expect(updateListOfCategories.deleteCategories).toStrictEqual([]);
+	});
+
+	describe('delete API', () => {
+		const labelCategory = LabelCategory.create('Language');
+
+		it('should delete service label category', async () => {
+			await Container.get(LabelsCategoriesService).delete([labelCategory]);
+			expect(LabelsCategoriesRepositoryMock.deleteMock).toBeCalledTimes(1);
+			expect(ServiceProviderLabelsCategoriesRepositoryMock.deleteMock).not.toBeCalled();
+		});
 	});
 });

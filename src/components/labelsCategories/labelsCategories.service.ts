@@ -2,7 +2,6 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { LabelCategory, Label, Service } from '../../models';
 import { LabelsCategoriesRepository } from './labelsCategories.repository';
 import { LabelsService } from '../labels/labels.service';
-
 @InRequestScope
 export class LabelsCategoriesService {
 	@Inject
@@ -10,8 +9,14 @@ export class LabelsCategoriesService {
 	@Inject
 	private labelsService: LabelsService;
 
-	public async delete(categories: LabelCategory[]) {
-		await this.categoriesRepository.delete(categories);
+	public async save(categories: LabelCategory[]): Promise<LabelCategory[]> {
+		if (!categories.length) return;
+		return await this.categoriesRepository.save(categories);
+	}
+
+	public async delete(categories: LabelCategory[]): Promise<void> {
+		if (!categories.length) return;
+		return await this.categoriesRepository.delete(categories);
 	}
 
 	public async update(
@@ -32,7 +37,7 @@ export class LabelsCategoriesService {
 		service.labels = await this.labelsService.updateLabelToNoCategory(movedLabelsToNoCategory, service);
 		await this.labelsService.delete(deleteLabels);
 		await this.delete(deleteCategories);
-		return this.categoriesRepository.save([...newCategories, ...updateOrKeepCategories]);
+		return await this.save([...newCategories, ...updateOrKeepCategories]);
 	}
 
 	public sortUpdateCategories(

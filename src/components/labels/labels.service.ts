@@ -14,7 +14,7 @@ export class LabelsService {
 
 	public async delete(labels: Label[]): Promise<void> {
 		if (!labels.length) return;
-		await this.labelsRepository.delete(labels);
+		return await this.labelsRepository.delete(labels);
 	}
 
 	public async update(labels: Label[]): Promise<Label[]> {

@@ -15,6 +15,7 @@ export class LabelsServiceMock implements Partial<LabelsService> {
 	public async update(...param): Promise<Label[]> {
 		return LabelsServiceMock.updateMock(...param);
 	}
+
 	public sortLabelForDeleteCategory(...param): { movedLabelsToNoCategory: Label[]; deleteLabels: Label[] } {
 		return LabelsServiceMock.sortLabelForDeleteCategoryMock(...param);
 	}

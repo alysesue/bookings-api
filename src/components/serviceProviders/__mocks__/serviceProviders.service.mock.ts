@@ -20,6 +20,8 @@ export class ServiceProvidersServiceMock implements Partial<ServiceProvidersServ
 	public static createServiceProvidersMock = jest.fn();
 	public static getServiceProvidersByNameMock = jest.fn();
 	public static getFilteredServiceProvidersByEmailMock = jest.fn();
+	public static getServiceProviderLabelsMock = jest.fn<Promise<ServiceProvider>, any>();
+	public static updateServiceProviderLabelsMock = jest.fn<Promise<ServiceProvider>, any>();
 
 	public async getServiceProvider(...params): Promise<ServiceProvider> {
 		return ServiceProvidersServiceMock.getServiceProviderMock(...params);
@@ -82,5 +84,13 @@ export class ServiceProvidersServiceMock implements Partial<ServiceProvidersServ
 
 	public getFilteredServiceProvidersByEmail(...params): ServiceProvider[] {
 		return ServiceProvidersServiceMock.getFilteredServiceProvidersByEmailMock(...params);
+	}
+
+	public getServiceProviderLabels(spId: number): Promise<ServiceProvider> {
+		return ServiceProvidersServiceMock.getServiceProviderLabelsMock(spId);
+	}
+
+	public updateServiceProviderLabels(...params): Promise<ServiceProvider> {
+		return ServiceProvidersServiceMock.updateServiceProviderLabelsMock(...params);
 	}
 }

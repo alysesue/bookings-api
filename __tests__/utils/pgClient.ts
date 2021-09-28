@@ -14,6 +14,9 @@ export class PgClient {
 	}
 	public async cleanAllTables() {
 		// Delete many-to-one relationships first
+		await this.pool.query('DELETE FROM public.otp;');
+		await this.pool.query('DELETE FROM public.service_provider_label');
+		await this.pool.query('DELETE FROM public.service_provider_label_category');
 		await this.pool.query('DELETE FROM public.service_notification_template;');
 		await this.pool.query('DELETE FROM public.dynamic_field');
 		await this.pool.query('DELETE FROM public.label');
