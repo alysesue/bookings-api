@@ -132,23 +132,21 @@ describe('One-off timeslots functional tests - get', () => {
 	});
 
 	it('one off timeslots should query by label', async () => {
-		const labelId0 = service1Results.labels[0].id;
-		const labelId1 = service1Results.labels[1].id;
+		const labelId0 = service1Results.labels[2].id;
 		const service1TimeslotsResponse = await OrganisationAdminRequestEndpointSG.create({
 			serviceId: serviceId1,
 		}).get(
-			`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}&labelIds=${labelId0}&labelIds=${labelId1}`,
+			`/timeslots?startDate=${overallStartDate.toISOString()}&endDate=${overallEndDate.toISOString()}&labelIds=${labelId0}`,
 			{},
 			'V2',
 		);
 
 		const data = service1TimeslotsResponse.body.data as TimeslotEntryResponseV2[];
-
 		expect(service1TimeslotsResponse.statusCode).toEqual(200);
 		expect(data[0].timeslotServiceProviders[0].eventTitle).toBe('my event');
 		expect(data[0].timeslotServiceProviders[0].eventDescription).toBe('my description');
-		expect(data[0].timeslotServiceProviders[0].labels[0].label).toBe('Chinese');
-		expect(data[0].timeslotServiceProviders[0].labels[1].label).toBe('English');
+		expect(data[0].timeslotServiceProviders.length).toBe(1);
+		expect(data[0].timeslotServiceProviders[0].labels.length).toBe(3);
 	});
 
 	it('one off timeslots should retrieve labels if applicable', async () => {
