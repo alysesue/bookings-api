@@ -824,6 +824,24 @@ export class BookingsControllerV2 extends Controller {
 	}
 
 	/**
+	 * Updates the booking user with the current user. It requires a Booking UUID
+	 *
+	 * @param @isInt bookingId The booking id.
+	 */
+	@Post('{bookingId}/user')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@SuccessResponse(200, 'Ok')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
+	public async changeUser(
+		@Path() bookingId: string,
+		@Body() request: BookingChangeUser,
+	): Promise<ApiData<BookingResponseV2>> {
+		request.bookingId = this.idHasher.decode(bookingId);
+		const booking = await this.bookingsService.changeUser(request);
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking, { mapUUID: true }));
+	}
+
+	/**
 	 * Validates an on hold booking.
 	 * It will add additional booking information to an existing booking and change the status of the booking
 	 *

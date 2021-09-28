@@ -20,3 +20,14 @@ export class ServiceNotificationTemplateResponse {
 	public serviceId: number;
 	public isDefaultTemplate?: boolean;
 }
+
+export class ServiceNotificationTemplateResponseV2 {
+	public id: string;
+	public emailTemplateType: EmailNotificationTemplateType;
+	public htmlTemplate: string;
+	/**
+	 * @isInt
+	 */
+	public serviceId: string;
+	public isDefaultTemplate?: boolean;
+}
