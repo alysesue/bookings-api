@@ -66,7 +66,21 @@ export class PgClient {
 		return res.rows[0]._molAdminId;
 	}
 
-	public async configureServiceAllowAnonymous({ serviceId }: { serviceId: number }): Promise<void> {
+	public async setOrganisation({organisationName, schemaVersion ={schemaVersion: 2}}): Promise<void> {
+		await this.pool.query({
+			text: `INSERT INTO public.organisation("_name", "_configuration") values ($1, $2)`,
+			values: [organisationName, schemaVersion],
+		});
+	}
+
+	public async getFirstOrganisation(): Promise<number> {
+		const res = await this.pool.query({
+			text: `SELECT * FROM public.organisation`
+		});
+		return res.rows[0]._id;
+	}
+
+	public async configureServiceAllowAnonymous({ serviceId }): Promise<void> {
 		await this.pool.query({
 			text: `UPDATE public.service set "_citizenAuthentication" = '{otp}' where _id = $1`,
 			values: [serviceId],
@@ -80,20 +94,14 @@ export class PgClient {
 		});
 	}
 
-	public async setServiceConfigurationStandAlone(serviceId: number, standAlone: boolean): Promise<void> {
+	public async setServiceConfigurationStandAlone(serviceId, standAlone): Promise<void> {
 		await this.pool.query({
 			text: `UPDATE public.service set "_isStandAlone" = $1 where _id = $2`,
 			values: [standAlone, serviceId],
 		});
 	}
 
-	public async setServiceProviderAutoAccept({
-		serviceProviderId,
-		autoAcceptBookings,
-	}: {
-		serviceProviderId: number;
-		autoAcceptBookings: boolean;
-	}): Promise<void> {
+	public async setServiceProviderAutoAccept({ serviceProviderId, autoAcceptBookings }): Promise<void> {
 		await this.pool.query({
 			text: `UPDATE public.service_provider set "_autoAcceptBookings" = $1 where _id = $2`,
 			values: [autoAcceptBookings, serviceProviderId],

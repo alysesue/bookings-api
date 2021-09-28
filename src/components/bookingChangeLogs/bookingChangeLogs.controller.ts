@@ -78,7 +78,7 @@ export class BookingChangeLogsControllerV2 extends Controller {
 		@Header('x-api-service') serviceId?: string,
 	): Promise<ApiData<BookingChangeLogResponseV2[]>> {
 		const unsignedServiceId = this.idHasher.decode(serviceId);
-		const unsignedBookingIds = bookingIds.map((id) => this.idHasher.decode(id));
+		const unsignedBookingIds = bookingIds ? bookingIds.map((id) => this.idHasher.decode(id)) : undefined;
 		const logs = await this.changeLogsService.getLogs({
 			changedSince,
 			changedUntil,

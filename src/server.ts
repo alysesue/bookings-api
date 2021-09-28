@@ -20,7 +20,7 @@ import { RegisterRoutes } from './routes';
 import { useSwagger } from './infrastructure/swagger.middleware';
 import { ContainerContextMiddleware } from './infrastructure/containerContext.middleware';
 import { UserContextMiddleware } from './infrastructure/userContext.middleware';
-import { ApiData, ApiPagedData } from './apicontract';
+import { ApiData, ApiPagedData, ApiPagedDataV2 } from './apicontract';
 import { BusinessErrorMiddleware } from './infrastructure/businessError.middleware';
 import { getConnectionOptions } from './core/connectionOptions';
 import { CitizenUserValidationMiddleware } from './infrastructure/citizenUserValidation.middleware';
@@ -53,7 +53,8 @@ class ApiDataResponseHandler {
 			if (
 				!ctx[MANUAL_CONTEXT_RESPONSE] &&
 				!(ctx.body instanceof ApiData) &&
-				!(ctx.body instanceof ApiPagedData)
+				!(ctx.body instanceof ApiPagedData) &&
+				!(ctx.body instanceof ApiPagedDataV2)
 			) {
 				await koaResponseMiddleware(ctx, emptyNext);
 			}
