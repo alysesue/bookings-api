@@ -91,8 +91,6 @@ describe('Dynamic Fields functional tests', () => {
 		});
 		const response = await endpoint.get('/dynamicFields', {}, 'V2');
 
-		console.log(response.body);
-
 		const resultData = response.body.data[0];
 		expect(resultData.name).toEqual('Select an option');
 		expect(resultData.type).toEqual('SelectList');

@@ -100,7 +100,6 @@ describe('Bookings functional tests as agency', () => {
 		const response = await createInSlotBooking();
 		expect(response.statusCode).toEqual(201);
 		expect(typeof response.body.data.id).toBe('string');
-		expect(typeof response.body.data.id).toBe('string');
 		expect(response.body.data.status).toBe(BookingStatus.Accepted);
 	});
 });
