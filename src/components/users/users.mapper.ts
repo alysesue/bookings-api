@@ -31,7 +31,7 @@ import { IdHasher } from '../../infrastructure/idHasher';
 export class UserProfileMapper {
 	public static mapUserToResponse(user: User): UserTypeResponse {
 		const instance = new UserTypeResponse();
-		if (user.isCitizen()) {
+		if (user.isSingPass()) {
 			instance.userType = UserTypeContract.singpass;
 			instance.singpass = new SingPassUserContract();
 			instance.singpass.uinfin = user.singPassUser.UinFin;

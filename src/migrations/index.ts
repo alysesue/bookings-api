@@ -44,3 +44,5 @@ export { AllowedServiceAuthentication1631253669914 } from './1631253669914-Allow
 export { OrgServiceProviderLabels1631674237169 } from './1631674237169-OrgServiceProviderLabels';
 export { EventNewFileds1634023542037 } from './1634023542037-eventNewFileds';
 export { PopulateEventNewFields } from './data/1634023542099-PopulateeventNewFileds';
+export { MyInfoDynamicFields1633925119821 } from './1633925119821-MyInfoDynamicFields';
+export { DateOnlyDynamicField1634081882047 } from './1634081882047-DateOnlyDynamicField';

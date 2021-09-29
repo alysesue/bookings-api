@@ -1,6 +1,6 @@
 import { BookingStatus } from '../../models';
 import { PagingRequest } from '../../apicontract';
-import { DynamicValueContract, PersistDynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
+import { PersistDynamicValueContract, DynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
 import { BookedSlot } from '../../models';
 import { BookingValidationType, BookingWorkflowType } from '../../models/bookingValidationType';
 

@@ -16,7 +16,7 @@ import {
 	Tags,
 } from 'tsoa';
 import { ApiData, ApiDataFactory } from '../../apicontract';
-import { DynamicFieldModel, PersistDynamicFieldModelV1, PersistDynamicFieldModelV2 } from './dynamicFields.apicontract';
+import { PersistDynamicFieldModelV1, PersistDynamicFieldModelV2, DynamicFieldModel } from './dynamicFields.apicontract';
 import { DynamicFieldsService } from './dynamicFields.service';
 import { MOLAuth } from 'mol-lib-common';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth';

@@ -107,6 +107,10 @@ export const ErrorsRef = (arg1?: string | number) => ({
 			code: '10250',
 			templateMessage: ({ name, charLimit }) => `${name} word limit is ${charLimit} characters.`,
 		},
+		DateOnlyInvalid: {
+			code: '10260',
+			templateMessage: ({ name }) => `${name} value is not a valid date.`,
+		},
 	},
 	// Business validation range: 10301-10399
 	service: {

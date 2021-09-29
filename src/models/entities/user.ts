@@ -64,7 +64,7 @@ export class User implements IUser {
 		this._anonymousUser = value;
 	}
 
-	public isCitizen(): boolean {
+	public isSingPass(): boolean {
 		return !!this._singPassUser;
 	}
 

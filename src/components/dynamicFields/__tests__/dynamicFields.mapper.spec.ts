@@ -10,11 +10,19 @@ import {
 	SelectListModel,
 	TextFieldModel,
 } from '../dynamicFields.apicontract';
+import { MyInfoFieldType } from '../../../models/entities/myInfoFieldType';
+import { MyInfoDynamicField } from '../../../models/entities/dynamicField';
+import { ContainerContextHolder } from '../../../infrastructure/containerContext';
+
+beforeAll(() => {
+	Container.bind(IdHasher).to(IdHasherMock);
+	ContainerContextHolder.registerInContainer();
+});
 
 describe('dynamicFields/dynamicFields.mapper', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
-		Container.bind(IdHasher).to(IdHasherMock);
+
 		IdHasherMock.encode.mockImplementation((id: number) => id.toString());
 		IdHasherMock.decode.mockImplementation((id: string) => Number.parseInt(id, 10));
 	});
@@ -306,5 +314,139 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 
 		const _test = () => instance.mapToEntity(request, null);
 		expect(_test).toThrowErrorMatchingInlineSnapshot('"Text field char limit must be at least 1."');
+	});
+
+	it('[Custom field] should require name for non myInfo fields', () => {
+		const request = new PersistDynamicFieldModelV1();
+		request.serviceId = 1;
+		request.type = DynamicFieldType.TextField;
+		request.textField = new TextFieldModel();
+		request.textField.charLimit = 15;
+		request.isMandatory = true;
+
+		const instance = Container.get(DynamicFieldsMapper);
+		const testCase = () => instance.mapToEntity(request, null);
+		const testCase2 = () => instance.mapToEntity({ ...request, name: '' }, null);
+
+		expect(testCase).toThrowErrorMatchingInlineSnapshot(`"Name must be specified for custom field."`);
+		expect(testCase2).toThrowErrorMatchingInlineSnapshot(`"Name must be specified for custom field."`);
+	});
+
+	it('[Custom field] should require type for non myInfo fields', () => {
+		const request = new PersistDynamicFieldModelV1();
+		request.serviceId = 1;
+		request.name = 'Notes';
+		request.textField = new TextFieldModel();
+		request.textField.charLimit = 15;
+		request.isMandatory = true;
+
+		const instance = Container.get(DynamicFieldsMapper);
+		const testCase = () => instance.mapToEntity(request, null);
+
+		expect(testCase).toThrowErrorMatchingInlineSnapshot(`"Type must be specified for custom field: Notes."`);
+	});
+
+	it('[My Info] should map from api to New entity', () => {
+		const request: PersistDynamicFieldModelV1 = {
+			serviceId: 10,
+			myInfoFieldType: MyInfoFieldType.regadd_postal,
+		};
+
+		const instance = Container.get(DynamicFieldsMapper);
+		const result = instance.mapToEntity(request, null);
+
+		expect(result).toBeDefined();
+		expect(result instanceof MyInfoDynamicField).toBe(true);
+		expect(result).toEqual({
+			_serviceId: 10,
+			_myInfoFieldType: 'regadd_postal',
+			_name: 'Postal code',
+			_isMandatory: false,
+		});
+	});
+
+	it('[My Info] should map from api to an existing entity', () => {
+		const request: PersistDynamicFieldModelV1 = {
+			idSigned: '2',
+			name: 'P',
+			myInfoFieldType: MyInfoFieldType.regadd_postal,
+		};
+		const entity = new MyInfoDynamicField();
+		entity.id = 2;
+		entity.name = 'Postal';
+		entity.myInfoFieldType = MyInfoFieldType.regadd_postal;
+
+		const instance = Container.get(DynamicFieldsMapper);
+		const result = instance.mapToEntity(request, entity);
+
+		expect(result).toBeDefined();
+		expect(result instanceof MyInfoDynamicField).toBe(true);
+		expect(result).toEqual({
+			_id: 2,
+			_myInfoFieldType: 'regadd_postal',
+			_name: 'P',
+		});
+	});
+
+	it('[My Info] should NOT map from api to an existing entity - with different myInfo field', () => {
+		const request: PersistDynamicFieldModelV1 = {
+			idSigned: '2',
+			name: 'P',
+			myInfoFieldType: MyInfoFieldType.regadd_postal,
+		};
+		const entity = new MyInfoDynamicField();
+		entity.id = 2;
+		entity.name = 'Nationality';
+		entity.myInfoFieldType = MyInfoFieldType.nationality;
+
+		const instance = Container.get(DynamicFieldsMapper);
+		const testCase = () => instance.mapToEntity(request, entity);
+
+		expect(testCase).toThrowErrorMatchingInlineSnapshot(
+			`"Type for myInfo field Nationality cannot be changed once is set."`,
+		);
+	});
+
+	it('[My Info] should not be able to change myInfoFieldType to simple TextField', () => {
+		const request: PersistDynamicFieldModelV1 = {
+			idSigned: '2',
+			name: 'P',
+			type: DynamicFieldType.TextField,
+			textField: {
+				charLimit: 5,
+			},
+		};
+		const entity = new MyInfoDynamicField();
+		entity.id = 2;
+		entity.name = 'Postal';
+		entity.myInfoFieldType = MyInfoFieldType.regadd_postal;
+
+		const instance = Container.get(DynamicFieldsMapper);
+		const testCase = () => instance.mapToEntity(request, entity);
+
+		expect(testCase).toThrowErrorMatchingInlineSnapshot(`"Type for field Postal cannot be changed once is set."`);
+	});
+
+	it('[My Info] should map from entity to api', () => {
+		const entity = new MyInfoDynamicField();
+		entity.id = 2;
+		entity.name = 'Postal';
+		entity.myInfoFieldType = MyInfoFieldType.regadd_postal;
+		entity.isMandatory = false;
+
+		const instance = Container.get(DynamicFieldsMapper);
+		const apiModel = instance.mapDataModel(entity);
+
+		expect(apiModel).toEqual({
+			idSigned: '2',
+			isMandatory: false,
+			name: 'Postal',
+			myInfoFieldType: 'regadd_postal',
+			type: 'TextField',
+			textField: {
+				charLimit: 6,
+			},
+			isCitizenReadonly: true,
+		});
 	});
 });

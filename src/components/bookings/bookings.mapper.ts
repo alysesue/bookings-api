@@ -32,6 +32,7 @@ export class BookingsMapper {
 	private dynamicValuesMapper: DynamicValuesMapper;
 	@Inject
 	private dynamicValuesRequestMapper: DynamicValuesRequestMapper;
+
 	@Inject
 	private idHasher: IdHasher;
 	@Inject
@@ -46,8 +47,9 @@ export class BookingsMapper {
 			return;
 		}
 
-		const mapResult = await this.dynamicValuesRequestMapper.mapDynamicValuesRequest(
+		const mapResult = await this.dynamicValuesRequestMapper.mapDynamicValues(
 			bookingRequest.dynamicValues,
+			booking.dynamicValues || [],
 			booking.serviceId,
 		);
 		if (isErrorResult(mapResult)) {
@@ -266,15 +268,20 @@ export class BookingsMapper {
 		// Place all logic to update booking details from user context information here.
 
 		const currentUser = await this.userContext.getCurrentUser();
-		if (currentUser && currentUser.isCitizen()) {
+		if (currentUser && currentUser.isSingPass()) {
 			booking.citizenUinFin = currentUser.singPassUser.UinFin;
 		}
 
+		booking.dynamicValues = await this.dynamicValuesRequestMapper.updateMyInfoDynamicFromUser(
+			booking.dynamicValues,
+			booking.serviceId,
+		);
+
 		const myInfo = service.isStandAlone ? await this.userContext.getMyInfo() : undefined;
 		if (myInfo) {
-			booking.citizenName = myInfo.data.name.value;
-			booking.citizenEmail = booking.citizenEmail || myInfo.data.email.value;
-			booking.citizenPhone = booking.citizenPhone || myInfo.data.mobileno.nbr.value;
+			booking.citizenName = myInfo.name.value;
+			booking.citizenEmail = booking.citizenEmail || myInfo.email.value;
+			booking.citizenPhone = booking.citizenPhone || myInfo.mobileno.nbr.value;
 		}
 
 		const mobileNo = this.userContext.getOtpAddOnMobileNo();

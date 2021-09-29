@@ -1,15 +1,20 @@
+import { MyInfoFieldType } from '../../models/entities/myInfoFieldType';
+
 export enum DynamicFieldType {
 	SelectList = 'SelectList',
 	TextField = 'TextField',
+	DateOnlyField = 'DateOnlyField',
 }
 
 export class DynamicFieldModel {
 	public idSigned: string;
 	public name: string;
+	public myInfoFieldType?: MyInfoFieldType;
 	public type: DynamicFieldType;
 	public selectList?: SelectListModel;
 	public textField?: TextFieldModel;
 	public isMandatory: boolean;
+	public isCitizenReadonly?: boolean;
 }
 
 export class PersistDynamicFieldModelBase {
@@ -17,8 +22,9 @@ export class PersistDynamicFieldModelBase {
 	 * @ignore
 	 */
 	public idSigned?: string;
-	public name: string;
-	public type: DynamicFieldType;
+	public name?: string;
+	public type?: DynamicFieldType;
+	public myInfoFieldType?: MyInfoFieldType;
 	public selectList?: SelectListModel;
 	public textField?: TextFieldModel;
 	/**
@@ -52,8 +58,15 @@ export class SelectListOptionModel {
 	 * @isInt
 	 * @minimum 1
 	 */
-	public key: number;
+	public key: number | string;
 	public value: string;
+
+	public static create(key: number | string, value: string) {
+		const option = new SelectListOptionModel();
+		option.key = key;
+		option.value = value;
+		return option;
+	}
 }
 
 export class TextFieldModel {

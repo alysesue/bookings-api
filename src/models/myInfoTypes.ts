@@ -1,11 +1,8 @@
-export type MyInfoStringValue = {
-	value: string;
-};
+import { MyInfo } from 'singpass-myinfo-oidc-helper';
 
-export type MyInfoResponse = {
-	data: {
-		name: MyInfoStringValue;
-		mobileno: { nbr: MyInfoStringValue };
-		email: MyInfoStringValue;
-	};
+export type MyInfoResponse = MyInfo.MyInfoComponents.Schemas.PersonCommon &
+	MyInfo.MyInfoComponents.Schemas.PersonFinancial;
+
+export type MyInfoWrapperResponse = {
+	data: MyInfoResponse;
 };

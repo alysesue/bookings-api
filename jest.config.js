@@ -35,6 +35,7 @@ const config = {
 		'!**/citizenUserValidation.middleware.ts',
 		'!**/ormconfig.ts',
 		'!**/bookingSGAuth.ts',
+		'!**/db.connectionPool.ts',
 	],
 	coverageDirectory: '<rootDir>/coverage',
 	coverageReporters: ['text'],
