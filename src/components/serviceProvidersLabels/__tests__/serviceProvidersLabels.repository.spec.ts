@@ -48,6 +48,21 @@ describe('Service Providers Labels Repository', () => {
 	});
 
 	describe('labels repository', () => {
+		describe('delete', () => {
+			it('should delete a label', async () => {
+				const repository = Container.get(ServiceProviderLabelsRepository);
+				TransactionManagerMock.delete.mockImplementation(() => Promise.resolve(savedLabels));
+				await repository.delete(labelsToSave);
+				expect(TransactionManagerMock.delete).toBeCalledTimes(1);
+			});
+
+			it('should not delete a label if data is empty', async () => {
+				const repository = Container.get(ServiceProviderLabelsRepository);
+				await repository.delete([]);
+				expect(TransactionManagerMock.delete).toBeCalledTimes(0);
+			});
+		});
+
 		it('should save a label', async () => {
 			const repository = Container.get(ServiceProviderLabelsRepository);
 			TransactionManagerMock.save.mockImplementation(() => Promise.resolve(savedLabels));
@@ -113,6 +128,21 @@ describe('Service Providers Categories Repository', () => {
 		});
 
 		describe('Service Provider Labels Category Repository', () => {
+			describe('delete', () => {
+				it('should delete a label', async () => {
+					const repository = Container.get(ServiceProviderLabelsCategoriesRepository);
+					TransactionManagerMock.delete.mockImplementation(() => Promise.resolve(labelsCategoryToSave));
+					await repository.delete(labelsCategoryToSave);
+					expect(TransactionManagerMock.delete).toBeCalledTimes(1);
+				});
+
+				it('should not delete a label if data is empty', async () => {
+					const repository = Container.get(ServiceProviderLabelsCategoriesRepository);
+					await repository.delete([]);
+					expect(TransactionManagerMock.delete).toBeCalledTimes(0);
+				});
+			});
+
 			it('should save a label', async () => {
 				const repository = Container.get(ServiceProviderLabelsCategoriesRepository);
 				TransactionManagerMock.save.mockImplementation(() => Promise.resolve(savedLabelsCategories));

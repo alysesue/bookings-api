@@ -273,6 +273,7 @@ describe('Timeslots Service', () => {
 			undefined,
 			undefined,
 			undefined,
+			undefined,
 		);
 	});
 

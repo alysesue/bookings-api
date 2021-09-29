@@ -6,7 +6,7 @@
 		"use:local-env": "node node_modules/cpy-cli/cli ./params/secrets/local.env ./ --rename=.env",
 		"use:mylocal-env": "cp ./params/secrets/mylocal.env ./.env ",
 		"lint": "NODE_OPTIONS='--max-old-space-size=4096' node_modules/.bin/eslint --fix -c .eslintrc.js --ext .ts './src/**/*.ts'",
-		"test": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
+		"test": "npm run fixLF && node ./node_modules/jest/bin/jest --clearCache && ./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
 		"atest": "npm run fixLF && node ./node_modules/jest/bin/jest --maxWorkers=4",
 		"test:cov": "npm run fixLF && node ./node_modules/jest/bin/jest --maxWorkers=4 --collect-coverage",
 		"test:functional": "npm run fixLF && ./node_modules/mol-lib-config/shared-scripts/jest-test.sh  --runInBand --config __tests__/jest.config.functional.js",

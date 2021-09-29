@@ -56,7 +56,7 @@ describe('Service providers Labels Auth', () => {
 		);
 
 		const organisation = Organisation.create('org1', 1);
-		userGroup.authorisedServices[0].organisation = organisation;
+		userGroup.authorisedServices[0].organisationId = 1;
 
 		const authVisitor = new OrganisationsActionAuthVisitor(organisation, CrudAction.Read);
 		expect(authVisitor.hasPermission([userGroup])).toBe(true);
@@ -74,7 +74,7 @@ describe('Service providers Labels Auth', () => {
 		expect(authVisitorRead.hasPermission(groups)).toBe(false);
 	});
 
-	it('should not be able to update/read as service provider', () => {
+	it('should not be able to update as service provider', () => {
 		const service = new Service();
 		const serviceProvider = ServiceProvider.create('new sp', 1);
 		serviceProvider.id = 1;
@@ -82,14 +82,30 @@ describe('Service providers Labels Auth', () => {
 			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
 			serviceProvider,
 		);
-		serviceProvider.service = service;
+		userGroup.authorisedServiceProvider.service = service;
+		userGroup.authorisedServiceProvider.service.organisationId = 1;
 
 		const organisation = Organisation.create('org1', 1);
 		const authVisitorUpdate = new OrganisationsActionAuthVisitor(organisation, CrudAction.Update);
-		const authVisitorRead = new OrganisationsActionAuthVisitor(organisation, CrudAction.Read);
 
 		expect(authVisitorUpdate.hasPermission([userGroup])).toBe(false);
-		expect(authVisitorRead.hasPermission([userGroup])).toBe(false);
+	});
+
+	it('should be able to read as service provider', () => {
+		const service = new Service();
+		const serviceProvider = ServiceProvider.create('new sp', 1);
+		serviceProvider.id = 1;
+		const userGroup = new ServiceProviderAuthGroup(
+			User.createAdminUser({ molAdminId: '', userName: '', email: '', name: '' }),
+			serviceProvider,
+		);
+		userGroup.authorisedServiceProvider.service = service;
+		userGroup.authorisedServiceProvider.service.organisationId = 1;
+
+		const organisation = Organisation.create('org1', 1);
+		const authVisitorRead = new OrganisationsActionAuthVisitor(organisation, CrudAction.Read);
+
+		expect(authVisitorRead.hasPermission([userGroup])).toBe(true);
 	});
 
 	it('should not be able to update/read as citizen', () => {
