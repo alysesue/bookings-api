@@ -35,6 +35,7 @@ import {
 	NotificationSMSService,
 	NotificationSMSServiceFactory,
 } from './components/notificationSMS/notificationSMS.service';
+import { MyInfoService, MyInfoServiceFactory } from './components/myInfo/myInfo.service';
 
 class ApiDataResponseHandler {
 	private readonly _middleware: Koa.Middleware;
@@ -81,6 +82,10 @@ function setIOCBindings() {
 
 	Container.bind(NotificationSMSService)
 		.factory((buildContext) => buildContext.resolve(NotificationSMSServiceFactory).getService())
+		.scope(Scope.Request);
+
+	Container.bind(MyInfoService)
+		.factory((buildContext) => buildContext.resolve(MyInfoServiceFactory).getService())
 		.scope(Scope.Request);
 
 	registerRequestClock();
