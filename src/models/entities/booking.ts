@@ -159,6 +159,14 @@ export class BookingBuilder {
 
 @Entity()
 export class Booking {
+	public copyNonIdValuesTo(_anotherBooking: Booking): void {
+		// Excludes some properties
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { _version, _uuid, _id, _targetWorkflow, _onHoldRescheduleWorkflow, ...values } = this;
+		// copies values
+		Object.assign(_anotherBooking, values);
+	}
+
 	public copyOnHoldInformation(_targetBooking: Booking): void {
 		_targetBooking.startDateTime = this.startDateTime;
 		_targetBooking.endDateTime = this.endDateTime;

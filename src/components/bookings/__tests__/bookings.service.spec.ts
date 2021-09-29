@@ -1424,7 +1424,6 @@ describe('Bookings.Service', () => {
 			//Create OnHold
 			expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Create);
 			expect(result.status).toStrictEqual(BookingStatus.OnHold);
-			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 		});
 	});
 

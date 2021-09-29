@@ -221,7 +221,24 @@ export class BookingsService {
 	}
 
 	private async rescheduleOnHoldFlow(_booking: Booking, rescheduleRequest: BookingUpdateRequestV1): Promise<Booking> {
-		const newBooking = await this.save({ ...rescheduleRequest }, _booking.serviceId);
+		const beforeMap = async (newBooking: Booking) => {
+			_booking.copyNonIdValuesTo(newBooking);
+		};
+
+		const saveAction = () =>
+			this.saveInternal(
+				{ ...rescheduleRequest, workflowType: BookingWorkflowType.OnHold },
+				_booking.serviceId,
+				false,
+				beforeMap,
+			);
+
+		const newBooking = await this.changeLogsService.executeAndLogAction(
+			null,
+			this.getBookingInternal.bind(this),
+			saveAction,
+		);
+
 		const onHoldReschedule = BookingWorkflow.createOnHoldReschedule({
 			target: _booking,
 			onHoldReschedule: newBooking,
@@ -482,6 +499,7 @@ export class BookingsService {
 		bookingRequest: BookingRequestV1,
 		serviceId: number,
 		shouldBypassCaptchaAndAutoAccept = false,
+		beforeMap: (newBooking: Booking) => Promise<void> = async () => {},
 	): Promise<[ChangeLogAction, Booking]> {
 		const { currentUser, isAgencyUser, service } = await this.bookingRequestExtraction(serviceId);
 		const useAdminValidator = BookingsService.useAdminValidator(currentUser, bookingRequest.validationType);
@@ -501,6 +519,7 @@ export class BookingsService {
 		}
 
 		const booking = Booking.createNew({ creator: currentUser });
+		await beforeMap(booking);
 		await this.bookingsMapper.mapRequest({
 			request: { ...bookingRequest, citizenUinFinUpdated: true },
 			booking,
