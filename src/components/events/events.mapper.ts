@@ -87,7 +87,7 @@ export class EventsMapper {
 		);
 	}
 
-	public mapToResponse(model: Event): EventResponse {
+	public mapToResponse(model: Event, availableSlots?: number): EventResponse {
 		const { id, service, title, description, capacity, labels, oneOffTimeslots } = model;
 		const labelRes = this.labelsMapper.mapToLabelsResponse(labels);
 		const sortStartDates = sortDate(oneOffTimeslots.map((slot) => slot.startDateTime));
@@ -102,6 +102,7 @@ export class EventsMapper {
 			firstStartDateTime: sortStartDates[0],
 			lastEndDateTime: sortEndDate[sortEndDate.length - 1],
 			timeslots: this.mapOneOffTimeslotsToEvent(oneOffTimeslots),
+			availableSlots,
 		} as EventResponse;
 	}
 }
