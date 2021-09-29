@@ -29,7 +29,7 @@ import {
 	ScheduleFormResponseV1,
 	ScheduleFormResponseV2,
 } from '../scheduleForms/scheduleForms.apicontract';
-import { ApiData, ApiDataFactory } from '../../apicontract';
+import { ApiData, ApiDataFactory, ApiPagedData, ApiPagingFactory } from '../../apicontract';
 import { parseCsv } from '../../tools/csvParser';
 import { ServicesService } from '../services/services.service';
 import { ServiceProvider } from '../../models';
@@ -62,6 +62,8 @@ export class ServiceProvidersController extends Controller {
 	private timeslotItemsMapper: TimeslotItemsMapper;
 	@Inject
 	private scheduleFormsMapper: ScheduleFormsMapper;
+	@Inject
+	private apiPagingFactory: ApiPagingFactory;
 
 	private static parseCsvModelToServiceProviders(csvModels: any[]) {
 		try {
@@ -132,22 +134,29 @@ export class ServiceProvidersController extends Controller {
 		@Header('x-api-service') serviceId?: number,
 		@Query() includeTimeslotsSchedule = false,
 		@Query() includeScheduleForm = false,
+		@Query() fromAvailableDate?: Date,
+		@Query() toAvailableDate?: Date,
+		@Query() filterDaysInAdvance = false,
 		@Query() limit?: number,
 		@Query() page?: number,
-	): Promise<ApiData<ServiceProviderResponseModelV1[]>> {
-		const dataModels = await this.serviceProvidersService.getServiceProviders({
-			serviceId,
+	): Promise<ApiPagedData<ServiceProviderResponseModelV1>> {
+		const result = await this.serviceProvidersService.getPagedServiceProviders(
+			fromAvailableDate,
+			toAvailableDate,
+			filterDaysInAdvance,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
 			limit,
-			pageNumber: page,
-		});
-		return ApiDataFactory.create(
-			await this.serviceProvidersMapper.mapDataModelsV1(dataModels, {
+			page,
+			serviceId,
+		);
+
+		return this.apiPagingFactory.createPagedAsync(result, async (serviceProvider: ServiceProvider) => {
+			return await this.serviceProvidersMapper.mapDataModelV1(serviceProvider, {
 				includeTimeslotsSchedule,
 				includeScheduleForm,
-			}),
-		);
+			});
+		});
 	}
 
 	/**
@@ -373,6 +382,8 @@ export class ServiceProvidersControllerV2 extends Controller {
 	private scheduleFormsMapper: ScheduleFormsMapper;
 	@Inject
 	private idHasher: IdHasher;
+	@Inject
+	private apiPagingFactory: ApiPagingFactory;
 
 	private static parseCsvModelToServiceProviders(csvModels: any[]) {
 		try {
@@ -445,23 +456,29 @@ export class ServiceProvidersControllerV2 extends Controller {
 		@Header('x-api-service') serviceId?: string,
 		@Query() includeTimeslotsSchedule = false,
 		@Query() includeScheduleForm = false,
+		@Query() fromAvailableDate?: Date,
+		@Query() toAvailableDate?: Date,
+		@Query() filterDaysInAdvance = false,
 		@Query() limit?: number,
 		@Query() page?: number,
 	): Promise<ApiData<ServiceProviderResponseModelV2[]>> {
 		const unsignedServiceId = this.idHasher.decode(serviceId);
-		const dataModels = await this.serviceProvidersService.getServiceProviders({
-			serviceId: unsignedServiceId,
+		const result = await this.serviceProvidersService.getPagedServiceProviders(
+			fromAvailableDate,
+			toAvailableDate,
+			filterDaysInAdvance,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
 			limit,
-			pageNumber: page,
-		});
-		return ApiDataFactory.create(
-			await this.serviceProvidersMapper.mapDataModelsV2(dataModels, {
+			page,
+			unsignedServiceId,
+		);
+		return this.apiPagingFactory.createPagedAsync(result, async (serviceProvider: ServiceProvider) => {
+			return await this.serviceProvidersMapper.mapDataModelV2(serviceProvider, {
 				includeTimeslotsSchedule,
 				includeScheduleForm,
-			}),
-		);
+			});
+		});
 	}
 
 	/**

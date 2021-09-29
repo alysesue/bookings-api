@@ -23,6 +23,7 @@ import {
 } from './serviceProviders.apicontract';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
 import { DateHelper } from '../../infrastructure/dateHelper';
+import { IPagedEntities } from '../../core/pagedEntities';
 
 const DEFAULT_PHONE_NUMBER = '+6580000000';
 
@@ -125,6 +126,53 @@ export class ServiceProvidersService {
 			includeScheduleForm,
 			includeTimeslotsSchedule,
 		});
+	}
+
+	public async getPagedServiceProviders(
+		from: Date,
+		to: Date,
+		filterDaysInAdvance: boolean,
+		includeTimeslotsSchedule = false,
+		includeScheduleForm = false,
+		limit?: number,
+		page?: number,
+		serviceId?: number,
+	): Promise<IPagedEntities<ServiceProvider>> {
+		let result: ServiceProvider[] = [];
+		if (from && to && from < to) {
+			if (serviceId) {
+				result = await this.getAvailableServiceProviders(from, to, filterDaysInAdvance, serviceId);
+			} else {
+				const servicesList = await this.servicesService.getServices();
+				for (const service of servicesList) {
+					result.push(
+						...(await this.getAvailableServiceProviders(from, to, filterDaysInAdvance, service.id)),
+					);
+				}
+			}
+		} else {
+			result = await this.getServiceProviders({ serviceId, includeScheduleForm, includeTimeslotsSchedule });
+		}
+		const resultLength = result.length;
+		result.sort((a, b) => {
+			return a.id - b.id;
+		});
+		let culledResult = result;
+		if (limit) {
+			culledResult = result.splice((page - 1) * limit, limit);
+		}
+		const maxPage = Math.ceil(result.length / limit);
+
+		const response: IPagedEntities<ServiceProvider> = {
+			entries: culledResult,
+			page,
+			limit,
+			total: resultLength,
+			maxId: undefined,
+			outdatedMaxId: undefined,
+			hasMore: maxPage > page,
+		};
+		return response;
 	}
 
 	public async getAvailableServiceProviders(

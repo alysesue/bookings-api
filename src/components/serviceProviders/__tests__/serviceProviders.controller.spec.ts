@@ -1,5 +1,6 @@
 import { Container } from 'typescript-ioc';
 import {
+	Booking,
 	ScheduleForm,
 	Service,
 	ServiceProvider,
@@ -18,6 +19,7 @@ import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userCont
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
+import { IPagedEntities } from '../../../core/pagedEntities';
 
 jest.mock('../../services/services.service', () => {
 	class ServicesService {}
@@ -66,7 +68,16 @@ describe('ServiceProviders.Controller.V1', () => {
 	});
 
 	it('should get service providers', async () => {
-		ServiceProvidersServiceMock.getServiceProvidersMock.mockReturnValue([sp1, sp2]);
+		ServiceProvidersServiceMock.getServiceProvidersMock.mockImplementation(() =>
+			Promise.resolve(({
+				entries: [sp1, sp2],
+			} as unknown) as IPagedEntities<Booking>),
+		);
+		ServiceProvidersServiceMock.getPagedServiceProvidersMock.mockImplementation(() =>
+			Promise.resolve(({
+				entries: [sp1, sp2],
+			} as unknown) as IPagedEntities<Booking>),
+		);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders();
 		expect(result.data.length).toBe(2);
@@ -95,11 +106,14 @@ describe('ServiceProviders.Controller.V1', () => {
 		);
 		timeslots.timeslotItems = [timeslotItem];
 		sp1.timeslotsSchedule = timeslots;
-		ServiceProvidersServiceMock.getServiceProvidersMock.mockReturnValue([sp1]);
-
+		ServiceProvidersServiceMock.getPagedServiceProvidersMock.mockImplementation(() =>
+			Promise.resolve(({
+				entries: [sp1, sp2],
+			} as unknown) as IPagedEntities<Booking>),
+		);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders(undefined, true);
-		expect(result.data.length).toBe(1);
+		expect(result.data.length).toBe(2);
 		expect(result.data[0].timeslotsSchedule.timeslots[0].weekDay).toBe(timeslotItem._weekDay);
 	});
 
@@ -351,12 +365,19 @@ describe('ServiceProviders.Controller.V2', () => {
 	});
 
 	it('should get service providers', async () => {
-		ServiceProvidersServiceMock.getServiceProvidersMock.mockReturnValue([sp1, sp2]);
-		const serviceId = '1';
-		const controller = Container.get(ServiceProvidersControllerV2);
-		const result = await controller.getServiceProviders(serviceId);
+		ServiceProvidersServiceMock.getServiceProvidersMock.mockImplementation(() =>
+			Promise.resolve(({
+				entries: [sp1, sp2],
+			} as unknown) as IPagedEntities<Booking>),
+		);
+		ServiceProvidersServiceMock.getPagedServiceProvidersMock.mockImplementation(() =>
+			Promise.resolve(({
+				entries: [sp1, sp2],
+			} as unknown) as IPagedEntities<Booking>),
+		);
+		const controller = Container.get(ServiceProvidersController);
+		const result = await controller.getServiceProviders();
 		expect(result.data.length).toBe(2);
-		expect(ServiceProvidersServiceMock.getServiceProvidersMock).toBeCalledTimes(1);
 	});
 
 	it('should get total service providers', async () => {
@@ -384,11 +405,14 @@ describe('ServiceProviders.Controller.V2', () => {
 		);
 		timeslots.timeslotItems = [timeslotItem];
 		sp1.timeslotsSchedule = timeslots;
-		ServiceProvidersServiceMock.getServiceProvidersMock.mockReturnValue([sp1]);
-
-		const controller = Container.get(ServiceProvidersControllerV2);
+		ServiceProvidersServiceMock.getPagedServiceProvidersMock.mockImplementation(() =>
+			Promise.resolve(({
+				entries: [sp1, sp2],
+			} as unknown) as IPagedEntities<Booking>),
+		);
+		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders(undefined, true);
-		expect(result.data.length).toBe(1);
+		expect(result.data.length).toBe(2);
 		expect(result.data[0].timeslotsSchedule.timeslots[0].weekDay).toBe(timeslotItem._weekDay);
 	});
 

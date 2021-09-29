@@ -1,5 +1,6 @@
 import { TimeslotsScheduleResponseV1, TimeslotsScheduleResponseV2 } from '../timeslotItems/timeslotItems.apicontract';
 import { ScheduleFormResponseV1, ScheduleFormResponseV2 } from '../scheduleForms/scheduleForms.apicontract';
+import { PagingRequest } from '../../apicontract';
 
 export class ServiceProviderModel {
 	public name: string;
@@ -110,4 +111,10 @@ export class ServiceProviderSummaryModelV2 extends ServiceProviderSummaryModelBa
 		this.id = id;
 		this.name = name;
 	}
+}
+
+export class ServiceProviderSearchRequest extends PagingRequest {
+	public from?: Date;
+	public to?: Date;
+	public serviceId?: number;
 }

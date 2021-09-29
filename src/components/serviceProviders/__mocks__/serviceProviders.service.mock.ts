@@ -3,9 +3,11 @@ import { ScheduleForm, ServiceProvider, TimeslotItem, TimeslotsSchedule } from '
 import { ServiceProviderModel } from '../serviceProviders.apicontract';
 import { MolUpsertUsersResult } from '../../users/molUsers/molUsers.apicontract';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
+import { IPagedEntities } from '../../../core/pagedEntities';
 
 export class ServiceProvidersServiceMock implements Partial<ServiceProvidersService> {
 	public static getServiceProviderMock = jest.fn();
+	public static getPagedServiceProvidersMock = jest.fn();
 	public static getServiceProvidersCountMock = jest.fn();
 	public static getServiceProvidersMock = jest.fn();
 	public static getAvailableServiceProvidersMock = jest.fn<Promise<ServiceProvider[]>, any>();
@@ -25,6 +27,9 @@ export class ServiceProvidersServiceMock implements Partial<ServiceProvidersServ
 
 	public async getServiceProvider(...params): Promise<ServiceProvider> {
 		return ServiceProvidersServiceMock.getServiceProviderMock(...params);
+	}
+	public async getPagedServiceProviders(...params): Promise<IPagedEntities<ServiceProvider>> {
+		return ServiceProvidersServiceMock.getPagedServiceProvidersMock(...params);
 	}
 	public async createServiceProviders(...params): Promise<MolUpsertUsersResult> {
 		return ServiceProvidersServiceMock.createServiceProvidersMock(...params);
