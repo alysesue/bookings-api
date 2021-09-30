@@ -65,7 +65,7 @@ export class EventsRepository extends RepositoryBase<Event> {
 		});
 	}
 
-	public async getById(request: { id: number; byPassAuth?: boolean }): Promise<Event> {
+	public async getById(request: { id: number; byPassAuth?: boolean }): Promise<Event | undefined> {
 		const idCondition = 'event._id = :id';
 		const query = await this.createSelectQuery([idCondition], { id: request.id }, request);
 

@@ -6,7 +6,15 @@ import { EventRequest } from '../events.apicontract';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { BookingsService } from '../../bookings';
-import { Booking, BookingChangeLog, Event, Organisation, Service, User } from '../../../models/entities';
+import {
+	Booking,
+	BookingChangeLog,
+	Event,
+	OneOffTimeslot,
+	Organisation,
+	Service,
+	User,
+} from '../../../models/entities';
 import { IPagedEntities } from '../../../core/pagedEntities';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { getConfig } from '../../../config/app-config';
@@ -29,6 +37,15 @@ describe('Test events controller', () => {
 
 	const eventMock = new Event();
 	eventMock.id = 1;
+	eventMock.oneOffTimeslots = [
+		{
+			startDateTime: new Date(),
+			endDateTime: new Date(),
+			id: 1,
+			serviceProvider: { id: 1, name: 'a' },
+		} as OneOffTimeslot,
+	];
+	eventMock.service = { name: 'name', id: 1, organisationId: 1 };
 
 	beforeAll(() => {
 		Container.bind(EventsService).to(EventsServiceMock);
@@ -55,17 +72,29 @@ describe('Test events controller', () => {
 	});
 
 	it('Should call search service', () => {
-		(EventsServiceMock.search as jest.Mock).mockReturnValue([]);
+		(EventsServiceMock.search as jest.Mock).mockReturnValue({
+			entries: [],
+			page: 1,
+			limit: 1,
+		});
 		Container.get(EventsController).search('1');
 		expect(EventsServiceMock.search).toHaveBeenCalledTimes(1);
 	});
 
+	it('Should call getById service', () => {
+		(EventsServiceMock.getById as jest.Mock).mockReturnValue(eventMock);
+		Container.get(EventsController).searchById('i');
+		expect(EventsServiceMock.getById).toHaveBeenCalledTimes(1);
+	});
+
 	it('Should call create service', () => {
+		(EventsServiceMock.saveEvent as jest.Mock).mockReturnValue(eventMock);
 		Container.get(EventsController).post({} as EventRequest);
 		expect(EventsServiceMock.saveEvent).toHaveBeenCalledTimes(1);
 	});
 
 	it('Should call update service', () => {
+		(EventsServiceMock.updateEvent as jest.Mock).mockReturnValue(eventMock);
 		Container.get(EventsController).update('asdf', {} as EventRequest);
 		expect(EventsServiceMock.updateEvent).toHaveBeenCalledTimes(1);
 	});
