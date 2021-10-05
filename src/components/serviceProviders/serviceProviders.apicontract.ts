@@ -9,7 +9,7 @@ export class ServiceProviderModel {
 	public phone?: string;
 	public expiryDate?: Date | null;
 	public description?: string | null;
-	public aliasName?: string;
+	public aliasName?: string | null;
 	public labelIds?: string[];
 
 	constructor(
