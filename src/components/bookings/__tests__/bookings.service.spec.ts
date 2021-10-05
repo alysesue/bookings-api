@@ -1304,6 +1304,38 @@ describe('Bookings.Service', () => {
 			expect(result.status).toBe(BookingStatus.PendingApproval);
 		});
 
+		it('should validate on hold event booking and change status to accepted', async () => {
+			const bookingService = Container.get(BookingsService);
+			const start = new Date('2020-02-02T11:00');
+			const end = new Date('2020-02-02T12:00');
+
+			const bookingRequest = {
+				citizenEmail: 'test@mail.com',
+				citizenName: 'Jake',
+				citizenUinFin: 'S6979208A',
+			} as BookingRequestV1;
+
+			BookingRepositoryMock.booking = new BookingBuilder()
+				.withEventId(5)
+				.withServiceId(1)
+				.withStartDateTime(start)
+				.withEndDateTime(end)
+				.withAutoAccept(true)
+				.withMarkOnHold(true)
+				.build();
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+			);
+
+			const result = await bookingService.validateOnHoldBooking(1, bookingRequest);
+
+			expect(result.status).toBe(BookingStatus.Accepted);
+			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+			expect(bookingActionVisitorMock.hasPermission).toBeCalled();
+		});
+
 		it('should not validate on hold booking', async () => {
 			const bookingService = Container.get(BookingsService);
 			const serviceProv = ServiceProvider.create('provider', 1);
