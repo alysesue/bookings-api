@@ -24,4 +24,12 @@ export class SettingsController extends Controller {
 		const res = await this.settingsService.verifyUrlRedirection(url);
 		return ApiDataFactory.create(res);
 	}
+
+	@Get('/hideEvents')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 } })
+	@SuccessResponse(200, 'Ok')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
+	public async hideEvents(): Promise<ApiData<string>> {
+		return ApiDataFactory.create(process.env.HIDE_EVENTS);
+	}
 }
