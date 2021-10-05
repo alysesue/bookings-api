@@ -1,7 +1,7 @@
 import { PgClient } from '../../utils/pgClient';
 import { DateHelper } from '../../../src/infrastructure/dateHelper';
 import { populateServiceAndServiceProvider } from '../../populate/V2/servieProviders';
-import { getEventRequest, getOneOffTimeslotRequest, populateEvent } from '../../populate/V1/events';
+import { createEventRequest, createOneOffTimeslotRequest, postEvent } from '../../populate/V1/events';
 
 describe('Event post functional tests', () => {
 	const pgClient = new PgClient();
@@ -31,12 +31,12 @@ describe('Event post functional tests', () => {
 	});
 
 	it('Should create a simple event', async () => {
-		const oneOffTimeslotRequest = getOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
-		const event = getEventRequest(
+		const oneOffTimeslotRequest = createOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
+		const event = createEventRequest(
 			{ serviceId: service.id, labelIds: [service.labels[0].id, service.categories[0].labels[1].id] },
 			[oneOffTimeslotRequest],
 		);
-		const eventResponse = await populateEvent(event);
+		const eventResponse = await postEvent(event);
 		expect(eventResponse.title).toEqual('title');
 		expect(eventResponse.description).toEqual('description');
 		expect(eventResponse.service.id).toEqual(service.id);
@@ -52,8 +52,8 @@ describe('Event post functional tests', () => {
 	});
 
 	it('Should be able to create 2 overlap event with same service Provider', async () => {
-		let oneOffTimeslotRequest = getOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
-		let event = getEventRequest(
+		let oneOffTimeslotRequest = createOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
+		let event = createEventRequest(
 			{
 				serviceId: service.id,
 				labelIds: [
@@ -66,16 +66,16 @@ describe('Event post functional tests', () => {
 			},
 			[oneOffTimeslotRequest],
 		);
-		await populateEvent(event);
+		await postEvent(event);
 
 		const endDateTime = new Date(Date.now() + 27 * 60 * 60 * 1000);
-		oneOffTimeslotRequest = getOneOffTimeslotRequest({
+		oneOffTimeslotRequest = createOneOffTimeslotRequest({
 			serviceProviderId: serviceProvider.id,
 			endDateTime,
 		});
-		getOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
-		event = getEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest]);
-		await populateEvent(event);
+		createOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
+		event = createEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest]);
+		await postEvent(event);
 	});
 
 	it('should create 20 events with same service and service provider', async () => {
@@ -85,14 +85,14 @@ describe('Event post functional tests', () => {
 		while (x < 20) {
 			tempStartDateTime = DateHelper.subtractMinutes(tempStartDateTime, 20);
 			tempEndDateTime = DateHelper.subtractMinutes(tempEndDateTime, 10);
-			const oneOffTimeslotRequest = getOneOffTimeslotRequest({
+			const oneOffTimeslotRequest = createOneOffTimeslotRequest({
 				serviceProviderId: serviceProvider.id,
 				startDateTime: tempStartDateTime,
 				endDateTime: tempEndDateTime,
 			});
 			x = x + 1;
-			const event = getEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest]);
-			await populateEvent(event);
+			const event = createEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest]);
+			await postEvent(event);
 		}
 	});
 });

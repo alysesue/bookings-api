@@ -91,6 +91,7 @@ export class EventsRepository extends RepositoryBase<Event> {
 		serviceProviderIds?: number[];
 		startDateTime?: Date;
 		endDateTime?: Date;
+		title?: string;
 		labelIds?: number[];
 		isOneOffTimeslot?: boolean;
 		labelOperationFiltering?: LabelOperationFiltering;
@@ -100,6 +101,7 @@ export class EventsRepository extends RepositoryBase<Event> {
 			serviceProviderIds,
 			startDateTime,
 			endDateTime,
+			title,
 			labelIds,
 			isOneOffTimeslot,
 			labelOperationFiltering,
@@ -109,15 +111,16 @@ export class EventsRepository extends RepositoryBase<Event> {
 			serviceProviderIds && serviceProviderIds.length > 0
 				? '"oneOffTimeslots"."_serviceProviderId" IN (:...serviceProviderIds)'
 				: '';
-		const startDateCondition = startDateTime ? '"oneOffTimeslots"."_endDateTime" > :startDateTime' : '';
-		const endDateCondition = endDateTime ? '"oneOffTimeslots"."_startDateTime" < :endDateTime' : '';
+
+		const startDateCondition = startDateTime ? '"event"."_firstStartDateTime" >= :startDateTime' : '';
+		const endDateCondition = endDateTime ? '"event"."_lastEndDateTime" <= :endDateTime' : '';
+		const titleCondition = title ? 'LOWER("event"."_title") ILIKE LOWER(:title)' : '';
 		const isOneOffTimeslotCondition =
 			typeof isOneOffTimeslot === 'boolean' ? '"event"."_isOneOffTimeslot" = :isOneOffTimeslot' : '';
 		const labelsCondition = labelIds?.length
-			? labelIds.map(
-					(_, index) =>
-						`event."_id" IN (SELECT "event_id" FROM event_label WHERE "label_id" = :label_${index})`,
-			  )
+			? labelIds.map((_, index) => {
+					return `event."_id" IN (SELECT "event_id" FROM event_label WHERE "label_id" = :label_${index})`;
+			  })
 			: [];
 
 		const labelsParam = {};
@@ -132,6 +135,7 @@ export class EventsRepository extends RepositoryBase<Event> {
 			labelsConditionsString = labelsCondition.length ? andWhere(labelsCondition) : '';
 		}
 
+		const titleParam = title && `${title}%`;
 		const query = await this.createSelectQuery(
 			[
 				serviceCondition,
@@ -140,12 +144,25 @@ export class EventsRepository extends RepositoryBase<Event> {
 				endDateCondition,
 				isOneOffTimeslotCondition,
 				labelsConditionsString,
+				titleCondition,
 			],
-			{ serviceId, serviceProviderIds, startDateTime, endDateTime, isOneOffTimeslot, ...labelsParam },
+			{
+				serviceId,
+				serviceProviderIds,
+				title: titleParam,
+				startDateTime,
+				endDateTime,
+				isOneOffTimeslot,
+				...labelsParam,
+			},
 			{ ...request },
 		);
 
-		return query.orderBy('oneOffTimeslots._startDateTime', 'ASC');
+		if (title) {
+			query.orderBy('event._title');
+		} else query.orderBy('event._firstStartDateTime');
+
+		return query;
 	}
 
 	public async delete(event: Event): Promise<void> {

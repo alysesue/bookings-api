@@ -1,16 +1,16 @@
-import { Inject, InRequestScope } from 'typescript-ioc';
 import { SelectQueryBuilder } from 'typeorm';
-import { Booking, BookingStatus } from '../../models';
+import { Inject, InRequestScope } from 'typescript-ioc';
+import { IPagedEntities } from '../../core/pagedEntities';
+import { PagingHelper } from '../../core/paging';
 import { RepositoryBase } from '../../core/repository';
 import { ConcurrencyError } from '../../errors/concurrencyError';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
+import { Booking, BookingStatus } from '../../models';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { andWhere } from '../../tools/queryConditions';
-import { PagingHelper } from '../../core/paging';
-import { IPagedEntities } from '../../core/pagedEntities';
-import { BookingQueryVisitorFactory } from './bookings.auth';
+import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
 import { BookedSlotRepository } from './bookedSlot.repository';
+import { BookingQueryVisitorFactory } from './bookings.auth';
 
 @InRequestScope
 export class BookingsRepository extends RepositoryBase<Booking> {

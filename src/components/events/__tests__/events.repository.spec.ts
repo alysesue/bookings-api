@@ -101,11 +101,15 @@ describe('Test event repository', () => {
 		const repository = Container.get(EventsRepository);
 		await repository.searchReturnAll({ serviceId: 2, serviceProviderIds: [10, 11] });
 		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
-		expect(
-			queryBuilderMock.where,
-		).toBeCalledWith(
+		expect(queryBuilderMock.where).toBeCalledWith(
 			'("serviceProvider"."_serviceId" = :serviceId) AND ("oneOffTimeslots"."_serviceProviderId" IN (:...serviceProviderIds))',
-			{ serviceId: 2, serviceProviderIds: [10, 11] },
+			{
+				serviceId: 2,
+				serviceProviderIds: [10, 11],
+				endDateTime: undefined,
+				startDateTime: undefined,
+				title: undefined,
+			},
 		);
 		expect(queryBuilderMock.getMany).toBeCalled();
 	});
@@ -114,11 +118,16 @@ describe('Test event repository', () => {
 		const repository = Container.get(EventsRepository);
 		await repository.searchReturnAll({ serviceId: 2, serviceProviderIds: [10, 11], isOneOffTimeslot: false });
 		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
-		expect(
-			queryBuilderMock.where,
-		).toBeCalledWith(
+		expect(queryBuilderMock.where).toBeCalledWith(
 			'("serviceProvider"."_serviceId" = :serviceId) AND ("oneOffTimeslots"."_serviceProviderId" IN (:...serviceProviderIds)) AND ("event"."_isOneOffTimeslot" = :isOneOffTimeslot)',
-			{ serviceId: 2, serviceProviderIds: [10, 11], isOneOffTimeslot: false },
+			{
+				serviceId: 2,
+				serviceProviderIds: [10, 11],
+				isOneOffTimeslot: false,
+				endDateTime: undefined,
+				startDateTime: undefined,
+				title: undefined,
+			},
 		);
 		expect(queryBuilderMock.getMany).toBeCalled();
 	});
@@ -130,11 +139,16 @@ describe('Test event repository', () => {
 			serviceProviderIds: [10, 11],
 			labelIds: [1],
 		});
-		expect(
-			queryBuilderMock.where,
-		).toBeCalledWith(
+		expect(queryBuilderMock.where).toBeCalledWith(
 			'("serviceProvider"."_serviceId" = :serviceId) AND ("oneOffTimeslots"."_serviceProviderId" IN (:...serviceProviderIds)) AND ((event."_id" IN (SELECT "event_id" FROM event_label WHERE "label_id" = :label_0)))',
-			{ serviceId: 2, serviceProviderIds: [10, 11], label_0: 1 },
+			{
+				serviceId: 2,
+				serviceProviderIds: [10, 11],
+				label_0: 1,
+				endDateTime: undefined,
+				startDateTime: undefined,
+				title: undefined,
+			},
 		);
 		expect(queryBuilderMock.getMany).toBeCalled();
 	});

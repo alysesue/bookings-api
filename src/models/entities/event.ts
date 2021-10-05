@@ -11,6 +11,7 @@ import {
 import { IEvent, IService } from '../interfaces';
 import { Label } from './label';
 import { OneOffTimeslot } from './oneOffTimeslot';
+import { sortDate } from '../../tools/date';
 
 @Entity()
 export class Event implements IEvent {
@@ -45,6 +46,12 @@ export class Event implements IEvent {
 		inverseJoinColumn: { name: 'label_id' },
 	})
 	private _labels: Label[];
+
+	@Column({ default: new Date('2020-01-01T14:00:00.000Z') })
+	private _firstStartDateTime: Date;
+
+	@Column({ default: new Date('2050-01-01T14:00:00.000Z') })
+	private _lastEndDateTime: Date;
 
 	@OneToMany(() => OneOffTimeslot, (oneOffTimeslot) => oneOffTimeslot._event, { cascade: true })
 	private _oneOffTimeslots: OneOffTimeslot[];
@@ -120,4 +127,38 @@ export class Event implements IEvent {
 	public set isOneOffTimeslot(value: boolean) {
 		this._isOneOffTimeslot = value;
 	}
+
+	public get firstStartDateTime(): Date {
+		return this._firstStartDateTime;
+	}
+
+	public set firstStartDateTime(value: Date) {
+		this._firstStartDateTime = value;
+	}
+
+	public get lastEndDateTime(): Date {
+		return this._lastEndDateTime;
+	}
+
+	public set lastEndDateTime(value: Date) {
+		this._lastEndDateTime = value;
+	}
+
+	public setDateRange({ firstStartDateTime, lastEndDateTime }: DateRange): void {
+		this.firstStartDateTime = firstStartDateTime;
+		this.lastEndDateTime = lastEndDateTime;
+	}
+
+	public getDateRange(): DateRange {
+		const sortStartDates = sortDate(this.oneOffTimeslots.map((slot) => slot.startDateTime));
+		const sortEndDate = sortDate(this.oneOffTimeslots.map((slot) => slot.endDateTime));
+		const firstStartDateTime = sortStartDates[0];
+		const lastEndDateTime = sortEndDate[sortEndDate.length - 1];
+		return { firstStartDateTime, lastEndDateTime };
+	}
 }
+
+type DateRange = {
+	firstStartDateTime: Date;
+	lastEndDateTime: Date;
+};

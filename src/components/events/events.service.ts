@@ -1,4 +1,15 @@
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
+import { IPagedEntities } from '../../core/pagedEntities';
+import { UserContext } from '../../infrastructure/auth/userContext';
+import { ContainerContext } from '../../infrastructure/containerContext';
+import { IdHasher } from '../../infrastructure/idHasher';
+import { Event, Label, OneOffTimeslot, Service } from '../../models';
+import { uniqBy } from '../../tools/arrays';
+import { LabelsService } from '../labels/labels.service';
+import { OneOffTimeslotsRepository } from '../oneOffTimeslots/oneOffTimeslots.repository';
+import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
+import { ServicesService } from '../services/services.service';
 import {
 	EventFilter,
 	EventOneOffTimeslotRequest,
@@ -6,21 +17,10 @@ import {
 	EventTimeslotRequest,
 	IEventRequest,
 } from './events.apicontract';
-import { EventsMapper } from './events.mapper';
-import { Event, Label, OneOffTimeslot, Service } from '../../models';
-import { LabelsService } from '../labels/labels.service';
-import { ServicesService } from '../services/services.service';
-import { EventsRepository } from './events.repository';
-import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { UserContext } from '../../infrastructure/auth/userContext';
 import { EventsAuthVisitor } from './events.auth';
+import { EventsMapper } from './events.mapper';
+import { EventsRepository } from './events.repository';
 import { EventsValidation } from './events.validation';
-import { ContainerContext } from '../../infrastructure/containerContext';
-import { IdHasher } from '../../infrastructure/idHasher';
-import { OneOffTimeslotsRepository } from '../oneOffTimeslots/oneOffTimeslots.repository';
-import { uniqBy } from '../../tools/arrays';
-import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
-import { IPagedEntities } from '../../core/pagedEntities';
 
 @InRequestScope
 export class EventsService {
@@ -62,6 +62,7 @@ export class EventsService {
 	}
 
 	private async save(event: Event): Promise<Event> {
+		event.setDateRange({ ...event.getDateRange() });
 		await this.getValidator().validate(event);
 		await this.verifyActionPermission(event);
 		const eventRes = await this.eventsRepository.save(event);
@@ -103,7 +104,7 @@ export class EventsService {
 	}
 
 	public async getById(id: number): Promise<Event> {
-		const event = this.eventsRepository.getById({ id });
+		const event = await this.eventsRepository.getById({ id });
 		if (!event) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Event can't be found`);
 		}
@@ -111,8 +112,8 @@ export class EventsService {
 	}
 
 	public async search(eventFilter: EventFilter): Promise<IPagedEntities<Event>> {
-		const events = this.eventsRepository.search({ ...eventFilter, isOneOffTimeslot: false });
-		return events;
+		const eventsPaging = await this.eventsRepository.search({ ...eventFilter, isOneOffTimeslot: false });
+		return eventsPaging;
 	}
 
 	private async fetchTimeslotDependencies(timeslots: EventTimeslotRequest[]): Promise<OneOffTimeslot[]> {

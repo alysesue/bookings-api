@@ -1,7 +1,6 @@
 import { PgClient } from '../../../utils/pgClient';
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
 import { populateServiceAndServiceProvider } from '../../../populate/V1/serviceProviders';
-
 describe('Organisations functional tests - put', () => {
 	const pgClient = new PgClient();
 	const organisationName = 'localorg';
@@ -91,7 +90,6 @@ describe('Organisations functional tests - put', () => {
 				},
 			],
 		};
-
 		const response = await OrganisationAdminRequestEndpointSG.create(
 			{},
 		).put(`/organisations/${organisationId}/scheduleForm`, { body: schedule });

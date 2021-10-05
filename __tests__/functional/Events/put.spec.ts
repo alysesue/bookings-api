@@ -1,13 +1,12 @@
 // tslint:disable-next-line: no-big-function
 import { PgClient } from '../../utils/pgClient';
-import { getEventRequest, getOneOffTimeslotRequest, populateEvent } from '../../populate/V1/events';
+import { createEventRequest, createOneOffTimeslotRequest, postEvent } from '../../populate/V1/events';
 import { populateServiceAndServiceProvider } from '../../populate/V2/servieProviders';
 
 describe('Event update functional tests', () => {
 	const pgClient = new PgClient();
 	let service;
 	let serviceProvider;
-	let event;
 	let eventRequest;
 	let oneOffTimeslotRequest1;
 	let oneOffTimeslotRequest2;
@@ -18,13 +17,13 @@ describe('Event update functional tests', () => {
 		const { service: srv, serviceProvider: sp } = await populateServiceAndServiceProvider({});
 		service = srv;
 		serviceProvider = sp[0];
-		oneOffTimeslotRequest1 = getOneOffTimeslotRequest({
+		oneOffTimeslotRequest1 = createOneOffTimeslotRequest({
 			endDateTime: endTime,
 			serviceProviderId: serviceProvider.id,
 		});
-		oneOffTimeslotRequest2 = getOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
-		eventRequest = getEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest1, oneOffTimeslotRequest2]);
-		event = await populateEvent(eventRequest);
+		oneOffTimeslotRequest2 = createOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
+		eventRequest = createEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest1, oneOffTimeslotRequest2]);
+		await postEvent(eventRequest);
 
 		done();
 	});
