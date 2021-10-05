@@ -1,6 +1,6 @@
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
 import { PgClient } from '../../../utils/pgClient';
-import { populateService } from '../../../populate/basicV1';
+import { postService } from '../../../populate/V1/services';
 
 describe('Service providers functional tests - post', () => {
 	const SP_NAME = 'sp';
@@ -20,7 +20,7 @@ describe('Service providers functional tests - post', () => {
 	});
 
 	beforeEach(async (done) => {
-		service = await populateService({});
+		service = await postService({ name: 'Service' });
 		done();
 	});
 
@@ -50,7 +50,7 @@ describe('Service providers functional tests - post', () => {
 			'/service-providers',
 		);
 		expect(getResponse.statusCode).toEqual(200);
-		expect(typeof getResponse.body.data[0].id).toBe("number");
+		expect(typeof getResponse.body.data[0].id).toBe('number');
 		expect(getResponse.body.data[0].name).toEqual(SP_NAME);
 		expect(getResponse.body.data[0].email).toEqual(SP_EMAIL);
 		expect(getResponse.body.data[0].phone).toEqual(SP_PHONE);

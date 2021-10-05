@@ -2,7 +2,8 @@ import { PgClient } from '../../../utils/pgClient';
 import * as request from 'request';
 
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
-import { populateIndividualTimeslot, populateUserServiceProvider } from '../../../populate/basicV2';
+import { populateUserServiceProvider } from '../../../populate/V2/users';
+import { populateIndividualTimeslot } from '../../../populate/V2/servieProviders';
 
 describe('Bookings functional tests', () => {
 	const pgClient = new PgClient();
@@ -37,48 +38,47 @@ describe('Bookings functional tests', () => {
 	beforeEach(async (done) => {
 		await pgClient.cleanAllTables();
 		const result = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_1,
-			serviceProviderName: SERVICE_PROVIDER_NAME_1,
+			serviceNames: [NAME_SERVICE_1],
+			name: SERVICE_PROVIDER_NAME_1,
 			agencyUserId: 'A001',
 		});
 		serviceProviderId = result.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1).id;
 		serviceId = result.services.find((item) => item.name === NAME_SERVICE_1).id;
 
 		const result2 = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_1,
-			serviceProviderName: SERVICE_PROVIDER_NAME_2,
+			serviceNames: [NAME_SERVICE_1],
+			name: SERVICE_PROVIDER_NAME_2,
 			agencyUserId: 'A002',
 		});
+
 		serviceProviderId2 = result2.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_2).id;
 
 		const result3 = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_1,
-			serviceProviderName: SERVICE_PROVIDER_NAME_3,
+			serviceNames: [NAME_SERVICE_1],
+			name: SERVICE_PROVIDER_NAME_3,
 			agencyUserId: 'A003',
 		});
+
 		serviceProviderId3 = result3.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_3).id;
 		done();
 	});
 
 	const createInSlotBooking = async (): Promise<request.Response> => {
-		await populateIndividualTimeslot({
-			serviceProviderId,
+		await populateIndividualTimeslot(serviceProviderId, {
 			weekDay: 0,
 			startTime: '08:00',
 			endTime: '09:00',
 			capacity: 1,
 		});
 
-		await populateIndividualTimeslot({
-			serviceProviderId: serviceProviderId2,
+		await populateIndividualTimeslot(serviceProviderId2, {
 			weekDay: 0,
 			startTime: '08:00',
 			endTime: '09:00',
 			capacity: 1,
 		});
 
-		await populateIndividualTimeslot({
-			serviceProviderId: serviceProviderId3,
+		await populateIndividualTimeslot(serviceProviderId3, {
 			weekDay: 0,
 			startTime: '08:00',
 			endTime: '09:00',

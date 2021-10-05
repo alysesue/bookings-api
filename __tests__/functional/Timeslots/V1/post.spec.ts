@@ -1,6 +1,6 @@
 import { PgClient } from '../../../utils/pgClient';
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
-import { populateUserServiceProvider } from '../../../populate/basicV1';
+import { populateUserServiceProvider } from '../../../populate/V1/users';
 
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
@@ -20,7 +20,7 @@ describe('Timeslots functional tests', () => {
 	});
 
 	beforeEach(async (done) => {
-		result = await populateUserServiceProvider({ nameService: 'Service1', agencyUserId: 'A001' });
+		result = await populateUserServiceProvider({ serviceNames: ['Service'], name: 'Sp1', agencyUserId: 'A001' });
 		done();
 	});
 

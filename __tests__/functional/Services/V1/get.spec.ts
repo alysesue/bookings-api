@@ -1,7 +1,7 @@
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
 import { PgClient } from '../../../utils/pgClient';
-import { populateService, populateServiceWithFields } from '../../../populate/basicV1';
 import { PartialAdditionalSettings, ServiceResponseV1 } from '../../../../src/components/services/service.apicontract';
+import { postService, postServiceWithFields } from '../../../populate/V1/services';
 
 describe('Tests endpoint and populate data', () => {
 	const SERVICE_NAME = 'Service';
@@ -22,7 +22,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it('Get service', async () => {
-		await populateService({ nameService: SERVICE_NAME });
+		await postService({ name: SERVICE_NAME });
 		const response = await OrganisationAdminRequestEndpointSG.create({}).get('/services');
 		expect(response.statusCode).toEqual(200);
 		expect((response.body.data[0] as ServiceResponseV1).name).toEqual(SERVICE_NAME);
@@ -39,7 +39,7 @@ describe('Tests endpoint and populate data', () => {
 			sendSMSNotifications: false,
 		} as PartialAdditionalSettings;
 
-		await populateServiceWithFields({ nameService: SERVICE_NAME, additionalSettings });
+		await postServiceWithFields({ name: SERVICE_NAME, additionalSettings });
 		const response = await OrganisationAdminRequestEndpointSG.create({}).get('/services');
 		expect(response.statusCode).toEqual(200);
 		expect((response.body.data[0] as ServiceResponseV1).additionalSettings.isOnHold).toEqual(false);

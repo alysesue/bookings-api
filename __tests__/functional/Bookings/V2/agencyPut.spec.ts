@@ -1,9 +1,10 @@
 import { PgClient } from '../../../utils/pgClient';
 import { AgencyRequestEndpointSG } from '../../../utils/requestEndpointSG';
-import { populateIndividualTimeslot, populateUserServiceProvider } from '../../../populate/basicV2';
 import { BookingStatus } from '../../../../src/models';
 import * as request from 'request';
 import { BookingValidationType } from '../../../../src/models/bookingValidationType';
+import { populateIndividualTimeslot } from '../../../populate/V2/servieProviders';
+import { populateUserServiceProvider } from '../../../populate/V2/users';
 
 describe('Bookings functional tests as agency for PUT request', () => {
 	const pgClient = new PgClient();
@@ -27,8 +28,8 @@ describe('Bookings functional tests as agency for PUT request', () => {
 	beforeEach(async (done) => {
 		await pgClient.cleanAllTables();
 		const result = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_1,
-			serviceProviderName: SERVICE_PROVIDER_NAME_1,
+			serviceNames: [NAME_SERVICE_1],
+			name: SERVICE_PROVIDER_NAME_1,
 			agencyUserId: 'A001',
 		});
 		serviceProviderId = result.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1).id;
@@ -37,8 +38,7 @@ describe('Bookings functional tests as agency for PUT request', () => {
 	});
 
 	const createInSlotBooking = async (): Promise<request.Response> => {
-		await populateIndividualTimeslot({
-			serviceProviderId,
+		await populateIndividualTimeslot(serviceProviderId, {
 			weekDay: 0,
 			startTime: '08:00',
 			endTime: '09:00',
@@ -71,8 +71,7 @@ describe('Bookings functional tests as agency for PUT request', () => {
 		}).get(`/bookings`, {}, 'V2');
 		expect(getResponse.body.data.length).toEqual(1);
 
-		await populateIndividualTimeslot({
-			serviceProviderId,
+		await populateIndividualTimeslot(serviceProviderId, {
 			weekDay: 0,
 			startTime: '09:00',
 			endTime: '10:00',
@@ -157,8 +156,7 @@ describe('Bookings functional tests as agency for PUT request', () => {
 		}).get(`/bookings`, {}, 'V2');
 		expect(getResponse.body.data.length).toEqual(1);
 
-		await populateIndividualTimeslot({
-			serviceProviderId,
+		await populateIndividualTimeslot(serviceProviderId, {
 			weekDay: 0,
 			startTime: '09:00',
 			endTime: '10:00',

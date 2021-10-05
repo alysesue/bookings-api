@@ -1,7 +1,7 @@
-import { populateOneOffTimeslot, updateOneOffTimeslot } from '../../../populate/basicV1';
-import { populateUserServiceProvider } from '../../../populate/basicV1';
 import { PgClient } from '../../../utils/pgClient';
 import { ServiceProviderResponseModelV1 } from '../../../../src/components/serviceProviders/serviceProviders.apicontract';
+import { populateUserServiceProvider } from '../../../populate/V1/users';
+import { populateOneOffTimeslot, updateOneOffTimeslot } from '../../../populate/V1/oneOffTimeslots';
 
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
@@ -22,8 +22,8 @@ describe('Timeslots functional tests', () => {
 		await pgClient.cleanAllTables();
 
 		const result1 = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_1,
-			serviceProviderName: SERVICE_PROVIDER_NAME_1,
+			serviceNames: [NAME_SERVICE_1],
+			name: SERVICE_PROVIDER_NAME_1,
 			agencyUserId: 'A001',
 		});
 

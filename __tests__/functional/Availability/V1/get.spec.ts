@@ -1,6 +1,7 @@
 import { PgClient } from '../../../utils/pgClient';
-import { populateUserServiceProvider, populateWeeklyTimesheet } from '../../../populate/basicV1';
 import { AnonmymousEndpointSG } from '../../../utils/requestEndpointSG';
+import { populateUserServiceProvider } from '../../../populate/V1/users';
+import { populateWeeklyTimesheet } from '../../../populate/V1/serviceProviders';
 
 describe('Timeslot availability functional tests', () => {
 	const pgClient = new PgClient();
@@ -23,8 +24,8 @@ describe('Timeslot availability functional tests', () => {
 		await pgClient.cleanAllTables();
 
 		result1 = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_1,
-			serviceProviderName: SERVICE_PROVIDER_NAME_1,
+			serviceNames: [NAME_SERVICE_1],
+			name: SERVICE_PROVIDER_NAME_1,
 			agencyUserId: 'A001',
 		});
 		serviceProvider1 = result1.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);

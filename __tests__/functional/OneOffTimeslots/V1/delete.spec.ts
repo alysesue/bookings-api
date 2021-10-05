@@ -1,6 +1,7 @@
 import { PgClient } from '../../../utils/pgClient';
-import { deleteOneOffTimeslot, populateOneOffTimeslot, populateUserServiceProvider } from '../../../populate/basicV1';
 import { ServiceProviderResponseModelV1 } from '../../../../src/components/serviceProviders/serviceProviders.apicontract';
+import { populateUserServiceProvider } from '../../../populate/V1/users';
+import { deleteOneOffTimeslot, populateOneOffTimeslot } from '../../../populate/V1/oneOffTimeslots';
 
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
@@ -21,8 +22,8 @@ describe('Timeslots functional tests', () => {
 		await pgClient.cleanAllTables();
 
 		const result1 = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_1,
-			serviceProviderName: SERVICE_PROVIDER_NAME_1,
+			serviceNames: [NAME_SERVICE_1],
+			name: SERVICE_PROVIDER_NAME_1,
 			agencyUserId: 'A001',
 		});
 
@@ -32,7 +33,7 @@ describe('Timeslots functional tests', () => {
 	});
 
 	it('should delete one off timeslot', async () => {
-		const [,service1TimeslotsResponse] = await populateOneOffTimeslot({
+		const [, service1TimeslotsResponse] = await populateOneOffTimeslot({
 			serviceProviderId: serviceProvider1.id,
 			startTime: START_TIME_1,
 			endTime: END_TIME_1,

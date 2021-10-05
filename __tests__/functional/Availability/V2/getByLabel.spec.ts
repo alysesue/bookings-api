@@ -1,7 +1,8 @@
 import { PgClient } from '../../../utils/pgClient';
-import { populateOneOffTimeslot, populateServiceAndServiceProvider } from '../../../populate/basicV2';
 import { AnonmymousEndpointSG } from '../../../utils/requestEndpointSG';
-import {IdHasherForFunctional} from "../../../utils/idHashingUtil";
+import { IdHasherForFunctional } from '../../../utils/idHashingUtil';
+import { populateOneOffTimeslot } from '../../../populate/V2/oneOffTimeslots';
+import { populateServiceAndServiceProvider } from '../../../populate/V2/servieProviders';
 
 describe('Timeslot availability filter by label', () => {
 	const pgClient = new PgClient();
@@ -55,16 +56,19 @@ describe('Timeslot availability filter by label', () => {
 	it('should be intersection by default', async () => {
 		await pgClient.configureServiceAllowAnonymous({ serviceId: unsignedServiceId });
 
-
 		const endpoint = await AnonmymousEndpointSG.create({ serviceId: service1.id });
 		let response = await endpoint.get(
-			`/timeslots/availability?startDate=2021-03-05T00:00:00&endDate=2021-03-05T15:59:59.999Z&labelIds=${frenchLabel.id}&labelIds=${englishLabel.id}`, {}, 'V2'
+			`/timeslots/availability?startDate=2021-03-05T00:00:00&endDate=2021-03-05T15:59:59.999Z&labelIds=${frenchLabel.id}&labelIds=${englishLabel.id}`,
+			{},
+			'V2',
 		);
 		expect(response.statusCode).toBe(200);
 		expect(response.body.data.length).toBe(0);
 
 		response = await endpoint.get(
-			`/timeslots/availability?startDate=2021-03-05T00:00:00&endDate=2021-03-05T15:59:59.999Z`, {}, 'V2'
+			`/timeslots/availability?startDate=2021-03-05T00:00:00&endDate=2021-03-05T15:59:59.999Z`,
+			{},
+			'V2',
 		);
 		expect(response.statusCode).toBe(200);
 		expect(response.body.data.length).toBe(2);
@@ -75,7 +79,9 @@ describe('Timeslot availability filter by label', () => {
 
 		const endpoint = await AnonmymousEndpointSG.create({ serviceId: service1.id });
 		const response = await endpoint.get(
-			`/timeslots/availability?labelOperationFiltering=intersection&startDate=2021-03-05T00:00:00&endDate=2021-03-05T15:59:59.999Z&labelIds=${frenchLabel.id}&labelIds=${englishLabel.id}`, {}, 'V2'
+			`/timeslots/availability?labelOperationFiltering=intersection&startDate=2021-03-05T00:00:00&endDate=2021-03-05T15:59:59.999Z&labelIds=${frenchLabel.id}&labelIds=${englishLabel.id}`,
+			{},
+			'V2',
 		);
 		expect(response.statusCode).toBe(200);
 		expect(response.body.data.length).toBe(0);
@@ -86,7 +92,9 @@ describe('Timeslot availability filter by label', () => {
 
 		const endpoint = await AnonmymousEndpointSG.create({ serviceId: service1.id });
 		const response = await endpoint.get(
-			`/timeslots/availability?labelOperationFiltering=union&startDate=2021-03-05T00:00:00&endDate=2021-03-05T15:59:59.999Z&labelIds=${frenchLabel.id}&labelIds=${englishLabel.id}`, {}, 'V2'
+			`/timeslots/availability?labelOperationFiltering=union&startDate=2021-03-05T00:00:00&endDate=2021-03-05T15:59:59.999Z&labelIds=${frenchLabel.id}&labelIds=${englishLabel.id}`,
+			{},
+			'V2',
 		);
 		expect(response.statusCode).toBe(200);
 		expect(response.body.data.length).toBe(2);

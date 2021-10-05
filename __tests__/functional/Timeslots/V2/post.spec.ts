@@ -1,6 +1,6 @@
 import { PgClient } from '../../../utils/pgClient';
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
-import { populateUserServiceProvider } from '../../../populate/basicV2';
+import { populateUserServiceProvider } from '../../../populate/V2/users';
 
 describe('Timeslots functional tests', () => {
 	const pgClient = new PgClient();
@@ -20,7 +20,7 @@ describe('Timeslots functional tests', () => {
 	});
 
 	beforeEach(async (done) => {
-		result = await populateUserServiceProvider({ nameService: 'Service1', agencyUserId: 'A001' });
+		result = await populateUserServiceProvider({ serviceNames: ['Service'], name: 'Sp1', agencyUserId: 'A001' });
 		done();
 	});
 
@@ -39,7 +39,8 @@ describe('Timeslots functional tests', () => {
 					endTime: END_TIME,
 					capacity: CAPACITY,
 				},
-			}, 'V2'
+			},
+			'V2',
 		);
 		expect(response.statusCode).toEqual(201);
 		expect(response.body.data.weekDay).toEqual(WEEKDAY);
