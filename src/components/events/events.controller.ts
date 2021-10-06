@@ -23,11 +23,17 @@ import { IdHasher } from '../../infrastructure/idHasher';
 import { MOLAuth } from 'mol-lib-common';
 import { Booking, Event } from '../../models';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
-import { BookingSearchRequest, EventBookingRequest, EventBookingResponse } from '../bookings/bookings.apicontract';
+import {
+	BookingSearchRequest,
+	EventBookingRequest,
+	EventBookingResponse,
+	ValidateOnHoldRequest,
+} from '../bookings/bookings.apicontract';
 import { BookingsService } from '../bookings';
 import { BookingsMapper } from '../bookings/bookings.mapper';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
+import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
@@ -65,6 +71,10 @@ export class EventsController extends Controller {
 		@Query() limit?: number,
 		@Query() maxId?: number,
 	): Promise<ApiPagedData<EventResponse>> {
+		const unsignedServiceId = this.idHasher.decode(serviceId);
+		if (!unsignedServiceId) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Service can't be found`);
+		}
 		const pagedEvents = await this.eventsService.search({
 			serviceId: this.idHasher.decode(serviceId),
 			page: page || DEFAULT_PAGE,
@@ -185,5 +195,25 @@ export class EventsController extends Controller {
 		return this.apiPagingFactory.createPagedAsync(pagedBookings, async (booking: Booking) => {
 			return this.bookingsMapper.mapEventsDataModel(booking);
 		});
+	}
+
+	/**
+	 * Validates an on hold booking.
+	 * It will add additional booking information to an existing booking and change the status of the booking
+	 *
+	 * @param bookingRequest
+	 * @param bookingId The booking id.
+	 */
+	@Post('/bookings/{bookingId}/validateOnHold')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@SuccessResponse(200, 'Validated')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
+	public async validateOnHoldBooking(
+		@Body() bookingRequest: ValidateOnHoldRequest,
+		@Path() bookingId: string,
+	): Promise<ApiData<EventBookingResponse>> {
+		const unsignedBookingId = this.idHasher.decode(bookingId);
+		const booking = await this.bookingsService.validateOnHoldBooking(unsignedBookingId, bookingRequest, true);
+		return ApiDataFactory.create(await this.bookingsMapper.mapEventsDataModel(booking));
 	}
 }
