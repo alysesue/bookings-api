@@ -145,6 +145,7 @@ export class BookingSearchRequest extends PagingRequest {
 	public serviceProviderIds?: number[];
 	public citizenUinFins?: string[];
 	public eventId?: number;
+	public byPassAuth?: boolean;
 }
 
 export class BookingProviderResponseV1 {

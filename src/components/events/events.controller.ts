@@ -72,7 +72,15 @@ export class EventsController extends Controller {
 			maxId,
 		});
 		return this.apiPagingFactory.createPagedAsync(pagedEvents, async (event: Event) => {
-			return this.eventsMapper.mapToResponse(event);
+			const eventBookings = await this.bookingsService.searchBookings({
+				eventId: event.id,
+				byPassAuth: true,
+				page: page || DEFAULT_PAGE,
+				limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
+				maxId,
+			});
+			const availableSlots = Math.max(0, event.capacity - eventBookings.entries.length);
+			return await this.eventsMapper.mapToResponse(event, availableSlots);
 		});
 	}
 

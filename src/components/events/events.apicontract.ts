@@ -76,4 +76,5 @@ export type EventResponse = {
 	firstStartDateTime: Date;
 	lastEndDateTime: Date;
 	timeslots: EventTimeslotResponse[];
+	availableSlots?: number;
 };
