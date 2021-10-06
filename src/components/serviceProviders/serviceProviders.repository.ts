@@ -12,6 +12,7 @@ import { ServiceProvidersQueryAuthVisitor } from './serviceProviders.auth';
 export type ProviderIncludeOptions = {
 	includeScheduleForm?: boolean;
 	includeTimeslotsSchedule?: boolean;
+	includeLabels?: boolean;
 	timeslotsScheduleOptions?: {
 		weekDays?: Weekday[];
 		startTime?: TimeOfDay;
@@ -61,6 +62,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			skipService?: boolean;
 			limit?: number;
 			pageNumber?: number;
+			includeLabels?: boolean;
 		} = {},
 	): Promise<SelectQueryBuilder<ServiceProvider>> {
 		const { serviceId, ids, scheduleFormId, organisationId } = options;
@@ -181,6 +183,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			skipAuthorisation?: boolean;
 			skipGroupMap?: boolean;
 			skipService?: boolean;
+			includeLabels?: boolean;
 		},
 	): Promise<SelectQueryBuilder<ServiceProvider>> {
 		const authGroups = await this.userContext.getAuthGroups();
@@ -205,6 +208,10 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			query = query
 				.leftJoinAndSelect('sp._service', 'service')
 				.leftJoinAndSelect('service._organisation', 'svcOrg');
+		}
+
+		if (options.includeLabels) {
+			query = query.leftJoinAndSelect('sp._labels', 'sp_label');
 		}
 
 		return query;

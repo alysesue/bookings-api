@@ -4,6 +4,9 @@ import {
 	ServiceProviderLabelsCategoriesRepository,
 	ServiceProviderLabelsRepository,
 } from './serviceProvidersLabels.repository';
+import { MOLErrorV2, ErrorCodeV2 } from 'mol-lib-api-contract';
+import { groupByKeyLastValue } from '../../tools/collections';
+import { IdHasher } from '../../infrastructure/idHasher';
 
 @InRequestScope
 export class SPLabelsCategoriesService {
@@ -11,6 +14,8 @@ export class SPLabelsCategoriesService {
 	private serviceProviderLabelRepository: ServiceProviderLabelsRepository;
 	@Inject
 	private spCategoriesRepository: ServiceProviderLabelsCategoriesRepository;
+	@Inject
+	private idHasher: IdHasher;
 
 	public sortSPLabelForDeleteCategory(
 		labelsNoCategory: ServiceProviderLabel[],
@@ -86,5 +91,34 @@ export class SPLabelsCategoriesService {
 		);
 
 		return { newCategories, updateOrKeepCategories, deleteCategories };
+	}
+
+	public async verifySPLabels(
+		encodedLabelIds: string[],
+		organisation: Organisation,
+	): Promise<ServiceProviderLabel[]> {
+		if (!encodedLabelIds || encodedLabelIds.length === 0) {
+			return [];
+		}
+
+		const labelIds = new Set<number>(encodedLabelIds.map((encodedId) => this.idHasher.decode(encodedId)));
+
+		if (!organisation.labels || !organisation.categories) throw new Error('Categories and labels are required');
+
+		const allCategoriesLabels = organisation.categories.map((cate) => cate.labels).flat(1) || [];
+		const serviceLabel = organisation.labels || [];
+		const labelsLookup = groupByKeyLastValue([...serviceLabel, ...allCategoriesLabels], (label) => label.id);
+
+		const labelsFound: ServiceProviderLabel[] = [];
+		labelIds.forEach((labelId: number) => {
+			const labelFound = labelsLookup.get(labelId);
+			if (!labelFound) {
+				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+					`Invalid label id: ${this.idHasher.encode(labelId)}`,
+				);
+			}
+			labelsFound.push(labelFound);
+		});
+		return labelsFound;
 	}
 }

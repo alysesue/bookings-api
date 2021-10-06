@@ -30,6 +30,11 @@ describe('Test categoriesLabels mapper', () => {
 
 		const labelResponse = new LabelResponseModel('hashId', 'English', 1);
 
+		it('should return empty if no data is passed', () => {
+			const result = Container.get(LabelsCategoriesMapper).mapToCategoriesResponse();
+			expect(result.length).toBe(0);
+		});
+
 		it('should return correct response', () => {
 			LabelsMapperMock.mapToLabelsResponse.mockReturnValue([labelResponse]);
 			const result = Container.get(LabelsCategoriesMapper).mapToCategoriesResponse([cat1]);
@@ -48,6 +53,10 @@ describe('Test categoriesLabels mapper', () => {
 		const labelsRequest = new LabelRequestModel('English', 'hashId');
 		const request = new LabelCategoryRequestModel('Language', [labelsRequest], 'hashId');
 
+		it('should return empty if no data is passed', () => {
+			const result = Container.get(LabelsCategoriesMapper).mapToCategories();
+			expect(result.length).toBe(0);
+		});
 		it('(hashId is provided) should return mapped category', () => {
 			const label = Label.create('English', 1);
 			IdHasherMock.decode.mockReturnValue(1);

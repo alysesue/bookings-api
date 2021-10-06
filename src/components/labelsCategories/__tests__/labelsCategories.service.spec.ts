@@ -18,6 +18,42 @@ describe('Test categoriesLabels service', () => {
 		jest.resetAllMocks();
 	});
 
+	describe('save', () => {
+		it('should save categories', async () => {
+			const label1 = Label.create('Label1', 1);
+			const label2 = Label.create('Label2', 2);
+			const catego1 = LabelCategory.create('catego1', [label1], 1);
+			const catego2 = LabelCategory.create('catego2', [label2]);
+
+			LabelsCategoriesRepositoryMock.saveMock.mockImplementation(() => Promise.resolve([catego1, catego2]));
+			await Container.get(LabelsCategoriesService).save([catego1, catego2]);
+			expect(LabelsCategoriesRepositoryMock.saveMock).toBeCalledTimes(1);
+		});
+
+		it('should not save categories when it is empty', async () => {
+			await Container.get(LabelsCategoriesService).save([]);
+			expect(LabelsCategoriesRepositoryMock.saveMock).toBeCalledTimes(0);
+		});
+	});
+
+	describe('delete', () => {
+		it('should delete categories', async () => {
+			const label1 = Label.create('Label1', 1);
+			const label2 = Label.create('Label2', 2);
+			const catego1 = LabelCategory.create('catego1', [label1], 1);
+			const catego2 = LabelCategory.create('catego2', [label2]);
+
+			LabelsCategoriesRepositoryMock.deleteMock.mockImplementation(() => Promise.resolve([catego1, catego2]));
+			await Container.get(LabelsCategoriesService).delete([catego1, catego2]);
+			expect(LabelsCategoriesRepositoryMock.deleteMock).toBeCalledTimes(1);
+		});
+
+		it('should not delete categories when it is empty', async () => {
+			await Container.get(LabelsCategoriesService).delete([]);
+			expect(LabelsCategoriesRepositoryMock.deleteMock).toBeCalledTimes(0);
+		});
+	});
+
 	it('Should update category', async () => {
 		const label1 = Label.create('Label1', 1);
 		const label2 = Label.create('Label2', 2);

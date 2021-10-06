@@ -1,5 +1,5 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
-import { Service, ServiceProvider, ServiceProviderGroupMap } from '../../models';
+import { Service, ServiceProvider, ServiceProviderGroupMap, ServiceProviderLabel } from '../../models';
 import {
 	MolServiceProviderOnboard,
 	ServiceProviderModel,
@@ -13,6 +13,7 @@ import { UserContext } from '../../infrastructure/auth/userContext';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { TimeslotItemsMapper } from '../timeslotItems/timeslotItems.mapper';
 import { ScheduleFormsMapper } from '../scheduleForms/scheduleForms.mapper';
+import { SPLabelsCategoriesMapper } from '../serviceProvidersLabels/serviceProvidersLabels.mapper';
 
 @InRequestScope
 export class ServiceProvidersMapper {
@@ -24,6 +25,8 @@ export class ServiceProvidersMapper {
 	private timeslotItemsMapper: TimeslotItemsMapper;
 	@Inject
 	private scheduleFormsMapper: ScheduleFormsMapper;
+	@Inject
+	private spLabelsCategoriesMapper: SPLabelsCategoriesMapper;
 
 	private async mapDataModelBase(spData: ServiceProvider): Promise<ServiceProviderResponseModelBase> {
 		const currentUser = await this.userContext.getCurrentUser();
@@ -66,7 +69,7 @@ export class ServiceProvidersMapper {
 
 	public async mapDataModelV2(
 		spData: ServiceProvider,
-		options: { includeTimeslotsSchedule?: boolean; includeScheduleForm?: boolean },
+		options: { includeTimeslotsSchedule?: boolean; includeScheduleForm?: boolean; includeLabels?: boolean },
 	): Promise<ServiceProviderResponseModelV2> {
 		const serviceProviderResponse = await this.mapDataModelBase(spData);
 		let timeslotsSchedule;
@@ -79,7 +82,19 @@ export class ServiceProvidersMapper {
 		}
 		const serviceProviderId = this.idHasher.encode(spData.id);
 		const serviceId = this.idHasher.encode(spData.serviceId);
-		return { ...serviceProviderResponse, id: serviceProviderId, serviceId, timeslotsSchedule, scheduleForm };
+		let labels;
+		if (options.includeLabels) {
+			labels = this.spLabelsCategoriesMapper.mapToServiceProviderLabelsResponse(spData.labels);
+		}
+
+		return {
+			...serviceProviderResponse,
+			id: serviceProviderId,
+			serviceId,
+			timeslotsSchedule,
+			scheduleForm,
+			labels,
+		};
 	}
 
 	public async mapDataModelsV1(
@@ -96,7 +111,7 @@ export class ServiceProvidersMapper {
 
 	public async mapDataModelsV2(
 		spList: ServiceProvider[],
-		options: { includeTimeslotsSchedule?: boolean; includeScheduleForm?: boolean },
+		options: { includeTimeslotsSchedule?: boolean; includeScheduleForm?: boolean; includeLabels?: boolean },
 	): Promise<ServiceProviderResponseModelV2[]> {
 		const result = [];
 
@@ -156,7 +171,11 @@ export class ServiceProvidersMapper {
 		return serviceProvider;
 	}
 
-	public mapServiceProviderModelToEntity(sp: ServiceProviderModel, entity: ServiceProvider): ServiceProvider {
+	public mapServiceProviderModelToEntity(
+		sp: ServiceProviderModel,
+		entity: ServiceProvider,
+		spLabels?: ServiceProviderLabel[],
+	): ServiceProvider {
 		if (!entity) {
 			throw new Error('Service provider not found');
 		}
@@ -167,6 +186,7 @@ export class ServiceProvidersMapper {
 		newSp.expiryDate = sp?.expiryDate ? new Date(sp.expiryDate) : null;
 		newSp.description = sp?.description;
 		newSp.aliasName = sp.aliasName;
+		newSp.labels = spLabels;
 		return newSp;
 	}
 }

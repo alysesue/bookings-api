@@ -48,6 +48,24 @@ describe('labelsCategories repository', () => {
 			} as unknown) as SelectQueryBuilder<LabelCategory>;
 		});
 
+		describe('delete', () => {
+			it('should delete a label', async () => {
+				const repository = Container.get(LabelsCategoriesRepository);
+				TransactionManagerMock.delete.mockImplementation(() => Promise.resolve(savedLabelsCategories));
+
+				await repository.delete(labelsCategoryToSave);
+				expect(TransactionManagerMock.delete).toBeCalledTimes(1);
+			});
+
+			it('should not delete when label category is empty', async () => {
+				const repository = Container.get(LabelsCategoriesRepository);
+				// TransactionManagerMock.delete.mockImplementation(() => Promise.resolve(savedLabelsCategories));
+
+				await repository.delete([]);
+				expect(TransactionManagerMock.delete).toBeCalledTimes(0);
+			});
+		});
+
 		it('should save a label', async () => {
 			const repository = Container.get(LabelsCategoriesRepository);
 			TransactionManagerMock.save.mockImplementation(() => Promise.resolve(savedLabelsCategories));

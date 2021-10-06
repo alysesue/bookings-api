@@ -31,14 +31,19 @@ describe('Test categoriesLabels mapper', () => {
 			expect(response[0].id).toBe('hashId');
 		});
 
-		it('return empty array', () => {
-			const response = Container.get(SPLabelsCategoriesMapper).mapToServiceProviderLabelsResponse([]);
+		it('return empty array if no data is passed', () => {
+			const response = Container.get(SPLabelsCategoriesMapper).mapToServiceProviderLabelsResponse();
 
 			expect(response).toHaveLength(0);
 		});
 	});
 
 	describe('mapToServiceProviderLabels API', () => {
+		it('return empty array if no data is passed', () => {
+			const response = Container.get(SPLabelsCategoriesMapper).mapToServiceProviderLabels();
+
+			expect(response).toHaveLength(0);
+		});
 		it('return service provider labels', () => {
 			const labels = new ServiceProviderLabelRequestModel('English', 'hashId');
 
@@ -46,6 +51,26 @@ describe('Test categoriesLabels mapper', () => {
 
 			expect(response[0].labelText).toBe('English');
 			expect(response[0].id).toBe(1);
+		});
+
+		it('return service provider labels without duplicate (1 without label id)', () => {
+			const labels = new ServiceProviderLabelRequestModel('English', 'hashId');
+			const labelWithoutId = new ServiceProviderLabelRequestModel('English');
+			const response = Container.get(SPLabelsCategoriesMapper).mapToServiceProviderLabels([
+				labels,
+				labelWithoutId,
+			]);
+			expect(response.length).toBe(1);
+		});
+
+		it('return service provider labels without duplicate (both without label id)', () => {
+			const labelWithoutId1 = new ServiceProviderLabelRequestModel('English');
+			const labelWithoutId2 = new ServiceProviderLabelRequestModel('English');
+			const response = Container.get(SPLabelsCategoriesMapper).mapToServiceProviderLabels([
+				labelWithoutId1,
+				labelWithoutId2,
+			]);
+			expect(response.length).toBe(1);
 		});
 	});
 
@@ -59,6 +84,16 @@ describe('Test categoriesLabels mapper', () => {
 			expect(response[0].labelText).toBe('English');
 			expect(response[0].id).toBe(1);
 		});
+
+		it('return service provider labels without one label from original list', () => {
+			const response = Container.get(SPLabelsCategoriesMapper).mergeAllLabels(
+				[ServiceProviderLabel.create('English', 1), ServiceProviderLabel.create('Malay', 2)],
+				[ServiceProviderLabel.create('Malay', 2)],
+			);
+
+			expect(response[0].labelText).toBe('Malay');
+			expect(response[0].id).toBe(2);
+		});
 	});
 
 	describe('mapToCategoriesResponse API', () => {
@@ -66,6 +101,11 @@ describe('Test categoriesLabels mapper', () => {
 		const label2 = ServiceProviderLabel.create('Singapore', 1);
 		const cat1 = ServiceProviderLabelCategory.create('Language', [label1], 1);
 		const cat2 = ServiceProviderLabelCategory.create('Country', [label2], 1);
+
+		it('return empty array if no data is passed', () => {
+			const result = Container.get(SPLabelsCategoriesMapper).mapToCategoriesResponse();
+			expect(result).toHaveLength(0);
+		});
 
 		it('should return correct response', () => {
 			const result = Container.get(SPLabelsCategoriesMapper).mapToCategoriesResponse([cat1]);
@@ -82,6 +122,11 @@ describe('Test categoriesLabels mapper', () => {
 	describe('mapToServiceProviderCategories API', () => {
 		const labelsRequest = new ServiceProviderLabelRequestModel('English', 'hashId');
 		const request = new ServiceProviderLabelCategoryRequestModel('Language', [labelsRequest], 'hashId');
+
+		it('return empty array if no data is passed', () => {
+			const result = Container.get(SPLabelsCategoriesMapper).mapToServiceProviderCategories();
+			expect(result).toHaveLength(0);
+		});
 
 		it('(hashId is provided) should return mapped category', () => {
 			const label = ServiceProviderLabel.create('English', 1);
