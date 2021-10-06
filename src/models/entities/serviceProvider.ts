@@ -129,6 +129,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		autoAcceptBookings = DEFAULT_AUTO_ACCEPT_BOOKINGS,
 		description?: string,
 		aliasName?: string,
+		labels?: ServiceProviderLabel[],
 	) {
 		const instance = new ServiceProvider();
 		instance._serviceId = serviceId;
@@ -141,6 +142,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		instance._scheduleFormConfirmed = DEFAULT_SCHEDULE_FORM_CONFIRMED;
 		instance._description = description;
 		instance._aliasName = aliasName;
+		instance._labels = labels;
 		return instance;
 	}
 

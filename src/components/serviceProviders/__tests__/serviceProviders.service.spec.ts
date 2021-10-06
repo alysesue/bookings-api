@@ -8,6 +8,7 @@ import {
 	ScheduleForm,
 	Service,
 	ServiceProvider,
+	ServiceProviderLabel,
 	TimeOfDay,
 	TimeslotItem,
 	TimeslotsSchedule,
@@ -47,6 +48,10 @@ import { TimeslotItemsServiceMock } from '../../timeslotItems/__mocks__/timeslot
 import { ScheduleFormsServiceMock } from '../../scheduleForms/__mocks__/scheduleForms.service.mock';
 import { TimeslotsScheduleRepositoryMock } from '../../timeslotsSchedules/__mocks__/timeslotsSchedule.repository.mock';
 import { OrganisationsRepositoryMock } from '../../organisations/__mocks__/organisations.noauth.repository.mock';
+import { OrganisationSettingsService } from '../../../components/organisations/organisations.settings.service';
+import { OrganisationSettingsServiceMock } from '../../../components/organisations/__mocks__/organisations.settings.service.mock';
+import { SPLabelsCategoriesService } from '../../../components/serviceProvidersLabels/serviceProvidersLabels.service';
+import { SPLabelsCategoriesServiceMock } from '../../../components/serviceProvidersLabels/__mock__/serviceProvidersLabels.service.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -109,6 +114,8 @@ describe('ServiceProviders.Service', () => {
 		Container.bind(UsersService).to(UsersServiceMock);
 		Container.bind(MolUsersService).to(MolUsersServiceMock);
 		Container.bind(OrganisationsNoauthRepository).to(OrganisationsRepositoryMock);
+		Container.bind(OrganisationSettingsService).to(OrganisationSettingsServiceMock);
+		Container.bind(SPLabelsCategoriesService).to(SPLabelsCategoriesServiceMock);
 	});
 
 	afterEach(() => {
@@ -447,12 +454,21 @@ describe('ServiceProviders.Service', () => {
 	});
 
 	it('should update a service provider', async () => {
+		const serviceMock = Service.create('name', organisation);
+		serviceProviderMock.service = serviceMock;
 		serviceProviderMock.service = serviceMockWithTemplate;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
 		UserContextMock.getAuthGroups.mockReturnValue(
 			Promise.resolve([new OrganisationAdminAuthGroup(adminMock, [organisation])]),
 		);
+		OrganisationSettingsServiceMock.getOrgSettings.mockImplementation(() =>
+			Promise.resolve(Organisation.create('org1')),
+		);
+		SPLabelsCategoriesServiceMock.verifySPLabels.mockImplementation(() =>
+			Promise.resolve([ServiceProviderLabel.create('label')]),
+		);
+
 		await Container.get(ServiceProvidersService).updateSp(serviceProviderModelMock, 1);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
 	});

@@ -166,6 +166,7 @@ export class TimeslotsService {
 		serviceProviderIds?: number[];
 		labelIds?: number[];
 		labelOperationFiltering?: LabelOperationFiltering;
+		includeLabels?: boolean;
 	}): Promise<AvailableTimeslotProviders[]> {
 		const {
 			serviceId,
@@ -174,6 +175,7 @@ export class TimeslotsService {
 			labelIds,
 			filterDaysInAdvance,
 			labelOperationFiltering,
+			includeLabels,
 		} = params;
 		let range = {
 			start: params.startDateTime,
@@ -197,6 +199,7 @@ export class TimeslotsService {
 			serviceProviderIds,
 			labelIds,
 			labelOperationFiltering,
+			includeLabels,
 		);
 	}
 
@@ -208,6 +211,7 @@ export class TimeslotsService {
 		serviceProviderIds?: number[],
 		labelIds?: number[],
 		labelOperationFiltering?: LabelOperationFiltering,
+		includeLabels?: boolean,
 	): Promise<AvailableTimeslotProviders[]> {
 		if (endDateTime < startDateTime) {
 			return [];
@@ -221,6 +225,7 @@ export class TimeslotsService {
 			serviceProviderIds,
 			labelIds,
 			labelOperationFiltering,
+			includeLabels,
 		);
 		getAggregatedTimeslotEntriesWatch.stop();
 
@@ -404,6 +409,7 @@ export class TimeslotsService {
 		serviceProviderIds?: number[],
 		labelIds?: number[],
 		labelOperationFiltering?: LabelOperationFiltering,
+		includeLabels?: boolean,
 	): Promise<[ServiceProvidersLookup, TimeslotMap<AvailableTimeslotProviders>]> {
 		const serviceProviderLookup = new ServiceProvidersLookup();
 		const aggregator = new AggregatorTimeslotProviders(serviceProviderLookup);
@@ -421,6 +427,7 @@ export class TimeslotsService {
 			skipAuthorisation: true, // loads all SPs regardless of user role
 			skipGroupMap: true,
 			skipService: true,
+			includeLabels,
 		});
 		serviceProviderLookup.addMany(serviceProviders);
 

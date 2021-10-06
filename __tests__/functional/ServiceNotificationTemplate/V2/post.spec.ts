@@ -29,7 +29,7 @@ describe('Tests endpoint and populate data for POST request', () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post(
 			`/services/${serviceId}/notificationTemplate/email`,
 			{
-				params: { serviceId: serviceId },
+				params: { serviceId },
 				body: { emailTemplateType: TEMPLATE_TYPE, htmlTemplate: HTML_TEMPLATE },
 			},
 		);

@@ -13,16 +13,21 @@ import {
 import { LabelsService } from '../../../components/labels/labels.service';
 import { LabelsCategoriesServiceMock } from '../../../components/labelsCategories/__mocks__/labelsCategories.service.mock';
 import { LabelsCategoriesService } from '../../../components/labelsCategories/labelsCategories.service';
+import { IdHasher } from '../../../infrastructure/idHasher';
+import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 
 describe('Service Provider Labels and Categories Services', () => {
 	beforeAll(() => {
 		jest.resetAllMocks();
 		Container.bind(ServiceProviderLabelsRepository).to(ServiceProviderLabelsRepositoryMock);
 		Container.bind(ServiceProviderLabelsCategoriesRepository).to(ServiceProviderLabelsCategoriesRepositoryMock);
+		Container.bind(IdHasher).to(IdHasherMock);
 	});
 
 	beforeEach(() => {
 		jest.resetAllMocks();
+		IdHasherMock.encode.mockImplementation((value: number) => value.toString());
+		IdHasherMock.decode.mockImplementation((value: string) => Number.parseInt(value, 10));
 	});
 
 	describe('sortSPLabelForDeleteCategory API', () => {
@@ -94,6 +99,50 @@ describe('Service Provider Labels and Categories Services', () => {
 			expect(ServiceProviderLabelsRepositoryMock.saveMock).toBeCalledTimes(1);
 			expect(ServiceProviderLabelsCategoriesRepositoryMock.deleteMock).toBeCalledTimes(1);
 			expect(ServiceProviderLabelsCategoriesRepositoryMock.saveMock).toBeCalledTimes(1);
+		});
+	});
+
+	describe('verifySPLabels', () => {
+		const label1 = ServiceProviderLabel.create('Label1', 1);
+		const catego1 = ServiceProviderLabelCategory.create('catego1', [label1], 1);
+		const organisation = Organisation.create('org1', 1);
+		const originalCategories = [catego1] as ServiceProviderLabelCategory[];
+		organisation.labels = [label1];
+		organisation.categories = originalCategories;
+
+		it('Should skip if array is empty', async () => {
+			ServiceProviderLabelsRepositoryMock.findMock.mockReturnValue([]);
+			const resLabel = await Container.get(SPLabelsCategoriesService).verifySPLabels([], organisation);
+
+			expect(resLabel).toStrictEqual([]);
+		});
+
+		it('Should throw if labels undefined', async () => {
+			ServiceProviderLabelsRepositoryMock.findMock.mockReturnValue([]);
+			const resLabel = Container.get(SPLabelsCategoriesService).verifySPLabels(['1'], new Organisation());
+
+			await expect(resLabel).rejects.toThrowError('required');
+		});
+
+		it('Should verify if labels are present in Service & remove duplication', async () => {
+			const labelIds = ['1', '1', '2'];
+
+			const org = new Organisation();
+			org.labels = [ServiceProviderLabel.create('ABC1', 1), ServiceProviderLabel.create('ABC2', 2)];
+			org.categories = [];
+			const resLabel = await Container.get(SPLabelsCategoriesService).verifySPLabels(labelIds, org);
+
+			expect(resLabel).toStrictEqual([
+				ServiceProviderLabel.create('ABC1', 1),
+				ServiceProviderLabel.create('ABC2', 2),
+			]);
+		});
+
+		it(`Should throw if label id doesn't exist`, async () => {
+			const labelIds = ['1', '1', '2'];
+
+			const asyncTest = Container.get(SPLabelsCategoriesService).verifySPLabels(labelIds, organisation);
+			await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(`"Invalid label id: 2"`);
 		});
 	});
 });

@@ -26,7 +26,7 @@ describe('Tests endpoint and populate data for GET request', () => {
 		const service = await populateService({ nameService: SERVICE_NAME });
 		const serviceId = await idHasher.convertHashToId(service.id);
 		await populateServiceNotificationTemplate({
-			serviceId: serviceId,
+			serviceId,
 			emailTemplateType: TEMPLATE_TYPE,
 			htmlTemplate: HTML_TEMPLATE,
 		});
@@ -34,7 +34,7 @@ describe('Tests endpoint and populate data for GET request', () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).get(
 			`/services/${serviceId}/notificationTemplate/email`,
 			{
-				params: { serviceId: serviceId, emailTemplateType: TEMPLATE_TYPE },
+				params: { serviceId, emailTemplateType: TEMPLATE_TYPE },
 			},
 		);
 
@@ -50,7 +50,7 @@ describe('Tests endpoint and populate data for GET request', () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).get(
 			`/services/${serviceId}/notificationTemplate/email`,
 			{
-				params: { serviceId: serviceId, emailTemplateType: TEMPLATE_TYPE },
+				params: { serviceId, emailTemplateType: TEMPLATE_TYPE },
 			},
 		);
 

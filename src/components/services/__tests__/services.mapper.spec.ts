@@ -47,10 +47,11 @@ describe('service/services.mapper', () => {
 
 		IdHasherMock.encode.mockImplementation(() => serviceData.id.toString());
 
-		const serviceResponse = serviceMapper.mapToServiceResponseV2(serviceData);
+		const serviceResponse = serviceMapper.mapToServiceResponseV2(serviceData, true);
 
 		expect(serviceResponse).toEqual({
 			id: '1',
+			orgId: '1',
 			name: 'name',
 			additionalSettings: { allowAnonymousBookings: false },
 			categories: [],

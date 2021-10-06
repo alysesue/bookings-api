@@ -42,7 +42,7 @@ export class OrganisationsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 		const organisationId = this._organisation.id;
 		switch (this._action) {
 			case CrudAction.Read:
-				if (_userGroup.authorisedServices.find((service) => service.organisation.id === organisationId)) {
+				if (_userGroup.authorisedServices.find((service) => service.organisationId === organisationId)) {
 					this.markWithPermission();
 				}
 				return;
@@ -51,5 +51,16 @@ export class OrganisationsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 		}
 	}
 
-	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {}
+	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
+		const organisationId = this._organisation.id;
+		switch (this._action) {
+			case CrudAction.Read:
+				if (_userGroup.authorisedServiceProvider.service.organisationId === organisationId) {
+					this.markWithPermission();
+				}
+				return;
+			default:
+				return;
+		}
+	}
 }

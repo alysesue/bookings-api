@@ -459,6 +459,7 @@ export class ServiceProvidersControllerV2 extends Controller {
 		@Query() fromAvailableDate?: Date,
 		@Query() toAvailableDate?: Date,
 		@Query() filterDaysInAdvance = false,
+		@Query() includeLabels = false,
 		@Query() limit?: number,
 		@Query() page?: number,
 	): Promise<ApiData<ServiceProviderResponseModelV2[]>> {
@@ -472,6 +473,7 @@ export class ServiceProvidersControllerV2 extends Controller {
 			limit,
 			page,
 			unsignedServiceId,
+			includeLabels,
 		);
 		return this.apiPagingFactory.createPagedAsync(result, async (serviceProvider: ServiceProvider) => {
 			return await this.serviceProvidersMapper.mapDataModelV2(serviceProvider, {
@@ -546,11 +548,12 @@ export class ServiceProvidersControllerV2 extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getServiceProvider(@Path() spId: string): Promise<ApiData<ServiceProviderResponseModelV2>> {
 		const unsignedSpId = this.idHasher.decode(spId);
-		const options = { includeTimeslotsSchedule: true, includeScheduleForm: true };
+		const options = { includeTimeslotsSchedule: true, includeScheduleForm: true, includeLabels: true };
 		const dataModel = await this.serviceProvidersService.getServiceProvider(
 			unsignedSpId,
 			options.includeScheduleForm,
 			options.includeTimeslotsSchedule,
+			options.includeLabels,
 		);
 		return ApiDataFactory.create(await this.serviceProvidersMapper.mapDataModelV2(dataModel, options));
 	}
@@ -589,8 +592,9 @@ export class ServiceProvidersControllerV2 extends Controller {
 		@Body() spRequest: ServiceProviderModel,
 	): Promise<ApiData<ServiceProviderResponseModelV2>> {
 		const unsignedSpId = this.idHasher.decode(spId);
+		const options = { includeLabels: true };
 		const result = await this.serviceProvidersService.updateSp(spRequest, unsignedSpId);
-		return ApiDataFactory.create(await this.serviceProvidersMapper.mapDataModelV2(result, {}));
+		return ApiDataFactory.create(await this.serviceProvidersMapper.mapDataModelV2(result, options));
 	}
 
 	/**

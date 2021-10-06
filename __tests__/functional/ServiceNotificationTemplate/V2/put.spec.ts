@@ -27,7 +27,7 @@ describe('Tests endpoint and populate data for PUT request', () => {
 		const service = await populateService({ nameService: SERVICE_NAME });
 		const serviceId = await idHasher.convertHashToId(service.id);
 		const populated = await populateServiceNotificationTemplate({
-			serviceId: serviceId,
+			serviceId,
 			emailTemplateType: TEMPLATE_TYPE,
 			htmlTemplate: HTML_TEMPLATE,
 		});
@@ -36,7 +36,7 @@ describe('Tests endpoint and populate data for PUT request', () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${serviceId}/notificationTemplate/email/${id}`,
 			{
-				params: { serviceId: serviceId, id: id },
+				params: { serviceId, id },
 				body: { emailTemplateType: TEMPLATE_TYPE, htmlTemplate: HTML_TEMPLATE_UPDATED },
 			},
 		);
