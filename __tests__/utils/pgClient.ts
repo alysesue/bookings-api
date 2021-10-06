@@ -76,7 +76,14 @@ export class PgClient {
 		});
 	}
 
-	public async getFirstOrganisation(): Promise<number> {
+	public async mapOrganisation({organisationId, organisationName}): Promise<void> {
+		await this.pool.query({
+			text: `INSERT INTO public.organisation_admin_group_map("_organisationId", "_organisationRef") values ($1, $2)`,
+			values: [organisationId, organisationName],
+		});
+	}
+
+	public async getFirstOrganisationId(): Promise<number> {
 		const res = await this.pool.query({
 			text: `SELECT * FROM public.organisation`
 		});

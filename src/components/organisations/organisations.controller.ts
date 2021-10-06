@@ -17,7 +17,7 @@ export class OrganisationsController extends Controller {
 	private serviceProvidersService: ServiceProvidersService;
 
 	/**
-	 * Creates weekly schedlue for each service providers of the organisation.
+	 * Creates weekly schedule for each service providers of the organisation.
 	 *
 	 * @param orgaId id organisation
 	 * @param request schedule form
@@ -26,7 +26,10 @@ export class OrganisationsController extends Controller {
 	@SuccessResponse(204, 'no content')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async setServiceScheduleForm(@Path() orgaId: number, @Body() request: ScheduleFormRequest): Promise<void> {
+	public async setOrganisationScheduleForm(
+		@Path() orgaId: number,
+		@Body() request: ScheduleFormRequest,
+	): Promise<void> {
 		await this.serviceProvidersService.setProvidersScheduleForm(orgaId, request);
 	}
 }
@@ -45,7 +48,7 @@ export class OrganisationsControllerV2 extends Controller {
 	private organisationsMapper: OrganisationsMapper;
 
 	/**
-	 * Creates weekly schedlue for each service providers of the organisation.
+	 * Creates weekly schedule for each service providers of the organisation.
 	 *
 	 * @param orgId id organisation
 	 * @param request schedule form
@@ -54,7 +57,10 @@ export class OrganisationsControllerV2 extends Controller {
 	@SuccessResponse(204, 'no content')
 	@MOLAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
-	public async setServiceScheduleForm(@Path() orgId: string, @Body() request: ScheduleFormRequest): Promise<void> {
+	public async setOrganisationScheduleForm(
+		@Path() orgId: string,
+		@Body() request: ScheduleFormRequest,
+	): Promise<void> {
 		const unsignedOrgId = this.idHasher.decode(orgId);
 		await this.serviceProvidersService.setProvidersScheduleForm(unsignedOrgId, request);
 	}

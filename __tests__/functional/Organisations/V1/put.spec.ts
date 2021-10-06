@@ -1,9 +1,11 @@
 import {PgClient} from "../../../utils/pgClient";
 import {OrganisationAdminRequestEndpointSG} from "../../../utils/requestEndpointSG";
+import {populateServiceAndServiceProvider} from "../../../populate/basicV1";
 
 describe('Organisations functional tests - put', () => {
     const pgClient = new PgClient();
     const organisationName = 'localorg';
+    let organisationId = undefined;
 
     beforeAll(async(done) => {
         await pgClient.cleanAllTables();
@@ -13,6 +15,8 @@ describe('Organisations functional tests - put', () => {
     beforeEach(async(done) => {
         await pgClient.cleanAllTables();
         await pgClient.setOrganisation({organisationName});
+        organisationId = await pgClient.getFirstOrganisationId();
+        await pgClient.mapOrganisation({organisationId, organisationName});
         done()
     });
 
@@ -22,7 +26,13 @@ describe('Organisations functional tests - put', () => {
     });
 
     it('should set organisation level schedule form', async() => {
-        const organisationId = await pgClient.getFirstOrganisation();
+        await populateServiceAndServiceProvider({
+            organisation: 'localorg',
+            nameService: 'admin',
+            serviceProviderName: 'sp',
+            labels: [],
+        });
+
         const openTime = '09:00';
         const closeTime = '10:00';
         const scheduleSlot = 60;

@@ -150,6 +150,8 @@ describe('ServiceProviders.Service', () => {
 		(ServiceProvidersActionAuthVisitor as jest.Mock).mockImplementation(() => ({
 			hasPermission: jest.fn().mockReturnValue(true),
 		}));
+
+		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(Promise.resolve(new Organisation()));
 	});
 
 	it('should get all service providers', async () => {
@@ -389,6 +391,40 @@ describe('ServiceProviders.Service', () => {
 			expect(errorStart.message).toBe('Both the start date and end date must be selected or empty');
 			expect(errorEnd.code).toBe('SYS_INVALID_PARAM');
 			expect(errorEnd.message).toBe('Both the start date and end date must be selected or empty');
+		});
+
+		it('Set scheduleForm should throw error if organisation does not exist', async () => {
+			OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(Promise.resolve(undefined));
+
+			let error;
+			try {
+				await Container.get(ServiceProvidersService).setProvidersScheduleForm(1, {
+					serviceProvidersEmailList: [],
+					startDate: new Date('2021-07-08'),
+					endDate: new Date('2021-07-09'),
+				} as ScheduleFormRequest);
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error.message).toBe('Organisation not found');
+		});
+
+		it('Set scheduleForm should throw error if no service providers under organisation', async () => {
+			ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([]));
+
+			let error;
+			try {
+				await Container.get(ServiceProvidersService).setProvidersScheduleForm(1, {
+					serviceProvidersEmailList: [],
+					startDate: new Date('2021-07-08'),
+					endDate: new Date('2021-07-09'),
+				} as ScheduleFormRequest);
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error.message).toBe('No service providers found');
 		});
 	});
 
