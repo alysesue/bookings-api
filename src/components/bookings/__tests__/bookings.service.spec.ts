@@ -1329,7 +1329,7 @@ describe('Bookings.Service', () => {
 				Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
 			);
 
-			const result = await bookingService.validateOnHoldBooking(1, bookingRequest);
+			const result = await bookingService.validateOnHoldBooking(1, bookingRequest, true);
 
 			expect(result.status).toBe(BookingStatus.Accepted);
 			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
