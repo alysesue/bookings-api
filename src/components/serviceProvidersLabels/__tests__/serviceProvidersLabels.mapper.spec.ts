@@ -88,7 +88,7 @@ describe('Test categoriesLabels mapper', () => {
 			expect(response.length).toBe(2);
 			expect(response[0].category).toBe(undefined);
 			expect(response[1].category).toBeDefined();
-			expect(response[1].category.name).toBe('category');
+			expect(response[1].category.categoryName).toBe('category');
 		});
 	});
 

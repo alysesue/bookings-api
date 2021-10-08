@@ -1,4 +1,4 @@
-import { Organisation, Service, ServiceProvider, ServiceProviderLabel, User } from '../../../models/entities';
+import { Organisation, Service, ServiceProvider, ServiceProviderLabel, User } from '../../../models';
 import { ServiceProvidersMapper } from '../serviceProviders.mapper';
 import { Container } from 'typescript-ioc';
 import { IdHasher } from '../../../infrastructure/idHasher';
@@ -12,7 +12,7 @@ import { ScheduleFormsMapperMock } from '../../scheduleForms/__mocks__/scheduleF
 import { TimeslotsScheduleResponseV1 } from '../../timeslotItems/timeslotItems.apicontract';
 import { ScheduleFormResponseV1 } from '../../scheduleForms/scheduleForms.apicontract';
 import { MolServiceProviderOnboard, ServiceProviderModel } from '../serviceProviders.apicontract';
-import { ServiceProviderLabelResponseModel } from '../../../components/serviceProvidersLabels/serviceProvidersLabels.apicontract';
+import { ServiceProviderLabelResponseModel } from '../../serviceProvidersLabels/serviceProvidersLabels.apicontract';
 import { SPLabelsCategoriesMapper } from '../../serviceProvidersLabels/serviceProvidersLabels.mapper';
 import { SPLabelsCategoriesMapperMock } from '../../serviceProvidersLabels/__mock__/serviceProvidersLabels.mapper.mock';
 
@@ -78,7 +78,7 @@ describe('Service providers mapper tests', () => {
 			label2.organisationId = 2;
 			label2.category = { id: 2, name: 'category' };
 			const labelResponse2 = new ServiceProviderLabelResponseModel('label', '2', '2', {
-				name: 'category',
+				categoryName: 'category',
 				id: '2',
 			});
 
