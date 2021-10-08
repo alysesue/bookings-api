@@ -14,10 +14,16 @@ export class ServiceProviderLabelResponseModel {
 	public organisationId: string;
 	public category: ServiceProviderLabelCategoryResponseModel;
 
-	constructor(name?: string, id?: string, organisationId?: string) {
+	constructor(
+		name?: string,
+		id?: string,
+		organisationId?: string,
+		category?: ServiceProviderLabelCategoryResponseModel,
+	) {
 		this.name = name;
 		this.id = id;
 		this.organisationId = organisationId;
+		this.category = category;
 	}
 }
 
@@ -35,9 +41,9 @@ export class ServiceProviderLabelCategoryRequestModel {
 
 export class ServiceProviderLabelCategoryResponseModel {
 	public categoryName: string;
-	public labels: ServiceProviderLabelResponseModel[];
-	public id: string;
-	public organisationId: string;
+	public labels?: ServiceProviderLabelResponseModel[];
+	public id?: string;
+	public organisationId?: string;
 
 	constructor(
 		categoryName?: string,

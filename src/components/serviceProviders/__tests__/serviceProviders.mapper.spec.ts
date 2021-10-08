@@ -67,12 +67,21 @@ describe('Service providers mapper tests', () => {
 			});
 		});
 
-		it('should map data model V2 with labels', async () => {
-			const labelResponse = new ServiceProviderLabelResponseModel('label', '1', 'undefined');
-			const label = ServiceProviderLabel.create('label', 1);
+		it('should map data model V2 with labels along with category', async () => {
+			const labelResponse1 = new ServiceProviderLabelResponseModel('label', '1', 'undefined');
+			const label1 = ServiceProviderLabel.create('label', 1);
+
+			let label2 = ServiceProviderLabel.create('label', 2);
+			label2.organisationId = 2;
+			label2.category = { id: 2, name: 'category' };
+			const labelResponse2 = new ServiceProviderLabelResponseModel('label', '2', '2', {
+				categoryName: 'category',
+				id: '2',
+			});
+
 			const serviceProvider = ServiceProvider.create('SP1', 1, 'sp1@email.com');
 			serviceProvider.id = 100;
-			serviceProvider.labels = [label];
+			serviceProvider.labels = [label1, label2];
 			const options = { includeTimeslotsSchedule: true, includeScheduleForm: true, includeLabels: true };
 
 			TimeslotItemsMapperMock.mapToTimeslotsScheduleResponseV1.mockReturnValue(new TimeslotsScheduleResponseV1());
@@ -87,8 +96,10 @@ describe('Service providers mapper tests', () => {
 				scheduleFormConfirmed: false,
 				serviceId: '1',
 				id: '100',
-				labels: [labelResponse],
+				labels: [labelResponse1, labelResponse2],
 			});
+			expect(result.labels[0].category).toBe(undefined);
+			expect(result.labels[1].category).toBeDefined();
 		});
 	});
 
