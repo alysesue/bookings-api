@@ -6,6 +6,7 @@ import {
 	ServiceProviderLabelCategoryRequestModel,
 	ServiceProviderLabelResponseModel,
 	ServiceProviderLabelCategoryResponseModel,
+	SPCategoryWithLabelResponseModel,
 } from './serviceProvidersLabels.apicontract';
 
 @InRequestScope
@@ -21,9 +22,9 @@ export class SPLabelsCategoriesMapper {
 			labelData.organisationId = this.idHasher.encode(i.organisationId);
 
 			if (i.category) {
-				const categoryData = new ServiceProviderLabelCategoryResponseModel();
+				const categoryData = new SPCategoryWithLabelResponseModel();
 				categoryData.id = this.idHasher.encode(i.category.id);
-				categoryData.categoryName = i.category.name;
+				categoryData.name = i.category.name;
 				labelData.category = categoryData;
 			}
 			return labelData;

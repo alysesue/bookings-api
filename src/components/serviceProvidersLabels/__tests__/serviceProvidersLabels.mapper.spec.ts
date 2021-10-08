@@ -72,6 +72,24 @@ describe('Test categoriesLabels mapper', () => {
 			]);
 			expect(response.length).toBe(1);
 		});
+
+		it('return service provider labels along with category', () => {
+			IdHasherMock.encode.mockImplementation((id: number) => String(id));
+			const label1 = ServiceProviderLabel.create('label1', 1);
+
+			const label2 = ServiceProviderLabel.create('label2', 2);
+			label2.organisationId = 2;
+			label2.category = { id: 2, name: 'category' };
+
+			const response = Container.get(SPLabelsCategoriesMapper).mapToServiceProviderLabelsResponse([
+				label1,
+				label2,
+			]);
+			expect(response.length).toBe(2);
+			expect(response[0].category).toBe(undefined);
+			expect(response[1].category).toBeDefined();
+			expect(response[1].category.name).toBe('category');
+		});
 	});
 
 	describe('mergeAllLabels API', () => {

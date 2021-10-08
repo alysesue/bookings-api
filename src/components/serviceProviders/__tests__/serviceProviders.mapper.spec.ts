@@ -13,6 +13,8 @@ import { TimeslotsScheduleResponseV1 } from '../../timeslotItems/timeslotItems.a
 import { ScheduleFormResponseV1 } from '../../scheduleForms/scheduleForms.apicontract';
 import { MolServiceProviderOnboard, ServiceProviderModel } from '../serviceProviders.apicontract';
 import { ServiceProviderLabelResponseModel } from '../../../components/serviceProvidersLabels/serviceProvidersLabels.apicontract';
+import { SPLabelsCategoriesMapper } from '../../serviceProvidersLabels/serviceProvidersLabels.mapper';
+import { SPLabelsCategoriesMapperMock } from '../../serviceProvidersLabels/__mock__/serviceProvidersLabels.mapper.mock';
 
 describe('Service providers mapper tests', () => {
 	beforeAll(() => {
@@ -20,6 +22,7 @@ describe('Service providers mapper tests', () => {
 		Container.bind(IdHasher).to(IdHasherMock);
 		Container.bind(TimeslotItemsMapper).to(TimeslotItemsMapperMock);
 		Container.bind(ScheduleFormsMapper).to(ScheduleFormsMapperMock);
+		Container.bind(SPLabelsCategoriesMapper).to(SPLabelsCategoriesMapperMock);
 	});
 
 	beforeEach(() => {
@@ -71,11 +74,11 @@ describe('Service providers mapper tests', () => {
 			const labelResponse1 = new ServiceProviderLabelResponseModel('label', '1', 'undefined');
 			const label1 = ServiceProviderLabel.create('label', 1);
 
-			let label2 = ServiceProviderLabel.create('label', 2);
+			const label2 = ServiceProviderLabel.create('label', 2);
 			label2.organisationId = 2;
 			label2.category = { id: 2, name: 'category' };
 			const labelResponse2 = new ServiceProviderLabelResponseModel('label', '2', '2', {
-				categoryName: 'category',
+				name: 'category',
 				id: '2',
 			});
 
@@ -86,6 +89,10 @@ describe('Service providers mapper tests', () => {
 
 			TimeslotItemsMapperMock.mapToTimeslotsScheduleResponseV1.mockReturnValue(new TimeslotsScheduleResponseV1());
 			ScheduleFormsMapperMock.mapToResponseV1.mockReturnValue(new ScheduleFormResponseV1());
+			SPLabelsCategoriesMapperMock.mapToServiceProviderLabelsResponse.mockReturnValue([
+				labelResponse1,
+				labelResponse2,
+			]);
 			await UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(new User()));
 			IdHasherMock.encode.mockImplementation((id: number) => String(id));
 

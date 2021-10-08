@@ -12,18 +12,23 @@ export class ServiceProviderLabelResponseModel {
 	public id: string;
 	public name: string;
 	public organisationId: string;
-	public category: ServiceProviderLabelCategoryResponseModel;
+	public category: SPCategoryWithLabelResponseModel;
 
-	constructor(
-		name?: string,
-		id?: string,
-		organisationId?: string,
-		category?: ServiceProviderLabelCategoryResponseModel,
-	) {
+	constructor(name?: string, id?: string, organisationId?: string, category?: SPCategoryWithLabelResponseModel) {
 		this.name = name;
 		this.id = id;
 		this.organisationId = organisationId;
 		this.category = category;
+	}
+}
+
+export class SPCategoryWithLabelResponseModel {
+	public name: string;
+	public id: string;
+
+	constructor(name?: string, id?: string) {
+		this.name = name;
+		this.id = id;
 	}
 }
 
