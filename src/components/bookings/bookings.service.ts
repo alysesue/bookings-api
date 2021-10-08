@@ -597,7 +597,7 @@ export class BookingsService {
 			const validator = this.bookingsValidatorFactory.getOnHoldValidator();
 			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
 
-			if ((serviceProvider && serviceProvider.autoAcceptBookings) || previousBooking.eventId) {
+			if (serviceProvider && serviceProvider.autoAcceptBookings) {
 				updatedBooking.status = BookingStatus.Accepted;
 			} else {
 				updatedBooking.status = BookingStatus.PendingApproval;
