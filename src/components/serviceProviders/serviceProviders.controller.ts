@@ -479,6 +479,7 @@ export class ServiceProvidersControllerV2 extends Controller {
 			return await this.serviceProvidersMapper.mapDataModelV2(serviceProvider, {
 				includeTimeslotsSchedule,
 				includeScheduleForm,
+				includeLabels,
 			});
 		});
 	}

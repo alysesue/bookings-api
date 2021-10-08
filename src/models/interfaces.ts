@@ -43,6 +43,7 @@ export interface IService {
 
 export interface ILabelCategory {
 	id: number;
+	name?: string;
 }
 
 export interface IEvent {

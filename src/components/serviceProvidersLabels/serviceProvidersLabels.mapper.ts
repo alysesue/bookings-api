@@ -19,6 +19,13 @@ export class SPLabelsCategoriesMapper {
 			labelData.id = this.idHasher.encode(i.id);
 			labelData.name = i.labelText;
 			labelData.organisationId = this.idHasher.encode(i.organisationId);
+
+			if (i.category) {
+				const categoryData = new ServiceProviderLabelCategoryResponseModel();
+				categoryData.id = this.idHasher.encode(i.category.id);
+				categoryData.categoryName = i.category.name;
+				labelData.category = categoryData;
+			}
 			return labelData;
 		});
 	}

@@ -12,6 +12,7 @@ export class ServiceProviderLabelResponseModel {
 	public id: string;
 	public name: string;
 	public organisationId: string;
+	public category: ServiceProviderLabelCategoryResponseModel;
 
 	constructor(name?: string, id?: string, organisationId?: string) {
 		this.name = name;
