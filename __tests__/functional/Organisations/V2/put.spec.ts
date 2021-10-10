@@ -1,9 +1,14 @@
 import {PgClient} from "../../../utils/pgClient";
 import {OrganisationAdminRequestEndpointSG} from "../../../utils/requestEndpointSG";
+import {IdHasherForFunctional} from "../../../utils/idHashingUtil";
+import {populateServiceAndServiceProvider} from "../../../populate/basicV2";
 
 describe('Organisations functional tests - put', () => {
     const pgClient = new PgClient();
     const organisationName = 'localorg';
+    const idHasher = new IdHasherForFunctional();
+    let organisationId = undefined;
+    let signedOrganisationId = undefined;
 
     beforeAll(async(done) => {
         await pgClient.cleanAllTables();
@@ -13,6 +18,9 @@ describe('Organisations functional tests - put', () => {
     beforeEach(async(done) => {
         await pgClient.cleanAllTables();
         await pgClient.setOrganisation({organisationName});
+        organisationId = await pgClient.getFirstOrganisationId();
+        await pgClient.mapOrganisation({organisationId, organisationName});
+        signedOrganisationId = await idHasher.convertIdToHash(organisationId);
         done()
     });
 
@@ -22,7 +30,13 @@ describe('Organisations functional tests - put', () => {
     });
 
     it('should set organisation level schedule form', async() => {
-        const organisationId = await pgClient.getFirstOrganisation();
+        await populateServiceAndServiceProvider({
+            organisation: organisationName,
+            nameService: 'admin',
+            serviceProviderName: 'sp',
+            labels: [],
+        });
+
         const openTime = '09:00';
         const closeTime = '10:00';
         const scheduleSlot = 60;
@@ -82,7 +96,7 @@ describe('Organisations functional tests - put', () => {
             ],
         };
 
-        const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/organisations/${organisationId}/scheduleForm`, {body: schedule}, 'V2');
+        const response = await OrganisationAdminRequestEndpointSG.create({}).put(`/organisations/${signedOrganisationId}/scheduleForm`, {body: schedule}, 'V2');
 
         expect(response.statusCode).toBe(204);
     });

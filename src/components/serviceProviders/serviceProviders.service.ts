@@ -32,6 +32,7 @@ import {
 import { ServiceProvidersRepository } from './serviceProviders.repository';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { IPagedEntities } from '../../core/pagedEntities';
+import { OrganisationsNoauthRepository } from '../organisations/organisations.noauth.repository';
 import { OrganisationSettingsService } from '../organisations/organisations.settings.service';
 import { SPLabelsCategoriesService } from '../serviceProvidersLabels/serviceProvidersLabels.service';
 
@@ -41,6 +42,8 @@ const DEFAULT_PHONE_NUMBER = '+6580000000';
 export class ServiceProvidersService {
 	@Inject
 	public serviceProvidersRepository: ServiceProvidersRepository;
+	@Inject
+	public organisationsNoauthRepository: OrganisationsNoauthRepository;
 	@Inject
 	private schedulesService: ScheduleFormsService;
 	@Inject
@@ -373,12 +376,21 @@ export class ServiceProvidersService {
 	}
 
 	public async setProvidersScheduleForm(orgaId: number, request: ScheduleFormRequest): Promise<ServiceProvider[]> {
+		const organisation = await this.organisationsNoauthRepository.getOrganisationById(orgaId);
+		if (!organisation) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Organisation not found');
+		}
+
 		this.verifyScheduleDates(request);
 		if (request.startDate && request.endDate) {
 			request.startDate = DateHelper.getDateOnly(request.startDate);
 			request.endDate = DateHelper.getDateOnly(request.endDate);
 		}
 		const serviceProviders = await this.serviceProvidersRepository.getServiceProviders({ organisationId: orgaId });
+		if (serviceProviders.length === 0) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('No service providers found');
+		}
+
 		const serviceProvidersRes = [];
 
 		const filteredServiceProviders = this.getFilteredServiceProvidersByEmail(request, serviceProviders);
