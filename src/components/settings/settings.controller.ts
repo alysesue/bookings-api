@@ -4,6 +4,7 @@ import { ApiData, ApiDataFactory } from '../../apicontract';
 import { SettingsService } from './settings.service';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth';
 import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
+import { ConfigUtils } from 'mol-lib-common';
 
 @Route('v1/settings')
 @Tags('Settings')
@@ -23,5 +24,13 @@ export class SettingsController extends Controller {
 	public async verifyUrl(@Query() url): Promise<ApiData<boolean>> {
 		const res = await this.settingsService.verifyUrlRedirection(url);
 		return ApiDataFactory.create(res);
+	}
+
+	@Get('/hideEvents')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 } })
+	@SuccessResponse(200, 'Ok')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
+	public async hideEvents(): Promise<ApiData<boolean>> {
+		return ApiDataFactory.create(ConfigUtils.getBooleanValueFromEnv('HIDE_EVENTS', true));
 	}
 }
