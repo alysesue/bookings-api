@@ -1,12 +1,12 @@
 import { Roles } from '../../utils/enums';
 import * as request from 'request';
-import { OneOffTimeslotResponse } from '../../../../bookingsg-e2e/__tests__/populate';
 import {
 	CitizenRequestEndpointSG,
 	OrganisationAdminRequestEndpointSG,
 	ServiceAdminRequestEndpointSG,
 	ServiceProviderRequestEndpointSG,
 } from '../../utils/requestEndpointSG';
+import { OneOffTimeslotResponse } from '../../../src/components/oneOffTimeslots/oneOffTimeslots.apicontract';
 
 export const populateOneOffTimeslot = async ({
 	serviceProviderId,
