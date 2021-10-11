@@ -86,8 +86,8 @@ export class EventsRepository extends RepositoryBase<Event> {
 	}
 
 	private async searchQueryFormulation(request: {
+		serviceId: number;
 		byPassAuth?: boolean;
-		serviceId?: number;
 		serviceProviderIds?: number[];
 		startDateTime?: Date;
 		endDateTime?: Date;
@@ -104,7 +104,7 @@ export class EventsRepository extends RepositoryBase<Event> {
 			isOneOffTimeslot,
 			labelOperationFiltering,
 		} = request;
-		const serviceCondition = serviceId ? '"serviceProvider"."_serviceId" = :serviceId' : '';
+		const serviceCondition = '"serviceProvider"."_serviceId" = :serviceId';
 		const spCondition =
 			serviceProviderIds && serviceProviderIds.length > 0
 				? '"oneOffTimeslots"."_serviceProviderId" IN (:...serviceProviderIds)'
@@ -157,8 +157,8 @@ export class EventsRepository extends RepositoryBase<Event> {
 export type EventSearchPagingQuery = EventSearchQuery & PagingRequest;
 
 export type EventSearchQuery = {
+	serviceId: number;
 	byPassAuth?: boolean;
-	serviceId?: number;
 	serviceProviderIds?: number[];
 	startDateTime?: Date;
 	endDateTime?: Date;

@@ -21,7 +21,7 @@ import { EventsService } from './events.service';
 import { EventsMapper } from './events.mapper';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { MOLAuth } from 'mol-lib-common';
-import { Booking, Event } from '../../models';
+import { Booking, BookingStatus, Event } from '../../models';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import {
 	BookingSearchRequest,
@@ -33,7 +33,6 @@ import { BookingsService } from '../bookings';
 import { BookingsMapper } from '../bookings/bookings.mapper';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
-import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
@@ -71,10 +70,6 @@ export class EventsController extends Controller {
 		@Query() limit?: number,
 		@Query() maxId?: number,
 	): Promise<ApiPagedData<EventResponse>> {
-		const unsignedServiceId = this.idHasher.decode(serviceId);
-		if (!unsignedServiceId) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Service can't be found`);
-		}
 		const pagedEvents = await this.eventsService.search({
 			serviceId: this.idHasher.decode(serviceId),
 			page: page || DEFAULT_PAGE,
@@ -88,8 +83,15 @@ export class EventsController extends Controller {
 				page: page || DEFAULT_PAGE,
 				limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
 				maxId,
+				statuses: [BookingStatus.Accepted, BookingStatus.OnHold, BookingStatus.PendingApproval],
 			});
-			const availableSlots = Math.max(0, event.capacity - eventBookings.entries.length);
+			let eventBookingsCount = eventBookings.entries.length;
+			eventBookings.entries.forEach((event) => {
+				if (event.status === BookingStatus.OnHold && !event.isValidOnHoldBooking()) {
+					eventBookingsCount--;
+				}
+			});
+			const availableSlots = Math.max(0, event.capacity - eventBookingsCount);
 			return await this.eventsMapper.mapToResponse(event, availableSlots);
 		});
 	}
