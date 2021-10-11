@@ -1,41 +1,41 @@
-import {PgClient} from "../../../utils/pgClient";
-import {OrganisationAdminRequestEndpointSG} from "../../../utils/requestEndpointSG";
-import {populateServiceAndServiceProvider} from "../../../populate/basicV1";
+import { PgClient } from '../../../utils/pgClient';
+import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
+import { populateServiceAndServiceProvider } from '../../../populate/V1/serviceProviders';
 
 describe('Organisations functional tests - put', () => {
-    const pgClient = new PgClient();
-    const organisationName = 'localorg';
-    let organisationId = undefined;
+	const pgClient = new PgClient();
+	const organisationName = 'localorg';
+	let organisationId;
 
 	beforeAll(async (done) => {
 		await pgClient.cleanAllTables();
 		done();
 	});
 
-    beforeEach(async(done) => {
-        await pgClient.cleanAllTables();
-        await pgClient.setOrganisation({organisationName});
-        organisationId = await pgClient.getFirstOrganisationId();
-        await pgClient.mapOrganisation({organisationId, organisationName});
-        done()
-    });
+	beforeEach(async (done) => {
+		await pgClient.cleanAllTables();
+		await pgClient.setOrganisation({ organisationName });
+		organisationId = await pgClient.getFirstOrganisationId();
+		await pgClient.mapOrganisation({ organisationId, organisationName });
+		done();
+	});
 
 	afterAll(async (done) => {
 		await pgClient.close();
 		done();
 	});
 
-    it('should set organisation level schedule form', async() => {
-        await populateServiceAndServiceProvider({
-            organisation: 'localorg',
-            nameService: 'admin',
-            serviceProviderName: 'sp',
-            labels: [],
-        });
+	it('should set organisation level schedule form', async () => {
+		await populateServiceAndServiceProvider({
+			organisation: 'localorg',
+			nameService: 'admin',
+			serviceProviderName: 'sp',
+			labels: [],
+		});
 
-        const openTime = '09:00';
-        const closeTime = '10:00';
-        const scheduleSlot = 60;
+		const openTime = '09:00';
+		const closeTime = '10:00';
+		const scheduleSlot = 60;
 
 		const schedule = {
 			slotsDurationInMin: scheduleSlot,
