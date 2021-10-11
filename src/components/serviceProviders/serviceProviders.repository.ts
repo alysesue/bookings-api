@@ -211,7 +211,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		}
 
 		if (options.includeLabels) {
-			query = query.leftJoinAndSelect('sp._labels', 'sp_label');
+			query = query.leftJoinAndSelect('sp._labels', 'label').leftJoinAndSelect('label.category', 'category');
 		}
 
 		return query;
