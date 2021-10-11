@@ -1,6 +1,7 @@
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
 import { PgClient } from '../../../utils/pgClient';
-import { populateService, populateWeeklyTimesheet, postServiceProvider } from '../../../populate/basicV2';
+import { postService } from '../../../populate/V2/services';
+import { populateWeeklyTimesheet, postServiceProvider } from '../../../populate/V2/servieProviders';
 
 describe('Service providers functional tests - get', () => {
 	const START_TIME_1 = '09:00';
@@ -20,7 +21,7 @@ describe('Service providers functional tests - get', () => {
 	});
 
 	beforeEach(async (done) => {
-		service = await populateService({});
+		service = await postService({ name: 'Service' });
 		await postServiceProvider(service.id);
 		serviceProvider = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).get(
 			'/service-providers',
@@ -63,13 +64,13 @@ describe('Service providers functional tests - get', () => {
 
 		expect(response.statusCode).toEqual(200);
 		expect(response.body.data.length).toEqual(1);
-		expect(typeof response.body.data[0].id).toBe("string");
+		expect(typeof response.body.data[0].id).toBe('string');
 		expect(response.body.data[0].name).toEqual('sp');
 		expect(response.body.data[0].email).toEqual('sp@govtech.com');
 		expect(response.body.data[0].phone).toEqual('+6580000000');
 	});
 
-	it('should get specific service provider', async() => {
+	it('should get specific service provider', async () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).get(
 			`/service-providers/${serviceProvider.body.data[0].id}`,
 			{},
@@ -77,13 +78,13 @@ describe('Service providers functional tests - get', () => {
 		);
 
 		expect(response.statusCode).toEqual(200);
-		expect(typeof response.body.data.id).toBe("string");
+		expect(typeof response.body.data.id).toBe('string');
 		expect(response.body.data.name).toEqual('sp');
 		expect(response.body.data.email).toEqual('sp@govtech.com');
 		expect(response.body.data.phone).toEqual('+6580000000');
 	});
 
-	it('should get specific service provider schedule', async() => {
+	it('should get specific service provider schedule', async () => {
 		const serviceProviderId = serviceProvider.body.data[0].id;
 		await populateWeeklyTimesheet({
 			serviceProviderId,

@@ -1,5 +1,5 @@
-import { OrganisationAdminRequestEndpointSG } from '../utils/requestEndpointSG';
-import { EventRequest, EventResponse, EventTimeslotRequest } from '../../src/components/events/events.apicontract';
+import { EventRequest, EventResponse, EventTimeslotRequest } from '../../../src/components/events/events.apicontract';
+import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
 
 export const getOneOffTimeslotRequest = ({
 	serviceProviderId,
@@ -29,18 +29,18 @@ export const getEventRequest = (eventRequest: Partial<EventRequest>, oneOffTimes
 		timeslots: oneOffTimeslotRequest,
 	} as EventRequest);
 
-// export const populateEvent = async (eventRequest: Partial<EventRequest>): Promise<EventResponse> => {
-// 	const oneOffTimeslotRequests = eventRequest.timeslots.map(
-// 		({ serviceProviderId, startDateTime, endDateTime, id }) =>
-// 			getOneOffTimeslotRequest({ serviceProviderId, startDateTime, endDateTime, id }),
-// 	);
-//
-// 	const event = getEventRequest(eventRequest, oneOffTimeslotRequests);
-//
-// 	const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/events/`, {
-// 		body: { ...event },
-// 	});
-// 	expect(response.statusCode).toEqual(201);
-//
-// 	return response.body.data as EventResponse;
-// };
+export const populateEvent = async (eventRequest: Partial<EventRequest>): Promise<EventResponse> => {
+	const oneOffTimeslotRequests = eventRequest.timeslots.map(({ serviceProviderId, startDateTime, endDateTime, id }) =>
+		getOneOffTimeslotRequest({ serviceProviderId, startDateTime, endDateTime, id }),
+	);
+
+	const event = getEventRequest(eventRequest, oneOffTimeslotRequests);
+
+	const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/events/`, {
+		body: { ...event },
+	});
+
+	expect(response.statusCode).toEqual(201);
+
+	return response.body.data as EventResponse;
+};

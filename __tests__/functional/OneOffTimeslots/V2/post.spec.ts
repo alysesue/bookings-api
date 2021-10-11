@@ -1,15 +1,10 @@
 import { PgClient } from '../../../utils/pgClient';
-import {
-	populateOneOffTimeslot,
-	populateServiceLabel,
-	populateUserServiceProvider,
-	updateOneOffTimeslot,
-} from '../../../populate/basicV2';
 import { Roles } from '../../../utils/enums';
-import {
-	ServiceProviderResponseModelV2
-} from '../../../../src/components/serviceProviders/serviceProviders.apicontract';
+import { ServiceProviderResponseModelV2 } from '../../../../src/components/serviceProviders/serviceProviders.apicontract';
 import { ServiceResponseV2 } from '../../../../src/components/services/service.apicontract';
+import { populateUserServiceProvider } from '../../../populate/V2/users';
+import { putServiceLabel } from '../../../populate/V2/services';
+import { populateOneOffTimeslot, updateOneOffTimeslot } from "../../../populate/V2/oneOffTimeslots";
 
 describe('One-off timeslots functional tests - post', () => {
 	const pgClient = new PgClient();
@@ -33,17 +28,15 @@ describe('One-off timeslots functional tests - post', () => {
 		await pgClient.cleanAllTables();
 
 		const result1 = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_1,
-			serviceProviderName: SERVICE_PROVIDER_NAME_1,
+			serviceNames: [NAME_SERVICE_1],
+			name: SERVICE_PROVIDER_NAME_1,
 			agencyUserId: 'A001',
 		});
 
 		serviceProvider1 = result1.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);
 
-		service = await populateServiceLabel({
-			serviceId: serviceProvider1.serviceId,
-			serviceName: NAME_SERVICE_1,
-			labels: ['Chinese'],
+		service = await putServiceLabel(serviceProvider1.serviceId.toString(), ['Chinese'], {
+			name: NAME_SERVICE_1,
 		});
 
 		done();

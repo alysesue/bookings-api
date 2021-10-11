@@ -1,13 +1,11 @@
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
 import { PgClient } from '../../../utils/pgClient';
-import { populateService, populateServiceNotificationTemplate } from '../../../populate/basicV2';
 import { EmailNotificationTemplateType } from '../../../../src/components/notifications/notifications.enum';
 import { ServiceNotificationTemplateResponse } from '../../../../src/components/serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
-import { IdHasherForFunctional } from '../../../utils/idHashingUtil';
+import { populateServiceNotificationTemplate, postService } from '../../../populate/V2/services';
 
 describe('Tests endpoint and populate data for GET request', () => {
 	const pgClient = new PgClient();
-	const idHasher = new IdHasherForFunctional();
 	const SERVICE_NAME = 'Service';
 	const TEMPLATE_TYPE = EmailNotificationTemplateType.CreatedByCitizenSentToCitizen;
 	const HTML_TEMPLATE = 'test service notification template';
@@ -23,19 +21,19 @@ describe('Tests endpoint and populate data for GET request', () => {
 	});
 
 	it('Get a single SERVICE email notification template', async () => {
-		const service = await populateService({ nameService: SERVICE_NAME });
-		const serviceId = await idHasher.convertHashToId(service.id);
+		const service = await postService({ name: SERVICE_NAME });
 		await populateServiceNotificationTemplate({
-			serviceId,
+			serviceId: service.id,
 			emailTemplateType: TEMPLATE_TYPE,
 			htmlTemplate: HTML_TEMPLATE,
 		});
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).get(
-			`/services/${serviceId}/notificationTemplate/email`,
+			`/services/${service.id}/notificationTemplate/email`,
 			{
-				params: { serviceId, emailTemplateType: TEMPLATE_TYPE },
+				params: { serviceId: service.id, emailTemplateType: TEMPLATE_TYPE },
 			},
+			'V2',
 		);
 
 		expect(response.statusCode).toEqual(200);
@@ -44,14 +42,14 @@ describe('Tests endpoint and populate data for GET request', () => {
 	});
 
 	it('Get a single DEFAULT email notification template', async () => {
-		const service = await populateService({ nameService: SERVICE_NAME });
-		const serviceId = await idHasher.convertHashToId(service.id);
+		const service = await postService({ name: SERVICE_NAME });
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).get(
-			`/services/${serviceId}/notificationTemplate/email`,
+			`/services/${service.id}/notificationTemplate/email`,
 			{
-				params: { serviceId, emailTemplateType: TEMPLATE_TYPE },
+				params: { serviceId: service.id, emailTemplateType: TEMPLATE_TYPE },
 			},
+			'V2',
 		);
 
 		expect(response.statusCode).toEqual(200);

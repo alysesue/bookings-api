@@ -1,9 +1,7 @@
 // tslint:disable-next-line: no-big-function
 import { PgClient } from '../../utils/pgClient';
-import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
-import { EventResponse } from '../../../src/components/events/events.apicontract';
-import { getEventRequest, getOneOffTimeslotRequest } from '../../populate/events';
-import { populateServiceAndServiceProvider } from '../../populate/serviceProvider';
+import { getEventRequest, getOneOffTimeslotRequest, populateEvent } from '../../populate/V1/events';
+import { populateServiceAndServiceProvider } from '../../populate/V2/servieProviders';
 
 describe('Event update functional tests', () => {
 	const pgClient = new PgClient();
@@ -19,14 +17,14 @@ describe('Event update functional tests', () => {
 		await pgClient.cleanAllTables();
 		const { service: srv, serviceProvider: sp } = await populateServiceAndServiceProvider({});
 		service = srv;
-		serviceProvider = sp;
+		serviceProvider = sp[0];
 		oneOffTimeslotRequest1 = getOneOffTimeslotRequest({
 			endDateTime: endTime,
 			serviceProviderId: serviceProvider.id,
 		});
 		oneOffTimeslotRequest2 = getOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
-		// eventRequest = getEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest1, oneOffTimeslotRequest2]);
-		// event = await populateEvent(eventRequest);
+		eventRequest = getEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest1, oneOffTimeslotRequest2]);
+		event = await populateEvent(eventRequest);
 
 		done();
 	});
@@ -37,9 +35,7 @@ describe('Event update functional tests', () => {
 		done();
 	});
 
-	it('should test', function () {
-
-	});
+	it('should test', function () {});
 
 	// it('Should update a simple event', async () => {
 	// 	eventRequest.id = event.id;

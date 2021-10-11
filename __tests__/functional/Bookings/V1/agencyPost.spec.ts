@@ -1,9 +1,10 @@
 import { PgClient } from '../../../utils/pgClient';
 import { AgencyRequestEndpointSG } from '../../../utils/requestEndpointSG';
-import { populateIndividualTimeslot, populateUserServiceProvider } from '../../../populate/basicV1';
 import { BookingStatus } from '../../../../src/models';
 import * as request from 'request';
 import { BookingValidationType } from '../../../../src/models/bookingValidationType';
+import { populateUserServiceProvider } from '../../../populate/V1/users';
+import { populateIndividualTimeslot } from '../../../populate/V1/serviceProviders';
 
 describe('Bookings functional tests as agency', () => {
 	const pgClient = new PgClient();
@@ -32,8 +33,8 @@ describe('Bookings functional tests as agency', () => {
 	beforeEach(async (done) => {
 		await pgClient.cleanAllTables();
 		const result = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_1,
-			serviceProviderName: SERVICE_PROVIDER_NAME_1,
+			serviceNames: [NAME_SERVICE_1],
+			name: SERVICE_PROVIDER_NAME_1,
 			agencyUserId: 'A001',
 		});
 		serviceProviderId = result.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1).id;
@@ -42,8 +43,7 @@ describe('Bookings functional tests as agency', () => {
 	});
 
 	const createInSlotBooking = async (): Promise<request.Response> => {
-		await populateIndividualTimeslot({
-			serviceProviderId,
+		await populateIndividualTimeslot(serviceProviderId, {
 			weekDay: 0,
 			startTime: '08:00',
 			endTime: '09:00',

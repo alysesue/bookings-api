@@ -1,7 +1,7 @@
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
 import { PgClient } from '../../../utils/pgClient';
-import { populateService, populateServiceWithFields } from '../../../populate/basicV2';
 import { ServiceResponseV2 } from '../../../../src/components/services/service.apicontract';
+import { postService, postServiceWithFields } from '../../../populate/V2/services';
 
 describe('Tests endpoint and populate data', () => {
 	const SERVICE_NAME = 'Service';
@@ -24,7 +24,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it("should update first service's name", async () => {
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 
 		const response2 = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
@@ -42,7 +42,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it('Put service with labels', async () => {
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 		const response = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
 			{
@@ -55,7 +55,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it('When Put service with same labels should not duplicate', async () => {
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 		const update1 = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
 			{
@@ -79,7 +79,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it('Put service with same labels and same id (should pass)', async () => {
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 		const update1 = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
 			{
@@ -110,7 +110,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it('Should delete service labels', async () => {
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 		const update1 = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
 			{
@@ -147,7 +147,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it("should update service's SP autoAssigned flag", async () => {
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
@@ -171,7 +171,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it("should update service's video conference URL", async () => {
-		const service = await populateServiceWithFields({ nameService: SERVICE_NAME, videoConferenceUrl });
+		const service = await postServiceWithFields({ name: SERVICE_NAME, videoConferenceUrl });
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
@@ -185,7 +185,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it("should not update service's video conference URL", async () => {
-		const service = await populateServiceWithFields({ nameService: SERVICE_NAME, videoConferenceUrl });
+		const service = await postServiceWithFields({ name: SERVICE_NAME, videoConferenceUrl });
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
@@ -209,7 +209,7 @@ describe('Tests endpoint and populate data', () => {
 			sendSMSNotifications: false,
 		};
 
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 
 		const putResponse = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
@@ -236,7 +236,7 @@ describe('Tests endpoint and populate data', () => {
 			sendSMSNotifications: false,
 		};
 
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 
 		const putResponse = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
@@ -263,7 +263,7 @@ describe('Tests endpoint and populate data', () => {
 			sendSMSNotifications: false,
 		};
 
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 
 		const putResponse = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
@@ -290,7 +290,7 @@ describe('Tests endpoint and populate data', () => {
 			sendSMSNotifications: false,
 		};
 
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 
 		const putResponse = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
@@ -317,7 +317,7 @@ describe('Tests endpoint and populate data', () => {
 			sendSMSNotifications: false,
 		};
 
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 
 		const putResponse = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
@@ -356,7 +356,7 @@ describe('Tests endpoint and populate data', () => {
 			sendSMSNotifications: true,
 		};
 
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 		const putResponse = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
 			{
@@ -401,7 +401,7 @@ describe('Tests endpoint and populate data', () => {
 			sendSMSNotifications: 'test sms notif',
 		};
 
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 
 		const putResponse = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,
@@ -426,7 +426,7 @@ describe('Tests endpoint and populate data', () => {
 	});
 
 	it(`Put service with 'days in advance' configuration`, async () => {
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 
 		const putResponse = await OrganisationAdminRequestEndpointSG.create({}).put(
 			`/services/${service.id}`,

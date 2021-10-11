@@ -1,6 +1,7 @@
 import { PgClient } from '../../../utils/pgClient';
-import { populateOneOffTimeslot, populateServiceAndServiceProvider } from '../../../populate/basicV1';
 import { AnonmymousEndpointSG } from '../../../utils/requestEndpointSG';
+import { populateServiceAndServiceProvider } from '../../../populate/V1/serviceProviders';
+import { populateOneOffTimeslot } from '../../../populate/V1/oneOffTimeslots';
 
 describe('Timeslot availability filter by label', () => {
 	const pgClient = new PgClient();

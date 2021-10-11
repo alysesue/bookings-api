@@ -1,7 +1,7 @@
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
-import { populateServiceWithMultipleServiceProviders } from '../../../populate/basicV2';
 import { PgClient } from '../../../utils/pgClient';
 import { ServiceProviderResponseModelV2 } from '../../../../src/components/serviceProviders/serviceProviders.apicontract';
+import { populateServiceWithMultipleServiceProviders } from '../../../populate/V2/servieProviders';
 
 describe('Un-availabilities Functional tests', () => {
 	const pgClient = new PgClient();

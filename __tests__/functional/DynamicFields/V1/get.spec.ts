@@ -1,7 +1,8 @@
 import { CitizenRequestEndpointSG } from '../../../utils/requestEndpointSG';
-import { populateUserServiceProvider, populateWeeklyTimesheet } from '../../../populate/basicV1';
 import { PgClient } from '../../../utils/pgClient';
 import { ServiceProviderResponseModelV1 } from '../../../../src/components/serviceProviders/serviceProviders.apicontract';
+import { populateUserServiceProvider } from '../../../populate/V1/users';
+import { populateWeeklyTimesheet } from '../../../populate/V1/serviceProviders';
 
 describe('Dynamic Fields functional tests', () => {
 	const pgClient = new PgClient();
@@ -36,13 +37,13 @@ describe('Dynamic Fields functional tests', () => {
 		await pgClient.cleanAllTables();
 
 		const result = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_1,
-			serviceProviderName: SERVICE_PROVIDER_NAME_1,
+			serviceNames: [NAME_SERVICE_1],
+			name: SERVICE_PROVIDER_NAME_1,
 			agencyUserId: 'A001',
 		});
 		const result2 = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_2,
-			serviceProviderName: SERVICE_PROVIDER_NAME_2,
+			serviceNames: [NAME_SERVICE_2],
+			name: SERVICE_PROVIDER_NAME_2,
 			agencyUserId: 'A002',
 		});
 		serviceProvider1 = result.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);

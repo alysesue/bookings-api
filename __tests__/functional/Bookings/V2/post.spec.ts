@@ -6,12 +6,6 @@ import {
 	OrganisationAdminRequestEndpointSG,
 	ServiceAdminRequestEndpointSG,
 } from '../../../utils/requestEndpointSG';
-import {
-	populateOutOfSlotBooking,
-	populateUserServiceProvider,
-	populateWeeklyTimesheet,
-	setServiceProviderAutoAssigned,
-} from '../../../populate/basicV2';
 import * as request from 'request';
 import { BookingStatus } from '../../../../src/models';
 import { PersistDynamicValueContract } from '../../../../src/components/dynamicFields/dynamicValues.apicontract';
@@ -21,6 +15,9 @@ import { ServiceProviderResponseModelV2 } from '../../../../src/components/servi
 import { ServiceResponseV2 } from '../../../../src/components/services/service.apicontract';
 import { BookingResponseV2 } from '../../../../src/components/bookings/bookings.apicontract';
 import { BookingChangeLogResponseV2 } from '../../../../src/components/bookingChangeLogs/bookingChangeLogs.apicontract';
+import { populateWeeklyTimesheet, setServiceProviderAutoAssigned } from '../../../populate/V2/servieProviders';
+import { populateOutOfSlotBooking } from '../../../populate/V2/booking';
+import { populateUserServiceProvider } from '../../../populate/V2/users';
 
 // tslint:disable-next-line: no-big-function
 describe('Bookings functional tests', () => {
@@ -65,13 +62,15 @@ describe('Bookings functional tests', () => {
 		await pgClient.cleanAllTables();
 
 		const result = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_1,
-			serviceProviderName: SERVICE_PROVIDER_NAME_1,
+			serviceNames: [NAME_SERVICE_1],
+			name: SERVICE_PROVIDER_NAME_1,
 			agencyUserId: 'A001',
 		});
 		serviceProvider = result.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);
+
 		service = result.services.find((item) => item.name === NAME_SERVICE_1);
 		serviceId = service.id;
+
 
 		unsignedServiceId = await idHasher.convertHashToId(serviceId);
 		unsignedServiceProviderId = await idHasher.convertHashToId(serviceProvider.id);
@@ -340,7 +339,7 @@ describe('Bookings functional tests', () => {
 		const changedUntil = new Date(new Date(booking.createdDateTime).getTime() + 1000 * 60);
 		const changeLogResponse = await getChangeLogs({
 			changedSince: booking.createdDateTime,
-			changedUntil: changedUntil,
+			changedUntil,
 			bookingIds: [booking.id],
 		});
 		expect(changeLogResponse.statusCode).toEqual(200);
@@ -884,7 +883,7 @@ describe('Bookings functional tests', () => {
 
 		const bookingId = bookingResponse.body.data.id;
 
-		//without otp
+		// without otp
 		const validateResponse = await endpoint.post(
 			`/bookings/${bookingId}/validateOnHold`,
 			{

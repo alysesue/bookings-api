@@ -1,8 +1,8 @@
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
 import { PgClient } from '../../../utils/pgClient';
-import { populateService } from '../../../populate/basicV1';
 import { EmailNotificationTemplateType } from '../../../../src/components/notifications/notifications.enum';
 import { ServiceNotificationTemplateResponse } from '../../../../src/components/serviceNotificationTemplate/serviceNotificationTemplate.apicontract';
+import { postService } from '../../../populate/V1/services';
 
 describe('Tests endpoint and populate data for POST request', () => {
 	const pgClient = new PgClient();
@@ -21,7 +21,7 @@ describe('Tests endpoint and populate data for POST request', () => {
 	});
 
 	it('Post a single service email notification template', async () => {
-		const service = await populateService({ nameService: SERVICE_NAME });
+		const service = await postService({ name: SERVICE_NAME });
 		const serviceId = service.id;
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post(

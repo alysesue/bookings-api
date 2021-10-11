@@ -1,8 +1,8 @@
 import { PgClient } from '../../../utils/pgClient';
-import { populateService } from '../../../populate/basicV1';
 import { DynamicFieldModel } from '../../../../src/components/dynamicFields/dynamicFields.apicontract';
 import { deleteDynamicField, getDynamicFields, postSelectListDynamicField, postTextDynamicField } from './common';
 import { ServiceResponseV1 } from '../../../../src/components/services/service.apicontract';
+import { postService } from '../../../populate/V1/services';
 
 describe('Dynamic Fields functional tests', () => {
 	const pgClient = new PgClient();
@@ -19,8 +19,8 @@ describe('Dynamic Fields functional tests', () => {
 	beforeEach(async (done) => {
 		await pgClient.cleanAllTables();
 
-		service = await populateService({
-			nameService: NAME_SERVICE_1,
+		service = await postService({
+			name: NAME_SERVICE_1,
 		});
 		serviceId = service.id;
 

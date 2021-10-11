@@ -1,8 +1,9 @@
 import { CitizenRequestEndpointSG } from '../../../utils/requestEndpointSG';
-import { populateUserServiceProvider, populateWeeklyTimesheet } from '../../../populate/basicV2';
 import { PgClient } from '../../../utils/pgClient';
 import { ServiceProviderResponseModelV2 } from '../../../../src/components/serviceProviders/serviceProviders.apicontract';
 import { IdHasherForFunctional } from '../../../utils/idHashingUtil';
+import { populateUserServiceProvider } from '../../../populate/V2/users';
+import { populateWeeklyTimesheet } from '../../../populate/V2/servieProviders';
 
 describe('Dynamic Fields functional tests', () => {
 	const pgClient = new PgClient();
@@ -37,15 +38,16 @@ describe('Dynamic Fields functional tests', () => {
 		await pgClient.cleanAllTables();
 
 		const result = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_1,
-			serviceProviderName: SERVICE_PROVIDER_NAME_1,
+			serviceNames: [NAME_SERVICE_1],
+			name: SERVICE_PROVIDER_NAME_1,
 			agencyUserId: 'A001',
 		});
 		const result2 = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_2,
-			serviceProviderName: SERVICE_PROVIDER_NAME_2,
+			serviceNames: [NAME_SERVICE_2],
+			name: SERVICE_PROVIDER_NAME_2,
 			agencyUserId: 'A002',
 		});
+
 		serviceProvider1 = result.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);
 		serviceProvider2 = result2.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_2);
 
@@ -70,7 +72,7 @@ describe('Dynamic Fields functional tests', () => {
 		const serviceId = await idHasher.convertHashToId(serviceId1);
 		await pgClient.mapDynamicFields({
 			type: 'SelectListDynamicField',
-			serviceId: serviceId,
+			serviceId,
 			name: 'Select an option',
 			options: JSON.stringify(options),
 		});

@@ -1,8 +1,8 @@
 import { PgClient } from '../../../utils/pgClient';
-import { populateService } from '../../../populate/basicV2';
 import { DynamicFieldModel } from '../../../../src/components/dynamicFields/dynamicFields.apicontract';
-import { getDynamicFields, postSelectListDynamicField, postTextDynamicField } from '../V2/common';
+import { getDynamicFields, postSelectListDynamicField, postTextDynamicField } from './common';
 import { ServiceResponseV2 } from '../../../../src/components/services/service.apicontract';
+import { postService } from '../../../populate/V2/services';
 
 describe('Dynamic Fields functional tests', () => {
 	const pgClient = new PgClient();
@@ -21,11 +21,11 @@ describe('Dynamic Fields functional tests', () => {
 	beforeEach(async (done) => {
 		await pgClient.cleanAllTables();
 
-		service = await populateService({
-			nameService: NAME_SERVICE_1,
+		service = await postService({
+			name: NAME_SERVICE_1,
 		});
-		service2 = await populateService({
-			nameService: NAME_SERVICE_2,
+		service2 = await postService({
+			name: NAME_SERVICE_2,
 		});
 
 		done();
@@ -67,10 +67,10 @@ describe('Dynamic Fields functional tests', () => {
 	});
 
 	it('should add fields to different services', async () => {
-		//service 1
+		// service 1
 		await postTextDynamicField({ serviceId: service.id }, true);
 		await postSelectListDynamicField({ serviceId: service.id }, true);
-		//service 2
+		// service 2
 		await postTextDynamicField({ serviceId: service2.id }, true);
 
 		expect((await getDynamicFields({ serviceId: service.id })).length).toEqual(2);

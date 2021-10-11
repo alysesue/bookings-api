@@ -1,7 +1,7 @@
-import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
-import { populateServiceAndServiceProvider } from '../../populate/serviceProvider';
-import { getEventRequest, getOneOffTimeslotRequest } from '../../populate/events';
 import { PgClient } from '../../utils/pgClient';
+import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
+import { populateServiceAndServiceProvider } from '../../populate/V2/servieProviders';
+import { getEventRequest, getOneOffTimeslotRequest, populateEvent } from '../../populate/V1/events';
 
 describe('Event post functional tests', () => {
 	const pgClient = new PgClient();
@@ -14,10 +14,10 @@ describe('Event post functional tests', () => {
 		await pgClient.cleanAllTables();
 		const { service: srv, serviceProvider: sp } = await populateServiceAndServiceProvider({});
 		service = srv;
-		serviceProvider = sp;
+		serviceProvider = sp[0];
 		const oneOffTimeslotRequest = getOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
 		eventRequest = getEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest]);
-		// event = await populateEvent(eventRequest);
+		event = await populateEvent(eventRequest);
 		done();
 	});
 
@@ -27,12 +27,8 @@ describe('Event post functional tests', () => {
 		done();
 	});
 
-	it('should test', function () {
-
+	it('Should delete an event', async () => {
+		const response2 = await OrganisationAdminRequestEndpointSG.create({}).delete(`/events/${event.id}`);
+		expect(response2.statusCode).toEqual(204);
 	});
-
-	// it('Should delete an event', async () => {
-	// 	const response2 = await OrganisationAdminRequestEndpointSG.create({}).delete(`/events/${event.id}`);
-	// 	expect(response2.statusCode).toEqual(204);
-	// });
 });

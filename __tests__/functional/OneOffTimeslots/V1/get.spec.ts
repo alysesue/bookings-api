@@ -5,11 +5,13 @@ import {
 	ServiceAdminRequestEndpointSG,
 	ServiceProviderRequestEndpointSG,
 } from '../../../utils/requestEndpointSG';
-import { populateOneOffTimeslot, populateServiceLabel, populateUserServiceProvider } from '../../../populate/basicV1';
 import { ServiceProviderResponseModelV1 } from '../../../../src/components/serviceProviders/serviceProviders.apicontract';
 import { ServiceResponseV1 } from '../../../../src/components/services/service.apicontract';
 import { TimeslotEntryResponseV1 } from '../../../../src/components/timeslots/timeslots.apicontract';
 import { keepTimeFromTimezoneToLocal } from '../../../utils/dateTimeUtil';
+import { populateUserServiceProvider } from '../../../populate/V1/users';
+import { putServiceLabel } from '../../../populate/V1/services';
+import { populateOneOffTimeslot } from '../../../populate/V1/oneOffTimeslots';
 
 // tslint:disable-next-line: no-big-function
 describe('Timeslots functional tests', () => {
@@ -48,18 +50,18 @@ describe('Timeslots functional tests', () => {
 		await pgClient.cleanAllTables();
 
 		const result1 = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_1,
-			serviceProviderName: SERVICE_PROVIDER_NAME_1,
+			serviceNames: [NAME_SERVICE_1],
+			name: SERVICE_PROVIDER_NAME_1,
 			agencyUserId: 'A001',
 		});
 		const result2 = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_2,
-			serviceProviderName: SERVICE_PROVIDER_NAME_2,
+			serviceNames: [NAME_SERVICE_2],
+			name: SERVICE_PROVIDER_NAME_2,
 			agencyUserId: 'A002',
 		});
 		const result3 = await populateUserServiceProvider({
-			nameService: NAME_SERVICE_3,
-			serviceProviderName: SERVICE_PROVIDER_NAME_3,
+			serviceNames: [NAME_SERVICE_3],
+			name: SERVICE_PROVIDER_NAME_3,
 			agencyUserId: 'A003',
 		});
 
@@ -71,22 +73,14 @@ describe('Timeslots functional tests', () => {
 		serviceId2 = result2.services.find((item) => item.name === NAME_SERVICE_2).id.toString();
 		serviceId3 = result3.services.find((item) => item.name === NAME_SERVICE_3).id.toString();
 
-		service1Results = await populateServiceLabel({
-			serviceId: serviceId1,
-			serviceName: NAME_SERVICE_1,
-			labels: ['Chinese', 'English', 'Malay'],
+		service1Results = await putServiceLabel(serviceId1, ['Chinese', 'English', 'Malay'], {
+			name: NAME_SERVICE_1,
 		});
-
-		const service2Result = await populateServiceLabel({
-			serviceId: serviceId2,
-			serviceName: NAME_SERVICE_2,
-			labels: ['Chinese', 'English'],
+		const service2Result = await putServiceLabel(serviceId2, ['Chinese', 'English'], {
+			name: NAME_SERVICE_2,
 		});
-
-		const service3Result = await populateServiceLabel({
-			serviceId: serviceId3,
-			serviceName: NAME_SERVICE_3,
-			labels: ['Chinese', 'English'],
+		const service3Result = await putServiceLabel(serviceId3, ['Chinese', 'English'], {
+			name: NAME_SERVICE_3,
 		});
 
 		await populateOneOffTimeslot({

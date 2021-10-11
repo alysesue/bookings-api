@@ -1,7 +1,7 @@
 import { PgClient } from '../../../utils/pgClient';
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
 import { LabelCategoryRequestModel } from '../../../../src/components/labelsCategories/labelsCategories.apicontract';
-import {ServiceResponseV1} from "../../../../src/components/services/service.apicontract";
+import { ServiceResponseV1 } from '../../../../src/components/services/service.apicontract';
 
 describe('Tests endpoint', () => {
 	const SERVICE_NAME = 'Service1';
