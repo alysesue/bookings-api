@@ -587,6 +587,7 @@ describe('Bookings.Controller.V2', () => {
 			undefined,
 			undefined,
 			undefined,
+			[],
 			serviceId,
 		);
 
@@ -602,6 +603,7 @@ describe('Bookings.Controller.V2', () => {
 			limit: 100,
 			maxId: undefined,
 			serviceProviderIds: [10],
+			eventIds: [],
 		});
 		expect(result.data.length).toBe(1);
 		expect(result.data[0]).toEqual({
@@ -644,6 +646,7 @@ describe('Bookings.Controller.V2', () => {
 			2,
 			50,
 			'123',
+			[],
 			serviceId,
 		);
 
@@ -659,6 +662,7 @@ describe('Bookings.Controller.V2', () => {
 			page: 2,
 			limit: 50,
 			maxId: 123,
+			eventIds: [],
 		});
 
 		expect(result.data.length).toBe(1);
@@ -827,6 +831,7 @@ describe('Bookings.Controller.V2', () => {
 			2,
 			50,
 			'123',
+			[],
 			serviceId,
 		);
 
@@ -842,6 +847,7 @@ describe('Bookings.Controller.V2', () => {
 			page: 2,
 			limit: 50,
 			maxId: 123,
+			eventIds: [],
 		});
 
 		expect(KoaContextStoreMock.koaContext.body).toBeDefined();

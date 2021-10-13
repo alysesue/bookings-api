@@ -147,7 +147,7 @@ describe('Test events controller', () => {
 		await controller.getBookings('1', undefined, undefined, undefined);
 
 		expect(BookingsServiceMock.searchBookings).toHaveBeenCalledWith({
-			eventId: 1,
+			eventIds: [1],
 			page: 1,
 			limit: 100,
 			maxId: undefined,

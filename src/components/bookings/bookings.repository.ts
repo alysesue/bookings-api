@@ -64,7 +64,12 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 				'booking_change_log',
 				'createdlog',
 				'createdlog."_bookingId" = booking._id AND createdlog._action = 1',
-			);
+			)
+			.leftJoinAndSelect('service_relation._organisation', 'org_relation')
+			.leftJoinAndSelect('booking._event', 'event')
+			.leftJoinAndSelect('event._oneOffTimeslots', 'event_oneOffTimeslots')
+			.leftJoinAndSelect('event_oneOffTimeslots._serviceProvider', 'event_oneOffTimeslots_serviceProvider')
+			.leftJoinAndSelect('event._service', 'event_service');
 	}
 
 	public async getBooking(bookingId: number, options: { byPassAuth?: boolean } = {}): Promise<Booking> {
@@ -152,7 +157,8 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 	private async searchQueryFormulation(request: BookingSearchQuery): Promise<SelectQueryBuilder<Booking>> {
 		const serviceCondition = request.serviceId ? 'booking."_serviceId" = :serviceId' : '';
 
-		const eventCondition = request.eventId ? 'booking."_eventId" = :eventId' : '';
+		const eventCondition =
+			request.eventIds && request.eventIds.length > 0 ? 'booking."_eventId" IN (:...eventIds)' : '';
 
 		const serviceProviderCondition =
 			request.serviceProviderIds && request.serviceProviderIds.length > 0
@@ -195,7 +201,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 					toCreatedDate: request.toCreatedDate,
 					statuses: request.statuses,
 					citizenUinFins: request.citizenUinFins,
-					eventId: request.eventId,
+					eventIds: request.eventIds,
 				},
 				request,
 			)
@@ -218,7 +224,7 @@ export type BookingSearchQuery = {
 	page: number;
 	limit: number;
 	maxId?: number;
-	eventId?: number;
+	eventIds?: number[];
 };
 
 export type PagedEntities<T> = {

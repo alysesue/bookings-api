@@ -118,7 +118,7 @@ abstract class BookingsEventValidator extends Validator<Booking> implements IBoo
 
 	protected async *validateCapacity(_booking: Booking): AsyncIterable<BusinessValidation> {
 		const searchQuery: BookingSearchRequest = {
-			eventId: _booking.eventId,
+			eventIds: [_booking.eventId],
 			statuses: [BookingStatus.Accepted, BookingStatus.OnHold],
 			page: 1,
 			limit: 9999,

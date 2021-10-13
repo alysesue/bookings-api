@@ -645,6 +645,7 @@ export class BookingsControllerV2 extends Controller {
 		@Query() page?: number,
 		@Query() limit?: number,
 		@Query() maxId?: string,
+		@Query() eventIds: string[] = [],
 		@Header('x-api-service') serviceId?: string,
 	): Promise<void> {
 		if (!status) {
@@ -658,6 +659,11 @@ export class BookingsControllerV2 extends Controller {
 			const unsignedSpId = this.idHasher.decode(spId);
 			spIds.push(unsignedSpId);
 		}
+		const unsignedEventIds = [];
+		for (const eventId of eventIds) {
+			const unsignedEventId = this.idHasher.decode(eventId);
+			unsignedEventIds.push(unsignedEventId);
+		}
 		const searchQuery: BookingSearchRequest = {
 			from,
 			to,
@@ -670,6 +676,7 @@ export class BookingsControllerV2 extends Controller {
 			page: page || DEFAULT_PAGE,
 			limit,
 			maxId: this.idHasher.decode(maxId),
+			eventIds: unsignedEventIds,
 		};
 
 		const bookings = await this.bookingsService.searchBookingsReturnAll(searchQuery);
@@ -715,6 +722,7 @@ export class BookingsControllerV2 extends Controller {
 		@Query() page?: number,
 		@Query() limit?: number,
 		@Query() maxId?: string,
+		@Query() eventIds: string[] = [],
 		@Header('x-api-service') serviceId?: string,
 	): Promise<ApiPagedDataV2<BookingResponseV2>> {
 		if (!status) {
@@ -726,6 +734,11 @@ export class BookingsControllerV2 extends Controller {
 		for (const spId of serviceProviderIds) {
 			const unsignedSpId = this.idHasher.decode(spId);
 			spIds.push(unsignedSpId);
+		}
+		const unsignedEventIds = [];
+		for (const eventId of eventIds) {
+			const unsignedEventId = this.idHasher.decode(eventId);
+			unsignedEventIds.push(unsignedEventId);
 		}
 		const searchQuery: BookingSearchRequest = {
 			from,
@@ -739,6 +752,7 @@ export class BookingsControllerV2 extends Controller {
 			page: page || DEFAULT_PAGE,
 			limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
 			maxId: this.idHasher.decode(maxId),
+			eventIds: unsignedEventIds,
 		};
 
 		const pagedBookings = await this.bookingsService.searchBookings(searchQuery);
