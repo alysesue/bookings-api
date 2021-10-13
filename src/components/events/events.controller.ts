@@ -28,6 +28,7 @@ import { BookingsService } from '../bookings';
 import { BookingsMapper } from '../bookings/bookings.mapper';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
+import { LabelOperationFiltering } from '../labels/label.enum';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
@@ -54,6 +55,8 @@ export class EventsController extends Controller {
 	 * Retrieves events
 	 *
 	 * @param serviceId
+	 * @param labelIds (Optional) to filter by label
+	 * @param labelTypeOfFiltering (Optional) type of filtering "union" or "intersection" (default: intersection)
 	 */
 	@Get('')
 	@Security('service')
@@ -64,12 +67,18 @@ export class EventsController extends Controller {
 		@Query() page?: number,
 		@Query() limit?: number,
 		@Query() maxId?: number,
+		@Query() labelIds?: string[],
+		@Query() labelOperationFiltering?: LabelOperationFiltering,
 	): Promise<ApiPagedData<EventResponse>> {
+		const labelIdsNumber = labelIds && labelIds.length > 0 ? labelIds.map((id) => this.idHasher.decode(id)) : [];
+
 		const pagedEvents = await this.eventsService.search({
 			serviceId: this.idHasher.decode(serviceId),
 			page: page || DEFAULT_PAGE,
 			limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
 			maxId,
+			labelIds: labelIdsNumber,
+			labelOperationFiltering,
 		});
 		return this.apiPagingFactory.createPagedAsync(pagedEvents, async (event: Event) => {
 			const eventBookings = await this.bookingsService.searchBookings({
