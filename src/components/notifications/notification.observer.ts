@@ -9,8 +9,6 @@ import {
 	EmailBookingTemplate,
 	EmailTemplateBase,
 } from './templates/citizen.mail';
-import { MOLErrorV2 } from 'mol-lib-api-contract/error';
-import { ErrorCodeV2 } from 'mol-lib-api-contract';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import {
 	ServiceProviderEmailTemplateBookingActionByCitizen,
@@ -18,6 +16,8 @@ import {
 } from './templates/serviceProviders.mail';
 import { BookingType } from '../../models/bookingType';
 import { MailOptions } from './notifications.mapper';
+import { logger } from 'mol-lib-common';
+import { EmailRecipient } from './notifications.enum';
 
 @InRequestScope
 export class MailObserver implements Observer {
@@ -36,25 +36,32 @@ export class MailObserver implements Observer {
 
 	public async update(subject: ISubject<any>): Promise<void> {
 		if (subject instanceof BookingsSubject && subject.booking?.status !== BookingStatus.OnHold) {
-			if (!subject.booking.service.sendNotifications) return;
-			await this.emailBookingToCitizen(subject.booking, subject.bookingType);
-			if (!subject.booking.service.sendNotificationsToServiceProviders) return;
-			await this.emailBookingToServiceProvider(subject.booking, subject.bookingType);
+			if (subject.booking.service.sendNotifications)
+				await this.sendEmail(subject.booking, subject.bookingType, EmailRecipient.Citizen);
+			if (subject.booking.service.sendNotificationsToServiceProviders)
+				await this.sendEmail(subject.booking, subject.bookingType, EmailRecipient.ServiceProvider);
 		}
 	}
 
-	private async emailBookingToCitizen(booking: Booking, bookingType: BookingType): Promise<void> {
-		const body = await this.createCitizenEmailFactory(booking, bookingType);
-		const email = MailObserver.verifyEmail(booking.citizenEmail);
-		const citizenEmailDetails = MailObserver.constructEmailTemplate(body, email);
-		if (citizenEmailDetails?.html) await this.notificationsService.sendEmail(citizenEmailDetails);
-	}
-
-	private async emailBookingToServiceProvider(booking: Booking, bookingType: BookingType): Promise<void> {
-		const serviceProviderEmailBody = await this.createServiceProviderEmailFactory(booking, bookingType);
-		const email = MailObserver.verifyEmail(booking.serviceProvider?.email);
-		const serviceProviderEmailDetails = MailObserver.constructEmailTemplate(serviceProviderEmailBody, email);
-		if (serviceProviderEmailDetails?.html) await this.notificationsService.sendEmail(serviceProviderEmailDetails);
+	private async sendEmail(booking: Booking, bookingType: BookingType, recipientType: EmailRecipient) {
+		let body: EmailTemplateBase;
+		let email: string;
+		switch (recipientType) {
+			case EmailRecipient.Citizen:
+				body = await this.createCitizenEmailFactory(booking, bookingType);
+				email = booking.citizenEmail;
+				break;
+			case EmailRecipient.ServiceProvider:
+				body = await this.createServiceProviderEmailFactory(booking, bookingType);
+				email = booking.serviceProvider?.email;
+				break;
+		}
+		if (email) {
+			const emailDetails = MailObserver.constructEmailTemplate(body, email);
+			if (emailDetails?.html) await this.notificationsService.sendEmail(emailDetails);
+			return;
+		}
+		logger.info(`Email not sent out for booking id (${booking.id}) as ${recipientType} email is not provided`);
 	}
 
 	private async createCitizenEmailFactory(booking: Booking, bookingType: BookingType): Promise<EmailTemplateBase> {
@@ -101,10 +108,5 @@ export class MailObserver implements Observer {
 			subject: emailTemplate?.subject,
 			html: emailTemplate?.html,
 		};
-	}
-
-	private static verifyEmail(email: string | undefined): string {
-		if (!email) throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Email not found`);
-		return email;
 	}
 }
