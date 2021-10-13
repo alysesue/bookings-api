@@ -124,8 +124,15 @@ abstract class BookingsEventValidator extends Validator<Booking> implements IBoo
 			limit: 9999,
 		};
 		const eventBookings = await this.bookingsRepository.searchReturnAll(searchQuery);
+		let eventBookingsCount = eventBookings.length;
+		eventBookings.forEach((event) => {
+			if (event.status === BookingStatus.OnHold && !event.isValidOnHoldBooking()) {
+				eventBookingsCount--;
+			}
+		});
+		eventBookingsCount = _booking.isValidOnHoldBooking() ? eventBookingsCount - 1 : eventBookingsCount;
 		const eventDetails = await this.eventService.getById(_booking.eventId);
-		if (eventBookings.length >= eventDetails.capacity) {
+		if (eventBookingsCount >= eventDetails.capacity) {
 			yield BookingBusinessValidations.EventCapacityUnavailable;
 		}
 	}
