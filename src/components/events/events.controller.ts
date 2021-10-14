@@ -21,9 +21,14 @@ import { EventsService } from './events.service';
 import { EventsMapper } from './events.mapper';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { MOLAuth } from 'mol-lib-common';
-import { Booking, Event } from '../../models';
+import { Booking, BookingStatus, Event } from '../../models';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
-import { BookingSearchRequest, EventBookingRequest, EventBookingResponse } from '../bookings/bookings.apicontract';
+import {
+	BookingSearchRequest,
+	EventBookingRequest,
+	EventBookingResponse,
+	ValidateOnHoldRequest,
+} from '../bookings/bookings.apicontract';
 import { BookingsService } from '../bookings';
 import { BookingsMapper } from '../bookings/bookings.mapper';
 import { UserContext } from '../../infrastructure/auth/userContext';
@@ -78,8 +83,15 @@ export class EventsController extends Controller {
 				page: page || DEFAULT_PAGE,
 				limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
 				maxId,
+				statuses: [BookingStatus.Accepted, BookingStatus.OnHold, BookingStatus.PendingApproval],
 			});
-			const availableSlots = Math.max(0, event.capacity - eventBookings.entries.length);
+			let eventBookingsCount = eventBookings.entries.length;
+			eventBookings.entries.forEach((event) => {
+				if (event.status === BookingStatus.OnHold && !event.isValidOnHoldBooking()) {
+					eventBookingsCount--;
+				}
+			});
+			const availableSlots = Math.max(0, event.capacity - eventBookingsCount);
 			return await this.eventsMapper.mapToResponse(event, availableSlots);
 		});
 	}
@@ -185,5 +197,25 @@ export class EventsController extends Controller {
 		return this.apiPagingFactory.createPagedAsync(pagedBookings, async (booking: Booking) => {
 			return this.bookingsMapper.mapEventsDataModel(booking);
 		});
+	}
+
+	/**
+	 * Validates an on hold booking.
+	 * It will add additional booking information to an existing booking and change the status of the booking
+	 *
+	 * @param bookingRequest
+	 * @param bookingId The booking id.
+	 */
+	@Post('/bookings/{bookingId}/validateOnHold')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@SuccessResponse(200, 'Validated')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
+	public async validateOnHoldBooking(
+		@Body() bookingRequest: ValidateOnHoldRequest,
+		@Path() bookingId: string,
+	): Promise<ApiData<EventBookingResponse>> {
+		const unsignedBookingId = this.idHasher.decode(bookingId);
+		const booking = await this.bookingsService.validateOnHoldBooking(unsignedBookingId, bookingRequest, true);
+		return ApiDataFactory.create(await this.bookingsMapper.mapEventsDataModel(booking));
 	}
 }

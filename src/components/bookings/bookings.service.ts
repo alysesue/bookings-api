@@ -618,8 +618,48 @@ export class BookingsService {
 		}
 	}
 
-	public async validateOnHoldBooking(bookingId: number, bookingRequest: ValidateOnHoldRequest): Promise<Booking> {
-		const validateAction = (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest);
+	private async validateOnHoldEventBookingInternal(
+		previousBooking: Booking,
+		bookingRequest: ValidateOnHoldRequest,
+	): Promise<[ChangeLogAction, Booking]> {
+		if (previousBooking.isValidOnHoldBooking()) {
+			const updatedBooking = previousBooking.clone();
+			const { service } = await this.bookingRequestExtraction(previousBooking.serviceId);
+			await this.bookingsMapper.mapBookingDetails({
+				request: { ...bookingRequest, citizenUinFinUpdated: bookingRequest.citizenUinFinUpdated || false },
+				booking: updatedBooking,
+				service,
+			});
+
+			const validator = this.bookingsEventValidatorFactory.getOnHoldValidator();
+			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
+
+			await validator.validate(updatedBooking);
+			if (previousBooking.eventId) {
+				updatedBooking.status = BookingStatus.Accepted;
+			}
+
+			const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
+			await this.loadBookingDependencies(updatedBooking);
+			await this.verifyActionPermission(updatedBooking, changeLogAction);
+			await this.bookingsRepository.update(updatedBooking);
+
+			return [changeLogAction, updatedBooking];
+		} else {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Booking ${previousBooking.id} is not on hold or has expired`,
+			);
+		}
+	}
+
+	public async validateOnHoldBooking(
+		bookingId: number,
+		bookingRequest: ValidateOnHoldRequest,
+		forEventBooking = false,
+	): Promise<Booking> {
+		const validateAction = forEventBooking
+			? (_booking) => this.validateOnHoldEventBookingInternal(_booking, bookingRequest)
+			: (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest);
 		const booking = await this.changeLogsService.executeAndLogAction(
 			bookingId,
 			this.getBookingInternal.bind(this),
