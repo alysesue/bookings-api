@@ -77,9 +77,8 @@ describe('Get events functional tests', () => {
 		await postEvent({ serviceId: service.id, timeslots: [oneOffTimeslotRequest],title: 'Numero2'});
 		await postEvent({ serviceId: service.id, timeslots: [oneOffTimeslotRequest],title: 'Numero1'});
 		const response = await getEvents(service.id, {title: 'nu'});
-		expect(response.length).toBe(3);
+		expect(response.length).toBe(2);
 		expect(response[0].title).toBe('Numero1');
 		expect(response[1].title).toBe('Numero2');
-		expect(response[2].title).toBe('lastNumero');
 	});
 });
