@@ -123,7 +123,7 @@ describe('Test event repository', () => {
 		expect(queryBuilderMock.getMany).toBeCalled();
 	});
 
-	it('should filter events by labelIds', async () => {
+	it('should filter events by labelIds and serviceProvider with searchReturnAll method', async () => {
 		const repository = Container.get(EventsRepository);
 		await repository.searchReturnAll({
 			serviceId: 2,
@@ -137,6 +137,41 @@ describe('Test event repository', () => {
 			{ serviceId: 2, serviceProviderIds: [10, 11], label_0: 1 },
 		);
 		expect(queryBuilderMock.getMany).toBeCalled();
+	});
+
+	it('should filter events by labelIds with search method (default operation: intersection) ', async () => {
+		const repository = Container.get(EventsRepository);
+		await repository.search({
+			serviceId: 2,
+			page: 1,
+			limit: 100,
+			labelIds: [1, 4],
+		});
+		expect(
+			queryBuilderMock.where,
+		).toBeCalledWith(
+			'("serviceProvider"."_serviceId" = :serviceId) AND ((event."_id" IN (SELECT "event_id" FROM event_label WHERE "label_id" = :label_0)) AND (event."_id" IN (SELECT "event_id" FROM event_label WHERE "label_id" = :label_1)))',
+			{ serviceId: 2, label_0: 1, label_1: 4 },
+		);
+		expect(PagingHelper.getManyWithPaging as jest.Mock).toHaveBeenCalledTimes(1);
+	});
+
+	it('should filter events by labelIds with search method (operation: union) ', async () => {
+		const repository = Container.get(EventsRepository);
+		await repository.search({
+			serviceId: 2,
+			page: 1,
+			limit: 100,
+			labelIds: [1, 4],
+			labelOperationFiltering: LabelOperationFiltering.UNION,
+		});
+		expect(
+			queryBuilderMock.where,
+		).toBeCalledWith(
+			'("serviceProvider"."_serviceId" = :serviceId) AND ((event."_id" IN (SELECT "event_id" FROM event_label WHERE "label_id" = :label_0)) OR (event."_id" IN (SELECT "event_id" FROM event_label WHERE "label_id" = :label_1)))',
+			{ serviceId: 2, label_0: 1, label_1: 4 },
+		);
+		expect(PagingHelper.getManyWithPaging as jest.Mock).toHaveBeenCalledTimes(1);
 	});
 
 	it('should search timeslots with labelId with union filter (OR)', async () => {
