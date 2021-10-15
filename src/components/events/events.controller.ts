@@ -59,6 +59,9 @@ export class EventsController extends Controller {
 	/**
 	 * Retrieves events
 	 *
+	 * @param title (Optional) Get events with corresponding title
+	 * @param startDateTime (Optional) The lower bound datetime limit (inclusive) for booking's end time.
+	 * @param endDateTime (Optional) The upper bound datetime limit (inclusive) for booking's start time.
 	 * @param serviceId
 	 * @param labelIds (Optional) to filter by label
 	 * @param labelTypeOfFiltering (Optional) type of filtering "union" or "intersection" (default: intersection)
@@ -69,6 +72,9 @@ export class EventsController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async search(
 		@Header('x-api-service') serviceId: string,
+		@Query() title?: string,
+		@Query() startDateTime?: Date,
+		@Query() endDateTime?: Date,
 		@Query() page?: number,
 		@Query() limit?: number,
 		@Query() maxId?: number,
@@ -79,6 +85,9 @@ export class EventsController extends Controller {
 
 		const pagedEvents = await this.eventsService.search({
 			serviceId: this.idHasher.decode(serviceId),
+			title,
+			startDateTime,
+			endDateTime,
 			page: page || DEFAULT_PAGE,
 			limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
 			maxId,
@@ -118,6 +127,7 @@ export class EventsController extends Controller {
 		const event = await this.eventsService.getById(idUnsigned);
 		return ApiDataFactory.create(this.eventsMapper.mapToResponse(event));
 	}
+
 	/**
 	 * Create an event
 	 *

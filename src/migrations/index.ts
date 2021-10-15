@@ -42,3 +42,5 @@ export { CustomUpdateAllExistingDynamicFields1628820298859 } from './16288202988
 export { IncreaseCharCount1628766321061 } from './1628766321061-IncreaseCharCount';
 export { AllowedServiceAuthentication1631253669914 } from './1631253669914-AllowedServiceAuthentication';
 export { OrgServiceProviderLabels1631674237169 } from './1631674237169-OrgServiceProviderLabels';
+export { EventNewFileds1634023542037 } from './1634023542037-eventNewFileds';
+export { PopulateEventNewFields } from './data/1634023542099-PopulateeventNewFileds';

@@ -23,6 +23,8 @@ import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userCont
 import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { BookingsServiceMock } from '../../bookings/__mocks__/bookings.service.mock';
 import { EventBookingRequest } from '../../bookings/bookings.apicontract';
+import { BookingsMapper } from '../../bookings/bookings.mapper';
+import { BookingsMapperMock } from '../../bookings/__mocks__/bookings.mapper.mock';
 
 describe('Test events controller', () => {
 	const adminMock = User.createAdminUser({
@@ -52,6 +54,7 @@ describe('Test events controller', () => {
 		Container.bind(IdHasher).to(IdHasherMock);
 		Container.bind(UserContext).to(UserContextMock);
 		Container.bind(BookingsService).to(BookingsServiceMock);
+		Container.bind(BookingsMapper).to(BookingsMapperMock);
 	});
 
 	beforeEach(() => {
@@ -152,6 +155,8 @@ describe('Test events controller', () => {
 	});
 
 	it('Should call create event booking', async () => {
+		(BookingsServiceMock.bookAnEventMock as jest.Mock).mockReturnValue({ id: 1, eventId: 1 });
+		(BookingsMapperMock.mapEventsDataModel as jest.Mock).mockReturnValue({});
 		Container.get(EventsController).createEventBooking('hashedEventId', {} as EventBookingRequest);
 		expect(BookingsServiceMock.bookAnEventMock).toHaveBeenCalledTimes(1);
 	});

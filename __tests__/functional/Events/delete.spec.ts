@@ -1,7 +1,7 @@
 import { PgClient } from '../../utils/pgClient';
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
 import { populateServiceAndServiceProvider } from '../../populate/V2/servieProviders';
-import { getEventRequest, getOneOffTimeslotRequest, populateEvent } from '../../populate/V1/events';
+import { createEventRequest, createOneOffTimeslotRequest, postEvent } from '../../populate/V1/events';
 
 describe('Event post functional tests', () => {
 	const pgClient = new PgClient();
@@ -15,9 +15,9 @@ describe('Event post functional tests', () => {
 		const { service: srv, serviceProvider: sp } = await populateServiceAndServiceProvider({});
 		service = srv;
 		serviceProvider = sp[0];
-		const oneOffTimeslotRequest = getOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
-		eventRequest = getEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest]);
-		event = await populateEvent(eventRequest);
+		const oneOffTimeslotRequest = createOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
+		eventRequest = createEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest]);
+		event = await postEvent(eventRequest);
 		done();
 	});
 

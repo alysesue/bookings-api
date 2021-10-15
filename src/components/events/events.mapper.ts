@@ -13,7 +13,6 @@ import { Label, OneOffTimeslot, Service } from '../../models';
 import { OneOffTimeslotRequestV1 } from '../oneOffTimeslots/oneOffTimeslots.apicontract';
 import { LabelsMapper } from '../labels/labels.mapper';
 import { ServicesMapper } from '../services/services.mapper';
-import { sortDate } from '../../tools/date';
 
 @InRequestScope
 export class EventsMapper {
@@ -88,10 +87,18 @@ export class EventsMapper {
 	}
 
 	public mapToResponse(model: Event, availableSlots?: number): EventResponse {
-		const { id, service, title, description, capacity, labels, oneOffTimeslots } = model;
+		const {
+			id,
+			service,
+			title,
+			description,
+			firstStartDateTime,
+			lastEndDateTime,
+			capacity,
+			labels,
+			oneOffTimeslots,
+		} = model;
 		const labelRes = this.labelsMapper.mapToLabelsResponse(labels);
-		const sortStartDates = sortDate(oneOffTimeslots.map((slot) => slot.startDateTime));
-		const sortEndDate = sortDate(oneOffTimeslots.map((slot) => slot.endDateTime));
 		return {
 			id: this.idHasher.encode(id),
 			service: this.servicesMapper.modelToServiceSummaryModel(service),
@@ -99,8 +106,8 @@ export class EventsMapper {
 			description,
 			capacity,
 			labels: labelRes,
-			firstStartDateTime: sortStartDates[0],
-			lastEndDateTime: sortEndDate[sortEndDate.length - 1],
+			firstStartDateTime,
+			lastEndDateTime,
 			timeslots: this.mapOneOffTimeslotsToEvent(oneOffTimeslots),
 			availableSlots,
 		} as EventResponse;

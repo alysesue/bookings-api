@@ -121,6 +121,7 @@ describe('Tests events services', () => {
 	});
 
 	it('Should call save when updating an event', async () => {
+		(EventsRepositoryMock.getByIdMock as jest.Mock).mockReturnValue(new Event());
 		const oneOffTimeslotRequest = getSimpleOneOffTimeslotRequest({ serviceProviderId: 1 });
 		const oneOffTimeslotRequest2 = getSimpleOneOffTimeslotRequest({ serviceProviderId: 2 });
 		const sp1 = getServiceProviderMock({ id: 1 });
@@ -129,7 +130,6 @@ describe('Tests events services', () => {
 		const eventRequest = getSimpleEventRequest({
 			oneOffTimeslots: [oneOffTimeslotRequest, oneOffTimeslotRequest2],
 		});
-		EventsRepositoryMock.getByIdMock.mockReturnValue({});
 		await Container.get(EventsService).updateEvent(eventRequest, '1');
 		expect(EventsRepositoryMock.saveMock).toHaveBeenCalledTimes(1);
 	});

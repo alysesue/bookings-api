@@ -67,6 +67,9 @@ export type EventFilter = {
 	serviceId: number;
 	labelIds?: number[];
 	labelOperationFiltering?: LabelOperationFiltering;
+	title?: string;
+	startDateTime?: Date;
+	endDateTime?: Date;
 } & PagingRequest;
 
 export type EventResponse = {
