@@ -3,6 +3,7 @@ import { OneOffTimeslot } from '../../models';
 import { PagingRequest } from '../../apicontract';
 import { ServiceSummaryModel } from '../services/service.apicontract';
 import { ServiceProviderSummaryModelV2 } from '../serviceProviders/serviceProviders.apicontract';
+import { LabelOperationFiltering } from '../labels/label.enum';
 
 export interface IEventTimeslot {
 	/**
@@ -64,6 +65,8 @@ export class EventOneOffTimeslotRequest implements IEventRequest {
 
 export type EventFilter = {
 	serviceId: number;
+	labelIds?: number[];
+	labelOperationFiltering?: LabelOperationFiltering;
 } & PagingRequest;
 
 export type EventResponse = {
