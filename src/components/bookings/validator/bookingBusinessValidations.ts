@@ -1,87 +1,74 @@
 import { BusinessValidation } from '../../../models';
+import { ErrorsRef } from '../../../errors/errors.ref';
 
 /** Reserved BookingBusinessValidations range: 10001 - 10099 */
 export class BookingBusinessValidations {
-	private constructor() {}
+	private static errors = ErrorsRef().booking;
 
-	public static readonly ServiceProviderNotAvailable = new BusinessValidation({
-		code: '10001',
-		message: `The service provider is not available in the selected time range`,
-	});
+	public static readonly ServiceProviderNotAvailable = new BusinessValidation(
+		BookingBusinessValidations.errors.ServiceProviderNotAvailable,
+	);
 
-	public static readonly ServiceProvidersNotAvailable = new BusinessValidation({
-		code: '10002',
-		message: `No available service providers in the selected time range`,
-	});
+	public static readonly ServiceProvidersNotAvailable = new BusinessValidation(
+		BookingBusinessValidations.errors.ServiceProvidersNotAvailable,
+	);
 
-	public static readonly OverlapsAcceptedBooking = new BusinessValidation({
-		code: '10003',
-		message: `Booking request not valid as it overlaps another accepted booking`,
-	});
+	public static readonly OverlapsAcceptedBooking = new BusinessValidation(
+		BookingBusinessValidations.errors.OverlapsAcceptedBooking,
+	);
 
-	public static readonly EndTimeLesserThanStartTime = new BusinessValidation({
-		code: '10004',
-		message: `End time for booking must be greater than start time`,
-	});
+	public static readonly EndTimeLesserThanStartTime = new BusinessValidation(
+		BookingBusinessValidations.errors.EndTimeLesserThanStartTime,
+	);
 
-	public static readonly CitizenUinFinNotFound = new BusinessValidation({
-		code: '10005',
-		message: `Citizen UIN/FIN not found`,
-	});
+	public static readonly CitizenUinFinNotFound = new BusinessValidation(
+		BookingBusinessValidations.errors.CitizenUinFinNotFound,
+	);
 
-	public static readonly CitizenNameNotProvided = new BusinessValidation({
-		code: '10006',
-		message: `Citizen name not provided`,
-	});
+	public static readonly CitizenNameNotProvided = new BusinessValidation(
+		BookingBusinessValidations.errors.CitizenNameNotProvided,
+	);
 
-	public static readonly CitizenEmailNotProvided = new BusinessValidation({
-		code: '10007',
-		message: `Citizen email not provided`,
-	});
+	public static readonly CitizenEmailNotProvided = new BusinessValidation(
+		BookingBusinessValidations.errors.CitizenEmailNotProvided,
+	);
 
-	public static readonly CitizenEmailNotValid = new BusinessValidation({
-		code: '10008',
-		message: `Citizen email not valid`,
-	});
+	public static readonly CitizenEmailNotValid = new BusinessValidation(
+		BookingBusinessValidations.errors.CitizenEmailNotValid,
+	);
 
 	public static readonly ServiceProviderNotFound = (spId: number) =>
-		new BusinessValidation({
-			code: '10009',
-			message: `Service provider '${spId}' not found`,
-		});
+		new BusinessValidation(ErrorsRef(spId).booking.ServiceProviderNotFound);
 
-	public static readonly OutOfSlotServiceProviderRequired = new BusinessValidation({
-		code: '10010',
-		message: `Service provider is required for out of slot bookings`,
-	});
+	public static readonly OutOfSlotServiceProviderRequired = new BusinessValidation(
+		BookingBusinessValidations.errors.OutOfSlotServiceProviderRequired,
+	);
 
-	public static readonly InvalidCaptchaToken = new BusinessValidation({
-		code: '10011',
-		message: `Invalid captcha token`,
-	});
+	public static readonly InvalidCaptchaToken = new BusinessValidation(
+		BookingBusinessValidations.errors.InvalidCaptchaToken,
+	);
 
-	public static readonly OverlapsOnHoldBooking = new BusinessValidation({
-		code: '10012',
-		message: `Booking request not valid as it overlaps another on hold booking`,
-	});
+	public static readonly OverlapsOnHoldBooking = new BusinessValidation(
+		BookingBusinessValidations.errors.OverlapsOnHoldBooking,
+	);
 
-	public static readonly ServiceProviderLicenceExpire = new BusinessValidation({
-		code: '10013',
-		message: `Licence of service provider will be expired`,
-	});
+	public static readonly ServiceProviderLicenceExpire = new BusinessValidation(
+		BookingBusinessValidations.errors.ServiceProviderLicenceExpire,
+	);
 
-	public static readonly VideoConferenceUrlIsInvalid = new BusinessValidation({
-		code: '10014',
-		message: `Invalid video conference link is provided`,
-	});
+	public static readonly VideoConferenceUrlIsInvalid = new BusinessValidation(
+		BookingBusinessValidations.errors.VideoConferenceUrlIsInvalid,
+	);
 
-	public static readonly CitizenNameNotValid = new BusinessValidation({
-		code: '10015',
-		message: `Citizen name is not valid`,
-	});
+	public static readonly CitizenNameNotValid = new BusinessValidation(
+		BookingBusinessValidations.errors.CitizenNameNotValid,
+	);
 
-	public static readonly PhoneNumberNotValid = new BusinessValidation({
-		code: '10016',
-		message: `Citizen phone number not valid`,
-	});
+	public static readonly EventCapacityUnavailable = new BusinessValidation(
+		BookingBusinessValidations.errors.EventCapacityUnavailable,
+	);
+
+	public static readonly PhoneNumberNotValid = new BusinessValidation(
+		BookingBusinessValidations.errors.PhoneNumberNotValid,
+	);
 }

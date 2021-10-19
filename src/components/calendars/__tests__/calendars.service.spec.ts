@@ -56,7 +56,6 @@ describe('Calendar service', () => {
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.build();
-
 		const calendars = [
 			{
 				googleCalendarId: 'googleid@group.calendar.google.com',

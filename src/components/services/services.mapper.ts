@@ -5,12 +5,15 @@ import { LabelsCategoriesMapper } from '../labelsCategories/labelsCategories.map
 import {
 	AdditionalSettings,
 	PartialAdditionalSettings,
+	ServiceSummaryModel,
 	ServiceRequestV1,
 	ServiceResponseBase,
 	ServiceResponseV1,
 	ServiceResponseV2,
 } from './service.apicontract';
+import { IService } from '../../models/interfaces';
 import { IdHasher } from '../../infrastructure/idHasher';
+import { CitizenAuthenticationType } from '../../models/citizenAuthenticationType';
 
 export class ServicesMapper {
 	@Inject
@@ -25,10 +28,11 @@ export class ServicesMapper {
 		return { ...serviceResponse, id: service.id };
 	}
 
-	public mapToServiceResponseV2(service: Service): ServiceResponseV2 {
+	public mapToServiceResponseV2(service: Service, includeOrganisationId = false): ServiceResponseV2 {
 		const signedServiceId = this.idHasher.encode(service.id);
 		const serviceResponse = this.mapToServiceResponseBase(service);
-		return { ...serviceResponse, id: signedServiceId };
+		const signedOrgId = includeOrganisationId ? this.idHasher.encode(service.organisationId) : undefined;
+		return { ...serviceResponse, id: signedServiceId, orgId: signedOrgId };
 	}
 
 	private mapToServiceResponseBase(service: Service): ServiceResponseBase {
@@ -50,7 +54,8 @@ export class ServicesMapper {
 
 	private mapToSettingsResponse(service: Service): AdditionalSettings {
 		const additionalSettings = new AdditionalSettings();
-		additionalSettings.allowAnonymousBookings = service.allowAnonymousBookings;
+		additionalSettings.allowAnonymousBookings = service.hasCitizenAuthentication(CitizenAuthenticationType.Otp);
+		additionalSettings.citizenAuthentication = service.citizenAuthentication;
 		additionalSettings.isOnHold = service.isOnHold;
 		additionalSettings.isStandAlone = service.isStandAlone;
 		additionalSettings.sendNotifications = service.sendNotifications;
@@ -78,6 +83,7 @@ export class ServicesMapper {
 	private additionalSettingsMapper(service: Service, settings: PartialAdditionalSettings) {
 		const {
 			allowAnonymousBookings,
+			citizenAuthentication,
 			isOnHold,
 			isStandAlone,
 			sendNotifications,
@@ -86,8 +92,22 @@ export class ServicesMapper {
 		} = settings;
 
 		if (allowAnonymousBookings !== undefined) {
-			service.allowAnonymousBookings = allowAnonymousBookings;
+			if (allowAnonymousBookings && !service.hasCitizenAuthentication(CitizenAuthenticationType.Otp)) {
+				service.citizenAuthentication = [
+					...(service.citizenAuthentication || []),
+					CitizenAuthenticationType.Otp,
+				];
+			}
+			if (!allowAnonymousBookings && service.hasCitizenAuthentication(CitizenAuthenticationType.Otp)) {
+				service.citizenAuthentication = service.citizenAuthentication.filter(
+					(a) => a !== CitizenAuthenticationType.Otp,
+				);
+			}
 		}
+		if (citizenAuthentication !== undefined) {
+			service.citizenAuthentication = citizenAuthentication;
+		}
+
 		if (isOnHold !== undefined) {
 			service.isOnHold = isOnHold;
 		}
@@ -103,5 +123,9 @@ export class ServicesMapper {
 		if (sendSMSNotifications !== undefined) {
 			service.sendSMSNotifications = sendSMSNotifications;
 		}
+	}
+
+	public modelToServiceSummaryModel(srv: IService) {
+		return new ServiceSummaryModel(this.idHasher.encode(srv.id), srv.name);
 	}
 }

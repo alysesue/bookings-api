@@ -153,7 +153,8 @@ export class ServicesService {
 		await validator.validate(service);
 		await this.verifyActionPermission(service, CrudAction.Update);
 		const updatedLabelList = this.labelsMapper.mapToLabels(request.labels);
-		this.labelsMapper.mergeLabels(service.labels, updatedLabelList);
+
+		this.labelsMapper.mergeAllLabels(service.labels, updatedLabelList);
 		const updatedCategoriesList = this.categoriesMapper.mapToCategories(request.categories);
 
 		try {

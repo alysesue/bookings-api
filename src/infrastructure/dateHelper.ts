@@ -25,6 +25,10 @@ export class DateHelper {
 		return new Date(date.getTime() + minutes * DateHelper.MsPerMinute);
 	}
 
+	public static subtractMinutes(date: Date, minutes: number) {
+		return new Date(date.getTime() - minutes * DateHelper.MsPerMinute);
+	}
+
 	public static addHours(date: Date, hours: number): Date {
 		return new Date(date.getTime() + hours * DateHelper.MsPerHour);
 	}

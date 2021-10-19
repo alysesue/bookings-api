@@ -1,4 +1,4 @@
-import { Booking, Service, ServiceProvider } from '../../models/entities';
+import { BookedSlot, Booking, Event, Service, ServiceProvider } from '../../models/entities';
 import {
 	BookingDetailsRequest,
 	BookingProviderResponseV1,
@@ -7,6 +7,8 @@ import {
 	BookingResponseBase,
 	BookingResponseV1,
 	BookingResponseV2,
+	EventBookingRequest,
+	EventBookingResponse,
 } from './bookings.apicontract';
 import { UinFinConfiguration } from '../../models/uinFinConfiguration';
 import { UserContext } from '../../infrastructure/auth/userContext';
@@ -95,7 +97,25 @@ export class BookingsMapper {
 		const bookingId = booking.id;
 		const serviceId = booking.serviceId;
 		const serviceProviderId = booking.serviceProviderId;
-		return { ...bookingResponse, id: bookingId, serviceId, serviceProviderId };
+		const startDateTime = booking.startDateTime;
+		const endDateTime = booking.endDateTime;
+		const serviceProviderAgencyUserId = booking.serviceProvider?.agencyUserId;
+		const serviceProviderName = booking.serviceProvider?.name;
+		const serviceProviderEmail = booking.serviceProvider?.email;
+		const serviceProviderPhone = booking.serviceProvider?.phone;
+
+		return {
+			...bookingResponse,
+			id: bookingId,
+			serviceId,
+			serviceProviderId,
+			startDateTime,
+			endDateTime,
+			serviceProviderAgencyUserId,
+			serviceProviderName,
+			serviceProviderEmail,
+			serviceProviderPhone,
+		};
 	}
 
 	public async mapDataModelV2(booking: Booking, { mapUUID }: { mapUUID?: boolean } = {}): Promise<BookingResponseV2> {
@@ -103,11 +123,24 @@ export class BookingsMapper {
 		const signedBookingId = this.idHasher.encode(booking.id);
 		const signedServiceId = this.idHasher.encode(booking.serviceId);
 		const signedServiceProviderId = this.idHasher.encode(booking.serviceProviderId);
+		const startDateTime = booking.startDateTime;
+		const endDateTime = booking.endDateTime;
+		const serviceProviderAgencyUserId = booking.serviceProvider?.agencyUserId;
+		const serviceProviderName = booking.serviceProvider?.name;
+		const serviceProviderEmail = booking.serviceProvider?.email;
+		const serviceProviderPhone = booking.serviceProvider?.phone;
+
 		return {
 			...bookingResponse,
 			id: signedBookingId,
 			serviceId: signedServiceId,
 			serviceProviderId: signedServiceProviderId,
+			startDateTime,
+			endDateTime,
+			serviceProviderAgencyUserId,
+			serviceProviderName,
+			serviceProviderEmail,
+			serviceProviderPhone,
 		};
 	}
 
@@ -115,13 +148,7 @@ export class BookingsMapper {
 		const response: BookingResponseBase = {
 			status: booking.status,
 			createdDateTime: booking.createdLog?.timestamp,
-			startDateTime: booking.startDateTime,
-			endDateTime: booking.endDateTime,
 			serviceName: booking.service?.name,
-			serviceProviderAgencyUserId: booking.serviceProvider?.agencyUserId,
-			serviceProviderName: booking.serviceProvider?.name,
-			serviceProviderEmail: booking.serviceProvider?.email,
-			serviceProviderPhone: booking.serviceProvider?.phone,
 			citizenUinFin: await this.maskUinFin(booking),
 			citizenName: booking.citizenName,
 			citizenEmail: booking.citizenEmail,
@@ -256,6 +283,31 @@ export class BookingsMapper {
 		}
 	}
 
+	public async mapEventBookingRequests({
+		request,
+		booking,
+		service,
+		event,
+	}: {
+		request: EventBookingRequest & { citizenUinFinUpdated: boolean };
+		booking: Booking;
+		service: Service;
+		event: Event;
+	}): Promise<void> {
+		await this.mapBookingDetails({ request, booking, service });
+		booking.eventId = event.id;
+		booking.bookedSlots = event.oneOffTimeslots.map((slot) => {
+			const entity = new BookedSlot();
+			entity.startDateTime = slot.startDateTime;
+			entity.endDateTime = slot.endDateTime;
+			entity.serviceProviderId = slot.serviceProviderId;
+			return entity;
+		});
+		booking.startDateTime = booking.bookedSlots[0].startDateTime;
+		booking.endDateTime = booking.bookedSlots[0].endDateTime;
+		booking.captchaToken = request.captchaToken;
+	}
+
 	public async mapRequest({
 		request,
 		booking,
@@ -266,13 +318,52 @@ export class BookingsMapper {
 		service: Service;
 	}): Promise<void> {
 		await this.mapBookingDetails({ request, booking, service });
+		const bookedSlots = [];
+		const bookedSlot = new BookedSlot();
+		bookedSlot.startDateTime = request.startDateTime;
+		bookedSlot.endDateTime = request.endDateTime;
+		bookedSlot.serviceProviderId = request.serviceProviderId;
+		bookedSlots.push(bookedSlot);
+
 		booking.startDateTime = request.startDateTime;
 		booking.endDateTime = request.endDateTime;
+		booking.bookedSlots = bookedSlots;
 		booking.serviceProviderId = request.serviceProviderId;
 		booking.captchaToken = request.captchaToken;
 	}
 
 	public mapStatuses(): number[] {
 		return bookingStatusArray.map((value) => value);
+	}
+
+	private mapBookedSlots(bookedSlot: any) {
+		return {
+			startDateTime: bookedSlot.startDateTime,
+			endDateTime: bookedSlot.endDateTime,
+			serviceProviderId: bookedSlot.serviceProviderId,
+		} as BookedSlot;
+	}
+
+	public async mapEventsDataModel(booking: Booking): Promise<EventBookingResponse> {
+		const response: EventBookingResponse = {
+			bookingId: this.idHasher.encode(booking.id),
+			eventId: this.idHasher.encode(booking.eventId),
+			status: booking.status,
+			createdDateTime: booking.createdLog?.timestamp,
+			serviceId: booking.serviceId,
+			serviceName: booking.service?.name,
+			citizenUinFin: await this.maskUinFin(booking),
+			citizenName: booking.citizenName,
+			citizenEmail: booking.citizenEmail,
+			citizenPhone: booking.citizenPhone,
+			description: booking.description,
+			refId: booking.refId,
+			dynamicValues: this.dynamicValuesMapper.mapDynamicValuesModel(booking.dynamicValues),
+			sendNotifications: booking.service?.sendNotifications,
+			sendSMSNotifications: booking.service?.sendSMSNotifications,
+			bookedSlots: booking.bookedSlots.map((slot) => this.mapBookedSlots(slot)),
+		} as EventBookingResponse;
+
+		return response;
 	}
 }

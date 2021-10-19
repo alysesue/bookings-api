@@ -2,5 +2,17 @@
 	"https://npmjs.com/advisories/1673",
 	"https://npmjs.com/advisories/1762",
 	"https://npmjs.com/advisories/1766",
-	"https://npmjs.com/advisories/1751"
+	"https://npmjs.com/advisories/1751",
+	"https://github.com/advisories/GHSA-4jqc-8m5r-9rpr",
+	"https://github.com/advisories/GHSA-cph5-m8f7-6c5x",
+	"https://github.com/advisories/GHSA-ww39-953v-wcq6",
+	"https://github.com/advisories/GHSA-35jh-r3h4-6jhm",
+	"https://github.com/advisories/GHSA-93q8-gq69-wqmw",
+	"https://github.com/advisories/GHSA-hqhp-5p83-hx96",
+	"https://github.com/advisories/GHSA-rp65-9cf3-cjxr",
+	"https://github.com/advisories/GHSA-44c6-4v22-4mhx",
+	"https://github.com/advisories/GHSA-jgrx-mgxx-jf9v",
+	"https://github.com/advisories/GHSA-89gv-h8wf-cg8r",
+	"https://github.com/advisories/GHSA-5fw9-fq32-wv5p",
+	"https://github.com/advisories/GHSA-fj58-h2fr-3pp2"
 ]

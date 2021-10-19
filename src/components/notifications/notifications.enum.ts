@@ -12,3 +12,8 @@ export enum EmailNotificationTemplateType {
 	UpdatedByServiceProviderSentToServiceProvider,
 	CancelledByServiceProviderSentToServiceProvider,
 }
+
+export enum EmailRecipient {
+	Citizen = 'citizen',
+	ServiceProvider = 'service provider',
+}

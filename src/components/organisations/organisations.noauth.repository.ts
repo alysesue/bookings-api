@@ -1,9 +1,19 @@
-import { InRequestScope } from 'typescript-ioc';
+import { Inject, InRequestScope } from 'typescript-ioc';
 import { Organisation } from '../../models';
 import { RepositoryBase } from '../../core/repository';
 
+import {
+	ServiceProviderLabelsRepository,
+	ServiceProviderLabelsCategoriesRepository,
+} from '../serviceProvidersLabels/serviceProvidersLabels.repository';
+
 @InRequestScope
 export class OrganisationsNoauthRepository extends RepositoryBase<Organisation> {
+	@Inject
+	private spLabelsRepository: ServiceProviderLabelsRepository;
+	@Inject
+	private spCategoriesLabelsRepository: ServiceProviderLabelsCategoriesRepository;
+
 	constructor() {
 		super(Organisation);
 	}
@@ -33,7 +43,13 @@ export class OrganisationsNoauthRepository extends RepositoryBase<Organisation> 
 		return await query.getMany();
 	}
 
-	public async getOrganisationById(orgaId: number): Promise<Organisation> {
+	public async getOrganisationById(
+		orgaId: number,
+		options?: {
+			includeLabels?: boolean;
+			includeLabelCategories?: boolean;
+		},
+	): Promise<Organisation> {
 		const repository = await this.getRepository();
 
 		const query = repository
@@ -42,6 +58,13 @@ export class OrganisationsNoauthRepository extends RepositoryBase<Organisation> 
 				orgaId,
 			});
 
-		return await query.getOne();
+		const entry = await query.getOne();
+		if (!entry) {
+			return entry;
+		}
+
+		if (options?.includeLabels) await this.spLabelsRepository.populateLabelForOrganisation([entry]);
+		if (options?.includeLabelCategories) await this.spCategoriesLabelsRepository.populateCategories([entry]);
+		return entry;
 	}
 }

@@ -17,9 +17,11 @@ import { DateHelper } from '../../infrastructure/dateHelper';
 import { ServiceProvider } from './serviceProvider';
 import { Service } from './service';
 import { User } from './user';
+import { Event } from './event';
 import { BookingChangeLog } from './bookingChangeLog';
 import { DynamicValueJsonModel } from './jsonModels';
 import { BookingWorkflow } from './bookingWorkflow';
+import { BookedSlot } from './bookedSlot';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
@@ -27,6 +29,8 @@ const HOLD_DURATION_IN_MINS = 10;
 
 export class BookingBuilder {
 	public serviceId: number;
+	public eventId: number;
+	public slots: BookedSlot[] = [];
 	public startDateTime: Date;
 	public endDateTime: Date;
 	public refId: string;
@@ -46,6 +50,22 @@ export class BookingBuilder {
 
 	public withServiceId(serviceId: number): BookingBuilder {
 		this.serviceId = serviceId;
+		return this;
+	}
+
+	public withEventId(eventId: number): BookingBuilder {
+		this.eventId = eventId;
+		return this;
+	}
+
+	public withSlots(slots: [Date, Date, number][]): BookingBuilder {
+		slots.forEach((slot) => {
+			const newSlot = new BookedSlot();
+			newSlot.startDateTime = slot[0];
+			newSlot.endDateTime = slot[1];
+			newSlot.serviceProviderId = slot[2];
+			this.slots.push(newSlot);
+		});
 		return this;
 	}
 
@@ -134,10 +154,11 @@ export class BookingBuilder {
 		if (this.markOnHold) {
 			instance.markOnHold();
 		} else {
-			instance.setAutoAccept({ autoAccept: !!this.serviceProviderId && this.autoAccept });
+			instance.setAutoAccept({ autoAccept: !!this.serviceProviderId && (this.autoAccept || !!this.eventId) });
 		}
 
 		instance.serviceId = this.serviceId;
+		instance.eventId = this.eventId;
 		instance.serviceProviderId = this.serviceProviderId;
 		instance.startDateTime = this.startDateTime;
 		instance.endDateTime = this.endDateTime;
@@ -152,6 +173,7 @@ export class BookingBuilder {
 		instance.citizenEmail = this.citizenEmail;
 		instance.captchaToken = this.captchaToken;
 		instance.reasonToReject = this.reasonToReject;
+		instance.bookedSlots = this.slots;
 
 		return instance;
 	}
@@ -199,8 +221,19 @@ export class Booking {
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
 
+	@Column({ nullable: true })
+	@Index()
+	private _eventId: number;
+
+	@ManyToOne(() => Event, { nullable: true })
+	@JoinColumn({ name: '_eventId' })
+	private _event: Event;
+
 	@Column()
 	private _status: BookingStatus;
+
+	@OneToMany(() => BookedSlot, (bookedSlot) => bookedSlot.booking, { cascade: true })
+	public bookedSlots: BookedSlot[];
 
 	@Column()
 	@Index()
@@ -363,6 +396,22 @@ export class Booking {
 
 	public set service(value: Service) {
 		this._service = value;
+	}
+
+	public get eventId() {
+		return this._eventId;
+	}
+
+	public set eventId(eventId: number) {
+		this._eventId = eventId;
+	}
+
+	public get event() {
+		return this._event;
+	}
+
+	public set event(value: Event) {
+		this._event = value;
 	}
 
 	public get status(): BookingStatus {

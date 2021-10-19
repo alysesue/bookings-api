@@ -1,7 +1,6 @@
 import { BookingSearchQuery, BookingsRepository } from '../bookings.repository';
 import { Booking, BookingStatus, ServiceProvider, User } from '../../../models';
 import { Container } from 'typescript-ioc';
-import { InsertResult } from 'typeorm';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { TransactionManager } from '../../../core/transactionManager';
 import { BookingBuilder } from '../../../models/entities/booking';
@@ -211,10 +210,6 @@ describe('Bookings repository', () => {
 	});
 
 	it('should insert booking', async () => {
-		const insertResult = { identifiers: [{ id: 'abc' }] } as Partial<InsertResult>;
-
-		TransactionManagerMock.insert.mockImplementation(() => insertResult);
-
 		const bookingsRepository = Container.get(BookingsRepository);
 		const booking = new BookingBuilder()
 			.withServiceId(1)
@@ -222,9 +217,10 @@ describe('Bookings repository', () => {
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
 			.build();
 		booking.id = 1;
+		TransactionManagerMock.save.mockImplementation(() => booking);
 
-		const result = await bookingsRepository.insert(booking);
-		expect(result.identifiers).toStrictEqual([{ id: 'abc' }]);
+		await bookingsRepository.insert(booking);
+		expect(TransactionManagerMock.save).toBeCalled();
 	});
 
 	it('should update booking', async () => {

@@ -641,7 +641,7 @@ export class BookingsControllerV2 extends Controller {
 		@Query() toCreatedDate?: Date,
 		@Query() status?: number[],
 		@Query() citizenUinFins?: string[],
-		@Query() serviceProviderIds?: string[],
+		@Query() serviceProviderIds: string[] = [],
 		@Query() page?: number,
 		@Query() limit?: number,
 		@Query() maxId?: string,
@@ -711,7 +711,7 @@ export class BookingsControllerV2 extends Controller {
 		@Query() toCreatedDate?: Date,
 		@Query() status?: number[],
 		@Query() citizenUinFins?: string[],
-		@Query() serviceProviderIds?: string[],
+		@Query() serviceProviderIds: string[] = [],
 		@Query() page?: number,
 		@Query() limit?: number,
 		@Query() maxId?: string,
@@ -821,6 +821,24 @@ export class BookingsControllerV2 extends Controller {
 	public async rejectBooking(@Path() bookingId: string, @Body() bookingReject: BookingReject): Promise<void> {
 		const unsignedBookingId = this.idHasher.decode(bookingId);
 		await this.bookingsService.rejectBooking(unsignedBookingId, bookingReject);
+	}
+
+	/**
+	 * Updates the booking user with the current user. It requires a Booking UUID
+	 *
+	 * @param @isInt bookingId The booking id.
+	 */
+	@Post('{bookingId}/user')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@SuccessResponse(200, 'Ok')
+	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
+	public async changeUser(
+		@Path() bookingId: string,
+		@Body() request: BookingChangeUser,
+	): Promise<ApiData<BookingResponseV2>> {
+		request.bookingId = this.idHasher.decode(bookingId);
+		const booking = await this.bookingsService.changeUser(request);
+		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking, { mapUUID: true }));
 	}
 
 	/**

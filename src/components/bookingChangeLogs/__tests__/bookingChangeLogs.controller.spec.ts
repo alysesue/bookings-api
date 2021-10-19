@@ -42,11 +42,12 @@ describe('BookingChangeLogs Controller V1', () => {
 		agencyUserId: 'ABC123',
 	});
 
-	const booking = new BookingBuilder()
+	const bookingDetails = new BookingBuilder()
 		.withServiceId(1)
 		.withStartDateTime(new Date(Date.UTC(2020, 0, 1, 14, 0)))
 		.withEndDateTime(new Date(Date.UTC(2020, 0, 1, 15, 0)))
 		.build();
+	const booking = bookingDetails;
 	booking.id = 1;
 	booking.serviceProvider = ServiceProvider.create('name', 1, 'ad@as.com', '800 120 7163');
 

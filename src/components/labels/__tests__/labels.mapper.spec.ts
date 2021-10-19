@@ -94,7 +94,7 @@ describe('labels/labels.mapper', () => {
 		const mapper = Container.get(LabelsMapper);
 		const existingLabels = [Label.create('label1', 1)];
 
-		const mergedLabels = mapper.mergeLabels(existingLabels, [Label.create('label1', 1), Label.create('label2')]);
+		const mergedLabels = mapper.mergeAllLabels(existingLabels, [Label.create('label1', 1), Label.create('label2')]);
 
 		expect(mergedLabels).toHaveLength(2);
 	});
@@ -103,7 +103,7 @@ describe('labels/labels.mapper', () => {
 		const mapper = Container.get(LabelsMapper);
 		const existingLabels = [Label.create('Chinese', 1), Label.create('English', 2)];
 
-		const mergedLabels = mapper.mergeLabels(existingLabels, [Label.create('Tamil')]);
+		const mergedLabels = mapper.mergeAllLabels(existingLabels, [Label.create('Tamil')]);
 
 		expect(mergedLabels).toHaveLength(1);
 	});
@@ -112,7 +112,10 @@ describe('labels/labels.mapper', () => {
 		const mapper = Container.get(LabelsMapper);
 		const existingLabels = [Label.create('label1', 2), Label.create('label2', 1)];
 
-		const mergedLabels = mapper.mergeLabels(existingLabels, [Label.create('label1', 2), Label.create('label3', 1)]);
+		const mergedLabels = mapper.mergeAllLabels(existingLabels, [
+			Label.create('label1', 2),
+			Label.create('label3', 1),
+		]);
 
 		expect(mergedLabels).toHaveLength(2);
 		expect(mergedLabels[1].labelText).toEqual('label3');
@@ -122,7 +125,7 @@ describe('labels/labels.mapper', () => {
 		const mapper = Container.get(LabelsMapper);
 		const existingLabels = [Label.create('label1', 2), Label.create('label2', 1)];
 
-		const mergedLabels = mapper.mergeLabels(existingLabels, [Label.create('label3', 1)]);
+		const mergedLabels = mapper.mergeAllLabels(existingLabels, [Label.create('label3', 1)]);
 
 		expect(mergedLabels).toHaveLength(1);
 		expect(mergedLabels[0].labelText).toEqual('label3');

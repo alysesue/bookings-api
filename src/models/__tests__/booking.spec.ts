@@ -267,4 +267,65 @@ describe('Booking tests with onhold flag', () => {
 		expect(booking.creator).toStrictEqual(creator);
 		expect(booking.status).toStrictEqual(BookingStatus.OnHold);
 	});
+
+	it('should create event booking with builder and set event id and booked slots', () => {
+		const start = new Date('2020-01-10T11:00');
+		const end = new Date('2020-01-10T12:00');
+		const serviceProviderId = 10;
+		const creator = {} as User;
+		const booking = new BookingBuilder()
+			.withCitizenUinFin('UINFIN')
+			.withServiceProviderId(1)
+			.withRefId('REFID')
+			.withEventId(1)
+			.withSlots([[start, end, serviceProviderId]])
+			.withServiceId(2)
+			.withCreator(creator)
+			.build();
+
+		expect(booking.eventId).toStrictEqual(1);
+		expect(booking.bookedSlots[0].startDateTime).toStrictEqual(start);
+		expect(booking.bookedSlots[0].endDateTime).toStrictEqual(end);
+		expect(booking.bookedSlots[0].serviceProviderId).toStrictEqual(serviceProviderId);
+		expect(booking.status).toStrictEqual(BookingStatus.Accepted);
+	});
+
+	it('should create event booking with builder and set status at accepted irrespective of autoAccept flag', () => {
+		const start = new Date('2020-01-10T11:00');
+		const end = new Date('2020-01-10T12:00');
+		const serviceProviderId = 10;
+		const creator = {} as User;
+		const booking = new BookingBuilder()
+			.withCitizenUinFin('UINFIN')
+			.withServiceProviderId(1)
+			.withRefId('REFID')
+			.withEventId(1)
+			.withSlots([[start, end, serviceProviderId]])
+			.withServiceId(2)
+			.withCreator(creator)
+			.withAutoAccept(false)
+			.build();
+
+		expect(booking.status).toStrictEqual(BookingStatus.Accepted);
+	});
+
+	it('should create event booking with builder and set status as on hold id OnHold flag is set', () => {
+		const start = new Date('2020-01-10T11:00');
+		const end = new Date('2020-01-10T12:00');
+		const serviceProviderId = 10;
+		const creator = {} as User;
+		const booking = new BookingBuilder()
+			.withCitizenUinFin('UINFIN')
+			.withServiceProviderId(1)
+			.withRefId('REFID')
+			.withEventId(1)
+			.withSlots([[start, end, serviceProviderId]])
+			.withServiceId(2)
+			.withCreator(creator)
+			.withAutoAccept(false)
+			.withMarkOnHold(true)
+			.build();
+
+		expect(booking.status).toStrictEqual(BookingStatus.OnHold);
+	});
 });

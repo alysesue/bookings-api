@@ -358,6 +358,7 @@ export class ServicesControllerV2 extends Controller {
 		@Query() includeScheduleForm = false,
 		@Query() includeLabels = false,
 		@Query() includeLabelCategories = false,
+		@Query() includeOrganisationId = false,
 	): Promise<ApiData<ServiceResponseV2>> {
 		const unsignedServiceId = this.idHasher.decode(serviceId);
 		const service = await this.servicesService.getService(unsignedServiceId, {
@@ -366,7 +367,7 @@ export class ServicesControllerV2 extends Controller {
 			includeLabelCategories,
 			includeLabels,
 		});
-		return ApiDataFactory.create(this.serviceMapper.mapToServiceResponseV2(service));
+		return ApiDataFactory.create(this.serviceMapper.mapToServiceResponseV2(service, includeOrganisationId));
 	}
 
 	/**

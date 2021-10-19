@@ -225,6 +225,7 @@ export class TimeslotsControllerV2 extends Controller {
 	 * @param serviceProviderId (Optional) Filters timeslots for a specific service provider.
 	 * @param exactTimeslot (Optional) to filter timeslots for the given dates.
 	 * @param labelIds (Optional) to filter by label
+	 * @param labelTypeOfFiltering (Optional) type of filtering "union" or "intersection" (default: intersection)
 	 */
 	@Get('availability')
 	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
@@ -237,6 +238,7 @@ export class TimeslotsControllerV2 extends Controller {
 		@Query() serviceProviderId?: string,
 		@Query() exactTimeslot = false,
 		@Query() labelIds?: string[],
+		@Query() labelOperationFiltering?: LabelOperationFiltering,
 	): Promise<ApiData<AvailabilityEntryResponseV2[]>> {
 		const labelIdsNumber = labelIds && labelIds.length > 0 ? labelIds.map((id) => this.idHasher.decode(id)) : [];
 
@@ -251,6 +253,7 @@ export class TimeslotsControllerV2 extends Controller {
 			serviceProviderIds: unsignedServiceProviderId ? [unsignedServiceProviderId] : undefined,
 			labelIds: labelIdsNumber,
 			filterDaysInAdvance: true,
+			labelOperationFiltering,
 		});
 
 		if (exactTimeslot) {
@@ -295,7 +298,7 @@ export class TimeslotsControllerV2 extends Controller {
 		@Query() startDate: Date,
 		@Query() endDate: Date,
 		@Header('x-api-service') serviceId: string,
-		@Query() serviceProviderIds?: string[],
+		@Query() serviceProviderIds: string[] = [],
 	): Promise<ApiData<AvailabilityByDayResponse[]>> {
 		if (DateHelper.DiffInDays(endDate, startDate) > this.MAX_NUMBER_OF_DAYS_TO_FETCH_TIMESLOT) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Date Range cannot be more than 31 days');
@@ -344,7 +347,7 @@ export class TimeslotsControllerV2 extends Controller {
 		@Query() endDate: Date,
 		@Header('x-api-service') serviceId: string,
 		@Query() includeBookings = false,
-		@Query() serviceProviderIds?: string[],
+		@Query() serviceProviderIds: string[] = [],
 		@Query() labelIds?: string[],
 	): Promise<ApiData<TimeslotEntryResponseV2[]>> {
 		const labelIdsNumber = labelIds && labelIds.length > 0 ? labelIds.map((id) => this.idHasher.decode(id)) : [];

@@ -15,3 +15,4 @@ import './components/unavailabilities/unavailabilities.controller';
 import './components/oneOffTimeslots/oneOffTimeslots.controller';
 import './components/dynamicFields/dynamicFields.controller';
 import './components/otp/otp.controller';
+import './components/events/events.controller';

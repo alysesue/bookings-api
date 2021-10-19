@@ -1,9 +1,10 @@
-import { Body, Controller, Header, Post, Response, Route, SuccessResponse, Tags } from 'tsoa';
+import { Body, Controller, Get, Header, Post, Query, Response, Route, SuccessResponse, Tags } from 'tsoa';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { EncryptionService } from './encryption.service';
 import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth';
+import { IdHasher } from '../../infrastructure/idHasher';
 
 @InRequestScope
 @Route('v1/encryption')
@@ -11,6 +12,8 @@ import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth';
 export class EncryptionController extends Controller {
 	@Inject
 	private encryptionService: EncryptionService;
+	@Inject
+	private idHasher: IdHasher;
 
 	/**
 	 * Encrypt the body
@@ -42,5 +45,17 @@ export class EncryptionController extends Controller {
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async decrypt(@Body() request: { data: string }): Promise<ApiData<string>> {
 		return ApiDataFactory.create(await this.encryptionService.decrypt(request.data));
+	}
+
+	/**
+	 * Hash ID
+	 *
+	 * @param request
+	 */
+	@Get('hashid')
+	@BookingSGAuth({ bypassAuth: true })
+	@SuccessResponse(200, 'Ok')
+	public async hashid(@Query() id: number): Promise<ApiData<string>> {
+		return ApiDataFactory.create(this.idHasher.encode(id));
 	}
 }

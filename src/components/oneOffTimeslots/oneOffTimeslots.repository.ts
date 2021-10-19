@@ -15,8 +15,11 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 	constructor() {
 		super(OneOffTimeslot);
 	}
+	public async create(data: OneOffTimeslot[]): Promise<OneOffTimeslot[]> {
+		return (await this.getRepository()).create(data);
+	}
 
-	public async save(data: OneOffTimeslot): Promise<OneOffTimeslot> {
+	public async save(data: OneOffTimeslot[]): Promise<OneOffTimeslot[]> {
 		if (!data) return null;
 		const repository = await this.getRepository();
 		return await repository.save(data);
@@ -27,12 +30,9 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 		queryParams: {},
 		options: {
 			byPassAuth?: boolean;
-			queryORFilters?: string[];
-			queryORParams?: {};
 		},
 	): Promise<SelectQueryBuilder<OneOffTimeslot>> {
 		const authGroups = await this.userContext.getAuthGroups();
-		const { queryORFilters = [], queryORParams = {} } = options;
 		const { userCondition, userParams } = options.byPassAuth
 			? { userCondition: '', userParams: {} }
 			: await new OneOffTimeslotsQueryAuthVisitor('serviceProvider', 'SPservice').createUserVisibilityCondition(
@@ -40,16 +40,14 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 			  );
 		const repository = await this.getRepository();
 
-		let whereConditions = andWhere([userCondition, ...queryFilters]);
-		whereConditions += orWhere(queryORFilters).length ? ' AND ' + orWhere(queryORFilters) : '';
-		const whereParam = { ...userParams, ...queryParams, ...queryORParams };
+		const whereConditions = andWhere([userCondition, ...queryFilters]);
+		const whereParam = { ...userParams, ...queryParams };
 
 		return repository
 			.createQueryBuilder('timeslot')
 			.where(whereConditions, whereParam)
 			.leftJoin('timeslot._serviceProvider', 'serviceProvider')
-			.leftJoin('serviceProvider._service', 'SPservice')
-			.leftJoinAndSelect('timeslot._labels', 'label');
+			.leftJoin('serviceProvider._service', 'SPservice');
 	}
 
 	public async getById(request: { id: number; byPassAuth?: boolean }): Promise<OneOffTimeslot> {
@@ -82,6 +80,7 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 			serviceProviderIds && serviceProviderIds.length > 0
 				? 'timeslot."_serviceProviderId" IN (:...serviceProviderIds)'
 				: '';
+
 		const startDateCondition = startDateTime ? 'timeslot."_endDateTime" > :startDateTime' : '';
 		const endDateCondition = endDateTime ? 'timeslot."_startDateTime" < :endDateTime' : '';
 		const labelsCondition =
@@ -96,30 +95,25 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 		if (labelIds && labelIds.length > 0) {
 			labelIds.forEach((labelId, index) => (labelsParam[`label_${index}`] = labelId));
 		}
-		let labelsANDConditions = [];
-		let labelsORConditions = [];
-		let labelsORParams = {};
-		let labelsANDParams = {};
 
+		let labelsConditionsString;
 		if (labelOperationFiltering === LabelOperationFiltering.UNION) {
-			labelsORConditions = labelsCondition;
-			labelsORParams = labelsParam;
+			labelsConditionsString = labelsCondition.length ? orWhere(labelsCondition) : '';
 		} else {
-			labelsANDConditions = labelsCondition;
-			labelsANDParams = labelsParam;
+			labelsConditionsString = labelsCondition.length ? andWhere(labelsCondition) : '';
 		}
 
 		const query = await this.createSelectQuery(
-			[serviceCondition, spCondition, startDateCondition, endDateCondition, ...labelsANDConditions],
-			{ serviceId, serviceProviderIds, startDateTime, endDateTime, ...labelsANDParams },
-			{ ...request, queryORFilters: labelsORConditions, queryORParams: labelsORParams },
+			[serviceCondition, spCondition, startDateCondition, endDateCondition, labelsConditionsString],
+			{ serviceId, serviceProviderIds, startDateTime, endDateTime, ...labelsParam },
+			{ ...request },
 		);
 
 		return await query.getMany();
 	}
 
-	public async delete(timeslot: OneOffTimeslot): Promise<void> {
+	public async delete(timeslots: OneOffTimeslot[]): Promise<void> {
 		const repository = await this.getRepository();
-		await repository.delete(timeslot.id);
+		await timeslots.map((slot) => repository.delete(slot.id));
 	}
 }

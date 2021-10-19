@@ -7,6 +7,9 @@ import { ScheduleForm } from './scheduleForm';
 import { Label } from './label';
 import { LabelCategory } from './labelCategory';
 import { DateHelper } from '../../infrastructure/dateHelper';
+import { CitizenAuthenticationType } from '../citizenAuthenticationType';
+
+const DEFAULT_CITIZEN_AUTH = [CitizenAuthenticationType.Singpass];
 
 @Entity()
 @Index(['_organisationId', '_name'], { unique: true })
@@ -133,6 +136,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 
 		service.labels = labels;
 		service.categories = categories;
+		service.citizenAuthentication = DEFAULT_CITIZEN_AUTH;
 
 		return service;
 	}
@@ -141,15 +145,25 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._name.toLowerCase().replace(/ /g, '');
 	}
 
-	@Column({ type: 'boolean', default: false })
-	private _allowAnonymousBookings: boolean;
+	@Column({
+		type: 'enum',
+		enum: CitizenAuthenticationType,
+		array: true,
+		default: DEFAULT_CITIZEN_AUTH,
+		nullable: false,
+	})
+	private _citizenAuthentication: CitizenAuthenticationType[];
 
-	public set allowAnonymousBookings(value: boolean) {
-		this._allowAnonymousBookings = value;
+	public get citizenAuthentication(): CitizenAuthenticationType[] {
+		return this._citizenAuthentication;
 	}
 
-	public get allowAnonymousBookings(): boolean {
-		return this._allowAnonymousBookings;
+	public set citizenAuthentication(value: CitizenAuthenticationType[]) {
+		this._citizenAuthentication = value;
+	}
+
+	public hasCitizenAuthentication(auth: CitizenAuthenticationType): boolean {
+		return !!this._citizenAuthentication?.some((e) => e === auth);
 	}
 
 	@Column({ nullable: false, default: false })

@@ -2,7 +2,15 @@ import { isDateTime, isEmail, isSGPhoneNumber } from 'mol-lib-api-contract/utils
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { cloneDeep } from 'lodash';
-import { Organisation, ScheduleForm, ServiceProvider, TimeOfDay, TimeslotItem, TimeslotsSchedule } from '../../models';
+import {
+	Organisation,
+	ScheduleForm,
+	ServiceProvider,
+	ServiceProviderLabel,
+	TimeOfDay,
+	TimeslotItem,
+	TimeslotsSchedule,
+} from '../../models';
 import { ScheduleFormsService } from '../scheduleForms/scheduleForms.service';
 import { TimeslotItemRequest } from '../timeslotItems/timeslotItems.apicontract';
 import { ServicesService } from '../services/services.service';
@@ -23,6 +31,10 @@ import {
 } from './serviceProviders.apicontract';
 import { ServiceProvidersRepository } from './serviceProviders.repository';
 import { DateHelper } from '../../infrastructure/dateHelper';
+import { IPagedEntities } from '../../core/pagedEntities';
+import { OrganisationsNoauthRepository } from '../organisations/organisations.noauth.repository';
+import { OrganisationSettingsService } from '../organisations/organisations.settings.service';
+import { SPLabelsCategoriesService } from '../serviceProvidersLabels/serviceProvidersLabels.service';
 
 const DEFAULT_PHONE_NUMBER = '+6580000000';
 
@@ -30,30 +42,28 @@ const DEFAULT_PHONE_NUMBER = '+6580000000';
 export class ServiceProvidersService {
 	@Inject
 	public serviceProvidersRepository: ServiceProvidersRepository;
-
+	@Inject
+	public organisationsNoauthRepository: OrganisationsNoauthRepository;
 	@Inject
 	private schedulesService: ScheduleFormsService;
-
 	@Inject
 	private timeslotItemsService: TimeslotItemsService;
-
 	@Inject
 	private servicesService: ServicesService;
-
 	@Inject
 	private mapper: ServiceProvidersMapper;
-
 	@Inject
 	private timeslotsService: TimeslotsService;
-
 	@Inject
 	private scheduleFormsService: ScheduleFormsService;
-
 	@Inject
 	private userContext: UserContext;
-
 	@Inject
 	private molUsersService: MolUsersService;
+	@Inject
+	private organisationSettingsService: OrganisationSettingsService;
+	@Inject
+	private spLabelsCategoriesService: SPLabelsCategoriesService;
 
 	private static async validateServiceProvider(sp: ServiceProviderModel): Promise<string[]> {
 		const errors: string[] = [];
@@ -89,19 +99,32 @@ export class ServiceProvidersService {
 		});
 	}
 
-	public async getServiceProviders(
-		serviceId?: number,
-		includeScheduleForm = false,
-		includeTimeslotsSchedule = false,
-		limit?: number,
-		pageNumber?: number,
-	): Promise<ServiceProvider[]> {
+	public async getServiceProviders(options: {
+		serviceId?: number;
+		includeScheduleForm?: boolean;
+		includeTimeslotsSchedule?: boolean;
+		limit?: number;
+		pageNumber?: number;
+		ids?: number[];
+		includeLabels?: boolean;
+	}): Promise<ServiceProvider[]> {
+		const {
+			serviceId,
+			includeTimeslotsSchedule = false,
+			includeScheduleForm = false,
+			limit,
+			pageNumber,
+			ids = [],
+			includeLabels = false,
+		} = options;
 		return await this.serviceProvidersRepository.getServiceProviders({
+			ids,
 			serviceId,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
 			limit,
 			pageNumber,
+			includeLabels,
 		});
 	}
 
@@ -117,11 +140,77 @@ export class ServiceProvidersService {
 		});
 	}
 
+	public async getPagedServiceProviders(
+		from: Date,
+		to: Date,
+		filterDaysInAdvance: boolean,
+		includeTimeslotsSchedule = false,
+		includeScheduleForm = false,
+		limit?: number,
+		page?: number,
+		serviceId?: number,
+		includeLabels = false,
+	): Promise<IPagedEntities<ServiceProvider>> {
+		let result: ServiceProvider[] = [];
+		if (from && to && from < to) {
+			if (serviceId) {
+				result = await this.getAvailableServiceProviders(
+					from,
+					to,
+					filterDaysInAdvance,
+					serviceId,
+					includeLabels,
+				);
+			} else {
+				const servicesList = await this.servicesService.getServices();
+				for (const service of servicesList) {
+					result.push(
+						...(await this.getAvailableServiceProviders(
+							from,
+							to,
+							filterDaysInAdvance,
+							service.id,
+							includeLabels,
+						)),
+					);
+				}
+			}
+		} else {
+			result = await this.getServiceProviders({
+				serviceId,
+				includeScheduleForm,
+				includeTimeslotsSchedule,
+				includeLabels,
+			});
+		}
+		const resultLength = result.length;
+		result.sort((a, b) => {
+			return a.id - b.id;
+		});
+		let culledResult = result;
+		if (limit) {
+			culledResult = result.splice((page - 1) * limit, limit);
+		}
+		const maxPage = Math.ceil(result.length / limit);
+
+		const response: IPagedEntities<ServiceProvider> = {
+			entries: culledResult,
+			page,
+			limit,
+			total: resultLength,
+			maxId: undefined,
+			outdatedMaxId: undefined,
+			hasMore: maxPage > page,
+		};
+		return response;
+	}
+
 	public async getAvailableServiceProviders(
 		from: Date,
 		to: Date,
 		filterDaysInAdvance: boolean,
 		serviceId?: number,
+		includeLabels?: boolean,
 	): Promise<ServiceProvider[]> {
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots({
 			startDateTime: from,
@@ -129,6 +218,7 @@ export class ServiceProvidersService {
 			serviceId,
 			includeBookings: false,
 			filterDaysInAdvance,
+			includeLabels,
 		});
 
 		const availableServiceProviders = new Set<ServiceProvider>();
@@ -147,11 +237,13 @@ export class ServiceProvidersService {
 		id: number,
 		includeScheduleForm = false,
 		includeTimeslotsSchedule = false,
+		includeLabels = false,
 	): Promise<ServiceProvider> {
 		const sp = await this.serviceProvidersRepository.getServiceProvider({
 			id,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
+			includeLabels,
 		});
 		if (!sp) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Service provider with id ${id} not found`);
@@ -272,17 +364,33 @@ export class ServiceProvidersService {
 		if (request.expiryDate) await this.verifyActionPermission(serviceProvider, SpAction.UpdateExpiryDate);
 
 		await ServiceProvidersService.validateServiceProviders([request]);
-		const updatedServiceProvider = this.mapper.mapServiceProviderModelToEntity(request, serviceProvider);
+
+		const spLabels = await this.fetchDependencies(serviceProvider.service.organisationId, request);
+		const updatedServiceProvider = this.mapper.mapServiceProviderModelToEntity(request, serviceProvider, spLabels);
 		return await this.serviceProvidersRepository.save(updatedServiceProvider);
 	}
 
+	private async fetchDependencies(orgId: number, request: ServiceProviderModel): Promise<ServiceProviderLabel[]> {
+		const organisation = await this.organisationSettingsService.getOrgSettings(orgId);
+		return await this.spLabelsCategoriesService.verifySPLabels(request.labelIds, organisation);
+	}
+
 	public async setProvidersScheduleForm(orgaId: number, request: ScheduleFormRequest): Promise<ServiceProvider[]> {
+		const organisation = await this.organisationsNoauthRepository.getOrganisationById(orgaId);
+		if (!organisation) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage('Organisation not found');
+		}
+
 		this.verifyScheduleDates(request);
 		if (request.startDate && request.endDate) {
 			request.startDate = DateHelper.getDateOnly(request.startDate);
 			request.endDate = DateHelper.getDateOnly(request.endDate);
 		}
 		const serviceProviders = await this.serviceProvidersRepository.getServiceProviders({ organisationId: orgaId });
+		if (serviceProviders.length === 0) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage('No service providers found');
+		}
+
 		const serviceProvidersRes = [];
 
 		const filteredServiceProviders = this.getFilteredServiceProvidersByEmail(request, serviceProviders);

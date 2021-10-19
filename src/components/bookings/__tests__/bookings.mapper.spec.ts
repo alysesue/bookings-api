@@ -1,4 +1,5 @@
 import {
+	BookedSlot,
 	Booking,
 	BookingChangeLog,
 	BusinessValidation,
@@ -77,10 +78,16 @@ describe('Bookings mapper tests', () => {
 	const getFullBookingInformation = () => {
 		const booking = new Booking();
 		const service = new Service();
+		const serviceProvider = new ServiceProvider();
+		const bookedSlot = new BookedSlot();
+		bookedSlot.startDateTime = new Date(2021, 2, 1);
+		bookedSlot.endDateTime = new Date(2021, 2, 1);
+		bookedSlot.serviceProviderId = serviceProvider.id;
+		const bookedSlots = [];
+		bookedSlots.push(bookedSlot);
 		service.id = 1;
 		service.name = `armin service`;
 		service.organisation = organisation;
-		const serviceProvider = new ServiceProvider();
 		serviceProvider.name = `armin`;
 		serviceProvider.email = `armin-sp@gmail.com`;
 		serviceProvider.phone = `81181188`;
@@ -92,6 +99,7 @@ describe('Bookings mapper tests', () => {
 		booking.createdLog = createdLog;
 		booking.startDateTime = new Date(2021, 2, 1);
 		booking.endDateTime = new Date(2021, 2, 1);
+		booking.bookedSlots = bookedSlots;
 		booking.location = `somewhere`;
 		booking.description = `description`;
 		booking.refId = `123`;
@@ -168,6 +176,7 @@ describe('Bookings mapper tests', () => {
 				_serviceProviderId: 100,
 				_status: 1,
 				_version: 1,
+				bookedSlots: [],
 			},
 		]);
 	});
@@ -230,6 +239,7 @@ describe('Bookings mapper tests', () => {
 				_serviceProviderId: 100,
 				_status: 1,
 				_version: 1,
+				bookedSlots: [],
 			},
 		]);
 	});

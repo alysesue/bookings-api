@@ -1,6 +1,8 @@
 import { Container } from 'typescript-ioc';
 import { EncryptionService } from '../encryption.service';
 import { EncryptionController } from '../encryption.controller';
+import { IdHasher } from '../../../infrastructure/idHasher';
+import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -10,6 +12,7 @@ afterAll(() => {
 describe('Encryption.Controller', () => {
 	beforeEach(() => {
 		Container.bind(EncryptionService).to(EncryptionServiceMock);
+		Container.bind(IdHasher).to(IdHasherMock);
 	});
 
 	beforeEach(() => {
@@ -27,6 +30,12 @@ describe('Encryption.Controller', () => {
 		const controller = Container.get(EncryptionController);
 		await controller.decrypt({ data: 'ss' });
 		expect(ServiceProvidersMock.decrypt).toHaveBeenCalled();
+	});
+
+	it('should call hashid service', async () => {
+		const controller = Container.get(EncryptionController);
+		await controller.hashid(1);
+		expect(IdHasherMock.encode).toHaveBeenCalled();
 	});
 });
 

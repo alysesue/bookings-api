@@ -1,9 +1,20 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+	Column,
+	Entity,
+	Index,
+	JoinColumn,
+	JoinTable,
+	ManyToMany,
+	ManyToOne,
+	OneToOne,
+	PrimaryGeneratedColumn,
+} from 'typeorm';
 import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IServiceProvider } from '../interfaces';
 import { Service } from './service';
 import { ServiceProviderGroupMap } from './serviceProviderGroupMap';
 import { ScheduleForm } from './scheduleForm';
 import { TimeslotsSchedule } from './timeslotsSchedule';
+import { ServiceProviderLabel } from './serviceProviderLabel';
 
 const DEFAULT_AUTO_ACCEPT_BOOKINGS = true;
 const DEFAULT_SCHEDULE_FORM_CONFIRMED = false;
@@ -118,6 +129,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		autoAcceptBookings = DEFAULT_AUTO_ACCEPT_BOOKINGS,
 		description?: string,
 		aliasName?: string,
+		labels?: ServiceProviderLabel[],
 	) {
 		const instance = new ServiceProvider();
 		instance._serviceId = serviceId;
@@ -130,6 +142,7 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 		instance._scheduleFormConfirmed = DEFAULT_SCHEDULE_FORM_CONFIRMED;
 		instance._description = description;
 		instance._aliasName = aliasName;
+		instance._labels = labels;
 		return instance;
 	}
 
@@ -248,5 +261,25 @@ export class ServiceProvider implements IServiceProvider, IEntityWithScheduleFor
 
 	public set aliasName(value: string) {
 		this._aliasName = value;
+	}
+
+	@ManyToMany(() => ServiceProviderLabel, { cascade: true })
+	@JoinTable({
+		name: 'serviceprovider_label',
+		joinColumn: { name: 'serviceProvider_id' },
+		inverseJoinColumn: { name: 'label_id' },
+	})
+	private _labels: ServiceProviderLabel[];
+
+	public set labels(value: ServiceProviderLabel[]) {
+		this._labels = value;
+	}
+
+	public get labels(): ServiceProviderLabel[] {
+		return this._labels;
+	}
+
+	public get serviceProviderId(): number {
+		return this._id;
 	}
 }

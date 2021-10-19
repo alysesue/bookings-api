@@ -1,13 +1,18 @@
 import { Container } from 'typescript-ioc';
 import { ServicesMapper } from '../services.mapper';
-import { Service } from '../../../models/entities';
+import { Organisation, Service } from '../../../models/entities';
 import { LabelsMapper } from '../../labels/labels.mapper';
 import { LabelResponseModel } from '../../labels/label.apicontract';
 import { AdditionalSettings, ServiceRequestV1 } from '../service.apicontract';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { IdHasher } from '../../../infrastructure/idHasher';
+import { CitizenAuthenticationType } from '../../../models/citizenAuthenticationType';
 
 describe('service/services.mapper', () => {
+	const organisation = new Organisation();
+	organisation.id = 2;
+	organisation.name = 'org';
+
 	beforeAll(() => {
 		Container.bind(LabelsMapper).to(LabelsMapperMock);
 		Container.bind(IdHasher).to(IdHasherMock);
@@ -26,7 +31,7 @@ describe('service/services.mapper', () => {
 		expect(serviceResponse).toEqual({
 			id: 1,
 			name: 'name',
-			additionalSettings: {},
+			additionalSettings: { allowAnonymousBookings: false },
 			categories: [],
 			labels: [],
 		});
@@ -42,12 +47,13 @@ describe('service/services.mapper', () => {
 
 		IdHasherMock.encode.mockImplementation(() => serviceData.id.toString());
 
-		const serviceResponse = serviceMapper.mapToServiceResponseV2(serviceData);
+		const serviceResponse = serviceMapper.mapToServiceResponseV2(serviceData, true);
 
 		expect(serviceResponse).toEqual({
 			id: '1',
+			orgId: '1',
 			name: 'name',
-			additionalSettings: {},
+			additionalSettings: { allowAnonymousBookings: false },
 			categories: [],
 			labels: [],
 		});
@@ -55,11 +61,11 @@ describe('service/services.mapper', () => {
 
 	it('should map service data to response V1', () => {
 		const serviceMapper = Container.get(ServicesMapper);
-		const serviceData = new Service();
+		const serviceData = Service.create('name', organisation);
 		serviceData.id = 1;
 		serviceData.name = 'name';
 		serviceData.emailSuffix = 'abc.com';
-		serviceData.allowAnonymousBookings = true;
+		serviceData.citizenAuthentication = [CitizenAuthenticationType.Otp];
 		serviceData.isOnHold = false;
 		serviceData.isStandAlone = true;
 		serviceData.sendNotifications = true;
@@ -83,6 +89,7 @@ describe('service/services.mapper', () => {
 		expect(serviceResponse).toEqual({
 			additionalSettings: {
 				allowAnonymousBookings: true,
+				citizenAuthentication: ['otp'],
 				isOnHold: false,
 				isStandAlone: true,
 				sendNotifications: true,
@@ -111,11 +118,11 @@ describe('service/services.mapper', () => {
 
 	it('should map service data to response V2', () => {
 		const serviceMapper = Container.get(ServicesMapper);
-		const serviceData = new Service();
+		const serviceData = Service.create('name', organisation);
 		serviceData.id = 1;
 		serviceData.name = 'name';
 		serviceData.emailSuffix = 'abc.com';
-		serviceData.allowAnonymousBookings = true;
+		serviceData.citizenAuthentication = [CitizenAuthenticationType.Singpass];
 		serviceData.isOnHold = false;
 		serviceData.isStandAlone = true;
 		serviceData.sendNotifications = true;
@@ -140,7 +147,8 @@ describe('service/services.mapper', () => {
 
 		expect(serviceResponse).toEqual({
 			additionalSettings: {
-				allowAnonymousBookings: true,
+				allowAnonymousBookings: false,
+				citizenAuthentication: ['singpass'],
 				isOnHold: false,
 				isStandAlone: true,
 				sendNotifications: true,
@@ -196,7 +204,7 @@ describe('service/services.mapper', () => {
 		servicesMapper.mapToEntityV1(serviceData, serviceRequest);
 		expect(serviceData.name).toBe('name');
 		expect(serviceData.emailSuffix).toBe('abc.com');
-		expect(serviceData.allowAnonymousBookings).toBe(true);
+		expect(serviceData.citizenAuthentication).toEqual(['otp']);
 		expect(serviceData.isOnHold).toBe(false);
 		expect(serviceData.isStandAlone).toBe(true);
 		expect(serviceData.sendNotifications).toBe(true);
@@ -224,13 +232,71 @@ describe('service/services.mapper', () => {
 		servicesMapper.mapToEntityV1(serviceData, serviceRequest);
 		expect(serviceData.name).toBe('name');
 		expect(serviceData.emailSuffix).toBe('abc.com');
-		expect(serviceData.allowAnonymousBookings).toBe(true);
+		expect(serviceData.citizenAuthentication).toEqual(['otp']);
 		expect(serviceData.isOnHold).toBe(false);
 		expect(serviceData.isStandAlone).toBe(true);
 		expect(serviceData.sendNotifications).toBe(true);
 		expect(serviceData.sendNotificationsToServiceProviders).toBe(false);
 		expect(serviceData.minDaysInAdvance).toBe(10);
 		expect(serviceData.maxDaysInAdvance).toBe(60);
+	});
+
+	it('should remove OTP setting when mapping - additional settings', () => {
+		const serviceData = new Service();
+		serviceData.citizenAuthentication = [CitizenAuthenticationType.Singpass, CitizenAuthenticationType.Otp];
+
+		const serviceRequest = new ServiceRequestV1();
+		serviceRequest.name = 'name';
+		serviceRequest.additionalSettings = new AdditionalSettings();
+		serviceRequest.additionalSettings.allowAnonymousBookings = false;
+
+		const servicesMapper = Container.get(ServicesMapper);
+		servicesMapper.mapToEntityV1(serviceData, serviceRequest);
+
+		expect(serviceData.citizenAuthentication).toEqual(['singpass']);
+	});
+
+	it('(2) should not change OTP setting when undefined - additional settings', () => {
+		const serviceData = new Service();
+
+		const serviceRequest = new ServiceRequestV1();
+		serviceRequest.name = 'name';
+		serviceRequest.additionalSettings = new AdditionalSettings();
+		serviceRequest.additionalSettings.allowAnonymousBookings = false;
+
+		const servicesMapper = Container.get(ServicesMapper);
+		servicesMapper.mapToEntityV1(serviceData, serviceRequest);
+
+		expect(serviceData.citizenAuthentication).toEqual(undefined);
+	});
+
+	it('should add OTP setting when mapping - additional settings', () => {
+		const serviceData = new Service();
+		serviceData.citizenAuthentication = [CitizenAuthenticationType.Singpass];
+
+		const serviceRequest = new ServiceRequestV1();
+		serviceRequest.name = 'name';
+		serviceRequest.additionalSettings = new AdditionalSettings();
+		serviceRequest.additionalSettings.allowAnonymousBookings = true;
+
+		const servicesMapper = Container.get(ServicesMapper);
+		servicesMapper.mapToEntityV1(serviceData, serviceRequest);
+
+		expect(serviceData.citizenAuthentication).toEqual(['singpass', 'otp']);
+	});
+
+	it('(2) should add OTP setting when mapping - additional settings', () => {
+		const serviceData = new Service();
+
+		const serviceRequest = new ServiceRequestV1();
+		serviceRequest.name = 'name';
+		serviceRequest.additionalSettings = new AdditionalSettings();
+		serviceRequest.additionalSettings.allowAnonymousBookings = true;
+
+		const servicesMapper = Container.get(ServicesMapper);
+		servicesMapper.mapToEntityV1(serviceData, serviceRequest);
+
+		expect(serviceData.citizenAuthentication).toEqual(['otp']);
 	});
 });
 

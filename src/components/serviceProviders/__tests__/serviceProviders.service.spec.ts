@@ -8,6 +8,7 @@ import {
 	ScheduleForm,
 	Service,
 	ServiceProvider,
+	ServiceProviderLabel,
 	TimeOfDay,
 	TimeslotItem,
 	TimeslotsSchedule,
@@ -47,6 +48,10 @@ import { TimeslotItemsServiceMock } from '../../timeslotItems/__mocks__/timeslot
 import { ScheduleFormsServiceMock } from '../../scheduleForms/__mocks__/scheduleForms.service.mock';
 import { TimeslotsScheduleRepositoryMock } from '../../timeslotsSchedules/__mocks__/timeslotsSchedule.repository.mock';
 import { OrganisationsRepositoryMock } from '../../organisations/__mocks__/organisations.noauth.repository.mock';
+import { OrganisationSettingsService } from '../../../components/organisations/organisations.settings.service';
+import { OrganisationSettingsServiceMock } from '../../../components/organisations/__mocks__/organisations.settings.service.mock';
+import { SPLabelsCategoriesService } from '../../../components/serviceProvidersLabels/serviceProvidersLabels.service';
+import { SPLabelsCategoriesServiceMock } from '../../../components/serviceProvidersLabels/__mock__/serviceProvidersLabels.service.mock';
 
 afterAll(() => {
 	jest.resetAllMocks();
@@ -109,6 +114,8 @@ describe('ServiceProviders.Service', () => {
 		Container.bind(UsersService).to(UsersServiceMock);
 		Container.bind(MolUsersService).to(MolUsersServiceMock);
 		Container.bind(OrganisationsNoauthRepository).to(OrganisationsRepositoryMock);
+		Container.bind(OrganisationSettingsService).to(OrganisationSettingsServiceMock);
+		Container.bind(SPLabelsCategoriesService).to(SPLabelsCategoriesServiceMock);
 	});
 
 	afterEach(() => {
@@ -143,12 +150,107 @@ describe('ServiceProviders.Service', () => {
 		(ServiceProvidersActionAuthVisitor as jest.Mock).mockImplementation(() => ({
 			hasPermission: jest.fn().mockReturnValue(true),
 		}));
+
+		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(Promise.resolve(new Organisation()));
 	});
 
 	it('should get all service providers', async () => {
 		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([serviceProviderMock]));
-		const result = await Container.get(ServiceProvidersService).getServiceProviders();
+		const result = await Container.get(ServiceProvidersService).getServiceProviders({});
 		expect(result.length).toBe(1);
+	});
+
+	it('should get service providers', async () => {
+		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([serviceProviderMock]));
+		const result = await Container.get(ServiceProvidersService).getPagedServiceProviders(
+			undefined,
+			undefined,
+			false,
+			false,
+			false,
+			undefined,
+			undefined,
+			1,
+		);
+		expect(result.entries.length).toBe(1);
+	});
+
+	it('should get service providers with Date and no serviceId', async () => {
+		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
+			const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
+			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
+			entry.endTime = new Date(2020, 8, 26, 8, 30).getTime();
+
+			const serviceProvider1 = ServiceProvider.create('Juku', 1);
+			serviceProvider1.id = 1;
+			const serviceProvider2 = ServiceProvider.create('Andi', 1);
+			serviceProvider2.id = 2;
+
+			entry.addServiceProvider(
+				serviceProvider1,
+				createTimeslot(new Date(entry.startTime), new Date(entry.endTime), 1),
+			);
+			entry.addServiceProvider(
+				serviceProvider2,
+				createTimeslot(new Date(entry.startTime), new Date(entry.endTime), 1),
+			);
+
+			return Promise.resolve([entry]);
+		});
+
+		ServicesServiceMock.getServices.mockReturnValue(Promise.resolve([serviceMockWithTemplate]));
+		const start = new Date('2020-08-25T12:00');
+		const end = new Date('2020-08-26T12:00');
+		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([serviceProviderMock]));
+		const result = await Container.get(ServiceProvidersService).getPagedServiceProviders(
+			start,
+			end,
+			false,
+			false,
+			false,
+			undefined,
+			undefined,
+		);
+		expect(result.entries.length).toBe(2);
+	});
+
+	it('should get service providers with Date', async () => {
+		TimeslotsServiceMock.getAggregatedTimeslots.mockImplementation(() => {
+			const entry = new AvailableTimeslotProviders(new ServiceProvidersLookup());
+			entry.startTime = new Date(2020, 8, 26, 8, 0).getTime();
+			entry.endTime = new Date(2020, 8, 26, 8, 30).getTime();
+
+			const serviceProvider1 = ServiceProvider.create('Juku', 1);
+			serviceProvider1.id = 1;
+			const serviceProvider2 = ServiceProvider.create('Andi', 1);
+			serviceProvider2.id = 2;
+
+			entry.addServiceProvider(
+				serviceProvider1,
+				createTimeslot(new Date(entry.startTime), new Date(entry.endTime), 1),
+			);
+			entry.addServiceProvider(
+				serviceProvider2,
+				createTimeslot(new Date(entry.startTime), new Date(entry.endTime), 1),
+			);
+
+			return Promise.resolve([entry]);
+		});
+
+		const start = new Date('2020-08-25T12:00');
+		const end = new Date('2020-08-26T12:00');
+		ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([serviceProviderMock]));
+		const result = await Container.get(ServiceProvidersService).getPagedServiceProviders(
+			start,
+			end,
+			false,
+			false,
+			false,
+			undefined,
+			undefined,
+			1,
+		);
+		expect(result.entries.length).toBe(2);
 	});
 
 	it('should get service provider by Id', async () => {
@@ -290,6 +392,40 @@ describe('ServiceProviders.Service', () => {
 			expect(errorEnd.code).toBe('SYS_INVALID_PARAM');
 			expect(errorEnd.message).toBe('Both the start date and end date must be selected or empty');
 		});
+
+		it('Set scheduleForm should throw error if organisation does not exist', async () => {
+			OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(Promise.resolve(undefined));
+
+			let error;
+			try {
+				await Container.get(ServiceProvidersService).setProvidersScheduleForm(1, {
+					serviceProvidersEmailList: [],
+					startDate: new Date('2021-07-08'),
+					endDate: new Date('2021-07-09'),
+				} as ScheduleFormRequest);
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error.message).toBe('Organisation not found');
+		});
+
+		it('Set scheduleForm should throw error if no service providers under organisation', async () => {
+			ServiceProvidersRepositoryMock.getServiceProviders.mockReturnValue(Promise.resolve([]));
+
+			let error;
+			try {
+				await Container.get(ServiceProvidersService).setProvidersScheduleForm(1, {
+					serviceProvidersEmailList: [],
+					startDate: new Date('2021-07-08'),
+					endDate: new Date('2021-07-09'),
+				} as ScheduleFormRequest);
+			} catch (e) {
+				error = e;
+			}
+
+			expect(error.message).toBe('No service providers found');
+		});
 	});
 
 	it('Filter service providers without request email inputs', async () => {
@@ -354,12 +490,21 @@ describe('ServiceProviders.Service', () => {
 	});
 
 	it('should update a service provider', async () => {
+		const serviceMock = Service.create('name', organisation);
+		serviceProviderMock.service = serviceMock;
 		serviceProviderMock.service = serviceMockWithTemplate;
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProviderMock;
 		ServiceProvidersRepositoryMock.save.mockImplementation(() => serviceProviderMock);
 		UserContextMock.getAuthGroups.mockReturnValue(
 			Promise.resolve([new OrganisationAdminAuthGroup(adminMock, [organisation])]),
 		);
+		OrganisationSettingsServiceMock.getOrgSettings.mockImplementation(() =>
+			Promise.resolve(Organisation.create('org1')),
+		);
+		SPLabelsCategoriesServiceMock.verifySPLabels.mockImplementation(() =>
+			Promise.resolve([ServiceProviderLabel.create('label')]),
+		);
+
 		await Container.get(ServiceProvidersService).updateSp(serviceProviderModelMock, 1);
 		expect(ServiceProvidersRepositoryMock.save).toBeCalled();
 	});

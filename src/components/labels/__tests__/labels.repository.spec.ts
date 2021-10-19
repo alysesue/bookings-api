@@ -59,41 +59,43 @@ describe('labels/labels.repository', () => {
 		UserContextMock.getAuthGroups.mockReturnValue(Promise.resolve([]));
 	});
 
-	it('should save a label', async () => {
-		const repository = Container.get(LabelsRepository);
-		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(savedLabels));
+	describe('Service Labels Repository', () => {
+		it('should save a label', async () => {
+			const repository = Container.get(LabelsRepository);
+			TransactionManagerMock.save.mockImplementation(() => Promise.resolve(savedLabels));
 
-		const res = await repository.save(labelsToSave);
-		expect(res).toStrictEqual(savedLabels);
-		expect(TransactionManagerMock.save.mock.calls[0][0]).toStrictEqual(labelsToSave);
-	});
+			const res = await repository.save(labelsToSave);
+			expect(res).toStrictEqual(savedLabels);
+			expect(TransactionManagerMock.save.mock.calls[0][0]).toStrictEqual(labelsToSave);
+		});
 
-	it('should get labels', async () => {
-		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
-		const repository = Container.get(LabelsRepository);
-		const result = await repository.find({ serviceIds: [1] });
-		expect(result).toBeDefined();
-		expect(queryBuilderMock.getMany).toBeCalled();
-	});
+		it('should get labels', async () => {
+			TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+			const repository = Container.get(LabelsRepository);
+			const result = await repository.find({ serviceIds: [1] });
+			expect(result).toBeDefined();
+			expect(queryBuilderMock.getMany).toBeCalled();
+		});
 
-	it('should populate for categories', async () => {
-		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
-		const repository = Container.get(LabelsRepository);
-		const labelCategory = new LabelCategory();
-		labelCategory.id = 1;
-		const result = await repository.populateLabelForCategories([labelCategory]);
-		expect(result).toBeDefined();
-		expect(queryBuilderMock.getMany).toBeCalled();
-	});
+		it('should populate for categories', async () => {
+			TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+			const repository = Container.get(LabelsRepository);
+			const labelCategory = new LabelCategory();
+			labelCategory.id = 1;
+			const result = await repository.populateLabelForCategories([labelCategory]);
+			expect(result).toBeDefined();
+			expect(queryBuilderMock.getMany).toBeCalled();
+		});
 
-	it('should populate for service', async () => {
-		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
-		const repository = Container.get(LabelsRepository);
-		const service = new Service();
-		service.id = 1;
-		const result = await repository.populateLabelForService([service]);
-		expect(result).toBeDefined();
-		expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
-		expect(queryBuilderMock.getMany).toBeCalled();
+		it('should populate for service', async () => {
+			TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+			const repository = Container.get(LabelsRepository);
+			const service = new Service();
+			service.id = 1;
+			const result = await repository.populateLabelForService([service]);
+			expect(result).toBeDefined();
+			expect(QueryAuthVisitorMock.createUserVisibilityCondition).toBeCalled();
+			expect(queryBuilderMock.getMany).toBeCalled();
+		});
 	});
 });

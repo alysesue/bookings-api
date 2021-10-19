@@ -4,6 +4,7 @@ import { LabelsRepositoryMock } from '../__mocks__/labels.repository.mock';
 import { Label, Organisation, Service } from '../../../models/entities';
 import { LabelsService } from '../labels.service';
 import { IdHasher } from '../../../infrastructure/idHasher';
+import { ServiceProviderLabelsRepositoryMock } from '../../../components/serviceProvidersLabels/__mock__/serviceProvidersLabels.repository.mock';
 
 describe('Test labels service', () => {
 	beforeAll(() => {
@@ -92,6 +93,24 @@ describe('Test labels service', () => {
 		const resAllLabel = await Container.get(LabelsService).sortLabelForDeleteCategory([label2], [label1, label2]);
 		expect(resAllLabel.deleteLabels).toStrictEqual([label1]);
 		expect(resAllLabel.movedLabelsToNoCategory).toStrictEqual([label2]);
+	});
+
+	describe('delete API', () => {
+		it('delete service label', async () => {
+			const label = Label.create('English', 1);
+			await Container.get(LabelsService).delete([label]);
+			expect(LabelsRepositoryMock.deleteMock).toBeCalledTimes(1);
+			expect(ServiceProviderLabelsRepositoryMock.deleteMock).not.toBeCalled();
+		});
+	});
+
+	describe('update API', () => {
+		it('update service label', async () => {
+			const label = Label.create('English', 1);
+			await Container.get(LabelsService).update([label]);
+			expect(LabelsRepositoryMock.saveMock).toBeCalledTimes(1);
+			expect(ServiceProviderLabelsRepositoryMock.saveMock).not.toBeCalled();
+		});
 	});
 });
 

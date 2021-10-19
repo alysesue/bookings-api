@@ -3,9 +3,11 @@ import { ScheduleForm, ServiceProvider, TimeslotItem, TimeslotsSchedule } from '
 import { ServiceProviderModel } from '../serviceProviders.apicontract';
 import { MolUpsertUsersResult } from '../../users/molUsers/molUsers.apicontract';
 import { TimeslotItemRequest } from '../../timeslotItems/timeslotItems.apicontract';
+import { IPagedEntities } from '../../../core/pagedEntities';
 
 export class ServiceProvidersServiceMock implements Partial<ServiceProvidersService> {
 	public static getServiceProviderMock = jest.fn();
+	public static getPagedServiceProvidersMock = jest.fn();
 	public static getServiceProvidersCountMock = jest.fn();
 	public static getServiceProvidersMock = jest.fn();
 	public static getAvailableServiceProvidersMock = jest.fn<Promise<ServiceProvider[]>, any>();
@@ -20,9 +22,14 @@ export class ServiceProvidersServiceMock implements Partial<ServiceProvidersServ
 	public static createServiceProvidersMock = jest.fn();
 	public static getServiceProvidersByNameMock = jest.fn();
 	public static getFilteredServiceProvidersByEmailMock = jest.fn();
+	public static getServiceProviderLabelsMock = jest.fn<Promise<ServiceProvider>, any>();
+	public static updateServiceProviderLabelsMock = jest.fn<Promise<ServiceProvider>, any>();
 
 	public async getServiceProvider(...params): Promise<ServiceProvider> {
 		return ServiceProvidersServiceMock.getServiceProviderMock(...params);
+	}
+	public async getPagedServiceProviders(...params): Promise<IPagedEntities<ServiceProvider>> {
+		return ServiceProvidersServiceMock.getPagedServiceProvidersMock(...params);
 	}
 	public async createServiceProviders(...params): Promise<MolUpsertUsersResult> {
 		return ServiceProvidersServiceMock.createServiceProvidersMock(...params);
@@ -82,5 +89,13 @@ export class ServiceProvidersServiceMock implements Partial<ServiceProvidersServ
 
 	public getFilteredServiceProvidersByEmail(...params): ServiceProvider[] {
 		return ServiceProvidersServiceMock.getFilteredServiceProvidersByEmailMock(...params);
+	}
+
+	public getServiceProviderLabels(spId: number): Promise<ServiceProvider> {
+		return ServiceProvidersServiceMock.getServiceProviderLabelsMock(spId);
+	}
+
+	public updateServiceProviderLabels(...params): Promise<ServiceProvider> {
+		return ServiceProvidersServiceMock.updateServiceProviderLabelsMock(...params);
 	}
 }

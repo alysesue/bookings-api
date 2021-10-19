@@ -3,9 +3,10 @@ import { Container } from 'typescript-ioc';
 import { OneOffTimeslotsController, OneOffTimeslotsControllerV2 } from '../oneOffTimeslots.controller';
 import { OneOffTimeslotRequestV1, OneOffTimeslotRequestV2 } from '../oneOffTimeslots.apicontract';
 import { OneOffTimeslotsService } from '../oneOffTimeslots.service';
-import { Label, OneOffTimeslot } from '../../../models';
+import { Event, Label, OneOffTimeslot } from '../../../models';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { LabelResponseModel } from '../../../components/labels/label.apicontract';
+import { OneOffTimeslotsServiceMock } from '../__mocks__/oneOffTimeslots.service.mock';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 
 jest.mock('../oneOffTimeslots.service', () => {
@@ -28,28 +29,31 @@ describe('One off timeslots Controller V1', () => {
 		Container.bind(IdHasher).to(IdHasherMock);
 	});
 
-	afterEach(() => {
-		jest.resetAllMocks();
-	});
+	const oneOffTimeslots = new OneOffTimeslot();
+	const event = new Event();
+	oneOffTimeslots.id = 1;
+	oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
+	oneOffTimeslots.endDateTime = new Date('2021-03-02T01:00:00Z');
+	event.capacity = 1;
+	event.labels = [Label.create('Chinese')];
+	event.oneOffTimeslots = [oneOffTimeslots];
+	event.title = 'test title';
+	event.description = 'test description';
 
-	it('should retrieve back labels from oneOffTimeslots', async () => {
-		const oneOffTimeslots = new OneOffTimeslot();
-		oneOffTimeslots.id = 1;
-		oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
-		oneOffTimeslots.endDateTime = new Date('2021-03-02T02:00:00Z');
-		oneOffTimeslots.capacity = 1;
-		oneOffTimeslots.labels = [Label.create('Chinese')];
-		OneOffTimeslotsServiceMock.save.mockReturnValue(Promise.resolve(oneOffTimeslots));
+	const request = new OneOffTimeslotRequestV1();
+	request.startDateTime = new Date('2021-03-02T00:00:00Z');
+	request.endDateTime = DateHelper.addHours(request.startDateTime, 1);
+	request.capacity = 2;
+	request.serviceProviderId = 1;
+
+	beforeEach(() => {
 		IdHasherMock.encode.mockImplementation(() => {
 			return 'A';
 		});
+	});
 
-		const request = new OneOffTimeslotRequestV1();
-		request.startDateTime = new Date('2021-03-02T00:00:00Z');
-		request.endDateTime = DateHelper.addHours(request.startDateTime, 1);
-		request.capacity = 2;
-		request.serviceProviderId = 1;
-
+	it('should retrieve back labels from oneOffTimeslots', async () => {
+		OneOffTimeslotsServiceMock.save.mockReturnValue(Promise.resolve(event));
 		const controller = Container.get(OneOffTimeslotsController);
 		const result = await controller.create(request);
 
@@ -63,22 +67,24 @@ describe('One off timeslots Controller V1', () => {
 		expect(result).toBeDefined();
 		expect(result).toEqual({
 			data: {
-				idSigned: 'A',
-				startDateTime: new Date('2021-03-02T00:00:00.000Z'),
-				endDateTime: new Date('2021-03-02T02:00:00.000Z'),
-				labels: labelResponse,
 				capacity: 1,
+				description: 'test description',
+				endDateTime: new Date('2021-03-02T01:00:00.000Z'),
+				idSigned: 'A',
+				labels: [
+					{
+						id: 'A',
+						label: 'Chinese',
+					},
+				],
+				startDateTime: new Date('2021-03-02T00:00:00.000Z'),
+				title: 'test title',
 			},
 		});
 	});
 
 	it('should save a new one off timeslot availability', async () => {
-		const oneOffTimeslots = new OneOffTimeslot();
-		oneOffTimeslots.id = 1;
-		oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
-		oneOffTimeslots.endDateTime = new Date('2021-03-02T02:00:00Z');
-		oneOffTimeslots.capacity = 1;
-		OneOffTimeslotsServiceMock.save.mockReturnValue(Promise.resolve(oneOffTimeslots));
+		OneOffTimeslotsServiceMock.save.mockReturnValue(Promise.resolve(event));
 		IdHasherMock.encode.mockImplementation(() => {
 			return 'A';
 		});
@@ -97,13 +103,21 @@ describe('One off timeslots Controller V1', () => {
 		expect(result).toEqual({
 			data: {
 				idSigned: 'A',
-				startDateTime: new Date('2021-03-02T00:00:00.000Z'),
-				endDateTime: new Date('2021-03-02T02:00:00.000Z'),
-				labels: [],
+				labels: [
+					{
+						id: 'A',
+						label: 'Chinese',
+					},
+				],
+				startDateTime: new Date('2021-03-02T00:00:00Z'),
+				endDateTime: request.endDateTime,
+				title: 'test title',
 				capacity: 1,
+				description: 'test description',
 			},
 		});
 	});
+
 	it('should delete one off timeslot', async () => {
 		OneOffTimeslotsServiceMock.delete.mockReturnValue(Promise.resolve());
 		IdHasherMock.encode.mockImplementation(() => {
@@ -117,15 +131,7 @@ describe('One off timeslots Controller V1', () => {
 	});
 
 	it('should update oneOffTimeslots', async () => {
-		const oneOffTimeslots = new OneOffTimeslot();
-		oneOffTimeslots.id = 1;
-		oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
-		oneOffTimeslots.endDateTime = new Date('2021-03-02T02:00:00Z');
-		oneOffTimeslots.capacity = 1;
-		oneOffTimeslots.title = 'test title';
-		oneOffTimeslots.description = 'test description';
-
-		OneOffTimeslotsServiceMock.update.mockReturnValue(Promise.resolve(oneOffTimeslots));
+		OneOffTimeslotsServiceMock.update.mockReturnValue(Promise.resolve(event));
 		IdHasherMock.encode.mockImplementation(() => {
 			return 'A';
 		});
@@ -146,9 +152,14 @@ describe('One off timeslots Controller V1', () => {
 			data: {
 				idSigned: 'A',
 				startDateTime: new Date('2021-03-02T00:00:00.000Z'),
-				endDateTime: new Date('2021-03-02T02:00:00.000Z'),
+				endDateTime: new Date('2021-03-02T01:00:00.000Z'),
 				capacity: 1,
-				labels: [],
+				labels: [
+					{
+						id: 'A',
+						label: 'Chinese',
+					},
+				],
 				title: 'test title',
 				description: 'test description',
 			},
@@ -162,18 +173,26 @@ describe('One off timeslots Controller V2', () => {
 		Container.bind(IdHasher).to(IdHasherMock);
 	});
 
+	const oneOffTimeslots = new OneOffTimeslot();
+	const event = new Event();
+
+	beforeEach(() => {
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
+		oneOffTimeslots.endDateTime = new Date('2021-03-02T02:00:00Z');
+		event.capacity = 1;
+		event.labels = [Label.create('Chinese')];
+		event.oneOffTimeslots = [oneOffTimeslots];
+		event.title = 'test title';
+		event.description = 'test description';
+	});
+
 	afterEach(() => {
 		jest.resetAllMocks();
 	});
 
 	it('should retrieve back labels from oneOffTimeslots', async () => {
-		const oneOffTimeslots = new OneOffTimeslot();
-		oneOffTimeslots.id = 1;
-		oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
-		oneOffTimeslots.endDateTime = new Date('2021-03-02T02:00:00Z');
-		oneOffTimeslots.capacity = 1;
-		oneOffTimeslots.labels = [Label.create('Chinese')];
-		OneOffTimeslotsServiceMock.save.mockReturnValue(Promise.resolve(oneOffTimeslots));
+		OneOffTimeslotsServiceMock.save.mockReturnValue(Promise.resolve(event));
 		IdHasherMock.encode.mockImplementation(() => {
 			return 'A';
 		});
@@ -202,17 +221,15 @@ describe('One off timeslots Controller V2', () => {
 				endDateTime: new Date('2021-03-02T02:00:00.000Z'),
 				labels: labelResponse,
 				capacity: 1,
+				description: 'test description',
+				title: 'test title',
 			},
 		});
 	});
 
 	it('should save a new one off timeslot availability', async () => {
-		const oneOffTimeslots = new OneOffTimeslot();
-		oneOffTimeslots.id = 1;
-		oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
-		oneOffTimeslots.endDateTime = new Date('2021-03-02T02:00:00Z');
-		oneOffTimeslots.capacity = 1;
-		OneOffTimeslotsServiceMock.save.mockReturnValue(Promise.resolve(oneOffTimeslots));
+		event.labels = [];
+		OneOffTimeslotsServiceMock.save.mockReturnValue(Promise.resolve(event));
 		IdHasherMock.encode.mockImplementation(() => {
 			return 'A';
 		});
@@ -231,6 +248,8 @@ describe('One off timeslots Controller V2', () => {
 		expect(result).toEqual({
 			data: {
 				idSigned: 'A',
+				description: 'test description',
+				title: 'test title',
 				startDateTime: new Date('2021-03-02T00:00:00.000Z'),
 				endDateTime: new Date('2021-03-02T02:00:00.000Z'),
 				labels: [],
@@ -251,15 +270,8 @@ describe('One off timeslots Controller V2', () => {
 	});
 
 	it('should update oneOffTimeslots', async () => {
-		const oneOffTimeslots = new OneOffTimeslot();
-		oneOffTimeslots.id = 1;
-		oneOffTimeslots.startDateTime = new Date('2021-03-02T00:00:00Z');
-		oneOffTimeslots.endDateTime = new Date('2021-03-02T02:00:00Z');
-		oneOffTimeslots.capacity = 1;
-		oneOffTimeslots.title = 'test title';
-		oneOffTimeslots.description = 'test description';
-
-		OneOffTimeslotsServiceMock.update.mockReturnValue(Promise.resolve(oneOffTimeslots));
+		event.labels = [];
+		OneOffTimeslotsServiceMock.update.mockReturnValue(Promise.resolve(event));
 		IdHasherMock.encode.mockImplementation(() => {
 			return 'A';
 		});
@@ -289,21 +301,3 @@ describe('One off timeslots Controller V2', () => {
 		});
 	});
 });
-
-class OneOffTimeslotsServiceMock implements Partial<OneOffTimeslotsService> {
-	public static save = jest.fn();
-	public static update = jest.fn();
-	public static delete = jest.fn();
-
-	public async save(...params): Promise<any> {
-		return OneOffTimeslotsServiceMock.save(...params);
-	}
-
-	public async update(...params): Promise<any> {
-		return OneOffTimeslotsServiceMock.update(...params);
-	}
-
-	public async delete(...params): Promise<any> {
-		return OneOffTimeslotsServiceMock.delete(...params);
-	}
-}

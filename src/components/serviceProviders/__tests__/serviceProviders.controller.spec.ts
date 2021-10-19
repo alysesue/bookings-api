@@ -1,8 +1,10 @@
 import { Container } from 'typescript-ioc';
 import {
+	Booking,
 	ScheduleForm,
 	Service,
 	ServiceProvider,
+	ServiceProviderLabel,
 	TimeOfDay,
 	TimeslotItem,
 	TimeslotsSchedule,
@@ -18,6 +20,7 @@ import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userCont
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
+import { IPagedEntities } from '../../../core/pagedEntities';
 
 jest.mock('../../services/services.service', () => {
 	class ServicesService {}
@@ -66,7 +69,16 @@ describe('ServiceProviders.Controller.V1', () => {
 	});
 
 	it('should get service providers', async () => {
-		ServiceProvidersServiceMock.getServiceProvidersMock.mockReturnValue([sp1, sp2]);
+		ServiceProvidersServiceMock.getServiceProvidersMock.mockImplementation(() =>
+			Promise.resolve(({
+				entries: [sp1, sp2],
+			} as unknown) as IPagedEntities<Booking>),
+		);
+		ServiceProvidersServiceMock.getPagedServiceProvidersMock.mockImplementation(() =>
+			Promise.resolve(({
+				entries: [sp1, sp2],
+			} as unknown) as IPagedEntities<Booking>),
+		);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders();
 		expect(result.data.length).toBe(2);
@@ -95,11 +107,14 @@ describe('ServiceProviders.Controller.V1', () => {
 		);
 		timeslots.timeslotItems = [timeslotItem];
 		sp1.timeslotsSchedule = timeslots;
-		ServiceProvidersServiceMock.getServiceProvidersMock.mockReturnValue([sp1]);
-
+		ServiceProvidersServiceMock.getPagedServiceProvidersMock.mockImplementation(() =>
+			Promise.resolve(({
+				entries: [sp1, sp2],
+			} as unknown) as IPagedEntities<Booking>),
+		);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders(undefined, true);
-		expect(result.data.length).toBe(1);
+		expect(result.data.length).toBe(2);
 		expect(result.data[0].timeslotsSchedule.timeslots[0].weekDay).toBe(timeslotItem._weekDay);
 	});
 
@@ -351,12 +366,19 @@ describe('ServiceProviders.Controller.V2', () => {
 	});
 
 	it('should get service providers', async () => {
-		ServiceProvidersServiceMock.getServiceProvidersMock.mockReturnValue([sp1, sp2]);
-		const serviceId = '1';
-		const controller = Container.get(ServiceProvidersControllerV2);
-		const result = await controller.getServiceProviders(serviceId);
+		ServiceProvidersServiceMock.getServiceProvidersMock.mockImplementation(() =>
+			Promise.resolve(({
+				entries: [sp1, sp2],
+			} as unknown) as IPagedEntities<Booking>),
+		);
+		ServiceProvidersServiceMock.getPagedServiceProvidersMock.mockImplementation(() =>
+			Promise.resolve(({
+				entries: [sp1, sp2],
+			} as unknown) as IPagedEntities<Booking>),
+		);
+		const controller = Container.get(ServiceProvidersController);
+		const result = await controller.getServiceProviders();
 		expect(result.data.length).toBe(2);
-		expect(ServiceProvidersServiceMock.getServiceProvidersMock).toBeCalledTimes(1);
 	});
 
 	it('should get total service providers', async () => {
@@ -384,26 +406,44 @@ describe('ServiceProviders.Controller.V2', () => {
 		);
 		timeslots.timeslotItems = [timeslotItem];
 		sp1.timeslotsSchedule = timeslots;
-		ServiceProvidersServiceMock.getServiceProvidersMock.mockReturnValue([sp1]);
-
-		const controller = Container.get(ServiceProvidersControllerV2);
+		ServiceProvidersServiceMock.getPagedServiceProvidersMock.mockImplementation(() =>
+			Promise.resolve(({
+				entries: [sp1, sp2],
+			} as unknown) as IPagedEntities<Booking>),
+		);
+		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders(undefined, true);
-		expect(result.data.length).toBe(1);
+		expect(result.data.length).toBe(2);
 		expect(result.data[0].timeslotsSchedule.timeslots[0].weekDay).toBe(timeslotItem._weekDay);
 	});
 
-	it('should get a service provider', async () => {
-		ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(
-			ServiceProvider.create('Monica', 1, null, null, null, null, 'description', 'alias name'),
-		);
-		const serviceId = '1';
+	describe('getServiceProvider API', () => {
+		it('should get a service provider', async () => {
+			ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(
+				ServiceProvider.create('Monica', 1, null, null, null, null, 'description', 'alias name'),
+			);
+			const serviceId = '1';
 
-		const controller = Container.get(ServiceProvidersControllerV2);
-		const result = await controller.getServiceProvider(serviceId);
+			const controller = Container.get(ServiceProvidersControllerV2);
+			const result = await controller.getServiceProvider(serviceId);
 
-		expect(result.data.name).toEqual('Monica');
-		expect(result.data.description).toEqual('description');
-		expect(result.data.aliasName).toEqual('alias name');
+			expect(result.data.name).toEqual('Monica');
+			expect(result.data.description).toEqual('description');
+			expect(result.data.aliasName).toEqual('alias name');
+		});
+
+		it('should get a service provider with labels', async () => {
+			const label = ServiceProviderLabel.create('English');
+			ServiceProvidersServiceMock.getServiceProviderMock.mockReturnValue(
+				ServiceProvider.create('Monica', 1, null, null, null, null, 'description', 'alias name', [label]),
+			);
+			const serviceId = '1';
+
+			const controller = Container.get(ServiceProvidersControllerV2);
+			const result = await controller.getServiceProvider(serviceId);
+
+			expect(result.data.labels[0].name).toEqual(label.labelText);
+		});
 	});
 
 	it('should get provider scheduleForm', async () => {
@@ -508,22 +548,50 @@ describe('ServiceProviders.Controller.V2', () => {
 		expect(ServiceProvidersServiceMock.setProviderScheduleFormMock).toBeCalled();
 	});
 
-	it('should update a service provider', async () => {
-		ServiceProvidersServiceMock.updateServiceProviderMock.mockReturnValue(
-			ServiceProvider.create('Test', 1, 'test@gmail.com', '123', null, null, 'updated desc', 'updated alias'),
-		);
-		const spId = '1';
+	describe('updateServiceProvider API', () => {
+		it('should update a service provider', async () => {
+			ServiceProvidersServiceMock.updateServiceProviderMock.mockReturnValue(
+				ServiceProvider.create('Test', 1, 'test@gmail.com', '123', null, null, 'updated desc', 'updated alias'),
+			);
+			const spId = '1';
 
-		const controller = Container.get(ServiceProvidersControllerV2);
-		const result = await controller.updateServiceProvider(spId, {
-			name: 'Test',
-			email: 'test@gmail.com',
+			const controller = Container.get(ServiceProvidersControllerV2);
+			const result = await controller.updateServiceProvider(spId, {
+				name: 'Test',
+				email: 'test@gmail.com',
+			});
+			expect(ServiceProvidersServiceMock.updateServiceProviderMock).toBeCalled();
+			expect(result.data.email).toEqual('test@gmail.com');
+			expect(result.data.phone).toEqual('123');
+			expect(result.data.description).toEqual('updated desc');
+			expect(result.data.aliasName).toBe('updated alias');
 		});
-		expect(ServiceProvidersServiceMock.updateServiceProviderMock).toBeCalled();
-		expect(result.data.email).toEqual('test@gmail.com');
-		expect(result.data.phone).toEqual('123');
-		expect(result.data.description).toEqual('updated desc');
-		expect(result.data.aliasName).toBe('updated alias');
+
+		it('should update a service provider with labels', async () => {
+			const label = ServiceProviderLabel.create('English');
+			ServiceProvidersServiceMock.updateServiceProviderMock.mockReturnValue(
+				ServiceProvider.create(
+					'Test',
+					1,
+					'test@gmail.com',
+					'123',
+					null,
+					null,
+					'updated desc',
+					'updated alias',
+					[label],
+				),
+			);
+			const spId = '1';
+
+			const controller = Container.get(ServiceProvidersControllerV2);
+			const result = await controller.updateServiceProvider(spId, {
+				name: 'Test',
+				email: 'test@gmail.com',
+			});
+			expect(ServiceProvidersServiceMock.updateServiceProviderMock).toBeCalled();
+			expect(result.data.labels[0].name).toEqual(label.labelText);
+		});
 	});
 
 	it('should set provider schedule timeslots', async () => {

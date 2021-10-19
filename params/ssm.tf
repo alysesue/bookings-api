@@ -327,3 +327,11 @@ resource "aws_ssm_parameter" "sms-enabled" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "hide-events" {
+  name  = "${local.path-prefix}/HIDE_EVENTS"
+  type  = "String"
+  value = "${data.external.static.result.HIDE_EVENTS}"
+
+  overwrite = true
+}
+

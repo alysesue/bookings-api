@@ -18,6 +18,9 @@ import {
 	ServiceProviderEmailTemplateBookingActionByCitizen,
 	ServiceProviderEmailTemplateBookingActionByServiceProvider,
 } from '../templates/serviceProviders.mail';
+import { logger } from 'mol-lib-common';
+import { EmailRecipient } from '../notifications.enum';
+import { MailOptions } from '../notifications.mapper';
 
 const adminMock = User.createAdminUser({
 	molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
@@ -46,34 +49,40 @@ describe('Test template call', () => {
 		EmailBookingTemplateMock.CreatedBookingEmailMock.mockReturnValue(templateValue);
 		EmailBookingTemplateMock.UpdatedBookingEmailMock.mockReturnValue(templateValue);
 		EmailBookingTemplateMock.CancelledBookingEmailMock.mockReturnValue(templateValue);
+		(logger.info as jest.Mock).mockImplementation(() => {});
 
 		booking = new Booking();
 		booking.startDateTime = new Date('2021-04-14T02:00:00.000Z');
 		booking.endDateTime = new Date('2021-04-14T03:00:00.000Z');
 		booking.status = 1;
 		booking.citizenEmail = 'email@email.com';
+		booking.citizenName = 'test info';
 		booking.service = ({
 			_name: 'Career',
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
 		} as unknown) as Service;
-		booking.serviceProvider = { email: 'test' } as ServiceProvider;
+		booking.serviceProvider = { email: 'test', name: 'test sp info' } as ServiceProvider;
 	});
 
 	it('should reject if not email citizen', async () => {
 		booking.citizenEmail = undefined;
 		const bookingSubject = new BookingsSubject();
 		bookingSubject.notify({ booking, bookingType: BookingType.Created });
-		const instance = Container.get(MailObserver).update(bookingSubject);
-		await expect(instance).rejects.toThrowError('Email not found');
+		await Container.get(MailObserver).update(bookingSubject);
+		expect(logger.info as jest.Mock).toBeCalledWith(
+			`Email not sent out for booking id (${booking.id}) as ${EmailRecipient.Citizen} email is not provided`,
+		);
 	});
 
 	it('should reject if not email for service provider', async () => {
 		booking.serviceProvider.email = undefined;
 		const bookingSubject = new BookingsSubject();
 		bookingSubject.notify({ booking, bookingType: BookingType.Created });
-		const instance = Container.get(MailObserver).update(bookingSubject);
-		await expect(instance).rejects.toThrowError('Email not found');
+		await Container.get(MailObserver).update(bookingSubject);
+		expect(logger.info as jest.Mock).toBeCalledWith(
+			`Email not sent out for booking id (${booking.id}) as ${EmailRecipient.ServiceProvider} email is not provided`,
+		);
 	});
 
 	it('should not send if template empty email', async () => {
@@ -85,22 +94,52 @@ describe('Test template call', () => {
 		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(0);
 	});
 
-	it('should send only one if sendNotificationsToServiceProviders = false', async () => {
+	it('should not send if sendNotifications = false, sendNotificationsToServiceProviders = false', async () => {
 		booking.service.sendNotificationsToServiceProviders = false;
-		const bookingSubject = new BookingsSubject();
-		bookingSubject.notify({ booking, bookingType: BookingType.Created });
-		await Container.get(MailObserver).update(bookingSubject);
-		expect(EmailBookingTemplateMock.CreatedBookingEmailMock).toHaveBeenCalledTimes(1);
-		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(1);
-	});
-
-	it('should not send if sendNotifications = false', async () => {
 		booking.service.sendNotifications = false;
 		const bookingSubject = new BookingsSubject();
 		bookingSubject.notify({ booking, bookingType: BookingType.Created });
 		await Container.get(MailObserver).update(bookingSubject);
 		expect(EmailBookingTemplateMock.CreatedBookingEmailMock).toHaveBeenCalledTimes(0);
 		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(0);
+	});
+
+	it('should send two if sendNotifications = true, sendNotificationsToServiceProviders = true', async () => {
+		const bookingSubject = new BookingsSubject();
+		bookingSubject.notify({ booking, bookingType: BookingType.Created });
+		await Container.get(MailObserver).update(bookingSubject);
+		expect(EmailBookingTemplateMock.CreatedBookingEmailMock).toHaveBeenCalledTimes(2);
+		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(2);
+	});
+
+	it('should send only one if sendNotifications = true and sendNotificationsToServiceProviders = false', async () => {
+		booking.service.sendNotificationsToServiceProviders = false;
+		const emailBody = {
+			html: 'html',
+			subject: undefined,
+			to: [booking.citizenEmail],
+		} as MailOptions;
+		const bookingSubject = new BookingsSubject();
+		bookingSubject.notify({ booking, bookingType: BookingType.Created });
+		await Container.get(MailObserver).update(bookingSubject);
+		expect(EmailBookingTemplateMock.CreatedBookingEmailMock).toHaveBeenCalledTimes(1);
+		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(1);
+		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledWith(emailBody);
+	});
+
+	it('should send only one if sendNotifications = false, sendNotificationsToServiceProviders = true', async () => {
+		booking.service.sendNotifications = false;
+		const emailBody = {
+			html: 'html',
+			subject: undefined,
+			to: [booking.serviceProvider.email],
+		} as MailOptions;
+		const bookingSubject = new BookingsSubject();
+		bookingSubject.notify({ booking, bookingType: BookingType.Created });
+		await Container.get(MailObserver).update(bookingSubject);
+		expect(EmailBookingTemplateMock.CreatedBookingEmailMock).toHaveBeenCalledTimes(1);
+		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(1);
+		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledWith(emailBody);
 	});
 
 	it('should send 2 emails with createTemplate when BookingType=Created', async () => {

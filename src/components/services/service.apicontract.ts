@@ -1,3 +1,4 @@
+import { CitizenAuthenticationType } from '../../models/citizenAuthenticationType';
 import { LabelRequestModel, LabelResponseModel } from '../labels/label.apicontract';
 import {
 	LabelCategoryRequestModel,
@@ -38,6 +39,7 @@ export class ServiceResponseV1 extends ServiceResponseBase {
 
 export class ServiceResponseV2 extends ServiceResponseBase {
 	public id: string;
+	public orgId?: string;
 }
 
 export class ServiceRequestBase {
@@ -73,7 +75,11 @@ export class ServiceRequestV2 extends ServiceRequestBase {
 }
 
 export class PartialAdditionalSettings {
+	/**
+	 * @deprecated use citizenAuthentication value
+	 */
 	public allowAnonymousBookings?: boolean;
+	public citizenAuthentication?: CitizenAuthenticationType[];
 	public isOnHold?: boolean;
 	public isStandAlone?: boolean;
 	public sendNotifications?: boolean;
@@ -82,10 +88,27 @@ export class PartialAdditionalSettings {
 }
 
 export class AdditionalSettings {
+	/**
+	 * @deprecated use citizenAuthentication value
+	 */
 	public allowAnonymousBookings: boolean;
+	public citizenAuthentication: CitizenAuthenticationType[];
 	public isOnHold: boolean;
 	public isStandAlone: boolean;
 	public sendNotifications: boolean;
 	public sendNotificationsToServiceProviders: boolean;
 	public sendSMSNotifications: boolean;
+}
+
+export class ServiceSummaryModel {
+	/**
+	 * @isInt
+	 */
+	public id: string;
+	public name: string;
+
+	constructor(id: string, name: string) {
+		this.id = id;
+		this.name = name;
+	}
 }

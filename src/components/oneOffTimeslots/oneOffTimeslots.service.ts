@@ -1,32 +1,29 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { OneOffTimeslot } from '../../models';
+import { Event, OneOffTimeslot, ServiceProvider } from '../../models';
 import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { LabelsService } from '../labels/labels.service';
 import { OneOffTimeslotRequestV1 } from './oneOffTimeslots.apicontract';
-import { OneOffTimeslotsRepository } from './oneOffTimeslots.repository';
 import { OneOffTimeslotsActionAuthVisitor } from './oneOffTimeslots.auth';
 import { OneOffTimeslotsMapper } from './oneOffTimeslots.mapper';
 import { OneOffTimeslotsValidation } from './oneOffTimeslots.validation';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { ContainerContext } from '../../infrastructure/containerContext';
-import { ServicesService } from '../services/services.service';
+import { EventsService } from '../events/events.service';
+import { EventsMapper } from '../events/events.mapper';
 
 @InRequestScope
 export class OneOffTimeslotsService {
 	@Inject
-	private oneOffTimeslotsRepo: OneOffTimeslotsRepository;
+	private eventsService: EventsService;
 	@Inject
 	private serviceProvidersService: ServiceProvidersService;
 	@Inject
-	private servicesService: ServicesService;
-	@Inject
 	private userContext: UserContext;
 	@Inject
-	private labelsService: LabelsService;
+	private oneOffTimeslotsMapper: OneOffTimeslotsMapper;
 	@Inject
-	private mapper: OneOffTimeslotsMapper;
+	private eventsMapper: EventsMapper;
 	@Inject
 	private idHasher: IdHasher;
 	@Inject
@@ -54,53 +51,69 @@ export class OneOffTimeslotsService {
 		return oneOffTimeslot;
 	}
 
-	public async save(request: OneOffTimeslotRequestV1): Promise<OneOffTimeslot> {
+	public async save(request: OneOffTimeslotRequestV1): Promise<Event> {
 		const validator = this.getValidator();
 		await validator.validateOneOffTimeslotsAvailability(request);
-		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
-		const service = await this.servicesService.getService(serviceProvider.serviceId, {
-			includeLabels: true,
-			includeLabelCategories: true,
-		});
-		const labels = await this.labelsService.verifyLabels(request.labelIds, service);
-		const entity = this.mapper.mapToOneOffTimeslots(request, serviceProvider, labels);
-		await validator.validate(entity);
-		await this.verifyActionPermission(entity);
-		await this.oneOffTimeslotsRepo.save(entity);
-		return entity;
+
+		const { serviceProvider } = await this.fetchDependencies(request);
+		let oneOffTimeslots = this.oneOffTimeslotsMapper.mapToOneOffTimeslots(
+			request,
+			new OneOffTimeslot(),
+			serviceProvider,
+		);
+		oneOffTimeslots = this.oneOffTimeslotsMapper.mapDependenciesToOneOffTimeslots(oneOffTimeslots, serviceProvider);
+		const event = this.eventsMapper.mapOneOffTimeslotsRequestToEventOneOffTimeslotRequest(request, oneOffTimeslots);
+		event.serviceId = this.idHasher.encode(serviceProvider.serviceId);
+
+		await this.verifyActionPermission(oneOffTimeslots);
+
+		return this.eventsService.saveOneOffTimeslot(event);
 	}
 
-	public async update(request: OneOffTimeslotRequestV1, idSigned: string): Promise<OneOffTimeslot> {
+	public async update(request: OneOffTimeslotRequestV1, idSigned: string): Promise<Event> {
 		const id = this.idHasher.decode(idSigned);
-		const entity = await this.oneOffTimeslotsRepo.getById({ id });
-		if (!entity) {
+		const event = await this.eventsService.getById(id);
+
+		const validator = this.getValidator();
+		await validator.validateOneOffTimeslotsAvailability(request, event.oneOffTimeslots[0].id);
+
+		if (!event || !event.oneOffTimeslots[0]) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`One off timeslot can't be found`);
 		}
 
-		const validator = this.getValidator();
-		await validator.validateOneOffTimeslotsAvailability(request, id);
-		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
-		const service = await this.servicesService.getService(serviceProvider.serviceId, {
-			includeLabels: true,
-			includeLabelCategories: true,
-		});
-		const labels = await this.labelsService.verifyLabels(request.labelIds, service);
-		this.mapper.updateMapToOneOffTimeslots(request, entity, serviceProvider, labels);
+		let oneOffTimeslots = this.oneOffTimeslotsMapper.mapToOneOffTimeslots(
+			request,
+			event.oneOffTimeslots[0],
+			await this.serviceProvidersService.getServiceProvider(request.serviceProviderId),
+		);
+		const { serviceProvider } = await this.fetchDependencies(request);
+		oneOffTimeslots = this.oneOffTimeslotsMapper.mapDependenciesToOneOffTimeslots(oneOffTimeslots, serviceProvider);
+		const eventRequest = this.eventsMapper.mapOneOffTimeslotsRequestToEventOneOffTimeslotRequest(
+			request,
+			oneOffTimeslots,
+			event,
+		);
+		eventRequest.serviceId = this.idHasher.encode(serviceProvider.serviceId);
 
-		await validator.validate(entity);
-		await this.verifyActionPermission(entity);
-		await this.oneOffTimeslotsRepo.save(entity);
-		return entity;
+		await this.verifyActionPermission(oneOffTimeslots);
+
+		return this.eventsService.updateOneOffTimeslot(eventRequest, event);
 	}
 
 	public async delete(idSigned: string): Promise<void> {
 		const id = this.idHasher.decode(idSigned);
-		const entity = await this.oneOffTimeslotsRepo.getById({ id });
-		if (!entity) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`One off timeslot not found`);
+		const event = await this.eventsService.getById(id);
+		if (!event || !event.oneOffTimeslots[0]) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`One off timeslot can't be found`);
 		}
-		await this.loadOneOffTimeslotDependencies(entity);
-		await this.verifyActionPermission(entity);
-		await this.oneOffTimeslotsRepo.delete(entity);
+
+		await this.loadOneOffTimeslotDependencies(event.oneOffTimeslots[0]);
+		await this.verifyActionPermission(event.oneOffTimeslots[0]);
+		await this.eventsService.delete(event);
+	}
+
+	private async fetchDependencies(request: OneOffTimeslotRequestV1): Promise<{ serviceProvider: ServiceProvider }> {
+		const serviceProvider = await this.serviceProvidersService.getServiceProvider(request.serviceProviderId);
+		return { serviceProvider };
 	}
 }

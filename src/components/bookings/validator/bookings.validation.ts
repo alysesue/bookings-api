@@ -156,6 +156,7 @@ class AdminBookingValidator extends BookingsValidator {
 	private unAvailabilitiesService: UnavailabilitiesService;
 	@Inject
 	private timeslotsService: TimeslotsService;
+
 	protected readonly ServiceProviderRequired: boolean;
 
 	constructor(serviceProviderRequired = true) {

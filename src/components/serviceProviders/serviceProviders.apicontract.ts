@@ -1,5 +1,7 @@
 import { TimeslotsScheduleResponseV1, TimeslotsScheduleResponseV2 } from '../timeslotItems/timeslotItems.apicontract';
 import { ScheduleFormResponseV1, ScheduleFormResponseV2 } from '../scheduleForms/scheduleForms.apicontract';
+import { PagingRequest } from '../../apicontract';
+import { ServiceProviderLabelResponseModel } from '../serviceProvidersLabels/serviceProvidersLabels.apicontract';
 
 export class ServiceProviderModel {
 	public name: string;
@@ -7,7 +9,8 @@ export class ServiceProviderModel {
 	public phone?: string;
 	public expiryDate?: Date | null;
 	public description?: string | null;
-	public aliasName?: string;
+	public aliasName?: string | null;
+	public labelIds?: string[];
 
 	constructor(
 		name: string,
@@ -16,6 +19,7 @@ export class ServiceProviderModel {
 		expiryDate?: Date,
 		description?: string,
 		aliasName?: string,
+		labelIds?: string[],
 	) {
 		this.name = name;
 		this.email = email;
@@ -23,6 +27,7 @@ export class ServiceProviderModel {
 		this.expiryDate = expiryDate;
 		this.description = description;
 		this.aliasName = aliasName;
+		this.labelIds = labelIds;
 	}
 }
 
@@ -75,6 +80,7 @@ export class ServiceProviderResponseModelV2 extends ServiceProviderResponseModel
 	public serviceId: string;
 	public timeslotsSchedule?: TimeslotsScheduleResponseV2;
 	public scheduleForm?: ScheduleFormResponseV2;
+	public labels?: ServiceProviderLabelResponseModel[];
 }
 
 export class ServiceProviderListRequest {
@@ -110,4 +116,10 @@ export class ServiceProviderSummaryModelV2 extends ServiceProviderSummaryModelBa
 		this.id = id;
 		this.name = name;
 	}
+}
+
+export class ServiceProviderSearchRequest extends PagingRequest {
+	public from?: Date;
+	public to?: Date;
+	public serviceId?: number;
 }
