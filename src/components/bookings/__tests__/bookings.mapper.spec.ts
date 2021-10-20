@@ -2,6 +2,7 @@ import {
 	BookedSlot,
 	Booking,
 	BookingChangeLog,
+	BookingStatus,
 	BusinessValidation,
 	Organisation,
 	SelectListDynamicField,
@@ -19,7 +20,6 @@ import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { PersistDynamicValueContract } from '../../dynamicFields/dynamicValues.apicontract';
 import { DynamicFieldsServiceMock } from '../../dynamicFields/__mocks__/dynamicFields.service.mock';
 import { BookingDetailsRequest } from '../bookings.apicontract';
-import { bookingStatusArray } from '../../../models/bookingStatus';
 import { IBookingsValidator } from '../validator/bookings.validation';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { BookingBuilder } from '../../../models/entities/booking';
@@ -404,7 +404,13 @@ describe('Bookings mapper tests', () => {
 		const mapper = Container.get(BookingsMapper);
 		const statuses = mapper.mapStatuses();
 
-		expect(statuses).toEqual(bookingStatusArray.map((value) => value));
+		expect(statuses).toEqual([
+			BookingStatus.PendingApproval,
+			BookingStatus.Accepted,
+			BookingStatus.Cancelled,
+			BookingStatus.Rejected,
+			BookingStatus.PendingApprovalSA,
+		]);
 	});
 
 	it('should map data to csv', async () => {

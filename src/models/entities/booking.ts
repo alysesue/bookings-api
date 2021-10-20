@@ -351,6 +351,10 @@ export class Booking {
 		this._status = autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
 	}
 
+	public setPendingSA(): void {
+		this._status = BookingStatus.PendingApprovalSA;
+	}
+
 	public static createNew({ creator }: { creator: User }): Booking {
 		const instance = new Booking();
 		instance._creator = creator;
