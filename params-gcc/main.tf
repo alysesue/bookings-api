@@ -51,6 +51,8 @@ resource "aws_ssm_parameter" "bookingsg-db_instance" {
 }
 
 resource "aws_ssm_parameter" "bookingsg-db_username" {
+  count = terraform.workspace == "prd" ? 0 : 1
+
   name  = format("%s/%s", local.path-prefix, "DB_USERNAME")
   type  = "String"
   value = data.external.static.result.DB_USERNAME
@@ -63,6 +65,8 @@ resource "aws_ssm_parameter" "bookingsg-db_username" {
 }
 
 resource "aws_ssm_parameter" "db-password" {
+  count = terraform.workspace == "prd" ? 0 : 1
+
   name   = format("%s/%s", local.path-prefix, "DB_PASSWORD")
   type   = "SecureString"
   key_id = data.aws_kms_alias.ssm-app.name

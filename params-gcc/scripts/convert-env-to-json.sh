@@ -19,12 +19,10 @@ DEPLOY_ENV=$1
 
 if [[ $DEPLOY_ENV != "dev" ]] &&
 	[[ $DEPLOY_ENV != "tst" ]] &&
-	[[ $DEPLOY_ENV != "qe" ]] &&
 	[[ $DEPLOY_ENV != "stg" ]] &&
-	[[ $DEPLOY_ENV != "e2e" ]] &&
 	[[ $DEPLOY_ENV != "local" ]] &&
-	[[ $DEPLOY_ENV != "prod" ]]; then
-	echo "ERROR: Invalid input. DEPLOY_ENV must be local/dev/qe/stg/e2e/prod."
+	[[ $DEPLOY_ENV != "prd" ]]; then
+	echo "ERROR: Invalid input. DEPLOY_ENV must be local/dev/tst/stg/prd."
 	exit 1
 fi
 
