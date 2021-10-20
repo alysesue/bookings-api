@@ -671,42 +671,6 @@ export class BookingsService {
 		return [changeLogAction, updatedBooking];
 	}
 
-	public async validateOnHoldBooking(_bookingId: number, bookingRequest: ValidateOnHoldRequest): Promise<Booking> {
-		const onHoldBooking = await this.getBookingInternal(_bookingId, {});
-		if (!onHoldBooking.isValidOnHoldBooking()) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				`Booking ${onHoldBooking.id} is not on hold or has expired`,
-			);
-		}
-
-		let targetId = _bookingId;
-		let beforeMap = async (_updatedBooking: Booking) => {};
-
-		if (onHoldBooking.onHoldRescheduleWorkflow) {
-			targetId = onHoldBooking.onHoldRescheduleWorkflow.targetId;
-
-			beforeMap = async (updatedBooking: Booking) => {
-				onHoldBooking.copyOnHoldInformation(updatedBooking);
-
-				onHoldBooking.expireOnHold();
-				await this.bookingsRepository.update(onHoldBooking);
-			};
-		}
-
-		const validateAction = (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest, beforeMap);
-		const targetBooking = await this.changeLogsService.executeAndLogAction(
-			targetId,
-			this.getBookingInternal.bind(this),
-			validateAction,
-		);
-		this.bookingsSubject.notify({
-			booking: targetBooking,
-			bookingType: BookingType.Created,
-			action: ExternalAgencyAppointmentJobAction.UPDATE,
-		});
-		return targetBooking;
-	}
-
 	private async validateOnHoldEventBookingInternal(
 		previousBooking: Booking,
 		bookingRequest: ValidateOnHoldRequest,
@@ -741,6 +705,48 @@ export class BookingsService {
 		}
 	}
 
+	public async validateOnHoldBooking(
+		_bookingId: number,
+		bookingRequest: ValidateOnHoldRequest,
+		forEventBooking = false,
+	): Promise<Booking> {
+		const onHoldBooking = await this.getBookingInternal(_bookingId, {});
+		if (!onHoldBooking.isValidOnHoldBooking()) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Booking ${onHoldBooking.id} is not on hold or has expired`,
+			);
+		}
+
+		let targetId = _bookingId;
+		let beforeMap = async (_updatedBooking: Booking) => {};
+
+		if (onHoldBooking.onHoldRescheduleWorkflow) {
+			targetId = onHoldBooking.onHoldRescheduleWorkflow.targetId;
+
+			beforeMap = async (updatedBooking: Booking) => {
+				onHoldBooking.copyOnHoldInformation(updatedBooking);
+
+				onHoldBooking.expireOnHold();
+				await this.bookingsRepository.update(onHoldBooking);
+			};
+		}
+
+		const validateAction = forEventBooking
+			? (_booking) => this.validateOnHoldEventBookingInternal(_booking, bookingRequest) // do i need the beforeMap here too? Is the event bookings affected by the bug in UI?
+			: (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest, beforeMap);
+
+		const targetBooking = await this.changeLogsService.executeAndLogAction(
+			targetId,
+			this.getBookingInternal.bind(this),
+			validateAction,
+		);
+		this.bookingsSubject.notify({
+			booking: targetBooking,
+			bookingType: BookingType.Created,
+			action: ExternalAgencyAppointmentJobAction.UPDATE,
+		});
+		return targetBooking;
+	}
 	public async changeUser(request: BookingChangeUser): Promise<Booking> {
 		const getBooking = async (): Promise<Booking> => {
 			const booking = await this.bookingsRepository.getBookingByUUID(request.bookingUUID, { byPassAuth: true });
