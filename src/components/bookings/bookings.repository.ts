@@ -57,13 +57,14 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 			.createQueryBuilder('booking')
 			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
 			.leftJoinAndSelect('booking._service', 'service_relation')
+			.leftJoinAndSelect('service_relation._organisation', 'org_relation')
+			.leftJoinAndSelect('booking._onHoldRescheduleWorkflow', 'onHoldRescheduleWorkflow')
 			.leftJoinAndMapOne(
 				'booking._createdLog',
 				'booking_change_log',
 				'createdlog',
 				'createdlog."_bookingId" = booking._id AND createdlog._action = 1',
-			)
-			.leftJoinAndSelect('service_relation._organisation', 'org_relation');
+			);
 	}
 
 	public async getBooking(bookingId: number, options: { byPassAuth?: boolean } = {}): Promise<Booking> {

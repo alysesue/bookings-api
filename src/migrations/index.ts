@@ -40,6 +40,7 @@ export { EventBooking1628595250677 } from './1628595250677-EventBooking';
 export { IsMandatoryDynamicFields1627545990317 } from './1627545990317-IsMandatoryDynamicFields';
 export { CustomUpdateAllExistingDynamicFields1628820298859 } from './1628820298859-CustomUpdateAllExistingDynamicFields';
 export { IncreaseCharCount1628766321061 } from './1628766321061-IncreaseCharCount';
+export { OnHoldReschedule1632718251210 } from './1632718251210-OnHoldReschedule';
 export { AllowedServiceAuthentication1631253669914 } from './1631253669914-AllowedServiceAuthentication';
 export { OrgServiceProviderLabels1631674237169 } from './1631674237169-OrgServiceProviderLabels';
 export { EventNewFileds1634023542037 } from './1634023542037-eventNewFileds';

@@ -44,18 +44,20 @@ describe('Bookings query auth', () => {
 
 	it('should return filter for anonymous user', async () => {
 		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		anonymous.id = 3;
 		const groups = [new AnonymousAuthGroup(anonymous)];
 
 		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('(b."_creatorId" = :userId)');
+		expect(result.userCondition).toStrictEqual('((b."_creatorId" = :anonUserId))');
 		expect(result.userParams).toStrictEqual({
-			userId: undefined,
+			anonUserId: 3,
 		});
 	});
 
 	it('should return filter for anonymous user (with booking info)', async () => {
 		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
+		anonymous.id = 3;
 		const bookingInfo: BookingUUIDInfo = {
 			bookingUUID: '81baeb3f-d930-4f48-9808-3ee4debc3d8a',
 			bookingId: 1,
@@ -68,8 +70,13 @@ describe('Bookings query auth', () => {
 
 		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('(b."_uuid" = :authorisedBookingUUID)');
-		expect(result.userParams).toStrictEqual({ authorisedBookingUUID: '81baeb3f-d930-4f48-9808-3ee4debc3d8a' });
+		expect(result.userCondition).toStrictEqual(
+			'((b."_creatorId" = :anonUserId) OR (b."_uuid" = :authorisedBookingUUID))',
+		);
+		expect(result.userParams).toStrictEqual({
+			anonUserId: 3,
+			authorisedBookingUUID: '81baeb3f-d930-4f48-9808-3ee4debc3d8a',
+		});
 	});
 
 	it(`should filter by citizen's uinfin`, async () => {

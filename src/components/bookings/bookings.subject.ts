@@ -3,6 +3,7 @@ import { Booking } from '../../models/entities';
 import { Subject } from '../../infrastructure/observer';
 import { BookingType } from '../../models/bookingType';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
+import { BookingStatus } from '../../models';
 
 export type BookingsPublisherProps = {
 	booking: Booking;
@@ -28,9 +29,11 @@ export class BookingsSubject extends Subject<BookingsPublisherProps> {
 	}
 
 	public notify(props: BookingsPublisherProps): void {
-		this._booking = props.booking;
-		this._bookingType = props.bookingType;
-		this._action = props?.action;
-		super.notify(props);
+		if (props.booking.status !== BookingStatus.OnHold) {
+			this._booking = props.booking;
+			this._bookingType = props.bookingType;
+			this._action = props?.action;
+			super.notify(props);
+		}
 	}
 }

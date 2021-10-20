@@ -87,7 +87,7 @@ module.exports = {
 				},
 			},
 		],
-		'@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+		'@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
 		'@typescript-eslint/member-ordering': 'off',
 		'@typescript-eslint/naming-convention': 'off', // need to find replacement for keywords
 		'@typescript-eslint/no-empty-function': 'off',

@@ -1,4 +1,14 @@
-import { Column, Entity, Generated, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+	Column,
+	Entity,
+	Generated,
+	Index,
+	JoinColumn,
+	ManyToOne,
+	OneToMany,
+	OneToOne,
+	PrimaryGeneratedColumn,
+} from 'typeorm';
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { BookingStatus } from '../bookingStatus';
 import * as timeSpan from '../../tools/timeSpan';
@@ -10,11 +20,13 @@ import { User } from './user';
 import { Event } from './event';
 import { BookingChangeLog } from './bookingChangeLog';
 import { DynamicValueJsonModel } from './jsonModels';
+import { BookingWorkflow } from './bookingWorkflow';
 import { BookedSlot } from './bookedSlot';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
 const HOLD_DURATION_IN_MINS = 10;
+
 export class BookingBuilder {
 	public serviceId: number;
 	public eventId: number;
@@ -137,12 +149,55 @@ export class BookingBuilder {
 	}
 
 	public build(): Booking {
-		return Booking.create(this);
+		const instance = new Booking();
+
+		if (this.markOnHold) {
+			instance.markOnHold();
+		} else {
+			instance.setAutoAccept({ autoAccept: !!this.serviceProviderId && (this.autoAccept || !!this.eventId) });
+		}
+
+		instance.serviceId = this.serviceId;
+		instance.eventId = this.eventId;
+		instance.serviceProviderId = this.serviceProviderId;
+		instance.startDateTime = this.startDateTime;
+		instance.endDateTime = this.endDateTime;
+		instance.refId = this.refId;
+		instance.location = this.location;
+		instance.description = this.description;
+		instance.videoConferenceUrl = this.videoConferenceUrl;
+		instance.creator = this.creator;
+		instance.citizenUinFin = this.citizenUinFin;
+		instance.citizenPhone = this.citizenPhone;
+		instance.citizenName = this.citizenName;
+		instance.citizenEmail = this.citizenEmail;
+		instance.captchaToken = this.captchaToken;
+		instance.reasonToReject = this.reasonToReject;
+		instance.bookedSlots = this.slots;
+
+		return instance;
 	}
 }
 
 @Entity()
 export class Booking {
+	public copyNonIdValuesTo(_anotherBooking: Booking): void {
+		// Excludes some properties
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { _version, _uuid, _id, _targetWorkflow, _onHoldRescheduleWorkflow, ...values } = this;
+		// copies values
+		Object.assign(_anotherBooking, values);
+	}
+
+	public copyOnHoldInformation(_targetBooking: Booking): void {
+		_targetBooking.startDateTime = this.startDateTime;
+		_targetBooking.endDateTime = this.endDateTime;
+		_targetBooking.serviceId = this.serviceId;
+		_targetBooking.serviceProviderId = this.serviceProviderId;
+		_targetBooking.status = this.status;
+		_targetBooking.onHoldUntil = this.onHoldUntil;
+	}
+
 	// _version is updated in an atomic DB operation (see repository)
 	@Column({ update: false })
 	public _version: number;
@@ -230,6 +285,21 @@ export class Booking {
 
 	@Column({ nullable: true })
 	private _reasonToReject: string;
+
+	@OneToMany(() => BookingWorkflow, (e) => e._target)
+	private _targetWorkflow: BookingWorkflow[];
+
+	@OneToOne(() => BookingWorkflow, (e) => e._onHoldReschedule, { nullable: true })
+	private _onHoldRescheduleWorkflow: BookingWorkflow;
+
+	public get targetWorkflow(): BookingWorkflow[] {
+		return this._targetWorkflow;
+	}
+
+	public get onHoldRescheduleWorkflow(): BookingWorkflow | null {
+		return this._onHoldRescheduleWorkflow;
+	}
+
 	public get uuid(): string {
 		return this._uuid;
 	}
@@ -272,40 +342,13 @@ export class Booking {
 		this._onHoldUntil.setMinutes(this._onHoldUntil.getMinutes() + HOLD_DURATION_IN_MINS);
 	}
 
-	public setAutoAccept({ autoAccept }: { autoAccept: boolean }): void {
-		this._status = autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
+	public expireOnHold(): void {
+		this._onHoldUntil = new Date();
+		this._onHoldUntil.setMinutes(this._onHoldUntil.getMinutes() - HOLD_DURATION_IN_MINS);
 	}
 
-	public static create(builder: BookingBuilder): Booking {
-		const instance = new Booking();
-
-		if (builder.markOnHold) {
-			instance.markOnHold();
-		} else {
-			instance.setAutoAccept({
-				autoAccept: !!builder.serviceProviderId && (builder.autoAccept || !!builder.eventId),
-			});
-		}
-
-		instance._serviceId = builder.serviceId;
-		instance._eventId = builder.eventId;
-		instance._serviceProviderId = builder.serviceProviderId;
-		instance._startDateTime = builder.startDateTime;
-		instance._endDateTime = builder.endDateTime;
-		instance._refId = builder.refId;
-		instance._location = builder.location;
-		instance._description = builder.description;
-		instance._videoConferenceUrl = builder.videoConferenceUrl;
-		instance._creator = builder.creator;
-		instance._citizenUinFin = builder.citizenUinFin;
-		instance._citizenPhone = builder.citizenPhone;
-		instance._citizenName = builder.citizenName;
-		instance._citizenEmail = builder.citizenEmail;
-		instance._captchaToken = builder.captchaToken;
-		instance._reasonToReject = builder.reasonToReject;
-		instance.bookedSlots = builder.slots;
-
-		return instance;
+	public setAutoAccept({ autoAccept }: { autoAccept: boolean }): void {
+		this._status = autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
 	}
 
 	public static createNew({ creator }: { creator: User }): Booking {
