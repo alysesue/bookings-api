@@ -732,7 +732,7 @@ export class BookingsService {
 		}
 
 		const validateAction = forEventBooking
-			? (_booking) => this.validateOnHoldEventBookingInternal(_booking, bookingRequest) // do i need the beforeMap here too? Is the event bookings affected by the bug in UI?
+			? (_booking) => this.validateOnHoldEventBookingInternal(_booking, bookingRequest)
 			: (_booking) => this.validateOnHoldBookingInternal(_booking, bookingRequest, beforeMap);
 
 		const targetBooking = await this.changeLogsService.executeAndLogAction(
