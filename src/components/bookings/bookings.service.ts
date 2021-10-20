@@ -363,7 +363,7 @@ export class BookingsService {
 		booking: Booking,
 		bookingReject: BookingReject,
 	): Promise<[ChangeLogAction, Booking]> {
-		if (booking.status !== BookingStatus.PendingApproval) {
+		if (booking.status !== BookingStatus.PendingApproval && booking.status !== BookingStatus.PendingApprovalSA) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Booking ${booking.id} is in invalid state for rejection`,
 			);
@@ -383,6 +383,12 @@ export class BookingsService {
 		if (request.workflowType === BookingWorkflowType.OnHold) return true;
 		if (user.isAdmin() || user.isAgency()) return false;
 		return service.isOnHold || service.isStandAlone;
+	}
+
+	private static shouldMarkPendingSA(booking: Booking, service: Service, user: User): boolean {
+		if (user.isAdmin() || user.isAgency() || !service.requireVerifyBySA) return false;
+		if (!booking.status || booking.status === BookingStatus.OnHold) return true;
+		return false;
 	}
 
 	private async updateBookingStatus({
@@ -405,10 +411,14 @@ export class BookingsService {
 
 		if (shouldMarkOnHold) {
 			booking.markOnHold();
-		} else {
-			const autoAccept = BookingsService.shouldAutoAccept(currentUser, serviceProvider, request.validationType);
-			booking.setAutoAccept({ autoAccept });
+			return;
 		}
+		if (BookingsService.shouldMarkPendingSA(booking, service, currentUser)) {
+			booking.setPendingSA();
+			return;
+		}
+		const autoAccept = BookingsService.shouldAutoAccept(currentUser, serviceProvider, request.validationType);
+		booking.setAutoAccept({ autoAccept });
 	}
 
 	private async rescheduleInternal(
@@ -435,7 +445,11 @@ export class BookingsService {
 		booking: Booking,
 		acceptRequest: BookingAcceptRequestV1,
 	): Promise<[ChangeLogAction, Booking]> {
-		if (booking.status !== BookingStatus.PendingApproval && booking.status !== BookingStatus.OnHold) {
+		if (
+			booking.status !== BookingStatus.PendingApproval &&
+			booking.status !== BookingStatus.OnHold &&
+			booking.status !== BookingStatus.PendingApprovalSA
+		) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
 				`Booking ${booking.id} is in invalid state for accepting`,
 			);
@@ -464,8 +478,11 @@ export class BookingsService {
 				);
 			}
 		}
-
-		booking.status = BookingStatus.Accepted;
+		if (booking.status === BookingStatus.PendingApprovalSA) {
+			booking.status = BookingStatus.PendingApproval;
+		} else {
+			booking.status = BookingStatus.Accepted;
+		}
 		booking.serviceProvider = provider;
 
 		await this.loadBookingDependencies(booking);
@@ -657,7 +674,9 @@ export class BookingsService {
 		await this.loadBookingDependencies(updatedBooking);
 		const serviceProvider = updatedBooking.serviceProvider;
 
-		if (serviceProvider && serviceProvider.autoAcceptBookings) {
+		if (service.requireVerifyBySA) {
+			updatedBooking.status = BookingStatus.PendingApprovalSA;
+		} else if (serviceProvider && serviceProvider.autoAcceptBookings) {
 			updatedBooking.status = BookingStatus.Accepted;
 		} else {
 			updatedBooking.status = BookingStatus.PendingApproval;

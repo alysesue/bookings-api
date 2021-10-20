@@ -233,7 +233,12 @@ export class TimeslotsService {
 			await this.bookingsRepository.search({
 				from: startDateTime,
 				to: endDateTime,
-				statuses: [BookingStatus.PendingApproval, BookingStatus.Accepted, BookingStatus.OnHold],
+				statuses: [
+					BookingStatus.PendingApproval,
+					BookingStatus.Accepted,
+					BookingStatus.OnHold,
+					BookingStatus.PendingApprovalSA,
+				],
 				serviceId,
 				byPassAuth: true,
 				page: 1,
@@ -242,7 +247,10 @@ export class TimeslotsService {
 		).entries;
 
 		const acceptedBookings = bookings.filter((booking) => booking.status === BookingStatus.Accepted);
-		const pendingBookings = bookings.filter((booking) => booking.status === BookingStatus.PendingApproval);
+		const pendingBookings = bookings.filter(
+			(booking) =>
+				booking.status === BookingStatus.PendingApproval || booking.status === BookingStatus.PendingApprovalSA,
+		);
 		const onHoldBookings = bookings.filter((booking) => {
 			const onHoldUntil = booking.onHoldUntil;
 			return booking.status === BookingStatus.OnHold && this.requestClock.requestTime() < onHoldUntil;
