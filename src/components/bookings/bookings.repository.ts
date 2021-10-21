@@ -65,7 +65,6 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 				'createdlog',
 				'createdlog."_bookingId" = booking._id AND createdlog._action = 1',
 			)
-			.leftJoinAndSelect('service_relation._organisation', 'org_relation')
 			.leftJoinAndSelect('booking._event', 'event')
 			.leftJoinAndSelect('event._oneOffTimeslots', 'event_oneOffTimeslots')
 			.leftJoinAndSelect('event_oneOffTimeslots._serviceProvider', 'event_oneOffTimeslots_serviceProvider')
