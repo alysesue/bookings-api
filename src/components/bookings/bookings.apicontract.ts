@@ -2,6 +2,7 @@ import { BookingStatus, BookingValidationType, BookingWorkflowType } from '../..
 import { PagingRequest } from '../../apicontract';
 import { DynamicValueContract, PersistDynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
 import { BookedSlot } from '../../models';
+import { EventResponse } from '../events/events.apicontract';
 
 export class BookingAcceptRequestV1 {
 	/**
@@ -99,6 +100,7 @@ export class BookingResponseBase {
 	 * (optional) Retrieves the booking UUID, only when creating or rescheduling a booking.
 	 */
 	public uuid?: string;
+	public event?: EventResponse;
 }
 
 export class BookingResponseV1 extends BookingResponseBase {
@@ -143,7 +145,7 @@ export class BookingSearchRequest extends PagingRequest {
 	public serviceId?: number;
 	public serviceProviderIds?: number[];
 	public citizenUinFins?: string[];
-	public eventId?: number;
+	public eventIds?: number[];
 	public byPassAuth?: boolean;
 }
 

@@ -106,7 +106,7 @@ export class EventsRepository extends RepositoryBase<Event> {
 			isOneOffTimeslot,
 			labelOperationFiltering,
 		} = request;
-		const serviceCondition = '"serviceProvider"."_serviceId" = :serviceId';
+		const serviceCondition = serviceId ? '"serviceProvider"."_serviceId" = :serviceId' : '';
 		const spCondition =
 			serviceProviderIds && serviceProviderIds.length > 0
 				? '"oneOffTimeslots"."_serviceProviderId" IN (:...serviceProviderIds)'

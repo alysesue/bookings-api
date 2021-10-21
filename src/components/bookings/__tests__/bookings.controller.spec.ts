@@ -546,6 +546,24 @@ describe('Bookings.Controller.V2', () => {
 		expect(BookingsServiceMock.mockBookingId).toBe(1);
 	});
 
+	it('should post booking', async () => {
+		BookingsServiceMock.mockPostBooking = Promise.resolve(testBooking1);
+		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(true));
+		const controller = Container.get(BookingsControllerV2);
+		const headers = {
+			[MOLSecurityHeaderKeys.USER_UINFIN]: MOLAuthType.USER,
+			[MOLSecurityHeaderKeys.USER_ID]: 'abc',
+		};
+
+		(controller as any).context = { headers };
+		const req = new BookingRequestV2();
+		req.captchaToken = '123';
+		const result = await controller.postBooking(req, '1');
+
+		expect(result).toBeDefined();
+		expect(result.data.uuid).toEqual('3e813466-c2ee-4b25-ae6e-77cc7dbe8878');
+	});
+
 	it('should update booking', async () => {
 		const controller = Container.get(BookingsControllerV2);
 		const bookingId = '1';
@@ -587,6 +605,7 @@ describe('Bookings.Controller.V2', () => {
 			undefined,
 			undefined,
 			undefined,
+			['123', '345'],
 			serviceId,
 		);
 
@@ -602,6 +621,7 @@ describe('Bookings.Controller.V2', () => {
 			limit: 100,
 			maxId: undefined,
 			serviceProviderIds: [10],
+			eventIds: [123, 345],
 		});
 		expect(result.data.length).toBe(1);
 		expect(result.data[0]).toEqual({
@@ -644,6 +664,7 @@ describe('Bookings.Controller.V2', () => {
 			2,
 			50,
 			'123',
+			['123', '345'],
 			serviceId,
 		);
 
@@ -659,6 +680,7 @@ describe('Bookings.Controller.V2', () => {
 			page: 2,
 			limit: 50,
 			maxId: 123,
+			eventIds: [123, 345],
 		});
 
 		expect(result.data.length).toBe(1);
@@ -755,26 +777,6 @@ describe('Bookings.Controller.V2', () => {
 		expect(BookingsServiceMock.mockBookingId).toBe(1);
 	});
 
-	it('should post booking', async () => {
-		BookingsServiceMock.mockPostBooking = Promise.resolve(testBooking1);
-		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(true));
-		const controller = Container.get(BookingsControllerV2);
-		const serviceId = '1';
-		const headers = {
-			[MOLSecurityHeaderKeys.USER_UINFIN]: MOLAuthType.USER,
-			[MOLSecurityHeaderKeys.USER_ID]: 'abc',
-			serviceId,
-		};
-
-		(controller as any).context = { headers };
-		const req = new BookingRequestV2();
-		req.captchaToken = '123';
-
-		const result = await controller.postBooking(req, '39t2m');
-
-		expect(result).toBeDefined();
-	});
-
 	it('should post out of timeslot booking', async () => {
 		BookingsServiceMock.mockPostBooking = Promise.resolve(testBooking1);
 		const controller = Container.get(BookingsControllerV2);
@@ -827,6 +829,7 @@ describe('Bookings.Controller.V2', () => {
 			2,
 			50,
 			'123',
+			['123', '345'],
 			serviceId,
 		);
 
@@ -842,6 +845,7 @@ describe('Bookings.Controller.V2', () => {
 			page: 2,
 			limit: 50,
 			maxId: 123,
+			eventIds: [123, 345],
 		});
 
 		expect(KoaContextStoreMock.koaContext.body).toBeDefined();
@@ -854,6 +858,18 @@ describe('Bookings.Controller.V2', () => {
 
 		const controller = Container.get(BookingsController);
 		const result = await controller.changeUser(2, { bookingUUID } as BookingChangeUser);
+
+		expect(result).toBeDefined();
+		expect(result.data.uuid).toEqual('3e813466-c2ee-4b25-ae6e-77cc7dbe8878');
+		expect(BookingsServiceMock.changeUser).toBeCalledWith({ bookingId: 2, bookingUUID });
+	});
+
+	it('should change booking user v2', async () => {
+		const bookingUUID = uuid.v4();
+		BookingsServiceMock.changeUser.mockResolvedValue(testBooking1);
+
+		const controller = Container.get(BookingsControllerV2);
+		const result = await controller.changeUser('2', { bookingUUID } as BookingChangeUser);
 
 		expect(result).toBeDefined();
 		expect(result.data.uuid).toEqual('3e813466-c2ee-4b25-ae6e-77cc7dbe8878');

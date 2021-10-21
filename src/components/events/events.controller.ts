@@ -20,7 +20,6 @@ import { EventRequest, EventResponse } from './events.apicontract';
 import { EventsService } from './events.service';
 import { EventsMapper } from './events.mapper';
 import { IdHasher } from '../../infrastructure/idHasher';
-import { MOLAuth } from 'mol-lib-common';
 import { Booking, BookingStatus, Event } from '../../models';
 import { MOLUserAuthLevel } from 'mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel';
 import {
@@ -67,11 +66,11 @@ export class EventsController extends Controller {
 	 * @param labelTypeOfFiltering (Optional) type of filtering "union" or "intersection" (default: intersection)
 	 */
 	@Get('')
-	@Security('service')
-	@MOLAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 } })
+	@Security('optional-service')
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 } })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async search(
-		@Header('x-api-service') serviceId: string,
+		@Header('x-api-service') serviceId?: string,
 		@Query() title?: string,
 		@Query() startDateTime?: Date,
 		@Query() endDateTime?: Date,
@@ -96,7 +95,7 @@ export class EventsController extends Controller {
 		});
 		return this.apiPagingFactory.createPagedAsync(pagedEvents, async (event: Event) => {
 			const eventBookings = await this.bookingsService.searchBookings({
-				eventId: event.id,
+				eventIds: [event.id],
 				byPassAuth: true,
 				page: page || DEFAULT_PAGE,
 				limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
@@ -120,7 +119,7 @@ export class EventsController extends Controller {
 	 */
 	@Get('{eventId}')
 	@Security('service')
-	@MOLAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 } })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async searchById(@Path() eventId: string): Promise<ApiData<EventResponse>> {
 		const idUnsigned = this.idHasher.decode(eventId);
@@ -134,7 +133,7 @@ export class EventsController extends Controller {
 	 * @param request Details of the event to be created.
 	 */
 	@Post()
-	@MOLAuth({ admin: {}, agency: {} })
+	@BookingSGAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async post(@Body() eventRequest: EventRequest): Promise<ApiData<EventResponse>> {
 		const event = await this.eventsService.saveEvent(eventRequest);
@@ -147,7 +146,7 @@ export class EventsController extends Controller {
 	 */
 	@Put('{id}')
 	@SuccessResponse(201, 'Updated')
-	@MOLAuth({ admin: {}, agency: {} })
+	@BookingSGAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async update(@Path() id: string, @Body() eventRequest: EventRequest): Promise<ApiData<EventResponse>> {
 		const event = await this.eventsService.updateEvent(eventRequest, id);
@@ -162,7 +161,7 @@ export class EventsController extends Controller {
 	 */
 	@Delete('{id}')
 	@SuccessResponse(204, 'Deleted')
-	@MOLAuth({ admin: {}, agency: {} })
+	@BookingSGAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async delete(@Path() id: string): Promise<void> {
 		const idNotSighed = this.idHasher.decode(id);
@@ -206,7 +205,7 @@ export class EventsController extends Controller {
 	): Promise<ApiPagedData<EventBookingResponse>> {
 		const idNotSigned = this.idHasher.decode(eventId);
 		const searchRequest: BookingSearchRequest = {
-			eventId: idNotSigned,
+			eventIds: [idNotSigned],
 			page: page || DEFAULT_PAGE,
 			limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
 			maxId,

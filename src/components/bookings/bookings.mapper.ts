@@ -19,6 +19,7 @@ import { IBookingsValidator } from './validator/bookings.validation';
 import * as stringify from 'csv-stringify';
 import { BookingStatus, bookingStatusArray } from '../../models/bookingStatus';
 import { IdHasher } from '../../infrastructure/idHasher';
+import { EventsMapper } from '../events/events.mapper';
 
 // tslint:disable-next-line: tsr-detect-unsafe-regexp
 const MASK_UINFIN_REGEX = /(?<=^.{1}).{4}/;
@@ -36,6 +37,8 @@ export class BookingsMapper {
 	private idHasher: IdHasher;
 	@Inject
 	private userContext: UserContext;
+	@Inject
+	private eventsMapper: EventsMapper;
 
 	public async mapDynamicValuesRequest(
 		bookingRequest: BookingDetailsRequest,
@@ -162,6 +165,7 @@ export class BookingsMapper {
 			reasonToReject: booking.reasonToReject,
 			sendNotifications: booking.service?.sendNotifications,
 			sendSMSNotifications: booking.service?.sendSMSNotifications,
+			event: booking.event ? this.eventsMapper.mapToResponse(booking.event) : undefined,
 		};
 
 		if (mapUUID) {
