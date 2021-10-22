@@ -1,8 +1,28 @@
-import { DateTimeFormatter, LocalTime } from '@js-joda/core';
+import { DateTimeFormatter, LocalDate, LocalTime } from '@js-joda/core';
 import { ParseTimeError } from '../errors/parseTimeError';
 
 const jsJoda_formatter = DateTimeFormatter.ofPattern('H:m[:s]');
 const parseTime = (time: string) => jsJoda_formatter.parse(time, LocalTime.FROM);
+
+export const tryParseDateOnly = (
+	value: string,
+): {
+	parsed: string | undefined;
+	isValid: boolean;
+} => {
+	try {
+		const parsed = LocalDate.parse(value).format(DateTimeFormatter.ISO_LOCAL_DATE);
+		return {
+			parsed,
+			isValid: true,
+		};
+	} catch {}
+
+	return {
+		parsed: undefined,
+		isValid: false,
+	};
+};
 
 export const isValidFormatHHmm = (time: string): boolean => {
 	try {

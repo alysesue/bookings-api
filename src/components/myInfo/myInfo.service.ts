@@ -3,12 +3,13 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { User } from '../../models/entities';
 import { logger } from 'mol-lib-common';
 import { getConfig } from '../../config/app-config';
-import { MyInfoResponse } from '../../models/myInfoTypes';
+import { MyInfoWrapperResponse, MyInfoResponse } from '../../models/myInfoTypes';
 import { MOLAuthType, MOLSecurityHeaderKeys } from 'mol-lib-api-contract/auth';
+import { infoRawMock } from './__mocks__/infoRaw.mock';
 
 export abstract class MyInfoService {
 	public async getMyInfo(user: User): Promise<MyInfoResponse | undefined> {
-		if (!user.isCitizen()) {
+		if (!user.isSingPass()) {
 			return undefined;
 		}
 
@@ -28,7 +29,8 @@ export class MyInfoServiceMol extends MyInfoService {
 		const path = config.molRouteMyInfo.url + `/api/v1/info-raw?nric=${nric}`;
 
 		try {
-			return await get(path, undefined, header);
+			const response = await get<MyInfoWrapperResponse>(path, undefined, header);
+			return response.data;
 		} catch (error) {
 			logger.error(error);
 		}
@@ -39,13 +41,7 @@ export class MyInfoServiceMol extends MyInfoService {
 @InRequestScope
 export class MyInfoServiceLocal extends MyInfoService {
 	protected async getInfoRaw(_nric: string): Promise<MyInfoResponse | undefined> {
-		return {
-			data: {
-				name: { value: 'John Doe MyInfo' },
-				email: { value: 'address@mail.com' },
-				mobileno: { nbr: { value: '84000000' } },
-			},
-		};
+		return infoRawMock(_nric);
 	}
 }
 

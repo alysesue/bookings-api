@@ -52,6 +52,11 @@ describe('Bookings mapper tests', () => {
 
 		UserContextMock.getOtpAddOnMobileNo.mockReturnValue(undefined);
 		UserContextMock.getMyInfo.mockReturnValue(Promise.resolve(undefined));
+
+		DynamicValuesRequestMapperMock.mapDynamicValues.mockImplementation(
+			async () => ({ result: [] } as MapRequestOptionalResult),
+		);
+		DynamicValuesRequestMapperMock.updateMyInfoDynamicFromUser.mockImplementation(async (values, _svcId) => values);
 	});
 
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
@@ -317,7 +322,7 @@ describe('Bookings mapper tests', () => {
 			singleSelectionValue: 'English',
 		} as DynamicValueJsonModel;
 
-		DynamicValuesRequestMapperMock.mapDynamicValuesRequest.mockImplementation(() =>
+		DynamicValuesRequestMapperMock.mapDynamicValues.mockImplementation(() =>
 			Promise.resolve({ result: [dynamicValueMock] } as MapRequestOptionalResult),
 		);
 
@@ -329,7 +334,7 @@ describe('Bookings mapper tests', () => {
 		const booking = new Booking();
 		await mapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
-		expect(DynamicValuesRequestMapperMock.mapDynamicValuesRequest).toBeCalled();
+		expect(DynamicValuesRequestMapperMock.mapDynamicValues).toBeCalled();
 		expect(validator.addCustomCitizenValidations).not.toBeCalled();
 		expect(booking.dynamicValues.length).toEqual(1);
 	});
@@ -351,7 +356,7 @@ describe('Bookings mapper tests', () => {
 			singleSelectionValue: 'English',
 		} as DynamicValueJsonModel;
 
-		DynamicValuesRequestMapperMock.mapDynamicValuesRequest.mockImplementation(() =>
+		DynamicValuesRequestMapperMock.mapDynamicValues.mockImplementation(() =>
 			Promise.resolve({ result: [dynamicValueMock] } as MapRequestOptionalResult),
 		);
 
@@ -363,7 +368,7 @@ describe('Bookings mapper tests', () => {
 		const booking = new Booking();
 		await mapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
-		expect(DynamicValuesRequestMapperMock.mapDynamicValuesRequest).not.toBeCalled();
+		expect(DynamicValuesRequestMapperMock.mapDynamicValues).not.toBeCalled();
 		expect(validator.addCustomCitizenValidations).not.toBeCalled();
 	});
 
@@ -377,7 +382,7 @@ describe('Bookings mapper tests', () => {
 		} as IBookingsValidator;
 
 		const validationError = new BusinessValidation({ code: 'abc', message: 'some validation' });
-		DynamicValuesRequestMapperMock.mapDynamicValuesRequest.mockImplementation(() =>
+		DynamicValuesRequestMapperMock.mapDynamicValues.mockImplementation(() =>
 			Promise.resolve({
 				errorResult: [validationError],
 			} as MapRequestOptionalResult),
@@ -391,7 +396,7 @@ describe('Bookings mapper tests', () => {
 		const booking = new Booking();
 		await mapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
-		expect(DynamicValuesRequestMapperMock.mapDynamicValuesRequest).toBeCalled();
+		expect(DynamicValuesRequestMapperMock.mapDynamicValues).toBeCalled();
 		expect(validator.addCustomCitizenValidations).toBeCalledWith(validationError);
 	});
 
@@ -462,16 +467,16 @@ describe('Bookings mapper tests', () => {
 		expect(booking.citizenEmail).toEqual('correctemail@gmail.com');
 		expect(booking.citizenPhone).toEqual('93328223');
 		expect(booking.videoConferenceUrl).toEqual('https://localhost');
+
+		expect(DynamicValuesRequestMapperMock.updateMyInfoDynamicFromUser).toBeCalled();
 	});
 
 	it('should map booking details from MyInfo when standalone', async () => {
-		const MyInfoResponse: MyInfoResponse = {
-			data: {
-				name: { value: 'Armin the great' },
-				email: { value: 'armin@gmail.com' },
-				mobileno: { nbr: { value: '84123456' } },
-			},
-		};
+		const MyInfoResponse = {
+			name: { value: 'Armin the great' },
+			email: { value: 'armin@gmail.com' },
+			mobileno: { nbr: { value: '84123456' } },
+		} as MyInfoResponse;
 
 		UserContextMock.getMyInfo.mockResolvedValue(MyInfoResponse);
 
@@ -492,12 +497,10 @@ describe('Bookings mapper tests', () => {
 
 	it('should map booking details from MyInfo when standalone (no email/phone override)', async () => {
 		const MyInfoResponse: MyInfoResponse = {
-			data: {
-				name: { value: 'Armin the great' },
-				email: { value: 'armin@gmail.com' },
-				mobileno: { nbr: { value: '84123456' } },
-			},
-		};
+			name: { value: 'Armin the great' },
+			email: { value: 'armin@gmail.com' },
+			mobileno: { nbr: { value: '84123456' } },
+		} as MyInfoResponse;
 
 		UserContextMock.getMyInfo.mockResolvedValue(MyInfoResponse);
 

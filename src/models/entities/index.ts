@@ -19,7 +19,13 @@ export { SingPassUser } from './singPassUser';
 export { User } from './user';
 export { Setting } from './setting';
 export { OneOffTimeslot } from './oneOffTimeslot';
-export { DynamicField, SelectListDynamicField, TextDynamicField } from './dynamicField';
+export {
+	DynamicField,
+	SelectListDynamicField,
+	TextDynamicField,
+	MyInfoDynamicField,
+	DateOnlyDynamicField,
+} from './dynamicField';
 export { Label } from './label';
 export { LabelCategory } from './labelCategory';
 export { Otp } from './otp';

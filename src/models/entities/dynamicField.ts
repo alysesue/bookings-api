@@ -9,11 +9,21 @@ import {
 	TableInheritance,
 	DeleteDateColumn,
 } from 'typeorm';
+import { MyInfoFieldType } from './myInfoFieldType';
 import { Service } from './service';
 
 export interface IDynamicFieldVisitor {
-	visitSelectList(_selectListField: SelectListDynamicField);
-	visitTextField(_textField: TextDynamicField);
+	visitSelectList(_selectListField: SelectListDynamicField): void;
+	visitTextField(_textField: TextDynamicField): void;
+	visitMyInfo(_myInfoDynamicField: MyInfoDynamicField): void;
+	visitDateOnlyField(_dateOnlyField: DateOnlyDynamicField): void;
+}
+
+export interface IDynamicFieldVisitorAsync {
+	visitSelectList(_selectListField: SelectListDynamicField): Promise<void>;
+	visitTextField(_textField: TextDynamicField): Promise<void>;
+	visitMyInfo(_myInfoDynamicField: MyInfoDynamicField): Promise<void>;
+	visitDateOnlyField(_dateOnlyField: DateOnlyDynamicField): Promise<void>;
 }
 
 /**
@@ -22,6 +32,8 @@ export interface IDynamicFieldVisitor {
 export enum DynamicFieldEntityType {
 	SelectListDynamicFieldType = 'SelectListDynamicField',
 	TextDynamicFieldType = 'TextDynamicField',
+	DateOnlyDynamicField = 'DateOnlyDynamicField',
+	MyInfoDynamicFieldType = 'MyInfoDynamicFieldType',
 }
 
 @Entity()
@@ -93,6 +105,47 @@ export abstract class DynamicField {
 	}
 
 	public abstract acceptVisitor(visitor: IDynamicFieldVisitor): void;
+	public abstract acceptVisitorAsync(visitor: IDynamicFieldVisitorAsync): Promise<void>;
+}
+
+@ChildEntity(DynamicFieldEntityType.MyInfoDynamicFieldType)
+export class MyInfoDynamicField extends DynamicField {
+	constructor() {
+		super();
+	}
+
+	@Column({
+		nullable: true,
+		type: 'enum',
+		enum: MyInfoFieldType,
+	})
+	private _myInfoFieldType: MyInfoFieldType;
+
+	public get myInfoFieldType(): MyInfoFieldType {
+		return this._myInfoFieldType;
+	}
+
+	public set myInfoFieldType(value: MyInfoFieldType) {
+		this._myInfoFieldType = value;
+	}
+
+	public static create(serviceId: number, name: string, myInfoFieldType: MyInfoFieldType): MyInfoDynamicField {
+		const dynamicField = new MyInfoDynamicField();
+		dynamicField.serviceId = serviceId;
+		dynamicField.myInfoFieldType = myInfoFieldType;
+		dynamicField.name = name;
+		dynamicField.isMandatory = false;
+
+		return dynamicField;
+	}
+
+	public acceptVisitor(visitor: IDynamicFieldVisitor): void {
+		visitor.visitMyInfo(this);
+	}
+
+	public async acceptVisitorAsync(visitor: IDynamicFieldVisitorAsync): Promise<void> {
+		await visitor.visitMyInfo(this);
+	}
 }
 
 @ChildEntity(DynamicFieldEntityType.SelectListDynamicFieldType)
@@ -128,10 +181,14 @@ export class SelectListDynamicField extends DynamicField {
 	public acceptVisitor(visitor: IDynamicFieldVisitor): void {
 		visitor.visitSelectList(this);
 	}
+
+	public async acceptVisitorAsync(visitor: IDynamicFieldVisitorAsync): Promise<void> {
+		await visitor.visitSelectList(this);
+	}
 }
 
 export type SelectListOption = {
-	key: number;
+	key: number | string;
 	value: string;
 };
 
@@ -163,5 +220,32 @@ export class TextDynamicField extends DynamicField {
 
 	public acceptVisitor(visitor: IDynamicFieldVisitor): void {
 		visitor.visitTextField(this);
+	}
+
+	public async acceptVisitorAsync(visitor: IDynamicFieldVisitorAsync): Promise<void> {
+		await visitor.visitTextField(this);
+	}
+}
+
+@ChildEntity(DynamicFieldEntityType.DateOnlyDynamicField)
+export class DateOnlyDynamicField extends DynamicField {
+	constructor() {
+		super();
+	}
+
+	public static create(serviceId: number, name: string, isMandatory: boolean): DynamicField {
+		const dynamicField = new DateOnlyDynamicField();
+		dynamicField.serviceId = serviceId;
+		dynamicField.name = name;
+		dynamicField.isMandatory = isMandatory;
+		return dynamicField;
+	}
+
+	public acceptVisitor(visitor: IDynamicFieldVisitor): void {
+		visitor.visitDateOnlyField(this);
+	}
+
+	public async acceptVisitorAsync(visitor: IDynamicFieldVisitorAsync): Promise<void> {
+		await visitor.visitDateOnlyField(this);
 	}
 }

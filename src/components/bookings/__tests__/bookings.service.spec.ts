@@ -78,6 +78,11 @@ import { EventsService } from '../../events/events.service';
 import { EventsServiceMock } from '../../events/__mocks__/events.service.mock';
 import { CitizenAuthenticationType } from '../../../models/citizenAuthenticationType';
 import { BookingActionAuthVisitor } from '../bookings.auth';
+import {
+	DynamicValuesRequestMapper,
+	MapRequestOptionalResult,
+} from '../../../components/dynamicFields/dynamicValues.mapper';
+import { DynamicValuesRequestMapperMock } from '../../../components/dynamicFields/__mocks__/dynamicValues.mapper.mock';
 
 jest.mock('../../../tools/arrays');
 jest.mock('../bookings.auth', () => ({ BookingActionAuthVisitor: jest.fn() }));
@@ -187,6 +192,7 @@ describe('Bookings.Service', () => {
 		Container.bind(MyInfoService).to(MyInfoServiceeMock);
 		Container.bind(BookedSlotRepository).to(BookedSlotRepositoryMock);
 		Container.bind(EventsService).to(EventsServiceMock);
+		Container.bind(DynamicValuesRequestMapper).to(DynamicValuesRequestMapperMock);
 	});
 
 	beforeEach(() => {
@@ -232,6 +238,11 @@ describe('Bookings.Service', () => {
 
 		UserContextMock.getOtpAddOnMobileNo.mockReturnValue(undefined);
 		UserContextMock.getMyInfo.mockReturnValue(Promise.resolve(undefined));
+
+		DynamicValuesRequestMapperMock.mapDynamicValues.mockImplementation(
+			async () => ({ result: [] } as MapRequestOptionalResult),
+		);
+		DynamicValuesRequestMapperMock.updateMyInfoDynamicFromUser.mockImplementation(async (values, _svcId) => values);
 	});
 
 	afterAll(() => {

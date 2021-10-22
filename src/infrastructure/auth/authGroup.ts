@@ -52,7 +52,7 @@ export class CitizenAuthGroup extends AuthGroup {
 	constructor(citizenUser: User) {
 		super(citizenUser);
 
-		if (!citizenUser.isCitizen()) {
+		if (!citizenUser.isSingPass()) {
 			throw new Error('CitizenAuthGroup must be created with a citizen User.');
 		}
 	}

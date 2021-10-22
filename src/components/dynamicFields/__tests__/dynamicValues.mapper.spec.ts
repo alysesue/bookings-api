@@ -10,9 +10,17 @@ import {
 } from '../dynamicValues.apicontract';
 import { DynamicFieldsService } from '../dynamicFields.service';
 import { DynamicFieldsServiceMock } from '../__mocks__/dynamicFields.service.mock';
-import { BusinessValidation, SelectListDynamicField, SelectListOption, TextDynamicField, User } from '../../../models';
+import {
+	BusinessValidation,
+	DateOnlyDynamicField,
+	SelectListDynamicField,
+	SelectListOption,
+	TextDynamicField,
+} from '../../../models';
 import { UserContext } from '../../../infrastructure/auth/userContext';
-import { AuthGroup } from '../../../infrastructure/auth/authGroup';
+import { ContainerContextHolder } from '../../../infrastructure/containerContext';
+
+import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 
 jest.mock('../dynamicFields.service', () => {
 	class DynamicFieldsService {}
@@ -25,6 +33,7 @@ beforeAll(() => {
 	Container.bind(IdHasher).to(IdHasherMock);
 	Container.bind(DynamicFieldsService).to(DynamicFieldsServiceMock);
 	Container.bind(UserContext).to(UserContextMock);
+	ContainerContextHolder.registerInContainer();
 });
 
 describe('dynamicFields/dynamicValues.mapper', () => {
@@ -47,19 +56,22 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		return textField;
 	};
 
-	const userMock = { isAdmin: jest.fn() } as Partial<User>;
+	const createDateField = ({ isMandatory }: { isMandatory: boolean }) => {
+		const dateField = new DateOnlyDynamicField();
+		dateField.id = 3;
+		dateField.name = 'Sample date';
+		dateField.isMandatory = isMandatory;
+		return dateField;
+	};
 
 	beforeEach(() => {
 		jest.resetAllMocks();
 
 		IdHasherMock.encode.mockImplementation((id: number) => id.toString());
 		IdHasherMock.decode.mockImplementation((id: string) => Number.parseInt(id, 10));
-
-		(UserContextMock.getCurrentUser as jest.Mock).mockImplementation(() => userMock);
-		(userMock.isAdmin as jest.Mock).mockImplementation(() => false);
 	});
 
-	it('should map select list dynamic field value ', async () => {
+	it('[Response] should map select list dynamic field value ', async () => {
 		const dynamicValueJson = {
 			fieldId: 1,
 			fieldName: 'testname',
@@ -82,7 +94,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		]);
 	});
 
-	it('should map select list dynamic field value to string ', async () => {
+	it('[Response] should map select list dynamic field value to string ', async () => {
 		const dynamicValueJson = {
 			fieldId: 1,
 			fieldName: 'testname',
@@ -97,7 +109,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		expect(str).toEqual('test');
 	});
 
-	it('should map text dynamic field value ', async () => {
+	it('[Response] should map text dynamic field value ', async () => {
 		const dynamicValueJson = {
 			fieldId: 1,
 			fieldName: 'testname',
@@ -117,7 +129,40 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		]);
 	});
 
-	it('should map text dynamic field value to string', async () => {
+	it('[Response] should map dateOnly dynamic field value ', async () => {
+		const dynamicValueJson = {
+			fieldId: 1,
+			fieldName: 'testname',
+			type: DynamicValueType.DateOnly,
+			dateOnlyValue: '2021-02-20',
+		} as DynamicValueJsonModel;
+
+		const mapper = Container.get(DynamicValuesMapper);
+		const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValueJson]);
+		expect(dynamicReturn).toEqual([
+			{
+				fieldIdSigned: '1',
+				fieldName: 'testname',
+				type: DynamicValueType.DateOnly,
+				dateOnlyValue: '2021-02-20',
+			},
+		]);
+	});
+
+	it('[Response] should map dateOnly dynamic field value to string ', async () => {
+		const dynamicValueJson = {
+			fieldId: 1,
+			fieldName: 'testname',
+			type: DynamicValueType.DateOnly,
+			dateOnlyValue: '2021-02-20',
+		} as DynamicValueJsonModel;
+
+		const mapper = Container.get(DynamicValuesMapper);
+		const str = mapper.getValueAsString(dynamicValueJson);
+		expect(str).toEqual('2021-02-20');
+	});
+
+	it('[Response] should map text dynamic field value to string', async () => {
 		const dynamicValueJson = {
 			fieldId: 1,
 			fieldName: 'testname',
@@ -130,7 +175,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		expect(str).toEqual('some text');
 	});
 
-	it('should return empty array when no dynamic values are passed ', async () => {
+	it('[Response] should return empty array when no dynamic values are passed ', async () => {
 		const mapper = Container.get(DynamicValuesMapper);
 		const dynamicReturn = mapper.mapDynamicValuesModel([]);
 
@@ -153,7 +198,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		dynamicValue2.textValue = 'some text';
 
 		const mapper = Container.get(DynamicValuesRequestMapper);
-		const dynamicReturn = await mapper.mapDynamicValuesRequest([dynamicValue, dynamicValue2], 100);
+		const dynamicReturn = await mapper.mapDynamicValues([dynamicValue, dynamicValue2], [], 100);
 
 		expect(dynamicReturn).toEqual({
 			result: [
@@ -163,12 +208,38 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 					fieldId: 1,
 					fieldName: 'testDynamic',
 					type: 'SingleSelection',
+					origin: { originType: 'bookingsg' },
 				},
 				{
 					fieldId: 2,
 					fieldName: 'Sample text',
 					textValue: 'some text',
 					type: 'Text',
+					origin: { originType: 'bookingsg' },
+				},
+			],
+		} as MapRequestOptionalResult);
+	});
+
+	it(`should map empty text field when field is not required`, async () => {
+		const field = createTextField();
+		field.isMandatory = false;
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() => Promise.resolve([field]));
+
+		const dynamicValue2 = new PersistDynamicValueContract();
+		dynamicValue2.fieldIdSigned = '2';
+		dynamicValue2.type = DynamicValueTypeContract.Text;
+		dynamicValue2.textValue = undefined;
+
+		const mapper = Container.get(DynamicValuesRequestMapper);
+		const dynamicReturn = await mapper.mapDynamicValues([dynamicValue2], [], 100);
+
+		expect(dynamicReturn).toEqual({
+			result: [
+				{
+					fieldId: 2,
+					fieldName: 'Sample text',
+					origin: { originType: 'bookingsg' },
 				},
 			],
 		} as MapRequestOptionalResult);
@@ -180,7 +251,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		);
 
 		const mapper = Container.get(DynamicValuesRequestMapper);
-		const dynamicReturn = await mapper.mapDynamicValuesRequest([], 100);
+		const dynamicReturn = await mapper.mapDynamicValues([], [], 100);
 
 		expect(dynamicReturn).toEqual({
 			errorResult: [
@@ -212,7 +283,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		dynamicValue2.textValue = undefined;
 
 		const mapper = Container.get(DynamicValuesRequestMapper);
-		const dynamicReturn = await mapper.mapDynamicValuesRequest([dynamicValue, dynamicValue2], 100);
+		const dynamicReturn = await mapper.mapDynamicValues([dynamicValue, dynamicValue2], [], 100);
 
 		expect(dynamicReturn).toEqual({
 			errorResult: [
@@ -244,7 +315,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		dynamicValue2.singleSelectionKey = 1;
 
 		const mapper = Container.get(DynamicValuesRequestMapper);
-		const dynamicReturn = await mapper.mapDynamicValuesRequest([dynamicValue, dynamicValue2], 100);
+		const dynamicReturn = await mapper.mapDynamicValues([dynamicValue, dynamicValue2], [], 100);
 
 		expect(dynamicReturn).toEqual({
 			errorResult: [
@@ -269,7 +340,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		dynamicValue.textValue = 'some text';
 
 		const mapper = Container.get(DynamicValuesRequestMapper);
-		const dynamicReturn = await mapper.mapDynamicValuesRequest([dynamicValue], 100);
+		const dynamicReturn = await mapper.mapDynamicValues([dynamicValue], [], 100);
 
 		expect(dynamicReturn).toEqual({
 			errorResult: [
@@ -290,7 +361,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		dynamicValue.textValue = 'some very long string, some very long string, some very long string';
 
 		const mapper = Container.get(DynamicValuesRequestMapper);
-		const dynamicReturn = await mapper.mapDynamicValuesRequest([dynamicValue], 100);
+		const dynamicReturn = await mapper.mapDynamicValues([dynamicValue], [], 100);
 
 		expect(dynamicReturn).toEqual({
 			errorResult: [
@@ -301,18 +372,113 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 			],
 		} as MapRequestOptionalResult);
 	});
+
+	it(`[DateOnly] should map date`, async () => {
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
+			Promise.resolve([createDateField({ isMandatory: false })]),
+		);
+		const dynamicValue = new PersistDynamicValueContract();
+		dynamicValue.fieldIdSigned = '3';
+		dynamicValue.type = DynamicValueTypeContract.DateOnly;
+		dynamicValue.dateOnlyValue = '2021-10-15';
+
+		const mapper = Container.get(DynamicValuesRequestMapper);
+		const dynamicReturn = await mapper.mapDynamicValues([dynamicValue], [], 100);
+		expect(dynamicReturn).toEqual({
+			result: [
+				{
+					dateOnlyValue: '2021-10-15',
+					fieldId: 3,
+					fieldName: 'Sample date',
+					type: 'DateOnly',
+					origin: { originType: 'bookingsg' },
+				},
+			],
+		} as MapRequestOptionalResult);
+	});
+
+	it(`[DateOnly] should map empty date when field is not mandatory`, async () => {
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
+			Promise.resolve([createDateField({ isMandatory: false })]),
+		);
+		const dynamicValue = new PersistDynamicValueContract();
+		dynamicValue.fieldIdSigned = '3';
+		dynamicValue.type = DynamicValueTypeContract.DateOnly;
+		dynamicValue.dateOnlyValue = undefined;
+
+		const mapper = Container.get(DynamicValuesRequestMapper);
+		const dynamicReturn = await mapper.mapDynamicValues([dynamicValue], [], 100);
+		expect(dynamicReturn).toEqual({
+			result: [
+				{
+					fieldId: 3,
+					fieldName: 'Sample date',
+					origin: { originType: 'bookingsg' },
+				},
+			],
+		} as MapRequestOptionalResult);
+	});
+
+	it(`[DateOnly] should NOT map empty date when field is mandatory`, async () => {
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
+			Promise.resolve([createDateField({ isMandatory: true })]),
+		);
+		const dynamicValue = new PersistDynamicValueContract();
+		dynamicValue.fieldIdSigned = '3';
+		dynamicValue.type = DynamicValueTypeContract.DateOnly;
+		dynamicValue.dateOnlyValue = undefined;
+
+		const mapper = Container.get(DynamicValuesRequestMapper);
+		const dynamicReturn = await mapper.mapDynamicValues([dynamicValue], [], 100);
+		expect(dynamicReturn).toEqual({
+			errorResult: [
+				new BusinessValidation({
+					code: '10202',
+					message: 'Sample date field is required.',
+				}),
+			],
+		} as MapRequestOptionalResult);
+	});
+
+	it(`[DateOnly] should return validation when date is invalid and field is mandatory`, async () => {
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
+			Promise.resolve([createDateField({ isMandatory: true })]),
+		);
+		const dynamicValue = new PersistDynamicValueContract();
+		dynamicValue.fieldIdSigned = '3';
+		dynamicValue.type = DynamicValueTypeContract.DateOnly;
+		dynamicValue.dateOnlyValue = 'ASD';
+
+		const mapper = Container.get(DynamicValuesRequestMapper);
+		const dynamicReturn = await mapper.mapDynamicValues([dynamicValue], [], 100);
+		expect(dynamicReturn).toEqual({
+			errorResult: [
+				new BusinessValidation({
+					code: '10260',
+					message: 'Sample date value is not a valid date.',
+				}),
+			],
+		} as MapRequestOptionalResult);
+	});
+
+	it(`[DateOnly] should  return validation when date is invalid and field is NOT mandatory`, async () => {
+		DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
+			Promise.resolve([createDateField({ isMandatory: false })]),
+		);
+		const dynamicValue = new PersistDynamicValueContract();
+		dynamicValue.fieldIdSigned = '3';
+		dynamicValue.type = DynamicValueTypeContract.DateOnly;
+		dynamicValue.dateOnlyValue = 'ASD';
+
+		const mapper = Container.get(DynamicValuesRequestMapper);
+		const dynamicReturn = await mapper.mapDynamicValues([dynamicValue], [], 100);
+		expect(dynamicReturn).toEqual({
+			errorResult: [
+				new BusinessValidation({
+					code: '10260',
+					message: 'Sample date value is not a valid date.',
+				}),
+			],
+		} as MapRequestOptionalResult);
+	});
 });
-
-class UserContextMock implements Partial<UserContext> {
-	public static getCurrentUser = jest.fn<Promise<User>, any>();
-	public static getAuthGroups = jest.fn<Promise<AuthGroup[]>, any>();
-
-	public init() {}
-	public async getCurrentUser(...params): Promise<any> {
-		return await UserContextMock.getCurrentUser(...params);
-	}
-
-	public async getAuthGroups(...params): Promise<any> {
-		return await UserContextMock.getAuthGroups(...params);
-	}
-}

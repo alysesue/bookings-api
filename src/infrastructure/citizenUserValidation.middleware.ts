@@ -16,7 +16,7 @@ export class CitizenUserValidationMiddleware {
 
 			if (
 				user &&
-				user.isCitizen() &&
+				user.isSingPass() &&
 				// tslint:disable-next-line: tsr-detect-possible-timing-attacks
 				requestHeaders[MOLSecurityHeaderKeys.AUTH_TYPE] === MOLAuthType.USER &&
 				(!requestHeaders[MOLSecurityHeaderKeys.USER_AUTH_LEVEL] ||

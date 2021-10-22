@@ -19,7 +19,7 @@ import { TimeslotServiceProviderResult } from '../../../models/timeslotServicePr
 import { KoaContextStore } from '../../../infrastructure/koaContextStore.middleware';
 import { IPagedEntities } from '../../../core/pagedEntities';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
-import { ContainerContext } from '../../../infrastructure/containerContext';
+import { ContainerContextHolder } from '../../../infrastructure/containerContext';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
 import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
@@ -99,7 +99,7 @@ describe('Bookings.Controller', () => {
 		Container.bind(CaptchaService).to(CaptchaServiceMock);
 		Container.bind(KoaContextStore).factory(() => KoaContextStoreMock);
 		Container.bind(UserContext).to(UserContextMock);
-		Container.bind(ContainerContext).factory(() => ContainerContext);
+		ContainerContextHolder.registerInContainer();
 	});
 
 	beforeEach(() => {
@@ -492,7 +492,8 @@ describe('Bookings.Controller.V2', () => {
 		Container.bind(CaptchaService).to(CaptchaServiceMock);
 		Container.bind(KoaContextStore).factory(() => KoaContextStoreMock);
 		Container.bind(UserContext).to(UserContextMock);
-		Container.bind(ContainerContext).factory(() => ContainerContext);
+		ContainerContextHolder.registerInContainer();
+
 		Container.bind(IdHasher).to(IdHasherMock);
 	});
 

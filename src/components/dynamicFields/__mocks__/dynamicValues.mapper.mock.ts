@@ -1,3 +1,4 @@
+import { DynamicValueJsonModel } from '../../../models/entities/jsonModels';
 import { DynamicValueContract, DynamicValueTypeContract } from '../dynamicValues.apicontract';
 import { DynamicValuesMapper, DynamicValuesRequestMapper, MapRequestOptionalResult } from '../dynamicValues.mapper';
 
@@ -24,9 +25,19 @@ export class DynamicValuesMapperMock implements Partial<DynamicValuesMapper> {
 	}
 }
 export class DynamicValuesRequestMapperMock implements Partial<DynamicValuesRequestMapper> {
-	public static mapDynamicValuesRequest = jest.fn<Promise<MapRequestOptionalResult>, any>();
+	public static mapDynamicValues = jest.fn<Promise<MapRequestOptionalResult>, any>();
+	public static updateMyInfoDynamicFromUser = jest.fn<
+		Promise<DynamicValueJsonModel[]>,
+		[DynamicValueJsonModel[], number]
+	>();
 
-	public async mapDynamicValuesRequest(...params): Promise<MapRequestOptionalResult> {
-		return await DynamicValuesRequestMapperMock.mapDynamicValuesRequest(...params);
+	public async mapDynamicValues(...params): Promise<MapRequestOptionalResult> {
+		return await DynamicValuesRequestMapperMock.mapDynamicValues(...params);
+	}
+	public async updateMyInfoDynamicFromUser(
+		dynamicValues: DynamicValueJsonModel[],
+		serviceId: number,
+	): Promise<DynamicValueJsonModel[]> {
+		return await DynamicValuesRequestMapperMock.updateMyInfoDynamicFromUser(dynamicValues, serviceId);
 	}
 }
