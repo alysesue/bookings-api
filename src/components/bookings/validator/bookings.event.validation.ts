@@ -125,13 +125,16 @@ abstract class BookingsEventValidator extends Validator<Booking> implements IBoo
 		};
 		const eventBookings = await this.bookingsRepository.searchReturnAll(searchQuery);
 		let eventBookingsCount = eventBookings.length;
-		eventBookings.forEach((event) => {
-			if (event.status === BookingStatus.OnHold && !event.isValidOnHoldBooking()) {
-				eventBookingsCount--;
+		eventBookings.forEach((e) => {
+			if (e.status === BookingStatus.OnHold && !e.isValidOnHoldBooking()) {
+				eventBookingsCount = eventBookingsCount - 1;
 			}
 		});
-		eventBookingsCount = _booking.isValidOnHoldBooking() ? eventBookingsCount - 1 : eventBookingsCount;
 		const eventDetails = await this.eventService.getById(_booking.eventId);
+		eventBookingsCount =
+			_booking.isValidOnHoldBooking() && eventBookingsCount <= eventDetails.capacity
+				? eventBookingsCount - 1
+				: eventBookingsCount;
 		if (eventBookingsCount >= eventDetails.capacity) {
 			yield BookingBusinessValidations.EventCapacityUnavailable;
 		}
