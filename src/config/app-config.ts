@@ -62,6 +62,10 @@ export const getConfig = () => ({
 			sender: ConfigUtils.getValueFromEnv('MOL_SENDER_EMAIL', ''),
 		},
 	},
+	awsLambdaMailer: {
+		baseUrl: ConfigUtils.getValueFromEnv('APIGW_ENDPOINT_NODEMAILER'),
+		apikey: ConfigUtils.getValueFromEnv('APIGW_KEY'),
+	},
 });
 
 export const basePath = '/bookingsg';
