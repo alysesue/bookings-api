@@ -5,10 +5,10 @@ import {
 	BookingStatus,
 	BookingWorkflow,
 	ChangeLogAction,
+	Event,
 	Service,
 	ServiceProvider,
 	User,
-	Event,
 } from '../../models';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
@@ -18,7 +18,6 @@ import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
 import { UsersService } from '../users/users.service';
-import { IPagedEntities } from '../../core/pagedEntities';
 import { getConfig } from '../../config/app-config';
 import { MailObserver } from '../notifications/notification.observer';
 import { randomIndex } from '../../tools/arrays';
@@ -29,13 +28,13 @@ import { BookingsValidatorFactory } from './validator/bookings.validation';
 import {
 	BookingAcceptRequestV1,
 	BookingChangeUser,
+	BookingDetailsRequest,
 	BookingReject,
 	BookingRequestV1,
 	BookingSearchRequest,
-	EventBookingRequest,
 	BookingUpdateRequestV1,
+	EventBookingRequest,
 	ValidateOnHoldRequest,
-	BookingDetailsRequest,
 	SendBookingsToLifeSGRequest,
 } from './bookings.apicontract';
 import { BookingsRepository } from './bookings.repository';
@@ -44,12 +43,14 @@ import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
 import { EventsService } from '../events/events.service';
-import { BookingValidationType, BookingWorkflowType } from '../../models/bookingValidationType';
+import { BookingValidationType, BookingWorkflowType } from '../../models';
 import { BookingWorkflowsRepository } from '../bookingWorkflows/bookingWorkflows.repository';
 import { BookingsEventValidatorFactory } from './validator/bookings.event.validation';
 import { LifeSGMapper } from '../lifesg/lifesg.mapper';
 import { LifeSGMQService } from '../lifesg/lifesg.service';
 import { AppointmentAgency } from 'mol-lib-api-contract/appointment';
+import { CitizenAuthenticationType } from '../../models/citizenAuthenticationType';
+import { IPagedEntities } from '../../core/pagedEntities';
 
 @InRequestScope
 export class BookingsService {
@@ -282,7 +283,26 @@ export class BookingsService {
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<IPagedEntities<Booking>> {
-		return await this.bookingsRepository.search(searchRequest);
+		const bookings = await this.bookingsRepository.search(searchRequest);
+		const user = await this.userContext.getCurrentUser();
+
+		if (user && user.adminUser) {
+			return bookings;
+		}
+
+		if (user && (user.singPassUser || user.anonymousUser)) {
+			for (let booking of bookings.entries) {
+				if (booking.citizenAuthType === CitizenAuthenticationType.Singpass && user && user.singPassUser) {
+					return bookings;
+				}
+				if (booking.citizenAuthType === CitizenAuthenticationType.Otp && user && user.anonymousUser) {
+					return bookings;
+				}
+			}
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
+				`User type does not match booking's auth type`,
+			);
+		}
 	}
 
 	public async searchBookingsReturnAll(searchRequest: BookingSearchRequest): Promise<Booking[]> {
@@ -855,7 +875,7 @@ export class BookingsService {
 			});
 		});
 
-		if(appointments.length === 0){
+		if (appointments.length === 0) {
 			return `No appointment.`;
 		}
 		this.lifeSGMQService.sendMultiple(appointments);

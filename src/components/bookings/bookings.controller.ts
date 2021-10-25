@@ -67,6 +67,8 @@ export class BookingsController extends Controller {
 	private bookingsMapper: BookingsMapper;
 	@Inject
 	private apiPagingFactory: ApiPagingFactory;
+	@Inject
+	private idHasher: IdHasher;
 
 	@Inject
 	private idHasher: IdHasher;
@@ -305,6 +307,8 @@ export class BookingsController extends Controller {
 	 * @param @isInt page
 	 * @param @isInt limit
 	 * @param maxId
+	 * @param eventIds
+	 * @param bookingToken
 	 */
 	@Get('')
 	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
@@ -323,10 +327,17 @@ export class BookingsController extends Controller {
 		@Query() page?: number,
 		@Query() limit?: number,
 		@Query() maxId?: number,
+		@Query() eventIds: string[] = [],
+		@Query() bookingToken?: string,
 		@Header('x-api-service') serviceId?: number,
 	): Promise<ApiPagedData<BookingResponseV1>> {
 		if (!status) {
 			status = this.bookingsMapper.mapStatuses();
+		}
+
+		const unsignedEventIds = [];
+		for (const id of eventIds) {
+			unsignedEventIds.push(this.idHasher.decode(id));
 		}
 		const searchQuery: BookingSearchRequest = {
 			from,
@@ -340,6 +351,8 @@ export class BookingsController extends Controller {
 			page: page || DEFAULT_PAGE,
 			limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
 			maxId,
+			eventIds: unsignedEventIds,
+			bookingToken,
 		};
 
 		const pagedBookings = await this.bookingsService.searchBookings(searchQuery);
@@ -711,6 +724,8 @@ export class BookingsControllerV2 extends Controller {
 	 * @param @isInt page
 	 * @param @isInt limit
 	 * @param maxId
+	 * @param eventIds
+	 * @param bookingToken
 	 */
 	@Get('')
 	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
@@ -730,6 +745,7 @@ export class BookingsControllerV2 extends Controller {
 		@Query() limit?: number,
 		@Query() maxId?: string,
 		@Query() eventIds: string[] = [],
+		@Query() bookingToken?: string,
 		@Header('x-api-service') serviceId?: string,
 	): Promise<ApiPagedDataV2<BookingResponseV2>> {
 		if (!status) {
@@ -760,6 +776,7 @@ export class BookingsControllerV2 extends Controller {
 			limit: Math.min(limit || DEFAULT_LIMIT, DEFAULT_LIMIT),
 			maxId: this.idHasher.decode(maxId),
 			eventIds: unsignedEventIds,
+			bookingToken,
 		};
 
 		const pagedBookings = await this.bookingsService.searchBookings(searchQuery);

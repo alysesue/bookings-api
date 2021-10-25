@@ -25,6 +25,9 @@ export interface IAuthGroupVisitor {
 export type OtpGroupInfo = { mobileNo: string };
 
 export class AnonymousAuthGroup extends AuthGroup {
+	public bookingInfo?: BookingUUIDInfo;
+	public otpGroupInfo?: OtpGroupInfo;
+
 	constructor(user: User, bookingInfo?: BookingUUIDInfo, otpGroupInfo?: OtpGroupInfo) {
 		super(user);
 
@@ -35,9 +38,6 @@ export class AnonymousAuthGroup extends AuthGroup {
 		this.bookingInfo = bookingInfo;
 		this.otpGroupInfo = otpGroupInfo;
 	}
-
-	public bookingInfo?: BookingUUIDInfo;
-	public otpGroupInfo?: OtpGroupInfo;
 
 	public hasOTPUser(): boolean {
 		return !!this.otpGroupInfo?.mobileNo;

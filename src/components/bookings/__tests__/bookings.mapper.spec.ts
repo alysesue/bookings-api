@@ -450,7 +450,7 @@ describe('Bookings mapper tests', () => {
 		});
 	});
 
-	it('should NOT map uuid ', async () => {
+	it('should NOT map uuid - V1', async () => {
 		const mapper = Container.get(BookingsMapper);
 		const booking = getFullBookingInformation();
 
@@ -458,11 +458,27 @@ describe('Bookings mapper tests', () => {
 		expect(mapped.uuid).toBe(undefined);
 	});
 
-	it('should map uuid ', async () => {
+	it('should map uuid - V1', async () => {
 		const mapper = Container.get(BookingsMapper);
 		const booking = getFullBookingInformation();
 
 		const mapped = await mapper.mapDataModelV1(booking, { mapUUID: true });
+		expect(mapped.uuid).toBe('35703724-c99a-4fac-9546-d2b54c50b6fe');
+	});
+
+	it('should NOT map uuid - V2', async () => {
+		const mapper = Container.get(BookingsMapper);
+		const booking = getFullBookingInformation();
+
+		const mapped = await mapper.mapDataModelV2(booking);
+		expect(mapped.uuid).toBe(undefined);
+	});
+
+	it('should map uuid - V2', async () => {
+		const mapper = Container.get(BookingsMapper);
+		const booking = getFullBookingInformation();
+
+		const mapped = await mapper.mapDataModelV2(booking, { mapUUID: true });
 		expect(mapped.uuid).toBe('35703724-c99a-4fac-9546-d2b54c50b6fe');
 	});
 

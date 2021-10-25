@@ -99,7 +99,10 @@ describe('Bookings.Controller', () => {
 		Container.bind(CaptchaService).to(CaptchaServiceMock);
 		Container.bind(KoaContextStore).factory(() => KoaContextStoreMock);
 		Container.bind(UserContext).to(UserContextMock);
+		Container.bind(IdHasher).to(IdHasherMock);
 		ContainerContextHolder.registerInContainer();
+
+		IdHasherMock.decode.mockImplementation(() => 1);
 	});
 
 	beforeEach(() => {
@@ -169,7 +172,16 @@ describe('Bookings.Controller', () => {
 		const to = new Date('2020-05-16T21:25:43.511Z');
 		const fromCreatedDate = new Date('2020-05-10T20:25:43.511Z');
 		const toCreatedDate = new Date('2020-05-20T21:25:43.511Z');
+		const status = [1];
 		const citizenUinFins = ['abc123', 'xyz456'];
+		const serviceProviderIds = undefined;
+		const page = undefined;
+		const limit = undefined;
+		const maxId = undefined;
+		const eventIds = undefined;
+		const bookingToken = undefined;
+		const serviceId = 1;
+
 		const controller = Container.get(BookingsController);
 
 		const result = await controller.getBookings(
@@ -177,13 +189,15 @@ describe('Bookings.Controller', () => {
 			to,
 			fromCreatedDate,
 			toCreatedDate,
-			[1],
+			status,
 			citizenUinFins,
-			undefined,
-			undefined,
-			undefined,
-			undefined,
-			1,
+			serviceProviderIds,
+			page,
+			limit,
+			maxId,
+			eventIds,
+			bookingToken,
+			serviceId,
 		);
 
 		expect(BookingsServiceMock.searchBookings).toHaveBeenCalledWith({
@@ -196,6 +210,10 @@ describe('Bookings.Controller', () => {
 			serviceId: 1,
 			page: 1,
 			limit: 100,
+			bookingToken: undefined,
+			eventIds: [],
+			maxId: undefined,
+			serviceProviderIds: undefined,
 		});
 
 		expect(result.data.length).toBe(1);
@@ -220,7 +238,16 @@ describe('Bookings.Controller', () => {
 		const to = new Date('2020-05-16T21:25:43.511Z');
 		const fromCreatedDate = new Date('2020-05-10T20:25:43.511Z');
 		const toCreatedDate = new Date('2020-05-20T21:25:43.511Z');
+		const status = [1];
 		const citizenUinFins = ['abc123', 'xyz456'];
+		const serviceProviderIds = [55];
+		const page = 2;
+		const limit = 50;
+		const maxId = 123;
+		const eventIds = ['event1', 'event2'];
+		const bookingToken = '66623746-ca76-4406-8138-0ca7ab0486cc';
+		const serviceId = 1;
+
 		const controller = Container.get(BookingsController);
 
 		const result = await controller.getBookings(
@@ -228,13 +255,15 @@ describe('Bookings.Controller', () => {
 			to,
 			fromCreatedDate,
 			toCreatedDate,
-			[1],
+			status,
 			citizenUinFins,
-			[55],
-			2,
-			50,
-			123,
-			1,
+			serviceProviderIds,
+			page,
+			limit,
+			maxId,
+			eventIds,
+			bookingToken,
+			serviceId,
 		);
 
 		expect(BookingsServiceMock.searchBookings).toHaveBeenCalledWith({
@@ -249,6 +278,8 @@ describe('Bookings.Controller', () => {
 			page: 2,
 			limit: 50,
 			maxId: 123,
+			bookingToken: '66623746-ca76-4406-8138-0ca7ab0486cc',
+			eventIds: [undefined, undefined],
 		});
 
 		expect(result.data.length).toBe(1);
@@ -437,6 +468,77 @@ describe('Bookings.Controller', () => {
 		expect(KoaContextStoreMock.koaContext.body).toBeDefined();
 		expect(typeof KoaContextStoreMock.koaContext.body).toBe('string');
 	});
+
+	it('should search all bookings by booking token and return one booking', async () => {
+		const controller = Container.get(BookingsController);
+		const startTime = new Date('2020-10-01T01:00:00');
+		const endTime = new Date('2020-10-01T02:00:00');
+		const bookingUUID = uuid.v4();
+
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withServiceProviderId(2)
+			.withStartDateTime(startTime)
+			.withEndDateTime(endTime)
+			.build();
+		booking.service = new Service();
+		booking.service.organisation = new Organisation();
+		booking.uuid = bookingUUID;
+
+		BookingsServiceMock.searchBookings.mockImplementation(() =>
+			Promise.resolve(({
+				entries: [booking],
+			} as unknown) as IPagedEntities<Booking>),
+		);
+
+		const from = undefined;
+		const to = undefined;
+		const fromCreatedDate = undefined;
+		const toCreatedDate = undefined;
+		const status = undefined;
+		const citizenUinFins = undefined;
+		const serviceProviderIds = undefined;
+		const page = undefined;
+		const limit = undefined;
+		const maxId = undefined;
+		const bookingToken = '66623746-ca76-4406-8138-0ca7ab0486cc';
+		const serviceId = undefined;
+		const eventIds = undefined;
+
+		const result = await controller.getBookings(
+			from,
+			to,
+			fromCreatedDate,
+			toCreatedDate,
+			status,
+			citizenUinFins,
+			serviceProviderIds,
+			page,
+			limit,
+			maxId,
+			eventIds,
+			bookingToken,
+			serviceId,
+		);
+
+		expect(BookingsServiceMock.searchBookings).toHaveBeenCalledWith({
+			from: undefined,
+			to: undefined,
+			fromCreatedDate: undefined,
+			toCreatedDate: undefined,
+			statuses: [1, 2, 3, 4, 6],
+			citizenUinFins: undefined,
+			serviceId: undefined,
+			serviceProviderIds: undefined,
+			page: 1,
+			limit: 100,
+			maxId: undefined,
+			eventIds: [],
+			bookingToken: '66623746-ca76-4406-8138-0ca7ab0486cc',
+		});
+
+		expect(result.data.length).toBe(1);
+	});
 });
 
 // tslint:disable-next-line: no-big-function
@@ -589,24 +691,31 @@ describe('Bookings.Controller.V2', () => {
 		const to = new Date('2020-05-16T21:25:43.511Z');
 		const fromCreatedDate = new Date('2020-05-10T20:25:43.511Z');
 		const toCreatedDate = new Date('2020-05-20T21:25:43.511Z');
+		const status = [1];
 		const citizenUinFins = ['abc123', 'xyz456'];
-		const controller = Container.get(BookingsControllerV2);
-
 		const serviceProviderIds = ['10'];
+		const page = undefined;
+		const limit = undefined;
+		const maxId = undefined;
+		const bookingToken = '3e813466-c2ee-4b25-ae6e-77cc7dbe8878';
 		const serviceId = '1';
+		const eventIds = ['123', '345'];
+
+		const controller = Container.get(BookingsControllerV2);
 
 		const result = await controller.getBookings(
 			from,
 			to,
 			fromCreatedDate,
 			toCreatedDate,
-			[1],
+			status,
 			citizenUinFins,
 			serviceProviderIds,
-			undefined,
-			undefined,
-			undefined,
-			['123', '345'],
+			page,
+			limit,
+			maxId,
+			eventIds,
+			bookingToken,
 			serviceId,
 		);
 
@@ -623,6 +732,7 @@ describe('Bookings.Controller.V2', () => {
 			maxId: undefined,
 			serviceProviderIds: [10],
 			eventIds: [123, 345],
+			bookingToken: '3e813466-c2ee-4b25-ae6e-77cc7dbe8878',
 		});
 		expect(result.data.length).toBe(1);
 		expect(result.data[0]).toEqual({
@@ -653,6 +763,7 @@ describe('Bookings.Controller.V2', () => {
 
 		const serviceProviderIds = ['10'];
 		const serviceId = '1';
+		const bookingToken = '3e813466-c2ee-4b25-ae6e-77cc7dbe8878';
 
 		const result = await controller.getBookings(
 			from,
@@ -666,6 +777,7 @@ describe('Bookings.Controller.V2', () => {
 			50,
 			'123',
 			['123', '345'],
+			bookingToken,
 			serviceId,
 		);
 
@@ -682,6 +794,7 @@ describe('Bookings.Controller.V2', () => {
 			limit: 50,
 			maxId: 123,
 			eventIds: [123, 345],
+			bookingToken: '3e813466-c2ee-4b25-ae6e-77cc7dbe8878',
 		});
 
 		expect(result.data.length).toBe(1);
@@ -851,6 +964,77 @@ describe('Bookings.Controller.V2', () => {
 
 		expect(KoaContextStoreMock.koaContext.body).toBeDefined();
 		expect(typeof KoaContextStoreMock.koaContext.body).toBe('string');
+	});
+
+	it('should search all bookings by booking token and return one booking', async () => {
+		const controller = Container.get(BookingsControllerV2);
+		const startTime = new Date('2020-10-01T01:00:00');
+		const endTime = new Date('2020-10-01T02:00:00');
+		const bookingUUID = uuid.v4();
+
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withServiceProviderId(2)
+			.withStartDateTime(startTime)
+			.withEndDateTime(endTime)
+			.build();
+		booking.service = new Service();
+		booking.service.organisation = new Organisation();
+		booking.uuid = bookingUUID;
+
+		BookingsServiceMock.searchBookings.mockImplementation(() =>
+			Promise.resolve(({
+				entries: [booking],
+			} as unknown) as IPagedEntities<Booking>),
+		);
+
+		const from = undefined;
+		const to = undefined;
+		const fromCreatedDate = undefined;
+		const toCreatedDate = undefined;
+		const status = undefined;
+		const citizenUinFins = undefined;
+		const serviceProviderIds = undefined;
+		const page = undefined;
+		const limit = undefined;
+		const maxId = undefined;
+		const bookingToken = '66623746-ca76-4406-8138-0ca7ab0486cc';
+		const serviceId = undefined;
+		const eventIds = undefined;
+
+		const result = await controller.getBookings(
+			from,
+			to,
+			fromCreatedDate,
+			toCreatedDate,
+			status,
+			citizenUinFins,
+			serviceProviderIds,
+			page,
+			limit,
+			maxId,
+			eventIds,
+			bookingToken,
+			serviceId,
+		);
+
+		expect(BookingsServiceMock.searchBookings).toHaveBeenCalledWith({
+			from: undefined,
+			to: undefined,
+			fromCreatedDate: undefined,
+			toCreatedDate: undefined,
+			statuses: [1, 2, 3, 4, 6],
+			citizenUinFins: undefined,
+			serviceId: undefined,
+			serviceProviderIds: [],
+			page: 1,
+			limit: 100,
+			maxId: undefined,
+			eventIds: [],
+			bookingToken: '66623746-ca76-4406-8138-0ca7ab0486cc',
+		});
+
+		expect(result.data.length).toBe(1);
 	});
 
 	it('should change booking user', async () => {

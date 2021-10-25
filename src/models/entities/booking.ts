@@ -23,6 +23,7 @@ import { DynamicValueJsonModel } from './jsonModels';
 import { BookingWorkflow } from './bookingWorkflow';
 import { BookedSlot } from './bookedSlot';
 import { Salutations } from '../salutations';
+import { CitizenAuthenticationType } from '../citizenAuthenticationType';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
@@ -379,6 +380,8 @@ export class Booking {
 	public static createNew({ creator }: { creator: User }): Booking {
 		const instance = new Booking();
 		instance._creator = creator;
+		if (creator.singPassUser) instance.citizenAuthType = CitizenAuthenticationType.Singpass;
+		if (creator.anonymousUser) instance.citizenAuthType = CitizenAuthenticationType.Otp;
 
 		return instance;
 	}
@@ -607,5 +610,16 @@ export class Booking {
 
 	public set dynamicValues(value: DynamicValueJsonModel[]) {
 		this._dynamicValues = value;
+	}
+
+	@Column({ nullable: true })
+	private _citizenAuthType: CitizenAuthenticationType;
+
+	public get citizenAuthType(): CitizenAuthenticationType {
+		return this._citizenAuthType;
+	}
+
+	public set citizenAuthType(value: CitizenAuthenticationType) {
+		this._citizenAuthType = value;
 	}
 }

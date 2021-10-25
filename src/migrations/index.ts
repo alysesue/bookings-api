@@ -47,6 +47,7 @@ export { EventNewFileds1634023542037 } from './1634023542037-eventNewFileds';
 export { PopulateEventNewFields } from './data/1634023542099-PopulateeventNewFileds';
 export { MyInfoDynamicFields1633925119821 } from './1633925119821-MyInfoDynamicFields';
 export { DateOnlyDynamicField1634081882047 } from './1634081882047-DateOnlyDynamicField';
+export { BookingAuthType1635209273424 } from './1635209273424-BookingAuthType';
 export { RequireVerifyBySA1634715633982 } from './1634715633982-RequireVerifyBySA';
 export { OnDeleteCascade1636444162404 } from './1636444162404-OnDeleteCascade';
 export { EventDefaults1636501334693 } from './1636501334693-EventDefaults';

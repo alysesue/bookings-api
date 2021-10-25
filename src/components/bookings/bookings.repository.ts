@@ -179,6 +179,8 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		const createdFromCondition = request.fromCreatedDate ? 'createdlog."_timestamp" > :fromCreatedDate' : '';
 		const createdToCondition = request.toCreatedDate ? 'createdlog."_timestamp" < :toCreatedDate' : '';
 
+		const bookingTokenCondition = request.bookingToken ? 'booking."_uuid" = :bookingToken' : '';
+
 		const query = (
 			await this.createSelectQuery(
 				[
@@ -191,6 +193,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 					statusesCondition,
 					citizenUinFinsCondition,
 					eventCondition,
+					bookingTokenCondition,
 				],
 				{
 					serviceId: request.serviceId,
@@ -202,6 +205,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 					statuses: request.statuses,
 					citizenUinFins: request.citizenUinFins,
 					eventIds: request.eventIds,
+					bookingToken: request.bookingToken,
 				},
 				request,
 			)
@@ -225,10 +229,5 @@ export type BookingSearchQuery = {
 	limit: number;
 	maxId?: number;
 	eventIds?: number[];
-};
-
-export type PagedEntities<T> = {
-	data: T[];
-	total: number;
-	page: number;
+	bookingToken?: string;
 };

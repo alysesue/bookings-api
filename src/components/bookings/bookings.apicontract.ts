@@ -2,6 +2,7 @@ import { BookingStatus, BookingValidationType, BookingWorkflowType, Salutations 
 import { PagingRequest } from '../../apicontract';
 import { PersistDynamicValueContract, DynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
 import { EventResponse } from '../events/events.apicontract';
+import { CitizenAuthenticationType } from '../../models/citizenAuthenticationType';
 
 export class BookingAcceptRequestV1 {
 	/**
@@ -118,6 +119,7 @@ export class BookingResponseBase {
 	 */
 	public uuid?: string;
 	public event?: EventResponse;
+	public citizenAuthType?: CitizenAuthenticationType;
 }
 
 export class BookingResponseV1 extends BookingResponseBase {
@@ -164,6 +166,7 @@ export class BookingSearchRequest extends PagingRequest {
 	public citizenUinFins?: string[];
 	public eventIds?: number[];
 	public byPassAuth?: boolean;
+	public bookingToken?: string;
 }
 
 export class BookingProviderResponseV1 {

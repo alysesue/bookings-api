@@ -170,6 +170,7 @@ export class BookingsMapper {
 			sendNotifications: booking.service?.sendNotifications,
 			sendSMSNotifications: booking.service?.sendSMSNotifications,
 			event: booking.event ? this.eventsMapper.mapToResponse(booking.event) : undefined,
+			citizenAuthType: booking.citizenAuthType,
 		};
 
 		if (mapUUID) {
