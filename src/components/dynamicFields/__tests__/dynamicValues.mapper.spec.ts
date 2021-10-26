@@ -1,7 +1,7 @@
 import { Container } from 'typescript-ioc';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
-import { DynamicValueJsonModel, DynamicValueType } from '../../../models/entities/jsonModels';
+import { DynamicValueJsonModel, DynamicValueType, InformationOriginType } from '../../../models/entities/jsonModels';
 import { DynamicValuesMapper, DynamicValuesRequestMapper, MapRequestOptionalResult } from '../dynamicValues.mapper';
 import {
 	DynamicValueContract,
@@ -21,6 +21,15 @@ import { UserContext } from '../../../infrastructure/auth/userContext';
 import { ContainerContextHolder } from '../../../infrastructure/containerContext';
 
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
+import { MyInfoResponseMapper } from '../../../components/myInfo/myInfoResponseMapper';
+import { MyInfoResponseMapperMock } from '../../../components/myInfo/__mocks__/myInfoResponseMapper.mock';
+
+jest.mock('../../../components/myInfo/myInfoResponseMapper', () => {
+	class MyInfoResponseMapper {}
+	return {
+		MyInfoResponseMapper,
+	};
+});
 
 jest.mock('../dynamicFields.service', () => {
 	class DynamicFieldsService {}
@@ -33,6 +42,7 @@ beforeAll(() => {
 	Container.bind(IdHasher).to(IdHasherMock);
 	Container.bind(DynamicFieldsService).to(DynamicFieldsServiceMock);
 	Container.bind(UserContext).to(UserContextMock);
+	Container.bind(MyInfoResponseMapper).to(MyInfoResponseMapperMock);
 	ContainerContextHolder.registerInContainer();
 });
 
@@ -180,6 +190,44 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		const dynamicReturn = mapper.mapDynamicValuesModel([]);
 
 		expect(dynamicReturn).toEqual([]);
+	});
+
+	it('[Response] should map origin to readonly', async () => {
+		MyInfoResponseMapperMock.isOriginReadonly.mockReturnValue(true);
+		const dynamicValueJson = {
+			fieldId: 1,
+			fieldName: 'testname',
+			type: DynamicValueType.Text,
+			textValue: 'some text',
+			origin: {
+				originType: InformationOriginType.MyInfo,
+				myInfoOrigin: {
+					classification: '',
+					lastupdated: '',
+					source: '1',
+				},
+			},
+		} as DynamicValueJsonModel;
+
+		const mapper = Container.get(DynamicValuesMapper);
+		const res = mapper.mapDynamicValueModel(dynamicValueJson);
+		expect(MyInfoResponseMapperMock.isOriginReadonly).toBeCalledWith(dynamicValueJson.origin);
+		expect(res.isReadonly).toEqual(true);
+	});
+
+	it('[Response] should map origin to not readonly', async () => {
+		MyInfoResponseMapperMock.isOriginReadonly.mockReturnValue(false);
+		const dynamicValueJson = {
+			fieldId: 1,
+			fieldName: 'testname',
+			type: DynamicValueType.Text,
+			textValue: 'some text',
+		} as DynamicValueJsonModel;
+
+		const mapper = Container.get(DynamicValuesMapper);
+		const res = mapper.mapDynamicValueModel(dynamicValueJson);
+		expect(MyInfoResponseMapperMock.isOriginReadonly).toBeCalledWith(dynamicValueJson.origin);
+		expect(res.isReadonly).toEqual(false);
 	});
 
 	it(`should map request fields`, async () => {

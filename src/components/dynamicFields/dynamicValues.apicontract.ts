@@ -27,4 +27,8 @@ export class DynamicValueContract {
 	public singleSelectionValue?: string;
 	public textValue?: string;
 	public dateOnlyValue?: string;
+	/**
+	 * Whether this value should not change. E.g. Verified MyInfo values.
+	 */
+	public isReadonly?: boolean;
 }

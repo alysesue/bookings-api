@@ -1,9 +1,9 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import {
 	DynamicValueJsonModel,
+	DynamicValueOrigin,
 	DynamicValueType,
 	InformationOriginType,
-	MyInfoOrigin,
 } from '../../models/entities/jsonModels';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { MyInfoResponse } from '../../models/myInfoTypes';
@@ -57,12 +57,16 @@ export class MyInfoResponseMapper {
 		return value as DynamicValueJsonModel;
 	}
 
-	private mapOrigin(
-		origin: MyInfoOriginRaw,
-	): {
-		originType: InformationOriginType;
-		myInfoOrigin: MyInfoOrigin;
-	} {
+	public isOriginReadonly(valueOrigin: DynamicValueOrigin | undefined): boolean {
+		return (
+			!!valueOrigin &&
+			valueOrigin.originType === InformationOriginType.MyInfo &&
+			!!valueOrigin.myInfoOrigin &&
+			valueOrigin.myInfoOrigin.source === '1' //verified
+		);
+	}
+
+	private mapOrigin(origin: MyInfoOriginRaw): DynamicValueOrigin {
 		return {
 			originType: InformationOriginType.MyInfo,
 			myInfoOrigin: {

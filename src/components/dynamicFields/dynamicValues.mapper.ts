@@ -112,6 +112,9 @@ export class DynamicValuesMapper {
 	@Inject
 	private idHasher: IdHasher;
 
+	@Inject
+	private myInfoResponseMapper: MyInfoResponseMapper;
+
 	public mapDynamicValuesModel(dynamicValues: DynamicValueJsonModel[]): DynamicValueContract[] | undefined {
 		return dynamicValues?.map((obj) => this.mapDynamicValueModel(obj));
 	}
@@ -135,6 +138,7 @@ export class DynamicValuesMapper {
 		contract.textValue = value.textValue;
 		contract.myInfoFieldType = value.myInfoFieldType;
 		contract.dateOnlyValue = value.dateOnlyValue;
+		contract.isReadonly = this.myInfoResponseMapper.isOriginReadonly(value.origin);
 
 		return contract;
 	}
