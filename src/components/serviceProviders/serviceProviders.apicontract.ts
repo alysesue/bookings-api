@@ -5,8 +5,8 @@ import { ServiceProviderLabelResponseModel } from '../serviceProvidersLabels/ser
 
 export class ServiceProviderModel {
 	public name: string;
-	public email?: string;
-	public phone?: string;
+	public email?: string | null;
+	public phone?: string | null;
 	public expiryDate?: Date | null;
 	public description?: string | null;
 	public aliasName?: string | null;
