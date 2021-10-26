@@ -138,16 +138,16 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitorAsync {
 
 		const isCitizenReadonly = this.myInfoMetadata.isCitizenReadonly(_myInfoDynamicField);
 		const { _fieldValue, _existingValue } = this._validationState;
+		const isExistingValueReadOnly = _existingValue
+			? this.myInfoResponseMapper.isOriginReadonly(_existingValue.origin)
+			: false;
 		let result: ValidationState = cloneDeep(this._validationState);
-		result._valueJson = undefined;
 
-		if (isCitizenReadonly) {
-			if (currentUser.isSingPass()) {
-				result._valueJson = await this.myInfoResponseMapper.mapOriginalValue(_myInfoDynamicField);
-			} else {
-				result._valueJson = _existingValue;
-			}
-		} else {
+		result._valueJson = _existingValue;
+
+		if (isCitizenReadonly && currentUser.isSingPass()) {
+			result._valueJson = await this.myInfoResponseMapper.mapOriginalValue(_myInfoDynamicField);
+		} else if (!isExistingValueReadOnly) {
 			if (_fieldValue) {
 				const metadata = this.myInfoMetadata.getFieldMetadata(_myInfoDynamicField);
 				const metadataVisitor = this.containerContext.resolve(DynamicValueRequestVisitor);
@@ -159,6 +159,8 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitorAsync {
 
 				result = cloneDeep(metadataVisitor._validationState);
 				result._valueJson.myInfoFieldType = _myInfoDynamicField.myInfoFieldType;
+			} else {
+				result._valueJson = undefined
 			}
 		}
 

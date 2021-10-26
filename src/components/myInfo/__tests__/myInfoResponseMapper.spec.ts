@@ -5,6 +5,7 @@ import { infoRawMock } from '../__mocks__/infoRaw.mock';
 import { MyInfoResponseMapper } from '../myInfoResponseMapper';
 import { MyInfoDynamicField } from '../../../models';
 import { MyInfoFieldType } from '../../../models/entities/myInfoFieldType';
+import { InformationOriginType } from '../../../models/entities/jsonModels';
 
 beforeAll(() => {
 	Container.bind(UserContext).to(UserContextMock);
@@ -155,6 +156,60 @@ describe('MyInfo response mapper', () => {
 				},
 				originType: 'myinfo',
 			},
+		});
+	});
+
+	describe('isOriginReadonly', () => {
+		it('returns false if value is empty', () => {
+			const myInfoResponseMapper = Container.get(MyInfoResponseMapper);
+			const result = myInfoResponseMapper.isOriginReadonly(undefined);
+			expect(result).toBe(false);
+			const result2 = myInfoResponseMapper.isOriginReadonly(null);
+			expect(result2).toBe(false);
+		});
+		it('returns false if origin type is not myinfo', () => {
+			const myInfoResponseMapper = Container.get(MyInfoResponseMapper);
+			const result = myInfoResponseMapper.isOriginReadonly({
+				originType: InformationOriginType.BookingSG,
+			});
+			expect(result).toBe(false);
+		});
+		it('returns false if there is no myinfo origin information', () => {
+			const myInfoResponseMapper = Container.get(MyInfoResponseMapper);
+			const result = myInfoResponseMapper.isOriginReadonly({
+				originType: InformationOriginType.MyInfo,
+			});
+			expect(result).toBe(false);
+		});
+		it('returns false if myinfo origin source is not 1', () => {
+			const myInfoResponseMapper = Container.get(MyInfoResponseMapper);
+			const result = myInfoResponseMapper.isOriginReadonly({
+				originType: InformationOriginType.MyInfo,
+				myInfoOrigin: {
+					source: '3',
+				},
+			});
+			expect(result).toBe(false);
+		});
+		it('returns true if myinfo origin source is 1', () => {
+			const myInfoResponseMapper = Container.get(MyInfoResponseMapper);
+			const result = myInfoResponseMapper.isOriginReadonly({
+				originType: InformationOriginType.MyInfo,
+				myInfoOrigin: {
+					source: '1',
+				},
+			});
+			expect(result).toBe(true);
+		});
+		it('returns false if myinfo origin source is 1 and origin type is not MyInfo', () => {
+			const myInfoResponseMapper = Container.get(MyInfoResponseMapper);
+			const result = myInfoResponseMapper.isOriginReadonly({
+				originType: InformationOriginType.BookingSG,
+				myInfoOrigin: {
+					source: '1',
+				},
+			});
+			expect(result).toBe(false);
 		});
 	});
 });
