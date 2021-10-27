@@ -51,7 +51,6 @@ export class EventsRepository extends RepositoryBase<Event> {
 
 	public async save(event: Event): Promise<Event> {
 		if (!event) return null;
-
 		const repository = await this.getRepository();
 		return this.transactionManager.runInTransaction(DefaultIsolationLevel, async () => {
 			const oneOffTimeslots = event.oneOffTimeslots;
@@ -135,7 +134,7 @@ export class EventsRepository extends RepositoryBase<Event> {
 			labelsConditionsString = labelsCondition.length ? andWhere(labelsCondition) : '';
 		}
 
-		const titleParam = title && `${title}%`;
+		const titleParam = title && `%${title}%`;
 		const query = await this.createSelectQuery(
 			[
 				serviceCondition,
@@ -160,6 +159,7 @@ export class EventsRepository extends RepositoryBase<Event> {
 
 		if (title) {
 			query.orderBy('event._title');
+			query.addOrderBy('event._firstStartDateTime');
 		} else query.orderBy('event._firstStartDateTime');
 
 		return query;
