@@ -1532,7 +1532,7 @@ describe('Bookings.Service', () => {
 			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(standAloneService));
 
 			const result = await bookingService.reschedule(1, rescheduleRequest);
-			//Create OnHold
+			// Create OnHold
 			expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Create);
 			expect(result.status).toStrictEqual(BookingStatus.OnHold);
 		});
