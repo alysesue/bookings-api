@@ -10,9 +10,9 @@ jest.mock('axios');
 jest.mock('../../../config/app-config', () => {
 	const configMock = {
 		isLocal: true,
-		awsLambdaMailer: {
-			baseUrl: 'https:www.google.com',
-			apikey: '1234567',
+		runtimeInjectedVariables: {
+			nodemailerEndpoint: 'https:www.google.com',
+			awsApigatewayApiKey: '1234567',
 		},
 		email: {
 			mol: {
