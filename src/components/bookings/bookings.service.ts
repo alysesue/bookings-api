@@ -478,7 +478,7 @@ export class BookingsService {
 				);
 			}
 		}
-		if (booking.status === BookingStatus.PendingApprovalSA) {
+		if (booking.status === BookingStatus.PendingApprovalSA && !provider.autoAcceptBookings) {
 			booking.status = BookingStatus.PendingApproval;
 		} else {
 			booking.status = BookingStatus.Accepted;
