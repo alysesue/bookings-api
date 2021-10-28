@@ -2,10 +2,9 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { logger } from 'mol-lib-common';
 import { getConfig } from '../../config/app-config';
 import { post } from '../../tools/fetch';
-import { GoogleVerifyApiRequest, GoogleVerifyApiRequestHeader, GoogleVerifyApiResponse } from './captcha.apicontract';
+import { GoogleVerifyApiRequest, GoogleVerifyApiResponse } from './captcha.apicontract';
 import { KoaContextStore } from '../../infrastructure/koaContextStore.middleware';
 
-const RECATPCHA_URL = 'https://recaptchaenterprise.googleapis.com';
 const RECAPTCHA_THRESHOLD = 0.5;
 
 @InRequestScope
