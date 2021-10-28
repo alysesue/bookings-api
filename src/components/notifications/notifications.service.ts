@@ -23,9 +23,9 @@ export class NotificationsService {
 		try {
 			const { data } = await axios.request({
 				method: 'post',
-				url: this.config.awsLambdaMailer.baseUrl,
+				url: this.config.runtimeInjectedVariables.nodemailerEndpoint,
 				data: JSON.stringify({ ...mergedOptions, to: recipients }),
-				headers: { 'x-api-key': this.config.awsLambdaMailer.apikey },
+				headers: { 'x-api-key': this.config.runtimeInjectedVariables.awsApigatewayApiKey },
 			});
 			const info = JSON.parse(data);
 

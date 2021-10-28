@@ -23,13 +23,14 @@ export class CaptchaService {
 		const origin = koaContext.header.origin;
 
 		if (token) {
-			const apiKey = config.recaptchaApiKey;
+			const googleApiKey = config.recaptchaApiKey;
 			const siteKey = config.recaptchaSiteKey;
 			const projectId = config.recaptchaProjectId;
+			const apigatewayApiKey = config.runtimeInjectedVariables.awsApigatewayApiKey;
 			const res = await post<GoogleVerifyApiResponse>(
-				`${RECATPCHA_URL}/v1beta1/projects/${projectId}/assessments?key=${apiKey}`,
+				`${config.runtimeInjectedVariables.recaptchaEndpoint}/v1beta1/projects/${projectId}/assessments?key=${googleApiKey}`,
 				new GoogleVerifyApiRequest(token, siteKey),
-				new GoogleVerifyApiRequestHeader(origin),
+				{ referer: origin, 'x-api-key': apigatewayApiKey },
 			);
 			const result = res.tokenProperties.valid && res.score && res.score >= RECAPTCHA_THRESHOLD;
 			if (!result) {

@@ -62,9 +62,11 @@ export const getConfig = () => ({
 			sender: ConfigUtils.getValueFromEnv('MOL_SENDER_EMAIL', ''),
 		},
 	},
-	awsLambdaMailer: {
-		baseUrl: ConfigUtils.getValueFromEnv('APIGW_ENDPOINT_NODEMAILER'),
-		apikey: ConfigUtils.getValueFromEnv('APIGW_KEY'),
+	// following params are injected into our container at runtime, hence they are not found in our env variables
+	runtimeInjectedVariables: {
+		awsApigatewayApiKey: ConfigUtils.getValueFromEnv('APIGW_KEY'),
+		nodemailerEndpoint: ConfigUtils.getValueFromEnv('APIGW_ENDPOINT_NODEMAILER'),
+		recaptchaEndpoint: ConfigUtils.getValueFromEnv('APIGW_ENDPOINT_PROXY/recaptcha'),
 	},
 });
 

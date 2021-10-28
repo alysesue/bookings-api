@@ -76,9 +76,9 @@ describe('Send email', () => {
 		};
 		const expectedOptions = {
 			method: 'post',
-			url: getConfig().awsLambdaMailer.baseUrl,
+			url: getConfig().runtimeInjectedVariables.nodemailerEndpoint,
 			data: JSON.stringify({ ...options, to: options.to.join(',') }),
-			headers: { 'x-api-key': getConfig().awsLambdaMailer.apikey },
+			headers: { 'x-api-key': getConfig().runtimeInjectedVariables.awsApigatewayApiKey },
 		};
 
 		const instance = await Container.get(NotificationsService);
@@ -96,9 +96,9 @@ describe('Send email', () => {
 
 		const expectedOptions = {
 			method: 'post',
-			url: getConfig().awsLambdaMailer.baseUrl,
+			url: getConfig().runtimeInjectedVariables.nodemailerEndpoint,
 			data: JSON.stringify({ ...options, to: options.to.join(',') }),
-			headers: { 'x-api-key': getConfig().awsLambdaMailer.apikey },
+			headers: { 'x-api-key': getConfig().runtimeInjectedVariables.awsApigatewayApiKey },
 		};
 
 		const instance = await Container.get(NotificationsService);
