@@ -30,6 +30,9 @@ describe('Captcha Service', () => {
 			recaptchaProjectId: '',
 			recaptchaSiteKey: '',
 			isAutomatedTest: false,
+			runtimeInjectedVariables: {
+				awsApigatewayApiKey: '1234567',
+			},
 		});
 	});
 
@@ -54,6 +57,9 @@ describe('Captcha Service', () => {
 			recaptchaProjectId: '',
 			recaptchaSiteKey: '',
 			isAutomatedTest: true,
+			runtimeInjectedVariables: {
+				awsApigatewayApiKey: '1234567',
+			},
 		});
 
 		expect(await Container.get(CaptchaService).verify('123')).toBe(true);
