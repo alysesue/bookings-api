@@ -10,7 +10,7 @@ import {
 	CitizenEmailTemplateBookingActionByServiceProvider,
 } from '../templates/citizen.mail';
 import { getConfig } from '../../../config/app-config';
-import { Booking, Service, ServiceProvider, User } from '../../../models';
+import { Booking, BookingStatus, Service, ServiceProvider, User } from '../../../models';
 import { BookingType } from '../../../models/bookingType';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
@@ -49,6 +49,7 @@ describe('Test template call', () => {
 		EmailBookingTemplateMock.CreatedBookingEmailMock.mockReturnValue(templateValue);
 		EmailBookingTemplateMock.UpdatedBookingEmailMock.mockReturnValue(templateValue);
 		EmailBookingTemplateMock.CancelledBookingEmailMock.mockReturnValue(templateValue);
+		EmailBookingTemplateMock.ApprovedBySABookingEmailMock.mockReturnValue(templateValue);
 		(logger.info as jest.Mock).mockImplementation(() => {});
 
 		booking = new Booking();
@@ -164,5 +165,22 @@ describe('Test template call', () => {
 		await Container.get(MailObserver).update(bookingSubject);
 		expect(EmailBookingTemplateMock.CancelledBookingEmailMock).toHaveBeenCalledTimes(2);
 		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(2);
+	});
+
+	it('should send 1 email with createTemplate when BookingType = Approved', async () => {
+		const bookingSubject = new BookingsSubject();
+		bookingSubject.notify({ booking, bookingType: BookingType.ApprovedBySA });
+		await Container.get(MailObserver).update(bookingSubject);
+		expect(EmailBookingTemplateMock.ApprovedBySABookingEmailMock).toHaveBeenCalledTimes(1);
+		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(1);
+	});
+
+	it('should send 1 email with createTemplate when BookingType = Create and booking status is pending SA approval', async () => {
+		const bookingSubject = new BookingsSubject();
+		booking.status = BookingStatus.PendingApprovalSA;
+		bookingSubject.notify({ booking, bookingType: BookingType.Created });
+		await Container.get(MailObserver).update(bookingSubject);
+		expect(EmailBookingTemplateMock.CreatedBookingEmailMock).toHaveBeenCalledTimes(1);
+		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(1);
 	});
 });

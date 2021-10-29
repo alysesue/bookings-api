@@ -35,11 +35,30 @@ export class MailObserver implements Observer {
 	private serviceProviderEmailTemplateBookingActionByCitizen: ServiceProviderEmailTemplateBookingActionByCitizen;
 
 	public async update(subject: ISubject<any>): Promise<void> {
-		if (subject instanceof BookingsSubject && subject.booking?.status !== BookingStatus.OnHold) {
-			if (subject.booking.service.sendNotifications)
-				await this.sendEmail(subject.booking, subject.bookingType, EmailRecipient.Citizen);
-			if (subject.booking.service.sendNotificationsToServiceProviders)
-				await this.sendEmail(subject.booking, subject.bookingType, EmailRecipient.ServiceProvider);
+		if (!(subject instanceof BookingsSubject) || subject.booking?.status === BookingStatus.OnHold) {
+			return;
+		}
+
+		switch (subject.bookingType) {
+			case BookingType.ApprovedBySA:
+				// When admin approves booking and release to SP, only send email to service provider
+				if (subject.booking.service.sendNotificationsToServiceProviders)
+					await this.sendEmail(subject.booking, subject.bookingType, EmailRecipient.ServiceProvider);
+				break;
+			case BookingType.Created:
+				// When citizen creates booking with 2-step workflow flag, only send email to citizen and [service admin] (Not implemented yet)
+				if (
+					subject.booking.status === BookingStatus.PendingApprovalSA &&
+					subject.booking.service.sendNotifications
+				) {
+					await this.sendEmail(subject.booking, subject.bookingType, EmailRecipient.Citizen);
+					break;
+				} // Else, fall through to default
+			default:
+				if (subject.booking.service.sendNotifications)
+					await this.sendEmail(subject.booking, subject.bookingType, EmailRecipient.Citizen);
+				if (subject.booking.service.sendNotificationsToServiceProviders)
+					await this.sendEmail(subject.booking, subject.bookingType, EmailRecipient.ServiceProvider);
 		}
 	}
 
@@ -97,6 +116,8 @@ export class MailObserver implements Observer {
 				return await templates.UpdatedBookingEmail(data);
 			case BookingType.CancelledOrRejected:
 				return await templates.CancelledBookingEmail(data);
+			case BookingType.ApprovedBySA:
+				return await templates.ApprovedBySABookingEmail(data);
 			default:
 				return;
 		}

@@ -23,6 +23,7 @@ export abstract class EmailBookingTemplate {
 	public abstract CreatedBookingEmail(data): Promise<EmailTemplateBase>;
 	public abstract UpdatedBookingEmail(data): Promise<EmailTemplateBase>;
 	public abstract CancelledBookingEmail(data): Promise<EmailTemplateBase>;
+	public abstract ApprovedBySABookingEmail(data): Promise<EmailTemplateBase>;
 
 	protected getEmailContentFromServiceTemplate = async (
 		serviceId: number,
@@ -107,6 +108,10 @@ export class CitizenEmailTemplateBookingActionByCitizen extends EmailBookingTemp
 			html: emailContent,
 		};
 	}
+
+	public async ApprovedBySABookingEmail(_data): Promise<EmailTemplateBase> {
+		return undefined;
+	}
 }
 
 export class CitizenEmailTemplateBookingActionByServiceProvider extends EmailBookingTemplate {
@@ -141,5 +146,9 @@ export class CitizenEmailTemplateBookingActionByServiceProvider extends EmailBoo
 			subject: `BookingSG cancellation: ${serviceName}${spNameDisplayedForCitizen}`,
 			html: emailContent,
 		};
+	}
+
+	public async ApprovedBySABookingEmail(_data): Promise<EmailTemplateBase> {
+		return undefined;
 	}
 }

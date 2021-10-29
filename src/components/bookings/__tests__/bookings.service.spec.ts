@@ -83,6 +83,7 @@ import {
 	MapRequestOptionalResult,
 } from '../../../components/dynamicFields/dynamicValues.mapper';
 import { DynamicValuesRequestMapperMock } from '../../../components/dynamicFields/__mocks__/dynamicValues.mapper.mock';
+import { BookingType } from '../../../models/bookingType';
 
 jest.mock('../../../tools/arrays');
 jest.mock('../bookings.auth', () => ({ BookingActionAuthVisitor: jest.fn() }));
@@ -794,6 +795,52 @@ describe('Bookings.Service', () => {
 		const result = await bookingService.acceptBooking(1, acceptRequest);
 
 		expect(result.status).toBe(BookingStatus.Accepted);
+	});
+
+	it('should approve booking and change status to pending', async () => {
+		const serviceProvider = ServiceProvider.create('provider', 1);
+		serviceProvider.id = 1;
+		serviceProvider.autoAcceptBookings = false;
+		service.requireVerifyBySA = true;
+		const bookingService = Container.get(BookingsService);
+		BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.withPendingSA(true)
+			.build();
+
+		TimeslotsServiceMock.isProviderAvailableForTimeslot.mockReturnValue(Promise.resolve(true));
+		TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
+			return Promise.resolve([
+				{
+					serviceProvider,
+					capacity: 1,
+					acceptedBookings: [],
+					pendingBookings: [],
+					availabilityCount: 1,
+				} as TimeslotServiceProviderResult,
+			]);
+		});
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
+
+		const acceptRequest = new BookingAcceptRequestV1();
+		acceptRequest.serviceProviderId = 1;
+		const result = await bookingService.acceptBooking(1, acceptRequest);
+		BookingRepositoryMock.booking.service = service;
+		BookingRepositoryMock.booking.serviceProvider = serviceProvider;
+
+		expect(result.status).toBe(BookingStatus.PendingApproval);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledWith({
+			booking: BookingRepositoryMock.booking,
+			bookingType: BookingType.ApprovedBySA,
+		});
 	});
 
 	it('should accept booking with pre selected service provider', async () => {
