@@ -166,11 +166,18 @@ export class BookingsService {
 			this.getBookingInternal.bind(this),
 			acceptAction,
 		);
-		this.bookingsSubject.notify({
-			booking,
-			bookingType: BookingType.Updated,
-			action: ExternalAgencyAppointmentJobAction.UPDATE,
-		});
+		if (booking.status === BookingStatus.PendingApproval && booking.service.requireVerifyBySA) {
+			this.bookingsSubject.notify({
+				booking,
+				bookingType: BookingType.ApprovedBySA,
+			});
+		} else {
+			this.bookingsSubject.notify({
+				booking,
+				bookingType: BookingType.Updated,
+				action: ExternalAgencyAppointmentJobAction.UPDATE,
+			});
+		}
 		return booking;
 	}
 

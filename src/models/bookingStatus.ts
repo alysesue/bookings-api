@@ -13,5 +13,5 @@ export enum BookingStatusDisplayedInEmails {
 	Cancelled = 3,
 	Rejected = 4,
 	'On Hold' = 5,
-	'Pending SA Verification' = 6,
+	'Pending Verification' = 6,
 }

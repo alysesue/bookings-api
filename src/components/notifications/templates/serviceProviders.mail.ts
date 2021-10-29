@@ -35,6 +35,10 @@ export class ServiceProviderEmailTemplateBookingActionByCitizen extends EmailBoo
 			html: emailContent,
 		};
 	}
+
+	public async ApprovedBySABookingEmail(_data): Promise<EmailTemplateBase> {
+		return undefined;
+	}
 }
 
 export class ServiceProviderEmailTemplateBookingActionByServiceProvider extends EmailBookingTemplate {
@@ -62,5 +66,17 @@ export class ServiceProviderEmailTemplateBookingActionByServiceProvider extends 
 
 	public CreatedBookingEmail(_data): Promise<EmailTemplateBase> {
 		return undefined;
+	}
+
+	// Using created by EmailNotificationTemplateType.CreatedByCitizenSentToServiceProvider, because after approval by Admin it would be treated as if the citizen created a new booking for this service provider
+	public async ApprovedBySABookingEmail(data): Promise<EmailTemplateBase> {
+		const { serviceName, spNameDisplayedForServiceProvider } = emailMapper(data);
+		const templateType = EmailNotificationTemplateType.CreatedByCitizenSentToServiceProvider;
+		const emailContent = await this.getEmailContent(data.serviceId, templateType, data);
+
+		return {
+			subject: `BookingSG approval: ${serviceName}${spNameDisplayedForServiceProvider}`,
+			html: emailContent,
+		};
 	}
 }
