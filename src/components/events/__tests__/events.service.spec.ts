@@ -75,7 +75,7 @@ describe('Tests events services', () => {
 		(authVisitorMock.hasPermission as jest.Mock).mockReturnValue(true);
 		(IdHasherMock.decode as jest.Mock).mockImplementation((s) => parseInt(s, 10));
 		TransactionManagerMock.runInTransaction.mockImplementation(
-			async <T extends unknown>(_isolationLevel: IsolationLevel, asyncFunction: AsyncFunction<T>): Promise<T> =>
+			async <T>(_isolationLevel: IsolationLevel, asyncFunction: AsyncFunction<T>): Promise<T> =>
 				await asyncFunction(),
 		);
 		ServicesServiceMock.getService.mockReturnValue(Service.create('Service', { id: 1 } as Organisation));
