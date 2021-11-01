@@ -335,3 +335,10 @@ resource "aws_ssm_parameter" "hide-events" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "lifesg-sync" {
+  name  = "${local.path-prefix}/LIFESG_SYNC"
+  type  = "String"
+  value = "${data.external.static.result.LIFESG_SYNC}"
+
+  overwrite = true
+}
