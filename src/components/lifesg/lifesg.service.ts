@@ -7,6 +7,7 @@ import { ExternalAgencyAppointmentJobAction } from './lifesg.apicontract';
 import { logger } from 'mol-lib-common';
 const container = require('rhea');
 import { ConnectionDetails } from 'rhea';
+import { UpdateAppointmentRequestApiDomain } from 'mol-lib-api-contract/appointment/update-appointment/api-domain';
 
 @InRequestScope
 export class LifeSGMQSerice {
@@ -14,7 +15,8 @@ export class LifeSGMQSerice {
 		appointment:
 			| CreateAppointmentRequestApiDomain
 			| CancelAppointmentRequestApiDomain
-			| DeleteAppointmentRequestApiDomain,
+			| DeleteAppointmentRequestApiDomain
+			| UpdateAppointmentRequestApiDomain,
 		action: ExternalAgencyAppointmentJobAction,
 	) {
 		const LIFESG_QUEUE = 'ExternalAgencyAppointment';
