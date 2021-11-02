@@ -66,7 +66,7 @@ export const getConfig = () => ({
 	runtimeInjectedVariables: {
 		awsApigatewayApiKey: ConfigUtils.getValueFromEnv('APIGW_KEY'),
 		nodemailerEndpoint: ConfigUtils.getValueFromEnv('APIGW_ENDPOINT_NODEMAILER'),
-		recaptchaEndpoint: ConfigUtils.getValueFromEnv('APIGW_ENDPOINT_PROXY/recaptcha'),
+		recaptchaEndpoint: ConfigUtils.getValueFromEnv('APIGW_ENDPOINT_PROXY'),
 	},
 });
 

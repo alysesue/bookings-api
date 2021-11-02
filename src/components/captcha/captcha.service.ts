@@ -27,7 +27,7 @@ export class CaptchaService {
 			const projectId = config.recaptchaProjectId;
 			const apigatewayApiKey = config.runtimeInjectedVariables.awsApigatewayApiKey;
 			const res = await post<GoogleVerifyApiResponse>(
-				`${config.runtimeInjectedVariables.recaptchaEndpoint}/v1beta1/projects/${projectId}/assessments?key=${googleApiKey}`,
+				`${config.runtimeInjectedVariables.recaptchaEndpoint}/recaptcha/v1beta1/projects/${projectId}/assessments?key=${googleApiKey}`,
 				new GoogleVerifyApiRequest(token, siteKey),
 				{ referer: origin, 'x-api-key': apigatewayApiKey },
 			);
