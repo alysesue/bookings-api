@@ -113,6 +113,14 @@ export class EventsService {
 
 	public async search(eventFilter: EventFilter): Promise<IPagedEntities<Event>> {
 		const eventsPaging = await this.eventsRepository.search({ ...eventFilter, isOneOffTimeslot: false });
+		if (eventFilter.title) {
+			eventsPaging.entries = eventsPaging.entries.sort((a, b) => {
+				if (a.title.toLowerCase().startsWith(eventFilter.title.toLowerCase())) return -1;
+				if (b.title.toLowerCase().startsWith(eventFilter.title.toLowerCase())) return 1;
+				return 0;
+			});
+		}
+
 		return eventsPaging;
 	}
 

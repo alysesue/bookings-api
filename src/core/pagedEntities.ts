@@ -1,5 +1,5 @@
 export interface IPagedEntities<T> {
-	readonly entries: T[];
+	entries: T[];
 	readonly page: number;
 	readonly limit: number;
 	readonly total: number;
