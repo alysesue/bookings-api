@@ -17,7 +17,7 @@ import { DynamicValuesMapper, DynamicValuesRequestMapper } from '../dynamicField
 import { isErrorResult } from '../../errors';
 import { IBookingsValidator } from './validator/bookings.validation';
 import * as stringify from 'csv-stringify';
-import { BookingStatus, bookingStatusArray } from '../../models/bookingStatus';
+import { BookingStatus } from '../../models/bookingStatus';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { EventsMapper } from '../events/events.mapper';
 
@@ -344,7 +344,14 @@ export class BookingsMapper {
 	}
 
 	public mapStatuses(): number[] {
-		return bookingStatusArray.map((value) => value);
+		// exclude return for on-hold bookings
+		return [
+			BookingStatus.PendingApproval,
+			BookingStatus.Accepted,
+			BookingStatus.Cancelled,
+			BookingStatus.Rejected,
+			BookingStatus.PendingApprovalSA,
+		];
 	}
 
 	private mapBookedSlots(bookedSlot: any) {

@@ -83,6 +83,7 @@ import {
 	MapRequestOptionalResult,
 } from '../../../components/dynamicFields/dynamicValues.mapper';
 import { DynamicValuesRequestMapperMock } from '../../../components/dynamicFields/__mocks__/dynamicValues.mapper.mock';
+import { BookingType } from '../../../models/bookingType';
 
 jest.mock('../../../tools/arrays');
 jest.mock('../bookings.auth', () => ({ BookingActionAuthVisitor: jest.fn() }));
@@ -111,11 +112,7 @@ describe('Bookings.Service', () => {
 	const organisation = new Organisation();
 	organisation.id = 123;
 
-	const service = new Service();
-	service.id = 1;
-	service.organisation = organisation;
-	service.organisationId = organisation.id;
-	service.citizenAuthentication = [CitizenAuthenticationType.Singpass, CitizenAuthenticationType.Otp];
+	let service: Service;
 
 	const serviceProvider = ServiceProvider.create('provider', 1);
 	serviceProvider.id = 1;
@@ -197,6 +194,11 @@ describe('Bookings.Service', () => {
 
 	beforeEach(() => {
 		jest.resetAllMocks();
+		service = new Service();
+		service.id = 1;
+		service.organisation = organisation;
+		service.organisationId = organisation.id;
+		service.citizenAuthentication = [CitizenAuthenticationType.Singpass, CitizenAuthenticationType.Otp];
 
 		(bookingActionVisitorMock.hasPermission as jest.Mock).mockReturnValue(true);
 		(BookingActionAuthVisitor as jest.Mock).mockReturnValue(bookingActionVisitorMock);
@@ -793,6 +795,52 @@ describe('Bookings.Service', () => {
 		const result = await bookingService.acceptBooking(1, acceptRequest);
 
 		expect(result.status).toBe(BookingStatus.Accepted);
+	});
+
+	it('should approve booking and change status to pending', async () => {
+		const serviceProvider = ServiceProvider.create('provider', 1);
+		serviceProvider.id = 1;
+		serviceProvider.autoAcceptBookings = false;
+		service.requireVerifyBySA = true;
+		const bookingService = Container.get(BookingsService);
+		BookingRepositoryMock.booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.withPendingSA(true)
+			.build();
+
+		TimeslotsServiceMock.isProviderAvailableForTimeslot.mockReturnValue(Promise.resolve(true));
+		TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
+			return Promise.resolve([
+				{
+					serviceProvider,
+					capacity: 1,
+					acceptedBookings: [],
+					pendingBookings: [],
+					availabilityCount: 1,
+				} as TimeslotServiceProviderResult,
+			]);
+		});
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() =>
+			Promise.resolve([new ServiceAdminAuthGroup(adminMock, [service])]),
+		);
+
+		const acceptRequest = new BookingAcceptRequestV1();
+		acceptRequest.serviceProviderId = 1;
+		const result = await bookingService.acceptBooking(1, acceptRequest);
+		BookingRepositoryMock.booking.service = service;
+		BookingRepositoryMock.booking.serviceProvider = serviceProvider;
+
+		expect(result.status).toBe(BookingStatus.PendingApproval);
+		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledWith({
+			booking: BookingRepositoryMock.booking,
+			bookingType: BookingType.ApprovedBySA,
+		});
 	});
 
 	it('should accept booking with pre selected service provider', async () => {
@@ -1450,6 +1498,11 @@ describe('Bookings.Service', () => {
 	});
 
 	describe('Reschedule', () => {
+		service = new Service();
+		service.id = 1;
+		service.organisation = organisation;
+		service.organisationId = organisation.id;
+		service.citizenAuthentication = [CitizenAuthenticationType.Singpass, CitizenAuthenticationType.Otp];
 		service.isOnHold = false;
 		service.isStandAlone = false;
 
@@ -1876,6 +1929,138 @@ describe('Bookings.Service', () => {
 				return bookedSlot;
 			});
 			expect(booking.bookedSlots).toStrictEqual(bookedSlots);
+		});
+	});
+
+	describe('2 step pending workflow (Singpass)', () => {
+		it('should validate on hold booking and change status to pending SA if verifyBySA flag is set', async () => {
+			const bookingService = Container.get(BookingsService);
+			const start = new Date('2020-02-02T11:00');
+			const end = new Date('2020-02-02T12:00');
+
+			const bookingRequest = {
+				citizenEmail: 'test@mail.com',
+				citizenName: 'Jake',
+				citizenUinFin: 'S6979208A',
+			} as BookingRequestV1;
+			service.requireVerifyBySA = true;
+
+			BookingRepositoryMock.booking = new BookingBuilder()
+				.withServiceId(1)
+				.withStartDateTime(start)
+				.withEndDateTime(end)
+				.withAutoAccept(true)
+				.withMarkOnHold(true)
+				.build();
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
+			);
+
+			const result = await bookingService.validateOnHoldBooking(1, bookingRequest, false);
+
+			expect(result.status).toBe(BookingStatus.PendingApprovalSA);
+			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+			expect(bookingActionVisitorMock.hasPermission).toBeCalled();
+		});
+
+		it('should save booking and change status to pending SA if verifyBySA flag is set', async () => {
+			const bookingService = Container.get(BookingsService);
+			const start = new Date('2020-02-02T11:00');
+			const end = new Date('2020-02-02T12:00');
+
+			const bookingRequest = {
+				citizenEmail: 'test@mail.com',
+				citizenName: 'Jake',
+				citizenUinFin: 'S6979208A',
+			} as BookingRequestV1;
+			service.requireVerifyBySA = true;
+
+			BookingRepositoryMock.booking = new BookingBuilder()
+				.withServiceId(1)
+				.withStartDateTime(start)
+				.withEndDateTime(end)
+				.withAutoAccept(true)
+				.withMarkOnHold(false)
+				.build();
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
+			);
+
+			const result = await bookingService.save(bookingRequest, 1);
+
+			expect(result.status).toBe(BookingStatus.PendingApprovalSA);
+			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+			expect(bookingActionVisitorMock.hasPermission).toBeCalled();
+		});
+	});
+
+	describe('2 step pending workflow (Anonymous)', () => {
+		it('should validate on hold booking and change status to pending SA if verifyBySA flag is set', async () => {
+			const bookingService = Container.get(BookingsService);
+			const start = new Date('2020-02-02T11:00');
+			const end = new Date('2020-02-02T12:00');
+
+			const bookingRequest = {
+				citizenEmail: 'test@mail.com',
+				citizenName: 'Jake',
+				citizenUinFin: 'S6979208A',
+			} as BookingRequestV1;
+			service.requireVerifyBySA = true;
+
+			BookingRepositoryMock.booking = new BookingBuilder()
+				.withServiceId(1)
+				.withStartDateTime(start)
+				.withEndDateTime(end)
+				.withAutoAccept(true)
+				.withMarkOnHold(true)
+				.build();
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(anonymousMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new AnonymousAuthGroup(anonymousMock, undefined, { mobileNo: '+6584000000' })]),
+			);
+
+			const result = await bookingService.validateOnHoldBooking(1, bookingRequest, false);
+
+			expect(result.status).toBe(BookingStatus.PendingApprovalSA);
+			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+			expect(bookingActionVisitorMock.hasPermission).toBeCalled();
+		});
+
+		it('should save booking and change status to pending SA if verifyBySA flag is set', async () => {
+			const bookingService = Container.get(BookingsService);
+			const start = new Date('2020-02-02T11:00');
+			const end = new Date('2020-02-02T12:00');
+
+			const bookingRequest = {
+				citizenEmail: 'test@mail.com',
+				citizenName: 'Jake',
+				citizenUinFin: 'S6979208A',
+			} as BookingRequestV1;
+			service.requireVerifyBySA = true;
+
+			BookingRepositoryMock.booking = new BookingBuilder()
+				.withServiceId(1)
+				.withStartDateTime(start)
+				.withEndDateTime(end)
+				.withAutoAccept(true)
+				.withMarkOnHold(false)
+				.build();
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(anonymousMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new AnonymousAuthGroup(anonymousMock, undefined, { mobileNo: '+6584000000' })]),
+			);
+
+			const result = await bookingService.save(bookingRequest, 1);
+
+			expect(result.status).toBe(BookingStatus.PendingApprovalSA);
+			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+			expect(bookingActionVisitorMock.hasPermission).toBeCalled();
 		});
 	});
 });

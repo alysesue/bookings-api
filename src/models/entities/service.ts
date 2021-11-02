@@ -319,4 +319,15 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 
 		return { start, end };
 	}
+
+	@Column({ nullable: false, default: false })
+	private _requireVerifyBySA: boolean;
+
+	public get requireVerifyBySA(): boolean {
+		return this._requireVerifyBySA;
+	}
+
+	public set requireVerifyBySA(requireVerifyBySA: boolean) {
+		this._requireVerifyBySA = requireVerifyBySA;
+	}
 }

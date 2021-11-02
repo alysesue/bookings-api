@@ -168,9 +168,13 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 
 	public visitServiceProvider(_userGroup: ServiceProviderAuthGroup): void {
 		const authorisedServiceProviderId = _userGroup.authorisedServiceProvider.id;
-		this.addAuthCondition(`${this._alias}."_serviceProviderId" = :authorisedServiceProviderId`, {
-			authorisedServiceProviderId,
-		});
+		this.addAuthCondition(
+			`${this._alias}."_serviceProviderId" = :authorisedServiceProviderId AND NOT ${this._alias}."_status" = :bookingStatus`,
+			{
+				authorisedServiceProviderId,
+				bookingStatus: BookingStatus.PendingApprovalSA,
+			},
+		);
 	}
 }
 

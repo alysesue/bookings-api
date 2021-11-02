@@ -47,6 +47,12 @@ export class BookingBuilder {
 	public captchaToken: string;
 	public markOnHold: boolean;
 	public reasonToReject: string;
+	public pendingSA: boolean;
+
+	public withPendingSA(pendingSA: boolean): BookingBuilder {
+		this.pendingSA = pendingSA;
+		return this;
+	}
 
 	public withServiceId(serviceId: number): BookingBuilder {
 		this.serviceId = serviceId;
@@ -155,6 +161,10 @@ export class BookingBuilder {
 			instance.markOnHold();
 		} else {
 			instance.setAutoAccept({ autoAccept: !!this.serviceProviderId && (this.autoAccept || !!this.eventId) });
+		}
+
+		if (this.pendingSA) {
+			instance.setPendingSA();
 		}
 
 		instance.serviceId = this.serviceId;
@@ -349,6 +359,10 @@ export class Booking {
 
 	public setAutoAccept({ autoAccept }: { autoAccept: boolean }): void {
 		this._status = autoAccept ? BookingStatus.Accepted : BookingStatus.PendingApproval;
+	}
+
+	public setPendingSA(): void {
+		this._status = BookingStatus.PendingApprovalSA;
 	}
 
 	public static createNew({ creator }: { creator: User }): Booking {

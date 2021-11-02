@@ -1,4 +1,4 @@
-import { BookingUUIDInfo, Organisation, Service, ServiceProvider, User } from '../../../models';
+import { BookingStatus, BookingUUIDInfo, Organisation, Service, ServiceProvider, User } from '../../../models';
 import { BookingQueryAuthVisitor, BookingQueryVisitorFactory } from '../bookings.auth';
 import {
 	AnonymousAuthGroup,
@@ -102,43 +102,53 @@ describe('Bookings query auth', () => {
 		});
 	});
 
-	it(`should filter by service id`, async () => {
-		const groups = [new ServiceAdminAuthGroup(adminMock, [service])];
-		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
+	describe('service admin auth', () => {
+		it(`should filter by service ids`, async () => {
+			const groups = [new ServiceAdminAuthGroup(adminMock, [service])];
+			const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('(b."_serviceId" IN (:...authorisedBookingServiceIds))');
-		expect(result.userParams).toStrictEqual({
-			authorisedBookingServiceIds: [3],
+			expect(result.userCondition).toStrictEqual('(b."_serviceId" IN (:...authorisedBookingServiceIds))');
+			expect(result.userParams).toStrictEqual({
+				authorisedBookingServiceIds: [3],
+			});
 		});
 	});
 
-	it(`should filter by service provider id`, async () => {
-		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
-		serviceProvider.id = 5;
-		const groups = [new ServiceProviderAuthGroup(adminMock, serviceProvider)];
-		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
+	describe('service provider auth', () => {
+		it(`should filter by service provider id and booking status`, async () => {
+			const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
+			serviceProvider.id = 5;
+			const groups = [new ServiceProviderAuthGroup(adminMock, serviceProvider)];
+			const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('(b."_serviceProviderId" = :authorisedServiceProviderId)');
-		expect(result.userParams).toStrictEqual({
-			authorisedServiceProviderId: 5,
+			expect(result.userCondition).toStrictEqual(
+				'(b."_serviceProviderId" = :authorisedServiceProviderId AND NOT b."_status" = :bookingStatus)',
+			);
+			expect(result.userParams).toStrictEqual({
+				authorisedServiceProviderId: 5,
+				bookingStatus: BookingStatus.PendingApprovalSA,
+			});
 		});
 	});
 
-	it(`should combine user groups' permission (union)`, async () => {
-		const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
-		serviceProvider.id = 5;
-		const groups = [
-			new ServiceAdminAuthGroup(adminMock, [service]),
-			new ServiceProviderAuthGroup(adminMock, serviceProvider),
-		];
-		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
+	describe('service admin & service provider combined auth', () => {
+		it(`should combine user groups' permission (union)`, async () => {
+			const serviceProvider = ServiceProvider.create('Peter', service.id, 'test@email.com', '0000');
+			serviceProvider.id = 5;
+			const groups = [
+				new ServiceAdminAuthGroup(adminMock, [service]),
+				new ServiceProviderAuthGroup(adminMock, serviceProvider),
+			];
+			const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual(
-			'((b."_serviceId" IN (:...authorisedBookingServiceIds)) OR (b."_serviceProviderId" = :authorisedServiceProviderId))',
-		);
-		expect(result.userParams).toStrictEqual({
-			authorisedBookingServiceIds: [3],
-			authorisedServiceProviderId: 5,
+			expect(result.userCondition).toStrictEqual(
+				'((b."_serviceId" IN (:...authorisedBookingServiceIds)) OR (b."_serviceProviderId" = :authorisedServiceProviderId AND NOT b."_status" = :bookingStatus))',
+			);
+			expect(result.userParams).toStrictEqual({
+				authorisedBookingServiceIds: [3],
+				authorisedServiceProviderId: 5,
+				bookingStatus: BookingStatus.PendingApprovalSA,
+			});
 		});
 	});
 });
