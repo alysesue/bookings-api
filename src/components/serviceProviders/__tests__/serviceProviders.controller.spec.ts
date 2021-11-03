@@ -58,6 +58,8 @@ describe('ServiceProviders.Controller.V1', () => {
 		jest.clearAllMocks();
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		IdHasherMock.encode.mockImplementation((id: number) => id.toString());
+		IdHasherMock.decode.mockImplementation((id: string) => Number.parseInt(id, 10));
 
 		mockItem._id = 11;
 		mockItem._startTime = TimeOfDay.create({ hours: 8, minutes: 0 });

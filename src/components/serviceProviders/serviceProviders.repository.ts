@@ -60,22 +60,35 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			skipAuthorisation?: boolean;
 			skipGroupMap?: boolean;
 			skipService?: boolean;
+			labelIds?: number[];
 			limit?: number;
 			pageNumber?: number;
 			includeLabels?: boolean;
 		} = {},
 	): Promise<SelectQueryBuilder<ServiceProvider>> {
-		const { serviceId, ids, scheduleFormId, organisationId } = options;
+		const { serviceId, ids, scheduleFormId, organisationId, labelIds } = options;
 		const serviceCondition = serviceId ? 'sp."_serviceId" = :serviceId ' : '';
 		const idsCondition = ids && ids.length > 0 ? 'sp._id IN (:...ids)' : '';
 		const scheduleFormIdCondition = scheduleFormId ? 'sp._scheduleFormId = :scheduleFormId' : '';
 		const organisationIdCondition = organisationId ? 'service._organisationId = :organisationId' : '';
+		if (labelIds?.length) options.includeLabels = true;
+		const labelsCondition = labelIds?.length
+			? labelIds.map((_, index) => {
+					return `sp."_id" IN (SELECT "serviceProvider_id" FROM serviceprovider_label WHERE "label_id" = :label_${index})`;
+			  })
+			: [];
 
-		return this.createSelectQuery(
-			[serviceCondition, idsCondition, scheduleFormIdCondition, organisationIdCondition],
-			{ serviceId, ids, scheduleFormId, organisationId },
+		const labelsParam = {};
+		if (labelIds && labelIds.length > 0) {
+			labelIds.forEach((labelId, index) => (labelsParam[`label_${index}`] = labelId));
+		}
+
+		const query = this.createSelectQuery(
+			[serviceCondition, idsCondition, scheduleFormIdCondition, organisationIdCondition, ...labelsCondition],
+			{ serviceId, ids, scheduleFormId, organisationId, labelIds, ...labelsParam },
 			options,
 		);
+		return query;
 	}
 
 	public async getServiceProviders(
@@ -84,6 +97,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 			serviceId?: number;
 			organisationId?: number;
 			scheduleFormId?: number;
+			labelIds?: number[];
 			skipAuthorisation?: boolean;
 			skipGroupMap?: boolean;
 			skipService?: boolean;
@@ -93,6 +107,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 	): Promise<ServiceProvider[]> {
 		const { limit, pageNumber } = options;
 		const query = await this.getSpQuery(options);
+
 		if (limit && pageNumber) {
 			query.skip(limit * (pageNumber - 1));
 			query.take(limit);

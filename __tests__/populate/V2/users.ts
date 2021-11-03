@@ -5,6 +5,7 @@ import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointS
 import { getServices } from './services';
 import { ServiceProviderResponseModelV2 } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
 import { getServiceProviders } from './servieProviders';
+import { UserProfileResponseV2 } from '../../../src/components/users/users.apicontract';
 
 export const populateUserServiceProvider = async (
 	user: Partial<MolServiceAdminUserContract>,
@@ -29,4 +30,9 @@ export const populateUserServiceProvider = async (
 	const serviceProviders = await getServiceProviders();
 	const services = await getServices();
 	return { services, serviceProviders };
+};
+
+export const getMe = async (): Promise<UserProfileResponseV2> => {
+	const me = await OrganisationAdminRequestEndpointSG.create({}).get('users/me', undefined, 'V2');
+	return me.body.data;
 };
