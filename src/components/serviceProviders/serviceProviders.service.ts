@@ -107,6 +107,7 @@ export class ServiceProvidersService {
 		pageNumber?: number;
 		ids?: number[];
 		includeLabels?: boolean;
+		labelIds?: number[];
 	}): Promise<ServiceProvider[]> {
 		const {
 			serviceId,
@@ -114,6 +115,7 @@ export class ServiceProvidersService {
 			includeScheduleForm = false,
 			limit,
 			pageNumber,
+			labelIds,
 			ids = [],
 			includeLabels = false,
 		} = options;
@@ -122,6 +124,7 @@ export class ServiceProvidersService {
 			serviceId,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
+			labelIds,
 			limit,
 			pageNumber,
 			includeLabels,
@@ -146,6 +149,7 @@ export class ServiceProvidersService {
 		filterDaysInAdvance: boolean,
 		includeTimeslotsSchedule = false,
 		includeScheduleForm = false,
+		labelIds: number[] = [],
 		limit?: number,
 		page?: number,
 		serviceId?: number,
@@ -160,6 +164,7 @@ export class ServiceProvidersService {
 					filterDaysInAdvance,
 					serviceId,
 					includeLabels,
+					labelIds,
 				);
 			} else {
 				const servicesList = await this.servicesService.getServices();
@@ -181,6 +186,7 @@ export class ServiceProvidersService {
 				includeScheduleForm,
 				includeTimeslotsSchedule,
 				includeLabels,
+				labelIds,
 			});
 		}
 		const resultLength = result.length;
@@ -211,6 +217,7 @@ export class ServiceProvidersService {
 		filterDaysInAdvance: boolean,
 		serviceId?: number,
 		includeLabels?: boolean,
+		labelIds?: number[],
 	): Promise<ServiceProvider[]> {
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots({
 			startDateTime: from,
@@ -219,6 +226,7 @@ export class ServiceProvidersService {
 			includeBookings: false,
 			filterDaysInAdvance,
 			includeLabels,
+			labelIdsSp: labelIds,
 		});
 
 		const availableServiceProviders = new Set<ServiceProvider>();

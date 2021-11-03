@@ -1,14 +1,15 @@
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
 import { PgClient } from '../../../utils/pgClient';
 import { postService } from '../../../populate/V2/services';
-import { populateWeeklyTimesheet, postServiceProvider } from '../../../populate/V2/servieProviders';
+import { populateWeeklyTimesheet, postServiceProvider, putServiceProvider } from '../../../populate/V2/servieProviders';
+import { putOrganisationSettings } from '../../../populate/V2/organisation';
 
 describe('Service providers functional tests - get', () => {
 	const START_TIME_1 = '09:00';
 	const END_TIME_1 = '10:00';
 	const pgClient = new PgClient();
 	let service;
-	let serviceProvider;
+	let serviceProviders;
 
 	beforeAll(async () => {
 		await pgClient.cleanAllTables();
@@ -17,19 +18,27 @@ describe('Service providers functional tests - get', () => {
 	afterAll(async () => {
 		await pgClient.close();
 	});
+	let orgaSettings;
 
-	beforeEach(async () => {
+	beforeEach(async (done) => {
+		orgaSettings = await putOrganisationSettings({
+			labelSettings: {
+				labels: [{ name: 'label1' }, { name: 'label2' }],
+				categories: [{ categoryName: 'Sport', labels: [{ name: 'Boxe' }, { name: 'Tennis' }] }],
+			},
+		});
 		service = await postService({ name: 'Service' });
 		await postServiceProvider(service.id);
-		serviceProvider = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).get(
+		serviceProviders = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).get(
 			'/service-providers',
 			{},
 			'V2',
 		);
 	});
 
-	afterEach(async () => {
+	afterEach(async (done) => {
 		await pgClient.cleanAllTables();
+		done();
 	});
 
 	it('should get service provider count', async () => {
@@ -44,7 +53,7 @@ describe('Service providers functional tests - get', () => {
 	});
 
 	it('should get available service providers', async () => {
-		const serviceProviderId = serviceProvider.body.data[0].id;
+		const serviceProviderId = serviceProviders.body.data[0].id;
 
 		await populateWeeklyTimesheet({
 			serviceProviderId,
@@ -68,7 +77,7 @@ describe('Service providers functional tests - get', () => {
 
 	it('should get specific service provider', async () => {
 		const response = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).get(
-			`/service-providers/${serviceProvider.body.data[0].id}`,
+			`/service-providers/${serviceProviders.body.data[0].id}`,
 			{},
 			'V2',
 		);
@@ -81,7 +90,7 @@ describe('Service providers functional tests - get', () => {
 	});
 
 	it('should get specific service provider schedule', async () => {
-		const serviceProviderId = serviceProvider.body.data[0].id;
+		const serviceProviderId = serviceProviders.body.data[0].id;
 		await populateWeeklyTimesheet({
 			serviceProviderId,
 			openTime: START_TIME_1,
@@ -96,5 +105,52 @@ describe('Service providers functional tests - get', () => {
 
 		expect(response.statusCode).toEqual(200);
 		expect(response.body.data.weekdaySchedules.length).toEqual(7);
+	});
+
+	it('Should filter by service providers', async () => {
+		const serviceProvider = serviceProviders.body.data[0];
+		const boxeId = orgaSettings.labelSettings.categories
+			.find((e) => e.categoryName === 'Sport')
+			.labels.find((e) => e.name === 'Boxe').id;
+		const tennisId = orgaSettings.labelSettings.categories
+			.find((e) => e.categoryName === 'Sport')
+			.labels.find((e) => e.name === 'Tennis').id;
+		const label1Id = orgaSettings.labelSettings.labels.find((e) => e.name === 'label1').id;
+		const label2Id = orgaSettings.labelSettings.labels.find((e) => e.name === 'label2').id;
+
+		await putServiceProvider(serviceProvider.id, {
+			...serviceProvider,
+			labelIds: [boxeId, label1Id],
+		});
+
+		let response = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).get(
+			`/service-providers?labelIds=${boxeId}&labelIds=${label2Id}`,
+			{},
+			'V2',
+		);
+		expect(response.statusCode).toEqual(200);
+		expect(response.body.data.length).toEqual(0);
+
+		response = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).get(
+			`/service-providers?labelIds=${boxeId}`,
+			{},
+			'V2',
+		);
+		expect(response.body.data.length).toEqual(1);
+
+		response = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).get(
+			`/service-providers?labelIds=${boxeId}&labelIds=${label1Id}`,
+			{},
+			'V2',
+		);
+		expect(response.body.data.length).toEqual(1);
+
+		response = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).get(
+			`/service-providers?labelIds=${tennisId}&labelIds=${label1Id}`,
+			{},
+			'V2',
+		);
+
+		expect(response.body.data.length).toEqual(0);
 	});
 });

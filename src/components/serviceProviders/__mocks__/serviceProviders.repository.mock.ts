@@ -7,6 +7,7 @@ export class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersR
 	public static getServiceProviderMock: ServiceProvider;
 	public static getServiceProvidersCountMock: number;
 	public static getServiceProvidersByName = jest.fn();
+	public static getAll = jest.fn();
 	public static save = jest.fn();
 	public static saveMany = jest.fn();
 
@@ -24,6 +25,10 @@ export class ServiceProvidersRepositoryMock implements Partial<ServiceProvidersR
 
 	public async getServiceProvidersByName(...params): Promise<ServiceProvider[]> {
 		return await ServiceProvidersRepositoryMock.getServiceProvidersByName(...params);
+	}
+
+	public async getAll(...params): Promise<ServiceProvider[]> {
+		return await ServiceProvidersRepositoryMock.getAll(...params);
 	}
 
 	public async save(...params): Promise<ServiceProvider> {
