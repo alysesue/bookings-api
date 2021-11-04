@@ -138,7 +138,7 @@ export class DynamicValuesMapper {
 		contract.textValue = value.textValue;
 		contract.myInfoFieldType = value.myInfoFieldType;
 		contract.dateOnlyValue = value.dateOnlyValue;
-		contract.isReadonly = this.myInfoResponseMapper.isOriginReadonly(value.origin);
+		contract.isReadonly = this.myInfoResponseMapper.isOriginReadonly(value.origin) ? true : undefined;
 
 		return contract;
 	}
