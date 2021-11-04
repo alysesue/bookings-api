@@ -227,7 +227,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		const mapper = Container.get(DynamicValuesMapper);
 		const res = mapper.mapDynamicValueModel(dynamicValueJson);
 		expect(MyInfoResponseMapperMock.isOriginReadonly).toBeCalledWith(dynamicValueJson.origin);
-		expect(res.isReadonly).toEqual(false);
+		expect(res.isReadonly).toBeFalsy();
 	});
 
 	it(`should map request fields`, async () => {

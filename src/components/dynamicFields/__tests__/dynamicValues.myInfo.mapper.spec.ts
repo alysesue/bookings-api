@@ -151,7 +151,6 @@ describe('[MyInfo] dynamicFields/dynamicValues.mapper', () => {
 				myInfoFieldType: myInfoFieldTypeMock,
 				type: DynamicValueType.Text,
 				textValue: 'textValue',
-				isReadonly: false,
 			},
 		]);
 	});
