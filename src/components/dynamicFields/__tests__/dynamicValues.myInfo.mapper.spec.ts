@@ -29,6 +29,13 @@ import { MyInfoMetadataFactoryMock } from '../../myInfo/__mocks__/myInfoMetadata
 import { MyInfoResponseMapper } from '../../myInfo/myInfoResponseMapper';
 import { MyInfoResponseMapperMock } from '../../myInfo/__mocks__/myInfoResponseMapper.mock';
 
+jest.mock('../../myInfo/myInfoResponseMapper', () => {
+	class MyInfoResponseMapper {}
+	return {
+		MyInfoResponseMapper,
+	};
+});
+
 jest.mock('../dynamicFields.service', () => {
 	class DynamicFieldsService {}
 	return {
@@ -122,6 +129,8 @@ describe('[MyInfo] dynamicFields/dynamicValues.mapper', () => {
 				},
 			} as DynamicValueJsonModel),
 		);
+
+		MyInfoResponseMapperMock.isOriginReadonly.mockReturnValue(false);
 	});
 
 	it('[Response] should map myInfo dynamic field value', async () => {
@@ -343,7 +352,7 @@ describe('[MyInfo] dynamicFields/dynamicValues.mapper', () => {
 		} as MapRequestOptionalResult);
 	});
 
-	it(`should keep existing value if user authentication is Admin (SA/SP)`, async () => {
+	it(`[Admin] should keep existing value if user authentication is Admin (SA/SP), and value is readonly`, async () => {
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([orgAuthGroup]));
 
@@ -355,9 +364,18 @@ describe('[MyInfo] dynamicFields/dynamicValues.mapper', () => {
 			textValue: '123456',
 		};
 
-		const mapper = Container.get(DynamicValuesRequestMapper);
-		const dynamicReturn = await mapper.mapDynamicValues([], [existingValue], 100);
+		const newValue: PersistDynamicValueContract = {
+			fieldIdSigned: '7',
+			type: DynamicValueTypeContract.Text,
+			textValue: 'ABCD',
+		};
 
+		MyInfoResponseMapperMock.isOriginReadonly.mockReturnValue(true);
+
+		const mapper = Container.get(DynamicValuesRequestMapper);
+		const dynamicReturn = await mapper.mapDynamicValues([newValue], [existingValue], 100);
+
+		expect(MyInfoResponseMapperMock.isOriginReadonly).toBeCalled();
 		expect(dynamicReturn).toEqual({
 			result: [
 				{
@@ -366,6 +384,79 @@ describe('[MyInfo] dynamicFields/dynamicValues.mapper', () => {
 					myInfoFieldType: myInfoFieldTypeMock,
 					textValue: '123456',
 					type: 'Text',
+				},
+			],
+		} as MapRequestOptionalResult);
+	});
+
+	it('[Admin] should override existing value if user authentication is Admin (SA/SP), and value is NOT readonly', async () => {
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([orgAuthGroup]));
+
+		const existingValue: DynamicValueJsonModel = {
+			fieldId: 7,
+			fieldName: 'Some MyInfo field',
+			myInfoFieldType: myInfoFieldTypeMock,
+			type: DynamicValueType.Text,
+			textValue: '123456',
+		};
+
+		const newValue: PersistDynamicValueContract = {
+			fieldIdSigned: '7',
+			type: DynamicValueTypeContract.Text,
+			textValue: 'ABCD',
+		};
+
+		MyInfoResponseMapperMock.isOriginReadonly.mockReturnValue(false);
+
+		const mapper = Container.get(DynamicValuesRequestMapper);
+		const dynamicReturn = await mapper.mapDynamicValues([newValue], [existingValue], 100);
+
+		expect(MyInfoResponseMapperMock.isOriginReadonly).toBeCalled();
+		expect(dynamicReturn).toEqual({
+			result: [
+				{
+					fieldId: 7,
+					fieldName: 'Some MyInfo field',
+					myInfoFieldType: myInfoFieldTypeMock,
+					textValue: 'ABCD',
+					type: 'Text',
+					origin: {
+						originType: 'bookingsg',
+					},
+				},
+			],
+		} as MapRequestOptionalResult);
+	});
+
+	it(`[Admin] should add new value if user authentication is Admin (SA/SP), and there's NO value, even if the field is citizenReadonly`, async () => {
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([orgAuthGroup]));
+
+		const newValue: PersistDynamicValueContract = {
+			fieldIdSigned: '7',
+			type: DynamicValueTypeContract.Text,
+			textValue: 'ABCD',
+		};
+
+		MyInfoMetadataFactoryMock.isCitizenReadonly.mockReturnValue(true);
+
+		const mapper = Container.get(DynamicValuesRequestMapper);
+		const dynamicReturn = await mapper.mapDynamicValues([newValue], [], 100);
+
+		// expect(MyInfoResponseMapperMock.isOriginReadonly).not.toBeCalled();
+		expect(MyInfoMetadataFactoryMock.isCitizenReadonly).toBeCalled();
+		expect(dynamicReturn).toEqual({
+			result: [
+				{
+					fieldId: 7,
+					fieldName: 'Some MyInfo field',
+					myInfoFieldType: myInfoFieldTypeMock,
+					textValue: 'ABCD',
+					type: 'Text',
+					origin: {
+						originType: 'bookingsg',
+					},
 				},
 			],
 		} as MapRequestOptionalResult);
@@ -390,6 +481,8 @@ describe('[MyInfo] dynamicFields/dynamicValues.mapper', () => {
 				originType: InformationOriginType.MyInfo,
 			},
 		};
+
+		MyInfoResponseMapperMock.isOriginReadonly.mockReturnValue(true);
 
 		const mapper = Container.get(DynamicValuesRequestMapper);
 		const dynamicReturn = await mapper.mapDynamicValues([], [existingValue], 100);
@@ -519,5 +612,47 @@ describe('[MyInfo] dynamicFields/dynamicValues.mapper', () => {
 			},
 			existingSimpleValue,
 		]);
+	});
+	it('[deleting] As an admin, it should delete myInfo value if field value is empty and field is not read only', async () => {
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([orgAuthGroup]));
+
+		const existingValue: DynamicValueJsonModel = {
+			fieldId: 7,
+			fieldName: 'Some MyInfo field',
+			myInfoFieldType: myInfoFieldTypeMock,
+			type: DynamicValueType.Text,
+			textValue: '123456',
+		};
+
+		MyInfoResponseMapperMock.isOriginReadonly.mockReturnValue(false);
+
+		const mapper = Container.get(DynamicValuesRequestMapper);
+		const dynamicReturn = await mapper.mapDynamicValues([], [existingValue], 100);
+
+		expect(MyInfoResponseMapperMock.isOriginReadonly).toBeCalled();
+		expect(dynamicReturn).toEqual({
+			result: [],
+		} as MapRequestOptionalResult);
+	});
+	it('[deleting] As a singpass user, it should delete myInfo value if field value is empty and field is not read only', async () => {
+		const existingValue: DynamicValueJsonModel = {
+			fieldId: 7,
+			fieldName: 'Some MyInfo field',
+			myInfoFieldType: myInfoFieldTypeMock,
+			type: DynamicValueType.Text,
+			textValue: '123456',
+		};
+
+		MyInfoResponseMapperMock.isOriginReadonly.mockReturnValue(false);
+		MyInfoMetadataFactoryMock.isCitizenReadonly.mockReturnValue(false);
+
+		const mapper = Container.get(DynamicValuesRequestMapper);
+		const dynamicReturn = await mapper.mapDynamicValues([], [existingValue], 100);
+
+		expect(MyInfoResponseMapperMock.isOriginReadonly).toBeCalled();
+		expect(dynamicReturn).toEqual({
+			result: [],
+		} as MapRequestOptionalResult);
 	});
 });

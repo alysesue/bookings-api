@@ -11,6 +11,11 @@ export enum InformationOriginType {
 	MyInfo = 'myinfo',
 }
 
+export type DynamicValueOrigin = {
+	originType: InformationOriginType;
+	myInfoOrigin?: MyInfoOrigin;
+};
+
 export type MyInfoOrigin = {
 	source?: string;
 	classification?: string;
@@ -26,8 +31,5 @@ export type DynamicValueJsonModel = {
 	SingleSelectionValue?: string;
 	textValue?: string;
 	dateOnlyValue?: string;
-	origin?: {
-		originType: InformationOriginType;
-		myInfoOrigin?: MyInfoOrigin;
-	};
+	origin?: DynamicValueOrigin;
 };
