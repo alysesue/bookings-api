@@ -119,7 +119,9 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 			providerIds && providerIds.length > 0 ? 'sp._id IN (:...providerIds)' : 'sp._id IS NOT NULL';
 		const [commonFilter, commonParams] = this.createCommonFilterCondition(commonOptions);
 
-		const query = await (await this.getEntityManager())
+		const query = await (
+			await this.getEntityManager()
+		)
 			.getRepository<Repository<TimeslotItem>>(TimeslotItem)
 			.createQueryBuilder('item')
 			.where(andWhere([serviceCondition, providersCondition, ...commonFilter]), {
@@ -164,7 +166,9 @@ export class TimeslotsScheduleRepository extends RepositoryBase<TimeslotsSchedul
 		const scheduleIdCondition = 'item._timeslotsScheduleId IN (:...scheduleIds)';
 		const [commonFilter, commonParams] = this.createCommonFilterCondition(commonOptions);
 
-		const query = await (await this.getEntityManager())
+		const query = await (
+			await this.getEntityManager()
+		)
 			.getRepository<Repository<TimeslotItem>>(TimeslotItem)
 			.createQueryBuilder('item')
 			.where(andWhere([scheduleIdCondition, ...commonFilter]), {

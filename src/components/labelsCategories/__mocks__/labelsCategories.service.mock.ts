@@ -18,9 +18,11 @@ export class LabelsCategoriesServiceMock implements Partial<LabelsCategoriesServ
 		return await LabelsCategoriesServiceMock.updateMock(...params);
 	}
 
-	public sortUpdateCategories(
-		...params
-	): { newCategories: LabelCategory[]; updateOrKeepCategories: LabelCategory[]; deleteCategories: LabelCategory[] } {
+	public sortUpdateCategories(...params): {
+		newCategories: LabelCategory[];
+		updateOrKeepCategories: LabelCategory[];
+		deleteCategories: LabelCategory[];
+	} {
 		return LabelsCategoriesServiceMock.sortUpdateCategoriesMock(...params);
 	}
 }

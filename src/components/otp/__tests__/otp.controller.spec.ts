@@ -14,11 +14,9 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-	OtpServiceMock.sendOtpMock.mockImplementation(
-		async (): Promise<string> => {
-			return Promise.resolve(uuid.v4());
-		},
-	);
+	OtpServiceMock.sendOtpMock.mockImplementation(async (): Promise<string> => {
+		return Promise.resolve(uuid.v4());
+	});
 });
 
 afterEach(() => {

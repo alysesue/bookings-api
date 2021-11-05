@@ -32,11 +32,11 @@ afterEach(() => {
 
 function buildSampleKoaContext(path: string): Koa.Context {
 	const headers = { myHeader: 'value' };
-	return ({
+	return {
 		path,
 		headers,
 		request: { host: 'localhost', protocol: 'http', headers },
-	} as unknown) as Koa.Context;
+	} as unknown as Koa.Context;
 }
 
 describe('user Context middleware tests', () => {

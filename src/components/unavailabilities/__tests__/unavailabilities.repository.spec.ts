@@ -64,12 +64,12 @@ describe('Unavailabilities repository', () => {
 	});
 
 	it('should retrieve unavailabilities for a service', async () => {
-		const queryBuilderMock = ({
+		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve([])),
-		} as unknown) as SelectQueryBuilder<Unavailability>;
+		} as unknown as SelectQueryBuilder<Unavailability>;
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
@@ -90,12 +90,12 @@ describe('Unavailabilities repository', () => {
 	});
 
 	it('should retrieve unavailabilities for a service (without auth)', async () => {
-		const queryBuilderMock = ({
+		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve([])),
-		} as unknown) as SelectQueryBuilder<Unavailability>;
+		} as unknown as SelectQueryBuilder<Unavailability>;
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
@@ -117,13 +117,13 @@ describe('Unavailabilities repository', () => {
 	});
 
 	it('should count unavailabilities for a service', async () => {
-		const queryBuilderMock = ({
+		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve([])),
 			getCount: jest.fn(() => Promise.resolve(1)),
-		} as unknown) as SelectQueryBuilder<Unavailability>;
+		} as unknown as SelectQueryBuilder<Unavailability>;
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
@@ -142,12 +142,12 @@ describe('Unavailabilities repository', () => {
 	});
 
 	it('should retrieve unavailabilities for a service provider', async () => {
-		const queryBuilderMock = ({
+		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve([])),
-		} as unknown) as SelectQueryBuilder<Unavailability>;
+		} as unknown as SelectQueryBuilder<Unavailability>;
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
@@ -173,11 +173,11 @@ describe('Unavailabilities repository', () => {
 	});
 
 	it('should not get unavailability for a service provider', async () => {
-		const queryBuilderMock = ({
+		const queryBuilderMock = {
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			where: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve([])),
-		} as unknown) as SelectQueryBuilder<Unavailability>;
+		} as unknown as SelectQueryBuilder<Unavailability>;
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => {
 			return queryBuilderMock;
@@ -194,11 +194,11 @@ describe('Unavailabilities repository', () => {
 	});
 
 	it('should get unavailability for a service provider', async () => {
-		const queryBuilderMock = ({
+		const queryBuilderMock = {
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			where: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve([])),
-		} as unknown) as SelectQueryBuilder<Unavailability>;
+		} as unknown as SelectQueryBuilder<Unavailability>;
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => {
 			return queryBuilderMock;
@@ -217,11 +217,11 @@ describe('Unavailabilities repository', () => {
 	});
 
 	it('should delete unavailability for all service providers', async () => {
-		const queryBuilderMock = ({
+		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			delete: jest.fn(() => queryBuilderMock),
 			execute: jest.fn(() => Promise.resolve()),
-		} as unknown) as SelectQueryBuilder<Unavailability>;
+		} as unknown as SelectQueryBuilder<Unavailability>;
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => {
 			return queryBuilderMock;
@@ -252,12 +252,12 @@ describe('Unavailabilities repository', () => {
 	});
 
 	it('should delete unavailability for multiple service provider', async () => {
-		const queryBuilderMock = ({
+		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			delete: jest.fn(() => queryBuilderMock),
 			from: jest.fn(() => queryBuilderMock),
 			execute: jest.fn(() => Promise.resolve()),
-		} as unknown) as SelectQueryBuilder<Unavailability>;
+		} as unknown as SelectQueryBuilder<Unavailability>;
 
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => {
 			return queryBuilderMock;

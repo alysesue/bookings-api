@@ -48,14 +48,14 @@ afterAll(() => {
 // tslint:disable-next-line: no-big-function
 describe('Bookings.Controller', () => {
 	const KoaContextStoreMock: Partial<KoaContextStore> = {
-		koaContext: ({
+		koaContext: {
 			set: jest.fn(),
 			remove: jest.fn(),
 			header: {
 				set: jest.fn(),
 				get: jest.fn(),
 			} as Partial<Headers>,
-		} as any) as Koa.Context,
+		} as any as Koa.Context,
 		manualContext: false,
 	};
 
@@ -442,14 +442,14 @@ describe('Bookings.Controller', () => {
 // tslint:disable-next-line: no-big-function
 describe('Bookings.Controller.V2', () => {
 	const KoaContextStoreMock: Partial<KoaContextStore> = {
-		koaContext: ({
+		koaContext: {
 			set: jest.fn(),
 			remove: jest.fn(),
 			header: {
 				set: jest.fn(),
 				get: jest.fn(),
 			} as Partial<Headers>,
-		} as any) as Koa.Context,
+		} as any as Koa.Context,
 		manualContext: false,
 	};
 
@@ -580,9 +580,9 @@ describe('Bookings.Controller.V2', () => {
 
 	it('should search bookings (default paging)', async () => {
 		BookingsServiceMock.searchBookings.mockImplementation(() =>
-			Promise.resolve(({
+			Promise.resolve({
 				entries: [testBooking1],
-			} as unknown) as IPagedEntities<Booking>),
+			} as unknown as IPagedEntities<Booking>),
 		);
 
 		const from = new Date('2020-05-16T20:25:43.511Z');

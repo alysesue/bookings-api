@@ -14,9 +14,9 @@ jest.mock('../../../tools/fetch', () => ({
 
 describe('Captcha Service', () => {
 	const KoaContextStoreMock: Partial<KoaContextStore> = {
-		koaContext: ({
+		koaContext: {
 			header: {} as Partial<Headers>,
-		} as any) as Koa.Context,
+		} as any as Koa.Context,
 	};
 	beforeAll(() => {
 		Container.bind(KoaContextStore).factory(() => KoaContextStoreMock);

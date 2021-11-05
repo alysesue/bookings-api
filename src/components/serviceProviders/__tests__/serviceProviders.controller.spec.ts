@@ -70,14 +70,14 @@ describe('ServiceProviders.Controller.V1', () => {
 
 	it('should get service providers', async () => {
 		ServiceProvidersServiceMock.getServiceProvidersMock.mockImplementation(() =>
-			Promise.resolve(({
+			Promise.resolve({
 				entries: [sp1, sp2],
-			} as unknown) as IPagedEntities<Booking>),
+			} as unknown as IPagedEntities<Booking>),
 		);
 		ServiceProvidersServiceMock.getPagedServiceProvidersMock.mockImplementation(() =>
-			Promise.resolve(({
+			Promise.resolve({
 				entries: [sp1, sp2],
-			} as unknown) as IPagedEntities<Booking>),
+			} as unknown as IPagedEntities<Booking>),
 		);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders();
@@ -108,9 +108,9 @@ describe('ServiceProviders.Controller.V1', () => {
 		timeslots.timeslotItems = [timeslotItem];
 		sp1.timeslotsSchedule = timeslots;
 		ServiceProvidersServiceMock.getPagedServiceProvidersMock.mockImplementation(() =>
-			Promise.resolve(({
+			Promise.resolve({
 				entries: [sp1, sp2],
-			} as unknown) as IPagedEntities<Booking>),
+			} as unknown as IPagedEntities<Booking>),
 		);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders(undefined, true);
@@ -367,14 +367,14 @@ describe('ServiceProviders.Controller.V2', () => {
 
 	it('should get service providers', async () => {
 		ServiceProvidersServiceMock.getServiceProvidersMock.mockImplementation(() =>
-			Promise.resolve(({
+			Promise.resolve({
 				entries: [sp1, sp2],
-			} as unknown) as IPagedEntities<Booking>),
+			} as unknown as IPagedEntities<Booking>),
 		);
 		ServiceProvidersServiceMock.getPagedServiceProvidersMock.mockImplementation(() =>
-			Promise.resolve(({
+			Promise.resolve({
 				entries: [sp1, sp2],
-			} as unknown) as IPagedEntities<Booking>),
+			} as unknown as IPagedEntities<Booking>),
 		);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders();
@@ -407,9 +407,9 @@ describe('ServiceProviders.Controller.V2', () => {
 		timeslots.timeslotItems = [timeslotItem];
 		sp1.timeslotsSchedule = timeslots;
 		ServiceProvidersServiceMock.getPagedServiceProvidersMock.mockImplementation(() =>
-			Promise.resolve(({
+			Promise.resolve({
 				entries: [sp1, sp2],
-			} as unknown) as IPagedEntities<Booking>),
+			} as unknown as IPagedEntities<Booking>),
 		);
 		const controller = Container.get(ServiceProvidersController);
 		const result = await controller.getServiceProviders(undefined, true);

@@ -27,13 +27,13 @@ export class BookingRepositoryMock implements Partial<BookingsRepository> {
 			return BookingRepositoryMock.saveMock;
 		}
 		BookingRepositoryMock.booking = booking;
-		return Promise.resolve(({
+		return Promise.resolve({
 			identifiers: [
 				{
 					_id: 1,
 				},
 			],
-		} as unknown) as Booking);
+		} as unknown as Booking);
 	}
 
 	public async update(booking: Booking): Promise<Booking> {

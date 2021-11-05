@@ -19,7 +19,7 @@ describe('PagingHelper tests', () => {
 		getRawOne: jest.fn<Promise<{ paging_max_id: string; paging_count_value: string }>, any>(),
 	};
 
-	const queryBuilderConstructor = () => (queryBuilderMock as unknown) as SelectQueryBuilder<SampleEntity>;
+	const queryBuilderConstructor = () => queryBuilderMock as unknown as SelectQueryBuilder<SampleEntity>;
 
 	beforeEach(() => {
 		jest.resetAllMocks();

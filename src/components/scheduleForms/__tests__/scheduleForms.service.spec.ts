@@ -58,7 +58,7 @@ describe('Schedules form template services ', () => {
 			Promise.resolve([new OrganisationAdminAuthGroup(userMock, [organisation])]),
 		);
 		TransactionManagerMock.runInTransaction.mockImplementation(
-			async <T extends unknown>(_isolationLevel: IsolationLevel, asyncFunction: AsyncFunction<T>): Promise<T> =>
+			async <T>(_isolationLevel: IsolationLevel, asyncFunction: AsyncFunction<T>): Promise<T> =>
 				await asyncFunction(),
 		);
 	});
