@@ -121,7 +121,7 @@ export class BookingsService {
 		this.bookingsSubject.notify({
 			booking,
 			bookingType: BookingType.CancelledOrRejected,
-			action: ExternalAgencyAppointmentJobAction.CANCEL,
+			action: ExternalAgencyAppointmentJobAction.UPDATE,
 		});
 		return booking;
 	}
@@ -175,7 +175,7 @@ export class BookingsService {
 			this.bookingsSubject.notify({
 				booking,
 				bookingType: BookingType.Updated,
-				action: ExternalAgencyAppointmentJobAction.UPDATE,
+				action: ExternalAgencyAppointmentJobAction.CREATE,
 			});
 		}
 		return booking;
@@ -208,7 +208,7 @@ export class BookingsService {
 		this.bookingsSubject.notify({
 			booking,
 			bookingType: BookingType.CancelledOrRejected,
-			action: ExternalAgencyAppointmentJobAction.UPDATE,
+			action: ExternalAgencyAppointmentJobAction.CANCEL,
 		});
 		return booking;
 	}
