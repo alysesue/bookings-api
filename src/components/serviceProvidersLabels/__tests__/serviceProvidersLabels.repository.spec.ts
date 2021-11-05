@@ -39,12 +39,12 @@ describe('Service Providers Labels Repository', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
 
-		queryBuilderMock = ({
+		queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve(labelsToSave)),
-		} as unknown) as SelectQueryBuilder<ServiceProviderLabel>;
+		} as unknown as SelectQueryBuilder<ServiceProviderLabel>;
 	});
 
 	describe('labels repository', () => {
@@ -119,12 +119,12 @@ describe('Service Providers Categories Repository', () => {
 		beforeEach(() => {
 			jest.resetAllMocks();
 
-			queryBuilderMock = ({
+			queryBuilderMock = {
 				where: jest.fn(() => queryBuilderMock),
 				leftJoin: jest.fn(() => queryBuilderMock),
 				leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 				getMany: jest.fn(() => Promise.resolve(labelsCategoryToSave)),
-			} as unknown) as SelectQueryBuilder<ServiceProviderLabelCategory>;
+			} as unknown as SelectQueryBuilder<ServiceProviderLabelCategory>;
 		});
 
 		describe('Service Provider Labels Category Repository', () => {

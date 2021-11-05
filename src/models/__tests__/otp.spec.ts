@@ -12,7 +12,7 @@ describe('OTP constructor', () => {
 			.mockReturnValueOnce(0.5)
 			.mockReturnValueOnce(0.6);
 		const currDateTime = new Date();
-		jest.spyOn(global, 'Date').mockReturnValue((currDateTime as unknown) as string); // https://stackoverflow.com/a/63782059
+		jest.spyOn(global, 'Date').mockReturnValue(currDateTime as unknown as string); // https://stackoverflow.com/a/63782059
 
 		const otp = Otp.create('+6588884444');
 
@@ -24,7 +24,7 @@ describe('OTP constructor', () => {
 	it('should generate an OTP value of 111111 when OTP_ENABLED=false', () => {
 		jest.spyOn(appConfig, 'getConfig').mockReturnValue({ ...appConfig.getConfig(), otpEnabled: false });
 		const currDateTime = new Date();
-		jest.spyOn(global, 'Date').mockReturnValue((currDateTime as unknown) as string); // https://stackoverflow.com/a/63782059
+		jest.spyOn(global, 'Date').mockReturnValue(currDateTime as unknown as string); // https://stackoverflow.com/a/63782059
 
 		const otp = Otp.create('+6588884444');
 

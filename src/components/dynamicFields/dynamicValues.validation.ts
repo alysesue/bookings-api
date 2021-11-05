@@ -160,7 +160,7 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitorAsync {
 				result = cloneDeep(metadataVisitor._validationState);
 				result._valueJson.myInfoFieldType = _myInfoDynamicField.myInfoFieldType;
 			} else {
-				result._valueJson = undefined
+				result._valueJson = undefined;
 			}
 		}
 

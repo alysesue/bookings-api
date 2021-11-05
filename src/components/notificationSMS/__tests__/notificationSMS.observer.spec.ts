@@ -45,12 +45,12 @@ describe('Test notificationSMS observer', () => {
 		booking.endDateTime = new Date('2021-04-14T03:00:00.000Z');
 		booking.status = 1;
 		booking.citizenEmail = 'email@email.com';
-		booking.service = ({
+		booking.service = {
 			_name: 'Career',
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
 			sendSMSNotifications: true,
-		} as unknown) as Service;
+		} as unknown as Service;
 		booking.serviceProvider = { email: 'test' } as ServiceProvider;
 		booking.uuid = 'f4533bed-da08-473a-8641-7aef918fe0db';
 		(getConfig as jest.Mock).mockReturnValue({

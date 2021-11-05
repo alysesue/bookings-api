@@ -18,7 +18,7 @@ jest.mock('google-auth-library', () => {
 		public fromJSON() {}
 
 		public createScoped(): JWT {
-			return (this as unknown) as JWT;
+			return this as unknown as JWT;
 		}
 
 		public async authorize(): Promise<Credentials> {

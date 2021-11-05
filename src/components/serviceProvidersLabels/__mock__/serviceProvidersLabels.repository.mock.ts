@@ -23,7 +23,8 @@ export class ServiceProviderLabelsRepositoryMock implements Partial<ServiceProvi
 }
 
 export class ServiceProviderLabelsCategoriesRepositoryMock
-	implements Partial<ServiceProviderLabelsCategoriesRepository> {
+	implements Partial<ServiceProviderLabelsCategoriesRepository>
+{
 	public static deleteMock = jest.fn();
 	public static saveMock = jest.fn();
 	public static findMock = jest.fn();

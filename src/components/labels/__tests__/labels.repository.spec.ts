@@ -46,12 +46,12 @@ describe('labels/labels.repository', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
 
-		queryBuilderMock = ({
+		queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve(labelsToSave)),
-		} as unknown) as SelectQueryBuilder<Label>;
+		} as unknown as SelectQueryBuilder<Label>;
 		(ServicesQueryAuthVisitor as jest.Mock).mockImplementation(() => QueryAuthVisitorMock);
 		QueryAuthVisitorMock.createUserVisibilityCondition.mockImplementation(() =>
 			Promise.resolve({ userCondition: '', userParams: {} }),

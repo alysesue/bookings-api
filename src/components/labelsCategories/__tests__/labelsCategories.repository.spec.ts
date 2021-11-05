@@ -40,12 +40,12 @@ describe('labelsCategories repository', () => {
 		beforeEach(() => {
 			jest.resetAllMocks();
 
-			queryBuilderMock = ({
+			queryBuilderMock = {
 				where: jest.fn(() => queryBuilderMock),
 				leftJoin: jest.fn(() => queryBuilderMock),
 				leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 				getMany: jest.fn(() => Promise.resolve(labelsCategoryToSave)),
-			} as unknown) as SelectQueryBuilder<LabelCategory>;
+			} as unknown as SelectQueryBuilder<LabelCategory>;
 		});
 
 		describe('delete', () => {

@@ -65,11 +65,8 @@ export class TimeslotsMapperV1 {
 	}
 
 	public async mapTimeslotEntryV1(entry: AvailableTimeslotProviders): Promise<TimeslotEntryResponseV1> {
-		const [
-			timeslotServiceProviders,
-			totalCapacity,
-			totalAssignedBookings,
-		] = await this.mapTimeslotServiceProvidersV1(Array.from(entry.getTimeslotServiceProviders()));
+		const [timeslotServiceProviders, totalCapacity, totalAssignedBookings] =
+			await this.mapTimeslotServiceProvidersV1(Array.from(entry.getTimeslotServiceProviders()));
 		const response = new TimeslotEntryResponseV1();
 		response.startTime = new Date(entry.startTime);
 		response.endTime = new Date(entry.endTime);
@@ -208,11 +205,8 @@ export class TimeslotsMapperV2 {
 	}
 
 	public async mapTimeslotEntryV2(entry: AvailableTimeslotProviders): Promise<TimeslotEntryResponseV2> {
-		const [
-			timeslotServiceProviders,
-			totalCapacity,
-			totalAssignedBookings,
-		] = await this.mapTimeslotServiceProvidersV2(Array.from(entry.getTimeslotServiceProviders()));
+		const [timeslotServiceProviders, totalCapacity, totalAssignedBookings] =
+			await this.mapTimeslotServiceProvidersV2(Array.from(entry.getTimeslotServiceProviders()));
 		const response = new TimeslotEntryResponseV2();
 		response.startTime = new Date(entry.startTime);
 		response.endTime = new Date(entry.endTime);
