@@ -130,9 +130,11 @@ describe('Bookings functional tests', () => {
 		serviceProviderId?: string,
 		start?: Date,
 		end?: Date,
+		isRequireVerifyBySA = false,
 	): Promise<request.Response> => {
 		await pgClient.setServiceConfigurationOnHold(unsignedServiceId, isOnHold);
 		await pgClient.setServiceConfigurationStandAlone(unsignedServiceId, isStandAlone);
+		await pgClient.setServiceConfigurationRequireVerifyBySA(unsignedServiceId, isRequireVerifyBySA);
 
 		const startDateTime = start ?? new Date(Date.UTC(2051, 11, 10, 1, 0));
 		const endDateTime = end ?? new Date(Date.UTC(2051, 11, 10, 2, 0));
@@ -921,5 +923,104 @@ describe('Bookings functional tests', () => {
 		expect(getResponse.body).toBeDefined();
 		expect(typeof getResponse.body.data.id).toBe('string');
 		expect(getResponse.body.data.status).toBe(BookingStatus.Rejected);
+	});
+
+	describe('2-step-workflow functional tests', () => {
+		const createTwoStepWorkflowCitizenBooking = async (serviceProvideId?: string): Promise<request.Response> => {
+			const response = await postCitizenBookingWithStartEndDateOnly(
+				false,
+				true,
+				serviceProvideId,
+				undefined,
+				undefined,
+				true,
+			);
+
+			const bookingId = response.body.data.id;
+
+			return await CitizenRequestEndpointSG.create({}).post(
+				`/bookings/${bookingId}/validateOnHold`,
+				{
+					body: {
+						citizenName,
+						citizenEmail,
+						citizenUinFin,
+					},
+				},
+				'V2',
+			);
+		};
+
+		it('should be pending SA approval status when citizen makes a booking [standalone flow][no assigned SP]', async () => {
+			const citizenBookingResponse = await createTwoStepWorkflowCitizenBooking();
+
+			expect(citizenBookingResponse.statusCode).toBe(200);
+			expect(citizenBookingResponse.body.data.status).toBe(BookingStatus.PendingApprovalSA);
+		});
+
+		it('should be pending SA approval status when citizen makes a booking [standalone flow][with assigned SP]', async () => {
+			const citizenBookingResponse = await createTwoStepWorkflowCitizenBooking(serviceProvider.id);
+
+			expect(citizenBookingResponse.statusCode).toBe(200);
+			expect(citizenBookingResponse.body.data.status).toBe(BookingStatus.PendingApprovalSA);
+		});
+
+		it('should be accepted status when admin approve booking', async () => {
+			const citizenBookingResponse = await createTwoStepWorkflowCitizenBooking(serviceProvider.id);
+			const bookingId = citizenBookingResponse.body.data.id;
+			const endpoint = await ServiceAdminRequestEndpointSG.create({ nameService: NAME_SERVICE_1, serviceId });
+			const postResponse = await endpoint.post(
+				`/bookings/${bookingId}/accept`,
+				{
+					body: { serviceProviderId: serviceProvider.id },
+				},
+				'V2',
+			);
+			expect(postResponse.statusCode).toBe(204);
+
+			const getResponse = await endpoint.get(`/bookings/${bookingId}`, {}, 'V2');
+			expect(getResponse.statusCode).toBe(200);
+			expect(getResponse.body.data.status).toBe(BookingStatus.Accepted);
+		});
+
+		it('should be pending status when admin approve booking', async () => {
+			await pgClient.setServiceProviderAutoAccept({
+				serviceProviderId: unsignedServiceProviderId,
+				autoAcceptBookings: false,
+			});
+			const citizenBookingResponse = await createTwoStepWorkflowCitizenBooking(serviceProvider.id);
+			const bookingId = citizenBookingResponse.body.data.id;
+			const endpoint = await ServiceAdminRequestEndpointSG.create({ nameService: NAME_SERVICE_1, serviceId });
+			const postResponse = await endpoint.post(
+				`/bookings/${bookingId}/accept`,
+				{
+					body: { serviceProviderId: serviceProvider.id },
+				},
+				'V2',
+			);
+			expect(postResponse.statusCode).toBe(204);
+
+			const getResponse = await endpoint.get(`/bookings/${bookingId}`, {}, 'V2');
+			expect(getResponse.statusCode).toBe(200);
+			expect(getResponse.body.data.status).toBe(BookingStatus.PendingApproval);
+		});
+
+		it('should be rejected status when admin reject booking', async () => {
+			const citizenBookingResponse = await createTwoStepWorkflowCitizenBooking(serviceProvider.id);
+			const bookingId = citizenBookingResponse.body.data.id;
+			const endpoint = await ServiceAdminRequestEndpointSG.create({ nameService: NAME_SERVICE_1, serviceId });
+			const postResponse = await endpoint.post(
+				`/bookings/${bookingId}/reject`,
+				{
+					body: { serviceProviderId: serviceProvider.id },
+				},
+				'V2',
+			);
+			expect(postResponse.statusCode).toBe(204);
+
+			const getResponse = await endpoint.get(`/bookings/${bookingId}`, {}, 'V2');
+			expect(getResponse.statusCode).toBe(200);
+			expect(getResponse.body.data.status).toBe(BookingStatus.Rejected);
+		});
 	});
 });
