@@ -65,12 +65,10 @@ describe('BookingChangeLogs service', () => {
 		booking.service = service;
 
 		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));
-		const action = jest.fn(
-			(_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
-				_booking.citizenUinFin = 'ABCD';
-				return Promise.resolve([ChangeLogAction.Update, _booking]);
-			},
-		);
+		const action = jest.fn((_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
+			_booking.citizenUinFin = 'ABCD';
+			return Promise.resolve([ChangeLogAction.Update, _booking]);
+		});
 
 		const svc = Container.get(BookingChangeLogsService);
 		await svc.executeAndLogAction(1, getBooking, action);
@@ -138,19 +136,17 @@ describe('BookingChangeLogs service', () => {
 		booking.service = service;
 
 		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));
-		const action = jest.fn(
-			(_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
-				_booking.dynamicValues = [
-					{
-						fieldId: 1,
-						fieldName: 'text',
-						type: DynamicValueType.Text,
-						textValue: 'some text',
-					} as DynamicValueJsonModel,
-				];
-				return Promise.resolve([ChangeLogAction.Update, _booking]);
-			},
-		);
+		const action = jest.fn((_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
+			_booking.dynamicValues = [
+				{
+					fieldId: 1,
+					fieldName: 'text',
+					type: DynamicValueType.Text,
+					textValue: 'some text',
+				} as DynamicValueJsonModel,
+			];
+			return Promise.resolve([ChangeLogAction.Update, _booking]);
+		});
 
 		const svc = Container.get(BookingChangeLogsService);
 		await svc.executeAndLogAction(1, getBooking, action);
@@ -228,13 +224,11 @@ describe('BookingChangeLogs service', () => {
 		serviceProvider.id = 1;
 
 		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));
-		const action = jest.fn(
-			(_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
-				_booking.serviceProvider = serviceProvider;
-				_booking.serviceProviderId = serviceProvider.id;
-				return Promise.resolve([ChangeLogAction.Update, _booking]);
-			},
-		);
+		const action = jest.fn((_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
+			_booking.serviceProvider = serviceProvider;
+			_booking.serviceProviderId = serviceProvider.id;
+			return Promise.resolve([ChangeLogAction.Update, _booking]);
+		});
 
 		const svc = Container.get(BookingChangeLogsService);
 		await svc.executeAndLogAction(1, getBooking, action);
@@ -303,12 +297,10 @@ describe('BookingChangeLogs service', () => {
 			.build();
 
 		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));
-		const action = jest.fn(
-			(_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
-				_booking.citizenUinFin = 'ABCD';
-				return Promise.resolve([ChangeLogAction.Update, _booking]);
-			},
-		);
+		const action = jest.fn((_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
+			_booking.citizenUinFin = 'ABCD';
+			return Promise.resolve([ChangeLogAction.Update, _booking]);
+		});
 
 		const svc = Container.get(BookingChangeLogsService);
 		const asyncTest = async () => await svc.executeAndLogAction(1, getBooking, action);
@@ -330,12 +322,10 @@ describe('BookingChangeLogs service', () => {
 		booking.serviceProviderId = 2;
 
 		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));
-		const action = jest.fn(
-			(_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
-				_booking.citizenUinFin = 'ABCD';
-				return Promise.resolve([ChangeLogAction.Update, _booking]);
-			},
-		);
+		const action = jest.fn((_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
+			_booking.citizenUinFin = 'ABCD';
+			return Promise.resolve([ChangeLogAction.Update, _booking]);
+		});
 
 		const svc = Container.get(BookingChangeLogsService);
 		const asyncTest = async () => await svc.executeAndLogAction(1, getBooking, action);
@@ -357,24 +347,18 @@ describe('BookingChangeLogs service', () => {
 		booking.service = service;
 
 		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));
-		const firstAction = jest.fn(
-			(_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
-				throw new ConcurrencyError(`Some concurrency error`);
-			},
-		);
-		const retryAction = jest.fn(
-			(_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
-				_booking.citizenUinFin = 'ABCD';
-				return Promise.resolve([ChangeLogAction.Update, _booking]);
-			},
-		);
+		const firstAction = jest.fn((_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
+			throw new ConcurrencyError(`Some concurrency error`);
+		});
+		const retryAction = jest.fn((_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
+			_booking.citizenUinFin = 'ABCD';
+			return Promise.resolve([ChangeLogAction.Update, _booking]);
+		});
 
 		let counter = 0;
-		const action = jest.fn(
-			async (_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
-				return counter++ === 0 ? await firstAction(_booking) : await retryAction(_booking);
-			},
-		);
+		const action = jest.fn(async (_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
+			return counter++ === 0 ? await firstAction(_booking) : await retryAction(_booking);
+		});
 
 		const svc = Container.get(BookingChangeLogsService);
 		await svc.executeAndLogAction(1, getBooking, action);
@@ -396,24 +380,18 @@ describe('BookingChangeLogs service', () => {
 		booking.service = service;
 
 		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));
-		const firstAction = jest.fn(
-			(_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
-				throw new Error(`Some unknown error`);
-			},
-		);
-		const retryAction = jest.fn(
-			(_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
-				_booking.citizenUinFin = 'ABCD';
-				return Promise.resolve([ChangeLogAction.Update, _booking]);
-			},
-		);
+		const firstAction = jest.fn((_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
+			throw new Error(`Some unknown error`);
+		});
+		const retryAction = jest.fn((_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
+			_booking.citizenUinFin = 'ABCD';
+			return Promise.resolve([ChangeLogAction.Update, _booking]);
+		});
 
 		let counter = 0;
-		const action = jest.fn(
-			async (_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
-				return counter++ === 0 ? await firstAction(_booking) : await retryAction(_booking);
-			},
-		);
+		const action = jest.fn(async (_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
+			return counter++ === 0 ? await firstAction(_booking) : await retryAction(_booking);
+		});
 
 		const svc = Container.get(BookingChangeLogsService);
 		const asyncTest = async () => await svc.executeAndLogAction(1, getBooking, action);

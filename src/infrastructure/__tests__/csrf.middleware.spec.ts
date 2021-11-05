@@ -47,9 +47,9 @@ describe('Test csrf middleware', () => {
 
 	beforeEach(() => {
 		jest.resetAllMocks();
-		context.request = ({
+		context.request = {
 			method: '',
-		} as Partial<Request>) as any;
+		} as Partial<Request> as any;
 
 		UserContextMock.getCurrentUser.mockReturnValue(Promise.resolve(adminMock));
 		(getConfig as jest.Mock).mockReturnValue({

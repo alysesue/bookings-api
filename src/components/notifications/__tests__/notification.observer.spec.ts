@@ -43,7 +43,7 @@ describe('Test template call', () => {
 
 	beforeEach(() => {
 		jest.resetAllMocks();
-		((getConfig as unknown) as jest.Mock).mockReturnValue({});
+		(getConfig as unknown as jest.Mock).mockReturnValue({});
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		const templateValue = { to: 'to', html: 'html' };
 		EmailBookingTemplateMock.CreatedBookingEmailMock.mockReturnValue(templateValue);
@@ -58,11 +58,11 @@ describe('Test template call', () => {
 		booking.status = 1;
 		booking.citizenEmail = 'email@email.com';
 		booking.citizenName = 'test info';
-		booking.service = ({
+		booking.service = {
 			_name: 'Career',
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
-		} as unknown) as Service;
+		} as unknown as Service;
 		booking.serviceProvider = { email: 'test', name: 'test sp info' } as ServiceProvider;
 	});
 

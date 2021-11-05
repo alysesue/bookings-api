@@ -5,7 +5,7 @@ import { BookingsSubject } from '../bookings.subject';
 export class BookingsSubjectMock extends BookingsSubject {
 	public static notifyMock = jest.fn();
 	public get booking(): Booking {
-		return ({
+		return {
 			_status: BookingStatus.Accepted,
 			status: BookingStatus.Accepted,
 			_service: {
@@ -25,7 +25,7 @@ export class BookingsSubjectMock extends BookingsSubject {
 			_location: 'location',
 			_startDateTime: new Date(),
 			_endDateTime: new Date(),
-		} as unknown) as Booking;
+		} as unknown as Booking;
 	}
 
 	public notify(...params): void {
@@ -35,7 +35,7 @@ export class BookingsSubjectMock extends BookingsSubject {
 
 export class PendingApprovalBookingSubjectMock extends BookingsSubjectMock {
 	public get booking(): Booking {
-		return ({
+		return {
 			_status: BookingStatus.PendingApproval,
 			status: BookingStatus.PendingApproval,
 			_service: {
@@ -48,13 +48,13 @@ export class PendingApprovalBookingSubjectMock extends BookingsSubjectMock {
 			_location: 'location',
 			_startDateTime: new Date(),
 			_endDateTime: new Date(),
-		} as unknown) as Booking;
+		} as unknown as Booking;
 	}
 }
 
 export class OnHoldBookingSubjectMock extends BookingsSubjectMock {
 	public get booking(): Booking {
-		return ({
+		return {
 			_status: BookingStatus.OnHold,
 			status: BookingStatus.OnHold,
 			_service: {
@@ -67,6 +67,6 @@ export class OnHoldBookingSubjectMock extends BookingsSubjectMock {
 			_location: 'location',
 			_startDateTime: new Date(),
 			_endDateTime: new Date(),
-		} as unknown) as Booking;
+		} as unknown as Booking;
 	}
 }

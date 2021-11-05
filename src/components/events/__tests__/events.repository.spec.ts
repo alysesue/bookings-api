@@ -59,14 +59,14 @@ describe('Test event repository', () => {
 			Promise.resolve({ entries: [] } as IPagedEntities<Booking>),
 		);
 
-		queryBuilderMock = ({
+		queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve([])),
 			getOne: jest.fn(() => Promise.resolve({})),
 			orderBy: jest.fn(() => queryBuilderMock),
-		} as unknown) as SelectQueryBuilder<OneOffTimeslot>;
+		} as unknown as SelectQueryBuilder<OneOffTimeslot>;
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 	});
 
@@ -161,9 +161,7 @@ describe('Test event repository', () => {
 			limit: 100,
 			labelIds: [1, 4],
 		});
-		expect(
-			queryBuilderMock.where,
-		).toBeCalledWith(
+		expect(queryBuilderMock.where).toBeCalledWith(
 			'("serviceProvider"."_serviceId" = :serviceId) AND ((event."_id" IN (SELECT "event_id" FROM event_label WHERE "label_id" = :label_0)) AND (event."_id" IN (SELECT "event_id" FROM event_label WHERE "label_id" = :label_1)))',
 			{ serviceId: 2, label_0: 1, label_1: 4 },
 		);
@@ -179,9 +177,7 @@ describe('Test event repository', () => {
 			labelIds: [1, 4],
 			labelOperationFiltering: LabelOperationFiltering.UNION,
 		});
-		expect(
-			queryBuilderMock.where,
-		).toBeCalledWith(
+		expect(queryBuilderMock.where).toBeCalledWith(
 			'("serviceProvider"."_serviceId" = :serviceId) AND ((event."_id" IN (SELECT "event_id" FROM event_label WHERE "label_id" = :label_0)) OR (event."_id" IN (SELECT "event_id" FROM event_label WHERE "label_id" = :label_1)))',
 			{ serviceId: 2, label_0: 1, label_1: 4 },
 		);
@@ -189,12 +185,12 @@ describe('Test event repository', () => {
 	});
 
 	it('should search timeslots with labelId with union filter (OR)', async () => {
-		const queryBuilderMock = ({
+		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve([])),
-		} as unknown) as SelectQueryBuilder<OneOffTimeslot>;
+		} as unknown as SelectQueryBuilder<OneOffTimeslot>;
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const repository = Container.get(OneOffTimeslotsRepository);

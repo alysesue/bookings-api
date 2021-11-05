@@ -62,7 +62,7 @@ export class MyInfoResponseMapper {
 			!!valueOrigin &&
 			valueOrigin.originType === InformationOriginType.MyInfo &&
 			!!valueOrigin.myInfoOrigin &&
-			valueOrigin.myInfoOrigin.source === '1' //verified
+			valueOrigin.myInfoOrigin.source === '1' // verified
 		);
 	}
 

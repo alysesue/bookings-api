@@ -32,11 +32,9 @@ describe('sendOtp()', () => {
 
 		configSpy = jest.spyOn(appConfig, 'getConfig');
 		otpRepoSaveSpy = jest.spyOn(OtpRepository.prototype, 'save');
-		otpRepoSaveSpy.mockImplementation(
-			(otp): Promise<Otp> => {
-				return Promise.resolve(otp);
-			},
-		);
+		otpRepoSaveSpy.mockImplementation((otp): Promise<Otp> => {
+			return Promise.resolve(otp);
+		});
 
 		NotificationSMSServiceMock.sendMock.mockResolvedValue();
 		configSpy.mockReturnValue({ otpEnabled: true });

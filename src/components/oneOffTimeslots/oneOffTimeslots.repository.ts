@@ -66,14 +66,8 @@ export class OneOffTimeslotsRepository extends RepositoryBase<OneOffTimeslot> {
 		labelIds?: number[];
 		labelOperationFiltering?: LabelOperationFiltering;
 	}): Promise<OneOffTimeslot[]> {
-		const {
-			serviceId,
-			serviceProviderIds,
-			startDateTime,
-			endDateTime,
-			labelIds,
-			labelOperationFiltering,
-		} = request;
+		const { serviceId, serviceProviderIds, startDateTime, endDateTime, labelIds, labelOperationFiltering } =
+			request;
 
 		const serviceCondition = serviceId ? '"serviceProvider"."_serviceId" = :serviceId' : '';
 		const spCondition =

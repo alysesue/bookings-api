@@ -49,12 +49,12 @@ describe('dynamicFields/dynamicFields.repository', () => {
 		const entity = TextDynamicField.create(1, 'notes', 50, true);
 		entity.id = 11;
 
-		const queryBuilderMock = ({
+		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getOne: jest.fn(() => Promise.resolve(entity)),
-		} as unknown) as SelectQueryBuilder<DynamicField>;
+		} as unknown as SelectQueryBuilder<DynamicField>;
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		QueryAuthVisitorMock.createUserVisibilityCondition.mockImplementation(() =>
 			Promise.resolve({ userCondition: 'field."_serviceId" = :testAuthId', userParams: { testAuthId: 2 } }),
@@ -86,12 +86,12 @@ describe('dynamicFields/dynamicFields.repository', () => {
 
 	it('should return valid query result', async () => {
 		const dynamicFields: DynamicField[] = [];
-		const queryBuilderMock = ({
+		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve(dynamicFields)),
-		} as unknown) as SelectQueryBuilder<DynamicField>;
+		} as unknown as SelectQueryBuilder<DynamicField>;
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 		QueryAuthVisitorMock.createUserVisibilityCondition.mockImplementation(() =>
 			Promise.resolve({ userCondition: 'field."_serviceId" = :testAuthId', userParams: { testAuthId: 2 } }),
@@ -113,12 +113,12 @@ describe('dynamicFields/dynamicFields.repository', () => {
 
 	it('test skip authorization true', async () => {
 		const dynamicFields: SelectListDynamicField[] = [];
-		const queryBuilderMock = ({
+		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoin: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve(dynamicFields)),
-		} as unknown) as SelectQueryBuilder<SelectListDynamicField>;
+		} as unknown as SelectQueryBuilder<SelectListDynamicField>;
 		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const container = Container.get(DynamicFieldsRepository);

@@ -111,9 +111,8 @@ export class ServiceNotificationTemplateService {
 		const defaultTemplate = new ServiceNotificationTemplate();
 		defaultTemplate.id = null;
 		defaultTemplate.emailTemplateType = emailTemplateType;
-		defaultTemplate.htmlTemplate = this.notificationsRepository.getDefaultEmailNotificationTemplateByType(
-			emailTemplateType,
-		);
+		defaultTemplate.htmlTemplate =
+			this.notificationsRepository.getDefaultEmailNotificationTemplateByType(emailTemplateType);
 
 		return defaultTemplate;
 	}

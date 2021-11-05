@@ -42,9 +42,9 @@ describe('Test encryption service', () => {
 	it('Should not decrypt value if date expire', async () => {
 		const mockDate = new Date(1466424490000);
 		const mockDate2 = new Date(1666434490000);
-		jest.spyOn(global, 'Date').mockImplementationOnce(() => (mockDate as unknown) as string);
-		jest.spyOn(global, 'Date').mockImplementationOnce(() => (mockDate2 as unknown) as string);
-		const spy = jest.spyOn(global, 'Date').mockImplementationOnce(() => (mockDate as unknown) as string);
+		jest.spyOn(global, 'Date').mockImplementationOnce(() => mockDate as unknown as string);
+		jest.spyOn(global, 'Date').mockImplementationOnce(() => mockDate2 as unknown as string);
+		const spy = jest.spyOn(global, 'Date').mockImplementationOnce(() => mockDate as unknown as string);
 
 		const object = { test: 'test' };
 		const resEncrypted = await Container.get(EncryptionService).encrypt(object as GenericEncryptionData);

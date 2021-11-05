@@ -70,11 +70,11 @@ describe('BookingChangeLogs repository', () => {
 	});
 
 	it('should retrieve logs', async () => {
-		const queryBuilderMock = ({
+		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve([])),
-		} as unknown) as SelectQueryBuilder<BookingChangeLog>;
+		} as unknown as SelectQueryBuilder<BookingChangeLog>;
 
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new OrganisationAdminAuthGroup(adminUserMock, [organisation])]),
@@ -101,11 +101,11 @@ describe('BookingChangeLogs repository', () => {
 	});
 
 	it('should not retrieve logs', async () => {
-		const queryBuilderMock = ({
+		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
 			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
 			getMany: jest.fn(() => Promise.resolve([])),
-		} as unknown) as SelectQueryBuilder<BookingChangeLog>;
+		} as unknown as SelectQueryBuilder<BookingChangeLog>;
 
 		UserContextMock.getAuthGroups.mockImplementation(() =>
 			Promise.resolve([new CitizenAuthGroup(singpassUserMock)]),

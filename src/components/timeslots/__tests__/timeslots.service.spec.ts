@@ -103,7 +103,7 @@ describe('Timeslots Service', () => {
 
 	const ServiceMock = new Service();
 	ServiceMock.id = 1;
-	ServiceMock.timeslotsSchedule = (TimeslotsScheduleMock as unknown) as TimeslotsSchedule;
+	ServiceMock.timeslotsSchedule = TimeslotsScheduleMock as unknown as TimeslotsSchedule;
 	ServiceMock.timeslotsScheduleId = TimeslotsScheduleMock._id;
 	ServiceMock.timeslotsSchedule.timeslotItems = [timeslot, timeslot2, timeslot3, timeslot4];
 
@@ -126,7 +126,7 @@ describe('Timeslots Service', () => {
 
 	const ServiceProviderMock2 = ServiceProvider.create('Provider with schedule', ServiceMock.id);
 	ServiceProviderMock2.id = 101;
-	ServiceProviderMock2.timeslotsSchedule = (ProviderScheduleMock as unknown) as TimeslotsSchedule;
+	ServiceProviderMock2.timeslotsSchedule = ProviderScheduleMock as unknown as TimeslotsSchedule;
 	ServiceProviderMock2.timeslotsScheduleId = ProviderScheduleMock._id;
 
 	// Booking in place for the last time slot
@@ -524,12 +524,12 @@ describe('Timeslots Service', () => {
 
 		const availableSp = ServiceProvider.create('Available SP', service1Mock.id);
 		availableSp.id = 200;
-		availableSp.timeslotsSchedule = (ProviderScheduleMock as unknown) as TimeslotsSchedule;
+		availableSp.timeslotsSchedule = ProviderScheduleMock as unknown as TimeslotsSchedule;
 		availableSp.timeslotsScheduleId = ProviderScheduleMock._id;
 		const expiredSP = ServiceProvider.create('Expired SP', service1Mock.id);
 		expiredSP.id = 201;
 		expiredSP.expiryDate = DateHelper.setHours(date, 17, 0);
-		expiredSP.timeslotsSchedule = (ProviderScheduleMock as unknown) as TimeslotsSchedule;
+		expiredSP.timeslotsSchedule = ProviderScheduleMock as unknown as TimeslotsSchedule;
 		expiredSP.timeslotsScheduleId = ProviderScheduleMock._id;
 
 		BookingsRepositoryMock.search.mockReturnValue(Promise.resolve({ entries: [] } as IPagedEntities<Booking>));
@@ -825,7 +825,7 @@ describe('Timeslots Service Out Of Slot', () => {
 
 	const ServiceMock = new Service();
 	ServiceMock.id = 1;
-	ServiceMock.timeslotsSchedule = (TimeslotsScheduleMock as unknown) as TimeslotsSchedule;
+	ServiceMock.timeslotsSchedule = TimeslotsScheduleMock as unknown as TimeslotsSchedule;
 	ServiceMock.timeslotsScheduleId = TimeslotsScheduleMock._id;
 
 	const ServiceProviderMock = ServiceProvider.create('Provider', ServiceMock.id);
@@ -838,7 +838,7 @@ describe('Timeslots Service Out Of Slot', () => {
 
 	const ServiceProviderMock2 = ServiceProvider.create('Provider with schedule', ServiceMock.id);
 	ServiceProviderMock2.id = 101;
-	ServiceProviderMock2.timeslotsSchedule = (ProviderScheduleMock as unknown) as TimeslotsSchedule;
+	ServiceProviderMock2.timeslotsSchedule = ProviderScheduleMock as unknown as TimeslotsSchedule;
 	ServiceProviderMock2.timeslotsScheduleId = ProviderScheduleMock._id;
 
 	beforeAll(() => {
