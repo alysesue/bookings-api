@@ -47,13 +47,10 @@ export class LifeSGMapper {
 						importantNotes: '',
 						...(booking?.citizenPhone && { contactNumber: booking.citizenPhone }), // TODO: lifesg shows as external contact
 						...(booking?.citizenEmail && { email: booking.citizenEmail }), // TODO: lifesg shows as external contact
-						// contactUrl: '', // TODO: 2 of 3 `contactNumber` / `email` / `contactUrl` choice
-						...((!booking?.citizenPhone || !booking?.citizenEmail) && {
-							contactUrl: 'https://www.google.com',
-						}), // TODO: mock logic as 2 of 3 contact methods are required
 						hideAgencyContactInfo: false,
 						isConfidential: true,
 						...(booking?.videoConferenceUrl && { isVirtual: true }),
+						// no videoConferenceUrl does not mean isVirtual: true, current logic is mocked for required values
 						...(booking?.videoConferenceUrl && { virtualAppointmentUrl: booking.videoConferenceUrl }),
 						agencyLastUpdatedAt: LocalDateTime.now(),
 					}),
