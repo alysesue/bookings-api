@@ -10,20 +10,17 @@ describe('Dynamic Fields functional tests', () => {
 
 	let service: ServiceResponseV1;
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		service = await postService({
 			name: NAME_SERVICE_1,
 		});
-
-		done();
 	});
 
 	it('should update text dynamic field (including change to the default value of isMandatory)', async () => {

@@ -10,21 +10,18 @@ describe('Dynamic Fields functional tests', () => {
 
 	let service: ServiceResponseV1;
 	let serviceId: number;
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		service = await postService({
 			name: NAME_SERVICE_1,
 		});
 		serviceId = service.id;
-
-		done();
 	});
 
 	it('should delete text dynamic field', async () => {

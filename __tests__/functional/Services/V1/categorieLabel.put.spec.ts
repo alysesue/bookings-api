@@ -11,20 +11,17 @@ describe('Tests endpoint', () => {
 	let response;
 	let serviceCreated;
 
-	beforeAll(async (done) => {
+	beforeAll(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.close();
-		done();
 	});
 
-	afterEach(async (done) => {
+	afterEach(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		categories = [{ categoryName: 'category', labels: [{ label: 'labelCategory' }] }];
 		response = await OrganisationAdminRequestEndpointSG.create({}).post('/services', {
 			body: { name: SERVICE_NAME, labels, categories },
@@ -37,7 +34,6 @@ describe('Tests endpoint', () => {
 		expect(serviceCreated.categories[0].labels[0].label).toBe('labelCategory');
 		labels = [...serviceCreated.labels];
 		categories = [...serviceCreated.categories];
-		done();
 	});
 
 	it('Should update service with a new category', async () => {

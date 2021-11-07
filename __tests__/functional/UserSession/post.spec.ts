@@ -4,14 +4,12 @@ import { PgClient } from '../../utils/pgClient';
 describe('User Session endpoints', () => {
 	const pgClient = new PgClient();
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
 	it('Post anonymous user', async () => {

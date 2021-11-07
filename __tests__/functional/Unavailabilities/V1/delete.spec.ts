@@ -1,7 +1,7 @@
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
 import { PgClient } from '../../../utils/pgClient';
 import { ServiceProviderResponseModelV1 } from '../../../../src/components/serviceProviders/serviceProviders.apicontract';
-import { populateServiceWithMultipleServiceProviders } from "../../../populate/V1/serviceProviders";
+import { populateServiceWithMultipleServiceProviders } from '../../../populate/V1/serviceProviders';
 
 describe('Un-availabilities Functional tests', () => {
 	const pgClient = new PgClient();
@@ -31,7 +31,7 @@ describe('Un-availabilities Functional tests', () => {
 		return await endpoint.post('/unavailabilities', { body });
 	};
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		const result = await populateServiceWithMultipleServiceProviders({
@@ -43,14 +43,11 @@ describe('Un-availabilities Functional tests', () => {
 		serviceProvider2 = result.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_2);
 
 		serviceId = result.service.id;
-
-		done();
 	});
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
 	it('Should delete unavailability by id', async () => {

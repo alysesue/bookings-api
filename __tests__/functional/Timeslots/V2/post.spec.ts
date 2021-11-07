@@ -10,23 +10,19 @@ describe('Timeslots functional tests', () => {
 	const CAPACITY = 2;
 	let result;
 
-	beforeAll(async (done) => {
+	beforeAll(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		result = await populateUserServiceProvider({ serviceNames: ['Service'], name: 'Sp1', agencyUserId: 'A001' });
-		done();
 	});
 
-	afterEach(async (done) => {
+	afterEach(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
 
 	it('should create individual timeslot with capacity', async () => {

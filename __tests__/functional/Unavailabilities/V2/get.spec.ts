@@ -31,7 +31,7 @@ describe('Un-availabilities Functional tests', () => {
 		return await endpoint.post('/unavailabilities', { body }, 'V2');
 	};
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		const result = await populateServiceWithMultipleServiceProviders({
@@ -43,14 +43,11 @@ describe('Un-availabilities Functional tests', () => {
 		serviceProvider2 = result.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_2);
 
 		serviceId = result.service.id;
-
-		done();
 	});
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
 	it('Should get unavailabilities', async () => {

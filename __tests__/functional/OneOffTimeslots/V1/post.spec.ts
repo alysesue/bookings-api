@@ -18,13 +18,12 @@ describe('Timeslots functional tests', () => {
 	let serviceProvider1: ServiceProviderResponseModelV1;
 	let service: ServiceResponseV1;
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		const result1 = await populateUserServiceProvider({
@@ -37,7 +36,6 @@ describe('Timeslots functional tests', () => {
 		service = await putServiceLabel(serviceProvider1.serviceId.toString(), ['Chinese'], {
 			name: NAME_SERVICE_1,
 		});
-		done();
 	});
 
 	describe('populating one off timeslots', () => {
@@ -134,8 +132,7 @@ describe('Timeslots functional tests', () => {
 			startTime: END_TIME_1,
 			endTime: START_TIME_1,
 			capacity: 1,
-			title:
-				'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii',
+			title: 'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii',
 			description: 'Description',
 		});
 

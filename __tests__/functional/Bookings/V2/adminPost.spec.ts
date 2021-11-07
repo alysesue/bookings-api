@@ -26,13 +26,12 @@ describe('Bookings functional tests as admin', () => {
 	let serviceId: string;
 	let unsignedServiceProviderId: number;
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 		const result = await populateUserServiceProvider({
 			serviceNames: [NAME_SERVICE_1],
@@ -43,8 +42,6 @@ describe('Bookings functional tests as admin', () => {
 		serviceId = result.services.find((item) => item.name === NAME_SERVICE_1).id;
 
 		unsignedServiceProviderId = await idHasher.convertHashToId(serviceProviderId);
-
-		done();
 	});
 
 	const createInSlotBooking = async (): Promise<request.Response> => {

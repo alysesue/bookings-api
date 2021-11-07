@@ -57,7 +57,7 @@ describe('Bookings functional tests', () => {
 		return new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate() + addDays, hours, minutes));
 	};
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		const result = await populateUserServiceProvider({
@@ -87,14 +87,11 @@ describe('Bookings functional tests', () => {
 
 		const idHasher = new IdHasherForFunctional();
 		dynamicFieldId = await idHasher.convertIdToHash(queryResult.rows[0]._id);
-
-		done();
 	});
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
 	const postAdminBookingWithStartEndTimeOnly = async (
@@ -535,11 +532,8 @@ describe('Bookings functional tests', () => {
 		expect(validateResponse.body.data.status).toBe(BookingStatus.Accepted);
 		expect(validatedBookingId).toBeDefined();
 
-		const {
-			onHoldReschedule,
-			bookingBeforeValidate,
-			validateReschedule,
-		} = await citizenRescheduleStandAloneAndValidate(validatedBookingId);
+		const { onHoldReschedule, bookingBeforeValidate, validateReschedule } =
+			await citizenRescheduleStandAloneAndValidate(validatedBookingId);
 
 		//makes sure original booking hasn't changed yet (before Reschedule standalone validation)
 		expect(bookingBeforeValidate.body.data.startDateTime).toEqual('2051-12-10T01:00:00.000Z');

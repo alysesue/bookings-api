@@ -14,13 +14,12 @@ describe('Timeslot availability filter by label', () => {
 	let englishLabel;
 	let frenchLabel;
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		const { service, serviceProvider } = await populateServiceAndServiceProvider({
@@ -49,8 +48,6 @@ describe('Timeslot availability filter by label', () => {
 			labelIds: [frenchLabel.id],
 			capacity: 3,
 		});
-
-		done();
 	});
 
 	it('should be intersection by default', async () => {

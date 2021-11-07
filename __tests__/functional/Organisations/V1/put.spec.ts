@@ -6,22 +6,19 @@ describe('Organisations functional tests - put', () => {
 	const organisationName = 'localorg';
 	let organisationId;
 
-	beforeAll(async (done) => {
+	beforeAll(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.setOrganisation({ organisationName });
 		organisationId = await pgClient.getFirstOrganisationId();
 		await pgClient.mapOrganisation({ organisationId, organisationName });
-		done();
 	});
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.close();
-		done();
 	});
 
 	it('should set organisation level schedule form', async () => {
@@ -90,9 +87,10 @@ describe('Organisations functional tests - put', () => {
 				},
 			],
 		};
-		const response = await OrganisationAdminRequestEndpointSG.create(
-			{},
-		).put(`/organisations/${organisationId}/scheduleForm`, { body: schedule });
+		const response = await OrganisationAdminRequestEndpointSG.create({}).put(
+			`/organisations/${organisationId}/scheduleForm`,
+			{ body: schedule },
+		);
 
 		expect(response.statusCode).toBe(204);
 	});

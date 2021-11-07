@@ -9,18 +9,15 @@ describe('Tests endpoint and populate data', () => {
 	const pgClient = new PgClient();
 	const videoConferenceUrl = 'http://www.zoom.us/1234567';
 
-	beforeAll(async (done) => {
+	beforeAll(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
 
 	it("should update first service's name", async () => {

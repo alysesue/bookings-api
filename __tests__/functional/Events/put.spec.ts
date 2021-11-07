@@ -12,7 +12,7 @@ describe('Event update functional tests', () => {
 	let oneOffTimeslotRequest2;
 	const endTime = new Date(Date.now() + 25 * 60 * 60 * 1000);
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 		const { service: srv, serviceProvider: sp } = await populateServiceAndServiceProvider({});
 		service = srv;
@@ -24,14 +24,11 @@ describe('Event update functional tests', () => {
 		oneOffTimeslotRequest2 = createOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
 		eventRequest = createEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest1, oneOffTimeslotRequest2]);
 		await postEvent(eventRequest);
-
-		done();
 	});
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
 	it('should test', function () {});

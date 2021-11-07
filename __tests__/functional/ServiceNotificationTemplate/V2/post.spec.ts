@@ -10,14 +10,12 @@ describe('Tests endpoint and populate data for POST request', () => {
 	const TEMPLATE_TYPE = EmailNotificationTemplateType.CreatedByCitizenSentToCitizen;
 	const HTML_TEMPLATE = 'test service notification template';
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
 	it('Post a single service email notification template', async () => {

@@ -24,13 +24,12 @@ describe('Bookings functional tests as agency', () => {
 	let serviceId: string;
 	const validationType = BookingValidationType.Admin;
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 		const result = await populateUserServiceProvider({
 			serviceNames: [NAME_SERVICE_1],
@@ -39,7 +38,6 @@ describe('Bookings functional tests as agency', () => {
 		});
 		serviceProviderId = result.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1).id;
 		serviceId = result.services.find((item) => item.name === NAME_SERVICE_1).id;
-		done();
 	});
 
 	const createInSlotBooking = async (): Promise<request.Response> => {

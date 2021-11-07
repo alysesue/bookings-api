@@ -10,7 +10,7 @@ describe('Event post functional tests', () => {
 	let event;
 	let eventRequest;
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 		const { service: srv, serviceProvider: sp } = await populateServiceAndServiceProvider({});
 		service = srv;
@@ -18,13 +18,11 @@ describe('Event post functional tests', () => {
 		const oneOffTimeslotRequest = createOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
 		eventRequest = createEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest]);
 		event = await postEvent(eventRequest);
-		done();
 	});
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
 	it('Should delete an event', async () => {
