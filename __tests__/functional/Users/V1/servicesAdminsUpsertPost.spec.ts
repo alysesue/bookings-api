@@ -4,19 +4,16 @@ import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpoi
 describe('Tests endpoint and populate data', () => {
 	const pgClient = new PgClient();
 
-	beforeAll(async (done) => {
+	beforeAll(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.close();
-		done();
 	});
 
-	afterEach(async (done) => {
+	afterEach(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
 
 	it('Post service admin when array is empty', async () => {

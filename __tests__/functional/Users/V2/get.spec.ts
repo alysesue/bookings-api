@@ -4,14 +4,12 @@ import { AnonmymousEndpointSG } from '../../../utils/requestEndpointSG';
 describe('Tests endpoint and populate data', () => {
 	const pgClient = new PgClient();
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
 	it('should get anonymous user', async () => {

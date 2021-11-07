@@ -8,7 +8,7 @@ describe('Event post functional tests', () => {
 	let service;
 	let serviceProvider;
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 		const { service: srv, serviceProvider: sp } = await populateServiceAndServiceProvider({
 			categories: [
@@ -20,14 +20,11 @@ describe('Event post functional tests', () => {
 		});
 		service = srv;
 		serviceProvider = sp[0];
-
-		done();
 	});
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
 	it('Should create a simple event', async () => {

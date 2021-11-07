@@ -37,13 +37,12 @@ describe('Timeslots functional tests', () => {
 	let serviceId2;
 	let serviceId3;
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		result1 = await populateUserServiceProvider({
@@ -101,8 +100,6 @@ describe('Timeslots functional tests', () => {
 			closeTime: END_TIME_3,
 			scheduleSlot: 60,
 		});
-
-		done();
 	});
 
 	it('organisation admin should get all timeslot schedules', async () => {

@@ -9,24 +9,20 @@ describe('Service providers functional tests - post', () => {
 	const pgClient = new PgClient();
 	let service;
 
-	beforeAll(async (done) => {
+	beforeAll(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		service = await postService({ name: 'Service' });
-		done();
 	});
 
-	afterEach(async (done) => {
+	afterEach(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
 
 	it('Post & Get serviceProvider', async () => {

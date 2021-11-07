@@ -40,13 +40,12 @@ describe('Timeslots functional tests', () => {
 
 	let service1Results: ServiceResponseV1;
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		const result1 = await populateUserServiceProvider({
@@ -107,8 +106,6 @@ describe('Timeslots functional tests', () => {
 			capacity: 3,
 			labelIds: service3Result.labels.map((l) => l.id),
 		});
-
-		done();
 	});
 
 	it('one off timeslots should query by label and return empty when not found', async () => {

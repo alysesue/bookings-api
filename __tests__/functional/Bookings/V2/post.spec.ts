@@ -58,7 +58,7 @@ describe('Bookings functional tests', () => {
 		return new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate() + addDays, hours, minutes));
 	};
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		const result = await populateUserServiceProvider({
@@ -70,7 +70,6 @@ describe('Bookings functional tests', () => {
 
 		service = result.services.find((item) => item.name === NAME_SERVICE_1);
 		serviceId = service.id;
-
 
 		unsignedServiceId = await idHasher.convertHashToId(serviceId);
 		unsignedServiceProviderId = await idHasher.convertHashToId(serviceProvider.id);
@@ -90,14 +89,11 @@ describe('Bookings functional tests', () => {
 		});
 
 		dynamicFieldId = await idHasher.convertIdToHash(queryResult.rows[0]._id);
-
-		done();
 	});
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
 	const postAdminBookingWithStartEndTimeOnly = async (

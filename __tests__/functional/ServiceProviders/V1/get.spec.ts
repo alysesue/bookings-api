@@ -10,28 +10,24 @@ describe('Service providers functional tests - get', () => {
 	let service;
 	let serviceProvider;
 
-	beforeAll(async (done) => {
+	beforeAll(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		service = await postService({ name: 'Service' });
 		await postServiceProvider(service.id);
 		serviceProvider = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).get(
 			'/service-providers',
 		);
-		done();
 	});
 
-	afterEach(async (done) => {
+	afterEach(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
 
 	it('should get service provider count', async () => {

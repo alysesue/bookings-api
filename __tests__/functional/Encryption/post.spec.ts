@@ -5,9 +5,8 @@ describe('Tests endpoint encrypt', () => {
 	const SERVICE_NAME = 'Service';
 	const pgClient = new PgClient();
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.close();
-		done();
 	});
 
 	it('Post encrypt', async () => {

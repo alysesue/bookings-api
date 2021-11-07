@@ -12,13 +12,12 @@ describe('Timeslots functional tests', () => {
 
 	let serviceProvider1: ServiceProviderResponseModelV1;
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		const result1 = await populateUserServiceProvider({
@@ -28,8 +27,6 @@ describe('Timeslots functional tests', () => {
 		});
 
 		serviceProvider1 = result1.serviceProviders.find((item) => item.name === SERVICE_PROVIDER_NAME_1);
-
-		done();
 	});
 
 	it('should delete one off timeslot', async () => {

@@ -10,7 +10,7 @@ describe('Get events functional tests', () => {
 	let service: ServiceResponseV2;
 	let serviceProvider;
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 		const { service: srv, serviceProvider: sp } = await populateServiceAndServiceProvider({});
 		service = srv;
@@ -19,13 +19,11 @@ describe('Get events functional tests', () => {
 		const oneOffTimeslotRequest = createOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
 		const event = createEventRequest({ serviceId: service.id }, [oneOffTimeslotRequest]);
 		await postEvent(event);
-		done();
 	});
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		// await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
 	xit('Should get all events but not oneOffTimeslot', async () => {
@@ -73,10 +71,10 @@ describe('Get events functional tests', () => {
 
 	it('Should filter by title and order them', async () => {
 		const oneOffTimeslotRequest = createOneOffTimeslotRequest({ serviceProviderId: serviceProvider.id });
-		await postEvent({ serviceId: service.id, timeslots: [oneOffTimeslotRequest],title: 'lastNumero'});
-		await postEvent({ serviceId: service.id, timeslots: [oneOffTimeslotRequest],title: 'Numero2'});
-		await postEvent({ serviceId: service.id, timeslots: [oneOffTimeslotRequest],title: 'Numero1'});
-		const response = await getEvents(service.id, {title: 'nu'});
+		await postEvent({ serviceId: service.id, timeslots: [oneOffTimeslotRequest], title: 'lastNumero' });
+		await postEvent({ serviceId: service.id, timeslots: [oneOffTimeslotRequest], title: 'Numero2' });
+		await postEvent({ serviceId: service.id, timeslots: [oneOffTimeslotRequest], title: 'Numero1' });
+		const response = await getEvents(service.id, { title: 'nu' });
 		expect(response.length).toBe(3);
 		expect(response[0].title).toBe('Numero2');
 		expect(response[1].title).toBe('Numero1');

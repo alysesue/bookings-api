@@ -10,23 +10,20 @@ describe('Organisations functional tests - put', () => {
 	let organisationId;
 	let signedOrganisationId;
 
-	beforeAll(async (done) => {
+	beforeAll(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.setOrganisation({ organisationName });
 		organisationId = await pgClient.getFirstOrganisationId();
 		await pgClient.mapOrganisation({ organisationId, organisationName });
 		signedOrganisationId = await idHasher.convertIdToHash(organisationId);
-		done();
 	});
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.close();
-		done();
 	});
 
 	it('should set organisation level schedule form', async () => {

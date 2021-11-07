@@ -4,7 +4,7 @@ import { ServiceProviderResponseModelV2 } from '../../../../src/components/servi
 import { ServiceResponseV2 } from '../../../../src/components/services/service.apicontract';
 import { populateUserServiceProvider } from '../../../populate/V2/users';
 import { putServiceLabel } from '../../../populate/V2/services';
-import { populateOneOffTimeslot, updateOneOffTimeslot } from "../../../populate/V2/oneOffTimeslots";
+import { populateOneOffTimeslot, updateOneOffTimeslot } from '../../../populate/V2/oneOffTimeslots';
 
 describe('One-off timeslots functional tests - post', () => {
 	const pgClient = new PgClient();
@@ -18,13 +18,12 @@ describe('One-off timeslots functional tests - post', () => {
 	let serviceProvider1: ServiceProviderResponseModelV2;
 	let service: ServiceResponseV2;
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		const result1 = await populateUserServiceProvider({
@@ -38,8 +37,6 @@ describe('One-off timeslots functional tests - post', () => {
 		service = await putServiceLabel(serviceProvider1.serviceId.toString(), ['Chinese'], {
 			name: NAME_SERVICE_1,
 		});
-
-		done();
 	});
 
 	describe('populating one off timeslots', () => {
@@ -134,8 +131,7 @@ describe('One-off timeslots functional tests - post', () => {
 			startTime: END_TIME_1,
 			endTime: START_TIME_1,
 			capacity: 1,
-			title:
-				'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii',
+			title: 'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii',
 			description: 'Description',
 		});
 

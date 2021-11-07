@@ -12,13 +12,12 @@ describe('Dynamic Fields functional tests', () => {
 	let service: ServiceResponseV2;
 	let service2: ServiceResponseV2;
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		service = await postService({
@@ -27,8 +26,6 @@ describe('Dynamic Fields functional tests', () => {
 		service2 = await postService({
 			name: NAME_SERVICE_2,
 		});
-
-		done();
 	});
 
 	it('should add text dynamic field with isMandatory = undefined set to default false', async () => {

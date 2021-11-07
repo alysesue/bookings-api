@@ -34,7 +34,7 @@ describe('Dynamic Fields functional tests', () => {
 		},
 	];
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		const result = await populateUserServiceProvider({
@@ -76,14 +76,11 @@ describe('Dynamic Fields functional tests', () => {
 			name: 'Select an option',
 			options: JSON.stringify(options),
 		});
-
-		done();
 	});
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
 	it('Should return dynamic fields created ', async () => {

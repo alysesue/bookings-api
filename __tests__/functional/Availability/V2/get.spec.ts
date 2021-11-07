@@ -19,13 +19,12 @@ describe('Timeslot availability functional tests - get', () => {
 	let unsignedServiceProviderId1: number;
 	let unsignedServiceId1: number;
 
-	afterAll(async (done) => {
+	afterAll(async () => {
 		await pgClient.cleanAllTables();
 		await pgClient.close();
-		done();
 	});
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		await pgClient.cleanAllTables();
 
 		result1 = await populateUserServiceProvider({
@@ -46,8 +45,6 @@ describe('Timeslot availability functional tests - get', () => {
 			closeTime: END_TIME_1,
 			scheduleSlot: 60,
 		});
-
-		done();
 	});
 
 	it('should retrieve service availability as anonymous (when service is configuration is set)', async () => {
