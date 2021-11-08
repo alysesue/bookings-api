@@ -532,8 +532,11 @@ describe('Bookings functional tests', () => {
 		expect(validateResponse.body.data.status).toBe(BookingStatus.Accepted);
 		expect(validatedBookingId).toBeDefined();
 
-		const { onHoldReschedule, bookingBeforeValidate, validateReschedule } =
-			await citizenRescheduleStandAloneAndValidate(validatedBookingId);
+		const {
+			onHoldReschedule,
+			bookingBeforeValidate,
+			validateReschedule,
+		} = await citizenRescheduleStandAloneAndValidate(validatedBookingId);
 
 		//makes sure original booking hasn't changed yet (before Reschedule standalone validation)
 		expect(bookingBeforeValidate.body.data.startDateTime).toEqual('2051-12-10T01:00:00.000Z');
@@ -875,6 +878,54 @@ describe('Bookings functional tests', () => {
 
 		expect(bookingResponse.statusCode).toBe(201);
 		expect(validateResponse.statusCode).toBe(403);
+	});
+
+	it('[Stand alone][Anonymous] - Should set nric with existing nric when reschedule', async () => {
+		await pgClient.configureServiceAllowAnonymous({ serviceId });
+		await pgClient.setServiceConfigurationStandAlone(serviceId, true);
+
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+
+		const endpoint = await AnonmymousEndpointSG.create({
+			serviceId: serviceIdStr,
+		});
+		await endpoint.sendAndVerifyOTP();
+
+		const bookingResponse = await endpoint.post('/bookings', {
+			body: {
+				startDateTime,
+				endDateTime,
+				serviceProviderId: serviceProvider.id,
+				citizenUinFin,
+				citizenName,
+				citizenEmail,
+			},
+		});
+		const bookingId = bookingResponse.body.data.id;
+		const validateResponse = await endpoint.post(`/bookings/${bookingId}/validateOnHold`, {
+			body: {
+				citizenUinFin,
+				citizenName,
+				citizenEmail,
+				citizenPhone: '84000000',
+			},
+		});
+		expect(bookingResponse.statusCode).toBe(201);
+		expect(validateResponse.statusCode).toBe(200);
+
+		const response = await endpoint.post(`/bookings/${bookingId}/reschedule`, {
+			body: {
+				startDateTime: new Date(Date.UTC(2051, 11, 10, 3, 0)),
+				endDateTime: new Date(Date.UTC(2051, 11, 10, 4, 0)),
+				serviceProviderId: serviceProvider.id,
+				citizenName,
+				citizenEmail,
+			},
+		});
+		expect(response.statusCode).toBe(200);
+		expect(response.body.data.status).toBe(BookingStatus.OnHold);
+		expect(response.body.data.citizenUinFin).toEqual('S****377H');
 	});
 
 	it('should create multiple bookings', async () => {
