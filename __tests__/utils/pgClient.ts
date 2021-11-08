@@ -70,14 +70,14 @@ export class PgClient {
 		return res.rows[0]._molAdminId;
 	}
 
-	public async setOrganisation({organisationName, schemaVersion ={schemaVersion: 2}}): Promise<void> {
+	public async setOrganisation({ organisationName, schemaVersion = { schemaVersion: 2 } }): Promise<void> {
 		await this.pool.query({
 			text: `INSERT INTO public.organisation("_name", "_configuration") values ($1, $2)`,
 			values: [organisationName, schemaVersion],
 		});
 	}
 
-	public async mapOrganisation({organisationId, organisationName}): Promise<void> {
+	public async mapOrganisation({ organisationId, organisationName }): Promise<void> {
 		await this.pool.query({
 			text: `INSERT INTO public.organisation_admin_group_map("_organisationId", "_organisationRef") values ($1, $2)`,
 			values: [organisationId, organisationName],
@@ -86,7 +86,7 @@ export class PgClient {
 
 	public async getFirstOrganisationId(): Promise<number> {
 		const res = await this.pool.query({
-			text: `SELECT * FROM public.organisation`
+			text: `SELECT * FROM public.organisation`,
 		});
 		return res.rows[0]._id;
 	}
@@ -109,6 +109,13 @@ export class PgClient {
 		await this.pool.query({
 			text: `UPDATE public.service set "_isStandAlone" = $1 where _id = $2`,
 			values: [standAlone, serviceId],
+		});
+	}
+
+	public async setServiceHasSalutation(serviceId, hasSalutation): Promise<void> {
+		await this.pool.query({
+			text: `UPDATE public.service set "_hasSalutation" = $1 where _id = $2`,
+			values: [hasSalutation, serviceId],
 		});
 	}
 

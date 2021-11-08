@@ -22,6 +22,7 @@ import { BookingChangeLog } from './bookingChangeLog';
 import { DynamicValueJsonModel } from './jsonModels';
 import { BookingWorkflow } from './bookingWorkflow';
 import { BookedSlot } from './bookedSlot';
+import { Salutations } from '../salutations';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
@@ -41,6 +42,7 @@ export class BookingBuilder {
 	public creator: User;
 	public citizenUinFin: string;
 	public citizenPhone: string;
+	public citizenSalutation: Salutations;
 	public citizenName: string;
 	public citizenEmail: string;
 	public autoAccept: boolean;
@@ -127,6 +129,11 @@ export class BookingBuilder {
 		return this;
 	}
 
+	public withCitizenSalutation(salutation: Salutations): BookingBuilder {
+		this.citizenSalutation = this.citizenSalutation;
+		return this;
+	}
+
 	public withCitizenName(citizenName: string): BookingBuilder {
 		this.citizenName = citizenName;
 		return this;
@@ -191,6 +198,7 @@ export class BookingBuilder {
 		instance.creator = this.creator;
 		instance.citizenUinFin = this.citizenUinFin;
 		instance.citizenPhone = this.citizenPhone;
+		instance.citizenSalutation = this.citizenSalutation;
 		instance.citizenName = this.citizenName;
 		instance.citizenEmail = this.citizenEmail;
 		instance.captchaToken = this.captchaToken;
@@ -279,6 +287,9 @@ export class Booking {
 	@ManyToOne(() => User, { nullable: false })
 	@JoinColumn({ name: '_creatorId' })
 	private _creator: User;
+
+	@Column({ nullable: true })
+	private _citizenSalutation: Salutations;
 
 	@Column({ nullable: true })
 	private _citizenName: string;
@@ -382,6 +393,14 @@ export class Booking {
 		instance._creator = creator;
 
 		return instance;
+	}
+
+	public get citizenSalutation(): Salutations {
+		return this._citizenSalutation;
+	}
+
+	public set citizenSalutation(salutation: Salutations) {
+		this._citizenSalutation = salutation;
 	}
 
 	public get citizenName(): string {

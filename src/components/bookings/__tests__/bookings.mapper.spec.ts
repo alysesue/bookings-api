@@ -5,6 +5,7 @@ import {
 	BookingStatus,
 	BusinessValidation,
 	Organisation,
+	Salutations,
 	SelectListDynamicField,
 	SelectListOption,
 	Service,
@@ -117,6 +118,7 @@ describe('Bookings mapper tests', () => {
 				singleSelectionValue: 'English',
 			} as DynamicValueJsonModel,
 		];
+		booking.citizenSalutation = Salutations.Dr;
 		booking.citizenName = `armin`;
 		booking.citizenUinFin = `S1234567D`;
 		booking.citizenEmail = `armin@gmail.com`;
@@ -189,6 +191,7 @@ describe('Bookings mapper tests', () => {
 	it('should map booking response V2', async () => {
 		const bookingsMapper = Container.get(BookingsMapper);
 		const bookingBuilder = new BookingBuilder();
+		bookingBuilder.citizenSalutation = Salutations.Dr;
 		bookingBuilder.citizenName = 'Citizen1';
 		bookingBuilder.citizenEmail = 'citizen1@email.com';
 		bookingBuilder.serviceId = 10;
@@ -204,6 +207,7 @@ describe('Bookings mapper tests', () => {
 
 		expect(bookingResponse).toEqual({
 			citizenEmail: 'citizen1@email.com',
+			citizenSalutation: Salutations.Dr,
 			citizenName: 'Citizen1',
 			id: '1',
 			serviceId: '10',
@@ -430,6 +434,7 @@ describe('Bookings mapper tests', () => {
 			'Booking reference': '123',
 			'Dynamic Fields': 'testDynamic:English',
 			'Citizen NRIC / FIN number': 'S****567D',
+			'Citizen Salutation': 'Dr',
 			'Citizen Name': 'armin',
 			'Citizen Email address': 'armin@gmail.com',
 			'Citizen Phone number': '81101234',

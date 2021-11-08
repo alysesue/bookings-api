@@ -68,6 +68,7 @@ describe('Booking validation tests', () => {
 		service = Service.create('svc', new Organisation());
 		service.id = 1;
 		service.setNoNric(false);
+		service.hasSalutation = false;
 
 		serviceProvider = ServiceProvider.create('provider', 1);
 		serviceProvider.id = 1;
@@ -194,6 +195,28 @@ describe('Booking validation tests', () => {
 		await expect(test).rejects.toMatchInlineSnapshot(
 			'[BusinessError: [10013] Licence of service provider will be expired]',
 		);
+	});
+
+	it('should not allow booking if salutation is required and not provided', async () => {
+		service.hasSalutation = true;
+		const start = new Date();
+
+		const booking = new BookingBuilder()
+			.withStartDateTime(start)
+			.withEndDateTime(DateHelper.addMinutes(start, 60))
+			.withCitizenName('Armin')
+			.withCitizenUinFin('G3382058K')
+			.withCitizenEmail('email@gmail.com')
+			.withServiceProviderId(1)
+			.withServiceId(service.id)
+			.build();
+		booking.service = service;
+
+		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
+
+		await expect(
+			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10018] Citizen salutation not provided]');
 	});
 
 	it('should validate citizen name', async () => {
