@@ -118,6 +118,7 @@ export class BookingsService {
 			this.getBookingInternal.bind(this),
 			this.cancelBookingInternal.bind(this),
 		);
+		this.loadBookingDependencies(booking);
 		this.bookingsSubject.notify({
 			booking,
 			bookingType: BookingType.CancelledOrRejected,
@@ -166,6 +167,7 @@ export class BookingsService {
 			this.getBookingInternal.bind(this),
 			acceptAction,
 		);
+		this.loadBookingDependencies(booking);
 		if (booking.status === BookingStatus.PendingApproval && booking.service.requireVerifyBySA) {
 			this.bookingsSubject.notify({
 				booking,
@@ -205,6 +207,7 @@ export class BookingsService {
 			this.getBookingInternal.bind(this),
 			rejectAction,
 		);
+		this.loadBookingDependencies(booking);
 		this.bookingsSubject.notify({
 			booking,
 			bookingType: BookingType.CancelledOrRejected,
