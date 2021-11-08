@@ -50,3 +50,4 @@ export { DateOnlyDynamicField1634081882047 } from './1634081882047-DateOnlyDynam
 export { RequireVerifyBySA1634715633982 } from './1634715633982-RequireVerifyBySA';
 export { OnDeleteCascade1636444162404 } from './1636444162404-OnDeleteCascade';
 export { EventDefaults1636501334693 } from './1636501334693-EventDefaults';
+export { MandatoryEventTitle1636358550171 } from './1636358550171-MandatoryEventTitle';

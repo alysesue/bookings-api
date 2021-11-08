@@ -1,4 +1,5 @@
 import {
+	Check,
 	Column,
 	Entity,
 	JoinColumn,
@@ -14,6 +15,7 @@ import { OneOffTimeslot } from './oneOffTimeslot';
 import { sortDate } from '../../tools/date';
 
 @Entity()
+@Check(`"_title" <> ''`)
 export class Event implements IEvent {
 	constructor() {}
 
@@ -27,7 +29,7 @@ export class Event implements IEvent {
 	@Column()
 	private _serviceId: number;
 
-	@Column({ type: 'varchar', length: 5000, nullable: true })
+	@Column({ type: 'varchar', length: 100, nullable: false })
 	private _title: string;
 
 	@Column({ type: 'varchar', length: 5000, nullable: true })
