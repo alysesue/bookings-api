@@ -897,6 +897,67 @@ describe('Bookings functional tests', () => {
 		expect(validateResponse.statusCode).toBe(401);
 	});
 
+	it('[Stand alone][Anonymous] - Should set nric with existing nric when reschedule', async () => {
+		await pgClient.setServiceConfigurationStandAlone(unsignedServiceId, true);
+		await pgClient.configureServiceAllowAnonymous({ serviceId: unsignedServiceId });
+
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+
+		const endpoint = await AnonmymousEndpointSG.create({
+			serviceId,
+		});
+		await endpoint.sendAndVerifyOTP();
+
+		const bookingResponse = await endpoint.post(
+			'/bookings',
+			{
+				body: {
+					startDateTime,
+					endDateTime,
+					serviceProviderId: serviceProvider.id,
+					citizenUinFin,
+					citizenName,
+					citizenEmail,
+				},
+			},
+			'V2',
+		);
+		const bookingId = bookingResponse.body.data.id;
+		const validateResponse = await endpoint.post(
+			`/bookings/${bookingId}/validateOnHold`,
+			{
+				body: {
+					citizenUinFin,
+					citizenName,
+					citizenEmail,
+					citizenPhone: '84000000',
+				},
+			},
+			'V2',
+		);
+		expect(bookingResponse.statusCode).toBe(201);
+		expect(validateResponse.statusCode).toBe(200);
+
+		const response = await endpoint.post(
+			`/bookings/${bookingId}/reschedule`,
+			{
+				body: {
+					startDateTime: new Date(Date.UTC(2051, 11, 10, 3, 0)),
+					endDateTime: new Date(Date.UTC(2051, 11, 10, 4, 0)),
+					serviceProviderId: serviceProvider.id,
+					citizenName,
+					citizenEmail,
+				},
+			},
+			'V2',
+		);
+		expect(response.statusCode).toBe(200);
+		expect(typeof response.body.data.id).toBe('string');
+		expect(response.body.data.status).toBe(BookingStatus.OnHold);
+		expect(response.body.data.citizenUinFin).toEqual('S****377H');
+	});
+
 	it('should create multiple/bulk bookings', async () => {
 		const startDateTime_1 = new Date(Date.UTC(2051, 11, 10, 1, 0));
 		const endDateTime_1 = new Date(Date.UTC(2051, 11, 10, 2, 0));
