@@ -76,25 +76,29 @@ export const ErrorsRef = (arg1?: string | number) => ({
 	},
 	// Business validation range: 10101-10199
 	oneOffTimeslot: {
-		titleTooLong: {
+		TitleTooLong: {
 			code: '10101',
 			message: `Title word limit is 100 characters`,
 		},
-		invalidTime: {
+		InvalidTime: {
 			code: '10102',
 			message: `Start time must be less than end time`,
 		},
-		descriptionTooLong: {
+		DescriptionTooLong: {
 			code: '10103',
 			message: `Description word limit is 4000 characters`,
 		},
-		sameService: {
+		SameService: {
 			code: '10104',
 			message: `Service providers should be part of the same service`,
 		},
-		atLeastOneSlot: {
+		AtLeastOneSlot: {
 			code: '10105',
 			message: `Event should have at least one slot`,
+		},
+		TitleNotProvided: {
+			code: '10106',
+			message: `Title not provided`,
 		},
 	},
 	// Business validation range: 10201-10299

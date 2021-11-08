@@ -62,6 +62,9 @@ export class EventsService {
 	}
 
 	private async save(event: Event): Promise<Event> {
+		if (event.title) {
+			event.title = event.title.trim();
+		}
 		event.setDateRange({ ...event.getDateRange() });
 		await this.getValidator().validate(event);
 		await this.verifyActionPermission(event);

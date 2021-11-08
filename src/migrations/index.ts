@@ -51,4 +51,5 @@ export { RequireVerifyBySA1634715633982 } from './1634715633982-RequireVerifyByS
 export { OnDeleteCascade1636444162404 } from './1636444162404-OnDeleteCascade';
 export { EventDefaults1636501334693 } from './1636501334693-EventDefaults';
 export { SalutationField1636342375459 } from './1636342375459-SalutationField';
+export { MandatoryEventTitle1636358550171 } from './1636358550171-MandatoryEventTitle';
 export { AddMqSubScriberToService1636341481752 } from './1636341481752-AddMqSubScriberToService';
