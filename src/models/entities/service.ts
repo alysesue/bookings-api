@@ -330,4 +330,15 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	public set requireVerifyBySA(requireVerifyBySA: boolean) {
 		this._requireVerifyBySA = requireVerifyBySA;
 	}
+
+	@Column({ nullable: false, default: false })
+	private _hasSalutation: boolean;
+
+	public get hasSalutation(): boolean {
+		return this._hasSalutation;
+	}
+
+	public set hasSalutation(value: boolean) {
+		this._hasSalutation = value;
+	}
 }

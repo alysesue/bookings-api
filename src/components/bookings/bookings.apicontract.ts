@@ -1,4 +1,4 @@
-import { BookingStatus, BookingValidationType, BookingWorkflowType } from '../../models/enums';
+import { BookingStatus, BookingValidationType, BookingWorkflowType, Salutations } from '../../models/enums';
 import { PagingRequest } from '../../apicontract';
 import { PersistDynamicValueContract, DynamicValueContract } from '../dynamicFields/dynamicValues.apicontract';
 import { BookedSlot } from '../../models';
@@ -25,6 +25,7 @@ export class BookingDetailsRequest {
 	 */
 	public refId?: string | null;
 	public citizenUinFin?: string | null;
+	public citizenSalutation?: Salutations;
 	public citizenName?: string;
 	public citizenEmail?: string;
 	public citizenPhone?: string | null;
@@ -80,6 +81,7 @@ export class BookingResponseBase {
 	public createdDateTime: Date;
 	public serviceName: string;
 	public citizenUinFin?: string;
+	public citizenSalutation?: Salutations;
 	public citizenName?: string;
 	public citizenEmail?: string;
 	public citizenPhone?: string;

@@ -897,6 +897,37 @@ describe('Bookings functional tests', () => {
 		expect(validateResponse.statusCode).toBe(401);
 	});
 
+	it('should NOT create booking if salutation is required and not provided', async () => {
+		await pgClient.setServiceHasSalutation(unsignedServiceId, true);
+
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+
+		const endpoint = await AnonmymousEndpointSG.create({
+			serviceId,
+		});
+
+		const bookingResponse = await endpoint.post(
+			'/bookings',
+			{
+				body: {
+					startDateTime,
+					endDateTime,
+					serviceProviderId: serviceProvider.id,
+					citizenUinFin: 'S2312382G',
+					citizenName: 'Janiece',
+					citizenEmail: 'janiece@gmail.com',
+					citizenPhone: '98728473',
+				},
+			},
+			'V2',
+		);
+
+		expect(bookingResponse.statusCode).toBe(400);
+		expect(bookingResponse.body).toBeDefined();
+		expect(bookingResponse.body.data).toEqual([{ code: '10018', message: 'Citizen salutation not provided' }]);
+	});
+
 	it('should create multiple/bulk bookings', async () => {
 		const startDateTime_1 = new Date(Date.UTC(2051, 11, 10, 1, 0));
 		const endDateTime_1 = new Date(Date.UTC(2051, 11, 10, 2, 0));
