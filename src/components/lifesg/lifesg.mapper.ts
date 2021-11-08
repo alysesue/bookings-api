@@ -7,8 +7,11 @@ import { BookingType } from '../../models/bookingType';
 import { Booking } from '../../models';
 import { ExternalAgencyAppointmentJobAction } from './lifesg.apicontract';
 
-interface CreateAppointmentRequestApiDomainWithIsCancelled extends CreateAppointmentRequestApiDomain {
-	isCancelled: boolean;
+export class CreateAppointmentRequestApiDomainWithIsCancelled extends CreateAppointmentRequestApiDomain {
+	constructor(props: Readonly<CreateAppointmentRequestApiDomainWithIsCancelled>) {
+		super(props);
+	}
+	isCancelled?: boolean;
 }
 
 export class LifeSGMapper {
@@ -23,39 +26,37 @@ export class LifeSGMapper {
 		switch (action) {
 			case ExternalAgencyAppointmentJobAction.CREATE:
 			case ExternalAgencyAppointmentJobAction.UPDATE:
-				return {
-					...new CreateAppointmentRequestApiDomain({
-						agency: AppointmentAgency.HPB,
-						agencyTransactionId: booking.id.toString(),
-						...(action === ExternalAgencyAppointmentJobAction.CREATE && { uinfin: booking.citizenUinFin }),
-						date: LocalDate.of(
-							booking.startDateTime.getFullYear(),
-							booking.startDateTime.getMonth() + 1,
-							booking.startDateTime.getDate(),
-						),
-						startTime: LocalTime.of(booking.startDateTime.getHours(), booking.startDateTime.getMinutes()),
-						endTime: LocalTime.of(booking.endDateTime.getHours(), booking.endDateTime.getMinutes()),
-						title: booking.service.name,
-						...(!booking?.videoConferenceUrl && {
-							venueName: booking.location ? booking.location : 'mock location',
-						}), // TODO: required if isVirtual=true
-						...(!booking?.videoConferenceUrl && {
-							venueDescription: booking.description ? booking.description : 'mock description',
-						}), // TODO: required if isVirtual=true
-						...(!booking?.videoConferenceUrl && { address: 'mock address' }), // TODO: required if isVirtual=true
-						...(!booking?.videoConferenceUrl && { postalCode: '138577' }), // TODO: required if isVirtual=true
-						importantNotes: '',
-						...(booking?.citizenPhone && { contactNumber: booking.citizenPhone }), // TODO: lifesg shows as external contact
-						...(booking?.citizenEmail && { email: booking.citizenEmail }), // TODO: lifesg shows as external contact
-						hideAgencyContactInfo: false,
-						isConfidential: true,
-						...(booking?.videoConferenceUrl && { isVirtual: true }),
-						// no videoConferenceUrl does not mean isVirtual: true, current logic is mocked for required values
-						...(booking?.videoConferenceUrl && { virtualAppointmentUrl: booking.videoConferenceUrl }),
-						agencyLastUpdatedAt: LocalDateTime.now(),
-					}),
+				return new CreateAppointmentRequestApiDomainWithIsCancelled({
+					agency: AppointmentAgency.HPB,
+					agencyTransactionId: booking.id.toString(),
+					...(action === ExternalAgencyAppointmentJobAction.CREATE && { uinfin: booking.citizenUinFin }),
+					date: LocalDate.of(
+						booking.startDateTime.getFullYear(),
+						booking.startDateTime.getMonth() + 1,
+						booking.startDateTime.getDate(),
+					),
+					startTime: LocalTime.of(booking.startDateTime.getHours(), booking.startDateTime.getMinutes()),
+					endTime: LocalTime.of(booking.endDateTime.getHours(), booking.endDateTime.getMinutes()),
+					title: booking.service.name,
+					...(!booking?.videoConferenceUrl && {
+						venueName: booking.location ? booking.location : 'mock location',
+					}), // TODO: required if isVirtual=true
+					...(!booking?.videoConferenceUrl && {
+						venueDescription: booking.description ? booking.description : 'mock description',
+					}), // TODO: required if isVirtual=true
+					...(!booking?.videoConferenceUrl && { address: 'mock address' }), // TODO: required if isVirtual=true
+					...(!booking?.videoConferenceUrl && { postalCode: '138577' }), // TODO: required if isVirtual=true
+					importantNotes: '',
+					...(booking?.citizenPhone && { contactNumber: booking.citizenPhone }), // TODO: lifesg shows as external contact
+					...(booking?.citizenEmail && { email: booking.citizenEmail }), // TODO: lifesg shows as external contact
+					hideAgencyContactInfo: false,
+					isConfidential: true,
+					isVirtual: booking.videoConferenceUrl ? true : false,
+					// no videoConferenceUrl does not mean isVirtual: true, current logic is mocked for required values
+					...(booking?.videoConferenceUrl && { virtualAppointmentUrl: booking.videoConferenceUrl }),
+					agencyLastUpdatedAt: LocalDateTime.now(),
 					...(bookingType === BookingType.CancelledOrRejected && { isCancelled: true }),
-				};
+				});
 			// TODO: lifesg check for isCancelled when ExternalAgencyAppointmentJobAction is CREATE or UPDATE
 			// case ExternalAgencyAppointmentJobAction.CANCEL:
 			// 	return new CancelAppointmentRequestApiDomain({

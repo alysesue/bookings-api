@@ -1,4 +1,5 @@
 import { Booking, BookingStatus } from '../../../models';
+import { MqSubscriberType } from '../../../models/mqSubscriberTypes';
 import { BookingsSubject } from '../bookings.subject';
 
 export class BookingsSubjectMock extends BookingsSubject {
@@ -9,6 +10,11 @@ export class BookingsSubjectMock extends BookingsSubject {
 			status: BookingStatus.Accepted,
 			_service: {
 				_name: 'name',
+				_mqSubscriber: [MqSubscriberType.LifeSG],
+			},
+			service: {
+				name: 'name',
+				mqSubscriber: [MqSubscriberType.LifeSG],
 			},
 			_serviceProvider: {
 				_name: 'name',
