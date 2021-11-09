@@ -19,6 +19,8 @@ export class BookingsSubjectMock extends BookingsSubject {
 			_serviceProvider: {
 				_name: 'name',
 			},
+			videoConferenceUrl: 'https://www.google.com',
+			_videoConferenceUrl: 'https://www.google.com',
 			_citizenEmail: 'email',
 			_location: 'location',
 			_startDateTime: new Date(),

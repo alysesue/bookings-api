@@ -15,11 +15,7 @@ describe('Test lifesg mq observer', () => {
 			.withServiceId(1)
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
-			.withLocation('mock location')
-			.withDescription('mock description')
-			.withAddress('mock address')
-			.withPostalCode('138577')
-			.withVideoConferenceUrl(undefined)
+			.withVideoConferenceUrl('https://www.google.com')
 			.withRefId('REFID')
 			.build();
 		bookingMock.id = 1;
@@ -46,17 +42,9 @@ describe('Test lifesg mq observer', () => {
 				startTime: LocalTime.of(bookingMock.startDateTime.getHours(), bookingMock.startDateTime.getMinutes()),
 				endTime: LocalTime.of(bookingMock.endDateTime.getHours(), bookingMock.endDateTime.getMinutes()),
 				title: bookingMock.service.name,
-				venueName: bookingMock.location,
-				venueDescription: bookingMock.description,
-				address: '',
-				postalCode: '',
-				importantNotes: '',
-				contactNumber: bookingMock.citizenPhone,
-				email: bookingMock.citizenEmail,
-				contactUrl: '',
 				hideAgencyContactInfo: false,
 				isConfidential: true,
-				isVirtual: false,
+				isVirtual: true,
 				virtualAppointmentUrl: bookingMock.videoConferenceUrl,
 				agencyLastUpdatedAt: LocalDateTime.now(),
 			});
@@ -82,12 +70,8 @@ describe('Test lifesg mq observer', () => {
 			.withServiceId(1)
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.withVideoConferenceUrl('https://www.google.com')
 			.withRefId('REFID')
-			.withLocation('mock location')
-			.withDescription('mock description')
-			.withAddress('mock address')
-			.withPostalCode('138577')
-			.withVideoConferenceUrl(undefined)
 			.build();
 		bookingMock.id = 1;
 		bookingMock.service = new Service();
@@ -114,15 +98,9 @@ describe('Test lifesg mq observer', () => {
 				title: bookingMock.service.name,
 				venueName: bookingMock.location,
 				venueDescription: bookingMock.description,
-				address: '',
-				postalCode: '',
-				importantNotes: '',
-				contactNumber: bookingMock.citizenPhone,
-				email: bookingMock.citizenEmail,
-				contactUrl: '',
 				hideAgencyContactInfo: false,
 				isConfidential: true,
-				isVirtual: false,
+				isVirtual: true,
 				virtualAppointmentUrl: bookingMock.videoConferenceUrl,
 				agencyLastUpdatedAt: LocalDateTime.now(),
 			});
@@ -137,11 +115,7 @@ describe('Test lifesg mq observer', () => {
 			.withServiceId(1)
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
-			.withLocation('mock location')
-			.withDescription('mock description')
-			.withAddress('mock address')
-			.withPostalCode('138577')
-			.withVideoConferenceUrl(undefined)
+			.withVideoConferenceUrl('https://www.google.com')
 			.withRefId('REFID')
 			.build();
 		bookingMock.id = 1;
@@ -172,11 +146,7 @@ describe('Test lifesg mq observer', () => {
 			.withServiceId(1)
 			.withStartDateTime(new Date('2020-10-01T01:00:00'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00'))
-			.withLocation('mock location')
-			.withDescription('mock description')
-			.withAddress('mock address')
-			.withPostalCode('138577')
-			.withVideoConferenceUrl(undefined)
+			.withVideoConferenceUrl('https://www.google.com')
 			.withRefId('REFID')
 			.build();
 		bookingMock.id = 1;

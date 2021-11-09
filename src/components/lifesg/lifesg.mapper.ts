@@ -38,33 +38,13 @@ export class LifeSGMapper {
 					startTime: LocalTime.of(booking.startDateTime.getHours(), booking.startDateTime.getMinutes()),
 					endTime: LocalTime.of(booking.endDateTime.getHours(), booking.endDateTime.getMinutes()),
 					title: booking.service.name,
-					...(!booking?.videoConferenceUrl && {
-						venueName: booking.location ? booking.location : 'mock location',
-					}), // TODO: required if isVirtual=true
-					...(!booking?.videoConferenceUrl && {
-						venueDescription: booking.description ? booking.description : 'mock description',
-					}), // TODO: required if isVirtual=true
-					...(!booking?.videoConferenceUrl && { address: 'mock address' }), // TODO: required if isVirtual=true
-					...(!booking?.videoConferenceUrl && { postalCode: '138577' }), // TODO: required if isVirtual=true
-					importantNotes: '',
-					...(booking?.citizenPhone && { contactNumber: booking.citizenPhone }), // TODO: lifesg shows as external contact
-					...(booking?.citizenEmail && { email: booking.citizenEmail }), // TODO: lifesg shows as external contact
 					hideAgencyContactInfo: false,
 					isConfidential: true,
-					isVirtual: booking.videoConferenceUrl ? true : false,
-					// no videoConferenceUrl does not mean isVirtual: true, current logic is mocked for required values
-					...(booking?.videoConferenceUrl && { virtualAppointmentUrl: booking.videoConferenceUrl }),
+					isVirtual: true,
+					virtualAppointmentUrl: booking.videoConferenceUrl,
 					agencyLastUpdatedAt: LocalDateTime.now(),
 					...(bookingType === BookingType.CancelledOrRejected && { isCancelled: true }),
 				});
-			// TODO: lifesg check for isCancelled when ExternalAgencyAppointmentJobAction is CREATE or UPDATE
-			// case ExternalAgencyAppointmentJobAction.CANCEL:
-			// 	return new CancelAppointmentRequestApiDomain({
-			// 		agency: AppointmentAgency.HPB,
-			// 		agencyTransactionId: booking.id.toString(),
-			// 		uinfin: booking.citizenUinFin,
-			// 		agencyLastUpdatedAt: LocalDateTime.now(),
-			// 	});
 			case ExternalAgencyAppointmentJobAction.DELETE:
 				return new DeleteAppointmentRequestApiDomain({
 					agency: AppointmentAgency.HPB,

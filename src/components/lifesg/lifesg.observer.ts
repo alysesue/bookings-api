@@ -13,6 +13,7 @@ export class LifeSGObserver implements IObserver {
 		if (
 			subject instanceof BookingsSubject &&
 			subject.booking.service?.mqSubscriber.includes(MqSubscriberType.LifeSG) &&
+			!!subject.booking.videoConferenceUrl &&
 			// tslint:disable-next-line: no-in-misuse
 			[BookingStatus.Accepted, BookingStatus.Cancelled, BookingStatus.Rejected].includes(subject.booking.status)
 		) {
