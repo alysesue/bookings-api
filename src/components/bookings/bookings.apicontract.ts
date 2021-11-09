@@ -25,7 +25,7 @@ export class BookingDetailsRequest {
 	 */
 	public refId?: string | null;
 	public citizenUinFin?: string | null;
-	public citizenSalutation?: Salutations;
+	public citizenSalutation?: Salutations | null;
 	public citizenName?: string;
 	public citizenEmail?: string;
 	public citizenPhone?: string | null;

@@ -264,6 +264,7 @@ export class BookingsMapper {
 		booking.citizenPhone = request.citizenPhone;
 		booking.location = request.location;
 		booking.description = request.description;
+		booking.citizenSalutation = request.citizenSalutation;
 
 		booking.videoConferenceUrl = request.videoConferenceUrl || service.videoConferenceUrl;
 
