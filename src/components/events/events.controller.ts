@@ -37,7 +37,7 @@ import { LabelOperationFiltering } from '../labels/label.enum';
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 100;
 
-@Route('v1/events')
+@Route('v2/events')
 @Tags('Events')
 export class EventsController extends Controller {
 	@Inject
