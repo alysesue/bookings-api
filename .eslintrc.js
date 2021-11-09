@@ -38,10 +38,7 @@ module.exports = {
 		'@typescript-eslint/tslint',
 		'prettier',
 	],
-	ignorePatterns: [
-		'**/node_modules/*',
-		'.eslintrc.js',
-	],
+	ignorePatterns: ['**/node_modules/*', '.eslintrc.js'],
 	overrides: [
 		{
 			files: ['**/*.test.ts', '*.ts'],
@@ -51,7 +48,7 @@ module.exports = {
 		},
 	],
 	rules: {
-		'prettier/prettier': 'warn',
+		//'prettier/prettier': 'warn',
 		'@typescript-eslint/adjacent-overload-signatures': 'error',
 		'@typescript-eslint/array-type': [
 			'error',
@@ -117,6 +114,7 @@ module.exports = {
 		'@typescript-eslint/type-annotation-spacing': 'off',
 		'@typescript-eslint/unified-signatures': 'error',
 		'arrow-body-style': 'off',
+		'prefer-arrow-callback': 'off',
 		'arrow-parens': ['off', 'always'],
 		'brace-style': ['off', 'off'],
 		'comma-dangle': 'off',
