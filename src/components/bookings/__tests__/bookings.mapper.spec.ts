@@ -7,7 +7,7 @@ import {
 	Organisation,
 	Salutations,
 	SelectListDynamicField,
-	SelectListOption,
+	DynamicKeyValueOption,
 	Service,
 	ServiceProvider,
 	User,
@@ -73,8 +73,13 @@ describe('Bookings mapper tests', () => {
 	const listOptions = {
 		key: 1,
 		value: 'English',
-	} as SelectListOption;
-	const dynamicFieldEntity = SelectListDynamicField.create(1, 'testDynamic', [listOptions], false);
+	} as DynamicKeyValueOption;
+	const dynamicFieldEntity = SelectListDynamicField.create({
+		serviceId: 1,
+		name: 'testDynamic',
+		options: [listOptions],
+		isMandatory: false,
+	});
 	dynamicFieldEntity.id = 1;
 
 	const organisation = new Organisation();

@@ -2,6 +2,8 @@ import { MyInfoFieldType } from '../../models/entities/myInfoFieldType';
 
 export enum DynamicFieldType {
 	SelectList = 'SelectList',
+	RadioList = 'RadioList',
+	CheckboxList = 'CheckboxList',
 	TextField = 'TextField',
 	DateOnlyField = 'DateOnlyField',
 }
@@ -11,7 +13,9 @@ export class DynamicFieldModel {
 	public name: string;
 	public myInfoFieldType?: MyInfoFieldType;
 	public type: DynamicFieldType;
-	public selectList?: SelectListModel;
+	public selectList?: FieldWithOptionsModel;
+	public radioList?: FieldWithOptionsModel;
+	public checkboxList?: FieldWithOptionsModel;
 	public textField?: TextFieldModel;
 	public isMandatory: boolean;
 	public isCitizenReadonly?: boolean;
@@ -25,7 +29,9 @@ export class PersistDynamicFieldModelBase {
 	public name?: string;
 	public type?: DynamicFieldType;
 	public myInfoFieldType?: MyInfoFieldType;
-	public selectList?: SelectListModel;
+	public selectList?: FieldWithOptionsModel;
+	public radioList?: FieldWithOptionsModel;
+	public checkboxList?: FieldWithOptionsModel;
 	public textField?: TextFieldModel;
 	/**
 	 * default is false
@@ -49,11 +55,11 @@ export class PersistDynamicFieldModelV2 extends PersistDynamicFieldModelBase {
 
 // Classes that represent the metadata (definition) of a dynamic field
 
-export class SelectListModel {
-	public options: SelectListOptionModel[];
+export class FieldWithOptionsModel {
+	public options: DynamicOptionModel[];
 }
 
-export class SelectListOptionModel {
+export class DynamicOptionModel {
 	/**
 	 * @isInt
 	 * @minimum 1
@@ -61,11 +67,19 @@ export class SelectListOptionModel {
 	public key: number | string;
 	public value: string;
 
-	public static create(key: number | string, value: string) {
-		const option = new SelectListOptionModel();
+	protected static createOption<T extends DynamicOptionModel>(
+		constructor: new () => T,
+		key: number | string,
+		value: string,
+	): T {
+		const option = new constructor();
 		option.key = key;
 		option.value = value;
 		return option;
+	}
+
+	public static create(key: number | string, value: string): DynamicOptionModel {
+		return DynamicOptionModel.createOption(DynamicOptionModel, key, value);
 	}
 }
 

@@ -9,40 +9,38 @@ export function groupByKeyValue<TElement, TKey, TValue>(
 	keySelector: Selector<TElement, TKey>,
 	valueSelector: Selector<TElement, TValue>,
 ): Map<TKey, TValue[]> {
-	const initial = new Map<TKey, TValue[]>();
+	const map = new Map<TKey, TValue[]>();
 	if (!elements) {
-		return initial;
+		return map;
 	}
 
-	const result = elements.reduce((map, current) => {
+	for (const current of elements) {
 		const key = keySelector(current);
 		const value = valueSelector(current);
 		const groupCollection = map.get(key) || [];
 		groupCollection.push(value);
 
 		map.set(key, groupCollection);
-		return map;
-	}, initial);
+	}
 
-	return result;
+	return map;
 }
 
 export function groupByKeyLastValue<TKey, TValue>(
 	elements: TValue[],
 	keySelector: (value: TValue) => TKey,
 ): Map<TKey, TValue> {
-	const initial = new Map<TKey, TValue>();
+	const map = new Map<TKey, TValue>();
 	if (!elements) {
-		return initial;
+		return map;
 	}
 
-	const result = elements.reduce((map, current) => {
+	for (const current of elements) {
 		const key = keySelector(current);
 		map.set(key, current);
-		return map;
-	}, initial);
+	}
 
-	return result;
+	return map;
 }
 
 export function uniqueStringArray(

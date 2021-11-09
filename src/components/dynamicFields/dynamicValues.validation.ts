@@ -1,9 +1,13 @@
 import { BusinessValidation, BusinessValidationTemplate, DynamicField, SelectListDynamicField } from '../../models';
 
 import {
+	CheckboxListDynamicField,
 	DateOnlyDynamicField,
+	DynamicFieldWithOptionsBase,
+	DynamicKeyValueOption,
 	IDynamicFieldVisitorAsync,
 	MyInfoDynamicField,
+	RadioListDynamicField,
 	TextDynamicField,
 } from '../../models/entities/dynamicField';
 import { DynamicValueTypeContract, PersistDynamicValueContract } from './dynamicValues.apicontract';
@@ -16,6 +20,7 @@ import { ContainerContext } from '../../infrastructure/containerContext';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { MyInfoResponseMapper } from '../myInfo/myInfoResponseMapper';
 import { tryParseDateOnly } from '../../tools/date';
+import { groupByKeyLastValue } from '../../tools/collections';
 
 type ValidationState = {
 	_fieldValue?: PersistDynamicValueContract;
@@ -49,18 +54,18 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitorAsync {
 		this._validationState._businessValidations.push(validation);
 	}
 
-	async visitSelectList(_selectListField: SelectListDynamicField): Promise<void> {
+	processSingleSelection(_fieldWithOptions: DynamicFieldWithOptionsBase): void {
 		// valid field value type for this field
 		if (this._validationState._fieldValue.type !== DynamicValueTypeContract.SingleSelection) {
-			this.addValidation(DynamicValueBusinessValidations.IncorrectFieldValueType.create(_selectListField));
+			this.addValidation(DynamicValueBusinessValidations.IncorrectFieldValueType.create(_fieldWithOptions));
 			return;
 		}
 
-		const selectedOption = _selectListField.options.find(
+		const selectedOption = _fieldWithOptions.options.find(
 			(o) => o.key === this._validationState._fieldValue.singleSelectionKey,
 		);
 		if (!selectedOption) {
-			this.checkMandatoryField(_selectListField);
+			this.checkMandatoryField(_fieldWithOptions);
 			return;
 		}
 
@@ -69,6 +74,44 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitorAsync {
 			type: DynamicValueType.SingleSelection,
 			SingleSelectionKey: selectedOption?.key,
 			SingleSelectionValue: selectedOption?.value,
+		};
+	}
+
+	async visitSelectList(_selectListField: SelectListDynamicField): Promise<void> {
+		this.processSingleSelection(_selectListField);
+	}
+
+	async visitRadioList(_radioListField: RadioListDynamicField): Promise<void> {
+		this.processSingleSelection(_radioListField);
+	}
+
+	async visitCheckboxList(_checkboxListField: CheckboxListDynamicField): Promise<void> {
+		// valid field value type for this field
+		if (this._validationState._fieldValue.type !== DynamicValueTypeContract.MultiSelection) {
+			this.addValidation(DynamicValueBusinessValidations.IncorrectFieldValueType.create(_checkboxListField));
+			return;
+		}
+
+		const optionsMap = groupByKeyLastValue(_checkboxListField.options, (o) => o.key);
+		const selectedOptions: DynamicKeyValueOption[] = [];
+		if (this._validationState._fieldValue.multiSelection) {
+			for (const { key } of this._validationState._fieldValue.multiSelection) {
+				const entry = optionsMap.get(key);
+				if (entry) {
+					selectedOptions.push(entry);
+				}
+			}
+		}
+
+		if (selectedOptions.length === 0) {
+			this.checkMandatoryField(_checkboxListField);
+			return;
+		}
+
+		this._validationState._valueJson = {
+			...this._validationState._valueJson,
+			type: DynamicValueType.MultiSelection,
+			multiSelection: selectedOptions,
 		};
 	}
 

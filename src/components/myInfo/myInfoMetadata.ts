@@ -1,5 +1,5 @@
 import { DateOnlyDynamicField, MyInfoDynamicField } from '../../models/entities/dynamicField';
-import { DynamicField, SelectListDynamicField, SelectListOption, TextDynamicField } from '../../models';
+import { DynamicField, SelectListDynamicField, DynamicKeyValueOption, TextDynamicField } from '../../models';
 import { MyInfoFieldType } from '../../models/entities/myInfoFieldType';
 import { InRequestScope } from 'typescript-ioc';
 import { nationalityCodes } from './data/nationalityCodes';
@@ -51,11 +51,11 @@ export class MyInfoMetadataFactory {
 	private residentialStatus(): DynamicField {
 		const field = new SelectListDynamicField();
 		field.options = [
-			{ key: 'A', value: 'Alien' } as SelectListOption,
-			{ key: 'C', value: 'Citizen' } as SelectListOption,
-			{ key: 'P', value: 'PR' } as SelectListOption,
-			{ key: 'U', value: 'Unknown' } as SelectListOption,
-			{ key: 'N', value: 'Not applicable' } as SelectListOption,
+			{ key: 'A', value: 'Alien' } as DynamicKeyValueOption,
+			{ key: 'C', value: 'Citizen' } as DynamicKeyValueOption,
+			{ key: 'P', value: 'PR' } as DynamicKeyValueOption,
+			{ key: 'U', value: 'Unknown' } as DynamicKeyValueOption,
+			{ key: 'N', value: 'Not applicable' } as DynamicKeyValueOption,
 		];
 
 		return field;
@@ -64,9 +64,9 @@ export class MyInfoMetadataFactory {
 	private sex(): DynamicField {
 		const field = new SelectListDynamicField();
 		field.options = [
-			{ key: 'F', value: 'Female' } as SelectListOption,
-			{ key: 'M', value: 'Male' } as SelectListOption,
-			{ key: 'U', value: 'Unknown' } as SelectListOption,
+			{ key: 'F', value: 'Female' } as DynamicKeyValueOption,
+			{ key: 'M', value: 'Male' } as DynamicKeyValueOption,
+			{ key: 'U', value: 'Unknown' } as DynamicKeyValueOption,
 		];
 
 		return field;
@@ -76,7 +76,7 @@ export class MyInfoMetadataFactory {
 		const field = new SelectListDynamicField();
 		field.options = nationalityCodes
 			.getValue()
-			.map((e) => ({ key: e.CODE, value: e.DESCRIPTION } as SelectListOption));
+			.map((e) => ({ key: e.CODE, value: e.DESCRIPTION } as DynamicKeyValueOption));
 
 		return field;
 	}

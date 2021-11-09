@@ -22,6 +22,8 @@ export { OneOffTimeslot } from './oneOffTimeslot';
 export {
 	DynamicField,
 	SelectListDynamicField,
+	RadioListDynamicField,
+	CheckboxListDynamicField,
 	TextDynamicField,
 	MyInfoDynamicField,
 	DateOnlyDynamicField,
