@@ -47,10 +47,10 @@ export class Event implements IEvent {
 	})
 	private _labels: Label[];
 
-	@Column({ default: new Date('2020-01-01T14:00:00.000Z') })
+	@Column()
 	private _firstStartDateTime: Date;
 
-	@Column({ default: new Date('2050-01-01T14:00:00.000Z') })
+	@Column()
 	private _lastEndDateTime: Date;
 
 	@OneToMany(() => OneOffTimeslot, (oneOffTimeslot) => oneOffTimeslot._event, { cascade: true })
