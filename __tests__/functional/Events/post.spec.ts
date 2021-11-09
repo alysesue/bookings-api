@@ -1,7 +1,7 @@
 import { PgClient } from '../../utils/pgClient';
 import { DateHelper } from '../../../src/infrastructure/dateHelper';
 import { populateServiceAndServiceProvider } from '../../populate/V2/servieProviders';
-import { createEventRequest, createOneOffTimeslotRequest, postEvent } from '../../populate/V1/events';
+import { createEventRequest, createOneOffTimeslotRequest, postEvent } from '../../populate/V2/events';
 
 describe('Event post functional tests', () => {
 	const pgClient = new PgClient();

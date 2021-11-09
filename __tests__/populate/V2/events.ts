@@ -42,9 +42,13 @@ export const postEvent = async (eventRequest: Partial<EventRequest>): Promise<Ev
 		createOneOffTimeslotRequest({ serviceProviderId, startDateTime, endDateTime, id }),
 	);
 	const event = createEventRequest(eventRequest, oneOffTimeslotRequests);
-	const response = await OrganisationAdminRequestEndpointSG.create({}).post(`/events/`, {
-		body: { ...event },
-	});
+	const response = await OrganisationAdminRequestEndpointSG.create({}).post(
+		`/events/`,
+		{
+			body: { ...event },
+		},
+		'V2',
+	);
 
 	expect(response.statusCode).toEqual(201);
 
@@ -52,11 +56,15 @@ export const postEvent = async (eventRequest: Partial<EventRequest>): Promise<Ev
 };
 
 export const getEvents = async (serviceId: string, eventFilter: Partial<EventFilter>): Promise<EventResponse[]> => {
-	const response = await OrganisationAdminRequestEndpointSG.create({ serviceId }).get(`/events`, {
-		params: {
-			...eventFilter,
+	const response = await OrganisationAdminRequestEndpointSG.create({ serviceId }).get(
+		`/events`,
+		{
+			params: {
+				...eventFilter,
+			},
 		},
-	});
+		'V2',
+	);
 	expect(response.statusCode).toEqual(200);
 	return response.body.data as EventResponse[];
 };
