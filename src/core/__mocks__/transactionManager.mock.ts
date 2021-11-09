@@ -3,6 +3,7 @@ import { AsyncFunction, TransactionManager } from '../transactionManager';
 export class TransactionManagerMock implements Partial<TransactionManager> {
 	public static readonly entityManager = {
 		save: jest.fn(),
+		update: jest.fn(),
 	};
 	public static insert = jest.fn();
 	public static find = jest.fn();
@@ -31,7 +32,7 @@ export class TransactionManagerMock implements Partial<TransactionManager> {
 				orderBy: TransactionManagerMock.orderBy,
 				createQueryBuilder: TransactionManagerMock.createQueryBuilder,
 			}),
-			save: TransactionManagerMock.entityManager.save,
+			...TransactionManagerMock.entityManager,
 		};
 		return Promise.resolve(entityManager);
 	}

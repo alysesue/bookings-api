@@ -14,8 +14,10 @@ import {
 	BusinessValidation,
 	DateOnlyDynamicField,
 	SelectListDynamicField,
-	SelectListOption,
+	DynamicKeyValueOption,
 	TextDynamicField,
+	RadioListDynamicField,
+	CheckboxListDynamicField,
 } from '../../../models';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { ContainerContextHolder } from '../../../infrastructure/containerContext';
@@ -48,11 +50,18 @@ beforeAll(() => {
 
 describe('dynamicFields/dynamicValues.mapper', () => {
 	const createSelectFieldEntity = () => {
-		const listOptions = {
-			key: 1,
-			value: 'English',
-		} as SelectListOption;
-		const field = SelectListDynamicField.create(1, 'testDynamic', [listOptions], true);
+		const listOptions: DynamicKeyValueOption[] = [
+			{
+				key: 1,
+				value: 'English',
+			},
+		];
+		const field = SelectListDynamicField.create({
+			serviceId: 1,
+			name: 'testDynamic',
+			options: listOptions,
+			isMandatory: true,
+		});
 		field.id = 1;
 		return field;
 	};
@@ -74,6 +83,52 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		return dateField;
 	};
 
+	const createRadioListField = () => {
+		const listOptions: DynamicKeyValueOption[] = [
+			{
+				key: 1,
+				value: 'English',
+			},
+		];
+		const field = RadioListDynamicField.create({
+			serviceId: 1,
+			name: 'testDynamic',
+			options: listOptions,
+			isMandatory: true,
+		});
+		field.id = 4;
+		return field;
+	};
+
+	const createCheckboxListField = () => {
+		const listOptions: DynamicKeyValueOption[] = [
+			{
+				key: 'A',
+				value: 'English',
+			},
+			{
+				key: 'B',
+				value: 'Malay',
+			},
+			{
+				key: 'C',
+				value: 'Tamil',
+			},
+			{
+				key: 'D',
+				value: 'Mandarin',
+			},
+		];
+		const field = CheckboxListDynamicField.create({
+			serviceId: 1,
+			name: 'testDynamic',
+			options: listOptions,
+			isMandatory: true,
+		});
+		field.id = 5;
+		return field;
+	};
+
 	beforeEach(() => {
 		jest.resetAllMocks();
 
@@ -81,115 +136,163 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		IdHasherMock.decode.mockImplementation((id: string) => Number.parseInt(id, 10));
 	});
 
-	it('[Response] should map select list dynamic field value ', async () => {
-		const dynamicValueJson = {
-			fieldId: 1,
-			fieldName: 'testname',
-			type: 'SingleSelection' as DynamicValueType,
-			SingleSelectionKey: 1,
-			SingleSelectionValue: 'test',
-		} as DynamicValueJsonModel;
-
-		const mapper = Container.get(DynamicValuesMapper);
-		const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValueJson]);
-
-		expect(dynamicReturn).toEqual([
-			{
-				fieldIdSigned: '1',
+	describe('Response mapper', () => {
+		it('[Multi Selection] should map Multi Selection dynamic field value ', async () => {
+			const dynamicValueJson = {
+				fieldId: 1,
 				fieldName: 'testname',
-				type: 'SingleSelection',
-				singleSelectionKey: 1,
-				singleSelectionValue: 'test',
-			} as DynamicValueContract,
-		]);
-	});
+				type: DynamicValueType.MultiSelection,
+				multiSelection: [
+					{ key: 1, value: 'A' },
+					{ key: 'X2', value: 'B' },
+				],
+			} as DynamicValueJsonModel;
 
-	it('[Response] should map select list dynamic field value to string ', async () => {
-		const dynamicValueJson = {
-			fieldId: 1,
-			fieldName: 'testname',
-			type: 'SingleSelection' as DynamicValueType,
-			SingleSelectionKey: 1,
-			SingleSelectionValue: 'test',
-		} as DynamicValueJsonModel;
+			const mapper = Container.get(DynamicValuesMapper);
+			const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValueJson]);
 
-		const mapper = Container.get(DynamicValuesMapper);
-		const str = mapper.getValueAsString(dynamicValueJson);
+			expect(dynamicReturn).toEqual([
+				{
+					fieldIdSigned: '1',
+					fieldName: 'testname',
+					type: 'MultiSelection',
+					multiSelection: [
+						{ key: 1, value: 'A' },
+						{ key: 'X2', value: 'B' },
+					],
+				} as DynamicValueContract,
+			]);
+		});
 
-		expect(str).toEqual('test');
-	});
-
-	it('[Response] should map text dynamic field value ', async () => {
-		const dynamicValueJson = {
-			fieldId: 1,
-			fieldName: 'testname',
-			type: DynamicValueType.Text,
-			textValue: 'some text',
-		} as DynamicValueJsonModel;
-
-		const mapper = Container.get(DynamicValuesMapper);
-		const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValueJson]);
-		expect(dynamicReturn).toEqual([
-			{
-				fieldIdSigned: '1',
+		it('[Single Selection] should map Single Selection dynamic field value ', async () => {
+			const dynamicValueJson = {
+				fieldId: 1,
 				fieldName: 'testname',
+				type: 'SingleSelection' as DynamicValueType,
+				SingleSelectionKey: 1,
+				SingleSelectionValue: 'test',
+			} as DynamicValueJsonModel;
+
+			const mapper = Container.get(DynamicValuesMapper);
+			const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValueJson]);
+
+			expect(dynamicReturn).toEqual([
+				{
+					fieldIdSigned: '1',
+					fieldName: 'testname',
+					type: 'SingleSelection',
+					singleSelectionKey: 1,
+					singleSelectionValue: 'test',
+				} as DynamicValueContract,
+			]);
+		});
+
+		it('[Response] should map text dynamic field value ', async () => {
+			const dynamicValueJson = {
+				fieldId: 1,
+				fieldName: 'testname',
+				type: DynamicValueType.Text,
 				textValue: 'some text',
-				type: 'Text',
-			},
-		]);
-	});
+			} as DynamicValueJsonModel;
 
-	it('[Response] should map dateOnly dynamic field value ', async () => {
-		const dynamicValueJson = {
-			fieldId: 1,
-			fieldName: 'testname',
-			type: DynamicValueType.DateOnly,
-			dateOnlyValue: '2021-02-20',
-		} as DynamicValueJsonModel;
+			const mapper = Container.get(DynamicValuesMapper);
+			const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValueJson]);
+			expect(dynamicReturn).toEqual([
+				{
+					fieldIdSigned: '1',
+					fieldName: 'testname',
+					textValue: 'some text',
+					type: 'Text',
+				},
+			]);
+		});
 
-		const mapper = Container.get(DynamicValuesMapper);
-		const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValueJson]);
-		expect(dynamicReturn).toEqual([
-			{
-				fieldIdSigned: '1',
+		it('[Response] should map dateOnly dynamic field value ', async () => {
+			const dynamicValueJson = {
+				fieldId: 1,
 				fieldName: 'testname',
 				type: DynamicValueType.DateOnly,
 				dateOnlyValue: '2021-02-20',
-			},
-		]);
+			} as DynamicValueJsonModel;
+
+			const mapper = Container.get(DynamicValuesMapper);
+			const dynamicReturn = mapper.mapDynamicValuesModel([dynamicValueJson]);
+			expect(dynamicReturn).toEqual([
+				{
+					fieldIdSigned: '1',
+					fieldName: 'testname',
+					type: DynamicValueType.DateOnly,
+					dateOnlyValue: '2021-02-20',
+				},
+			]);
+		});
+
+		it('[Response] should return empty array when no dynamic values are passed ', async () => {
+			const mapper = Container.get(DynamicValuesMapper);
+			const dynamicReturn = mapper.mapDynamicValuesModel([]);
+
+			expect(dynamicReturn).toEqual([]);
+		});
 	});
 
-	it('[Response] should map dateOnly dynamic field value to string ', async () => {
-		const dynamicValueJson = {
-			fieldId: 1,
-			fieldName: 'testname',
-			type: DynamicValueType.DateOnly,
-			dateOnlyValue: '2021-02-20',
-		} as DynamicValueJsonModel;
+	describe('Value as String', () => {
+		it('[Single Selection] should map Single Selection dynamic field value to string ', async () => {
+			const dynamicValueJson = {
+				fieldId: 1,
+				fieldName: 'testname',
+				type: 'SingleSelection' as DynamicValueType,
+				SingleSelectionKey: 1,
+				SingleSelectionValue: 'test',
+			} as DynamicValueJsonModel;
 
-		const mapper = Container.get(DynamicValuesMapper);
-		const str = mapper.getValueAsString(dynamicValueJson);
-		expect(str).toEqual('2021-02-20');
-	});
+			const mapper = Container.get(DynamicValuesMapper);
+			const str = mapper.getValueAsString(dynamicValueJson);
 
-	it('[Response] should map text dynamic field value to string', async () => {
-		const dynamicValueJson = {
-			fieldId: 1,
-			fieldName: 'testname',
-			type: DynamicValueType.Text,
-			textValue: 'some text',
-		} as DynamicValueJsonModel;
+			expect(str).toEqual('test');
+		});
 
-		const mapper = Container.get(DynamicValuesMapper);
-		const str = mapper.getValueAsString(dynamicValueJson);
-		expect(str).toEqual('some text');
-	});
+		it('[Multi Selection] should map Multi Selection dynamic field value to string ', async () => {
+			const dynamicValueJson = {
+				fieldId: 1,
+				fieldName: 'testname',
+				type: DynamicValueType.MultiSelection,
+				multiSelection: [
+					{ key: 1, value: 'A' },
+					{ key: 'X2', value: 'B' },
+				],
+			} as DynamicValueJsonModel;
 
-	it('[Response] should return empty array when no dynamic values are passed ', async () => {
-		const mapper = Container.get(DynamicValuesMapper);
-		const dynamicReturn = mapper.mapDynamicValuesModel([]);
+			const mapper = Container.get(DynamicValuesMapper);
+			const str = mapper.getValueAsString(dynamicValueJson);
 
-		expect(dynamicReturn).toEqual([]);
+			expect(str).toEqual('A|B');
+		});
+
+		it('[DateOnly] should map dateOnly dynamic field value to string ', async () => {
+			const dynamicValueJson = {
+				fieldId: 1,
+				fieldName: 'testname',
+				type: DynamicValueType.DateOnly,
+				dateOnlyValue: '2021-02-20',
+			} as DynamicValueJsonModel;
+
+			const mapper = Container.get(DynamicValuesMapper);
+			const str = mapper.getValueAsString(dynamicValueJson);
+			expect(str).toEqual('2021-02-20');
+		});
+
+		it('[Text] should map text dynamic field value to string', async () => {
+			const dynamicValueJson = {
+				fieldId: 1,
+				fieldName: 'testname',
+				type: DynamicValueType.Text,
+				textValue: 'some text',
+			} as DynamicValueJsonModel;
+
+			const mapper = Container.get(DynamicValuesMapper);
+			const str = mapper.getValueAsString(dynamicValueJson);
+			expect(str).toEqual('some text');
+		});
 	});
 
 	it('[Response] should map origin to readonly', async () => {
@@ -528,5 +631,73 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 				}),
 			],
 		} as MapRequestOptionalResult);
+	});
+
+	describe('[Radio List]', () => {
+		it(`[RadioList] should map request value`, async () => {
+			DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
+				Promise.resolve([createRadioListField()]),
+			);
+
+			const dynamicValue = new PersistDynamicValueContract();
+			dynamicValue.fieldIdSigned = '4';
+			dynamicValue.type = DynamicValueTypeContract.SingleSelection;
+			dynamicValue.singleSelectionKey = 1;
+
+			const mapper = Container.get(DynamicValuesRequestMapper);
+			const dynamicReturn = await mapper.mapDynamicValues([dynamicValue], [], 100);
+			expect(dynamicReturn).toEqual({
+				result: [
+					{
+						fieldId: 4,
+						SingleSelectionKey: 1,
+						SingleSelectionValue: 'English',
+						fieldName: 'testDynamic',
+						type: 'SingleSelection',
+						origin: {
+							originType: 'bookingsg',
+						},
+					},
+				],
+			} as MapRequestOptionalResult);
+		});
+	});
+
+	describe('[Checkbox List]', () => {
+		it(`[Checkbox List] should map request value`, async () => {
+			DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
+				Promise.resolve([createCheckboxListField()]),
+			);
+
+			const dynamicValue = new PersistDynamicValueContract();
+			dynamicValue.fieldIdSigned = '5';
+			dynamicValue.type = DynamicValueTypeContract.MultiSelection;
+			dynamicValue.multiSelection = [{ key: 'A' }, { key: 'D' }];
+
+			const mapper = Container.get(DynamicValuesRequestMapper);
+			const dynamicReturn = await mapper.mapDynamicValues([dynamicValue], [], 100);
+			expect(dynamicReturn).toEqual({
+				result: [
+					{
+						fieldId: 5,
+						fieldName: 'testDynamic',
+						multiSelection: [
+							{
+								key: 'A',
+								value: 'English',
+							},
+							{
+								key: 'D',
+								value: 'Mandarin',
+							},
+						],
+						origin: {
+							originType: 'bookingsg',
+						},
+						type: 'MultiSelection',
+					},
+				],
+			} as MapRequestOptionalResult);
+		});
 	});
 });

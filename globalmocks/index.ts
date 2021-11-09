@@ -54,6 +54,7 @@ jest.mock('typeorm', () => {
 		Check: decoratorMock,
 		SelectQueryBuilder: jest.fn(),
 		In: jest.fn(),
+		getMetadataArgsStorage: jest.fn(),
 	};
 });
 

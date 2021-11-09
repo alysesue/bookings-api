@@ -1,4 +1,4 @@
-import { SelectListDynamicField, SelectListOption, Service, TextDynamicField } from '../../../models';
+import { SelectListDynamicField, DynamicKeyValueOption, Service, TextDynamicField } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { DynamicFieldsRepository } from '../dynamicFields.repository';
 import { DynamicFieldsService } from '../dynamicFields.service';
@@ -189,8 +189,13 @@ describe('dynamicFields/dynamicFields.service', () => {
 		const listOptions = {
 			key: 1,
 			value: 'English',
-		} as SelectListOption;
-		const dynamicFieldEntity = SelectListDynamicField.create(1, 'testDynamic', [listOptions], true);
+		} as DynamicKeyValueOption;
+		const dynamicFieldEntity = SelectListDynamicField.create({
+			serviceId: 1,
+			name: 'testDynamic',
+			options: [listOptions],
+			isMandatory: true,
+		});
 		dynamicFieldEntity.id = 1;
 
 		const container = Container.get(DynamicFieldsService);

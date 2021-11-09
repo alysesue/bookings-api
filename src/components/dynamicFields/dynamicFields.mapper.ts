@@ -1,18 +1,21 @@
-import { DynamicField, SelectListDynamicField, SelectListOption } from '../../models';
+import { DynamicField, SelectListDynamicField, DynamicKeyValueOption } from '../../models';
 import { Inject, InRequestScope, Scope, Scoped } from 'typescript-ioc';
 import {
+	FieldWithOptionsModel,
 	DynamicFieldModel,
 	DynamicFieldType,
+	DynamicOptionModel,
 	PersistDynamicFieldModelV1,
-	SelectListModel,
-	SelectListOptionModel,
 	TextFieldModel,
 } from './dynamicFields.apicontract';
 import { IdHasher } from '../../infrastructure/idHasher';
 import {
+	CheckboxListDynamicField,
 	DateOnlyDynamicField,
+	DynamicFieldWithOptionsBase,
 	IDynamicFieldVisitor,
 	MyInfoDynamicField,
+	RadioListDynamicField,
 	TextDynamicField,
 } from '../../models/entities/dynamicField';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
@@ -21,6 +24,7 @@ import { DEFAULT_MYINFO_NAMES, MyInfoFieldType } from '../../models/entities/myI
 import { MyInfoMetadataFactory } from '../myInfo/myInfoMetadata';
 import { cloneDeep } from 'lodash';
 import { ContainerContext } from '../../infrastructure/containerContext';
+import { safeCast } from '../../tools/object';
 
 @InRequestScope
 export class DynamicFieldsMapper {
@@ -36,50 +40,110 @@ export class DynamicFieldsMapper {
 		return visitor.mapDataModel(field);
 	}
 
-	private checkExpectedEntityType(model: PersistDynamicFieldModelV1, entity: DynamicField): boolean {
+	private checkExpectedEntityType(model: PersistDynamicFieldModelV1, entity: DynamicField): [boolean, DynamicField] {
 		if (model.myInfoFieldType) {
-			return entity instanceof MyInfoDynamicField;
+			return entity instanceof MyInfoDynamicField ? [true, entity] : [false, entity];
 		}
 
 		switch (model.type) {
 			case DynamicFieldType.SelectList:
-				return entity instanceof SelectListDynamicField;
+				if (entity instanceof SelectListDynamicField) {
+					return [true, entity];
+				} else if (entity instanceof RadioListDynamicField) {
+					// Expected type - SelectList, current type - RadioList, we can change it because they are both single selection.
+					const selectList = SelectListDynamicField.create(entity);
+					selectList.id = entity.id; // preserve id - so it's an UPDATE operation
+					return [true, selectList];
+				} else {
+					return [false, entity];
+				}
+			case DynamicFieldType.RadioList:
+				if (entity instanceof RadioListDynamicField) {
+					return [true, entity];
+				} else if (entity instanceof SelectListDynamicField) {
+					// Expected type - RadioList, current type - SelectList, we can change it because they are both single selection.
+					const radioList = RadioListDynamicField.create(entity);
+					radioList.id = entity.id; // preserve id - so it's an UPDATE operation
+					return [true, radioList];
+				} else {
+					return [false, entity];
+				}
+			case DynamicFieldType.CheckboxList:
+				return entity instanceof CheckboxListDynamicField ? [true, entity] : [false, entity];
 			case DynamicFieldType.TextField:
-				return entity instanceof TextDynamicField;
+				return entity instanceof TextDynamicField ? [true, entity] : [false, entity];
 			case DynamicFieldType.DateOnlyField:
-				return entity instanceof DateOnlyDynamicField;
+				return entity instanceof DateOnlyDynamicField ? [true, entity] : [false, entity];
 			default:
 				throw new Error(`DynamicFieldsMapper.checkExpectedEntityType not implemented for type: ${model.type}`);
 		}
 	}
 
-	private mapToSelectListField(
-		model: PersistDynamicFieldModelV1,
-		entity: SelectListDynamicField | null,
-	): DynamicField {
-		if (!model.selectList?.options?.length) {
+	private validateDynamicOptions(optionsRequest: DynamicOptionModel[] | undefined): DynamicOptionModel[] {
+		if (!optionsRequest?.length) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				`Select list field must contain at least one option.`,
+				`This field type must contain at least one option.`,
 			);
 		}
 
-		if (model.selectList.options.find((o: SelectListOptionModel) => o.key === 0)) {
+		if (optionsRequest.find((o: DynamicOptionModel) => o.key === 0)) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				`Select list field must not contain option with key 0.`,
+				`This field type must not contain option with key 0.`,
 			);
 		}
 
 		// ensures key uniqueness
-		const options = Array.from(groupByKeyLastValue(model.selectList.options, (o) => o.key).values());
+		const options = Array.from(groupByKeyLastValue(optionsRequest, (o) => o.key).values());
+		return options;
+	}
+
+	private mapToFieldWithOptions<T extends DynamicFieldWithOptionsBase>(
+		model: PersistDynamicFieldModelV1,
+		options: DynamicOptionModel[] | undefined,
+		entity: T | null,
+		creator: (params: {
+			serviceId: number;
+			name: string;
+			options: DynamicKeyValueOption[];
+			isMandatory: boolean;
+		}) => T,
+	): T {
+		const validatedOptions = this.validateDynamicOptions(options);
 
 		if (entity) {
 			entity.name = model.name;
-			entity.options = options;
+			entity.options = validatedOptions;
 			entity.isMandatory = model.isMandatory;
 			return entity;
 		}
 
-		return SelectListDynamicField.create(model.serviceId, model.name, options, model.isMandatory);
+		return creator({
+			serviceId: model.serviceId,
+			name: model.name,
+			options: validatedOptions,
+			isMandatory: model.isMandatory,
+		});
+	}
+
+	private mapToSelectListField(
+		model: PersistDynamicFieldModelV1,
+		entity: SelectListDynamicField | null,
+	): SelectListDynamicField {
+		return this.mapToFieldWithOptions(model, model.selectList?.options, entity, SelectListDynamicField.create);
+	}
+
+	private mapToRadioListField(
+		model: PersistDynamicFieldModelV1,
+		entity: RadioListDynamicField | null,
+	): RadioListDynamicField {
+		return this.mapToFieldWithOptions(model, model.radioList?.options, entity, RadioListDynamicField.create);
+	}
+
+	private mapToCheckboxListField(
+		model: PersistDynamicFieldModelV1,
+		entity: CheckboxListDynamicField | null,
+	): CheckboxListDynamicField {
+		return this.mapToFieldWithOptions(model, model.checkboxList?.options, entity, CheckboxListDynamicField.create);
 	}
 
 	private mapToTextField(model: PersistDynamicFieldModelV1, entity: TextDynamicField | null): DynamicField {
@@ -132,18 +196,21 @@ export class DynamicFieldsMapper {
 		return MyInfoDynamicField.create(model.serviceId, name, model.myInfoFieldType);
 	}
 
-	public mapToEntity(model: PersistDynamicFieldModelV1, entity: DynamicField | null): DynamicField {
-		if (entity) {
-			const valid = this.checkExpectedEntityType(model, entity);
-			if (!valid) {
+	public mapToEntity(model: PersistDynamicFieldModelV1, existingEntity: DynamicField | null): DynamicField {
+		let entity: DynamicField | null;
+		if (existingEntity) {
+			const [valid, validatedEntity] = this.checkExpectedEntityType(model, existingEntity);
+			if (valid) {
+				entity = validatedEntity;
+			} else {
 				throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-					`Type for field ${entity.name} cannot be changed once is set.`,
+					`Type for field ${existingEntity.name} cannot be changed from [${existingEntity.constructor.name}] to the requested value.`,
 				);
 			}
 		}
 
 		if (model.myInfoFieldType) {
-			return this.mapToMyInfo(model, entity as MyInfoDynamicField);
+			return this.mapToMyInfo(model, safeCast(entity, MyInfoDynamicField));
 		}
 
 		model.name = model.name?.trim();
@@ -159,11 +226,15 @@ export class DynamicFieldsMapper {
 
 		switch (model.type) {
 			case DynamicFieldType.SelectList:
-				return this.mapToSelectListField(model, entity as SelectListDynamicField);
+				return this.mapToSelectListField(model, safeCast(entity, SelectListDynamicField));
+			case DynamicFieldType.RadioList:
+				return this.mapToRadioListField(model, safeCast(entity, RadioListDynamicField));
+			case DynamicFieldType.CheckboxList:
+				return this.mapToCheckboxListField(model, safeCast(entity, CheckboxListDynamicField));
 			case DynamicFieldType.TextField:
-				return this.mapToTextField(model, entity as TextDynamicField);
+				return this.mapToTextField(model, safeCast(entity, TextDynamicField));
 			case DynamicFieldType.DateOnlyField:
-				return this.mapToDateOnlyField(model, entity as DateOnlyDynamicField);
+				return this.mapToDateOnlyField(model, safeCast(entity, DateOnlyDynamicField));
 			default:
 				throw new Error(`DynamicFieldsMapper.mapToEntity not implemented for type: ${model.type}`);
 		}
@@ -181,17 +252,25 @@ class DynamicFieldMapperVisitor implements IDynamicFieldVisitor {
 
 	private _result: DynamicFieldModel;
 
-	private mapSelectListOption(o: SelectListOption): SelectListOptionModel {
-		const obj = new SelectListOptionModel();
-		obj.key = o.key;
-		obj.value = o.value;
-		return obj;
+	private mapFieldWithOptions({ options }: { options: DynamicKeyValueOption[] }): FieldWithOptionsModel {
+		const fieldWithOptions = new FieldWithOptionsModel();
+		fieldWithOptions.options = options.map((o) => DynamicOptionModel.create(o.key, o.value));
+		return fieldWithOptions;
 	}
 
 	visitSelectList(_selectListField: SelectListDynamicField): void {
 		this._result.type = DynamicFieldType.SelectList;
-		this._result.selectList = new SelectListModel();
-		this._result.selectList.options = _selectListField.options.map((o) => this.mapSelectListOption(o));
+		this._result.selectList = this.mapFieldWithOptions(_selectListField);
+	}
+
+	visitRadioList(_radioListField: RadioListDynamicField): void {
+		this._result.type = DynamicFieldType.RadioList;
+		this._result.radioList = this.mapFieldWithOptions(_radioListField);
+	}
+
+	visitCheckboxList(_checkboxListField: CheckboxListDynamicField): void {
+		this._result.type = DynamicFieldType.CheckboxList;
+		this._result.checkboxList = this.mapFieldWithOptions(_checkboxListField);
 	}
 
 	visitTextField(_textField: TextDynamicField): void {

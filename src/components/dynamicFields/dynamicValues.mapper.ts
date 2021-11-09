@@ -1,11 +1,7 @@
 import { BusinessValidation } from '../../models';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { IdHasher } from '../../infrastructure/idHasher';
-import {
-	DynamicValueTypeContract,
-	PersistDynamicValueContract,
-	DynamicValueContract,
-} from './dynamicValues.apicontract';
+import { PersistDynamicValueContract, DynamicValueContract } from './dynamicValues.apicontract';
 import { DynamicValueJsonModel, DynamicValueType } from '../../models/entities/jsonModels';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { ErrorResult, OkResult, OptionalResult } from '../../errors';
@@ -103,12 +99,6 @@ export class DynamicValuesRequestMapper {
 
 @InRequestScope
 export class DynamicValuesMapper {
-	static readonly DynamicValueTypeMapping: Readonly<{ [key: string]: DynamicValueTypeContract }> = Object.freeze({
-		[DynamicValueType.SingleSelection]: DynamicValueTypeContract.SingleSelection,
-		[DynamicValueType.Text]: DynamicValueTypeContract.Text,
-		[DynamicValueType.DateOnly]: DynamicValueTypeContract.DateOnly,
-	});
-
 	@Inject
 	private idHasher: IdHasher;
 
@@ -119,22 +109,15 @@ export class DynamicValuesMapper {
 		return dynamicValues?.map((obj) => this.mapDynamicValueModel(obj));
 	}
 
-	private mapTypeToApiContract(type: DynamicValueType): DynamicValueTypeContract {
-		const result = DynamicValuesMapper.DynamicValueTypeMapping[type];
-		if (!result) {
-			throw new Error(`DynamicValueType not found in DynamicValuesMapper: ${type}`);
-		}
-		return result;
-	}
-
 	public mapDynamicValueModel(value: DynamicValueJsonModel): DynamicValueContract {
 		const contract = new DynamicValueContract();
 		contract.fieldIdSigned = this.idHasher.encode(value.fieldId);
 		contract.fieldName = value.fieldName;
-		contract.type = this.mapTypeToApiContract(value.type);
+		contract.type = value.type;
 
 		contract.singleSelectionKey = value.SingleSelectionKey;
 		contract.singleSelectionValue = value.SingleSelectionValue;
+		contract.multiSelection = value.multiSelection;
 		contract.textValue = value.textValue;
 		contract.myInfoFieldType = value.myInfoFieldType;
 		contract.dateOnlyValue = value.dateOnlyValue;
@@ -147,6 +130,8 @@ export class DynamicValuesMapper {
 		switch (value.type) {
 			case DynamicValueType.SingleSelection:
 				return value.SingleSelectionValue;
+			case DynamicValueType.MultiSelection:
+				return value.multiSelection?.map((o) => o.value).join('|') || '';
 			case DynamicValueType.Text:
 				return value.textValue;
 			case DynamicValueType.DateOnly:
