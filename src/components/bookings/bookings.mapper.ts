@@ -1,5 +1,6 @@
 import { BookedSlot, Booking, Event, Service, ServiceProvider } from '../../models/entities';
 import {
+	BookedSlotResponse,
 	BookingDetailsRequest,
 	BookingProviderResponseV1,
 	BookingProviderResponseV2,
@@ -361,8 +362,8 @@ export class BookingsMapper {
 		return {
 			startDateTime: bookedSlot.startDateTime,
 			endDateTime: bookedSlot.endDateTime,
-			serviceProviderId: bookedSlot.serviceProviderId,
-		} as BookedSlot;
+			serviceProviderId: this.idHasher.encode(bookedSlot.serviceProviderId),
+		} as BookedSlotResponse;
 	}
 
 	public async mapEventsDataModel(booking: Booking): Promise<EventBookingResponse> {
@@ -371,7 +372,7 @@ export class BookingsMapper {
 			eventId: this.idHasher.encode(booking.eventId),
 			status: booking.status,
 			createdDateTime: booking.createdLog?.timestamp,
-			serviceId: booking.serviceId,
+			serviceId: this.idHasher.encode(booking.serviceId),
 			serviceName: booking.service?.name,
 			citizenUinFin: await this.maskUinFin(booking),
 			citizenName: booking.citizenName,
