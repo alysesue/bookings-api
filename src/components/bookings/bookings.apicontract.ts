@@ -157,17 +157,22 @@ export class BookingProviderResponseV1 {
 	public name: string;
 }
 
+export class BookedSlotResponse {
+	public startDateTime: Date;
+	public endDateTime: Date;
+	public serviceProviderId: string;
+}
+
 export class EventBookingRequest extends BookingDetailsRequest {
 	public captchaToken?: string | null;
 	// default validation type: citizen
 	public validationType?: BookingValidationType | null;
 	public citizenUinFinUpdated?: boolean;
 }
-
 export class EventBookingResponse extends BookingResponseBase {
 	public eventId: string;
 	public bookingId: string;
-	public bookedSlots?: BookedSlot[];
+	public bookedSlots?: BookedSlotResponse[];
 }
 export class BookingProviderResponseV2 {
 	public id: string;
