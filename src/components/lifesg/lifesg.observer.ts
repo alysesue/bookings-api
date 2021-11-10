@@ -15,7 +15,7 @@ export class LifeSGObserver implements IObserver {
 			subject.booking.service?.mqSubscriber.includes(MqSubscriberType.LifeSG) &&
 			!!subject.booking.videoConferenceUrl &&
 			// tslint:disable-next-line: no-in-misuse
-			[BookingStatus.Accepted, BookingStatus.Cancelled, BookingStatus.Rejected].includes(subject.booking.status)
+			[BookingStatus.Accepted, BookingStatus.Cancelled].includes(subject.booking.status)
 		) {
 			this.lifeSGMQSerice.send(
 				LifeSGMapper.mapLifeSGAppointment(subject.booking, subject.bookingType, subject.action),
