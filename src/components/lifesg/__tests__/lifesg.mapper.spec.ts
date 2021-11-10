@@ -31,7 +31,7 @@ describe('Test lifesg mq observer', () => {
 		expect(mappedLifeSGAppt).toBeInstanceOf(CreateAppointmentRequestApiDomainWithIsCancelled);
 		if (mappedLifeSGAppt instanceof CreateAppointmentRequestApiDomain) {
 			const expectedMappedAppt = new CreateAppointmentRequestApiDomain({
-				agency: AppointmentAgency.HPB,
+				agency: AppointmentAgency.HDB,
 				agencyTransactionId: bookingMock.id.toString(),
 				uinfin: bookingMock.citizenUinFin,
 				date: LocalDate.of(
@@ -85,7 +85,7 @@ describe('Test lifesg mq observer', () => {
 		expect(mappedLifeSGAppt).toBeInstanceOf(CreateAppointmentRequestApiDomain);
 		if (mappedLifeSGAppt instanceof CreateAppointmentRequestApiDomain) {
 			const expectedMappedAppt = new CreateAppointmentRequestApiDomain({
-				agency: AppointmentAgency.HPB,
+				agency: AppointmentAgency.HDB,
 				agencyTransactionId: bookingMock.id.toString(),
 				uinfin: bookingMock.citizenUinFin,
 				date: LocalDate.of(
@@ -130,7 +130,7 @@ describe('Test lifesg mq observer', () => {
 		expect(mappedCanceledBooking).toBeInstanceOf(CancelAppointmentRequestApiDomain);
 		if (mappedCanceledBooking instanceof CancelAppointmentRequestApiDomain) {
 			const expectedMappedAppt = new CancelAppointmentRequestApiDomain({
-				agency: AppointmentAgency.HPB,
+				agency: AppointmentAgency.HDB,
 				agencyTransactionId: bookingMock.id.toString(),
 				uinfin: bookingMock.citizenUinFin,
 				agencyLastUpdatedAt: LocalDateTime.now(),
@@ -161,7 +161,7 @@ describe('Test lifesg mq observer', () => {
 		expect(mappedDeletedBooking).toBeInstanceOf(DeleteAppointmentRequestApiDomain);
 		if (mappedDeletedBooking instanceof DeleteAppointmentRequestApiDomain) {
 			const expectedMappedAppt = new DeleteAppointmentRequestApiDomain({
-				agency: AppointmentAgency.HPB,
+				agency: AppointmentAgency.HDB,
 				agencyTransactionId: bookingMock.id.toString(),
 				uinfin: bookingMock.citizenUinFin,
 			});

@@ -27,7 +27,7 @@ export class LifeSGMapper {
 			case ExternalAgencyAppointmentJobAction.CREATE:
 			case ExternalAgencyAppointmentJobAction.UPDATE:
 				return new CreateAppointmentRequestApiDomainWithIsCancelled({
-					agency: AppointmentAgency.HPB,
+					agency: AppointmentAgency.HDB,
 					agencyTransactionId: booking.id.toString(),
 					...(action === ExternalAgencyAppointmentJobAction.CREATE && { uinfin: booking.citizenUinFin }),
 					date: LocalDate.of(
@@ -47,7 +47,7 @@ export class LifeSGMapper {
 				});
 			case ExternalAgencyAppointmentJobAction.DELETE:
 				return new DeleteAppointmentRequestApiDomain({
-					agency: AppointmentAgency.HPB,
+					agency: AppointmentAgency.HDB,
 					agencyTransactionId: booking.id.toString(),
 					uinfin: booking.citizenUinFin,
 				});
