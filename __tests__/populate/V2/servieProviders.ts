@@ -1,5 +1,6 @@
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
 import {
+	ServiceProviderModel,
 	ServiceProviderResponseModelV2,
 	ServiceProviderSummaryModelBase,
 } from '../../../src/components/serviceProviders/serviceProviders.apicontract';
@@ -9,7 +10,6 @@ import {
 	TimeslotItemRequest,
 	TimeslotItemResponseV2,
 } from '../../../src/components/timeslotItems/timeslotItems.apicontract';
-import { LabelCategoryResponseModel } from "../../../src/components/labelsCategories/labelsCategories.apicontract";
 
 export const getServiceProviders = async (): Promise<ServiceProviderResponseModelV2[]> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({}).get('/service-providers', undefined, 'V2');
@@ -101,6 +101,19 @@ export const postServiceProvider = async (serviceId: string): Promise<void> => {
 		},
 		'V2',
 	);
+};
+
+export const putServiceProvider = async (serviceProviderId: string, sp: ServiceProviderModel): Promise<ServiceProviderResponseModelV2> => {
+	const response = await OrganisationAdminRequestEndpointSG.create({}).put(
+		`/service-providers/${serviceProviderId}`,
+		{
+			body: {
+				...sp,
+			},
+		},
+		'V2',
+	);
+	return response.body.data;
 };
 
 export const populateIndividualTimeslot = async (

@@ -64,6 +64,8 @@ export class ServiceProvidersController extends Controller {
 	private scheduleFormsMapper: ScheduleFormsMapper;
 	@Inject
 	private apiPagingFactory: ApiPagingFactory;
+	@Inject
+	private idHasher: IdHasher;
 
 	private static parseCsvModelToServiceProviders(csvModels: any[]) {
 		try {
@@ -137,15 +139,18 @@ export class ServiceProvidersController extends Controller {
 		@Query() fromAvailableDate?: Date,
 		@Query() toAvailableDate?: Date,
 		@Query() filterDaysInAdvance = false,
+		@Query() labelIds?: string[],
 		@Query() limit?: number,
 		@Query() page?: number,
 	): Promise<ApiPagedData<ServiceProviderResponseModelV1>> {
+		const labelIdsUnsigned = labelIds?.map((l) => this.idHasher.decode(l));
 		const result = await this.serviceProvidersService.getPagedServiceProviders(
 			fromAvailableDate,
 			toAvailableDate,
 			filterDaysInAdvance,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
+			labelIdsUnsigned,
 			limit,
 			page,
 			serviceId,
@@ -460,16 +465,19 @@ export class ServiceProvidersControllerV2 extends Controller {
 		@Query() toAvailableDate?: Date,
 		@Query() filterDaysInAdvance = false,
 		@Query() includeLabels = false,
+		@Query() labelIds?: string[],
 		@Query() limit?: number,
 		@Query() page?: number,
 	): Promise<ApiData<ServiceProviderResponseModelV2[]>> {
 		const unsignedServiceId = this.idHasher.decode(serviceId);
+		const labelIdsUnsigned = labelIds ? labelIds.map((l) => this.idHasher.decode(l)) : [];
 		const result = await this.serviceProvidersService.getPagedServiceProviders(
 			fromAvailableDate,
 			toAvailableDate,
 			filterDaysInAdvance,
 			includeScheduleForm,
 			includeTimeslotsSchedule,
+			labelIdsUnsigned,
 			limit,
 			page,
 			unsignedServiceId,
