@@ -20,7 +20,7 @@ describe('Service providers functional tests - get', () => {
 	});
 	let orgaSettings;
 
-	beforeEach(async (done) => {
+	beforeEach(async () => {
 		orgaSettings = await putOrganisationSettings({
 			labelSettings: {
 				labels: [{ name: 'label1' }, { name: 'label2' }],
@@ -36,9 +36,8 @@ describe('Service providers functional tests - get', () => {
 		);
 	});
 
-	afterEach(async (done) => {
+	afterEach(async () => {
 		await pgClient.cleanAllTables();
-		done();
 	});
 
 	it('should get service provider count', async () => {
