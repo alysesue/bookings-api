@@ -122,7 +122,7 @@ export class BookingsService {
 		this.bookingsSubject.notify({
 			booking,
 			bookingType: BookingType.CancelledOrRejected,
-			action: ExternalAgencyAppointmentJobAction.UPDATE,
+			action: ExternalAgencyAppointmentJobAction.DELETE,
 		});
 		return booking;
 	}

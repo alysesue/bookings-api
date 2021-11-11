@@ -50,6 +50,7 @@ export class LifeSGMapper {
 					agency: AppointmentAgency.HDBVC_BSG,
 					agencyTransactionId: booking.id.toString(),
 					uinfin: booking.citizenUinFin,
+					agencyLastUpdatedAt: LocalDateTime.now(),
 				});
 		}
 	}
