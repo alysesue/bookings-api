@@ -772,7 +772,7 @@ export class BookingsService {
 		this.bookingsSubject.notify({
 			booking: targetBooking,
 			bookingType: BookingType.Created,
-			action: ExternalAgencyAppointmentJobAction.UPDATE,
+			action: ExternalAgencyAppointmentJobAction.CREATE,
 		});
 		return targetBooking;
 	}
