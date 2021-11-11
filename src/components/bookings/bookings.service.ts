@@ -748,9 +748,11 @@ export class BookingsService {
 
 		let targetId = _bookingId;
 		let beforeMap = async (_updatedBooking: Booking) => {};
+		let targetAction = ExternalAgencyAppointmentJobAction.CREATE;
 
 		if (onHoldBooking.onHoldRescheduleWorkflow) {
 			targetId = onHoldBooking.onHoldRescheduleWorkflow.targetId;
+			targetAction = ExternalAgencyAppointmentJobAction.UPDATE;
 
 			beforeMap = async (updatedBooking: Booking) => {
 				onHoldBooking.copyOnHoldInformation(updatedBooking);
@@ -772,7 +774,7 @@ export class BookingsService {
 		this.bookingsSubject.notify({
 			booking: targetBooking,
 			bookingType: BookingType.Created,
-			action: ExternalAgencyAppointmentJobAction.CREATE,
+			action: targetAction,
 		});
 		return targetBooking;
 	}
