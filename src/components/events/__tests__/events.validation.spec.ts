@@ -31,6 +31,15 @@ describe('Validation of events', () => {
 		await expect(validate).rejects.toThrow('[10103] Description word limit is 4000 characters');
 	});
 
+	it('Should return title not provided error', async () => {
+		const event = new Event();
+		event.oneOffTimeslots = [];
+		event.title = undefined;
+		const eventsValidation = Container.get(EventsValidation);
+		const validate = async () => await eventsValidation.validate(event);
+		await expect(validate).rejects.toThrow('[10106] Title not provided');
+	});
+
 	it('Should return error if not the same service ', async () => {
 		const event = new Event();
 		const sp1 = getServiceProviderMock({ service: getServiceMock({ id: 11 }) });

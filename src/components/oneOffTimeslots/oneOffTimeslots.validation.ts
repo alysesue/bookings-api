@@ -48,5 +48,5 @@ export class OneOffTimeslotsValidation extends Validator<OneOffTimeslot> {
 class OneOffTimeslotsBusinessValidation {
 	private static errors = ErrorsRef().oneOffTimeslot;
 
-	public static readonly InvalidTime = new BusinessValidation(OneOffTimeslotsBusinessValidation.errors.invalidTime);
+	public static readonly InvalidTime = new BusinessValidation(OneOffTimeslotsBusinessValidation.errors.InvalidTime);
 }
