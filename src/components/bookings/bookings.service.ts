@@ -311,7 +311,8 @@ export class BookingsService {
 		serviceId: number,
 		bypassCaptchaAndAutoAccept = false,
 	): Promise<Booking> {
-		const saveAction = () => this.saveInternal(bookingRequest, serviceId, bypassCaptchaAndAutoAccept);
+		const saveAction = () =>
+			this.saveInternal({ ...bookingRequest, citizenUinFinUpdated: true }, serviceId, bypassCaptchaAndAutoAccept);
 		const booking = await this.changeLogsService.executeAndLogAction(
 			null,
 			this.getBookingInternal.bind(this),
@@ -602,7 +603,7 @@ export class BookingsService {
 	}
 
 	private async saveInternal(
-		bookingRequest: BookingRequestV1,
+		bookingRequest: BookingUpdateRequestV1,
 		serviceId: number,
 		shouldBypassCaptchaAndAutoAccept = false,
 		beforeMap: (newBooking: Booking) => Promise<void> = async () => {},
@@ -627,7 +628,7 @@ export class BookingsService {
 		const booking = Booking.createNew({ creator: currentUser });
 		await beforeMap(booking);
 		await this.bookingsMapper.mapRequest({
-			request: { ...bookingRequest, citizenUinFinUpdated: true },
+			request: { ...bookingRequest, citizenUinFinUpdated: bookingRequest.citizenUinFinUpdated ?? false },
 			booking,
 			service,
 		});
