@@ -710,13 +710,14 @@ export class BookingsService {
 				service,
 			});
 
+			if (previousBooking.eventId) {
+				updatedBooking.status = BookingStatus.Accepted;
+			}
+
 			const validator = this.bookingsEventValidatorFactory.getOnHoldValidator();
 			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
 
 			await validator.validate(updatedBooking);
-			if (previousBooking.eventId) {
-				updatedBooking.status = BookingStatus.Accepted;
-			}
 
 			const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
 			await this.loadBookingDependencies(updatedBooking);
