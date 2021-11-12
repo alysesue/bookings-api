@@ -1,6 +1,6 @@
 // tslint:disable-next-line: no-big-function
 import { PgClient } from '../../utils/pgClient';
-import { createEventRequest, createOneOffTimeslotRequest, postEvent } from '../../populate/V1/events';
+import { createEventRequest, createOneOffTimeslotRequest, postEvent } from '../../populate/V2/events';
 import { populateServiceAndServiceProvider } from '../../populate/V2/servieProviders';
 
 describe('Event update functional tests', () => {

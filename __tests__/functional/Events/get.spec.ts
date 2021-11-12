@@ -1,6 +1,6 @@
 import { PgClient } from '../../utils/pgClient';
 import { populateServiceAndServiceProvider } from '../../populate/V2/servieProviders';
-import { createEventRequest, createOneOffTimeslotRequest, getEvents, postEvent } from '../../populate/V1/events';
+import { createEventRequest, createOneOffTimeslotRequest, getEvents, postEvent } from '../../populate/V2/events';
 import { populateOneOffTimeslot } from '../../populate/V2/oneOffTimeslots';
 import { EventResponse } from '../../../src/components/events/events.apicontract';
 import { ServiceResponseV2 } from '../../../src/components/services/service.apicontract';

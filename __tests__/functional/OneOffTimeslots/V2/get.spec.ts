@@ -100,6 +100,7 @@ describe('One-off timeslots functional tests - get', () => {
 			startTime: START_TIME_2,
 			endTime: END_TIME_2,
 			capacity: 2,
+			title: 'my event 2',
 			labelIds: service2Result.labels.map((l) => l.id),
 		});
 		await populateOneOffTimeslot({
@@ -107,6 +108,7 @@ describe('One-off timeslots functional tests - get', () => {
 			startTime: START_TIME_3,
 			endTime: END_TIME_3,
 			capacity: 3,
+			title: 'my event 3',
 			labelIds: service3Result.labels.map((l) => l.id),
 		});
 	});
@@ -152,7 +154,7 @@ describe('One-off timeslots functional tests - get', () => {
 		);
 
 		expect(service1TimeslotsResponse.statusCode).toEqual(200);
-		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].labels[0].label).toBe('Chinese');
+		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].labels.length).toBe(3);
 	});
 
 	it('organisation admin should get all oneoff timeslots', async () => {
@@ -191,7 +193,7 @@ describe('One-off timeslots functional tests - get', () => {
 		const data2 = service2TimeslotsResponse.body.data as TimeslotEntryResponseV2[];
 
 		expect(service2TimeslotsResponse.statusCode).toEqual(200);
-		expect(data2[0].timeslotServiceProviders[0].eventTitle).toBe(undefined);
+		expect(data2[0].timeslotServiceProviders[0].eventTitle).toBe(`my event 2`);
 		expect(data2[0].timeslotServiceProviders[0].eventDescription).toBe(undefined);
 		expect(data2[0].startTime).toEqual(START_TIME_2.toISOString());
 		expect(data2[0].endTime).toEqual(END_TIME_2.toISOString());

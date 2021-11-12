@@ -7,7 +7,7 @@ import {
 	ServiceAdminRequestEndpointSG,
 } from '../../../utils/requestEndpointSG';
 import * as request from 'request';
-import { BookingStatus } from '../../../../src/models';
+import { BookingStatus, BookingWorkflowType } from '../../../../src/models';
 import {
 	DynamicValueTypeContract,
 	PersistDynamicValueContract,
@@ -15,7 +15,7 @@ import {
 import { IdHasherForFunctional } from '../../../utils/idHashingUtil';
 import { ServiceProviderResponseModelV1 } from '../../../../src/components/serviceProviders/serviceProviders.apicontract';
 import { ServiceResponseV1 } from '../../../../src/components/services/service.apicontract';
-import { BookingResponseV1 } from '../../../../src/components/bookings/bookings.apicontract';
+import { BookingRequestV1, BookingResponseV1 } from '../../../../src/components/bookings/bookings.apicontract';
 import { BookingChangeLogResponseV1 } from '../../../../src/components/bookingChangeLogs/bookingChangeLogs.apicontract';
 import { populateUserServiceProvider } from '../../../populate/V1/users';
 import { populateWeeklyTimesheet, setServiceProviderAutoAssigned } from '../../../populate/V1/serviceProviders';
@@ -140,6 +140,61 @@ describe('Bookings functional tests', () => {
 				startDateTime,
 				endDateTime,
 				serviceProviderId: serviceProviderId || undefined,
+			},
+		});
+	};
+
+	const postAnonymousBooking = async (
+		params: Partial<BookingRequestV1> = {},
+		verifyOTP: boolean = false,
+		validate: boolean = false,
+		reschedule: boolean = false,
+	) => {
+		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
+		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
+
+		const endpoint = await AnonmymousEndpointSG.create({
+			serviceId: serviceIdStr,
+		});
+
+		if (verifyOTP) await endpoint.sendAndVerifyOTP();
+
+		const bookingResponse = await endpoint.post('/bookings', {
+			body: {
+				startDateTime,
+				endDateTime,
+				serviceProviderId: serviceProvider.id,
+				citizenUinFin,
+				citizenName,
+				citizenEmail,
+				...params,
+			},
+		});
+
+		if (!validate) return bookingResponse;
+
+		const bookingId = bookingResponse.body.data.id;
+		const validateResponse = await endpoint.post(`/bookings/${bookingId}/validateOnHold`, {
+			body: {
+				citizenUinFin,
+				citizenName,
+				citizenEmail,
+				citizenPhone: '98728473',
+			},
+		});
+
+		if (reschedule) return postAnonymousRescheduleBooking(endpoint, bookingId);
+		return [bookingResponse, validateResponse];
+	};
+
+	const postAnonymousRescheduleBooking = async (endpoint, bookingId) => {
+		return await endpoint.post(`/bookings/${bookingId}/reschedule`, {
+			body: {
+				startDateTime: new Date(Date.UTC(2051, 11, 10, 3, 0)),
+				endDateTime: new Date(Date.UTC(2051, 11, 10, 4, 0)),
+				serviceProviderId: serviceProvider.id,
+				citizenName,
+				citizenEmail,
 			},
 		});
 	};
@@ -532,8 +587,11 @@ describe('Bookings functional tests', () => {
 		expect(validateResponse.body.data.status).toBe(BookingStatus.Accepted);
 		expect(validatedBookingId).toBeDefined();
 
-		const { onHoldReschedule, bookingBeforeValidate, validateReschedule } =
-			await citizenRescheduleStandAloneAndValidate(validatedBookingId);
+		const {
+			onHoldReschedule,
+			bookingBeforeValidate,
+			validateReschedule,
+		} = await citizenRescheduleStandAloneAndValidate(validatedBookingId);
 
 		//makes sure original booking hasn't changed yet (before Reschedule standalone validation)
 		expect(bookingBeforeValidate.body.data.startDateTime).toEqual('2051-12-10T01:00:00.000Z');
@@ -684,125 +742,34 @@ describe('Bookings functional tests', () => {
 	it('should NOT create in-slot booking as anonymous (when status is not OnHold)', async () => {
 		await pgClient.configureServiceAllowAnonymous({ serviceId });
 
-		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
-		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
-
-		const endpoint = await AnonmymousEndpointSG.create({
-			serviceId: serviceIdStr,
-		});
-
-		const response = await endpoint.post('/bookings', {
-			body: {
-				startDateTime,
-				endDateTime,
-				serviceProviderId: serviceProvider.id,
-				citizenUinFin,
-				citizenName,
-				citizenEmail,
-			},
-		});
-		expect(response.statusCode).toBe(403);
+		const bookingResponse = await postAnonymousBooking();
+		expect(bookingResponse.statusCode).toBe(403);
 	});
 
 	it('should create in-slot booking as anonymous (when status is OnHold)', async () => {
-		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
-		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
-
-		const endpoint = await AnonmymousEndpointSG.create({
-			serviceId: serviceIdStr,
+		const bookingResponse = await postAnonymousBooking({
+			workflowType: BookingWorkflowType.OnHold,
 		});
-
-		const response = await endpoint.post('/bookings', {
-			body: {
-				startDateTime,
-				endDateTime,
-				serviceProviderId: serviceProvider.id,
-				citizenUinFin,
-				citizenName,
-				citizenEmail,
-				workflowType: 'onhold',
-			},
-		});
-		expect(response.statusCode).toBe(201);
+		expect(bookingResponse.statusCode).toBe(201);
 	});
 
 	it('should create in-slot booking as anonymous (when status is NOT OnHold, but is user is OTP verified)', async () => {
 		await pgClient.configureServiceAllowAnonymous({ serviceId });
-		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
-		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
 
-		const endpoint = await AnonmymousEndpointSG.create({
-			serviceId: serviceIdStr,
-		});
-
-		await endpoint.sendAndVerifyOTP();
-		const response = await endpoint.post('/bookings', {
-			body: {
-				startDateTime,
-				endDateTime,
-				serviceProviderId: serviceProvider.id,
-				citizenUinFin,
-				citizenName,
-				citizenEmail,
-			},
-		});
-
-		expect(response.statusCode).toBe(201);
+		const bookingResponse = await postAnonymousBooking({}, true);
+		expect(bookingResponse.statusCode).toBe(201);
 	});
 
 	it('should NOT create in-slot booking as anonymous if service is not setup (when status is NOT OnHold, but is user is OTP verified)', async () => {
-		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
-		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
-
-		const endpoint = await AnonmymousEndpointSG.create({
-			serviceId: serviceIdStr,
-		});
-
-		await endpoint.sendAndVerifyOTP();
-		const response = await endpoint.post('/bookings', {
-			body: {
-				startDateTime,
-				endDateTime,
-				serviceProviderId: serviceProvider.id,
-				citizenUinFin,
-				citizenName,
-				citizenEmail,
-			},
-		});
-
-		expect(response.statusCode).toBe(403);
+		const bookingResponse = await postAnonymousBooking({}, true);
+		expect(bookingResponse.statusCode).toBe(403);
 	});
 
 	it('should create standalone booking as an Anonymous user (when service is configured)', async () => {
 		await pgClient.configureServiceAllowAnonymous({ serviceId });
 		await pgClient.setServiceConfigurationStandAlone(serviceId, true);
 
-		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
-		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
-
-		const endpoint = await AnonmymousEndpointSG.create({
-			serviceId: serviceIdStr,
-		});
-
-		const bookingResponse = await endpoint.post('/bookings', {
-			body: {
-				startDateTime,
-				endDateTime,
-				serviceProviderId: serviceProvider.id,
-			},
-		});
-
-		const bookingId = bookingResponse.body.data.id;
-
-		await endpoint.sendAndVerifyOTP();
-		const validateResponse = await endpoint.post(`/bookings/${bookingId}/validateOnHold`, {
-			body: {
-				citizenUinFin: 'S2312382G',
-				citizenName: 'Janiece',
-				citizenEmail: 'janiece@gmail.com',
-				citizenPhone: '98728473',
-			},
-		});
+		const [bookingResponse, validateResponse] = await postAnonymousBooking({}, true, true);
 
 		expect(bookingResponse.statusCode).toBe(201);
 		expect(validateResponse.statusCode).toBe(200);
@@ -812,32 +779,8 @@ describe('Bookings functional tests', () => {
 		await pgClient.configureServiceAllowAnonymous({ serviceId });
 		await pgClient.setServiceConfigurationStandAlone(serviceId, true);
 
-		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
-		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
-
-		const endpoint = await AnonmymousEndpointSG.create({
-			serviceId: serviceIdStr,
-		});
-
-		const bookingResponse = await endpoint.post('/bookings', {
-			body: {
-				startDateTime,
-				endDateTime,
-				serviceProviderId: serviceProvider.id,
-			},
-		});
-
-		const bookingId = bookingResponse.body.data.id;
-
 		// without otp
-		const validateResponse = await endpoint.post(`/bookings/${bookingId}/validateOnHold`, {
-			body: {
-				citizenUinFin: 'S2312382G',
-				citizenName: 'Janiece',
-				citizenEmail: 'janiece@gmail.com',
-				citizenPhone: '98728473',
-			},
-		});
+		const [bookingResponse, validateResponse] = await postAnonymousBooking({}, false, true);
 
 		expect(bookingResponse.statusCode).toBe(201);
 		expect(validateResponse.statusCode).toBe(401);
@@ -846,35 +789,20 @@ describe('Bookings functional tests', () => {
 	it('should NOT create standalone booking as an Anonymous user (when service is NOT configured)', async () => {
 		await pgClient.setServiceConfigurationStandAlone(serviceId, true);
 
-		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
-		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
-
-		const endpoint = await AnonmymousEndpointSG.create({
-			serviceId: serviceIdStr,
-		});
-
-		const bookingResponse = await endpoint.post('/bookings', {
-			body: {
-				startDateTime,
-				endDateTime,
-				serviceProviderId: serviceProvider.id,
-			},
-		});
-
-		const bookingId = bookingResponse.body.data.id;
-
-		await endpoint.sendAndVerifyOTP();
-		const validateResponse = await endpoint.post(`/bookings/${bookingId}/validateOnHold`, {
-			body: {
-				citizenUinFin: 'S2312382G',
-				citizenName: 'Janiece',
-				citizenEmail: 'janiece@gmail.com',
-				citizenPhone: '98728473',
-			},
-		});
+		const [bookingResponse, validateResponse] = await postAnonymousBooking({}, true, true);
 
 		expect(bookingResponse.statusCode).toBe(201);
 		expect(validateResponse.statusCode).toBe(403);
+	});
+
+	it('[Stand alone][Anonymous] - should reschedule booking as anonymous', async () => {
+		await pgClient.setServiceConfigurationStandAlone(serviceId, true);
+
+		const response = await postAnonymousBooking({}, true, true, true);
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body.data.status).toBe(BookingStatus.OnHold);
+		expect(response.body.data.citizenUinFin).toEqual('S****377H');
 	});
 
 	it('should create multiple bookings', async () => {

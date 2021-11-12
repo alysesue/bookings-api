@@ -51,6 +51,7 @@ jest.mock('typeorm', () => {
 		ChildEntity: decoratorMock,
 		Generated: decoratorMock,
 		DeleteDateColumn: decoratorMock,
+		Check: decoratorMock,
 		SelectQueryBuilder: jest.fn(),
 		In: jest.fn(),
 	};

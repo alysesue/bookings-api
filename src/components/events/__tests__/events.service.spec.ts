@@ -45,6 +45,7 @@ describe('Tests events services', () => {
 
 	const getSimpleEventRequest = ({ oneOffTimeslots }: { oneOffTimeslots: OneOffTimeslotRequestV2[] }) =>
 		({
+			title: 'event title',
 			serviceId: '1',
 			timeslots: oneOffTimeslots,
 		} as EventRequest);

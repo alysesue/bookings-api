@@ -50,7 +50,11 @@ export class EventsValidation extends Validator<Event> {
 		}
 	}
 	private static async *validateTitle(title: string): AsyncIterable<BusinessValidation> {
-		if (title && title.length > 100) {
+		if (!title) {
+			yield EventsBusinessValidation.TitleNotProvided;
+			return;
+		}
+		if (title.length > 100) {
 			yield EventsBusinessValidation.TitleTooLong;
 		}
 	}
@@ -60,18 +64,22 @@ class EventsBusinessValidation {
 	private static oneOffTimeslotError = ErrorsRef().oneOffTimeslot;
 
 	public static readonly TitleTooLong = new BusinessValidation(
-		EventsBusinessValidation.oneOffTimeslotError.titleTooLong,
+		EventsBusinessValidation.oneOffTimeslotError.TitleTooLong,
 	);
 
 	public static readonly DescriptionTooLong = new BusinessValidation(
-		EventsBusinessValidation.oneOffTimeslotError.descriptionTooLong,
+		EventsBusinessValidation.oneOffTimeslotError.DescriptionTooLong,
 	);
 
 	public static readonly SameService = new BusinessValidation(
-		EventsBusinessValidation.oneOffTimeslotError.sameService,
+		EventsBusinessValidation.oneOffTimeslotError.SameService,
 	);
 
 	public static readonly AtLeastOneSlot = new BusinessValidation(
-		EventsBusinessValidation.oneOffTimeslotError.atLeastOneSlot,
+		EventsBusinessValidation.oneOffTimeslotError.AtLeastOneSlot,
+	);
+
+	public static readonly TitleNotProvided = new BusinessValidation(
+		EventsBusinessValidation.oneOffTimeslotError.TitleNotProvided,
 	);
 }

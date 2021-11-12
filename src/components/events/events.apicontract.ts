@@ -46,7 +46,7 @@ export interface IEventRequest {
 export class EventRequest implements IEventRequest {
 	public id?: string;
 	public serviceId: string;
-	public title?: string;
+	public title: string;
 	public description?: string | null;
 	public capacity?: number;
 	public labelIds?: string[];
