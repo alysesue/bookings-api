@@ -14,7 +14,7 @@ export const populateOneOffTimeslot = async ({
 	endTime,
 	capacity,
 	labelIds,
-	title,
+	title = 'title',
 	description,
 	role,
 	requestDetails,
