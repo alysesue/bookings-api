@@ -1589,6 +1589,84 @@ describe('Bookings.Service', () => {
 			expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Create);
 			expect(result.status).toStrictEqual(BookingStatus.OnHold);
 		});
+
+		it('should set booking nric for on hold booking with existing nric when rescheduling and isStandAlone is true', async () => {
+			const standAloneService = new Service();
+			standAloneService.id = 1;
+			standAloneService.organisation = organisation;
+			standAloneService.organisationId = organisation.id;
+			standAloneService.citizenAuthentication = [CitizenAuthenticationType.Otp];
+			standAloneService.isStandAlone = true;
+
+			const bookingRequest: BookingRequestV1 = new BookingRequestV1();
+			bookingRequest.startDateTime = new Date('2020-10-01T01:00:00');
+			bookingRequest.endDateTime = new Date('2020-10-01T02:00:00');
+			bookingRequest.serviceProviderId = 1;
+			bookingRequest.citizenName = 'test';
+			bookingRequest.citizenEmail = 'test@mail.com';
+			bookingRequest.citizenUinFin = 'ABC789';
+
+			const rescheduleRequest = {
+				citizenName: 'test',
+				citizenEmail: 'test@mail.com',
+				startDateTime: new Date('2020-10-01T05:00:00'),
+				endDateTime: new Date('2020-10-01T06:00:00'),
+			} as BookingRequestV1;
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(anonymousMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new AnonymousAuthGroup(anonymousMock, undefined, { mobileNo: '+6584000000' })]),
+			);
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(standAloneService));
+
+			await Container.get(BookingsService).save(bookingRequest, 1);
+
+			const result = await Container.get(BookingsService).reschedule(1, rescheduleRequest);
+			// Create OnHold
+			expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Create);
+			expect(result.status).toStrictEqual(BookingStatus.OnHold);
+			expect(result.citizenUinFin).toEqual('ABC789');
+		});
+
+		it('should set booking nric for on hold booking when citizenUinFinUpdated is true - rescheduling', async () => {
+			const standAloneService = new Service();
+			standAloneService.id = 1;
+			standAloneService.organisation = organisation;
+			standAloneService.organisationId = organisation.id;
+			standAloneService.citizenAuthentication = [CitizenAuthenticationType.Otp];
+			standAloneService.isStandAlone = true;
+
+			const bookingRequest: BookingRequestV1 = new BookingRequestV1();
+			bookingRequest.startDateTime = new Date('2020-10-01T01:00:00');
+			bookingRequest.endDateTime = new Date('2020-10-01T02:00:00');
+			bookingRequest.serviceProviderId = 1;
+			bookingRequest.citizenName = 'test';
+			bookingRequest.citizenEmail = 'test@mail.com';
+			bookingRequest.citizenUinFin = 'ABC789';
+
+			const rescheduleRequest = {
+				citizenName: 'test',
+				citizenEmail: 'test@mail.com',
+				citizenUinFin: 'ASD123',
+				startDateTime: new Date('2020-10-01T05:00:00'),
+				endDateTime: new Date('2020-10-01T06:00:00'),
+				citizenUinFinUpdated: true,
+			} as BookingUpdateRequestV1;
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(anonymousMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new AnonymousAuthGroup(anonymousMock, undefined, { mobileNo: '+6584000000' })]),
+			);
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(standAloneService));
+
+			await Container.get(BookingsService).save(bookingRequest, 1);
+
+			const result = await Container.get(BookingsService).reschedule(1, rescheduleRequest);
+			// Create OnHold
+			expect(BookingChangeLogsServiceMock.action).toStrictEqual(ChangeLogAction.Create);
+			expect(result.status).toStrictEqual(BookingStatus.OnHold);
+			expect(result.citizenUinFin).toEqual('ASD123');
+		});
 	});
 
 	describe('On Hold', () => {
