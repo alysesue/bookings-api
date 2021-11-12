@@ -34,7 +34,6 @@ export class BookingsMapper {
 	private dynamicValuesMapper: DynamicValuesMapper;
 	@Inject
 	private dynamicValuesRequestMapper: DynamicValuesRequestMapper;
-
 	@Inject
 	private idHasher: IdHasher;
 	@Inject
@@ -255,19 +254,22 @@ export class BookingsMapper {
 			booking.serviceId = service.id;
 		}
 
-		booking.refId = request.refId;
-		if (request.citizenUinFinUpdated) {
+		if (!service.noNric && request.citizenUinFinUpdated) {
 			booking.citizenUinFin = request.citizenUinFin;
 		}
 
 		booking.citizenName = request.citizenName;
 		booking.citizenEmail = request.citizenEmail;
 		booking.citizenPhone = request.citizenPhone;
-		booking.location = request.location;
-		booking.description = request.description;
 		booking.citizenSalutation = request.citizenSalutation;
 
-		booking.videoConferenceUrl = request.videoConferenceUrl || service.videoConferenceUrl;
+		// Standalone form would not allow user to modify any of these fields
+		if (booking.status !== BookingStatus.OnHold) {
+			booking.refId = request.refId;
+			booking.location = request.location;
+			booking.description = request.description;
+			booking.videoConferenceUrl = request.videoConferenceUrl || service.videoConferenceUrl;
+		}
 
 		await this.updateDetailsFromUser({ booking, service });
 	}
@@ -276,7 +278,7 @@ export class BookingsMapper {
 		// Place all logic to update booking details from user context information here.
 
 		const currentUser = await this.userContext.getCurrentUser();
-		if (currentUser && currentUser.isSingPass()) {
+		if (!service.noNric && currentUser && currentUser.isSingPass()) {
 			booking.citizenUinFin = currentUser.singPassUser.UinFin;
 		}
 
