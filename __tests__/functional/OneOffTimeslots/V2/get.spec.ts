@@ -154,7 +154,7 @@ describe('One-off timeslots functional tests - get', () => {
 		);
 
 		expect(service1TimeslotsResponse.statusCode).toEqual(200);
-		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].labels[0].label).toBe('Chinese');
+		expect(service1TimeslotsResponse.body.data[0].timeslotServiceProviders[0].labels.length).toBe(3);
 	});
 
 	it('organisation admin should get all oneoff timeslots', async () => {
