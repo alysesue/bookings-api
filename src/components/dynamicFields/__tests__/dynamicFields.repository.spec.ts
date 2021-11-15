@@ -4,13 +4,26 @@ import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userCont
 import { Container } from 'typescript-ioc';
 import { DynamicFieldsRepository } from '../dynamicFields.repository';
 import { DynamicField, SelectListDynamicField, TextDynamicField, User } from '../../../models';
-import { TransactionManager } from '../../../core/transactionManager';
-import { SelectQueryBuilder } from 'typeorm';
+import { AsyncFunction, TransactionManager } from '../../../core/transactionManager';
+import { getMetadataArgsStorage, SelectQueryBuilder } from 'typeorm';
 import { UserConditionParams } from '../../../infrastructure/auth/authConditionCollection';
 import { ServicesQueryAuthVisitor } from '../../services/services.auth';
 import { TransactionManagerMock } from '../../../core/__mocks__/transactionManager.mock';
+import { MetadataArgsStorage } from 'typeorm/metadata-args/MetadataArgsStorage';
+import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
+import { DiscriminatorValueMetadataArgs } from 'typeorm/metadata-args/DiscriminatorValueMetadataArgs';
+import { DynamicFieldEntityType } from '../../../models/entities/dynamicField';
 
 jest.mock('../../../components/services/services.auth');
+
+jest.mock('typeorm/metadata-args/MetadataArgsStorage', () => {
+	class MetadataArgsStorage {}
+	return { MetadataArgsStorage };
+});
+
+jest.mock('typeorm/metadata-args/DiscriminatorValueMetadataArgs', () => {
+	return {};
+});
 
 beforeAll(() => {
 	Container.bind(UserContext).to(UserContextMock);
@@ -23,6 +36,11 @@ describe('dynamicFields/dynamicFields.repository', () => {
 	const QueryAuthVisitorMock = {
 		createUserVisibilityCondition: jest.fn<Promise<UserConditionParams>, any>(),
 	};
+
+	const metadataArgsStorage: Partial<MetadataArgsStorage> = {
+		findDiscriminatorValue: jest.fn(),
+	};
+
 	beforeEach(() => {
 		jest.resetAllMocks();
 		UserContextMock.getAuthGroups.mockImplementation(() =>
@@ -32,15 +50,41 @@ describe('dynamicFields/dynamicFields.repository', () => {
 		QueryAuthVisitorMock.createUserVisibilityCondition.mockImplementation(() =>
 			Promise.resolve({ userCondition: '', userParams: {} }),
 		);
+
+		(getMetadataArgsStorage as jest.Mock).mockReturnValue(metadataArgsStorage);
+		TransactionManagerMock.runInTransaction.mockImplementation(
+			async <T>(_isolationLevel: IsolationLevel, asyncFunction: AsyncFunction<T>): Promise<T> =>
+				await asyncFunction(),
+		);
 	});
 
-	it('should save dynamic field', async () => {
+	it('should save new dynamic field', async () => {
 		const field = TextDynamicField.create(2, 'Notes', 50, true);
 		TransactionManagerMock.entityManager.save.mockReturnValue(Promise.resolve({}));
 
 		const container = Container.get(DynamicFieldsRepository);
 		const result = await container.save(field);
 
+		expect(TransactionManagerMock.entityManager.update).not.toBeCalled();
+		expect(TransactionManagerMock.entityManager.save).toBeCalled();
+		expect(result).toBeDefined();
+	});
+
+	it('should update dynamic field', async () => {
+		const field = TextDynamicField.create(2, 'Notes', 50, true);
+		field.id = 10;
+		TransactionManagerMock.entityManager.save.mockReturnValue(Promise.resolve({}));
+		(metadataArgsStorage.findDiscriminatorValue as jest.Mock<DiscriminatorValueMetadataArgs>).mockReturnValue({
+			target: TextDynamicField,
+			value: DynamicFieldEntityType.TextDynamicFieldType,
+		});
+
+		const container = Container.get(DynamicFieldsRepository);
+		const result = await container.save(field);
+
+		expect(TransactionManagerMock.entityManager.update).toBeCalledWith(DynamicField, 10, {
+			_type: DynamicFieldEntityType.TextDynamicFieldType,
+		});
 		expect(TransactionManagerMock.entityManager.save).toBeCalled();
 		expect(result).toBeDefined();
 	});

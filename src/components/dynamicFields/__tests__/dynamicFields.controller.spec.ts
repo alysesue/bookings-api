@@ -8,8 +8,8 @@ import {
 	DynamicFieldType,
 	PersistDynamicFieldModelV1,
 	PersistDynamicFieldModelV2,
-	SelectListModel,
-	SelectListOptionModel,
+	FieldWithOptionsModel,
+	DynamicOptionModel,
 } from '../dynamicFields.apicontract';
 import { DynamicFieldsController, DynamicFieldsControllerV2 } from '../dynamicFields.controller';
 import { TextDynamicField } from '../../../models';
@@ -92,14 +92,14 @@ describe('DynamicFields.Controller.V1', () => {
 	});
 
 	it('should return api result', async () => {
-		const selectOption = new SelectListOptionModel();
+		const selectOption = new DynamicOptionModel();
 		selectOption.key = 1;
 		selectOption.value = 'abc';
 		const dynamicFieldModel = new DynamicFieldModel();
 		dynamicFieldModel.idSigned = '1';
 		dynamicFieldModel.name = 'testDynamicController';
 		dynamicFieldModel.type = DynamicFieldType.SelectList;
-		dynamicFieldModel.selectList = new SelectListModel();
+		dynamicFieldModel.selectList = new FieldWithOptionsModel();
 		dynamicFieldModel.selectList.options = [selectOption];
 
 		DynamicFieldsMapperMock.mapDataModels.mockImplementation(() => [dynamicFieldModel]);
@@ -165,14 +165,14 @@ describe('DynamicFields.Controller.V2', () => {
 	});
 
 	it('should return api result', async () => {
-		const selectOption = new SelectListOptionModel();
+		const selectOption = new DynamicOptionModel();
 		selectOption.key = 1;
 		selectOption.value = 'abc';
 		const dynamicFieldModel = new DynamicFieldModel();
 		dynamicFieldModel.idSigned = '1';
 		dynamicFieldModel.name = 'testDynamicController';
 		dynamicFieldModel.type = DynamicFieldType.SelectList;
-		dynamicFieldModel.selectList = new SelectListModel();
+		dynamicFieldModel.selectList = new FieldWithOptionsModel();
 		dynamicFieldModel.selectList.options = [selectOption];
 
 		DynamicFieldsMapperMock.mapDataModels.mockImplementation(() => [dynamicFieldModel]);

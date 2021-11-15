@@ -1,10 +1,6 @@
 import { MyInfoFieldType } from './myInfoFieldType';
-
-export enum DynamicValueType {
-	SingleSelection = 'SingleSelection',
-	Text = 'Text',
-	DateOnly = 'DateOnly',
-}
+import { DynamicValueType } from '../dynamicValueType';
+export { DynamicValueType } from '../dynamicValueType';
 
 export enum InformationOriginType {
 	BookingSG = 'bookingsg',
@@ -22,6 +18,7 @@ export type MyInfoOrigin = {
 	lastupdated?: string;
 };
 
+/** Be aware of existing DB data when changing this model */
 export type DynamicValueJsonModel = {
 	fieldId: number;
 	fieldName: string;
@@ -29,7 +26,13 @@ export type DynamicValueJsonModel = {
 	type: DynamicValueType;
 	SingleSelectionKey?: number | string;
 	SingleSelectionValue?: string;
+	multiSelection?: MultiSelectionJsonModel[];
 	textValue?: string;
 	dateOnlyValue?: string;
 	origin?: DynamicValueOrigin;
+};
+
+export type MultiSelectionJsonModel = {
+	key: number | string;
+	value: string;
 };

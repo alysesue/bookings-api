@@ -68,7 +68,12 @@ describe('[MyInfo] dynamicFields/dynamicValues.mapper', () => {
 			{ key: 'A', value: '111122' },
 			{ key: 'B', value: '77755' },
 		];
-		const field = SelectListDynamicField.create(1, 'Some MyInfo field', options, false);
+		const field = SelectListDynamicField.create({
+			serviceId: 1,
+			name: 'Some MyInfo field',
+			options,
+			isMandatory: false,
+		});
 		field.id = 7;
 		return field;
 	};

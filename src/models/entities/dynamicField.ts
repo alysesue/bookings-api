@@ -14,6 +14,8 @@ import { Service } from './service';
 
 export interface IDynamicFieldVisitor {
 	visitSelectList(_selectListField: SelectListDynamicField): void;
+	visitRadioList(_radioListField: RadioListDynamicField): void;
+	visitCheckboxList(_checkboxListField: CheckboxListDynamicField): void;
 	visitTextField(_textField: TextDynamicField): void;
 	visitMyInfo(_myInfoDynamicField: MyInfoDynamicField): void;
 	visitDateOnlyField(_dateOnlyField: DateOnlyDynamicField): void;
@@ -21,6 +23,8 @@ export interface IDynamicFieldVisitor {
 
 export interface IDynamicFieldVisitorAsync {
 	visitSelectList(_selectListField: SelectListDynamicField): Promise<void>;
+	visitRadioList(_radioListField: RadioListDynamicField): Promise<void>;
+	visitCheckboxList(_checkboxListField: CheckboxListDynamicField): Promise<void>;
 	visitTextField(_textField: TextDynamicField): Promise<void>;
 	visitMyInfo(_myInfoDynamicField: MyInfoDynamicField): Promise<void>;
 	visitDateOnlyField(_dateOnlyField: DateOnlyDynamicField): Promise<void>;
@@ -34,6 +38,8 @@ export enum DynamicFieldEntityType {
 	TextDynamicFieldType = 'TextDynamicField',
 	DateOnlyDynamicField = 'DateOnlyDynamicField',
 	MyInfoDynamicFieldType = 'MyInfoDynamicFieldType',
+	CheckboxListDynamicField = 'CheckboxListDynamicField',
+	RadioListDynamicField = 'RadioListDynamicField',
 }
 
 @Entity()
@@ -104,6 +110,10 @@ export abstract class DynamicField {
 		this._isMandatory = value;
 	}
 
+	// TypeOrm doesn't support this column in DynamicFieldWithOptions, so it needs to be here.
+	@Column({ type: 'jsonb', nullable: false, default: '[]' })
+	protected _options: DynamicKeyValueOption[];
+
 	public abstract acceptVisitor(visitor: IDynamicFieldVisitor): void;
 	public abstract acceptVisitorAsync(visitor: IDynamicFieldVisitorAsync): Promise<void>;
 }
@@ -148,19 +158,22 @@ export class MyInfoDynamicField extends DynamicField {
 	}
 }
 
-@ChildEntity(DynamicFieldEntityType.SelectListDynamicFieldType)
-export class SelectListDynamicField extends DynamicField {
-	constructor() {
-		super();
-	}
-
-	public static create(
-		serviceId: number,
-		name: string,
-		options: SelectListOption[],
-		isMandatory: boolean,
-	): DynamicField {
-		const dynamicField = new SelectListDynamicField();
+export abstract class DynamicFieldWithOptionsBase extends DynamicField {
+	public static createField<T extends DynamicFieldWithOptionsBase>(
+		constructor: new () => T,
+		{
+			serviceId,
+			name,
+			options,
+			isMandatory,
+		}: {
+			serviceId: number;
+			name: string;
+			options: DynamicKeyValueOption[];
+			isMandatory: boolean;
+		},
+	): T {
+		const dynamicField = new constructor();
 		dynamicField.serviceId = serviceId;
 		dynamicField.name = name;
 		dynamicField.options = options;
@@ -168,14 +181,35 @@ export class SelectListDynamicField extends DynamicField {
 		return dynamicField;
 	}
 
-	@Column({ type: 'jsonb', nullable: false, default: '[]' })
-	private _options: SelectListOption[];
-
-	public get options(): SelectListOption[] {
+	public get options(): DynamicKeyValueOption[] {
 		return this._options;
 	}
-	public set options(options: SelectListOption[]) {
+	public set options(options: DynamicKeyValueOption[]) {
 		this._options = options;
+	}
+}
+
+export type DynamicKeyValueOption = {
+	key: number | string;
+	value: string;
+};
+
+@ChildEntity(DynamicFieldEntityType.SelectListDynamicFieldType)
+export class SelectListDynamicField extends DynamicFieldWithOptionsBase {
+	// (unused in runtime) make this TS type not compatible with other siblings
+	private __SelectListDynamicField_TypeMarker: string;
+
+	constructor() {
+		super();
+	}
+
+	public static create(params: {
+		serviceId: number;
+		name: string;
+		options: DynamicKeyValueOption[];
+		isMandatory: boolean;
+	}): SelectListDynamicField {
+		return DynamicFieldWithOptionsBase.createField(SelectListDynamicField, params);
 	}
 
 	public acceptVisitor(visitor: IDynamicFieldVisitor): void {
@@ -187,10 +221,59 @@ export class SelectListDynamicField extends DynamicField {
 	}
 }
 
-export type SelectListOption = {
-	key: number | string;
-	value: string;
-};
+@ChildEntity(DynamicFieldEntityType.RadioListDynamicField)
+export class RadioListDynamicField extends DynamicFieldWithOptionsBase {
+	// (unused in runtime) make this TS type not compatible with other siblings
+	private __RadioListDynamicField_TypeMarker: string;
+
+	constructor() {
+		super();
+	}
+
+	public static create(params: {
+		serviceId: number;
+		name: string;
+		options: DynamicKeyValueOption[];
+		isMandatory: boolean;
+	}): RadioListDynamicField {
+		return DynamicFieldWithOptionsBase.createField(RadioListDynamicField, params);
+	}
+
+	public acceptVisitor(visitor: IDynamicFieldVisitor): void {
+		visitor.visitRadioList(this);
+	}
+
+	public async acceptVisitorAsync(visitor: IDynamicFieldVisitorAsync): Promise<void> {
+		await visitor.visitRadioList(this);
+	}
+}
+
+@ChildEntity(DynamicFieldEntityType.CheckboxListDynamicField)
+export class CheckboxListDynamicField extends DynamicFieldWithOptionsBase {
+	// (unused in runtime) make this TS type not compatible with other siblings
+	private __CheckboxListDynamicField_TypeMarker: string;
+
+	constructor() {
+		super();
+	}
+
+	public static create(params: {
+		serviceId: number;
+		name: string;
+		options: DynamicKeyValueOption[];
+		isMandatory: boolean;
+	}): CheckboxListDynamicField {
+		return DynamicFieldWithOptionsBase.createField(CheckboxListDynamicField, params);
+	}
+
+	public acceptVisitor(visitor: IDynamicFieldVisitor): void {
+		visitor.visitCheckboxList(this);
+	}
+
+	public async acceptVisitorAsync(visitor: IDynamicFieldVisitorAsync): Promise<void> {
+		await visitor.visitCheckboxList(this);
+	}
+}
 
 @ChildEntity(DynamicFieldEntityType.TextDynamicFieldType)
 export class TextDynamicField extends DynamicField {
