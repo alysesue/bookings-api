@@ -130,7 +130,7 @@ describe('Bookings functional tests', () => {
 			const fields = body[1].split(',');
 
 			expect(csvHeaders).toEqual(
-				`Booking ID,Booking Status,Booking creation date,Booking service start date/time,Booking service end date/time,Booking location,Booking description,Booking reference,Dynamic Fields,Citizen NRIC / FIN number,Citizen Name,Citizen Email address,Citizen Phone number,Service Name,Service Provider Name,Service Provider Email address,Service Provider Phone number`,
+				`Booking ID,Booking Status,Booking creation date,Booking service start date/time,Booking service end date/time,Booking location,Booking description,Booking reference,Dynamic Fields,Citizen NRIC / FIN number,Citizen Salutation,Citizen Name,Citizen Email address,Citizen Phone number,Service Name,Service Provider Name,Service Provider Email address,Service Provider Phone number`,
 			);
 			expect(fields[1]).toEqual('Accepted');
 			expect(new Date(fields[3])).toEqual(startDateTime);
@@ -138,11 +138,11 @@ describe('Bookings functional tests', () => {
 			expect(fields[5]).toEqual(location);
 			expect(fields[6]).toEqual(description);
 			expect(fields[9]).toEqual('S****377H');
-			expect(fields[10]).toEqual(citizenName);
-			expect(fields[11]).toEqual(citizenEmail);
-			expect(fields[13]).toEqual(NAME_SERVICE_1);
-			expect(fields[14]).toEqual(SERVICE_PROVIDER_NAME_1);
-			expect(fields[16]).toEqual('+6580000000');
+			expect(fields[11]).toEqual(citizenName);
+			expect(fields[12]).toEqual(citizenEmail);
+			expect(fields[14]).toEqual(NAME_SERVICE_1);
+			expect(fields[15]).toEqual(SERVICE_PROVIDER_NAME_1);
+			expect(fields[17]).toEqual('+6580000000');
 		});
 	});
 
