@@ -83,7 +83,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 		return dateField;
 	};
 
-	const createRadioListField = () => {
+	const createRadioListField = ({ isMandatory }: { isMandatory: boolean }) => {
 		const listOptions: DynamicKeyValueOption[] = [
 			{
 				key: 1,
@@ -94,13 +94,13 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 			serviceId: 1,
 			name: 'testDynamic',
 			options: listOptions,
-			isMandatory: true,
+			isMandatory,
 		});
 		field.id = 4;
 		return field;
 	};
 
-	const createCheckboxListField = () => {
+	const createCheckboxListField = ({ isMandatory }: { isMandatory: boolean }) => {
 		const listOptions: DynamicKeyValueOption[] = [
 			{
 				key: 'A',
@@ -123,7 +123,7 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 			serviceId: 1,
 			name: 'testDynamic',
 			options: listOptions,
-			isMandatory: true,
+			isMandatory,
 		});
 		field.id = 5;
 		return field;
@@ -634,9 +634,9 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 	});
 
 	describe('[Radio List]', () => {
-		it(`[RadioList] should map request value`, async () => {
+		it(`[Radio List] should map request value`, async () => {
 			DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
-				Promise.resolve([createRadioListField()]),
+				Promise.resolve([createRadioListField({ isMandatory: true })]),
 			);
 
 			const dynamicValue = new PersistDynamicValueContract();
@@ -661,18 +661,67 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 				],
 			} as MapRequestOptionalResult);
 		});
+
+		it(`[Radio List] should validate empty value when mandatory`, async () => {
+			DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
+				Promise.resolve([createRadioListField({ isMandatory: true })]),
+			);
+
+			const dynamicValue = new PersistDynamicValueContract();
+			dynamicValue.fieldIdSigned = '4';
+			dynamicValue.type = DynamicValueTypeContract.SingleSelection;
+
+			const mapper = Container.get(DynamicValuesRequestMapper);
+			const dynamicReturn = await mapper.mapDynamicValues([dynamicValue], [], 100);
+			expect(dynamicReturn).toEqual({
+				errorResult: [
+					new BusinessValidation({
+						code: '10202',
+						message: 'testDynamic field is required.',
+					}),
+				],
+			} as MapRequestOptionalResult);
+		});
+
+		it(`[Radio List] should allow empty value when NOT mandatory`, async () => {
+			DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
+				Promise.resolve([createRadioListField({ isMandatory: false })]),
+			);
+
+			const dynamicValue = new PersistDynamicValueContract();
+			dynamicValue.fieldIdSigned = '4';
+			dynamicValue.type = DynamicValueTypeContract.SingleSelection;
+
+			const mapper = Container.get(DynamicValuesRequestMapper);
+			const dynamicReturn = await mapper.mapDynamicValues([dynamicValue], [], 100);
+			expect(dynamicReturn).toEqual({
+				result: [
+					{
+						fieldId: 4,
+						fieldName: 'testDynamic',
+						type: 'SingleSelection',
+						origin: {
+							originType: 'bookingsg',
+						},
+					},
+				],
+			} as MapRequestOptionalResult);
+		});
 	});
 
 	describe('[Checkbox List]', () => {
 		it(`[Checkbox List] should map request value`, async () => {
 			DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
-				Promise.resolve([createCheckboxListField()]),
+				Promise.resolve([createCheckboxListField({ isMandatory: true })]),
 			);
 
 			const dynamicValue = new PersistDynamicValueContract();
 			dynamicValue.fieldIdSigned = '5';
 			dynamicValue.type = DynamicValueTypeContract.MultiSelection;
-			dynamicValue.multiSelection = [{ key: 'A' }, { key: 'D' }];
+			dynamicValue.multiSelection = [
+				{ key: 'A', value: 'this value should be ignored in the request' },
+				{ key: 'D' },
+			];
 
 			const mapper = Container.get(DynamicValuesRequestMapper);
 			const dynamicReturn = await mapper.mapDynamicValues([dynamicValue], [], 100);
@@ -695,6 +744,55 @@ describe('dynamicFields/dynamicValues.mapper', () => {
 							originType: 'bookingsg',
 						},
 						type: 'MultiSelection',
+					},
+				],
+			} as MapRequestOptionalResult);
+		});
+
+		it(`[Checkbox List] should validate empty value when mandatory`, async () => {
+			DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
+				Promise.resolve([createCheckboxListField({ isMandatory: true })]),
+			);
+
+			const dynamicValue = new PersistDynamicValueContract();
+			dynamicValue.fieldIdSigned = '5';
+			dynamicValue.type = DynamicValueTypeContract.MultiSelection;
+
+			const mapper = Container.get(DynamicValuesRequestMapper);
+			const dynamicReturn = await mapper.mapDynamicValues([dynamicValue], [], 100);
+
+			expect(dynamicReturn).toEqual({
+				errorResult: [
+					new BusinessValidation({
+						code: '10202',
+						message: 'testDynamic field is required.',
+					}),
+				],
+			} as MapRequestOptionalResult);
+		});
+
+		it(`[Checkbox List] should allow empty value when NOT mandatory`, async () => {
+			DynamicFieldsServiceMock.getServiceFields.mockImplementation(() =>
+				Promise.resolve([createCheckboxListField({ isMandatory: false })]),
+			);
+
+			const dynamicValue = new PersistDynamicValueContract();
+			dynamicValue.fieldIdSigned = '5';
+			dynamicValue.type = DynamicValueTypeContract.MultiSelection;
+
+			const mapper = Container.get(DynamicValuesRequestMapper);
+			const dynamicReturn = await mapper.mapDynamicValues([dynamicValue], [], 100);
+
+			expect(dynamicReturn).toEqual({
+				result: [
+					{
+						fieldId: 5,
+						fieldName: 'testDynamic',
+						type: 'MultiSelection',
+						multiSelection: [],
+						origin: {
+							originType: 'bookingsg',
+						},
 					},
 				],
 			} as MapRequestOptionalResult);

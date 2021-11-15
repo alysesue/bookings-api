@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CheckboxListDynamicField1636502564498 implements MigrationInterface {
-	name = 'CheckboxListDynamicField1636502564498';
+export class CheckboxListRadioListFields1636950904064 implements MigrationInterface {
+	name = 'CheckboxListRadioListFields1636950904064';
 
 	public async up(queryRunner: QueryRunner): Promise<void> {
 		await queryRunner.query(`ALTER TABLE "dynamic_field" ALTER COLUMN "_options" SET NOT NULL`);
@@ -9,7 +9,7 @@ export class CheckboxListDynamicField1636502564498 implements MigrationInterface
 			`ALTER TYPE "public"."dynamic_field__type_enum" RENAME TO "dynamic_field__type_enum_old"`,
 		);
 		await queryRunner.query(
-			`CREATE TYPE "public"."dynamic_field__type_enum" AS ENUM('SelectListDynamicField', 'TextDynamicField', 'DateOnlyDynamicField', 'MyInfoDynamicFieldType', 'CheckboxListDynamicField')`,
+			`CREATE TYPE "public"."dynamic_field__type_enum" AS ENUM('SelectListDynamicField', 'TextDynamicField', 'DateOnlyDynamicField', 'MyInfoDynamicFieldType', 'CheckboxListDynamicField', 'RadioListDynamicField')`,
 		);
 		await queryRunner.query(
 			`ALTER TABLE "dynamic_field" ALTER COLUMN "_type" TYPE "public"."dynamic_field__type_enum" USING "_type"::"text"::"public"."dynamic_field__type_enum"`,
