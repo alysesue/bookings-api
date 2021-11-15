@@ -64,10 +64,6 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitorAsync {
 		const selectedOption = _fieldWithOptions.options.find(
 			(o) => o.key === this._validationState._fieldValue.singleSelectionKey,
 		);
-		if (!selectedOption) {
-			this.checkMandatoryField(_fieldWithOptions);
-			return;
-		}
 
 		this._validationState._valueJson = {
 			...this._validationState._valueJson,
@@ -75,6 +71,11 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitorAsync {
 			SingleSelectionKey: selectedOption?.key,
 			SingleSelectionValue: selectedOption?.value,
 		};
+
+		if (!selectedOption) {
+			this.checkMandatoryField(_fieldWithOptions);
+			return;
+		}
 	}
 
 	async visitSelectList(_selectListField: SelectListDynamicField): Promise<void> {
@@ -103,16 +104,16 @@ export class DynamicValueRequestVisitor implements IDynamicFieldVisitorAsync {
 			}
 		}
 
-		if (selectedOptions.length === 0) {
-			this.checkMandatoryField(_checkboxListField);
-			return;
-		}
-
 		this._validationState._valueJson = {
 			...this._validationState._valueJson,
 			type: DynamicValueType.MultiSelection,
 			multiSelection: selectedOptions,
 		};
+
+		if (selectedOptions.length === 0) {
+			this.checkMandatoryField(_checkboxListField);
+			return;
+		}
 	}
 
 	private markFieldNotProvided(field: DynamicField): void {

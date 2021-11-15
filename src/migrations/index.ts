@@ -52,5 +52,4 @@ export { OnDeleteCascade1636444162404 } from './1636444162404-OnDeleteCascade';
 export { EventDefaults1636501334693 } from './1636501334693-EventDefaults';
 export { MandatoryEventTitle1636358550171 } from './1636358550171-MandatoryEventTitle';
 export { SalutationField1636342375459 } from './1636342375459-SalutationField';
-export { CheckboxListDynamicField1636502564498 } from './1636502564498-CheckboxListDynamicField';
-export { RadioListDynamicField1636593927491 } from './1636593927491-RadioListDynamicField';
+export { CheckboxListRadioListFields1636950904064 } from './1636950904064-CheckboxListRadioListFields';
