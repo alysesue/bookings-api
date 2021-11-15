@@ -128,7 +128,7 @@ export class BookingBuilder {
 	}
 
 	public withCitizenSalutation(salutation: Salutations): BookingBuilder {
-		this.citizenSalutation = this.citizenSalutation;
+		this.citizenSalutation = salutation;
 		return this;
 	}
 
