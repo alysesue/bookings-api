@@ -156,6 +156,7 @@ export class BookingsMapper {
 			createdDateTime: booking.createdLog?.timestamp,
 			serviceName: booking.service?.name,
 			citizenUinFin: await this.maskUinFin(booking),
+			citizenSalutation: booking.citizenSalutation,
 			citizenName: booking.citizenName,
 			citizenEmail: booking.citizenEmail,
 			citizenPhone: booking.citizenPhone,
@@ -214,6 +215,7 @@ export class BookingsMapper {
 			['Booking reference']: `${booking.refId}`,
 			['Dynamic Fields']: `${dynamicValues?.join('; ')}`,
 			['Citizen NRIC / FIN number']: `${await this.maskUinFin(booking)}`,
+			['Citizen Salutation']: `${booking.citizenSalutation}`,
 			['Citizen Name']: `${booking.citizenName}`,
 			['Citizen Email address']: `${booking.citizenEmail}`,
 			['Citizen Phone number']: `${booking.citizenPhone}`,
@@ -263,6 +265,7 @@ export class BookingsMapper {
 		booking.citizenPhone = request.citizenPhone;
 		booking.location = request.location;
 		booking.description = request.description;
+		booking.citizenSalutation = request.citizenSalutation;
 
 		booking.videoConferenceUrl = request.videoConferenceUrl || service.videoConferenceUrl;
 

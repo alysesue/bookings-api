@@ -69,6 +69,10 @@ export const ErrorsRef = (arg1?: string | number) => ({
 			code: '10017',
 			message: `Event is out of capacity`,
 		},
+		CitizenSalutationNotProvided: {
+			code: '10018',
+			message: 'Citizen salutation not provided',
+		},
 	},
 	// Business validation range: 10101-10199
 	oneOffTimeslot: {

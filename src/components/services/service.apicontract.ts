@@ -82,6 +82,7 @@ export class PartialAdditionalSettings {
 	public citizenAuthentication?: CitizenAuthenticationType[];
 	public isOnHold?: boolean;
 	public isStandAlone?: boolean;
+	public hasSalutations?: boolean;
 	public sendNotifications?: boolean;
 	public sendNotificationsToServiceProviders?: boolean;
 	public sendSMSNotifications?: boolean;
@@ -95,6 +96,7 @@ export class AdditionalSettings {
 	public citizenAuthentication: CitizenAuthenticationType[];
 	public isOnHold: boolean;
 	public isStandAlone: boolean;
+	public hasSalutations: boolean;
 	public sendNotifications: boolean;
 	public sendNotificationsToServiceProviders: boolean;
 	public sendSMSNotifications: boolean;

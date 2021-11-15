@@ -61,6 +61,7 @@ export class ServicesMapper {
 		additionalSettings.sendNotifications = service.sendNotifications;
 		additionalSettings.sendNotificationsToServiceProviders = service.sendNotificationsToServiceProviders;
 		additionalSettings.sendSMSNotifications = service.sendSMSNotifications;
+		additionalSettings.hasSalutations = service.hasSalutation;
 		return additionalSettings;
 	}
 
@@ -89,6 +90,7 @@ export class ServicesMapper {
 			sendNotifications,
 			sendNotificationsToServiceProviders,
 			sendSMSNotifications,
+			hasSalutations,
 		} = settings;
 
 		if (allowAnonymousBookings !== undefined) {
@@ -122,6 +124,10 @@ export class ServicesMapper {
 		}
 		if (sendSMSNotifications !== undefined) {
 			service.sendSMSNotifications = sendSMSNotifications;
+		}
+
+		if (hasSalutations !== undefined) {
+			service.hasSalutation = hasSalutations;
 		}
 	}
 

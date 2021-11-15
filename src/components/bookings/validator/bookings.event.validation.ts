@@ -76,6 +76,9 @@ abstract class BookingsEventValidator extends Validator<Booking> implements IBoo
 				yield BookingBusinessValidations.PhoneNumberNotValid;
 			}
 		}
+		if (booking.service.hasSalutation && !booking.citizenSalutation) {
+			yield BookingBusinessValidations.CitizenSalutationNotProvided;
+		}
 
 		if (this._customCitizenValidations.length > 0) {
 			yield* this._customCitizenValidations;

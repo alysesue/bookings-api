@@ -64,6 +64,10 @@ export class BookingBusinessValidations {
 		BookingBusinessValidations.errors.CitizenNameNotValid,
 	);
 
+	public static readonly CitizenSalutationNotProvided = new BusinessValidation(
+		BookingBusinessValidations.errors.CitizenSalutationNotProvided,
+	);
+
 	public static readonly EventCapacityUnavailable = new BusinessValidation(
 		BookingBusinessValidations.errors.EventCapacityUnavailable,
 	);
