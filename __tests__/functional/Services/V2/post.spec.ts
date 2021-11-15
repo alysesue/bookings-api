@@ -87,6 +87,7 @@ describe('Tests endpoint and populate data', () => {
 			sendNotifications: false,
 			sendNotificationsToServiceProviders: false,
 			sendSMSNotifications: false,
+			hasSalutations: false,
 		};
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post(
@@ -112,6 +113,7 @@ describe('Tests endpoint and populate data', () => {
 			sendNotifications: false,
 			sendNotificationsToServiceProviders: false,
 			sendSMSNotifications: false,
+			hasSalutations: false,
 		};
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post(
@@ -137,6 +139,7 @@ describe('Tests endpoint and populate data', () => {
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
 			sendSMSNotifications: true,
+			hasSalutations: true,
 		};
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post(
@@ -162,6 +165,7 @@ describe('Tests endpoint and populate data', () => {
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
 			sendSMSNotifications: true,
+			hasSalutations: true,
 		};
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post(
@@ -200,6 +204,7 @@ describe('Tests endpoint and populate data', () => {
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
 			sendSMSNotifications: false,
+			hasSalutations: false,
 		});
 	});
 
@@ -211,6 +216,7 @@ describe('Tests endpoint and populate data', () => {
 			sendNotifications: 'test notif',
 			sendNotificationsToServiceProviders: 'test notifSP',
 			sendSMSNotifications: 'test sms notif',
+			hasSalutations: 'test has salutations',
 		};
 
 		const response = await OrganisationAdminRequestEndpointSG.create({}).post(
@@ -231,6 +237,7 @@ describe('Tests endpoint and populate data', () => {
 		expect(responseData[`${responseKey}.sendNotificationsToServiceProviders`].message).toBe(
 			'invalid boolean value',
 		);
+		expect(responseData[`${responseKey}.hasSalutations`].message).toBe('invalid boolean value');
 		expect(responseData[`${responseKey}.sendSMSNotifications`].message).toBe('invalid boolean value');
 		expect(response.body.errorCode).toBe('SYS_INVALID_PARAM');
 	});
