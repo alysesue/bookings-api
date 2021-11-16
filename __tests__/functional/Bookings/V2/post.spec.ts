@@ -815,6 +815,16 @@ describe('Bookings functional tests', () => {
 		expect(bookingResponse.body.data).toEqual([{ code: '10018', message: 'Citizen salutation not provided' }]);
 	});
 
+	it('[Stand alone][Anonymous] - should reschedule booking as anonymous', async () => {
+		await pgClient.setServiceConfigurationStandAlone(unsignedServiceId, true);
+
+		const response = await postAnonymousBooking({}, true, true, true);
+
+		expect(response.statusCode).toBe(200);
+		expect(response.body.data.status).toBe(BookingStatus.OnHold);
+		expect(response.body.data.citizenUinFin).toEqual('S****377H');
+	});
+
 	it('should create multiple/bulk bookings', async () => {
 		const startDateTime_1 = new Date(Date.UTC(2051, 11, 10, 1, 0));
 		const endDateTime_1 = new Date(Date.UTC(2051, 11, 10, 2, 0));
