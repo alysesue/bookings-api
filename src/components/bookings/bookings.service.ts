@@ -47,7 +47,6 @@ import { EventsService } from '../events/events.service';
 import { BookingValidationType, BookingWorkflowType } from '../../models/bookingValidationType';
 import { BookingWorkflowsRepository } from '../bookingWorkflows/bookingWorkflows.repository';
 import { BookingsEventValidatorFactory } from './validator/bookings.event.validation';
-import { LocalDateTime } from '@js-joda/core';
 
 @InRequestScope
 export class BookingsService {
@@ -827,18 +826,12 @@ export class BookingsService {
 	}
 
 	public async sendBookingsToLifeSG(request: SendBookingsToLifeSGRequest): Promise<any> {
-		const { serviceName, serviceId, fromDateTime = LocalDateTime.now() } = request;
+		const { serviceId } = request;
 
-		if (!serviceName && !serviceId) {
-			//throw error `pls provide serviceName or serviceId`
-		}
-		//get bookings
-		//filter by: serviceName serviceId, fromDateTime, booking status??
+		// get bookings
 		const searchRequest = {
-			// serviceName,
-			// from: fromDateTime,
-			// statuses: [], //BookingStatus[];
-			// serviceId,
+			serviceId,
+			statuses: [BookingStatus.Accepted],
 			page: null,
 			limit: null,
 		};
@@ -854,7 +847,7 @@ export class BookingsService {
 			if (!booking.videoConferenceUrl) {
 				result.failed++;
 				result.errors.push({
-					bookingId: '',
+					bookingId: booking.id,
 					error: 'videoConferenceUrl is required',
 				});
 				return;
@@ -868,7 +861,6 @@ export class BookingsService {
 			// LifeSGMQSerice.send(appointment, action);
 
 			// or
-
 			// this.lifeSGObserver.update({
 			// 	booking,
 			// 	bookingType: BookingType.Created,
@@ -876,7 +868,7 @@ export class BookingsService {
 			// })
 			result.sent++;
 		});
-		return [];
+		return result;
 	}
 }
 

@@ -73,9 +73,7 @@ export class ValidateOnHoldRequest extends BookingDetailsRequest {
 }
 
 export class SendBookingsToLifeSGRequest {
-	serviceName?: string;
-	serviceId?: string;
-	fromDateTime?: Date;
+	serviceId: number;
 }
 
 export class BookingResponseBase {
