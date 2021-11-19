@@ -36,6 +36,7 @@ import {
 	BookingUpdateRequestV1,
 	ValidateOnHoldRequest,
 	BookingDetailsRequest,
+	SendBookingsToLifeSGRequest,
 } from './bookings.apicontract';
 import { BookingsRepository } from './bookings.repository';
 import { BookingType } from '../../models/bookingType';
@@ -46,6 +47,7 @@ import { EventsService } from '../events/events.service';
 import { BookingValidationType, BookingWorkflowType } from '../../models/bookingValidationType';
 import { BookingWorkflowsRepository } from '../bookingWorkflows/bookingWorkflows.repository';
 import { BookingsEventValidatorFactory } from './validator/bookings.event.validation';
+import { LocalDateTime } from '@js-joda/core';
 
 @InRequestScope
 export class BookingsService {
@@ -822,6 +824,59 @@ export class BookingsService {
 
 		await this.bookingsRepository.update(newBooking);
 		return [ChangeLogAction.UpdateUser, newBooking];
+	}
+
+	public async sendBookingsToLifeSG(request: SendBookingsToLifeSGRequest): Promise<any> {
+		const { serviceName, serviceId, fromDateTime = LocalDateTime.now() } = request;
+
+		if (!serviceName && !serviceId) {
+			//throw error `pls provide serviceName or serviceId`
+		}
+		//get bookings
+		//filter by: serviceName serviceId, fromDateTime, booking status??
+		const searchRequest = {
+			// serviceName,
+			// from: fromDateTime,
+			// statuses: [], //BookingStatus[];
+			// serviceId,
+			page: null,
+			limit: null,
+		};
+		const bookings: Booking[] = await this.searchBookingsReturnAll(searchRequest);
+
+		const result = {
+			sent: 0,
+			failed: 0,
+			errors: [],
+		};
+
+		bookings.forEach((booking) => {
+			if (!booking.videoConferenceUrl) {
+				result.failed++;
+				result.errors.push({
+					bookingId: '',
+					error: 'videoConferenceUrl is required',
+				});
+				return;
+			}
+
+			// send to LifeSgMQ
+
+			// const action = ExternalAgencyAppointmentJobAction.CREATE;
+			// const appointment = LifeSGMapper.mapLifeSGAppointment(booking, BookingType.Created, action);
+			// console.log('JASMINE LifeSGObserver appointment', JSON.stringify(appointment));
+			// LifeSGMQSerice.send(appointment, action);
+
+			// or
+
+			// this.lifeSGObserver.update({
+			// 	booking,
+			// 	bookingType: BookingType.Created,
+			// 	action: ExternalAgencyAppointmentJobAction.CREATE,
+			// })
+			result.sent++;
+		});
+		return [];
 	}
 }
 

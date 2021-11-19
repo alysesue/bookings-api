@@ -45,6 +45,7 @@ import {
 	BookingProviderResponseV2,
 	BookingChangeUser,
 	ValidateOnHoldRequest,
+	SendBookingsToLifeSGRequest,
 } from './bookings.apicontract';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
@@ -873,5 +874,18 @@ export class BookingsControllerV2 extends Controller {
 		const unsignedBookingId = this.idHasher.decode(bookingId);
 		const booking = await this.bookingsService.validateOnHoldBooking(unsignedBookingId, bookingRequest);
 		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking));
+	}
+
+	/**
+	 * Migrates HDB VC bookings to LifeSG.
+	 * It will get a list of future HDB VC bookings and send it to LifeSG MQ
+	 */
+	@Post('lifesg')
+	@BookingSGAuth({ admin: {}, agency: {} })
+	@SuccessResponse(200, 'Ok')
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async sendBookingsToLifeSG(@Body() request: SendBookingsToLifeSGRequest): Promise<any> {
+		const result = await this.bookingsService.sendBookingsToLifeSG(request);
+		return result;
 	}
 }
