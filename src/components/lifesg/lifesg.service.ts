@@ -43,7 +43,9 @@ export class LifeSGMQSerice {
 				});
 				context.sender.send({ body });
 				context.connection.close();
-				logger.info(`[LifeSGMQSerice] data sent to ${LIFESG_QUEUE}: ${stringifiedPayload}`);
+				logger.info(
+					`[LifeSGMQSerice] data sent to ${LIFESG_QUEUE}, action: ${action}, agency: ${appointment.agency}, agencyTransactionId: ${appointment.agencyTransactionId}`,
+				);
 			});
 		} catch (error) {
 			logger.error('Error sending appointment to lifesg', { error });
