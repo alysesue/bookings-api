@@ -47,9 +47,13 @@ import { EventsService } from '../events/events.service';
 import { BookingValidationType, BookingWorkflowType } from '../../models/bookingValidationType';
 import { BookingWorkflowsRepository } from '../bookingWorkflows/bookingWorkflows.repository';
 import { BookingsEventValidatorFactory } from './validator/bookings.event.validation';
+import { LifeSGMapper } from '../lifesg/lifesg.mapper';
+import { LifeSGMQSerice } from '../lifesg/lifesg.service';
 
 @InRequestScope
 export class BookingsService {
+	@Inject
+	private lifeSGMQSerice: LifeSGMQSerice;
 	@Inject
 	private bookingsSubject: BookingsSubject;
 	@Inject
@@ -837,38 +841,20 @@ export class BookingsService {
 		};
 		const bookings: Booking[] = await this.searchBookingsReturnAll(searchRequest);
 
-		const result = {
-			sent: 0,
-			failed: 0,
-			errors: [],
-		};
-
+		const appointments = [];
 		bookings.forEach((booking) => {
-			if (!booking.videoConferenceUrl) {
-				result.failed++;
-				result.errors.push({
-					bookingId: booking.id,
-					error: 'videoConferenceUrl is required',
-				});
-				return;
-			}
-
-			// send to LifeSgMQ
-
-			// const action = ExternalAgencyAppointmentJobAction.CREATE;
-			// const appointment = LifeSGMapper.mapLifeSGAppointment(booking, BookingType.Created, action);
-			// console.log('JASMINE LifeSGObserver appointment', JSON.stringify(appointment));
-			// LifeSGMQSerice.send(appointment, action);
-
-			// or
-			// this.lifeSGObserver.update({
-			// 	booking,
-			// 	bookingType: BookingType.Created,
-			// 	action: ExternalAgencyAppointmentJobAction.CREATE,
-			// })
-			result.sent++;
+			appointments.push({
+				appointment: LifeSGMapper.mapLifeSGAppointment(
+					booking,
+					BookingType.Created,
+					ExternalAgencyAppointmentJobAction.CREATE,
+				),
+				action: ExternalAgencyAppointmentJobAction.CREATE,
+			});
 		});
-		return result;
+
+		this.lifeSGMQSerice.sendMultiple(appointments);
+		return `LifeSg Appointment(s) sent.`;
 	}
 }
 
