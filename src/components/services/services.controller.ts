@@ -367,6 +367,9 @@ export class ServicesControllerV2 extends Controller {
 			includeLabelCategories,
 			includeLabels,
 		});
+		console.log('==============================================')
+		console.dir(service, { depth: null, colors: true });
+
 		return ApiDataFactory.create(this.serviceMapper.mapToServiceResponseV2(service, includeOrganisationId));
 	}
 

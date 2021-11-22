@@ -10,6 +10,7 @@ export class UserContextMock implements Partial<UserContext> {
 	public static getFirstAuthorisedOrganisation = jest.fn<Promise<Organisation>, any>();
 	public static getOtpAddOnMobileNo = jest.fn<string | undefined, any>();
 	public static getMyInfo = jest.fn<Promise<MyInfoResponse | undefined>, any>();
+	public static verifyAndGetFirstAuthorisedOrganisation = jest.fn<Promise<Organisation>, any>();
 
 	public init() {}
 

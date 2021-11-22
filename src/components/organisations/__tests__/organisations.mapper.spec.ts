@@ -7,7 +7,7 @@ import {
 	ServiceProviderLabelResponseModel,
 } from '../../../components/serviceProvidersLabels/serviceProvidersLabels.apicontract';
 import { OrganisationsMapper } from '../organisations.mapper';
-import { Organisation } from '../../../models';
+import {Organisation, ServiceProviderLabel, ServiceProviderLabelCategory} from '../../../models';
 import { OrganisationSettingsResponse } from '../organisations.apicontract';
 
 afterAll(() => {
@@ -40,4 +40,32 @@ describe('Organisations mapper', () => {
 		const result = Container.get(OrganisationsMapper).mapToOrganisationSettings(new Organisation());
 		expect(result).toEqual(organisationSettings);
 	});
-});
+
+	it('return organisation settings response', () => {
+		const label = ServiceProviderLabel.create('label', 1);
+		const result = Container.get(OrganisationsMapper).mapToOrganisationLabels([label], [ServiceProviderLabelCategory.create('name', [label], 1)]);
+		expect(result).toEqual({
+			"categories": [
+				{
+					"categoryName": "Language",
+					"id": "hashCategoryId",
+					"labels": [
+						{
+							"id": "hashLabelId",
+							"name": "English",
+							"organisationId": "orgId"
+						}
+					],
+					"organisationId": "orgId"
+				}
+			],
+			"labels": [
+				{
+					"id": "hashLabelId",
+					"name": "English",
+					"organisationId": "orgId"
+				}
+			]
+		});
+	});
+})

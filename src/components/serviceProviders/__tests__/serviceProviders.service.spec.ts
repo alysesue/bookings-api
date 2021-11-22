@@ -674,4 +674,21 @@ describe('ServiceProviders.Service', () => {
 		const result = await serviceProvidersService.getServiceProvidersByName('mon', 1);
 		expect(result.length).toBe(1);
 	});
+
+	it('Should test filterServiceProviderByLabels', async () => {
+		SPLabelsCategoriesServiceMock.fetchSpLabelsAndSpCategories.mockReturnValue(
+			Promise.resolve({spLabels: [], spCategories: []}),
+		);
+		SPLabelsCategoriesServiceMock.filterSpLabelsByLabelsIdSelected.mockReturnValue(
+			[[{"id": 1, "labelText": "labels"}], [{"id": 2, "labelText": "toto"}, {"id": 5, "labelText": "ono"}]] as ServiceProviderLabel[][],
+		);
+	    const serviceProvider1 = {id: 1, name: 'name', labels: [{id: 1}]} as ServiceProvider
+		const serviceProvider2 = {id: 2, name: 'name2', labels: [{id: 1},{id: 2}]} as ServiceProvider
+		const serviceProvider3 = {id: 3, name: 'name3', labels: []} as ServiceProvider
+		const serviceProvider4 = {id: 4, name: 'name4', labels: [{id: 2}]} as ServiceProvider
+		const serviceProviders = [serviceProvider1, serviceProvider2, serviceProvider3, serviceProvider4]
+		const serviceProvidersService = Container.get(ServiceProvidersService);
+		const result = await serviceProvidersService.filterServiceProviderByLabels(1, [1, 2, 5], serviceProviders);
+		expect(result).toEqual([serviceProvider2]);
+	})
 });

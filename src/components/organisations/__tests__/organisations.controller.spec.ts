@@ -11,6 +11,7 @@ import { OrganisationSettingsRequest, OrganisationSettingsResponse } from '../or
 import { OrganisationsControllerV2 } from '../organisations.controller';
 import { OrganisationSettingsServiceMock } from '../__mocks__/organisations.settings.service.mock';
 import { OrganisationSettingsService } from '../organisations.settings.service';
+import {ServiceProviderLabelResponse} from "../../serviceProvidersLabels/serviceProvidersLabels.apicontract";
 
 describe('Organisations.controller', () => {
 	beforeAll(() => {
@@ -34,6 +35,17 @@ describe('Organisations.controller', () => {
 		const providerScheduleFormRequest = new ScheduleFormRequest();
 		await Container.get(ServiceProvidersController).setServiceScheduleForm(1, providerScheduleFormRequest);
 		expect(ServiceProvidersMock.setProvidersScheduleForm).toBeCalled();
+	});
+
+	it('should get organisation labels', async () => {
+		OrganisationSettingsServiceMock.getLabels.mockReturnValue(Promise.resolve({labels: [], categories: []}));
+		OrganisationsMapperMock.mapToOrganisationLabels.mockImplementation(() => new ServiceProviderLabelResponse());
+
+		const response = await Container.get(OrganisationsControllerV2).getOrganisationLabels('hashId');
+		expect(IdHasherMock.decode).toBeCalledTimes(1);
+		expect(OrganisationSettingsServiceMock.getLabels).toBeCalledTimes(1);
+		expect(OrganisationsMapperMock.mapToOrganisationLabels).toBeCalledTimes(1);
+		expect(response).toBeDefined();
 	});
 
 	it('should get organisation settings', async () => {

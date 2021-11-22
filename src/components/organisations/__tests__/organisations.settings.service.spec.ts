@@ -25,7 +25,8 @@ import {
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { OrganisationSettingsRequest } from '../../../components/organisations/organisations.apicontract';
 import { ServiceProviderLabelRequest } from '../../../components/serviceProvidersLabels/serviceProvidersLabels.apicontract';
-import { OrganisationsActionAuthVisitor } from '../organisations.auth';
+import {OrganisationsActionAuthVisitor, OrganisationsAuthOtherAction} from '../organisations.auth';
+import {CrudAction} from "../../../enums/crudAction";
 
 jest.mock('../organisations.auth');
 
@@ -109,7 +110,17 @@ describe('Organisation Settings API', () => {
 			it('should return organisation', async () => {
 				OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(organisation);
 				const result = await Container.get(OrganisationSettingsService).getOrgSettings(1);
+				expect((OrganisationsActionAuthVisitor as jest.Mock).mock.calls[0][1]).toBe(CrudAction.Read);
 				expect(result).toBe(organisation);
+			});
+		});
+
+		describe('getLabels API', () => {
+			it('should return organisation', async () => {
+				OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(organisation);
+				const result = await Container.get(OrganisationSettingsService).getLabels(1);
+				expect((OrganisationsActionAuthVisitor as jest.Mock).mock.calls[0][1]).toBe(OrganisationsAuthOtherAction.someRead);
+				expect(result).toStrictEqual({categories: organisation.categories, labels: organisation.labels});
 			});
 		});
 
