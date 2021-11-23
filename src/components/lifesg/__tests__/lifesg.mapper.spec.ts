@@ -26,6 +26,7 @@ describe('Test lifesg mq observer', () => {
 			bookingMock,
 			bookingType,
 			ExternalAgencyAppointmentJobAction.CREATE,
+			AppointmentAgency.HDBVC_BSG,
 		);
 
 		expect(mappedLifeSGAppt).toBeInstanceOf(CreateAppointmentRequestApiDomainWithIsCancelled);
@@ -81,6 +82,7 @@ describe('Test lifesg mq observer', () => {
 			bookingMock,
 			bookingType,
 			ExternalAgencyAppointmentJobAction.UPDATE,
+			AppointmentAgency.HDBVC_BSG,
 		);
 		expect(mappedLifeSGAppt).toBeInstanceOf(CreateAppointmentRequestApiDomain);
 		if (mappedLifeSGAppt instanceof CreateAppointmentRequestApiDomain) {
@@ -126,6 +128,7 @@ describe('Test lifesg mq observer', () => {
 			bookingMock,
 			bookingType,
 			ExternalAgencyAppointmentJobAction.CANCEL,
+			AppointmentAgency.HDBVC_BSG,
 		);
 		expect(mappedCanceledBooking).toBeInstanceOf(CancelAppointmentRequestApiDomain);
 		if (mappedCanceledBooking instanceof CancelAppointmentRequestApiDomain) {
@@ -157,6 +160,7 @@ describe('Test lifesg mq observer', () => {
 			bookingMock,
 			bookingType,
 			ExternalAgencyAppointmentJobAction.DELETE,
+			AppointmentAgency.HDBVC_BSG,
 		);
 		expect(mappedDeletedBooking).toBeInstanceOf(DeleteAppointmentRequestApiDomain);
 		if (mappedDeletedBooking instanceof DeleteAppointmentRequestApiDomain) {
