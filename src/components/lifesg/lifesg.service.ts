@@ -12,11 +12,7 @@ import { UpdateAppointmentRequestApiDomain } from 'mol-lib-api-contract/appointm
 @InRequestScope
 export class LifeSGMQSerice {
 	public async send(
-		appointment:
-			| CreateAppointmentRequestApiDomain
-			| CancelAppointmentRequestApiDomain
-			| DeleteAppointmentRequestApiDomain
-			| UpdateAppointmentRequestApiDomain,
+		appointment: CreateAppointmentRequestApiDomain | DeleteAppointmentRequestApiDomain,
 		action: ExternalAgencyAppointmentJobAction,
 	) {
 		const LIFESG_QUEUE = 'ExternalAgencyAppointment';

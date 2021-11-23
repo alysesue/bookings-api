@@ -19,17 +19,15 @@ export class LifeSGMapper {
 		booking: Booking,
 		bookingType: BookingType,
 		action: ExternalAgencyAppointmentJobAction,
-	):
-		| CreateAppointmentRequestApiDomainWithIsCancelled
-		| CancelAppointmentRequestApiDomain
-		| DeleteAppointmentRequestApiDomain {
+		agency: AppointmentAgency,
+	): CreateAppointmentRequestApiDomainWithIsCancelled | DeleteAppointmentRequestApiDomain {
 		switch (action) {
 			case ExternalAgencyAppointmentJobAction.CREATE:
 			case ExternalAgencyAppointmentJobAction.UPDATE:
 				return new CreateAppointmentRequestApiDomainWithIsCancelled({
-					agency: AppointmentAgency.HDBVC_BSG,
+					agency,
 					agencyTransactionId: booking.id.toString(),
-					...(action === ExternalAgencyAppointmentJobAction.CREATE && { uinfin: booking.citizenUinFin }),
+					...(action === ExternalAgencyAppointmentJobAction.CREATE && { uinfin: booking.citizenUinFin }), // For updates, LifeSG appointment services does not accept uinfin
 					date: LocalDate.of(
 						booking.startDateTime.getFullYear(),
 						booking.startDateTime.getMonth() + 1,
@@ -47,7 +45,7 @@ export class LifeSGMapper {
 				});
 			case ExternalAgencyAppointmentJobAction.DELETE:
 				return new DeleteAppointmentRequestApiDomain({
-					agency: AppointmentAgency.HDBVC_BSG,
+					agency,
 					agencyTransactionId: booking.id.toString(),
 					uinfin: booking.citizenUinFin,
 					agencyLastUpdatedAt: LocalDateTime.now(),

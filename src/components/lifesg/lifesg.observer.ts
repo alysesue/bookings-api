@@ -32,7 +32,13 @@ export class LifeSGObserver implements IObserver {
 			[BookingStatus.Accepted, BookingStatus.Cancelled].includes(subject.booking.status)
 		) {
 			this.lifeSGMQSerice.send(
-				LifeSGMapper.mapLifeSGAppointment(subject.booking, subject.bookingType, subject.action),
+				LifeSGMapper.mapLifeSGAppointment(
+					subject.booking,
+					subject.bookingType,
+					subject.action,
+					// NOTE: Hardcoded to HDBVC_BSG to complete the HDB-VC requirements in time. This needs to be revisited when other agencies wants to pipe data to LifeSG
+					AppointmentAgency.HDBVC_BSG,
+				),
 				subject.action,
 			);
 		}
