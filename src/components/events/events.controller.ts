@@ -136,9 +136,6 @@ export class EventsController extends Controller {
 	@BookingSGAuth({ admin: {}, agency: {} })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async post(@Body() eventRequest: EventRequest): Promise<ApiData<EventResponse>> {
-		console.log('============================')
-	    console.dir(eventRequest, { depth: null, colors: true });
-
 		const event = await this.eventsService.saveEvent(eventRequest);
 		this.setStatus(201);
 		return ApiDataFactory.create(this.eventsMapper.mapToResponse(event));
