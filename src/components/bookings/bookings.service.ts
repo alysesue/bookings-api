@@ -301,11 +301,11 @@ export class BookingsService {
 			this.getBookingInternal.bind(this),
 			saveAction,
 		);
-		// this.bookingsSubject.notify({
-		// 	booking,
-		// 	bookingType: BookingType.Created,
-		// 	action: ExternalAgencyAppointmentJobAction.CREATE,
-		// });
+		this.bookingsSubject.notify({
+			booking,
+			bookingType: BookingType.Created,
+			action: ExternalAgencyAppointmentJobAction.CREATE,
+		});
 		return booking;
 	}
 

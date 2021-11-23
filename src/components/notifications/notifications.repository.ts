@@ -10,6 +10,9 @@ export class NotificationsRepository {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Invalid request`);
 		}
 		const type = EmailNotificationTemplateType[emailTemplateType].toString();
+		if (type.includes('Event')) {
+			return defaultTemplates.email['DefaultEventNotification'];
+		}
 		return defaultTemplates.email[type];
 	}
 }

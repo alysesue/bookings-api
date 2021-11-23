@@ -16,10 +16,11 @@ export class BookedSlotRepository extends RepositoryBase<BookedSlot> {
 
 	public async getBookedSlotByBooking(bookingId: number): Promise<BookedSlot[]> {
 		const repository = await this.getRepository();
-		return await repository.find({
-			where: {
-				_bookingId: bookingId,
-			},
-		});
+
+		return await repository
+			.createQueryBuilder('bookedSlots')
+			.where('bookedSlots._bookingId = :bookingId', { bookingId })
+			.leftJoinAndSelect('bookedSlots._serviceProvider', 'serviceProvider')
+			.getMany();
 	}
 }

@@ -1,21 +1,26 @@
 import { Booking } from '../../models';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { BookingStatusDisplayedInEmails } from '../../models/bookingStatus';
+import { EmailNotificationTemplateType, EmailRecipient } from './notifications.enum';
+import { defaultTemplates } from './templates/defaultNotificationTemplate';
 
-export interface EmailData {
+export class EmailData {
 	status: string;
 	serviceName: string;
 	serviceProviderName: string;
 	spNameDisplayedForServiceProvider: string;
 	spNameDisplayedForCitizen: string;
 	location: string;
-	locationText: string;
 	day: string;
 	time: string;
+	dateTimeServiceProvider?: string;
 	videoConferenceUrl?: string;
 	reasonToReject?: string;
 	serviceProviderAliasName?: string;
 	manageBookingLink?: string;
+	eventUpdateDescription?: string;
+	eventName?: string;
+	eventSummaryDescription?: string;
 }
 
 export interface MailOptions {
@@ -28,7 +33,7 @@ export interface MailOptions {
 	html: string;
 }
 
-export const emailMapper = (data: Booking, isSMS = false, appURL?: string): EmailData => {
+const commonMapper = (data: Booking, isSMS = false, appURL?: string): Partial<EmailData> => {
 	const status = BookingStatusDisplayedInEmails[data.status];
 	const serviceName = data.service?.name || '';
 	const serviceProviderName = data.serviceProvider?.name;
@@ -39,9 +44,31 @@ export const emailMapper = (data: Booking, isSMS = false, appURL?: string): Emai
 		? ` - ${serviceProviderName}`
 		: '';
 	const spNameDisplayedForServiceProvider = serviceProviderName ? ` - ${serviceProviderName}` : '';
-	const location = data.location;
 	const reasonToReject = data.reasonToReject ? `<br/>Reason: ${data.reasonToReject}.` : '';
-	let locationText = location ? `Location: <b>${location}</b>` : '';
+	let location = data.location ? `Location: <b>${data.location}</b>` : '';
+
+	if (location.length && isSMS) {
+		location = `Location: ${data.location}`;
+	}
+
+	const manageBookingURL = `${appURL}/public/my-bookings/?bookingToken=${data.uuid}`;
+	const manageBookingLink = manageBookingURL ? `<a href='${manageBookingURL}'>Reschedule / Cancel Booking</a>` : '';
+
+	return {
+		status,
+		serviceName,
+		serviceProviderName,
+		spNameDisplayedForCitizen,
+		spNameDisplayedForServiceProvider,
+		location,
+		reasonToReject,
+		serviceProviderAliasName,
+		manageBookingLink,
+	};
+};
+
+export const emailMapper = (data: Booking, isSMS = false, appURL?: string): Partial<EmailData> => {
+	const commonData = commonMapper(data, isSMS, appURL);
 	const day = DateHelper.getDateFormat(data.startDateTime);
 	const time = `${DateHelper.getTime12hFormatString(data.startDateTime)} - ${DateHelper.getTime12hFormatString(
 		data.endDateTime,
@@ -55,33 +82,52 @@ export const emailMapper = (data: Booking, isSMS = false, appURL?: string): Emai
 	}
 	let videoConferenceUrl = vcLink ? `Video Conference Link: <a href='${vcLink}'>${vcLink}</a>` : '';
 
-	if (locationText.length && isSMS) {
-		locationText = `Location: ${location}`;
-	}
 	if (videoConferenceUrl && isSMS) {
 		videoConferenceUrl = `Video Conference Link:${vcLink}`;
 	}
-	const manageBookingURL = `${appURL}/public/my-bookings/?bookingToken=${data.uuid}`;
-	const manageBookingLink = manageBookingURL ? `<a href='${manageBookingURL}'>Reschedule / Cancel Booking</a>` : '';
 
 	return {
-		status,
-		serviceName,
-		serviceProviderName,
-		spNameDisplayedForCitizen,
-		spNameDisplayedForServiceProvider,
-		location,
-		locationText,
+		...commonData,
 		day,
 		time,
 		videoConferenceUrl,
-		reasonToReject,
-		serviceProviderAliasName,
-		manageBookingLink,
 	};
 };
 
-export const mapVariablesValuesToDefaultTemplate = (mapValues: EmailData, template: string): string => {
+export const eventEmailMapper = (
+	data: Booking,
+	emailTemplateType: EmailNotificationTemplateType,
+	isSMS = false,
+	appURL?: string,
+): Partial<EmailData> => {
+	const commonData = commonMapper(data, isSMS, appURL);
+	let dateTimeServiceProvider = '';
+	data.bookedSlots.map((slot) => {
+		dateTimeServiceProvider += `${DateHelper.getDateFormat(
+			slot.startDateTime,
+		)}, ${DateHelper.getTime12hFormatString(data.startDateTime)} - ${DateHelper.getTime12hFormatString(
+			data.endDateTime,
+		)} - ${slot.serviceProvider.name}<br>`;
+	});
+
+	const eventName = data.event.title;
+	const type = EmailNotificationTemplateType[emailTemplateType].toString();
+	const eventUpdateDescription = defaultTemplates.eventUpdateDescription[type];
+	const eventSummaryDescription = defaultTemplates.eventSummaryDescription[type];
+	return {
+		...commonData,
+		dateTimeServiceProvider,
+		eventName,
+		eventUpdateDescription,
+		eventSummaryDescription,
+	};
+};
+
+export const mapVariablesValuesToTemplate = (
+	mapValues: Partial<EmailData>,
+	template: string,
+	receipient: EmailRecipient,
+): string => {
 	const {
 		serviceName,
 		spNameDisplayedForCitizen,
@@ -89,10 +135,14 @@ export const mapVariablesValuesToDefaultTemplate = (mapValues: EmailData, templa
 		status,
 		day,
 		time,
-		locationText,
+		location,
 		videoConferenceUrl,
 		reasonToReject,
 		manageBookingLink,
+		dateTimeServiceProvider,
+		eventName,
+		eventUpdateDescription,
+		eventSummaryDescription,
 	} = mapValues;
 
 	const mapVariables = {
@@ -102,44 +152,14 @@ export const mapVariablesValuesToDefaultTemplate = (mapValues: EmailData, templa
 		'{status}': status,
 		'{day}': day,
 		'{time}': time,
-		'{locationText}': locationText,
-		'{videoConferenceUrl}': videoConferenceUrl,
-		'{reasonToReject}': reasonToReject,
-		'{manageBookingLink}': manageBookingLink,
-	};
-
-	for (const key of Object.keys(mapVariables)) {
-		template = template.replace(new RegExp(key, 'g'), mapVariables[key]);
-	}
-
-	return template;
-};
-
-export const mapVariablesValuesToServiceTemplate = (mapValues: EmailData, template: string): string => {
-	const {
-		status,
-		serviceName,
-		serviceProviderName,
-		serviceProviderAliasName,
-		location,
-		day,
-		time,
-		videoConferenceUrl,
-		reasonToReject,
-		manageBookingLink,
-	} = mapValues;
-
-	const mapVariables = {
-		'{status}': status,
-		'{serviceName}': serviceName,
-		'{serviceProviderName}': serviceProviderName,
-		'{serviceProviderAliasName}': serviceProviderAliasName,
 		'{location}': location,
-		'{day}': day,
-		'{time}': time,
 		'{videoConferenceUrl}': videoConferenceUrl,
 		'{reasonToReject}': reasonToReject,
-		'{manageBookingLink}': manageBookingLink,
+		'{manageBookingLink}': receipient === EmailRecipient.Citizen ? manageBookingLink : '',
+		'{dateTimeServiceProvider}': dateTimeServiceProvider,
+		'{eventName}': eventName,
+		'{eventUpdateDescription}': eventUpdateDescription,
+		'{eventSummaryDescription}': eventSummaryDescription,
 	};
 
 	for (const key of Object.keys(mapVariables)) {
