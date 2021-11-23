@@ -50,8 +50,6 @@ export class BookingBuilder {
 	public markOnHold: boolean;
 	public reasonToReject: string;
 	public pendingSA: boolean;
-	public address: string;
-	public postalCode: string;
 
 	public withPendingSA(pendingSA: boolean): BookingBuilder {
 		this.pendingSA = pendingSA;
@@ -162,17 +160,6 @@ export class BookingBuilder {
 		this.markOnHold = markOnHold;
 		return this;
 	}
-
-	public withAddress(address: string): BookingBuilder {
-		this.address = address;
-		return this;
-	}
-
-	public withPostalCode(postalCode: string): BookingBuilder {
-		this.postalCode = postalCode;
-		return this;
-	}
-
 	public build(): Booking {
 		const instance = new Booking();
 
