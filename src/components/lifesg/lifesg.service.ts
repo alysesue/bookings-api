@@ -37,11 +37,15 @@ export class LifeSGMQSerice {
 			container.once('sender_open', (context) => {
 				const stringifiedPayload = JSON.stringify({ action, appointment });
 				const body = amqp_message.data_section(Buffer.from(stringifiedPayload, 'utf8'));
+				logger.info('Sending appointment to lifesg', {
+					action,
+					id: `${appointment.agency}-${appointment.agencyTransactionId}`,
+				});
 				context.sender.send({ body });
 				context.connection.close();
 			});
 		} catch (error) {
-			logger.error(error);
+			logger.error('Error sending appointment to lifesg', { error });
 		}
 	}
 }
