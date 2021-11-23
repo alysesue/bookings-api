@@ -8,6 +8,8 @@ import { OrganisationSettingsRequest, OrganisationSettingsResponse } from './org
 import { ApiData, ApiDataFactory } from '../../apicontract';
 import { OrganisationsMapper } from './organisations.mapper';
 import { OrganisationSettingsService } from './organisations.settings.service';
+import {ServiceProviderLabelResponse} from "../serviceProvidersLabels/serviceProvidersLabels.apicontract";
+import {MOLUserAuthLevel} from "mol-lib-api-contract/auth/auth-forwarder/common/MOLUserAuthLevel";
 
 @InRequestScope
 @Route('v1/organisations')
@@ -79,6 +81,22 @@ export class OrganisationsControllerV2 extends Controller {
 		const unsignedOrgId = this.idHasher.decode(orgId);
 		const settings = await this.organisationSettingsService.getOrgSettings(unsignedOrgId);
 		return ApiDataFactory.create(this.organisationsMapper.mapToOrganisationSettings(settings));
+	}
+
+	/**
+	 * Get labels organisation settings
+	 *
+	 * @param orgId id organisation
+	 *
+	 */
+	@Get('{orgId}/settings/labels')
+	@SuccessResponse(200, 'Ok')
+	@MOLAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 } })
+	@Response(401, 'Valid authentication types: [admin,agency]')
+	public async getOrganisationLabels(@Path() orgId: string): Promise<ApiData<ServiceProviderLabelResponse>> {
+		const unsignedOrgId = this.idHasher.decode(orgId);
+		const res = await this.organisationSettingsService.getLabels(unsignedOrgId);
+		return ApiDataFactory.create(this.organisationsMapper.mapToOrganisationLabels(res.labels, res.categories));
 	}
 
 	/**

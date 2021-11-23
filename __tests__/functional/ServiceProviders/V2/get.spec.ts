@@ -145,11 +145,11 @@ describe('Service providers functional tests - get', () => {
 		expect(response.body.data.length).toEqual(1);
 
 		response = await OrganisationAdminRequestEndpointSG.create({ serviceId: service.id }).get(
-			`/service-providers?labelIds=${tennisId}&labelIds=${label1Id}`,
+			`/service-providers?labelIds=${boxeId}&labelIds=${label1Id}&labelIds=${tennisId}`,
 			{},
 			'V2',
 		);
+		expect(response.body.data.length).toEqual(1);
 
-		expect(response.body.data.length).toEqual(0);
 	});
 });

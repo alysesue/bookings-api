@@ -1,11 +1,11 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { SelectQueryBuilder } from 'typeorm';
-import { ServiceProvider, TimeOfDay } from '../../models';
+import {ServiceProvider, ServiceProviderLabel, ServiceProviderLabelCategory, TimeOfDay} from '../../models';
 import { RepositoryBase } from '../../core/repository';
 import { ScheduleFormsRepository } from '../scheduleForms/scheduleForms.repository';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { andWhere } from '../../tools/queryConditions';
+import {andWhere, orWhere} from '../../tools/queryConditions';
 import { Weekday } from '../../enums/weekday';
 import { ServiceProvidersQueryAuthVisitor } from './serviceProviders.auth';
 
@@ -82,9 +82,10 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		if (labelIds && labelIds.length > 0) {
 			labelIds.forEach((labelId, index) => (labelsParam[`label_${index}`] = labelId));
 		}
+		const labelsConditionString = labelsCondition.length ? orWhere(labelsCondition) : '';
 
 		const query = this.createSelectQuery(
-			[serviceCondition, idsCondition, scheduleFormIdCondition, organisationIdCondition, ...labelsCondition],
+			[serviceCondition, idsCondition, scheduleFormIdCondition, organisationIdCondition, labelsConditionString],
 			{ serviceId, ids, scheduleFormId, organisationId, labelIds, ...labelsParam },
 			options,
 		);
@@ -116,6 +117,7 @@ export class ServiceProvidersRepository extends RepositoryBase<ServiceProvider> 
 		const entries = await query.getMany();
 		return await this.processIncludes(entries, options);
 	}
+
 
 	public async getServiceProvidersByName(options: {
 		searchKey: string;

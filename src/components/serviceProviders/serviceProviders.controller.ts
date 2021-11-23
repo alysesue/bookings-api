@@ -450,6 +450,7 @@ export class ServiceProvidersControllerV2 extends Controller {
 	 * @param serviceId (Optional) Filters by a service (id).
 	 * @param includeTimeslotsSchedule (Optional) Whether to include weekly timeslots in the response.
 	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
+	 * @param labelIds (Optional) Filter by label's ids.
 	 * @param @isInt limit (Optional) the total number of records required.
 	 * @param @isInt page (Optional) the page number currently requested.
 	 */

@@ -9,11 +9,17 @@ import {
 import { PermissionAwareAuthGroupVisitor } from '../../infrastructure/auth/queryAuthGroupVisitor';
 import { Organisation } from '../../models';
 
+export enum OrganisationsAuthOtherAction {
+	someRead = 'someRead',
+}
+
+export type OrganisationsAuthAction = OrganisationsAuthOtherAction | CrudAction;
+
 export class OrganisationsActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 	private readonly _organisation: Organisation;
-	private readonly _action: CrudAction;
+	private readonly _action: OrganisationsAuthAction;
 
-	constructor(organisation: Organisation, action: CrudAction) {
+	constructor(organisation: Organisation, action: OrganisationsAuthAction) {
 		super();
 		this._organisation = organisation;
 		this._action = action;
@@ -27,9 +33,25 @@ export class OrganisationsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 		}
 	}
 
-	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
+		switch (this._action) {
+			case OrganisationsAuthOtherAction.someRead:
+				this.markWithPermission();
+				return;
+			default:
+				return;
+		}
+	}
 
-	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
+	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
+		switch (this._action) {
+			case OrganisationsAuthOtherAction.someRead:
+					this.markWithPermission();
+				return;
+			default:
+				return;
+		}
+	}
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {
 		const organisationId = this._organisation.id;

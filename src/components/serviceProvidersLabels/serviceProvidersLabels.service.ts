@@ -1,4 +1,4 @@
-import { Organisation, ServiceProviderLabel, ServiceProviderLabelCategory } from '../../models';
+import {Organisation, ServiceProvider, ServiceProviderLabel, ServiceProviderLabelCategory} from '../../models';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import {
 	ServiceProviderLabelsCategoriesRepository,
@@ -121,4 +121,26 @@ export class SPLabelsCategoriesService {
 		});
 		return labelsFound;
 	}
+
+	public async fetchSpLabelsAndSpCategories(organisationId: number): Promise<{spLabels: ServiceProviderLabel[], spCategories: ServiceProviderLabelCategory[]}> {
+		const spLabels: ServiceProviderLabel[] = await this.serviceProviderLabelRepository.find({organisationIds: [organisationId], categoryIds: undefined})
+		const spCategories: ServiceProviderLabelCategory[] = await this.spCategoriesRepository.find({organisationId})
+		return {spLabels, spCategories};
+
+	}
+
+	public filterSpLabelsByLabelsIdSelected(spLabels: ServiceProviderLabel[],spCategories: ServiceProviderLabelCategory[], labelsId: number[]): ServiceProviderLabel[][]{
+		const filteringLabels = (spLabels:ServiceProviderLabel[], labelsId: number[] ) => (spLabels.filter(spLabel => (labelsId.some(selectedLabelIds => (selectedLabelIds === spLabel.id)))))
+
+		const spLabelsFiltered: ServiceProviderLabel[] = filteringLabels(spLabels, labelsId);
+		const spLabelsFilteredByCategories: ServiceProviderLabel[][] = [];
+		if (spLabelsFiltered.length > 0) spLabelsFilteredByCategories.push(spLabelsFiltered)
+
+		spCategories.forEach(spCategories => {
+			const spLabelsFiltered: ServiceProviderLabel[] = filteringLabels(spCategories.labels, labelsId);
+			if (spLabelsFiltered.length > 0) spLabelsFilteredByCategories.push(spLabelsFiltered)
+		});
+		return spLabelsFilteredByCategories;
+	}
+
 }

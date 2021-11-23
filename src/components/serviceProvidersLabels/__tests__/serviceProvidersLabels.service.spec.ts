@@ -145,4 +145,15 @@ describe('Service Provider Labels and Categories Services', () => {
 			await expect(asyncTest).rejects.toThrowErrorMatchingInlineSnapshot(`"Invalid label id: 2"`);
 		});
 	});
+
+	describe('Test filterSpLabelsByLabelsIdSelected ', function () {
+		it(`Should select each labels and push them in an array of categories`, () => {
+			const spLabels: ServiceProviderLabel[] = [{id: 1, labelText: 'labels'} as ServiceProviderLabel, {id: 4, labelText: 'popo'} as ServiceProviderLabel]
+			const spCategories: ServiceProviderLabelCategory[] = [{id: 10, name: 'CategoryName', labels: [{id: 2, labelText: 'toto'}, {id: 3, labelText: 'nono'}, {id: 5, labelText: 'ono'}]} as ServiceProviderLabelCategory]
+
+			const res = Container.get(SPLabelsCategoriesService).filterSpLabelsByLabelsIdSelected(spLabels, spCategories, [1,2,5]);
+			 expect(res).toEqual([[{"id": 1, "labelText": "labels"}], [{"id": 2, "labelText": "toto"}, {"id": 5, "labelText": "ono"}]]);
+		});
+
+	});
 });

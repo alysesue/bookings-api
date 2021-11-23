@@ -165,7 +165,6 @@ export class TimeslotsService {
 		includeBookings?: boolean;
 		serviceProviderIds?: number[];
 		labelIds?: number[];
-		labelIdsSp?: number[];
 		labelOperationFiltering?: LabelOperationFiltering;
 		includeLabels?: boolean;
 	}): Promise<AvailableTimeslotProviders[]> {
@@ -174,7 +173,6 @@ export class TimeslotsService {
 			includeBookings,
 			serviceProviderIds,
 			labelIds,
-			labelIdsSp,
 			filterDaysInAdvance,
 			labelOperationFiltering,
 			includeLabels,
@@ -201,7 +199,6 @@ export class TimeslotsService {
 			serviceProviderIds,
 			labelIds,
 			labelOperationFiltering,
-			labelIdsSp,
 			includeLabels,
 		);
 	}
@@ -214,7 +211,6 @@ export class TimeslotsService {
 		serviceProviderIds?: number[],
 		labelIds?: number[],
 		labelOperationFiltering?: LabelOperationFiltering,
-		labelIdsSp?: number[],
 		includeLabels?: boolean,
 	): Promise<AvailableTimeslotProviders[]> {
 		if (endDateTime < startDateTime) {
@@ -229,7 +225,6 @@ export class TimeslotsService {
 			serviceProviderIds,
 			labelIds,
 			labelOperationFiltering,
-			labelIdsSp,
 			includeLabels,
 		);
 		getAggregatedTimeslotEntriesWatch.stop();
@@ -422,7 +417,6 @@ export class TimeslotsService {
 		serviceProviderIds?: number[],
 		labelIds?: number[],
 		labelOperationFiltering?: LabelOperationFiltering,
-		labelIdsSp?: number[],
 		includeLabels?: boolean,
 	): Promise<[ServiceProvidersLookup, TimeslotMap<AvailableTimeslotProviders>]> {
 		const serviceProviderLookup = new ServiceProvidersLookup();
@@ -442,7 +436,6 @@ export class TimeslotsService {
 			skipGroupMap: true,
 			skipService: true,
 			includeLabels,
-			labelIds: labelIdsSp,
 		});
 		serviceProviderLookup.addMany(serviceProviders);
 

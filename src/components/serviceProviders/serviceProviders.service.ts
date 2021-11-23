@@ -6,7 +6,7 @@ import {
 	Organisation,
 	ScheduleForm,
 	ServiceProvider,
-	ServiceProviderLabel,
+	ServiceProviderLabel, ServiceProviderLabelCategory,
 	TimeOfDay,
 	TimeslotItem,
 	TimeslotsSchedule,
@@ -164,7 +164,6 @@ export class ServiceProvidersService {
 					filterDaysInAdvance,
 					serviceId,
 					includeLabels,
-					labelIds,
 				);
 			} else {
 				const servicesList = await this.servicesService.getServices();
@@ -193,6 +192,17 @@ export class ServiceProvidersService {
 		result.sort((a, b) => {
 			return a.id - b.id;
 		});
+		if(!!labelIds.length) {
+			let orgId;
+			if (serviceId) {
+				const service = await this.servicesService.getService(serviceId);
+				orgId = service.organisationId;
+			} else {
+				const org = await this.userContext.verifyAndGetFirstAuthorisedOrganisation()
+				orgId = org.id;
+			}
+			result = await this.filterServiceProviderByLabels(orgId, labelIds, result);
+		}
 		let culledResult = result;
 		if (limit) {
 			culledResult = result.splice((page - 1) * limit, limit);
@@ -217,7 +227,6 @@ export class ServiceProvidersService {
 		filterDaysInAdvance: boolean,
 		serviceId?: number,
 		includeLabels?: boolean,
-		labelIds?: number[],
 	): Promise<ServiceProvider[]> {
 		const timeslots = await this.timeslotsService.getAggregatedTimeslots({
 			startDateTime: from,
@@ -226,7 +235,6 @@ export class ServiceProvidersService {
 			includeBookings: false,
 			filterDaysInAdvance,
 			includeLabels,
-			labelIdsSp: labelIds,
 		});
 
 		const availableServiceProviders = new Set<ServiceProvider>();
@@ -580,6 +588,27 @@ export class ServiceProvidersService {
 
 		return await this.serviceProvidersRepository.save(serviceProvider);
 	}
+
+	/*
+	* fn: filter service provider by labels
+	* fetch serviceprovider labels and categories
+	* service provider need at least one label from each categories(or uncategory)
+	 */
+	public async filterServiceProviderByLabels(organisationId: number, labelsId: number[], serviceProviders: ServiceProvider[]): Promise<ServiceProvider[]>{
+		const {spLabels, spCategories} = await this.spLabelsCategoriesService.fetchSpLabelsAndSpCategories(organisationId);
+		const spLabelsFilteredByCategories = this.spLabelsCategoriesService.filterSpLabelsByLabelsIdSelected(spLabels, spCategories, labelsId);
+		return this.filterServiceProvidersBySpLabelsFilteredByCategories(serviceProviders, spLabelsFilteredByCategories);
+	}
+
+	private filterServiceProvidersBySpLabelsFilteredByCategories(serviceProviders: ServiceProvider[], spLabelsFilteredByCategories: ServiceProviderLabel[][]): ServiceProvider[] {
+		return serviceProviders.filter((sp) => (
+			spLabelsFilteredByCategories.every(spLabelsFilteredByCategory => (
+					spLabelsFilteredByCategory.some((spLabel) => sp.labels.some(({id}) => id === spLabel.id))
+				)
+			)));
+
+	}
+
 
 	private async verifyActionPermission(
 		serviceProvider: ServiceProvider,
