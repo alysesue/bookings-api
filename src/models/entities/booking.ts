@@ -160,6 +160,7 @@ export class BookingBuilder {
 		this.markOnHold = markOnHold;
 		return this;
 	}
+
 	public build(): Booking {
 		const instance = new Booking();
 
