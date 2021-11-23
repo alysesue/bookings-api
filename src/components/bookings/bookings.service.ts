@@ -118,10 +118,11 @@ export class BookingsService {
 			this.getBookingInternal.bind(this),
 			this.cancelBookingInternal.bind(this),
 		);
+		this.loadBookingDependencies(booking);
 		this.bookingsSubject.notify({
 			booking,
 			bookingType: BookingType.CancelledOrRejected,
-			action: ExternalAgencyAppointmentJobAction.CANCEL,
+			action: ExternalAgencyAppointmentJobAction.DELETE,
 		});
 		return booking;
 	}
@@ -166,6 +167,7 @@ export class BookingsService {
 			this.getBookingInternal.bind(this),
 			acceptAction,
 		);
+		this.loadBookingDependencies(booking);
 		if (booking.status === BookingStatus.PendingApproval && booking.service.requireVerifyBySA) {
 			this.bookingsSubject.notify({
 				booking,
@@ -175,7 +177,7 @@ export class BookingsService {
 			this.bookingsSubject.notify({
 				booking,
 				bookingType: BookingType.Updated,
-				action: ExternalAgencyAppointmentJobAction.UPDATE,
+				action: ExternalAgencyAppointmentJobAction.CREATE,
 			});
 		}
 		return booking;
@@ -205,10 +207,11 @@ export class BookingsService {
 			this.getBookingInternal.bind(this),
 			rejectAction,
 		);
+		this.loadBookingDependencies(booking);
 		this.bookingsSubject.notify({
 			booking,
 			bookingType: BookingType.CancelledOrRejected,
-			action: ExternalAgencyAppointmentJobAction.UPDATE,
+			action: ExternalAgencyAppointmentJobAction.CANCEL,
 		});
 		return booking;
 	}
@@ -747,9 +750,11 @@ export class BookingsService {
 
 		let targetId = _bookingId;
 		let beforeMap = async (_updatedBooking: Booking) => {};
+		let targetAction = ExternalAgencyAppointmentJobAction.CREATE;
 
 		if (onHoldBooking.onHoldRescheduleWorkflow) {
 			targetId = onHoldBooking.onHoldRescheduleWorkflow.targetId;
+			targetAction = ExternalAgencyAppointmentJobAction.UPDATE;
 
 			beforeMap = async (updatedBooking: Booking) => {
 				onHoldBooking.copyOnHoldInformation(updatedBooking);
@@ -771,7 +776,7 @@ export class BookingsService {
 		this.bookingsSubject.notify({
 			booking: targetBooking,
 			bookingType: BookingType.Created,
-			action: ExternalAgencyAppointmentJobAction.UPDATE,
+			action: targetAction,
 		});
 		return targetBooking;
 	}

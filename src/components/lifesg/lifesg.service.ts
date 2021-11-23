@@ -1,7 +1,6 @@
 import { InRequestScope } from 'typescript-ioc';
 import { getConfig } from '../../config/app-config';
 import { CreateAppointmentRequestApiDomain } from 'mol-lib-api-contract/appointment/create-appointment/api-domain';
-import { CancelAppointmentRequestApiDomain } from 'mol-lib-api-contract/appointment/cancel-appointment/api-domain';
 import { DeleteAppointmentRequestApiDomain } from 'mol-lib-api-contract/appointment/delete-appointment/api-domain';
 import { ExternalAgencyAppointmentJobAction } from './lifesg.apicontract';
 import { logger } from 'mol-lib-common';
@@ -11,10 +10,7 @@ import { ConnectionDetails } from 'rhea';
 @InRequestScope
 export class LifeSGMQSerice {
 	public async send(
-		appointment:
-			| CreateAppointmentRequestApiDomain
-			| CancelAppointmentRequestApiDomain
-			| DeleteAppointmentRequestApiDomain,
+		appointment: CreateAppointmentRequestApiDomain | DeleteAppointmentRequestApiDomain,
 		action: ExternalAgencyAppointmentJobAction,
 	) {
 		const LIFESG_QUEUE = 'ExternalAgencyAppointment';

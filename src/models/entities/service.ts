@@ -8,6 +8,7 @@ import { Label } from './label';
 import { LabelCategory } from './labelCategory';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { CitizenAuthenticationType } from '../citizenAuthenticationType';
+import { MqSubscriberType } from '../mqSubscriberTypes';
 
 const DEFAULT_CITIZEN_AUTH = [CitizenAuthenticationType.Singpass];
 
@@ -340,5 +341,22 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 
 	public set hasSalutation(value: boolean) {
 		this._hasSalutation = value;
+	}
+
+	@Column({
+		type: 'enum',
+		enum: MqSubscriberType,
+		array: true,
+		default: [],
+		nullable: false,
+	})
+	private _mqSubscriber: MqSubscriberType[];
+
+	public get mqSubscriber(): MqSubscriberType[] {
+		return this._mqSubscriber;
+	}
+
+	public set mqSubscriber(mqSubscriber: MqSubscriberType[]) {
+		this._mqSubscriber = mqSubscriber;
 	}
 }
