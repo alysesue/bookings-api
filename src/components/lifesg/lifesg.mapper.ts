@@ -1,6 +1,5 @@
 import { LocalDate, LocalDateTime, LocalTime } from '@js-joda/core';
 import { AppointmentAgency } from 'mol-lib-api-contract/appointment';
-import { CancelAppointmentRequestApiDomain } from 'mol-lib-api-contract/appointment/cancel-appointment/api-domain';
 import { CreateAppointmentRequestApiDomain } from 'mol-lib-api-contract/appointment/create-appointment/api-domain';
 import { DeleteAppointmentRequestApiDomain } from 'mol-lib-api-contract/appointment/delete-appointment/api-domain';
 import { BookingType } from '../../models/bookingType';

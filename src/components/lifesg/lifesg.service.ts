@@ -1,13 +1,11 @@
 import { InRequestScope } from 'typescript-ioc';
 import { getConfig } from '../../config/app-config';
 import { CreateAppointmentRequestApiDomain } from 'mol-lib-api-contract/appointment/create-appointment/api-domain';
-import { CancelAppointmentRequestApiDomain } from 'mol-lib-api-contract/appointment/cancel-appointment/api-domain';
 import { DeleteAppointmentRequestApiDomain } from 'mol-lib-api-contract/appointment/delete-appointment/api-domain';
 import { ExternalAgencyAppointmentJobAction } from './lifesg.apicontract';
 import { logger } from 'mol-lib-common';
 const container = require('rhea');
 import { ConnectionDetails } from 'rhea';
-import { UpdateAppointmentRequestApiDomain } from 'mol-lib-api-contract/appointment/update-appointment/api-domain';
 
 @InRequestScope
 export class LifeSGMQSerice {
