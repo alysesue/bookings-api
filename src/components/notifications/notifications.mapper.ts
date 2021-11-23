@@ -102,7 +102,7 @@ export const eventEmailMapper = (
 ): Partial<EmailData> => {
 	const commonData = commonMapper(data, isSMS, appURL);
 	let dateTimeServiceProvider = '';
-	data.bookedSlots.map((slot) => {
+	data.event.oneOffTimeslots.map((slot) => {
 		dateTimeServiceProvider += `${DateHelper.getDateFormat(
 			slot.startDateTime,
 		)}, ${DateHelper.getTime12hFormatString(data.startDateTime)} - ${DateHelper.getTime12hFormatString(
@@ -130,6 +130,8 @@ export const mapVariablesValuesToTemplate = (
 ): string => {
 	const {
 		serviceName,
+		serviceProviderName,
+		serviceProviderAliasName,
 		spNameDisplayedForCitizen,
 		spNameDisplayedForServiceProvider,
 		status,
@@ -147,6 +149,8 @@ export const mapVariablesValuesToTemplate = (
 
 	const mapVariables = {
 		'{serviceName}': serviceName,
+		'{serviceProviderName}': serviceProviderName,
+		'{serviceProviderAliasName}': serviceProviderAliasName,
 		'{spNameDisplayedForCitizen}': spNameDisplayedForCitizen,
 		'{spNameDisplayedForServiceProvider}': spNameDisplayedForServiceProvider,
 		'{status}': status,

@@ -14,7 +14,7 @@ export class ServiceProviderEventEmailTemplateBookingActionByCitizen extends Ema
 		);
 
 		return {
-			subject: `BookingSG confirmation: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForServiceProvider}`,
+			subject: `BookingSG confirmation: ${mappedEmailData.eventName} - ${mappedEmailData.serviceName}`,
 			html: emailContent,
 		};
 	}
@@ -30,7 +30,7 @@ export class ServiceProviderEventEmailTemplateBookingActionByCitizen extends Ema
 		);
 
 		return {
-			subject: `BookingSG update: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForServiceProvider}`,
+			subject: `BookingSG update: ${mappedEmailData.eventName} - ${mappedEmailData.serviceName}`,
 			html: emailContent,
 		};
 	}
@@ -46,7 +46,7 @@ export class ServiceProviderEventEmailTemplateBookingActionByCitizen extends Ema
 		);
 
 		return {
-			subject: `BookingSG cancellation: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForServiceProvider}`,
+			subject: `BookingSG cancellation: ${mappedEmailData.eventName} - ${mappedEmailData.serviceName}`,
 			html: emailContent,
 		};
 	}
@@ -68,7 +68,7 @@ export class ServiceProviderEventEmailTemplateBookingActionByServiceProvider ext
 		);
 
 		return {
-			subject: `BookingSG update: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForServiceProvider}`,
+			subject: `BookingSG update: ${mappedEmailData.eventName} - ${mappedEmailData.serviceName}`,
 			html: emailContent,
 		};
 	}
@@ -84,7 +84,7 @@ export class ServiceProviderEventEmailTemplateBookingActionByServiceProvider ext
 		);
 
 		return {
-			subject: `BookingSG cancellation: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForServiceProvider}`,
+			subject: `BookingSG cancellation: ${mappedEmailData.eventName} - ${mappedEmailData.serviceName}`,
 			html: emailContent,
 		};
 	}
@@ -100,7 +100,7 @@ export class ServiceProviderEventEmailTemplateBookingActionByServiceProvider ext
 		);
 
 		return {
-			subject: `BookingSG confirmation: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForServiceProvider}`,
+			subject: `BookingSG confirmation: ${mappedEmailData.eventName} - ${mappedEmailData.serviceName}`,
 			html: emailContent,
 		};
 	}

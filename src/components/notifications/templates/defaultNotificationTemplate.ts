@@ -50,7 +50,7 @@ export const defaultTemplates = {
 		UpdatedByServiceProviderSentToServiceProvider:
 			'<p>You have updated a booking.</p>\n' +
 			'<p>Booking for: <strong>{serviceName}</strong> <strong>{spNameDisplayedForServiceProvider}</strong>.</p>\n' +
-			'<p>Below is a summery of your updated booking details.<br>Booking status: <strong>{status}</strong><br>Date: <strong>{day}</strong><br>Time:' +
+			'<p>Below is a summary of your updated booking details.<br>Booking status: <strong>{status}</strong><br>Date: <strong>{day}</strong><br>Time:' +
 			' <strong>{time}</strong><br>{videoConferenceUrl}<br>{location}</p>',
 		CancelledByServiceProviderSentToServiceProvider:
 			'<p>You have cancelled the following booking.</p>\n' +

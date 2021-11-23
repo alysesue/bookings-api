@@ -97,7 +97,7 @@ export class MailObserver implements Observer {
 
 				// For event bookings
 				if (booking.eventId) {
-					booking.bookedSlots.map((slot) => {
+					booking.event.oneOffTimeslots.map((slot) => {
 						emails.push(slot.serviceProvider.email);
 					});
 					emails = [...new Set(emails)];
@@ -105,18 +105,13 @@ export class MailObserver implements Observer {
 
 				break;
 		}
-		if (emails && emails.length) {
-			emails.forEach(async (email) => {
-				const emailDetails = MailObserver.constructEmailTemplate(body, email);
-				if (emailDetails?.html) {
-					await this.notificationsService.sendEmail(emailDetails);
-				} else {
-					logger.info(
-						`Email not sent out for booking id (${booking.id}) as ${recipientType} email is not provided`,
-					);
-				}
-			});
-		}
+		emails.forEach(async (email) => {
+			const emailDetails = MailObserver.constructEmailTemplate(body, email);
+			if (emailDetails?.html) {
+				await this.notificationsService.sendEmail(emailDetails);
+			}
+		});
+		logger.info(`Email not sent out for booking id (${booking.id}) as ${recipientType} email is not provided`);
 	}
 
 	private async createCitizenEmailFactory(booking: Booking, bookingType: BookingType): Promise<EmailTemplateBase> {

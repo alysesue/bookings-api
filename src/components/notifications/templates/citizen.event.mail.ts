@@ -10,7 +10,7 @@ export class CitizenEventEmailTemplateBookingActionByCitizen extends EmailBookin
 		const emailContent = await this.getEmailContent(templateType, data, mappedEmailData);
 
 		return {
-			subject: `BookingSG confirmation: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForCitizen}`,
+			subject: `BookingSG confirmation: ${mappedEmailData.eventName} - ${mappedEmailData.serviceName}`,
 			html: emailContent,
 		};
 	}
@@ -21,7 +21,7 @@ export class CitizenEventEmailTemplateBookingActionByCitizen extends EmailBookin
 		const emailContent = await this.getEmailContent(templateType, data, mappedEmailData);
 
 		return {
-			subject: `BookingSG update: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForCitizen}`,
+			subject: `BookingSG update: ${mappedEmailData.eventName} - ${mappedEmailData.serviceName}`,
 			html: emailContent,
 		};
 	}
@@ -32,7 +32,7 @@ export class CitizenEventEmailTemplateBookingActionByCitizen extends EmailBookin
 		const emailContent = await this.getEmailContent(templateType, data, mappedEmailData);
 
 		return {
-			subject: `BookingSG cancellation: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForCitizen}`,
+			subject: `BookingSG cancellation: ${mappedEmailData.eventName} - ${mappedEmailData.serviceName}`,
 			html: emailContent,
 		};
 	}
@@ -49,7 +49,7 @@ export class CitizenEventEmailTemplateBookingActionByServiceProvider extends Ema
 		const emailContent = await this.getEmailContent(templateType, data, mappedEmailData);
 
 		return {
-			subject: `BookingSG confirmation: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForCitizen}`,
+			subject: `BookingSG confirmation: ${mappedEmailData.eventName} - ${mappedEmailData.serviceName}`,
 			html: emailContent,
 		};
 	}
@@ -60,7 +60,7 @@ export class CitizenEventEmailTemplateBookingActionByServiceProvider extends Ema
 		const emailContent = await this.getEmailContent(templateType, data, mappedEmailData);
 
 		return {
-			subject: `BookingSG update: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForCitizen}`,
+			subject: `BookingSG update: ${mappedEmailData.eventName} - ${mappedEmailData.serviceName}`,
 			html: emailContent,
 		};
 	}
@@ -71,7 +71,7 @@ export class CitizenEventEmailTemplateBookingActionByServiceProvider extends Ema
 		const emailContent = await this.getEmailContent(templateType, data, mappedEmailData);
 
 		return {
-			subject: `BookingSG cancellation: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForCitizen}`,
+			subject: `BookingSG cancellation: ${mappedEmailData.eventName} - ${mappedEmailData.serviceName}`,
 			html: emailContent,
 		};
 	}
