@@ -60,6 +60,7 @@ export class ServiceProviderResponseModelBase {
 	public onHoldEnabled?: boolean;
 	public description?: string;
 	public aliasName?: string;
+	public autoAcceptBookings?: boolean;
 }
 
 export class ServiceProviderResponseModelV1 extends ServiceProviderResponseModelBase {

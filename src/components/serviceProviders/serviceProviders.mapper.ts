@@ -44,6 +44,7 @@ export class ServiceProvidersMapper {
 			response.phone = spData.phone;
 			response.expiryDate = spData.expiryDate;
 			response.agencyUserId = spData.agencyUserId;
+			response.autoAcceptBookings = spData.autoAcceptBookings;
 		}
 
 		return response;

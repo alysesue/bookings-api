@@ -126,6 +126,16 @@ export class PgClient {
 		});
 	}
 
+	public async setServiceConfigurationRequireVerifyBySA(
+		serviceId: number,
+		requireVerifyBySA: boolean,
+	): Promise<void> {
+		await this.pool.query({
+			text: `UPDATE public.service set "_requireVerifyBySA" = $1 where _id = $2`,
+			values: [requireVerifyBySA, serviceId],
+		});
+	}
+
 	public async close() {
 		await this.pool.end();
 	}
