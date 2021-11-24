@@ -131,7 +131,10 @@ export class EventsService {
 		const oneOffTimeslots = [];
 		const fKeyServiceProviderId = ({ serviceProviderId }) => serviceProviderId;
 		const ids = uniqBy(timeslots, fKeyServiceProviderId).map(fKeyServiceProviderId);
-		const idsString = ids.map((id) => this.idHasher.decode(id));
+		const idsString = ids.map((id) => {
+			if (!id) throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`ServiceProviderId is required`);
+			return this.idHasher.decode(id);
+		});
 		const serviceProviders = await this.serviceProvidersService.getServiceProviders({
 			ids: idsString,
 		});

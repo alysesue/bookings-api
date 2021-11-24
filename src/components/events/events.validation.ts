@@ -12,12 +12,13 @@ export class EventsValidation extends Validator<Event> {
 	private oneOffTimeslotsValidation: OneOffTimeslotsValidation;
 
 	protected async *getValidations(entity: Event): AsyncIterable<BusinessValidation> {
-		const { title, description, oneOffTimeslots } = entity;
+		const { title, description, oneOffTimeslots, capacity } = entity;
 		const oneOffTimeslotsValidations = oneOffTimeslots
 			? oneOffTimeslots.map((oneOffTimeslot) => this.oneOffTimeslotsValidation.getValidations(oneOffTimeslot))
 			: [];
 		const allValidates = concatIteratables(
 			EventsValidation.validateTitle(title),
+			EventsValidation.validateCapacity(capacity),
 			EventsValidation.validateDescription(description),
 			EventsValidation.atLeastOneSlot(oneOffTimeslots),
 			EventsValidation.sameService(oneOffTimeslots),
@@ -58,6 +59,11 @@ export class EventsValidation extends Validator<Event> {
 			yield EventsBusinessValidation.TitleTooLong;
 		}
 	}
+	private static async *validateCapacity(capacity: number): AsyncIterable<BusinessValidation> {
+		if (capacity <= 0) {
+			yield EventsBusinessValidation.InvalidCapacity;
+		}
+	}
 }
 
 class EventsBusinessValidation {
@@ -81,5 +87,9 @@ class EventsBusinessValidation {
 
 	public static readonly TitleNotProvided = new BusinessValidation(
 		EventsBusinessValidation.oneOffTimeslotError.TitleNotProvided,
+	);
+
+	public static readonly InvalidCapacity = new BusinessValidation(
+		EventsBusinessValidation.oneOffTimeslotError.InvalidCapacity,
 	);
 }
