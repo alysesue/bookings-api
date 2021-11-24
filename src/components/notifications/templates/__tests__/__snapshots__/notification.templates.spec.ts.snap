@@ -95,7 +95,7 @@ exports[`Notification templates tests should create service provider email for s
 Object {
   "html": "<p>You have updated a booking.</p>
 <p>Booking for: <strong>Career</strong> <strong></strong>.</p>
-<p>Below is a summery of your updated booking details.<br>Booking status: <strong>Pending Approval</strong><br>Date: <strong>14 April 2021</strong><br>Time: <strong>10:00am - 11:00am</strong><br>Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a><br>Location: <b>Some street</b></p>",
+<p>Below is a summary of your updated booking details.<br>Booking status: <strong>Pending Approval</strong><br>Date: <strong>14 April 2021</strong><br>Time: <strong>10:00am - 11:00am</strong><br>Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a><br>Location: <b>Some street</b></p>",
   "subject": "BookingSG update: Career",
 }
 `;

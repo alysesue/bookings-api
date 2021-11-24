@@ -10,7 +10,16 @@ import {
 	CitizenEmailTemplateBookingActionByServiceProvider,
 } from '../templates/citizen.mail';
 import { getConfig } from '../../../config/app-config';
-import { Booking, BookingStatus, Service, ServiceProvider, User } from '../../../models';
+import {
+	BookedSlot,
+	Booking,
+	BookingStatus,
+	Service,
+	ServiceProvider,
+	User,
+	Event,
+	OneOffTimeslot,
+} from '../../../models';
 import { BookingType } from '../../../models/bookingType';
 import { UserContext } from '../../../infrastructure/auth/userContext';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
@@ -21,6 +30,15 @@ import {
 import { logger } from 'mol-lib-common';
 import { EmailRecipient } from '../notifications.enum';
 import { MailOptions } from '../notifications.mapper';
+import { IServiceProvider } from '../../../models/interfaces';
+import {
+	CitizenEventEmailTemplateBookingActionByCitizen,
+	CitizenEventEmailTemplateBookingActionByServiceProvider,
+} from '../templates/citizen.event.mail';
+import {
+	ServiceProviderEventEmailTemplateBookingActionByCitizen,
+	ServiceProviderEventEmailTemplateBookingActionByServiceProvider,
+} from '../templates/serviceProviders.event.mail';
 
 const adminMock = User.createAdminUser({
 	molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
@@ -31,6 +49,25 @@ const adminMock = User.createAdminUser({
 
 describe('Test template call', () => {
 	let booking: Booking;
+
+	const setBookingForEvent = (booking: Booking) => {
+		booking.event = new Event();
+		booking.event.title = 'event title';
+		const oneOffTimeslot = new OneOffTimeslot();
+		oneOffTimeslot.startDateTime = new Date(2021, 3, 14, 10);
+		oneOffTimeslot.endDateTime = new Date(2021, 3, 14, 11);
+		oneOffTimeslot.serviceProvider = { name: 'John Doe', email: 'john@email.com' } as IServiceProvider;
+		const oneOffTimeslot2 = new OneOffTimeslot();
+		oneOffTimeslot2.startDateTime = new Date(2021, 3, 14, 10);
+		oneOffTimeslot2.endDateTime = new Date(2021, 3, 14, 11);
+		oneOffTimeslot2.serviceProvider = { name: 'Jane Doe', email: 'jane@email.com' } as IServiceProvider;
+		const oneOffTimeslot3 = new OneOffTimeslot();
+		oneOffTimeslot3.startDateTime = new Date(2021, 3, 14, 10);
+		oneOffTimeslot3.endDateTime = new Date(2021, 3, 14, 11);
+		oneOffTimeslot3.serviceProvider = { name: 'Dana Doe', email: 'dana@email.com' } as IServiceProvider;
+		booking.event.oneOffTimeslots = [oneOffTimeslot, oneOffTimeslot2, oneOffTimeslot3];
+		booking.eventId = 1;
+	};
 	beforeAll(() => {
 		Container.bind(NotificationsService).to(NotificationsServiceMock);
 		Container.bind(BookingsSubject).to(BookingsSubjectMock);
@@ -39,6 +76,10 @@ describe('Test template call', () => {
 		Container.bind(CitizenEmailTemplateBookingActionByServiceProvider).to(EmailBookingTemplateMock);
 		Container.bind(ServiceProviderEmailTemplateBookingActionByCitizen).to(EmailBookingTemplateMock);
 		Container.bind(ServiceProviderEmailTemplateBookingActionByServiceProvider).to(EmailBookingTemplateMock);
+		Container.bind(CitizenEventEmailTemplateBookingActionByCitizen).to(EmailBookingTemplateMock);
+		Container.bind(CitizenEventEmailTemplateBookingActionByServiceProvider).to(EmailBookingTemplateMock);
+		Container.bind(ServiceProviderEventEmailTemplateBookingActionByCitizen).to(EmailBookingTemplateMock);
+		Container.bind(ServiceProviderEventEmailTemplateBookingActionByServiceProvider).to(EmailBookingTemplateMock);
 	});
 
 	beforeEach(() => {
@@ -111,6 +152,15 @@ describe('Test template call', () => {
 		await Container.get(MailObserver).update(bookingSubject);
 		expect(EmailBookingTemplateMock.CreatedBookingEmailMock).toHaveBeenCalledTimes(2);
 		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(2);
+	});
+
+	it('should send four if sendNotifications = true, sendNotificationsToServiceProviders = true with 3 SP', async () => {
+		setBookingForEvent(booking);
+		const bookingSubject = new BookingsSubject();
+		bookingSubject.notify({ booking, bookingType: BookingType.Created });
+		await Container.get(MailObserver).update(bookingSubject);
+		expect(EmailBookingTemplateMock.CreatedBookingEmailMock).toHaveBeenCalledTimes(2);
+		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(4);
 	});
 
 	it('should send only one if sendNotifications = true and sendNotificationsToServiceProviders = false', async () => {

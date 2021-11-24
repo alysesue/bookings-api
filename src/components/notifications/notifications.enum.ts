@@ -11,6 +11,18 @@ export enum EmailNotificationTemplateType {
 	CreatedByServiceProviderSentToServiceProvider, // currently undefined
 	UpdatedByServiceProviderSentToServiceProvider,
 	CancelledByServiceProviderSentToServiceProvider,
+	CreatedByCitizenSentToCitizenEvent,
+	UpdatedByCitizenSentToCitizenEvent,
+	CancelledByCitizenSentToCitizenEvent,
+	CreatedByCitizenSentToServiceProviderEvent,
+	UpdatedByCitizenSentToServiceProviderEvent,
+	CancelledByCitizenSentToServiceProviderEvent,
+	CreatedByServiceProviderSentToCitizenEvent,
+	UpdatedByServiceProviderSentToCitizenEvent,
+	CancelledByServiceProviderSentToCitizenEvent,
+	CreatedByServiceProviderSentToServiceProviderEvent, // currently undefined
+	UpdatedByServiceProviderSentToServiceProviderEvent,
+	CancelledByServiceProviderSentToServiceProviderEvent,
 }
 
 export enum EmailRecipient {

@@ -1,8 +1,11 @@
-import { Booking, Organisation, Service, ServiceProvider } from '../../../../models';
-import { emailMapper, mapVariablesValuesToServiceTemplate } from '../../notifications.mapper';
-import { getConfig } from '../../../../config/app-config';
+import { Booking, Organisation, Service, ServiceProvider, Event, OneOffTimeslot } from '../../../models';
+import { emailMapper, eventEmailMapper, mapVariablesValuesToTemplate } from '../notifications.mapper';
+import { getConfig } from '../../../config/app-config';
+import { EmailNotificationTemplateType, EmailRecipient } from '../notifications.enum';
+import { IServiceProvider } from '../../../models/interfaces';
+import { DateHelper } from '../../../infrastructure/dateHelper';
 
-jest.mock('../../../../config/app-config', () => ({
+jest.mock('../../../config/app-config', () => ({
 	getConfig: jest.fn(),
 }));
 
@@ -30,7 +33,7 @@ describe('Notification mapper tests', () => {
 			status,
 			day,
 			time,
-			locationText,
+			location,
 			videoConferenceUrl,
 			manageBookingLink,
 		} = emailMapper(booking, false, 'http://www.local.booking.gov.sg:3000');
@@ -39,7 +42,7 @@ describe('Notification mapper tests', () => {
 		expect(status).toEqual(`Pending Approval`);
 		expect(serviceName).toEqual(`Career`);
 		expect(spNameDisplayedForCitizen).toEqual(` - armin`);
-		expect(locationText).toEqual(`Location: <b>Some street</b>`);
+		expect(location).toEqual(`Location: <b>Some street</b>`);
 		expect(videoConferenceUrl).toEqual(
 			`Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>`,
 		);
@@ -65,8 +68,8 @@ describe('Notification mapper tests', () => {
 	it('booking location text should be empty', () => {
 		booking.location = ``;
 
-		const { locationText } = emailMapper(booking);
-		expect(locationText).toEqual(``);
+		const { location } = emailMapper(booking);
+		expect(location).toEqual(``);
 	});
 
 	it('booking video conference link should be empty', () => {
@@ -101,7 +104,7 @@ describe('Notification mapper tests', () => {
 			'serviceName: {serviceName}\n' +
 			'serviceProviderName: {serviceProviderName}\n' +
 			'serviceProviderAliasName: {serviceProviderAliasName}\n' +
-			'location: {location}\n' +
+			'{location}\n' +
 			'day: {day}\n' +
 			'time: {time}\n' +
 			'videoConferenceUrl: {videoConferenceUrl}\n' +
@@ -113,16 +116,64 @@ describe('Notification mapper tests', () => {
 			'serviceName: Career\n' +
 			'serviceProviderName: armin\n' +
 			'serviceProviderAliasName: Orange\n' +
-			'location: Some street\n' +
+			'Location: <b>Some street</b>\n' +
 			'day: 14 April 2021\n' +
 			'time: 10:00am - 11:00am\n' +
 			"videoConferenceUrl: Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>\n" +
 			'reasonToReject: <br/>Reason: rejected.\n' +
 			"manageBookingLink: <a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a>";
 
-		const returnedTemplate = mapVariablesValuesToServiceTemplate(
+		const returnedTemplate = mapVariablesValuesToTemplate(
 			emailMapper(booking, false, getConfig().appURL),
 			template,
+			EmailRecipient.Citizen,
+		);
+		expect(returnedTemplate).toEqual(expectedReturnedTemplate);
+	});
+
+	it('should map variables values to service template for event', () => {
+		booking.event = new Event();
+		booking.event.title = 'event title';
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.startDateTime = new Date(2021, 3, 14, 10);
+		oneOffTimeslots.endDateTime = new Date(2021, 3, 14, 11);
+		oneOffTimeslots.serviceProvider = { name: 'John Doe' } as IServiceProvider;
+		const oneOffTimeslots2 = new OneOffTimeslot();
+		oneOffTimeslots2.startDateTime = new Date(2021, 3, 14, 10);
+		oneOffTimeslots2.endDateTime = new Date(2021, 3, 14, 11);
+		oneOffTimeslots2.serviceProvider = { name: 'Jane Doe' } as IServiceProvider;
+		booking.event.oneOffTimeslots = [oneOffTimeslots, oneOffTimeslots2];
+
+		const dateAndTime = `${DateHelper.getDateFormat(
+			new Date(2021, 3, 14, 10),
+		)}, ${DateHelper.getTime12hFormatString(new Date(2021, 3, 14, 10))} - ${DateHelper.getTime12hFormatString(
+			new Date(2021, 3, 14, 11),
+		)} - John Doe<br>${DateHelper.getDateFormat(new Date(2021, 3, 14, 10))}, ${DateHelper.getTime12hFormatString(
+			new Date(2021, 3, 14, 10),
+		)} - ${DateHelper.getTime12hFormatString(new Date(2021, 3, 14, 11))} - Jane Doe<br>`;
+
+		const template =
+			'status: {status}\n' +
+			'{location}\n' +
+			'Date & times:\n{dateTimeServiceProvider}\n' +
+			'manageBookingLink: {manageBookingLink}';
+
+		const expectedReturnedTemplate =
+			'status: Pending Approval\n' +
+			'Location: <b>Some street</b>\n' +
+			'Date & times:\n' +
+			`${dateAndTime}\n` +
+			"manageBookingLink: <a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a>";
+
+		const returnedTemplate = mapVariablesValuesToTemplate(
+			eventEmailMapper(
+				booking,
+				EmailNotificationTemplateType.CreatedByServiceProviderSentToCitizenEvent,
+				false,
+				getConfig().appURL,
+			),
+			template,
+			EmailRecipient.Citizen,
 		);
 		expect(returnedTemplate).toEqual(expectedReturnedTemplate);
 	});

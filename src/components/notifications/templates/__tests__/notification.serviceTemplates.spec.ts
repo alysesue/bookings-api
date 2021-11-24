@@ -45,7 +45,7 @@ describe('Services Notification Templates test', () => {
 		'<br>Date: <strong>14 April 2021</strong>' +
 		'<br>Time: <strong>10:00am - 11:00am</strong>' +
 		"<br>Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>" +
-		'<br>Some street&nbsp;</p>';
+		'<br>Location: <b>Some street</b>&nbsp;</p>';
 
 	const booking = new Booking();
 	booking.startDateTime = new Date(2021, 3, 14, 10);

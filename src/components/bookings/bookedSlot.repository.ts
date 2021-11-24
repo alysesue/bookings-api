@@ -16,6 +16,7 @@ export class BookedSlotRepository extends RepositoryBase<BookedSlot> {
 
 	public async getBookedSlotByBooking(bookingId: number): Promise<BookedSlot[]> {
 		const repository = await this.getRepository();
+
 		return await repository.find({
 			where: {
 				_bookingId: bookingId,

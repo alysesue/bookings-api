@@ -18,6 +18,14 @@ import { BookingType } from '../../models/bookingType';
 import { MailOptions } from './notifications.mapper';
 import { logger } from 'mol-lib-common';
 import { EmailRecipient } from './notifications.enum';
+import {
+	CitizenEventEmailTemplateBookingActionByServiceProvider,
+	CitizenEventEmailTemplateBookingActionByCitizen,
+} from './templates/citizen.event.mail';
+import {
+	ServiceProviderEventEmailTemplateBookingActionByServiceProvider,
+	ServiceProviderEventEmailTemplateBookingActionByCitizen,
+} from './templates/serviceProviders.event.mail';
 
 @InRequestScope
 export class MailObserver implements Observer {
@@ -33,6 +41,14 @@ export class MailObserver implements Observer {
 	private serviceProviderEmailTemplateBookingActionByServiceProvider: ServiceProviderEmailTemplateBookingActionByServiceProvider;
 	@Inject
 	private serviceProviderEmailTemplateBookingActionByCitizen: ServiceProviderEmailTemplateBookingActionByCitizen;
+	@Inject
+	private citizenEventEmailTemplateBookingActionByServiceProvider: CitizenEventEmailTemplateBookingActionByServiceProvider;
+	@Inject
+	private citizenEventEmailTemplateBookingActionByCitizen: CitizenEventEmailTemplateBookingActionByCitizen;
+	@Inject
+	private serviceProviderEventEmailTemplateBookingActionByServiceProvider: ServiceProviderEventEmailTemplateBookingActionByServiceProvider;
+	@Inject
+	private serviceProviderEventEmailTemplateBookingActionByCitizen: ServiceProviderEventEmailTemplateBookingActionByCitizen;
 
 	public async update(subject: ISubject<any>): Promise<void> {
 		if (!(subject instanceof BookingsSubject) || subject.booking?.status === BookingStatus.OnHold) {
@@ -64,31 +80,51 @@ export class MailObserver implements Observer {
 
 	private async sendEmail(booking: Booking, bookingType: BookingType, recipientType: EmailRecipient) {
 		let body: EmailTemplateBase;
-		let email: string;
+		let emails: string[] = [];
 		switch (recipientType) {
 			case EmailRecipient.Citizen:
 				body = await this.createCitizenEmailFactory(booking, bookingType);
-				email = booking.citizenEmail;
+				if (booking.citizenEmail) {
+					emails.push(booking.citizenEmail);
+				}
 				break;
 			case EmailRecipient.ServiceProvider:
 				body = await this.createServiceProviderEmailFactory(booking, bookingType);
-				email = booking.serviceProvider?.email;
+				// For normal bookings
+				if (!booking.eventId && booking.serviceProvider.email) {
+					emails.push(booking.serviceProvider?.email);
+				}
+
+				// For event bookings
+				if (booking.eventId) {
+					booking.event.oneOffTimeslots.map((slot) => {
+						emails.push(slot.serviceProvider.email);
+					});
+					emails = [...new Set(emails)];
+				}
+
 				break;
 		}
-		if (email) {
+		emails.forEach(async (email) => {
 			const emailDetails = MailObserver.constructEmailTemplate(body, email);
-			if (emailDetails?.html) await this.notificationsService.sendEmail(emailDetails);
-			return;
-		}
+			if (emailDetails?.html) {
+				await this.notificationsService.sendEmail(emailDetails);
+			}
+		});
 		logger.info(`Email not sent out for booking id (${booking.id}) as ${recipientType} email is not provided`);
 	}
 
 	private async createCitizenEmailFactory(booking: Booking, bookingType: BookingType): Promise<EmailTemplateBase> {
 		const currentUser = await this.userContext.getCurrentUser();
 		const userIsAdmin = currentUser.isAdmin() || currentUser.isAgency();
-		const templates = userIsAdmin
-			? this.citizenEmailTemplateBookingActionByServiceProvider
+		const actionBySPTemplate = booking.eventId
+			? this.citizenEventEmailTemplateBookingActionByServiceProvider
+			: this.citizenEmailTemplateBookingActionByServiceProvider;
+		const actionByCitizenTemplate = booking.eventId
+			? this.citizenEventEmailTemplateBookingActionByCitizen
 			: this.citizenEmailTemplateBookingActionByCitizen;
+
+		const templates = userIsAdmin ? actionBySPTemplate : actionByCitizenTemplate;
 		return this.templateFactory(booking, bookingType, templates);
 	}
 
@@ -98,9 +134,14 @@ export class MailObserver implements Observer {
 	): Promise<EmailTemplateBase> {
 		const currentUser = await this.userContext.getCurrentUser();
 		const userIsAdmin = currentUser.isAdmin() || currentUser.isAgency();
-		const templates = userIsAdmin
-			? this.serviceProviderEmailTemplateBookingActionByServiceProvider
+		const actionBySPTemplate = booking.eventId
+			? this.serviceProviderEventEmailTemplateBookingActionByServiceProvider
+			: this.serviceProviderEmailTemplateBookingActionByServiceProvider;
+		const actionByCitizenTemplate = booking.eventId
+			? this.serviceProviderEventEmailTemplateBookingActionByCitizen
 			: this.serviceProviderEmailTemplateBookingActionByCitizen;
+
+		const templates = userIsAdmin ? actionBySPTemplate : actionByCitizenTemplate;
 		return this.templateFactory(booking, bookingType, templates);
 	}
 

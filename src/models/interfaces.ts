@@ -55,6 +55,7 @@ export interface IServiceProvider {
 	serviceId: number;
 	service: IService;
 	name: string;
+	email: string;
 }
 
 export interface ITimeSpan {

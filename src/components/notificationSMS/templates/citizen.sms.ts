@@ -9,8 +9,10 @@ export abstract class SMSBookingTemplate {
 
 export class CitizenSMSTemplateBookingActionByCitizen implements SMSBookingTemplate {
 	public CreatedBookingSMS(data): SMSmessage {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } =
-			emailMapper(data, true);
+		const { serviceName, spNameDisplayedForCitizen, status, day, time, location, videoConferenceUrl } = emailMapper(
+			data,
+			true,
+		);
 
 		return `
 BookingSG confirmation: ${serviceName}${spNameDisplayedForCitizen}
@@ -24,12 +26,14 @@ Booking status: ${status}
 Date: ${day}
 Time: ${time}
 ${videoConferenceUrl}
-${locationText}`;
+${location}`;
 	}
 
 	public UpdatedBookingSMS(data): SMSmessage {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } =
-			emailMapper(data, true);
+		const { serviceName, spNameDisplayedForCitizen, status, day, time, location, videoConferenceUrl } = emailMapper(
+			data,
+			true,
+		);
 		return `
 BookingSG update: ${serviceName}${spNameDisplayedForCitizen}
 
@@ -42,15 +46,17 @@ Booking status: ${status}
 Date: ${day}
 Time: ${time}
 ${videoConferenceUrl}
-${locationText}`;
+${location}`;
 	}
 
 	public CancelledBookingSMS(data): SMSmessage {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } =
-			emailMapper(data, true);
+		const { serviceName, spNameDisplayedForCitizen, status, day, time, location, videoConferenceUrl } = emailMapper(
+			data,
+			true,
+		);
 
 		return `BookingSG cancellation: ${serviceName}${spNameDisplayedForCitizen}
-		
+
 You have cancelled the following booking.
 
 Booking for: ${serviceName}${spNameDisplayedForCitizen}.
@@ -59,14 +65,16 @@ Booking status: ${status}
 Date: ${day}
 Time: ${time}
 ${videoConferenceUrl}
-${locationText}`;
+${location}`;
 	}
 }
 
 export class CitizenSMSTemplateBookingActionByServiceProvider implements SMSBookingTemplate {
 	public CreatedBookingSMS(data): SMSmessage {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } =
-			emailMapper(data, true);
+		const { serviceName, spNameDisplayedForCitizen, status, day, time, location, videoConferenceUrl } = emailMapper(
+			data,
+			true,
+		);
 
 		return `BookingSG confirmation: ${serviceName}${spNameDisplayedForCitizen}
 
@@ -79,13 +87,15 @@ Booking status: ${status}
 Date: ${day}
 Time: ${time}
 ${videoConferenceUrl}
-${locationText}
+${location}
 `;
 	}
 
 	public UpdatedBookingSMS(data): SMSmessage {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } =
-			emailMapper(data, true);
+		const { serviceName, spNameDisplayedForCitizen, status, day, time, location, videoConferenceUrl } = emailMapper(
+			data,
+			true,
+		);
 		return `
 			BookingSG update: ${serviceName}${spNameDisplayedForCitizen}
 
@@ -98,14 +108,16 @@ Booking status: ${status}
 Date: ${day}
 Time: ${time}
 ${videoConferenceUrl}
-${locationText}`;
+${location}`;
 	}
 
 	public CancelledBookingSMS(data): SMSmessage {
-		const { serviceName, spNameDisplayedForCitizen, status, day, time, locationText, videoConferenceUrl } =
-			emailMapper(data, true);
+		const { serviceName, spNameDisplayedForCitizen, status, day, time, location, videoConferenceUrl } = emailMapper(
+			data,
+			true,
+		);
 		return `BookingSG cancellation: ${serviceName}${spNameDisplayedForCitizen}
-		
+
 The following booking has been cancelled by the other party.
 
 Booking for: ${serviceName}${spNameDisplayedForCitizen}.
@@ -114,6 +126,6 @@ Booking status: ${status}
 Date: ${day}
 Time: ${time}
 ${videoConferenceUrl}
-${locationText}`;
+${location}`;
 	}
 }

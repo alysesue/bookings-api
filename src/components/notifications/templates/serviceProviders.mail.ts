@@ -1,37 +1,52 @@
 import { emailMapper } from '../notifications.mapper';
 import { EmailBookingTemplate, EmailTemplateBase } from './citizen.mail';
-import { EmailNotificationTemplateType } from '../notifications.enum';
+import { EmailNotificationTemplateType, EmailRecipient } from '../notifications.enum';
 
 export class ServiceProviderEmailTemplateBookingActionByCitizen extends EmailBookingTemplate {
 	public async CreatedBookingEmail(data): Promise<EmailTemplateBase> {
-		const { serviceName, spNameDisplayedForServiceProvider } = emailMapper(data);
+		const mappedEmailData = emailMapper(data);
 		const templateType = EmailNotificationTemplateType.CreatedByCitizenSentToServiceProvider;
-		const emailContent = await this.getEmailContent(data.serviceId, templateType, data);
+		const emailContent = await this.getEmailContent(
+			templateType,
+			data,
+			mappedEmailData,
+			EmailRecipient.ServiceProvider,
+		);
 
 		return {
-			subject: `BookingSG request: ${serviceName}${spNameDisplayedForServiceProvider}`,
+			subject: `BookingSG request: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForServiceProvider}`,
 			html: emailContent,
 		};
 	}
 
 	public async UpdatedBookingEmail(data): Promise<EmailTemplateBase> {
-		const { serviceName, spNameDisplayedForServiceProvider } = emailMapper(data);
+		const mappedEmailData = emailMapper(data);
 		const templateType = EmailNotificationTemplateType.UpdatedByCitizenSentToServiceProvider;
-		const emailContent = await this.getEmailContent(data.serviceId, templateType, data);
+		const emailContent = await this.getEmailContent(
+			templateType,
+			data,
+			mappedEmailData,
+			EmailRecipient.ServiceProvider,
+		);
 
 		return {
-			subject: `BookingSG update: ${serviceName}${spNameDisplayedForServiceProvider}`,
+			subject: `BookingSG update: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForServiceProvider}`,
 			html: emailContent,
 		};
 	}
 
 	public async CancelledBookingEmail(data): Promise<EmailTemplateBase> {
-		const { serviceName, spNameDisplayedForServiceProvider } = emailMapper(data);
+		const mappedEmailData = emailMapper(data);
 		const templateType = EmailNotificationTemplateType.CancelledByCitizenSentToServiceProvider;
-		const emailContent = await this.getEmailContent(data.serviceId, templateType, data);
+		const emailContent = await this.getEmailContent(
+			templateType,
+			data,
+			mappedEmailData,
+			EmailRecipient.ServiceProvider,
+		);
 
 		return {
-			subject: `BookingSG cancellation: ${serviceName}${spNameDisplayedForServiceProvider}`,
+			subject: `BookingSG cancellation: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForServiceProvider}`,
 			html: emailContent,
 		};
 	}
@@ -43,23 +58,33 @@ export class ServiceProviderEmailTemplateBookingActionByCitizen extends EmailBoo
 
 export class ServiceProviderEmailTemplateBookingActionByServiceProvider extends EmailBookingTemplate {
 	public async UpdatedBookingEmail(data): Promise<EmailTemplateBase> {
-		const { serviceName, spNameDisplayedForServiceProvider } = emailMapper(data);
+		const mappedEmailData = emailMapper(data);
 		const templateType = EmailNotificationTemplateType.UpdatedByServiceProviderSentToServiceProvider;
-		const emailContent = await this.getEmailContent(data.serviceId, templateType, data);
+		const emailContent = await this.getEmailContent(
+			templateType,
+			data,
+			mappedEmailData,
+			EmailRecipient.ServiceProvider,
+		);
 
 		return {
-			subject: `BookingSG update: ${serviceName}${spNameDisplayedForServiceProvider}`,
+			subject: `BookingSG update: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForServiceProvider}`,
 			html: emailContent,
 		};
 	}
 
 	public async CancelledBookingEmail(data): Promise<EmailTemplateBase> {
-		const { serviceName, spNameDisplayedForServiceProvider } = emailMapper(data);
+		const mappedEmailData = emailMapper(data);
 		const templateType = EmailNotificationTemplateType.CancelledByServiceProviderSentToServiceProvider;
-		const emailContent = await this.getEmailContent(data.serviceId, templateType, data);
+		const emailContent = await this.getEmailContent(
+			templateType,
+			data,
+			mappedEmailData,
+			EmailRecipient.ServiceProvider,
+		);
 
 		return {
-			subject: `BookingSG cancellation: ${serviceName}${spNameDisplayedForServiceProvider}`,
+			subject: `BookingSG cancellation: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForServiceProvider}`,
 			html: emailContent,
 		};
 	}
@@ -70,12 +95,17 @@ export class ServiceProviderEmailTemplateBookingActionByServiceProvider extends 
 
 	// Using created by EmailNotificationTemplateType.CreatedByCitizenSentToServiceProvider, because after approval by Admin it would be treated as if the citizen created a new booking for this service provider
 	public async ApprovedBySABookingEmail(data): Promise<EmailTemplateBase> {
-		const { serviceName, spNameDisplayedForServiceProvider } = emailMapper(data);
+		const mappedEmailData = emailMapper(data);
 		const templateType = EmailNotificationTemplateType.CreatedByCitizenSentToServiceProvider;
-		const emailContent = await this.getEmailContent(data.serviceId, templateType, data);
+		const emailContent = await this.getEmailContent(
+			templateType,
+			data,
+			mappedEmailData,
+			EmailRecipient.ServiceProvider,
+		);
 
 		return {
-			subject: `BookingSG approval: ${serviceName}${spNameDisplayedForServiceProvider}`,
+			subject: `BookingSG approval: ${mappedEmailData.serviceName}${mappedEmailData.spNameDisplayedForServiceProvider}`,
 			html: emailContent,
 		};
 	}
