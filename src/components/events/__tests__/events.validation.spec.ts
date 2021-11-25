@@ -58,4 +58,14 @@ describe('Validation of events', () => {
 		const validate = async () => await eventsValidation.validate(event);
 		await expect(validate).rejects.toThrow('[10105] Event should have at least one slot');
 	});
+
+	it('Should return invalid capacity error', async () => {
+		const event = new Event();
+		event.oneOffTimeslots = [];
+		event.title = 'title';
+		event.capacity = 0;
+		const eventsValidation = Container.get(EventsValidation);
+		const validate = async () => await eventsValidation.validate(event);
+		await expect(validate).rejects.toThrow('[10107] Capacity must be at least 1');
+	});
 });

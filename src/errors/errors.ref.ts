@@ -100,6 +100,10 @@ export const ErrorsRef = (arg1?: string | number) => ({
 			code: '10106',
 			message: `Title not provided`,
 		},
+		InvalidCapacity: {
+			code: '10107',
+			message: `Capacity must be at least 1`,
+		},
 	},
 	// Business validation range: 10201-10299
 	dynamicValue: {
