@@ -49,6 +49,7 @@ import { BookingWorkflowsRepository } from '../bookingWorkflows/bookingWorkflows
 import { BookingsEventValidatorFactory } from './validator/bookings.event.validation';
 import { LifeSGMapper } from '../lifesg/lifesg.mapper';
 import { LifeSGMQSerice } from '../lifesg/lifesg.service';
+import { AppointmentAgency } from 'mol-lib-api-contract/appointment';
 
 @InRequestScope
 export class BookingsService {
@@ -848,6 +849,7 @@ export class BookingsService {
 					booking,
 					BookingType.Created,
 					ExternalAgencyAppointmentJobAction.CREATE,
+					AppointmentAgency.HDBVC_BSG,
 				),
 				action: ExternalAgencyAppointmentJobAction.CREATE,
 			});

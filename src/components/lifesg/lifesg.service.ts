@@ -8,11 +8,7 @@ const container = require('rhea');
 import { ConnectionDetails } from 'rhea';
 
 interface Payload {
-	appointment:
-		| CreateAppointmentRequestApiDomain
-		| CancelAppointmentRequestApiDomain
-		| DeleteAppointmentRequestApiDomain
-		| UpdateAppointmentRequestApiDomain;
+	appointment: CreateAppointmentRequestApiDomain | DeleteAppointmentRequestApiDomain;
 	action: ExternalAgencyAppointmentJobAction;
 }
 @InRequestScope
@@ -61,7 +57,7 @@ export class LifeSGMQSerice {
 				}
 			});
 		} catch (error) {
-			logger.error(error);
+			logger.error('Error sending appointment to lifesg', { error });
 		}
 	}
 
