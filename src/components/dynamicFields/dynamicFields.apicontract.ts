@@ -5,6 +5,7 @@ export enum DynamicFieldType {
 	RadioList = 'RadioList',
 	CheckboxList = 'CheckboxList',
 	TextField = 'TextField',
+	TextAreaField = 'TextAreaField',
 	DateOnlyField = 'DateOnlyField',
 }
 

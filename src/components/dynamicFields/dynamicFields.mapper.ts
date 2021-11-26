@@ -1,4 +1,4 @@
-import { DynamicField, SelectListDynamicField, DynamicKeyValueOption } from '../../models';
+import { DynamicField, DynamicKeyValueOption, SelectListDynamicField } from '../../models';
 import { Inject, InRequestScope, Scope, Scoped } from 'typescript-ioc';
 import {
 	FieldWithOptionsModel,
@@ -71,6 +71,7 @@ export class DynamicFieldsMapper {
 			case DynamicFieldType.CheckboxList:
 				return entity instanceof CheckboxListDynamicField ? [true, entity] : [false, entity];
 			case DynamicFieldType.TextField:
+			case DynamicFieldType.TextAreaField:
 				return entity instanceof TextDynamicField ? [true, entity] : [false, entity];
 			case DynamicFieldType.DateOnlyField:
 				return entity instanceof DateOnlyDynamicField ? [true, entity] : [false, entity];
@@ -153,13 +154,20 @@ export class DynamicFieldsMapper {
 
 		if (entity) {
 			entity.name = model.name;
+			entity.inputType = model.type;
 			entity.charLimit = model.textField.charLimit;
 			entity.isMandatory = model.isMandatory;
 
 			return entity;
 		}
 
-		return TextDynamicField.create(model.serviceId, model.name, model.textField.charLimit, model.isMandatory);
+		return TextDynamicField.create(
+			model.serviceId,
+			model.name,
+			model.textField.charLimit,
+			model.isMandatory,
+			model.type,
+		);
 	}
 
 	private mapToDateOnlyField(model: PersistDynamicFieldModelV1, entity: DateOnlyDynamicField | null): DynamicField {
@@ -197,6 +205,17 @@ export class DynamicFieldsMapper {
 	}
 
 	public mapToEntity(model: PersistDynamicFieldModelV1, existingEntity: DynamicField | null): DynamicField {
+		model.name = model.name?.trim();
+		if (!model.name) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Name must be specified for custom field.`);
+		}
+
+		if (!model.type) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Type must be specified for custom field: ${model.name}.`,
+			);
+		}
+
 		let entity: DynamicField | null;
 		if (existingEntity) {
 			const [valid, validatedEntity] = this.checkExpectedEntityType(model, existingEntity);
@@ -213,17 +232,6 @@ export class DynamicFieldsMapper {
 			return this.mapToMyInfo(model, safeCast(entity, MyInfoDynamicField));
 		}
 
-		model.name = model.name?.trim();
-		if (!model.name) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Name must be specified for custom field.`);
-		}
-
-		if (!model.type) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				`Type must be specified for custom field: ${model.name}.`,
-			);
-		}
-
 		switch (model.type) {
 			case DynamicFieldType.SelectList:
 				return this.mapToSelectListField(model, safeCast(entity, SelectListDynamicField));
@@ -232,6 +240,7 @@ export class DynamicFieldsMapper {
 			case DynamicFieldType.CheckboxList:
 				return this.mapToCheckboxListField(model, safeCast(entity, CheckboxListDynamicField));
 			case DynamicFieldType.TextField:
+			case DynamicFieldType.TextAreaField:
 				return this.mapToTextField(model, safeCast(entity, TextDynamicField));
 			case DynamicFieldType.DateOnlyField:
 				return this.mapToDateOnlyField(model, safeCast(entity, DateOnlyDynamicField));
@@ -274,7 +283,7 @@ class DynamicFieldMapperVisitor implements IDynamicFieldVisitor {
 	}
 
 	visitTextField(_textField: TextDynamicField): void {
-		this._result.type = DynamicFieldType.TextField;
+		this._result.type = _textField.inputType;
 		this._result.textField = new TextFieldModel();
 		this._result.textField.charLimit = _textField.charLimit;
 	}
