@@ -1,3 +1,4 @@
+import { ServiceSetting } from './../../models/entities/serviceSetting';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import {
@@ -123,7 +124,9 @@ export class ServicesService {
 
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
 		const mapToCategories = this.categoriesMapper.mapToCategories(request.categories);
+		const serviceSetting = ServiceSetting.create(request.additionalSettings.bookingLimitation);
 		const service = Service.create(request.name, orga, transformedLabels, mapToCategories);
+		service.serviceSetting = serviceSetting;
 		this.servicesMapper.mapToEntityV1(service, request);
 
 		await validator.validate(service);

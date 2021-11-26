@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-enum BookingLimitation {
+export enum BookingLimitation {
 	NoLimitations = 'NoLimitations',
 	OnlyOneBookingPerDate = 'OnlyOneBookingPerDate',
 	OnlyOneUpcomingBooking = 'OnlyOneUpcomingBooking',
@@ -40,5 +40,12 @@ export class ServiceSetting {
 
 	public get limitationNumber(): number {
 		return this._limitationNumber;
+	}
+
+	public static create(bookingLimitation?: BookingLimitation, limitationNumber?: number) {
+		const serviceSetting = new ServiceSetting();
+		serviceSetting._bookingLimitation = bookingLimitation;
+		serviceSetting._limitationNumber = limitationNumber;
+		return serviceSetting;
 	}
 }
