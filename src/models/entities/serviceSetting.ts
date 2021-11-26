@@ -44,7 +44,8 @@ export class ServiceSetting {
 
 	public static create(bookingLimitation?: BookingLimitation, limitationNumber?: number) {
 		const serviceSetting = new ServiceSetting();
-		serviceSetting._bookingLimitation = bookingLimitation;
+		if (bookingLimitation) serviceSetting._bookingLimitation = bookingLimitation;
+		else serviceSetting._bookingLimitation = BookingLimitation.NoLimitations;
 		serviceSetting._limitationNumber = limitationNumber;
 		return serviceSetting;
 	}

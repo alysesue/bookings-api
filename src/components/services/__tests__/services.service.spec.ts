@@ -43,6 +43,7 @@ import { ServicesRepositoryMock } from '../__mocks__/services.repository.mock';
 import { TimeslotItemsServiceMock } from '../../timeslotItems/__mocks__/timeslotItems.service.mock';
 import { ScheduleFormsServiceMock } from '../../scheduleForms/__mocks__/scheduleForms.service.mock';
 import { OrganisationsRepositoryMock } from '../../organisations/__mocks__/organisations.noauth.repository.mock';
+import { BookingLimitation } from '../../../models/entities/serviceSetting';
 
 jest.mock('../services.auth');
 jest.mock('../services.repository', () => {
@@ -209,6 +210,55 @@ describe('Services service tests', () => {
 		}
 
 		expect(error).toEqual(`[10301] Invalid URL`);
+	});
+
+	it('should create a new service with bookingLimitation as OnlyOneBookingPerDate', async () => {
+		const request = new ServiceRequestV1();
+		request.name = 'John';
+		request.organisationId = 1;
+		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
+			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
+		);
+
+		request.additionalSettings = {
+			bookingLimitation: BookingLimitation.OnlyOneBookingPerDate,
+		};
+
+		await Container.get(ServicesService).createService(request);
+
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].serviceSetting.bookingLimitation).toBe(
+			BookingLimitation.OnlyOneBookingPerDate,
+		);
+
+		expect(ServicesRepositoryMock.getService).toBeCalledWith({
+			id: 2,
+			includeLabelCategories: true,
+			includeLabels: true,
+			includeScheduleForm: false,
+			includeTimeslotsSchedule: false,
+		});
+	});
+
+	it('should create a new service with bookingLimitation as NoLimitations by default', async () => {
+		const request = new ServiceRequestV1();
+		request.name = 'John';
+		request.organisationId = 1;
+		OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(
+			Promise.resolve({ _organisationAdminGroupMap: { organisationRef: 'orga' } }),
+		);
+
+		await Container.get(ServicesService).createService(request);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].serviceSetting.bookingLimitation).toBe(
+			BookingLimitation.NoLimitations,
+		);
+
+		expect(ServicesRepositoryMock.getService).toBeCalledWith({
+			id: 2,
+			includeLabelCategories: true,
+			includeLabels: true,
+			includeScheduleForm: false,
+			includeTimeslotsSchedule: false,
+		});
 	});
 
 	it('(a) should save service', async () => {
