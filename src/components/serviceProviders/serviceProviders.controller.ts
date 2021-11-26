@@ -130,7 +130,7 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Get('')
 	@Security('optional-service')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getServiceProviders(
 		@Header('x-api-service') serviceId?: number,
@@ -171,7 +171,7 @@ export class ServiceProvidersController extends Controller {
 	 */
 	@Get('/count')
 	@Security('optional-service')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getTotalServiceProviders(
 		@Header('x-api-service') serviceId?: number,
@@ -218,7 +218,7 @@ export class ServiceProvidersController extends Controller {
 	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
 	 */
 	@Get('{spId}')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getServiceProvider(@Path() spId: number): Promise<ApiData<ServiceProviderResponseModelV1>> {
 		const options = { includeTimeslotsSchedule: true, includeScheduleForm: true };
@@ -456,7 +456,7 @@ export class ServiceProvidersControllerV2 extends Controller {
 	 */
 	@Get('')
 	@Security('optional-service')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getServiceProviders(
 		@Header('x-api-service') serviceId?: string,
@@ -500,7 +500,7 @@ export class ServiceProvidersControllerV2 extends Controller {
 	 */
 	@Get('/count')
 	@Security('optional-service')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getTotalServiceProviders(
 		@Header('x-api-service') serviceId?: string,
@@ -554,7 +554,7 @@ export class ServiceProvidersControllerV2 extends Controller {
 	 * @param includeScheduleForm (Optional) Whether to include working hours and breaks in the response.
 	 */
 	@Get('{spId}')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getServiceProvider(@Path() spId: string): Promise<ApiData<ServiceProviderResponseModelV2>> {
 		const unsignedSpId = this.idHasher.decode(spId);

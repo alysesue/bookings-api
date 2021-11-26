@@ -4,6 +4,7 @@ import {
 	AuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
@@ -39,6 +40,32 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 		return service.hasCitizenAuthentication(CitizenAuthenticationType.Otp) && _anonymousGroup.hasOTPUser();
 	}
 
+	public visitOtp(_otpGroup: OtpAuthGroup): void {
+		const userId = _otpGroup.user.id;
+
+		// tslint:disable-next-line: no-small-switch
+		switch (this._changeLogAction) {
+			case ChangeLogAction.Create:
+				if (
+					this._booking.status === BookingStatus.OnHold ||
+					this._booking.service.hasCitizenAuthentication(CitizenAuthenticationType.Otp)
+				) {
+					this.markWithPermission();
+				}
+
+				break;
+			case ChangeLogAction.Update:
+			case ChangeLogAction.Reschedule:
+			case ChangeLogAction.Cancel:
+				if ((this._booking.creatorId = userId)) {
+					// REVIEW TO BE CHANGED TO OWNER ID
+					this.markWithPermission();
+				}
+				break;
+		}
+	}
+
+	// TO REVIEW PERMISSION
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
 		const userId = _anonymousGroup.user.id;
 
@@ -125,6 +152,17 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 		this._serviceAlias = serviceAlias;
 	}
 
+	// REVIEW TO BE CHANGE TO OWNER ID
+	public visitOtp(_otpGroup: OtpAuthGroup): void {
+		const orConditions = [];
+		const orParams = {};
+		orParams['otpUserId'] = _otpGroup.user.id;
+		orConditions.push(`${this._alias}."_creatorId" = :otpUserId`);
+
+		this.addAuthCondition(orWhere(orConditions), orParams);
+	}
+
+	// TO REVIEW PERMISSION
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
 		const orConditions = [];
 		const orParams = {};

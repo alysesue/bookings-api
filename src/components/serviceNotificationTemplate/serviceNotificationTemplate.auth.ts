@@ -2,6 +2,7 @@ import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
@@ -32,6 +33,8 @@ export class NotificationTemplateActionAuthVisitor extends PermissionAwareAuthGr
 		}
 	}
 
+	public visitOtp(_otpGroup: OtpAuthGroup): void {}
+
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
@@ -55,6 +58,8 @@ export class NotificationTemplateQueryAuthVisitor extends QueryAuthGroupVisitor 
 		super();
 		this._serviceAlias = serviceAlias;
 	}
+
+	public visitOtp(_otpGroup: OtpAuthGroup): void {}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 

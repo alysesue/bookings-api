@@ -3,6 +3,7 @@ import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
@@ -22,6 +23,8 @@ export class OneOffTimeslotsQueryAuthVisitor extends QueryAuthGroupVisitor {
 		this.serviceProviderAlias = serviceProviderAlias;
 		this.serviceProviderServiceAlias = serviceProviderServiceAlias;
 	}
+
+	public visitOtp(_otpGroup: OtpAuthGroup): void {}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 
@@ -70,6 +73,8 @@ export class OneOffTimeslotsActionAuthVisitor extends PermissionAwareAuthGroupVi
 
 		this._oneOffTimeslot = oneOffTimeslot;
 	}
+
+	public visitOtp(_otpGroup: OtpAuthGroup): void {}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 

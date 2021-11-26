@@ -84,7 +84,7 @@ export class BookingsController extends Controller {
 	 */
 	@Post()
 	@SuccessResponse(201, 'Created')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
 	@Security('service')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async postBooking(
@@ -148,7 +148,7 @@ export class BookingsController extends Controller {
 	 * @param rescheduleRequest A new booking request for reschedule
 	 */
 	@Post('{bookingId}/reschedule')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(200, 'Accepted')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async reschedule(
@@ -182,7 +182,7 @@ export class BookingsController extends Controller {
 	 * @param @isInt bookingId The booking id.
 	 */
 	@Post('{bookingId}/cancel')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(204, 'Cancelled')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async cancelBooking(@Path() bookingId: number): Promise<void> {
@@ -195,7 +195,7 @@ export class BookingsController extends Controller {
 	 * @param @isInt bookingId The booking id.
 	 */
 	@Post('{bookingId}/user')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async changeUser(
@@ -311,7 +311,7 @@ export class BookingsController extends Controller {
 	 * @param bookingToken
 	 */
 	@Get('')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(200, 'Ok')
 	@Security('optional-service')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
@@ -367,7 +367,7 @@ export class BookingsController extends Controller {
 	 * @param @isInt bookingId The booking id.
 	 */
 	@Get('{bookingId}')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async getBooking(@Path() bookingId: number | string): Promise<ApiData<BookingResponseV1>> {
@@ -385,7 +385,7 @@ export class BookingsController extends Controller {
 	 * @returns A single booking
 	 */
 	@Get('uuid/{bookingUUID}')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async getBookingByUUID(@Path() bookingUUID: string): Promise<ApiData<BookingResponseV1>> {
@@ -444,7 +444,7 @@ export class BookingsController extends Controller {
 	 * @param @isInt bookingId The booking id.
 	 */
 	@Post('{bookingId}/validateOnHold')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(200, 'Validated')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async validateOnHoldBooking(
@@ -483,7 +483,7 @@ export class BookingsControllerV2 extends Controller {
 	 */
 	@Post()
 	@SuccessResponse(201, 'Created')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
 	@Security('service')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async postBooking(
@@ -559,7 +559,7 @@ export class BookingsControllerV2 extends Controller {
 	 * @param rescheduleRequest A new booking request for reschedule
 	 */
 	@Post('{bookingId}/reschedule')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(200, 'Accepted')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async reschedule(
@@ -600,7 +600,7 @@ export class BookingsControllerV2 extends Controller {
 	 * @param bookingId The booking id.
 	 */
 	@Post('{bookingId}/cancel')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(204, 'Cancelled')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async cancelBooking(@Path() bookingId: string): Promise<void> {
@@ -728,7 +728,7 @@ export class BookingsControllerV2 extends Controller {
 	 * @param bookingToken
 	 */
 	@Get('')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(200, 'Ok')
 	@Security('optional-service')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
@@ -791,7 +791,7 @@ export class BookingsControllerV2 extends Controller {
 	 * @param bookingId The booking id.
 	 */
 	@Get('{bookingId}')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async getBooking(@Path() bookingId: string): Promise<ApiData<BookingResponseV2>> {
@@ -807,7 +807,7 @@ export class BookingsControllerV2 extends Controller {
 	 * @returns A single booking
 	 */
 	@Get('uuid/{bookingUUID}')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async getBookingByUUID(@Path() bookingUUID: string): Promise<ApiData<BookingResponseV2>> {
@@ -867,7 +867,7 @@ export class BookingsControllerV2 extends Controller {
 	 * @param @isInt bookingId The booking id.
 	 */
 	@Post('{bookingId}/user')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async changeUser(
@@ -887,7 +887,7 @@ export class BookingsControllerV2 extends Controller {
 	 * @param bookingId The booking id.
 	 */
 	@Post('{bookingId}/validateOnHold')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(200, 'Validated')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async validateOnHoldBooking(

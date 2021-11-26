@@ -4,6 +4,7 @@ import {
 	CitizenAuthGroup,
 	IAuthGroupVisitor,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../infrastructure/auth/authGroup';
@@ -18,7 +19,7 @@ export class UinFinConfiguration implements IAuthGroupVisitor {
 	}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
-
+	public visitOtp(_otpGroup: OtpAuthGroup): void {}
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {}
 
 	public visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void {

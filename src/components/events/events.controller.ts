@@ -176,7 +176,7 @@ export class EventsController extends Controller {
 	 */
 	@Post('{eventId}/bookings')
 	@Response(401, 'Valid authentication types: [citizen,admin,agency]')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
 	public async createEventBooking(
 		@Path() eventId: string,
 		@Body() eventBookingRequest: EventBookingRequest,
@@ -196,7 +196,7 @@ export class EventsController extends Controller {
 	@Get('{eventId}/bookings')
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Unauthorized')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
 	public async getBookings(
 		@Path() eventId: string,
 		@Query() page?: number,
@@ -225,7 +225,7 @@ export class EventsController extends Controller {
 	 * @param bookingId The booking id.
 	 */
 	@Post('/bookings/{bookingId}/validateOnHold')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@SuccessResponse(200, 'Validated')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
 	public async validateOnHoldBooking(

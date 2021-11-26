@@ -5,6 +5,7 @@ import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
@@ -26,6 +27,8 @@ export class DynamicFieldsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 		this._service = service;
 		this._action = action;
 	}
+
+	public visitOtp(_otpGroup: OtpAuthGroup): void {}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 

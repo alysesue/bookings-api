@@ -52,6 +52,7 @@ export enum AuthGroupTypeContract {
 	serviceAdmin = 'service-admin',
 	serviceProvider = 'service-provider',
 	anonymous = 'anonymous',
+	otp = 'otp',
 }
 
 export class AuthGroupResponseV1 {

@@ -15,6 +15,7 @@ export abstract class AuthGroup {
 
 // Visitor Pattern
 export interface IAuthGroupVisitor {
+	visitOtp(_otpGroup: OtpAuthGroup): void | Promise<void>;
 	visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void | Promise<void>;
 	visitCitizen(_citizenGroup: CitizenAuthGroup): void | Promise<void>;
 	visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void | Promise<void>;
@@ -23,6 +24,20 @@ export interface IAuthGroupVisitor {
 }
 
 export type OtpGroupInfo = { mobileNo: string };
+
+export class OtpAuthGroup extends AuthGroup {
+	constructor(otpUser: User) {
+		super(otpUser);
+
+		if (!otpUser.isOtp()) {
+			throw new Error('OtpUserAuthGroup must be created with an otp User.');
+		}
+	}
+
+	public acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void> {
+		return visitor.visitOtp(this);
+	}
+}
 
 export class AnonymousAuthGroup extends AuthGroup {
 	public bookingInfo?: BookingUUIDInfo;

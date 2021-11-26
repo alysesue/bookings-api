@@ -2,6 +2,7 @@ import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
@@ -29,6 +30,8 @@ export class ServicesActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 			throw new Error('ServicesActionAuthVisitor - Organisation ID cannot be null or undefined');
 		}
 	}
+
+	public visitOtp(_otpGroup: OtpAuthGroup): void {}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 
@@ -68,6 +71,10 @@ export class ServicesQueryAuthVisitor extends QueryAuthGroupVisitor {
 		this._alias = alias;
 	}
 
+	// TO REVIEW
+	public visitOtp(_otpGroup: OtpAuthGroup): void {}
+
+	// TO REVIEW
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
 		if (_anonymousGroup.bookingInfo) {
 			const { serviceId } = _anonymousGroup.bookingInfo;

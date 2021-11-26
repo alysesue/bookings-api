@@ -32,7 +32,7 @@ export class UsersController extends Controller {
 	 * It returns Unauthorized (401) status code if the user is not logged in.
 	 */
 	@Get('me')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getProfile(): Promise<ApiData<UserProfileResponseV1>> {
@@ -142,7 +142,7 @@ export class UsersControllerV2 extends Controller {
 	 * It returns Unauthorized (401) status code if the user is not logged in.
 	 */
 	@Get('me')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getProfile(): Promise<ApiData<UserProfileResponseV2>> {

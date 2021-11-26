@@ -3,6 +3,7 @@ import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
@@ -43,10 +44,12 @@ export class OrganisationsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 		}
 	}
 
+	public visitOtp(_otpGroup: OtpAuthGroup): void {}
+
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
 		switch (this._action) {
 			case OrganisationsAuthOtherAction.someRead:
-					this.markWithPermission();
+				this.markWithPermission();
 				return;
 			default:
 				return;

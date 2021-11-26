@@ -3,6 +3,7 @@ import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
@@ -28,6 +29,8 @@ export class ScheduleFormsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 		this._action = action;
 		this._serviceProvider = serviceProvider;
 	}
+
+	public visitOtp(_otpGroup: OtpAuthGroup): void {}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 
@@ -87,6 +90,8 @@ export class ScheduleFormsQueryAuthVisitor extends QueryAuthGroupVisitor {
 		this._spServiceAlias = spServiceAlias;
 		this._serviceProviderAlias = serviceProviderAlias;
 	}
+
+	public visitOtp(_otpGroup: OtpAuthGroup): void {}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 

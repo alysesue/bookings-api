@@ -6,13 +6,10 @@ import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 
 const emptyFunction = async (): Promise<void> => {};
 
-export type AnonymousAuthConfig = {
-	requireOtp: boolean;
-};
-
 export type AuthConfig = MOLAuth.Config & {
 	bypassAuth?: boolean;
-	anonymous?: AnonymousAuthConfig;
+	anonymous?: boolean;
+	otp?: boolean;
 };
 
 export function BookingSGAuth(
@@ -27,8 +24,14 @@ export function BookingSGAuth(
 			// function keyword preserves 'this' (the controller instance)
 			descriptor.value = async function decoratedMethod(...params) {
 				const context = (this as any).context as Koa.Context;
-				if (await isAnonymousAuth(context)) {
-					await verifyAnonymousAuth(context);
+				if ((await isOtpAuth(context)) && !config.otp) {
+					throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
+						'Endpoint does not support otp user',
+					);
+				} else if ((await isAnonymousAuth(context)) && !config.anonymous) {
+					throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
+						'Endpoint does not support anonymous user',
+					);
 				} else {
 					await molDecoratorFunction.apply(this, params);
 				}
@@ -62,21 +65,10 @@ export function BookingSGAuth(
 		return user && user.isAnonymous();
 	};
 
-	const verifyAnonymousAuth = async (ctx: Koa.Context): Promise<void> => {
+	const isOtpAuth = async (ctx: Koa.Context): Promise<boolean> => {
 		const userContext = resolveUserContext(ctx);
-
-		if (!config.anonymous) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
-				'Endpoint does not support anonymous user',
-			);
-		}
-
-		const otpAddOnMobileNo = userContext?.getOtpAddOnMobileNo();
-		if (config.anonymous.requireOtp && !otpAddOnMobileNo) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
-				'User is not authenticated with mobile otp',
-			);
-		}
+		const user = await userContext.getCurrentUser();
+		return user && user.isOtp();
 	};
 
 	return decorator;
