@@ -59,4 +59,11 @@ export class ServiceSetting {
 		serviceSetting.bookingLimitation = bookingLimitation;
 		return serviceSetting;
 	}
+
+	public static create(bookingLimitation?: BookingLimitation, limitationNumber?: number) {
+		const serviceSetting = new ServiceSetting();
+		serviceSetting._bookingLimitation = bookingLimitation;
+		serviceSetting._limitationNumber = limitationNumber;
+		return serviceSetting;
+	}
 }

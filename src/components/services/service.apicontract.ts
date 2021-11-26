@@ -1,3 +1,4 @@
+import { BookingLimitation } from '../../models/entities/serviceSetting';
 import { CitizenAuthenticationType } from '../../models/citizenAuthenticationType';
 import { LabelRequestModel, LabelResponseModel } from '../labels/label.apicontract';
 import {
