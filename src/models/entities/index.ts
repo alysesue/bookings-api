@@ -37,3 +37,4 @@ export { Event } from './event';
 export { BookedSlot } from './bookedSlot';
 export { ServiceProviderLabel } from './serviceProviderLabel';
 export { ServiceProviderLabelCategory } from './serviceProviderLabelCategory';
+export { ServiceSetting } from './serviceSetting';

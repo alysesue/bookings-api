@@ -1,3 +1,4 @@
+import { ServiceSetting } from './serviceSetting';
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
@@ -359,4 +360,17 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	public set mqSubscriber(mqSubscriber: MqSubscriberType[]) {
 		this._mqSubscriber = mqSubscriber;
 	}
+
+	@OneToOne('ServiceSetting', { nullable: false, cascade: true })
+	@JoinColumn({ name: '_serviceSettingId' })
+	public _serviceSetting: ServiceSetting;
+
+	public set serviceSetting(serviceSetting: ServiceSetting) {
+		this._serviceSetting = serviceSetting;
+	}
+
+	public get serviceSetting(): ServiceSetting {
+		return this._serviceSetting;
+	}
+
 }
