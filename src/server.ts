@@ -116,6 +116,7 @@ function getContentPolicyOptions() {
 
 const byPassCSRFPaths = [
 	'/api/v1/bookings/bulk',
+	'/api/v2/bookings/lifesg',
 	'/api/v1/encryption/encrypt',
 	'/api/v1/users/service-admins/upsert',
 	'/api/v1/users/service-admins/upsert/csv',

@@ -36,6 +36,7 @@ import {
 	BookingUpdateRequestV1,
 	ValidateOnHoldRequest,
 	BookingDetailsRequest,
+	SendBookingsToLifeSGRequest,
 } from './bookings.apicontract';
 import { BookingsRepository } from './bookings.repository';
 import { BookingType } from '../../models/bookingType';
@@ -46,9 +47,14 @@ import { EventsService } from '../events/events.service';
 import { BookingValidationType, BookingWorkflowType } from '../../models/bookingValidationType';
 import { BookingWorkflowsRepository } from '../bookingWorkflows/bookingWorkflows.repository';
 import { BookingsEventValidatorFactory } from './validator/bookings.event.validation';
+import { LifeSGMapper } from '../lifesg/lifesg.mapper';
+import { LifeSGMQSerice } from '../lifesg/lifesg.service';
+import { AppointmentAgency } from 'mol-lib-api-contract/appointment';
 
 @InRequestScope
 export class BookingsService {
+	@Inject
+	private lifeSGMQSerice: LifeSGMQSerice;
 	@Inject
 	private bookingsSubject: BookingsSubject;
 	@Inject
@@ -822,6 +828,35 @@ export class BookingsService {
 
 		await this.bookingsRepository.update(newBooking);
 		return [ChangeLogAction.UpdateUser, newBooking];
+	}
+
+	public async sendBookingsToLifeSG(request: SendBookingsToLifeSGRequest): Promise<any> {
+		const { serviceId } = request;
+
+		// get bookings
+		const searchRequest = {
+			serviceId,
+			statuses: [BookingStatus.Accepted],
+			page: null,
+			limit: null,
+		};
+		const bookings: Booking[] = await this.searchBookingsReturnAll(searchRequest);
+
+		const appointments = [];
+		bookings.forEach((booking) => {
+			appointments.push({
+				appointment: LifeSGMapper.mapLifeSGAppointment(
+					booking,
+					BookingType.Created,
+					ExternalAgencyAppointmentJobAction.CREATE,
+					AppointmentAgency.HDBVC_BSG,
+				),
+				action: ExternalAgencyAppointmentJobAction.CREATE,
+			});
+		});
+
+		this.lifeSGMQSerice.sendMultiple(appointments);
+		return `LifeSg Appointment(s) sent.`;
 	}
 }
 

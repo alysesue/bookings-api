@@ -72,6 +72,10 @@ export class ValidateOnHoldRequest extends BookingDetailsRequest {
 	public citizenUinFinUpdated?: boolean = true; // for backwards compatibility
 }
 
+export class SendBookingsToLifeSGRequest {
+	serviceId: number;
+}
+
 export class BookingResponseBase {
 	/**
 	 * @isInt
