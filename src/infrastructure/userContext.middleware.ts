@@ -14,14 +14,16 @@ export class UserContextMiddleware {
 
 			const user = await userContext.getCurrentUser();
 			if (!user) {
-				const anonymousCookieHelper = containerContext.resolve(BookingSGCookieHelper);
-				const anonymousData = anonymousCookieHelper.getCookieValue();
-				if (anonymousData) {
-					userContext.setAnonymousUser(anonymousData);
-					const mobileOtpCookieHelper = containerContext.resolve(MobileOtpCookieHelper);
-					const mobileOtpCookie = mobileOtpCookieHelper.getCookieValue();
-					if (mobileOtpCookieHelper.isCookieValid(mobileOtpCookie))
-						await userContext.otpAddOn(mobileOtpCookie);
+				const mobileOtpCookieHelper = containerContext.resolve(MobileOtpCookieHelper);
+				const otpData = mobileOtpCookieHelper.getCookieValue();
+				if (otpData) {
+					userContext.setOtpUser(otpData);
+				} else {
+					const anonymousCookieHelper = containerContext.resolve(BookingSGCookieHelper);
+					const anonymousData = anonymousCookieHelper.getCookieValue();
+					if (anonymousData) {
+						userContext.setAnonymousUser(anonymousData);
+					}
 				}
 			}
 
