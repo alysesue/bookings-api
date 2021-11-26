@@ -68,6 +68,9 @@ export class BookingsController extends Controller {
 	@Inject
 	private apiPagingFactory: ApiPagingFactory;
 
+	@Inject
+	private idHasher: IdHasher;
+
 	/**
 	 * Creates a new booking.
 	 * [startDateTime, endDateTime] pair needs to match an available timeslot for the service or service provider.
@@ -354,7 +357,10 @@ export class BookingsController extends Controller {
 	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: true } })
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
-	public async getBooking(@Path() bookingId: number): Promise<ApiData<BookingResponseV1>> {
+	public async getBooking(@Path() bookingId: number | string): Promise<ApiData<BookingResponseV1>> {
+		if (typeof bookingId === 'string') {
+			bookingId = this.idHasher.decode(bookingId);
+		}
 		const booking = await this.bookingsService.getBooking(bookingId);
 		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking));
 	}
