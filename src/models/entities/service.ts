@@ -1,4 +1,4 @@
-import { ServiceSetting } from './serviceSetting';
+import { BookingLimitation, ServiceSetting } from './serviceSetting';
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
@@ -124,7 +124,13 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		return this._timeslotsSchedule;
 	}
 
-	public static create(name: string, orga: Organisation, labels: Label[] = [], categories: LabelCategory[] = []) {
+	public static create(
+		name: string,
+		orga: Organisation,
+		labels: Label[] = [],
+		categories: LabelCategory[] = [],
+		bookingLimitation: BookingLimitation = BookingLimitation.NoLimitations,
+	) {
 		const service = new Service();
 		service._name = name.trim();
 		service._organisation = orga;
@@ -135,7 +141,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 				orga._organisationAdminGroupMap?.organisationRef,
 			),
 		);
-
+		service.serviceSetting = ServiceSetting.create(bookingLimitation);
 		service.labels = labels;
 		service.categories = categories;
 		service.citizenAuthentication = DEFAULT_CITIZEN_AUTH;
@@ -372,5 +378,4 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 	public get serviceSetting(): ServiceSetting {
 		return this._serviceSetting;
 	}
-
 }
