@@ -124,9 +124,7 @@ export class ServicesService {
 
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
 		const mapToCategories = this.categoriesMapper.mapToCategories(request.categories);
-		const serviceSetting = ServiceSetting.create(request.additionalSettings?.bookingLimitation ?? null);
 		const service = Service.create(request.name, orga, transformedLabels, mapToCategories);
-		service.serviceSetting = serviceSetting;
 		this.servicesMapper.mapToEntityV1(service, request);
 
 		await validator.validate(service);
