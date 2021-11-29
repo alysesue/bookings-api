@@ -135,7 +135,7 @@ export class ServicesController extends Controller {
 	 * @param includeLabelCategories (Optional) Whether to include categories with labels in the response.
 	 */
 	@Get('{serviceId}')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true, otp: true })
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getService(
@@ -349,7 +349,7 @@ export class ServicesControllerV2 extends Controller {
 	 * @param includeLabelCategories (Optional) Whether to include categories with labels in the response.
 	 */
 	@Get('{serviceId}')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true, otp: true })
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getService(

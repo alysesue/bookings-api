@@ -20,22 +20,22 @@ export function BookingSGAuth(
 
 		if (!config.bypassAuth) {
 			const molDecoratorFunction = getMolDecoratorFunction(target, propertyKey, descriptor);
-
 			// function keyword preserves 'this' (the controller instance)
 			descriptor.value = async function decoratedMethod(...params) {
 				const context = (this as any).context as Koa.Context;
-				if ((await isOtpAuth(context)) && !config.otp) {
-					throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
-						'Endpoint does not support otp user',
-					);
-				} else if ((await isAnonymousAuth(context)) && !config.anonymous) {
-					throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
-						'Endpoint does not support anonymous user',
-					);
+				if (await isOtpAuth(context)) {
+					if (!config.otp)
+						throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
+							'Endpoint does not support otp user',
+						);
+				} else if (await isAnonymousAuth(context)) {
+					if (!config.anonymous)
+						throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHENTICATION).setMessage(
+							'Endpoint does not support anonymous user',
+						);
 				} else {
 					await molDecoratorFunction.apply(this, params);
 				}
-
 				return await originalMethod.apply(this, params);
 			};
 		}

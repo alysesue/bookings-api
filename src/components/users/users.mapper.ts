@@ -25,6 +25,7 @@ import {
 	UserProfileResponseV2,
 	UserTypeContract,
 	UserTypeResponse,
+	OtpUserContract,
 } from './users.apicontract';
 import { Inject } from 'typescript-ioc';
 import { IdHasher } from '../../infrastructure/idHasher';
@@ -49,6 +50,10 @@ export class UserProfileMapper {
 			instance.agency.name = user.agencyUser.agencyName;
 		} else if (user.isAnonymous()) {
 			instance.userType = UserTypeContract.anonymous;
+		} else if (user.isOtp()) {
+			instance.userType = UserTypeContract.otp;
+			instance.otp = new OtpUserContract();
+			instance.otp.mobileNo = user.otpUser.mobileNo;
 		} else {
 			throw new Error('User cannot be mapped to UserTypeResponse. Id: ' + user.id);
 		}

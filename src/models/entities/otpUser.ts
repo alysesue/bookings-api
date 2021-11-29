@@ -32,8 +32,9 @@ export class OtpUser {
 	}
 
 	public static create(mobileNo: string): OtpUser {
+		if (!mobileNo) return null;
 		const instance = new OtpUser();
-		instance.mobileNo = mobileNo;
+		instance._mobileNo = mobileNo;
 		return instance;
 	}
 }

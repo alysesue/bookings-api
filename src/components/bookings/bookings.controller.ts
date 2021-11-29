@@ -84,7 +84,7 @@ export class BookingsController extends Controller {
 	 */
 	@Post()
 	@SuccessResponse(201, 'Created')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true, otp: true })
 	@Security('service')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async postBooking(
@@ -483,7 +483,7 @@ export class BookingsControllerV2 extends Controller {
 	 */
 	@Post()
 	@SuccessResponse(201, 'Created')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true, otp: true })
 	@Security('service')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async postBooking(

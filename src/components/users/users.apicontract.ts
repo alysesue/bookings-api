@@ -22,10 +22,16 @@ export class UserTypeResponse {
 	public admin?: AdminUserContract;
 	/** This field is used when userType='agency', for agency users (system to system) */
 	public agency?: AgencyUserContract;
+	/** This field is used when userType='otp', for otp users */
+	public otp?: OtpUserContract;
 }
 
 export class SingPassUserContract {
 	public uinfin: string;
+}
+
+export class OtpUserContract {
+	public mobileNo: string;
 }
 
 export class AdminUserContract {
@@ -44,6 +50,7 @@ export enum UserTypeContract {
 	admin = 'admin',
 	agency = 'agency',
 	anonymous = 'anonymous',
+	otp = 'otp',
 }
 
 export enum AuthGroupTypeContract {
@@ -61,6 +68,7 @@ export class AuthGroupResponseV1 {
 	public services?: ServiceAdminGroupContractV1[];
 	public serviceProvider?: ServiceProviderContractV1;
 	public anonymous?: AnonymousGroupContract;
+	public otp?: OtpGroupContractV1;
 }
 
 export class AuthGroupResponseV2 {
@@ -69,8 +77,24 @@ export class AuthGroupResponseV2 {
 	public services?: ServiceAdminGroupContractV2[];
 	public serviceProvider?: ServiceProviderContractV2;
 	public anonymous?: AnonymousGroupContract;
+	public otp?: OtpGroupContractV2;
 }
 
+export class OtpGroupContractV1 {
+	/**
+	 * @isInt
+	 */
+	public id: number;
+	public name: string;
+}
+
+export class OtpGroupContractV2 {
+	/**
+	 * @isInt
+	 */
+	public id: string;
+	public name: string;
+}
 export class OrganisationAdminGroupContractV1 {
 	/**
 	 * @isInt

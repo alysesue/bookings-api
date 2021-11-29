@@ -301,4 +301,13 @@ export class UsersService {
 
 		return user;
 	}
+
+	public async getOtpUser(mobileNo: string): Promise<User> {
+		return await this.usersRepository.getUserByMobileNo(mobileNo);
+	}
+
+	public async createOtpUser(mobileNo: string): Promise<User> {
+		const otpUser = User.createOtpUser(mobileNo);
+		return await this.usersRepository.save(otpUser);
+	}
 }

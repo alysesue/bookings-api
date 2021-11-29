@@ -110,9 +110,11 @@ export class User implements IUser {
 		return !!this.id;
 	}
 
-	public static createOtpUser(otpPhone: string): User {
+	public static createOtpUser(mobileNo: string): User {
+		const otpUser = OtpUser.create(mobileNo);
+		if (!otpUser) return null;
 		const instance = new User();
-		instance.otpUser = OtpUser.create(otpPhone);
+		instance._otpUser = otpUser;
 		return instance;
 	}
 

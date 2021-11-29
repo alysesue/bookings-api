@@ -72,7 +72,9 @@ export class ServicesQueryAuthVisitor extends QueryAuthGroupVisitor {
 	}
 
 	// TO REVIEW
-	public visitOtp(_otpGroup: OtpAuthGroup): void {}
+	public visitOtp(_otpGroup: OtpAuthGroup): void {
+		this.addAsTrue();
+	}
 
 	// TO REVIEW
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {

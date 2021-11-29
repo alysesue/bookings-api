@@ -12,6 +12,19 @@ export class UsersRepository extends RepositoryBase<User> {
 		return await repository.save(user);
 	}
 
+	public async getUserByMobileNo(mobileNo?: string): Promise<User> {
+		if (!mobileNo) return null;
+
+		const repository = await this.getRepository();
+		const query = repository
+			.createQueryBuilder('u')
+			.innerJoinAndSelect('u._otpUser', 'otp', 'otp."_mobileNo" = :mobileNo', {
+				mobileNo,
+			});
+
+		return await query.getOne();
+	}
+
 	public async getUserByTrackingId(trackingId?: string): Promise<User> {
 		if (!trackingId) return null;
 
