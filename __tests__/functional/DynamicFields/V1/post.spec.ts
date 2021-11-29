@@ -1,5 +1,8 @@
 import { PgClient } from '../../../utils/pgClient';
-import { DynamicFieldModel } from '../../../../src/components/dynamicFields/dynamicFields.apicontract';
+import {
+	DynamicFieldModel,
+	DynamicFieldType,
+} from '../../../../src/components/dynamicFields/dynamicFields.apicontract';
 import { getDynamicFields, postSelectListDynamicField, postTextDynamicField } from './common';
 import { ServiceResponseV1 } from '../../../../src/components/services/service.apicontract';
 import { postService } from '../../../populate/V1/services';
@@ -41,6 +44,26 @@ describe('Dynamic Fields functional tests', () => {
 				charLimit: 15,
 			},
 			type: 'TextField',
+		});
+	});
+
+	it('should add text area dynamic field with isMandatory = undefined set to default false', async () => {
+		const response = await postTextDynamicField(
+			{ serviceId: service.id },
+			undefined,
+			DynamicFieldType.TextAreaField,
+		);
+		expect(response.statusCode).toBe(201);
+
+		const field = response.body.data as DynamicFieldModel;
+		expect(field).toEqual({
+			idSigned: field.idSigned,
+			isMandatory: false,
+			name: 'notes',
+			textField: {
+				charLimit: 15,
+			},
+			type: 'TextAreaField',
 		});
 	});
 
