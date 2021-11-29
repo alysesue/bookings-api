@@ -855,8 +855,11 @@ export class BookingsService {
 			});
 		});
 
+		if(appointments.length === 0){
+			return `No appointment.`;
+		}
 		this.lifeSGMQSerice.sendMultiple(appointments);
-		return `LifeSg Appointment(s) sent.`;
+		return `Sending Appointment(s).`;
 	}
 }
 
