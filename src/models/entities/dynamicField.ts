@@ -287,14 +287,14 @@ export class TextDynamicField extends DynamicField {
 		name: string,
 		charLimit: number,
 		isMandatory: boolean,
-		inputType: DynamicFieldType,
+		inputType?: DynamicFieldType,
 	): DynamicField {
 		const dynamicField = new TextDynamicField();
 		dynamicField.serviceId = serviceId;
 		dynamicField.name = name;
 		dynamicField.charLimit = charLimit;
 		dynamicField.isMandatory = isMandatory;
-		dynamicField.inputType = inputType;
+		dynamicField.inputType = inputType ?? DynamicFieldType.TextField;
 		return dynamicField;
 	}
 

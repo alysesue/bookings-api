@@ -205,17 +205,6 @@ export class DynamicFieldsMapper {
 	}
 
 	public mapToEntity(model: PersistDynamicFieldModelV1, existingEntity: DynamicField | null): DynamicField {
-		model.name = model.name?.trim();
-		if (!model.name) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Name must be specified for custom field.`);
-		}
-
-		if (!model.type) {
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
-				`Type must be specified for custom field: ${model.name}.`,
-			);
-		}
-
 		let entity: DynamicField | null;
 		if (existingEntity) {
 			const [valid, validatedEntity] = this.checkExpectedEntityType(model, existingEntity);
@@ -230,6 +219,17 @@ export class DynamicFieldsMapper {
 
 		if (model.myInfoFieldType) {
 			return this.mapToMyInfo(model, safeCast(entity, MyInfoDynamicField));
+		}
+
+		model.name = model.name?.trim();
+		if (!model.name) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Name must be specified for custom field.`);
+		}
+
+		if (!model.type) {
+			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(
+				`Type must be specified for custom field: ${model.name}.`,
+			);
 		}
 
 		switch (model.type) {

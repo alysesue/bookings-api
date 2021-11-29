@@ -1,8 +1,9 @@
 import { DateOnlyDynamicField, MyInfoDynamicField } from '../../models/entities/dynamicField';
-import { DynamicField, SelectListDynamicField, DynamicKeyValueOption, TextDynamicField } from '../../models';
+import { DynamicField, DynamicKeyValueOption, SelectListDynamicField, TextDynamicField } from '../../models';
 import { MyInfoFieldType } from '../../models/entities/myInfoFieldType';
 import { InRequestScope } from 'typescript-ioc';
 import { nationalityCodes } from './data/nationalityCodes';
+import { DynamicFieldType } from '../dynamicFields/dynamicFields.apicontract';
 
 @InRequestScope
 export class MyInfoMetadataFactory {
@@ -44,6 +45,7 @@ export class MyInfoMetadataFactory {
 	private postalField(): DynamicField {
 		const field = new TextDynamicField();
 		field.charLimit = 6;
+		field.inputType = DynamicFieldType.TextField;
 
 		return field;
 	}
