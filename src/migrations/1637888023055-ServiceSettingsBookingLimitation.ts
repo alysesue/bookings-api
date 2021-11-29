@@ -28,6 +28,8 @@ export class ServiceSettingsBookingLimitation1637888023055 implements MigrationI
 					END LOOP;
 			END;
 			$$;`);
+
+		await queryRunner.query(`ALTER TABLE "service" ALTER "_serviceSettingId" SET NOT NULL`);
 	}
 
 	public async down(queryRunner: QueryRunner): Promise<void> {
