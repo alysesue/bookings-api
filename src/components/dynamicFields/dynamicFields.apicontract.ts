@@ -1,5 +1,10 @@
 import { MyInfoFieldType } from '../../models/entities/myInfoFieldType';
 
+export enum TextFieldType {
+	SingleLine = 'SingleLine',
+	TextArea = 'TextArea',
+}
+
 export enum DynamicFieldType {
 	SelectList = 'SelectList',
 	RadioList = 'RadioList',

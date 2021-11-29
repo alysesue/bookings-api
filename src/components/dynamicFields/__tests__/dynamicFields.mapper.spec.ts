@@ -9,6 +9,7 @@ import {
 	FieldWithOptionsModel,
 	PersistDynamicFieldModelV1,
 	TextFieldModel,
+	TextFieldType,
 } from '../dynamicFields.apicontract';
 import { MyInfoFieldType } from '../../../models/entities/myInfoFieldType';
 import {
@@ -51,12 +52,12 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		return field;
 	};
 
-	const createTextField = (type?: DynamicFieldType) => {
+	const createTextField = (type?: TextFieldType) => {
 		const textField = new TextDynamicField();
 		textField.id = 2;
 		textField.name = 'Sample text';
 		textField.charLimit = 15;
-		textField.inputType = type ?? DynamicFieldType.TextField;
+		textField.inputType = type ?? TextFieldType.SingleLine;
 		textField.isMandatory = true;
 
 		return textField;
@@ -94,7 +95,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 
 	it('should map text area field', () => {
 		const container = Container.get(DynamicFieldsMapper);
-		const dynamicFieldModel = container.mapDataModel(createTextField(DynamicFieldType.TextAreaField));
+		const dynamicFieldModel = container.mapDataModel(createTextField(TextFieldType.TextArea));
 
 		expect(dynamicFieldModel).toEqual({
 			textField: {
@@ -447,7 +448,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			request.selectList.options = [{ key: 1, value: 'option A' }];
 
 			const instance = Container.get(DynamicFieldsMapper);
-			const entity = TextDynamicField.create(1, 'notes', 10, true, DynamicFieldType.TextField);
+			const entity = TextDynamicField.create(1, 'notes', 10, true);
 			entity.id = 11;
 
 			const _test = () => instance.mapToEntity(request, entity);
@@ -534,7 +535,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			request.isMandatory = true;
 
 			const instance = Container.get(DynamicFieldsMapper);
-			const entity = TextDynamicField.create(1, 'existing entity - text', 20, true, DynamicFieldType.TextField);
+			const entity = TextDynamicField.create(1, 'existing entity - text', 20, true);
 			entity.id = 11;
 
 			const mapped = instance.mapToEntity(request, entity);
@@ -542,7 +543,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			expect(mapped).toEqual({
 				_id: 11,
 				_name: 'update request - text area',
-				_inputType: DynamicFieldType.TextAreaField,
+				_inputType: TextFieldType.TextArea,
 				_isMandatory: true,
 				_charLimit: 100,
 				_serviceId: 1,
@@ -559,13 +560,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			request.isMandatory = true;
 
 			const instance = Container.get(DynamicFieldsMapper);
-			const entity = TextDynamicField.create(
-				1,
-				'existing entity - text area',
-				100,
-				true,
-				DynamicFieldType.TextAreaField,
-			);
+			const entity = TextDynamicField.create(1, 'existing entity - text area', 100, true, TextFieldType.TextArea);
 			entity.id = 11;
 
 			const mapped = instance.mapToEntity(request, entity);
@@ -573,7 +568,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			expect(mapped).toEqual({
 				_id: 11,
 				_name: 'update request - text',
-				_inputType: DynamicFieldType.TextField,
+				_inputType: TextFieldType.SingleLine,
 				_isMandatory: true,
 				_charLimit: 15,
 				_serviceId: 1,
@@ -596,7 +591,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			expect(mapped).toEqual({
 				_isMandatory: true,
 				_name: 'notes',
-				_inputType: DynamicFieldType.TextField,
+				_inputType: TextFieldType.SingleLine,
 				_charLimit: 15,
 				_serviceId: 1,
 			});
@@ -612,7 +607,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			request.isMandatory = true;
 
 			const instance = Container.get(DynamicFieldsMapper);
-			const entity = TextDynamicField.create(1, 'field', 20, true, DynamicFieldType.TextField);
+			const entity = TextDynamicField.create(1, 'field', 20, true);
 			entity.id = 11;
 
 			const mapped = instance.mapToEntity(request, entity);
@@ -620,7 +615,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			expect(mapped).toEqual({
 				_id: 11,
 				_name: 'notes',
-				_inputType: DynamicFieldType.TextField,
+				_inputType: TextFieldType.SingleLine,
 				_isMandatory: true,
 				_charLimit: 15,
 				_serviceId: 1,
@@ -678,7 +673,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			expect(mapped).toEqual({
 				_isMandatory: true,
 				_name: 'notes',
-				_inputType: DynamicFieldType.TextAreaField,
+				_inputType: TextFieldType.TextArea,
 				_charLimit: 15,
 				_serviceId: 1,
 			});
@@ -686,7 +681,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 
 		it('[TextArea] should map to existing entity', () => {
 			const instance = Container.get(DynamicFieldsMapper);
-			const entity = TextDynamicField.create(1, 'field', 20, true, DynamicFieldType.TextAreaField);
+			const entity = TextDynamicField.create(1, 'field', 20, true, TextFieldType.TextArea);
 			entity.id = 11;
 
 			const mapped = instance.mapToEntity(request, entity);
@@ -694,7 +689,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			expect(mapped).toEqual({
 				_id: 11,
 				_name: 'notes',
-				_inputType: DynamicFieldType.TextAreaField,
+				_inputType: TextFieldType.TextArea,
 				_isMandatory: true,
 				_charLimit: 15,
 				_serviceId: 1,

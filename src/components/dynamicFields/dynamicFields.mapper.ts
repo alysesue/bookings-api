@@ -1,12 +1,13 @@
 import { DynamicField, DynamicKeyValueOption, SelectListDynamicField } from '../../models';
 import { Inject, InRequestScope, Scope, Scoped } from 'typescript-ioc';
 import {
-	FieldWithOptionsModel,
 	DynamicFieldModel,
 	DynamicFieldType,
 	DynamicOptionModel,
+	FieldWithOptionsModel,
 	PersistDynamicFieldModelV1,
 	TextFieldModel,
+	TextFieldType,
 } from './dynamicFields.apicontract';
 import { IdHasher } from '../../infrastructure/idHasher';
 import {
@@ -152,11 +153,14 @@ export class DynamicFieldsMapper {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Text field char limit must be at least 1.`);
 		}
 
+		const textInputType =
+			model.type === DynamicFieldType.TextAreaField ? TextFieldType.TextArea : TextFieldType.SingleLine;
+
 		if (entity) {
 			entity.name = model.name;
-			entity.inputType = model.type;
 			entity.charLimit = model.textField.charLimit;
 			entity.isMandatory = model.isMandatory;
+			entity.inputType = textInputType;
 
 			return entity;
 		}
@@ -166,7 +170,7 @@ export class DynamicFieldsMapper {
 			model.name,
 			model.textField.charLimit,
 			model.isMandatory,
-			model.type,
+			textInputType,
 		);
 	}
 
@@ -283,7 +287,10 @@ class DynamicFieldMapperVisitor implements IDynamicFieldVisitor {
 	}
 
 	visitTextField(_textField: TextDynamicField): void {
-		this._result.type = _textField.inputType;
+		this._result.type =
+			_textField.inputType === TextFieldType.TextArea
+				? DynamicFieldType.TextAreaField
+				: DynamicFieldType.TextField;
 		this._result.textField = new TextFieldModel();
 		this._result.textField.charLimit = _textField.charLimit;
 	}
