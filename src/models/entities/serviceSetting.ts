@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
+// For new service settings that are not `boolean`, should be added here
 export enum BookingLimitation {
 	NoLimitations = 'NoLimitations',
 	OnlyOneBookingPerDate = 'OnlyOneBookingPerDate',

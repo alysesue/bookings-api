@@ -62,6 +62,7 @@ export class ServicesMapper {
 		additionalSettings.sendNotificationsToServiceProviders = service.sendNotificationsToServiceProviders;
 		additionalSettings.sendSMSNotifications = service.sendSMSNotifications;
 		additionalSettings.hasSalutations = service.hasSalutation;
+		additionalSettings.bookingLimitation = service.serviceSetting.bookingLimitation;
 		return additionalSettings;
 	}
 
