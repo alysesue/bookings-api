@@ -90,14 +90,16 @@ export class EventsService {
 
 	public async updateEvent(request: EventRequest, idSigned: string): Promise<Event> {
 		const id = this.idHasher.decode(idSigned);
+		await this.bookingsRepository.deleteBookedSlotsByEventId(id);
 		let entity = await this.eventsRepository.getById({ id });
 		entity.isOneOffTimeslot = false;
 		this.eventsMapper.mapUpdateModel(entity, request);
 		const { service, labels } = await this.fetchDependencies(request);
 		entity.oneOffTimeslots = await this.fetchTimeslotDependencies(request.timeslots);
 		entity = this.eventsMapper.mapDependenciesToModel(entity, { service, labels });
-		await this.bookingsRepository.updateBookedSlots(entity, id);
-		return this.save(entity);
+		const updatedEvent = await this.save(entity);
+		await this.bookingsRepository.updateBookedSlots(updatedEvent, id);
+		return updatedEvent;
 	}
 
 	public async deleteById(id: number) {

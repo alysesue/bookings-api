@@ -10,7 +10,7 @@ import {
 	DynamicKeyValueOption,
 	Service,
 	ServiceProvider,
-	User,
+	User, OneOffTimeslot,
 } from '../../../models';
 import { BookingMapDetails, BookingsMapper } from '../bookings.mapper';
 import { UinFinConfiguration } from '../../../models/uinFinConfiguration';
@@ -91,10 +91,12 @@ describe('Bookings mapper tests', () => {
 		const booking = new Booking();
 		const service = new Service();
 		const serviceProvider = new ServiceProvider();
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date(2021, 2, 1);
+		oneOffTimeslots.endDateTime = new Date(2021, 2, 1);
 		const bookedSlot = new BookedSlot();
-		bookedSlot.startDateTime = new Date(2021, 2, 1);
-		bookedSlot.endDateTime = new Date(2021, 2, 1);
-		bookedSlot.serviceProviderId = serviceProvider.id;
+		bookedSlot.oneOffTimeslot = oneOffTimeslots;
 		const bookedSlots = [];
 		bookedSlots.push(bookedSlot);
 		service.id = 1;

@@ -1499,10 +1499,15 @@ describe('Bookings.Service', () => {
 		const bookingService = Container.get(BookingsService);
 		const bookingUpdateRequest = getUpdateBookingRequest();
 
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2020-10-01T01:00:00Z');
+		oneOffTimeslots.endDateTime = new Date('2020-10-01T02:00:00Z');
+
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(service.id)
 			.withCitizenEmail('test@mail.com')
-			.withSlots([[new Date('2020-09-01'), new Date('2020-09-02'), null]])
+			.withSlots([[oneOffTimeslots]])
 			.withStartDateTime(new Date('2020-09-01'))
 			.withEndDateTime(new Date('2020-09-02'))
 			.build();
@@ -2346,12 +2351,14 @@ describe('Bookings.Service', () => {
 			slot1.startDateTime = new Date();
 			slot1.endDateTime = DateHelper.addMinutes(slot1.startDateTime, 45);
 			slot1.serviceProviderId = 90;
+			slot1.id = 1;
 
 			const slot2 = new OneOffTimeslot();
 			slot2.eventId = 10;
 			slot2.startDateTime = DateHelper.addMinutes(slot1.startDateTime, 60);
 			slot2.endDateTime = DateHelper.addMinutes(slot2.startDateTime, 45);
 			slot2.serviceProviderId = 91;
+			slot2.id = 2;
 			mockEvent.oneOffTimeslots = [slot1, slot2];
 
 			EventsServiceMock.getById.mockImplementation(() => Promise.resolve(mockEvent));
@@ -2382,9 +2389,8 @@ describe('Bookings.Service', () => {
 			expect(booking.citizenPhone).toBe('93328223');
 			const bookedSlots = mockEvent.oneOffTimeslots.map((slot) => {
 				const bookedSlot = new BookedSlot();
-				bookedSlot.startDateTime = slot.startDateTime;
-				bookedSlot.endDateTime = slot.endDateTime;
-				bookedSlot.serviceProviderId = slot.serviceProviderId;
+				bookedSlot.oneOffTimeslot = slot;
+				bookedSlot.oneOffTimeslotId = slot.id;
 				return bookedSlot;
 			});
 			expect(booking.bookedSlots).toStrictEqual(bookedSlots);
@@ -2419,9 +2425,8 @@ describe('Bookings.Service', () => {
 			expect(booking.citizenPhone).toBe('93328223');
 			const bookedSlots = mockEvent.oneOffTimeslots.map((slot) => {
 				const bookedSlot = new BookedSlot();
-				bookedSlot.startDateTime = slot.startDateTime;
-				bookedSlot.endDateTime = slot.endDateTime;
-				bookedSlot.serviceProviderId = slot.serviceProviderId;
+				bookedSlot.oneOffTimeslot = slot;
+				bookedSlot.oneOffTimeslotId = slot.id;
 				return bookedSlot;
 			});
 			expect(booking.bookedSlots).toStrictEqual(bookedSlots);
@@ -2456,9 +2461,8 @@ describe('Bookings.Service', () => {
 			expect(booking.citizenPhone).toBe('93328223');
 			const bookedSlots = mockEvent.oneOffTimeslots.map((slot) => {
 				const bookedSlot = new BookedSlot();
-				bookedSlot.startDateTime = slot.startDateTime;
-				bookedSlot.endDateTime = slot.endDateTime;
-				bookedSlot.serviceProviderId = slot.serviceProviderId;
+				bookedSlot.oneOffTimeslot = slot;
+				bookedSlot.oneOffTimeslotId = slot.id;
 				return bookedSlot;
 			});
 			expect(booking.bookedSlots).toStrictEqual(bookedSlots);
@@ -2487,9 +2491,8 @@ describe('Bookings.Service', () => {
 			expect(booking.citizenPhone).toBe('93328223');
 			const bookedSlots = mockEvent.oneOffTimeslots.map((slot) => {
 				const bookedSlot = new BookedSlot();
-				bookedSlot.startDateTime = slot.startDateTime;
-				bookedSlot.endDateTime = slot.endDateTime;
-				bookedSlot.serviceProviderId = slot.serviceProviderId;
+				bookedSlot.oneOffTimeslot = slot;
+				bookedSlot.oneOffTimeslotId = slot.id;
 				return bookedSlot;
 			});
 			expect(booking.bookedSlots).toStrictEqual(bookedSlots);

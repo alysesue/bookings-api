@@ -28,6 +28,8 @@ import { OneOffTimeslotsRepository } from '../../oneOffTimeslots/oneOffTimeslots
 import { OneOffTimeslotsRepositoryMock } from '../../oneOffTimeslots/__mocks__/oneOffTimeslots.repository.mock';
 import { EventsAuthVisitor } from '../events.auth';
 import { getServiceProviderMock } from '../../../models/__mocks__/serviceProvider.mock';
+import {BookedSlotRepository} from "../../bookings/bookedSlot.repository";
+import {BookedSlotRepositoryMock} from "../../bookings/__mocks__/bookedSlot.repository.mock";
 
 jest.mock('../events.auth');
 jest.mock('../events.validation');
@@ -68,6 +70,7 @@ describe('Tests events services', () => {
 		Container.bind(UserContext).to(UserContextMock);
 		Container.bind(TransactionManager).to(TransactionManagerMock);
 		Container.bind(EventsRepository).to(EventsRepositoryMock);
+		Container.bind(BookedSlotRepository).to(BookedSlotRepositoryMock);
 	});
 
 	beforeEach(() => {

@@ -123,15 +123,27 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		});
 	}
 
+	public async deleteBookedSlotsByEventId(eventId: number): Promise<void> {
+		const bookings = await this.getBookingsByEventId(eventId);
+		if (!bookings) return;
+		for (let i = 0; i<bookings.length; i++) {
+			const booking = await this.getBooking(bookings[i].id);
+			booking.bookedSlots = [];
+			const repository = await this.getRepository();
+			await repository.save(booking);
+		}
+	}
+
 	public async updateBookedSlots(event: Event, id: number): Promise<void> {
 		if (!event) return;
 		const bookings = await this.getBookingsByEventId(id);
+		if (!bookings) return;
 		for (let i = 0; i<bookings.length; i++) {
-			let booking = await this.getBooking(bookings[i].id);
-			let newBookedSlots : BookedSlot[] = [];
-			for (let j = 0; j<event.oneOffTimeslots.length; i++) {
-				let updatedBookedSlot = new BookedSlot()
-				updatedBookedSlot.oneOffTimeslotId = event.oneOffTimeslots[i].id;
+			const booking = bookings[i];
+			const newBookedSlots : BookedSlot[] = [];
+			for (let j = 0; j<event.oneOffTimeslots.length; j++) {
+				const updatedBookedSlot = new BookedSlot()
+				updatedBookedSlot.oneOffTimeslot = event.oneOffTimeslots[j];
 				updatedBookedSlot.bookingId = booking.id;
 				newBookedSlots.push(updatedBookedSlot);
 			}
@@ -139,7 +151,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 			const repository = await this.getRepository();
 			await repository.save(booking);
 		}
-		// await this.bookedSlotRepository.update(bookings, event);
+
 	}
 
 	public async update(booking: Booking): Promise<Booking> {

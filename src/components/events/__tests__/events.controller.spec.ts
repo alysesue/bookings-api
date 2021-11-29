@@ -116,9 +116,14 @@ describe('Test events controller', () => {
 		eventMock.service = serviceMock;
 		eventMock.serviceId = serviceMock.id;
 
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2020-10-01T01:00:00Z');
+		oneOffTimeslots.endDateTime = new Date('2020-10-01T02:00:00Z');
+
 		const testBooking1 = new BookingBuilder()
 			.withServiceId(1)
-			.withSlots([[new Date('2020-10-01T01:00:00Z'), new Date('2020-10-01T02:00:00Z'), null]])
+			.withSlots([[oneOffTimeslots]])
 			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 			.withEventId(1)

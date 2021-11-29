@@ -315,6 +315,7 @@ export class BookingsMapper {
 		booking.bookedSlots = event.oneOffTimeslots.map((slot) => {
 			const entity = new BookedSlot();
 			entity.oneOffTimeslotId = slot.oneOffTimeslotId;
+			entity.oneOffTimeslot = slot;
 			return entity;
 		});
 		booking.startDateTime = event.oneOffTimeslots[0].startDateTime;
@@ -337,6 +338,7 @@ export class BookingsMapper {
 			const bookedSlot = new BookedSlot();
 			const oneOffTimeslot = booking.event.oneOffTimeslots.find((timeslot) => timeslot.startDateTime === request.startDateTime && timeslot.endDateTime === request.endDateTime && timeslot.serviceProviderId === request.serviceProviderId);
 			bookedSlot.oneOffTimeslotId = oneOffTimeslot.oneOffTimeslotId;
+			bookedSlot.oneOffTimeslot = oneOffTimeslot;
 		}
 		booking.startDateTime = request.startDateTime;
 		booking.endDateTime = request.endDateTime;

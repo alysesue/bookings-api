@@ -1,6 +1,7 @@
 import { BookingBuilder } from '../entities/booking';
 import { ChangeLogAction, User } from '..';
 import { BookingStatus } from '../index';
+import {OneOffTimeslot} from "../entities";
 
 describe('Booking tests', () => {
 	it('should get update change type', () => {
@@ -269,38 +270,38 @@ describe('Booking tests with onhold flag', () => {
 	});
 
 	it('should create event booking with builder and set event id and booked slots', () => {
-		const start = new Date('2020-01-10T11:00');
-		const end = new Date('2020-01-10T12:00');
-		const serviceProviderId = 10;
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2020-01-10T11:00');
+		oneOffTimeslots.endDateTime = new Date('2020-01-10T12:00');
 		const creator = {} as User;
 		const booking = new BookingBuilder()
 			.withCitizenUinFin('UINFIN')
 			.withServiceProviderId(1)
 			.withRefId('REFID')
 			.withEventId(1)
-			.withSlots([[start, end, serviceProviderId]])
+			.withSlots([[oneOffTimeslots]])
 			.withServiceId(2)
 			.withCreator(creator)
 			.build();
 
 		expect(booking.eventId).toStrictEqual(1);
-		expect(booking.bookedSlots[0].startDateTime).toStrictEqual(start);
-		expect(booking.bookedSlots[0].endDateTime).toStrictEqual(end);
-		expect(booking.bookedSlots[0].serviceProviderId).toStrictEqual(serviceProviderId);
+		expect(booking.bookedSlots[0].oneOffTimeslot).toStrictEqual(oneOffTimeslots);
 		expect(booking.status).toStrictEqual(BookingStatus.Accepted);
 	});
 
 	it('should create event booking with builder and set status at accepted irrespective of autoAccept flag', () => {
-		const start = new Date('2020-01-10T11:00');
-		const end = new Date('2020-01-10T12:00');
-		const serviceProviderId = 10;
 		const creator = {} as User;
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2020-01-10T11:00');
+		oneOffTimeslots.endDateTime = new Date('2020-01-10T12:00');
 		const booking = new BookingBuilder()
 			.withCitizenUinFin('UINFIN')
 			.withServiceProviderId(1)
 			.withRefId('REFID')
 			.withEventId(1)
-			.withSlots([[start, end, serviceProviderId]])
+			.withSlots([[oneOffTimeslots]])
 			.withServiceId(2)
 			.withCreator(creator)
 			.withAutoAccept(false)
@@ -310,16 +311,17 @@ describe('Booking tests with onhold flag', () => {
 	});
 
 	it('should create event booking with builder and set status as on hold id OnHold flag is set', () => {
-		const start = new Date('2020-01-10T11:00');
-		const end = new Date('2020-01-10T12:00');
-		const serviceProviderId = 10;
 		const creator = {} as User;
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2020-01-10T11:00');
+		oneOffTimeslots.endDateTime = new Date('2020-01-10T12:00');
 		const booking = new BookingBuilder()
 			.withCitizenUinFin('UINFIN')
 			.withServiceProviderId(1)
 			.withRefId('REFID')
 			.withEventId(1)
-			.withSlots([[start, end, serviceProviderId]])
+			.withSlots([[oneOffTimeslots]])
 			.withServiceId(2)
 			.withCreator(creator)
 			.withAutoAccept(false)

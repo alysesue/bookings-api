@@ -3,7 +3,7 @@ import {
 	Booking,
 	BookingChangeLog,
 	BookingStatus,
-	ChangeLogAction,
+	ChangeLogAction, OneOffTimeslot,
 	Service,
 	ServiceProvider,
 	User,
@@ -56,9 +56,13 @@ describe('BookingChangeLogs service', () => {
 		const service = new Service();
 		service.id = 1;
 		service.name = 'service';
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2020-10-01T01:00:00Z');
+		oneOffTimeslots.endDateTime = new Date('2020-10-01T02:00:00Z');
 		const booking = new BookingBuilder()
 			.withServiceId(1)
-			.withSlots([[new Date('2020-10-01T01:00:00Z'), new Date('2020-10-01T02:00:00Z'), null]])
+			.withSlots([[oneOffTimeslots]])
 			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 			.build();
@@ -80,9 +84,8 @@ describe('BookingChangeLogs service', () => {
 
 		const changeLogParam = BookingChangeLogsRepositoryMock.save.mock.calls[0][0] as BookingChangeLog;
 		const bookedSlot = new BookedSlot();
-		bookedSlot.startDateTime = new Date('2020-10-01T01:00:00Z');
-		bookedSlot.endDateTime = new Date('2020-10-01T02:00:00Z');
-		bookedSlot.serviceProviderId = null;
+		bookedSlot.oneOffTimeslot = oneOffTimeslots;
+		bookedSlot.oneOffTimeslotId = 1;
 		expect(changeLogParam.previousState).toEqual({
 			startDateTime: new Date('2020-10-01T01:00:00Z'),
 			endDateTime: new Date('2020-10-01T02:00:00Z'),
@@ -127,9 +130,13 @@ describe('BookingChangeLogs service', () => {
 		const service = new Service();
 		service.id = 1;
 		service.name = 'service';
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2020-10-01T01:00:00Z');
+		oneOffTimeslots.endDateTime = new Date('2020-10-01T02:00:00Z');
 		const booking = new BookingBuilder()
 			.withServiceId(1)
-			.withSlots([[new Date('2020-10-01T01:00:00Z'), new Date('2020-10-01T02:00:00Z'), null]])
+			.withSlots([[oneOffTimeslots]])
 			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 			.build();
@@ -158,9 +165,8 @@ describe('BookingChangeLogs service', () => {
 
 		const changeLogParam = BookingChangeLogsRepositoryMock.save.mock.calls[0][0] as BookingChangeLog;
 		const bookedSlot = new BookedSlot();
-		bookedSlot.serviceProviderId = null;
-		bookedSlot.startDateTime = new Date('2020-10-01T01:00:00Z');
-		bookedSlot.endDateTime = new Date('2020-10-01T02:00:00Z');
+		bookedSlot.oneOffTimeslot = oneOffTimeslots;
+		bookedSlot.oneOffTimeslotId = 1;
 		expect(changeLogParam.previousState).toEqual({
 			startDateTime: new Date('2020-10-01T01:00:00Z'),
 			endDateTime: new Date('2020-10-01T02:00:00Z'),
@@ -212,9 +218,14 @@ describe('BookingChangeLogs service', () => {
 		const service = new Service();
 		service.id = 1;
 		service.name = 'service';
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2020-10-01T01:00:00Z');
+		oneOffTimeslots.endDateTime = new Date('2020-10-01T02:00:00Z');
+
 		const booking = new BookingBuilder()
 			.withServiceId(1)
-			.withSlots([[new Date('2020-10-01T01:00:00Z'), new Date('2020-10-01T02:00:00Z'), null]])
+			.withSlots([[oneOffTimeslots]])
 			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 			.build();
@@ -241,9 +252,8 @@ describe('BookingChangeLogs service', () => {
 		const changeLogParam = BookingChangeLogsRepositoryMock.save.mock.calls[0][0] as BookingChangeLog;
 		const bookedSlot = new BookedSlot();
 		// new BookedSlot(new Date('2020-10-01T01:00:00Z'), new Date('2020-10-01T02:00:00Z'), null)
-		bookedSlot.serviceProviderId = null;
-		bookedSlot.startDateTime = new Date('2020-10-01T01:00:00Z');
-		bookedSlot.endDateTime = new Date('2020-10-01T02:00:00Z');
+		bookedSlot.oneOffTimeslot = oneOffTimeslots;
+		bookedSlot.oneOffTimeslotId = 1;
 		expect(changeLogParam.previousState).toEqual({
 			startDateTime: new Date('2020-10-01T01:00:00Z'),
 			endDateTime: new Date('2020-10-01T02:00:00Z'),

@@ -84,6 +84,7 @@ export class BookingBuilder {
 		slots.forEach((slot) => {
 			const newSlot = new BookedSlot();
 			newSlot.oneOffTimeslotId = slot[0].oneOffTimeslotId;
+			newSlot.oneOffTimeslot = slot[0]
 			this.slots.push(newSlot);
 		});
 		return this;
