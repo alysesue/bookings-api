@@ -5,7 +5,7 @@ import { PagingHelper } from '../../core/paging';
 import { RepositoryBase } from '../../core/repository';
 import { ConcurrencyError } from '../../errors/concurrencyError';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import { Booking, BookingStatus } from '../../models';
+import {BookedSlot, Booking, BookingStatus, Event} from '../../models';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { andWhere } from '../../tools/queryConditions';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
@@ -111,6 +111,35 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		const bookingPromise = await repository.save(booking);
 
 		return bookingPromise;
+	}
+
+	public async getBookingsByEventId(eventId: number): Promise<Booking[]> {
+		const repository = await this.getRepository();
+
+		return await repository.find({
+			where: {
+				_eventId: eventId,
+			},
+		});
+	}
+
+	public async updateBookedSlots(event: Event, id: number): Promise<void> {
+		if (!event) return;
+		const bookings = await this.getBookingsByEventId(id);
+		for (let i = 0; i<bookings.length; i++) {
+			let booking = await this.getBooking(bookings[i].id);
+			let newBookedSlots : BookedSlot[] = [];
+			for (let j = 0; j<event.oneOffTimeslots.length; i++) {
+				let updatedBookedSlot = new BookedSlot()
+				updatedBookedSlot.oneOffTimeslotId = event.oneOffTimeslots[i].id;
+				updatedBookedSlot.bookingId = booking.id;
+				newBookedSlots.push(updatedBookedSlot);
+			}
+			booking.bookedSlots = newBookedSlots;
+			const repository = await this.getRepository();
+			await repository.save(booking);
+		}
+		// await this.bookedSlotRepository.update(bookings, event);
 	}
 
 	public async update(booking: Booking): Promise<Booking> {

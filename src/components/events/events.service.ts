@@ -21,9 +21,12 @@ import { EventsAuthVisitor } from './events.auth';
 import { EventsMapper } from './events.mapper';
 import { EventsRepository } from './events.repository';
 import { EventsValidation } from './events.validation';
+import {BookingsRepository} from "../bookings/bookings.repository";
 
 @InRequestScope
 export class EventsService {
+	@Inject
+	private bookingsRepository: BookingsRepository;
 	@Inject
 	private eventsMapper: EventsMapper;
 	@Inject
@@ -93,6 +96,7 @@ export class EventsService {
 		const { service, labels } = await this.fetchDependencies(request);
 		entity.oneOffTimeslots = await this.fetchTimeslotDependencies(request.timeslots);
 		entity = this.eventsMapper.mapDependenciesToModel(entity, { service, labels });
+		await this.bookingsRepository.updateBookedSlots(entity, id);
 		return this.save(entity);
 	}
 
@@ -144,8 +148,9 @@ export class EventsService {
 			const idNotSigned = this.idHasher.decode(id);
 			const serviceProviderIdNotSigned = this.idHasher.decode(serviceProviderId);
 			const serviceProvider = serviceProviders.find((sp) => sp.id === serviceProviderIdNotSigned);
+			const createdOneOffTimeslot = OneOffTimeslot.create({ serviceProvider, startDateTime, endDateTime, id: idNotSigned })
 			oneOffTimeslots.push(
-				OneOffTimeslot.create({ serviceProvider, startDateTime, endDateTime, id: idNotSigned }),
+				createdOneOffTimeslot,
 			);
 		});
 		return oneOffTimeslots;
