@@ -27,7 +27,12 @@ describe('Validators', () => {
 			expect(res.pass).toBe(true);
 		});
 
-		it('It should not accept anything except XSTFG series NRIC', () => {
+		it('It should accept M series NRIC', () => {
+			const res = isSGUinfin('M9400291L');
+			expect(res.pass).toBe(true);
+		});
+
+		it('It should not accept anything except XSTFGM series NRIC', () => {
 			const res = isSGUinfin('Z9400291U');
 			expect(res.pass).toBe(false);
 		});
