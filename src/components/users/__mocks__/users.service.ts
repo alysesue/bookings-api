@@ -7,6 +7,8 @@ export class UsersServiceMock implements Partial<UsersService> {
 	public static getUserGroupsFromHeaders = jest.fn<Promise<AuthGroup[]>, any>();
 	public static createAnonymousUserFromCookie = jest.fn<Promise<User>, any>();
 	public static getAnonymousUserRoles = jest.fn<Promise<AuthGroup[]>, any>();
+	public static getOtpUser = jest.fn<Promise<User>, any>();
+	public static createOtpUser = jest.fn<Promise<User>, any>();
 
 	public async getOrSaveUserFromHeaders(...params): Promise<any> {
 		return await UsersServiceMock.getOrSaveUserFromHeaders(...params);
@@ -22,5 +24,13 @@ export class UsersServiceMock implements Partial<UsersService> {
 
 	public async getAnonymousUserRoles(...params): Promise<AuthGroup[]> {
 		return await UsersServiceMock.getAnonymousUserRoles(...params);
+	}
+
+	public async getOtpUser(...params): Promise<User> {
+		return await UsersServiceMock.getOtpUser(...params);
+	}
+
+	public async createOtpUser(...params): Promise<User> {
+		return await UsersServiceMock.createOtpUser(...params);
 	}
 }

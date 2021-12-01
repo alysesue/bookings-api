@@ -236,6 +236,9 @@ export class Booking {
 	@Column({ nullable: false })
 	private _creatorId: number;
 
+	@Column({ nullable: false })
+	private _ownerId: number;
+
 	@ManyToOne(() => Service)
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
@@ -276,6 +279,10 @@ export class Booking {
 	@ManyToOne(() => User, { nullable: false })
 	@JoinColumn({ name: '_creatorId' })
 	private _creator: User;
+
+	@ManyToOne(() => User, { nullable: false })
+	@JoinColumn({ name: '_ownerId' })
+	private _owner: User;
 
 	@Column({ nullable: true })
 	private _citizenSalutation: Salutations;
@@ -418,6 +425,14 @@ export class Booking {
 		this._creatorId = value;
 	}
 
+	public get ownerId(): number {
+		return this._ownerId;
+	}
+
+	public set ownerId(value: number) {
+		this._ownerId = value;
+	}
+
 	public get serviceId(): number {
 		return this._serviceId;
 	}
@@ -504,6 +519,14 @@ export class Booking {
 
 	public set creator(value: User) {
 		this._creator = value;
+	}
+
+	public get owner(): User {
+		return this._owner;
+	}
+
+	public set owner(value: User) {
+		this._owner = value;
 	}
 
 	public get citizenUinFin(): string {

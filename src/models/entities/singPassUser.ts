@@ -32,7 +32,7 @@ export class SingPassUser {
 		this._UinFin = value;
 	}
 
-	@Column({ type: 'uuid' })
+	@Column({ nullable: true, type: 'uuid' })
 	@Index({ unique: true })
 	private _molUserId: string;
 
@@ -44,7 +44,7 @@ export class SingPassUser {
 		this._molUserId = molUserId;
 	}
 
-	public static create(molUserId: string, UinFin: string): SingPassUser {
+	public static create(molUserId?: string, UinFin?: string): SingPassUser {
 		const instance = new SingPassUser();
 		instance.molUserId = molUserId;
 		instance.UinFin = UinFin;

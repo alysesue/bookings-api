@@ -24,6 +24,10 @@ import { ServiceProvidersRepositoryNoAuth } from '../../serviceProviders/service
 import { BookingsNoAuthRepository } from '../../bookings/bookings.noauth.repository';
 import { BookingsNoAuthRepositoryMock } from '../../bookings/__mocks__/bookings.mocks';
 import { OrganisationsNoauthRepository } from '../../organisations/organisations.noauth.repository';
+import { UserRepositoryMock } from '../__mocks__/users.repository.mock';
+import { OrganisationsServiceMock } from '../../../components/organisations/__mocks__/organisations.service.mock';
+import { ServicesRepositoryNoAuthMock } from '../../services/__mocks__/services.noauth.repository.mock';
+import { ServiceProvidersRepositoryNoAuthMock } from '../../../components/serviceProviders/__mocks__/serviceProviders.noauth.repository.mock';
 
 beforeAll(() => {
 	Container.bind(UsersRepository).to(UserRepositoryMock);
@@ -98,30 +102,69 @@ describe('Users Service', () => {
 		expect(result).toBe(null);
 	});
 
-	it("should save if user doesn't exist", async () => {
-		const headers = {};
-		headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.USER;
-		headers[MOLSecurityHeaderKeys.USER_ID] = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
-		headers[MOLSecurityHeaderKeys.USER_UINFIN] = 'ABC1234';
+	describe('Singpass user', () => {
+		it("should save if user doesn't exist", async () => {
+			const headers = {};
+			headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.USER;
+			headers[MOLSecurityHeaderKeys.USER_ID] = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
+			headers[MOLSecurityHeaderKeys.USER_UINFIN] = 'ABC1234';
 
-		const userMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+			const userMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 
-		let savedCalled = false;
-		UserRepositoryMock.getUserByMolUserId.mockImplementation(() => Promise.resolve(savedCalled ? userMock : null));
-		UserRepositoryMock.save.mockImplementation((entry) => {
-			return new Promise((resolve) =>
-				setTimeout(() => {
-					savedCalled = true;
-					resolve(entry);
-				}, 10),
+			let savedCalled = false;
+			UserRepositoryMock.getUserByMolUserId.mockImplementation(() =>
+				Promise.resolve(savedCalled ? userMock : null),
 			);
+			UserRepositoryMock.save.mockImplementation((entry) => {
+				return new Promise((resolve) =>
+					setTimeout(() => {
+						savedCalled = true;
+						resolve(entry);
+					}, 10),
+				);
+			});
+
+			const service = Container.get(UsersService);
+			const user = await service.getOrSaveUserFromHeaders(headers);
+			expect(UserRepositoryMock.getUserByMolUserId).toBeCalled();
+			expect(UserRepositoryMock.save).toBeCalled();
+			expect(user.singPassUser).toBeDefined();
 		});
 
-		const service = Container.get(UsersService);
-		const user = await service.getOrSaveUserFromHeaders(headers);
-		expect(UserRepositoryMock.getUserByMolUserId).toBeCalled();
-		expect(UserRepositoryMock.save).toBeCalled();
-		expect(user.singPassUser).toBeDefined();
+		it('should save molUserId when singpass user login', async () => {
+			const headers = {};
+			headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.USER;
+			headers[MOLSecurityHeaderKeys.USER_ID] = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
+			headers[MOLSecurityHeaderKeys.USER_UINFIN] = 'ABC1234';
+
+			const userMock = User.createSingPassUser(null, 'ABC1234');
+
+			UserRepositoryMock.getUserByMolUserId.mockImplementation(() => Promise.resolve(userMock));
+			UserRepositoryMock.save.mockImplementation(() => Promise.resolve(userMock));
+
+			const service = Container.get(UsersService);
+			const user = await service.getOrSaveUserFromHeaders(headers);
+			expect(UserRepositoryMock.getUserByMolUserId).toBeCalled();
+			expect(UserRepositoryMock.save).toBeCalled();
+			expect(user.singPassUser).toBeDefined();
+		});
+
+		it('should not save when singpass user exist', async () => {
+			const headers = {};
+			headers[MOLSecurityHeaderKeys.AUTH_TYPE] = MOLAuthType.USER;
+			headers[MOLSecurityHeaderKeys.USER_ID] = 'd080f6ed-3b47-478a-a6c6-dfb5608a199d';
+			headers[MOLSecurityHeaderKeys.USER_UINFIN] = 'ABC1234';
+
+			const userMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
+
+			UserRepositoryMock.getUserByMolUserId.mockImplementation(() => Promise.resolve(userMock));
+
+			const service = Container.get(UsersService);
+			const user = await service.getOrSaveUserFromHeaders(headers);
+			expect(UserRepositoryMock.getUserByMolUserId).toBeCalled();
+			expect(UserRepositoryMock.save).not.toBeCalled();
+			expect(user.singPassUser).toBeDefined();
+		});
 	});
 
 	it('should update admin users with their orgs and services', async () => {
@@ -350,53 +393,3 @@ describe('Users Service', () => {
 
 	describe('getOrSaveInternal', () => {});
 });
-
-class UserRepositoryMock implements Partial<UsersRepository> {
-	public static save = jest.fn();
-	public static getUserByMolUserId = jest.fn();
-	public static getUserByMolAdminId = jest.fn();
-
-	public async save(...params): Promise<any> {
-		return await UserRepositoryMock.save(...params);
-	}
-
-	public async getUserByMolUserId(...params): Promise<any> {
-		return await UserRepositoryMock.getUserByMolUserId(...params);
-	}
-
-	public async getUserByMolAdminId(...params): Promise<any> {
-		return await UserRepositoryMock.getUserByMolAdminId(...params);
-	}
-}
-
-class OrganisationsServiceMock implements Partial<OrganisationsService> {
-	public static getOrganisationsForGroups = jest.fn<Promise<Organisation[]>, any>();
-
-	public async getOrganisationsForGroups(...params): Promise<any> {
-		return await OrganisationsServiceMock.getOrganisationsForGroups(...params);
-	}
-}
-
-class ServicesRepositoryNoAuthMock implements Partial<ServicesRepositoryNoAuth> {
-	public static getServicesForUserGroups = jest.fn<Promise<Service[]>, any>();
-
-	public async getServicesForUserGroups(...params): Promise<any> {
-		return await ServicesRepositoryNoAuthMock.getServicesForUserGroups(...params);
-	}
-}
-
-class OrganisationsNoauthRepositoryMock implements Partial<OrganisationsNoauthRepository> {
-	public static getOrganisationsForUserGroups = jest.fn<Promise<Organisation[]>, any>();
-
-	public async getOrganisationsForUserGroups(...params): Promise<any> {
-		return await OrganisationsNoauthRepositoryMock.getOrganisationsForUserGroups(...params);
-	}
-}
-
-class ServiceProvidersRepositoryNoAuthMock implements Partial<ServiceProvidersRepositoryNoAuth> {
-	public static getServiceProviderByMolAdminId = jest.fn<Promise<ServiceProvider>, any>();
-
-	public async getServiceProviderByMolAdminId(...params): Promise<any> {
-		return await ServiceProvidersRepositoryNoAuthMock.getServiceProviderByMolAdminId(...params);
-	}
-}

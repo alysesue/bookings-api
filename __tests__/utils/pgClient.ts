@@ -14,7 +14,9 @@ export class PgClient {
 	}
 	public async cleanAllTables() {
 		// Delete many-to-one relationships first
+		await this.pool.query('DELETE FROM public.otp_user;');
 		await this.pool.query('DELETE FROM public.otp;');
+		await this.pool.query('DELETE FROM public.serviceprovider_label');
 		await this.pool.query('DELETE FROM public.service_provider_label');
 		await this.pool.query('DELETE FROM public.service_provider_label_category');
 		await this.pool.query('DELETE FROM public.service_notification_template;');
@@ -30,6 +32,7 @@ export class PgClient {
 		await this.pool.query('DELETE FROM public.booking_workflow;');
 		await this.pool.query('DELETE FROM public.booking_change_log;');
 		await this.pool.query('DELETE FROM public.booking;');
+		await this.pool.query('DELETE FROM public.event_label');
 		await this.pool.query('DELETE FROM public.event');
 		await this.pool.query('DELETE FROM public.timeslot_item;');
 		await this.pool.query('DELETE FROM public.week_day_break;');

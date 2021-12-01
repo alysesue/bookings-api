@@ -70,9 +70,6 @@ export class BookingsController extends Controller {
 	@Inject
 	private idHasher: IdHasher;
 
-	@Inject
-	private idHasher: IdHasher;
-
 	/**
 	 * Creates a new booking.
 	 * [startDateTime, endDateTime] pair needs to match an available timeslot for the service or service provider.

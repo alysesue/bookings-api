@@ -47,7 +47,6 @@ export { EventNewFileds1634023542037 } from './1634023542037-eventNewFileds';
 export { PopulateEventNewFields } from './data/1634023542099-PopulateeventNewFileds';
 export { MyInfoDynamicFields1633925119821 } from './1633925119821-MyInfoDynamicFields';
 export { DateOnlyDynamicField1634081882047 } from './1634081882047-DateOnlyDynamicField';
-export { BookingAuthType1635209273424 } from './1635209273424-BookingAuthType';
 export { RequireVerifyBySA1634715633982 } from './1634715633982-RequireVerifyBySA';
 export { OnDeleteCascade1636444162404 } from './1636444162404-OnDeleteCascade';
 export { EventDefaults1636501334693 } from './1636501334693-EventDefaults';
@@ -58,4 +57,6 @@ export { AddMqSubScriberToService1636341481752 } from './1636341481752-AddMqSubS
 export { TextFieldType1638165653527 } from './1638165653527-TextFieldType';
 export { ServiceBookingLimitation1638772496515 } from './1638772496515-ServiceBookingLimitation';
 export { MapServicesAndOrganisationsToAdmin1639023609720 } from './1639023609720-MapServicesAndOrganisationsToAdmin';
+export { BookingAuthType1635209273424 } from './1635209273424-BookingAuthType';
 export { AddOtpUser1637826607021 } from './1637826607021-AddOtpUser';
+export { BookingOwnerIdAndSingpassNullable1638241378905 } from './1638241378905-BookingOwnerIdAndSingpassNullable';

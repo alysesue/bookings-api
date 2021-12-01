@@ -68,7 +68,6 @@ export class AuthGroupResponseV1 {
 	public services?: ServiceAdminGroupContractV1[];
 	public serviceProvider?: ServiceProviderContractV1;
 	public anonymous?: AnonymousGroupContract;
-	public otp?: OtpGroupContractV1;
 }
 
 export class AuthGroupResponseV2 {
@@ -77,23 +76,6 @@ export class AuthGroupResponseV2 {
 	public services?: ServiceAdminGroupContractV2[];
 	public serviceProvider?: ServiceProviderContractV2;
 	public anonymous?: AnonymousGroupContract;
-	public otp?: OtpGroupContractV2;
-}
-
-export class OtpGroupContractV1 {
-	/**
-	 * @isInt
-	 */
-	public id: number;
-	public name: string;
-}
-
-export class OtpGroupContractV2 {
-	/**
-	 * @isInt
-	 */
-	public id: string;
-	public name: string;
 }
 export class OrganisationAdminGroupContractV1 {
 	/**

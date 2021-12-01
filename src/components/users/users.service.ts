@@ -74,6 +74,16 @@ export class UsersService {
 		return savedUser;
 	}
 
+	private async saveUserInternal(user: User): Promise<User> {
+		if (!user) return;
+		try {
+			return await this.usersRepository.save(user);
+		} catch (e) {
+			// concurrent insert fail case
+			logger.warn('Exception when creating BookingSG User', e);
+		}
+	}
+
 	public async getOrSaveUserFromHeaders(headers: HeadersType): Promise<User> {
 		const authType = headers[MOLSecurityHeaderKeys.AUTH_TYPE];
 		if (!authType) {
@@ -116,9 +126,22 @@ export class UsersService {
 		molUserId: string;
 		molUserUinFin: string;
 	}): Promise<User> {
-		if (!molUserId || !molUserUinFin) return null;
-		const user = User.createSingPassUser(molUserId, molUserUinFin);
-		return await this.getOrSaveInternal(user, () => this.usersRepository.getUserByMolUserId(molUserId));
+		// Creating of singpass user will only require one of the this field (to cater for admin creation)
+		if (!molUserId && !molUserUinFin) return null;
+
+		let singPassUser = await this.usersRepository.getUserByMolUserId(molUserId);
+		if (!singPassUser) singPassUser = await this.usersRepository.getUserByUinFin(molUserUinFin);
+		if (!singPassUser) {
+			const user = User.createSingPassUser(molUserId, molUserUinFin);
+			return this.saveUserInternal(user);
+		}
+
+		if (!singPassUser._singPassUser.molUserId) {
+			singPassUser._singPassUser.molUserId = molUserId;
+			return await this.saveUserInternal(singPassUser);
+		}
+
+		return singPassUser;
 	}
 
 	public async getOrSaveAdminUser(data: {

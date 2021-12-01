@@ -290,19 +290,12 @@ export class BookingsService {
 			return bookings;
 		}
 
-		if (user && (user.singPassUser || user.anonymousUser)) {
-			for (let booking of bookings.entries) {
-				if (booking.citizenAuthType === CitizenAuthenticationType.Singpass && user && user.singPassUser) {
-					return bookings;
-				}
-				if (booking.citizenAuthType === CitizenAuthenticationType.Otp && user && user.anonymousUser) {
-					return bookings;
-				}
-			}
+		if (user && !(user.singPassUser || user.otpUser))
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
 				`User type does not match booking's auth type`,
 			);
-		}
+
+		return bookings;
 	}
 
 	public async searchBookingsReturnAll(searchRequest: BookingSearchRequest): Promise<Booking[]> {
@@ -608,6 +601,9 @@ export class BookingsService {
 			event,
 		});
 
+		// Assuming there can only be one auth type for now
+		booking.citizenAuthType = service.citizenAuthentication[0];
+
 		const shouldMarkOnHold = BookingsService.shouldMarkOnHold(eventBookingRequest, service, currentUser);
 		if (shouldMarkOnHold) {
 			booking.markOnHold();
@@ -664,6 +660,9 @@ export class BookingsService {
 		booking.serviceProviderId = serviceProvider?.id;
 		booking.serviceProvider = serviceProvider;
 
+		// Assuming there can only be one auth type for now
+		booking.citizenAuthType = service.citizenAuthentication[0];
+
 		if (shouldBypassCaptchaAndAutoAccept) {
 			booking.setAutoAccept({ autoAccept: true });
 		} else {
@@ -676,11 +675,18 @@ export class BookingsService {
 		}
 
 		const validator = this.bookingsValidatorFactory.getValidator(useAdminValidator);
+
+		booking.owner = await this.getOwnerUser(useAdminValidator, booking, currentUser);
+
 		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || isAgencyUser);
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
 		await this.loadBookingDependencies(booking);
 		await validator.validate(booking);
+
+		// Add owner after bookings have been validated
+		booking.owner = await this.getOwnerUser(useAdminValidator, booking, currentUser);
+
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
 		booking.serviceProviderId = serviceProvider?.id;
 
@@ -689,6 +695,26 @@ export class BookingsService {
 		await this.bookingsRepository.insert(booking);
 		booking.bookedSlots = [];
 		return [ChangeLogAction.Create, booking];
+	}
+
+	private async getOwnerUser(useAdminValidator: boolean, booking: Booking, currentUser: User): Promise<User> {
+		// Add owner after bookings have been validated
+		let user = currentUser;
+		if (useAdminValidator) {
+			if (booking.citizenAuthType === CitizenAuthenticationType.Otp) {
+				user = await this.usersService.getOtpUser(booking.citizenPhone);
+				if (!user) {
+					user = await this.usersService.createOtpUser(booking.citizenPhone);
+				}
+			} else {
+				user = await this.usersService.getOrSaveSingpassUser({
+					molUserId: null,
+					molUserUinFin: booking.citizenUinFin,
+				});
+			}
+		}
+
+		return user;
 	}
 
 	private async validateOnHoldBookingInternal(

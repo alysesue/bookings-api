@@ -49,6 +49,17 @@ export class UsersRepository extends RepositoryBase<User> {
 		return await query.getOne();
 	}
 
+	public async getUserByUinFin(uinFin?: string): Promise<User> {
+		if (!uinFin) return null;
+
+		const repository = await this.getRepository();
+		const query = repository
+			.createQueryBuilder('u')
+			.innerJoinAndSelect('u._singPassUser', 'singpass', 'singpass."_UinFin" = :uinFin', { uinFin });
+
+		return await query.getOne();
+	}
+
 	public async getUserByMolAdminId(molAdminId?: string): Promise<User> {
 		if (!molAdminId) return null;
 

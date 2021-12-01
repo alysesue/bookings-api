@@ -4,6 +4,7 @@ import {
 	CitizenAuthGroup,
 	IAuthGroupVisitor,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../authGroup';
@@ -35,6 +36,7 @@ describe('auth group tests', () => {
 
 	const visitorMock = {
 		visitAnonymous: jest.fn(),
+		visitOtp: jest.fn(),
 		visitCitizen: jest.fn(),
 		visitOrganisationAdmin: jest.fn(),
 		visitServiceAdmin: jest.fn(),
@@ -47,6 +49,12 @@ describe('auth group tests', () => {
 		expect(() => new OrganisationAdminAuthGroup(singpassMock, [organisation])).toThrowError();
 		expect(() => new ServiceAdminAuthGroup(singpassMock, [service])).toThrowError();
 		expect(() => new ServiceProviderAuthGroup(singpassMock, serviceProvider)).toThrowError();
+	});
+
+	it('should create otp group', async () => {
+		const otp = User.createOtpUser('+6584000000');
+		const authGroup = new OtpAuthGroup(otp);
+		expect(authGroup).toBeDefined();
 	});
 
 	it('should create anonymous group', async () => {

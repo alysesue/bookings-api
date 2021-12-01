@@ -39,6 +39,7 @@ export class OtpAuthGroup extends AuthGroup {
 	}
 }
 
+// TO REVIEW when doing delayLogin ticket
 export class AnonymousAuthGroup extends AuthGroup {
 	public bookingInfo?: BookingUUIDInfo;
 	public otpGroupInfo?: OtpGroupInfo;

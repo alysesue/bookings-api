@@ -7,7 +7,6 @@ import {
 	ScheduleForm,
 	ServiceProvider,
 	ServiceProviderLabel,
-	ServiceProviderLabelCategory,
 	TimeOfDay,
 	TimeslotItem,
 	TimeslotsSchedule,

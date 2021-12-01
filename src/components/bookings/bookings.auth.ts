@@ -67,37 +67,34 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 
 	// TO REVIEW PERMISSION
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
-		const userId = _anonymousGroup.user.id;
-
+		// const userId = _anonymousGroup.user.id;
 		// tslint:disable-next-line: no-small-switch
 		switch (this._changeLogAction) {
 			case ChangeLogAction.Create:
 				if (this._booking.status === BookingStatus.OnHold || this.isValidOTPServiceAndUser(_anonymousGroup)) {
 					this.markWithPermission();
 				}
-
 				break;
-			case ChangeLogAction.Update:
-			case ChangeLogAction.Reschedule:
-			case ChangeLogAction.Cancel:
-				if (
-					_anonymousGroup.hasOTPUser() &&
-					_anonymousGroup.user.anonymousUser.bookingUUID === this._booking._uuid
-				) {
-					this.markWithPermission();
-					break;
-				}
-
-				if (this.isValidOTPServiceAndUser(_anonymousGroup)) {
-					if (
-						(this._booking.createdLog && _anonymousGroup.user.id === this._booking.createdLog.userId) ||
-						this._booking.creatorId === userId
-					) {
-						this.markWithPermission();
-						break;
-					}
-				}
-				break;
+			// case ChangeLogAction.Update:
+			// case ChangeLogAction.Reschedule:
+			// case ChangeLogAction.Cancel:
+			// 	if (
+			// 		_anonymousGroup.hasOTPUser() &&
+			// 		_anonymousGroup.user.anonymousUser.bookingUUID === this._booking._uuid
+			// 	) {
+			// 		this.markWithPermission();
+			// 		break;
+			// 	}
+			// 	if (this.isValidOTPServiceAndUser(_anonymousGroup)) {
+			// 		if (
+			// 			(this._booking.createdLog && _anonymousGroup.user.id === this._booking.createdLog.userId) ||
+			// 			this._booking.creatorId === userId
+			// 		) {
+			// 			this.markWithPermission();
+			// 			break;
+			// 		}
+			// 	}
+			// 	break;
 		}
 	}
 
@@ -157,7 +154,7 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 		const orConditions = [];
 		const orParams = {};
 		orParams['otpUserId'] = _otpGroup.user.id;
-		orConditions.push(`${this._alias}."_creatorId" = :otpUserId`);
+		orConditions.push(`${this._alias}."_ownerId" = :otpUserId`);
 
 		this.addAuthCondition(orWhere(orConditions), orParams);
 	}
@@ -182,7 +179,7 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 		const userId = _citizenGroup.user.id;
 
 		this.addAuthCondition(
-			`${this._alias}."_citizenUinFin" = :authorisedUinFin OR ${this._alias}."_creatorId" = :userId`,
+			`${this._alias}."_citizenUinFin" = :authorisedUinFin OR ${this._alias}."_ownerId" = :userId`,
 			{
 				authorisedUinFin,
 				userId,

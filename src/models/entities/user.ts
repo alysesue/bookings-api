@@ -118,7 +118,7 @@ export class User implements IUser {
 		return instance;
 	}
 
-	public static createSingPassUser(molUserId: string, userUinFin: string): User {
+	public static createSingPassUser(molUserId?: string, userUinFin?: string): User {
 		const instance = new User();
 		instance.singPassUser = SingPassUser.create(molUserId, userUinFin);
 		return instance;
