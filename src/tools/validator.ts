@@ -5,7 +5,7 @@ export const isSGUinfin = (uinFinString?: string): { pass: boolean; message?: st
 	if (!_.isString(uinFinString)) {
 		return { pass: false, message: `should be a valid NRIC/FIN` };
 	}
-	const pattern = '^[XSTFG]\\d{7}[A-Z]$';
+	const pattern = '^[XSTFGM]\\d{7}[A-Z]$';
 	if (uinFinString.match(pattern) === null) {
 		return { pass: false, message: `should be a valid NRIC/FIN` };
 	}
