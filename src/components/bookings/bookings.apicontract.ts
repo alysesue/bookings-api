@@ -18,24 +18,27 @@ export class BookingReject {
 	public reasonToReject?: string;
 }
 
-export class BookingDetailsRequest {
-	/**
-	 * An external reference Id for this booking (e.g. external Client Id or booking Id).
-	 */
-	public refId?: string | null;
+export class BookingOnHoldDetailsRequest {
 	public citizenUinFin?: string | null;
 	public citizenSalutation?: Salutations | null;
 	public citizenName?: string;
 	public citizenEmail?: string;
 	public citizenPhone?: string | null;
-	public location?: string | null;
-	public description?: string | null;
-	public videoConferenceUrl?: string | null;
 	public dynamicValuesUpdated?: boolean;
 	public dynamicValues?: PersistDynamicValueContract[];
 	// default validation type: citizen
 	public validationType?: BookingValidationType | null;
 	public workflowType?: BookingWorkflowType | null;
+}
+
+export class BookingDetailsRequest extends BookingOnHoldDetailsRequest {
+	/**
+	 * An external reference Id for this booking (e.g. external Client Id or booking Id).
+	 */
+	public refId?: string | null;
+	public location?: string | null;
+	public description?: string | null;
+	public videoConferenceUrl?: string | null;
 }
 
 export class BookingRequestBase extends BookingDetailsRequest {
@@ -68,7 +71,7 @@ export class BookingUpdateRequestV2 extends BookingRequestBase {
 	public serviceProviderId?: string;
 }
 
-export class ValidateOnHoldRequest extends BookingDetailsRequest {
+export class ValidateOnHoldRequest extends BookingOnHoldDetailsRequest {
 	public citizenUinFinUpdated?: boolean = true; // for backwards compatibility
 }
 

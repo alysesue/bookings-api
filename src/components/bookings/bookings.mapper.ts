@@ -262,14 +262,10 @@ export class BookingsMapper {
 		booking.citizenEmail = request.citizenEmail;
 		booking.citizenPhone = request.citizenPhone;
 		booking.citizenSalutation = request.citizenSalutation;
-
-		// Standalone form would not allow user to modify any of these fields
-		if (booking.status !== BookingStatus.OnHold) {
-			booking.refId = request.refId;
-			booking.location = request.location;
-			booking.description = request.description;
-			booking.videoConferenceUrl = request.videoConferenceUrl || service.videoConferenceUrl;
-		}
+		booking.refId = request.refId;
+		booking.location = request.location;
+		booking.description = request.description;
+		booking.videoConferenceUrl = request.videoConferenceUrl || service.videoConferenceUrl;
 
 		await this.updateDetailsFromUser({ booking, service });
 	}
