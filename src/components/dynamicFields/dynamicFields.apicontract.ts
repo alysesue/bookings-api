@@ -10,7 +10,6 @@ export enum DynamicFieldType {
 	RadioList = 'RadioList',
 	CheckboxList = 'CheckboxList',
 	TextField = 'TextField',
-	TextAreaField = 'TextAreaField',
 	DateOnlyField = 'DateOnlyField',
 }
 
@@ -94,4 +93,5 @@ export class TextFieldModel {
 	 * @isInt
 	 */
 	public charLimit: number;
+	public inputType?: TextFieldType;
 }

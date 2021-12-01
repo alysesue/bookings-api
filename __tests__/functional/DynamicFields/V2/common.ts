@@ -1,19 +1,16 @@
 import { OrganisationAdminRequestEndpointSG } from '../../../utils/requestEndpointSG';
 import * as request from 'request';
-import {
-	DynamicFieldModel,
-	DynamicFieldType,
-} from '../../../../src/components/dynamicFields/dynamicFields.apicontract';
+import { DynamicFieldModel, TextFieldType } from '../../../../src/components/dynamicFields/dynamicFields.apicontract';
 
 export const postTextDynamicField = async (
 	{ serviceId }: { serviceId: string },
 	isMandatory: boolean,
-	type?: DynamicFieldType,
+	inputType?: TextFieldType,
 ): Promise<request.Response> => {
 	const body = {
 		name: 'notes',
-		type: type ?? 'TextField',
-		textField: { charLimit: 15 },
+		type: 'TextField',
+		textField: { charLimit: 15, inputType },
 		isMandatory: isMandatory,
 	};
 

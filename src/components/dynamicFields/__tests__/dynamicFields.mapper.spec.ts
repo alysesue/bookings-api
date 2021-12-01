@@ -85,6 +85,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		expect(dynamicFieldModel).toEqual({
 			textField: {
 				charLimit: 15,
+				inputType: TextFieldType.SingleLine,
 			},
 			idSigned: '2',
 			name: 'Sample text',
@@ -100,10 +101,11 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		expect(dynamicFieldModel).toEqual({
 			textField: {
 				charLimit: 15,
+				inputType: TextFieldType.TextArea,
 			},
 			idSigned: '2',
 			name: 'Sample text',
-			type: 'TextAreaField',
+			type: 'TextField',
 			isMandatory: true,
 		} as DynamicFieldModel);
 	});
@@ -132,6 +134,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			{
 				textField: {
 					charLimit: 15,
+					inputType: TextFieldType.SingleLine,
 				},
 				idSigned: '2',
 				name: 'Sample text',
@@ -529,9 +532,10 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 			const request = new PersistDynamicFieldModelV1();
 			request.serviceId = 1;
 			request.name = 'update request - text area';
-			request.type = DynamicFieldType.TextAreaField;
+			request.type = DynamicFieldType.TextField;
 			request.textField = new TextFieldModel();
 			request.textField.charLimit = 100;
+			request.textField.inputType = TextFieldType.TextArea;
 			request.isMandatory = true;
 
 			const instance = Container.get(DynamicFieldsMapper);
@@ -662,9 +666,10 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 		const request = new PersistDynamicFieldModelV1();
 		request.serviceId = 1;
 		request.name = 'notes';
-		request.type = DynamicFieldType.TextAreaField;
+		request.type = DynamicFieldType.TextField;
 		request.textField = new TextFieldModel();
 		request.textField.charLimit = 15;
+		request.textField.inputType = TextFieldType.TextArea;
 		request.isMandatory = true;
 
 		it('[TextArea] should map to new entity with input type TextAreaField', () => {
@@ -829,6 +834,7 @@ describe('dynamicFields/dynamicFields.mapper', () => {
 				type: 'TextField',
 				textField: {
 					charLimit: 6,
+					inputType: TextFieldType.SingleLine,
 				},
 				isCitizenReadonly: true,
 			});

@@ -72,7 +72,6 @@ export class DynamicFieldsMapper {
 			case DynamicFieldType.CheckboxList:
 				return entity instanceof CheckboxListDynamicField ? [true, entity] : [false, entity];
 			case DynamicFieldType.TextField:
-			case DynamicFieldType.TextAreaField:
 				return entity instanceof TextDynamicField ? [true, entity] : [false, entity];
 			case DynamicFieldType.DateOnlyField:
 				return entity instanceof DateOnlyDynamicField ? [true, entity] : [false, entity];
@@ -153,14 +152,11 @@ export class DynamicFieldsMapper {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(`Text field char limit must be at least 1.`);
 		}
 
-		const textInputType =
-			model.type === DynamicFieldType.TextAreaField ? TextFieldType.TextArea : TextFieldType.SingleLine;
-
 		if (entity) {
 			entity.name = model.name;
 			entity.charLimit = model.textField.charLimit;
 			entity.isMandatory = model.isMandatory;
-			entity.inputType = textInputType;
+			entity.inputType = model.textField.inputType ?? TextFieldType.SingleLine;
 
 			return entity;
 		}
@@ -170,7 +166,7 @@ export class DynamicFieldsMapper {
 			model.name,
 			model.textField.charLimit,
 			model.isMandatory,
-			textInputType,
+			model.textField.inputType,
 		);
 	}
 
@@ -244,7 +240,6 @@ export class DynamicFieldsMapper {
 			case DynamicFieldType.CheckboxList:
 				return this.mapToCheckboxListField(model, safeCast(entity, CheckboxListDynamicField));
 			case DynamicFieldType.TextField:
-			case DynamicFieldType.TextAreaField:
 				return this.mapToTextField(model, safeCast(entity, TextDynamicField));
 			case DynamicFieldType.DateOnlyField:
 				return this.mapToDateOnlyField(model, safeCast(entity, DateOnlyDynamicField));
@@ -287,12 +282,10 @@ class DynamicFieldMapperVisitor implements IDynamicFieldVisitor {
 	}
 
 	visitTextField(_textField: TextDynamicField): void {
-		this._result.type =
-			_textField.inputType === TextFieldType.TextArea
-				? DynamicFieldType.TextAreaField
-				: DynamicFieldType.TextField;
+		this._result.type = DynamicFieldType.TextField;
 		this._result.textField = new TextFieldModel();
 		this._result.textField.charLimit = _textField.charLimit;
+		this._result.textField.inputType = _textField.inputType;
 	}
 
 	visitDateOnlyField(_dateOnlyField: DateOnlyDynamicField): void {

@@ -1,8 +1,5 @@
 import { PgClient } from '../../../utils/pgClient';
-import {
-	DynamicFieldModel,
-	DynamicFieldType,
-} from '../../../../src/components/dynamicFields/dynamicFields.apicontract';
+import { DynamicFieldModel, TextFieldType } from '../../../../src/components/dynamicFields/dynamicFields.apicontract';
 import { postSelectListDynamicField, postTextDynamicField, putDynamicField } from './common';
 import { ServiceResponseV2 } from '../../../../src/components/services/service.apicontract';
 import { postService } from '../../../populate/V2/services';
@@ -13,15 +10,15 @@ describe('Dynamic Fields functional tests', () => {
 
 	let service: ServiceResponseV2;
 
-	const putTextDynamicField = async (field: DynamicFieldModel, type?: DynamicFieldType) => {
+	const putTextDynamicField = async (field: DynamicFieldModel, inputType?: TextFieldType) => {
 		return await putDynamicField({
 			serviceId: service.id,
 			idSigned: field.idSigned,
 			params: {
 				body: {
 					name: 'notes 2',
-					type: type ?? 'TextField',
-					textField: { charLimit: 20 },
+					type: 'TextField',
+					textField: { charLimit: 20, inputType },
 					isMandatory: true,
 				},
 			},
@@ -55,17 +52,14 @@ describe('Dynamic Fields functional tests', () => {
 			name: 'notes 2',
 			textField: {
 				charLimit: 20,
+				inputType: TextFieldType.SingleLine,
 			},
 			type: 'TextField',
 		});
 	});
 
 	it('should update text area dynamic field to text dynamic field', async () => {
-		const addedResponse = await postTextDynamicField(
-			{ serviceId: service.id },
-			undefined,
-			DynamicFieldType.TextAreaField,
-		);
+		const addedResponse = await postTextDynamicField({ serviceId: service.id }, undefined, TextFieldType.TextArea);
 		const field = addedResponse.body.data as DynamicFieldModel;
 
 		const response = await putTextDynamicField(field);
@@ -78,6 +72,7 @@ describe('Dynamic Fields functional tests', () => {
 			name: 'notes 2',
 			textField: {
 				charLimit: 20,
+				inputType: TextFieldType.SingleLine,
 			},
 			type: 'TextField',
 		});
@@ -87,7 +82,7 @@ describe('Dynamic Fields functional tests', () => {
 		const addedResponse = await postTextDynamicField({ serviceId: service.id }, undefined);
 		const field = addedResponse.body.data as DynamicFieldModel;
 
-		const response = await putTextDynamicField(field, DynamicFieldType.TextAreaField);
+		const response = await putTextDynamicField(field, TextFieldType.TextArea);
 		expect(response.statusCode).toBe(200);
 
 		const updatedField = response.body.data as DynamicFieldModel;
@@ -97,8 +92,9 @@ describe('Dynamic Fields functional tests', () => {
 			name: 'notes 2',
 			textField: {
 				charLimit: 20,
+				inputType: TextFieldType.TextArea,
 			},
-			type: 'TextAreaField',
+			type: 'TextField',
 		});
 	});
 

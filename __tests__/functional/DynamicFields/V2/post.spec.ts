@@ -1,8 +1,5 @@
 import { PgClient } from '../../../utils/pgClient';
-import {
-	DynamicFieldModel,
-	DynamicFieldType,
-} from '../../../../src/components/dynamicFields/dynamicFields.apicontract';
+import { DynamicFieldModel, TextFieldType } from '../../../../src/components/dynamicFields/dynamicFields.apicontract';
 import { getDynamicFields, postSelectListDynamicField, postTextDynamicField } from './common';
 import { ServiceResponseV2 } from '../../../../src/components/services/service.apicontract';
 import { postService } from '../../../populate/V2/services';
@@ -42,17 +39,14 @@ describe('Dynamic Fields functional tests', () => {
 			name: 'notes',
 			textField: {
 				charLimit: 15,
+				inputType: TextFieldType.SingleLine,
 			},
 			type: 'TextField',
 		});
 	});
 
 	it('should add text area dynamic field with isMandatory = undefined set to default false', async () => {
-		const response = await postTextDynamicField(
-			{ serviceId: service.id },
-			undefined,
-			DynamicFieldType.TextAreaField,
-		);
+		const response = await postTextDynamicField({ serviceId: service.id }, undefined, TextFieldType.TextArea);
 		expect(response.statusCode).toBe(201);
 
 		const field = response.body.data as DynamicFieldModel;
@@ -62,8 +56,9 @@ describe('Dynamic Fields functional tests', () => {
 			name: 'notes',
 			textField: {
 				charLimit: 15,
+				inputType: TextFieldType.TextArea,
 			},
-			type: 'TextAreaField',
+			type: 'TextField',
 		});
 	});
 
