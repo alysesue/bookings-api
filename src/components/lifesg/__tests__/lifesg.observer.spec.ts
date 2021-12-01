@@ -6,12 +6,12 @@ import {
 	PendingApprovalBookingSubjectMock,
 } from '../../bookings/__mocks__/bookings.subject.mock';
 import { BookingsSubject } from '../../bookings/bookings.subject';
-import { LifeSGMQSerice } from '../lifesg.service';
+import { LifeSGMQService } from '../lifesg.service';
 import { LifeSGObserver } from '../lifesg.observer';
 
 describe('Test lifesg mq observer', () => {
 	beforeAll(() => {
-		Container.bind(LifeSGMQSerice).to(LifeSGServiceMock);
+		Container.bind(LifeSGMQService).to(LifeSGServiceMock);
 		Container.bind(BookingsSubject).to(BookingsSubjectMock);
 	});
 

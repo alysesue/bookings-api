@@ -4,13 +4,13 @@ import { Inject, InRequestScope } from 'typescript-ioc';
 import { IObserver, ISubject } from '../../infrastructure/observer';
 import { BookingsSubject } from '../bookings/bookings.subject';
 import { LifeSGMapper } from './lifesg.mapper';
-import { LifeSGMQSerivce } from './lifesg.service';
+import { LifeSGMQService } from './lifesg.service';
 import { MqSubscriberType } from '../../models/mqSubscriberTypes';
 import { AppointmentAgency } from 'mol-lib-api-contract/appointment';
 @InRequestScope
 export class LifeSGObserver implements IObserver {
 	@Inject
-	private lifeSGMQSerivce: LifeSGMQSerivce;
+	private lifeSGMQService: LifeSGMQService;
 	/**
 	 * This method will send an accepted or cancelled booking to LifeSG's appointment service, a booking entity on BSG is an appointment entity in LifeSG appointment service
 	 * Over at LifeSG, what they will do with the booking data is to display it in the LifeSG mobile app, so that LifeSG users can view bookings made in BSG on the LifeSG mobile app
@@ -32,7 +32,7 @@ export class LifeSGObserver implements IObserver {
 			// tslint:disable-next-line: no-in-misuse
 			[BookingStatus.Accepted, BookingStatus.Cancelled].includes(subject.booking.status)
 		) {
-			this.lifeSGMQSerivce.send(
+			this.lifeSGMQService.send(
 				LifeSGMapper.mapLifeSGAppointment(
 					subject.booking,
 					subject.bookingType,

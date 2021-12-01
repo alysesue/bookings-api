@@ -12,7 +12,7 @@ interface Payload {
 	action: ExternalAgencyAppointmentJobAction;
 }
 @InRequestScope
-export class LifeSGMQSerivce {
+export class LifeSGMQService {
 	public async sendMultiple(payloads: Payload[]) {
 		const LIFESG_QUEUE = 'ExternalAgencyAppointment';
 		let attempt = -1;
@@ -52,7 +52,7 @@ export class LifeSGMQSerivce {
 						(p) =>
 							`{action: ${p.action}, agency: ${p.appointment.agency}, agencyTransactionId: ${p.appointment.agencyTransactionId}}`,
 					);
-					logger.info(`[LifeSGMQSerivce] total ${total} data sent to ${LIFESG_QUEUE}, ${loggedObj}`);
+					logger.info(`[LifeSGMQService] total ${total} data sent to ${LIFESG_QUEUE}, ${loggedObj}`);
 					context.connection.close();
 				}
 			});
@@ -96,7 +96,7 @@ export class LifeSGMQSerivce {
 				context.sender.send({ body });
 				context.connection.close();
 				logger.info(
-					`[LifeSGMQSerivce] data sent to ${LIFESG_QUEUE}, action: ${action}, agency: ${appointment.agency}, agencyTransactionId: ${appointment.agencyTransactionId}`,
+					`[LifeSGMQService] data sent to ${LIFESG_QUEUE}, action: ${action}, agency: ${appointment.agency}, agencyTransactionId: ${appointment.agencyTransactionId}`,
 				);
 			});
 		} catch (error) {

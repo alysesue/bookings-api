@@ -48,13 +48,13 @@ import { BookingValidationType, BookingWorkflowType } from '../../models/booking
 import { BookingWorkflowsRepository } from '../bookingWorkflows/bookingWorkflows.repository';
 import { BookingsEventValidatorFactory } from './validator/bookings.event.validation';
 import { LifeSGMapper } from '../lifesg/lifesg.mapper';
-import { LifeSGMQSerivce } from '../lifesg/lifesg.service';
+import { LifeSGMQService } from '../lifesg/lifesg.service';
 import { AppointmentAgency } from 'mol-lib-api-contract/appointment';
 
 @InRequestScope
 export class BookingsService {
 	@Inject
-	private lifeSGMQSerivce: LifeSGMQSerivce;
+	private lifeSGMQService: LifeSGMQService;
 	@Inject
 	private bookingsSubject: BookingsSubject;
 	@Inject
@@ -858,7 +858,7 @@ export class BookingsService {
 		if(appointments.length === 0){
 			return `No appointment.`;
 		}
-		this.lifeSGMQSerivce.sendMultiple(appointments);
+		this.lifeSGMQService.sendMultiple(appointments);
 		return `Sending Appointment(s).`;
 	}
 }
