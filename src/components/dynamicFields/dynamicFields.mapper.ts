@@ -1,12 +1,13 @@
-import { DynamicField, SelectListDynamicField, DynamicKeyValueOption } from '../../models';
+import { DynamicField, DynamicKeyValueOption, SelectListDynamicField } from '../../models';
 import { Inject, InRequestScope, Scope, Scoped } from 'typescript-ioc';
 import {
-	FieldWithOptionsModel,
 	DynamicFieldModel,
 	DynamicFieldType,
 	DynamicOptionModel,
+	FieldWithOptionsModel,
 	PersistDynamicFieldModelV1,
 	TextFieldModel,
+	TextFieldType,
 } from './dynamicFields.apicontract';
 import { IdHasher } from '../../infrastructure/idHasher';
 import {
@@ -155,11 +156,18 @@ export class DynamicFieldsMapper {
 			entity.name = model.name;
 			entity.charLimit = model.textField.charLimit;
 			entity.isMandatory = model.isMandatory;
+			entity.inputType = model.textField.inputType ?? TextFieldType.SingleLine;
 
 			return entity;
 		}
 
-		return TextDynamicField.create(model.serviceId, model.name, model.textField.charLimit, model.isMandatory);
+		return TextDynamicField.create(
+			model.serviceId,
+			model.name,
+			model.textField.charLimit,
+			model.isMandatory,
+			model.textField.inputType,
+		);
 	}
 
 	private mapToDateOnlyField(model: PersistDynamicFieldModelV1, entity: DateOnlyDynamicField | null): DynamicField {
@@ -277,6 +285,7 @@ class DynamicFieldMapperVisitor implements IDynamicFieldVisitor {
 		this._result.type = DynamicFieldType.TextField;
 		this._result.textField = new TextFieldModel();
 		this._result.textField.charLimit = _textField.charLimit;
+		this._result.textField.inputType = _textField.inputType;
 	}
 
 	visitDateOnlyField(_dateOnlyField: DateOnlyDynamicField): void {

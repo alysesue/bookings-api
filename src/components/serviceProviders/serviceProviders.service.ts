@@ -6,7 +6,8 @@ import {
 	Organisation,
 	ScheduleForm,
 	ServiceProvider,
-	ServiceProviderLabel, ServiceProviderLabelCategory,
+	ServiceProviderLabel,
+	ServiceProviderLabelCategory,
 	TimeOfDay,
 	TimeslotItem,
 	TimeslotsSchedule,
@@ -192,13 +193,13 @@ export class ServiceProvidersService {
 		result.sort((a, b) => {
 			return a.id - b.id;
 		});
-		if(!!labelIds.length) {
+		if (!!labelIds.length) {
 			let orgId;
 			if (serviceId) {
 				const service = await this.servicesService.getService(serviceId);
 				orgId = service.organisationId;
 			} else {
-				const org = await this.userContext.verifyAndGetFirstAuthorisedOrganisation()
+				const org = await this.userContext.verifyAndGetFirstAuthorisedOrganisation();
 				orgId = org.id;
 			}
 			result = await this.filterServiceProviderByLabels(orgId, labelIds, result);
@@ -590,25 +591,39 @@ export class ServiceProvidersService {
 	}
 
 	/*
-	* fn: filter service provider by labels
-	* fetch serviceprovider labels and categories
-	* service provider need at least one label from each categories(or uncategory)
+	 * fn: filter service provider by labels
+	 * fetch serviceprovider labels and categories
+	 * service provider need at least one label from each categories(or uncategory)
 	 */
-	public async filterServiceProviderByLabels(organisationId: number, labelsId: number[], serviceProviders: ServiceProvider[]): Promise<ServiceProvider[]>{
-		const {spLabels, spCategories} = await this.spLabelsCategoriesService.fetchSpLabelsAndSpCategories(organisationId);
-		const spLabelsFilteredByCategories = this.spLabelsCategoriesService.filterSpLabelsByLabelsIdSelected(spLabels, spCategories, labelsId);
-		return this.filterServiceProvidersBySpLabelsFilteredByCategories(serviceProviders, spLabelsFilteredByCategories);
+	public async filterServiceProviderByLabels(
+		organisationId: number,
+		labelsId: number[],
+		serviceProviders: ServiceProvider[],
+	): Promise<ServiceProvider[]> {
+		const { spLabels, spCategories } = await this.spLabelsCategoriesService.fetchSpLabelsAndSpCategories(
+			organisationId,
+		);
+		const spLabelsFilteredByCategories = this.spLabelsCategoriesService.filterSpLabelsByLabelsIdSelected(
+			spLabels,
+			spCategories,
+			labelsId,
+		);
+		return this.filterServiceProvidersBySpLabelsFilteredByCategories(
+			serviceProviders,
+			spLabelsFilteredByCategories,
+		);
 	}
 
-	private filterServiceProvidersBySpLabelsFilteredByCategories(serviceProviders: ServiceProvider[], spLabelsFilteredByCategories: ServiceProviderLabel[][]): ServiceProvider[] {
-		return serviceProviders.filter((sp) => (
-			spLabelsFilteredByCategories.every(spLabelsFilteredByCategory => (
-					spLabelsFilteredByCategory.some((spLabel) => sp.labels.some(({id}) => id === spLabel.id))
-				)
-			)));
-
+	private filterServiceProvidersBySpLabelsFilteredByCategories(
+		serviceProviders: ServiceProvider[],
+		spLabelsFilteredByCategories: ServiceProviderLabel[][],
+	): ServiceProvider[] {
+		return serviceProviders.filter((sp) =>
+			spLabelsFilteredByCategories.every((spLabelsFilteredByCategory) =>
+				spLabelsFilteredByCategory.some((spLabel) => sp.labels.some(({ id }) => id === spLabel.id)),
+			),
+		);
 	}
-
 
 	private async verifyActionPermission(
 		serviceProvider: ServiceProvider,

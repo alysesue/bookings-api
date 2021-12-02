@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { MyInfoFieldType } from './myInfoFieldType';
 import { Service } from './service';
+import { TextFieldType } from '../../components/dynamicFields/dynamicFields.apicontract';
 
 export interface IDynamicFieldVisitor {
 	visitSelectList(_selectListField: SelectListDynamicField): void;
@@ -281,12 +282,19 @@ export class TextDynamicField extends DynamicField {
 		super();
 	}
 
-	public static create(serviceId: number, name: string, charLimit: number, isMandatory: boolean): DynamicField {
+	public static create(
+		serviceId: number,
+		name: string,
+		charLimit: number,
+		isMandatory: boolean,
+		inputType?: TextFieldType,
+	): DynamicField {
 		const dynamicField = new TextDynamicField();
 		dynamicField.serviceId = serviceId;
 		dynamicField.name = name;
 		dynamicField.charLimit = charLimit;
 		dynamicField.isMandatory = isMandatory;
+		dynamicField.inputType = inputType ?? TextFieldType.SingleLine;
 		return dynamicField;
 	}
 
@@ -299,6 +307,17 @@ export class TextDynamicField extends DynamicField {
 
 	public set charLimit(value: number) {
 		this._charLimit = value;
+	}
+
+	@Column()
+	private _inputType: TextFieldType;
+
+	public get inputType(): TextFieldType {
+		return this._inputType;
+	}
+
+	public set inputType(value: TextFieldType) {
+		this._inputType = value;
 	}
 
 	public acceptVisitor(visitor: IDynamicFieldVisitor): void {
