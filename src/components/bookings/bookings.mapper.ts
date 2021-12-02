@@ -34,6 +34,7 @@ export class BookingsMapper {
 	private dynamicValuesMapper: DynamicValuesMapper;
 	@Inject
 	private dynamicValuesRequestMapper: DynamicValuesRequestMapper;
+
 	@Inject
 	private idHasher: IdHasher;
 	@Inject
@@ -254,7 +255,7 @@ export class BookingsMapper {
 			booking.serviceId = service.id;
 		}
 
-		if (!service.noNric && request.citizenUinFinUpdated) {
+		if (request.citizenUinFinUpdated) {
 			booking.citizenUinFin = request.citizenUinFin;
 		}
 
@@ -274,7 +275,7 @@ export class BookingsMapper {
 		// Place all logic to update booking details from user context information here.
 
 		const currentUser = await this.userContext.getCurrentUser();
-		if (!service.noNric && currentUser && currentUser.isSingPass()) {
+		if (currentUser && currentUser.isSingPass()) {
 			booking.citizenUinFin = currentUser.singPassUser.UinFin;
 		}
 

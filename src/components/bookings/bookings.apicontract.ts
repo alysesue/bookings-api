@@ -18,6 +18,11 @@ export class BookingReject {
 	public reasonToReject?: string;
 }
 
+/**
+ * To create a booking in BSG, we have a two API workflow where frontend will call an API to make an on hold booking, followed by a second API that contains more citizen details such as UNIFIN to confirm the booking
+ * The following API contract is the common variables between the two APIs.
+ */
+// These fields are common fields shared across
 export class BookingOnHoldDetailsRequest {
 	public citizenUinFin?: string | null;
 	public citizenSalutation?: Salutations | null;
@@ -31,6 +36,10 @@ export class BookingOnHoldDetailsRequest {
 	public workflowType?: BookingWorkflowType | null;
 }
 
+/**
+ * The variables in the following API contract are set by the agency, and hence should not be modifiable by the citizens
+ * This API contract should not be used in validateOnHold API
+ */
 export class BookingDetailsRequest extends BookingOnHoldDetailsRequest {
 	/**
 	 * An external reference Id for this booking (e.g. external Client Id or booking Id).
