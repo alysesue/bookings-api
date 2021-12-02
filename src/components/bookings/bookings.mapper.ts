@@ -255,7 +255,6 @@ export class BookingsMapper {
 			booking.serviceId = service.id;
 		}
 
-		booking.refId = request.refId;
 		if (request.citizenUinFinUpdated) {
 			booking.citizenUinFin = request.citizenUinFin;
 		}
@@ -263,10 +262,10 @@ export class BookingsMapper {
 		booking.citizenName = request.citizenName;
 		booking.citizenEmail = request.citizenEmail;
 		booking.citizenPhone = request.citizenPhone;
+		booking.citizenSalutation = request.citizenSalutation;
+		booking.refId = request.refId;
 		booking.location = request.location;
 		booking.description = request.description;
-		booking.citizenSalutation = request.citizenSalutation;
-
 		booking.videoConferenceUrl = request.videoConferenceUrl || service.videoConferenceUrl;
 
 		await this.updateDetailsFromUser({ booking, service });

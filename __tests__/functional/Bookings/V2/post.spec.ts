@@ -158,9 +158,10 @@ describe('Bookings functional tests', () => {
 
 	const postAnonymousBooking = async (
 		params: Partial<BookingRequestV2> = {},
-		verifyOTP: boolean = false,
-		validate: boolean = false,
-		reschedule: boolean = false,
+		verifyOTP = false,
+		validate = false,
+		reschedule = false,
+		standaloneParams: Partial<BookingRequestV2> = {},
 	) => {
 		const startDateTime = new Date(Date.UTC(2051, 11, 10, 1, 0));
 		const endDateTime = new Date(Date.UTC(2051, 11, 10, 2, 0));
@@ -198,6 +199,7 @@ describe('Bookings functional tests', () => {
 					citizenName,
 					citizenEmail,
 					citizenPhone: '98728473',
+					...standaloneParams,
 				},
 			},
 			'V2',
@@ -1021,6 +1023,32 @@ describe('Bookings functional tests', () => {
 			const getResponse = await endpoint.get(`/bookings/${bookingId}`, {}, 'V2');
 			expect(getResponse.statusCode).toBe(200);
 			expect(getResponse.body.data.status).toBe(BookingStatus.Rejected);
+		});
+	});
+
+	describe('data manipulation', () => {
+		const refId = 'someRefId';
+		const videoConferenceUrl = 'something@zoom.us';
+		const location = 'singapore';
+		const description = 'my description';
+
+		it('[anonymous][standalone] should not allow unauthorized change of phone number and other fields not exposed in standalone form', async () => {
+			await pgClient.configureServiceAllowAnonymous({ serviceId: unsignedServiceId });
+			await pgClient.setServiceConfigurationStandAlone(unsignedServiceId, true);
+
+			const [, validateResponse] = await postAnonymousBooking({}, true, true, false, {
+				refId,
+				videoConferenceUrl,
+				location,
+				description,
+			});
+
+			expect(validateResponse.statusCode).toBe(200);
+			expect(validateResponse.body.data.citizenPhone).toBe('84000000');
+			expect(validateResponse.body.data.refId).toBe(null);
+			expect(validateResponse.body.data.videoConferenceUrl).toBe(null);
+			expect(validateResponse.body.data.location).toBe(null);
+			expect(validateResponse.body.data.description).toBe(null);
 		});
 	});
 });
