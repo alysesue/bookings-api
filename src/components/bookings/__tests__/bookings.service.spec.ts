@@ -2378,7 +2378,7 @@ describe('Bookings.Service', () => {
 				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
 			);
 
-			await Container.get(BookingsService).bookAnEvent(eventBookingRequest, 10);
+			await Container.get(BookingsService).bookAnEvent(eventBookingRequest, mockEvent);
 
 			const booking = BookingRepositoryMock.booking;
 			expect(booking).not.toBe(undefined);
@@ -2414,7 +2414,7 @@ describe('Bookings.Service', () => {
 				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
 			);
 
-			await Container.get(BookingsService).bookAnEvent(eventBookingRequest, 10);
+			await Container.get(BookingsService).bookAnEvent(eventBookingRequest, mockEvent);
 
 			const booking = BookingRepositoryMock.booking;
 			expect(booking).not.toBe(undefined);
@@ -2450,7 +2450,7 @@ describe('Bookings.Service', () => {
 				Promise.resolve([new AnonymousAuthGroup(anonymousMock, undefined, { mobileNo: '+6584000000' })]),
 			);
 
-			await Container.get(BookingsService).bookAnEvent(eventBookingRequest, 10);
+			await Container.get(BookingsService).bookAnEvent(eventBookingRequest, mockEvent);
 
 			const booking = BookingRepositoryMock.booking;
 			expect(booking).not.toBe(undefined);
@@ -2480,7 +2480,7 @@ describe('Bookings.Service', () => {
 				Promise.resolve([new OrganisationAdminAuthGroup(agencyMock, [organisation])]),
 			);
 
-			await Container.get(BookingsService).bookAnEvent(eventBookingRequest, 10);
+			await Container.get(BookingsService).bookAnEvent(eventBookingRequest, mockEvent);
 
 			const booking = BookingRepositoryMock.booking;
 			expect(booking).not.toBe(undefined);

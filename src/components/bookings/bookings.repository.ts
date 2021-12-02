@@ -5,7 +5,7 @@ import { PagingHelper } from '../../core/paging';
 import { RepositoryBase } from '../../core/repository';
 import { ConcurrencyError } from '../../errors/concurrencyError';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import {BookedSlot, Booking, BookingStatus, Event} from '../../models';
+import { Booking, BookingStatus } from '../../models';
 import { groupByKeyLastValue } from '../../tools/collections';
 import { andWhere } from '../../tools/queryConditions';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
@@ -113,6 +113,12 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return bookingPromise;
 	}
 
+	public async saveMultiple(booking: Booking[]): Promise<Booking[]> {
+		if (!booking) return;
+		const repository = await this.getRepository();
+		return await repository.save(booking);
+	}
+
 	public async getBookingsByEventId(eventId: number): Promise<Booking[]> {
 		const repository = await this.getRepository();
 
@@ -121,37 +127,6 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 				_eventId: eventId,
 			},
 		});
-	}
-
-	public async deleteBookedSlotsByEventId(eventId: number): Promise<void> {
-		const bookings = await this.getBookingsByEventId(eventId);
-		if (!bookings) return;
-		for (let i = 0; i<bookings.length; i++) {
-			const booking = await this.getBooking(bookings[i].id);
-			booking.bookedSlots = [];
-			const repository = await this.getRepository();
-			await repository.save(booking);
-		}
-	}
-
-	public async updateBookedSlots(event: Event, id: number): Promise<void> {
-		if (!event) return;
-		const bookings = await this.getBookingsByEventId(id);
-		if (!bookings) return;
-		for (let i = 0; i<bookings.length; i++) {
-			const booking = bookings[i];
-			const newBookedSlots : BookedSlot[] = [];
-			for (let j = 0; j<event.oneOffTimeslots.length; j++) {
-				const updatedBookedSlot = new BookedSlot()
-				updatedBookedSlot.oneOffTimeslot = event.oneOffTimeslots[j];
-				updatedBookedSlot.bookingId = booking.id;
-				newBookedSlots.push(updatedBookedSlot);
-			}
-			booking.bookedSlots = newBookedSlots;
-			const repository = await this.getRepository();
-			await repository.save(booking);
-		}
-
 	}
 
 	public async update(booking: Booking): Promise<Booking> {

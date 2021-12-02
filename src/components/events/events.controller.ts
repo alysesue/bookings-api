@@ -182,7 +182,8 @@ export class EventsController extends Controller {
 		@Body() eventBookingRequest: EventBookingRequest,
 	): Promise<ApiData<EventBookingResponse>> {
 		const eventIdNotSighed = this.idHasher.decode(eventId);
-		const eventBooking = await this.bookingsService.bookAnEvent(eventBookingRequest, eventIdNotSighed, false);
+		const event = await this.eventsService.getById(eventIdNotSighed);
+		const eventBooking = await this.bookingsService.bookAnEvent(eventBookingRequest, event, false);
 
 		this.setStatus(201);
 		return ApiDataFactory.create(await this.bookingsMapper.mapEventsDataModel(eventBooking));

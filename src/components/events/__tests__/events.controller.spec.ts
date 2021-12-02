@@ -160,9 +160,14 @@ describe('Test events controller', () => {
 	});
 
 	it('Should call create event booking', async () => {
+		const eventBookingRequest: EventBookingRequest = new EventBookingRequest();
+		eventBookingRequest.citizenName = 'this should be the name';
+		eventBookingRequest.citizenEmail = 'correctemail@gmail.com';
+		eventBookingRequest.citizenPhone = '93328223';
 		(BookingsServiceMock.bookAnEventMock as jest.Mock).mockReturnValue({ id: 1, eventId: 1 });
 		(BookingsMapperMock.mapEventsDataModel as jest.Mock).mockReturnValue({});
-		Container.get(EventsController).createEventBooking('hashedEventId', {} as EventBookingRequest);
+		(EventsServiceMock.getById as jest.Mock).mockReturnValue(eventMock);
+		await Container.get(EventsController).createEventBooking('hashedEventId', eventBookingRequest);
 		expect(BookingsServiceMock.bookAnEventMock).toHaveBeenCalledTimes(1);
 	});
 });

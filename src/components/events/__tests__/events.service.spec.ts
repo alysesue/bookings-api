@@ -30,6 +30,8 @@ import { EventsAuthVisitor } from '../events.auth';
 import { getServiceProviderMock } from '../../../models/__mocks__/serviceProvider.mock';
 import {BookedSlotRepository} from "../../bookings/bookedSlot.repository";
 import {BookedSlotRepositoryMock} from "../../bookings/__mocks__/bookedSlot.repository.mock";
+import {BookingsServiceMock} from "../../bookings/__mocks__/bookings.service.mock";
+import {BookingsService} from "../../bookings";
 
 jest.mock('../events.auth');
 jest.mock('../events.validation');
@@ -71,6 +73,7 @@ describe('Tests events services', () => {
 		Container.bind(TransactionManager).to(TransactionManagerMock);
 		Container.bind(EventsRepository).to(EventsRepositoryMock);
 		Container.bind(BookedSlotRepository).to(BookedSlotRepositoryMock);
+		Container.bind(BookingsService).to(BookingsServiceMock)
 	});
 
 	beforeEach(() => {

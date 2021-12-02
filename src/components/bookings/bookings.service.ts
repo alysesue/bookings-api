@@ -42,7 +42,6 @@ import { BookingType } from '../../models/bookingType';
 import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
-import { EventsService } from '../events/events.service';
 import { BookingValidationType, BookingWorkflowType } from '../../models';
 import { BookingWorkflowsRepository } from '../bookingWorkflows/bookingWorkflows.repository';
 import { BookingsEventValidatorFactory } from './validator/bookings.event.validation';
@@ -90,8 +89,6 @@ export class BookingsService {
 	private bookingsMapper: BookingsMapper;
 	@Inject
 	private bookingWorkflowsRepo: BookingWorkflowsRepository;
-	@Inject
-	private eventService: EventsService;
 
 	constructor() {
 		this.bookingsSubject.attach(
@@ -311,15 +308,14 @@ export class BookingsService {
 
 	public async bookAnEvent(
 		eventBookingRequest: EventBookingRequest,
-		eventId: number,
+		event: Event,
 		bypassCaptchaAndAutoAccept = false,
 	): Promise<Booking> {
-		const eventDetails = await this.eventService.getById(eventId);
 		const saveAction = () =>
 			this.bookEventInternal(
 				eventBookingRequest,
-				eventDetails,
-				eventDetails.serviceId,
+				event,
+				event.serviceId,
 				bypassCaptchaAndAutoAccept,
 			);
 		const booking = await this.changeLogsService.executeAndLogAction(
@@ -935,6 +931,34 @@ export class BookingsService {
 		}
 		this.lifeSGMQService.sendMultiple(appointments);
 		return `Sending Appointment(s).`;
+	}
+
+	public async deleteBookedSlotsByEventId(eventId: number): Promise<Booking[]> {
+		const bookings = await this.bookingsRepository.getBookingsByEventId(eventId);
+		if (!bookings) return;
+		await Promise.all(bookings.map(async (booking) => {
+			booking.bookedSlots = [];
+		}))
+		return await this.bookingsRepository.saveMultiple(bookings);
+	}
+
+	public async updateBookedSlots(event: Event, id: number): Promise<Booking[]> {
+		if (!event) return;
+		const bookings = await this.bookingsRepository.getBookingsByEventId(id);
+		if (!bookings) return;
+		const newBookings: Booking[] = [];
+		bookings.forEach((booking) => {
+			const newBookedSlots : BookedSlot[] = [];
+			event.oneOffTimeslots.forEach((timeslot) => {
+				const updatedBookedSlot = new BookedSlot()
+				updatedBookedSlot.oneOffTimeslot = timeslot;
+				updatedBookedSlot.bookingId = booking.id;
+				newBookedSlots.push(updatedBookedSlot);
+			})
+			booking.bookedSlots = newBookedSlots;
+			newBookings.push(booking);
+		})
+		return await this.bookingsRepository.saveMultiple(newBookings);
 	}
 }
 

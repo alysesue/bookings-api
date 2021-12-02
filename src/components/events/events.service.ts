@@ -21,12 +21,10 @@ import { EventsAuthVisitor } from './events.auth';
 import { EventsMapper } from './events.mapper';
 import { EventsRepository } from './events.repository';
 import { EventsValidation } from './events.validation';
-import {BookingsRepository} from "../bookings/bookings.repository";
+import { BookingsService } from "../bookings/bookings.service";
 
 @InRequestScope
 export class EventsService {
-	@Inject
-	private bookingsRepository: BookingsRepository;
 	@Inject
 	private eventsMapper: EventsMapper;
 	@Inject
@@ -45,6 +43,8 @@ export class EventsService {
 	private containerContext: ContainerContext;
 	@Inject
 	private idHasher: IdHasher;
+	@Inject
+	private bookingsService: BookingsService;
 
 	public async saveOneOffTimeslot(eventRequest: EventOneOffTimeslotRequest): Promise<Event> {
 		let event = this.eventsMapper.mapToModel(eventRequest);
@@ -90,7 +90,7 @@ export class EventsService {
 
 	public async updateEvent(request: EventRequest, idSigned: string): Promise<Event> {
 		const id = this.idHasher.decode(idSigned);
-		await this.bookingsRepository.deleteBookedSlotsByEventId(id);
+		await this.bookingsService.deleteBookedSlotsByEventId(id);
 		let entity = await this.eventsRepository.getById({ id });
 		entity.isOneOffTimeslot = false;
 		this.eventsMapper.mapUpdateModel(entity, request);
@@ -98,7 +98,7 @@ export class EventsService {
 		entity.oneOffTimeslots = await this.fetchTimeslotDependencies(request.timeslots);
 		entity = this.eventsMapper.mapDependenciesToModel(entity, { service, labels });
 		const updatedEvent = await this.save(entity);
-		await this.bookingsRepository.updateBookedSlots(updatedEvent, id);
+		await this.bookingsService.updateBookedSlots(updatedEvent, id);
 		return updatedEvent;
 	}
 

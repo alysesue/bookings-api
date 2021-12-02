@@ -10,6 +10,8 @@ export class BookingsServiceMock implements Partial<BookingsService> {
 	public static mockCheckLimit = jest.fn<Promise<void>, any>();
 	public static changeUser = jest.fn<Promise<Booking>, any>();
 	public static bookAnEventMock = jest.fn<Promise<Booking>, any>();
+	public static mockDeleteBookedSlotsByEventId = jest.fn<Promise<Booking[]>, any>();
+	public static mockUpdateBookedSlots = jest.fn<Promise<Booking[]>, any>();
 	public static getBookingByUUID = jest.fn<Promise<Booking>, any>();
 
 	public static mockBooking: Booking;
@@ -82,5 +84,13 @@ export class BookingsServiceMock implements Partial<BookingsService> {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public async bookAnEvent(...params): Promise<Booking> {
 		return BookingsServiceMock.bookAnEventMock(...params);
+	}
+
+	public async deleteBookedSlotsByEventId(...params): Promise<Booking[]> {
+		return BookingsServiceMock.mockDeleteBookedSlotsByEventId(...params);
+	}
+
+	public async updateBookedSlots(...params): Promise<Booking[]> {
+		return BookingsServiceMock.mockUpdateBookedSlots(...params);
 	}
 }

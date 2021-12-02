@@ -10,9 +10,9 @@ import { Validator } from '../../../infrastructure/validator';
 import { BookingBusinessValidations } from './bookingBusinessValidations';
 import { ContainerContext } from '../../../infrastructure/containerContext';
 import { BookingSearchRequest } from '../bookings.apicontract';
-import { EventsService } from '../../events/events.service';
 import { isVerifiedPhoneNumber } from '../../../tools/phoneNumber';
 import { IBookingsValidator } from './bookings.validation';
+import { EventsRepository } from "../../events/events.repository";
 
 abstract class BookingsEventValidator extends Validator<Booking> implements IBookingsValidator {
 	@Inject
@@ -20,7 +20,7 @@ abstract class BookingsEventValidator extends Validator<Booking> implements IBoo
 	@Inject
 	protected bookingsRepository: BookingsRepository;
 	@Inject
-	protected eventService: EventsService;
+	protected eventRepository: EventsRepository;
 
 	protected shouldBypassCaptcha = false;
 	private _customCitizenValidations: BusinessValidation[];
@@ -125,19 +125,19 @@ abstract class BookingsEventValidator extends Validator<Booking> implements IBoo
 			page: 1,
 			limit: 9999,
 		};
-
-		// decrement event bookings count if onHoldUntil has expired or
-		// is current persisted onhold booking (submission from standalone form)
 		const eventBookings = await this.bookingsRepository.searchReturnAll(searchQuery);
 		let eventBookingsCount = eventBookings.length;
 		eventBookings.forEach((e) => {
-			if ((e.status === BookingStatus.OnHold && e.onHoldUntil < new Date()) || e.id === _booking.id) {
+			if (e.status === BookingStatus.OnHold && !e.isValidOnHoldBooking()) {
 				eventBookingsCount = eventBookingsCount - 1;
 			}
 		});
-
-		const eventDetails = await this.eventService.getById(_booking.eventId);
-
+		const id = _booking.eventId;
+		const eventDetails = await this.eventRepository.getById({ id });
+		eventBookingsCount =
+			_booking.isValidOnHoldBooking() && eventBookingsCount <= eventDetails.capacity
+				? eventBookingsCount - 1
+				: eventBookingsCount;
 		if (eventBookingsCount >= eventDetails.capacity) {
 			yield BookingBusinessValidations.EventCapacityUnavailable;
 		}
