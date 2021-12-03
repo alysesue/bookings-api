@@ -319,6 +319,23 @@ describe('Bookings repository', () => {
 		expect(result).toStrictEqual(booking);
 		expect(result.serviceProvider).toStrictEqual(serviceProvider);
 	});
+
+	it('should get booking by eventId', async () => {
+		const eventId = 1;
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withStartDateTime(new Date('2020-10-01T01:00:00'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00'))
+			.build();
+		booking.id = 1;
+		booking.eventId = 1;
+
+		TransactionManagerMock.find.mockImplementation(() => booking);
+
+		const bookingsRepository = Container.get(BookingsRepository);
+		const result = await bookingsRepository.getBookingsByEventId(eventId);
+		expect(result).toStrictEqual(booking);
+	});
 });
 
 class UserContextMock implements Partial<UserContext> {
