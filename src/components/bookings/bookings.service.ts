@@ -949,6 +949,10 @@ export class BookingsService {
 		const newBookings: Booking[] = [];
 		bookings.forEach((booking) => {
 			const newBookedSlots : BookedSlot[] = [];
+			if (event.oneOffTimeslots[0]) {
+				booking.startDateTime = event.oneOffTimeslots[0].startDateTime;
+				booking.endDateTime = event.oneOffTimeslots[0].endDateTime;
+			}
 			event.oneOffTimeslots.forEach((timeslot) => {
 				const updatedBookedSlot = new BookedSlot()
 				updatedBookedSlot.oneOffTimeslot = timeslot;
