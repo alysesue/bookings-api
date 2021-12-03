@@ -5,6 +5,7 @@ import {
 	EventTimeslotRequest,
 } from '../../../src/components/events/events.apicontract';
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
+import {Body} from "tsoa";
 
 export const createOneOffTimeslotRequest = ({
 	serviceProviderId,
@@ -46,6 +47,20 @@ export const postEvent = async (eventRequest: Partial<EventRequest>): Promise<Ev
 		`/events/`,
 		{
 			body: { ...event },
+		},
+		'V2',
+	);
+
+	expect(response.statusCode).toEqual(201);
+
+	return response.body.data as EventResponse;
+};
+
+export const putEvent = async (id: string, eventRequest: Partial<EventRequest>): Promise<EventResponse> => {
+	const response = await OrganisationAdminRequestEndpointSG.create({}).put(
+		`/events/${id}`,
+		{
+			body: { ...eventRequest },
 		},
 		'V2',
 	);
