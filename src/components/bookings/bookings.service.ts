@@ -283,19 +283,7 @@ export class BookingsService {
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<IPagedEntities<Booking>> {
-		const bookings = await this.bookingsRepository.search(searchRequest);
-		const user = await this.userContext.getCurrentUser();
-
-		if (user && user.adminUser) {
-			return bookings;
-		}
-
-		if (user && !(user.singPassUser || user.otpUser))
-			throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_AUTHORIZATION).setMessage(
-				`User type does not match booking's auth type`,
-			);
-
-		return bookings;
+		return await this.bookingsRepository.search(searchRequest);
 	}
 
 	public async searchBookingsReturnAll(searchRequest: BookingSearchRequest): Promise<Booking[]> {
@@ -619,6 +607,10 @@ export class BookingsService {
 
 		await this.loadBookingDependencies(booking);
 		await validator.validate(booking);
+
+		// Add owner after bookings have been validated
+		booking.owner = await this.getOwnerUser(useAdminValidator, booking, currentUser);
+
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
 
 		// Persists in memory user only after validating booking.
@@ -675,8 +667,6 @@ export class BookingsService {
 		}
 
 		const validator = this.bookingsValidatorFactory.getValidator(useAdminValidator);
-
-		booking.owner = await this.getOwnerUser(useAdminValidator, booking, currentUser);
 
 		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || isAgencyUser);
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
@@ -760,6 +750,7 @@ export class BookingsService {
 		if (previousBooking.isValidOnHoldBooking()) {
 			const updatedBooking = previousBooking.clone();
 			const { service } = await this.bookingRequestExtraction(previousBooking.serviceId);
+
 			await this.bookingsMapper.mapBookingDetails({
 				request: { ...bookingRequest, citizenUinFinUpdated: bookingRequest.citizenUinFinUpdated || false },
 				booking: updatedBooking,

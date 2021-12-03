@@ -57,15 +57,14 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 			case ChangeLogAction.Update:
 			case ChangeLogAction.Reschedule:
 			case ChangeLogAction.Cancel:
-				if ((this._booking.creatorId = userId)) {
-					// REVIEW TO BE CHANGED TO OWNER ID
+				if (this._booking.ownerId === userId) {
 					this.markWithPermission();
 				}
 				break;
 		}
 	}
 
-	// TO REVIEW PERMISSION
+	// TO REVIEW PERMISSION: when doing delayLogin ticket
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
 		// const userId = _anonymousGroup.user.id;
 		// tslint:disable-next-line: no-small-switch
@@ -75,26 +74,6 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 					this.markWithPermission();
 				}
 				break;
-			// case ChangeLogAction.Update:
-			// case ChangeLogAction.Reschedule:
-			// case ChangeLogAction.Cancel:
-			// 	if (
-			// 		_anonymousGroup.hasOTPUser() &&
-			// 		_anonymousGroup.user.anonymousUser.bookingUUID === this._booking._uuid
-			// 	) {
-			// 		this.markWithPermission();
-			// 		break;
-			// 	}
-			// 	if (this.isValidOTPServiceAndUser(_anonymousGroup)) {
-			// 		if (
-			// 			(this._booking.createdLog && _anonymousGroup.user.id === this._booking.createdLog.userId) ||
-			// 			this._booking.creatorId === userId
-			// 		) {
-			// 			this.markWithPermission();
-			// 			break;
-			// 		}
-			// 	}
-			// 	break;
 		}
 	}
 
@@ -149,7 +128,6 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 		this._serviceAlias = serviceAlias;
 	}
 
-	// REVIEW TO BE CHANGE TO OWNER ID
 	public visitOtp(_otpGroup: OtpAuthGroup): void {
 		const orConditions = [];
 		const orParams = {};
@@ -164,7 +142,7 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 		const orConditions = [];
 		const orParams = {};
 		orParams['anonUserId'] = _anonymousGroup.user.id;
-		orConditions.push(`${this._alias}."_creatorId" = :anonUserId`);
+		orConditions.push(`${this._alias}."_ownerId" = :anonUserId`);
 
 		if (_anonymousGroup.bookingInfo) {
 			orParams['authorisedBookingUUID'] = _anonymousGroup.bookingInfo.bookingUUID;

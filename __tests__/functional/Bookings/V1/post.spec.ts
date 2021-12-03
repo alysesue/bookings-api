@@ -786,13 +786,13 @@ describe('Bookings functional tests', () => {
 		expect(validateResponse.statusCode).toBe(401);
 	});
 
-	it('should NOT create standalone booking as an Anonymous user (when service is NOT configured)', async () => {
+	it('should create and update standalone booking as an OTP user', async () => {
 		await pgClient.setServiceConfigurationStandAlone(serviceId, true);
 
 		const [bookingResponse, validateResponse] = await postAnonymousBooking({}, true, true);
 
 		expect(bookingResponse.statusCode).toBe(201);
-		expect(validateResponse.statusCode).toBe(403);
+		expect(validateResponse.statusCode).toBe(200);
 	});
 
 	it('[Stand alone][Anonymous] - should reschedule booking as anonymous', async () => {

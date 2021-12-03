@@ -29,12 +29,11 @@ export class ServiceProvidersQueryAuthVisitor extends QueryAuthGroupVisitor {
 		this._serviceAlias = serviceAlias;
 	}
 
-	// TO REVIEW
 	public visitOtp(_otpGroup: OtpAuthGroup): void {
 		this.addAsTrue();
 	}
 
-	// TO REVIEW
+	// TO REVIEW: when doing delayLogin ticket
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
 		if (_anonymousGroup.bookingInfo) {
 			const { serviceId } = _anonymousGroup.bookingInfo;

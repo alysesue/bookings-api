@@ -1,7 +1,6 @@
 import { OrganisationsRepositoryMock } from '../../../components/organisations/__mocks__/organisations.noauth.repository.mock';
 import { Container } from 'typescript-ioc';
 import { OrganisationSettingsService } from '../organisations.settings.service';
-import { UsersServiceMock } from '../../../components/bookings/__mocks__/bookings.mocks';
 import { OrganisationsNoauthRepository } from '../../../components/organisations/organisations.noauth.repository';
 import { SPLabelsCategoriesMapper } from '../../../components/serviceProvidersLabels/serviceProvidersLabels.mapper';
 import { SPLabelsCategoriesService } from '../../../components/serviceProvidersLabels/serviceProvidersLabels.service';
@@ -25,8 +24,9 @@ import {
 import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 import { OrganisationSettingsRequest } from '../../../components/organisations/organisations.apicontract';
 import { ServiceProviderLabelRequest } from '../../../components/serviceProvidersLabels/serviceProvidersLabels.apicontract';
-import {OrganisationsActionAuthVisitor, OrganisationsAuthOtherAction} from '../organisations.auth';
-import {CrudAction} from "../../../enums/crudAction";
+import { OrganisationsActionAuthVisitor, OrganisationsAuthOtherAction } from '../organisations.auth';
+import { CrudAction } from '../../../enums/crudAction';
+import { UsersServiceMock } from '../../../components/users/__mocks__/users.service';
 
 jest.mock('../organisations.auth');
 
@@ -119,8 +119,10 @@ describe('Organisation Settings API', () => {
 			it('should return organisation', async () => {
 				OrganisationsRepositoryMock.getOrganisationById.mockReturnValue(organisation);
 				const result = await Container.get(OrganisationSettingsService).getLabels(1);
-				expect((OrganisationsActionAuthVisitor as jest.Mock).mock.calls[0][1]).toBe(OrganisationsAuthOtherAction.someRead);
-				expect(result).toStrictEqual({categories: organisation.categories, labels: organisation.labels});
+				expect((OrganisationsActionAuthVisitor as jest.Mock).mock.calls[0][1]).toBe(
+					OrganisationsAuthOtherAction.someRead,
+				);
+				expect(result).toStrictEqual({ categories: organisation.categories, labels: organisation.labels });
 			});
 		});
 

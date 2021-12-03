@@ -41,6 +41,7 @@ import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
@@ -49,7 +50,6 @@ import {
 	BookingRepositoryMock,
 	TimeslotsServiceMock,
 	UnavailabilitiesServiceMock,
-	UsersServiceMock,
 } from '../__mocks__/bookings.mocks';
 import { ServiceProvidersService } from '../../serviceProviders/serviceProviders.service';
 import { UsersService } from '../../users/users.service';
@@ -84,6 +84,7 @@ import {
 } from '../../../components/dynamicFields/dynamicValues.mapper';
 import { DynamicValuesRequestMapperMock } from '../../../components/dynamicFields/__mocks__/dynamicValues.mapper.mock';
 import { BookingType } from '../../../models/bookingType';
+import { UsersServiceMock } from '../../../components/users/__mocks__/users.service';
 
 jest.mock('../../../tools/arrays');
 jest.mock('../bookings.auth', () => ({ BookingActionAuthVisitor: jest.fn() }));
@@ -129,6 +130,8 @@ describe('Bookings.Service', () => {
 	});
 	const singpassMock = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
 	singpassMock.id = 45;
+	const otpMock = User.createOtpUser('+6584000000');
+	otpMock.id = 46;
 	const anonymousMock = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
 	const agencyMock = User.createAgencyUser({
 		agencyAppId: 'some-app',
@@ -245,6 +248,9 @@ describe('Bookings.Service', () => {
 			async () => ({ result: [] } as MapRequestOptionalResult),
 		);
 		DynamicValuesRequestMapperMock.updateMyInfoDynamicFromUser.mockImplementation(async (values, _svcId) => values);
+
+		UsersServiceMock.getOrSaveSingpassUser.mockImplementation(() => Promise.resolve(singpassMock));
+		UsersServiceMock.getOtpUser.mockImplementation(() => Promise.resolve(otpMock));
 	});
 
 	afterAll(() => {
@@ -370,45 +376,183 @@ describe('Bookings.Service', () => {
 		expect(bookingActionVisitorMock.hasPermission).toBeCalled();
 	});
 
-	it('should save booking from booking request (singpass user)', async () => {
-		const bookingRequest: BookingRequestV1 = new BookingRequestV1();
-		bookingRequest.startDateTime = new Date();
-		bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
-		bookingRequest.citizenName = 'this should be the name';
-		bookingRequest.citizenEmail = 'correctemail@gmail.com';
-		bookingRequest.citizenPhone = '93328223';
+	describe('booking owner test', () => {
+		it('should save booking from booking request (singpass user)', async () => {
+			const bookingRequest: BookingRequestV1 = new BookingRequestV1();
+			bookingRequest.startDateTime = new Date();
+			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+			bookingRequest.citizenName = 'this should be the name';
+			bookingRequest.citizenEmail = 'correctemail@gmail.com';
+			bookingRequest.citizenPhone = '93328223';
 
-		const standaloneService = new Service();
-		standaloneService.id = 1;
-		standaloneService.citizenAuthentication = [CitizenAuthenticationType.Singpass];
-		standaloneService.isStandAlone = true;
+			const standaloneService = new Service();
+			standaloneService.id = 1;
+			standaloneService.citizenAuthentication = [CitizenAuthenticationType.Singpass];
+			standaloneService.isStandAlone = true;
 
-		ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(standaloneService));
-		TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
-			return Promise.resolve([
-				{
-					serviceProvider,
-					capacity: 1,
-					acceptedBookings: [],
-					pendingBookings: [],
-					availabilityCount: 1,
-				} as TimeslotServiceProviderResult,
-			]);
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(standaloneService));
+			TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
+				return Promise.resolve([
+					{
+						serviceProvider,
+						capacity: 1,
+						acceptedBookings: [],
+						pendingBookings: [],
+						availabilityCount: 1,
+					} as TimeslotServiceProviderResult,
+				]);
+			});
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new CitizenAuthGroup(singpassMock)]),
+			);
+
+			await Container.get(BookingsService).save(bookingRequest, 1);
+
+			const booking = BookingRepositoryMock.booking;
+			expect(booking).not.toBe(undefined);
+			expect(booking.status).toBe(BookingStatus.OnHold);
+			expect(booking.citizenName).toBe('this should be the name');
+			expect(booking.citizenEmail).toBe('correctemail@gmail.com');
+			expect(booking.citizenPhone).toBe('93328223');
+			expect(booking.creator).toBe(singpassMock);
+			expect(booking.owner).toBe(singpassMock);
+			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+			expect(bookingActionVisitorMock.hasPermission).toBeCalled();
 		});
 
-		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(singpassMock));
-		UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new CitizenAuthGroup(singpassMock)]));
+		it('should save booking from booking request (otp user)', async () => {
+			const bookingRequest: BookingRequestV1 = new BookingRequestV1();
+			bookingRequest.startDateTime = new Date();
+			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+			bookingRequest.citizenName = 'this should be the name';
+			bookingRequest.citizenEmail = 'correctemail@gmail.com';
+			bookingRequest.citizenPhone = '93328223';
 
-		await Container.get(BookingsService).save(bookingRequest, 1);
+			const standaloneService = new Service();
+			standaloneService.id = 1;
+			standaloneService.citizenAuthentication = [CitizenAuthenticationType.Otp];
+			standaloneService.isStandAlone = true;
 
-		const booking = BookingRepositoryMock.booking;
-		expect(booking).not.toBe(undefined);
-		expect(booking.status).toBe(BookingStatus.OnHold);
-		expect(booking.citizenName).toBe('this should be the name');
-		expect(booking.citizenEmail).toBe('correctemail@gmail.com');
-		expect(booking.citizenPhone).toBe('93328223');
-		expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
-		expect(bookingActionVisitorMock.hasPermission).toBeCalled();
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(standaloneService));
+			TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
+				return Promise.resolve([
+					{
+						serviceProvider,
+						capacity: 1,
+						acceptedBookings: [],
+						pendingBookings: [],
+						availabilityCount: 1,
+					} as TimeslotServiceProviderResult,
+				]);
+			});
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(otpMock));
+			UserContextMock.getAuthGroups.mockImplementation(() => Promise.resolve([new OtpAuthGroup(otpMock)]));
+
+			await Container.get(BookingsService).save(bookingRequest, 1);
+
+			const booking = BookingRepositoryMock.booking;
+			expect(booking).not.toBe(undefined);
+			expect(booking.status).toBe(BookingStatus.OnHold);
+			expect(booking.citizenName).toBe('this should be the name');
+			expect(booking.citizenEmail).toBe('correctemail@gmail.com');
+			expect(booking.citizenPhone).toBe('93328223');
+			expect(booking.creator).toBe(otpMock);
+			expect(booking.owner).toBe(otpMock);
+			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+			expect(bookingActionVisitorMock.hasPermission).toBeCalled();
+		});
+		it('should save booking from booking request (otp user) - action by admin', async () => {
+			const bookingRequest: BookingRequestV1 = new BookingRequestV1();
+			bookingRequest.startDateTime = new Date();
+			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+			bookingRequest.citizenName = 'this should be the name';
+			bookingRequest.citizenEmail = 'correctemail@gmail.com';
+			bookingRequest.citizenPhone = '93328223';
+
+			const standaloneService = new Service();
+			standaloneService.id = 1;
+			standaloneService.citizenAuthentication = [CitizenAuthenticationType.Otp];
+			standaloneService.isStandAlone = true;
+
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(standaloneService));
+			TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
+				return Promise.resolve([
+					{
+						serviceProvider,
+						capacity: 1,
+						acceptedBookings: [],
+						pendingBookings: [],
+						availabilityCount: 1,
+					} as TimeslotServiceProviderResult,
+				]);
+			});
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new OrganisationAdminAuthGroup(adminMock, [organisation])]),
+			);
+
+			await Container.get(BookingsService).save(bookingRequest, 1);
+
+			const booking = BookingRepositoryMock.booking;
+			expect(booking).not.toBe(undefined);
+			expect(booking.status).toBe(BookingStatus.PendingApproval);
+			expect(booking.citizenName).toBe('this should be the name');
+			expect(booking.citizenEmail).toBe('correctemail@gmail.com');
+			expect(booking.citizenPhone).toBe('93328223');
+			expect(booking.creator).toBe(adminMock);
+			expect(booking.owner).toBe(otpMock);
+			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+			expect(bookingActionVisitorMock.hasPermission).toBeCalled();
+		});
+
+		it('should save booking from booking request (singpass user) - action by admin', async () => {
+			const bookingRequest: BookingRequestV1 = new BookingRequestV1();
+			bookingRequest.startDateTime = new Date();
+			bookingRequest.endDateTime = DateHelper.addMinutes(bookingRequest.startDateTime, 45);
+			bookingRequest.citizenName = 'this should be the name';
+			bookingRequest.citizenEmail = 'correctemail@gmail.com';
+			bookingRequest.citizenPhone = '93328223';
+
+			const standaloneService = new Service();
+			standaloneService.id = 1;
+			standaloneService.citizenAuthentication = [CitizenAuthenticationType.Singpass];
+			standaloneService.isStandAlone = true;
+
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(standaloneService));
+			TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
+				return Promise.resolve([
+					{
+						serviceProvider,
+						capacity: 1,
+						acceptedBookings: [],
+						pendingBookings: [],
+						availabilityCount: 1,
+					} as TimeslotServiceProviderResult,
+				]);
+			});
+
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new OrganisationAdminAuthGroup(adminMock, [organisation])]),
+			);
+
+			await Container.get(BookingsService).save(bookingRequest, 1);
+
+			const booking = BookingRepositoryMock.booking;
+			expect(booking).not.toBe(undefined);
+			expect(booking.status).toBe(BookingStatus.PendingApproval);
+			expect(booking.citizenName).toBe('this should be the name');
+			expect(booking.citizenEmail).toBe('correctemail@gmail.com');
+			expect(booking.citizenPhone).toBe('93328223');
+			expect(booking.creator).toBe(adminMock);
+			expect(booking.owner).toBe(singpassMock);
+			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
+			expect(bookingActionVisitorMock.hasPermission).toBeCalled();
+		});
 	});
 
 	it('should be able to bypass captcha and make a booking as an agency, with no validationType specified - default citizen', async () => {
@@ -1563,6 +1707,7 @@ describe('Bookings.Service', () => {
 			standAloneService.organisation = organisation;
 			standAloneService.organisationId = organisation.id;
 			standAloneService.isStandAlone = true;
+			standAloneService.citizenAuthentication = [CitizenAuthenticationType.Singpass];
 
 			const bookingService = Container.get(BookingsService);
 			BookingRepositoryMock.booking = new BookingBuilder()
@@ -1673,6 +1818,7 @@ describe('Bookings.Service', () => {
 		const onHoldService = new Service();
 		onHoldService.id = 2;
 		onHoldService.isOnHold = true;
+		onHoldService.citizenAuthentication = [CitizenAuthenticationType.Singpass];
 		const onHoldServiceProvider = ServiceProvider.create('provider', 2);
 		onHoldServiceProvider.id = 2;
 		it('should mark booking as onhold and set the onhold current timestamp', async () => {
@@ -1717,6 +1863,7 @@ describe('Bookings.Service', () => {
 	describe('Stand alone', () => {
 		const standAloneService = new Service();
 		standAloneService.id = 10;
+		standAloneService.citizenAuthentication = [CitizenAuthenticationType.Singpass];
 		const standAloneServiceProvider = ServiceProvider.create('provider', 10);
 		standAloneServiceProvider.id = 1;
 		it('Should make an on hold booking if isStandAlone is set to true on service', async () => {
@@ -1796,6 +1943,7 @@ describe('Bookings.Service', () => {
 
 	describe('Service provider auto assigned', () => {
 		const spAutoAssignedService = new Service();
+		spAutoAssignedService.citizenAuthentication = [CitizenAuthenticationType.Singpass];
 		spAutoAssignedService.id = 10;
 		spAutoAssignedService.setIsSpAutoAssigned(true);
 

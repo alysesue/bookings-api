@@ -44,7 +44,15 @@ export class OrganisationsActionAuthVisitor extends PermissionAwareAuthGroupVisi
 		}
 	}
 
-	public visitOtp(_otpGroup: OtpAuthGroup): void {}
+	public visitOtp(_otpGroup: OtpAuthGroup): void {
+		switch (this._action) {
+			case OrganisationsAuthOtherAction.someRead:
+				this.markWithPermission();
+				return;
+			default:
+				return;
+		}
+	}
 
 	public visitCitizen(_citizenGroup: CitizenAuthGroup): void {
 		switch (this._action) {

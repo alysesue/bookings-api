@@ -144,7 +144,7 @@ describe('Notification mapper tests', () => {
 			'serviceName: {serviceName}\n' +
 			'serviceProviderName: {serviceProviderName}\n' +
 			'serviceProviderAliasName: {serviceProviderAliasName}\n' +
-			'location: {location}\n' +
+			'{location}\n' +
 			'day: {day}\n' +
 			'time: {time}\n' +
 			'videoConferenceUrl: {videoConferenceUrl}\n' +
@@ -156,7 +156,7 @@ describe('Notification mapper tests', () => {
 			'serviceName: Career\n' +
 			'serviceProviderName: armin\n' +
 			'serviceProviderAliasName: Orange\n' +
-			'location: Some street\n' +
+			'Location: <b>Some street</b>\n' +
 			'day: 14 April 2021\n' +
 			'time: 10:00am - 11:00am\n' +
 			"videoConferenceUrl: Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>\n" +
@@ -183,6 +183,7 @@ describe('Notification mapper tests', () => {
 		oneOffTimeslots2.endDateTime = new Date(2021, 3, 14, 11);
 		oneOffTimeslots2.serviceProvider = { name: 'Jane Doe' } as IServiceProvider;
 		booking.event.oneOffTimeslots = [oneOffTimeslots, oneOffTimeslots2];
+		booking.citizenAuthType = CitizenAuthenticationType.Singpass;
 
 		const dateAndTime = `${DateHelper.getDateFormat(
 			new Date(2021, 3, 14, 10),
@@ -203,7 +204,7 @@ describe('Notification mapper tests', () => {
 			'Location: <b>Some street</b>\n' +
 			'Date & times:\n' +
 			`${dateAndTime}\n` +
-			"manageBookingLink: <a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a>";
+			"manageBookingLink: <a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db&authType=singpass'>Reschedule / Cancel Booking</a>";
 
 		const returnedTemplate = mapVariablesValuesToTemplate(
 			eventEmailMapper(

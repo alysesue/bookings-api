@@ -51,6 +51,18 @@ export class BookingBuilder {
 	public markOnHold: boolean;
 	public reasonToReject: string;
 	public pendingSA: boolean;
+	public ownerId: number;
+	public citizenAuthType: CitizenAuthenticationType;
+
+	public withOwnerId(ownerId: number): BookingBuilder {
+		this.ownerId = ownerId;
+		return this;
+	}
+
+	public withCitizenAuthType(citizenAuthType: CitizenAuthenticationType): BookingBuilder {
+		this.citizenAuthType = citizenAuthType;
+		return this;
+	}
 
 	public withPendingSA(pendingSA: boolean): BookingBuilder {
 		this.pendingSA = pendingSA;
@@ -193,6 +205,8 @@ export class BookingBuilder {
 		instance.captchaToken = this.captchaToken;
 		instance.reasonToReject = this.reasonToReject;
 		instance.bookedSlots = this.slots;
+		instance.ownerId = this.ownerId;
+		instance.citizenAuthType = this.citizenAuthType;
 
 		return instance;
 	}
@@ -387,8 +401,6 @@ export class Booking {
 	public static createNew({ creator }: { creator: User }): Booking {
 		const instance = new Booking();
 		instance._creator = creator;
-		if (creator.singPassUser) instance.citizenAuthType = CitizenAuthenticationType.Singpass;
-		if (creator.anonymousUser) instance.citizenAuthType = CitizenAuthenticationType.Otp;
 
 		return instance;
 	}

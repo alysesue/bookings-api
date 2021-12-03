@@ -326,8 +326,11 @@ class CitizenBookingValidator extends BookingsValidator {
 		}
 	}
 
-	protected async *validateByAuthorizationType(_booking: Booking): AsyncIterable<BusinessValidation> {
-		return;
+	protected async *validateByAuthorizationType(booking: Booking): AsyncIterable<BusinessValidation> {
+		const noNric = booking.service.noNric;
+		if (!noNric && !booking.citizenUinFin) {
+			yield BookingBusinessValidations.CitizenUinFinNotProvided;
+		}
 	}
 }
 

@@ -35,6 +35,7 @@ import { DynamicValuesMapperMock } from '../../dynamicFields/__mocks__/dynamicVa
 import { MyInfoResponse } from '../../../models/myInfoTypes';
 import { UinFinConfigurationMock } from '../../../models/__mocks__/uinFinConfiguration.mock';
 import { CitizenAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { CitizenAuthenticationType } from '../../../models/citizenAuthenticationType';
 
 jest.mock('../../../models/uinFinConfiguration');
 jest.mock('../../../components/dynamicFields/dynamicValues.mapper');
@@ -169,6 +170,7 @@ describe('Bookings mapper tests', () => {
 		booking.id = 1;
 		booking.service = new Service();
 		booking.service.organisation = new Organisation();
+		booking.citizenAuthType = CitizenAuthenticationType.Singpass;
 
 		const bookingResponse = await bookingsMapper.mapDataModelsV1([booking]);
 
@@ -189,6 +191,7 @@ describe('Bookings mapper tests', () => {
 				_status: 1,
 				_version: 1,
 				bookedSlots: [],
+				_citizenAuthType: CitizenAuthenticationType.Singpass,
 			},
 		]);
 	});
@@ -232,6 +235,7 @@ describe('Bookings mapper tests', () => {
 		booking.id = 1;
 		booking.service = new Service();
 		booking.service.organisation = new Organisation();
+		booking.citizenAuthType = CitizenAuthenticationType.Otp;
 
 		IdHasherMock.encode.mockImplementation((id: number) => String(id));
 
@@ -254,6 +258,7 @@ describe('Bookings mapper tests', () => {
 				_status: 1,
 				_version: 1,
 				bookedSlots: [],
+				_citizenAuthType: CitizenAuthenticationType.Otp,
 			},
 		]);
 	});

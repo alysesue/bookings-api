@@ -768,13 +768,13 @@ describe('Bookings functional tests', () => {
 		expect(validateResponse.statusCode).toBe(200);
 	});
 
-	it('should NOT create standalone booking as an Anonymous user (when service is NOT configured)', async () => {
+	it('should create and update standalone booking as an OTP user', async () => {
 		await pgClient.setServiceConfigurationStandAlone(unsignedServiceId, true);
 
 		const [bookingResponse, validateResponse] = await postAnonymousBooking({}, true, true);
 
 		expect(bookingResponse.statusCode).toBe(201);
-		expect(validateResponse.statusCode).toBe(403);
+		expect(validateResponse.statusCode).toBe(200);
 	});
 
 	it('should NOT create standalone booking as an Anonymous user without OTP verification', async () => {
@@ -1023,32 +1023,6 @@ describe('Bookings functional tests', () => {
 			const getResponse = await endpoint.get(`/bookings/${bookingId}`, {}, 'V2');
 			expect(getResponse.statusCode).toBe(200);
 			expect(getResponse.body.data.status).toBe(BookingStatus.Rejected);
-		});
-	});
-
-	describe('data manipulation', () => {
-		const refId = 'someRefId';
-		const videoConferenceUrl = 'something@zoom.us';
-		const location = 'singapore';
-		const description = 'my description';
-
-		it('[anonymous][standalone] should not allow unauthorized change of phone number and other fields not exposed in standalone form', async () => {
-			await pgClient.configureServiceAllowAnonymous({ serviceId: unsignedServiceId });
-			await pgClient.setServiceConfigurationStandAlone(unsignedServiceId, true);
-
-			const [, validateResponse] = await postAnonymousBooking({}, true, true, false, {
-				refId,
-				videoConferenceUrl,
-				location,
-				description,
-			});
-
-			expect(validateResponse.statusCode).toBe(200);
-			expect(validateResponse.body.data.citizenPhone).toBe('84000000');
-			expect(validateResponse.body.data.refId).toBe(null);
-			expect(validateResponse.body.data.videoConferenceUrl).toBe(null);
-			expect(validateResponse.body.data.location).toBe(null);
-			expect(validateResponse.body.data.description).toBe(null);
 		});
 	});
 });

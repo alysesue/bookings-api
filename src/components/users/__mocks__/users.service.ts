@@ -9,6 +9,8 @@ export class UsersServiceMock implements Partial<UsersService> {
 	public static getAnonymousUserRoles = jest.fn<Promise<AuthGroup[]>, any>();
 	public static getOtpUser = jest.fn<Promise<User>, any>();
 	public static createOtpUser = jest.fn<Promise<User>, any>();
+	public static getOrSaveSingpassUser = jest.fn<Promise<User>, any>();
+	public static persistUserIfRequired = jest.fn<Promise<User>, any>();
 
 	public async getOrSaveUserFromHeaders(...params): Promise<any> {
 		return await UsersServiceMock.getOrSaveUserFromHeaders(...params);
@@ -32,5 +34,13 @@ export class UsersServiceMock implements Partial<UsersService> {
 
 	public async createOtpUser(...params): Promise<User> {
 		return await UsersServiceMock.createOtpUser(...params);
+	}
+
+	public async getOrSaveSingpassUser(...params): Promise<User> {
+		return await UsersServiceMock.getOrSaveSingpassUser(...params);
+	}
+
+	public async persistUserIfRequired(...params): Promise<User> {
+		return await UsersServiceMock.persistUserIfRequired(...params);
 	}
 }
