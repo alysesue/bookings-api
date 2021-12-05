@@ -63,7 +63,8 @@ export class ServicesMapper {
 		additionalSettings.sendNotificationsToServiceProviders = service.sendNotificationsToServiceProviders;
 		additionalSettings.sendSMSNotifications = service.sendSMSNotifications;
 		additionalSettings.hasSalutations = service.hasSalutation;
-		additionalSettings.bookingLimitation = service.serviceSetting?.bookingLimitation;
+		additionalSettings.bookingLimitationType = service.serviceSetting?.bookingLimitationType;
+		additionalSettings.bookingLimitationNumber = service.serviceSetting?.bookingLimitationNumber;
 		return additionalSettings;
 	}
 
@@ -93,7 +94,8 @@ export class ServicesMapper {
 			sendNotificationsToServiceProviders,
 			sendSMSNotifications,
 			hasSalutations,
-			bookingLimitation,
+			bookingLimitationType,
+			bookingLimitationNumber,
 		} = settings;
 
 		if (allowAnonymousBookings !== undefined) {
