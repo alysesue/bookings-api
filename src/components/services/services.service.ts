@@ -124,7 +124,14 @@ export class ServicesService {
 
 		const transformedLabels = this.labelsMapper.mapToLabels(request.labels);
 		const mapToCategories = this.categoriesMapper.mapToCategories(request.categories);
-		const service = Service.create(request.name, orga, transformedLabels, mapToCategories);
+		const service = Service.create(
+			request.name,
+			orga,
+			transformedLabels,
+			mapToCategories,
+			request.additionalSettings.bookingLimitationType,
+			request.additionalSettings.bookingLimitationNumber,
+		);
 		this.servicesMapper.mapToEntityV1(service, request);
 
 		await validator.validate(service);
@@ -147,7 +154,6 @@ export class ServicesService {
 			includeLabelCategories: true,
 			includeLabels: true,
 		});
-
 		await validator.validateServiceFound(service);
 		this.servicesMapper.mapToEntityV1(service, request);
 

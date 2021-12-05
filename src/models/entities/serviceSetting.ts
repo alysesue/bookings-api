@@ -1,10 +1,11 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { BookingLimitationType } from '../bookingLimitationType';
 
 // For new service settings that are not `boolean`, should be added here
 export enum BookingLimitation {
 	NoLimitations = 'NoLimitations',
-	OnlyOneBookingPerDate = 'OnlyOneBookingPerDate',
-	OnlyOneUpcomingBooking = 'OnlyOneUpcomingBooking',
+	LimitedBookingPerDate = 'LimitedBookingPerDate',
+	LimitedUpcomingBooking = 'LimitedUpcomingBooking',
 }
 
 @Entity()
@@ -23,31 +24,31 @@ export class ServiceSetting {
 	}
 
 	@Column({ default: BookingLimitation.NoLimitations })
-	private _bookingLimitation: BookingLimitation;
+	private _bookingLimitationType: BookingLimitationType;
 
-	public set bookingLimitation(value: BookingLimitation) {
-		this._bookingLimitation = value;
+	public set bookingLimitationType(value: BookingLimitationType) {
+		this._bookingLimitationType = value;
 	}
-	public get bookingLimitation(): BookingLimitation {
-		return this._bookingLimitation;
+	public get bookingLimitationType(): BookingLimitationType {
+		return this._bookingLimitationType;
 	}
 
 	@Column({ nullable: true })
-	private _limitationNumber: number;
+	private _bookingLimitationNumber: number;
 
-	public set limitationNumber(value: number) {
-		this._limitationNumber = value;
+	public set bookingLimitationNumber(value: number) {
+		this._bookingLimitationNumber = value;
 	}
 
-	public get limitationNumber(): number {
-		return this._limitationNumber;
+	public get bookingLimitationNumber(): number {
+		return this._bookingLimitationNumber;
 	}
 
-	public static create(bookingLimitation?: BookingLimitation, limitationNumber?: number) {
+	public static create(bookingLimitationType?: BookingLimitationType, bookingLimitationNumber?: number) {
 		const serviceSetting = new ServiceSetting();
-		if (bookingLimitation) serviceSetting._bookingLimitation = bookingLimitation;
-		else serviceSetting._bookingLimitation = BookingLimitation.NoLimitations;
-		serviceSetting._limitationNumber = limitationNumber;
+		if (bookingLimitationType) serviceSetting._bookingLimitationType = bookingLimitationType;
+		else serviceSetting._bookingLimitationType = BookingLimitationType.NoLimitations;
+		serviceSetting._bookingLimitationNumber = bookingLimitationNumber;
 		return serviceSetting;
 	}
 }

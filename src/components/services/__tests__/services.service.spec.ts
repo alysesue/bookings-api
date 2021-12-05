@@ -221,7 +221,7 @@ describe('Services service tests', () => {
 		);
 
 		request.additionalSettings = {
-			bookingLimitation: BookingLimitation.OnlyOneBookingPerDate,
+			bookingLimitationType: 'LimitedBookingPerDate',
 		};
 
 		await Container.get(ServicesService).createService(request);

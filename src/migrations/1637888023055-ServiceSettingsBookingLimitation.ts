@@ -5,7 +5,7 @@ export class ServiceSettingsBookingLimitation1637888023055 implements MigrationI
 
 	public async up(queryRunner: QueryRunner): Promise<void> {
 		await queryRunner.query(
-			`CREATE TABLE "service_setting" ("_id" SERIAL NOT NULL, "_bookingLimitation" character varying NOT NULL DEFAULT 'NoLimitations', "_limitationNumber" integer, CONSTRAINT "PK_216bb4361584336831d9be23de8" PRIMARY KEY ("_id"))`,
+			`CREATE TABLE "service_setting" ("_id" SERIAL NOT NULL, "_bookingLimitationType" character varying NOT NULL DEFAULT 'NoLimitations', "_bookingLimitationNumber" integer, CONSTRAINT "PK_216bb4361584336831d9be23de8" PRIMARY KEY ("_id"))`,
 		);
 
 		await queryRunner.query(`ALTER TABLE "service" ADD "_serviceSettingId" integer null`);
