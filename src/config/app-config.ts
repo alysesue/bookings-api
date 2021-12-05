@@ -17,11 +17,11 @@ export const getConfig = () => ({
 	encryptionKey: ConfigUtils.getValueFromEnv('ENCRYPTION_KEY_BOOKINGSG_APP'),
 	csrfSecret: ConfigUtils.getValueFromEnv('CSRF_SECRET'),
 	database: {
-		host: ConfigUtils.getValueFromEnv('BOOKINGSG_DB_HOST'),
-		port: ConfigUtils.getValueFromEnv('BOOKINGSG_DB_PORT'),
-		instance: ConfigUtils.getValueFromEnv('BOOKINGSG_DB_INSTANCE'),
-		username: ConfigUtils.getValueFromEnv('BOOKINGSG_DB_USERNAME'),
-		password: ConfigUtils.getValueFromEnv('DB_PASSWORD_BOOKINGSG_APP'),
+		host: ConfigUtils.getValueFromEnv('DB_HOST'),
+		port: ConfigUtils.getValueFromEnv('DB_PORT'),
+		instance: ConfigUtils.getValueFromEnv('DB_INSTANCE'),
+		username: ConfigUtils.getValueFromEnv('DB_USERNAME'),
+		password: ConfigUtils.getValueFromEnv('DB_PASSWORD'),
 	},
 	molAdminAuthForwarder: {
 		url: ConfigUtils.getValueFromEnv('MOL_ADMIN_AUTH_FORWARDER_URL', ''),
@@ -51,8 +51,8 @@ export const getConfig = () => ({
 		smtpPort: ConfigUtils.getValueFromEnv('SMTP_PORT', ''),
 		smtpSecure: ConfigUtils.getBooleanValueFromEnv('SMTP_SECURE', true),
 		smtpUseAuth: ConfigUtils.getBooleanValueFromEnv('SMTP_USE_AUTH', true),
-		smtpAuthUsername: ConfigUtils.getValueFromEnv('SMTP_AUTH_USERNAME', ''),
-		smtpAuthPassword: ConfigUtils.getValueFromEnv('SMTP_AUTH_PASSWORD', ''),
+		smtpAuthUsername: ConfigUtils.getValueFromEnv('SMTP_USERNAME', ''),
+		smtpAuthPassword: ConfigUtils.getValueFromEnv('SMTP_PASSWORD', ''),
 	},
 	featureFlag: {
 		lifeSGSync: ConfigUtils.getValueFromEnv('LIFESG_SYNC', 'false') === 'true',
@@ -61,6 +61,12 @@ export const getConfig = () => ({
 		mol: {
 			sender: ConfigUtils.getValueFromEnv('MOL_SENDER_EMAIL', ''),
 		},
+	},
+	// following params are injected into our container at runtime, hence they are not found in our env variables
+	runtimeInjectedVariables: {
+		awsApigatewayApiKey: ConfigUtils.getValueFromEnv('APIGW_KEY'),
+		nodemailerEndpoint: ConfigUtils.getValueFromEnv('APIGW_ENDPOINT_NODEMAILER'),
+		recaptchaEndpoint: ConfigUtils.getValueFromEnv('APIGW_ENDPOINT_PROXY'),
 	},
 });
 

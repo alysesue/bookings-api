@@ -2,10 +2,11 @@ import { InRequestScope } from 'typescript-ioc';
 import { getConfig } from '../../config/app-config';
 import { CreateEmailResponseDataApiDomain } from 'mol-lib-api-contract/notification/mail/create-email/create-email-api-domain';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
-import { mailer } from '../../config/mailer';
+// import { mailer } from '../../config/mailer';
 import { emailLogger } from '../../config/logger';
 import { MailOptions } from './notifications.mapper';
 import { isEmail } from 'mol-lib-api-contract/utils';
+import axios from 'axios';
 
 @InRequestScope
 export class NotificationsService {
@@ -20,7 +21,14 @@ export class NotificationsService {
 		const recipients = options.to.join(',');
 
 		try {
-			const info = await (await mailer()).sendMail({ ...mergedOptions, to: recipients });
+			const { data } = await axios.request({
+				method: 'post',
+				url: this.config.runtimeInjectedVariables.nodemailerEndpoint,
+				data: JSON.stringify({ ...mergedOptions, to: recipients }),
+				headers: { 'x-api-key': this.config.runtimeInjectedVariables.awsApigatewayApiKey },
+			});
+			const info = JSON.parse(data);
+
 			if (info.rejected.length > 0) {
 				emailLogger.error('Nodemailer error', info);
 				throw new MOLErrorV2(ErrorCodeV2.SYS_GENERIC).setResponseData(info);
@@ -31,12 +39,13 @@ export class NotificationsService {
 
 			return new CreateEmailResponseDataApiDomain({ accepted, rejected, messageId });
 		} catch (err) {
-			emailLogger.warn(`Failed to send email to ${recipients}`, err);
+			const errObj = JSON.parse(err as string);
+			emailLogger.warn(`Failed to send email to ${recipients}`, errObj);
 
 			return new CreateEmailResponseDataApiDomain({
-				accepted: err.responseData.accepted,
-				rejected: err.responseData.rejected,
-				messageId: err.responseData.messageId,
+				accepted: errObj.responseData.accepted,
+				rejected: errObj.responseData.rejected,
+				messageId: errObj.responseData.messageId,
 			});
 		}
 	}
