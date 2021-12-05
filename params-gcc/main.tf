@@ -375,9 +375,35 @@ resource "aws_ssm_parameter" "app-url" {
 }
 
 resource "aws_ssm_parameter" "sms-enabled" {
-  name  = "${local.path-prefix}/SMS_ENABLED"
+  name  = format("%s/%s", local.path-prefix, "SMS_ENABLED")
   type  = "String"
-  value = "${data.external.static.result.SMS_ENABLED}"
+  value = data.external.static.result.SMS_ENABLED
+
+  tags = merge(local.tags, {
+    Name = format("%s/%s", local.path-prefix, "APP_URL")
+  })
+
+  overwrite = true
+}
+resource "aws_ssm_parameter" "hide-events" {
+  name  = format("%s/%s", local.path-prefix, "HIDE_EVENTS")
+  type  = "String"
+  value = data.external.static.result.HIDE_EVENTS
+
+  tags = merge(local.tags, {
+    Name = format("%s/%s", local.path-prefix, "HIDE_EVENTS")
+  })
+
+  overwrite = true
+}
+resource "aws_ssm_parameter" "lifesg-sync" {
+  name  = format("%s/%s", local.path-prefix, "LIFESG_SYNC")
+  type  = "String"
+  value = data.external.static.result.LIFESG_SYNC
+
+  tags = merge(local.tags, {
+    Name = format("%s/%s", local.path-prefix, "LIFESG_SYNC")
+  })
 
   overwrite = true
 }

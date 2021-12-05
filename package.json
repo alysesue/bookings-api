@@ -4,8 +4,8 @@
 	"main": "index.js",
 	"scripts": {
 		"postinstall": "./scripts/postinstall.sh",
-		"use:local-env": "node node_modules/cpy-cli/cli ./params/secrets/local.env ./ --rename=.env",
-		"use:mylocal-env": "cp ./params/secrets/mylocal.env ./.env ",
+		"use:local-env": "node node_modules/cpy-cli/cli ./params-gcc/secrets/local.env ./ --rename=.env",
+		"use:mylocal-env": "cp ./params-gcc/secrets/mylocal.env ./.env ",
 		"lint": "export TIMING=all && NODE_OPTIONS='--max-old-space-size=4096' node_modules/.bin/eslint --fix -c .eslintrc.js --ext .ts './src/**/*.ts'",
 		"test": "npm run fixLF && node ./node_modules/jest/bin/jest --clearCache && ./node_modules/mol-lib-config/shared-scripts/jest-test-unit-integration.sh",
 		"atest": "npm run fixLF && node ./node_modules/jest/bin/jest --maxWorkers=4",
@@ -16,7 +16,6 @@
 		"build": "npm run fixLF && ./scripts/build.sh",
 		"swagger": "./node_modules/.bin/tsoa spec",
 		"sync-env": "npm run fixLF && export SERVICE_NAME=bookingsg && ./node_modules/mol-lib-config/shared-scripts/aws/aws-sm-sync-env.sh",
-		"sync-local": "node node_modules/cpy-cli/cli ./params/secrets/local.env ./ --rename=.env",
 		"start": "npm run use:mylocal-env && docker-compose up -d --build",
 		"start:functional": "npm run use:local-env && docker-compose up -d --build",
 		"start:fresh": "docker-compose down -v && npm run use:mylocal-env && docker-compose up -d --build --force-recreate",
