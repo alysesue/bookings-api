@@ -128,14 +128,11 @@ abstract class BookingsEventValidator extends Validator<Booking> implements IBoo
 		};
 
 		// decrement event bookings count if onHoldUntil has expired or
-		// is validating current onhold booking (submission from standalone form)
+		// is current persisted onhold booking (submission from standalone form)
 		const eventBookings = await this.bookingsRepository.searchReturnAll(searchQuery);
 		let eventBookingsCount = eventBookings.length;
 		eventBookings.forEach((e) => {
-			if (
-				(e.status === BookingStatus.OnHold && e.onHoldUntil < new Date()) ||
-				(e.id === _booking.id && e.isValidOnHoldBooking())
-			) {
+			if ((e.status === BookingStatus.OnHold && e.onHoldUntil < new Date()) || e.id === _booking.id) {
 				eventBookingsCount = eventBookingsCount - 1;
 			}
 		});

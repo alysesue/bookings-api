@@ -714,12 +714,11 @@ export class BookingsService {
 			const validator = this.bookingsEventValidatorFactory.getOnHoldValidator();
 			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
 
-			await validator.validate(updatedBooking);
-
-			// changing booking status after onhold booking validations
 			if (previousBooking.eventId) {
 				updatedBooking.status = BookingStatus.Accepted;
 			}
+
+			await validator.validate(updatedBooking);
 
 			const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
 			await this.loadBookingDependencies(updatedBooking);
