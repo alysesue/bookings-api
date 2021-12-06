@@ -10,7 +10,6 @@ import {
 	ServiceResponseBase,
 	ServiceResponseV1,
 	ServiceResponseV2,
-	BookingLimitation,
 } from './service.apicontract';
 import { IService } from '../../models/interfaces';
 import { IdHasher } from '../../infrastructure/idHasher';

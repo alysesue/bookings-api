@@ -42,29 +42,4 @@ export class ServiceSetting {
 		serviceSetting.bookingLimitation = bookingLimitation;
 		return serviceSetting;
 	}
-	private static defaultBookingLimitation() {
-		return {
-			bookingLimitationType: BookingLimitationType.NoLimitations,
-		} as BookingLimitation;
-	}
-	public static create(bookingLimitation?: BookingLimitation) {
-		const serviceSetting = new ServiceSetting();
-		if (!bookingLimitation) {
-			serviceSetting.bookingLimitation = this.defaultBookingLimitation();
-			return serviceSetting;
-		}
-		if (bookingLimitation.bookingLimitationType !== BookingLimitationType.NoLimitations) {
-			bookingLimitation.bookingLimitationNumber = bookingLimitation.bookingLimitationNumber ?? 1;
-		}
-		serviceSetting.bookingLimitation = bookingLimitation;
-		return serviceSetting;
-	}
-
-	public static create(bookingLimitation?: BookingLimitation, limitationNumber?: number) {
-		const serviceSetting = new ServiceSetting();
-		if (bookingLimitation) serviceSetting._bookingLimitation = bookingLimitation;
-		else serviceSetting._bookingLimitation = BookingLimitation.NoLimitations;
-		serviceSetting._limitationNumber = limitationNumber;
-		return serviceSetting;
-	}
 }
