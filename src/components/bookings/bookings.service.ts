@@ -720,12 +720,12 @@ export class BookingsService {
 				service,
 			});
 
+			const validator = this.bookingsEventValidatorFactory.getOnHoldValidator();
+			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
+
 			if (previousBooking.eventId) {
 				updatedBooking.status = BookingStatus.Accepted;
 			}
-
-			const validator = this.bookingsEventValidatorFactory.getOnHoldValidator();
-			await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, updatedBooking, validator);
 
 			await validator.validate(updatedBooking);
 
