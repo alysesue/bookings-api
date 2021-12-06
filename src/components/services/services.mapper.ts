@@ -1,4 +1,3 @@
-import { BookingLimitationType } from './../../models/entities/serviceSetting';
 import { Inject } from 'typescript-ioc';
 import { Service } from '../../models/entities';
 import { LabelsMapper } from '../labels/labels.mapper';

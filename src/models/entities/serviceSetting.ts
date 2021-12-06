@@ -43,12 +43,12 @@ export class ServiceSetting {
 		return serviceSetting;
 	}
 
-	public static create(bookingLimitation?: BookingLimitationType) {
+	public static create(bookingLimitation?: BookingLimitation) {
 		const serviceSetting = new ServiceSetting();
-		const bookingLimitationObj: BookingLimitationType = {};
+		const bookingLimitationObj: BookingLimitation = {};
 		if (bookingLimitation && bookingLimitation.bookingLimitationType)
 			bookingLimitationObj.bookingLimitationType = bookingLimitation.bookingLimitationType;
-		else bookingLimitationObj.bookingLimitationType = BookingLimitation.NoLimitations;
+		else bookingLimitationObj.bookingLimitationType = BookingLimitationType.NoLimitations;
 		if (bookingLimitation && bookingLimitation.bookingLimitationNumber)
 			bookingLimitationObj.bookingLimitationNumber = bookingLimitation.bookingLimitationNumber;
 		else bookingLimitationObj.bookingLimitationNumber = 1;

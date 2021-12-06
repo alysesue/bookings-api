@@ -1,4 +1,3 @@
-import { BookingLimitation } from '../../models/entities/serviceSetting';
 import { CitizenAuthenticationType } from '../../models/citizenAuthenticationType';
 import { LabelRequestModel, LabelResponseModel } from '../labels/label.apicontract';
 import {
@@ -98,10 +97,7 @@ export class PartialAdditionalSettings {
 	public sendNotifications?: boolean;
 	public sendNotificationsToServiceProviders?: boolean;
 	public sendSMSNotifications?: boolean;
-	public bookingLimitation?: {
-		bookingLimitationType?: BookingLimitation;
-		bookingLimitationNumber?: number;
-	};
+	public bookingLimitation?: BookingLimitation;
 }
 
 export class AdditionalSettings {

@@ -1,4 +1,4 @@
-import { BookingLimitationType, ServiceSetting } from './serviceSetting';
+import { ServiceSetting } from './serviceSetting';
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
