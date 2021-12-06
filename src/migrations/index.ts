@@ -55,4 +55,6 @@ export { SalutationField1636342375459 } from './1636342375459-SalutationField';
 export { CheckboxListRadioListFields1636950904064 } from './1636950904064-CheckboxListRadioListFields';
 export { AddMqSubScriberToService1636341481752 } from './1636341481752-AddMqSubScriberToService';
 export { TextFieldType1638165653527 } from './1638165653527-TextFieldType';
-export { ServiceSettingsBookingLimitation1637888023055 } from './1637888023055-ServiceSettingsBookingLimitation';
+export { ServiceBookingLimitation1638772496515 } from './1638772496515-ServiceBookingLimitation';
+
+// export { ServiceSettingsBookingLimitation1637888023055 } from './1637888023055-ServiceSettingsBookingLimitation';

@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { BookingLimitationType } from '../bookingLimitationType';
 
 // For new service settings that are not `boolean`, should be added here
 export enum BookingLimitation {
@@ -7,6 +6,11 @@ export enum BookingLimitation {
 	LimitedBookingPerDate = 'LimitedBookingPerDate',
 	LimitedUpcomingBooking = 'LimitedUpcomingBooking',
 }
+
+export type BookingLimitationType = {
+	bookingLimitationType?: BookingLimitation;
+	bookingLimitationNumber?: number;
+};
 
 @Entity()
 export class ServiceSetting {
@@ -23,32 +27,25 @@ export class ServiceSetting {
 		return this._id;
 	}
 
-	@Column({ default: BookingLimitation.NoLimitations })
-	private _bookingLimitationType: BookingLimitationType;
-
-	public set bookingLimitationType(value: BookingLimitationType) {
-		this._bookingLimitationType = value;
+	@Column({ type: 'jsonb', nullable: false, default: '{}' })
+	protected _bookingLimitation: BookingLimitationType;
+	public set bookingLimitation(value: BookingLimitationType) {
+		this._bookingLimitation = value;
 	}
-	public get bookingLimitationType(): BookingLimitationType {
-		return this._bookingLimitationType;
-	}
-
-	@Column({ nullable: true })
-	private _bookingLimitationNumber: number;
-
-	public set bookingLimitationNumber(value: number) {
-		this._bookingLimitationNumber = value;
+	public get bookingLimitation(): BookingLimitationType {
+		return this._bookingLimitation;
 	}
 
-	public get bookingLimitationNumber(): number {
-		return this._bookingLimitationNumber;
-	}
-
-	public static create(bookingLimitationType?: BookingLimitationType, bookingLimitationNumber?: number) {
+	public static create(bookingLimitation?: BookingLimitationType) {
 		const serviceSetting = new ServiceSetting();
-		if (bookingLimitationType) serviceSetting._bookingLimitationType = bookingLimitationType;
-		else serviceSetting._bookingLimitationType = BookingLimitationType.NoLimitations;
-		serviceSetting._bookingLimitationNumber = bookingLimitationNumber;
+		const bookingLimitationObj: BookingLimitationType = {};
+		if (bookingLimitation && bookingLimitation.bookingLimitationType)
+			bookingLimitationObj.bookingLimitationType = bookingLimitation.bookingLimitationType;
+		else bookingLimitationObj.bookingLimitationType = BookingLimitation.NoLimitations;
+		if (bookingLimitation && bookingLimitation.bookingLimitationNumber)
+			bookingLimitationObj.bookingLimitationNumber = bookingLimitation.bookingLimitationNumber;
+		else bookingLimitationObj.bookingLimitationNumber = 1;
+		serviceSetting.bookingLimitation = bookingLimitationObj;
 		return serviceSetting;
 	}
 }

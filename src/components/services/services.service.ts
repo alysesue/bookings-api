@@ -1,4 +1,3 @@
-import { ServiceSetting } from './../../models/entities/serviceSetting';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import {
@@ -129,8 +128,7 @@ export class ServicesService {
 			orga,
 			transformedLabels,
 			mapToCategories,
-			request.additionalSettings.bookingLimitationType,
-			request.additionalSettings.bookingLimitationNumber,
+			request.additionalSettings.bookingLimitation,
 		);
 		this.servicesMapper.mapToEntityV1(service, request);
 
