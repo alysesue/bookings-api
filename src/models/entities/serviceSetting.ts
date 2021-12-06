@@ -1,6 +1,5 @@
 import { BookingLimitation, BookingLimitationType } from '../../components/services/service.apicontract';
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { BookingLimitationType } from '../bookingLimitationType';
 
 // For new service settings that are not `boolean`, should be added here
 @Entity()
@@ -44,11 +43,16 @@ export class ServiceSetting {
 		return serviceSetting;
 	}
 
-	public static create(bookingLimitationType?: BookingLimitationType, bookingLimitationNumber?: number) {
+	public static create(bookingLimitation?: BookingLimitationType) {
 		const serviceSetting = new ServiceSetting();
-		if (bookingLimitationType) serviceSetting._bookingLimitationType = bookingLimitationType;
-		else serviceSetting._bookingLimitationType = BookingLimitationType.NoLimitations;
-		serviceSetting._bookingLimitationNumber = bookingLimitationNumber;
+		const bookingLimitationObj: BookingLimitationType = {};
+		if (bookingLimitation && bookingLimitation.bookingLimitationType)
+			bookingLimitationObj.bookingLimitationType = bookingLimitation.bookingLimitationType;
+		else bookingLimitationObj.bookingLimitationType = BookingLimitation.NoLimitations;
+		if (bookingLimitation && bookingLimitation.bookingLimitationNumber)
+			bookingLimitationObj.bookingLimitationNumber = bookingLimitation.bookingLimitationNumber;
+		else bookingLimitationObj.bookingLimitationNumber = 1;
+		serviceSetting.bookingLimitation = bookingLimitationObj;
 		return serviceSetting;
 	}
 }

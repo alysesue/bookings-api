@@ -1,4 +1,4 @@
-import { BookingLimitation, BookingLimitationType, ServiceSetting } from './serviceSetting';
+import { BookingLimitationType, ServiceSetting } from './serviceSetting';
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
@@ -142,7 +142,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 				orga._organisationAdminGroupMap?.organisationRef,
 			),
 		);
-		service.serviceSetting = ServiceSetting.create(bookingLimitationType, bookingLimitationNumber);
+		service.serviceSetting = ServiceSetting.create(bookingLimitation);
 		service.labels = labels;
 		service.categories = categories;
 		service.citizenAuthentication = DEFAULT_CITIZEN_AUTH;

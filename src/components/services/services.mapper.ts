@@ -1,3 +1,4 @@
+import { BookingLimitationType } from './../../models/entities/serviceSetting';
 import { Inject } from 'typescript-ioc';
 import { Service } from '../../models/entities';
 import { LabelsMapper } from '../labels/labels.mapper';
@@ -63,8 +64,7 @@ export class ServicesMapper {
 		additionalSettings.sendNotificationsToServiceProviders = service.sendNotificationsToServiceProviders;
 		additionalSettings.sendSMSNotifications = service.sendSMSNotifications;
 		additionalSettings.hasSalutations = service.hasSalutation;
-		additionalSettings.bookingLimitationType = service.serviceSetting?.bookingLimitationType;
-		additionalSettings.bookingLimitationNumber = service.serviceSetting?.bookingLimitationNumber;
+		additionalSettings.bookingLimitation = service.serviceSetting?.bookingLimitation;
 		return additionalSettings;
 	}
 
@@ -94,8 +94,7 @@ export class ServicesMapper {
 			sendNotificationsToServiceProviders,
 			sendSMSNotifications,
 			hasSalutations,
-			bookingLimitationType,
-			bookingLimitationNumber,
+			bookingLimitation,
 		} = settings;
 
 		if (allowAnonymousBookings !== undefined) {
@@ -136,6 +135,7 @@ export class ServicesMapper {
 		if (bookingLimitation) {
 			service.serviceSetting.bookingLimitation = bookingLimitation;
 		}
+		service.serviceSetting.bookingLimitation = bookingLimitationObj;
 	}
 
 	public modelToServiceSummaryModel(srv: IService) {
