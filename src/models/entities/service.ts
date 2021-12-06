@@ -1,4 +1,4 @@
-import { BookingLimitationType, ServiceSetting } from './serviceSetting';
+import { ServiceSetting } from './serviceSetting';
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
@@ -10,6 +10,7 @@ import { LabelCategory } from './labelCategory';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { CitizenAuthenticationType } from '../citizenAuthenticationType';
 import { MqSubscriberType } from '../mqSubscriberTypes';
+import { BookingLimitation } from '../../components/services/service.apicontract';
 
 const DEFAULT_CITIZEN_AUTH = [CitizenAuthenticationType.Singpass];
 
@@ -129,7 +130,7 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 		orga: Organisation,
 		labels: Label[] = [],
 		categories: LabelCategory[] = [],
-		bookingLimitation?: BookingLimitationType,
+		bookingLimitation?: BookingLimitation,
 	) {
 		const service = new Service();
 		service._name = name.trim();

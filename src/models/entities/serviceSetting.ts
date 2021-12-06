@@ -1,16 +1,5 @@
+import { BookingLimitation, BookingLimitationType } from '../../components/services/service.apicontract';
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-
-// For new service settings that are not `boolean`, should be added here
-export enum BookingLimitation {
-	NoLimitations = 'NoLimitations',
-	LimitedBookingPerDate = 'LimitedBookingPerDate',
-	LimitedUpcomingBooking = 'LimitedUpcomingBooking',
-}
-
-export type BookingLimitationType = {
-	bookingLimitationType?: BookingLimitation;
-	bookingLimitationNumber?: number;
-};
 
 @Entity()
 export class ServiceSetting {
@@ -28,20 +17,20 @@ export class ServiceSetting {
 	}
 
 	@Column({ type: 'jsonb', nullable: false, default: '{}' })
-	protected _bookingLimitation: BookingLimitationType;
-	public set bookingLimitation(value: BookingLimitationType) {
+	protected _bookingLimitation: BookingLimitation;
+	public set bookingLimitation(value: BookingLimitation) {
 		this._bookingLimitation = value;
 	}
-	public get bookingLimitation(): BookingLimitationType {
+	public get bookingLimitation(): BookingLimitation {
 		return this._bookingLimitation;
 	}
 
-	public static create(bookingLimitation?: BookingLimitationType) {
+	public static create(bookingLimitation?: BookingLimitation) {
 		const serviceSetting = new ServiceSetting();
-		const bookingLimitationObj: BookingLimitationType = {};
+		const bookingLimitationObj: BookingLimitation = {};
 		if (bookingLimitation && bookingLimitation.bookingLimitationType)
 			bookingLimitationObj.bookingLimitationType = bookingLimitation.bookingLimitationType;
-		else bookingLimitationObj.bookingLimitationType = BookingLimitation.NoLimitations;
+		else bookingLimitationObj.bookingLimitationType = BookingLimitationType.NoLimitations;
 		if (bookingLimitation && bookingLimitation.bookingLimitationNumber)
 			bookingLimitationObj.bookingLimitationNumber = bookingLimitation.bookingLimitationNumber;
 		else bookingLimitationObj.bookingLimitationNumber = 1;

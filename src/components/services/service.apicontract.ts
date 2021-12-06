@@ -1,4 +1,3 @@
-import { BookingLimitation } from '../../models/entities/serviceSetting';
 import { CitizenAuthenticationType } from '../../models/citizenAuthenticationType';
 import { LabelRequestModel, LabelResponseModel } from '../labels/label.apicontract';
 import {
@@ -75,6 +74,18 @@ export class ServiceRequestV2 extends ServiceRequestBase {
 	public organisationId?: string;
 }
 
+// For new service settings that are not `boolean`, should be added here
+export enum BookingLimitationType {
+	NoLimitations = 'NoLimitations',
+	LimitedBookingPerDate = 'LimitedBookingPerDate',
+	LimitedUpcomingBooking = 'LimitedUpcomingBooking',
+}
+
+export type BookingLimitation = {
+	bookingLimitationType?: BookingLimitationType;
+	bookingLimitationNumber?: number;
+};
+
 export class PartialAdditionalSettings {
 	/**
 	 * @deprecated use citizenAuthentication value
@@ -87,10 +98,7 @@ export class PartialAdditionalSettings {
 	public sendNotifications?: boolean;
 	public sendNotificationsToServiceProviders?: boolean;
 	public sendSMSNotifications?: boolean;
-	public bookingLimitation?: {
-		bookingLimitationType?: BookingLimitation;
-		bookingLimitationNumber?: number;
-	};
+	public bookingLimitation?: BookingLimitation;
 }
 
 export class AdditionalSettings {
@@ -105,10 +113,7 @@ export class AdditionalSettings {
 	public sendNotifications: boolean;
 	public sendNotificationsToServiceProviders: boolean;
 	public sendSMSNotifications: boolean;
-	public bookingLimitation?: {
-		bookingLimitationType?: BookingLimitation;
-		bookingLimitationNumber?: number;
-	};
+	public bookingLimitation?: BookingLimitation;
 }
 
 export class ServiceSummaryModel {

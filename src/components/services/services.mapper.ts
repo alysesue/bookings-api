@@ -1,4 +1,3 @@
-import { BookingLimitationType } from './../../models/entities/serviceSetting';
 import { Inject } from 'typescript-ioc';
 import { Service } from '../../models/entities';
 import { LabelsMapper } from '../labels/labels.mapper';
@@ -11,6 +10,7 @@ import {
 	ServiceResponseBase,
 	ServiceResponseV1,
 	ServiceResponseV2,
+	BookingLimitation,
 } from './service.apicontract';
 import { IService } from '../../models/interfaces';
 import { IdHasher } from '../../infrastructure/idHasher';
@@ -131,7 +131,7 @@ export class ServicesMapper {
 		if (hasSalutations !== undefined) {
 			service.hasSalutation = hasSalutations;
 		}
-		const bookingLimitationObj: BookingLimitationType = {};
+		const bookingLimitationObj: BookingLimitation = {};
 		if (bookingLimitation && bookingLimitation.bookingLimitationType !== undefined) {
 			bookingLimitationObj.bookingLimitationType = bookingLimitation.bookingLimitationType;
 		}
