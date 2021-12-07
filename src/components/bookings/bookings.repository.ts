@@ -119,14 +119,21 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return await repository.save(booking);
 	}
 
-	public async getBookingsByEventId(eventId: number): Promise<Booking[]> {
-		const repository = await this.getRepository();
+	public async getBookingsByEventId(eventId: number, options: { byPassAuth?: boolean } = {}): Promise<Booking[]> {
+		const idCondition = 'booking."_eventId" = :id';
 
-		return await repository.find({
-			where: {
-				_eventId: eventId,
-			},
-		});
+		const repository = await this.getRepository();
+		const query = repository
+			.createQueryBuilder('booking')
+			.where(andWhere([idCondition]), { id: eventId })
+			.leftJoinAndSelect('booking._service', 'service')
+			.leftJoinAndSelect('booking._event', 'event')
+			.leftJoinAndSelect('booking.bookedSlots', 'bookedSlots')
+			.leftJoinAndSelect('bookedSlots._oneOffTimeslot', 'oneOffTimeSlot')
+			.leftJoinAndSelect('oneOffTimeSlot._serviceProvider', 'serviceProvider')
+			.leftJoinAndSelect('serviceProvider._service', 'serviceProvider_service');
+
+		return query.getMany();
 	}
 
 	public async update(booking: Booking): Promise<Booking> {

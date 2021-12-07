@@ -5,10 +5,11 @@ import {
 	BookingStatus,
 	BookingWorkflow,
 	ChangeLogAction,
-	Event,
 	Service,
 	ServiceProvider,
 	User,
+	Event,
+	BookedSlot,
 } from '../../models';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
@@ -48,8 +49,6 @@ import { BookingsEventValidatorFactory } from './validator/bookings.event.valida
 import { LifeSGMapper } from '../lifesg/lifesg.mapper';
 import { LifeSGMQService } from '../lifesg/lifesg.service';
 import { AppointmentAgency } from 'mol-lib-api-contract/appointment';
-import { CitizenAuthenticationType } from '../../models/citizenAuthenticationType';
-import { IPagedEntities } from '../../core/pagedEntities';
 
 @InRequestScope
 export class BookingsService {
@@ -89,6 +88,8 @@ export class BookingsService {
 	private bookingsMapper: BookingsMapper;
 	@Inject
 	private bookingWorkflowsRepo: BookingWorkflowsRepository;
+	@Inject
+	private bookedSlotRepository: BookedSlotRepository;
 
 	constructor() {
 		this.bookingsSubject.attach(
@@ -312,12 +313,7 @@ export class BookingsService {
 		bypassCaptchaAndAutoAccept = false,
 	): Promise<Booking> {
 		const saveAction = () =>
-			this.bookEventInternal(
-				eventBookingRequest,
-				event,
-				event.serviceId,
-				bypassCaptchaAndAutoAccept,
-			);
+			this.bookEventInternal(eventBookingRequest, event, event.serviceId, bypassCaptchaAndAutoAccept);
 		const booking = await this.changeLogsService.executeAndLogAction(
 			null,
 			this.getBookingInternal.bind(this),
@@ -933,35 +929,41 @@ export class BookingsService {
 		return `Sending Appointment(s).`;
 	}
 
+	public async getAllBookingsByEventId(eventId: number): Promise<Booking[]> {
+		return await this.bookingsRepository.getBookingsByEventId(eventId);
+	}
+
 	public async deleteBookedSlotsByEventId(eventId: number): Promise<Booking[]> {
-		const bookings = await this.bookingsRepository.getBookingsByEventId(eventId);
+		const bookings = await this.getAllBookingsByEventId(eventId);
 		if (!bookings) return;
-		await Promise.all(bookings.map(async (booking) => {
-			booking.bookedSlots = [];
-		}))
+		await Promise.all(
+			bookings.map(async (booking) => {
+				booking.bookedSlots = [];
+			}),
+		);
 		return await this.bookingsRepository.saveMultiple(bookings);
 	}
 
 	public async updateBookedSlots(event: Event, id: number): Promise<Booking[]> {
 		if (!event) return;
-		const bookings = await this.bookingsRepository.getBookingsByEventId(id);
+		const bookings = await this.getAllBookingsByEventId(id);
 		if (!bookings) return;
 		const newBookings: Booking[] = [];
 		bookings.forEach((booking) => {
-			const newBookedSlots : BookedSlot[] = [];
+			const newBookedSlots: BookedSlot[] = [];
 			if (event.oneOffTimeslots[0]) {
 				booking.startDateTime = event.oneOffTimeslots[0].startDateTime;
 				booking.endDateTime = event.oneOffTimeslots[0].endDateTime;
 			}
 			event.oneOffTimeslots.forEach((timeslot) => {
-				const updatedBookedSlot = new BookedSlot()
+				const updatedBookedSlot = new BookedSlot();
 				updatedBookedSlot.oneOffTimeslot = timeslot;
 				updatedBookedSlot.bookingId = booking.id;
 				newBookedSlots.push(updatedBookedSlot);
-			})
+			});
 			booking.bookedSlots = newBookedSlots;
 			newBookings.push(booking);
-		})
+		});
 		return await this.bookingsRepository.saveMultiple(newBookings);
 	}
 }

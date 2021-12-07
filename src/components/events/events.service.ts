@@ -4,7 +4,7 @@ import { IPagedEntities } from '../../core/pagedEntities';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ContainerContext } from '../../infrastructure/containerContext';
 import { IdHasher } from '../../infrastructure/idHasher';
-import { Event, Label, OneOffTimeslot, Service } from '../../models';
+import { Booking, ChangeLogAction, Event, Label, OneOffTimeslot, Service } from '../../models';
 import { uniqBy } from '../../tools/arrays';
 import { LabelsService } from '../labels/labels.service';
 import { OneOffTimeslotsRepository } from '../oneOffTimeslots/oneOffTimeslots.repository';
@@ -21,7 +21,9 @@ import { EventsAuthVisitor } from './events.auth';
 import { EventsMapper } from './events.mapper';
 import { EventsRepository } from './events.repository';
 import { EventsValidation } from './events.validation';
-import { BookingsService } from "../bookings/bookings.service";
+import { BookingsService } from '../bookings/bookings.service';
+import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs.service';
+import { BookingsRepository } from '../bookings/bookings.repository';
 
 @InRequestScope
 export class EventsService {
@@ -38,6 +40,8 @@ export class EventsService {
 	@Inject
 	private oneOffTimeslotsRepository: OneOffTimeslotsRepository;
 	@Inject
+	private bookingRepository: BookingsRepository;
+	@Inject
 	private userContext: UserContext;
 	@Inject
 	private containerContext: ContainerContext;
@@ -45,6 +49,8 @@ export class EventsService {
 	private idHasher: IdHasher;
 	@Inject
 	private bookingsService: BookingsService;
+	@Inject
+	private changeLogsService: BookingChangeLogsService;
 
 	public async saveOneOffTimeslot(eventRequest: EventOneOffTimeslotRequest): Promise<Event> {
 		let event = this.eventsMapper.mapToModel(eventRequest);
@@ -90,15 +96,28 @@ export class EventsService {
 
 	public async updateEvent(request: EventRequest, idSigned: string): Promise<Event> {
 		const id = this.idHasher.decode(idSigned);
-		await this.bookingsService.deleteBookedSlotsByEventId(id);
-		let entity = await this.eventsRepository.getById({ id });
-		entity.isOneOffTimeslot = false;
-		this.eventsMapper.mapUpdateModel(entity, request);
-		const { service, labels } = await this.fetchDependencies(request);
-		entity.oneOffTimeslots = await this.fetchTimeslotDependencies(request.timeslots);
-		entity = this.eventsMapper.mapDependenciesToModel(entity, { service, labels });
-		const updatedEvent = await this.save(entity);
-		await this.bookingsService.updateBookedSlots(updatedEvent, id);
+
+		let updatedEvent;
+		const updateAction = async (): Promise<[ChangeLogAction, Booking[]]> => {
+			await this.bookingsService.deleteBookedSlotsByEventId(id);
+
+			let entity = await this.eventsRepository.getById({ id });
+			entity.isOneOffTimeslot = false;
+			this.eventsMapper.mapUpdateModel(entity, request);
+			const { service, labels } = await this.fetchDependencies(request);
+			entity.oneOffTimeslots = await this.fetchTimeslotDependencies(request.timeslots);
+			entity = this.eventsMapper.mapDependenciesToModel(entity, { service, labels });
+
+			updatedEvent = await this.save(entity);
+			return [ChangeLogAction.Update, await this.bookingsService.updateBookedSlots(updatedEvent, id)];
+		};
+
+		await this.changeLogsService.executeAndLogMultipleActions(
+			this.bookingsService.getAllBookingsByEventId.bind(this.bookingsService),
+			updateAction,
+			id,
+		);
+
 		return updatedEvent;
 	}
 
@@ -150,10 +169,13 @@ export class EventsService {
 			const idNotSigned = this.idHasher.decode(id);
 			const serviceProviderIdNotSigned = this.idHasher.decode(serviceProviderId);
 			const serviceProvider = serviceProviders.find((sp) => sp.id === serviceProviderIdNotSigned);
-			const createdOneOffTimeslot = OneOffTimeslot.create({ serviceProvider, startDateTime, endDateTime, id: idNotSigned })
-			oneOffTimeslots.push(
-				createdOneOffTimeslot,
-			);
+			const createdOneOffTimeslot = OneOffTimeslot.create({
+				serviceProvider,
+				startDateTime,
+				endDateTime,
+				id: idNotSigned,
+			});
+			oneOffTimeslots.push(createdOneOffTimeslot);
 		});
 		return oneOffTimeslots;
 	}
