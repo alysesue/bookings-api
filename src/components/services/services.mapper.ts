@@ -134,7 +134,6 @@ export class ServicesMapper {
 		if (bookingLimitation) {
 			service.serviceSetting.bookingLimitation = bookingLimitation;
 		}
-		service.serviceSetting.bookingLimitation = bookingLimitationObj;
 	}
 
 	public modelToServiceSummaryModel(srv: IService) {
