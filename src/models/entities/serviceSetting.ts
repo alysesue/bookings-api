@@ -22,9 +22,10 @@ export class ServiceSetting {
 	public set bookingLimitation(value: BookingLimitation) {
 		this._bookingLimitation = value;
 	}
-	public get bookingLimitationType(): BookingLimitationType {
-		return this._bookingLimitationType;
+	public get bookingLimitation(): BookingLimitation {
+		return this._bookingLimitation;
 	}
+
 	private static defaultBookingLimitation() {
 		return {
 			bookingLimitationType: BookingLimitationType.NoLimitations,
