@@ -25,17 +25,21 @@ export class ServiceSetting {
 	public get bookingLimitation(): BookingLimitation {
 		return this._bookingLimitation;
 	}
-
+	private static defaultBookingLimitation() {
+		return {
+			bookingLimitationType: BookingLimitationType.NoLimitation,
+		} as BookingLimitation;
+	}
 	public static create(bookingLimitation?: BookingLimitation) {
 		const serviceSetting = new ServiceSetting();
-		const bookingLimitationObj: BookingLimitation = {};
-		if (bookingLimitation && bookingLimitation.bookingLimitationType)
-			bookingLimitationObj.bookingLimitationType = bookingLimitation.bookingLimitationType;
-		else bookingLimitationObj.bookingLimitationType = BookingLimitationType.NoLimitations;
-		if (bookingLimitation && bookingLimitation.bookingLimitationNumber)
-			bookingLimitationObj.bookingLimitationNumber = bookingLimitation.bookingLimitationNumber;
-		else bookingLimitationObj.bookingLimitationNumber = 1;
-		serviceSetting.bookingLimitation = bookingLimitationObj;
+		if (!bookingLimitation) {
+			serviceSetting.bookingLimitation = this.defaultBookingLimitation();
+			return serviceSetting;
+		}
+		if (bookingLimitation.bookingLimitationType !== BookingLimitationType.NoLimitation) {
+			bookingLimitation.bookingLimitationNumber = bookingLimitation.bookingLimitationNumber ?? 1;
+		}
+		serviceSetting.bookingLimitation = bookingLimitation;
 		return serviceSetting;
 	}
 }

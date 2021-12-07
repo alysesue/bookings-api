@@ -131,14 +131,9 @@ export class ServicesMapper {
 		if (hasSalutations !== undefined) {
 			service.hasSalutation = hasSalutations;
 		}
-		const bookingLimitationObj: BookingLimitation = {};
-		if (bookingLimitation && bookingLimitation.bookingLimitationType !== undefined) {
-			bookingLimitationObj.bookingLimitationType = bookingLimitation.bookingLimitationType;
+		if (bookingLimitation) {
+			service.serviceSetting.bookingLimitation = bookingLimitation;
 		}
-		if (bookingLimitation && bookingLimitation.bookingLimitationNumber !== undefined) {
-			bookingLimitationObj.bookingLimitationNumber = bookingLimitation.bookingLimitationNumber;
-		}
-		service.serviceSetting.bookingLimitation = bookingLimitationObj;
 	}
 
 	public modelToServiceSummaryModel(srv: IService) {
