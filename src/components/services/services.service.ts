@@ -128,7 +128,7 @@ export class ServicesService {
 			orga,
 			transformedLabels,
 			mapToCategories,
-			request.additionalSettings.bookingLimitation,
+			request.additionalSettings?.bookingLimitation,
 		);
 		this.servicesMapper.mapToEntityV1(service, request);
 

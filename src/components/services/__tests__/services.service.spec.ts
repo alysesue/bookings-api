@@ -1,6 +1,6 @@
 import { Container } from 'typescript-ioc';
 import { ServicesService } from '../services.service';
-import { ServiceRequestV1 } from '../service.apicontract';
+import { BookingLimitationType, ServiceRequestV1 } from '../service.apicontract';
 import {
 	Label,
 	Organisation,
@@ -43,7 +43,6 @@ import { ServicesRepositoryMock } from '../__mocks__/services.repository.mock';
 import { TimeslotItemsServiceMock } from '../../timeslotItems/__mocks__/timeslotItems.service.mock';
 import { ScheduleFormsServiceMock } from '../../scheduleForms/__mocks__/scheduleForms.service.mock';
 import { OrganisationsRepositoryMock } from '../../organisations/__mocks__/organisations.noauth.repository.mock';
-import { BookingLimitation } from '../../../models/entities/serviceSetting';
 
 jest.mock('../services.auth');
 jest.mock('../services.repository', () => {
@@ -212,7 +211,7 @@ describe('Services service tests', () => {
 		expect(error).toEqual(`[10301] Invalid URL`);
 	});
 
-	it('should create a new service with bookingLimitation as OnlyOneBookingPerDate', async () => {
+	it('should create a new service with bookingLimitation as LimitedBookingPerDate', async () => {
 		const request = new ServiceRequestV1();
 		request.name = 'John';
 		request.organisationId = 1;
@@ -221,14 +220,17 @@ describe('Services service tests', () => {
 		);
 
 		request.additionalSettings = {
-			bookingLimitationType: 'LimitedBookingPerDate',
+			bookingLimitation: {
+				bookingLimitationType: BookingLimitationType.LimitedBookingPerDate,
+			},
 		};
 
 		await Container.get(ServicesService).createService(request);
 
-		expect(ServicesRepositoryMock.save.mock.calls[0][0].serviceSetting.bookingLimitation).toBe(
-			BookingLimitation.OnlyOneBookingPerDate,
-		);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].serviceSetting.bookingLimitation).toStrictEqual({
+			bookingLimitationNumber: 1,
+			bookingLimitationType: BookingLimitationType.LimitedBookingPerDate,
+		});
 
 		expect(ServicesRepositoryMock.getService).toBeCalledWith({
 			id: 2,
@@ -248,9 +250,9 @@ describe('Services service tests', () => {
 		);
 
 		await Container.get(ServicesService).createService(request);
-		expect(ServicesRepositoryMock.save.mock.calls[0][0].serviceSetting.bookingLimitation).toBe(
-			BookingLimitation.NoLimitations,
-		);
+		expect(ServicesRepositoryMock.save.mock.calls[0][0].serviceSetting.bookingLimitation).toStrictEqual({
+			bookingLimitationType: BookingLimitationType.NoLimitations,
+		});
 
 		expect(ServicesRepositoryMock.getService).toBeCalledWith({
 			id: 2,

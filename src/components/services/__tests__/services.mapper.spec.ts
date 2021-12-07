@@ -95,7 +95,9 @@ describe('service/services.mapper', () => {
 				sendNotifications: true,
 				sendNotificationsToServiceProviders: false,
 				sendSMSNotifications: true,
-				bookingLimitation: 'NoLimitations',
+				bookingLimitation: {
+					bookingLimitationType: 'NoLimitations',
+				},
 			},
 			categories: [],
 			description: 'desc',
@@ -155,7 +157,9 @@ describe('service/services.mapper', () => {
 				sendNotifications: true,
 				sendNotificationsToServiceProviders: false,
 				sendSMSNotifications: true,
-				bookingLimitation: 'NoLimitations',
+				bookingLimitation: {
+					bookingLimitationType: 'NoLimitations',
+				},
 			},
 			categories: [],
 			description: 'desc',
