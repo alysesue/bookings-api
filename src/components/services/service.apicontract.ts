@@ -74,7 +74,6 @@ export class ServiceRequestV2 extends ServiceRequestBase {
 	public organisationId?: string;
 }
 
-// For new service settings that are not `boolean`, should be added here
 export enum BookingLimitationType {
 	NoLimitations = 'NoLimitations',
 	LimitedBookingPerDate = 'LimitedBookingPerDate',

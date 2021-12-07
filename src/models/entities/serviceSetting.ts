@@ -1,6 +1,7 @@
 import { BookingLimitation, BookingLimitationType } from '../../components/services/service.apicontract';
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
+// For new service settings that are not `boolean`, should be added here
 @Entity()
 export class ServiceSetting {
 	public constructor() {}
