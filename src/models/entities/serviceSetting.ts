@@ -27,7 +27,7 @@ export class ServiceSetting {
 	}
 	private static defaultBookingLimitation() {
 		return {
-			bookingLimitationType: BookingLimitationType.NoLimitation,
+			bookingLimitationType: BookingLimitationType.NoLimitations,
 		} as BookingLimitation;
 	}
 	public static create(bookingLimitation?: BookingLimitation) {
@@ -36,7 +36,7 @@ export class ServiceSetting {
 			serviceSetting.bookingLimitation = this.defaultBookingLimitation();
 			return serviceSetting;
 		}
-		if (bookingLimitation.bookingLimitationType !== BookingLimitationType.NoLimitation) {
+		if (bookingLimitation.bookingLimitationType !== BookingLimitationType.NoLimitations) {
 			bookingLimitation.bookingLimitationNumber = bookingLimitation.bookingLimitationNumber ?? 1;
 		}
 		serviceSetting.bookingLimitation = bookingLimitation;
