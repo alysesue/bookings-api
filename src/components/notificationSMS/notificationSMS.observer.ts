@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ISubject, Observer } from '../../infrastructure/observer';
 import { BookingsSubject } from '../bookings/bookings.subject';
-import { Booking, BookingStatus } from '../../models';
+import { Booking, BookingStatus, Organisation } from '../../models';
 import { BookingType } from '../../models/bookingType';
 import {
 	CitizenSMSTemplateBookingActionByCitizen,
@@ -32,8 +32,14 @@ export class SMSObserver implements Observer {
 				? this.citizenSMSTemplateBookingActionByServiceProvider
 				: this.citizenSMSTemplateBookingActionByCitizen;
 			const sms = this.templateFactory(subject.booking, subject.bookingType, templates);
+			const organisationName = subject.booking.service.organisation.name;
+			const agencyUserName = currentUser.agencyUser.agencyName;
 			try {
-				await this.notificationSMSService.send({ message: sms, phoneNumber: subject.booking.citizenPhone });
+				await this.notificationSMSService.send(
+					{ message: sms, phoneNumber: subject.booking.citizenPhone },
+					organisationName,
+					agencyUserName,
+				);
 			} catch (error) {
 				// No need to do anything for now
 			}

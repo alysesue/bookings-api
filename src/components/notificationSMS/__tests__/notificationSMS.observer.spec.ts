@@ -6,7 +6,7 @@ import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userCont
 import { CitizenSMSTemplateBookingActionByCitizen } from '../templates/citizen.sms';
 import { NotificationSMSService } from '../notificationSMS.service';
 import { NotificationSMSServiceMock } from '../__mocks__/notificationSMS.service.mock';
-import { Booking, Service, ServiceProvider, User } from '../../../models';
+import { Booking, Organisation, Service, ServiceProvider, User } from '../../../models';
 import { BookingType } from '../../../models/bookingType';
 import { SMSObserver } from '../notificationSMS.observer';
 import { SMSBookingTemplateMock } from '../templates/__mocks__/citizen.sms.mock';
@@ -23,6 +23,11 @@ const adminMock = User.createAdminUser({
 	name: 'Name',
 });
 
+const agencyMock = User.createAgencyUser({
+	agencyAppId: 'abc123',
+	agencyName: 'Agency1',
+});
+
 describe('Test notificationSMS observer', () => {
 	let booking: Booking;
 	beforeAll(() => {
@@ -36,6 +41,7 @@ describe('Test notificationSMS observer', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
+		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(agencyMock));
 		SMSBookingTemplateMock.CreatedBookingSMSMock.mockReturnValue('');
 		SMSBookingTemplateMock.UpdatedBookingSMSMock.mockReturnValue('');
 		SMSBookingTemplateMock.CancelledBookingSMSMock.mockReturnValue('');
@@ -50,6 +56,7 @@ describe('Test notificationSMS observer', () => {
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
 			sendSMSNotifications: true,
+			organisation: Organisation.create('Organisation1', 1),
 		} as unknown as Service;
 		booking.serviceProvider = { email: 'test' } as ServiceProvider;
 		booking.uuid = 'f4533bed-da08-473a-8641-7aef918fe0db';

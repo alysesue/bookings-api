@@ -32,7 +32,9 @@ export class OtpService {
 		await this.notificationSMSService.send({
 			phoneNumber: request.mobileNo,
 			message: `Your authentication code is ${otp._value}`,
-		});
+		},
+			undefined,
+			undefined);
 		await this.otpRepository.save(otp);
 
 		return otp._requestId;
