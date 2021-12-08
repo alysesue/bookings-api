@@ -24,12 +24,6 @@ beforeAll(() => {
 describe('Booking event validation tests', () => {
 	let service: Service;
 	const mockSingpassUser1 = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
-	const adminMock = User.createAdminUser({
-		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
-		userName: 'UserName',
-		email: 'test@email.com',
-		name: 'Name',
-	});
 
 	beforeEach(() => {
 		jest.resetAllMocks();

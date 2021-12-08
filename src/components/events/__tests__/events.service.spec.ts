@@ -18,7 +18,7 @@ import { OneOffTimeslotsServiceMock } from '../../oneOffTimeslots/__mocks__/oneO
 import { ContainerContextHolder } from '../../../infrastructure/containerContext';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
-import { Booking, ChangeLogAction, Event, OneOffTimeslot, Organisation, Service, User } from '../../../models';
+import { ChangeLogAction, Event, OneOffTimeslot, Organisation, Service, User } from '../../../models';
 import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { OneOffTimeslotsActionAuthVisitor } from '../../oneOffTimeslots/oneOffTimeslots.auth';
 import { getOneOffTimeslotMock } from '../../../models/__mocks__/oneOffTimeslot.mock';
@@ -104,10 +104,7 @@ describe('Tests events services', () => {
 			async (
 				getBookingsFunction: GetBookingsFunctionByEventId,
 				actionFunction: BookingsActionFunction,
-				eventId?: number,
-				bookings?: Booking[],
 			) => {
-				const prevBookings = await getBookingsFunction(eventId, {});
 				const [action, newBookings] = await actionFunction();
 				BookingChangeLogsServiceMock.action = action;
 				return newBookings;
