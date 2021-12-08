@@ -5,7 +5,6 @@ import {
 	EventTimeslotRequest,
 } from '../../../src/components/events/events.apicontract';
 import { OrganisationAdminRequestEndpointSG } from '../../utils/requestEndpointSG';
-import {Body} from "tsoa";
 
 export const createOneOffTimeslotRequest = ({
 	serviceProviderId,

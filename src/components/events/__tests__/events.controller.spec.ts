@@ -123,7 +123,7 @@ describe('Test events controller', () => {
 
 		const testBooking1 = new BookingBuilder()
 			.withServiceId(1)
-			.withSlots([[oneOffTimeslots]])
+			.withSlots([oneOffTimeslots])
 			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 			.withEventId(1)

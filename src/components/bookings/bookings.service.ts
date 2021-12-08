@@ -936,31 +936,30 @@ export class BookingsService {
 	public async deleteBookedSlotsByEventId(eventId: number): Promise<Booking[]> {
 		const bookings = await this.getAllBookingsByEventId(eventId);
 		if (!bookings) return;
-		await Promise.all(
-			bookings.map(async (booking) => {
-				booking.bookedSlots = [];
-			}),
-		);
+		bookings.map((booking) => {
+			booking.bookedSlots = [];
+		})
 		return await this.bookingsRepository.saveMultiple(bookings);
 	}
 
 	public async updateBookedSlots(event: Event, id: number): Promise<Booking[]> {
-		if (!event) return;
+		if (!event){
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Event ${id} not found`);
+		};
 		const bookings = await this.getAllBookingsByEventId(id);
 		if (!bookings) return;
 		const newBookings: Booking[] = [];
-		bookings.forEach((booking) => {
+		bookings.map((booking) => {
 			const newBookedSlots: BookedSlot[] = [];
-			if (event.oneOffTimeslots[0]) {
-				booking.startDateTime = event.oneOffTimeslots[0].startDateTime;
-				booking.endDateTime = event.oneOffTimeslots[0].endDateTime;
-			}
-			event.oneOffTimeslots.forEach((timeslot) => {
+			event.oneOffTimeslots.map((timeslot) => {
 				const updatedBookedSlot = new BookedSlot();
 				updatedBookedSlot.oneOffTimeslot = timeslot;
 				updatedBookedSlot.bookingId = booking.id;
 				newBookedSlots.push(updatedBookedSlot);
 			});
+
+			booking.startDateTime = event.oneOffTimeslots[0].startDateTime;
+			booking.endDateTime = event.oneOffTimeslots[0].endDateTime;
 			booking.bookedSlots = newBookedSlots;
 			newBookings.push(booking);
 		});

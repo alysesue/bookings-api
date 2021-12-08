@@ -1507,7 +1507,7 @@ describe('Bookings.Service', () => {
 		BookingRepositoryMock.booking = new BookingBuilder()
 			.withServiceId(service.id)
 			.withCitizenEmail('test@mail.com')
-			.withSlots([[oneOffTimeslots]])
+			.withSlots([oneOffTimeslots])
 			.withStartDateTime(new Date('2020-09-01'))
 			.withEndDateTime(new Date('2020-09-02'))
 			.build();
@@ -2597,37 +2597,102 @@ describe('Bookings.Service', () => {
 			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
 			expect(bookingActionVisitorMock.hasPermission).toBeCalled();
 		});
+	});
+	describe('Event update', () => {
+		const mockEvent = new Event();
 
-		it('should save booking and change status to pending SA if verifyBySA flag is set', async () => {
-			const bookingService = Container.get(BookingsService);
+		beforeEach(() => {
+			mockEvent.serviceId = service.id;
+			mockEvent.title = 'Mock Event';
+			mockEvent.id = 10;
+
+			const slot1 = new OneOffTimeslot();
+			slot1.eventId = 10;
+			slot1.startDateTime = new Date();
+			slot1.endDateTime = DateHelper.addMinutes(slot1.startDateTime, 45);
+			slot1.serviceProviderId = 90;
+			slot1.id = 1;
+
+			const slot2 = new OneOffTimeslot();
+			slot2.eventId = 10;
+			slot2.startDateTime = DateHelper.addMinutes(slot1.startDateTime, 60);
+			slot2.endDateTime = DateHelper.addMinutes(slot2.startDateTime, 45);
+			slot2.serviceProviderId = 91;
+			slot2.id = 2;
+			mockEvent.oneOffTimeslots = [slot1, slot2];
+
+			EventsServiceMock.getById.mockImplementation(() => Promise.resolve(mockEvent));
+		});
+
+		it('should be able to delete bookedslots of a booking', async () => {
 			const start = new Date('2020-02-02T11:00');
 			const end = new Date('2020-02-02T12:00');
-
-			const bookingRequest = {
-				citizenEmail: 'test@mail.com',
-				citizenName: 'Jake',
-				citizenUinFin: 'S6979208A',
-			} as BookingRequestV1;
-			service.requireVerifyBySA = true;
-
-			BookingRepositoryMock.booking = new BookingBuilder()
+			const mockBooking = new BookingBuilder()
 				.withServiceId(1)
 				.withStartDateTime(start)
 				.withEndDateTime(end)
 				.withAutoAccept(true)
-				.withMarkOnHold(false)
+				.withMarkOnHold(true)
 				.build();
+			const bookedSlots = mockEvent.oneOffTimeslots.map((slot) => {
+				const bookedSlot = new BookedSlot();
+				bookedSlot.oneOffTimeslot = slot;
+				bookedSlot.oneOffTimeslotId = slot.id;
+				return bookedSlot;
+			});
+			mockBooking.bookedSlots = bookedSlots;
+			expect(mockBooking.bookedSlots).not.toBe([]);
 
-			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(anonymousMock));
+			service.isStandAlone = false;
+			service.isOnHold = false;
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(service));
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(agencyMock));
 			UserContextMock.getAuthGroups.mockImplementation(() =>
-				Promise.resolve([new AnonymousAuthGroup(anonymousMock, undefined, { mobileNo: '+6584000000' })]),
+				Promise.resolve([new OrganisationAdminAuthGroup(agencyMock, [organisation])]),
 			);
+			BookingRepositoryMock.getBookingsByEventId.mockImplementation(() => Promise.resolve([mockBooking]));
 
-			const result = await bookingService.save(bookingRequest, 1);
+			await Container.get(BookingsService).deleteBookedSlotsByEventId(mockEvent.id);
 
-			expect(result.status).toBe(BookingStatus.PendingApprovalSA);
-			expect(BookingsSubjectMock.notifyMock).toHaveBeenCalledTimes(1);
-			expect(bookingActionVisitorMock.hasPermission).toBeCalled();
+			expect(mockBooking).not.toBe(undefined);
+			expect(mockBooking.eventId).not.toBe(undefined || null);
+			expect(mockBooking.bookedSlots).toStrictEqual([]);
+		});
+
+		it('should be able to update bookedslots of an event', async () => {
+			const start = new Date('2020-02-02T11:00');
+			const end = new Date('2020-02-02T12:00');
+			const mockBooking = new BookingBuilder()
+				.withServiceId(1)
+				.withStartDateTime(start)
+				.withEndDateTime(end)
+				.withAutoAccept(true)
+				.withMarkOnHold(true)
+				.build();
+			mockBooking.bookedSlots = [];
+			mockBooking.id = 1;
+
+
+			service.isStandAlone = false;
+			service.isOnHold = false;
+			ServicesServiceMock.getService.mockImplementation(() => Promise.resolve(service));
+			UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(agencyMock));
+			UserContextMock.getAuthGroups.mockImplementation(() =>
+				Promise.resolve([new OrganisationAdminAuthGroup(agencyMock, [organisation])]),
+			);
+			BookingRepositoryMock.getBookingsByEventId.mockImplementation(() => Promise.resolve([mockBooking]));
+
+			await Container.get(BookingsService).updateBookedSlots(mockEvent, mockEvent.id);
+
+			expect(mockBooking).not.toBe(undefined);
+			expect(mockBooking.eventId).not.toBe(undefined || null);
+			const bookedSlots = mockEvent.oneOffTimeslots.map((slot) => {
+				const bookedSlot = new BookedSlot();
+				bookedSlot.oneOffTimeslot = slot;
+				bookedSlot.bookingId = 1;
+				return bookedSlot;
+			});
+			expect(mockBooking.bookedSlots).toStrictEqual(bookedSlots);
 		});
 	});
 });

@@ -119,7 +119,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		return await repository.save(booking);
 	}
 
-	public async getBookingsByEventId(eventId: number, options: { byPassAuth?: boolean } = {}): Promise<Booking[]> {
+	public async getBookingsByEventId(eventId: number): Promise<Booking[]> {
 		const idCondition = 'booking."_eventId" = :id';
 
 		const repository = await this.getRepository();

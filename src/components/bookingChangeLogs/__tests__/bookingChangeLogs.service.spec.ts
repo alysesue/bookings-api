@@ -62,7 +62,7 @@ describe('BookingChangeLogs service', () => {
 		oneOffTimeslots.endDateTime = new Date('2020-10-01T02:00:00Z');
 		const booking = new BookingBuilder()
 			.withServiceId(1)
-			.withSlots([[oneOffTimeslots]])
+			.withSlots([oneOffTimeslots])
 			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 			.build();
@@ -136,7 +136,7 @@ describe('BookingChangeLogs service', () => {
 		oneOffTimeslots.endDateTime = new Date('2020-10-01T02:00:00Z');
 		const booking = new BookingBuilder()
 			.withServiceId(1)
-			.withSlots([[oneOffTimeslots]])
+			.withSlots([oneOffTimeslots])
 			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 			.build();
@@ -225,7 +225,7 @@ describe('BookingChangeLogs service', () => {
 
 		const booking = new BookingBuilder()
 			.withServiceId(1)
-			.withSlots([[oneOffTimeslots]])
+			.withSlots([oneOffTimeslots])
 			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 			.build();

@@ -80,11 +80,11 @@ export class BookingBuilder {
 		return this;
 	}
 
-	public withSlots(slots: [OneOffTimeslot][]): BookingBuilder {
+	public withSlots(slots: OneOffTimeslot[]): BookingBuilder {
 		slots.forEach((slot) => {
 			const newSlot = new BookedSlot();
-			newSlot.oneOffTimeslotId = slot[0].oneOffTimeslotId;
-			newSlot.oneOffTimeslot = slot[0]
+			newSlot.oneOffTimeslotId = slot.oneOffTimeslotId;
+			newSlot.oneOffTimeslot = slot
 			this.slots.push(newSlot);
 		});
 		return this;

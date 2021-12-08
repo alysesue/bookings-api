@@ -78,7 +78,7 @@ describe('Bookings.Controller', () => {
 
 	const testBooking1 = new BookingBuilder()
 		.withServiceId(1)
-		.withSlots([[mockOneOffTimeslots1]])
+		.withSlots([mockOneOffTimeslots1])
 		.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 		.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 		.build();
@@ -91,7 +91,7 @@ describe('Bookings.Controller', () => {
 
 	const testBooking2 = new BookingBuilder()
 		.withServiceId(1)
-		.withSlots([[mockOneOffTimeslots2]])
+		.withSlots([mockOneOffTimeslots2])
 		.withStartDateTime(new Date('2020-10-01T15:00:00Z'))
 		.withEndDateTime(new Date('2020-10-02T16:00:00Z'))
 		.build();
@@ -317,7 +317,7 @@ describe('Bookings.Controller', () => {
 		oneOffTimeslots.endDateTime = new Date('2020-10-01T02:00:00');
 		const booking = new BookingBuilder()
 			.withServiceId(1)
-			.withSlots([[oneOffTimeslots]])
+			.withSlots([oneOffTimeslots])
 			.withStartDateTime(startTime)
 			.withEndDateTime(endTime)
 			.build();
