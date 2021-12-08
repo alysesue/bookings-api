@@ -330,7 +330,8 @@ describe('Bookings repository', () => {
 		booking.id = 1;
 		booking.eventId = 1;
 
-		TransactionManagerMock.find.mockImplementation(() => booking);
+		queryBuilderMock.getMany.mockImplementation(() => Promise.resolve(booking));
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
 
 		const bookingsRepository = Container.get(BookingsRepository);
 		const result = await bookingsRepository.getBookingsByEventId(eventId);

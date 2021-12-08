@@ -18,7 +18,7 @@ import { OneOffTimeslotsServiceMock } from '../../oneOffTimeslots/__mocks__/oneO
 import { ContainerContextHolder } from '../../../infrastructure/containerContext';
 import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
-import { Event, OneOffTimeslot, Organisation, Service, User } from '../../../models';
+import { Booking, ChangeLogAction, Event, OneOffTimeslot, Organisation, Service, User } from '../../../models';
 import { OrganisationAdminAuthGroup } from '../../../infrastructure/auth/authGroup';
 import { OneOffTimeslotsActionAuthVisitor } from '../../oneOffTimeslots/oneOffTimeslots.auth';
 import { getOneOffTimeslotMock } from '../../../models/__mocks__/oneOffTimeslot.mock';
@@ -28,10 +28,16 @@ import { OneOffTimeslotsRepository } from '../../oneOffTimeslots/oneOffTimeslots
 import { OneOffTimeslotsRepositoryMock } from '../../oneOffTimeslots/__mocks__/oneOffTimeslots.repository.mock';
 import { EventsAuthVisitor } from '../events.auth';
 import { getServiceProviderMock } from '../../../models/__mocks__/serviceProvider.mock';
-import {BookedSlotRepository} from "../../bookings/bookedSlot.repository";
-import {BookedSlotRepositoryMock} from "../../bookings/__mocks__/bookedSlot.repository.mock";
-import {BookingsServiceMock} from "../../bookings/__mocks__/bookings.service.mock";
-import {BookingsService} from "../../bookings";
+import { BookedSlotRepository } from '../../bookings/bookedSlot.repository';
+import { BookedSlotRepositoryMock } from '../../bookings/__mocks__/bookedSlot.repository.mock';
+import { BookingsServiceMock } from '../../bookings/__mocks__/bookings.service.mock';
+import { BookingsService } from '../../bookings';
+import {
+	BookingChangeLogsService,
+	BookingsActionFunction,
+	GetBookingsFunctionByEventId,
+} from '../../bookingChangeLogs/bookingChangeLogs.service';
+import { BookingChangeLogsServiceMock } from '../../bookings/__mocks__/bookings.mocks';
 
 jest.mock('../events.auth');
 jest.mock('../events.validation');
@@ -73,7 +79,8 @@ describe('Tests events services', () => {
 		Container.bind(TransactionManager).to(TransactionManagerMock);
 		Container.bind(EventsRepository).to(EventsRepositoryMock);
 		Container.bind(BookedSlotRepository).to(BookedSlotRepositoryMock);
-		Container.bind(BookingsService).to(BookingsServiceMock)
+		Container.bind(BookingsService).to(BookingsServiceMock);
+		Container.bind(BookingChangeLogsService).to(BookingChangeLogsServiceMock);
 	});
 
 	beforeEach(() => {
@@ -92,6 +99,19 @@ describe('Tests events services', () => {
 					{ id: 1 } as Organisation,
 				]),
 			]),
+		);
+		BookingChangeLogsServiceMock.executeAndLogMultipleActions.mockImplementation(
+			async (
+				getBookingsFunction: GetBookingsFunctionByEventId,
+				actionFunction: BookingsActionFunction,
+				eventId?: number,
+				bookings?: Booking[],
+			) => {
+				const prevBookings = await getBookingsFunction(eventId, {});
+				const [action, newBookings] = await actionFunction();
+				BookingChangeLogsServiceMock.action = action;
+				return newBookings;
+			},
 		);
 	});
 
@@ -128,7 +148,9 @@ describe('Tests events services', () => {
 	});
 
 	it('Should call save when updating an event', async () => {
+		(BookingsServiceMock.mockGetAllBookingsByEventId as jest.Mock).mockReturnValue(new Event());
 		(EventsRepositoryMock.getByIdMock as jest.Mock).mockReturnValue(new Event());
+
 		const oneOffTimeslotRequest = getSimpleOneOffTimeslotRequest({ serviceProviderId: 1 });
 		const oneOffTimeslotRequest2 = getSimpleOneOffTimeslotRequest({ serviceProviderId: 2 });
 		const sp1 = getServiceProviderMock({ id: 1 });
@@ -137,7 +159,10 @@ describe('Tests events services', () => {
 		const eventRequest = getSimpleEventRequest({
 			oneOffTimeslots: [oneOffTimeslotRequest, oneOffTimeslotRequest2],
 		});
+
 		await Container.get(EventsService).updateEvent(eventRequest, '1');
+		expect(BookingsServiceMock.mockGetAllBookingsByEventId).toHaveBeenCalledTimes(1);
+		expect(BookingChangeLogsServiceMock.action).toEqual(ChangeLogAction.Update);
 		expect(EventsRepositoryMock.saveMock).toHaveBeenCalledTimes(1);
 	});
 

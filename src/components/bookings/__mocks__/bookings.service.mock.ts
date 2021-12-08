@@ -12,6 +12,7 @@ export class BookingsServiceMock implements Partial<BookingsService> {
 	public static bookAnEventMock = jest.fn<Promise<Booking>, any>();
 	public static mockDeleteBookedSlotsByEventId = jest.fn<Promise<Booking[]>, any>();
 	public static mockUpdateBookedSlots = jest.fn<Promise<Booking[]>, any>();
+	public static mockGetAllBookingsByEventId = jest.fn<Promise<Booking[]>, any>();
 	public static getBookingByUUID = jest.fn<Promise<Booking>, any>();
 
 	public static mockBooking: Booking;
@@ -92,5 +93,9 @@ export class BookingsServiceMock implements Partial<BookingsService> {
 
 	public async updateBookedSlots(...params): Promise<Booking[]> {
 		return BookingsServiceMock.mockUpdateBookedSlots(...params);
+	}
+
+	public async getAllBookingsByEventId(...params): Promise<Booking[]> {
+		return BookingsServiceMock.mockGetAllBookingsByEventId(...params);
 	}
 }

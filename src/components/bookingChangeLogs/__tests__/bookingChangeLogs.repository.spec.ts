@@ -69,6 +69,27 @@ describe('BookingChangeLogs repository', () => {
 		expect(TransactionManagerMock.save).toBeCalled();
 	});
 
+	it('should save multiple logs', async () => {
+		const repo = Container.get(BookingChangeLogsRepository);
+
+		const bookings = [new Booking(), new Booking()];
+		const changeLogs = bookings.map((booking) =>
+			BookingChangeLog.create({
+				booking,
+				user: singpassUserMock,
+				action: ChangeLogAction.Create,
+				previousState: {},
+				newState: {},
+			}),
+		);
+
+		TransactionManagerMock.save.mockImplementation(() => Promise.resolve(changeLogs));
+
+		await repo.saveMultiple(changeLogs);
+		expect(TransactionManagerMock.save).toBeCalled();
+		expect(TransactionManagerMock.save).toBeCalledWith(changeLogs);
+	});
+
 	it('should retrieve logs', async () => {
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),

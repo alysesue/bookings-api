@@ -99,9 +99,14 @@ export class UnavailabilitiesServiceMock implements Partial<UnavailabilitiesServ
 
 export class BookingChangeLogsServiceMock implements Partial<BookingChangeLogsService> {
 	public static executeAndLogAction = jest.fn();
+	public static executeAndLogMultipleActions = jest.fn();
 	public static action: ChangeLogAction;
 
 	public async executeAndLogAction(...params): Promise<any> {
 		return await BookingChangeLogsServiceMock.executeAndLogAction(...params);
+	}
+
+	public async executeAndLogMultipleActions(...params): Promise<any> {
+		return await BookingChangeLogsServiceMock.executeAndLogMultipleActions(...params);
 	}
 }
