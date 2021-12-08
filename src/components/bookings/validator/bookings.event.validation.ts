@@ -20,7 +20,7 @@ abstract class BookingsEventValidator extends Validator<Booking> implements IBoo
 	@Inject
 	protected bookingsRepository: BookingsRepository;
 	@Inject
-	protected eventRepository: EventsRepository;
+	protected eventsRepository: EventsRepository;
 
 	protected shouldBypassCaptcha = false;
 	private _customCitizenValidations: BusinessValidation[];
@@ -125,19 +125,20 @@ abstract class BookingsEventValidator extends Validator<Booking> implements IBoo
 			page: 1,
 			limit: 9999,
 		};
+
+		// decrement event bookings count if onHoldUntil has expired or
+		// is current persisted onhold booking (submission from standalone form)
 		const eventBookings = await this.bookingsRepository.searchReturnAll(searchQuery);
 		let eventBookingsCount = eventBookings.length;
 		eventBookings.forEach((e) => {
-			if (e.status === BookingStatus.OnHold && !e.isValidOnHoldBooking()) {
+			if ((e.status === BookingStatus.OnHold && e.onHoldUntil < new Date()) || e.id === _booking.id) {
 				eventBookingsCount = eventBookingsCount - 1;
 			}
 		});
+
 		const id = _booking.eventId;
-		const eventDetails = await this.eventRepository.getById({ id });
-		eventBookingsCount =
-			_booking.isValidOnHoldBooking() && eventBookingsCount <= eventDetails.capacity
-				? eventBookingsCount - 1
-				: eventBookingsCount;
+		const eventDetails = await this.eventsRepository.getById({id});
+
 		if (eventBookingsCount >= eventDetails.capacity) {
 			yield BookingBusinessValidations.EventCapacityUnavailable;
 		}
