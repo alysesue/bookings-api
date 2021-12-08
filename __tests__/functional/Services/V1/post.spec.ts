@@ -61,6 +61,9 @@ describe('Tests endpoint and populate data', () => {
 	it('should return additionalSettings default values in response when it is not set in Post request', async () => {
 		const additionalSettingsDefaultValues = {
 			allowAnonymousBookings: false,
+			bookingLimitation: {
+				bookingLimitationType: 'NoLimitations',
+			},
 			isOnHold: false,
 			isStandAlone: false,
 			sendNotifications: false,
@@ -82,6 +85,9 @@ describe('Tests endpoint and populate data', () => {
 
 	it('should return additionalSettings default values in response when it is set to empty in Post request', async () => {
 		const additionalSettingsDefaultValues = {
+			bookingLimitation: {
+				bookingLimitationType: 'NoLimitations',
+			},
 			allowAnonymousBookings: false,
 			isOnHold: false,
 			isStandAlone: false,
@@ -105,6 +111,9 @@ describe('Tests endpoint and populate data', () => {
 	it('should post ALL additionalSettings values and return them in response', async () => {
 		const additionalSettingsValues = {
 			allowAnonymousBookings: true,
+			bookingLimitation: {
+				bookingLimitationType: 'NoLimitations',
+			},
 			isOnHold: true,
 			isStandAlone: true,
 			sendNotifications: true,
@@ -127,6 +136,9 @@ describe('Tests endpoint and populate data', () => {
 	it('(new contract) should post ALL additionalSettings values and return them in response', async () => {
 		const additionalSettingsValues = {
 			citizenAuthentication: ['otp'],
+			bookingLimitation: {
+				bookingLimitationType: 'NoLimitations',
+			},
 			isOnHold: true,
 			isStandAlone: true,
 			sendNotifications: true,
@@ -157,6 +169,9 @@ describe('Tests endpoint and populate data', () => {
 		expect(response.statusCode).toEqual(200);
 		expect(response.body.data.additionalSettings).toEqual({
 			allowAnonymousBookings: false,
+			bookingLimitation: {
+				bookingLimitationType: 'NoLimitations',
+			},
 			citizenAuthentication: ['singpass'],
 			isOnHold: false,
 			isStandAlone: false,

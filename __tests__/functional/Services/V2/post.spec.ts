@@ -101,6 +101,9 @@ describe('Tests endpoint and populate data', () => {
 		expect(response.statusCode).toEqual(200);
 		expect(response.body.data.additionalSettings).toEqual({
 			...additionalSettingsDefaultValues,
+			bookingLimitation: {
+				bookingLimitationType: 'NoLimitations',
+			},
 			citizenAuthentication: ['singpass'],
 		});
 	});
@@ -127,6 +130,9 @@ describe('Tests endpoint and populate data', () => {
 		expect(response.statusCode).toEqual(200);
 		expect(response.body.data.additionalSettings).toEqual({
 			...additionalSettingsDefaultValues,
+			bookingLimitation: {
+				bookingLimitationType: 'NoLimitations',
+			},
 			citizenAuthentication: ['singpass'],
 		});
 	});
@@ -153,6 +159,9 @@ describe('Tests endpoint and populate data', () => {
 		expect(response.statusCode).toEqual(200);
 		expect(response.body.data.additionalSettings).toEqual({
 			...additionalSettingsValues,
+			bookingLimitation: {
+				bookingLimitationType: 'NoLimitations',
+			},
 			citizenAuthentication: ['singpass', 'otp'],
 		});
 	});
@@ -179,6 +188,9 @@ describe('Tests endpoint and populate data', () => {
 		expect(response.statusCode).toEqual(200);
 		expect(response.body.data.additionalSettings).toEqual({
 			...additionalSettingsValues,
+			bookingLimitation: {
+				bookingLimitationType: 'NoLimitations',
+			},
 			allowAnonymousBookings: true,
 		});
 	});
@@ -198,6 +210,9 @@ describe('Tests endpoint and populate data', () => {
 		expect(response.statusCode).toEqual(200);
 		expect(response.body.data.additionalSettings).toEqual({
 			allowAnonymousBookings: false,
+			bookingLimitation: {
+				bookingLimitationType: 'NoLimitations',
+			},
 			citizenAuthentication: ['singpass'],
 			isOnHold: false,
 			isStandAlone: false,
