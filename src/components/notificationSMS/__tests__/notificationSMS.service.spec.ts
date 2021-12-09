@@ -52,7 +52,7 @@ describe('Test of notification SMS', () => {
 	});
 
 	it('Should call post when sending an sms', async () => {
-		await Container.get(NotificationSMSServiceMol).send({ phoneNumber: '+6588217161', message: '' }, organisation.name, agencyMock.agencyUser.agencyName);
+		await Container.get(NotificationSMSServiceMol).send({ phoneNumber: '+6588217161', message: '' }, organisation.name);
 		expect(post).toHaveBeenCalledTimes(1);
 	});
 
@@ -75,7 +75,7 @@ describe('Test of notification SMS', () => {
 
 		(SMSService as any).context = {headers};
 
-		await SMSService.send({ phoneNumber: '+6588217161', message: '' }, organisation.name, agencyMock.agencyUser.agencyName);
+		await SMSService.send({ phoneNumber: '+6588217161', message: '' }, organisation.name);
 		expect(post).toHaveBeenCalledWith("/sms/api/v2/send-batch", {"sms": [{"message": "", "phoneNumber": "+6588217161"}]}, {"mol-agency-name": "BSG-AGENCY1", "mol-auth-type": "SYSTEM"});
 	});
 
@@ -88,7 +88,7 @@ describe('Test of notification SMS', () => {
 
 		(SMSService as any).context = {headers};
 
-		await SMSService.send({ phoneNumber: '+6588217161', message: '' }, organisation.name, undefined);
+		await SMSService.send({ phoneNumber: '+6588217161', message: '' }, organisation.name);
 		expect(post).toHaveBeenCalledWith("/sms/api/v2/send-batch", {"sms": [{"message": "", "phoneNumber": "+6588217161"}]}, {"mol-agency-name": "BSG-Organisation1", "mol-auth-type": "SYSTEM"});
 	});
 });

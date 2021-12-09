@@ -15,7 +15,7 @@ export type SMS = {
 };
 
 export abstract class NotificationSMSService {
-	public abstract send(sms: SMS, organisationName: string, agencyUserName: string): Promise<void>;
+	public abstract send(sms: SMS, organisationName: string): Promise<void>;
 
 	public static async validatePhone(phone: string): Promise<void> {
 		if (!(await isPhoneNumberWithPrefix(phone)).pass) {
@@ -28,12 +28,12 @@ export abstract class NotificationSMSService {
 export class NotificationSMSServiceMol extends NotificationSMSService {
 	private config = getConfig();
 
-	public async send(sms: SMS, organisationName: string, agencyUserName: string): Promise<void> {
+	public async send(sms: SMS, organisationName: string): Promise<void> {
 		const molNotifSvcUrl = this.config.molNotification.url;
 		const prefix = `BSG-`;
 		const header = {
 			[MOLSecurityHeaderKeys.AUTH_TYPE]: MOLAuthType.SYSTEM,
-			[MOLSecurityHeaderKeys.AGENCY_NAME]: prefix + (agencyUserName ? agencyUserName : organisationName),
+			[MOLSecurityHeaderKeys.AGENCY_NAME]: prefix + organisationName,
 		};
 		// For mol notification service, they only enable real SMS sending on QE, STG and PROD env
 		// Hence for BSG's local and dev env, we will point to their QE environment so that we can send out SMS (depending on our own env variables)
