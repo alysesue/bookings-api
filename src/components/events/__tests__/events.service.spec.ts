@@ -104,7 +104,9 @@ describe('Tests events services', () => {
 			async (
 				getBookingsFunction: GetBookingsFunctionByEventId,
 				actionFunction: BookingsActionFunction,
+				eventId?: number,
 			) => {
+				await getBookingsFunction(eventId, {});
 				const [action, newBookings] = await actionFunction();
 				BookingChangeLogsServiceMock.action = action;
 				return newBookings;
