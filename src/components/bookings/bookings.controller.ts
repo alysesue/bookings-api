@@ -12,6 +12,7 @@ import {
 	Route,
 	Security,
 	SuccessResponse,
+	Hidden,
 	Tags,
 } from 'tsoa';
 import { MOLAuth } from 'mol-lib-common';
@@ -46,6 +47,8 @@ import {
 	BookingChangeUser,
 	ValidateOnHoldRequest,
 	SendBookingsToLifeSGRequest,
+	BookingAuthType,
+	BookingUUIDRequest,
 } from './bookings.apicontract';
 import { IdHasher } from '../../infrastructure/idHasher';
 import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
@@ -372,21 +375,6 @@ export class BookingsController extends Controller {
 			bookingId = this.idHasher.decode(bookingId);
 		}
 		const booking = await this.bookingsService.getBooking(bookingId);
-		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking));
-	}
-
-	/**
-	 * Retrieves a single booking by UUID
-	 *
-	 * @param bookingUUID Booking UUID
-	 * @returns A single booking
-	 */
-	@Get('uuid/{bookingUUID}')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
-	@SuccessResponse(200, 'Ok')
-	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
-	public async getBookingByUUID(@Path() bookingUUID: string): Promise<ApiData<BookingResponseV1>> {
-		const booking = await this.bookingsService.getBookingByUUID(bookingUUID);
 		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV1(booking));
 	}
 
@@ -798,18 +786,19 @@ export class BookingsControllerV2 extends Controller {
 	}
 
 	/**
-	 * Retrieves a single booking by UUID
+	 * THIS IS A TARGETED API for BACKWARD COMPATIBILITY for EXISTING BOOKINGS WITHOUT VALID OWNERID
+	 * Retrieves a single booking by UUID and return only citizenAuthType
 	 *
 	 * @param bookingUUID Booking UUID
-	 * @returns A single booking
+	 * @returns A single booking with only citizenAuthType
 	 */
-	@Get('uuid/{bookingUUID}')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
+	@Post('authType')
+	@Hidden()
+	@BookingSGAuth({ bypassAuth: true })
 	@SuccessResponse(200, 'Ok')
-	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous-otp]')
-	public async getBookingByUUID(@Path() bookingUUID: string): Promise<ApiData<BookingResponseV2>> {
-		const booking = await this.bookingsService.getBookingByUUID(bookingUUID);
-		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking));
+	public async getBookingByUUID(@Body() bookingUUIDRequest: BookingUUIDRequest): Promise<ApiData<BookingAuthType>> {
+		const booking = await this.bookingsService.getBookingByUUID(bookingUUIDRequest.bookingUUID);
+		return ApiDataFactory.create(this.bookingsMapper.mapBookingAuthType(booking));
 	}
 
 	/**

@@ -250,7 +250,7 @@ export class Booking {
 	@Column({ nullable: false })
 	private _creatorId: number;
 
-	@Column({ nullable: false })
+	@Column({ nullable: true })
 	private _ownerId: number;
 
 	@ManyToOne(() => Service)

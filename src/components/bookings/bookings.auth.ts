@@ -133,6 +133,7 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 		const orParams = {};
 		orParams['otpUserId'] = _otpGroup.user.id;
 		orConditions.push(`${this._alias}."_ownerId" = :otpUserId`);
+		orConditions.push(`${this._alias}."_ownerId" IS NULL`);
 
 		this.addAuthCondition(orWhere(orConditions), orParams);
 	}
@@ -157,7 +158,7 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 		const userId = _citizenGroup.user.id;
 
 		this.addAuthCondition(
-			`${this._alias}."_citizenUinFin" = :authorisedUinFin OR ${this._alias}."_ownerId" = :userId`,
+			`${this._alias}."_citizenUinFin" = :authorisedUinFin OR ${this._alias}."_ownerId" = :userId OR ${this._alias}."_ownerId" IS NULL`,
 			{
 				authorisedUinFin,
 				userId,

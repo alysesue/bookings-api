@@ -57,6 +57,6 @@ export { AddMqSubScriberToService1636341481752 } from './1636341481752-AddMqSubS
 export { TextFieldType1638165653527 } from './1638165653527-TextFieldType';
 export { ServiceBookingLimitation1638772496515 } from './1638772496515-ServiceBookingLimitation';
 export { MapServicesAndOrganisationsToAdmin1639023609720 } from './1639023609720-MapServicesAndOrganisationsToAdmin';
-export { BookingAuthType1635209273424 } from './1635209273424-BookingAuthType';
+export { BookingAuthType1639037629646 } from './1639037629646-BookingAuthType';
 export { AddOtpUser1637826607021 } from './1637826607021-AddOtpUser';
-export { BookingOwnerIdAndSingpassNullable1638241378905 } from './1638241378905-BookingOwnerIdAndSingpassNullable';
+export { BookingOwnerIdAndSingpassNullable1639035773906 } from './1639035773906-BookingOwnerIdAndSingpassNullable';

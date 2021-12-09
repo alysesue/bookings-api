@@ -20,7 +20,7 @@ import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { PersistDynamicValueContract } from '../../dynamicFields/dynamicValues.apicontract';
 import { DynamicFieldsServiceMock } from '../../dynamicFields/__mocks__/dynamicFields.service.mock';
-import { BookingDetailsRequest } from '../bookings.apicontract';
+import { BookingAuthType, BookingDetailsRequest } from '../bookings.apicontract';
 import { IBookingsValidator } from '../validator/bookings.validation';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { BookingBuilder } from '../../../models/entities/booking';
@@ -617,5 +617,25 @@ describe('Bookings mapper tests', () => {
 		await mapper.mapBookingDetails({ request, booking, service });
 
 		expect(booking.citizenUinFin).toEqual('ABC1234');
+	});
+
+	describe('mapBookingAuthType', () => {
+		it('should map booking auth type (OTP)', () => {
+			const booking = new Booking();
+			const result = new BookingAuthType(CitizenAuthenticationType.Otp);
+			booking.citizenAuthType = CitizenAuthenticationType.Otp;
+			const mapper = Container.get(BookingsMapper);
+			const response = mapper.mapBookingAuthType(booking);
+			expect(response).toEqual(result);
+		});
+
+		it('should map booking auth type (Singpass)', () => {
+			const booking = new Booking();
+			const result = new BookingAuthType(CitizenAuthenticationType.Singpass);
+			booking.citizenAuthType = CitizenAuthenticationType.Singpass;
+			const mapper = Container.get(BookingsMapper);
+			const response = mapper.mapBookingAuthType(booking);
+			expect(response).toEqual(result);
+		});
 	});
 });

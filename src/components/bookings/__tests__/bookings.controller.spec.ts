@@ -5,6 +5,7 @@ import { BookingsController, BookingsControllerV2 } from '../bookings.controller
 import {
 	BookingAcceptRequestV1,
 	BookingAcceptRequestV2,
+	BookingAuthType,
 	BookingChangeUser,
 	BookingReject,
 	BookingRequestV1,
@@ -13,6 +14,7 @@ import {
 	BookingResponseV2,
 	BookingUpdateRequestV1,
 	BookingUpdateRequestV2,
+	BookingUUIDRequest,
 } from '../bookings.apicontract';
 import { BookingBuilder } from '../../../models/entities/booking';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
@@ -37,6 +39,8 @@ import * as uuid from 'uuid';
 import { CaptchaServiceMock } from '../../captcha/__mocks__/captcha.service.mock';
 import { UinFinConfigurationMock } from '../../../models/__mocks__/uinFinConfiguration.mock';
 import { BookingsServiceMock } from '../__mocks__/bookings.service.mock';
+import { BookingsMapperMock } from '../__mocks__/bookings.mapper.mock';
+import { CitizenAuthenticationType } from '../../../models/citizenAuthenticationType';
 
 jest.mock('../../../models/uinFinConfiguration');
 
@@ -316,31 +320,6 @@ describe('Bookings.Controller', () => {
 		expect(result.data.status).toBe(BookingStatus.PendingApproval);
 	});
 
-	it('should return one booking by uuid', async () => {
-		const controller = Container.get(BookingsController);
-		const startTime = new Date('2020-10-01T01:00:00');
-		const endTime = new Date('2020-10-01T02:00:00');
-		const bookingUUID = uuid.v4();
-
-		const booking = new BookingBuilder()
-			.withServiceId(1)
-			.withSlots([[startTime, endTime, null]])
-			.withStartDateTime(startTime)
-			.withEndDateTime(endTime)
-			.build();
-		booking.service = new Service();
-		booking.service.organisation = new Organisation();
-		booking.uuid = bookingUUID;
-
-		BookingsServiceMock.getBookingPromise = Promise.resolve(booking);
-
-		const result = await controller.getBookingByUUID(bookingUUID);
-
-		expect(result.data.startDateTime).toBe(startTime);
-		expect(result.data.endDateTime).toBe(endTime);
-		expect(result.data.status).toBe(BookingStatus.PendingApproval);
-	});
-
 	it('should get booking providers', async () => {
 		const controller = Container.get(BookingsController);
 		BookingsServiceMock.getBooking.mockReturnValue(Promise.resolve(testBooking1));
@@ -486,9 +465,9 @@ describe('Bookings.Controller', () => {
 		booking.uuid = bookingUUID;
 
 		BookingsServiceMock.searchBookings.mockImplementation(() =>
-			Promise.resolve(({
+			Promise.resolve({
 				entries: [booking],
-			} as unknown) as IPagedEntities<Booking>),
+			} as unknown as IPagedEntities<Booking>),
 		);
 
 		const from = undefined;
@@ -836,33 +815,6 @@ describe('Bookings.Controller.V2', () => {
 		expect(result.data.serviceProviderId).toBe('2');
 	});
 
-	it('should return one booking by uuid', async () => {
-		const controller = Container.get(BookingsControllerV2);
-		const startTime = new Date('2020-10-01T01:00:00');
-		const endTime = new Date('2020-10-01T02:00:00');
-		const bookingUUID = uuid.v4();
-
-		const booking = new BookingBuilder()
-			.withServiceId(1)
-			.withServiceProviderId(2)
-			.withStartDateTime(startTime)
-			.withEndDateTime(endTime)
-			.build();
-		booking.service = new Service();
-		booking.service.organisation = new Organisation();
-		booking.uuid = bookingUUID;
-
-		BookingsServiceMock.getBookingPromise = Promise.resolve(booking);
-
-		const result = await controller.getBookingByUUID(bookingUUID);
-
-		expect(result.data.startDateTime).toBe(startTime);
-		expect(result.data.endDateTime).toBe(endTime);
-		expect(result.data.status).toBe(BookingStatus.PendingApproval);
-		expect(result.data.serviceId).toBe('1');
-		expect(result.data.serviceProviderId).toBe('2');
-	});
-
 	it('should get booking providers', async () => {
 		const controller = Container.get(BookingsControllerV2);
 		BookingsServiceMock.getBooking.mockReturnValue(Promise.resolve(testBooking1));
@@ -983,9 +935,9 @@ describe('Bookings.Controller.V2', () => {
 		booking.uuid = bookingUUID;
 
 		BookingsServiceMock.searchBookings.mockImplementation(() =>
-			Promise.resolve(({
+			Promise.resolve({
 				entries: [booking],
-			} as unknown) as IPagedEntities<Booking>),
+			} as unknown as IPagedEntities<Booking>),
 		);
 
 		const from = undefined;
@@ -1059,6 +1011,20 @@ describe('Bookings.Controller.V2', () => {
 		expect(result).toBeDefined();
 		expect(result.data.uuid).toEqual('3e813466-c2ee-4b25-ae6e-77cc7dbe8878');
 		expect(BookingsServiceMock.changeUser).toBeCalledWith({ bookingId: 2, bookingUUID });
+	});
+
+	it('should return citizenAuthType', async () => {
+		BookingsServiceMock.getBookingByUUID.mockImplementation(() => Promise.resolve(new Booking()));
+		BookingsMapperMock.mapBookingAuthType.mockImplementation(
+			() => new BookingAuthType(CitizenAuthenticationType.Otp),
+		);
+		const controller = Container.get(BookingsControllerV2);
+		const response = await controller.getBookingByUUID({
+			bookingUUID: '3e813466-c2ee-4b25-ae6e-77cc7dbe8878',
+		} as BookingUUIDRequest);
+
+		expect(response).toBeDefined();
+		expect(BookingsServiceMock.getBookingByUUID).toBeCalled();
 	});
 });
 

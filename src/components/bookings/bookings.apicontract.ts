@@ -206,3 +206,15 @@ export class BookingChangeUser {
 	public bookingId: number;
 	public bookingUUID: string;
 }
+
+export class BookingAuthType {
+	public citizenAuthType: CitizenAuthenticationType;
+
+	constructor(citizenAuthType: CitizenAuthenticationType) {
+		this.citizenAuthType = citizenAuthType;
+	}
+}
+
+export class BookingUUIDRequest {
+	public bookingUUID: string;
+}

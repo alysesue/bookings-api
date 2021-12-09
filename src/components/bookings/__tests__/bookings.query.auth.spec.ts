@@ -50,7 +50,7 @@ describe('Bookings query auth', () => {
 
 		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
-		expect(result.userCondition).toStrictEqual('((b."_ownerId" = :otpUserId))');
+		expect(result.userCondition).toStrictEqual('((b."_ownerId" = :otpUserId) OR (b."_ownerId" IS NULL))');
 		expect(result.userParams).toStrictEqual({
 			otpUserId: 3,
 		});
@@ -100,7 +100,7 @@ describe('Bookings query auth', () => {
 		const result = await new BookingQueryAuthVisitor('b', 's').createUserVisibilityCondition(groups);
 
 		expect(result.userCondition).toStrictEqual(
-			'(b."_citizenUinFin" = :authorisedUinFin OR b."_ownerId" = :userId)',
+			'(b."_citizenUinFin" = :authorisedUinFin OR b."_ownerId" = :userId OR b."_ownerId" IS NULL)',
 		);
 		expect(result.userParams).toStrictEqual({
 			authorisedUinFin: 'ABC1234',

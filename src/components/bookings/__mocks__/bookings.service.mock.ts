@@ -10,6 +10,7 @@ export class BookingsServiceMock implements Partial<BookingsService> {
 	public static mockCheckLimit = jest.fn<Promise<void>, any>();
 	public static changeUser = jest.fn<Promise<Booking>, any>();
 	public static bookAnEventMock = jest.fn<Promise<Booking>, any>();
+	public static getBookingByUUID = jest.fn<Promise<Booking>, any>();
 
 	public static mockBooking: Booking;
 	public static mockAcceptBooking = Promise.resolve(BookingsServiceMock.mockBooking);
@@ -20,7 +21,6 @@ export class BookingsServiceMock implements Partial<BookingsService> {
 	public static mockBookingId;
 	public static mockBookingUUID;
 	public static getBookingPromise = Promise.resolve(BookingsServiceMock.mockBooking);
-	public static getBookingByUUIDPromise = Promise.resolve(BookingsServiceMock.mockBooking);
 	public static mockUpdateBooking: Booking;
 	public static mockValidateOnHoldBooking = Promise.resolve(BookingsServiceMock.mockBooking);
 
@@ -29,8 +29,7 @@ export class BookingsServiceMock implements Partial<BookingsService> {
 	}
 
 	public async getBookingByUUID(bookingUUID: string): Promise<Booking> {
-		BookingsServiceMock.mockBookingUUID = bookingUUID;
-		return BookingsServiceMock.getBookingPromise;
+		return BookingsServiceMock.getBookingByUUID(bookingUUID);
 	}
 
 	public async acceptBooking(bookingId: number): Promise<Booking> {

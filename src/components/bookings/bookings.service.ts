@@ -139,7 +139,7 @@ export class BookingsService {
 	}
 
 	public async getBookingByUUID(bookingUUID: string): Promise<Booking> {
-		return this.getBookingInternalByUUID(bookingUUID);
+		return this.getBookingInternalByUUID(bookingUUID, { byPassAuth: true });
 	}
 
 	private async getBookingInternalByUUID(
@@ -283,7 +283,20 @@ export class BookingsService {
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<IPagedEntities<Booking>> {
-		return await this.bookingsRepository.search(searchRequest);
+		let bookings = await this.bookingsRepository.search(searchRequest);
+		if (!bookings.entries.length && searchRequest.bookingToken) {
+			// Making sure citizen can only see booking that doesn't have ownerId and the auth type is matched to the login method, else do not return any booking
+			const currentUser = await this.userContext.getCurrentUser();
+			let citizen: CitizenAuthenticationType;
+			if (currentUser.isOtp()) citizen = CitizenAuthenticationType.Otp;
+			else if (currentUser.isSingPass()) citizen = CitizenAuthenticationType.Singpass;
+			searchRequest.byPassAuth = true;
+			bookings = await this.bookingsRepository.search(searchRequest);
+			if (bookings.entries[0].ownerId || citizen !== bookings.entries[0].citizenAuthType) {
+				bookings.entries = [];
+			}
+		}
+		return bookings;
 	}
 
 	public async searchBookingsReturnAll(searchRequest: BookingSearchRequest): Promise<Booking[]> {
@@ -519,9 +532,8 @@ export class BookingsService {
 
 		const updatedBooking = previousBooking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
-		const validator = this.bookingsValidatorFactory.getValidator(
-			BookingsService.useAdminValidator(currentUser, bookingRequest.validationType),
-		);
+		const useAdminValidator = BookingsService.useAdminValidator(currentUser, bookingRequest.validationType);
+		const validator = this.bookingsValidatorFactory.getValidator(useAdminValidator);
 		validator.bypassCaptcha(isAgencyUser);
 
 		await this.bookingsMapper.mapRequest({
@@ -534,10 +546,18 @@ export class BookingsService {
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
 		});
+
 		await afterMap(updatedBooking);
 		await validator.validate(updatedBooking);
 		const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
 		await this.loadBookingDependencies(updatedBooking);
+
+		if (!updatedBooking.ownerId) {
+			// Add owner after bookings have been validated
+			const ownerUser = await this.getOwnerUser(useAdminValidator, updatedBooking, currentUser);
+			updatedBooking.ownerId = ownerUser.id;
+		}
+
 		await this.verifyActionPermission(updatedBooking, changeLogAction);
 		await this.bookingsRepository.update(updatedBooking);
 		updatedBooking.creator = await this.usersService.persistUserIfRequired(currentUser);
@@ -712,6 +732,7 @@ export class BookingsService {
 		bookingRequest: ValidateOnHoldRequest,
 		beforeMap: (updatedBooking: Booking) => Promise<void> = async () => {},
 	): Promise<[ChangeLogAction, Booking]> {
+		const currentUser = await this.userContext.getCurrentUser();
 		const updatedBooking = previousBooking.clone();
 		await beforeMap(updatedBooking);
 		const { service } = await this.bookingRequestExtraction(updatedBooking.serviceId);
@@ -737,6 +758,12 @@ export class BookingsService {
 
 		await validator.validate(updatedBooking);
 		const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
+
+		if (!updatedBooking.ownerId) {
+			// Add owner after bookings have been validated
+			updatedBooking.ownerId = currentUser.id;
+		}
+
 		await this.verifyActionPermission(updatedBooking, changeLogAction);
 
 		await this.bookingsRepository.update(updatedBooking);
@@ -748,6 +775,7 @@ export class BookingsService {
 		bookingRequest: ValidateOnHoldRequest,
 	): Promise<[ChangeLogAction, Booking]> {
 		if (previousBooking.isValidOnHoldBooking()) {
+			const currentUser = await this.userContext.getCurrentUser();
 			const updatedBooking = previousBooking.clone();
 			const { service } = await this.bookingRequestExtraction(previousBooking.serviceId);
 
@@ -768,6 +796,10 @@ export class BookingsService {
 
 			const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
 			await this.loadBookingDependencies(updatedBooking);
+
+			if (!updatedBooking.ownerId) {
+				updatedBooking.ownerId = currentUser.id;
+			}
 			await this.verifyActionPermission(updatedBooking, changeLogAction);
 			await this.bookingsRepository.update(updatedBooking);
 

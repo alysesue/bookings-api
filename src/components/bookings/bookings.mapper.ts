@@ -1,6 +1,7 @@
 import { BookedSlot, Booking, Event, Service, ServiceProvider } from '../../models/entities';
 import {
 	BookedSlotResponse,
+	BookingAuthType,
 	BookingDetailsRequest,
 	BookingProviderResponseV1,
 	BookingProviderResponseV2,
@@ -387,5 +388,9 @@ export class BookingsMapper {
 		} as EventBookingResponse;
 
 		return response;
+	}
+
+	public mapBookingAuthType(booking: Booking): BookingAuthType {
+		return new BookingAuthType(booking.citizenAuthType);
 	}
 }

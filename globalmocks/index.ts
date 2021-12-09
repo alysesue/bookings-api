@@ -109,5 +109,6 @@ jest.mock('tsoa', () => {
 		Tags: decoratorMock,
 		Security: decoratorMock,
 		Deprecated: decoratorMock,
+		Hidden: decoratorMock,
 	};
 });
