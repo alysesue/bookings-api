@@ -62,12 +62,12 @@ export class MailObserver implements Observer {
 					await this.sendEmail(subject.booking, subject.bookingType, EmailRecipient.ServiceProvider);
 				break;
 			case BookingType.Created:
-				// When citizen creates booking with 2-step workflow flag, only send email to citizen and [service admin] (Not implemented yet)
-				if (
-					subject.booking.status === BookingStatus.PendingApprovalSA &&
-					subject.booking.service.sendNotifications
-				) {
-					await this.sendEmail(subject.booking, subject.bookingType, EmailRecipient.Citizen);
+				// When citizen creates booking with 2-step workflow flag, only send email to citizen and [service admin]
+				if (subject.booking.status === BookingStatus.PendingApprovalSA) {
+					if (subject.booking.service.sendNotifications) {
+						await this.sendEmail(subject.booking, subject.bookingType, EmailRecipient.Citizen);
+					}
+					await this.sendEmail(subject.booking, subject.bookingType, EmailRecipient.ServiceAdmin);
 					break;
 				} // Else, fall through to default
 			default:
@@ -104,14 +104,22 @@ export class MailObserver implements Observer {
 				}
 
 				break;
+			case EmailRecipient.ServiceAdmin:
+				body = await this.createServiceProviderEmailFactory(booking, bookingType);
+				emails = booking.service.adminUsers.map((adminUser) => adminUser.email);
+				break;
 		}
 		emails.forEach(async (email) => {
 			const emailDetails = MailObserver.constructEmailTemplate(body, email);
 			if (emailDetails?.html) {
 				await this.notificationsService.sendEmail(emailDetails);
 			}
+			return;
 		});
-		logger.info(`Email not sent out for booking id (${booking.id}) as ${recipientType} email is not provided`);
+
+		if (!emails.length) {
+			logger.info(`Email not sent out for booking id (${booking.id}) as ${recipientType} email is not provided`);
+		}
 	}
 
 	private async createCitizenEmailFactory(booking: Booking, bookingType: BookingType): Promise<EmailTemplateBase> {

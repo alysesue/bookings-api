@@ -58,6 +58,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 			.where(andWhere([userCondition, ...queryFilters]), { ...userParams, ...queryParams })
 			.leftJoinAndSelect('booking._service', 'service_relation')
 			.leftJoinAndSelect('service_relation._organisation', 'org_relation')
+			.leftJoinAndSelect('service_relation._adminUsers', 'adminUser_relation')
 			.leftJoinAndSelect('booking._onHoldRescheduleWorkflow', 'onHoldRescheduleWorkflow')
 			.leftJoinAndMapOne(
 				'booking._createdLog',

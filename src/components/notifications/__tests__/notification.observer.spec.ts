@@ -11,7 +11,6 @@ import {
 } from '../templates/citizen.mail';
 import { getConfig } from '../../../config/app-config';
 import {
-	BookedSlot,
 	Booking,
 	BookingStatus,
 	Service,
@@ -19,6 +18,7 @@ import {
 	User,
 	Event,
 	OneOffTimeslot,
+	AdminUser,
 } from '../../../models';
 import { BookingType } from '../../../models/bookingType';
 import { UserContext } from '../../../infrastructure/auth/userContext';
@@ -84,7 +84,7 @@ describe('Test template call', () => {
 
 	beforeEach(() => {
 		jest.resetAllMocks();
-		(getConfig as unknown as jest.Mock).mockReturnValue({});
+		((getConfig as unknown) as jest.Mock).mockReturnValue({});
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		const templateValue = { to: 'to', html: 'html' };
 		EmailBookingTemplateMock.CreatedBookingEmailMock.mockReturnValue(templateValue);
@@ -96,14 +96,15 @@ describe('Test template call', () => {
 		booking = new Booking();
 		booking.startDateTime = new Date('2021-04-14T02:00:00.000Z');
 		booking.endDateTime = new Date('2021-04-14T03:00:00.000Z');
-		booking.status = 1;
+		booking.status = BookingStatus.PendingApproval;
 		booking.citizenEmail = 'email@email.com';
 		booking.citizenName = 'test info';
-		booking.service = {
+		booking.service = ({
 			_name: 'Career',
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
-		} as unknown as Service;
+			adminUsers: [],
+		} as unknown) as Service;
 		booking.serviceProvider = { email: 'test', name: 'test sp info' } as ServiceProvider;
 	});
 
@@ -124,6 +125,16 @@ describe('Test template call', () => {
 		await Container.get(MailObserver).update(bookingSubject);
 		expect(logger.info as jest.Mock).toBeCalledWith(
 			`Email not sent out for booking id (${booking.id}) as ${EmailRecipient.ServiceProvider} email is not provided`,
+		);
+	});
+
+	it('should reject if no email for Service admins', async () => {
+		booking.status = BookingStatus.PendingApprovalSA;
+		const bookingSubject = new BookingsSubject();
+		bookingSubject.notify({ booking, bookingType: BookingType.Created });
+		await Container.get(MailObserver).update(bookingSubject);
+		expect(logger.info as jest.Mock).toBeCalledWith(
+			`Email not sent out for booking id (${booking.id}) as ${EmailRecipient.ServiceAdmin} email is not provided`,
 		);
 	});
 
@@ -225,12 +236,13 @@ describe('Test template call', () => {
 		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(1);
 	});
 
-	it('should send 1 email with createTemplate when BookingType = Create and booking status is pending SA approval', async () => {
+	it('should send 1 email to citizen and 1 email to each SA with createTemplate when BookingType = Create and booking status is pending SA approval', async () => {
 		const bookingSubject = new BookingsSubject();
 		booking.status = BookingStatus.PendingApprovalSA;
+		booking.service.adminUsers.push({ email: 'test' } as AdminUser, { email: 'test' } as AdminUser);
 		bookingSubject.notify({ booking, bookingType: BookingType.Created });
 		await Container.get(MailObserver).update(bookingSubject);
-		expect(EmailBookingTemplateMock.CreatedBookingEmailMock).toHaveBeenCalledTimes(1);
-		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(1);
+		expect(EmailBookingTemplateMock.CreatedBookingEmailMock).toHaveBeenCalledTimes(2);
+		expect(NotificationsServiceMock.sendEmailMock).toHaveBeenCalledTimes(3);
 	});
 });
