@@ -785,6 +785,7 @@ export class BookingsControllerV2 extends Controller {
 		return ApiDataFactory.create(await this.bookingsMapper.mapDataModelV2(booking));
 	}
 
+	// TO REVIEW after all backward compatibility issues with owner ID is fixed
 	/**
 	 * THIS IS A TARGETED API for BACKWARD COMPATIBILITY for EXISTING BOOKINGS WITHOUT VALID OWNERID
 	 * Retrieves a single booking by UUID and return only citizenAuthType

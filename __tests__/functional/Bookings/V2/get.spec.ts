@@ -211,15 +211,4 @@ describe('Bookings functional tests', () => {
 		expect(response.statusCode).toBe(200);
 		expect(spLength).toEqual(2);
 	});
-
-	it('should get booking by uuid', async () => {
-		const res = await createInSlotBooking();
-		const resUUID = res.body.data.uuid;
-
-		const response = await OrganisationAdminRequestEndpointSG.create({}).get(`/bookings/uuid/${resUUID}`, {}, 'V2');
-		expect(response.statusCode).toBe(200);
-		expect(typeof response.body.data.id).toBe('string');
-		expect(response.body.data.serviceId).toEqual(serviceId);
-		expect(response.body.data.serviceProviderId).toEqual(serviceProviderId);
-	});
 });

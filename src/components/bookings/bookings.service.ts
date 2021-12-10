@@ -284,6 +284,8 @@ export class BookingsService {
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<IPagedEntities<Booking>> {
 		let bookings = await this.bookingsRepository.search(searchRequest);
+
+		// TO REVIEW after all backward compatibility issues with owner ID is fixed
 		if (!bookings.entries.length && searchRequest.bookingToken) {
 			// Making sure citizen can only see booking that doesn't have ownerId and the auth type is matched to the login method, else do not return any booking
 			const currentUser = await this.userContext.getCurrentUser();
@@ -292,7 +294,11 @@ export class BookingsService {
 			else if (currentUser.isSingPass()) citizen = CitizenAuthenticationType.Singpass;
 			searchRequest.byPassAuth = true;
 			bookings = await this.bookingsRepository.search(searchRequest);
-			if (bookings.entries[0].ownerId || citizen !== bookings.entries[0].citizenAuthType) {
+
+			if (
+				bookings.entries.length &&
+				(bookings.entries[0].ownerId || citizen !== bookings.entries[0].citizenAuthType)
+			) {
 				bookings.entries = [];
 			}
 		}
