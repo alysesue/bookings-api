@@ -23,7 +23,7 @@ import { ServicesRepositoryNoAuth } from '../../services/services.noauth.reposit
 import { ServiceProvidersRepositoryNoAuth } from '../../serviceProviders/serviceProviders.noauth.repository';
 import { BookingsNoAuthRepository } from '../../bookings/bookings.noauth.repository';
 import { BookingsNoAuthRepositoryMock } from '../../bookings/__mocks__/bookings.mocks';
-import { OrganisationsNoauthRepository } from '../../organisations/organisations.noauth.repository';
+// import { OrganisationsNoauthRepository } from '../../organisations/organisations.noauth.repository';
 import { UserRepositoryMock } from '../__mocks__/users.repository.mock';
 import { OrganisationsServiceMock } from '../../../components/organisations/__mocks__/organisations.service.mock';
 import { ServicesRepositoryNoAuthMock } from '../../services/__mocks__/services.noauth.repository.mock';
@@ -33,7 +33,7 @@ beforeAll(() => {
 	Container.bind(UsersRepository).to(UserRepositoryMock);
 	Container.bind(OrganisationsService).to(OrganisationsServiceMock);
 	Container.bind(ServicesRepositoryNoAuth).to(ServicesRepositoryNoAuthMock);
-	Container.bind(OrganisationsNoauthRepository).to(OrganisationsNoauthRepositoryMock);
+	// Container.bind(OrganisationsNoauthRepository).to(OrganisationsNoauthRepositoryMock);
 	Container.bind(ServiceProvidersRepositoryNoAuth).to(ServiceProvidersRepositoryNoAuthMock);
 	Container.bind(BookingsNoAuthRepository).to(BookingsNoAuthRepositoryMock);
 });
@@ -167,26 +167,26 @@ describe('Users Service', () => {
 		});
 	});
 
-	it('should update admin users with their orgs and services', async () => {
-		const headers = getAdminHeaders();
+	// it('should update admin users with their orgs and services', async () => {
+	// 	const headers = getAdminHeaders();
 
-		const userMock = User.createAdminUser({
-			molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
-			userName: 'UserName',
-			email: 'test@email.com',
-			name: 'Name',
-		});
+	// 	const userMock = User.createAdminUser({
+	// 		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
+	// 		userName: 'UserName',
+	// 		email: 'test@email.com',
+	// 		name: 'Name',
+	// 	});
 
-		UserRepositoryMock.getUserByMolAdminId.mockImplementation(() => Promise.resolve(userMock));
+	// 	UserRepositoryMock.getUserByMolAdminId.mockImplementation(() => Promise.resolve(userMock));
 
-		const service = Container.get(UsersService);
-		await service.getOrSaveUserFromHeaders(headers);
-		expect(UserRepositoryMock.getUserByMolAdminId).toBeCalled();
+	// 	const service = Container.get(UsersService);
+	// 	await service.getOrSaveUserFromHeaders(headers);
+	// 	expect(UserRepositoryMock.getUserByMolAdminId).toBeCalled();
 
-		expect(ServicesRepositoryNoAuthMock.getServicesForUserGroups).toBeCalled();
-		expect(OrganisationsNoauthRepositoryMock.getOrganisationsForUserGroups).toBeCalled();
-		expect(UserRepositoryMock.save).toBeCalled();
-	});
+	// 	expect(ServicesRepositoryNoAuthMock.getServicesForUserGroups).toBeCalled();
+	// 	expect(OrganisationsNoauthRepositoryMock.getOrganisationsForUserGroups).toBeCalled();
+	// 	expect(UserRepositoryMock.save).toBeCalled();
+	// });
 
 	it('should return admin user', async () => {
 		const headers = getAdminHeaders();
