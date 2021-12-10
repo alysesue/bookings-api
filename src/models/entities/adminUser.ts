@@ -1,5 +1,7 @@
-import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Organisation } from './organisation';
 import { IUser } from '../interfaces';
+import { Service } from './service';
 
 @Entity()
 export class AdminUser {
@@ -96,5 +98,37 @@ export class AdminUser {
 		instance.name = name;
 		instance.agencyUserId = agencyUserId;
 		return instance;
+	}
+
+	@ManyToMany('Service', '_adminUsers')
+	@JoinTable({
+		name: 'service_admin_service_map',
+		joinColumn: { name: 'adminUser_id' },
+		inverseJoinColumn: { name: 'service_id' },
+	})
+	private _services: Service[];
+
+	public get services(): Service[] {
+		return this._services;
+	}
+
+	public set services(value: Service[]) {
+		this._services = value;
+	}
+
+	@ManyToMany('Organisation', '_adminUsers')
+	@JoinTable({
+		name: 'organisation_admin_organisation_map',
+		joinColumn: { name: 'adminUser_id' },
+		inverseJoinColumn: { name: 'organisation_id' },
+	})
+	private _organisations: Organisation[];
+
+	public get organisations(): Organisation[] {
+		return this._organisations;
+	}
+
+	public set organisations(value: Organisation[]) {
+		this._organisations = value;
 	}
 }

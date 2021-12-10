@@ -28,4 +28,5 @@ export enum EmailNotificationTemplateType {
 export enum EmailRecipient {
 	Citizen = 'citizen',
 	ServiceProvider = 'service provider',
+	ServiceAdmin = 'service admin',
 }

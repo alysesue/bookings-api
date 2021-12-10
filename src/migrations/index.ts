@@ -56,3 +56,4 @@ export { CheckboxListRadioListFields1636950904064 } from './1636950904064-Checkb
 export { AddMqSubScriberToService1636341481752 } from './1636341481752-AddMqSubScriberToService';
 export { TextFieldType1638165653527 } from './1638165653527-TextFieldType';
 export { ServiceBookingLimitation1638772496515 } from './1638772496515-ServiceBookingLimitation';
+export { MapServicesAndOrganisationsToAdmin1639023609720 } from './1639023609720-MapServicesAndOrganisationsToAdmin';

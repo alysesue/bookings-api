@@ -5,7 +5,7 @@ import { RepositoryBase } from '../../core/repository';
 import { ScheduleFormsRepository } from '../scheduleForms/scheduleForms.repository';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';
 import { UserContext } from '../../infrastructure/auth/userContext';
-import {andWhere, orWhere} from '../../tools/queryConditions';
+import { andWhere, orWhere } from '../../tools/queryConditions';
 import { Weekday } from '../../enums/weekday';
 import { ServiceProvidersQueryAuthVisitor } from './serviceProviders.auth';
 

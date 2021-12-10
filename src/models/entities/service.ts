@@ -1,5 +1,15 @@
 import { ServiceSetting } from './serviceSetting';
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+	Column,
+	Entity,
+	Index,
+	JoinColumn,
+	ManyToMany,
+	ManyToOne,
+	OneToMany,
+	OneToOne,
+	PrimaryGeneratedColumn,
+} from 'typeorm';
 import { IEntityWithScheduleForm, IEntityWithTimeslotsSchedule, IService } from '../interfaces';
 import { TimeslotsSchedule } from './timeslotsSchedule';
 import { ServiceAdminGroupMap } from './serviceAdminGroupMap';
@@ -9,6 +19,7 @@ import { Label } from './label';
 import { LabelCategory } from './labelCategory';
 import { DateHelper } from '../../infrastructure/dateHelper';
 import { CitizenAuthenticationType } from '../citizenAuthenticationType';
+import { AdminUser } from './adminUser';
 import { MqSubscriberType } from '../mqSubscriberTypes';
 import { BookingLimitation } from '../../components/services/service.apicontract';
 
@@ -349,6 +360,13 @@ export class Service implements IService, IEntityWithScheduleForm, IEntityWithTi
 
 	public set hasSalutation(value: boolean) {
 		this._hasSalutation = value;
+	}
+
+	@ManyToMany('AdminUser', '_services')
+	private _adminUsers: AdminUser[];
+
+	public get adminUsers(): AdminUser[] {
+		return this._adminUsers;
 	}
 
 	@Column({

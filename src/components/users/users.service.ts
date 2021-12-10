@@ -17,6 +17,7 @@ import { ServiceProvidersRepositoryNoAuth } from '../serviceProviders/servicePro
 import { AnonymousCookieData } from '../../infrastructure/bookingSGCookieHelper';
 import { UsersRepository } from './users.repository';
 import { BookingsNoAuthRepository } from '../bookings/bookings.noauth.repository';
+import { OrganisationsNoauthRepository } from '../organisations/organisations.noauth.repository';
 
 export type HeadersType = { [key: string]: string };
 
@@ -27,24 +28,50 @@ export class UsersService {
 	@Inject
 	private servicesRepositoryNoAuth: ServicesRepositoryNoAuth;
 	@Inject
+	private organisationRepositoryNoAuth: OrganisationsNoauthRepository;
+	@Inject
 	private serviceProvidersRepositoryNoAuth: ServiceProvidersRepositoryNoAuth;
 	@Inject
 	private usersRepository: UsersRepository;
 	@Inject
 	private bookingNoAuthRepository: BookingsNoAuthRepository;
 
-	private async getOrSaveInternal(user: User, getter: () => Promise<User>): Promise<User> {
-		let userRepo = await getter();
-		if (!userRepo) {
+	private async getOrSaveInternal(user: User, getter: () => Promise<User>, adminGroups?: string): Promise<User> {
+		const existingUser = await getter();
+		let userToSave = existingUser ? null : user;
+
+		if (adminGroups) {
+			userToSave = existingUser || user;
+
+			const parsedUserGroups = UserGroupParser.parseAdminUserGroups(adminGroups);
+
+			const servicesToMapRefs = parsedUserGroups.filter(
+				(group) => group.userGroupRole === UserGroupRole.ServiceAdmin,
+			);
+			const servicesToMap = await this.servicesRepositoryNoAuth.getServicesForUserGroups(
+				servicesToMapRefs as ServiceRefInfo[],
+			);
+
+			const orgsToMapRefs = parsedUserGroups
+				.filter((group) => group.userGroupRole === UserGroupRole.OrganisationAdmin)
+				.map((group) => group.organisationRef);
+			const orgsToMap = await this.organisationRepositoryNoAuth.getOrganisationsForUserGroups(orgsToMapRefs);
+
+			userToSave.adminUser.services = servicesToMap;
+			userToSave.adminUser.organisations = orgsToMap;
+		}
+
+		if (userToSave) {
 			try {
-				await this.usersRepository.save(user);
+				await this.usersRepository.save(userToSave);
 			} catch (e) {
 				// concurrent insert fail case
 				logger.warn('Exception when creating BookingSG User', e);
 			}
-			userRepo = await getter();
 		}
-		return userRepo;
+
+		const savedUser = await getter();
+		return savedUser;
 	}
 
 	public async getOrSaveUserFromHeaders(headers: HeadersType): Promise<User> {
@@ -68,6 +95,7 @@ export class UsersService {
 					email: headers[MOLSecurityHeaderKeys.ADMIN_EMAIL],
 					name: headers[MOLSecurityHeaderKeys.ADMIN_NAME],
 					agencyUserId: headers[MOLSecurityHeaderKeys.ADMIN_AGENCY_USER_ID],
+					adminGroups: headers[MOLSecurityHeaderKeys.ADMIN_GROUPS],
 				});
 				break;
 			case MOLAuthType.AGENCY:
@@ -99,13 +127,18 @@ export class UsersService {
 		email: string;
 		name: string;
 		agencyUserId?: string;
+		adminGroups?: string;
 	}): Promise<User> {
 		if (!data.molAdminId || !data.email) {
 			return null;
 		}
 
 		const adminUser = User.createAdminUser(data);
-		return await this.getOrSaveInternal(adminUser, () => this.usersRepository.getUserByMolAdminId(data.molAdminId));
+		return await this.getOrSaveInternal(
+			adminUser,
+			() => this.usersRepository.getUserByMolAdminId(data.molAdminId),
+			data.adminGroups,
+		);
 	}
 
 	public async getOrSaveAgencyUser(data: { agencyAppId: string; agencyName: string }): Promise<User> {
