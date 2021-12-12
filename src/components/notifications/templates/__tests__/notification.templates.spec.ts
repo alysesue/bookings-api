@@ -11,6 +11,7 @@ import { Container } from 'typescript-ioc';
 import { ServiceNotificationTemplateService } from '../../../serviceNotificationTemplate/serviceNotificationTemplate.service';
 import { ServiceNotificationTemplateServiceMock } from '../../../serviceNotificationTemplate/__mock__/serviceNotificationTemplate.service.mock';
 import { getConfig } from '../../../../config/app-config';
+import { CitizenAuthenticationType } from '../../../../models/citizenAuthenticationType';
 
 jest.mock('../../../../config/app-config', () => ({
 	getConfig: jest.fn(),
@@ -35,6 +36,7 @@ describe('Notification templates tests', () => {
 	booking.serviceProviderId = 1;
 	booking.videoConferenceUrl = 'http://www.zoom.us/1234567';
 	booking.uuid = 'f4533bed-da08-473a-8641-7aef918fe0db';
+	booking.citizenAuthType = CitizenAuthenticationType.Singpass;
 
 	it('should create citizen email for citizen created booking', async () => {
 		const result = await Container.get(CitizenEmailTemplateBookingActionByCitizen).CreatedBookingEmail(booking);

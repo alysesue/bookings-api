@@ -73,6 +73,14 @@ export const ErrorsRef = (arg1?: string | number) => ({
 			code: '10018',
 			message: 'Citizen salutation not provided',
 		},
+		CitizenUinFinNotProvided: {
+			code: '10019',
+			message: `Citizen UIN/FIN not provided`,
+		},
+		PhoneNumberNotProvided: {
+			code: '10020',
+			message: `Citizen phone number not provided`,
+		},
 	},
 	// Business validation range: 10101-10199
 	oneOffTimeslot: {

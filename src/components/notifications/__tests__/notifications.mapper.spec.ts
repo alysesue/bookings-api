@@ -5,6 +5,8 @@ import { EmailNotificationTemplateType, EmailRecipient } from '../notifications.
 import { IServiceProvider } from '../../../models/interfaces';
 import { DateHelper } from '../../../infrastructure/dateHelper';
 
+import { CitizenAuthenticationType } from '../../../models/citizenAuthenticationType';
+
 jest.mock('../../../config/app-config', () => ({
 	getConfig: jest.fn(),
 }));
@@ -21,6 +23,7 @@ describe('Notification mapper tests', () => {
 		booking.serviceProvider = { name: 'armin' } as ServiceProvider;
 		booking.videoConferenceUrl = 'http://www.zoom.us/1234567';
 		booking.uuid = 'f4533bed-da08-473a-8641-7aef918fe0db';
+		booking.citizenAuthType = CitizenAuthenticationType.Singpass;
 		(getConfig as jest.Mock).mockReturnValue({
 			appURL: 'http://www.local.booking.gov.sg:3000',
 		});
@@ -47,7 +50,7 @@ describe('Notification mapper tests', () => {
 			`Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>`,
 		);
 		expect(manageBookingLink).toEqual(
-			`<a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a>`,
+			`<a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db&authType=singpass'>Reschedule / Cancel Booking</a>`,
 		);
 	});
 
@@ -96,9 +99,10 @@ describe('Notification mapper tests', () => {
 		expect(spNameDisplayedForCitizen).toEqual(` - Orange`);
 	});
 
-	it('should map variables values to service template', () => {
+	it('should map variables values to service template - otp user', () => {
 		booking.serviceProvider.aliasName = 'Orange';
 		booking.reasonToReject = 'rejected';
+		booking.citizenAuthType = CitizenAuthenticationType.Otp;
 		const template =
 			'status: {status}\n' +
 			'serviceName: {serviceName}\n' +
@@ -121,7 +125,43 @@ describe('Notification mapper tests', () => {
 			'time: 10:00am - 11:00am\n' +
 			"videoConferenceUrl: Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>\n" +
 			'reasonToReject: <br/>Reason: rejected.\n' +
-			"manageBookingLink: <a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a>";
+			"manageBookingLink: <a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db&authType=otp'>Reschedule / Cancel Booking</a>";
+
+		const returnedTemplate = mapVariablesValuesToTemplate(
+			emailMapper(booking, false, getConfig().appURL),
+			template,
+			EmailRecipient.Citizen,
+		);
+		expect(returnedTemplate).toEqual(expectedReturnedTemplate);
+	});
+
+	it('should map variables values to service template - singpass user', () => {
+		booking.serviceProvider.aliasName = 'Orange';
+		booking.reasonToReject = 'rejected';
+		booking.citizenAuthType = CitizenAuthenticationType.Singpass;
+		const template =
+			'status: {status}\n' +
+			'serviceName: {serviceName}\n' +
+			'serviceProviderName: {serviceProviderName}\n' +
+			'serviceProviderAliasName: {serviceProviderAliasName}\n' +
+			'{location}\n' +
+			'day: {day}\n' +
+			'time: {time}\n' +
+			'videoConferenceUrl: {videoConferenceUrl}\n' +
+			'reasonToReject: {reasonToReject}\n' +
+			'manageBookingLink: {manageBookingLink}';
+
+		const expectedReturnedTemplate =
+			'status: Pending Approval\n' +
+			'serviceName: Career\n' +
+			'serviceProviderName: armin\n' +
+			'serviceProviderAliasName: Orange\n' +
+			'Location: <b>Some street</b>\n' +
+			'day: 14 April 2021\n' +
+			'time: 10:00am - 11:00am\n' +
+			"videoConferenceUrl: Video Conference Link: <a href='http://www.zoom.us/1234567'>http://www.zoom.us/1234567</a>\n" +
+			'reasonToReject: <br/>Reason: rejected.\n' +
+			"manageBookingLink: <a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db&authType=singpass'>Reschedule / Cancel Booking</a>";
 
 		const returnedTemplate = mapVariablesValuesToTemplate(
 			emailMapper(booking, false, getConfig().appURL),
@@ -143,6 +183,7 @@ describe('Notification mapper tests', () => {
 		oneOffTimeslots2.endDateTime = new Date(2021, 3, 14, 11);
 		oneOffTimeslots2.serviceProvider = { name: 'Jane Doe' } as IServiceProvider;
 		booking.event.oneOffTimeslots = [oneOffTimeslots, oneOffTimeslots2];
+		booking.citizenAuthType = CitizenAuthenticationType.Singpass;
 
 		const dateAndTime = `${DateHelper.getDateFormat(
 			new Date(2021, 3, 14, 10),
@@ -163,7 +204,7 @@ describe('Notification mapper tests', () => {
 			'Location: <b>Some street</b>\n' +
 			'Date & times:\n' +
 			`${dateAndTime}\n` +
-			"manageBookingLink: <a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db'>Reschedule / Cancel Booking</a>";
+			"manageBookingLink: <a href='http://www.local.booking.gov.sg:3000/public/my-bookings/?bookingToken=f4533bed-da08-473a-8641-7aef918fe0db&authType=singpass'>Reschedule / Cancel Booking</a>";
 
 		const returnedTemplate = mapVariablesValuesToTemplate(
 			eventEmailMapper(

@@ -52,7 +52,7 @@ export class TimeslotsController extends Controller {
 	 * @param labelTypeOfFiltering (Optional) type of filtering "union" or "intersection" (default: intersection)
 	 */
 	@Get('availability')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true, otp: true })
 	@Security('service')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getAvailability(
@@ -228,7 +228,7 @@ export class TimeslotsControllerV2 extends Controller {
 	 * @param labelTypeOfFiltering (Optional) type of filtering "union" or "intersection" (default: intersection)
 	 */
 	@Get('availability')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true, otp: true })
 	@Security('service')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getAvailability(

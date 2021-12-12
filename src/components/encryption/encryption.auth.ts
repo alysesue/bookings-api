@@ -4,6 +4,7 @@ import {
 	CitizenAuthGroup,
 	IAuthGroupVisitor,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
@@ -30,6 +31,10 @@ export class EncryptionAuthVisitor implements IAuthGroupVisitor {
 	}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
+		this.throwIfSignatureButNotCitizen();
+	}
+
+	public visitOtp(_otpGroup: OtpAuthGroup): void {
 		this.throwIfSignatureButNotCitizen();
 	}
 

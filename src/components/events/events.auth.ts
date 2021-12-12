@@ -7,6 +7,7 @@ import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
@@ -20,6 +21,10 @@ export class EventQueryAuthVisitor extends QueryAuthGroupVisitor {
 
 		this.serviceProviderAlias = serviceProviderAlias;
 		this.serviceProviderServiceAlias = serviceProviderServiceAlias;
+	}
+
+	public visitOtp(_otpGroup: OtpAuthGroup): void {
+		this.addAsTrue();
 	}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
@@ -69,6 +74,8 @@ export class EventsAuthVisitor extends PermissionAwareAuthGroupVisitor {
 
 		this._event = event;
 	}
+
+	visitOtp(_otpGroup: OtpAuthGroup): void {}
 
 	visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 

@@ -23,6 +23,7 @@ import { DynamicValueJsonModel } from './jsonModels';
 import { BookingWorkflow } from './bookingWorkflow';
 import { BookedSlot } from './bookedSlot';
 import { Salutations } from '../salutations';
+import { CitizenAuthenticationType } from '../citizenAuthenticationType';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
 
@@ -50,6 +51,18 @@ export class BookingBuilder {
 	public markOnHold: boolean;
 	public reasonToReject: string;
 	public pendingSA: boolean;
+	public ownerId: number;
+	public citizenAuthType: CitizenAuthenticationType;
+
+	public withOwnerId(ownerId: number): BookingBuilder {
+		this.ownerId = ownerId;
+		return this;
+	}
+
+	public withCitizenAuthType(citizenAuthType: CitizenAuthenticationType): BookingBuilder {
+		this.citizenAuthType = citizenAuthType;
+		return this;
+	}
 
 	public withPendingSA(pendingSA: boolean): BookingBuilder {
 		this.pendingSA = pendingSA;
@@ -192,6 +205,8 @@ export class BookingBuilder {
 		instance.captchaToken = this.captchaToken;
 		instance.reasonToReject = this.reasonToReject;
 		instance.bookedSlots = this.slots;
+		instance.ownerId = this.ownerId;
+		instance.citizenAuthType = this.citizenAuthType;
 
 		return instance;
 	}
@@ -235,6 +250,9 @@ export class Booking {
 	@Column({ nullable: false })
 	private _creatorId: number;
 
+	@Column({ nullable: true })
+	private _ownerId: number;
+
 	@ManyToOne(() => Service)
 	@JoinColumn({ name: '_serviceId' })
 	private _service: Service;
@@ -275,6 +293,10 @@ export class Booking {
 	@ManyToOne(() => User, { nullable: false })
 	@JoinColumn({ name: '_creatorId' })
 	private _creator: User;
+
+	@ManyToOne(() => User, { nullable: false })
+	@JoinColumn({ name: '_ownerId' })
+	private _owner: User;
 
 	@Column({ nullable: true })
 	private _citizenSalutation: Salutations;
@@ -415,6 +437,14 @@ export class Booking {
 		this._creatorId = value;
 	}
 
+	public get ownerId(): number {
+		return this._ownerId;
+	}
+
+	public set ownerId(value: number) {
+		this._ownerId = value;
+	}
+
 	public get serviceId(): number {
 		return this._serviceId;
 	}
@@ -501,6 +531,14 @@ export class Booking {
 
 	public set creator(value: User) {
 		this._creator = value;
+	}
+
+	public get owner(): User {
+		return this._owner;
+	}
+
+	public set owner(value: User) {
+		this._owner = value;
 	}
 
 	public get citizenUinFin(): string {
@@ -607,5 +645,16 @@ export class Booking {
 
 	public set dynamicValues(value: DynamicValueJsonModel[]) {
 		this._dynamicValues = value;
+	}
+
+	@Column({ nullable: true })
+	private _citizenAuthType: CitizenAuthenticationType;
+
+	public get citizenAuthType(): CitizenAuthenticationType {
+		return this._citizenAuthType;
+	}
+
+	public set citizenAuthType(value: CitizenAuthenticationType) {
+		this._citizenAuthType = value;
 	}
 }

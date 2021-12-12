@@ -80,7 +80,7 @@ export class DynamicFieldsController extends Controller {
 	 * @param @isInt serviceId The service id.
 	 */
 	@Get('')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true, otp: true })
 	@Security('service')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getDynamicFields(@Header('x-api-service') serviceId: number): Promise<ApiData<DynamicFieldModel[]>> {
@@ -165,7 +165,7 @@ export class DynamicFieldsControllerV2 extends Controller {
 	 * @param serviceId The service id.
 	 */
 	@Get('')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true, otp: true })
 	@Security('service')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async getDynamicFields(@Header('x-api-service') serviceId: string): Promise<ApiData<DynamicFieldModel[]>> {

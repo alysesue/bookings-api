@@ -5,7 +5,7 @@ import { Organisation, User } from '../../models';
 import { UsersService } from '../../components/users/users.service';
 import { AsyncLazy } from '../../tools/asyncLazy';
 import { AnonymousCookieData, MobileOtpAddOnCookieData } from '../bookingSGCookieHelper';
-import { AuthGroup, CitizenAuthGroup, OrganisationAdminAuthGroup } from './authGroup';
+import { AuthGroup, CitizenAuthGroup, OrganisationAdminAuthGroup, OtpAuthGroup } from './authGroup';
 import { ContainerContext } from '../containerContext';
 import { MyInfoService } from '../../components/myInfo/myInfo.service';
 import { MyInfoResponse } from '../../models/myInfoTypes';
@@ -24,6 +24,7 @@ export class UserContext {
 	private containerContext: ContainerContext;
 	private _requestHeaders: any;
 	private _anonymousCookieData: AnonymousCookieData;
+	private _mobileOtpAddOnCookieData: MobileOtpAddOnCookieData;
 	private _currentUser: AsyncLazy<User>;
 	private _authGroups: AsyncLazy<AuthGroup[]>;
 	private _myInfo: AsyncLazy<MyInfoResponse | undefined>;
@@ -48,6 +49,13 @@ export class UserContext {
 		if (!anonymousCookieData) return;
 
 		this._anonymousCookieData = anonymousCookieData;
+		this.resetAsyncLazy();
+	}
+
+	public setOtpUser(mobileOtpAddOnCookieData: MobileOtpAddOnCookieData): void {
+		if (!mobileOtpAddOnCookieData) return;
+
+		this._mobileOtpAddOnCookieData = mobileOtpAddOnCookieData;
 		this.resetAsyncLazy();
 	}
 
@@ -89,11 +97,23 @@ export class UserContext {
 
 	private async getCurrentUserInternal(): Promise<User> {
 		const usersService = this.containerContext.resolve(UsersService);
-		if (this._anonymousCookieData) {
+		if (this._mobileOtpAddOnCookieData) {
+			return await this.getOtpUserInternal();
+		} else if (this._anonymousCookieData) {
 			return await usersService.createAnonymousUserFromCookie(this._anonymousCookieData);
 		} else {
 			return await usersService.getOrSaveUserFromHeaders(this._requestHeaders);
 		}
+	}
+
+	private async getOtpUserInternal(): Promise<User> {
+		const usersService = this.containerContext.resolve(UsersService);
+		const otp = this.containerContext.resolve(OtpService);
+		const mobileNo = await otp.getMobileNo(this._mobileOtpAddOnCookieData.otpReqId);
+		const otpUser = await usersService.getOtpUser(mobileNo);
+
+		if (otpUser) return otpUser;
+		return await usersService.createOtpUser(mobileNo);
 	}
 
 	private async getAuthGroupsInternal(): Promise<AuthGroup[]> {
@@ -102,7 +122,9 @@ export class UserContext {
 			return [];
 		}
 
-		if (user.isAnonymous()) {
+		if (user.isOtp()) {
+			return [new OtpAuthGroup(user)];
+		} else if (user.isAnonymous()) {
 			const otpInfo = this._mobileNo ? { mobileNo: this._mobileNo } : undefined;
 			const usersService = this.containerContext.resolve(UsersService);
 			return await usersService.getAnonymousUserRoles(user, otpInfo);

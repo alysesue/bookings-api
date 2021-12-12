@@ -95,11 +95,3 @@ export class BookingChangeLogsServiceMock implements Partial<BookingChangeLogsSe
 		return await BookingChangeLogsServiceMock.executeAndLogAction(...params);
 	}
 }
-
-export class UsersServiceMock implements Partial<UsersService> {
-	public static persistUserIfRequired = jest.fn();
-
-	public async persistUserIfRequired(...params): Promise<User> {
-		return await UsersServiceMock.persistUserIfRequired(...params);
-	}
-}

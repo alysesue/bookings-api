@@ -86,6 +86,21 @@ describe('User repository', () => {
 		expect(result).toStrictEqual(userMock);
 	});
 
+	it('should getUserByMobileNo', async () => {
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			orderBy: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve([userMock])),
+		};
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		const userRepository = Container.get(UsersRepository);
+
+		const result = await userRepository.getUserByMobileNo('+6584000000');
+		expect(result).toStrictEqual([userMock]);
+	});
+
 	it('should getUserByMolUserId', async () => {
 		const queryBuilderMock = {
 			where: jest.fn(() => queryBuilderMock),
@@ -98,6 +113,21 @@ describe('User repository', () => {
 		const userRepository = Container.get(UsersRepository);
 
 		const result = await userRepository.getUserByMolUserId('d080f6ed-3b47-478a-a6c6-dfb5608a199d');
+		expect(result).toStrictEqual([userMock]);
+	});
+
+	it('should getUserByUinFin', async () => {
+		const queryBuilderMock = {
+			where: jest.fn(() => queryBuilderMock),
+			leftJoinAndSelect: jest.fn(() => queryBuilderMock),
+			innerJoinAndSelect: jest.fn(() => queryBuilderMock),
+			orderBy: jest.fn(() => queryBuilderMock),
+			getOne: jest.fn(() => Promise.resolve([userMock])),
+		};
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+		const userRepository = Container.get(UsersRepository);
+
+		const result = await userRepository.getUserByUinFin('S1234567D');
 		expect(result).toStrictEqual([userMock]);
 	});
 

@@ -2,6 +2,7 @@ import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
@@ -28,6 +29,11 @@ export class ServiceProvidersQueryAuthVisitor extends QueryAuthGroupVisitor {
 		this._serviceAlias = serviceAlias;
 	}
 
+	public visitOtp(_otpGroup: OtpAuthGroup): void {
+		this.addAsTrue();
+	}
+
+	// TO REVIEW: when doing delayLogin ticket
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
 		if (_anonymousGroup.bookingInfo) {
 			const { serviceId } = _anonymousGroup.bookingInfo;
@@ -76,6 +82,8 @@ export class ServiceProvidersActionAuthVisitor extends PermissionAwareAuthGroupV
 			throw new Error('ServiceProvidersActionAuthVisitor - service cannot be null');
 		}
 	}
+
+	public visitOtp(_otpGroup: OtpAuthGroup): void {}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 

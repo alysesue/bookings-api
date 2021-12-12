@@ -25,6 +25,7 @@ import { ServiceProvidersLookup } from '../../../timeslots/aggregatorTimeslotPro
 import { TimeslotServiceProviderResult } from '../../../../models/timeslotServiceProvider';
 import { ServiceProvidersRepositoryMock } from '../../../../components/serviceProviders/__mocks__/serviceProviders.repository.mock';
 import { CaptchaServiceMock } from '../../../../components/captcha/__mocks__/captcha.service.mock';
+import { CitizenAuthenticationType } from '../../../../models/citizenAuthenticationType';
 
 const createTimeslotNative = (startTime: number, endTime: number, capacity?: number) => {
 	return {
@@ -324,6 +325,7 @@ describe('Booking validation tests', () => {
 			.withEndDateTime(DateHelper.addMinutes(start, 60))
 			.withServiceProviderId(1)
 			.withServiceId(service.id)
+			.withCitizenAuthType(CitizenAuthenticationType.Singpass)
 			.build();
 		booking.service = service;
 
@@ -333,7 +335,7 @@ describe('Booking validation tests', () => {
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(true).validate(booking),
 		).rejects.toMatchInlineSnapshot(
-			'[BusinessError: [10005] Citizen UIN/FIN not found, [10006] Citizen name not provided, [10007] Citizen email not provided]',
+			'[BusinessError: [10006] Citizen name not provided, [10007] Citizen email not provided, [10019] Citizen UIN/FIN not provided]',
 		);
 	});
 
@@ -656,23 +658,13 @@ describe('Booking validation tests', () => {
 
 		ServiceProvidersRepositoryMock.getServiceProviderMock = serviceProvider;
 
-		TimeslotsServiceMock.getAvailableProvidersForTimeslot.mockImplementation(() => {
-			return Promise.resolve([
-				{
-					serviceProvider,
-					capacity: 1,
-					acceptedBookings: [],
-					pendingBookings: [],
-					availabilityCount: 1,
-				} as TimeslotServiceProviderResult,
-			]);
-		});
+		TimeslotsServiceMock.isProviderAvailableForTimeslot.mockImplementation(() => Promise.resolve(true));
 
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(null));
 
 		await expect(
 			async () => await Container.get(BookingsValidatorFactory).getValidator(false).validate(booking),
-		).rejects.toMatchInlineSnapshot('[BusinessError: [10005] Citizen UIN/FIN not found]');
+		).rejects.toMatchInlineSnapshot('[BusinessError: [10019] Citizen UIN/FIN not provided]');
 	});
 
 	it('should not allow booking on top of existing booking', async () => {

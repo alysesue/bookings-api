@@ -4,6 +4,7 @@ import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
@@ -22,6 +23,8 @@ export class UnavailabilitiesQueryAuthVisitor extends QueryAuthGroupVisitor {
 		this._alias = alias;
 		this._serviceAlias = serviceAlias;
 	}
+
+	public visitOtp(_otpGroup: OtpAuthGroup): void {}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 
@@ -67,6 +70,8 @@ export class UnavailabilitiesActionAuthVisitor extends PermissionAwareAuthGroupV
 			throw new Error('UnavailabilitiesActionAuthVisitor - service cannot be null');
 		}
 	}
+
+	public visitOtp(_otpGroup: OtpAuthGroup): void {}
 
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {}
 

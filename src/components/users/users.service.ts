@@ -74,6 +74,16 @@ export class UsersService {
 		return savedUser;
 	}
 
+	private async saveUserInternal(user: User): Promise<User> {
+		if (!user) return;
+		try {
+			return await this.usersRepository.save(user);
+		} catch (e) {
+			// concurrent insert fail case
+			logger.warn('Exception when creating BookingSG User', e);
+		}
+	}
+
 	public async getOrSaveUserFromHeaders(headers: HeadersType): Promise<User> {
 		const authType = headers[MOLSecurityHeaderKeys.AUTH_TYPE];
 		if (!authType) {
@@ -109,6 +119,17 @@ export class UsersService {
 		return user;
 	}
 
+	/**
+	 * This function is intended for use in two places
+	 * 1. When admin makes a booking on behalf of a singpass user
+	 * 2. When citizen logs in using singpass
+	 *
+	 * For scenario 1, admin only has the NRIC of the user, and not the molUserId, hence molUserId is made optional
+	 *
+	 * For scenarios 2, when citizen logs in and the database does not have molUserUinFin, it means the singpass user in database is created
+	 * when admin made a booking, hence we will save the logged in user's molUserId along
+	 */
+
 	public async getOrSaveSingpassUser({
 		molUserId,
 		molUserUinFin,
@@ -116,9 +137,22 @@ export class UsersService {
 		molUserId: string;
 		molUserUinFin: string;
 	}): Promise<User> {
-		if (!molUserId || !molUserUinFin) return null;
-		const user = User.createSingPassUser(molUserId, molUserUinFin);
-		return await this.getOrSaveInternal(user, () => this.usersRepository.getUserByMolUserId(molUserId));
+		// Creating of singpass user will at least require one of the following fields (to cater for admin creation)
+		if (!molUserId && !molUserUinFin) return null;
+
+		let singPassUser = await this.usersRepository.getUserByMolUserId(molUserId);
+		if (!singPassUser) singPassUser = await this.usersRepository.getUserByUinFin(molUserUinFin);
+		if (!singPassUser) {
+			const user = User.createSingPassUser(molUserId, molUserUinFin);
+			return this.saveUserInternal(user);
+		}
+
+		if (!singPassUser._singPassUser.molUserId) {
+			singPassUser._singPassUser.molUserId = molUserId;
+			return await this.saveUserInternal(singPassUser);
+		}
+
+		return singPassUser;
 	}
 
 	public async getOrSaveAdminUser(data: {
@@ -300,5 +334,14 @@ export class UsersService {
 		}
 
 		return user;
+	}
+
+	public async getOtpUser(mobileNo: string): Promise<User> {
+		return await this.usersRepository.getUserByMobileNo(mobileNo);
+	}
+
+	public async createOtpUser(mobileNo: string): Promise<User> {
+		const otpUser = User.createOtpUser(mobileNo);
+		return await this.usersRepository.save(otpUser);
 	}
 }

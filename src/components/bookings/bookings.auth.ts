@@ -4,6 +4,7 @@ import {
 	AuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../infrastructure/auth/authGroup';
@@ -39,13 +40,16 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 		return service.hasCitizenAuthentication(CitizenAuthenticationType.Otp) && _anonymousGroup.hasOTPUser();
 	}
 
-	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
-		const userId = _anonymousGroup.user.id;
+	public visitOtp(_otpGroup: OtpAuthGroup): void {
+		const userId = _otpGroup.user.id;
 
 		// tslint:disable-next-line: no-small-switch
 		switch (this._changeLogAction) {
 			case ChangeLogAction.Create:
-				if (this._booking.status === BookingStatus.OnHold || this.isValidOTPServiceAndUser(_anonymousGroup)) {
+				if (
+					this._booking.status === BookingStatus.OnHold ||
+					this._booking.service.hasCitizenAuthentication(CitizenAuthenticationType.Otp)
+				) {
 					this.markWithPermission();
 				}
 
@@ -53,22 +57,21 @@ export class BookingActionAuthVisitor extends PermissionAwareAuthGroupVisitor {
 			case ChangeLogAction.Update:
 			case ChangeLogAction.Reschedule:
 			case ChangeLogAction.Cancel:
-				if (
-					_anonymousGroup.hasOTPUser() &&
-					_anonymousGroup.user.anonymousUser.bookingUUID === this._booking._uuid
-				) {
+				if (this._booking.ownerId === userId) {
 					this.markWithPermission();
-					break;
 				}
+				break;
+		}
+	}
 
-				if (this.isValidOTPServiceAndUser(_anonymousGroup)) {
-					if (
-						(this._booking.createdLog && _anonymousGroup.user.id === this._booking.createdLog.userId) ||
-						this._booking.creatorId === userId
-					) {
-						this.markWithPermission();
-						break;
-					}
+	// TO REVIEW PERMISSION: when doing delayLogin ticket
+	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
+		// const userId = _anonymousGroup.user.id;
+		// tslint:disable-next-line: no-small-switch
+		switch (this._changeLogAction) {
+			case ChangeLogAction.Create:
+				if (this._booking.status === BookingStatus.OnHold || this.isValidOTPServiceAndUser(_anonymousGroup)) {
+					this.markWithPermission();
 				}
 				break;
 		}
@@ -125,11 +128,21 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 		this._serviceAlias = serviceAlias;
 	}
 
+	public visitOtp(_otpGroup: OtpAuthGroup): void {
+		const orConditions = [];
+		const orParams = {};
+		orParams['otpUserId'] = _otpGroup.user.id;
+		orConditions.push(`${this._alias}."_ownerId" = :otpUserId`);
+
+		this.addAuthCondition(orWhere(orConditions), orParams);
+	}
+
+	// [BOOKINGSG-2737] TO REVIEW PERMISSION.
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
 		const orConditions = [];
 		const orParams = {};
 		orParams['anonUserId'] = _anonymousGroup.user.id;
-		orConditions.push(`${this._alias}."_creatorId" = :anonUserId`);
+		orConditions.push(`${this._alias}."_ownerId" = :anonUserId`);
 
 		if (_anonymousGroup.bookingInfo) {
 			orParams['authorisedBookingUUID'] = _anonymousGroup.bookingInfo.bookingUUID;
@@ -144,7 +157,7 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 		const userId = _citizenGroup.user.id;
 
 		this.addAuthCondition(
-			`${this._alias}."_citizenUinFin" = :authorisedUinFin OR ${this._alias}."_creatorId" = :userId`,
+			`${this._alias}."_citizenUinFin" = :authorisedUinFin OR ${this._alias}."_ownerId" = :userId`,
 			{
 				authorisedUinFin,
 				userId,

@@ -15,6 +15,7 @@ export abstract class AuthGroup {
 
 // Visitor Pattern
 export interface IAuthGroupVisitor {
+	visitOtp(_otpGroup: OtpAuthGroup): void | Promise<void>;
 	visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void | Promise<void>;
 	visitCitizen(_citizenGroup: CitizenAuthGroup): void | Promise<void>;
 	visitOrganisationAdmin(_userGroup: OrganisationAdminAuthGroup): void | Promise<void>;
@@ -24,7 +25,25 @@ export interface IAuthGroupVisitor {
 
 export type OtpGroupInfo = { mobileNo: string };
 
+export class OtpAuthGroup extends AuthGroup {
+	constructor(otpUser: User) {
+		super(otpUser);
+
+		if (!otpUser.isOtp()) {
+			throw new Error('OtpUserAuthGroup must be created with an otp User.');
+		}
+	}
+
+	public acceptVisitor(visitor: IAuthGroupVisitor): void | Promise<void> {
+		return visitor.visitOtp(this);
+	}
+}
+
+// TO REVIEW when doing delayLogin ticket
 export class AnonymousAuthGroup extends AuthGroup {
+	public bookingInfo?: BookingUUIDInfo;
+	public otpGroupInfo?: OtpGroupInfo;
+
 	constructor(user: User, bookingInfo?: BookingUUIDInfo, otpGroupInfo?: OtpGroupInfo) {
 		super(user);
 
@@ -35,9 +54,6 @@ export class AnonymousAuthGroup extends AuthGroup {
 		this.bookingInfo = bookingInfo;
 		this.otpGroupInfo = otpGroupInfo;
 	}
-
-	public bookingInfo?: BookingUUIDInfo;
-	public otpGroupInfo?: OtpGroupInfo;
 
 	public hasOTPUser(): boolean {
 		return !!this.otpGroupInfo?.mobileNo;

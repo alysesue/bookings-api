@@ -75,4 +75,12 @@ export class BookingBusinessValidations {
 	public static readonly PhoneNumberNotValid = new BusinessValidation(
 		BookingBusinessValidations.errors.PhoneNumberNotValid,
 	);
+
+	public static readonly CitizenUinFinNotProvided = new BusinessValidation(
+		BookingBusinessValidations.errors.CitizenUinFinNotProvided,
+	);
+
+	public static readonly PhoneNumberNotProvided = new BusinessValidation(
+		BookingBusinessValidations.errors.PhoneNumberNotProvided,
+	);
 }

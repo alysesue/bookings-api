@@ -5,10 +5,10 @@ import {
 	BookingStatus,
 	BookingWorkflow,
 	ChangeLogAction,
+	Event,
 	Service,
 	ServiceProvider,
 	User,
-	Event,
 } from '../../models';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
@@ -18,7 +18,6 @@ import { BookingChangeLogsService } from '../bookingChangeLogs/bookingChangeLogs
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { ServiceProvidersService } from '../serviceProviders/serviceProviders.service';
 import { UsersService } from '../users/users.service';
-import { IPagedEntities } from '../../core/pagedEntities';
 import { getConfig } from '../../config/app-config';
 import { MailObserver } from '../notifications/notification.observer';
 import { randomIndex } from '../../tools/arrays';
@@ -29,13 +28,13 @@ import { BookingsValidatorFactory } from './validator/bookings.validation';
 import {
 	BookingAcceptRequestV1,
 	BookingChangeUser,
+	BookingDetailsRequest,
 	BookingReject,
 	BookingRequestV1,
 	BookingSearchRequest,
-	EventBookingRequest,
 	BookingUpdateRequestV1,
+	EventBookingRequest,
 	ValidateOnHoldRequest,
-	BookingDetailsRequest,
 	SendBookingsToLifeSGRequest,
 } from './bookings.apicontract';
 import { BookingsRepository } from './bookings.repository';
@@ -44,12 +43,14 @@ import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
 import { EventsService } from '../events/events.service';
-import { BookingValidationType, BookingWorkflowType } from '../../models/bookingValidationType';
+import { BookingValidationType, BookingWorkflowType } from '../../models';
 import { BookingWorkflowsRepository } from '../bookingWorkflows/bookingWorkflows.repository';
 import { BookingsEventValidatorFactory } from './validator/bookings.event.validation';
 import { LifeSGMapper } from '../lifesg/lifesg.mapper';
 import { LifeSGMQService } from '../lifesg/lifesg.service';
 import { AppointmentAgency } from 'mol-lib-api-contract/appointment';
+import { CitizenAuthenticationType } from '../../models/citizenAuthenticationType';
+import { IPagedEntities } from '../../core/pagedEntities';
 
 @InRequestScope
 export class BookingsService {
@@ -138,7 +139,7 @@ export class BookingsService {
 	}
 
 	public async getBookingByUUID(bookingUUID: string): Promise<Booking> {
-		return this.getBookingInternalByUUID(bookingUUID);
+		return this.getBookingInternalByUUID(bookingUUID, { byPassAuth: true });
 	}
 
 	private async getBookingInternalByUUID(
@@ -282,7 +283,26 @@ export class BookingsService {
 	}
 
 	public async searchBookings(searchRequest: BookingSearchRequest): Promise<IPagedEntities<Booking>> {
-		return await this.bookingsRepository.search(searchRequest);
+		let bookings = await this.bookingsRepository.search(searchRequest);
+
+		// [BOOKINGSG-2737] TO REVIEW after all backward compatibility issues with owner ID is fixed
+		if (!bookings.entries.length && searchRequest.bookingToken) {
+			// Making sure citizen can only see booking that doesn't have ownerId and the auth type is matched to the login method, else do not return any booking
+			const currentUser = await this.userContext.getCurrentUser();
+			let citizen: CitizenAuthenticationType;
+			if (currentUser.isOtp()) citizen = CitizenAuthenticationType.Otp;
+			else if (currentUser.isSingPass()) citizen = CitizenAuthenticationType.Singpass;
+			searchRequest.byPassAuth = true;
+			bookings = await this.bookingsRepository.search(searchRequest);
+
+			if (
+				bookings.entries.length &&
+				(bookings.entries[0].ownerId || citizen !== bookings.entries[0].citizenAuthType)
+			) {
+				bookings.entries = [];
+			}
+		}
+		return bookings;
 	}
 
 	public async searchBookingsReturnAll(searchRequest: BookingSearchRequest): Promise<Booking[]> {
@@ -518,9 +538,8 @@ export class BookingsService {
 
 		const updatedBooking = previousBooking.clone();
 		const currentUser = await this.userContext.getCurrentUser();
-		const validator = this.bookingsValidatorFactory.getValidator(
-			BookingsService.useAdminValidator(currentUser, bookingRequest.validationType),
-		);
+		const useAdminValidator = BookingsService.useAdminValidator(currentUser, bookingRequest.validationType);
+		const validator = this.bookingsValidatorFactory.getValidator(useAdminValidator);
 		validator.bypassCaptcha(isAgencyUser);
 
 		await this.bookingsMapper.mapRequest({
@@ -533,10 +552,18 @@ export class BookingsService {
 		updatedBooking.serviceProvider = await this.serviceProviderRepo.getServiceProvider({
 			id: updatedBooking.serviceProviderId,
 		});
+
 		await afterMap(updatedBooking);
 		await validator.validate(updatedBooking);
 		const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
 		await this.loadBookingDependencies(updatedBooking);
+
+		if (!updatedBooking.ownerId) {
+			// Add owner after bookings have been validated
+			const ownerUser = await this.getOwnerUser(useAdminValidator, updatedBooking, currentUser);
+			updatedBooking.ownerId = ownerUser.id;
+		}
+
 		await this.verifyActionPermission(updatedBooking, changeLogAction);
 		await this.bookingsRepository.update(updatedBooking);
 		updatedBooking.creator = await this.usersService.persistUserIfRequired(currentUser);
@@ -588,6 +615,9 @@ export class BookingsService {
 			event,
 		});
 
+		// Assuming there can only be one auth type for now
+		booking.citizenAuthType = service.citizenAuthentication[0];
+
 		const shouldMarkOnHold = BookingsService.shouldMarkOnHold(eventBookingRequest, service, currentUser);
 		if (shouldMarkOnHold) {
 			booking.markOnHold();
@@ -603,6 +633,10 @@ export class BookingsService {
 
 		await this.loadBookingDependencies(booking);
 		await validator.validate(booking);
+
+		// Add owner after bookings have been validated
+		booking.owner = await this.getOwnerUser(useAdminValidator, booking, currentUser);
+
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
 
 		// Persists in memory user only after validating booking.
@@ -644,6 +678,9 @@ export class BookingsService {
 		booking.serviceProviderId = serviceProvider?.id;
 		booking.serviceProvider = serviceProvider;
 
+		// Assuming there can only be one auth type for now
+		booking.citizenAuthType = service.citizenAuthentication[0];
+
 		if (shouldBypassCaptchaAndAutoAccept) {
 			booking.setAutoAccept({ autoAccept: true });
 		} else {
@@ -656,11 +693,16 @@ export class BookingsService {
 		}
 
 		const validator = this.bookingsValidatorFactory.getValidator(useAdminValidator);
+
 		validator.bypassCaptcha(shouldBypassCaptchaAndAutoAccept || isAgencyUser);
 		await this.bookingsMapper.mapDynamicValuesRequest(bookingRequest, booking, validator);
 
 		await this.loadBookingDependencies(booking);
 		await validator.validate(booking);
+
+		// Add owner after bookings have been validated
+		booking.owner = await this.getOwnerUser(useAdminValidator, booking, currentUser);
+
 		await this.verifyActionPermission(booking, ChangeLogAction.Create);
 		booking.serviceProviderId = serviceProvider?.id;
 
@@ -671,11 +713,32 @@ export class BookingsService {
 		return [ChangeLogAction.Create, booking];
 	}
 
+	private async getOwnerUser(useAdminValidator: boolean, booking: Booking, currentUser: User): Promise<User> {
+		// Add owner after bookings have been validated
+		let user = currentUser;
+		if (useAdminValidator) {
+			if (booking.citizenAuthType === CitizenAuthenticationType.Otp) {
+				user = await this.usersService.getOtpUser(booking.citizenPhone);
+				if (!user) {
+					user = await this.usersService.createOtpUser(booking.citizenPhone);
+				}
+			} else {
+				user = await this.usersService.getOrSaveSingpassUser({
+					molUserId: null,
+					molUserUinFin: booking.citizenUinFin,
+				});
+			}
+		}
+
+		return user;
+	}
+
 	private async validateOnHoldBookingInternal(
 		previousBooking: Booking,
 		bookingRequest: ValidateOnHoldRequest,
 		beforeMap: (updatedBooking: Booking) => Promise<void> = async () => {},
 	): Promise<[ChangeLogAction, Booking]> {
+		const currentUser = await this.userContext.getCurrentUser();
 		const updatedBooking = previousBooking.clone();
 		await beforeMap(updatedBooking);
 		const { service } = await this.bookingRequestExtraction(updatedBooking.serviceId);
@@ -701,6 +764,12 @@ export class BookingsService {
 
 		await validator.validate(updatedBooking);
 		const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
+
+		if (!updatedBooking.ownerId) {
+			// Add owner after bookings have been validated
+			updatedBooking.ownerId = currentUser.id;
+		}
+
 		await this.verifyActionPermission(updatedBooking, changeLogAction);
 
 		await this.bookingsRepository.update(updatedBooking);
@@ -712,8 +781,10 @@ export class BookingsService {
 		bookingRequest: ValidateOnHoldRequest,
 	): Promise<[ChangeLogAction, Booking]> {
 		if (previousBooking.isValidOnHoldBooking()) {
+			const currentUser = await this.userContext.getCurrentUser();
 			const updatedBooking = previousBooking.clone();
 			const { service } = await this.bookingRequestExtraction(previousBooking.serviceId);
+
 			await this.bookingsMapper.mapBookingDetails({
 				request: { ...bookingRequest, citizenUinFinUpdated: bookingRequest.citizenUinFinUpdated || false },
 				booking: updatedBooking,
@@ -731,6 +802,10 @@ export class BookingsService {
 
 			const changeLogAction = updatedBooking.getUpdateChangeType(previousBooking);
 			await this.loadBookingDependencies(updatedBooking);
+
+			if (!updatedBooking.ownerId) {
+				updatedBooking.ownerId = currentUser.id;
+			}
 			await this.verifyActionPermission(updatedBooking, changeLogAction);
 			await this.bookingsRepository.update(updatedBooking);
 
@@ -855,7 +930,7 @@ export class BookingsService {
 			});
 		});
 
-		if(appointments.length === 0){
+		if (appointments.length === 0) {
 			return `No appointment.`;
 		}
 		this.lifeSGMQService.sendMultiple(appointments);

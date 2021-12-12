@@ -51,7 +51,7 @@ const commonMapper = (data: Booking, isSMS = false, appURL?: string): Partial<Em
 		location = `Location: ${data.location}`;
 	}
 
-	const manageBookingURL = `${appURL}/public/my-bookings/?bookingToken=${data.uuid}`;
+	const manageBookingURL = `${appURL}/public/my-bookings/?bookingToken=${data.uuid}&authType=${data.citizenAuthType}`;
 	const manageBookingLink = manageBookingURL ? `<a href='${manageBookingURL}'>Reschedule / Cancel Booking</a>` : '';
 
 	return {

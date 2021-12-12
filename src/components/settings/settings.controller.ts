@@ -18,7 +18,7 @@ export class SettingsController extends Controller {
 	 * @param url
 	 */
 	@Get('isValidRedirectUrl')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true, otp: true })
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async verifyUrl(@Query() url): Promise<ApiData<boolean>> {

@@ -1,9 +1,10 @@
-import {Entity, OneToOne, PrimaryGeneratedColumn} from 'typeorm';
+import { Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IUser } from '../interfaces';
 import { SingPassUser } from './singPassUser';
 import { AdminUser } from './adminUser';
 import { AgencyUser } from './agencyUser';
 import { AnonymousUser } from './anonymousUser';
+import { OtpUser } from './otpUser';
 
 @Entity()
 export class User implements IUser {
@@ -18,6 +19,17 @@ export class User implements IUser {
 
 	public set id(value: number) {
 		this._id = value;
+	}
+
+	@OneToOne(() => OtpUser, (e) => e._User, { cascade: true, nullable: true })
+	public _otpUser: OtpUser;
+
+	public get otpUser(): OtpUser {
+		return this._otpUser;
+	}
+
+	public set otpUser(value: OtpUser) {
+		this._otpUser = value;
 	}
 
 	@OneToOne(() => SingPassUser, (e) => e._User, { cascade: true, nullable: true })
@@ -64,6 +76,10 @@ export class User implements IUser {
 		this._anonymousUser = value;
 	}
 
+	public isOtp(): boolean {
+		return !!this._otpUser;
+	}
+
 	public isSingPass(): boolean {
 		return !!this._singPassUser;
 	}
@@ -94,7 +110,15 @@ export class User implements IUser {
 		return !!this.id;
 	}
 
-	public static createSingPassUser(molUserId: string, userUinFin: string): User {
+	public static createOtpUser(mobileNo: string): User {
+		const otpUser = OtpUser.create(mobileNo);
+		if (!otpUser) return null;
+		const instance = new User();
+		instance._otpUser = otpUser;
+		return instance;
+	}
+
+	public static createSingPassUser(molUserId?: string, userUinFin?: string): User {
 		const instance = new User();
 		instance.singPassUser = SingPassUser.create(molUserId, userUinFin);
 		return instance;

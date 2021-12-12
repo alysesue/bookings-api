@@ -7,7 +7,6 @@ import {
 	ScheduleForm,
 	ServiceProvider,
 	ServiceProviderLabel,
-	ServiceProviderLabelCategory,
 	TimeOfDay,
 	TimeslotItem,
 	TimeslotsSchedule,
@@ -193,7 +192,7 @@ export class ServiceProvidersService {
 		result.sort((a, b) => {
 			return a.id - b.id;
 		});
-		if (labelIds.length) {
+		if (labelIds && !!labelIds.length) {
 			let orgId;
 			if (serviceId) {
 				const service = await this.servicesService.getService(serviceId);

@@ -76,7 +76,15 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		const idCondition = 'booking."_id" = :id';
 
 		const query = await this.createSelectQuery([idCondition], { id: bookingId }, options);
-		const entry = await query.getOne();
+		let entry = await query.getOne();
+
+		// [BOOKINGSG-2737] TO REVIEW after all backward compatibility issues with owner ID is fixed
+		if (!entry) {
+			const idCondition = 'booking."_id" = :id AND booking."_ownerId" IS NULL';
+			const query = await this.createSelectQuery([idCondition], { id: bookingId }, { byPassAuth: true });
+			entry = await query.getOne();
+		}
+
 		if (entry) {
 			const bookedSlots = await this.bookedSlotRepository.getBookedSlotByBooking(bookingId);
 			entry.bookedSlots = bookedSlots ? bookedSlots : [];
@@ -179,6 +187,8 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		const createdFromCondition = request.fromCreatedDate ? 'createdlog."_timestamp" > :fromCreatedDate' : '';
 		const createdToCondition = request.toCreatedDate ? 'createdlog."_timestamp" < :toCreatedDate' : '';
 
+		const bookingTokenCondition = request.bookingToken ? 'booking."_uuid" = :bookingToken' : '';
+
 		const query = (
 			await this.createSelectQuery(
 				[
@@ -191,6 +201,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 					statusesCondition,
 					citizenUinFinsCondition,
 					eventCondition,
+					bookingTokenCondition,
 				],
 				{
 					serviceId: request.serviceId,
@@ -202,6 +213,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 					statuses: request.statuses,
 					citizenUinFins: request.citizenUinFins,
 					eventIds: request.eventIds,
+					bookingToken: request.bookingToken,
 				},
 				request,
 			)
@@ -225,10 +237,5 @@ export type BookingSearchQuery = {
 	limit: number;
 	maxId?: number;
 	eventIds?: number[];
-};
-
-export type PagedEntities<T> = {
-	data: T[];
-	total: number;
-	page: number;
+	bookingToken?: string;
 };

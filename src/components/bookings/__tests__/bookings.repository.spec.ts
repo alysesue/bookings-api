@@ -209,6 +209,31 @@ describe('Bookings repository', () => {
 		expect(PagingHelper.getManyWithPaging).toBeCalledTimes(1);
 	});
 
+	it('should search bookings with booking token', async () => {
+		const bookingMock = new Booking();
+		bookingMock.status = BookingStatus.Accepted;
+
+		(PagingHelper.getManyWithPaging as jest.Mock).mockImplementation(() =>
+			Promise.resolve({ entries: [bookingMock] } as IPagedEntities<Booking>),
+		);
+
+		TransactionManagerMock.createQueryBuilder.mockImplementation(() => queryBuilderMock);
+
+		const bookingsRepository = Container.get(BookingsRepository);
+
+		const result = await bookingsRepository.search({
+			serviceId: 1,
+			serviceProviderIds: [1],
+			bookingToken: '66623746-ca76-4406-8138-0ca7ab0486cc',
+		} as BookingSearchQuery);
+
+		expect(result.entries).toStrictEqual([bookingMock]);
+		expect(queryBuilderMock.where).toBeCalled();
+		expect(queryBuilderMock.leftJoinAndSelect).toBeCalled();
+		expect(queryBuilderMock.orderBy).toBeCalledTimes(1);
+		expect(PagingHelper.getManyWithPaging).toBeCalledTimes(1);
+	});
+
 	it('should insert booking', async () => {
 		const bookingsRepository = Container.get(BookingsRepository);
 		const booking = new BookingBuilder()

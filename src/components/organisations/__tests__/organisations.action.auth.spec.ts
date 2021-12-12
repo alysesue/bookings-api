@@ -2,6 +2,7 @@ import {
 	AnonymousAuthGroup,
 	CitizenAuthGroup,
 	OrganisationAdminAuthGroup,
+	OtpAuthGroup,
 	ServiceAdminAuthGroup,
 	ServiceProviderAuthGroup,
 } from '../../../infrastructure/auth/authGroup';
@@ -65,6 +66,18 @@ describe('Service providers Labels Auth', () => {
 	it('should not be able to update/read as anonymous user', () => {
 		const anonymous = User.createAnonymousUser({ createdAt: new Date(), trackingId: uuid.v4() });
 		const groups = [new AnonymousAuthGroup(anonymous)];
+		const organisation = Organisation.create('org1', 1);
+
+		const authVisitorUpdate = new OrganisationsActionAuthVisitor(organisation, CrudAction.Update);
+		const authVisitorRead = new OrganisationsActionAuthVisitor(organisation, CrudAction.Read);
+
+		expect(authVisitorUpdate.hasPermission(groups)).toBe(false);
+		expect(authVisitorRead.hasPermission(groups)).toBe(false);
+	});
+
+	it('should not be able to update/read as otp user', () => {
+		const otp = User.createOtpUser('+6584000000');
+		const groups = [new OtpAuthGroup(otp)];
 		const organisation = Organisation.create('org1', 1);
 
 		const authVisitorUpdate = new OrganisationsActionAuthVisitor(organisation, CrudAction.Update);

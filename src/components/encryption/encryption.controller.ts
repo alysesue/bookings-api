@@ -40,7 +40,7 @@ export class EncryptionController extends Controller {
 	 * @param request
 	 */
 	@Post('decrypt')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: { requireOtp: false } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, anonymous: true, otp: true })
 	@SuccessResponse(200, 'Ok')
 	@Response(401, 'Valid authentication types: [admin,agency,user,anonymous]')
 	public async decrypt(@Body() request: { data: string }): Promise<ApiData<string>> {

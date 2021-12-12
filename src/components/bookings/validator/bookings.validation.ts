@@ -14,6 +14,7 @@ import { IValidator, Validator } from '../../../infrastructure/validator';
 import { BookingBusinessValidations } from './bookingBusinessValidations';
 import { ContainerContext } from '../../../infrastructure/containerContext';
 import { isVerifiedPhoneNumber } from '../../../tools/phoneNumber';
+import { CitizenAuthenticationType } from '../../../models/citizenAuthenticationType';
 
 export interface IBookingsValidator extends IValidator<Booking> {
 	bypassCaptcha(shouldBypassCaptcha: boolean): void;
@@ -53,7 +54,10 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 	}
 
 	private async *validateCitizenDetails(booking: Booking): AsyncIterable<BusinessValidation> {
-		if (!(await BookingsValidator.validateUinFin(booking.citizenUinFin, booking.service.noNric))) {
+		if (
+			booking.citizenUinFin &&
+			!(await BookingsValidator.validateUinFin(booking.citizenUinFin, booking.service.noNric))
+		) {
 			yield BookingBusinessValidations.CitizenUinFinNotFound;
 		}
 		if (!booking.citizenName) {
@@ -116,6 +120,7 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 			booking.status === BookingStatus.OnHold
 				? BookingsValidator.skipValidation(booking)
 				: this.validateCitizenDetails(booking),
+			this.validateByAuthorizationType(booking),
 		)) {
 			yieldedAny = true;
 			yield validation;
@@ -131,6 +136,8 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 	protected abstract validateAvailability(booking: Booking): AsyncIterable<BusinessValidation>;
 
 	protected abstract validateToken(booking: Booking): AsyncIterable<BusinessValidation>;
+
+	protected abstract validateByAuthorizationType(booking: Booking): AsyncIterable<BusinessValidation>;
 
 	protected async *validateServiceProviderExisting(booking: Booking): AsyncIterable<BusinessValidation> {
 		if (booking.serviceProviderId) {
@@ -260,6 +267,20 @@ class AdminBookingValidator extends BookingsValidator {
 	protected async *validateToken(_booking: Booking): AsyncIterable<BusinessValidation> {
 		return;
 	}
+
+	protected async *validateByAuthorizationType(booking: Booking): AsyncIterable<BusinessValidation> {
+		const authType = booking.citizenAuthType;
+		switch (authType) {
+			case CitizenAuthenticationType.Singpass:
+				if (!booking.citizenUinFin) yield BookingBusinessValidations.CitizenUinFinNotProvided;
+				return;
+			case CitizenAuthenticationType.Otp:
+				if (!booking.citizenPhone) yield BookingBusinessValidations.PhoneNumberNotProvided;
+				return;
+			default:
+				return;
+		}
+	}
 }
 
 @Scoped(Scope.Local)
@@ -302,6 +323,13 @@ class CitizenBookingValidator extends BookingsValidator {
 		const res = await this.captchaService.verify(booking.captchaToken);
 		if (!res) {
 			yield BookingBusinessValidations.InvalidCaptchaToken;
+		}
+	}
+
+	protected async *validateByAuthorizationType(booking: Booking): AsyncIterable<BusinessValidation> {
+		const noNric = booking.service.noNric;
+		if (!noNric && !booking.citizenUinFin) {
+			yield BookingBusinessValidations.CitizenUinFinNotProvided;
 		}
 	}
 }

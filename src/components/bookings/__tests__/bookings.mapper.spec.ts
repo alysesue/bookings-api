@@ -20,7 +20,7 @@ import { IdHasher } from '../../../infrastructure/idHasher';
 import { IdHasherMock } from '../../../infrastructure/__mocks__/idHasher.mock';
 import { PersistDynamicValueContract } from '../../dynamicFields/dynamicValues.apicontract';
 import { DynamicFieldsServiceMock } from '../../dynamicFields/__mocks__/dynamicFields.service.mock';
-import { BookingDetailsRequest } from '../bookings.apicontract';
+import { BookingAuthType, BookingDetailsRequest } from '../bookings.apicontract';
 import { IBookingsValidator } from '../validator/bookings.validation';
 import { UserContextMock } from '../../../infrastructure/auth/__mocks__/userContext';
 import { BookingBuilder } from '../../../models/entities/booking';
@@ -35,6 +35,7 @@ import { DynamicValuesMapperMock } from '../../dynamicFields/__mocks__/dynamicVa
 import { MyInfoResponse } from '../../../models/myInfoTypes';
 import { UinFinConfigurationMock } from '../../../models/__mocks__/uinFinConfiguration.mock';
 import { CitizenAuthGroup } from '../../../infrastructure/auth/authGroup';
+import { CitizenAuthenticationType } from '../../../models/citizenAuthenticationType';
 
 jest.mock('../../../models/uinFinConfiguration');
 jest.mock('../../../components/dynamicFields/dynamicValues.mapper');
@@ -169,6 +170,7 @@ describe('Bookings mapper tests', () => {
 		booking.id = 1;
 		booking.service = new Service();
 		booking.service.organisation = new Organisation();
+		booking.citizenAuthType = CitizenAuthenticationType.Singpass;
 
 		const bookingResponse = await bookingsMapper.mapDataModelsV1([booking]);
 
@@ -189,6 +191,7 @@ describe('Bookings mapper tests', () => {
 				_status: 1,
 				_version: 1,
 				bookedSlots: [],
+				_citizenAuthType: CitizenAuthenticationType.Singpass,
 			},
 		]);
 	});
@@ -232,6 +235,7 @@ describe('Bookings mapper tests', () => {
 		booking.id = 1;
 		booking.service = new Service();
 		booking.service.organisation = new Organisation();
+		booking.citizenAuthType = CitizenAuthenticationType.Otp;
 
 		IdHasherMock.encode.mockImplementation((id: number) => String(id));
 
@@ -254,6 +258,7 @@ describe('Bookings mapper tests', () => {
 				_status: 1,
 				_version: 1,
 				bookedSlots: [],
+				_citizenAuthType: CitizenAuthenticationType.Otp,
 			},
 		]);
 	});
@@ -450,7 +455,7 @@ describe('Bookings mapper tests', () => {
 		});
 	});
 
-	it('should NOT map uuid ', async () => {
+	it('should NOT map uuid - V1', async () => {
 		const mapper = Container.get(BookingsMapper);
 		const booking = getFullBookingInformation();
 
@@ -458,11 +463,27 @@ describe('Bookings mapper tests', () => {
 		expect(mapped.uuid).toBe(undefined);
 	});
 
-	it('should map uuid ', async () => {
+	it('should map uuid - V1', async () => {
 		const mapper = Container.get(BookingsMapper);
 		const booking = getFullBookingInformation();
 
 		const mapped = await mapper.mapDataModelV1(booking, { mapUUID: true });
+		expect(mapped.uuid).toBe('35703724-c99a-4fac-9546-d2b54c50b6fe');
+	});
+
+	it('should NOT map uuid - V2', async () => {
+		const mapper = Container.get(BookingsMapper);
+		const booking = getFullBookingInformation();
+
+		const mapped = await mapper.mapDataModelV2(booking);
+		expect(mapped.uuid).toBe(undefined);
+	});
+
+	it('should map uuid - V2', async () => {
+		const mapper = Container.get(BookingsMapper);
+		const booking = getFullBookingInformation();
+
+		const mapped = await mapper.mapDataModelV2(booking, { mapUUID: true });
 		expect(mapped.uuid).toBe('35703724-c99a-4fac-9546-d2b54c50b6fe');
 	});
 
@@ -596,5 +617,25 @@ describe('Bookings mapper tests', () => {
 		await mapper.mapBookingDetails({ request, booking, service });
 
 		expect(booking.citizenUinFin).toEqual('ABC1234');
+	});
+
+	describe('mapBookingAuthType', () => {
+		it('should map booking auth type (OTP)', () => {
+			const booking = new Booking();
+			const result = new BookingAuthType(CitizenAuthenticationType.Otp);
+			booking.citizenAuthType = CitizenAuthenticationType.Otp;
+			const mapper = Container.get(BookingsMapper);
+			const response = mapper.mapBookingAuthType(booking);
+			expect(response).toEqual(result);
+		});
+
+		it('should map booking auth type (Singpass)', () => {
+			const booking = new Booking();
+			const result = new BookingAuthType(CitizenAuthenticationType.Singpass);
+			booking.citizenAuthType = CitizenAuthenticationType.Singpass;
+			const mapper = Container.get(BookingsMapper);
+			const response = mapper.mapBookingAuthType(booking);
+			expect(response).toEqual(result);
+		});
 	});
 });
