@@ -71,7 +71,6 @@ export class ServicesQueryAuthVisitor extends QueryAuthGroupVisitor {
 		this._alias = alias;
 	}
 
-	// TO REVIEW: should be right to add as true and have the same validation as citizen
 	public visitOtp(_otpGroup: OtpAuthGroup): void {
 		this.addAsTrue();
 	}

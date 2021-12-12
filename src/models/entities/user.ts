@@ -1,4 +1,4 @@
-import {Entity, OneToOne, PrimaryGeneratedColumn} from 'typeorm';
+import { Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IUser } from '../interfaces';
 import { SingPassUser } from './singPassUser';
 import { AdminUser } from './adminUser';

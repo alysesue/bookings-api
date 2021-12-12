@@ -119,6 +119,17 @@ export class UsersService {
 		return user;
 	}
 
+	/**
+	 * This function is intended for use in two places
+	 * 1. When admin makes a booking on behalf of a singpass user
+	 * 2. When citizen logs in using singpass
+	 *
+	 * For scenario 1, admin only has the NRIC of the user, and not the molUserId, hence molUserId is made optional
+	 *
+	 * For scenarios 2, when citizen logs in and the database does not have molUserUinFin, it means the singpass user in database is created
+	 * when admin made a booking, hence we will save the logged in user's molUserId along
+	 */
+
 	public async getOrSaveSingpassUser({
 		molUserId,
 		molUserUinFin,
@@ -126,7 +137,7 @@ export class UsersService {
 		molUserId: string;
 		molUserUinFin: string;
 	}): Promise<User> {
-		// Creating of singpass user will only require one of the this field (to cater for admin creation)
+		// Creating of singpass user will at least require one of the following fields (to cater for admin creation)
 		if (!molUserId && !molUserUinFin) return null;
 
 		let singPassUser = await this.usersRepository.getUserByMolUserId(molUserId);

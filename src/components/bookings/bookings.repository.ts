@@ -78,7 +78,7 @@ export class BookingsRepository extends RepositoryBase<Booking> {
 		const query = await this.createSelectQuery([idCondition], { id: bookingId }, options);
 		let entry = await query.getOne();
 
-    // TO REVIEW after all backward compatibility issues with owner ID is fixed
+		// [BOOKINGSG-2737] TO REVIEW after all backward compatibility issues with owner ID is fixed
 		if (!entry) {
 			const idCondition = 'booking."_id" = :id AND booking."_ownerId" IS NULL';
 			const query = await this.createSelectQuery([idCondition], { id: bookingId }, { byPassAuth: true });

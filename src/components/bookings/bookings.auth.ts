@@ -137,7 +137,7 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 		this.addAuthCondition(orWhere(orConditions), orParams);
 	}
 
-	// TO REVIEW PERMISSION
+	// [BOOKINGSG-2737] TO REVIEW PERMISSION.
 	public visitAnonymous(_anonymousGroup: AnonymousAuthGroup): void {
 		const orConditions = [];
 		const orParams = {};
