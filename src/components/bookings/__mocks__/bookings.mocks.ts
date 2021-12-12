@@ -1,11 +1,10 @@
 import { BookingsRepository } from '../bookings.repository';
-import { Booking, BookingUUIDInfo, ChangeLogAction, User } from '../../../models';
+import { Booking, BookingUUIDInfo, ChangeLogAction } from '../../../models';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { BookingChangeLogsService } from '../../bookingChangeLogs/bookingChangeLogs.service';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
-import { UsersService } from '../../users/users.service';
 import { IPagedEntities } from '../../../core/pagedEntities';
 import { BookingsNoAuthRepository } from '../bookings.noauth.repository';
 

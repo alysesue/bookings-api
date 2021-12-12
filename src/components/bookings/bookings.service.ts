@@ -8,7 +8,6 @@ import {
 	Service,
 	ServiceProvider,
 	User,
-	Event,
 	BookedSlot,
 } from '../../models';
 import { TimeslotsService } from '../timeslots/timeslots.service';
