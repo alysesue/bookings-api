@@ -4,6 +4,7 @@ import {
 	BookingChangeLog,
 	BookingStatus,
 	ChangeLogAction,
+	OneOffTimeslot,
 	Service,
 	ServiceProvider,
 	User,
@@ -41,6 +42,31 @@ describe('BookingChangeLogs service', () => {
 		agencyUserId: 'ABC12',
 	});
 
+	const createBooking = () => {
+		const service = new Service();
+		service.id = 1;
+		service.name = 'service';
+
+		const booking = new BookingBuilder()
+			.withServiceId(1)
+			.withSlots([getOneOffTimeSlots()])
+			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
+			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
+			.build();
+		booking.service = service;
+
+		return booking;
+	};
+
+	const getOneOffTimeSlots = () => {
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2020-10-01T01:00:00Z');
+		oneOffTimeslots.endDateTime = new Date('2020-10-01T02:00:00Z');
+
+		return oneOffTimeslots;
+	};
+
 	beforeEach(() => {
 		jest.resetAllMocks();
 
@@ -50,20 +76,11 @@ describe('BookingChangeLogs service', () => {
 				await asyncFunction(),
 		);
 		BookingChangeLogsRepositoryMock.save.mockImplementation((_entry) => Promise.resolve(_entry));
+		BookingChangeLogsRepositoryMock.saveMultiple.mockImplementation((_entries) => Promise.resolve(_entries));
 	});
 
 	it('should execute and save log', async () => {
-		const service = new Service();
-		service.id = 1;
-		service.name = 'service';
-		const booking = new BookingBuilder()
-			.withServiceId(1)
-			.withSlots([[new Date('2020-10-01T01:00:00Z'), new Date('2020-10-01T02:00:00Z'), null]])
-			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
-			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
-			.build();
-		booking.service = service;
-
+		const booking = createBooking();
 		const getBooking = jest.fn((_id: number) => Promise.resolve(booking));
 		const action = jest.fn((_booking: Booking): Promise<[ChangeLogAction, Booking]> => {
 			_booking.citizenUinFin = 'ABCD';
@@ -80,9 +97,8 @@ describe('BookingChangeLogs service', () => {
 
 		const changeLogParam = BookingChangeLogsRepositoryMock.save.mock.calls[0][0] as BookingChangeLog;
 		const bookedSlot = new BookedSlot();
-		bookedSlot.startDateTime = new Date('2020-10-01T01:00:00Z');
-		bookedSlot.endDateTime = new Date('2020-10-01T02:00:00Z');
-		bookedSlot.serviceProviderId = null;
+		bookedSlot.oneOffTimeslot = getOneOffTimeSlots();
+		bookedSlot.oneOffTimeslotId = 1;
 		expect(changeLogParam.previousState).toEqual({
 			startDateTime: new Date('2020-10-01T01:00:00Z'),
 			endDateTime: new Date('2020-10-01T02:00:00Z'),
@@ -123,13 +139,80 @@ describe('BookingChangeLogs service', () => {
 		});
 	});
 
+	it('should execute and save multiple logs', async () => {
+		const bookings = [createBooking(), createBooking()];
+		const getBookings = jest.fn((_id: number) => Promise.resolve(bookings));
+		const action = jest.fn((): Promise<[ChangeLogAction, Booking[]]> => {
+			bookings.forEach((booking) => (booking.citizenUinFin = 'ABCD'));
+			return Promise.resolve([ChangeLogAction.Update, bookings]);
+		});
+
+		const svc = Container.get(BookingChangeLogsService);
+		await svc.executeAndLogMultipleActions(getBookings, action, 1, bookings);
+
+		expect(TransactionManagerMock.runInTransaction).toBeCalled();
+		expect(getBookings).toBeCalled();
+		expect(action).toBeCalled();
+		expect(BookingChangeLogsRepositoryMock.saveMultiple).toBeCalledTimes(1);
+
+		const bookedSlot = new BookedSlot();
+		bookedSlot.oneOffTimeslot = getOneOffTimeSlots();
+		bookedSlot.oneOffTimeslotId = 1;
+
+		const changeLogParam = BookingChangeLogsRepositoryMock.saveMultiple.mock.calls[0][0] as BookingChangeLog[];
+		changeLogParam.forEach((changeLogParam) => {
+			expect(changeLogParam.previousState).toEqual({
+				startDateTime: new Date('2020-10-01T01:00:00Z'),
+				endDateTime: new Date('2020-10-01T02:00:00Z'),
+				citizenEmail: undefined,
+				citizenName: undefined,
+				citizenPhone: undefined,
+				citizenUinFin: undefined,
+				description: undefined,
+				id: undefined,
+				location: undefined,
+				schemaVersion: 1,
+				serviceId: 1,
+				serviceName: 'service',
+				status: 1,
+				dynamicValues: undefined,
+				refId: undefined,
+				videoConferenceUrl: undefined,
+				bookedSlots: [bookedSlot],
+			});
+			expect(changeLogParam.newState).toEqual({
+				startDateTime: new Date('2020-10-01T01:00:00Z'),
+				endDateTime: new Date('2020-10-01T02:00:00Z'),
+				citizenEmail: undefined,
+				citizenName: undefined,
+				citizenPhone: undefined,
+				citizenUinFin: 'ABCD',
+				description: undefined,
+				id: undefined,
+				location: undefined,
+				schemaVersion: 1,
+				serviceId: 1,
+				serviceName: 'service',
+				status: 1,
+				dynamicValues: undefined,
+				refId: undefined,
+				videoConferenceUrl: undefined,
+				bookedSlots: [bookedSlot],
+			});
+		});
+	});
+
 	it('(2) should execute and save log with dynamic values', async () => {
 		const service = new Service();
 		service.id = 1;
 		service.name = 'service';
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2020-10-01T01:00:00Z');
+		oneOffTimeslots.endDateTime = new Date('2020-10-01T02:00:00Z');
 		const booking = new BookingBuilder()
 			.withServiceId(1)
-			.withSlots([[new Date('2020-10-01T01:00:00Z'), new Date('2020-10-01T02:00:00Z'), null]])
+			.withSlots([oneOffTimeslots])
 			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 			.build();
@@ -158,9 +241,8 @@ describe('BookingChangeLogs service', () => {
 
 		const changeLogParam = BookingChangeLogsRepositoryMock.save.mock.calls[0][0] as BookingChangeLog;
 		const bookedSlot = new BookedSlot();
-		bookedSlot.serviceProviderId = null;
-		bookedSlot.startDateTime = new Date('2020-10-01T01:00:00Z');
-		bookedSlot.endDateTime = new Date('2020-10-01T02:00:00Z');
+		bookedSlot.oneOffTimeslot = oneOffTimeslots;
+		bookedSlot.oneOffTimeslotId = 1;
 		expect(changeLogParam.previousState).toEqual({
 			startDateTime: new Date('2020-10-01T01:00:00Z'),
 			endDateTime: new Date('2020-10-01T02:00:00Z'),
@@ -212,9 +294,14 @@ describe('BookingChangeLogs service', () => {
 		const service = new Service();
 		service.id = 1;
 		service.name = 'service';
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2020-10-01T01:00:00Z');
+		oneOffTimeslots.endDateTime = new Date('2020-10-01T02:00:00Z');
+
 		const booking = new BookingBuilder()
 			.withServiceId(1)
-			.withSlots([[new Date('2020-10-01T01:00:00Z'), new Date('2020-10-01T02:00:00Z'), null]])
+			.withSlots([oneOffTimeslots])
 			.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 			.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 			.build();
@@ -240,10 +327,8 @@ describe('BookingChangeLogs service', () => {
 
 		const changeLogParam = BookingChangeLogsRepositoryMock.save.mock.calls[0][0] as BookingChangeLog;
 		const bookedSlot = new BookedSlot();
-		// new BookedSlot(new Date('2020-10-01T01:00:00Z'), new Date('2020-10-01T02:00:00Z'), null)
-		bookedSlot.serviceProviderId = null;
-		bookedSlot.startDateTime = new Date('2020-10-01T01:00:00Z');
-		bookedSlot.endDateTime = new Date('2020-10-01T02:00:00Z');
+		bookedSlot.oneOffTimeslot = oneOffTimeslots;
+		bookedSlot.oneOffTimeslotId = 1;
 		expect(changeLogParam.previousState).toEqual({
 			startDateTime: new Date('2020-10-01T01:00:00Z'),
 			endDateTime: new Date('2020-10-01T02:00:00Z'),
@@ -430,10 +515,15 @@ class UserContextMock implements Partial<UserContext> {
 
 class BookingChangeLogsRepositoryMock implements Partial<BookingChangeLogsRepository> {
 	public static save = jest.fn();
+	public static saveMultiple = jest.fn();
 	public static getLogs = jest.fn<Promise<Map<number, BookingChangeLog[]>>, any>();
 
 	public async save(...params): Promise<any> {
 		await BookingChangeLogsRepositoryMock.save(...params);
+	}
+
+	public async saveMultiple(...params): Promise<any> {
+		await BookingChangeLogsRepositoryMock.saveMultiple(...params);
 	}
 
 	public async getLogs(...params): Promise<any> {

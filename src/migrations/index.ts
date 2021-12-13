@@ -55,6 +55,7 @@ export { SalutationField1636342375459 } from './1636342375459-SalutationField';
 export { CheckboxListRadioListFields1636950904064 } from './1636950904064-CheckboxListRadioListFields';
 export { AddMqSubScriberToService1636341481752 } from './1636341481752-AddMqSubScriberToService';
 export { TextFieldType1638165653527 } from './1638165653527-TextFieldType';
+export { NewBookedSlots1638946454117 } from './1638946454117-NewBookedSlots';
 export { ServiceBookingLimitation1638772496515 } from './1638772496515-ServiceBookingLimitation';
 export { MapServicesAndOrganisationsToAdmin1639023609720 } from './1639023609720-MapServicesAndOrganisationsToAdmin';
 export { BookingAuthType1639037629646 } from './1639037629646-BookingAuthType';

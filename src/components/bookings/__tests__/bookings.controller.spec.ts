@@ -1,6 +1,6 @@
 import { Container } from 'typescript-ioc';
 import * as Koa from 'koa';
-import { Booking, BookingChangeLog, BookingStatus, Organisation, Service, User } from '../../../models';
+import {Booking, BookingChangeLog, BookingStatus, OneOffTimeslot, Organisation, Service, User} from '../../../models';
 import { BookingsController, BookingsControllerV2 } from '../bookings.controller';
 import {
 	BookingAcceptRequestV1,
@@ -66,9 +66,19 @@ describe('Bookings.Controller', () => {
 	const organisation = new Organisation();
 	organisation.id = 1;
 
+	const mockOneOffTimeslots1 = new OneOffTimeslot();
+	mockOneOffTimeslots1.id = 1;
+	mockOneOffTimeslots1.startDateTime = new Date('2020-10-01T01:00:00Z');
+	mockOneOffTimeslots1.endDateTime = new Date('2020-10-02T16:00:00Z');
+
+	const mockOneOffTimeslots2 = new OneOffTimeslot();
+	mockOneOffTimeslots2.id = 1;
+	mockOneOffTimeslots2.startDateTime = new Date('2020-10-01T15:00:00Z');
+	mockOneOffTimeslots2.endDateTime = new Date('2020-10-01T02:00:00');
+
 	const testBooking1 = new BookingBuilder()
 		.withServiceId(1)
-		.withSlots([[new Date('2020-10-01T01:00:00Z'), new Date('2020-10-01T02:00:00Z'), null]])
+		.withSlots([mockOneOffTimeslots1])
 		.withStartDateTime(new Date('2020-10-01T01:00:00Z'))
 		.withEndDateTime(new Date('2020-10-01T02:00:00Z'))
 		.build();
@@ -81,7 +91,7 @@ describe('Bookings.Controller', () => {
 
 	const testBooking2 = new BookingBuilder()
 		.withServiceId(1)
-		.withSlots([[new Date('2020-10-01T15:00:00Z'), new Date('2020-10-02T16:00:00Z'), null]])
+		.withSlots([mockOneOffTimeslots2])
 		.withStartDateTime(new Date('2020-10-01T15:00:00Z'))
 		.withEndDateTime(new Date('2020-10-02T16:00:00Z'))
 		.build();
@@ -301,10 +311,13 @@ describe('Bookings.Controller', () => {
 		const controller = Container.get(BookingsController);
 		const startTime = new Date('2020-10-01T01:00:00');
 		const endTime = new Date('2020-10-01T02:00:00');
-
+		const oneOffTimeslots = new OneOffTimeslot();
+		oneOffTimeslots.id = 1;
+		oneOffTimeslots.startDateTime = new Date('2020-10-01T01:00:00');
+		oneOffTimeslots.endDateTime = new Date('2020-10-01T02:00:00');
 		const booking = new BookingBuilder()
 			.withServiceId(1)
-			.withSlots([[startTime, endTime, null]])
+			.withSlots([oneOffTimeslots])
 			.withStartDateTime(startTime)
 			.withEndDateTime(endTime)
 			.build();

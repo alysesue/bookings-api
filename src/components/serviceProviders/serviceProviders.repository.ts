@@ -1,6 +1,6 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { SelectQueryBuilder } from 'typeorm';
-import {ServiceProvider, ServiceProviderLabel, ServiceProviderLabelCategory, TimeOfDay} from '../../models';
+import {ServiceProvider, TimeOfDay} from '../../models';
 import { RepositoryBase } from '../../core/repository';
 import { ScheduleFormsRepository } from '../scheduleForms/scheduleForms.repository';
 import { TimeslotsScheduleRepository } from '../timeslotsSchedules/timeslotsSchedule.repository';

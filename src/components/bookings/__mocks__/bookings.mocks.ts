@@ -1,11 +1,10 @@
 import { BookingsRepository } from '../bookings.repository';
-import { Booking, BookingUUIDInfo, ChangeLogAction, User } from '../../../models';
+import { Booking, BookingUUIDInfo, ChangeLogAction } from '../../../models';
 import { TimeslotsService } from '../../timeslots/timeslots.service';
 import { AvailableTimeslotProviders } from '../../timeslots/availableTimeslotProviders';
 import { UnavailabilitiesService } from '../../unavailabilities/unavailabilities.service';
 import { BookingChangeLogsService } from '../../bookingChangeLogs/bookingChangeLogs.service';
 import { TimeslotServiceProviderResult } from '../../../models/timeslotServiceProvider';
-import { UsersService } from '../../users/users.service';
 import { IPagedEntities } from '../../../core/pagedEntities';
 import { BookingsNoAuthRepository } from '../bookings.noauth.repository';
 
@@ -16,6 +15,8 @@ export class BookingRepositoryMock implements Partial<BookingsRepository> {
 	public static saveMock: Promise<Booking>;
 	public static getBookingByUUID = jest.fn<Promise<Booking>, any>();
 	public static update = jest.fn<Promise<Booking>, [Booking]>();
+	public static getBookingsByEventId = jest.fn<Promise<Booking[]>, any>();
+	public static saveMultiple = jest.fn<Promise<Booking[]>, any>();
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public async getBooking(id: number): Promise<Booking> {
@@ -50,6 +51,14 @@ export class BookingRepositoryMock implements Partial<BookingsRepository> {
 
 	public async getBookingByUUID(...params): Promise<Booking> {
 		return await BookingRepositoryMock.getBookingByUUID(...params);
+	}
+
+	public async getBookingsByEventId(...params): Promise<Booking[]> {
+		return await BookingRepositoryMock.getBookingsByEventId(...params);
+	}
+
+	public async saveMultiple(...params): Promise<Booking[]> {
+		return await BookingRepositoryMock.saveMultiple(...params)
 	}
 }
 
@@ -89,9 +98,14 @@ export class UnavailabilitiesServiceMock implements Partial<UnavailabilitiesServ
 
 export class BookingChangeLogsServiceMock implements Partial<BookingChangeLogsService> {
 	public static executeAndLogAction = jest.fn();
+	public static executeAndLogMultipleActions = jest.fn();
 	public static action: ChangeLogAction;
 
 	public async executeAndLogAction(...params): Promise<any> {
 		return await BookingChangeLogsServiceMock.executeAndLogAction(...params);
+	}
+
+	public async executeAndLogMultipleActions(...params): Promise<any> {
+		return await BookingChangeLogsServiceMock.executeAndLogMultipleActions(...params);
 	}
 }

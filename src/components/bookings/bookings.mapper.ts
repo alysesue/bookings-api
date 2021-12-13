@@ -314,13 +314,12 @@ export class BookingsMapper {
 		booking.eventId = event.id;
 		booking.bookedSlots = event.oneOffTimeslots.map((slot) => {
 			const entity = new BookedSlot();
-			entity.startDateTime = slot.startDateTime;
-			entity.endDateTime = slot.endDateTime;
-			entity.serviceProviderId = slot.serviceProviderId;
+			entity.oneOffTimeslotId = slot.oneOffTimeslotId;
+			entity.oneOffTimeslot = slot;
 			return entity;
 		});
-		booking.startDateTime = booking.bookedSlots[0].startDateTime;
-		booking.endDateTime = booking.bookedSlots[0].endDateTime;
+		booking.startDateTime = event.oneOffTimeslots[0].startDateTime;
+		booking.endDateTime = event.oneOffTimeslots[0].endDateTime;
 		booking.captchaToken = request.captchaToken;
 	}
 
@@ -335,12 +334,12 @@ export class BookingsMapper {
 	}): Promise<void> {
 		await this.mapBookingDetails({ request, booking, service });
 		const bookedSlots = [];
-		const bookedSlot = new BookedSlot();
-		bookedSlot.startDateTime = request.startDateTime;
-		bookedSlot.endDateTime = request.endDateTime;
-		bookedSlot.serviceProviderId = request.serviceProviderId;
-		bookedSlots.push(bookedSlot);
-
+		if (booking.eventId) {
+			const bookedSlot = new BookedSlot();
+			const oneOffTimeslot = booking.event.oneOffTimeslots.find((timeslot) => timeslot.startDateTime === request.startDateTime && timeslot.endDateTime === request.endDateTime && timeslot.serviceProviderId === request.serviceProviderId);
+			bookedSlot.oneOffTimeslotId = oneOffTimeslot.oneOffTimeslotId;
+			bookedSlot.oneOffTimeslot = oneOffTimeslot;
+		}
 		booking.startDateTime = request.startDateTime;
 		booking.endDateTime = request.endDateTime;
 		booking.bookedSlots = bookedSlots;

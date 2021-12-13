@@ -5,10 +5,11 @@ import {
 	BookingStatus,
 	BookingWorkflow,
 	ChangeLogAction,
-	Event,
 	Service,
 	ServiceProvider,
 	User,
+	BookedSlot,
+	Event,
 } from '../../models';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
@@ -42,15 +43,15 @@ import { BookingType } from '../../models/bookingType';
 import { LifeSGObserver } from '../lifesg/lifesg.observer';
 import { ExternalAgencyAppointmentJobAction } from '../lifesg/lifesg.apicontract';
 import { SMSObserver } from '../notificationSMS/notificationSMS.observer';
-import { EventsService } from '../events/events.service';
 import { BookingValidationType, BookingWorkflowType } from '../../models';
 import { BookingWorkflowsRepository } from '../bookingWorkflows/bookingWorkflows.repository';
 import { BookingsEventValidatorFactory } from './validator/bookings.event.validation';
 import { LifeSGMapper } from '../lifesg/lifesg.mapper';
 import { LifeSGMQService } from '../lifesg/lifesg.service';
 import { AppointmentAgency } from 'mol-lib-api-contract/appointment';
-import { CitizenAuthenticationType } from '../../models/citizenAuthenticationType';
-import { IPagedEntities } from '../../core/pagedEntities';
+import { CitizenAuthenticationType } from "../../models/citizenAuthenticationType";
+import { BookedSlotRepository } from "./bookedSlot.repository";
+import { IPagedEntities } from "../../core/pagedEntities";
 
 @InRequestScope
 export class BookingsService {
@@ -91,7 +92,7 @@ export class BookingsService {
 	@Inject
 	private bookingWorkflowsRepo: BookingWorkflowsRepository;
 	@Inject
-	private eventService: EventsService;
+	private bookedSlotRepository: BookedSlotRepository;
 
 	constructor() {
 		this.bookingsSubject.attach(
@@ -311,17 +312,11 @@ export class BookingsService {
 
 	public async bookAnEvent(
 		eventBookingRequest: EventBookingRequest,
-		eventId: number,
+		event: Event,
 		bypassCaptchaAndAutoAccept = false,
 	): Promise<Booking> {
-		const eventDetails = await this.eventService.getById(eventId);
 		const saveAction = () =>
-			this.bookEventInternal(
-				eventBookingRequest,
-				eventDetails,
-				eventDetails.serviceId,
-				bypassCaptchaAndAutoAccept,
-			);
+			this.bookEventInternal(eventBookingRequest, event, event.serviceId, bypassCaptchaAndAutoAccept);
 		const booking = await this.changeLogsService.executeAndLogAction(
 			null,
 			this.getBookingInternal.bind(this),
@@ -935,6 +930,43 @@ export class BookingsService {
 		}
 		this.lifeSGMQService.sendMultiple(appointments);
 		return `Sending Appointment(s).`;
+	}
+
+	public async getAllBookingsByEventId(eventId: number): Promise<Booking[]> {
+		return await this.bookingsRepository.getBookingsByEventId(eventId);
+	}
+
+	public async deleteBookedSlotsByEventId(eventId: number): Promise<Booking[]> {
+		const bookings = await this.getAllBookingsByEventId(eventId);
+		if (!bookings) return;
+		bookings.map((booking) => {
+			booking.bookedSlots = [];
+		})
+		return await this.bookingsRepository.saveMultiple(bookings);
+	}
+
+	public async updateBookedSlots(event: Event, id: number): Promise<Booking[]> {
+		if (!event){
+			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Event ${id} not found`);
+		};
+		const bookings = await this.getAllBookingsByEventId(id);
+		if (!bookings) return;
+		const newBookings: Booking[] = [];
+		bookings.map((booking) => {
+			const newBookedSlots: BookedSlot[] = [];
+			event.oneOffTimeslots.map((timeslot) => {
+				const updatedBookedSlot = new BookedSlot();
+				updatedBookedSlot.oneOffTimeslot = timeslot;
+				updatedBookedSlot.bookingId = booking.id;
+				newBookedSlots.push(updatedBookedSlot);
+			});
+
+			booking.startDateTime = event.oneOffTimeslots[0].startDateTime;
+			booking.endDateTime = event.oneOffTimeslots[0].endDateTime;
+			booking.bookedSlots = newBookedSlots;
+			newBookings.push(booking);
+		});
+		return await this.bookingsRepository.saveMultiple(newBookings);
 	}
 }
 

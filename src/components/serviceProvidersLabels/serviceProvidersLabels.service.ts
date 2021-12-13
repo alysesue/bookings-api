@@ -1,4 +1,4 @@
-import {Organisation, ServiceProvider, ServiceProviderLabel, ServiceProviderLabelCategory} from '../../models';
+import {Organisation, ServiceProviderLabel, ServiceProviderLabelCategory} from '../../models';
 import { Inject, InRequestScope } from 'typescript-ioc';
 import {
 	ServiceProviderLabelsCategoriesRepository,

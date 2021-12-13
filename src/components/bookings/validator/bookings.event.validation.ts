@@ -10,9 +10,9 @@ import { Validator } from '../../../infrastructure/validator';
 import { BookingBusinessValidations } from './bookingBusinessValidations';
 import { ContainerContext } from '../../../infrastructure/containerContext';
 import { BookingSearchRequest } from '../bookings.apicontract';
-import { EventsService } from '../../events/events.service';
 import { isVerifiedPhoneNumber } from '../../../tools/phoneNumber';
 import { IBookingsValidator } from './bookings.validation';
+import { EventsRepository } from "../../events/events.repository";
 
 abstract class BookingsEventValidator extends Validator<Booking> implements IBookingsValidator {
 	@Inject
@@ -20,7 +20,7 @@ abstract class BookingsEventValidator extends Validator<Booking> implements IBoo
 	@Inject
 	protected bookingsRepository: BookingsRepository;
 	@Inject
-	protected eventService: EventsService;
+	protected eventsRepository: EventsRepository;
 
 	protected shouldBypassCaptcha = false;
 	private _customCitizenValidations: BusinessValidation[];
@@ -100,7 +100,6 @@ abstract class BookingsEventValidator extends Validator<Booking> implements IBoo
 		}
 
 		for await (const validation of concatIteratables(
-			this.validateServiceProviderExisting(booking),
 			this.validateLicenceServiceProviderIsNotExpire(booking),
 			booking.status === BookingStatus.OnHold
 				? BookingsEventValidator.skipValidation(booking)
@@ -137,29 +136,11 @@ abstract class BookingsEventValidator extends Validator<Booking> implements IBoo
 			}
 		});
 
-		const eventDetails = await this.eventService.getById(_booking.eventId);
+		const id = _booking.eventId;
+		const eventDetails = await this.eventsRepository.getById({id});
 
 		if (eventBookingsCount >= eventDetails.capacity) {
 			yield BookingBusinessValidations.EventCapacityUnavailable;
-		}
-	}
-
-	protected async *validateServiceProviderExisting(booking: Booking): AsyncIterable<BusinessValidation> {
-		let isValid = true;
-		if (booking.bookedSlots.length > 0) {
-			booking.bookedSlots.forEach(async (bookedSlot) => {
-				const provider = await this.serviceProvidersRepository.getServiceProvider({
-					id: bookedSlot.serviceProviderId,
-				});
-				bookedSlot.serviceProvider = provider;
-				if (!provider) {
-					isValid = isValid && false;
-				}
-			});
-		}
-
-		if (!isValid) {
-			yield BookingBusinessValidations.ServiceProviderNotFound(booking.serviceProviderId);
 		}
 	}
 
@@ -168,7 +149,7 @@ abstract class BookingsEventValidator extends Validator<Booking> implements IBoo
 		if (booking.bookedSlots.length > 0) {
 			booking.bookedSlots.forEach(async (bookedSlot) => {
 				const provider = await this.serviceProvidersRepository.getServiceProvider({
-					id: bookedSlot.serviceProviderId,
+					id: bookedSlot.oneOffTimeslot.serviceProviderId,
 				});
 				if (provider?.isLicenceExpire(booking.startDateTime)) {
 					isValid = isValid && false;
@@ -195,7 +176,7 @@ class AdminBookingEventValidator extends BookingsEventValidator {
 		let isValid = true;
 		if (this.ServiceProviderRequired && booking.bookedSlots.length > 0) {
 			booking.bookedSlots.forEach((bookedSlot) => {
-				if (!bookedSlot.serviceProviderId) {
+				if (!bookedSlot.oneOffTimeslot.serviceProviderId) {
 					isValid = true;
 				}
 			});
@@ -206,7 +187,6 @@ class AdminBookingEventValidator extends BookingsEventValidator {
 			return;
 		}
 
-		yield* super.validateServiceProviderExisting(booking);
 	}
 
 	protected async *validateToken(_booking: Booking): AsyncIterable<BusinessValidation> {

@@ -1,19 +1,11 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IBooking, IServiceProvider } from '../interfaces';
-import { ServiceProvider } from './serviceProvider';
+import { IBooking } from '../interfaces';
+import {OneOffTimeslot} from "./oneOffTimeslot";
 
 @Entity()
 export class BookedSlot {
 	@PrimaryGeneratedColumn()
 	private _id: number;
-
-	@Column()
-	@Index()
-	private _startDateTime: Date;
-
-	@Column()
-	@Index()
-	private _endDateTime: Date;
 
 	@Column({ nullable: false })
 	@Index()
@@ -25,11 +17,11 @@ export class BookedSlot {
 
 	@Column({ nullable: true })
 	@Index()
-	private _serviceProviderId: number;
+	private _oneOffTimeslotId: number;
 
-	@ManyToOne(() => ServiceProvider, { nullable: true })
-	@JoinColumn({ name: '_serviceProviderId' })
-	private _serviceProvider: IServiceProvider;
+	@ManyToOne(() => OneOffTimeslot, { nullable: true })
+	@JoinColumn({ name: '_oneOffTimeslotId' })
+	private _oneOffTimeslot: OneOffTimeslot;
 
 	public get id(): number {
 		return this._id;
@@ -43,35 +35,19 @@ export class BookedSlot {
 		this._bookingId = bookingId;
 	}
 
-	public get startDateTime(): Date {
-		return this._startDateTime;
+	public get oneOffTimeslotId(): number {
+		return this._oneOffTimeslotId;
 	}
 
-	public set startDateTime(startDateTime) {
-		this._startDateTime = startDateTime;
+	public set oneOffTimeslotId(oneOffTimeslotId: number) {
+		this._oneOffTimeslotId = oneOffTimeslotId;
 	}
 
-	public get endDateTime(): Date {
-		return this._endDateTime;
+	public get oneOffTimeslot(): OneOffTimeslot {
+		return this._oneOffTimeslot;
 	}
 
-	public set endDateTime(endDateTime) {
-		this._endDateTime = endDateTime;
-	}
-
-	public get serviceProviderId(): number {
-		return this._serviceProviderId;
-	}
-
-	public set serviceProviderId(serviceProviderId: number) {
-		this._serviceProviderId = serviceProviderId;
-	}
-
-	public get serviceProvider(): IServiceProvider {
-		return this._serviceProvider;
-	}
-
-	public set serviceProvider(serviceProvider: IServiceProvider) {
-		this._serviceProvider = serviceProvider;
+	public set oneOffTimeslot(oneOffTimeslot: OneOffTimeslot) {
+		this._oneOffTimeslot = oneOffTimeslot;
 	}
 }

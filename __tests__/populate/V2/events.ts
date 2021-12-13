@@ -55,6 +55,20 @@ export const postEvent = async (eventRequest: Partial<EventRequest>): Promise<Ev
 	return response.body.data as EventResponse;
 };
 
+export const putEvent = async (id: string, eventRequest: Partial<EventRequest>): Promise<EventResponse> => {
+	const response = await OrganisationAdminRequestEndpointSG.create({}).put(
+		`/events/${id}`,
+		{
+			body: { ...eventRequest },
+		},
+		'V2',
+	);
+
+	expect(response.statusCode).toEqual(201);
+
+	return response.body.data as EventResponse;
+};
+
 export const getEvents = async (serviceId: string, eventFilter: Partial<EventFilter>): Promise<EventResponse[]> => {
 	const response = await OrganisationAdminRequestEndpointSG.create({ serviceId }).get(
 		`/events`,

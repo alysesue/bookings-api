@@ -12,7 +12,9 @@ import { BookingsRepository } from '../../bookings.repository';
 import { BookingRepositoryMock } from '../../__mocks__/bookings.mocks';
 import { EventsService } from '../../../events/events.service';
 import { EventsServiceMock } from '../../../events/__mocks__/events.service.mock';
+import { EventsRepositoryMock } from "../../../events/__mocks__/events.repository.mock";
 import { Event } from '../../../../models';
+import {EventsRepository} from "../../../events/events.repository";
 
 beforeAll(() => {
 	ContainerContextHolder.registerInContainer();
@@ -22,18 +24,13 @@ beforeAll(() => {
 describe('Booking event validation tests', () => {
 	let service: Service;
 	const mockSingpassUser1 = User.createSingPassUser('d080f6ed-3b47-478a-a6c6-dfb5608a199d', 'ABC1234');
-	const adminMock = User.createAdminUser({
-		molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
-		userName: 'UserName',
-		email: 'test@email.com',
-		name: 'Name',
-	});
 
 	beforeEach(() => {
 		jest.resetAllMocks();
 		Container.bind(UserContext).to(UserContextMock);
 		Container.bind(BookingsRepository).to(BookingRepositoryMock);
 		Container.bind(EventsService).to(EventsServiceMock);
+		Container.bind(EventsRepository).to(EventsRepositoryMock);
 		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(true));
 		(getConfig as jest.Mock).mockReturnValue({
 			isAutomatedTest: false,
@@ -79,7 +76,7 @@ describe('Booking event validation tests', () => {
 		const mockBooking = new BookingBuilder().withStartDateTime(start).withEndDateTime(end).withEventId(1).build();
 		mockBooking.id = 10;
 		BookingRepositoryMock.searchReturnAll.mockImplementation(() => Promise.resolve([mockBooking] as Booking[]));
-		EventsServiceMock.getById.mockImplementation(() => Promise.resolve(mockEvent));
+		EventsRepositoryMock.getByIdMock.mockImplementation(() => Promise.resolve(mockEvent));
 		const validator = Container.get(BookingsEventValidatorFactory).getValidator(false);
 		validator.bypassCaptcha(true);
 		const test = async () => await validator.validate(booking);
@@ -114,7 +111,7 @@ describe('Booking event validation tests', () => {
 		const mockBooking = new BookingBuilder().withStartDateTime(start).withEndDateTime(end).withEventId(1).build();
 		mockBooking.id = 10;
 		BookingRepositoryMock.searchReturnAll.mockImplementation(() => Promise.resolve([mockBooking] as Booking[]));
-		EventsServiceMock.getById.mockImplementation(() => Promise.resolve(mockEvent));
+		EventsRepositoryMock.getByIdMock.mockImplementation(() => Promise.resolve(mockEvent));
 		const validator = Container.get(BookingsEventValidatorFactory).getValidator(false);
 		validator.bypassCaptcha(true);
 		const test = async () => await validator.validate(booking);
@@ -152,7 +149,7 @@ describe('Booking event validation tests', () => {
 		mockBooking.onHoldUntil = new Date();
 		mockBooking.onHoldUntil.setMinutes(mockBooking.onHoldUntil.getMinutes() + 10);
 		BookingRepositoryMock.searchReturnAll.mockImplementation(() => Promise.resolve([mockBooking] as Booking[]));
-		EventsServiceMock.getById.mockImplementation(() => Promise.resolve(mockEvent));
+		EventsRepositoryMock.getByIdMock.mockImplementation(() => Promise.resolve(mockEvent));
 		const validator = Container.get(BookingsEventValidatorFactory).getValidator(false);
 		validator.bypassCaptcha(true);
 		await expect(validator.validate(booking)).resolves.toEqual(undefined);
@@ -187,7 +184,7 @@ describe('Booking event validation tests', () => {
 		mockBooking.onHoldUntil = new Date();
 		mockBooking.onHoldUntil.setMinutes(mockBooking.onHoldUntil.getMinutes() - 10);
 		BookingRepositoryMock.searchReturnAll.mockImplementation(() => Promise.resolve([mockBooking] as Booking[]));
-		EventsServiceMock.getById.mockImplementation(() => Promise.resolve(mockEvent));
+		EventsRepositoryMock.getByIdMock.mockImplementation(() => Promise.resolve(mockEvent));
 		const validator = Container.get(BookingsEventValidatorFactory).getValidator(false);
 		validator.bypassCaptcha(true);
 		await expect(validator.validate(booking)).resolves.toEqual(undefined);
@@ -222,7 +219,7 @@ describe('Booking event validation tests', () => {
 		mockBooking.onHoldUntil = new Date();
 		mockBooking.onHoldUntil.setMinutes(mockBooking.onHoldUntil.getMinutes() + 10);
 		BookingRepositoryMock.searchReturnAll.mockImplementation(() => Promise.resolve([mockBooking] as Booking[]));
-		EventsServiceMock.getById.mockImplementation(() => Promise.resolve(mockEvent));
+		EventsRepositoryMock.getByIdMock.mockImplementation(() => Promise.resolve(mockEvent));
 		const validator = Container.get(BookingsEventValidatorFactory).getValidator(false);
 		validator.bypassCaptcha(true);
 		const test = async () => await validator.validate(booking);

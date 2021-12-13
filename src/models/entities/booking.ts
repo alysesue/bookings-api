@@ -23,6 +23,7 @@ import { DynamicValueJsonModel } from './jsonModels';
 import { BookingWorkflow } from './bookingWorkflow';
 import { BookedSlot } from './bookedSlot';
 import { Salutations } from '../salutations';
+import { OneOffTimeslot } from "./oneOffTimeslot";
 import { CitizenAuthenticationType } from '../citizenAuthenticationType';
 
 export const BookingIsolationLevel: IsolationLevel = 'READ COMMITTED';
@@ -79,12 +80,11 @@ export class BookingBuilder {
 		return this;
 	}
 
-	public withSlots(slots: [Date, Date, number][]): BookingBuilder {
+	public withSlots(slots: OneOffTimeslot[]): BookingBuilder {
 		slots.forEach((slot) => {
 			const newSlot = new BookedSlot();
-			newSlot.startDateTime = slot[0];
-			newSlot.endDateTime = slot[1];
-			newSlot.serviceProviderId = slot[2];
+			newSlot.oneOffTimeslotId = slot.oneOffTimeslotId;
+			newSlot.oneOffTimeslot = slot
 			this.slots.push(newSlot);
 		});
 		return this;

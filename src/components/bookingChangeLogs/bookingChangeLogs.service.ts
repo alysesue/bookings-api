@@ -9,7 +9,10 @@ import { BookingChangeLogsRepository, ChangeLogSearchQuery } from './bookingChan
 import * as _ from 'lodash';
 
 export type GetBookingFunction = (bookingId: number, options: { byPassAuth?: boolean }) => Promise<Booking>;
+export type GetBookingsFunctionByEventId = (eventId: number, options: { byPassAuth?: boolean }) => Promise<Booking[]>;
+
 export type BookingActionFunction = (booking: Booking) => Promise<[ChangeLogAction, Booking]>;
+export type BookingsActionFunction = () => Promise<[ChangeLogAction, Booking[]]>;
 
 @InRequestScope
 export class BookingChangeLogsService {
@@ -71,7 +74,7 @@ export class BookingChangeLogsService {
 		let attempts = 0;
 		while (attempts < maxAttempts) {
 			try {
-				return await this.executeInTransation(bookingId, getBookingFunction, actionFunction);
+				return await this.executeInTransaction(bookingId, getBookingFunction, actionFunction);
 			} catch (e) {
 				if (e.name === ConcurrencyError.name) {
 					if (attempts >= maxAttempts) {
@@ -85,7 +88,31 @@ export class BookingChangeLogsService {
 		}
 	}
 
-	private async executeInTransation(
+	public async executeAndLogMultipleActions(
+		getBookingsFunction: OmitThisParameter<(eventId: number) => Promise<Booking[]>>,
+		actionFunction: BookingsActionFunction,
+		eventId?: number,
+		bookings?: Booking[],
+	): Promise<Booking[]> {
+		const maxAttempts = 3;
+		let attempts = 0;
+		while (attempts < maxAttempts) {
+			try {
+				return await this.executeMultipleInTransaction(getBookingsFunction, actionFunction, eventId, bookings);
+			} catch (e) {
+				if (e.name === ConcurrencyError.name) {
+					if (attempts >= maxAttempts) {
+						throw new MOLErrorV2(ErrorCodeV2.SYS_INVALID_PARAM).setMessage(e.message);
+					}
+				} else {
+					throw e;
+				}
+			}
+			attempts++;
+		}
+	}
+
+	private async executeInTransaction(
 		bookingId: number,
 		getBookingFunction: GetBookingFunction,
 		actionFunction: BookingActionFunction,
@@ -112,6 +139,36 @@ export class BookingChangeLogsService {
 				const reloadBooking = await getBookingFunction(newBooking.id, { byPassAuth: true });
 				return reloadBooking;
 			}
+		});
+	}
+
+	private async executeMultipleInTransaction(
+		getBookingsFunction: GetBookingsFunctionByEventId,
+		actionFunction: BookingsActionFunction,
+		eventId?: number,
+		bookings?: Booking[],
+	): Promise<Booking[]> {
+		const user = await this.userContext.getCurrentUser();
+		return await this.transactionManager.runInTransaction(BookingIsolationLevel, async () => {
+			const previousBookings = eventId ? await getBookingsFunction(eventId, {}) : bookings;
+			const previousBookingsState = previousBookings.map((booking) => {
+				return this.mapToJsonSchema(booking);
+			});
+			const [action, updatedBookings] = await actionFunction();
+
+			const changeLogs: BookingChangeLog[] = updatedBookings.map((updatedBooking) => {
+				const previousState = previousBookingsState.filter((booking) => booking.id === updatedBooking.id)[0];
+				return BookingChangeLog.create({
+					action,
+					booking: updatedBooking,
+					user,
+					previousState,
+					newState: this.mapToJsonSchema(updatedBooking),
+				});
+			});
+
+			await this.changeLogsRepository.saveMultiple(changeLogs);
+			return updatedBookings;
 		});
 	}
 

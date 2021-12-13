@@ -19,6 +19,12 @@ export class BookingChangeLogsRepository extends RepositoryBase<BookingChangeLog
 		return repository.save(changeLog);
 	}
 
+	public async saveMultiple(changeLogs: BookingChangeLog[]): Promise<BookingChangeLog[]> {
+		if (!changeLogs) return;
+		const repository = await this.getRepository();
+		return await repository.save(changeLogs);
+	}
+
 	public async getLogs(options: ChangeLogSearchQuery): Promise<Map<number, BookingChangeLog[]>> {
 		const authGroups = await this.userContext.getAuthGroups();
 		const { userCondition, userParams } = options.byPassAuth
