@@ -9,6 +9,7 @@ import {
 	ServiceProvider,
 	User,
 	BookedSlot,
+	Event,
 } from '../../models';
 import { TimeslotsService } from '../timeslots/timeslots.service';
 import { ServiceProvidersRepository } from '../serviceProviders/serviceProviders.repository';
@@ -48,6 +49,9 @@ import { BookingsEventValidatorFactory } from './validator/bookings.event.valida
 import { LifeSGMapper } from '../lifesg/lifesg.mapper';
 import { LifeSGMQService } from '../lifesg/lifesg.service';
 import { AppointmentAgency } from 'mol-lib-api-contract/appointment';
+import { CitizenAuthenticationType } from "../../models/citizenAuthenticationType";
+import { BookedSlotRepository } from "./bookedSlot.repository";
+import { IPagedEntities } from "../../core/pagedEntities";
 
 @InRequestScope
 export class BookingsService {
