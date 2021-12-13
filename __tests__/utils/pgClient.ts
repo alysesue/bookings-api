@@ -39,8 +39,8 @@ export class PgClient {
 		await this.pool.query('DELETE FROM public.week_day_schedule;');
 		await this.pool.query('DELETE FROM public.service_provider_group_map;');
 		await this.pool.query('DELETE FROM public.service_provider;');
-		await this.pool.query('DELETE FROM public.service;');
 		await this.pool.query('DELETE FROM public.admin_user;');
+		await this.pool.query('DELETE FROM public.service;');
 		await this.pool.query('DELETE FROM public.sing_pass_user;');
 		await this.pool.query('DELETE FROM public.agency_user;');
 		await this.pool.query('DELETE FROM public.anonymous_user;');
