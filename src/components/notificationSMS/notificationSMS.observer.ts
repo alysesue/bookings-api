@@ -1,7 +1,7 @@
 import { Inject, InRequestScope } from 'typescript-ioc';
 import { ISubject, Observer } from '../../infrastructure/observer';
 import { BookingsSubject } from '../bookings/bookings.subject';
-import { Booking, BookingStatus, Organisation } from '../../models';
+import { Booking, BookingStatus, BookingValidationType } from '../../models';
 import { BookingType } from '../../models/bookingType';
 import {
 	CitizenSMSTemplateBookingActionByCitizen,
@@ -28,16 +28,20 @@ export class SMSObserver implements Observer {
 			if (!subject.booking.citizenPhone) return;
 			const currentUser = await this.userContext.getCurrentUser();
 			const userIsAdmin = currentUser.isAdmin() || currentUser.isAgency();
+			const serviceProviderTemplate = this.citizenSMSTemplateBookingActionByServiceProvider;
+			const citizenTemplate = this.citizenSMSTemplateBookingActionByCitizen;
 			const templates = userIsAdmin
-				? this.citizenSMSTemplateBookingActionByServiceProvider
-				: this.citizenSMSTemplateBookingActionByCitizen;
+				? serviceProviderTemplate
+				: citizenTemplate;
 			const sms = this.templateFactory(subject.booking, subject.bookingType, templates);
 			const phoneNumber = subject.booking.citizenPhone;
 			const organisationName = subject.booking.service.organisation.name;
 			const serviceId = subject.booking.serviceId;
+			let userType;
+            (templates === serviceProviderTemplate) ? userType = BookingValidationType.Admin : userType = BookingValidationType.Citizen;
 			try {
 				await this.notificationSMSService.send(
-					{ message: sms, phoneNumber }, organisationName, serviceId);
+					{ message: sms, phoneNumber }, organisationName, serviceId, userType);
 			} catch (error) {
 				// No need to do anything for now
 			}

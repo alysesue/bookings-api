@@ -1,6 +1,7 @@
 export class OtpSendRequest {
 	public mobileNo: string;
 	public captchaToken?: string;
+	//public serviceId?: string;
 
 	constructor(mobileNo: string, captchaToken?: string) {
 		this.mobileNo = mobileNo;
