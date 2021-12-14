@@ -61,3 +61,4 @@ export { MapServicesAndOrganisationsToAdmin1639023609720 } from './1639023609720
 export { BookingAuthType1639037629646 } from './1639037629646-BookingAuthType';
 export { AddOtpUser1637826607021 } from './1637826607021-AddOtpUser';
 export { BookingOwnerIdAndSingpassNullable1639035773906 } from './1639035773906-BookingOwnerIdAndSingpassNullable';
+export { CitizenAuthTypeBookingMigration1639464843587 } from './data/1639464843587-CitizenAuthTypeBookingMigration';
