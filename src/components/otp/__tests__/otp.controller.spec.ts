@@ -1,5 +1,5 @@
 import { OtpServiceMock } from './../__mocks__/otp.service.mock';
-import { MobileOtpCookieHelper } from './../../../infrastructure/bookingSGCookieHelper';
+import { MobileOtpCookieHelper, MolCookieHelper } from './../../../infrastructure/bookingSGCookieHelper';
 import { OtpVerifyRequest } from './../otp.apicontract';
 import { OtpController } from '../otp.controller';
 import { Container } from 'typescript-ioc';
@@ -8,9 +8,14 @@ import { OtpService } from '../otp.service';
 import * as uuid from 'uuid';
 import { MobileOtpCookieHelperMock } from '../../../infrastructure/__mocks__/mobileOtpCookieHelper.mock';
 
+const MolCookieHelperMock = {
+	delete: jest.fn(),
+};
+
 beforeAll(() => {
 	Container.bind(OtpService).to(OtpServiceMock);
 	Container.bind(MobileOtpCookieHelper).to(MobileOtpCookieHelperMock);
+	Container.bind(MolCookieHelper).factory(() => MolCookieHelperMock);
 });
 
 beforeEach(() => {
