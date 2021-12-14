@@ -1,12 +1,12 @@
 import { NotificationSMSServiceMock } from './../../notificationSMS/__mocks__/notificationSMS.service.mock';
 import { OtpRepository } from '../otp.repository';
 import { BusinessError } from '../../../errors/businessError';
-import { OtpSendRequest, OtpVerifyRequest } from '../otp.apicontract';
+import { OtpSendRequestServiceIdNumber, OtpVerifyRequest} from '../otp.apicontract';
 import { OtpService } from '../otp.service';
 import { CaptchaService } from '../../captcha/captcha.service';
 import * as appConfig from '../../../config/app-config';
 import { BookingBusinessValidations } from '../../bookings/validator/bookingBusinessValidations';
-import { Otp } from '../../../models';
+import { Organisation, Otp } from '../../../models';
 import { Container } from 'typescript-ioc';
 import { NotificationSMSService } from '../../../components/notificationSMS/notificationSMS.service';
 import { CaptchaServiceMock } from '../../../components/captcha/__mocks__/captcha.service.mock';
@@ -18,6 +18,9 @@ import { getConfig } from '../../../config/app-config';
 jest.mock('../../../config/app-config', () => ({
 	getConfig: jest.fn(),
 }));
+
+const organisation = Organisation.create('Organisation1', 1);
+
 describe('sendOtp()', () => {
 	let configSpy: jest.SpyInstance;
 	let otpRepoSaveSpy: jest.SpyInstance;
@@ -44,9 +47,9 @@ describe('sendOtp()', () => {
 		CaptchaServiceMock.verify.mockReturnValue(Promise.resolve(true));
 
 		const otpSvc = Container.get(OtpService);
-		await otpSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken'));
+		await otpSvc.sendOtp(new OtpSendRequestServiceIdNumber('+6588884444', 'captchaToken', 1), organisation.name);
 
-		expect(async () => otpSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken'))).not.toThrow();
+		expect(async () => otpSvc.sendOtp(new OtpSendRequestServiceIdNumber('+6588884444', 'captchaToken', 1), organisation.name)).not.toThrow();
 		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');
 		expect(NotificationSMSServiceMock.sendMock).toBeCalledTimes(1);
 		expect(otpRepoSaveSpy).toBeCalledTimes(1);
@@ -57,7 +60,7 @@ describe('sendOtp()', () => {
 
 		const otpSvc = Container.get(OtpService);
 
-		await expect(async () => otpSvc.sendOtp(new OtpSendRequest('+6588884444', 'captchaToken'))).rejects.toThrow(
+		await expect(async () => otpSvc.sendOtp(new OtpSendRequestServiceIdNumber('+6588884444', 'captchaToken', 1), organisation.name)).rejects.toThrow(
 			BusinessError.create([BookingBusinessValidations.InvalidCaptchaToken]),
 		);
 		expect(CaptchaServiceMock.verify).toBeCalledWith('captchaToken');

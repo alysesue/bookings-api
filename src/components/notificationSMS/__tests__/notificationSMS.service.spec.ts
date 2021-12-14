@@ -3,8 +3,9 @@ import { Container } from 'typescript-ioc';
 import { post } from '../../../tools/fetch';
 import { MOLSecurityHeaderKeys } from "mol-lib-api-contract/auth";
 import {UserContextMock} from "../../../infrastructure/auth/__mocks__/userContext";
-import {Organisation, User} from "../../../models/entities";
+import {Organisation, Service, User} from "../../../models/entities";
 import {UserContext} from "../../../infrastructure/auth/userContext";
+import {BookingValidationType} from "../../../models";
 
 jest.mock('../../../tools/fetch');
 
@@ -35,6 +36,9 @@ const agencyMock = User.createAgencyUser({
 
 const organisation = Organisation.create('Organisation1', 1);
 
+const service = Service.create('Service1', organisation);
+service.id = 1;
+
 describe('Test of notification SMS', () => {
 	beforeAll(() => {
 		(post as jest.Mock).mockImplementation(jest.fn());
@@ -52,7 +56,7 @@ describe('Test of notification SMS', () => {
 	});
 
 	it('Should call post when sending an sms', async () => {
-		await Container.get(NotificationSMSServiceMol).send({ phoneNumber: '+6588217161', message: '' }, organisation.name);
+		await Container.get(NotificationSMSServiceMol).send({ phoneNumber: '+6588217161', message: '' }, organisation.name, service.id, BookingValidationType.Citizen);
 		expect(post).toHaveBeenCalledTimes(1);
 	});
 
@@ -75,8 +79,8 @@ describe('Test of notification SMS', () => {
 
 		(SMSService as any).context = {headers};
 
-		await SMSService.send({ phoneNumber: '+6588217161', message: '' }, organisation.name);
-		expect(post).toHaveBeenCalledWith("/sms/api/v2/send-batch", {"sms": [{"message": "", "phoneNumber": "+6588217161"}]}, {"mol-agency-name": "BSG-AGENCY1", "mol-auth-type": "SYSTEM"});
+		await SMSService.send({ phoneNumber: '+6588217161', message: '' }, organisation.name, service.id, BookingValidationType.Citizen);
+		expect(post).toHaveBeenCalledWith("/sms/api/v2/send-batch", {"sms": [{"message": "", "phoneNumber": "+6588217161"}]}, {"mol-agency-name": "BSG-Organisation1-1-citizen", "mol-auth-type": "SYSTEM"});
 	});
 
 	it('Should pass organisation name as header value when sending SMS', async () => {
@@ -88,7 +92,7 @@ describe('Test of notification SMS', () => {
 
 		(SMSService as any).context = {headers};
 
-		await SMSService.send({ phoneNumber: '+6588217161', message: '' }, organisation.name);
-		expect(post).toHaveBeenCalledWith("/sms/api/v2/send-batch", {"sms": [{"message": "", "phoneNumber": "+6588217161"}]}, {"mol-agency-name": "BSG-Organisation1", "mol-auth-type": "SYSTEM"});
+		await SMSService.send({ phoneNumber: '+6588217161', message: '' }, organisation.name, service.id, BookingValidationType.Citizen);
+		expect(post).toHaveBeenCalledWith("/sms/api/v2/send-batch", {"sms": [{"message": "", "phoneNumber": "+6588217161"}]}, {"mol-agency-name": "BSG-Organisation1-1-citizen", "mol-auth-type": "SYSTEM"});
 	});
 });
