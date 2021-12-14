@@ -5,6 +5,8 @@ import { Controller, Post, Route, Tags, SuccessResponse, Body, Response } from '
 import { Inject } from 'typescript-ioc';
 import { OtpService } from '../otp/otp.service';
 import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
+import {IdHasher} from "../../infrastructure/idHasher";
+import {ServicesRepository} from "../services/services.repository";
 
 @Route('v1/otp')
 @Tags('Otp')
@@ -15,12 +17,20 @@ export class OtpController extends Controller {
 	private mobileOtpCookieHelper: MobileOtpCookieHelper;
 	@Inject
 	private molCookieHelper: MolCookieHelper;
+	@Inject
+	private idHasher: IdHasher;
+	@Inject
+	private servicesRepository: ServicesRepository;
 
+	//TODO
 	@Post('send')
 	@BookingSGAuth({ bypassAuth: true })
 	@SuccessResponse(200, 'Success')
 	public async sendOtp(@Body() otpReqBody: OtpSendRequest): Promise<ApiData<OtpSendResponse>> {
-		const otpReqId = await this.otpService.sendOtp(otpReqBody);
+		const unsignedServiceId = await this.idHasher.decode(otpReqBody.serviceId);
+		const service = await this.servicesRepository.getService({id: unsignedServiceId});
+		const organisationName = service.organisation.name;
+		const otpReqId = await this.otpService.sendOtp({...otpReqBody, serviceId: unsignedServiceId}, organisationName);
 		return ApiDataFactory.create(new OtpSendResponse(otpReqId));
 	}
 

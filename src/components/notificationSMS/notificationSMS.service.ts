@@ -33,7 +33,7 @@ export class NotificationSMSServiceMol extends NotificationSMSService {
 		const prefix = `BSG`;
 		const header = {
 			[MOLSecurityHeaderKeys.AUTH_TYPE]: MOLAuthType.SYSTEM,
-			[MOLSecurityHeaderKeys.AGENCY_NAME]: `${prefix}-${organisationName}-${serviceId}-${userType}`, //BSG-MINLAW-1-citizen
+			[MOLSecurityHeaderKeys.AGENCY_NAME]: `${prefix}-${organisationName}-${serviceId}-${userType}`,
 		};
 		// For mol notification service, they only enable real SMS sending on QE, STG and PROD env
 		// Hence for BSG's local and dev env, we will point to their QE environment so that we can send out SMS (depending on our own env variables)
