@@ -89,6 +89,8 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 		if (this._customCitizenValidations.length > 0) {
 			yield* this._customCitizenValidations;
 		}
+
+		yield* this.validateByAuthorizationType(booking);
 	}
 
 	private static async *validateDuration(booking: Booking): AsyncIterable<BusinessValidation> {
@@ -120,7 +122,7 @@ abstract class BookingsValidator extends Validator<Booking> implements IBookings
 			booking.status === BookingStatus.OnHold
 				? BookingsValidator.skipValidation(booking)
 				: this.validateCitizenDetails(booking),
-			this.validateByAuthorizationType(booking),
+			// this.validateByAuthorizationType(booking),
 		)) {
 			yieldedAny = true;
 			yield validation;
@@ -338,6 +340,13 @@ class CitizenBookingValidator extends BookingsValidator {
 class ConfirmOnHoldBookingValidator extends AdminBookingValidator {
 	constructor() {
 		super(false);
+	}
+
+	protected async *validateByAuthorizationType(booking: Booking): AsyncIterable<BusinessValidation> {
+		const noNric = booking.service.noNric;
+		if (!noNric && !booking.citizenUinFin) {
+			yield BookingBusinessValidations.CitizenUinFinNotProvided;
+		}
 	}
 }
 
