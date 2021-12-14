@@ -67,7 +67,7 @@ export class EventsController extends Controller {
 	 */
 	@Get('')
 	@Security('optional-service')
-	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 } })
+	@BookingSGAuth({ admin: {}, agency: {}, user: { minLevel: MOLUserAuthLevel.L2 }, otp: true })
 	@Response(401, 'Valid authentication types: [admin,agency]')
 	public async search(
 		@Header('x-api-service') serviceId?: string,
