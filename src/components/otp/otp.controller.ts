@@ -1,4 +1,4 @@
-import { MobileOtpCookieHelper } from './../../infrastructure/bookingSGCookieHelper';
+import { MobileOtpCookieHelper, MolCookieHelper } from './../../infrastructure/bookingSGCookieHelper';
 import { ApiDataFactory, ApiData } from './../../apicontract';
 import { OtpSendRequest, OtpSendResponse, OtpVerifyRequest } from './otp.apicontract';
 import { Controller, Post, Route, Tags, SuccessResponse, Body, Response } from 'tsoa';
@@ -13,6 +13,8 @@ export class OtpController extends Controller {
 	private otpService: OtpService;
 	@Inject
 	private mobileOtpCookieHelper: MobileOtpCookieHelper;
+	@Inject
+	private molCookieHelper: MolCookieHelper;
 
 	@Post('send')
 	@BookingSGAuth({ bypassAuth: true })
@@ -32,6 +34,7 @@ export class OtpController extends Controller {
 			cookieRefreshedAt: new Date(),
 			otpReqId: otpVerifyBody.otpRequestId,
 		});
+		this.molCookieHelper.delete();
 		this.setStatus(204);
 	}
 

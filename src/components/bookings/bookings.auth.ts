@@ -157,7 +157,7 @@ export class BookingQueryAuthVisitor extends QueryAuthGroupVisitor implements IB
 		const userId = _citizenGroup.user.id;
 
 		this.addAuthCondition(
-			`${this._alias}."_citizenUinFin" = :authorisedUinFin OR ${this._alias}."_ownerId" = :userId`,
+			`${this._alias}."_citizenUinFin" = :authorisedUinFin AND ${this._alias}."_ownerId" = :userId`,
 			{
 				authorisedUinFin,
 				userId,
