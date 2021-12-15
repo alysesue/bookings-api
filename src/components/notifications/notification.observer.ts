@@ -97,8 +97,8 @@ export class MailObserver implements Observer {
 
 				// For event bookings
 				if (booking.eventId) {
-					booking.event.oneOffTimeslots.map((slot) => {
-						emails.push(slot.serviceProvider.email);
+					booking.bookedSlots.map((slot) => {
+						emails.push(slot.oneOffTimeslot.serviceProvider.email);
 					});
 					emails = [...new Set(emails)];
 				}
