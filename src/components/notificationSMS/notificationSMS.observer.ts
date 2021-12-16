@@ -10,6 +10,7 @@ import {
 } from './templates/citizen.sms';
 import { UserContext } from '../../infrastructure/auth/userContext';
 import { NotificationSMSService, SMSmessage } from './notificationSMS.service';
+import { SMSType } from '../../models/SMSType';
 
 @InRequestScope
 export class SMSObserver implements Observer {
@@ -30,18 +31,23 @@ export class SMSObserver implements Observer {
 			const userIsAdmin = currentUser.isAdmin() || currentUser.isAgency();
 			const serviceProviderTemplate = this.citizenSMSTemplateBookingActionByServiceProvider;
 			const citizenTemplate = this.citizenSMSTemplateBookingActionByCitizen;
-			const templates = userIsAdmin
-				? serviceProviderTemplate
-				: citizenTemplate;
+			const templates = userIsAdmin ? serviceProviderTemplate : citizenTemplate;
 			const sms = this.templateFactory(subject.booking, subject.bookingType, templates);
 			const phoneNumber = subject.booking.citizenPhone;
 			const organisationName = subject.booking.service.organisation.name;
 			const serviceId = subject.booking.serviceId;
 			let userType;
-            (templates === serviceProviderTemplate) ? userType = BookingValidationType.Admin : userType = BookingValidationType.Citizen;
+			templates === serviceProviderTemplate
+				? (userType = BookingValidationType.Admin)
+				: (userType = BookingValidationType.Citizen);
 			try {
 				await this.notificationSMSService.send(
-					{ message: sms, phoneNumber }, organisationName, serviceId, userType);
+					{ message: sms, phoneNumber },
+					organisationName,
+					serviceId,
+					userType,
+					SMSType.BookingNotification,
+				);
 			} catch (error) {
 				// No need to do anything for now
 			}

@@ -8,7 +8,8 @@ import { BusinessError } from '../../errors/businessError';
 import { BookingBusinessValidations } from '../bookings/validator/bookingBusinessValidations';
 import { ErrorCodeV2, MOLErrorV2 } from 'mol-lib-api-contract';
 import { MobileOtpCookieHelper } from '../../infrastructure/bookingSGCookieHelper';
-import { BookingValidationType } from "../../models";
+import { BookingValidationType } from '../../models';
+import { SMSType } from "../../models/SMSType";
 
 const OTP_EXPIRY_IN_SECONDS = 3 * 60;
 
@@ -23,17 +24,23 @@ export class OtpService {
 	@Inject
 	private mobileOtpCookieHelper: MobileOtpCookieHelper;
 
-    async sendOtp(request: OtpSendRequestServiceIdNumber, organisationName: string): Promise<string> {
+	async sendOtp(request: OtpSendRequestServiceIdNumber, organisationName: string): Promise<string> {
 		const res = await this.captchaService.verify(request.captchaToken);
 		if (!res) {
 			BusinessError.throw([BookingBusinessValidations.InvalidCaptchaToken]);
 		}
 
 		const otp = Otp.create(request.mobileNo);
-		await this.notificationSMSService.send({
-			phoneNumber: request.mobileNo,
-			message: `Your authentication code is ${otp._value}`,
-		}, organisationName, request.serviceId, BookingValidationType.Citizen);
+		await this.notificationSMSService.send(
+			{
+				phoneNumber: request.mobileNo,
+				message: `Your authentication code is ${otp._value}`,
+			},
+			organisationName,
+			request.serviceId,
+			BookingValidationType.Citizen,
+			SMSType.Login,
+		);
 		await this.otpRepository.save(otp);
 
 		return otp._requestId;

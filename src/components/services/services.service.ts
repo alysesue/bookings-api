@@ -234,6 +234,7 @@ export class ServicesService {
 			includeLabels = false,
 			includeLabelCategories = false,
 		} = {},
+		skipAuthorisation?: boolean,
 	): Promise<Service> {
 		const validator = this.getValidator();
 		const service = await this.servicesRepository.getService({
@@ -242,6 +243,7 @@ export class ServicesService {
 			includeTimeslotsSchedule,
 			includeLabels,
 			includeLabelCategories,
+			skipAuthorisation,
 		});
 		await validator.validateServiceFound(service);
 

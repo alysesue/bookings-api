@@ -16,6 +16,10 @@ import {Organisation, Service, User} from "../../../models/entities";
 import {ServicesService} from "../../services/services.service";
 import {ServicesServiceMock} from "../../services/__mocks__/services.service";
 
+const MolCookieHelperMock = {
+	delete: jest.fn(),
+};
+
 const adminMock = User.createAdminUser({
 	molAdminId: 'd080f6ed-3b47-478a-a6c6-dfb5608a199d',
 	userName: 'UserName',

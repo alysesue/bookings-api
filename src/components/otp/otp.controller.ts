@@ -5,8 +5,8 @@ import { Controller, Post, Route, Tags, SuccessResponse, Body, Response } from '
 import { Inject } from 'typescript-ioc';
 import { OtpService } from '../otp/otp.service';
 import { BookingSGAuth } from '../../infrastructure/decorators/bookingSGAuth';
-import {IdHasher} from "../../infrastructure/idHasher";
-import {ServicesService} from "../services/services.service";
+import { IdHasher } from '../../infrastructure/idHasher';
+import { ServicesService } from '../services/services.service';
 
 @Route('v1/otp')
 @Tags('Otp')
@@ -22,15 +22,17 @@ export class OtpController extends Controller {
 	@Inject
 	private servicesService: ServicesService;
 
-	//TODO
 	@Post('send')
 	@BookingSGAuth({ bypassAuth: true })
 	@SuccessResponse(200, 'Success')
 	public async sendOtp(@Body() otpReqBody: OtpSendRequest): Promise<ApiData<OtpSendResponse>> {
-		const unsignedServiceId = await this.idHasher.decode(otpReqBody.serviceId);
-		const service = await this.servicesService.getService(unsignedServiceId);
+		const unsignedServiceId = this.idHasher.decode(otpReqBody.serviceId);
+		const service = await this.servicesService.getService(unsignedServiceId, {}, true);
 		const organisationName = service.organisation.name;
-		const otpReqId = await this.otpService.sendOtp({...otpReqBody, serviceId: unsignedServiceId}, organisationName);
+		const otpReqId = await this.otpService.sendOtp(
+			{ ...otpReqBody, serviceId: unsignedServiceId },
+			organisationName,
+		);
 		return ApiDataFactory.create(new OtpSendResponse(otpReqId));
 	}
 
