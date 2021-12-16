@@ -10,7 +10,6 @@ export class OtpSendRequest {
 	}
 }
 
-//TODO
 export class OtpSendRequestServiceIdNumber {
 	public mobileNo: string;
 	public captchaToken?: string;
