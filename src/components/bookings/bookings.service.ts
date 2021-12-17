@@ -49,9 +49,9 @@ import { BookingsEventValidatorFactory } from './validator/bookings.event.valida
 import { LifeSGMapper } from '../lifesg/lifesg.mapper';
 import { LifeSGMQService } from '../lifesg/lifesg.service';
 import { AppointmentAgency } from 'mol-lib-api-contract/appointment';
-import { CitizenAuthenticationType } from "../../models/citizenAuthenticationType";
-import { BookedSlotRepository } from "./bookedSlot.repository";
-import { IPagedEntities } from "../../core/pagedEntities";
+import { CitizenAuthenticationType } from '../../models/citizenAuthenticationType';
+import { BookedSlotRepository } from './bookedSlot.repository';
+import { IPagedEntities } from '../../core/pagedEntities';
 
 @InRequestScope
 export class BookingsService {
@@ -941,14 +941,14 @@ export class BookingsService {
 		if (!bookings) return;
 		bookings.map((booking) => {
 			booking.bookedSlots = [];
-		})
+		});
 		return await this.bookingsRepository.saveMultiple(bookings);
 	}
 
 	public async updateBookedSlots(event: Event, id: number): Promise<Booking[]> {
-		if (!event){
+		if (!event) {
 			throw new MOLErrorV2(ErrorCodeV2.SYS_NOT_FOUND).setMessage(`Event ${id} not found`);
-		};
+		}
 		const bookings = await this.getAllBookingsByEventId(id);
 		if (!bookings) return;
 		const newBookings: Booking[] = [];

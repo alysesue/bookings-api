@@ -19,6 +19,7 @@ import {
 	Event,
 	OneOffTimeslot,
 	AdminUser,
+	BookedSlot,
 } from '../../../models';
 import { BookingType } from '../../../models/bookingType';
 import { UserContext } from '../../../infrastructure/auth/userContext';
@@ -65,8 +66,14 @@ describe('Test template call', () => {
 		oneOffTimeslot3.startDateTime = new Date(2021, 3, 14, 10);
 		oneOffTimeslot3.endDateTime = new Date(2021, 3, 14, 11);
 		oneOffTimeslot3.serviceProvider = { name: 'Dana Doe', email: 'dana@email.com' } as IServiceProvider;
-		booking.event.oneOffTimeslots = [oneOffTimeslot, oneOffTimeslot2, oneOffTimeslot3];
 		booking.eventId = 1;
+		const bookedSlot = new BookedSlot();
+		bookedSlot.oneOffTimeslot = oneOffTimeslot;
+		const bookedSlot2 = new BookedSlot();
+		bookedSlot2.oneOffTimeslot = oneOffTimeslot2;
+		const bookedSlot3 = new BookedSlot();
+		bookedSlot3.oneOffTimeslot = oneOffTimeslot3;
+		booking.bookedSlots = [bookedSlot, bookedSlot2, bookedSlot3];
 	};
 	beforeAll(() => {
 		Container.bind(NotificationsService).to(NotificationsServiceMock);
@@ -84,7 +91,7 @@ describe('Test template call', () => {
 
 	beforeEach(() => {
 		jest.resetAllMocks();
-		((getConfig as unknown) as jest.Mock).mockReturnValue({});
+		(getConfig as unknown as jest.Mock).mockReturnValue({});
 		UserContextMock.getCurrentUser.mockImplementation(() => Promise.resolve(adminMock));
 		const templateValue = { to: 'to', html: 'html' };
 		EmailBookingTemplateMock.CreatedBookingEmailMock.mockReturnValue(templateValue);
@@ -99,12 +106,12 @@ describe('Test template call', () => {
 		booking.status = BookingStatus.PendingApproval;
 		booking.citizenEmail = 'email@email.com';
 		booking.citizenName = 'test info';
-		booking.service = ({
+		booking.service = {
 			_name: 'Career',
 			sendNotifications: true,
 			sendNotificationsToServiceProviders: true,
 			adminUsers: [],
-		} as unknown) as Service;
+		} as unknown as Service;
 		booking.serviceProvider = { email: 'test', name: 'test sp info' } as ServiceProvider;
 	});
 
