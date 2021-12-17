@@ -2,11 +2,13 @@ export class OtpSendRequest {
 	public mobileNo: string;
 	public captchaToken?: string;
 	public serviceId?: string;
+	public bookingToken?: string;
 
-	constructor(mobileNo: string, captchaToken?: string, serviceId?: string) {
+	constructor(mobileNo: string, captchaToken?: string, serviceId?: string, bookingToken?: string) {
 		this.mobileNo = mobileNo;
 		this.captchaToken = captchaToken;
 		this.serviceId = serviceId;
+		this.bookingToken = bookingToken;
 	}
 }
 
